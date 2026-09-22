@@ -2,30 +2,6 @@
 
 ## Block A — What a tool call costs the turn
 
-### §PW39 One rule with two reaches, not two rules
-
-Two argument checks now exist and they disagree about what a bad argument is. The worker
-reads the target's signature in the child process and refuses a keyword the function
-does not take. The describe surface reads the operation's registration and refuses an
-unknown keyword, a missing required one, a value outside the declared range, and a value
-outside the declared choices.
-
-So an operation run as a job is held to a weaker contract than the same one called
-directly. A size of 8192 against a range of 16 to 4096 is refused at once by one door
-and, through the other, spawns an interpreter, imports the target and comes back a
-failed job — the expensive way to learn what the surface already knew.
-
-The parent should validate through the registry before it spawns anything, and the
-worker should keep its own check for the targets that are not registered operations: a
-project's own generator named as a file path is a legitimate target and has no
-registration. That leaves one rule with two reaches rather than two rules.
-
-The obstacle is that the parent does not import the target — deliberately, because a
-target may need an environment the parent does not have. So the registry has to be
-consultable by name without importing the implementation, which means registration has
-to happen somewhere the parent already loads, or the validation has to travel into the
-child as data rather than as a lookup.
-
 ### §PW40 A number with two homes has no home
 
 `[tolerance] alpha_floor` is 0.02 in the config defaults, and `check("render", path)`

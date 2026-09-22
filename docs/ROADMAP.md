@@ -2,7 +2,6 @@
 
 ## Block A — What a tool call costs the turn
 
-- 📋 **PW39** (deps: —) **a job checks only that an argument exists while a direct call checks its range, so one call has two contracts** — The worker reads a target's signature and describe reads its registration, so a value the surface would refuse still costs a spawn and a failed job to discover. → §PW39
 - 📋 **PW40** (deps: —) **a tolerance has one default in the project config and a different one in the function that uses it** — A check falls back to an alpha floor of zero while the config declares 0.02, so an operation that forgets to pass it measures the background as part of the subject. → §PW40
 - 📋 **PW41** (deps: —) **an artefact that was produced without a record is invisible, because verify starts from the records** — A paid mesh with no sidecar reads as a sound project, and re-buying it is the only way to find out what it was made from. → §PW41
 - 📋 **PW42** (deps: —) **a render that is black to any observer passes the check for a blank render, on one bit of edge noise** — The assertion asks whether every visible pixel is exactly one colour, and an unlit Cycles render came back with two: black, and 1/255 at the antialiased edge. → §PW42

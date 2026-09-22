@@ -15,6 +15,7 @@ import time
 from pathlib import Path
 from typing import Any
 
+from .. import describe
 from ..errors import PolyweaveError
 from . import children, process
 from . import record as rec
@@ -100,6 +101,15 @@ class JobStore:
         """Spawn `target` as a job and return its handle, without waiting for it."""
         stages_for(kind)  # refuses an unknown kind before anything is written
         args = dict(args or {})
+        # One rule with two reaches, not two rules (§PW39). A registered operation is
+        # held to the same contract here as when it is called directly: a size of 8192
+        # against a range of 16 to 4096 was refused at once through one door and,
+        # through this one, spawned an interpreter, imported the target and came back a
+        # failed job. An unregistered target has no declaration, so the worker's own
+        # signature check stays the contract for those.
+        operation = describe.for_target(target)
+        if operation is not None:
+            describe.validate(operation, args)
         running = [v for v in self.list() if not is_terminal(v["stage"])]
         if len(running) >= self.max_parallel:
             held = ", ".join(v["job"] for v in running)

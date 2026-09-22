@@ -23,6 +23,8 @@ description complete rather than merely present.
 
 from __future__ import annotations
 
+import contextlib
+import importlib
 import inspect
 import typing
 from collections.abc import Callable, Sequence
@@ -73,8 +75,19 @@ class Operation:
             "parameters": [dict(p) for p in self.parameters],
         }
 
+    @property
+    def target(self) -> str:
+        """How a job would name this operation's function: `module:function`."""
+        return f"{self.fn.__module__}:{self.fn.__qualname__}"
+
 
 _REGISTRY: dict[str, Operation] = {}
+
+#: The plugin's own modules that register operations, imported on demand so the registry
+#: is complete before anything is looked up in it (§PW39). Only this package's own
+#: modules are ever imported here: a project's target may need an environment the caller
+#: does not have, which is exactly why a job spawns rather than importing.
+MODULES: tuple[str, ...] = ("polyweave.render",)
 
 
 def _type_name(annotation: Any) -> str:
@@ -175,6 +188,35 @@ def _parameters(name: str, fn: Callable, injects: tuple[str, ...]) -> list[dict]
             }
         )
     return out
+
+
+def load() -> None:
+    """Import this package's own operation modules, so the registry is complete.
+
+    Registration happens as a side effect of an import, so anything asking "is this a
+    registered operation?" is really asking "has its module been imported yet?" — and a
+    parent that never imports the module gets "no" for an operation that plainly exists.
+    Importing them here is safe in the way importing a project's target is not: these
+    are the plugin's own modules, and `polyweave.render` deliberately keeps `bpy` behind
+    a lazy import so that loading it costs nothing and needs no Blender.
+    """
+    for module in MODULES:
+        with contextlib.suppress(ImportError):  # pragma: no cover - always present
+            importlib.import_module(module)
+
+
+def for_target(target: str) -> str | None:
+    """The operation a job's `module:function` target is, or None if it is not one.
+
+    None is the ordinary answer, not a failure: a project's own generator named as a
+    file path is a legitimate target and has no registration (§PW39). What it means is
+    that the worker's own signature check is the only contract that target has.
+    """
+    load()
+    for registered in _REGISTRY.values():
+        if registered.target == target:
+            return registered.name
+    return None
 
 
 def operations() -> list[str]:

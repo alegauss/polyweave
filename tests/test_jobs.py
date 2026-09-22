@@ -141,6 +141,69 @@ def test_an_unknown_argument_is_refused_rather_than_dropped(store, target_path):
     assert "sixe" in done["error"]["message"]
 
 
+# -- one rule with two reaches (§PW39) -----------------------------------------
+
+
+def test_a_registered_operation_is_held_to_its_declared_range_before_it_spawns(store):
+    """The same value refused at once through one door used to spawn an interpreter,
+    import the target and come back a failed job through the other."""
+    with pytest.raises(PolyweaveError) as caught:
+        store.start(
+            "polyweave.render:bake",
+            kind="bake",
+            args={"out": "r.png", "elevation": 400.0},
+        )
+    assert caught.value.code == "op.out-of-range"
+    assert store.list() == [], "and nothing was written, let alone spawned"
+
+
+def test_a_missing_required_argument_is_refused_before_it_spawns(store):
+    with pytest.raises(PolyweaveError) as caught:
+        store.start("polyweave.render:bake", kind="bake", args={})
+    assert caught.value.code == "op.missing-argument"
+
+
+def test_an_unknown_argument_to_a_registered_operation_never_reaches_a_worker(store):
+    with pytest.raises(PolyweaveError) as caught:
+        store.start(
+            "polyweave.render:bake", kind="bake", args={"out": "r.png", "sixe": 512}
+        )
+    assert caught.value.code == "op.unknown-argument"
+
+
+def test_a_target_with_no_registration_is_still_the_workers_to_check(
+    store, target_path
+):
+    """A project's own generator named as a file path is a legitimate target, and the
+    signature check in the child is the only contract it has."""
+    from polyweave import describe
+
+    assert describe.for_target(f"{TARGET}:takes_nothing") is None
+    handle = start(store, "takes_nothing", target_path, args={"sixe": 512})
+    done = store.result(handle["job"], wait=True, timeout=30)
+    assert done["error"]["code"] == "job.unknown-arg", "refused, just later and dearer"
+
+
+def test_the_registry_answers_by_target_without_the_caller_importing_anything(store):
+    """Registration is a side effect of an import, so asking whether something is an
+    operation used to be asking whether its module had been imported yet."""
+    from polyweave import describe
+
+    assert describe.for_target("polyweave.render:bake") == "render.bake"
+    assert describe.for_target("nothing.at.all:ever") is None
+
+
+def test_a_value_inside_the_declared_range_starts_the_job(store):
+    """The check refuses what the declaration refuses, and nothing more."""
+    handle = store.start(
+        "polyweave.render:bake",
+        kind="bake",
+        args={"out": "r.png", "rung": "sphere", "elevation": 20.0},
+    )
+    assert handle["stage"] == "queued"
+    store.cancel(handle["job"])
+
+
 def test_a_target_that_does_not_exist_names_the_door(store, target_path):
     handle = store.start(f"{TARGET}:nope", kind="bake", path=target_path)
     done = store.result(handle["job"], wait=True, timeout=30)

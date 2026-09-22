@@ -136,6 +136,16 @@ both answers.
 - **A declared range is enforced, or it is a comment.** The same declaration that `describe`
   reports is what refuses an out-of-range argument (`op.out-of-range`), so the two cannot
   disagree about what is allowed.
+- **One rule with two reaches, not two rules.** The declaration is checked in the caller's
+  process before a job spawns, not only in the worker after it has. Otherwise the same
+  operation is held to a weaker contract as a job than as a direct call: an elevation of 400
+  against a range of −89 to 89 was refused at once through one door and, through the other,
+  spawned an interpreter, imported the target and came back a failed job — the expensive way
+  to learn what the surface already knew. The registry is consulted **by target**, and the
+  plugin's own operation modules are imported to fill it, since registration is a side effect
+  of an import and a caller that never imported the module would otherwise be told a real
+  operation is not one. A target with no registration — a project's own generator named as a
+  file path — is left to the worker's own signature check, which is the only contract it has.
 - `capabilities()` returns what this installation can actually do on this machine: which
   renderer and version, whether an engine is reachable, which offscreen route works (PW23),
   whether a service key is present, and the remaining budget. A caller plans against this

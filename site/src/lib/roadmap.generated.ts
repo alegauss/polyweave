@@ -25,7 +25,7 @@ export interface GeneratedNonGoal {
 }
 
 export const generatedBlocks: GeneratedBlock[] = [
-  { block: "A", title: "What a tool call costs the turn", open: 4 },
+  { block: "A", title: "What a tool call costs the turn", open: 3 },
   { block: "B", title: "Seeing the result cheaply", open: 2 },
   { block: "C", title: "The asset compiler", open: 1 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 2 },
@@ -36,13 +36,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW39",
-    block: "A",
-    symptom: "a job checks only that an argument exists while a direct call checks its range, so one call has two contracts",
-    why: "The worker reads a target's signature and describe reads its registration, so a value the surface would refuse still costs a spawn and a failed job to discover.",
-    deps: [],
-  },
   {
     id: "PW40",
     block: "A",
