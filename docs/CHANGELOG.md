@@ -50,6 +50,7 @@
 ## Block G — Geometry as a declaration
 
 - ✅ **PW30** **a shape is a Python script, so stating one means writing and debugging a program** — A shape is a TOML document of named parameters, expressions over them and a repeat, resolved into a flat graph that says what a change rebuilds (design recorded in `docs/specs/geometry.md`).
+- ✅ **PW31 (outlines and the constructive solids)** **a format covering only primitives would leave every real asset in code** — The outline vocabulary and the solids that build without a solver, so a drawing traces to an outline and extrudes into the sprite it was drawn as.
 
 ## Block H — Proof on a real game
 

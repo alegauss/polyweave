@@ -131,6 +131,21 @@ would leave every real asset in code (§PW31).
 An outline appears inline on a solid node, as in `seat` above, or as its own node when two
 nodes share one.
 
+**An outline is a closed ring in XY, and a solid extrudes it along Z** — the plane the
+camera faces at azimuth zero, which is what a sprite-baked asset wants: the drawn shape
+stays the drawn shape and the depth goes away from the viewer.
+
+**`offset` moves each corner along its miter, not its bisector.** A unit step along the
+bisector grows a ten-unit square to 11.4 rather than to 12, because a corner has to travel
+the diagonal. It is not a clipping offset: shrink a shape past its own width and the edges
+cross rather than the shape disappearing.
+
+**Tracing is Moore-neighbour boundary walking, then Ramer-Douglas-Peucker.** Every point
+it returns is a pixel really on the edge, and the simplification is what stops a drawing
+traced at one point per pixel becoming a thousand-point outline of a shape with eight
+corners. The y axis is flipped on the way out, because an image counts rows downward and §6
+counts y upward — an outline that came back mirrored is a sprite extruded backwards.
+
 ### Solids (3D)
 
 | `op` | What it is |
@@ -151,6 +166,12 @@ nodes share one.
 silhouette to the pixel. `prism` over an `image` outline is the other half of the same idea:
 a star's silhouette becomes a mesh that is not merely similar to the drawn sprite but is the
 drawn sprite, extruded.
+
+**A concave cap is triangulated and a convex one is not.** Cottony's first star came back
+with black triangles laid across its arms, which is a cap filled as though its points were
+a convex hull. Whether the outline is convex decides it, so a rounded rectangle keeps its
+single n-gon cap — which is what keeps the tray's topology, and therefore its committed
+render, from moving.
 
 **Booleans are exact by construction.** Cottony measured Blender's EXACT solver returning an
 empty mesh, with no error, for a cut against a bevelled object — 2402 faces before the bevel

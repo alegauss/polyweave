@@ -117,7 +117,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW31",
     block: "G",
     symptom: "a format covering only primitives would leave every real asset in code",
-    why: "The existing models use extruded outlines, crowned plates, radial arrays, annuli and boolean pockets, so the vocabulary has to be read off what they already do.",
+    why: "Carve, bevel and inflate need a solver, so a boolean pocket cannot be stated yet.",
     deps: [],
   },
   {

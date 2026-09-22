@@ -600,6 +600,28 @@ CODES: dict[str, Code] = {
         when="a node taking its own output as an input, directly or through others",
         doors=("break the circle; a graph of shapes has to have a beginning",),
     ),
+    "geom.bad-outline": Code(
+        means="what was given is not an outline",
+        when="fewer than three points, a mapping naming no shape, or a star of one "
+        "point",
+        doors=("give it a shape, an image, or at least three points",),
+    ),
+    "geom.bad-solid": Code(
+        means="the solid's own numbers do not describe a shape",
+        when="an annulus whose inner radius is not inside its outer one, or a union of "
+        "nothing at all",
+        doors=("check the numbers the node states",),
+    ),
+    "geom.unknown-shape": Code(
+        means="there is no outline generator by that name",
+        when="a shape named outside the small library the scripts were read off",
+        doors=("name a declared generator", "trace a drawing instead"),
+    ),
+    "geom.nothing-to-trace": Code(
+        means="the drawing has no subject in it to trace an outline from",
+        when="an image that is entirely background",
+        doors=("point it at a drawing with a subject in it",),
+    ),
     "geom.bad-repeat": Code(
         means="the repeat does not describe a range",
         when="a range with no variable, or a step of zero, which is a loop that never "
