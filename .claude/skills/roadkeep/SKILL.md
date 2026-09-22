@@ -8,7 +8,7 @@ description: "Call the roadkeep CLI instead of editing a project's governed ROAD
 The line format is a schema at the point of insertion, not a convention to remember. Every
 field is validated before a sentence exists, so a refusal costs a retry and never a
 deletion. Read `roadkeep.toml` for this project's prefix, id shape, paths, markers and
-limits (L6); nothing below hardcodes them. `python ".roadkeep/scripts/roadkeep.py"` is this project's entry point — `install` wired it to a checkout, so the package is not installed here and `roadkeep` is on no PATH.
+limits (L6); nothing below hardcodes them. `python ".claude/hooks/roadkeep-launch.py"` is this project's entry point — the package is not installed here and `roadkeep` is on no PATH, and that launcher is committed to this repository so it finds an engine wherever this environment has one. The vendored `.roadkeep/scripts/roadkeep.py` is the engine it resolves first and stays callable directly.
 
 ## The loop, in four calls
 
