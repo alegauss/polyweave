@@ -717,6 +717,39 @@ def inline_image(path: str | Path, image: Image | None = None) -> dict:
     }
 
 
+def noise_floor(
+    one: Any,
+    two: Any,
+    *,
+    region: Any = None,
+    alpha_floor: float,
+) -> float:
+    """The distance between two renders of one unchanged scene: the floor itself.
+
+    §PW44. A configured floor is a guess, and measuring proves it is usually the wrong
+    one. On Blender 5.2.1 two seeds of one unchanged sphere came back 0.0234 apart at
+    the sphere rung, 0.0195 at preview and 0.0122 at final, against a single configured
+    default of 0.004 — so every comparison at every rung read as a change.
+
+    The controls matter more than the numbers. The same seed rendered twice is 0.0
+    exactly, so what is measured here is sampler noise and not the pipeline wobbling;
+    and a changed material measures 0.63, thirty times the widest floor, so nothing is
+    being hidden by a bar this size.
+
+    A floor measured this way costs one render and is right on this machine at this
+    sample count for this scene, which a number in a file never is.
+    """
+    taken = measure(
+        one,
+        ["distance"],
+        region=region,
+        alpha_floor=alpha_floor,
+        against=two,
+        root=".",
+    )
+    return float(summarise(taken)["distance"])
+
+
 def same(
     subject: Any,
     against: Any,
@@ -725,6 +758,8 @@ def same(
     delta: float | None = None,
     region: Any = None,
     alpha_floor: float | None = None,
+    twin: Any = None,
+    rung: str | None = None,
     root: str | Path = ".",
 ) -> dict:
     """Whether two renders are the same picture, with a tolerance rather than equality.
@@ -733,9 +768,19 @@ def same(
     differing pixels across a render nobody had touched, none by more than 1/255. So a
     gate comparing bytes fires on every run, and the question needs a threshold.
 
-    The threshold is `[tolerance] render_noise` unless the caller states one, because
-    the bar for sampler noise is not the bar for a silhouette that has to land within
-    three pixels.
+    Three ways to get one, best first (§PW44):
+
+    - `twin`, a second render of the subject's own unchanged scene at another seed. The
+      floor is then **measured** rather than assumed, and is right at whatever sample
+      count and on whatever machine this is. It costs one render.
+    - `tolerance`, stated by the caller who knows their own bar.
+    - `[tolerance] render_noise` for the rung, which is keyed by rung because the floor
+      at four samples is not the floor at five hundred. The rung is read from the
+      subject's own provenance record where there is one, so a verdict taken on a sphere
+      is not held to a final render's bar.
+
+    The answer says which of the three it used, because a verdict rests on its floor and
+    a floor nobody can see is a number nobody can argue with.
 
     This has a root, so it is where the resolving happens: `measure` below it takes the
     numbers and invents none (§PW40).
@@ -743,15 +788,27 @@ def same(
     from .config import load as load_config
 
     config = load_config(root)
-    bar = float(config.get("tolerance.render_noise", tolerance))
+    floor_alpha = float(config.get("tolerance.alpha_floor", alpha_floor))
+    at = rung or _rung_of(subject, root)
+    if twin is not None:
+        bar = noise_floor(subject, twin, region=region, alpha_floor=floor_alpha)
+        source = "measured from a twin render"
+    elif tolerance is not None:
+        bar = float(tolerance)
+        source = "stated by the caller"
+    else:
+        bar = config.tolerances(at).render_noise
+        source = f"[tolerance] render_noise for the {at or 'strictest'} rung"
+
     floor = delta if delta is not None else bar
     taken = measure(
         subject,
         ["distance", "changed_fraction"],
         region=region,
-        alpha_floor=float(config.get("tolerance.alpha_floor", alpha_floor)),
+        alpha_floor=floor_alpha,
         against=against,
         delta=floor,
+        root=root,
     )
     found = summarise(taken)
     apart = found["distance"]
@@ -760,10 +817,31 @@ def same(
         "distance": apart,
         "changed_fraction": found["changed_fraction"],
         "tolerance": bar,
+        "tolerance_from": source,
+        "rung": at,
         "why": ""
         if apart <= bar
-        else f"the 99th percentile difference is {apart}, past a tolerance of {bar}",
+        else f"the 99th percentile difference is {apart}, past a tolerance of {bar} "
+        f"({source})",
     }
+
+
+def _rung_of(subject: Any, root: str | Path) -> str | None:
+    """Which rung a render was taken at, off the record already written beside it.
+
+    Read rather than asked for, because the record carries it and a caller repeating it
+    is a caller who can get it wrong (§PW6). None where there is no record, which is the
+    ordinary case for an image that came from somewhere else.
+    """
+    if not isinstance(subject, str | Path):
+        return None
+    from .errors import PolyweaveError
+    from .provenance import read as read_record
+
+    try:
+        return read_record(subject, root=root).get("rung")
+    except PolyweaveError:
+        return None
 
 
 def summarise(measurements: Iterable[dict]) -> dict:

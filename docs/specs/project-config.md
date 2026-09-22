@@ -50,7 +50,9 @@ max_parallel = 4
 
 [tolerance]
 alpha_floor        = 0.02      # what counts as a subject pixel
-render_noise       = 0.004     # below this, two renders are the same picture
+# below this, two renders are the same picture — keyed by rung, because the floor at
+# thirty-two samples is not the floor at five hundred
+render_noise       = { sphere = 0.025, preview = 0.020, final = 0.013 }
 silhouette_iou     = 0.97
 delta_e            = 2.0
 background_delta_e = 12.0      # how far from the frame's edge colour is still ground
@@ -125,6 +127,21 @@ way a second value ever enters.
 All six resolve together, as one object, for two reasons: an operation cannot pick up a
 stale sibling of the number it wanted, and a record written beside an artefact can carry the
 values that were actually in force rather than whatever this file holds when it is read back.
+
+**`render_noise` is keyed by rung**, like `[render] samples` and for the same reason: the
+noise floor is not one number. Two seeds of one unchanged sphere measured 0.0234 apart at the
+sphere rung, 0.0195 at preview and 0.0122 at final, against the single 0.004 this used to
+hold — so every comparison at every rung read as a change (§PW44). `Config.tolerances(rung)`
+resolves it to the one number the comparing code wants; naming no rung takes the strictest,
+which is the safe way to be wrong, since too tight costs a look and too loose is a wrong
+answer.
+
+**And a measured floor beats all of them.** Those defaults are what one machine measured,
+which is still a guess about another. `measure.same` takes a `twin` — a second render of the
+subject's own unchanged scene at another seed — and measures the floor from it, which costs
+one render and is right at whatever sample count on whatever machine. The answer says which
+of the three floors it used, because a verdict rests on its floor and one nobody can see is
+a number nobody can argue with.
 
 ## Rules that are not defaults
 

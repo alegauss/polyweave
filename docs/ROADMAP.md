@@ -7,8 +7,6 @@
 
 ## Block B — Seeing the result cheaply
 
-- 📋 **PW44** (deps: —) **one configured noise floor calls every preview-sized render a change, because the floor moves with the rung** — Two seeds of one scene measured 0.046 apart at four samples and 0.014 at sixty-four, against a configured default of 0.004 calibrated for a final render. → §PW44
-
 ## Block C — The asset compiler
 
 - 📋 **PW45** (deps: —) **a search renders its samples one after another, so a budget of twenty-four costs twenty-four waits** — The job handles exist so four samples can run at once, and the search calls its evaluator once per sample and waits for each render before proposing the next. → §PW45

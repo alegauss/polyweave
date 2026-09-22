@@ -127,9 +127,13 @@ def test_a_small_change_is_not_diluted_by_the_frame_around_it(tmp_path):
 def test_the_tolerance_comes_from_the_project(tmp_path):
     original = scene(tmp_path, "a.png")
     noisy = with_noise(tmp_path, original, "b.png")
-    where = project(tmp_path, "[tolerance]\nrender_noise = 0.0\n")
+    where = project(
+        tmp_path,
+        "[tolerance]\nrender_noise = { sphere = 0.0, preview = 0.0, final = 0.0 }\n",
+    )
     found = measure.same(original, noisy, root=where, region="frame")
     assert found["tolerance"] == 0.0
+    assert "render_noise" in found["tolerance_from"]
     assert found["same"] is False  # nothing is identical to a path-traced twin
 
 
@@ -188,3 +192,92 @@ def test_a_picture_is_the_same_as_itself(tmp_path):
     assert found["same"] is True
     assert found["distance"] == 0.0
     assert found["changed_fraction"] == 0.0
+
+
+# -- the floor moves with the rung, and measuring beats configuring (§PW44) ------------
+
+
+def test_the_floor_is_read_for_the_rung_rather_than_being_one_number(tmp_path):
+    """Two seeds of one sphere sit 0.0234 apart at the sphere rung and 0.0122 at final,
+    so a single number calls one of them a change whichever number is chosen."""
+    where = project(tmp_path)
+    loose = C.load(where).tolerances("sphere").render_noise
+    tight = C.load(where).tolerances("final").render_noise
+    assert loose > tight, "a cheaper rung is noisier, and its bar has to be wider"
+
+
+def test_naming_no_rung_takes_the_strictest_floor(tmp_path):
+    """The safe way to be wrong: too tight calls an unchanged render changed, which is
+    a wasted look, and too loose calls a changed one unchanged, which is a wrong answer.
+    """
+    where = project(tmp_path)
+    every = C.load(where).table("tolerance")["render_noise"].values()
+    assert C.load(where).tolerances().render_noise == min(every)
+
+
+def test_a_verdict_says_which_floor_it_rested_on(tmp_path):
+    original = scene(tmp_path, "a.png")
+    found = measure.same(original, original, root=project(tmp_path), region="frame")
+    assert "render_noise" in found["tolerance_from"]
+    assert (
+        measure.same(
+            original, original, tolerance=0.5, root=project(tmp_path), region="frame"
+        )["tolerance_from"]
+        == "stated by the caller"
+    )
+
+
+def test_a_twin_render_measures_the_floor_instead_of_assuming_it(tmp_path):
+    """The better of the two routes: one render, right at any sample count."""
+    original = scene(tmp_path, "a.png")
+    twin = with_noise(tmp_path, original, "twin.png")
+    changed = with_noise(tmp_path, original, "c.png", pixels=400_000, amount=60, seed=3)
+
+    found = measure.same(
+        original, changed, twin=twin, root=project(tmp_path), region="frame"
+    )
+    assert found["tolerance_from"] == "measured from a twin render"
+    assert found["tolerance"] == pytest.approx(
+        measure.noise_floor(original, twin, region="frame", alpha_floor=0.0)
+    )
+    assert found["same"] is False, "and a real change still reads as one"
+
+
+def test_the_measured_floor_forgives_exactly_the_noise_it_was_measured_from(tmp_path):
+    original = scene(tmp_path, "a.png")
+    twin = with_noise(tmp_path, original, "twin.png")
+    found = measure.same(
+        original, twin, twin=twin, root=project(tmp_path), region="frame"
+    )
+    assert found["same"] is True, "the floor is the distance, so it cannot be exceeded"
+
+
+def test_a_twin_beats_a_stated_bar_which_beats_the_configured_one(tmp_path):
+    """Stated in the order the answer prefers them, so the preference is checkable."""
+    original = scene(tmp_path, "a.png")
+    twin = with_noise(tmp_path, original, "twin.png")
+    where = project(tmp_path)
+    both = measure.same(
+        original, twin, twin=twin, tolerance=0.9, root=where, region="frame"
+    )
+    assert both["tolerance_from"] == "measured from a twin render"
+
+
+def test_the_rung_is_read_off_the_record_rather_than_asked_for(tmp_path):
+    """§PW6 wrote it down, and a caller repeating it is one who can get it wrong."""
+    from polyweave import provenance
+
+    where = project(tmp_path)
+    original = scene(tmp_path, "a.png")
+    provenance.write(
+        provenance.build("render", "a.png", rung="sphere", root=where), root=where
+    )
+    found = measure.same(original, original, root=where, region="frame")
+    assert found["rung"] == "sphere"
+    assert found["tolerance"] == C.load(where).tolerances("sphere").render_noise
+
+
+def test_an_image_with_no_record_is_held_to_the_strictest_floor(tmp_path):
+    original = scene(tmp_path, "a.png")
+    found = measure.same(original, original, root=project(tmp_path), region="frame")
+    assert found["rung"] is None

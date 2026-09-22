@@ -180,12 +180,14 @@ def test_a_render_that_is_black_to_any_observer_is_refused(project):
 
 
 def test_the_edge_noise_that_used_to_get_through_is_what_the_floor_is_set_at(project):
-    """1/255 is 0.0039 and the floor is 0.0040, which is why it is caught at all."""
+    """1/255 is 0.0039, and a floor of 0.0040 is why it is caught at all."""
     from polyweave import config, post
     from polyweave.image import Image
 
-    floor = config.load(project).tolerances().render_noise
-    assert floor == pytest.approx(0.004)
+    # The flatness check is about a byte of edge noise, not about sampler noise, so it
+    # states its own bar rather than reading the rung's (§PW44).
+    floor = 0.004
+    assert config.load(project).tolerances("final").render_noise > floor
 
     def two_values(low, high):
         rgba = np.zeros((8, 8, 4), dtype=np.uint8)

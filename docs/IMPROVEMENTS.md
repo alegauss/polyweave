@@ -53,30 +53,6 @@ refusing a wand.
 
 ## Block B — Seeing the result cheaply
 
-### §PW44 The noise floor is measurable, and configuring it is a guess
-
-`[tolerance] render_noise` is one number for a project, and the noise it describes is
-not one number. Two seeds of one unchanged scene were measured on a 48-pixel sphere at
-four samples and came back 0.046 apart; at sixty-four samples the same pair sat at
-0.014. The configured default is 0.004, which is calibrated for a full-size final render
-and calls every preview a change.
-
-The separation is not in doubt — a changed material measured 0.75 against both, fifty
-times the floor — so the metric works. What is missing is that the floor depends on the
-rung a render was taken at, and nothing says so. A caller stating its own tolerance gets
-the right answer and one relying on the default does not, which is the defect
-configuration removes.
-
-Two ways out. The narrow one is a tolerance per rung: `[tolerance] render_noise` becomes
-a table keyed like `[render] samples`, read for the rung the renders already record. The
-wider one is to stop configuring the floor and measure it — render the scene twice at
-that rung and use the distance between them as the bar. It costs one render and it is
-right on any machine at any sample count, which a configured number never is.
-
-The second is better and the first is cheaper, and a measured floor also wants somewhere
-to be cached — which is the cache in Block C, so the decision is worth taking after it
-lands.
-
 ## Block C — The asset compiler
 
 ### §PW45 Four samples were meant to be four handles

@@ -83,7 +83,13 @@ DEFAULTS: dict[str, Any] = {
     },
     "tolerance": {
         "alpha_floor": 0.02,
-        "render_noise": 0.004,
+        # Keyed by rung, because the noise floor is not one number: two seeds of one
+        # unchanged sphere measured 0.0234 apart at the sphere rung, 0.0195 at preview
+        # and 0.0122 at final on Blender 5.2.1, against the 0.004 that used to be the
+        # single default — so every preview comparison read as a change (§PW44). These
+        # are what one machine measured, which is still a guess about another: a floor
+        # measured from a twin render beats all of them, and `measure.same` takes one.
+        "render_noise": {"sphere": 0.025, "preview": 0.020, "final": 0.013},
         "silhouette_iou": 0.97,
         "delta_e": 2.0,
         # How far from the colour at the frame's edge still counts as background when a
@@ -274,15 +280,29 @@ class Config:
         table, _, key = address.partition(".")
         return key in self._declared.get(table, {})
 
-    def tolerances(self) -> Tolerances:
+    def tolerances(self, rung: str | None = None) -> Tolerances:
         """Every tolerance in force, resolved together (§PW40).
 
         An operation reads this once and passes the numbers down. The functions below it
         take them and have no fallback of their own, so there is nowhere for a second
         value of one number to live.
+
+        `render_noise` is keyed by rung in the file and a single number here, because
+        the floor at four samples is not the floor at five hundred (§PW44) and yet the
+        code comparing two pictures wants one bar. Naming no rung takes the strictest of
+        them, which is the safe way to be wrong: too tight calls an unchanged render
+        changed, and too loose calls a changed one unchanged.
         """
         table = self.table("tolerance")
-        return Tolerances(**{f.name: float(table[f.name]) for f in fields(Tolerances)})
+        noise = table["render_noise"]
+        if isinstance(noise, dict):
+            noise = noise.get(rung, min(noise.values())) if noise else 0.0
+        values = {
+            f.name: float(table[f.name])
+            for f in fields(Tolerances)
+            if f.name != "render_noise"
+        }
+        return Tolerances(render_noise=float(noise), **values)
 
     # -- the one read that is a decision ---------------------------------------
 

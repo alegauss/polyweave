@@ -96,6 +96,16 @@ separation on that case rather than assert it.
 Thresholds are per comparison and come from `[tolerance]` in the project config. The bar for
 sampler noise is not the bar for a silhouette that has to land within three pixels.
 
+**And the noise floor is measurable, which beats configuring it.** It is not one number: two
+seeds of one unchanged sphere measured 0.0234 apart at the sphere rung, 0.0195 at preview and
+0.0122 at final (§PW44), so `[tolerance] render_noise` is keyed by rung. Even so those are
+one machine's numbers. The better route is a **twin** — a second render of the subject's own
+unchanged scene at another seed — whose distance from the subject *is* the floor, right at
+whatever sample count on whatever machine, for one render. The controls are what make it
+trustworthy: the same seed rendered twice measures 0.0 exactly, so what a twin measures is
+sampler noise and not the pipeline wobbling, and a changed material measures 0.63 against a
+floor of 0.02, so nothing real is hidden under a bar that size.
+
 `distance` is **the worst patch, not the average pixel**. The difference is pooled over 8×8
 blocks and the largest block is reported. Pooling is the whole separation: a path tracer's
 error is uncorrelated between neighbours and averages away inside a patch however many
