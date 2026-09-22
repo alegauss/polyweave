@@ -16,9 +16,9 @@
 
 ## Block C — The asset compiler
 
-- 📋 **PW13** (deps: PW7 ✅, PW12 ✅) **a rig number is found by rendering, looking, and changing it by hand, one sample at a time** — Cottony's fourteen tuned constants were each discovered that way at two minutes a sample, which is the single largest cost in making an asset. → §PW13
-- 📋 **PW14** (deps: PW6 ✅, PW13) **a search re-renders states it has already rendered** — A parameter sweep revisits neighbourhoods, and without a cache keyed on the inputs the same picture is paid for as many times as the search returns to it. → §PW14
-- 📋 **PW15** (deps: PW13) **a search reports the winning numbers and not what it rejected** — A result nobody can inspect is one nobody can overrule, and a rig tuned against the wrong criterion looks exactly like a rig tuned against the right one. → §PW15
+- 📋 **PW14** (deps: PW6 ✅, PW13 ✅) **a search re-renders states it has already rendered** — A parameter sweep revisits neighbourhoods, and without a cache keyed on the inputs the same picture is paid for as many times as the search returns to it. → §PW14
+- 📋 **PW15** (deps: PW13 ✅) **a search reports the winning numbers and not what it rejected** — A result nobody can inspect is one nobody can overrule, and a rig tuned against the wrong criterion looks exactly like a rig tuned against the right one. → §PW15
+- 📋 **PW45** (deps: —) **a search renders its samples one after another, so a budget of twenty-four costs twenty-four waits** — The job handles exist so four samples can run at once, and the search calls its evaluator once per sample and waits for each render before proposing the next. → §PW45
 
 ## Block D — Fetching from a paid service without surprise
 
@@ -47,13 +47,13 @@
 
 - 📋 **PW30** (deps: —) **a shape is a Python script, so stating one means writing and debugging a program** — Cottony's tray, star, ball and props are four modules of imperative geometry code, and the shape each describes is not readable without running it. → §PW30
 - 📋 **PW31** (deps: PW30) **a format covering only primitives would leave every real asset in code** — The existing models use extruded outlines, crowned plates, radial arrays, annuli and boolean pockets, so the vocabulary has to be read off what they already do. → §PW31
-- 📋 **PW32** (deps: PW13, PW30) **a shape's own numbers are unreachable from the search that tunes everything else** — Geometry constants live inside a module while the rig's live in a dataclass, so a search can reach the lighting and never the shape it is lighting. → §PW32
+- 📋 **PW32** (deps: PW13 ✅, PW30) **a shape's own numbers are unreachable from the search that tunes everything else** — Geometry constants live inside a module while the rig's live in a dataclass, so a search can reach the lighting and never the shape it is lighting. → §PW32
 - 📋 **PW33** (deps: PW30) **a shape cannot be reviewed without building it, so a wrong construction is found in the render** — Two wrong constructions of one tray's seats each looked reasonable while being written and were only visible once rendered, which is the expensive place. → §PW33
 - 📋 **PW34** (deps: PW30) **a declaration that cannot express a shape leaves no way back to code** — Any format will meet a shape it cannot state, and forcing that shape into the format produces worse geometry than the script it replaced. → §PW34
 
 ## Block H — Proof on a real game
 
-- 📋 **PW35** (deps: PW13) **the plugin's value is asserted and never measured against what it replaced** — Nothing records how long a correct asset took before or after, so there is no way to tell a real improvement from a rearrangement of the same work. → §PW35
+- 📋 **PW35** (deps: PW13 ✅) **the plugin's value is asserted and never measured against what it replaced** — Nothing records how long a correct asset took before or after, so there is no way to tell a real improvement from a rearrangement of the same work. → §PW35
 - 📋 **PW36** (deps: PW5 ✅) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Cottony is the first consumer and the test of whether the configuration boundary holds, and an adoption that needs a fork proves that it does not. → §PW36
 
 ## Non-goals

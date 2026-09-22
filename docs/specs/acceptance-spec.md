@@ -85,7 +85,28 @@ refused (`spec.rung-too-low`) rather than quietly accepted.
 whatever the optimiser would like. This is what stops a search reaching a value that is wrong
 for reasons the spec does not capture — it can tune the exposure and it cannot decide the
 asset should be twice as large. Ranges come from the spec; where a project wants defaults for
-a parameter it always searches, they live in `polyweave.toml`.
+a parameter it always searches, they live in `polyweave.toml`. A spec with predicates and no
+ranges is not searchable, and a search over it is refused rather than run over nothing.
+
+## How the search spends
+
+**The budget is a number of renders, not a wall-clock.** It is the thing being managed, so it
+has to be legible and it has to be obeyed exactly: the search evaluates no sample twice and
+stops the moment it is spent.
+
+A **coarse grid, then the window closes around the best** — the space is small and mostly
+continuous, so this converges without anything cleverer. The grid is as fine as the remaining
+budget affords and never coarser than the ends of the range. Each pass halves the window
+rather than measuring a neighbourhood from the best value, because a best value sitting dead
+centre of its range is the common case and its neighbourhood would be the range it started
+as.
+
+**A search that has its answer stops paying.** Once the spec passes with nothing left to
+gain, the renders after it buy nothing, and the answer says which of those things ended it.
+
+The winner is reported with its score **against every individual predicate**, so a spec that
+was satisfied by an ugly render is visible as exactly that rather than as a success, along
+with the whole trace of what was tried.
 
 ## What this file deliberately cannot say
 

@@ -191,22 +191,6 @@ lands.
 
 ## Block C — The asset compiler
 
-### §PW13 Search the parameters, do not guess them
-
-Fourteen tuned constants in Cottony's rig were each found the same way: render, look,
-change a number, render again. At two minutes a sample that is the single largest cost
-in making an asset, and it is a search a machine should be running. Given the spec from
-the line above and a cheap render from Block B, the loop is mechanical: propose values,
-render at the lowest rung that can evaluate the predicates, score, continue. The space
-is small and mostly continuous, so a coarse grid followed by local refinement is very
-likely enough before anything cleverer is warranted, and the interesting engineering is
-in the evaluation budget rather than in the optimiser. Two things keep it honest. It
-searches only the parameters it is told it may search, with ranges taken from
-configuration, so it cannot wander to a value that is wrong for reasons the spec does
-not capture. And it reports the winner with its score against every individual
-predicate, so a spec that was satisfied by an ugly render is visible as exactly that
-rather than as a success.
-
 ### §PW14 Renders are content-addressed
 
 A search revisits neighbourhoods, and a caller re-runs the same render across sessions.
@@ -235,6 +219,30 @@ wrong rather than the renderer. That is the loop this entire block exists for: t
 is the thing being debugged, and the search is the fastest way yet found to discover
 that it is incomplete. The trace is also what makes a result reproducible, since it
 records the seed and the search's own configuration beside the samples it scored.
+
+### §PW45 Four samples were meant to be four handles
+
+The job system was built so that four parameter samples are four handles rather than
+four waits, and that was named at the time as what makes a search affordable at all. The
+search does not use it. It calls its evaluator once per sample and waits for each render
+before proposing the next, so a budget of twenty-four samples is twenty-four renders end
+to end where the machine could be running four at a time.
+
+The seam is already in place: the evaluator is a function the search is handed, and
+everything about rendering is on the far side of it. What is missing is a batched form —
+a pass proposes a grid, hands the whole grid over, and gets back a list — and an
+evaluator that starts one job per sample, bounded by `[render] max_parallel`, and
+collects them.
+
+There is a reason it was not built with the search. The render path drives Blender
+through the bpy module in process, and bpy is a singleton that cannot render two scenes
+at once in one interpreter. Parallel samples therefore need the worker, so each sample
+pays an interpreter start it currently avoids. At four spheres that trade is probably a
+loss; at four final characters it is plainly a win, and the crossing point is
+measurable.
+
+So the work is a batched evaluator, a job-backed implementation of it, and the
+measurement that says which rungs it should be the default for.
 
 ## Block D — Fetching from a paid service without surprise
 

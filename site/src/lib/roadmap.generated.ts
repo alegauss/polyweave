@@ -93,25 +93,25 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW13",
-    block: "C",
-    symptom: "a rig number is found by rendering, looking, and changing it by hand, one sample at a time",
-    why: "Cottony's fourteen tuned constants were each discovered that way at two minutes a sample, which is the single largest cost in making an asset.",
-    deps: [],
-  },
-  {
     id: "PW14",
     block: "C",
     symptom: "a search re-renders states it has already rendered",
     why: "A parameter sweep revisits neighbourhoods, and without a cache keyed on the inputs the same picture is paid for as many times as the search returns to it.",
-    deps: ["PW13"],
+    deps: [],
   },
   {
     id: "PW15",
     block: "C",
     symptom: "a search reports the winning numbers and not what it rejected",
     why: "A result nobody can inspect is one nobody can overrule, and a rig tuned against the wrong criterion looks exactly like a rig tuned against the right one.",
-    deps: ["PW13"],
+    deps: [],
+  },
+  {
+    id: "PW45",
+    block: "C",
+    symptom: "a search renders its samples one after another, so a budget of twenty-four costs twenty-four waits",
+    why: "The job handles exist so four samples can run at once, and the search calls its evaluator once per sample and waits for each render before proposing the next.",
+    deps: [],
   },
   {
     id: "PW16",
@@ -230,7 +230,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "G",
     symptom: "a shape's own numbers are unreachable from the search that tunes everything else",
     why: "Geometry constants live inside a module while the rig's live in a dataclass, so a search can reach the lighting and never the shape it is lighting.",
-    deps: ["PW13", "PW30"],
+    deps: ["PW30"],
   },
   {
     id: "PW33",
@@ -251,7 +251,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "the plugin's value is asserted and never measured against what it replaced",
     why: "Nothing records how long a correct asset took before or after, so there is no way to tell a real improvement from a rearrangement of the same work.",
-    deps: ["PW13"],
+    deps: [],
   },
   {
     id: "PW36",

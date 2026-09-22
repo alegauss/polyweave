@@ -37,6 +37,7 @@ AREAS: dict[str, str] = {
     "op": "an operation's own arguments, against what it declared",
     "prov": "the record written beside an artefact, and the cache key it defines",
     "compose": "putting an asset where it will actually be seen",
+    "search": "looking for parameter values that satisfy a spec",
 }
 
 CODES: dict[str, Code] = {
@@ -398,6 +399,18 @@ CODES: dict[str, Code] = {
         means="the asset lands entirely outside the capture it was placed into",
         when="a position in the coordinates of a different capture, or of the asset",
         doors=("place it within the capture's own pixels",),
+    ),
+    # -- search: looking for values that satisfy a spec -----------------------
+    "search.nothing-to-search": Code(
+        means="the spec names no parameter a search is permitted to turn",
+        when="an acceptance spec with predicates and no search ranges; a parameter not "
+        "named there is not searched, whatever an optimiser would like",
+        doors=("add a search range for each parameter it may turn",),
+    ),
+    "search.no-budget": Code(
+        means="the search was given no renders to spend",
+        when="a budget below one",
+        doors=("give it a budget of at least one render",),
     ),
     # -- prov: what produced an artefact -------------------------------------
     "prov.unknown-kind": Code(
