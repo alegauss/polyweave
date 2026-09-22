@@ -326,6 +326,62 @@ CODES: dict[str, Code] = {
         when="a ${NAME} reference on a machine where NAME was never exported",
         doors=("set the variable", "write the value in the config instead"),
     ),
+    # -- render: producing a picture from a scene -----------------------------
+    "render.no-renderer": Code(
+        means="Blender is not importable here, so nothing can render",
+        when="the bpy module is not installed in the interpreter running the work",
+        doors=("install bpy", "point [paths] blender at one that runs the worker"),
+    ),
+    "render.unknown-rung": Code(
+        means="the rung named is not one of the three the ladder renders",
+        when="a project renames a rung, or a caller misspells one",
+        doors=("name sphere, preview or final",),
+    ),
+    "render.rung-disabled": Code(
+        means="the question needs a rung this project does not enable",
+        when="a measure that needs the real mesh on a project that enables only sphere",
+        doors=("add the rung to [render] rungs", "ask a cheaper question"),
+    ),
+    "render.no-rungs": Code(
+        means="the project enables no rungs at all",
+        when="[render] rungs is empty",
+        doors=("name some of sphere, preview and final",),
+    ),
+    "render.no-samples": Code(
+        means="no sample count is declared for the rung being rendered",
+        when="a project names a rung in [render] rungs and omits it from samples",
+        doors=("set samples for that rung",),
+    ),
+    "render.no-mesh": Code(
+        means="the rung renders the real mesh and there is none to render",
+        when="no model was named, the file is not there, or it imported empty",
+        doors=("pass the model", "ask a question the sphere rung carries"),
+    ),
+    "render.unknown-format": Code(
+        means="the mesh file is not in a format this reads",
+        when="a .blend or .obj where glTF or FBX was expected",
+        doors=("export as .glb, .gltf or .fbx",),
+    ),
+    "render.unknown-primitive": Code(
+        means="the primitive named does not exist",
+        when="a rung asks for a shape other than the sphere a surface is read on",
+        doors=("use the sphere",),
+    ),
+    "render.bad-ratio": Code(
+        means="a decimation ratio is not a fraction of one",
+        when="a preview rung is given a ratio at or below zero, or above one",
+        doors=("pass a ratio above 0 and at most 1",),
+    ),
+    "render.no-material": Code(
+        means="this Blender has no standard shader to build a material on",
+        when="a build without the Principled BSDF node",
+        doors=("render with a Blender that ships the standard shader nodes",),
+    ),
+    "render.unknown-material-field": Code(
+        means="a material names an input the shader does not have",
+        when="a misspelled Principled BSDF socket, refused rather than dropped",
+        doors=("name a socket the shader declares",),
+    ),
     # -- prov: what produced an artefact -------------------------------------
     "prov.unknown-kind": Code(
         means="the record names a kind of artefact that is not one of the four",
@@ -358,6 +414,12 @@ CODES: dict[str, Code] = {
         means="the code asked about is not one this plugin publishes",
         when="an explain names a code that does not exist, usually a misspelling",
         doors=("list the codes", "name one of the near matches"),
+    ),
+    "spec.unknown-measure": Code(
+        means="the name is not a measure the vocabulary carries",
+        when="an acceptance spec or a question names a measure that does not exist; "
+        "the vocabulary is closed, or a spec would silently check nothing",
+        doors=("name a declared measure", "add the measure it needs"),
     ),
     "spec.unknown-area": Code(
         means="the area named is not one codes are namespaced under",

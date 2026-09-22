@@ -1,0 +1,242 @@
+"""Rendering, from the cheapest rung that can answer the question.
+
+    bake(report, model="mascot.glb", rung="sphere")     # three seconds
+    bake(report, model="mascot.glb", asking=["silhouette_iou"])   # picks `preview`
+
+A caller names what it wants to know and the ladder picks the rung; a caller that names
+a rung gets that one. Either way the answer **says which rung it came from**, in the
+result and in the record beside the picture, so a verdict taken at the sphere is never
+mistaken for one taken at the top.
+"""
+
+from __future__ import annotations
+
+import time
+from pathlib import Path
+from typing import Annotated
+
+from .. import post, provenance
+from ..config import load
+from ..describe import Param, operation
+from ..errors import PolyweaveError
+from .ladder import CARRIES, RUNGS, check_rung, enabled, lowest_rung, rung_for
+from .rig import Rig, as_params
+
+#: How much of the real mesh a preview keeps. Enough face count for a silhouette, far
+#: less than a final render pays for.
+PREVIEW_RATIO = 0.25
+
+__all__ = [
+    "CARRIES",
+    "PREVIEW_RATIO",
+    "RUNGS",
+    "Rig",
+    "bake",
+    "check_rung",
+    "enabled",
+    "lowest_rung",
+    "plan",
+    "rung_for",
+]
+
+
+def plan(
+    rung: str | None = None,
+    asking: list[str] | None = None,
+    *,
+    floor: str | None = None,
+    root: str | Path = ".",
+) -> dict:
+    """Which rung will answer, how big it will be, and why that one.
+
+    Read-only, and the call to make before spending anything: it says what a render
+    would cost before the render happens.
+    """
+    config = load(root)
+    offered = enabled(config.get("render.rungs"))
+    if rung is not None:
+        chosen = check_rung(rung)
+        why = "named by the caller"
+    elif asking:
+        chosen = lowest_rung(asking, floor)
+        why = f"the lowest rung that carries {', '.join(sorted(set(asking)))}"
+    else:
+        chosen = check_rung(floor) if floor else offered[0]
+        why = "the asset's own floor" if floor else "the cheapest rung enabled"
+
+    if chosen not in offered:
+        raise PolyweaveError(
+            "render.rung-disabled",
+            f"this project does not enable the {chosen!r} rung, and the question "
+            f"needs it",
+            f"add {chosen!r} to `[render] rungs`, which holds {', '.join(offered)}",
+        )
+    samples = config.get("render.samples")
+    if chosen not in samples:
+        raise PolyweaveError(
+            "render.no-samples",
+            f"`[render] samples` says nothing for the {chosen!r} rung",
+            f"set samples.{chosen}, beside {', '.join(sorted(samples)) or 'nothing'}",
+        )
+    return {
+        "rung": chosen,
+        "why": why,
+        "carries": CARRIES[chosen],
+        "size": _size_for(config, chosen),
+        "samples": int(samples[chosen]),
+        "seed": int(config.get("render.seed")),
+        "subject": "primitive" if chosen == "sphere" else "mesh",
+        "decimate": PREVIEW_RATIO if chosen == "preview" else 1.0,
+        "enabled": list(offered),
+    }
+
+
+def _size_for(config, rung: str) -> int:
+    if rung == "final":
+        return int(config.get("render.final_size"))
+    return int(config.get("render.preview_size"))
+
+
+@operation(
+    "render.bake",
+    produces="render",
+    kind="bake",
+    injects=("report",),
+)
+def bake(
+    report,
+    out: Annotated[str, Param("where to write the picture, under the project")],
+    model: Annotated[
+        str, Param("the mesh to render; not read at the sphere rung")
+    ] = "",
+    rung: Annotated[str, Param("which rung to render at", choices=RUNGS)] = "",
+    asking: Annotated[
+        list, Param("the measures the answer has to carry, if no rung is named")
+    ] = (),
+    floor: Annotated[
+        str,
+        Param("the lowest rung a verdict on this asset may be taken at", choices=RUNGS),
+    ] = "",
+    material: Annotated[
+        dict, Param("Principled BSDF inputs to put on the subject")
+    ] = None,
+    azimuth: Annotated[
+        float,
+        Param("where the camera sits around the subject", lo=-360, hi=360, unit="deg"),
+    ] = 35.0,
+    elevation: Annotated[
+        float, Param("how far above the subject", lo=-89, hi=89, unit="deg")
+    ] = 20.0,
+    margin: Annotated[
+        float, Param("how much room around the subject", lo=1.0, hi=4.0)
+    ] = 1.15,
+    focal_mm: Annotated[
+        float, Param("camera focal length", lo=8.0, hi=400.0, unit="mm")
+    ] = 50.0,
+    key: Annotated[
+        float, Param("key light power", lo=0.0, hi=10000.0, unit="W")
+    ] = 400.0,
+    fill: Annotated[
+        float, Param("fill light power", lo=0.0, hi=10000.0, unit="W")
+    ] = 120.0,
+    rim: Annotated[
+        float, Param("rim light power", lo=0.0, hi=10000.0, unit="W")
+    ] = 200.0,
+    light_distance: Annotated[
+        float, Param("how far the lights sit, in subject radii", lo=1.0, hi=20.0)
+    ] = 3.0,
+    ambient: Annotated[float, Param("world lighting", lo=0.0, hi=10.0)] = 0.25,
+    exposure: Annotated[
+        float, Param("film exposure", lo=-10.0, hi=10.0, unit="stops")
+    ] = 0.0,
+    transparent: Annotated[bool, Param("leave the background empty")] = True,
+    root: Annotated[str, Param("the project to resolve settings against")] = ".",
+) -> dict:
+    """Render one subject at the cheapest rung that can answer the question.
+
+    The rig is the same at every rung; only what stands in front of it changes.
+    """
+    from . import blender
+
+    started = time.monotonic()
+    chosen = plan(rung or None, list(asking) or None, floor=floor or None, root=root)
+    config = load(root)
+    where = Path(root).resolve()
+    out_path = where / out if not Path(out).is_absolute() else Path(out)
+
+    report.stage("building", note=f"{chosen['rung']}: {chosen['carries']}")
+    scene = blender.reset()
+    if chosen["subject"] == "primitive":
+        subject = blender.primitive("sphere")
+    else:
+        if not model:
+            raise PolyweaveError(
+                "render.no-mesh",
+                f"the {chosen['rung']} rung renders the real mesh and none was named",
+                "pass `model`, or ask a question the sphere rung can carry",
+            )
+        subject = blender.load_mesh(
+            where / model if not Path(model).is_absolute() else model
+        )
+        subject = blender.decimate(subject, chosen["decimate"])
+    blender.apply_material(subject, material)
+
+    rig = Rig().with_(
+        azimuth=azimuth,
+        elevation=elevation,
+        margin=margin,
+        focal_mm=focal_mm,
+        key=key,
+        fill=fill,
+        rim=rim,
+        light_distance=light_distance,
+        ambient=ambient,
+        exposure=exposure,
+        transparent=transparent,
+    )
+    blender.place(scene, rig, subject)
+
+    report.stage(
+        "rendering",
+        note=f"{chosen['size']}px at {chosen['samples']} samples",
+    )
+    blender.render_to(
+        scene,
+        out_path,
+        size=chosen["size"],
+        samples=chosen["samples"],
+        seed=chosen["seed"],
+    )
+
+    measured = post.check(
+        "render",
+        out_path,
+        size=(chosen["size"], chosen["size"]),
+        alpha_floor=float(config.get("tolerance.alpha_floor")),
+    )
+    elapsed = round(time.monotonic() - started, 3)
+    record = provenance.build(
+        "render",
+        out_path,
+        engine=blender.engine_record(scene),
+        inputs=[provenance.source("mesh", where / model, root=where)] if model else [],
+        params={**as_params(rig), **({"material": material} if material else {})},
+        measurements=measured,
+        rung=chosen["rung"],
+        seed=chosen["seed"],
+        samples=chosen["samples"],
+        elapsed_s=elapsed,
+        root=where,
+    )
+    provenance.write(record, root=where)
+
+    return {
+        "artefact": record["artefact"]["path"],
+        "rung": chosen["rung"],
+        "why": chosen["why"],
+        "size": chosen["size"],
+        "samples": chosen["samples"],
+        "elapsed_s": elapsed,
+        "measurements": measured,
+        "cache_key": provenance.cache_key(record),
+    }

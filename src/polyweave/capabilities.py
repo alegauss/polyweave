@@ -66,6 +66,12 @@ def _probe(binary: str, where: str | Path, args: tuple[str, ...]) -> dict:
     }
 
 
+def _blender_module() -> dict:
+    from .render import blender
+
+    return blender.available()
+
+
 def _describe_binary(binary: str, where: Path, probe: bool) -> dict:
     """Ask the binary, or say only where it would be looked for."""
     if probe:
@@ -93,6 +99,10 @@ def capabilities(
     service_key_env = config.get("service.key_env", service_key_env) or None
     renderer = _describe_binary("blender", blender, probe)
     engine = _describe_binary("godot", godot, probe)
+    # Blender also ships as an importable module, and a worker that has it needs no
+    # binary at all. Reporting only the binary would call a machine that can render one
+    # that cannot.
+    module = _blender_module() if probe else {"found": None, "why": "not probed"}
 
     service = {"key_env": service_key_env, "key_present": None}
     if service_key_env:
@@ -111,7 +121,11 @@ def capabilities(
             "release": platform.release(),
             "machine": platform.machine(),
         },
-        "renderer": {"blender": renderer},
+        "renderer": {
+            "blender": renderer,
+            "bpy": module,
+            "usable": bool(module.get("found") or renderer.get("found")),
+        },
         "engine": {"godot": engine},
         "service": service,
         "operations": describe(),

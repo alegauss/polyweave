@@ -11,6 +11,8 @@
 
 ## Block B — Seeing the result cheaply
 
+- ✅ **PW7** **judging a material costs a two-minute render when the verdict needs three seconds** — A question is answered from the lowest rung that carries it, on one shared rig, and the answer names the rung it came from (design recorded in `docs/specs/rungs.md`).
+
 ## Block C — The asset compiler
 
 ## Block D — Fetching from a paid service without surprise

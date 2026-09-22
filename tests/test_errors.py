@@ -26,10 +26,18 @@ SRC = Path(__file__).resolve().parent.parent / "src" / "polyweave"
 SHAPED = re.compile(rf"^({'|'.join(C.AREAS)})\.[a-z0-9]+(-[a-z0-9]+)*$")
 
 
-#: A config address is `table.key` too, and a single-word key under a table that shares
-#: its name with an error area — `render.samples` — is shaped exactly like a code. The
-#: settings are the smaller, enumerable set, so they are what gets subtracted.
-SETTINGS = {f"{t}.{k}" for t, keys in config.DEFAULTS.items() for k in keys}
+#: `area.name` is the shape of three different vocabularies here: an error code, a
+#: config address (`render.samples`) and an operation name (`render.bake`). Only the
+#: codes have to be declared, so the other two are enumerated and subtracted first.
+def _not_codes() -> set[str]:
+    import polyweave.render  # noqa: F401 - imported for the side effect of registering
+    from polyweave.describe import operations
+
+    settings = {f"{t}.{k}" for t, keys in config.DEFAULTS.items() for k in keys}
+    return settings | set(operations())
+
+
+SETTINGS = _not_codes()
 
 
 def used_codes() -> dict[str, list[str]]:

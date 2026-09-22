@@ -117,22 +117,30 @@ per path, from the project's config rather than a flag someone remembers to pass
 report nobody can quieten is a report nobody reads, and this one has to stay worth
 reading for the one week in a year when a mesh goes missing.
 
+### §PW42 An assertion about a render needs a tolerance
+
+The check that refuses a render carrying no image asks whether every visible pixel is
+the same colour, exactly. A real render is never exactly anything. An unlit scene
+rendered through Cycles at four samples came back with two distinct colours — (0,0,0)
+across the subject and (1,1,1) on the antialiased edge — so a picture that is black to
+any observer passed the assertion that exists to catch it, on one least significant bit.
+
+The fix is a tolerance rather than equality: the range across the visible pixels,
+compared against a floor the project already declares a sibling of. `[tolerance]
+render_noise` is 0.004, which is one part in 250 and almost exactly the 1/255 seen here,
+so the number is already written down and the check is not reading it.
+
+The trap is the other direction. Raise the tolerance far enough and a render that is
+nearly flat by design — a matte card, a silhouette study — starts being refused, and the
+door out of that is `allow_uniform`, which already exists. So the tolerance wants to be
+tight, measured against a real render rather than chosen, and the test that proves it
+should be an actual unlit render rather than a constructed array.
+
+Worth doing at the same time: the same equality appears in the transparency check, where
+`max(alpha) == 0` has the same problem in reverse — a render whose only non-zero alpha
+is one stray edge pixel is empty for every purpose and passes.
+
 ## Block B — Seeing the result cheaply
-
-### §PW7 The preview ladder
-
-A material is read on a sphere, and a sphere renders in three seconds where a character
-takes two minutes. That ratio is the whole argument. Judging a surface on the final mesh
-pays forty times over for an answer the cheap shape already gives, and the only reason
-it keeps happening is that nothing makes the cheap path the default. The ladder has
-rungs: the same rig and the same material on a primitive; the real mesh decimated, at a
-quarter resolution and a low sample count; the full render. A caller asks a question and
-the tool answers from the lowest rung that can carry it. A material question stops at
-the sphere, a silhouette question needs the real mesh but not the samples, a final
-judgement needs everything. Two constraints keep it honest. The rungs must share the rig
-exactly, or the cheap answer describes a different scene and is worse than no answer.
-And the tool must say which rung it answered from, so a verdict taken at the sphere is
-never mistaken for one taken at the top.
 
 ### §PW8 The picture comes back with the numbers
 
@@ -192,6 +200,29 @@ caught without a person looking at it. And a cache can return a hit without anyo
 having to wonder whether the hit was subtly wrong. The threshold is configuration and it
 is per comparison, because the bar for sampler noise is not the bar for a silhouette
 that has to land within three pixels.
+
+### §PW43 An installation that cannot measure colour should say so
+
+The render path asks Blender for the view transform that puts back what was put in, so a
+measured colour and an authored one are the same number. On the bpy module installed
+here that request is accepted and does not take effect: the wheel ships without the
+colour configuration the transforms are defined in, and the scene keeps the one it had.
+
+It was measured. An emission of linear 0.2158605 — sRGB 0.5, which should land on 128 —
+came back at 161 under the default transform and 172 after asking for the standard one.
+Neither is 128, and the second is further away than the first, so the request did
+something without doing the right thing.
+
+Every predicate in an acceptance spec compares a measured colour against a target. On an
+installation like this one, `delta_e` against a hex value is measuring the tone curve as
+much as the material, and a search would tune the lighting to compensate for a transform
+rather than to match the colour. The failure is silent and the result looks plausible.
+
+The record already carries the transform in force, so a difference is attributable after
+the fact. What is missing is the check before it: a known colour rendered and compared
+against what it should be, once, as part of what `capabilities` reports — so an
+installation that cannot measure colour says so rather than answering confidently. One
+small render settles it for every measurement built on top.
 
 ## Block C — The asset compiler
 

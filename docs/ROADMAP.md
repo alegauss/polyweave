@@ -7,19 +7,20 @@
 - 📋 **PW39** (deps: —) **a job checks only that an argument exists while a direct call checks its range, so one call has two contracts** — The worker reads a target's signature and describe reads its registration, so a value the surface would refuse still costs a spawn and a failed job to discover. → §PW39
 - 📋 **PW40** (deps: —) **a tolerance has one default in the project config and a different one in the function that uses it** — A check falls back to an alpha floor of zero while the config declares 0.02, so an operation that forgets to pass it measures the background as part of the subject. → §PW40
 - 📋 **PW41** (deps: —) **an artefact that was produced without a record is invisible, because verify starts from the records** — A paid mesh with no sidecar reads as a sound project, and re-buying it is the only way to find out what it was made from. → §PW41
+- 📋 **PW42** (deps: —) **a render that is black to any observer passes the check for a blank render, on one bit of edge noise** — The assertion asks whether every visible pixel is exactly one colour, and an unlit Cycles render came back with two: black, and 1/255 at the antialiased edge. → §PW42
 
 ## Block B — Seeing the result cheaply
 
-- 📋 **PW7** (deps: —) **judging a material costs a two-minute render when the verdict needs three seconds** — A surface is read on a sphere and a sphere renders in three seconds, but nothing makes the cheap look the default, so the expensive one is what gets run. → §PW7
 - 📋 **PW8** (deps: —) **a render is judged by opening the file it wrote, so every verdict costs a second call** — The picture and its measurements are one answer to one question, and splitting them across two calls doubles the turns a parameter sweep takes. → §PW8
 - 📋 **PW9** (deps: —) **a mean over an image agrees while the look is plainly wrong** — Cottony's board measured 0.31 mean saturation against the concept art's 0.32 and still looked washed out, because the whole difference sat at the 99th percentile. → §PW9
 - 📋 **PW10** (deps: —) **an asset is judged alone and then lands beside five siblings it does not match** — A prop that reads correctly on its own can be the one thing on a sheet with no shadow and no specular window, which no solo render shows. → §PW10
 - 📋 **PW11** (deps: —) **a bake is not byte-reproducible, so a file diff cannot say whether anything changed** — Two runs of one unchanged scene differed in 29,696 pixels and none by more than 1/255, so equality is the wrong question and a tolerance is the right one. → §PW11
+- 📋 **PW43** (deps: —) **a colour measured off a render is not the colour that was authored, and nothing says so** — An emission that should land on sRGB 128 came back at 161, and at 172 after asking for the standard view transform, because this Blender ships without the colour configuration. → §PW43
 
 ## Block C — The asset compiler
 
 - 📋 **PW12** (deps: PW9) **what counts as a correct render lives in somebody's head, so it is approved by opinion** — Nothing states that a face must read the drawing's own colour or that a silhouette must land within three pixels, so no later change can be checked against it. → §PW12
-- 📋 **PW13** (deps: PW7, PW12) **a rig number is found by rendering, looking, and changing it by hand, one sample at a time** — Cottony's fourteen tuned constants were each discovered that way at two minutes a sample, which is the single largest cost in making an asset. → §PW13
+- 📋 **PW13** (deps: PW7 ✅, PW12) **a rig number is found by rendering, looking, and changing it by hand, one sample at a time** — Cottony's fourteen tuned constants were each discovered that way at two minutes a sample, which is the single largest cost in making an asset. → §PW13
 - 📋 **PW14** (deps: PW6 ✅, PW13) **a search re-renders states it has already rendered** — A parameter sweep revisits neighbourhoods, and without a cache keyed on the inputs the same picture is paid for as many times as the search returns to it. → §PW14
 - 📋 **PW15** (deps: PW13) **a search reports the winning numbers and not what it rejected** — A result nobody can inspect is one nobody can overrule, and a rig tuned against the wrong criterion looks exactly like a rig tuned against the right one. → §PW15
 

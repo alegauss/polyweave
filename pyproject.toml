@@ -18,6 +18,10 @@ dependencies = ["numpy>=1.26", "pillow>=10"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.6"]
+# Blender is optional: `capabilities()` reports whether it is reachable and a render
+# refuses without it, so importing polyweave never costs a renderer. The module route is
+# what a worker uses; a blender binary named in `[paths]` is the other one.
+blender = ["bpy>=4.2"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/polyweave"]

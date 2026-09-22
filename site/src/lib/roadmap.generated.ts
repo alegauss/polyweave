@@ -25,7 +25,7 @@ export interface GeneratedNonGoal {
 }
 
 export const generatedBlocks: GeneratedBlock[] = [
-  { block: "A", title: "What a tool call costs the turn", open: 5 },
+  { block: "A", title: "What a tool call costs the turn", open: 6 },
   { block: "B", title: "Seeing the result cheaply", open: 5 },
   { block: "C", title: "The asset compiler", open: 4 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 6 },
@@ -72,10 +72,10 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW7",
-    block: "B",
-    symptom: "judging a material costs a two-minute render when the verdict needs three seconds",
-    why: "A surface is read on a sphere and a sphere renders in three seconds, but nothing makes the cheap look the default, so the expensive one is what gets run.",
+    id: "PW42",
+    block: "A",
+    symptom: "a render that is black to any observer passes the check for a blank render, on one bit of edge noise",
+    why: "The assertion asks whether every visible pixel is exactly one colour, and an unlit Cycles render came back with two: black, and 1/255 at the antialiased edge.",
     deps: [],
   },
   {
@@ -107,6 +107,13 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
+    id: "PW43",
+    block: "B",
+    symptom: "a colour measured off a render is not the colour that was authored, and nothing says so",
+    why: "An emission that should land on sRGB 128 came back at 161, and at 172 after asking for the standard view transform, because this Blender ships without the colour configuration.",
+    deps: [],
+  },
+  {
     id: "PW12",
     block: "C",
     symptom: "what counts as a correct render lives in somebody's head, so it is approved by opinion",
@@ -118,7 +125,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "C",
     symptom: "a rig number is found by rendering, looking, and changing it by hand, one sample at a time",
     why: "Cottony's fourteen tuned constants were each discovered that way at two minutes a sample, which is the single largest cost in making an asset.",
-    deps: ["PW7", "PW12"],
+    deps: ["PW12"],
   },
   {
     id: "PW14",

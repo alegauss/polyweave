@@ -35,7 +35,9 @@ also carries the non-goals, which say what this deliberately will not be.
 
 Python, under `src/polyweave`, against Python 3.11 — which is the interpreter Blender 4.2
 ships, and code here may have to run inside it. It depends on numpy and Pillow, and on
-nothing else.
+nothing else. Blender is optional: `pip install -e ".[blender]"` brings `bpy` in for the
+render path, and without it `capabilities()` says so and a render refuses rather than
+importing a renderer nobody asked for.
 
 ```
 python -m pytest         # the suite, in tests/

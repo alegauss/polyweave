@@ -9,8 +9,9 @@ These files are ordinary documents. Nothing governs them, and they are edited di
 unlike `docs/ROADMAP.md`, `docs/CHANGELOG.md` and `docs/IMPROVEMENTS.md`, which belong to
 roadkeep and refuse a hand edit.
 
-**Status: draft.** §1 of [tool-surface.md](tool-surface.md) is built; everything else here
-is still ahead of its code. Each spec is settled enough to build against, and the first
+**Status: part built.** [tool-surface.md](tool-surface.md), [project-config.md](project-config.md),
+[provenance.md](provenance.md) and [rungs.md](rungs.md) describe code that exists; the rest is
+still ahead of its code. Each spec is settled enough to build against, and the first
 implementation that disagrees with one is evidence about the spec, not only about the code —
 which is why §1 now names a heartbeat and a `sweep` that its first implementation needed.
 
@@ -19,6 +20,7 @@ which is why §1 now names a heartbeat and a `sweep` that its first implementati
 | [tool-surface.md](tool-surface.md) | How every call behaves: handles, post-conditions, errors, self-description, conventions | PW1–PW6 |
 | [project-config.md](project-config.md) | What a project declares, and how a value is resolved | PW5 |
 | [measurements.md](measurements.md) | The closed vocabulary a comparison may return | PW8–PW11 |
+| [rungs.md](rungs.md) | The preview ladder: what each rung is, and which question it carries | PW7, PW13–PW15 |
 | [acceptance-spec.md](acceptance-spec.md) | What "correct" means, as a file a search can aim at | PW12, PW13, PW15 |
 | [geometry.md](geometry.md) | A shape as data rather than as a program | PW30–PW34 |
 | [provenance.md](provenance.md) | What is recorded beside an artefact, and the cache key | PW6, PW14, PW17 |
