@@ -32,6 +32,9 @@ all of which were the reason for choosing it:
 ```toml
 name    = "board_tray"
 version = 1
+output  = "tray"     # above the first [[nodes]], because TOML puts a bare key after a
+                     # table header inside that table — written below, it would name
+                     # the last node's own field instead
 
 [params]
 cell       = 112
@@ -70,9 +73,14 @@ op     = "carve"
 into   = "face"
 cutter = "seat"
 bevel  = "bevel"
-
-output = "tray"
 ```
+
+**`output` goes above the first `[[nodes]]`.** TOML puts a bare key written after a table
+header *inside that table*, so an `output` at the foot of the file names the last node's
+own field and not the document's output — which is quiet enough that this spec's first
+example had it wrong. A node carrying an `output` key is refused with that explanation
+rather than read as though it meant the document. Where nothing names an output, the last
+node is it.
 
 ## Values and expressions
 
@@ -84,7 +92,18 @@ The expression grammar is deliberately small: numeric literals, parameter names,
 variables, `+ - * / %`, parentheses, and `min`, `max`, `abs`, `round`, `floor`, `ceil`,
 `sqrt`, `sin`, `cos`, `radians`. **Nothing evaluates arbitrary code.** That is a determinism
 requirement before it is a security one: an expression whose value can depend on anything but
-its parameters breaks the cache key in [provenance.md](provenance.md).
+its parameters breaks the cache key in [provenance.md](provenance.md). Python's own parser
+produces the tree and every node of it is then checked against that list, so a call, an
+attribute, a comparison, a subscript, a lambda or a string literal is refused where it is
+read rather than where it is evaluated.
+
+**What is in scope decides whether a string is an expression or a name.** `depth =
+"face_depth"` resolves to a number because `face_depth` is a parameter; `shape =
+"rounded_square"` stays a string because nothing declares that name and it is not
+arithmetic. A string that is not an expression at all, like a colour, stays what it is. One
+that *is* arithmetic and names something undeclared is a typo and is refused, so
+`"cel * 0.82"` does not quietly become the text it was written as. A parameter and a
+generator sharing a name is a document that should rename one of them; the parameter wins.
 
 ## Repeat
 

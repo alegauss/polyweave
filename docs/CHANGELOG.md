@@ -49,5 +49,7 @@
 
 ## Block G — Geometry as a declaration
 
+- ✅ **PW30** **a shape is a Python script, so stating one means writing and debugging a program** — A shape is a TOML document of named parameters, expressions over them and a repeat, resolved into a flat graph that says what a change rebuilds (design recorded in `docs/specs/geometry.md`).
+
 ## Block H — Proof on a real game
 

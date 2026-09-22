@@ -30,11 +30,10 @@
 
 ## Block G — Geometry as a declaration
 
-- 📋 **PW30** (deps: —) **a shape is a Python script, so stating one means writing and debugging a program** — Cottony's tray, star, ball and props are four modules of imperative geometry code, and the shape each describes is not readable without running it. → §PW30
-- 📋 **PW31** (deps: PW30) **a format covering only primitives would leave every real asset in code** — The existing models use extruded outlines, crowned plates, radial arrays, annuli and boolean pockets, so the vocabulary has to be read off what they already do. → §PW31
-- 📋 **PW32** (deps: PW13 ✅, PW30) **a shape's own numbers are unreachable from the search that tunes everything else** — Geometry constants live inside a module while the rig's live in a dataclass, so a search can reach the lighting and never the shape it is lighting. → §PW32
-- 📋 **PW33** (deps: PW30) **a shape cannot be reviewed without building it, so a wrong construction is found in the render** — Two wrong constructions of one tray's seats each looked reasonable while being written and were only visible once rendered, which is the expensive place. → §PW33
-- 📋 **PW34** (deps: PW30) **a declaration that cannot express a shape leaves no way back to code** — Any format will meet a shape it cannot state, and forcing that shape into the format produces worse geometry than the script it replaced. → §PW34
+- 📋 **PW31** (deps: PW30 ✅) **a format covering only primitives would leave every real asset in code** — The existing models use extruded outlines, crowned plates, radial arrays, annuli and boolean pockets, so the vocabulary has to be read off what they already do. → §PW31
+- 📋 **PW32** (deps: PW13 ✅, PW30 ✅) **a shape's own numbers are unreachable from the search that tunes everything else** — Geometry constants live inside a module while the rig's live in a dataclass, so a search can reach the lighting and never the shape it is lighting. → §PW32
+- 📋 **PW33** (deps: PW30 ✅) **a shape cannot be reviewed without building it, so a wrong construction is found in the render** — Two wrong constructions of one tray's seats each looked reasonable while being written and were only visible once rendered, which is the expensive place. → §PW33
+- 📋 **PW34** (deps: PW30 ✅) **a declaration that cannot express a shape leaves no way back to code** — Any format will meet a shape it cannot state, and forcing that shape into the format produces worse geometry than the script it replaced. → §PW34
 
 ## Block H — Proof on a real game
 

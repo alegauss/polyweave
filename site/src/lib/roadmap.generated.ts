@@ -31,7 +31,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "D", title: "Fetching from a paid service without surprise", open: 1 },
   { block: "E", title: "One world with the engine", open: 1 },
   { block: "F", title: "Motion", open: 0 },
-  { block: "G", title: "Geometry as a declaration", open: 5 },
+  { block: "G", title: "Geometry as a declaration", open: 4 },
   { block: "H", title: "Proof on a real game", open: 3 },
 ];
 
@@ -114,39 +114,32 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW30",
-    block: "G",
-    symptom: "a shape is a Python script, so stating one means writing and debugging a program",
-    why: "Cottony's tray, star, ball and props are four modules of imperative geometry code, and the shape each describes is not readable without running it.",
-    deps: [],
-  },
-  {
     id: "PW31",
     block: "G",
     symptom: "a format covering only primitives would leave every real asset in code",
     why: "The existing models use extruded outlines, crowned plates, radial arrays, annuli and boolean pockets, so the vocabulary has to be read off what they already do.",
-    deps: ["PW30"],
+    deps: [],
   },
   {
     id: "PW32",
     block: "G",
     symptom: "a shape's own numbers are unreachable from the search that tunes everything else",
     why: "Geometry constants live inside a module while the rig's live in a dataclass, so a search can reach the lighting and never the shape it is lighting.",
-    deps: ["PW30"],
+    deps: [],
   },
   {
     id: "PW33",
     block: "G",
     symptom: "a shape cannot be reviewed without building it, so a wrong construction is found in the render",
     why: "Two wrong constructions of one tray's seats each looked reasonable while being written and were only visible once rendered, which is the expensive place.",
-    deps: ["PW30"],
+    deps: [],
   },
   {
     id: "PW34",
     block: "G",
     symptom: "a declaration that cannot express a shape leaves no way back to code",
     why: "Any format will meet a shape it cannot state, and forcing that shape into the format produces worse geometry than the script it replaced.",
-    deps: ["PW30"],
+    deps: [],
   },
   {
     id: "PW35",

@@ -270,22 +270,6 @@ wants the former, which may mean a rung of its own rather than a parameter.
 
 ## Block G — Geometry as a declaration
 
-### §PW30 A shape is a declaration, and data beats a new language
-
-Cottony's tray, star, ball and props are four modules of imperative geometry code. The
-tray's docstring is excellent and the shape it describes is still not readable without
-running the module, because the shape exists only as the result of executing statements.
-That has three costs. Writing one means writing and debugging a program, so the unit of
-work is a file rather than an edit. Reviewing one means rendering it. And nothing else
-can read it, so no tool can reason about the shape, vary it or check it. The shape
-should be data: a document naming parameters, then a tree of operations over them. Data
-rather than a new language, because a language needs a grammar, a parser, error messages
-and an editor story before it renders its first triangle, and a document in a format
-everything already reads needs none of that. The one thing plain data cannot do is
-arithmetic, and the tray is a loop over a cell size, so the format needs named
-parameters, expressions over them, and a repeat construct. That is three features, not a
-language.
-
 ### §PW31 The vocabulary comes from the scripts that exist
 
 A format that covers cubes and spheres would leave every real asset in code, which is

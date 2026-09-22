@@ -560,6 +560,52 @@ CODES: dict[str, Code] = {
         "is the one that catches a hang the engine itself does not end",
         doors=("read the log", "raise [engine] timeout if the run is honestly slow"),
     ),
+    # -- geom: a shape declared as data ----------------------------------------
+    "geom.unreadable": Code(
+        means="the declaration is not readable as the format it claims",
+        when="a hand edit that left invalid TOML behind",
+        doors=("fix the syntax the detail points at",),
+    ),
+    "geom.malformed": Code(
+        means="the file is TOML and is not a shape",
+        when="a document with no name, no nodes, or no output named",
+        doors=("give it a name, a node and an output",),
+    ),
+    "geom.bad-expression": Code(
+        means="the expression is not one this evaluates",
+        when="a call, an attribute, a comparison or a name outside the parameters and "
+        "the repeat variables; nothing here evaluates arbitrary code, because a value "
+        "that can depend on anything but its parameters breaks the cache key",
+        doors=("write it with the operators and functions the grammar names",),
+    ),
+    "geom.unknown-name": Code(
+        means="the expression names something the document does not declare",
+        when="a parameter spelled differently here than in [params], or a repeat "
+        "variable used on a node that does not repeat",
+        doors=("declare it in [params]", "name a variable this node repeats over"),
+    ),
+    "geom.duplicate-id": Code(
+        means="two nodes claim the same id",
+        when="a node copied and not renamed; ids are how every other node refers to "
+        "one, so two of them makes every reference ambiguous",
+        doors=("give each node an id of its own",),
+    ),
+    "geom.unknown-node": Code(
+        means="a node refers to an id no node has",
+        when="a typo in an input, or a node deleted while something still points at it",
+        doors=("name a node the document declares",),
+    ),
+    "geom.cycle": Code(
+        means="the nodes refer to each other in a circle, so none can be built first",
+        when="a node taking its own output as an input, directly or through others",
+        doors=("break the circle; a graph of shapes has to have a beginning",),
+    ),
+    "geom.bad-repeat": Code(
+        means="the repeat does not describe a range",
+        when="a range with no variable, or a step of zero, which is a loop that never "
+        "ends rather than one that repeats nothing",
+        doors=("give each range a var, a from and a to", "use a step above zero"),
+    ),
     # -- clip: motion over time ------------------------------------------------
     "clip.empty": Code(
         means="the clip moves nothing",
