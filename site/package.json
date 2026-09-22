@@ -1,0 +1,32 @@
+{
+  "name": "polyweave-site",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "The public site for polyweave — copy in one module, sections only render it, and every roadmap line on the page is generated from roadkeep.",
+  "scripts": {
+    "dev": "vite",
+    "generate": "node scripts/roadmap.mjs",
+    "build": "npm run generate && tsc -b && vite build && node scripts/og-image.mjs && vite build --ssr src/entry-server.tsx --outDir dist-server && node scripts/prerender.mjs",
+    "build:client": "vite build",
+    "prerender": "vite build --ssr src/entry-server.tsx --outDir dist-server && node scripts/prerender.mjs",
+    "typecheck": "tsc -b",
+    "test": "node --test scripts/*.test.mjs",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "@tailwindcss/vite": "^4.1.4",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "node-html-parser": "^9.0.4",
+    "tailwindcss": "^4.1.4",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.0"
+  }
+}

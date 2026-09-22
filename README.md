@@ -34,3 +34,17 @@ also carries the non-goals, which say what this deliberately will not be.
 
 `docs/ROADMAP.md`, `docs/CHANGELOG.md` and `docs/IMPROVEMENTS.md` are maintained by roadkeep
 and are not edited by hand — `python .roadkeep/scripts/roadkeep.py` is the entry point here.
+
+`docs/specs/` is the other half: the contracts that more than one roadmap line depends on — a
+file format, a vocabulary, a behaviour every call obeys. Those are ordinary documents, edited
+directly, and they are settled enough to build against.
+
+## The site
+
+`site/` is the public page, at `alegauss.github.io/polyweave/` once Pages is pointed at the
+`site` workflow. It describes the product the roadmap specifies, in the present tense, and
+says on the page — second, above everything but the hero — that none of it is built.
+
+Everything it counts is generated from `docs/ROADMAP.md` through roadkeep rather than typed,
+so the page cannot disagree with the file, and `npm test` fails the build if the page stops
+saying there is no implementation. See [`site/README.md`](site/README.md).

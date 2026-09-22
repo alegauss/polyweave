@@ -1,0 +1,160 @@
+# polyweave
+
+> A Claude Code plugin for making 3D assets — geometry, surface and motion — by declaring
+> what an asset has to satisfy and letting a search find the parameters that satisfy it,
+> on top of Blender, Godot and a generative mesh service. It runs on the developer's own
+> machine, against files in their own repository: no GUI, no account, no hosted service.
+
+**There is nothing to install. polyweave is at design stage and has no implementation.**
+What exists is the plan and the contracts, and both are readable now:
+[`docs/ROADMAP.md`](https://github.com/alegauss/polyweave/blob/main/docs/ROADMAP.md) holds
+thirty-six lines across eight blocks, none shipped, each one a failure measured in a real
+project rather than a feature somebody wanted;
+[`docs/specs/`](https://github.com/alegauss/polyweave/tree/main/docs/specs) holds the
+contracts that more than one of those lines depends on. Every measurement quoted on the
+site or in this file was taken in **Cottony**, the game the backlog was drawn from, and
+describes the cost polyweave exists to remove. None of it is a measurement of polyweave.
+
+## For agents
+
+This site answers a coding agent in files it can grep, not only in hydrated markup. Every
+route has a Markdown twin beside it, the same page converted from the same render, with the
+navigation, the footer and the call to action dropped. Read `<route>/index.md` instead of
+the HTML: the landing page is
+[`/index.md`](https://alegauss.github.io/polyweave/index.md). The full list of routes,
+their twins and their byte sizes is in
+[`manifest.json`](https://alegauss.github.io/polyweave/manifest.json).
+
+## Why it exists
+
+Generating a mesh is the cheap part. What is expensive is everything between *having a
+mesh* and *knowing it is right*, and today that is a person changing one number at a time
+and looking at a two-minute render. Cottony's render rig has fourteen tuned constants, and
+every one of them was found that way. polyweave's premise is that the loop can be closed:
+you state what the asset has to satisfy, and a search finds the parameters that satisfy it,
+measuring against the reference rather than against an opinion.
+
+## The mechanism
+
+- **An acceptance spec** (`<asset>.accept.toml`) states what makes a render of the asset
+  correct: a list of named predicates, each naming a measure from a closed vocabulary and
+  stating one bound (`min`, `max` or `target`), plus a `[search.<param>]` block per
+  parameter the search is permitted to move. A parameter the spec does not name is not
+  searched.
+- **Every predicate returns a margin, not only a verdict**: pass/fail *and* a value in
+  [0, 1] for how comfortably it passed, normalised against the bound. A pure boolean gives
+  a search a cliff and nothing to climb; the margin is what makes it converge.
+- **The search** proposes values, bakes at the cheapest preview rung that can answer the
+  question, measures, scores, and repeats. What comes back is the winning values, a contact
+  sheet of the best handful side by side, and a trace of every sample it rejected with the
+  predicate that rejected it.
+- **A cache keyed on the inputs, the renderer and its version, and the seed** means a state
+  the sweep has already rendered is not paid for twice.
+- **The expected failure is a good one**: a search that satisfies every predicate and
+  returns a render a person rejects tells you the *spec* is incomplete, which is the
+  fastest way to find that out.
+
+## The blocks
+
+- **A — What a tool call costs the turn.** Anything over roughly two seconds returns a
+  handle whose state is a file in `.polyweave/jobs/`, so it survives the session; a dead
+  worker is `job.worker-gone` rather than a hang. Every operation asserts its own output
+  before returning (a mesh has faces and finite bounds; a render is not a single uniform
+  colour; a download's byte length matches and its sha256 is recorded), and a failed
+  assertion is an error, never a warning. Errors are typed, namespaced and carry a `remedy`
+  that is the call which closes them. An unknown field in any input is refused, never
+  dropped. `describe()` returns each parameter's type, range and default read from the
+  implementation; `capabilities()` says what this machine can actually do. Configuration
+  resolves explicit argument → `polyweave.toml` → default, on every call.
+- **B — Seeing the result cheaply.** A surface is read on a sphere in three seconds rather
+  than on the final mesh in two minutes, and the rung is reported with every measurement,
+  never inferred. A render returns its measurements in the same answer. A distribution is
+  reported as a set (`p1`, `p50`, `p99`, mean, std) and never as a mean: Cottony's board
+  matched the concept art's mean saturation to within 0.01 and looked plainly wrong,
+  because the whole difference sat at the 99th percentile. Two runs of one unchanged scene
+  differed in 29,696 pixels, none by more than 1/255, which is the noise floor any usable
+  distance metric has to sit above.
+- **C — The asset compiler.** The acceptance spec, the parameter search, the cache and the
+  trace. This is the block the rest exists to make possible.
+- **D — Fetching from a paid service without surprise.** The silhouette is checked against
+  the reference drawing *before* a credit moves (a wide low cap was sent and a tall dome on
+  a long stem came back, for thirty credits). The spend is bounded by a ceiling a person
+  sets in the project config and a ledger against it, rather than by a question per fetch.
+  What was bought is copied locally with its sha256 and a provenance sidecar, because the
+  service deletes it after seventy-two hours. A fetched mesh is normalised into this
+  project's axes, scale and origin, and a reference photograph's background is removed
+  before it can be fused into the geometry.
+- **E — One world with the engine.** Godot exits zero on a script error and non-zero on a
+  clean quit, so the verdict is a line the script printed and no error in the log. A
+  capture runs where there is no screen. The sprite grid is declared once and both sides
+  read it. The runner's locale and settings are pinned.
+- **F — Motion.** A skeleton, so a fetched mesh can be posed at all; clips rather than a
+  second static render; curves as text a diff can show; and one source for both the 2D
+  sprite frames and the 3D clip.
+- **G — Geometry as a declaration.** A shape stated as data rather than written as a
+  program, with a vocabulary read off what the existing assets already do (extruded
+  outlines, crowned plates, radial arrays, annuli, boolean pockets), numbers the search can
+  reach, a review before anything is built, and a way back to code for the shape no format
+  can state.
+- **H — Proof on a real game.** Cottony adopts the plugin, and the benchmark records how
+  long a correct asset took before and after. Until that line ships, no number anywhere is
+  a measurement of polyweave.
+
+## Conventions, fixed once
+
+- **Axes**: Y up, −Z forward, right-handed — the engine's convention, because the engine
+  draws the result. Blender's Z-up and glTF's +Z-forward are converted on the boundary.
+- **Scale**: one unit is one metre, unless the asset declares `pixels_per_unit`.
+- **Origin**: the centre of the footprint, on the ground plane — the base of the
+  silhouette, not the centre of the bounding box.
+- **Colour**: sRGB in every authored document and every reported value. Linear values live
+  inside a renderer and never in an interface.
+- **Angles**: degrees in authored documents, radians nowhere a caller can see.
+- **State**: `.polyweave/` inside the project, which belongs in `.gitignore`. A cache in a
+  home directory is state a repository cannot review and a colleague cannot reproduce.
+- **Formats**: TOML for documents a person authors or reads, JSON for records a machine
+  writes. The split is about who edits the file, not about what is in it.
+
+## Non-goals (governed, not accidental)
+
+- **A graphical editor.** The caller is an agent in a terminal, so a surface that needs a
+  person at a screen is one the agent cannot use at all.
+- **Replacing Blender, Godot or the generative service.** Those three already do the work;
+  what is missing is the loop around them.
+- **Spending money on the agent's own judgement.** A fetch draws on a real balance, so the
+  ceiling is a person's to set and the plugin's job is to make a spend bounded and visible.
+- **One project's palette, rig or paths compiled in.** Cottony is the first consumer and
+  not the specification; a default that cannot be overridden is a defect.
+- **A hosted service or an account to sign into.** Everything runs on the developer's
+  machine, because a plugin that needs an account is one that fails on the day the account
+  does.
+
+## Layout
+
+- `docs/ROADMAP.md`, `docs/CHANGELOG.md`, `docs/IMPROVEMENTS.md`: governed by
+  [roadkeep](https://github.com/alegauss/roadkeep) and written by that tool, not by hand.
+- `docs/specs/`: ordinary documents, edited directly — the contracts more than one roadmap
+  line depends on.
+- `site/`: the public site (Vite + React + Tailwind). Its build emits this file, a Markdown
+  twin per route and `manifest.json`, and it generates the roadmap counts and lines it
+  displays from `docs/ROADMAP.md` through roadkeep, so the page cannot disagree with the
+  file.
+
+## Sponsor
+
+Sponsored by **Viglet** (https://www.viglet.org). Open source search and content tools for
+organisations with a lot to publish. Run on your own servers, with no per-user licence.
+
+- **Viglet Turing ES** (https://turing.viglet.org). Search for sites with a lot of content,
+  with AI answers drawn only from your own published content.
+- **Viglet Shio CMS** (https://shio.viglet.org). A content system that takes the page out
+  of the development queue, with every version kept.
+
+## Links
+
+- [Website](https://alegauss.github.io/polyweave/): project page
+- [Manifest](https://alegauss.github.io/polyweave/manifest.json): the routes and their Markdown twins
+- [GitHub repository](https://github.com/alegauss/polyweave): source
+- [Roadmap](https://github.com/alegauss/polyweave/blob/main/docs/ROADMAP.md): what is open, and the measurement behind each line
+- [Specs](https://github.com/alegauss/polyweave/tree/main/docs/specs): the contracts
+- [Sponsor](https://www.viglet.org): Viglet, open source search and content management
