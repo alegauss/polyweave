@@ -32,7 +32,6 @@
 
 ## Block H — Proof on a real game
 
-- 📋 **PW35** (deps: PW13 ✅) **the plugin's value is asserted and never measured against what it replaced** — Nothing records how long a correct asset took before or after, so there is no way to tell a real improvement from a rearrangement of the same work. → §PW35
 - 📋 **PW36** (deps: PW5 ✅) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Cottony is the first consumer and the test of whether the configuration boundary holds, and an adoption that needs a fork proves that it does not. → §PW36
 - 📋 **PW48** (deps: —) **every test input is synthetic, so nothing is ever checked against an artefact somebody made** — The suite has no real mesh, photograph or capture in it, and those are where every symptom in this backlog was measured in the first place. → §PW48
 

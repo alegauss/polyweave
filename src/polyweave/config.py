@@ -68,6 +68,9 @@ DEFAULTS: dict[str, Any] = {
         # The ledger of what was paid for. Inside the tree and committed with it: a
         # purchase and its record are one artefact (§PW17).
         "purchases": "polyweave.purchases.json",
+        # What one asset cost, made each way. Committed with the tree, because a
+        # baseline that can be rewritten is not a baseline (§PW35).
+        "loop": "polyweave.loop.json",
     },
     "render": {
         "rungs": ["sphere", "preview", "final"],

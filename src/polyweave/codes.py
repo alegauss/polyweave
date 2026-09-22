@@ -43,6 +43,7 @@ AREAS: dict[str, str] = {
     "capture": "the environment a picture of the running game is taken in",
     "rig": "fitting a skeleton to a mesh, and moving a pose between skeletons",
     "clip": "motion over time, as something with a name and a duration",
+    "loop": "what one asset cost to make, each way",
 }
 
 CODES: dict[str, Code] = {
@@ -605,6 +606,33 @@ CODES: dict[str, Code] = {
         when="fewer than three points, a mapping naming no shape, or a star of one "
         "point",
         doors=("give it a shape, an image, or at least three points",),
+    ),
+    "loop.baseline-too-late": Code(
+        means="a baseline was started for an asset the plugin has already made",
+        when="the before side recorded after the after side; a baseline written once "
+        "the answer is known is not a baseline, it is a justification",
+        doors=("record the baseline first", "measure a different asset"),
+    ),
+    "loop.unknown-way": Code(
+        means="a run claims to be neither the old way nor the new one",
+        when="a way outside the two being compared",
+        doors=("say before or after",),
+    ),
+    "loop.unfinished": Code(
+        means="the run was never judged, so it says nothing about either way",
+        when="a comparison over a run that recorded no verdict; an asset nobody "
+        "accepted or rejected did not finish being made",
+        doors=("judge it before finishing it",),
+    ),
+    "loop.nothing-to-compare": Code(
+        means="only one way has been recorded, so there is nothing to compare it with",
+        when="a comparison before the same asset has been made both ways",
+        doors=("record the other way", "list what has been recorded"),
+    ),
+    "loop.malformed": Code(
+        means="the ledger is not readable",
+        when="a hand edit that left invalid JSON behind",
+        doors=("fix the syntax the detail points at",),
     ),
     "geom.no-function": Code(
         means="the custom node names a function nothing here can load",

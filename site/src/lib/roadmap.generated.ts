@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 1 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 3 },
+  { block: "H", title: "Proof on a real game", open: 2 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -111,13 +111,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "E",
     symptom: "a bake renders square at the rung's size, so a declared world rectangle can be refused but never met",
     why: "PW24's contract names the size a sprite must be, and nothing renders at it: the size is the rung's, and it is not in the cache key either.",
-    deps: [],
-  },
-  {
-    id: "PW35",
-    block: "H",
-    symptom: "the plugin's value is asserted and never measured against what it replaced",
-    why: "Nothing records how long a correct asset took before or after, so there is no way to tell a real improvement from a rearrangement of the same work.",
     deps: [],
   },
   {

@@ -38,6 +38,7 @@ renders    = "docs/design/art"
 specs      = "docs/design/accept"
 work       = ".polyweave"
 purchases  = "polyweave.purchases.json"
+loop       = "polyweave.loop.json"      # what one asset cost, made each way
 
 [render]
 rungs        = ["sphere", "preview", "final"]

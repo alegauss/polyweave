@@ -57,3 +57,4 @@
 
 ## Block H — Proof on a real game
 
+- ✅ **PW35** **the plugin's value is asserted and never measured against what it replaced** — One asset's cost is recorded each way, with a baseline that cannot be written after the port and a verdict allowed to say the plugin made things worse (design recorded in `docs/specs/adoption.md`).

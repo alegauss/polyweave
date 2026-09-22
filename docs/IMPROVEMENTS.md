@@ -272,21 +272,6 @@ wants the former, which may mean a rung of its own rather than a parameter.
 
 ## Block H — Proof on a real game
 
-### §PW35 Measure the loop, not the features
-
-Every line in this backlog is a claim that something will be faster or more certain, and
-not one of them is measured. The risk is specific: the work gets rearranged rather than
-reduced, and the plugin becomes a different way to spend the same afternoon. So the loop
-itself is instrumented against a real asset made both ways, recording wall-clock time
-from brief to accepted render, the number of renders spent, the number of tool calls,
-the credits spent, and how many results were rejected by a person after the tool had
-reported them as passing. That last number is the honest measure of assertiveness: a
-tool that approves renders a person then rejects has made things worse however fast it
-was. The baseline is what the existing pipeline costs today, recorded before anything is
-ported so that it cannot be reconstructed favourably afterwards. This line sits late in
-the file and is deliberately not optional, because the alternative is a backlog whose
-central claim cannot be falsified.
-
 ### §PW36 Cottony adopts it without a fork
 
 Cottony is the first consumer and the test of whether the configuration boundary in

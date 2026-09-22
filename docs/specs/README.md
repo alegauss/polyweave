@@ -10,8 +10,10 @@ unlike `docs/ROADMAP.md`, `docs/CHANGELOG.md` and `docs/IMPROVEMENTS.md`, which 
 roadkeep and refuse a hand edit.
 
 **Status: part built.** [tool-surface.md](tool-surface.md), [project-config.md](project-config.md),
-[provenance.md](provenance.md), [rungs.md](rungs.md), [fetching.md](fetching.md) and
-[engine.md](engine.md) describe code that exists; the rest is still ahead of its code. Each spec is settled enough to build against, and the first
+[provenance.md](provenance.md), [rungs.md](rungs.md), [fetching.md](fetching.md),
+[engine.md](engine.md), [motion.md](motion.md), [geometry.md](geometry.md) and
+[adoption.md](adoption.md) describe code that exists; the rest is still ahead of its
+code. Each spec is settled enough to build against, and the first
 implementation that disagrees with one is evidence about the spec, not only about the code —
 which is why §1 now names a heartbeat and a `sweep` that its first implementation needed.
 
@@ -28,6 +30,7 @@ which is why §1 now names a heartbeat and a `sweep` that its first implementati
 | [acceptance-spec.md](acceptance-spec.md) | What "correct" means, as a file a search can aim at | PW12, PW13, PW15 |
 | [geometry.md](geometry.md) | A shape as data rather than as a program | PW30–PW34 |
 | [provenance.md](provenance.md) | What is recorded beside an artefact, and the cache key | PW6, PW14, PW17 |
+| [adoption.md](adoption.md) | What one asset cost to make each way, so the claim can be falsified | PW35 |
 
 ## Two format rules, so nobody has to decide twice
 
