@@ -29,6 +29,17 @@ Also `tools/art/solid.py` (the geometry vocabulary Block G is read off), `tools/
 (the paid-service client Block D generalises) and `tools/capture_screens.py` (the Godot
 runner Block E replaces).
 
+## The specs are where a format lives
+
+`docs/specs/` holds the contracts more than one roadmap line depends on — the tool surface,
+the project config, the measurement vocabulary, the acceptance spec, the geometry declaration
+and the provenance record. Read the one that covers what you are about to build, because a
+rationale section in `docs/IMPROVEMENTS.md` is capped at 250 words and says *why*, while the
+spec says *what*. `docs/specs/README.md` indexes them and says what is deliberately not
+specced yet.
+
+Those files are ordinary documents and are edited directly. The three below are not.
+
 ## The docs are governed
 
 `docs/ROADMAP.md`, `docs/CHANGELOG.md` and `docs/IMPROVEMENTS.md` belong to roadkeep. A hand

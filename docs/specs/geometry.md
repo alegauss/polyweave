@@ -1,0 +1,204 @@
+# Geometry as a declaration
+
+Binds **PW30–PW34**. A shape stated as data, compiled to a mesh.
+
+The reasoning is §PW30 and is not repeated here. The short form: a shape that exists only as
+the result of executing statements cannot be read without running it, cannot be varied by
+anything else, and cannot be reviewed before it is built.
+
+## Why data and not a new language
+
+A language needs a grammar, a parser, error messages and an editor story before it renders
+its first triangle. A document in a format everything already reads needs none of that.
+
+But plain data cannot do arithmetic, and the shapes that matter here are arithmetic — a
+sixty-four seat tray is a loop over a cell size the game holds as a constant. So the format
+adds exactly three things to TOML: **named parameters**, **expressions over them**, and a
+**repeat** construct. Three features, not a language.
+
+## A flat graph, not a nested tree
+
+Nodes are a flat list. Each has an `id`, and refers to its inputs by id. Three consequences,
+all of which were the reason for choosing it:
+
+- **It diffs.** A change touches one table, not a re-indented subtree.
+- **It is addressable.** PW32's search points at a node's parameter, and PW33's review points
+  at a node, by name.
+- **A node can be used twice.** It is a graph, not a tree, which a boolean against a shared
+  cutter needs anyway.
+
+## A document
+
+```toml
+name    = "board_tray"
+version = 1
+
+[params]
+cell       = 112
+board      = 8
+pad        = 16
+face_depth = 6.0
+seat_depth = 4.0
+bevel      = 2.0
+
+[materials.cushion]
+colour    = "#F2E4D0"
+roughness = 0.62
+
+[[nodes]]
+id       = "face"
+op       = "plate"
+material = "cushion"
+rect     = ["0", "0", "board * cell + pad * 2", "board * cell + pad * 2"]
+depth    = "face_depth"
+corner   = 28
+
+[[nodes]]
+id      = "seat"
+op      = "prism"
+outline = { shape = "rounded_square", size = "cell * 0.82", corner = 18 }
+depth   = "seat_depth"
+at      = ["pad + col * cell + cell / 2", "pad + row * cell + cell / 2", "0"]
+repeat  = [
+  { var = "row", from = 0, to = "board - 1" },
+  { var = "col", from = 0, to = "board - 1" },
+]
+
+[[nodes]]
+id     = "tray"
+op     = "carve"
+into   = "face"
+cutter = "seat"
+bevel  = "bevel"
+
+output = "tray"
+```
+
+## Values and expressions
+
+A value is a number, a string holding an expression, or a boolean. **Where any element of an
+array is an expression, write them all as strings** — that keeps a caller from having to
+reason about mixed-type arrays.
+
+The expression grammar is deliberately small: numeric literals, parameter names, repeat
+variables, `+ - * / %`, parentheses, and `min`, `max`, `abs`, `round`, `floor`, `ceil`,
+`sqrt`, `sin`, `cos`, `radians`. **Nothing evaluates arbitrary code.** That is a determinism
+requirement before it is a security one: an expression whose value can depend on anything but
+its parameters breaks the cache key in [provenance.md](provenance.md).
+
+## Repeat
+
+`repeat` is a list of variable ranges. The node is instanced once per point of their
+cartesian product, with each variable in scope for every expression on that node. `to` is
+inclusive; `step` defaults to 1.
+
+**A repeated node's id names the whole set.** `cutter = "seat"` above means all sixty-four
+instances, which is what makes the tray one boolean rather than sixty-four.
+
+## The vocabulary
+
+Read off what Cottony's scripts already do, because a format covering only cubes and spheres
+would leave every real asset in code (§PW31).
+
+### Outlines (2D)
+
+| `op` / field | What it is |
+|---|---|
+| `shape` | A named generator — `circle`, `rounded_square`, `star`, `lobed` — with its own parameters |
+| `image` | An alpha mask from a project image, traced to an outline |
+| `radial` | Points arrayed about a centre, `steps` of them |
+| `offset` | An outline grown or shrunk by a distance |
+
+An outline appears inline on a solid node, as in `seat` above, or as its own node when two
+nodes share one.
+
+### Solids (3D)
+
+| `op` | What it is |
+|---|---|
+| `primitive` | `sphere`, `cube`, `cylinder`, `plane` — the cheap shapes the preview rung needs |
+| `prism` | An outline extruded along the depth axis |
+| `plate` | A rounded plate: a rectangle with a corner radius and a depth |
+| `crowned` | A plate with a domed face |
+| `annulus` | A ring between two radii |
+| `inflate` | A drawing given volume, as a stuffed cushion is — the route a panel takes |
+| `carve` | Boolean difference: `into` minus `cutter` |
+| `union` | Boolean union of a list of ids |
+| `bevel` | A bevel applied to an existing node |
+| `transform` | Translate, rotate and scale an existing node |
+| `custom` | A project function — see below |
+
+`inflate` is the operation that gives a drawn panel its volume while keeping the drawn
+silhouette to the pixel. `prism` over an `image` outline is the other half of the same idea:
+a star's silhouette becomes a mesh that is not merely similar to the drawn sprite but is the
+drawn sprite, extruded.
+
+**Booleans are exact by construction.** Cottony measured Blender's EXACT solver returning an
+empty mesh, with no error, for a cut against a bevelled object — 2402 faces before the bevel
+and 0 after. The compiler uses a solver that does not have that behaviour and asserts a
+non-empty result either way (§PW2). Where a bevel and a boolean both appear on a node, the
+boolean runs first.
+
+## The escape hatch is a node, not a mode
+
+Any format eventually meets a shape it cannot state, and forcing that shape into the format
+produces worse geometry than the script it replaced (§PW34).
+
+```toml
+[[nodes]]
+id     = "rope"
+op     = "custom"
+fn     = "tools/art/rope.py:build"
+inputs = { along = "face" }
+args   = { thickness = "bevel * 1.5", twist = 12 }
+```
+
+The function receives resolved arguments and named inputs and returns geometry the rest of
+the graph composes with. Three properties survive:
+
+- The parameters stay **declared**, so PW32's search can still reach them.
+- The function's source is **hashed into provenance**, so changing it invalidates the cache.
+- The rest of the shape stays **data**. A declaration does not become a script because one
+  node in it is custom.
+
+Where the same custom node appears in three projects, that is the signal it should have been
+vocabulary, and it gets filed as a roadmap line rather than copied a fourth time.
+
+## What a build returns
+
+A mesh, and a report — because a shape that can only be checked by looking at a render is
+one whose construction errors are found in the expensive place (§PW33). Two wrong
+constructions of Cottony's tray seats each looked entirely reasonable while being written.
+
+```json
+{
+  "output": "tray",
+  "params": { "cell": 112, "board": 8, "…": "…resolved values…" },
+  "nodes": [
+    { "id": "face", "op": "plate", "faces": 1256, "instances": 1 },
+    { "id": "seat", "op": "prism", "faces": 2048, "instances": 64 },
+    { "id": "tray", "op": "carve", "faces": 9814, "instances": 1, "manifold": true }
+  ],
+  "bounds": [0, 0, 0, 928, 928, 6.0],
+  "warnings": []
+}
+```
+
+The report is readable before a render exists, and the per-node face count is what catches a
+boolean that silently returned nothing.
+
+## Rebuilding
+
+A parameter change forces a rebuild of every node that references it, transitively; a rig
+change forces only a re-render. The compiler computes that from the graph, and **the search
+needs it** — rebuilding geometry costs more than re-rendering it, so a mixed search over
+shape and light orders its sampling to rebuild as rarely as it can (§PW32).
+
+Every parameter a search may touch needs a declared range for the same reason a rig parameter
+does: a wall thickness that goes negative does not produce a poor render, it produces an
+invalid mesh.
+
+## Conventions
+
+Axes, units, origin, colour and angles are fixed in
+[tool-surface.md](tool-surface.md#6-conventions-fixed-once) and are not restated per format.
