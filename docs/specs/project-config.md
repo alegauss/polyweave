@@ -72,6 +72,10 @@ schema  = "polyweave.service.toml"
 credits = 60
 expires = "2026-12-31"
 
+[units]
+source    = "scripts/board.gd:CELL_PX"   # read the engine's scale where it keeps it
+tolerance = 0.001
+
 [capture]
 locale     = "pt_BR"
 resolution = [1920, 1080]

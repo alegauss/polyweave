@@ -101,7 +101,40 @@ after `--`; a capture script that honours it puts its window out of the way, and
 ignores it still captures, with a window visible while it does. Nothing here reaches into
 the running engine from outside to move it.
 
+## Units are a contract, not a coincidence
+
+Cottony's board tray renders at one unit per pixel because somebody set the render
+rectangle to exactly the world rectangle the board covers, so its wells land on a cell
+size the game holds separately as its own constant. **The two numbers agree because a
+person made them agree.** Nothing fails if either moves; the sprite lands a few pixels off
+the grid and someone notices later, on a screen, by eye.
+
+Declared, it is arithmetic. The **asset** states the world rectangle it covers and the
+pixels per unit it is baked at, which give the size in pixels it must be. The **engine**
+states its own pixels per unit. A **check** compares them, and a disagreement is a refusal
+**with both numbers in it** — `units.mismatch` when the two scales differ,
+`units.wrong-size` when the picture is not the size the declaration asks for, and
+`units.not-whole` when the rectangle and the scale land between two pixels, which is a
+sprite that cannot sit on the grid whatever else is right.
+
+**The engine's number is read from where the engine keeps it.** `[units] source` is
+`path/to/file.gd:NAME`, read out of a GDScript constant, a JSON key or an ini-shaped one.
+Stating the number in `polyweave.toml` instead (`[units] pixels_per_unit`) is the weaker
+half of the same idea, because a copy that can drift is the coincidence this exists to
+remove. Where the constant is renamed or moved, that is `units.unreadable` — the check
+doing its job, not failing at it.
+
+**The check happens before the render, not after.** A scale that disagrees costs nothing to
+refuse, and the refusal is more useful than the same refusal with a render's worth of time
+spent behind it. `render.bake` takes `covers` and `pixels_per_unit`, checks them against
+the project's scale and against the size the rung will produce, and carries both into the
+provenance record and the answer. A bake that declares nothing is not asked about scale,
+because most renders are a preview of a thing rather than a sprite on somebody's grid.
+
+What is not here is a bake whose size comes *from* the declaration rather than from the
+rung: the renderer produces square pictures at a rung's size, and a rectangle needs both a
+non-square render and the size in the cache key. That is PW47.
+
 ## Still to come in this block
 
-The declared environment a capture is taken in (PW25), and the unit contract between a
-baked sprite and the running game (PW24).
+The declared environment a capture is taken in (PW25).

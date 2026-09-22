@@ -112,6 +112,14 @@ DEFAULTS: dict[str, Any] = {
         "declared": ["locale", "resolution"],
     },
     "geometry": {"outlines": ""},
+    "units": {
+        # The scale the engine draws at. Stating it here is the weaker half; `source`
+        # is the stronger one — `path/to.gd:NAME` reads it from wherever the game
+        # already holds it, so the two numbers cannot drift apart (§PW24).
+        "pixels_per_unit": 0.0,
+        "source": "",
+        "tolerance": 0.001,
+    },
 }
 
 

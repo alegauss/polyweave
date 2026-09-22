@@ -37,6 +37,7 @@
 
 - ✅ **PW22** **the engine's exit code is not the verdict, so each project writes its own output parser** — One runner drives a scene script and returns a verdict read off the printed line, the errors and the file, with both bounds set and the log kept (design recorded in `docs/specs/engine.md`).
 - ✅ **PW23** **a real renderer needs a window, so a capture cannot run where there is no screen** — One call captures real pixels by whichever route draws on this machine, each route proved by a picture it drew and read back rather than assumed (design recorded in `docs/specs/engine.md`).
+- ✅ **PW24** **the baked sprite and the running game agree on scale only because a constant was tuned** — An asset declares the rectangle it covers and the scale it is baked at, checked against the engine's own number before a render, both numbers in a refusal (design recorded in `docs/specs/engine.md`).
 
 ## Block F — Motion
 

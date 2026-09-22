@@ -243,21 +243,6 @@ reading the two side by side says otherwise.
 
 ## Block E — One world with the engine
 
-### §PW24 Units are a contract, not a coincidence
-
-Cottony's board tray renders at one unit per pixel because somebody set the render
-rectangle to exactly the world rectangle the board covers, so that its wells land on a
-cell size the game holds separately as its own constant. The two numbers agree because a
-person made them agree. Nothing fails if either one moves; the sprite simply lands a few
-pixels off the grid and someone notices later, on a screen, by eye. That coupling should
-be declared instead. The asset states the world rectangle it covers and the pixels per
-unit it is baked at, the engine side states the same, and a check compares them and
-refuses a mismatch at bake time. Where the engine can render the asset itself the
-problem disappears entirely, which is the stronger version of this line and the reason
-it sits in this block rather than in the renderer's. Either way the goal is the same: a
-scale disagreement becomes a refusal with two numbers in it, rather than a misalignment
-discovered visually three commits later.
-
 ### §PW25 A capture declares its environment
 
 The same capture script on two machines gives two different pictures, because the game
@@ -272,6 +257,29 @@ depend on whose desk it was taken at. The runner should take that environment as
 explicit argument, set it, and record it beside the image, and it should refuse a
 capture that leaves a declared-relevant setting to chance. What makes this affordable is
 that the list of settings that matter is per project and short.
+
+### §PW47 Bake at the size the declaration gives
+
+A sprite covering a 4 x 2 world rectangle at 64 pixels per unit has to be 256 x 128
+pixels. The renderer produces square pictures at whichever size the rung names, so such
+a declaration can only be refused, never met. PW24 put the contract in place and its
+refusal names the size it wants; nothing yet renders at it.
+
+Two things stand in the way. The first is the render: `render_to` sets one resolution on
+both axes, and the framing centres the subject in a square frame rather than mapping a
+stated world rectangle onto the pixels.
+
+The second is the cache key, and that is the part needing care. The key carries the
+rung, the seed, the samples, the inputs and the rig; the size rides along only because
+the rung implies it. Once a bake can be asked for a size the rung does not imply, the
+key has to carry it, or a square render comes back for a rectangular request — a wrong
+answer rather than a slow one. The subset is pinned in `docs/specs/provenance.md` and
+every cached entry was keyed without it, so the open question is whether the field is
+added always or only where a size was asked.
+
+There is an orthographic question underneath. A world rectangle mapped onto pixels is an
+orthographic projection; the rig is a perspective camera with a margin. A baked sprite
+wants the former, which may mean a rung of its own rather than a parameter.
 
 ## Block F — Motion
 

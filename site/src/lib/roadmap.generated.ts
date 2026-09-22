@@ -107,17 +107,17 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW24",
-    block: "E",
-    symptom: "the baked sprite and the running game agree on scale only because a constant was tuned",
-    why: "One unit is one pixel because somebody set the render rectangle to match a cell size the game holds separately, and nothing fails if either moves.",
-    deps: [],
-  },
-  {
     id: "PW25",
     block: "E",
     symptom: "a capture takes its picture in whatever language and settings the runner happens to have",
     why: "The same script on two machines produces two different images, and the difference is a locale nobody declared rather than a change anybody made.",
+    deps: [],
+  },
+  {
+    id: "PW47",
+    block: "E",
+    symptom: "a bake renders square at the rung's size, so a declared world rectangle can be refused but never met",
+    why: "PW24's contract names the size a sprite must be, and nothing renders at it: the size is the rung's, and it is not in the cache key either.",
     deps: [],
   },
   {

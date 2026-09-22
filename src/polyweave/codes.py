@@ -39,6 +39,7 @@ AREAS: dict[str, str] = {
     "compose": "putting an asset where it will actually be seen",
     "search": "looking for parameter values that satisfy a spec",
     "engine": "running a scene script and reading its verdict",
+    "units": "the scale an asset is baked at, against the one the engine draws it at",
 }
 
 CODES: dict[str, Code] = {
@@ -555,6 +556,36 @@ CODES: dict[str, Code] = {
         when="a script that never quits; the frame budget is the other bound and this "
         "is the one that catches a hang the engine itself does not end",
         doors=("read the log", "raise [engine] timeout if the run is honestly slow"),
+    ),
+    # -- units: the scale an asset is baked at --------------------------------
+    "units.undeclared": Code(
+        means="nothing says what scale this asset is baked at",
+        when="a check with no world rectangle, or a project that names no scale of its "
+        "own and no file to read one from",
+        doors=("state the rectangle the asset covers", "set [units] pixels_per_unit"),
+    ),
+    "units.unreadable": Code(
+        means="the file the project points at holds no such number",
+        when="a constant renamed or moved in the engine's own source; the point of "
+        "reading it there is that this is what happens when it moves",
+        doors=("check the name [units] source addresses", "state the number here"),
+    ),
+    "units.mismatch": Code(
+        means="the asset is baked at one scale and the engine draws at another",
+        when="a render rectangle tuned by hand to match a cell size held separately, "
+        "after either of the two moved",
+        doors=("bake at the engine's scale", "change the engine's, deliberately"),
+    ),
+    "units.not-whole": Code(
+        means="the rectangle and the scale do not come to a whole number of pixels",
+        when="a rectangle whose width times the scale lands between two pixels, which "
+        "is a sprite that cannot sit on the grid whatever else is right",
+        doors=("round the rectangle", "use a scale the rectangle divides by"),
+    ),
+    "units.wrong-size": Code(
+        means="the picture is not the size the declaration asks for",
+        when="a bake whose size came from the rung rather than from the rectangle",
+        doors=("render at the size the declaration gives",),
     ),
     # -- prov: what produced an artefact -------------------------------------
     "prov.unknown-kind": Code(

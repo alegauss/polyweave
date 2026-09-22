@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Annotated
 
 from .. import cache as store
-from .. import measure, post, provenance
+from .. import measure, post, provenance, units
 from ..config import load
 from ..describe import Param, operation
 from ..errors import PolyweaveError
@@ -192,6 +192,14 @@ def bake(
         float, Param("film exposure", lo=-10.0, hi=10.0, unit="stops")
     ] = 0.0,
     transparent: Annotated[bool, Param("leave the background empty")] = True,
+    covers: Annotated[
+        list,
+        Param("the world rectangle this picture stands for, as [width, height]"),
+    ] = (),
+    pixels_per_unit: Annotated[
+        float,
+        Param("the scale it is baked at; the project's own where this is left out"),
+    ] = 0.0,
     root: Annotated[str, Param("the project to resolve settings against")] = ".",
 ) -> dict:
     """Render one subject at the cheapest rung that can answer the question.
@@ -220,6 +228,17 @@ def bake(
         transparent=transparent,
     )
     params = {**as_params(rig), **({"material": material} if material else {})}
+    scale = None
+    if len(covers):
+        # Before the render, not after: a scale that disagrees is a refusal that costs
+        # nothing, and the numbers that disagree are both in it (§PW24).
+        scale = units.require(
+            {"covers": list(covers), "pixels_per_unit": pixels_per_unit},
+            size=(chosen["size"], chosen["size"]),
+            root=root,
+        )
+        params["covers"] = [float(v) for v in covers]
+        params["pixels_per_unit"] = scale["pixels_per_unit"]
     if model:
         mesh = Path(model) if Path(model).is_absolute() else where / model
         if not mesh.is_file():
@@ -332,6 +351,9 @@ def bake(
         "measurements": taken,
         "cache_key": signature,
     }
+    if scale is not None:
+        answer["covers"] = scale["covers"]
+        answer["pixels_per_unit"] = scale["pixels_per_unit"]
     if inline:
         answer["image"] = measure.inline_image(out_path)
     return answer
