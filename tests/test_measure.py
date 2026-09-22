@@ -44,24 +44,26 @@ def test_a_measurement_carries_its_region_and_its_rung(tmp_path):
 
 def test_the_rung_is_reported_and_never_inferred(tmp_path):
     """A verdict taken on a sphere is never mistaken for one taken on the final mesh."""
-    assert measure.measure(png(tmp_path))[0]["rung"] is None
+    assert measure.measure(png(tmp_path), ["alpha_coverage"])[0]["rung"] is None
 
 
 def test_the_default_region_is_the_subject_where_there_is_alpha(tmp_path):
-    assert measure.measure(png(tmp_path, coverage=0.5))[0]["region"] == "subject"
+    only = ["alpha_coverage"]
+    assert measure.measure(png(tmp_path, coverage=0.5), only)[0]["region"] == "subject"
 
 
 def test_the_default_region_is_the_frame_without_alpha(tmp_path):
     flat = tmp_path / "flat.png"
     PILImage.fromarray(np.full((4, 4, 3), 90, dtype=np.uint8), "RGB").save(flat)
-    assert measure.measure(flat)[0]["region"] == "frame"
+    assert measure.measure(flat, ["alpha_coverage"])[0]["region"] == "frame"
 
 
 def test_the_frame_and_the_subject_are_different_answers(tmp_path):
     """The masking is half the value: a prop is not diluted by its background."""
     path = png(tmp_path, coverage=0.5)
-    frame = measure.measure(path, region="frame")[0]["value"]
-    subject = measure.measure(path, region="subject")[0]["value"]
+    only = ["alpha_coverage"]
+    frame = measure.measure(path, only, region="frame")[0]["value"]
+    subject = measure.measure(path, only, region="subject")[0]["value"]
     assert frame == 0.5  # half the frame is the asset
     assert subject == 1.0  # all of the asset is the asset
 
@@ -69,10 +71,11 @@ def test_the_frame_and_the_subject_are_different_answers(tmp_path):
 def test_a_rectangle_measures_only_inside_itself(tmp_path):
     """A region answers about itself, or it would only report its own size."""
     path = png(tmp_path, size=(8, 8), coverage=0.5)
-    covered = measure.measure(path, region=[0, 0, 8, 4])[0]
+    only = ["alpha_coverage"]
+    covered = measure.measure(path, only, region=[0, 0, 8, 4])[0]
     assert covered["region"] == [0, 0, 8, 4]
     assert covered["value"] == 1.0  # the top half is all subject
-    empty = measure.measure(path, region=[0, 4, 8, 8])[0]
+    empty = measure.measure(path, only, region=[0, 4, 8, 8])[0]
     assert empty["value"] == 0.0  # the bottom half is all background
 
 
@@ -93,8 +96,9 @@ def test_a_mask_file_is_a_region(tmp_path):
         PILImage.fromarray(mask, "RGBA").save(where)
         return where
 
-    assert measure.measure(path, region=mask_over(slice(0, 2)))[0]["value"] == 1.0
-    assert measure.measure(path, region=mask_over(slice(2, 4)))[0]["value"] == 0.0
+    only = ["alpha_coverage"]
+    assert measure.measure(path, only, region=mask_over(slice(0, 2)))[0]["value"] == 1.0
+    assert measure.measure(path, only, region=mask_over(slice(2, 4)))[0]["value"] == 0.0
 
 
 def test_a_mask_of_another_size_is_refused(tmp_path):
@@ -120,8 +124,9 @@ def test_the_alpha_floor_decides_what_counts_as_the_subject(tmp_path):
     path = tmp_path / "haze.png"
     PILImage.fromarray(rgba, "RGBA").save(path)
     over = {"region": "frame"}
-    assert measure.measure(path, alpha_floor=0.0, **over)[0]["value"] == 1.0
-    assert measure.measure(path, alpha_floor=0.02, **over)[0]["value"] == 0.5
+    only = ["alpha_coverage"]
+    assert measure.measure(path, only, alpha_floor=0.0, **over)[0]["value"] == 1.0
+    assert measure.measure(path, only, alpha_floor=0.02, **over)[0]["value"] == 0.5
 
 
 # -- the vocabulary is closed, and honest about what it cannot do yet -----------------
@@ -136,9 +141,9 @@ def test_a_measure_outside_the_vocabulary_is_refused(tmp_path):
 def test_a_declared_measure_nothing_computes_yet_says_which_line_builds_it(tmp_path):
     """Refused by name beats an answer quietly missing the field that was asked for."""
     with pytest.raises(PolyweaveError) as caught:
-        measure.measure(png(tmp_path), ["saturation_p99"])
+        measure.measure(png(tmp_path), ["delta_e"])
     assert caught.value.code == "spec.unmeasured"
-    assert "PW9" in caught.value.remedy
+    assert "PW10" in caught.value.remedy
 
 
 def test_a_statistic_resolves_to_its_measure(tmp_path):
@@ -149,8 +154,8 @@ def test_a_statistic_resolves_to_its_measure(tmp_path):
 
 def test_what_can_be_measured_now_is_answerable(tmp_path):
     found = measure.available()
-    assert "alpha_coverage" in found["computed"]
-    assert "saturation" in found["pending"]
+    assert {"alpha_coverage", "saturation", "luma"} <= set(found["computed"])
+    assert "delta_e" in found["pending"]
     assert all(v for v in found["pending"].values())
 
 
@@ -173,5 +178,7 @@ def test_the_picture_comes_back_at_the_size_it_was_rendered(tmp_path):
 
 
 def test_measurements_flatten_for_a_record(tmp_path):
-    taken = measure.measure(png(tmp_path, coverage=0.5), region="frame")
+    taken = measure.measure(
+        png(tmp_path, coverage=0.5), ["alpha_coverage"], region="frame"
+    )
     assert measure.summarise(taken) == {"alpha_coverage": 0.5}

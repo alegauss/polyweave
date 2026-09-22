@@ -38,6 +38,16 @@ def base_measure(measure: str) -> str:
     return measure
 
 
+#: Measures reported as a **set of statistics, never as one number**. §PW9 is why:
+#: Cottony's board matched the concept art's mean saturation to within 0.01 and was
+#: plainly washed out, because the whole difference sat at the 99th percentile. A mean
+#: over an image is dominated by whatever covers the most area, which is almost never
+#: the thing being judged.
+DISTRIBUTIONS: dict[str, Any] = {}
+
+#: Measures that are one number by nature.
+SCALARS: dict[str, Any] = {}
+
 #: What each measure is, and what computes it. A name in `measurements.md` with nothing
 #: here is in the vocabulary and not yet built — see `PENDING`.
 COMPUTES: dict[str, Any] = {}
@@ -45,9 +55,6 @@ COMPUTES: dict[str, Any] = {}
 #: Measures the vocabulary declares and no line has built yet, each naming the line that
 #: will. Refusing by name beats returning an answer that is quietly missing a field.
 PENDING = {
-    "saturation": "PW9 reports a distribution rather than a mean",
-    "luma": "PW9 reports a distribution rather than a mean",
-    "hue_spread": "PW9 reports a distribution rather than a mean",
     "region_colour": "PW10 judges an asset beside its siblings",
     "delta_e": "PW10 judges an asset beside its siblings",
     "silhouette_iou": "PW10 compares a render against a reference",
@@ -58,14 +65,25 @@ PENDING = {
     "luma_bands": "PW10 measures what survives at display size",
 }
 
-#: The set a render answers with unless a caller names others, per `measurements.md`. It
-#: grows as the measures above are built.
-DEFAULT = ("alpha_coverage",)
+#: The set a render answers with unless a caller names others, per `measurements.md`.
+DEFAULT = ("saturation", "luma", "alpha_coverage")
 
 
 def _computes(name: str):
     def register(fn):
         COMPUTES[name] = fn
+        SCALARS[name] = fn
+        return fn
+
+    return register
+
+
+def _distributes(name: str):
+    """Register a measure whose answer is every statistic of it, not one number."""
+
+    def register(fn):
+        COMPUTES[name] = fn
+        DISTRIBUTIONS[name] = fn
         return fn
 
     return register
@@ -84,6 +102,84 @@ def _alpha_coverage(
     if not within:
         return 0.0
     return round(float((image.subject(alpha_floor) & mask).sum() / within), 6)
+
+
+# -- what a look is made of ---------------------------------------------------------
+
+
+def srgb_to_linear(channel: np.ndarray) -> np.ndarray:
+    """Undo the sRGB transfer function, because luminance is a linear quantity."""
+    low = channel / 12.92
+    high = ((channel + 0.055) / 1.055) ** 2.4
+    return np.where(channel <= 0.04045, low, high)
+
+
+def _hsl(rgb: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Hue in turns, saturation and lightness, from sRGB in 0–1."""
+    high = rgb.max(axis=-1)
+    low = rgb.min(axis=-1)
+    span = high - low
+    lightness = (high + low) / 2.0
+    saturation = np.where(
+        span == 0, 0.0, span / np.maximum(1.0 - np.abs(2.0 * lightness - 1.0), 1e-12)
+    )
+    r, g, b = rgb[..., 0], rgb[..., 1], rgb[..., 2]
+    with np.errstate(invalid="ignore", divide="ignore"):
+        hue = np.select(
+            [span == 0, high == r, high == g],
+            [0.0, ((g - b) / span) % 6.0, (b - r) / span + 2.0],
+            default=(r - g) / span + 4.0,
+        )
+    return (hue / 6.0) % 1.0, np.clip(saturation, 0.0, 1.0), lightness
+
+
+@_distributes("saturation")
+def _saturation(image: Image, mask: np.ndarray, **_: Any) -> np.ndarray:
+    """HSL saturation over the region, which is how colourful a pixel reads."""
+    rgb = image.rgba[mask][:, :3].astype(np.float64) / 255.0
+    return _hsl(rgb)[1]
+
+
+@_distributes("luma")
+def _luma(image: Image, mask: np.ndarray, **_: Any) -> np.ndarray:
+    """Relative luminance, sRGB-weighted, on linear values because light adds."""
+    linear = srgb_to_linear(image.rgba[mask][:, :3].astype(np.float64) / 255.0)
+    return linear @ np.array([0.2126, 0.7152, 0.0722])
+
+
+@_computes("hue_spread")
+def _hue_spread(image: Image, mask: np.ndarray, **_: Any) -> float:
+    """How far apart the hues are, weighted by saturation.
+
+    Circular, because hue wraps and a mean of 355° and 5° is not 180°. Reported as the
+    circular **variance** — one minus the resultant length — which is the form of the
+    quantity that fits the 0–1 the vocabulary declares; the standard deviation it is
+    derived from is unbounded and could not.
+
+    Weighted by saturation because the hue of a grey pixel is arbitrary, and an image of
+    mostly grey would otherwise report a spread it does not have.
+    """
+    rgb = image.rgba[mask][:, :3].astype(np.float64) / 255.0
+    hue, saturation, _ = _hsl(rgb)
+    weight = saturation.sum()
+    if weight <= 0.0:
+        return 0.0  # nothing is coloured, so nothing is spread
+    angle = hue * 2.0 * np.pi
+    x = float((np.cos(angle) * saturation).sum() / weight)
+    y = float((np.sin(angle) * saturation).sum() / weight)
+    return round(float(1.0 - min(1.0, np.hypot(x, y))), 6)
+
+
+def statistics(values: np.ndarray) -> dict[str, float]:
+    """The five a distribution is reported as, per `measurements.md`."""
+    p1, p50, p99 = np.percentile(values, [1, 50, 99])
+    return {
+        "_p1": round(float(p1), 6),
+        "_p50": round(float(p50), 6),
+        "_p99": round(float(p99), 6),
+        "_mean": round(float(values.mean()), 6),
+        "_std": round(float(values.std()), 6),
+    }
 
 
 # -- regions ---------------------------------------------------------------------
@@ -167,24 +263,48 @@ def measure(
     image = subject if isinstance(subject, Image) else load(subject)
     where = default_region(image) if region is None else region
     mask = region_mask(image, where, alpha_floor)
+    if not mask.any():
+        raise PolyweaveError(
+            "spec.empty-region",
+            f"the region {_named(where)!r} holds no pixels to measure",
+            "widen the region, or lower `[tolerance] alpha_floor` if the subject is "
+            "fainter than the floor",
+        )
+
     out = []
     for name in measures:
-        fn = _resolve(name)
-        out.append(
-            {
-                "measure": name,
-                "region": _named(where),
-                "rung": rung,
-                "value": fn(image, mask, alpha_floor=alpha_floor),
-            }
-        )
+        base = _resolve(name)
+        if base in DISTRIBUTIONS:
+            values = DISTRIBUTIONS[base](image, mask, alpha_floor=alpha_floor)
+            for suffix, value in statistics(values).items():
+                if name == base or name.endswith(suffix):
+                    out.append(_taken(base + suffix, where, rung, value))
+        else:
+            value = SCALARS[base](image, mask, alpha_floor=alpha_floor)
+            out.append(_taken(name, where, rung, value))
     return out
 
 
-def _resolve(name: str):
+def _taken(name: str, where: Any, rung: str | None, value: float) -> dict:
+    return {
+        "measure": name,
+        "region": _named(where),
+        "rung": rung,
+        "value": value,
+    }
+
+
+def _resolve(name: str) -> str:
+    """The measure a name asks for, or a refusal that says why it cannot be given."""
     base = base_measure(name)
     if base in COMPUTES:
-        return COMPUTES[base]
+        if base in SCALARS and name != base:
+            raise PolyweaveError(
+                "spec.unknown-measure",
+                f"{base!r} is one number, so there is no {name!r}",
+                f"ask for {base!r} on its own",
+            )
+        return base
     if base in PENDING:
         raise PolyweaveError(
             "spec.unmeasured",

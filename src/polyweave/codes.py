@@ -433,6 +433,11 @@ CODES: dict[str, Code] = {
         "neither frame nor subject",
         doors=("give frame, subject, a rectangle, or a mask the same size",),
     ),
+    "spec.empty-region": Code(
+        means="the region a measurement was asked for holds no pixels",
+        when="a subject region on an image whose alpha is everywhere below the floor",
+        doors=("widen the region", "lower the alpha floor"),
+    ),
     "spec.unknown-area": Code(
         means="the area named is not one codes are namespaced under",
         when="a listing asks for an area outside the declared set",

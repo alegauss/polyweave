@@ -39,6 +39,22 @@ difference sat at the 99th percentile.
 
 A call asking for `saturation` returns all five statistics. A predicate names one.
 
+Two things the first implementation had to settle:
+
+**`luma` is computed on linearised values**, because luminance is a linear quantity and the
+bytes in a file are not. Mid grey stores as 128 and carries about 0.22 of the light, not
+0.5; weighting the stored bytes would report a picture as half as bright as it is.
+
+**`hue_spread` is the circular *variance*** — one minus the saturation-weighted resultant
+length — rather than the circular standard deviation it is derived from. The standard
+deviation is unbounded and this table declares a 0–1 range, and a measure that cannot hit
+its own declared range is not usable in a bound. It is weighted by saturation because the
+hue of a grey pixel is arbitrary, and an image of mostly grey would otherwise report a
+spread it does not have.
+
+A region holding no pixels is refused (`spec.empty-region`) rather than answered with zero:
+a statistic over nothing is not a statistic.
+
 ## Silhouette
 
 | Measure | Range | What it is |

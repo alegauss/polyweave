@@ -26,7 +26,7 @@ export interface GeneratedNonGoal {
 
 export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 6 },
-  { block: "B", title: "Seeing the result cheaply", open: 4 },
+  { block: "B", title: "Seeing the result cheaply", open: 3 },
   { block: "C", title: "The asset compiler", open: 4 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 6 },
   { block: "E", title: "One world with the engine", open: 4 },
@@ -79,13 +79,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW9",
-    block: "B",
-    symptom: "a mean over an image agrees while the look is plainly wrong",
-    why: "Cottony's board measured 0.31 mean saturation against the concept art's 0.32 and still looked washed out, because the whole difference sat at the 99th percentile.",
-    deps: [],
-  },
-  {
     id: "PW10",
     block: "B",
     symptom: "an asset is judged alone and then lands beside five siblings it does not match",
@@ -111,7 +104,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "C",
     symptom: "what counts as a correct render lives in somebody's head, so it is approved by opinion",
     why: "Nothing states that a face must read the drawing's own colour or that a silhouette must land within three pixels, so no later change can be checked against it.",
-    deps: ["PW9"],
+    deps: [],
   },
   {
     id: "PW13",

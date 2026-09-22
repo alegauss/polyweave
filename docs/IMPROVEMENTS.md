@@ -142,21 +142,6 @@ is one stray edge pixel is empty for every purpose and passes.
 
 ## Block B — Seeing the result cheaply
 
-### §PW9 A look is a distribution
-
-Cottony's board was asserted to be washed out against the concept art. Measured, the
-mean saturation was 0.31 against the art's 0.32 and the luma spread matched, so the
-claim looked wrong. It was not wrong. At the 99th percentile the board read 0.68 against
-the art's 0.88. The averages agreed because most of the board is cream tray, and what
-was actually missing was any deeply saturated pixel at all. The lesson generalises well
-past that screen: a mean over an image is dominated by whatever covers the most area,
-which is almost never the thing being judged, so a comparison reporting only means will
-cheerfully agree with a picture that is plainly wrong. Every comparison this plugin
-makes should report a distribution rather than a number: percentiles of saturation, of
-luma and of hue spread, for the whole frame and for the subject's own silhouette
-separately. The masking is half the value, because a prop measured against only its own
-pixels is not diluted by whatever background it happens to be sitting on.
-
 ### §PW10 Judged in the place it will be seen
 
 An asset that reads correctly on its own can be the one wrong thing in the frame it

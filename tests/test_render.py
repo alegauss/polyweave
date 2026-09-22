@@ -263,8 +263,9 @@ def test_one_call_returns_the_picture_and_the_numbers(project):
     assert (
         base64.b64decode(out["image"]["base64"]) == (project / "both.png").read_bytes()
     )
-    assert [m["measure"] for m in out["measurements"]] == ["alpha_coverage"]
-    assert out["measurements"][0]["rung"] == "sphere"
+    names = [m["measure"] for m in out["measurements"]]
+    assert "saturation_p99" in names and "alpha_coverage" in names
+    assert all(m["rung"] == "sphere" for m in out["measurements"])
 
 
 def test_the_measurements_asked_for_come_back_with_the_render(project):
@@ -287,7 +288,7 @@ def test_a_measure_that_is_not_built_yet_refuses_the_whole_call(project):
             Reported(),
             out="x.png",
             rung="sphere",
-            measures=["saturation_p99"],
+            measures=["delta_e"],
             root=project,
         )
     assert caught.value.code == "spec.unmeasured"
