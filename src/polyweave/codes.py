@@ -606,6 +606,17 @@ CODES: dict[str, Code] = {
         "point",
         doors=("give it a shape, an image, or at least three points",),
     ),
+    "geom.no-function": Code(
+        means="the custom node names a function nothing here can load",
+        when="a path that does not resolve, or a function the file does not have",
+        doors=("write it as path/to/file.py:name", "check the name"),
+    ),
+    "geom.not-geometry": Code(
+        means="a custom node returned something that is not geometry",
+        when="a project function returning None, or a value with no vertices and faces "
+        "on it; the rest of the graph has nothing to compose with",
+        doors=("return a mesh, or a mapping of vertices and faces",),
+    ),
     "geom.bad-solid": Code(
         means="the solid's own numbers do not describe a shape",
         when="an annulus whose inner radius is not inside its outer one, or a union of "

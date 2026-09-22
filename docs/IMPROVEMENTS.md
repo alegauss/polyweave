@@ -270,21 +270,6 @@ wants the former, which may mean a rung of its own rather than a parameter.
 
 ## Block G — Geometry as a declaration
 
-### §PW34 An escape hatch that is a node, not a mode
-
-Any format will eventually meet a shape it cannot state, and the framework that forces
-the shape into the format anyway produces worse geometry than the script it replaced. So
-the escape hatch is part of the design rather than an admission of failure. A
-declaration should be able to name a project-supplied function as one node in its tree,
-receiving the declared parameters and returning geometry the rest of the tree composes
-with. That keeps three properties that matter. The parameters stay declared, so the
-search can still reach them. The provenance record still hashes the code, so a change to
-it still invalidates a cache. And the rest of the shape stays data, so only the
-genuinely awkward part is code. The rule to hold to is that the hatch is a node and
-never a mode: a declaration does not become a script because one operation in it is
-custom. Where the same custom node appears in three projects, that is the signal it
-should have been vocabulary, and the backlog should record it as such.
-
 ## Block H — Proof on a real game
 
 ### §PW35 Measure the loop, not the features

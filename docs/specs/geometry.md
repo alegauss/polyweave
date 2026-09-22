@@ -213,13 +213,23 @@ inputs = { along = "face" }
 args   = { thickness = "bevel * 1.5", twist = 12 }
 ```
 
-The function receives resolved arguments and named inputs and returns geometry the rest of
-the graph composes with. Three properties survive:
+The function receives resolved arguments and **named inputs as meshes, not as ids** — it is
+handed the geometry, so it never has to know how the graph is stored. Three properties
+survive, and each is checked rather than hoped for:
 
-- The parameters stay **declared**, so PW32's search can still reach them.
+- The parameters stay **declared**. `args` are expressions over the document's own
+  parameters, resolved before the call like every other field, so PW32's search still
+  reaches `thickness` by turning `bevel`.
 - The function's source is **hashed into provenance**, so changing it invalidates the cache.
+  A custom node whose file changed and whose parameters did not would otherwise come back
+  from the cache as the shape it used to be. A function that is a module on the path rather
+  than a file in the tree is not hashable, and the record says so instead of guessing.
 - The rest of the shape stays **data**. A declaration does not become a script because one
   node in it is custom.
+
+A function that does not load, raises, or returns something that is not geometry is a typed
+refusal naming what it was handed — `geom.no-function` and `geom.not-geometry`. The address
+is the same `path/to/file.py:name` a job's target uses, resolved by the same code.
 
 Where the same custom node appears in three projects, that is the signal it should have been
 vocabulary, and it gets filed as a roadmap line rather than copied a fourth time.

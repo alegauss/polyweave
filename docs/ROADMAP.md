@@ -30,8 +30,6 @@
 
 ## Block G — Geometry as a declaration
 
-- 📋 **PW34** (deps: PW30 ✅) **a declaration that cannot express a shape leaves no way back to code** — Any format will meet a shape it cannot state, and forcing that shape into the format produces worse geometry than the script it replaced. → §PW34
-
 ## Block H — Proof on a real game
 
 - 📋 **PW35** (deps: PW13 ✅) **the plugin's value is asserted and never measured against what it replaced** — Nothing records how long a correct asset took before or after, so there is no way to tell a real improvement from a rearrangement of the same work. → §PW35
