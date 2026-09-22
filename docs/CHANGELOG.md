@@ -19,6 +19,8 @@
 
 ## Block C — The asset compiler
 
+- ✅ **PW12** **what counts as a correct render lives in somebody's head, so it is approved by opinion** — A file per asset states what makes a render of it correct, and every predicate returns a verdict and a margin a search can climb (design recorded in `docs/specs/acceptance-spec.md`).
+
 ## Block D — Fetching from a paid service without surprise
 
 ## Block E — One world with the engine

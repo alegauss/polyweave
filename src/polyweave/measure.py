@@ -16,6 +16,7 @@ caller is never handed a shorter answer than it asked for.
 from __future__ import annotations
 
 import base64
+import math
 from collections.abc import Iterable, Sequence
 from pathlib import Path
 from typing import Any
@@ -54,13 +55,7 @@ COMPUTES: dict[str, Any] = {}
 
 #: Measures the vocabulary declares and no line has built yet, each naming the line that
 #: will. Refusing by name beats returning an answer that is quietly missing a field.
-PENDING = {
-    "region_colour": "PW12 builds the predicates an acceptance spec is made of",
-    "delta_e": "PW12 builds the predicates an acceptance spec is made of",
-    "silhouette_iou": "PW12 builds the predicates an acceptance spec is made of",
-    "silhouette_centroid_offset": "PW12 builds the predicates it compares against",
-    "silhouette_bbox_delta": "PW12 builds the predicates it compares against",
-}
+PENDING: dict[str, str] = {}
 
 #: The set a render answers with unless a caller names others, per `measurements.md`.
 DEFAULT = ("saturation", "luma", "alpha_coverage")
@@ -342,6 +337,199 @@ def _changed_fraction(
     return round(float((field > float(delta) * DELTA_E_FULL).mean()), 6)
 
 
+# -- colour at a place ----------------------------------------------------------------
+
+
+def from_hex(colour: str) -> np.ndarray:
+    """A hex colour as sRGB in 0–1. §6 fixes every authored colour as sRGB."""
+    text = str(colour).strip().lstrip("#")
+    if len(text) == 3:
+        text = "".join(c * 2 for c in text)
+    if len(text) != 6 or any(c not in "0123456789abcdefABCDEF" for c in text):
+        raise PolyweaveError(
+            "spec.bad-colour",
+            f"{colour!r} is not a colour",
+            "write it as #RRGGBB",
+        )
+    return np.array([int(text[i : i + 2], 16) for i in (0, 2, 4)]) / 255.0
+
+
+@_computes("region_colour")
+def _region_colour(image: Image, mask: np.ndarray, **_: Any) -> list[float]:
+    """The mean CIELAB colour over the region.
+
+    Averaged in Lab rather than in sRGB: the mean of two sRGB values is not the colour
+    halfway between them, and "does this read as the right colour" is a perceptual
+    question throughout.
+    """
+    rgb = image.rgba[mask][:, :3].astype(np.float64) / 255.0
+    return [round(float(v), 4) for v in to_lab(rgb).mean(axis=0)]
+
+
+@_computes("delta_e")
+def _delta_e(image: Image, mask: np.ndarray, *, target: Any = None, **_: Any) -> float:
+    """CIEDE2000 between the region's colour and a target.
+
+    Perceptual, because the question being asked is always "does this read as the right
+    colour", and an RGB distance answers a different question. Under 2 is a difference a
+    person has to look for; over 5 is a different colour.
+    """
+    if target is None:
+        raise PolyweaveError(
+            "spec.measure-needs",
+            "delta_e is a distance to a target colour, and none was given",
+            "pass target='#RRGGBB', the colour it should read as",
+        )
+    here = np.array(_region_colour(image, mask))
+    there = to_lab(from_hex(target)) if isinstance(target, str) else np.array(target)
+    return round(ciede2000(here, there), 4)
+
+
+def ciede2000(one: np.ndarray, two: np.ndarray) -> float:
+    """The CIE's 2000 colour difference, between two Lab values."""
+    l1, a1, b1 = (float(v) for v in one)
+    l2, a2, b2 = (float(v) for v in two)
+    c1, c2 = math.hypot(a1, b1), math.hypot(a2, b2)
+    c_bar = (c1 + c2) / 2.0
+    g = 0.5 * (1.0 - math.sqrt(c_bar**7 / (c_bar**7 + 25.0**7))) if c_bar else 0.0
+
+    a1p, a2p = (1 + g) * a1, (1 + g) * a2
+    c1p, c2p = math.hypot(a1p, b1), math.hypot(a2p, b2)
+    h1p = math.degrees(math.atan2(b1, a1p)) % 360.0 if (a1p or b1) else 0.0
+    h2p = math.degrees(math.atan2(b2, a2p)) % 360.0 if (a2p or b2) else 0.0
+
+    dlp = l2 - l1
+    dcp = c2p - c1p
+    if c1p * c2p == 0:
+        dhp = 0.0
+    elif abs(h2p - h1p) <= 180:
+        dhp = h2p - h1p
+    else:
+        dhp = h2p - h1p - 360.0 if h2p > h1p else h2p - h1p + 360.0
+    dHp = 2.0 * math.sqrt(c1p * c2p) * math.sin(math.radians(dhp) / 2.0)
+
+    lp_bar = (l1 + l2) / 2.0
+    cp_bar = (c1p + c2p) / 2.0
+    if c1p * c2p == 0:
+        hp_bar = h1p + h2p
+    elif abs(h1p - h2p) <= 180:
+        hp_bar = (h1p + h2p) / 2.0
+    elif h1p + h2p < 360:
+        hp_bar = (h1p + h2p + 360.0) / 2.0
+    else:
+        hp_bar = (h1p + h2p - 360.0) / 2.0
+
+    t = (
+        1.0
+        - 0.17 * math.cos(math.radians(hp_bar - 30.0))
+        + 0.24 * math.cos(math.radians(2.0 * hp_bar))
+        + 0.32 * math.cos(math.radians(3.0 * hp_bar + 6.0))
+        - 0.20 * math.cos(math.radians(4.0 * hp_bar - 63.0))
+    )
+    sl = 1.0 + (0.015 * (lp_bar - 50.0) ** 2) / math.sqrt(20.0 + (lp_bar - 50.0) ** 2)
+    sc = 1.0 + 0.045 * cp_bar
+    sh = 1.0 + 0.015 * cp_bar * t
+    rt = (
+        -2.0
+        * math.sqrt(cp_bar**7 / (cp_bar**7 + 25.0**7))
+        * math.sin(math.radians(60.0 * math.exp(-(((hp_bar - 275.0) / 25.0) ** 2))))
+        if cp_bar
+        else 0.0
+    )
+    return math.sqrt(
+        (dlp / sl) ** 2
+        + (dcp / sc) ** 2
+        + (dHp / sh) ** 2
+        + rt * (dcp / sc) * (dHp / sh)
+    )
+
+
+# -- silhouette ---------------------------------------------------------------------
+
+
+def _reference_mask(image: Image, against: Any, alpha_floor: float) -> np.ndarray:
+    """The reference's own silhouette, scaled to the image being measured.
+
+    Both masks are normalised to the same dimensions first, so a render and a drawing of
+    different sizes still compare — which is the whole point of measuring a shape rather
+    than a file.
+    """
+    other = _other(against, "a silhouette measure")
+    if other.size == image.size:
+        return other.subject(alpha_floor)
+    from PIL import Image as PILImage
+
+    scaled = PILImage.fromarray(other.rgba, "RGBA").resize(image.size, PILImage.NEAREST)
+    edge = round(alpha_floor * 255)
+    return np.asarray(scaled, dtype=np.uint8)[:, :, 3] > edge
+
+
+def _boxes(mask: np.ndarray) -> tuple[int, int, int, int] | None:
+    rows = np.flatnonzero(mask.any(axis=1))
+    columns = np.flatnonzero(mask.any(axis=0))
+    if not rows.size or not columns.size:
+        return None
+    return (int(columns[0]), int(rows[0]), int(columns[-1]), int(rows[-1]))
+
+
+@_computes("silhouette_iou")
+def _silhouette_iou(
+    image: Image,
+    mask: np.ndarray,
+    *,
+    against: Any = None,
+    alpha_floor: float = 0.0,
+    **_,
+) -> float:
+    """Intersection over union of the two alpha masks.
+
+    The measure that would have caught the tall dome returned for a wide low cap, before
+    the credits were spent.
+    """
+    here = image.subject(alpha_floor) & mask
+    there = _reference_mask(image, against, alpha_floor) & mask
+    union = int((here | there).sum())
+    if not union:
+        return 1.0  # two empty silhouettes are the same silhouette
+    return round(float(int((here & there).sum()) / union), 6)
+
+
+@_computes("silhouette_centroid_offset")
+def _silhouette_centroid_offset(
+    image: Image,
+    mask: np.ndarray,
+    *,
+    against: Any = None,
+    alpha_floor: float = 0.0,
+    **_,
+) -> float:
+    """How far apart the two silhouettes' middles are, in pixels."""
+    here = image.subject(alpha_floor) & mask
+    there = _reference_mask(image, against, alpha_floor) & mask
+    if not here.any() or not there.any():
+        return 0.0
+    a = np.argwhere(here).mean(axis=0)
+    b = np.argwhere(there).mean(axis=0)
+    return round(float(np.hypot(*(a - b))), 4)
+
+
+@_computes("silhouette_bbox_delta")
+def _silhouette_bbox_delta(
+    image: Image,
+    mask: np.ndarray,
+    *,
+    against: Any = None,
+    alpha_floor: float = 0.0,
+    **_,
+) -> float:
+    """The largest per-edge difference between the two bounding boxes, in pixels."""
+    here = _boxes(image.subject(alpha_floor) & mask)
+    there = _boxes(_reference_mask(image, against, alpha_floor) & mask)
+    if here is None or there is None:
+        return 0.0
+    return float(max(abs(a - b) for a, b in zip(here, there, strict=True)))
+
+
 def statistics(values: np.ndarray) -> dict[str, float]:
     """The five a distribution is reported as, per `measurements.md`."""
     p1, p50, p99 = np.percentile(values, [1, 50, 99])
@@ -447,7 +635,7 @@ def measure(
 
     out = []
     for name in measures:
-        base = _resolve(name)
+        base = resolve(name)
         if base in DISTRIBUTIONS:
             values = DISTRIBUTIONS[base](image, mask, alpha_floor=alpha_floor, **params)
             for suffix, value in statistics(values).items():
@@ -468,7 +656,7 @@ def _taken(name: str, where: Any, rung: str | None, value: float) -> dict:
     }
 
 
-def _resolve(name: str) -> str:
+def resolve(name: str) -> str:
     """The measure a name asks for, or a refusal that says why it cannot be given."""
     base = base_measure(name)
     if base in COMPUTES:

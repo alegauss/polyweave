@@ -456,6 +456,69 @@ CODES: dict[str, Code] = {
         "a question nobody asked",
         doors=("pass the argument the measure names",),
     ),
+    "spec.unknown-field": Code(
+        means="the acceptance spec names a field nothing reads",
+        when="a misspelled key in a spec or a predicate; refused rather than ignored, "
+        "or a claim would read as checked while it was not",
+        doors=("name a declared field",),
+    ),
+    "spec.missing": Code(
+        means="the asset has no acceptance spec",
+        when="a check on an asset nobody has written the predicates for",
+        doors=("write one beside the asset", "write one under [paths] specs"),
+    ),
+    "spec.malformed": Code(
+        means="the acceptance spec is not readable as TOML",
+        when="a syntax error in the spec file",
+        doors=("fix the syntax the detail points at",),
+    ),
+    "spec.no-predicates": Code(
+        means="the spec states nothing, so it checks nothing",
+        when="a spec file with no predicate in it",
+        doors=("add a predicate naming a measure and a bound",),
+    ),
+    "spec.anonymous-predicate": Code(
+        means="a predicate has no id",
+        when="a predicate written without one; a search reports a score per predicate "
+        "and the trace addresses them by name, so an anonymous one cannot be discussed",
+        doors=("give the predicate an id",),
+    ),
+    "spec.duplicate-id": Code(
+        means="two predicates share one id",
+        when="a spec that was copied and not renamed",
+        doors=("give each predicate a name of its own",),
+    ),
+    "spec.no-measure": Code(
+        means="a predicate names no measure, so there is nothing to compute",
+        when="a predicate with bounds and nothing to bound",
+        doors=("name a measure from the vocabulary",),
+    ),
+    "spec.no-bound": Code(
+        means="nothing bounds the value, so nothing can fail",
+        when="a predicate with neither min nor max, or a search range open at one end",
+        doors=("give it a min, a max, or both",),
+    ),
+    "spec.bad-bound": Code(
+        means="a bound is not a number",
+        when="an expression where a bound belongs; a predicate states a bound, and "
+        "never an expression",
+        doors=("write a number", "add the measure that answers the question"),
+    ),
+    "spec.bad-colour": Code(
+        means="the target is not a colour",
+        when="a name or a malformed hex where #RRGGBB was expected",
+        doors=("write it as #RRGGBB",),
+    ),
+    "spec.unbounded-measure": Code(
+        means="the measure answers with something a bound cannot hold",
+        when="a bound on a measure that returns a set or a colour rather than a number",
+        doors=("bound a statistic of it instead",),
+    ),
+    "spec.rung-too-low": Code(
+        means="the render was taken lower on the ladder than the spec allows",
+        when="a verdict taken at the sphere on an asset whose spec names a floor",
+        doors=("render at the rung the spec needs",),
+    ),
     "spec.size-mismatch": Code(
         means="two images being compared are not the same size",
         when="a comparison between renders taken at different rungs",

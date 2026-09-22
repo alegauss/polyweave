@@ -53,15 +53,33 @@ is a spec that silently checks nothing, which is §PW19's lesson applied one lay
 **Every predicate has an `id`.** The search reports a score per predicate and the trace
 (§PW15) addresses them by name, so an anonymous predicate cannot be discussed.
 
-**`min`, `max` and `target` are the only comparisons.** A predicate states a bound, not an
-expression. Anything needing more than a bound is a measure that does not exist yet, and the
-honest response is to add the measure rather than to widen this grammar.
+**`min` and `max` are the only comparisons.** A predicate states a bound, not an expression.
+Anything needing more than a bound is a measure that does not exist yet, and the honest
+response is to add the measure rather than to widen this grammar. A predicate with neither
+bound is refused: nothing could fail it.
+
+**`target`, `against`, `display` and `delta` are arguments to the measure**, not
+comparisons — the colour `delta_e` is measured to, the reference a silhouette is compared
+with, the size `luma_bands` counts at. Every other key is refused where it is written, so a
+misspelled field is never a claim that reads as checked while it is not.
+
+**A measure whose answer is not a number cannot be bounded.** `region_colour` is a colour and
+`saturation` is a set; a bound on either is refused and told to name a statistic instead.
 
 **Bounds produce a margin, not only a verdict.** Each predicate yields pass/fail *and* a
 value in `[0, 1]` for how comfortably it passed, normalised against the bound. A pure boolean
 gives a search a cliff and nothing to climb; the margin is what makes PW13's parameter search
 converge on something rather than wander. The overall score is the weighted mean of the
 margins, with `weight` defaulting to 1.
+
+The margin is **continuous on both sides of the bound**, so a failing predicate still reports
+how close it came: against a `min` it is `value / min` below the bound and 1 at or above it,
+and against a `max` it is `max / value` above the bound and 1 at or below it. A predicate
+carrying both takes the worse of the two.
+
+**`rung` is a floor.** It raises the rung a verdict on this asset may be taken at and never
+lowers one the predicates themselves require, and a verdict offered from lower down is
+refused (`spec.rung-too-low`) rather than quietly accepted.
 
 **`[search.<param>]` is the whole permission.** A parameter not named there is not searched,
 whatever the optimiser would like. This is what stops a search reaching a value that is wrong

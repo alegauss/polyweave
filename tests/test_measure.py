@@ -138,12 +138,21 @@ def test_a_measure_outside_the_vocabulary_is_refused(tmp_path):
     assert caught.value.code == "spec.unknown-measure"
 
 
-def test_a_declared_measure_nothing_computes_yet_says_which_line_builds_it(tmp_path):
-    """Refused by name beats an answer quietly missing the field that was asked for."""
+def test_a_declared_measure_nothing_computes_yet_says_which_line_builds_it(
+    tmp_path, monkeypatch
+):
+    """Refused by name beats an answer quietly missing the field that was asked for.
+
+    Nothing is pending today — the vocabulary is entirely built — so the door is proven
+    against a measure declared pending for the length of this test.
+    """
+    monkeypatch.setitem(
+        measure.PENDING, "thickness", "PW99 measures how thick it reads"
+    )
     with pytest.raises(PolyweaveError) as caught:
-        measure.measure(png(tmp_path), ["delta_e"])
+        measure.measure(png(tmp_path), ["thickness"])
     assert caught.value.code == "spec.unmeasured"
-    assert "PW12" in caught.value.remedy
+    assert "PW99" in caught.value.remedy
 
 
 def test_a_statistic_resolves_to_its_measure(tmp_path):
@@ -154,9 +163,9 @@ def test_a_statistic_resolves_to_its_measure(tmp_path):
 
 def test_what_can_be_measured_now_is_answerable(tmp_path):
     found = measure.available()
-    assert {"alpha_coverage", "saturation", "luma"} <= set(found["computed"])
-    assert "delta_e" in found["pending"]
-    assert all(v for v in found["pending"].values())
+    assert {"alpha_coverage", "saturation", "luma", "delta_e"} <= set(found["computed"])
+    # Every name the vocabulary declares is computed, so nothing is pending.
+    assert found["pending"] == {}
 
 
 # -- the picture comes back too --------------------------------------------------------

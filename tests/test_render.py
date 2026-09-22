@@ -281,17 +281,13 @@ def test_the_measurements_asked_for_come_back_with_the_render(project):
     assert 0.0 < out["measurements"][0]["value"] < 1.0
 
 
-def test_a_measure_that_is_not_built_yet_refuses_the_whole_call(project):
-    """A short answer that looks complete is worse than a refusal naming the line."""
+def test_a_measure_outside_the_vocabulary_refuses_the_whole_call(project):
+    """A short answer that looks complete is worse than a refusal naming the door."""
     with pytest.raises(PolyweaveError) as caught:
         render.bake(
-            Reported(),
-            out="x.png",
-            rung="sphere",
-            measures=["delta_e"],
-            root=project,
+            Reported(), out="x.png", rung="sphere", measures=["vibes"], root=project
         )
-    assert caught.value.code == "spec.unmeasured"
+    assert caught.value.code == "spec.unknown-measure"
 
 
 def test_the_picture_can_be_left_on_disk(project):

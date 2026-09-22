@@ -27,7 +27,7 @@ export interface GeneratedNonGoal {
 export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 6 },
   { block: "B", title: "Seeing the result cheaply", open: 2 },
-  { block: "C", title: "The asset compiler", open: 4 },
+  { block: "C", title: "The asset compiler", open: 3 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 6 },
   { block: "E", title: "One world with the engine", open: 4 },
   { block: "F", title: "Motion", open: 4 },
@@ -93,18 +93,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW12",
-    block: "C",
-    symptom: "what counts as a correct render lives in somebody's head, so it is approved by opinion",
-    why: "Nothing states that a face must read the drawing's own colour or that a silhouette must land within three pixels, so no later change can be checked against it.",
-    deps: [],
-  },
-  {
     id: "PW13",
     block: "C",
     symptom: "a rig number is found by rendering, looking, and changing it by hand, one sample at a time",
     why: "Cottony's fourteen tuned constants were each discovered that way at two minutes a sample, which is the single largest cost in making an asset.",
-    deps: ["PW12"],
+    deps: [],
   },
   {
     id: "PW14",

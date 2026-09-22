@@ -191,22 +191,6 @@ lands.
 
 ## Block C — The asset compiler
 
-### §PW12 The acceptance spec
-
-Nothing in Cottony's repository states what makes a render correct. The knowledge
-exists. The face should read the drawing's own colour, the silhouette should match the
-drawn outline, the lobes should separate, the surface should read as cloth at the size
-the screen draws it. But it lives in commit messages and in a person's memory, so no
-later change can be checked against it and no search can aim at it. The spec is a file
-per asset stating the predicates directly: this region reads this colour within this
-tolerance, the silhouette's intersection over union against this reference is above this
-figure, the 99th percentile of saturation is at least this. Each predicate is one of the
-measurements Block B provides, so the vocabulary is closed and every claim is
-machine-checkable. This is the line that turns judgement into a gate, and everything
-else in this block depends on it existing first. Written for one asset it documents
-intent; written for all of them it is a regression suite nobody had to invent
-separately.
-
 ### §PW13 Search the parameters, do not guess them
 
 Fourteen tuned constants in Cottony's rig were each found the same way: render, look,

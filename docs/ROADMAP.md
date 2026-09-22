@@ -16,8 +16,7 @@
 
 ## Block C — The asset compiler
 
-- 📋 **PW12** (deps: PW9 ✅) **what counts as a correct render lives in somebody's head, so it is approved by opinion** — Nothing states that a face must read the drawing's own colour or that a silhouette must land within three pixels, so no later change can be checked against it. → §PW12
-- 📋 **PW13** (deps: PW7 ✅, PW12) **a rig number is found by rendering, looking, and changing it by hand, one sample at a time** — Cottony's fourteen tuned constants were each discovered that way at two minutes a sample, which is the single largest cost in making an asset. → §PW13
+- 📋 **PW13** (deps: PW7 ✅, PW12 ✅) **a rig number is found by rendering, looking, and changing it by hand, one sample at a time** — Cottony's fourteen tuned constants were each discovered that way at two minutes a sample, which is the single largest cost in making an asset. → §PW13
 - 📋 **PW14** (deps: PW6 ✅, PW13) **a search re-renders states it has already rendered** — A parameter sweep revisits neighbourhoods, and without a cache keyed on the inputs the same picture is paid for as many times as the search returns to it. → §PW14
 - 📋 **PW15** (deps: PW13) **a search reports the winning numbers and not what it rejected** — A result nobody can inspect is one nobody can overrule, and a rig tuned against the wrong criterion looks exactly like a rig tuned against the right one. → §PW15
 
