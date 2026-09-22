@@ -17,7 +17,7 @@ poll   → { job, stage, progress?, started_at, elapsed_s }
 result → { job, status: "done" | "failed", … }   # blocks only if asked to wait
 cancel → { job, status: "cancelled" }
 list   → [ … ]                                   # every job this project knows about
-sweep  → { reaped, removed }                     # collect what was abandoned
+sweep  → { reaped, removed, orphans }            # collect what was abandoned
 ```
 
 - `stage` is a short vocabulary per operation kind (`queued`, `building`, `rendering`,
@@ -36,6 +36,16 @@ sweep  → { reaped, removed }                     # collect what was abandoned
 - **An abandoned job is collectable, not a leak.** `sweep` fails every job whose worker is
   gone, kills the descendants that outlived it, and deletes the records of jobs that
   finished long enough ago to be nobody's business.
+- **A sweep cannot walk a tree, so the worker leaves a trail instead.** `cancel` walks the
+  tree from a living worker; by the time a sweep finds a job abandoned there is no living
+  worker to walk from, and on Windows nothing at all connects a dead parent to its
+  children. So a worker writes each process it spawns into `.polyweave/jobs/<job>.kids`
+  **before** it waits on it — killed a millisecond later, it has still left the trail —
+  and a sweep ends those pids directly, reporting how many as `orphans`. Each pid is
+  recorded with the process's own start time and is ended **only while that still
+  matches**: killing a stranger who inherited the number is a worse failure than leaking a
+  renderer, and a sweep that might do it is one nobody will run. A pid the OS will not
+  date is left alone rather than guessed at.
 - Concurrency is the caller's: four handles is four parallel samples, bounded by
   `[render] max_parallel` in the project config. A `start` beyond that bound is refused with
   `job.at-capacity` rather than queued, because a queue nobody can see is a wait by another

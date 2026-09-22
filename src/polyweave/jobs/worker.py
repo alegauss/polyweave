@@ -21,6 +21,7 @@ from pathlib import Path
 from typing import Any
 
 from ..errors import PolyweaveError, guard
+from . import children
 from . import record as rec
 from .report import Report
 
@@ -133,6 +134,9 @@ def run(record_path: Path) -> int:
         return 2
 
     paths = rec.JobPaths(Path(state["work"]))
+    # Anything this worker spawns is written down before it is waited on, because a
+    # sweep after this worker dies has no tree left to walk from (§PW37).
+    children.watching(paths.kids(state["job"]))
     stop = threading.Event()
     beat = threading.Thread(
         target=_heartbeat,
@@ -175,6 +179,7 @@ def run(record_path: Path) -> int:
         return 1
     finally:
         stop.set()
+        children.watching(None)
 
 
 def main(argv: list[str] | None = None) -> int:

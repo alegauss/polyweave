@@ -40,6 +40,7 @@ from typing import Any
 from .config import load
 from .errors import PolyweaveError
 from .files import write_atomic
+from .jobs import children
 
 #: Every spelling the engine has for "the script is broken". This is the engine's own
 #: vocabulary and not a project's convention, which is why it is the one pattern here.
@@ -111,17 +112,33 @@ def _errors(output: str, pattern: re.Pattern) -> list[dict]:
 
 
 def _launch(command: list[str], *, cwd: Path, timeout: float) -> tuple[str, int]:
-    done = subprocess.run(
+    """Start the engine and wait for it, leaving a trail first.
+
+    `Popen` rather than `subprocess.run` for one reason: the pid has to be written down
+    **before** anything waits on it (§PW37). A worker killed while waiting here takes
+    its handle to this process with it, and on Windows nothing then connects the two —
+    so the pid in the job's trail is all a later sweep has to go on.
+    """
+    with subprocess.Popen(
         command,
-        check=False,  # the printed line is the verdict, not the exit code
         cwd=cwd,
-        capture_output=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
         text=True,
         encoding="utf-8",
         errors="replace",
-        timeout=timeout,
-    )
-    return done.stdout + done.stderr, int(done.returncode)
+    ) as running:
+        children.watch(running.pid)
+        try:
+            output, _ = running.communicate(timeout=timeout)
+        except subprocess.TimeoutExpired as expired:
+            running.kill()
+            # `communicate` raises with nothing attached, and what the engine printed
+            # before it hung is the most useful part of a timeout. Read it after the
+            # kill and put it back on the exception the caller already handles.
+            expired.stdout, _ = running.communicate()
+            raise
+    return output or "", int(running.returncode)
 
 
 def run(

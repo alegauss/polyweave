@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Any
 
 from ..errors import PolyweaveError
-from . import process
+from . import children, process
 from . import record as rec
 from .stages import is_terminal, stages_for
 
@@ -244,6 +244,11 @@ class JobStore:
             return self._view(state, pid=pid)
         process.kill_tree(pid)
         process.wait_gone(pid)
+        # The tree walk above should have taken them, and on Windows it takes them only
+        # while the worker is still alive to be walked from. This is the same belt the
+        # sweep wears, worn here because a cancel that leaves a renderer running is the
+        # failure §PW37 names and the trail is already written (§PW37).
+        self._end_orphans(job)
         state = self._read(job)
         if is_terminal(state["stage"]):
             return self._view(state, pid=pid)
@@ -253,6 +258,7 @@ class JobStore:
         """Collect what was abandoned: dead workers, their orphans, and old records."""
         reaped: list[str] = []
         removed: list[str] = []
+        orphans = 0
         now = time.time()
         for job in self.paths.ids():
             state = rec.read_record(self.paths.record(job))
@@ -264,6 +270,7 @@ class JobStore:
                     # The worker is gone but its renderer may not be, and on POSIX the
                     # group id outlives the leader.
                     process.kill_tree(pid)
+                    orphans += self._end_orphans(job)
                     self._reap(state, pid)
                     reaped.append(job)
                 continue
@@ -276,7 +283,27 @@ class JobStore:
                         p.unlink(missing_ok=True)
                 if not self.paths.record(job).exists():
                     removed.append(job)
-        return {"reaped": reaped, "removed": removed}
+        return {"reaped": reaped, "removed": removed, "orphans": orphans}
+
+    def _end_orphans(self, job: str) -> int:
+        """End what a dead worker left running, by pid rather than by tree.
+
+        §PW37: `cancel` walks the tree from a living worker, and by the time a sweep
+        finds a job abandoned there is no living worker to walk from. On Windows nothing
+        at all connects a dead parent to its children. So the worker wrote each pid down
+        before waiting on it, and this ends those directly — only where the recorded
+        start time still matches, because ending a stranger who inherited the number is
+        a worse failure than leaking a renderer.
+        """
+        ended = 0
+        for pid, since in children.ended(self.paths.kids(job)):
+            if since is None:
+                # The OS would not say when it started, so this cannot be told apart
+                # from a stranger. Left alone and reported by `list`, not killed.
+                continue
+            if process.end(pid, since=since):
+                ended += 1
+        return ended
 
     # -- the state itself -------------------------------------------------------
 

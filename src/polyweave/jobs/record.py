@@ -6,11 +6,14 @@ that made it. Four files carry one job, and each has exactly one writer:
     <job>.json   the record         — the worker, once running; the creator at birth
     <job>.pid    the OS process id  — the creator, before `start` returns
     <job>.beat   a heartbeat        — the worker's heartbeat thread
+    <job>.kids   what it spawned    — the worker, before it waits on each one
     <job>.log    stdout and stderr  — the worker's own streams
 
 The pid and the heartbeat are separate files rather than fields so that the creator and
 the worker never write the same file: a merge with two writers loses one of them, and
-the loss would be the pid a `cancel` needs.
+the loss would be the pid a `cancel` needs. `.kids` follows the same rule for the same
+reason, and the worker is its only writer because the worker is the only thing that
+spawns a renderer.
 
 The atomic write and the retrying read live in `polyweave.files`, because the cache
 needs the same two and one home for them beats two copies.
@@ -19,6 +22,7 @@ needs the same two and one home for them beats two copies.
 from __future__ import annotations
 
 import json
+import os
 import secrets
 import time
 from datetime import UTC, datetime
@@ -57,11 +61,20 @@ class JobPaths:
     def beat(self, job: str) -> Path:
         return self.jobs / f"{job}.beat"
 
+    def kids(self, job: str) -> Path:
+        return self.jobs / f"{job}.kids"
+
     def log(self, job: str) -> Path:
         return self.jobs / f"{job}.log"
 
     def all_of(self, job: str) -> list[Path]:
-        return [self.record(job), self.pid(job), self.beat(job), self.log(job)]
+        return [
+            self.record(job),
+            self.pid(job),
+            self.beat(job),
+            self.kids(job),
+            self.log(job),
+        ]
 
     def ids(self) -> list[str]:
         if not self.jobs.is_dir():
@@ -92,6 +105,42 @@ def read_beat(path: Path) -> float | None:
         return float(text.strip())
     except ValueError:
         return None
+
+
+def add_kid(path: Path, pid: int, since: float | None) -> None:
+    """Record one spawned process, before anybody waits on it.
+
+    Appended rather than rewritten, and appended *before* the wait: a worker killed a
+    millisecond after spawning has still left the trail, which is the whole difference
+    between a leak that is collectable and one that is not (§PW37). A start time that
+    could not be read is written as `-`, and a sweep leaves those alone.
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    line = f"{pid} {'-' if since is None else repr(since)}\n"
+    with path.open("a", encoding="utf-8") as fh:
+        fh.write(line)
+        fh.flush()
+        os.fsync(fh.fileno())
+
+
+def read_kids(path: Path) -> list[tuple[int, float | None]]:
+    """Every process this job spawned, as `(pid, start time)`.
+
+    A torn or half-written line is skipped rather than raising: this is read by a sweep
+    cleaning up after a crash, which is exactly when a file is most likely to be torn,
+    and one unreadable line must not stop the others being collected.
+    """
+    text = read_text_retrying(path)
+    if text is None:
+        return []
+    out: list[tuple[int, float | None]] = []
+    for line in text.splitlines():
+        pid, _, since = line.strip().partition(" ")
+        try:
+            out.append((int(pid), None if since.strip() in ("", "-") else float(since)))
+        except ValueError:
+            continue
+    return out
 
 
 def read_pid(path: Path) -> int | None:

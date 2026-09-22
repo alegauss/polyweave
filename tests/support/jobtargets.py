@@ -38,6 +38,34 @@ def sleeper(report, seconds=30.0):
     return "woke up"
 
 
+def spawner(report, seconds=120.0):
+    """Start a real child and wait on it, the way an engine capture does.
+
+    §PW37 is about what happens to this child when the worker above it dies, so the
+    child has to be a real process: the whole question is what the operating system does
+    with it once its parent is gone, and a stand-in would answer a different question.
+    """
+    import subprocess
+    import sys
+
+    from polyweave.jobs import children
+
+    child = subprocess.Popen(  # noqa: S603 - a sleep, with no shell and no input
+        [sys.executable, "-c", f"import time; time.sleep({seconds})"],
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    children.watch(child.pid)
+    report.stage("rendering")
+    marker = os.environ.get("POLYWEAVE_TEST_MARKER")
+    if marker:
+        with open(marker, "w", encoding="utf-8") as fh:
+            fh.write(str(child.pid))
+    child.wait()
+    return "the child finished"
+
+
 def raiser(report):
     """Fail the way most code fails: an exception nobody typed."""
     raise ValueError("the boolean left no faces")

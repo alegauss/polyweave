@@ -253,6 +253,104 @@ def test_sweep_reaps_an_abandoned_job(store, target_path):
     assert store.poll(job)["error"]["code"] == "job.worker-gone"
 
 
+# -- a renderer whose parent is gone (§PW37) -----------------------------------
+
+
+def test_a_worker_writes_down_what_it_spawned_before_waiting_on_it(
+    store, target_path, tmp_path
+):
+    """The trail has to exist before the wait, or a worker killed a moment later
+    takes the only handle to its child with it."""
+    marker = tmp_path / "child.pid"
+    handle = start(
+        store,
+        "spawner",
+        target_path,
+        args={"seconds": 120},
+        env={"POLYWEAVE_TEST_MARKER": str(marker)},
+    )
+    wait_for(lambda: store.poll(handle["job"])["stage"] == "rendering")
+
+    from polyweave.jobs import record as rec
+
+    kids = rec.read_kids(store.work / "jobs" / f"{handle['job']}.kids")
+    assert [pid for pid, _ in kids] == [int(marker.read_text())]
+    assert kids[0][1] is not None, "and with a start time, or it is only a number"
+
+
+def test_a_sweep_ends_the_renderer_a_dead_worker_left_running(
+    store, target_path, tmp_path
+):
+    """The failure §PW37 names: on Windows nothing connects a dead parent to its
+    children, so the render goes on spending a core nobody is watching."""
+    marker = tmp_path / "child.pid"
+    handle = start(
+        store,
+        "spawner",
+        target_path,
+        args={"seconds": 120},
+        env={"POLYWEAVE_TEST_MARKER": str(marker)},
+    )
+    job = handle["job"]
+    wait_for(lambda: store.poll(job)["stage"] == "rendering")
+    child = int(marker.read_text())
+
+    from polyweave.jobs import process
+
+    # The worker alone, not its tree: a tree walk is exactly what a sweep does not have,
+    # and on POSIX taking the group would hide the bug by killing the child too.
+    process.end(handle["pid"])
+    process.wait_gone(handle["pid"])
+    assert process.alive(child), "the orphan outlives its parent, which is the bug"
+
+    swept = store.sweep()
+    assert swept["reaped"] == [job]
+    assert swept["orphans"] == 1
+    assert process.wait_gone(child, 5.0), "and the sweep is what ends it"
+
+
+def test_a_recorded_pid_that_belongs_to_somebody_else_now_is_left_alone(store):
+    """Killing a stranger is a worse failure than leaking a renderer, and a sweep
+    that might do it is one nobody will run."""
+    from polyweave.jobs import process
+    from polyweave.jobs import record as rec
+
+    assert not process.end(os.getpid(), since=1.0), "a start time nothing matches"
+    assert process.alive(os.getpid())
+
+    # And a pid the OS would not date is skipped rather than guessed at.
+    kids = store.work / "jobs" / "j_none.kids"
+    kids.parent.mkdir(parents=True, exist_ok=True)
+    rec.add_kid(kids, os.getpid(), None)
+    assert rec.read_kids(kids) == [(os.getpid(), None)]
+
+
+def test_a_process_can_be_told_apart_from_a_stranger_that_reused_its_number():
+    """The reuse problem the heartbeat solves for a worker, for its children."""
+    from polyweave.jobs import process
+
+    mine = process.started_at(os.getpid())
+    assert mine is not None, "this platform must be able to date a process"
+    assert process.started_at(os.getpid()) == mine, "and date it the same way twice"
+
+
+def test_a_torn_trail_does_not_stop_the_rest_being_collected(tmp_path):
+    """A sweep runs after a crash, which is when a file is most likely to be torn."""
+    from polyweave.jobs import record as rec
+
+    trail = tmp_path / "j_x.kids"
+    trail.write_text("123 4.0\nnot-a-pid\n456 -\n", encoding="utf-8")
+    assert rec.read_kids(trail) == [(123, 4.0), (456, None)]
+
+
+def test_nothing_is_recorded_outside_a_worker(tmp_path):
+    """`watch` is called wherever something spawns, job or no job."""
+    from polyweave.jobs import children
+
+    assert children.watched() is None
+    children.watch(os.getpid())  # no job, so nowhere to write and nothing raised
+
+
 def test_sweep_collects_an_old_record(store, target_path):
     handle = start(store, "immediate", target_path)
     job = handle["job"]

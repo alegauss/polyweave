@@ -24,6 +24,7 @@ if WINDOWS:  # pragma: no cover - platform-specific
 
     _SYNCHRONIZE = 0x00100000
     _PROCESS_TERMINATE = 0x0001
+    _PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
     _WAIT_TIMEOUT = 0x00000102
     _ERROR_ACCESS_DENIED = 5
 
@@ -38,6 +39,14 @@ if WINDOWS:  # pragma: no cover - platform-specific
     _k32.TerminateProcess.restype = wintypes.BOOL
     _k32.CloseHandle.argtypes = (wintypes.HANDLE,)
     _k32.CloseHandle.restype = wintypes.BOOL
+    _k32.GetProcessTimes.argtypes = (
+        wintypes.HANDLE,
+        ctypes.POINTER(wintypes.FILETIME),
+        ctypes.POINTER(wintypes.FILETIME),
+        ctypes.POINTER(wintypes.FILETIME),
+        ctypes.POINTER(wintypes.FILETIME),
+    )
+    _k32.GetProcessTimes.restype = wintypes.BOOL
 
 
 def alive(pid: int | None) -> bool:
@@ -76,6 +85,84 @@ def alive(pid: int | None) -> bool:
         return False
     except PermissionError:
         return True
+    return True
+
+
+def started_at(pid: int | None) -> float | None:
+    """When `pid`'s process began, or None where the OS will not say.
+
+    §PW37 needs this because a pid on its own is not an identity. A number recorded
+    minutes ago may belong to a stranger by the time a sweep reads it, and ending a
+    stranger's process is a worse failure than leaking a renderer — bad enough that a
+    sweep which might do it is one nobody will run. The start time is what the reuse
+    cannot fake, exactly as the heartbeat is for the worker.
+
+    The units are the OS's own, compared for equality and never for duration: Windows
+    counts 100-nanosecond intervals from 1601 and Linux counts clock ticks since boot,
+    and converting either to a wall clock introduces a rounding this must not have.
+
+    None where it cannot be read, and a caller that needs it must treat None as "do not
+    touch" rather than as "no match".
+    """
+    if not pid or pid <= 0:
+        return None
+    if WINDOWS:  # pragma: no cover - platform-specific
+        handle = _k32.OpenProcess(_PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
+        if not handle:
+            return None
+        try:
+            created = wintypes.FILETIME()
+            rest = [wintypes.FILETIME() for _ in range(3)]
+            ok = _k32.GetProcessTimes(
+                handle,
+                ctypes.byref(created),
+                ctypes.byref(rest[0]),
+                ctypes.byref(rest[1]),
+                ctypes.byref(rest[2]),
+            )
+            if not ok:
+                return None
+            return float((created.dwHighDateTime << 32) | created.dwLowDateTime)
+        finally:
+            _k32.CloseHandle(handle)
+    try:
+        # Field 22 of /proc/<pid>/stat, counting from 1. Field 2 is the executable name
+        # in parentheses and may itself contain spaces and parentheses, so the split
+        # starts after the last `)` rather than at the first space.
+        stat = Path(f"/proc/{pid}/stat").read_text(encoding="utf-8", errors="replace")
+        fields = stat[stat.rfind(")") + 1 :].split()
+        return float(fields[19])
+    except (OSError, IndexError, ValueError):
+        return None
+
+
+def end(pid: int | None, *, since: float | None = None) -> bool:
+    """End one process, and only if it is still the one that was recorded.
+
+    Unlike `kill_tree` this walks nothing: it is for a child whose parent is already
+    gone, where there is no tree left to walk from (§PW37). `since` is what that child's
+    `started_at` returned when it was recorded, and a mismatch means the number has been
+    reused and this is somebody else's process.
+    """
+    if not alive(pid):
+        return False
+    if since is not None and started_at(pid) != since:
+        return False
+    if WINDOWS:  # pragma: no cover - platform-specific
+        handle = _k32.OpenProcess(_PROCESS_TERMINATE, False, pid)
+        if not handle:
+            return False
+        try:
+            return bool(_k32.TerminateProcess(handle, 1))
+        finally:
+            _k32.CloseHandle(handle)
+    for sig in (signal.SIGTERM, signal.SIGKILL):
+        try:
+            os.kill(pid, sig)
+        except OSError:
+            return True  # already gone between the check and the signal
+        if wait_gone(pid, 2.0 if sig == signal.SIGTERM else 0.0):
+            return True
     return True
 
 
