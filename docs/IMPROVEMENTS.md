@@ -142,20 +142,6 @@ is one stray edge pixel is empty for every purpose and passes.
 
 ## Block B — Seeing the result cheaply
 
-### §PW8 The picture comes back with the numbers
-
-Judging a render is one question with two halves: does it look right, and by how much is
-it off. Today that is a render call, then a file read to see the image, then a separate
-measurement run. Three calls, two of which exist only because the first returned a path
-instead of an answer. A render call should return the image itself alongside its
-measurements, so the verdict is formed in a single turn. This matters most in a sweep,
-where the number of turns is the cost: eight samples at three calls each is twenty-four
-round trips for what should be eight. Two details decide whether it works. The image has
-to come back at a size worth looking at rather than a thumbnail, which argues for the
-preview rung being the default resolution and the full render being asked for by name.
-And the measurements have to be the ones a verdict actually needs, which the other lines
-in this block define, rather than whatever happened to be cheap to compute.
-
 ### §PW9 A look is a distribution
 
 Cottony's board was asserted to be washed out against the concept art. Measured, the

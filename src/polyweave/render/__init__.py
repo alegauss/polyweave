@@ -15,7 +15,7 @@ import time
 from pathlib import Path
 from typing import Annotated
 
-from .. import post, provenance
+from .. import measure, post, provenance
 from ..config import load
 from ..describe import Param, operation
 from ..errors import PolyweaveError
@@ -120,6 +120,15 @@ def bake(
     material: Annotated[
         dict, Param("Principled BSDF inputs to put on the subject")
     ] = None,
+    measures: Annotated[
+        list, Param("which measurements to take of the render, in the same call")
+    ] = (),
+    region: Annotated[
+        str, Param("where to measure: frame, subject, a rectangle, or a mask file")
+    ] = "",
+    inline: Annotated[
+        bool, Param("carry the picture back with the numbers, base64 encoded")
+    ] = True,
     azimuth: Annotated[
         float,
         Param("where the camera sits around the subject", lo=-360, hi=360, unit="deg"),
@@ -208,12 +217,24 @@ def bake(
         seed=chosen["seed"],
     )
 
-    measured = post.check(
+    floor_alpha = float(config.get("tolerance.alpha_floor"))
+    asserted = post.check(
         "render",
         out_path,
         size=(chosen["size"], chosen["size"]),
-        alpha_floor=float(config.get("tolerance.alpha_floor")),
+        alpha_floor=floor_alpha,
     )
+    # The verdict and the picture are one answer to one question, so the measuring
+    # happens here rather than in a call the caller has to make next.
+    report.stage("rendering", progress=1.0, note="measuring")
+    taken = measure.measure(
+        out_path,
+        list(measures) or measure.DEFAULT,
+        region=region or None,
+        alpha_floor=floor_alpha,
+        rung=chosen["rung"],
+    )
+
     elapsed = round(time.monotonic() - started, 3)
     record = provenance.build(
         "render",
@@ -221,7 +242,7 @@ def bake(
         engine=blender.engine_record(scene),
         inputs=[provenance.source("mesh", where / model, root=where)] if model else [],
         params={**as_params(rig), **({"material": material} if material else {})},
-        measurements=measured,
+        measurements={**asserted, **measure.summarise(taken)},
         rung=chosen["rung"],
         seed=chosen["seed"],
         samples=chosen["samples"],
@@ -230,13 +251,17 @@ def bake(
     )
     provenance.write(record, root=where)
 
-    return {
+    answer = {
         "artefact": record["artefact"]["path"],
         "rung": chosen["rung"],
         "why": chosen["why"],
         "size": chosen["size"],
         "samples": chosen["samples"],
         "elapsed_s": elapsed,
-        "measurements": measured,
+        "asserted": asserted,
+        "measurements": taken,
         "cache_key": provenance.cache_key(record),
     }
+    if inline:
+        answer["image"] = measure.inline_image(out_path)
+    return answer

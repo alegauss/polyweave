@@ -16,6 +16,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 
 from ..errors import PolyweaveError
+from ..measure import base_measure
 
 #: The three rungs, cheapest first. Their meaning is the plugin's and not the project's:
 #: a project chooses which to enable and how big they are, never what `sphere` means.
@@ -28,9 +29,6 @@ CARRIES = {
     "preview": "the real mesh decimated, at the preview size and sample count",
     "final": "the real mesh whole, at the final size and sample count",
 }
-
-#: The statistic suffixes `measurements.md` appends, stripped before the lookup.
-_SUFFIXES = ("_p1", "_p50", "_p99", "_mean", "_std")
 
 #: The lowest rung each measure can be taken at.
 #:
@@ -52,14 +50,6 @@ ANSWERS_AT = {
     "changed_fraction": "final",
     "luma_bands": "final",
 }
-
-
-def base_measure(measure: str) -> str:
-    """`saturation_p99` is a statistic of `saturation`, and both are answered alike."""
-    for suffix in _SUFFIXES:
-        if measure.endswith(suffix):
-            return measure[: -len(suffix)]
-    return measure
 
 
 def check_rung(rung: str) -> str:

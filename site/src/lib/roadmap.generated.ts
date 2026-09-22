@@ -26,7 +26,7 @@ export interface GeneratedNonGoal {
 
 export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 6 },
-  { block: "B", title: "Seeing the result cheaply", open: 5 },
+  { block: "B", title: "Seeing the result cheaply", open: 4 },
   { block: "C", title: "The asset compiler", open: 4 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 6 },
   { block: "E", title: "One world with the engine", open: 4 },
@@ -76,13 +76,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "A",
     symptom: "a render that is black to any observer passes the check for a blank render, on one bit of edge noise",
     why: "The assertion asks whether every visible pixel is exactly one colour, and an unlit Cycles render came back with two: black, and 1/255 at the antialiased edge.",
-    deps: [],
-  },
-  {
-    id: "PW8",
-    block: "B",
-    symptom: "a render is judged by opening the file it wrote, so every verdict costs a second call",
-    why: "The picture and its measurements are one answer to one question, and splitting them across two calls doubles the turns a parameter sweep takes.",
     deps: [],
   },
   {

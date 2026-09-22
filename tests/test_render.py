@@ -75,7 +75,8 @@ def test_the_sphere_rung_renders_without_a_mesh(project):
     assert (project / "sphere.png").is_file()
     assert out["size"] == 48
     assert out["samples"] == 4
-    assert [s for s, _ in report.stages] == ["building", "rendering"]
+    # building, then rendering — reported more than once as the work moves through it.
+    assert list(dict.fromkeys(s for s, _ in report.stages)) == ["building", "rendering"]
 
 
 def test_the_answer_says_which_rung_it_came_from(project, mesh):
@@ -120,8 +121,8 @@ def test_the_render_is_asserted_before_it_is_returned(project):
         material={"base_color": [0.9, 0.7, 0.2, 1.0]},
         root=project,
     )
-    assert out["measurements"]["size"] == [48, 48]
-    assert 0.0 < out["measurements"]["alpha_coverage"] < 1.0
+    assert out["asserted"]["size"] == [48, 48]
+    assert 0.0 < out["asserted"]["alpha_coverage"] < 1.0
 
 
 def test_the_rig_is_what_puts_light_on_the_subject(project):
@@ -145,8 +146,8 @@ def test_the_rig_is_what_puts_light_on_the_subject(project):
         root=project,
     )
     # The same silhouette either way; only what reaches the film differs.
-    assert dark["measurements"]["alpha_coverage"] == pytest.approx(
-        lit["measurements"]["alpha_coverage"], abs=0.02
+    assert dark["asserted"]["alpha_coverage"] == pytest.approx(
+        lit["asserted"]["alpha_coverage"], abs=0.02
     )
     assert _mean_luma(project / "dark.png") < _mean_luma(project / "lit2.png") / 10
 
@@ -247,6 +248,64 @@ def test_a_material_field_the_shader_lacks_is_refused_rather_than_dropped(projec
         )
     assert caught.value.code == "render.unknown-material-field"
     assert "roughness" in caught.value.remedy
+
+
+# -- the picture and the numbers are one answer ---------------------------------------
+
+
+def test_one_call_returns_the_picture_and_the_numbers(project):
+    """§PW8: the verdict is formed in a single turn, not a render then two reads."""
+    import base64
+
+    out = render.bake(Reported(), out="both.png", rung="sphere", root=project)
+    assert out["image"]["media_type"] == "image/png"
+    assert (out["image"]["width"], out["image"]["height"]) == (48, 48)
+    assert (
+        base64.b64decode(out["image"]["base64"]) == (project / "both.png").read_bytes()
+    )
+    assert [m["measure"] for m in out["measurements"]] == ["alpha_coverage"]
+    assert out["measurements"][0]["rung"] == "sphere"
+
+
+def test_the_measurements_asked_for_come_back_with_the_render(project):
+    out = render.bake(
+        Reported(),
+        out="asked.png",
+        rung="sphere",
+        measures=["alpha_coverage"],
+        region="frame",
+        root=project,
+    )
+    assert out["measurements"][0]["region"] == "frame"
+    assert 0.0 < out["measurements"][0]["value"] < 1.0
+
+
+def test_a_measure_that_is_not_built_yet_refuses_the_whole_call(project):
+    """A short answer that looks complete is worse than a refusal naming the line."""
+    with pytest.raises(PolyweaveError) as caught:
+        render.bake(
+            Reported(),
+            out="x.png",
+            rung="sphere",
+            measures=["saturation_p99"],
+            root=project,
+        )
+    assert caught.value.code == "spec.unmeasured"
+
+
+def test_the_picture_can_be_left_on_disk(project):
+    """A sweep that only wants the numbers should not carry a megabyte of base64."""
+    out = render.bake(
+        Reported(), out="quiet.png", rung="sphere", inline=False, root=project
+    )
+    assert "image" not in out
+    assert (project / "quiet.png").is_file()
+
+
+def test_the_measurements_are_in_the_record_too(project):
+    render.bake(Reported(), out="rec.png", rung="sphere", root=project)
+    record = provenance.read("rec.png", root=project)
+    assert "alpha_coverage" in record["measurements"]
 
 
 # -- through a job, which is how a caller actually reaches it -------------------------

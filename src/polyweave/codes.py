@@ -421,6 +421,18 @@ CODES: dict[str, Code] = {
         "the vocabulary is closed, or a spec would silently check nothing",
         doors=("name a declared measure", "add the measure it needs"),
     ),
+    "spec.unmeasured": Code(
+        means="the measure is in the vocabulary and nothing computes it yet",
+        when="a call asks for a measure a later line builds; it is refused by name "
+        "rather than quietly left out of the answer",
+        doors=("ask for a measure that exists", "wait for the line that builds it"),
+    ),
+    "spec.bad-region": Code(
+        means="the region a measurement would be taken over is not one",
+        when="a rectangle outside the image, a mask of another size, or a word that is "
+        "neither frame nor subject",
+        doors=("give frame, subject, a rectangle, or a mask the same size",),
+    ),
     "spec.unknown-area": Code(
         means="the area named is not one codes are namespaced under",
         when="a listing asks for an area outside the declared set",

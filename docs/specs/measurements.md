@@ -96,3 +96,16 @@ question honestly.
 Per §PW8, a render call returns the image alongside its measurements in one answer, so a
 verdict costs one turn rather than three. The default set is `saturation`, `luma`,
 `alpha_coverage` and the dimensions; anything else is asked for by name.
+
+The image comes back **base64-encoded at the size it was rendered**, never a thumbnail: an
+image worth looking at is the other half of the answer, and a caller that has to open the
+file to see it is back to paying two calls for one question. A sweep that wants only the
+numbers turns it off, because the answer rides home inside a job record.
+
+**A measure this plugin does not compute yet is refused by name**, saying which roadmap line
+builds it (`spec.unmeasured`). An answer that is quietly missing the field that was asked
+for is the same defect as a dropped argument, one layer up.
+
+`alpha_coverage` is a fraction **of its region**, not of the frame — a measurement taken
+over a rectangle answers about that rectangle, or a region would only ever report its own
+size.

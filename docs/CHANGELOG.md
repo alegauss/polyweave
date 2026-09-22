@@ -12,6 +12,7 @@
 ## Block B — Seeing the result cheaply
 
 - ✅ **PW7** **judging a material costs a two-minute render when the verdict needs three seconds** — A question is answered from the lowest rung that carries it, on one shared rig, and the answer names the rung it came from (design recorded in `docs/specs/rungs.md`).
+- ✅ **PW8** **a render is judged by opening the file it wrote, so every verdict costs a second call** — A render returns the picture and its measurements in one answer, each measurement naming the region and the rung it was taken at (design recorded in `docs/specs/measurements.md`).
 
 ## Block C — The asset compiler
 

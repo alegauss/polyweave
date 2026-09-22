@@ -11,7 +11,6 @@
 
 ## Block B — Seeing the result cheaply
 
-- 📋 **PW8** (deps: —) **a render is judged by opening the file it wrote, so every verdict costs a second call** — The picture and its measurements are one answer to one question, and splitting them across two calls doubles the turns a parameter sweep takes. → §PW8
 - 📋 **PW9** (deps: —) **a mean over an image agrees while the look is plainly wrong** — Cottony's board measured 0.31 mean saturation against the concept art's 0.32 and still looked washed out, because the whole difference sat at the 99th percentile. → §PW9
 - 📋 **PW10** (deps: —) **an asset is judged alone and then lands beside five siblings it does not match** — A prop that reads correctly on its own can be the one thing on a sheet with no shadow and no specular window, which no solo render shows. → §PW10
 - 📋 **PW11** (deps: —) **a bake is not byte-reproducible, so a file diff cannot say whether anything changed** — Two runs of one unchanged scene differed in 29,696 pixels and none by more than 1/255, so equality is the wrong question and a tolerance is the right one. → §PW11
