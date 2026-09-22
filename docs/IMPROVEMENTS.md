@@ -268,21 +268,6 @@ wants the former, which may mean a rung of its own rather than a parameter.
 
 ## Block F — Motion
 
-### §PW28 Curves are data
-
-An animation inside a binary mesh file is a binary track. A timing change to it is
-invisible in a diff, unreachable by an edit, and only makeable by re-exporting from a
-tool nobody has scripted. That puts the most iterated part of animation, which is the
-timing, behind the highest-friction door in the whole pipeline. The clip's authored form
-should be text: named channels, keyframes with their interpolation, stated in a file
-that a person and an agent can both read and change, with the binary being an export
-rather than the source. Two things follow. A review can see that an ease changed, which
-is the difference between an animation that can be collaborated on and one that can only
-be replaced wholesale. And an agent can adjust a curve directly instead of describing a
-change to a tool and hoping, which is the whole reason this line is in the backlog. The
-exporter to the engine's own format is then a compile step with a cache, exactly like
-the renders in Block C.
-
 ### §PW29 One clip, two outputs
 
 The same motion is needed in two shapes. A 2D screen needs frames, as a sprite sheet the

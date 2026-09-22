@@ -128,6 +128,63 @@ worst and beside what it was at rest — because a silhouette that fits its budg
 and not mid-stride is a silhouette nobody measured, and that is the question a still
 cannot be asked.
 
+## Curves are data
+
+An animation inside a binary mesh file is a binary track. A timing change to it is
+**invisible in a diff, unreachable by an edit**, and only makeable by re-exporting from a
+tool nobody has scripted — which puts the most iterated part of animation behind the
+highest-friction door in the pipeline.
+
+So the authored form is **TOML**, by this repository's own rule: a person writes it, and
+the binary is an export rather than the source.
+
+```toml
+name = "settle"
+duration = 0.4
+fps = 24
+easing = "linear"
+
+[[channel]]
+joint = "root"
+property = "scale"
+keys = [
+  { at = 0, value = [1, 1, 1] },
+  { at = 0.2, value = [1.06, 0.93, 1.06], ease = "ease" },
+  { at = 0.4, value = [1, 1, 1] },
+]
+```
+
+**One key per line is the contract and not a preference.** A review that can see an ease
+changed is the difference between an animation that can be collaborated on and one that
+can only be replaced wholesale, and a key sharing a line with three others says nothing. A
+timing change is one changed line, and the tests hold it to exactly that.
+
+`set_key` and `retime` are the same changes made **directly** rather than described to a
+tool and hoped at, which is the whole reason this is text. Both return a new clip, so the
+one being edited is never quietly changed underneath.
+
+## The export is a compile step with a cache
+
+Exactly like the renders in Block C. The clip becomes keyframes on the armature's pose
+bones and leaves as a glTF animation, and the result is kept under a key so an unchanged
+clip is a copy rather than an export.
+
+**The key is over the authored text, not over a summary of it.** The first version keyed
+on the clip's record, which carries the key *times* and not their *values* — so two clips
+with the same timings and different values keyed identically, and the cache would have
+handed back the wrong animation. A digest of the text is the whole of what was asked for,
+which is the advantage of having a source that is text in the first place. The mesh and
+the weights are in the key too, because the same clip on a differently weighted mesh is a
+different file.
+
+**The written file carries curves for every bone, not only the driven ones.** glTF has no
+sparse animation, so the exporter samples the whole armature. That is the format's
+business and not a defect, and it is why reading a compiled file reports the joints
+separately from the raw channel list.
+
+A clip driving a joint the skeleton does not have is `rig.unmatched-joints` — the same
+refusal a retarget gives, for the same reason.
+
 ## Still to come in this block
 
-Curves as text (PW28), and one clip producing both outputs (PW29).
+One clip producing both outputs (PW29).

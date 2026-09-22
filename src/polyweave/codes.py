@@ -583,6 +583,17 @@ CODES: dict[str, Code] = {
         "and a key beyond it never plays",
         doors=("move the key inside", "lengthen the clip"),
     ),
+    "clip.unreadable": Code(
+        means="the clip file is not readable as the format it claims",
+        when="a hand edit that left invalid TOML behind; the format is text so that a "
+        "person can change it, which is also how it gets broken",
+        doors=("fix the syntax the detail points at",),
+    ),
+    "clip.malformed": Code(
+        means="the file is TOML and is not a clip",
+        when="a file missing a name, a duration, or any channel at all",
+        doors=("give it a name, a duration and a channel with keys",),
+    ),
     "clip.no-frames": Code(
         means="the clip is too short or too slow to have a single frame in it",
         when="a duration or a frame rate at or below zero",

@@ -28,7 +28,6 @@
 
 ## Block F — Motion
 
-- 📋 **PW28** (deps: PW27 ✅) **an animation lives in a binary track, so a curve cannot be reviewed or edited as text** — A timing change inside a mesh file is invisible in a diff and unreachable by an edit, which makes every adjustment a re-export from a tool nobody scripted. → §PW28
 - 📋 **PW29** (deps: PW27 ✅) **a 2D screen needs frames and a 3D scene needs a clip, so the motion is authored twice** — The same settle exists as a sprite the interface crossfades to and as something a 3D scene would play, and keeping the two in step is manual. → §PW29
 
 ## Block G — Geometry as a declaration

@@ -306,3 +306,164 @@ def test_the_record_says_what_the_clip_is_without_every_key_in_it():
     assert found["channels"] == ["root.scale"]
     assert found["frames"] == len(C.times(C.clip("settle", 0.4, channels=SQUASH)))
     assert found["keys"] == [0.0, 0.2, 0.4]
+
+
+# -- the authored form is text ---------------------------------------------------------
+
+
+def test_a_clip_writes_as_toml_a_person_can_read(tmp_path):
+    where = C.write(C.clip("settle", 0.4, channels=SQUASH), tmp_path / "settle.toml")
+    text = where.read_text(encoding="utf-8")
+    assert 'name = "settle"' in text
+    assert "duration = 0.4" in text
+    assert "[[channel]]" in text
+    assert 'joint = "root"' in text
+
+
+def test_every_key_gets_its_own_line_so_a_diff_can_point_at_one(tmp_path):
+    """A key sharing a line with three others says nothing in a review."""
+    text = C.as_toml(C.clip("settle", 0.4, channels=SQUASH))
+    keyed = [line for line in text.splitlines() if line.strip().startswith("{ at")]
+    assert len(keyed) == 3
+
+
+def test_a_timing_change_shows_up_as_one_changed_line(tmp_path):
+    """The difference between collaborating on an animation and replacing it."""
+    before = C.clip("settle", 0.4, channels=SQUASH)
+    after = C.set_key(before, "root", "scale", 0.2, [1.06, 0.80, 1.06])
+    one, two = C.as_toml(before).splitlines(), C.as_toml(after).splitlines()
+    differing = [n for n, (a, b) in enumerate(zip(one, two, strict=True)) if a != b]
+    assert len(differing) == 1
+    assert "0.8" in two[differing[0]]
+
+
+def test_an_ease_that_changed_is_visible_in_the_text(tmp_path):
+    before = C.clip("settle", 0.4, channels=SQUASH)
+    after = C.set_key(before, "root", "scale", 0.2, [1.06, 0.93, 1.06], "ease")
+    assert 'ease = "ease"' not in C.as_toml(before)
+    assert 'ease = "ease"' in C.as_toml(after)
+
+
+def test_what_was_written_reads_back_as_the_same_clip(tmp_path):
+    original = C.clip("settle", 0.4, fps=30, easing="ease", channels=SQUASH)
+    assert C.read(C.write(original, tmp_path / "settle.toml")) == original
+
+
+def test_a_clip_with_several_channels_round_trips_too(tmp_path):
+    original = C.clip("both", 1.0, channels={**SQUASH, **WAVE})
+    assert C.read(C.write(original, tmp_path / "both.toml")) == original
+
+
+def test_a_file_a_hand_edit_broke_says_where(tmp_path):
+    where = tmp_path / "broken.toml"
+    where.write_text('name = "settle\nduration = 0.4\n', encoding="utf-8")
+    with pytest.raises(PolyweaveError) as caught:
+        C.read(where)
+    assert caught.value.code == "clip.unreadable"
+    assert caught.value.detail
+
+
+def test_a_file_that_is_toml_and_is_not_a_clip_is_refused(tmp_path):
+    where = tmp_path / "other.toml"
+    where.write_text('title = "not a clip"\n', encoding="utf-8")
+    with pytest.raises(PolyweaveError) as caught:
+        C.read(where)
+    assert caught.value.code == "clip.malformed"
+
+
+def test_a_clip_that_is_not_there_is_not_a_traceback(tmp_path):
+    with pytest.raises(PolyweaveError) as caught:
+        C.read(tmp_path / "nothing.toml")
+    assert caught.value.code == "clip.unreadable"
+
+
+# -- changing a curve ------------------------------------------------------------------
+
+
+def test_a_key_can_be_added_where_there_was_none():
+    found = C.set_key(
+        C.clip("settle", 0.4, channels=SQUASH), "root", "scale", 0.3, [1.02, 0.98, 1.02]
+    )
+    assert C.keys(found) == [0.0, 0.2, 0.3, 0.4]
+
+
+def test_setting_a_key_that_exists_replaces_it():
+    found = C.set_key(
+        C.clip("settle", 0.4, channels=SQUASH), "root", "scale", 0.2, [2, 2, 2]
+    )
+    assert C.at(found, 0.2)["root"]["scale"] == pytest.approx((2, 2, 2))
+    assert len(C.keys(found)) == 3
+
+
+def test_changing_a_key_leaves_the_original_alone():
+    before = C.clip("settle", 0.4, channels=SQUASH)
+    C.set_key(before, "root", "scale", 0.2, [9, 9, 9])
+    assert C.at(before, 0.2)["root"]["scale"] == pytest.approx((1.06, 0.93, 1.06))
+
+
+def test_retiming_keeps_the_shape_over_a_different_span():
+    """The change that gets made most, and the one a binary track makes hardest."""
+    slower = C.retime(C.clip("settle", 0.4, channels=SQUASH), 0.8)
+    assert slower["duration"] == 0.8
+    assert C.keys(slower) == [0.0, 0.4, 0.8]
+    assert C.at(slower, 0.4)["root"]["scale"] == pytest.approx((1.06, 0.93, 1.06))
+
+
+# -- the export is a compile step with a cache -----------------------------------------
+
+
+def compiled_clip(tmp_path, subject, name="out.glb", **how):
+    pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
+    mesh, rig, bound = rigged(tmp_path)
+    return C.compile(
+        subject, mesh, rig, bound, out=tmp_path / name, root=tmp_path, **how
+    )
+
+
+def test_the_clip_lands_in_the_file_under_its_own_name(tmp_path):
+    found = compiled_clip(tmp_path, C.clip("settle", 0.4, channels=SQUASH))
+    assert C.compiled(found["artefact"])["clips"][0]["name"] == "settle"
+
+
+def test_and_over_the_frames_its_duration_gives(tmp_path):
+    found = compiled_clip(tmp_path, C.clip("wave", 1.0, fps=24, channels=WAVE))
+    assert C.compiled(found["artefact"])["clips"][0]["frames"] == [0.0, 24.0]
+
+
+def test_the_joint_the_clip_drives_is_in_the_file(tmp_path):
+    found = compiled_clip(tmp_path, C.clip("wave", 1.0, channels=WAVE))
+    assert "arm.L" in C.compiled(found["artefact"])["clips"][0]["joints"]
+
+
+def test_compiling_the_same_clip_again_is_a_copy_and_not_an_export(tmp_path):
+    subject = C.clip("settle", 0.4, channels=SQUASH)
+    first = compiled_clip(tmp_path, subject, name="a.glb")
+    again = compiled_clip(tmp_path, subject, name="b.glb")
+    assert first["cached"] is False
+    assert again["cached"] is True
+    assert again["cache_key"] == first["cache_key"]
+
+
+def test_a_clip_that_changed_is_a_different_key(tmp_path):
+    first = compiled_clip(
+        tmp_path, C.clip("settle", 0.4, channels=SQUASH), name="a.glb"
+    )
+    changed = C.set_key(
+        C.clip("settle", 0.4, channels=SQUASH), "root", "scale", 0.2, [1.2, 0.8, 1.2]
+    )
+    again = compiled_clip(tmp_path, changed, name="b.glb")
+    assert again["cache_key"] != first["cache_key"]
+    assert again["cached"] is False
+
+
+def test_a_clip_driving_a_joint_the_skeleton_lacks_is_named(tmp_path):
+    pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
+    mesh, rig, bound = rigged(tmp_path)
+    subject = C.clip(
+        "swish",
+        1.0,
+        channels={"tail": {"rotation": [(0.0, [0, 0, 0]), (1.0, [0, 0, 30])]}},
+    )
+    with pytest.raises(PolyweaveError) as caught:
+        C.compile(subject, mesh, rig, bound, out=tmp_path / "x.glb", root=tmp_path)
+    assert caught.value.code == "rig.unmatched-joints"

@@ -28,6 +28,7 @@ and not mid-stride is a silhouette nobody measured.
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Any
 
@@ -374,3 +375,339 @@ def as_record(subject: dict) -> dict:
         ),
         "keys": keys(subject),
     }
+
+
+# -- the authored form is text -------------------------------------------------------
+
+
+def _number(value: float) -> str:
+    """A number as a person would write it: no trailing zeros, no exponents."""
+    text = f"{float(value):.6f}".rstrip("0").rstrip(".")
+    return text or "0"
+
+
+def as_toml(subject: dict) -> str:
+    """The clip as the file somebody authors, **one key per line**.
+
+    One per line is the contract and not a preference. A diff that says an ease changed
+    is the difference between an animation that can be collaborated on and one that can
+    only be replaced wholesale, and a key sharing a line with three others says nothing.
+    """
+    out = [
+        f'name = "{subject["name"]}"',
+        f"duration = {_number(subject['duration'])}",
+        f"fps = {subject['fps']}",
+        f'easing = "{subject["easing"]}"',
+    ]
+    for joint in sorted(subject["channels"]):
+        for prop in sorted(subject["channels"][joint]):
+            out += ["", "[[channel]]", f'joint = "{joint}"', f'property = "{prop}"']
+            out.append("keys = [")
+            for when, value, ease in subject["channels"][joint][prop]:
+                stated = ", ".join(_number(v) for v in value)
+                easing = f', ease = "{ease}"' if ease else ""
+                out.append(f"  {{ at = {_number(when)}, value = [{stated}]{easing} }},")
+            out.append("]")
+    return "\n".join(out) + "\n"
+
+
+def write(subject: dict, path: str | Path, *, root: str | Path = ".") -> Path:
+    """Write the authored clip, which is the source and not an export."""
+    from .files import write_atomic
+
+    where = Path(path)
+    if not where.is_absolute():
+        where = Path(root).resolve() / where
+    write_atomic(where, as_toml(subject))
+    return where
+
+
+def read(path: str | Path, *, root: str | Path = ".") -> dict:
+    """Read one back, refusing a file that is TOML and is not a clip."""
+    import tomllib
+
+    where = Path(path)
+    if not where.is_absolute():
+        where = Path(root).resolve() / where
+    if not where.is_file():
+        raise PolyweaveError(
+            "clip.unreadable",
+            f"there is no clip at {where}",
+            "check the path, or write the clip before reading it",
+        )
+    try:
+        stated = tomllib.loads(where.read_text(encoding="utf-8"))
+    except tomllib.TOMLDecodeError as exc:
+        raise PolyweaveError(
+            "clip.unreadable",
+            f"{where.name} is not readable as TOML",
+            "fix the syntax the detail below points at; the format is text so a person "
+            "can change it, which is also how it gets broken",
+            detail=str(exc),
+        ) from exc
+
+    channels: dict[str, dict[str, list]] = {}
+    for stated_channel in stated.get("channel", ()):
+        joint = stated_channel.get("joint")
+        prop = stated_channel.get("property")
+        if not joint or not prop:
+            raise PolyweaveError(
+                "clip.malformed",
+                f"{where.name} has a channel with no joint or no property",
+                "give every channel a joint and a property",
+            )
+        channels.setdefault(joint, {})[prop] = [
+            (key["at"], key["value"], key.get("ease", ""))
+            for key in stated_channel.get("keys", ())
+        ]
+    if not stated.get("name") or not stated.get("duration"):
+        raise PolyweaveError(
+            "clip.malformed",
+            f"{where.name} is TOML and is not a clip: it has no "
+            f"{'name' if not stated.get('name') else 'duration'}",
+            "give it a name, a duration and a channel with keys",
+        )
+    return clip(
+        stated["name"],
+        stated["duration"],
+        fps=int(stated.get("fps", FPS)),
+        easing=str(stated.get("easing", "linear")),
+        channels=channels,
+    )
+
+
+# -- changing a curve, which is the most iterated part ---------------------------------
+
+
+def set_key(
+    subject: dict, joint: str, prop: str, when: float, value: Any, ease: str = ""
+) -> dict:
+    """A key set or replaced, as a new clip. The change an agent makes directly.
+
+    Directly, rather than describing it to a tool and hoping — which is the whole reason
+    this is text in the first place.
+    """
+    channels = {
+        j: {p: list(k) for p, k in d.items()} for j, d in subject["channels"].items()
+    }
+    keys = channels.setdefault(joint, {}).setdefault(prop, [])
+    channels[joint][prop] = [key for key in keys if key[0] != float(when)] + [
+        (float(when), tuple(float(v) for v in value), ease)
+    ]
+    return clip(
+        subject["name"],
+        subject["duration"],
+        fps=subject["fps"],
+        easing=subject["easing"],
+        channels=channels,
+    )
+
+
+def retime(subject: dict, duration: float) -> dict:
+    """The same shape over a different span — the change that gets made most."""
+    scale = float(duration) / subject["duration"]
+    channels = {
+        joint: {
+            prop: [(when * scale, value, ease) for when, value, ease in keys]
+            for prop, keys in driven.items()
+        }
+        for joint, driven in subject["channels"].items()
+    }
+    return clip(
+        subject["name"],
+        float(duration),
+        fps=subject["fps"],
+        easing=subject["easing"],
+        channels=channels,
+    )
+
+
+# -- the export, which is a compile step with a cache ----------------------------------
+
+
+def _radians(value: Any) -> list[float]:
+    return [float(np.radians(v)) for v in value]
+
+
+def _action(bpy: Any, rig: Any, subject: dict) -> Any:
+    """The clip as keyframes on the armature's own pose bones."""
+    rig.animation_data_create()
+    action = bpy.data.actions.new(subject["name"])
+    rig.animation_data.action = action
+    for joint, driven in subject["channels"].items():
+        if joint not in rig.pose.bones:
+            raise PolyweaveError(
+                "rig.unmatched-joints",
+                f"the clip drives {joint!r}, which this skeleton does not have",
+                f"this skeleton has "
+                f"{', '.join(sorted(b.name for b in rig.pose.bones))}; a joint name is "
+                f"the contract between a clip and a skeleton",
+            )
+        bone = rig.pose.bones[joint]
+        bone.rotation_mode = "XYZ"
+        for prop, channel in driven.items():
+            for when, value, _ in channel:
+                frame = when * subject["fps"]
+                if prop == "rotation":
+                    bone.rotation_euler = _radians(value)
+                    bone.keyframe_insert("rotation_euler", frame=frame)
+                elif prop == "scale":
+                    bone.scale = [float(v) for v in value]
+                    bone.keyframe_insert("scale", frame=frame)
+                else:
+                    bone.location = [float(v) for v in value]
+                    bone.keyframe_insert("location", frame=frame)
+    return action
+
+
+def _digest(text: str | bytes) -> str:
+    import hashlib
+
+    return hashlib.sha256(
+        text.encode("utf-8") if isinstance(text, str) else text
+    ).hexdigest()
+
+
+def _key_params(subject: dict, mesh: Any, rig: dict, bound: dict) -> dict:
+    """What the compiled file depends on, in full rather than in summary.
+
+    The clip goes in as a digest of its **authored text**, not of `as_record`: a record
+    leaves the key values out, so two clips with the same timings and different values
+    would key the same and the cache would hand back the wrong animation. The text is
+    the source, so a digest of it is the whole of what was asked for.
+
+    The mesh and the weights are in it too, because the same clip on a differently
+    weighted mesh is a different file.
+    """
+    points = np.ascontiguousarray(as_mesh(mesh)[0], dtype=np.float64)
+    return {
+        "clip": subject["name"],
+        "clip_sha256": _digest(as_toml(subject)),
+        "mesh_sha256": _digest(points.tobytes()),
+        "weights_sha256": _digest(
+            np.ascontiguousarray(bound["weights"], dtype=np.float64).tobytes()
+        ),
+        "bones": list(bound["names"]),
+        "joints": [
+            [joint["name"], joint["parent"], list(joint["at"])]
+            for joint in rig.get("joints", rig)
+        ],
+    }
+
+
+def compile(
+    subject: dict,
+    mesh: Any,
+    rig: dict,
+    bound: dict,
+    *,
+    out: str | Path,
+    root: str | Path = ".",
+    cached: bool = True,
+) -> dict:
+    """Export the clip onto the rigged mesh, and keep the result under its own key.
+
+    A compile step with a cache, exactly like the renders in Block C: the key is over
+    the clip, the skeleton and the weights, so an unchanged clip is a copy rather than
+    an export.
+    """
+    from . import cache as store
+    from . import provenance
+    from .config import load
+    from .render import blender
+
+    settings = load(root)
+    where = Path(out)
+    if not where.is_absolute():
+        where = settings.root / where
+    work = settings.path("paths.work")
+
+    params = _key_params(subject, mesh, rig, bound)
+    signature = provenance.cache_key(provenance.planned("mesh", params=params))
+    if cached:
+        hit = store.look(signature, work=work, suffix=".glb")
+        if hit is not None:
+            return {
+                "artefact": str(store.take(hit, where)),
+                "clip": subject["name"],
+                "cached": True,
+                "cache_key": signature,
+            }
+
+    bpy = blender.require()
+    blender.reset()
+    obj, armature = skeleton.build(mesh, rig, bound, name=subject["name"])
+    _action(bpy, armature, subject)
+    where.parent.mkdir(parents=True, exist_ok=True)
+    for other in bpy.context.scene.objects:
+        other.select_set(other in (obj, armature))
+    bpy.context.view_layer.objects.active = armature
+    bpy.ops.export_scene.gltf(
+        filepath=str(where),
+        use_selection=True,
+        export_format="GLB" if where.suffix.lower() == ".glb" else "GLTF_SEPARATE",
+        export_skins=True,
+        export_animations=True,
+    )
+    record = provenance.build("mesh", where, params=params, root=settings.root)
+    provenance.write(record, root=settings.root)
+    if cached:
+        store.put(signature, where, record, work=work)
+    return {
+        "artefact": str(where),
+        "clip": subject["name"],
+        "cached": False,
+        "cache_key": signature,
+    }
+
+
+#: How a bone's name appears in an f-curve's address.
+ADDRESSED = re.compile(r'pose\.bones\["([^"]+)"\]')
+
+
+def compiled(path: str | Path) -> dict:
+    """What a written file actually carries, read back off the file itself.
+
+    The channel list is longer than the clip's own. glTF has no sparse animation, so the
+    exporter samples **every** bone whether the clip drives it or not — that is the
+    format's business and not a defect, and it is why `joints` is here beside it.
+    """
+    from .render import blender
+
+    bpy = blender.require()
+    blender.reset()
+    bpy.ops.import_scene.gltf(filepath=str(Path(path)))
+    found = []
+    for action in bpy.data.actions:
+        start, end = action.frame_range
+        addressed = sorted({curve.data_path for curve in _curves(action)})
+        found.append(
+            {
+                "name": action.name,
+                "frames": [round(float(start), 3), round(float(end), 3)],
+                "channels": addressed,
+                "joints": sorted(
+                    {
+                        match.group(1)
+                        for path in addressed
+                        if (match := ADDRESSED.match(path))
+                    }
+                ),
+            }
+        )
+    return {"clips": sorted(found, key=lambda one: one["name"])}
+
+
+def _curves(action: Any):
+    """Every f-curve of an action, whichever shape this Blender keeps them in.
+
+    Slotted actions landed in 4.4 and moved the curves down into layers and strips.
+    Reading both is two lines and saves the whole read breaking on a version bump.
+    """
+    if hasattr(action, "fcurves"):
+        yield from action.fcurves
+        return
+    for layer in action.layers:
+        for strip in layer.strips:
+            for bag in getattr(strip, "channelbags", ()):
+                yield from bag.fcurves
