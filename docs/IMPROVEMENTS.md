@@ -2,20 +2,6 @@
 
 ## Block A — What a tool call costs the turn
 
-### §PW4 An error names the door that closes it
-
-A stack trace says where the code gave up, which is rarely where the caller should act.
-A render that fails because the model carries no material, a fetch refused because the
-payload is missing a required field, a capture that printed nothing because its script
-had a parse error: each has a specific next action, and today each arrives as a
-traceback the caller reads backwards to guess one. Errors here should be typed. A code,
-a sentence stating what is wrong, and the call that closes it with its arguments already
-filled in wherever they are derivable. roadkeep does exactly this, and it is why its
-refusals cost one retry rather than a search through source. The measure to hold this to
-is whether a failure can be answered without opening any implementation file. Where the
-fix is a judgement the tool cannot make, it should name the two doors and say what
-separates them, which is still a far better answer than a frame number and a line.
-
 ### §PW5 Configuration is the project's, defaults are the plugin's
 
 Cottony's art tools resolve their own repository root from their file path, import a

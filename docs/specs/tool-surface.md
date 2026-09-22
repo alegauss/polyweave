@@ -89,6 +89,16 @@ does, because a render of nothing is nothing anybody asked for.
 - `message` never contains a traceback. `detail` may.
 - An **unknown field in any input is refused**, never dropped. §PW19 is the lesson: a silent
   drop makes a typo indistinguishable from a working call.
+- **A code is declared before it can be raised.** The whole set lives in one table with what
+  each means and what produces it, and constructing an error under a code that table does not
+  carry is refused. So `explain(code)` can answer every code that exists, and a code
+  assembled at runtime — which nothing could enumerate — cannot be built at all.
+- `explain(code)` is the read a caller makes when **planning** for a failure, and `remedy` is
+  the same answer with the arguments filled in, which is the one to act on. `codes()` lists
+  the set, and `capabilities()` carries it, so what can go wrong is knowable before it does.
+- An operation putting a boundary around work it did not write turns whatever came out into
+  a typed failure, traceback in `detail`. A failure that is already typed passes through
+  untouched, because wrapping it would bury the better answer.
 
 ## 4. The surface describes itself
 

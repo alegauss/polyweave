@@ -293,21 +293,14 @@ class JobStore:
 
     def _reap(self, state: dict, pid: int | None) -> dict:
         log = self.paths.log(state["job"])
-        return self._finish(
-            state,
-            "failed",
-            error={
-                "code": "job.worker-gone",
-                "message": (
-                    f"the worker for {state['job']} is no longer running, and it left "
-                    f"no result behind"
-                ),
-                "remedy": (
-                    f"read {log} for what it printed, then start the work again"
-                ),
-                "detail": rec.tail(log) or f"pid {pid} is not running",
-            },
+        gone = PolyweaveError(
+            "job.worker-gone",
+            f"the worker for {state['job']} is no longer running, and it left no "
+            f"result behind",
+            f"read {log} for what it printed, then start the work again",
+            detail=rec.tail(log) or f"pid {pid} is not running",
         )
+        return self._finish(state, "failed", error=gone.as_dict())
 
     def _finish(self, state: dict, status: str, **fields: Any) -> dict:
         now = time.time()

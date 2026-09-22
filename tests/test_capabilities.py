@@ -66,6 +66,12 @@ def test_it_reports_the_surface_that_already_exists():
     assert isinstance(found["operations"], list)
 
 
+def test_it_lists_the_failures_a_caller_can_plan_for():
+    found = capabilities(probe=False)
+    assert "job.worker-gone" in found["errors"]["codes"]
+    assert found["errors"]["areas"]["post"]
+
+
 def test_what_is_not_established_yet_names_the_line_that_will():
     found = capabilities(probe=False)
     assert "PW5" in found["pending"]["budget"]

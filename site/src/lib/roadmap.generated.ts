@@ -25,7 +25,7 @@ export interface GeneratedNonGoal {
 }
 
 export const generatedBlocks: GeneratedBlock[] = [
-  { block: "A", title: "What a tool call costs the turn", open: 6 },
+  { block: "A", title: "What a tool call costs the turn", open: 5 },
   { block: "B", title: "Seeing the result cheaply", open: 5 },
   { block: "C", title: "The asset compiler", open: 4 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 6 },
@@ -36,13 +36,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW4",
-    block: "A",
-    symptom: "a failure arrives as a stack trace, so the fix is guessed from the frame that raised it",
-    why: "A traceback names where the code gave up and not what the caller should do instead, which is the one thing needed to retry without another round trip.",
-    deps: [],
-  },
   {
     id: "PW5",
     block: "A",

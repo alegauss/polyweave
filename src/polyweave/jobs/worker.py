@@ -20,7 +20,7 @@ import traceback
 from pathlib import Path
 from typing import Any
 
-from ..errors import PolyweaveError
+from ..errors import PolyweaveError, guard
 from . import record as rec
 from .report import Report
 
@@ -143,28 +143,34 @@ def run(record_path: Path) -> int:
 
     report = Report(record_path, state)
     try:
-        root = Path(state["root"])
-        fn = resolve_target(state["target"], root)
-        check_args(fn, state["args"])
-        result = fn(report, **state["args"])
+        # `guard` types whatever the target raised, keeping the traceback in `detail`
+        # and out of the message; a failure that is already typed passes through it.
+        with guard(
+            "job.target-failed",
+            remedy=f"read {paths.log(state['job'])} for the output, and the detail "
+            f"below for where it raised",
+        ):
+            root = Path(state["root"])
+            fn = resolve_target(state["target"], root)
+            check_args(fn, state["args"])
+            result = fn(report, **state["args"])
         report.finish("done", result=result, error=None)
         return 0
     except PolyweaveError as exc:
         report.finish("failed", result=None, error=exc.as_dict())
         return 1
     except BaseException as exc:  # noqa: BLE001 - every failure becomes a record
+        # Not an Exception at all: a SystemExit or a KeyboardInterrupt still has to
+        # leave a record, or the job reads as a worker that vanished.
         report.finish(
             "failed",
             result=None,
-            error={
-                "code": "job.target-failed",
-                "message": f"{type(exc).__name__}: {exc}",
-                "remedy": (
-                    f"read {paths.log(state['job'])} for the output, and the detail "
-                    f"below for where it raised"
-                ),
-                "detail": traceback.format_exc(),
-            },
+            error=PolyweaveError(
+                "job.target-failed",
+                f"{type(exc).__name__}: {exc}",
+                f"read {paths.log(state['job'])} for the output",
+                detail=traceback.format_exc(),
+            ).as_dict(),
         )
         return 1
     finally:

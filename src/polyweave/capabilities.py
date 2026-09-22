@@ -18,7 +18,9 @@ import sys
 from pathlib import Path
 
 from . import __version__
+from .codes import AREAS
 from .describe import describe
+from .errors import codes
 from .jobs.stages import KINDS, TERMINAL
 from .post import CHEAP, OPTIONAL
 
@@ -107,6 +109,12 @@ def capabilities(
         "assertions": {
             "always": sorted(CHEAP),
             "optional": sorted(OPTIONAL),
+        },
+        "errors": {
+            # Listed rather than counted: a caller that knows the codes can plan for a
+            # failure instead of meeting it, and `explain` says what each one means.
+            "areas": dict(AREAS),
+            "codes": codes(),
         },
         "pending": {
             "budget": "PW18 spends against it, and PW5 reads it from polyweave.toml",

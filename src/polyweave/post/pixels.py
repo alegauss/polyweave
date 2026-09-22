@@ -42,13 +42,13 @@ def _measure(image: Image, alpha_floor: float) -> dict:
     }
 
 
-def _check_size(image: Image, size: Any, what: str) -> None:
+def _check_size(image: Image, size: Any, *, code: str, what: str) -> None:
     if size is None:
         return
     wanted = tuple(int(v) for v in size)
     if image.size != wanted:
         raise PolyweaveError(
-            f"post.{what}-size",
+            code,
             f"the {what} is {image.width}x{image.height}, and "
             f"{wanted[0]}x{wanted[1]} was asked for",
             f"the renderer ignored or clamped the size; ask for "
@@ -60,15 +60,21 @@ def _check_size(image: Image, size: Any, what: str) -> None:
 def _check_not_blank(
     image: Image,
     *,
+    transparent: str,
+    uniform: str,
     what: str,
     alpha_floor: float,
     allow_uniform: bool,
 ) -> np.ndarray:
-    """Not fully transparent, and not one flat colour."""
+    """Not fully transparent, and not one flat colour.
+
+    The two codes are passed in rather than assembled from `what`: a code is part of the
+    published contract, and one built at runtime is one nothing can enumerate.
+    """
     mask = image.subject(alpha_floor)
     if image.had_alpha and not mask.any():
         raise PolyweaveError(
-            f"post.{what}-transparent",
+            transparent,
             f"every pixel of the {what} is below the alpha floor, so nothing is there",
             "the subject was outside the frame, or the camera never saw it; check the "
             "framing before spending another render",
@@ -79,7 +85,7 @@ def _check_not_blank(
     if len(visible) and bool((visible.min(axis=0) == visible.max(axis=0)).all()):
         colour = "#" + "".join(f"{int(v):02x}" for v in visible[0])
         raise PolyweaveError(
-            f"post.{what}-uniform",
+            uniform,
             f"every visible pixel of the {what} is {colour}, so it carries no image",
             f"the scene was empty or the light never fired; if a flat {colour} is what "
             f"was wanted, pass allow_uniform=True",
@@ -96,9 +102,14 @@ def check_render(
 ) -> dict:
     """Not a single uniform colour, not fully transparent, dimensions as requested."""
     image = as_image(subject)
-    _check_size(image, size, "render")
+    _check_size(image, size, code="post.render-size", what="render")
     _check_not_blank(
-        image, what="render", alpha_floor=alpha_floor, allow_uniform=allow_uniform
+        image,
+        transparent="post.render-transparent",
+        uniform="post.render-uniform",
+        what="render",
+        alpha_floor=alpha_floor,
+        allow_uniform=allow_uniform,
     )
     return _measure(image, alpha_floor)
 
@@ -112,9 +123,14 @@ def check_texture(
 ) -> dict:
     """Not fully transparent, not a single uniform colour."""
     image = as_image(subject)
-    _check_size(image, size, "texture")
+    _check_size(image, size, code="post.texture-size", what="texture")
     _check_not_blank(
-        image, what="texture", alpha_floor=alpha_floor, allow_uniform=allow_uniform
+        image,
+        transparent="post.texture-transparent",
+        uniform="post.texture-uniform",
+        what="texture",
+        alpha_floor=alpha_floor,
+        allow_uniform=allow_uniform,
     )
     return _measure(image, alpha_floor)
 
@@ -126,7 +142,7 @@ def check_capture(subject: Any, *, size: Any = None) -> dict:
     capture, and §PW25 is about the settings that produced it rather than its content.
     """
     image = as_image(subject)
-    _check_size(image, size, "capture")
+    _check_size(image, size, code="post.capture-size", what="capture")
     measured = _measure(image, 0.0)
     measured["path"] = str(image.path) if image.path else None
     return measured
