@@ -97,13 +97,18 @@ produces the tree and every node of it is then checked against that list, so a c
 attribute, a comparison, a subscript, a lambda or a string literal is refused where it is
 read rather than where it is evaluated.
 
-**What is in scope decides whether a string is an expression or a name.** `depth =
-"face_depth"` resolves to a number because `face_depth` is a parameter; `shape =
-"rounded_square"` stays a string because nothing declares that name and it is not
-arithmetic. A string that is not an expression at all, like a colour, stays what it is. One
-that *is* arithmetic and names something undeclared is a typo and is refused, so
-`"cel * 0.82"` does not quietly become the text it was written as. A parameter and a
-generator sharing a name is a document that should rename one of them; the parameter wins.
+**What is in scope decides whether a string is an expression or a name, all or nothing.**
+`depth = "face_depth"` resolves to a number because `face_depth` is a parameter; `shape =
+"rounded_square"` stays a string because nothing declares that name. Every name in it must
+be in scope, and **a path is why**: `art/star.png` parses as a division of two names, so a
+rule that took any `/` for arithmetic would evaluate an image path and break a working
+document.
+
+The cost of that rule is a typo inside an expression — `"pad + cel"` — which now reads as
+a name rather than as a mistake. That is a **warning** from the review rather than a
+refusal, and it belongs there: it reads reasonable and it is wrong, which is the class of
+error §PW33 exists for. A parameter and a generator sharing a name is a document that
+should rename one of them; the parameter wins.
 
 ## Repeat
 
@@ -241,6 +246,27 @@ constructions of Cottony's tray seats each looked entirely reasonable while bein
 
 The report is readable before a render exists, and the per-node face count is what catches a
 boolean that silently returned nothing.
+
+**But the cheapest check is the one that costs no build at all.** Two wrong constructions of
+the tray's seats were built before the right one, and both looked entirely reasonable while
+being written. So a declaration also reads back **in words**, one sentence per node, in the
+order they build:
+
+```
+face: a plate 928 by 928 at 0 by 0 (corner 28, depth 6), in cushion
+seat: a rounded_square of corner 18, size 91.84, extruded (depth 4) — 64 of them, in an 8 by 8 grid
+tray: face with seat cut out of it (bevel 2)
+```
+
+That is a sentence somebody can disagree with, which a render is not until it exists. Beside
+it come the things that are **odd rather than wrong**: a node nothing uses, a parameter no
+node reads, a repeat larger than a document usually means, and a field that reads as
+arithmetic over a name nothing declares. None of them stops a build. All of them are shapes
+the mistake takes when the code did exactly what it said and what it said was wrong.
+
+The manifold check is **opt-in**, because it walks every edge of every face and on a dense
+mesh costs more than the operation that produced it — the same line §2 draws between a cheap
+assertion and an expensive one.
 
 ## Rebuilding
 

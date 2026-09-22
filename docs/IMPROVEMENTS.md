@@ -270,21 +270,6 @@ wants the former, which may mean a rung of its own rather than a parameter.
 
 ## Block G — Geometry as a declaration
 
-### §PW33 A declaration is reviewable before it is built
-
-Two wrong constructions of Cottony's tray seats were built before the right one, and
-both looked entirely reasonable while being written. Raised bars between the cells gave
-a woven basket where the separators read as rungs laid on top of the tray. Cutting those
-bars into segments so their bevels would stop fighting turned them into a ladder of
-lozenges. Neither was visible until rendered, and rendering is the expensive place to
-find a construction error. A declaration can be read before it is built, which is the
-point of it being data. Three checks are worth having, in increasing cost: a structural
-read that says what the tree does in words, a wireframe or clay preview at the cheapest
-rung, and the post-condition that the built mesh is manifold with a plausible face
-count. The first two are what a person or an agent looks at before committing to a full
-bake. None of them replace judgement, but all three catch the class of error where the
-code did exactly what it said and what it said was wrong.
-
 ### §PW34 An escape hatch that is a node, not a mode
 
 Any format will eventually meet a shape it cannot state, and the framework that forces

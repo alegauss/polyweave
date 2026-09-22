@@ -52,6 +52,7 @@
 - ✅ **PW30** **a shape is a Python script, so stating one means writing and debugging a program** — A shape is a TOML document of named parameters, expressions over them and a repeat, resolved into a flat graph that says what a change rebuilds (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW31** **a format covering only primitives would leave every real asset in code** — Carve, bevel and inflate complete the vocabulary, with the boolean asserted non-empty because that is what protects a build rather than the solver chosen (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW32** **a shape's own numbers are unreachable from the search that tunes everything else** — A shape's parameters and a rig's search as one space, ordered so the shape is rebuilt once per shape rather than once per sample (design recorded in `docs/specs/geometry.md`).
+- ✅ **PW33** **a shape cannot be reviewed without building it, so a wrong construction is found in the render** — A shape reads back in words before it is built, beside what is odd about it, and a built one reports a face count per node (design recorded in `docs/specs/geometry.md`).
 
 ## Block H — Proof on a real game
 

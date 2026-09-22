@@ -295,14 +295,19 @@ def _string(value: str, scope: dict, where: str) -> Any:
     not this module. A parameter and a shape sharing a name is a document that should
     rename one of them, and the parameter wins.
 
-    A string that is not an expression at all, like a colour, stays what it is. One that
-    **is** arithmetic but names something undeclared is a typo and is refused, which is
-    why `"cel * 0.82"` does not quietly become the string it was written as.
+    The rule is **all or nothing**: every name in scope and it is arithmetic, otherwise
+    it is a name. A path is why. `"art/star.png"` parses as a division of two names, and
+    a rule that took any `/` for arithmetic would evaluate an image path — which is a
+    working document broken by the resolver, the worse of the two mistakes available
+    here.
+
+    The other one is a typo inside an expression, and it is now a **warning** rather
+    than a refusal: `review.warn` names a field that reads as arithmetic over something
+    undeclared, which is exactly the class of error §PW33 is about.
     """
     if not _parses(value):
         return value
-    used = mentions(value)
-    if used and not used <= set(scope) and not _arithmetic(value):
+    if not mentions(value) <= set(scope):
         return value
     return evaluate(value, scope, where=where)
 
@@ -315,9 +320,21 @@ def _parses(value: str) -> bool:
     return True
 
 
-def _arithmetic(value: str) -> bool:
-    """Whether a string is doing arithmetic, as against naming one thing."""
-    return any(character in value for character in "0123456789+-*/%()")
+def arithmetic(value: Any) -> bool:
+    """Whether a string *reads* as arithmetic, as against naming one thing.
+
+    **Not** what decides how a value resolves — that is whether its names are in scope,
+    and it has to be, because `art/star.png` parses as a division. This is only for the
+    review, which warns about a field that looks like a sum over something nothing
+    declares.
+
+    A **spaced** operator is the test, because that is how these documents write
+    arithmetic (`cell * 0.82`, `board - 1`) and how a path never does. A heuristic, and
+    one whose only cost is a warning not printed.
+    """
+    return isinstance(value, str) and any(
+        f" {operator} " in value for operator in "+-*/%"
+    )
 
 
 # -- what a change costs ---------------------------------------------------------------

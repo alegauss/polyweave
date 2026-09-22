@@ -30,7 +30,6 @@
 
 ## Block G — Geometry as a declaration
 
-- 📋 **PW33** (deps: PW30 ✅) **a shape cannot be reviewed without building it, so a wrong construction is found in the render** — Two wrong constructions of one tray's seats each looked reasonable while being written and were only visible once rendered, which is the expensive place. → §PW33
 - 📋 **PW34** (deps: PW30 ✅) **a declaration that cannot express a shape leaves no way back to code** — Any format will meet a shape it cannot state, and forcing that shape into the format produces worse geometry than the script it replaced. → §PW34
 
 ## Block H — Proof on a real game

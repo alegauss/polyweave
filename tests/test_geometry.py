@@ -290,10 +290,18 @@ def test_a_range_with_no_variable_is_not_a_range(tmp_path):
 
 
 def test_a_repeat_variable_is_not_in_scope_on_another_node(tmp_path):
+    """It resolves as text rather than as arithmetic, and the review says so.
+
+    A value is arithmetic only where **every** name in it is in scope, because
+    `art/star.png` parses as a division and evaluating an image path would break a
+    working document. That leaves a typo looking like a name, so it is a warning.
+    """
+    from polyweave.geometry import review
+
     body = TRAY.replace('depth    = "face_depth"', 'depth    = "face_depth + row"')
-    with pytest.raises(PolyweaveError) as caught:
-        G.expand(tray(tmp_path, body))
-    assert caught.value.code == "geom.unknown-name"
+    document = tray(tmp_path, body)
+    assert G.expand(document)["nodes"][0]["instances"][0]["depth"] == "face_depth + row"
+    assert any("over row" in one for one in review.warn(document))
 
 
 # -- resolving -------------------------------------------------------------------------
