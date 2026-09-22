@@ -222,3 +222,104 @@ def test_a_search_turns_a_real_rig_number(tmp_path):
     # Whatever it settled on, a brighter key scored no worse than the dimmest sample.
     dimmest = min(found["trace"], key=lambda s: s["params"]["key"])
     assert found["score"] >= dimmest["score"]
+
+
+# -- a pass at a time rather than a sample at a time (§PW45) ---------------------------
+
+
+def batched(target, *, name="light", width=4.0):
+    """The same objective, handed a whole pass and answering with a list."""
+    one = peaking_at(target, name=name, width=width)
+    passes = []
+
+    def evaluate_all(samples):
+        passes.append(list(samples))
+        return [one(v) for v in samples]
+
+    evaluate_all.passes = passes
+    evaluate_all.calls = one.calls
+    return evaluate_all
+
+
+def test_a_whole_pass_is_handed_over_at_once():
+    """Four samples were meant to be four handles, not four waits."""
+    every = batched(2.7)
+    search.search(a_spec(), evaluate_all=every, budget=24, points=3, passes=3)
+    assert every.passes, "it was called"
+    assert all(len(p) > 1 for p in every.passes), "with a pass, not a sample"
+    assert sum(len(p) for p in every.passes) == len(every.calls)
+
+
+def test_batching_a_pass_finds_the_same_answer_as_one_at_a_time():
+    """The batching is about when renders happen, never about what is searched."""
+    alone = peaking_at(2.7)
+    every = batched(2.7)
+    one = search.search(a_spec(), alone, budget=24, points=3, passes=3)
+    many = search.search(a_spec(), evaluate_all=every, budget=24, points=3, passes=3)
+    assert many["best"] == one["best"]
+    assert many["spent"] == one["spent"]
+    assert many["trace"] == one["trace"]
+
+
+def test_a_batch_never_exceeds_what_the_budget_still_affords():
+    """The pass is cut before it is handed over, not after it is paid for."""
+    every = batched(2.7)
+    found = search.search(a_spec(), evaluate_all=every, budget=5, points=4, passes=3)
+    assert found["spent"] <= 5
+    assert sum(len(p) for p in every.passes) <= 5
+
+
+def test_a_batch_holds_no_sample_twice():
+    every = batched(2.7)
+    search.search(a_spec(), evaluate_all=every, budget=24, points=3, passes=3)
+    for one in every.passes:
+        keys = [tuple(sorted(v.items())) for v in one]
+        assert len(keys) == len(set(keys))
+
+
+def test_a_search_that_has_its_answer_still_stops_between_passes():
+    """Which is why a pass is batched and not the whole budget."""
+    every = batched(2.0)
+    found = search.search(a_spec(), evaluate_all=every, budget=24, points=3, passes=3)
+    assert found["stopped"] == "the spec passed with nothing left to gain"
+    assert found["spent"] < 24
+
+
+def test_an_evaluator_that_loses_a_sample_is_refused():
+    """Results are matched by position, so a short list scores the wrong parameters."""
+
+    def drops_one(samples):
+        return [{"score": 1.0, "passed": True}] * (len(samples) - 1)
+
+    with pytest.raises(PolyweaveError) as caught:
+        search.search(a_spec(), evaluate_all=drops_one, budget=8, points=3)
+    assert caught.value.code == "search.batch-mismatch"
+
+
+def test_exactly_one_evaluator_is_required():
+    with pytest.raises(PolyweaveError) as caught:
+        search.search(a_spec(), budget=8)
+    assert caught.value.code == "search.no-evaluator"
+
+    with pytest.raises(PolyweaveError) as caught:
+        search.search(a_spec(), peaking_at(2.7), evaluate_all=batched(2.7), budget=8)
+    assert caught.value.code == "search.no-evaluator"
+
+
+# -- and whether it is worth it, which is measured ------------------------------------
+
+
+def test_the_crossing_point_is_where_serial_and_parallel_meet():
+    """Serial is lanes*one; parallel is one+start. They meet at start/(lanes-1)."""
+    assert search.crossing_point(lanes=4, start_s=0.9) == pytest.approx(0.3)
+    assert search.crossing_point(lanes=2, start_s=0.9) == pytest.approx(0.9)
+
+
+def test_the_cheap_rung_is_not_worth_parallelising_and_the_dear_one_is():
+    """Measured on Blender 5.2.1: a sphere renders in 0.24s and a final in 11.44s."""
+    assert not search.worth_parallel(0.24), "four spheres: 0.95s serial, 1.09s parallel"
+    assert search.worth_parallel(11.44), "four finals: 45.78s serial, 12.30s parallel"
+
+
+def test_more_lanes_make_parallel_worth_it_sooner():
+    assert search.crossing_point(lanes=8) < search.crossing_point(lanes=4)

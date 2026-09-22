@@ -55,30 +55,6 @@ refusing a wand.
 
 ## Block C — The asset compiler
 
-### §PW45 Four samples were meant to be four handles
-
-The job system was built so that four parameter samples are four handles rather than
-four waits, and that was named at the time as what makes a search affordable at all. The
-search does not use it. It calls its evaluator once per sample and waits for each render
-before proposing the next, so a budget of twenty-four samples is twenty-four renders end
-to end where the machine could be running four at a time.
-
-The seam is already in place: the evaluator is a function the search is handed, and
-everything about rendering is on the far side of it. What is missing is a batched form —
-a pass proposes a grid, hands the whole grid over, and gets back a list — and an
-evaluator that starts one job per sample, bounded by `[render] max_parallel`, and
-collects them.
-
-There is a reason it was not built with the search. The render path drives Blender
-through the bpy module in process, and bpy is a singleton that cannot render two scenes
-at once in one interpreter. Parallel samples therefore need the worker, so each sample
-pays an interpreter start it currently avoids. At four spheres that trade is probably a
-loss; at four final characters it is plainly a win, and the crossing point is
-measurable.
-
-So the work is a batched evaluator, a job-backed implementation of it, and the
-measurement that says which rungs it should be the default for.
-
 ## Block D — Fetching from a paid service without surprise
 
 ### §PW46 Record what a normalisation derived

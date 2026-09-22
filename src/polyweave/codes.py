@@ -551,6 +551,23 @@ CODES: dict[str, Code] = {
         "named there is not searched, whatever an optimiser would like",
         doors=("add a search range for each parameter it may turn",),
     ),
+    "search.no-evaluator": Code(
+        means="a search was given no way to evaluate a sample, or two ways",
+        when="both `evaluate` and `evaluate_all` are passed, or neither. They are not "
+        "combined: one renders a sample at a time and the other hands a pass to "
+        "four job handles at once (§PW45)",
+        doors=(
+            "pass `evaluate` for one sample at a time",
+            "pass `evaluate_all` for a whole pass at once",
+        ),
+    ),
+    "search.batch-mismatch": Code(
+        means="a batched evaluator returned a different number of results than samples",
+        when="an `evaluate_all` that dropped, added or reordered a sample. The results "
+        "are matched to the samples by position, so a short list would attach a "
+        "score to the wrong parameters",
+        doors=("return one result per sample, in the order they were given",),
+    ),
     "search.no-budget": Code(
         means="the search was given no renders to spend",
         when="a budget below one",

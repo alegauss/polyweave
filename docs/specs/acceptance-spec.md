@@ -112,6 +112,20 @@ as.
 **A search that has its answer stops paying.** Once the spec passes with nothing left to
 gain, the renders after it buy nothing, and the answer says which of those things ended it.
 
+**A pass is what runs at once, not a sample and not the budget.** The evaluator comes in two
+forms: one takes a sample and one takes a whole pass and returns a list in the same order.
+The second is what lets four samples be four job handles rather than four waits (§PW45). It
+is the pass rather than the whole budget because the stopping above is per pass, and handing
+over everything at once would pay for the samples the answer made unnecessary.
+
+**Whether that is worth it is measured, not assumed.** Blender's Python module is a singleton
+and cannot render two scenes at once in one interpreter, so a parallel sample pays an
+interpreter start — 0.85s, measured. Serial costs `lanes × one`; parallel costs `one + start`.
+They cross at `start / (lanes − 1)`, about 0.28s per render at four lanes. Against the ladder
+on Blender 5.2.1, four at a time: a sphere renders in 0.24s, so 0.95s serial against 1.09s
+parallel, a loss; a final renders in 11.44s, so 45.78s against 12.30s, a win of 3.7×. **So the
+dear rung is what parallelism is for, which is what the cheap rung is for not needing it.**
+
 The winner is reported with its score **against every individual predicate**, so a spec that
 was satisfied by an ugly render is visible as exactly that rather than as a success, along
 with the whole trace of what was tried.

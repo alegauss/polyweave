@@ -23,7 +23,7 @@ import difflib
 import inspect
 import itertools
 import math
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Iterator, Sequence
 from pathlib import Path
 from typing import Any
 
@@ -145,8 +145,9 @@ def rebuilds_in(samples: Sequence[dict], rebuilding: Sequence[str]) -> int:
 
 def search(
     spec: Spec,
-    evaluate: Callable[[dict], dict],
+    evaluate: Callable[[dict], dict] | None = None,
     *,
+    evaluate_all: Callable[[list[dict]], list[dict]] | None = None,
     budget: int = BUDGET,
     points: int = POINTS,
     passes: int = 3,
@@ -158,9 +159,24 @@ def search(
     returns. Everything about rendering is on the other side of it, so this is testable
     without a renderer and a parallel evaluator is a drop-in.
 
+    `evaluate_all` is that drop-in: it takes the whole pass at once and returns a list
+    in the same order, which is what lets four samples be four handles rather than four
+    waits (§PW45). The job system was built for exactly this and the search was not
+    using it, so a budget of twenty-four was twenty-four renders end to end on a machine
+    that could run four at a time. One of the two is required, and never both.
+
     A search that has already found its answer stops: there is no reason to pay for the
-    renders after a spec passes with nothing left to gain.
+    renders after a spec passes with nothing left to gain. That is why a pass is what is
+    batched rather than the whole budget: the stopping is per pass, and handing over
+    every sample at once would pay for the ones the answer made unnecessary.
     """
+    if (evaluate is None) == (evaluate_all is None):
+        raise PolyweaveError(
+            "search.no-evaluator",
+            "a search needs exactly one of evaluate and evaluate_all",
+            "pass `evaluate` for one sample at a time, or `evaluate_all` for a whole "
+            "pass at once",
+        )
     permitted = ranges(spec)
     if budget < 1:
         raise PolyweaveError(
@@ -188,14 +204,31 @@ def search(
         axes = [
             grid(*windows[n], per_axis, steps[n] and float(steps[n])) for n in names
         ]
+        # The pass is settled before anything is evaluated, which is what makes handing
+        # the whole of it over possible: deduplicated against what has been seen and cut
+        # to what the budget still affords (§PW45).
+        wanted: list[tuple[tuple, dict]] = []
         for combination in itertools.product(*axes):
-            if spent >= budget:
+            if spent + len(wanted) >= budget:
                 break
             key = tuple(round(v, 10) for v in combination)
-            if key in seen:
+            if key in seen or any(key == k for k, _ in wanted):
                 continue
-            values = dict(zip(names, combination, strict=True))
-            found = evaluate(values)
+            wanted.append((key, dict(zip(names, combination, strict=True))))
+
+        results = (
+            evaluate_all([v for _, v in wanted])
+            if evaluate_all is not None
+            else [evaluate(v) for _, v in wanted]
+        )
+        if len(results) != len(wanted):
+            raise PolyweaveError(
+                "search.batch-mismatch",
+                f"{len(wanted)} samples were handed over and {len(results)} came back",
+                "return one result per sample, in the order they were given",
+            )
+
+        for (key, values), found in zip(wanted, results, strict=True):
             spent += 1
             sample = {
                 "params": values,
@@ -340,6 +373,133 @@ def renderer(
         return found
 
     return evaluate
+
+
+def in_parallel(
+    spec: Spec,
+    *,
+    out: str | Path,
+    root: str | Path = ".",
+    rung: str | None = None,
+    fixed: dict | None = None,
+    store: Any = None,
+) -> Callable[[list[dict]], list[dict]]:
+    """An evaluator that renders a whole pass at once, one job per sample.
+
+    §PW45. The job system was built so that four parameter samples are four handles
+    rather than four waits, and the search was calling its evaluator once per sample and
+    waiting for each render before proposing the next.
+
+    The reason it was not built this way to begin with is real and still holds: the
+    render path drives Blender through the bpy module in process, and bpy is a
+    singleton that cannot render two scenes at once in one interpreter. So each sample
+    here pays an interpreter start that `renderer` avoids — a loss on cheap rungs and a
+    win on dear ones, and `crossing_point` is how a project finds out which is which.
+
+    Each sample writes its own picture, because they are in flight together and one
+    path would be one file four processes were writing. The checking happens back here,
+    in this process, since it costs no renderer.
+    """
+    from .jobs import JobStore
+
+    at = rung or spec.needs_rung()
+    turnable(_bake_signature(), ranges(spec), also=fixed or {})
+    jobs = store or JobStore.for_project(root)
+    where = Path(out)
+
+    def evaluate_all(samples: list[dict]) -> list[dict]:
+        if not samples:
+            return []
+        started: list[tuple[str, Path]] = []
+        found: list[dict] = []
+        # Bounded by what the project allows at once, and collected in batches of that
+        # size: `start` refuses past the ceiling rather than queueing, which is the
+        # right behaviour to obey rather than to work around.
+        for batch in _chunked(list(enumerate(samples)), jobs.max_parallel):
+            for index, values in batch:
+                picture = where.with_name(f"{where.stem}-{index:03d}{where.suffix}")
+                handle = jobs.start(
+                    "polyweave.render:bake",
+                    kind="bake",
+                    label=f"sample {index}",
+                    args={
+                        "out": str(picture),
+                        "rung": at,
+                        "inline": False,
+                        "root": str(root),
+                        **(fixed or {}),
+                        **values,
+                    },
+                )
+                started.append((handle["job"], picture))
+            for job, picture in started[len(found) :]:
+                done = jobs.result(job, wait=True)
+                if done.get("status") != "done":
+                    # Raised rather than scored: a sample whose render failed has no
+                    # picture, and checking the absent file would report the failure as
+                    # a missing path instead of as whatever actually went wrong.
+                    raise PolyweaveError.from_dict(done.get("error") or {})
+                drawn = done.get("result") or {}
+                checked = accept.check(spec, Path(root) / picture, rung=at, root=root)
+                checked["render"] = {
+                    "cache_key": drawn.get("cache_key"),
+                    "cached": drawn.get("cached"),
+                    "artefact": drawn.get("artefact"),
+                }
+                found.append(checked)
+        return found
+
+    return evaluate_all
+
+
+#: What a worker costs before it renders anything: spawning an interpreter and importing
+#: bpy. Measured at 0.85s on Blender 5.2.1 — a sphere render that takes 0.24s in process
+#: took 1.09s round-tripped through a job.
+WORKER_START_S = 0.85
+
+
+def crossing_point(*, lanes: int = 4, start_s: float = WORKER_START_S) -> float:
+    """How long one render must take before running `lanes` of them at once pays.
+
+    §PW45's open question, answered with arithmetic over a measurement rather than with
+    a rule of thumb. Serial costs `lanes * one`; parallel costs `one + start_s`, since
+    the lanes overlap and each pays its own interpreter start only once. They meet at
+    `start_s / (lanes - 1)`.
+
+    Measured against the ladder on Blender 5.2.1, four samples at a time:
+
+    | rung    | one render | serial | parallel |         |
+    |---------|-----------:|-------:|---------:|---------|
+    | sphere  |      0.24s |  0.95s |    1.09s | a loss  |
+    | preview |      0.22s |  0.86s |    1.07s | a loss  |
+    | final   |     11.44s | 45.78s |   12.30s | 3.7x    |
+
+    So **parallel is for the dear rung and not the cheap ones**, which is what the cheap
+    rung is for. The parallel column is the optimistic bound — four Blenders contend for
+    the same cores — so the crossing sits somewhat above what this returns, and a rung
+    near it should be measured rather than assumed.
+    """
+    return float(start_s) / max(1, int(lanes) - 1)
+
+
+def worth_parallel(
+    seconds_per_render: float, *, lanes: int = 4, start_s: float = WORKER_START_S
+) -> bool:
+    """Whether four handles beat four waits, for a render that costs this much."""
+    return float(seconds_per_render) > crossing_point(lanes=lanes, start_s=start_s)
+
+
+def _bake_signature() -> Callable:
+    """The renderer a job will run, for checking the axes against before spawning."""
+    from . import render as R
+
+    return R.bake
+
+
+def _chunked(items: list, size: int) -> Iterator[list]:
+    size = max(1, int(size))
+    for start in range(0, len(items), size):
+        yield items[start : start + size]
 
 
 def sweep(

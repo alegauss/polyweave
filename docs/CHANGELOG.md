@@ -31,6 +31,7 @@
 - ✅ **PW13** **a rig number is found by rendering, looking, and changing it by hand, one sample at a time** — A rig number is found by searching the range the spec permits, on a stated budget of renders, reported against every predicate it was scored on (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW14** **a search re-renders states it has already rendered** — An identical render is returned from the store instead of paid for again, keyed on everything that can change it, and a hit says it was one (design recorded in `docs/specs/provenance.md`).
 - ✅ **PW15** **a search reports the winning numbers and not what it rejected** — A search writes down every sample it scored and lays the best handful side by side, so a spec satisfied by a wrong render is visible as that (design recorded in `docs/specs/acceptance-spec.md`).
+- ✅ **PW45** **a search renders its samples one after another, so a budget of twenty-four costs twenty-four waits** — A pass can be handed over whole and rendered through job handles, and the crossing is measured: a loss on the sphere rung, 3.7x on the final one (design recorded in `docs/specs/acceptance-spec.md`).
 
 ## Block D — Fetching from a paid service without surprise
 

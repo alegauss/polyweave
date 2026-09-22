@@ -9,8 +9,6 @@
 
 ## Block C — The asset compiler
 
-- 📋 **PW45** (deps: —) **a search renders its samples one after another, so a budget of twenty-four costs twenty-four waits** — The job handles exist so four samples can run at once, and the search calls its evaluator once per sample and waits for each render before proposing the next. → §PW45
-
 ## Block D — Fetching from a paid service without surprise
 
 - 📋 **PW46** (deps: —) **a normalised mesh sits beside the paid one with nothing recording what it derives from** — Ingest writes a second file and returns the transform to its caller, so the mesh the project loads is one `verify` reads as an artefact nothing recorded. → §PW46

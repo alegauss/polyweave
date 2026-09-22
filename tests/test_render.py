@@ -409,3 +409,50 @@ def test_a_bake_runs_as_a_job_and_reports_its_stages(project, mesh):
     assert done["status"] == "done", done["error"]
     assert done["result"]["rung"] == "sphere"
     assert (project / "job.png").is_file()
+
+
+# -- four samples as four handles (§PW45) ---------------------------------------------
+
+
+def test_a_pass_renders_through_job_handles_rather_than_one_at_a_time(project):
+    """The job system was built for this and the search was not using it."""
+    from polyweave import accept, search
+
+    (project / "m.accept.toml").write_text(
+        "asset = 'mascot'\n"
+        "rung = 'sphere'\n"
+        "[[predicate]]\n"
+        "id = 'lit'\n"
+        "measure = 'luma_p50'\n"
+        "min = 0.0\n"
+        "[search.key]\n"
+        "min = 200.0\n"
+        "max = 600.0\n",
+        encoding="utf-8",
+    )
+    spec = accept.read(project / "m.accept.toml")
+    every = search.in_parallel(spec, out="s.png", root=project)
+
+    found = every([{"key": 200.0}, {"key": 400.0}, {"key": 600.0}])
+    assert len(found) == 3, "one result per sample, in the order they were given"
+    assert all(one["predicates"] for one in found)
+    # Each sample wrote its own picture, since they were in flight together.
+    assert sorted(p.name for p in project.glob("s-*.png")) == [
+        "s-000.png",
+        "s-001.png",
+        "s-002.png",
+    ]
+
+
+def test_an_empty_pass_starts_no_jobs(project):
+    from polyweave import accept, search
+
+    spec = accept.parse(
+        {
+            "asset": "m",
+            "rung": "sphere",
+            "predicate": [{"id": "lit", "measure": "luma_p50", "min": 0.0}],
+            "search": {"key": {"min": 200.0, "max": 600.0}},
+        }
+    )
+    assert search.in_parallel(spec, out="s.png", root=project)([]) == []

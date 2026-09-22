@@ -27,7 +27,7 @@ export interface GeneratedNonGoal {
 export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 2 },
   { block: "B", title: "Seeing the result cheaply", open: 0 },
-  { block: "C", title: "The asset compiler", open: 1 },
+  { block: "C", title: "The asset compiler", open: 0 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 2 },
   { block: "E", title: "One world with the engine", open: 1 },
   { block: "F", title: "Motion", open: 0 },
@@ -48,13 +48,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "A",
     symptom: "a render holding two opaque pixels in one corner is empty for every purpose and passes every check",
     why: "Coverage clears the alpha floor and the two pixels differ, so neither assertion fires, and the obvious number to compare against would refuse a correctly framed thin asset.",
-    deps: [],
-  },
-  {
-    id: "PW45",
-    block: "C",
-    symptom: "a search renders its samples one after another, so a budget of twenty-four costs twenty-four waits",
-    why: "The job handles exist so four samples can run at once, and the search calls its evaluator once per sample and waits for each render before proposing the next.",
     deps: [],
   },
   {
