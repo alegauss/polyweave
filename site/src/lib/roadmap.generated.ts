@@ -26,7 +26,7 @@ export interface GeneratedNonGoal {
 
 export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 2 },
-  { block: "B", title: "Seeing the result cheaply", open: 2 },
+  { block: "B", title: "Seeing the result cheaply", open: 1 },
   { block: "C", title: "The asset compiler", open: 1 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 2 },
   { block: "E", title: "One world with the engine", open: 1 },
@@ -48,13 +48,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "A",
     symptom: "a render holding two opaque pixels in one corner is empty for every purpose and passes every check",
     why: "Coverage clears the alpha floor and the two pixels differ, so neither assertion fires, and the obvious number to compare against would refuse a correctly framed thin asset.",
-    deps: [],
-  },
-  {
-    id: "PW43",
-    block: "B",
-    symptom: "a colour measured off a render is not the colour that was authored, and nothing says so",
-    why: "An emission that should land on sRGB 128 came back at 161, and at 172 after asking for the standard view transform, because this Blender ships without the colour configuration.",
     deps: [],
   },
   {

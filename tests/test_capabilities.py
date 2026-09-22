@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import sys
 
+import pytest
+
 from polyweave.capabilities import capabilities
 
 
@@ -80,3 +82,51 @@ def test_what_is_not_established_yet_names_the_line_that_will():
 
 def test_a_budget_nobody_declared_is_not_an_unlimited_one():
     assert capabilities(probe=False)["budget"]["spendable"] is False
+
+
+# -- whether a colour can be measured here at all (§PW43) ------------------------
+
+
+def test_an_unprobed_read_does_not_render_anything():
+    """A colour check costs a render, so it belongs to the probing read only."""
+    found = capabilities(probe=False)["renderer"]["colour"]
+    assert found["checked"] is False
+    assert found["why"] == "not probed"
+
+
+def test_usable_and_trustworthy_are_different_questions(tmp_path):
+    """A renderer that runs can hand back a colour that is not the authored one."""
+    found = capabilities(tmp_path)["renderer"]
+    assert set(found) >= {"usable", "colour"}
+
+
+def test_this_installation_says_whether_a_measured_colour_is_the_authored_one(tmp_path):
+    """§PW43's whole point: an installation that cannot measure colour says so."""
+    bpy = pytest.importorskip("bpy", reason="the probe needs a renderer")
+    assert bpy
+    found = capabilities(tmp_path)["renderer"]["colour"]
+    assert found["checked"] is True
+    assert found["authored"] == 128
+    assert found["view_transform"], "and which transform produced that"
+    if found["trustworthy"]:
+        assert found["off_by"] <= 2
+        assert found["why"] is None
+    else:
+        assert "came back as" in found["why"], "a failure names the number it saw"
+
+
+def test_the_probe_is_deterministic_so_a_second_read_agrees_with_the_first(tmp_path):
+    bpy = pytest.importorskip("bpy", reason="the probe needs a renderer")
+    assert bpy
+    first = capabilities(tmp_path)["renderer"]["colour"]["measured"]
+    assert capabilities(tmp_path)["renderer"]["colour"]["measured"] == first
+
+
+def test_a_machine_with_no_renderer_says_that_rather_than_failing(monkeypatch):
+    """The read is a report. A probe that cannot run is an answer, not a stop."""
+    from polyweave.render import blender
+
+    monkeypatch.setattr(blender, "available", lambda: {"found": False, "why": "none"})
+    found = capabilities(probe=True)["renderer"]["colour"]
+    assert found["checked"] is False
+    assert "bpy is not importable" in found["why"]

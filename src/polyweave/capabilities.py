@@ -72,6 +72,32 @@ def _blender_module() -> dict:
     return blender.available()
 
 
+def _colour(work: Path, probe: bool) -> dict:
+    """Whether a colour measured off a render here is the colour that was authored.
+
+    §PW43: a request for the view transform that puts back what was put in can be
+    accepted and not take effect, and then every `delta_e` in every acceptance spec is
+    measuring the tone curve as much as the material — silently, and with a result that
+    looks plausible. One small render settles it for every measurement built on top,
+    which is why it sits here rather than being discovered by a search that tuned the
+    lighting to compensate for a transform.
+    """
+    if not probe:
+        return {"checked": False, "why": "not probed"}
+    from .render import blender
+
+    if not blender.available().get("found"):
+        return {"checked": False, "why": "bpy is not importable, so nothing can render"}
+    try:
+        work.mkdir(parents=True, exist_ok=True)
+        return blender.colour_probe(work / "colour-probe.png")
+    except Exception as exc:  # noqa: BLE001 - a probe that fails is an answer, not a stop
+        return {
+            "checked": False,
+            "why": f"the probe render failed: {type(exc).__name__}: {exc}",
+        }
+
+
 def _describe_binary(binary: str, where: Path, probe: bool) -> dict:
     """Ask the binary, or say only where it would be looked for."""
     if probe:
@@ -125,6 +151,9 @@ def capabilities(
             "blender": renderer,
             "bpy": module,
             "usable": bool(module.get("found") or renderer.get("found")),
+            # Usable and trustworthy are different questions: a renderer that runs can
+            # still hand back a colour that is not the one authored (§PW43).
+            "colour": _colour(config.path("paths.work"), probe),
         },
         "engine": {"godot": engine},
         "service": service,

@@ -53,29 +53,6 @@ refusing a wand.
 
 ## Block B — Seeing the result cheaply
 
-### §PW43 An installation that cannot measure colour should say so
-
-The render path asks Blender for the view transform that puts back what was put in, so a
-measured colour and an authored one are the same number. On the bpy module installed
-here that request is accepted and does not take effect: the wheel ships without the
-colour configuration the transforms are defined in, and the scene keeps the one it had.
-
-It was measured. An emission of linear 0.2158605 — sRGB 0.5, which should land on 128 —
-came back at 161 under the default transform and 172 after asking for the standard one.
-Neither is 128, and the second is further away than the first, so the request did
-something without doing the right thing.
-
-Every predicate in an acceptance spec compares a measured colour against a target. On an
-installation like this one, `delta_e` against a hex value is measuring the tone curve as
-much as the material, and a search would tune the lighting to compensate for a transform
-rather than to match the colour. The failure is silent and the result looks plausible.
-
-The record already carries the transform in force, so a difference is attributable after
-the fact. What is missing is the check before it: a known colour rendered and compared
-against what it should be, once, as part of what `capabilities` reports — so an
-installation that cannot measure colour says so rather than answering confidently. One
-small render settles it for every measurement built on top.
-
 ### §PW44 The noise floor is measurable, and configuring it is a guess
 
 `[tolerance] render_noise` is one number for a project, and the noise it describes is

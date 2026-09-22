@@ -22,6 +22,7 @@
 - ✅ **PW9** **a mean over an image agrees while the look is plainly wrong** — Saturation, luma and hue spread come back as distributions over the frame or the subject, so a picture that is wrong at the 99th percentile says so (design recorded in `docs/specs/measurements.md`).
 - ✅ **PW10** **an asset is judged alone and then lands beside five siblings it does not match** — An asset is composited onto a sheet with its siblings or into the screen it belongs to, and the measurement runs on that rather than the lone file (design recorded in `docs/specs/context.md`).
 - ✅ **PW11** **a bake is not byte-reproducible, so a file diff cannot say whether anything changed** — Two renders are compared with a tolerance rather than byte-wise, and a path tracer's own noise sits fifty times below a real change (design recorded in `docs/specs/measurements.md`).
+- ✅ **PW43** **a colour measured off a render is not the colour that was authored, and nothing says so** — Capabilities renders one known colour and reports what came back, so an installation that cannot measure colour says so before a spec is built on it (design recorded in `docs/specs/tool-surface.md`).
 
 ## Block C — The asset compiler
 

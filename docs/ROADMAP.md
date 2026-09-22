@@ -7,7 +7,6 @@
 
 ## Block B — Seeing the result cheaply
 
-- 📋 **PW43** (deps: —) **a colour measured off a render is not the colour that was authored, and nothing says so** — An emission that should land on sRGB 128 came back at 161, and at 172 after asking for the standard view transform, because this Blender ships without the colour configuration. → §PW43
 - 📋 **PW44** (deps: —) **one configured noise floor calls every preview-sized render a change, because the floor moves with the rung** — Two seeds of one scene measured 0.046 apart at four samples and 0.014 at sixty-four, against a configured default of 0.004 calibrated for a final render. → §PW44
 
 ## Block C — The asset compiler

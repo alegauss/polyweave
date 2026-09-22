@@ -267,6 +267,98 @@ def _standard_colour(scene: Any) -> None:
         scene.view_settings.view_transform = VIEW_TRANSFORM
 
 
+#: The colour the probe renders, as linear and as the sRGB byte it must come back as.
+#: 0.2158605 is sRGB 0.5, which is the middle of the range and the place a tone curve
+#: bends furthest, so it is the most sensitive single value to check with.
+PROBE_LINEAR = 0.2158605
+PROBE_SRGB = 128
+
+#: How far the measured byte may sit from the authored one and still be called sound.
+#: Two, because that is the whole variation measured across framings of this probe on a
+#: sound installation, and the failure it has to catch was thirty-three.
+PROBE_TOLERANCE = 2
+
+
+def colour_probe(path: str | Path) -> dict:
+    """Render one known colour and report whether it comes back as itself.
+
+    §PW43. The render path asks Blender for the view transform that puts back what was
+    put in, so a measured colour and an authored one are the same number. On the bpy
+    module installed here that request is accepted and does not take effect: the wheel
+    ships without the colour configuration the transforms are defined in, and the scene
+    keeps the one it had. Measured, an emission of linear 0.2158605 — sRGB 0.5, which
+    should land on 128 — came back at 161 under the default transform and 172 after
+    asking for the standard one. Neither is 128, and the second is further away.
+
+    Every predicate in an acceptance spec compares a measured colour against a target,
+    so on an installation like that one `delta_e` against a hex value measures the tone
+    curve as much as the material, and a search would tune the lighting to compensate
+    for a transform rather than to match the colour. The failure is silent and the
+    result looks plausible, which is why this is a check and not a note.
+
+    **On Blender 5.2.1 that failure does not reproduce.** Run here on 2026-09-22 the
+    probe returns 128 exactly, under a view transform that reports itself as `Standard`,
+    five times out of five. The 161 and 172 are kept above because they are what was
+    measured when the line was written, and this is a check whose whole purpose is that
+    the answer differs by machine rather than a claim about every machine. What the
+    probe is for is saying which kind of installation this one is, before a spec is
+    written against it.
+
+    An emission rather than a lit surface, because the question is only about the
+    pipeline between a value and a byte: a shaded material would put the lighting's
+    arithmetic in the way of the one thing being measured. The **median** rather than
+    the mean, because a flat world at this size still comes back spanning 120 to 140 —
+    the film filter and not sampling, since sixteen samples give the same spread as one
+    — and the middle of that is the answer while its average is at the mercy of the
+    tails.
+    """
+    import numpy as np
+
+    bpy = require()
+    scene = reset()
+    scene.render.film_transparent = False
+    scene.world = bpy.data.worlds.new("probe")
+    scene.world.use_nodes = True
+    background = scene.world.node_tree.nodes.get("Background")
+    background.inputs["Color"].default_value = (
+        PROBE_LINEAR,
+        PROBE_LINEAR,
+        PROBE_LINEAR,
+        1.0,
+    )
+    background.inputs["Strength"].default_value = 1.0
+    scene.view_settings.exposure = 0.0
+    _standard_colour(scene)
+    # A camera pointing at nothing, because Cycles will not render without one and the
+    # world is what fills the frame.
+    camera = bpy.data.objects.new("probe", bpy.data.cameras.new("probe"))
+    scene.collection.objects.link(camera)
+    scene.camera = camera
+    # One sample and eight pixels: the world fills the frame whatever the camera does,
+    # so nothing here is a question about sampling.
+    out = render_to(scene, path, size=8, samples=1, seed=0)
+
+    from ..image import load as load_image
+
+    measured = int(np.median(load_image(out).rgba[:, :, :3]))
+    off_by = abs(measured - PROBE_SRGB)
+    sound = off_by <= PROBE_TOLERANCE
+    return {
+        "checked": True,
+        "authored": PROBE_SRGB,
+        "measured": measured,
+        "off_by": off_by,
+        "trustworthy": sound,
+        "view_transform": scene.view_settings.view_transform,
+        "display_device": scene.display_settings.display_device,
+        "why": None
+        if sound
+        else f"a colour authored as {PROBE_SRGB} came back as {measured}; this "
+        f"installation's view transform is {scene.view_settings.view_transform!r} "
+        f"and a measured colour is not the authored one",
+    }
+
+
 def _socket_names(bsdf: Any) -> list[str]:
     return [i.name.lower().replace(" ", "_") for i in bsdf.inputs]
 

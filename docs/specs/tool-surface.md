@@ -162,6 +162,15 @@ both answers.
   binary**, never inferred from a path existing, and a key is reported present or absent and
   never echoed. What no line has established yet is named as pending, with the line that
   will establish it, because "nobody has said" and "there is none" are different answers.
+- **Usable and trustworthy are different questions.** A renderer that runs can still hand
+  back a colour that is not the one that was authored: the request for the view transform
+  that puts back what was put in can be accepted and not take effect, and then every
+  `delta_e` in every acceptance spec measures the tone curve as much as the material, and a
+  search tunes the lighting to compensate for a transform (§PW43). So `capabilities` renders
+  **one known colour** — a flat emission of linear 0.2158605, which is sRGB 128 — and reports
+  what came back, alongside the transform in force. An installation that cannot measure
+  colour says so, before a spec is written against it, rather than answering confidently.
+  The check belongs to the probing read, because it costs a render.
 
 ## 5. Configuration is resolved per call
 
