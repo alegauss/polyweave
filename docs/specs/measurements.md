@@ -96,6 +96,20 @@ separation on that case rather than assert it.
 Thresholds are per comparison and come from `[tolerance]` in the project config. The bar for
 sampler noise is not the bar for a silhouette that has to land within three pixels.
 
+`distance` is **the worst patch, not the average pixel**. The difference is pooled over 8×8
+blocks and the largest block is reported. Pooling is the whole separation: a path tracer's
+error is uncorrelated between neighbours and averages away inside a patch however many
+pixels carry it, while a real change is contiguous and survives the average at full
+strength. Counting differing pixels cannot tell those apart; averaging over a neighbourhood
+can. The worst block rather than the mean block, because §PW9's lesson applies here too — a
+highlight that moved is small, and an average over the frame dilutes it away.
+
+**Alpha is applied before the comparison.** The colour beneath a fully transparent pixel is
+undefined: a renderer writes whatever it had there, and two runs of one unchanged scene
+disagree about it entirely. Comparing raw channels over a transparent background measures
+the renderer's scratch memory and nothing else — measured here as the difference between a
+useless metric and one that separates noise from change by a factor of fifty.
+
 ## At display size
 
 | Measure | Range | What it is |

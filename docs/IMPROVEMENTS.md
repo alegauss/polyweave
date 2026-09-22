@@ -142,21 +142,6 @@ is one stray edge pixel is empty for every purpose and passes.
 
 ## Block B — Seeing the result cheaply
 
-### §PW11 Change is perceptual, not byte-wise
-
-Two runs of one unchanged path-traced scene differ. Cottony measured 29,696 differing
-pixels across a render nobody had touched, none of them by more than 1/255. So the
-natural question, did this change anything, cannot be asked of the bytes, and a gate
-comparing files will fire on every single run. What is needed instead is a comparison
-with a tolerance: a perceptual distance between two renders and a stated threshold below
-which they are the same picture. That makes three things possible that are impossible
-now. A change that should move nothing can be proved to have moved nothing, which is the
-only real proof that an opt-in default is genuinely opt-in. A visual regression can be
-caught without a person looking at it. And a cache can return a hit without anyone
-having to wonder whether the hit was subtly wrong. The threshold is configuration and it
-is per comparison, because the bar for sampler noise is not the bar for a silhouette
-that has to land within three pixels.
-
 ### §PW43 An installation that cannot measure colour should say so
 
 The render path asks Blender for the view transform that puts back what was put in, so a
@@ -179,6 +164,30 @@ the fact. What is missing is the check before it: a known colour rendered and co
 against what it should be, once, as part of what `capabilities` reports — so an
 installation that cannot measure colour says so rather than answering confidently. One
 small render settles it for every measurement built on top.
+
+### §PW44 The noise floor is measurable, and configuring it is a guess
+
+`[tolerance] render_noise` is one number for a project, and the noise it describes is
+not one number. Two seeds of one unchanged scene were measured on a 48-pixel sphere at
+four samples and came back 0.046 apart; at sixty-four samples the same pair sat at
+0.014. The configured default is 0.004, which is calibrated for a full-size final render
+and calls every preview a change.
+
+The separation is not in doubt — a changed material measured 0.75 against both, fifty
+times the floor — so the metric works. What is missing is that the floor depends on the
+rung a render was taken at, and nothing says so. A caller stating its own tolerance gets
+the right answer and one relying on the default does not, which is the defect
+configuration removes.
+
+Two ways out. The narrow one is a tolerance per rung: `[tolerance] render_noise` becomes
+a table keyed like `[render] samples`, read for the rung the renders already record. The
+wider one is to stop configuring the floor and measure it — render the scene twice at
+that rung and use the distance between them as the bar. It costs one render and it is
+right on any machine at any sample count, which a configured number never is.
+
+The second is better and the first is cheaper, and a measured floor also wants somewhere
+to be cached — which is the cache in Block C, so the decision is worth taking after it
+lands.
 
 ## Block C — The asset compiler
 

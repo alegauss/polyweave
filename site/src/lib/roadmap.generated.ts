@@ -79,17 +79,17 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW11",
-    block: "B",
-    symptom: "a bake is not byte-reproducible, so a file diff cannot say whether anything changed",
-    why: "Two runs of one unchanged scene differed in 29,696 pixels and none by more than 1/255, so equality is the wrong question and a tolerance is the right one.",
-    deps: [],
-  },
-  {
     id: "PW43",
     block: "B",
     symptom: "a colour measured off a render is not the colour that was authored, and nothing says so",
     why: "An emission that should land on sRGB 128 came back at 161, and at 172 after asking for the standard view transform, because this Blender ships without the colour configuration.",
+    deps: [],
+  },
+  {
+    id: "PW44",
+    block: "B",
+    symptom: "one configured noise floor calls every preview-sized render a change, because the floor moves with the rung",
+    why: "Two seeds of one scene measured 0.046 apart at four samples and 0.014 at sixty-four, against a configured default of 0.004 calibrated for a final render.",
     deps: [],
   },
   {

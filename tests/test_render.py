@@ -309,6 +309,41 @@ def test_the_measurements_are_in_the_record_too(project):
     assert "alpha_coverage" in record["measurements"]
 
 
+# -- a path tracer's own noise, against a real change ----------------------------------
+
+
+def test_a_path_tracers_own_noise_is_far_below_a_real_change(project):
+    """The separation `measurements.md` demands, on noise this machine actually made.
+
+    The tolerance is stated here rather than taken from the default, because the default
+    is calibrated for a full-size final render and these are 48 pixels across. That the
+    floor moves with the rung is §PW44; what this test holds is the separation, which is
+    what makes any threshold between them findable at all.
+    """
+    from polyweave import measure
+
+    red = {"base_color": [0.8, 0.2, 0.2, 1.0]}
+    blue = {"base_color": [0.2, 0.2, 0.9, 1.0]}
+
+    render.bake(Reported(), out="s1.png", rung="sphere", material=red, root=project)
+    render.bake(Reported(), out="s3.png", rung="sphere", material=blue, root=project)
+    (project / C.FILENAME).write_text(
+        (project / C.FILENAME)
+        .read_text(encoding="utf-8")
+        .replace("seed = 11", "seed = 12"),
+        encoding="utf-8",
+    )
+    render.bake(Reported(), out="s2.png", rung="sphere", material=red, root=project)
+
+    at = {"root": project, "region": "frame", "tolerance": 0.1}
+    twins = measure.same(project / "s1.png", project / "s2.png", **at)
+    changed = measure.same(project / "s1.png", project / "s3.png", **at)
+
+    assert twins["same"] is True, twins
+    assert changed["same"] is False, changed
+    assert changed["distance"] > twins["distance"] * 10
+
+
 # -- through a job, which is how a caller actually reaches it -------------------------
 
 

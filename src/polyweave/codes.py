@@ -456,6 +456,11 @@ CODES: dict[str, Code] = {
         "a question nobody asked",
         doors=("pass the argument the measure names",),
     ),
+    "spec.size-mismatch": Code(
+        means="two images being compared are not the same size",
+        when="a comparison between renders taken at different rungs",
+        doors=("render both at the same rung", "scale one before comparing"),
+    ),
     "spec.empty-region": Code(
         means="the region a measurement was asked for holds no pixels",
         when="a subject region on an image whose alpha is everywhere below the floor",
