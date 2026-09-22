@@ -63,6 +63,20 @@ Three rules, each of which exists because its absence splits the cache:
 3. **Paths relative to the project root, forward slashes.** A key computed on Windows and one
    computed elsewhere must agree.
 
+The subset is serialised as a **flat object**, so that naming the fields is enough to
+reproduce the key:
+
+```json
+{"engine_bindings":"bpy 4.2.0","engine_name":"cycles","engine_version":"4.2.1",
+ "inputs":[{"role":"mesh","sha256":"41ab…"}],"kind":"render",
+ "params":{"form":2.5,"light":2.7},"producer_version":"0.3.1","rung":"final",
+ "samples":512,"seed":20260922}
+```
+
+An input each carries only `role` and `sha256`, in the order the operation declared them.
+An absent field is `null` rather than omitted, so adding a field later changes every key
+exactly once rather than only for the records that happened to carry it.
+
 ## Layout
 
 ```
@@ -93,3 +107,13 @@ missing is dropped rather than repaired.
 `verify` walks every `.prov.json` in the project and answers one question: is every artefact
 the records claim to hold actually present, and does it still hash to what was written down.
 Today nothing can answer that at all, which is how a paid mesh came to be recorded and lost.
+
+It **reports rather than refuses**, because the answer to "what is missing" is a list and one
+broken record must not hide the next. Four outcomes per record: sound, the artefact is
+**missing**, the artefact **changed** — with both digests, so the difference is attributable
+— or the record itself is **unreadable**.
+
+An input that lives outside the project tree is recorded by its absolute path rather than
+refused. Paths are not in the key, so a shared library outside the tree still yields the same
+key on another machine; what it costs is that the record alone does not say where to find
+that file on a machine that has it elsewhere.

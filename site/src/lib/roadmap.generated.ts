@@ -37,13 +37,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 
 export const generatedTasks: GeneratedTask[] = [
   {
-    id: "PW6",
-    block: "A",
-    symptom: "the renderer's version is not recorded, so a render that moved cannot be told from a change",
-    why: "A bake is not byte-reproducible, and without the library versions and the seed beside the output there is no way to attribute a difference to anything.",
-    deps: [],
-  },
-  {
     id: "PW37",
     block: "A",
     symptom: "a renderer outlives the worker that started it, and a sweep on Windows cannot find it to end it",
@@ -69,6 +62,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "A",
     symptom: "a tolerance has one default in the project config and a different one in the function that uses it",
     why: "A check falls back to an alpha floor of zero while the config declares 0.02, so an operation that forgets to pass it measures the background as part of the subject.",
+    deps: [],
+  },
+  {
+    id: "PW41",
+    block: "A",
+    symptom: "an artefact that was produced without a record is invisible, because verify starts from the records",
+    why: "A paid mesh with no sidecar reads as a sound project, and re-buying it is the only way to find out what it was made from.",
     deps: [],
   },
   {
@@ -125,7 +125,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "C",
     symptom: "a search re-renders states it has already rendered",
     why: "A parameter sweep revisits neighbourhoods, and without a cache keyed on the inputs the same picture is paid for as many times as the search returns to it.",
-    deps: ["PW6", "PW13"],
+    deps: ["PW13"],
   },
   {
     id: "PW15",

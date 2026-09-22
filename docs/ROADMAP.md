@@ -2,11 +2,11 @@
 
 ## Block A — What a tool call costs the turn
 
-- 📋 **PW6** (deps: —) **the renderer's version is not recorded, so a render that moved cannot be told from a change** — A bake is not byte-reproducible, and without the library versions and the seed beside the output there is no way to attribute a difference to anything. → §PW6
 - 📋 **PW37** (deps: —) **a renderer outlives the worker that started it, and a sweep on Windows cannot find it to end it** — taskkill walks a tree from the living parent, so a worker that died takes its handle to its children with it, and the render goes on spending a core nobody is watching. → §PW37
 - 📋 **PW38** (deps: —) **a height field survives an eight-bit round trip as a staircase, and every assertion says it is fine** — The third silent failure behind the post-conditions is a blur that quantises a gradient, invisible in a shadow and ruinous under a specular, and no colour or coverage check sees it. → §PW38
 - 📋 **PW39** (deps: —) **a job checks only that an argument exists while a direct call checks its range, so one call has two contracts** — The worker reads a target's signature and describe reads its registration, so a value the surface would refuse still costs a spawn and a failed job to discover. → §PW39
 - 📋 **PW40** (deps: —) **a tolerance has one default in the project config and a different one in the function that uses it** — A check falls back to an alpha floor of zero while the config declares 0.02, so an operation that forgets to pass it measures the background as part of the subject. → §PW40
+- 📋 **PW41** (deps: —) **an artefact that was produced without a record is invisible, because verify starts from the records** — A paid mesh with no sidecar reads as a sound project, and re-buying it is the only way to find out what it was made from. → §PW41
 
 ## Block B — Seeing the result cheaply
 
@@ -20,7 +20,7 @@
 
 - 📋 **PW12** (deps: PW9) **what counts as a correct render lives in somebody's head, so it is approved by opinion** — Nothing states that a face must read the drawing's own colour or that a silhouette must land within three pixels, so no later change can be checked against it. → §PW12
 - 📋 **PW13** (deps: PW7, PW12) **a rig number is found by rendering, looking, and changing it by hand, one sample at a time** — Cottony's fourteen tuned constants were each discovered that way at two minutes a sample, which is the single largest cost in making an asset. → §PW13
-- 📋 **PW14** (deps: PW6, PW13) **a search re-renders states it has already rendered** — A parameter sweep revisits neighbourhoods, and without a cache keyed on the inputs the same picture is paid for as many times as the search returns to it. → §PW14
+- 📋 **PW14** (deps: PW6 ✅, PW13) **a search re-renders states it has already rendered** — A parameter sweep revisits neighbourhoods, and without a cache keyed on the inputs the same picture is paid for as many times as the search returns to it. → §PW14
 - 📋 **PW15** (deps: PW13) **a search reports the winning numbers and not what it rejected** — A result nobody can inspect is one nobody can overrule, and a rig tuned against the wrong criterion looks exactly like a rig tuned against the right one. → §PW15
 
 ## Block D — Fetching from a paid service without surprise

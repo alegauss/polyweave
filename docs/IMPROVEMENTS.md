@@ -2,21 +2,6 @@
 
 ## Block A — What a tool call costs the turn
 
-### §PW6 Every output carries what produced it
-
-A path-traced bake is not byte-reproducible. Two runs of one unchanged scene in Cottony
-differed in 29,696 pixels, none of them by more than 1/255. That is normal for the
-technique and fatal for attribution: when a render changes, nothing says whether the
-scene moved, a library moved, or the sampler simply landed somewhere else. The answer is
-a sidecar written beside every artefact recording what produced it. The versions of the
-renderer and its bindings, the seed, the sample count, the hashes of every input, the
-parameter values, and the elapsed time. It costs nothing to write and it is the only
-thing that makes a difference explicable weeks later. It also makes the cache in Block C
-correct rather than hopeful, because the cache key is exactly this record. And it is
-what allows a regression to be bisected at all: a render that got worse is compared
-against the record of the last one that was right, and the fields that changed between
-them are the suspect list.
-
 ### §PW37 Ending a renderer whose parent is gone
 
 A worker is killed, or simply dies, and the Blender it started keeps rendering. `cancel`
@@ -107,6 +92,30 @@ The cost is that every call site resolves the config first. A resolved tolerance
 object, passed once into an operation, would carry all four together and would also give
 the provenance record the values actually in force rather than whatever the file holds
 when it is read back.
+
+### §PW41 The half of the question verify cannot ask
+
+`verify` walks the records and checks their artefacts. It cannot walk the artefacts and
+check their records, because it has no idea which files in a project are supposed to
+have one. A mesh that was paid for, downloaded, committed, and never recorded is
+invisible to it: there is no sidecar to start from, so nothing is reported and the
+project looks sound.
+
+That is the more expensive half of the same failure. A recorded artefact that went
+missing costs a re-render. An unrecorded one that was paid for costs the credits again,
+and nothing says which of the meshes in the tree those are.
+
+What is missing is a statement of which files are supposed to carry a record. The config
+already names the directories that hold produced artefacts — `[paths] meshes` and
+`[paths] renders` — and the extensions are knowable from what the plugin writes. So the
+check is: every file under those directories with a produced extension has a sidecar,
+and anything that does not is named.
+
+The trap is that a project puts hand-made files in those directories too, and calling
+each of them a defect makes the report useless within a week. So it has to be ignorable
+per path, from the project's config rather than a flag someone remembers to pass. A
+report nobody can quieten is a report nobody reads, and this one has to stay worth
+reading for the one week in a year when a mesh goes missing.
 
 ## Block B — Seeing the result cheaply
 

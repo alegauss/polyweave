@@ -35,6 +35,7 @@ AREAS: dict[str, str] = {
     "geom": "a shape declared as data",
     "spec": "an acceptance spec and its vocabulary",
     "op": "an operation's own arguments, against what it declared",
+    "prov": "the record written beside an artefact, and the cache key it defines",
 }
 
 CODES: dict[str, Code] = {
@@ -324,6 +325,33 @@ CODES: dict[str, Code] = {
         means="a setting names an environment variable that is not set here",
         when="a ${NAME} reference on a machine where NAME was never exported",
         doors=("set the variable", "write the value in the config instead"),
+    ),
+    # -- prov: what produced an artefact -------------------------------------
+    "prov.unknown-kind": Code(
+        means="the record names a kind of artefact that is not one of the four",
+        when="a record is built for something outside render, mesh, capture and fetch",
+        doors=("name one of the declared kinds",),
+    ),
+    "prov.missing-artefact": Code(
+        means="there is nothing at the path the record would describe",
+        when="a record is built before the artefact is written, or beside the wrong "
+        "path",
+        doors=("write the artefact first", "record the path it was written to"),
+    ),
+    "prov.missing-input": Code(
+        means="an input the record names is not on disk",
+        when="a path recorded from an argument rather than from what was read",
+        doors=("record the path the operation actually read",),
+    ),
+    "prov.no-record": Code(
+        means="the artefact has no record beside it",
+        when="something produced it without one, which is how a paid mesh was lost",
+        doors=("produce it again", "verify what the project holds"),
+    ),
+    "prov.malformed": Code(
+        means="the record is not readable as JSON",
+        when="a record edited by hand, or truncated",
+        doors=("produce the artefact again",),
     ),
     # -- spec: the vocabularies a caller names things by ---------------------
     "spec.unknown-code": Code(
