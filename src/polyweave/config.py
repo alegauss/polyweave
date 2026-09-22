@@ -20,6 +20,7 @@ import difflib
 import os
 import re
 import tomllib
+from dataclasses import dataclass, fields
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -154,6 +155,36 @@ DEFAULTS: dict[str, Any] = {
 }
 
 
+@dataclass(frozen=True)
+class Tolerances:
+    """The numbers that decide what counts as the same, resolved once.
+
+    §PW40: `[tolerance] alpha_floor` was 0.02 in this file's defaults and 0.0 in the
+    signature of every function that used it, and the two disagreed. An operation that
+    resolved the setting measured the subject the project asked for; one that forgot
+    measured every pixel in the frame, background included, and nothing reported that a
+    choice had been made.
+
+    The fix is that a tolerance has one home, and this is it. The library functions stay
+    pure — they take numbers, read no files, and so can run inside Blender — and none of
+    them invents a fallback any more. Resolving happens at the operation, once, and this
+    is what it resolves to: all six together, so an operation that needs one cannot pick
+    up a stale sibling, and so a provenance record can carry the values actually in
+    force rather than whatever the file holds when it is read back.
+    """
+
+    alpha_floor: float
+    render_noise: float
+    silhouette_iou: float
+    delta_e: float
+    background_delta_e: float
+    subject_coverage: float
+
+    def as_dict(self) -> dict[str, float]:
+        """What was in force, for the record written beside the artefact."""
+        return {f.name: getattr(self, f.name) for f in fields(self)}
+
+
 class Config:
     """One project's settings, resolved against the plugin's defaults."""
 
@@ -234,6 +265,16 @@ class Config:
         """Whether the project stated this itself, rather than taking the default."""
         table, _, key = address.partition(".")
         return key in self._declared.get(table, {})
+
+    def tolerances(self) -> Tolerances:
+        """Every tolerance in force, resolved together (§PW40).
+
+        An operation reads this once and passes the numbers down. The functions below it
+        take them and have no fallback of their own, so there is nowhere for a second
+        value of one number to live.
+        """
+        table = self.table("tolerance")
+        return Tolerances(**{f.name: float(table[f.name]) for f in fields(Tolerances)})
 
     # -- the one read that is a decision ---------------------------------------
 

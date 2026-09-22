@@ -284,7 +284,7 @@ def image(
     path: str | Path,
     *,
     root: str | Path = ".",
-    alpha_floor: float = 0.0,
+    alpha_floor: float | None = None,
     tolerance: float = TOLERANCE,
     size: float | None = None,
 ) -> np.ndarray:
@@ -295,14 +295,20 @@ def image(
 
     The y axis is flipped: an image counts rows downward and §6 counts y upward, and an
     outline that came back mirrored is a sprite extruded backwards.
+
+    The floor comes from the project rather than from a default here (§PW40): what
+    counts as the drawing and what counts as the paper around it is the same decision
+    the rest of the plugin makes, and a second answer to it traces the page.
     """
+    from ..config import load as load_config
     from ..image import load as load_image
 
     where = Path(path)
     if not where.is_absolute():
         where = Path(root).resolve() / where
+    floor = float(load_config(root).get("tolerance.alpha_floor", alpha_floor))
     picture = load_image(where)
-    ring = simplify(trace(picture.subject(alpha_floor)), tolerance)
+    ring = simplify(trace(picture.subject(floor)), tolerance)
 
     ring[:, 1] = picture.height - ring[:, 1]
     ring = ring - ring.mean(axis=0)

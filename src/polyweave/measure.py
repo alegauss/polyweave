@@ -478,7 +478,7 @@ def _silhouette_iou(
     mask: np.ndarray,
     *,
     against: Any = None,
-    alpha_floor: float = 0.0,
+    alpha_floor: float,
     **_,
 ) -> float:
     """Intersection over union of the two alpha masks.
@@ -500,7 +500,7 @@ def _silhouette_centroid_offset(
     mask: np.ndarray,
     *,
     against: Any = None,
-    alpha_floor: float = 0.0,
+    alpha_floor: float,
     **_,
 ) -> float:
     """How far apart the two silhouettes' middles are, in pixels."""
@@ -519,7 +519,7 @@ def _silhouette_bbox_delta(
     mask: np.ndarray,
     *,
     against: Any = None,
-    alpha_floor: float = 0.0,
+    alpha_floor: float,
     **_,
 ) -> float:
     """The largest per-edge difference between the two bounding boxes, in pixels."""
@@ -612,8 +612,9 @@ def measure(
     measures: Sequence[str] = DEFAULT,
     *,
     region: Any = None,
-    alpha_floor: float = 0.0,
+    alpha_floor: float | None = None,
     rung: str | None = None,
+    root: str | Path = ".",
     **params: Any,
 ) -> list[dict]:
     """Every measure asked for, each with the region and rung it was taken at.
@@ -621,7 +622,14 @@ def measure(
     The rung is reported and never inferred, so a verdict taken on a sphere is never
     mistaken for one taken on the final mesh. `params` carries what one measure needs
     and the others do not — `display` for `luma_bands`, a count at a stated size.
+
+    This is the boundary where a tolerance is resolved (§PW40). The measures below it
+    take the number and none of them defaults it, so there is one home for what counts
+    as the subject; here the project's own answer is read unless the caller states one.
     """
+    from .config import load as load_config
+
+    alpha_floor = float(load_config(root).get("tolerance.alpha_floor", alpha_floor))
     image = subject if isinstance(subject, Image) else load(subject)
     where = default_region(image) if region is None else region
     mask = region_mask(image, where, alpha_floor)
@@ -716,7 +724,7 @@ def same(
     tolerance: float | None = None,
     delta: float | None = None,
     region: Any = None,
-    alpha_floor: float = 0.0,
+    alpha_floor: float | None = None,
     root: str | Path = ".",
 ) -> dict:
     """Whether two renders are the same picture, with a tolerance rather than equality.
@@ -728,6 +736,9 @@ def same(
     The threshold is `[tolerance] render_noise` unless the caller states one, because
     the bar for sampler noise is not the bar for a silhouette that has to land within
     three pixels.
+
+    This has a root, so it is where the resolving happens: `measure` below it takes the
+    numbers and invents none (§PW40).
     """
     from .config import load as load_config
 
@@ -738,7 +749,7 @@ def same(
         subject,
         ["distance", "changed_fraction"],
         region=region,
-        alpha_floor=alpha_floor,
+        alpha_floor=float(config.get("tolerance.alpha_floor", alpha_floor)),
         against=against,
         delta=floor,
     )

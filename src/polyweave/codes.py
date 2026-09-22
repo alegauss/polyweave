@@ -232,6 +232,17 @@ CODES: dict[str, Code] = {
         when="a bake whose source had no coverage at all",
         doors=("check the UVs and the source",),
     ),
+    "post.tolerance-unstated": Code(
+        means="a check that needs a tolerance was given none",
+        when="a render, texture, field or capture check with no alpha_floor. It used "
+        "to default to zero while the config declared 0.02, so a caller who forgot "
+        "measured the background as part of the subject and got an answer rather "
+        "than a refusal (§PW40)",
+        doors=(
+            "resolve it once with Config.tolerances() and pass it down",
+            "state the floor this particular check should use",
+        ),
+    ),
     "post.field-size": Code(
         means="the field is not the size that was asked for",
         when="a bake writes at a resolution other than the one requested",

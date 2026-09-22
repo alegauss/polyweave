@@ -37,13 +37,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 
 export const generatedTasks: GeneratedTask[] = [
   {
-    id: "PW40",
-    block: "A",
-    symptom: "a tolerance has one default in the project config and a different one in the function that uses it",
-    why: "A check falls back to an alpha floor of zero while the config declares 0.02, so an operation that forgets to pass it measures the background as part of the subject.",
-    deps: [],
-  },
-  {
     id: "PW41",
     block: "A",
     symptom: "an artefact that was produced without a record is invisible, because verify starts from the records",
@@ -55,6 +48,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "A",
     symptom: "a render that is black to any observer passes the check for a blank render, on one bit of edge noise",
     why: "The assertion asks whether every visible pixel is exactly one colour, and an unlit Cycles render came back with two: black, and 1/255 at the antialiased edge.",
+    deps: [],
+  },
+  {
+    id: "PW51",
+    block: "A",
+    symptom: "a record says nothing about the tolerances its measurements were taken against",
+    why: "Reading the config back gives the project's numbers now, not the artefact's, so two records carrying one measurement can mean different things and nothing says which.",
     deps: [],
   },
   {

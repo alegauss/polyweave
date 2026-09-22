@@ -2,9 +2,9 @@
 
 ## Block A — What a tool call costs the turn
 
-- 📋 **PW40** (deps: —) **a tolerance has one default in the project config and a different one in the function that uses it** — A check falls back to an alpha floor of zero while the config declares 0.02, so an operation that forgets to pass it measures the background as part of the subject. → §PW40
 - 📋 **PW41** (deps: —) **an artefact that was produced without a record is invisible, because verify starts from the records** — A paid mesh with no sidecar reads as a sound project, and re-buying it is the only way to find out what it was made from. → §PW41
 - 📋 **PW42** (deps: —) **a render that is black to any observer passes the check for a blank render, on one bit of edge noise** — The assertion asks whether every visible pixel is exactly one colour, and an unlit Cycles render came back with two: black, and 1/255 at the antialiased edge. → §PW42
+- 📋 **PW51** (deps: —) **a record says nothing about the tolerances its measurements were taken against** — Reading the config back gives the project's numbers now, not the artefact's, so two records carrying one measurement can mean different things and nothing says which. → §PW51
 
 ## Block B — Seeing the result cheaply
 

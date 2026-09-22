@@ -2,29 +2,6 @@
 
 ## Block A — What a tool call costs the turn
 
-### §PW40 A number with two homes has no home
-
-`[tolerance] alpha_floor` is 0.02 in the config defaults, and `check("render", path)`
-falls back to 0.0 in its own signature. Both are defaults for one number, and they
-disagree. An operation that resolves the setting and passes it measures the subject the
-project asked for; one that forgets measures every pixel in the frame, including the
-background, and neither reports that a choice was made.
-
-The same shape waits for `render_noise`, `silhouette_iou` and `delta_e` as soon as Block
-B has a comparison to apply them to. The library functions are deliberately pure — they
-take numbers and do not read files, which is what makes them testable and what lets them
-run inside Blender — so the resolution belongs at the operation, not inside them.
-
-What is missing is that a pure function currently gets to invent a fallback. It should
-not: a tolerance has one home, and a function that needs one should require it rather
-than default it. Making the parameter required moves the mistake from a silent wrong
-answer to a refusal at the call, which is the trade this whole block is built on.
-
-The cost is that every call site resolves the config first. A resolved tolerances
-object, passed once into an operation, would carry all four together and would also give
-the provenance record the values actually in force rather than whatever the file holds
-when it is read back.
-
 ### §PW41 The half of the question verify cannot ask
 
 `verify` walks the records and checks their artefacts. It cannot walk the artefacts and
@@ -71,6 +48,30 @@ should be an actual unlit render rather than a constructed array.
 Worth doing at the same time: the same equality appears in the transparency check, where
 `max(alpha) == 0` has the same problem in reverse — a render whose only non-zero alpha
 is one stray edge pixel is empty for every purpose and passes.
+
+### §PW51 A measurement without the tolerance it was taken against is a number, and the file cannot be read back for it
+
+A record says which mesh, which seed, which sample count and which view transform made
+an artefact, and nothing about the numbers the verdict beside it was taken against. Two
+records can therefore carry the same measurement and mean different things, because the
+alpha floor that decided what counted as the subject sat in a file that has since been
+edited. Reading the config back does not recover it: the record is the artefact's, and
+the file is the project's as it is now.
+
+`Config.tolerances()` resolves all six together for exactly this reason, and
+`Tolerances.as_dict()` exists to be written down. What is missing is the field and the
+decision about where it goes.
+
+The decision is whether they belong in the cache key. They should not, on the argument
+that they do not change the artefact: a render made at one alpha floor is byte-identical
+to the same render at another, because the floor is read after the pixels exist. That
+argument has a hole worth checking first — a search that accepts on a predicate measured
+at one floor and is re-run at another reuses a hit whose verdict no longer holds, which
+is a stale acceptance rather than a stale picture. Whether that is the key's problem or
+the spec's is the thing to settle.
+
+Measure how often a project actually changes a tolerance, because a field nobody varies
+is a field nobody needs.
 
 ## Block B — Seeing the result cheaply
 

@@ -338,7 +338,7 @@ def project(subject: Any, *, grid: int = GRID) -> np.ndarray:
     return _closed(mask)
 
 
-def drawing(reference: str | Path, *, grid: int = GRID, alpha_floor: float = 0.0):
+def drawing(reference: str | Path, *, grid: int = GRID, alpha_floor: float):
     """The reference's own outline, on the same grid and fitted the same way."""
     from .image import load as load_image
 
@@ -377,7 +377,7 @@ def orient(
     against: str | Path,
     height: float | None = 1.0,
     grid: int = GRID,
-    alpha_floor: float = 0.0,
+    alpha_floor: float,
 ) -> dict:
     """Normalise a mesh the way the drawing says it stands.
 
@@ -447,17 +447,25 @@ def ingest(
     against: str | Path | None = None,
     rotation: np.ndarray | None = None,
     height: float | None = 1.0,
+    alpha_floor: float | None = None,
+    root: str | Path = ".",
 ) -> dict:
     """Put an arriving mesh in the project's frame, once, and write it there.
 
     `against` is the drawing that asked for the shape and settles which way is forward.
     Without one the mesh keeps the way round it arrived, unless `rotation` states it —
     what never happens is a guess.
+
+    This is the operation, so it is where the tolerance is resolved; `orient` and
+    `drawing` below it take the number and default nothing (§PW40).
     """
+    from .config import load as load_config
+
     source = Path(path)
     arrived = read_mesh(source)
     if against is not None:
-        found = orient(arrived, against=against, height=height)
+        floor = float(load_config(root).get("tolerance.alpha_floor", alpha_floor))
+        found = orient(arrived, against=against, height=height, alpha_floor=floor)
     else:
         found = normalise(arrived, rotation=rotation, height=height)
 

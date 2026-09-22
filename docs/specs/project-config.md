@@ -98,6 +98,29 @@ theme      = "dark"
 outlines = "tools/art/outlines.py"   # where named shape generators come from
 ```
 
+## A tolerance has one home
+
+`[tolerance]` is the only table whose values also appear as arguments all through the code,
+and that is where a second home for a number grows. It had one: `alpha_floor` was 0.02 here
+and 0.0 in the signature of every function that used it, so an operation that resolved the
+setting measured the subject the project asked for and one that forgot measured the whole
+frame, background included, with nothing reporting that a choice had been made.
+
+**A library function takes the number and never defaults it.** The functions that do the
+measuring are pure — they read no files, which is what lets them run inside Blender — so a
+default in one of them is a value nobody chose. They require it instead, and a call that
+states none is refused (`post.tolerance-unstated`) rather than answered.
+
+**An operation resolves, once.** Anything holding a `root` reads `Config.tolerances()` and
+passes the numbers down: `measure`, `accept.check`, `normalise.ingest`, `render.bake`,
+`outline.image`. The resolution order is the usual one — the explicit argument, then this
+file, then the plugin default — so stating a floor for one call still works and is the only
+way a second value ever enters.
+
+All six resolve together, as one object, for two reasons: an operation cannot pick up a
+stale sibling of the number it wanted, and a record written beside an artefact can carry the
+values that were actually in force rather than whatever this file holds when it is read back.
+
 ## Rules that are not defaults
 
 **A secret is named, never stored.** `key_env` holds the name of an environment variable. A

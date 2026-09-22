@@ -295,15 +295,19 @@ def test_a_projection_is_the_same_every_time():
 
 
 def test_the_drawing_comes_back_on_the_grid_with_its_proportions(tmp_path):
-    mask = normalise.drawing(draw(tmp_path / "wide.png", 80, 20))
+    mask = normalise.drawing(draw(tmp_path / "wide.png", 80, 20), alpha_floor=0.0)
     wide, tall = extent(mask)
     assert wide / tall == pytest.approx(4.0, abs=0.2)
     assert mask.shape == (normalise.GRID, normalise.GRID)
 
 
 def test_how_the_drawing_was_framed_does_not_change_its_outline(tmp_path):
-    tight = normalise.drawing(draw(tmp_path / "tight.png", 80, 20, pad=2))
-    loose = normalise.drawing(draw(tmp_path / "loose.png", 160, 40, pad=90))
+    tight = normalise.drawing(
+        draw(tmp_path / "tight.png", 80, 20, pad=2), alpha_floor=0.0
+    )
+    loose = normalise.drawing(
+        draw(tmp_path / "loose.png", 160, 40, pad=90), alpha_floor=0.0
+    )
     assert normalise.overlap(tight, loose) > 0.9
 
 
@@ -313,7 +317,7 @@ def test_a_drawing_with_nothing_in_it_is_refused(tmp_path):
     empty = tmp_path / "empty.png"
     PILImage.fromarray(np.zeros((32, 32, 4), dtype=np.uint8), "RGBA").save(empty)
     with pytest.raises(PolyweaveError) as caught:
-        normalise.drawing(empty)
+        normalise.drawing(empty, alpha_floor=0.0)
     assert caught.value.code == "fetch.no-reference"
 
 
@@ -323,7 +327,9 @@ def test_a_drawing_with_nothing_in_it_is_refused(tmp_path):
 def test_the_drawing_decides_which_way_round_the_mesh_goes(tmp_path):
     """§PW20's hammer. Two angles found by re-rendering; one drawing already knew."""
     found = normalise.orient(
-        cube(1.0, 4.0, 1.0), against=draw(tmp_path / "hammer.png", 120, 30)
+        cube(1.0, 4.0, 1.0),
+        against=draw(tmp_path / "hammer.png", 120, 30),
+        alpha_floor=0.0,
     )
     assert found["size"][0] == pytest.approx(4.0, abs=0.1), "the long axis lies across"
     assert found["size"][1] == pytest.approx(1.0)
@@ -333,7 +339,9 @@ def test_the_drawing_decides_which_way_round_the_mesh_goes(tmp_path):
 
 def test_the_drawing_can_also_say_upright(tmp_path):
     found = normalise.orient(
-        cube(1.0, 4.0, 1.0), against=draw(tmp_path / "upright.png", 30, 120)
+        cube(1.0, 4.0, 1.0),
+        against=draw(tmp_path / "upright.png", 30, 120),
+        alpha_floor=0.0,
     )
     assert found["size"][1] == pytest.approx(1.0)
     assert found["size"][0] == pytest.approx(0.25, abs=0.02), "it stands"
@@ -342,7 +350,7 @@ def test_the_drawing_can_also_say_upright(tmp_path):
 
 def test_the_orientation_it_chose_is_recorded_beside_the_drawing(tmp_path):
     reference = draw(tmp_path / "hammer.png", 120, 30)
-    found = normalise.orient(cube(1.0, 4.0, 1.0), against=reference)
+    found = normalise.orient(cube(1.0, 4.0, 1.0), against=reference, alpha_floor=0.0)
     assert found["against"] == str(reference)
     assert np.linalg.det(np.array(found["rotation"])) == pytest.approx(1.0)
 
@@ -351,7 +359,7 @@ def test_a_shape_the_drawing_cannot_tell_apart_is_said_so(tmp_path):
     """A cube against a square: every way round matches, and none of them is forward."""
     square = draw(tmp_path / "square.png", 40, 40)
     with pytest.raises(PolyweaveError) as caught:
-        normalise.orient(cube(1.0, 1.0, 1.0), against=square)
+        normalise.orient(cube(1.0, 1.0, 1.0), against=square, alpha_floor=0.0)
     assert caught.value.code == "mesh.ambiguous-forward"
 
 

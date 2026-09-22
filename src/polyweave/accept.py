@@ -247,7 +247,7 @@ def check(
     subject: Any,
     *,
     rung: str | None = None,
-    alpha_floor: float = 0.0,
+    alpha_floor: float | None = None,
     root: str | Path = ".",
 ) -> dict:
     """Every predicate against one render: its value, whether it holds, and by how much.
@@ -255,7 +255,14 @@ def check(
     The rung is carried through and reported. A verdict taken lower than the spec's own
     floor is refused rather than quietly accepted, because that is the whole difference
     between a gate and an opinion.
+
+    This has a root, so the tolerance is resolved here and the measures below take it
+    (§PW40). The old default of zero disagreed with the 0.02 the config declares, and a
+    verdict taken against the wrong subject is the opinion this is meant to replace.
     """
+    from .config import load as load_config
+
+    floor = float(load_config(root).get("tolerance.alpha_floor", alpha_floor))
     needed = spec.needs_rung()
     if rung is not None and RUNGS.index(rung) < RUNGS.index(needed):
         raise PolyweaveError(
@@ -274,7 +281,7 @@ def check(
             subject,
             [p.measure],
             region=p.region,
-            alpha_floor=alpha_floor,
+            alpha_floor=floor,
             rung=rung,
             **arguments,
         )

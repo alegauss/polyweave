@@ -11,6 +11,7 @@
 - ✅ **PW37** **a renderer outlives the worker that started it, and a sweep on Windows cannot find it to end it** — A worker writes every process it spawns down before waiting on it, and a sweep ends those pids directly, while the recorded start time still matches (design recorded in `docs/specs/tool-surface.md`).
 - ✅ **PW38** **a height field survives an eight-bit round trip as a staircase, and every assertion says it is fine** — A field is its own checked kind, holding the file's own bit depth and its distinct values per channel, with a shallow write and a flat buffer apart (design recorded in `docs/specs/tool-surface.md`).
 - ✅ **PW39** **a job checks only that an argument exists while a direct call checks its range, so one call has two contracts** — A registered operation is validated in the caller before a job spawns, and an unregistered target is left to the worker's signature check (design recorded in `docs/specs/tool-surface.md`).
+- ✅ **PW40** **a tolerance has one default in the project config and a different one in the function that uses it** — A tolerance is resolved once by the operation holding a root, and the pure functions below default nothing, so a second value has nowhere to live (design recorded in `docs/specs/project-config.md`).
 
 ## Block B — Seeing the result cheaply
 

@@ -44,11 +44,14 @@ class Image:
     def alpha(self) -> np.ndarray:
         return self.rgba[:, :, 3]
 
-    def subject(self, alpha_floor: float = 0.0) -> np.ndarray:
+    def subject(self, alpha_floor: float) -> np.ndarray:
         """The mask of pixels that are the asset rather than the background.
 
-        `alpha_floor` is a fraction of one, matching `[tolerance] alpha_floor`. An image
-        that never had an alpha channel is all subject.
+        `alpha_floor` is a fraction of one, matching `[tolerance] alpha_floor`, and it
+        is **required**: a default here would be a second home for a number that has
+        one (§PW40), and the one it had was zero where the config said 0.02 — so a
+        caller who forgot measured the background as part of the subject and nothing
+        said so. An image that never had an alpha channel is all subject either way.
         """
         if not self.had_alpha:
             return np.ones(self.rgba.shape[:2], dtype=bool)

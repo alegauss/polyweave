@@ -52,6 +52,16 @@ CHEAP: dict[str, tuple[Any, frozenset[str]]] = {
     "download": (check_download, ACCEPTS_DOWNLOAD),
 }
 
+#: What a kind cannot be checked without. A tolerance has one home (§PW40), so no check
+#: below invents a value for one — the operation resolves it and passes it down, and a
+#: call that states none is refused rather than answered against a number nobody chose.
+REQUIRES: dict[str, frozenset[str]] = {
+    "render": frozenset({"alpha_floor"}),
+    "texture": frozenset({"alpha_floor"}),
+    "field": frozenset({"alpha_floor"}),
+    "capture": frozenset({"alpha_floor"}),
+}
+
 #: Assertions that cost more than the operation on a large enough input, so a project
 #: turns them on deliberately. Off by default, and PW5 wires the config that names them.
 OPTIONAL: dict[str, tuple[Any, frozenset[str]]] = {
@@ -84,6 +94,20 @@ def check(
             "post.unknown-field",
             f"a {produces} check takes no {', '.join(unknown)}",
             f"it takes {', '.join(sorted(accepts)) or 'no arguments'}",
+        )
+
+    required = REQUIRES.get(produces, frozenset())
+    unstated = sorted(required - set(expected))
+    if unstated:
+        # §PW40: a check used to default the tolerance to zero while the config said
+        # 0.02, so a caller who forgot measured the background as part of the subject
+        # and got an answer rather than a refusal. One home for the number now, and
+        # a call that names none is a call that has not said which subject it means.
+        raise PolyweaveError(
+            "post.tolerance-unstated",
+            f"a {produces} check needs {', '.join(unstated)}, and none was given",
+            "resolve it once with Config.tolerances() and pass it down; a default here "
+            "would be a second home for a number that has one",
         )
 
     measured = checker(subject, **expected)

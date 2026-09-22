@@ -282,7 +282,7 @@ def test_measurements_from_a_check_go_straight_into_the_record(tmp_path):
     path = tmp_path / "shot.png"
     PILImage.fromarray(rgba, "RGBA").save(path)
 
-    measured = post.check("render", path, size=(8, 8))
+    measured = post.check("render", path, size=(8, 8), alpha_floor=0.0)
     record = P.build("render", path, measurements=measured, root=tmp_path)
     assert record["measurements"]["alpha_coverage"] == 1.0
     assert record["measurements"]["size"] == [8, 8]

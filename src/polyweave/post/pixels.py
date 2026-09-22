@@ -3,6 +3,14 @@
 A render that came out empty, black or transparent is the cheapest failure there is to
 detect and the most expensive one to find two steps downstream, where the evidence of
 which step broke has already been overwritten.
+
+Every check here takes `alpha_floor` and **none of them defaults it** (§PW40). These are
+pure — they read no files, which is what lets them run inside Blender — so the tolerance
+has to arrive from the operation that resolved it. Defaulting it here put a second value
+of one number in the codebase, and the two disagreed: zero against the 0.02 the config
+declared, so a caller who forgot measured the background as part of the subject and
+nothing reported that a choice had been made. `Config.tolerances()` is where it comes
+from now, and a call that states none is refused rather than answered wrongly.
 """
 
 from __future__ import annotations
@@ -17,7 +25,7 @@ from ..image import Image, load
 
 ACCEPTS_RENDER = frozenset({"size", "alpha_floor", "allow_uniform"})
 ACCEPTS_TEXTURE = frozenset({"size", "alpha_floor", "allow_uniform"})
-ACCEPTS_CAPTURE = frozenset({"size"})
+ACCEPTS_CAPTURE = frozenset({"size", "alpha_floor"})
 ACCEPTS_FIELD = frozenset({"size", "levels", "bits", "alpha_floor"})
 
 #: Bits per channel, by the mode the file opens as. §PW38 needs the file's own depth and
@@ -120,7 +128,7 @@ def check_render(
     subject: Any,
     *,
     size: Any = None,
-    alpha_floor: float = 0.0,
+    alpha_floor: float,
     allow_uniform: bool = False,
 ) -> dict:
     """Not a single uniform colour, not fully transparent, dimensions as requested."""
@@ -141,7 +149,7 @@ def check_texture(
     subject: Any,
     *,
     size: Any = None,
-    alpha_floor: float = 0.0,
+    alpha_floor: float,
     allow_uniform: bool = False,
 ) -> dict:
     """Not fully transparent, not a single uniform colour."""
@@ -203,7 +211,7 @@ def check_field(
     size: Any = None,
     levels: int = 0,
     bits: int = 0,
-    alpha_floor: float = 0.0,
+    alpha_floor: float,
 ) -> dict:
     """A height, normal or displacement field still carries the precision it needs.
 
@@ -260,14 +268,16 @@ def check_field(
     return measured
 
 
-def check_capture(subject: Any, *, size: Any = None) -> dict:
+def check_capture(subject: Any, *, size: Any = None, alpha_floor: float) -> dict:
     """The named artefact exists on disk and is a readable image.
 
     Weaker than a render on purpose: a screenshot of a loading screen is a legitimate
     capture, and §PW25 is about the settings that produced it rather than its content.
+    The floor is still required, because the coverage it reports is measured against it
+    and a number invented here would be the second home §PW40 is about.
     """
     image = as_image(subject)
     _check_size(image, size, code="post.capture-size", what="capture")
-    measured = _measure(image, 0.0)
+    measured = _measure(image, alpha_floor)
     measured["path"] = str(image.path) if image.path else None
     return measured
