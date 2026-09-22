@@ -12,7 +12,7 @@ import re
 
 # `area.kebab-case`, the namespaces §3 fixes. A code is part of the published contract,
 # so it is checked where it is constructed rather than where it is read.
-_AREAS = ("render", "mesh", "fetch", "post", "config", "job", "geom", "spec")
+_AREAS = ("render", "mesh", "fetch", "post", "config", "job", "geom", "spec", "op")
 _CODE = re.compile(rf"^({'|'.join(_AREAS)})\.[a-z0-9]+(-[a-z0-9]+)*$")
 
 

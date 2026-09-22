@@ -37,13 +37,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 
 export const generatedTasks: GeneratedTask[] = [
   {
-    id: "PW3",
-    block: "A",
-    symptom: "a tool's parameters are learned by reading the source that implements them",
-    why: "Cottony's rig has fourteen fields documented only as comments in a thousand-line module, so every caller pays a file read to find out what it may set.",
-    deps: [],
-  },
-  {
     id: "PW4",
     block: "A",
     symptom: "a failure arrives as a stack trace, so the fix is guessed from the frame that raised it",
@@ -76,6 +69,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "A",
     symptom: "a height field survives an eight-bit round trip as a staircase, and every assertion says it is fine",
     why: "The third silent failure behind the post-conditions is a blur that quantises a gradient, invisible in a shadow and ruinous under a specular, and no colour or coverage check sees it.",
+    deps: [],
+  },
+  {
+    id: "PW39",
+    block: "A",
+    symptom: "a job checks only that an argument exists while a direct call checks its range, so one call has two contracts",
+    why: "The worker reads a target's signature and describe reads its registration, so a value the surface would refuse still costs a spawn and a failed job to discover.",
     deps: [],
   },
   {

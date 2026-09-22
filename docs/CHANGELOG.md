@@ -4,6 +4,7 @@
 
 - ✅ **PW1** **an operation that takes minutes holds the turn, and nothing reports progress until it ends** — Long work returns a handle at once; poll names the stage it reached, result the artefact or the typed failure, cancel the whole process tree (design recorded in `docs/specs/tool-surface.md`).
 - ✅ **PW2** **a tool reports success on an empty result, so the failure is found a render later** — Every operation asserts its own output before returning, and an empty boolean, a blank render or a short download is an error naming what failed (design recorded in `docs/specs/tool-surface.md`).
+- ✅ **PW3** **a tool's parameters are learned by reading the source that implements them** — One call returns an operation's parameters with type, range, default and a sentence, read from the signature; another says what this machine can do (design recorded in `docs/specs/tool-surface.md`).
 
 ## Block B — Seeing the result cheaply
 

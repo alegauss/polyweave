@@ -2,21 +2,6 @@
 
 ## Block A — What a tool call costs the turn
 
-### §PW3 The surface describes itself
-
-Cottony's render rig takes fourteen parameters, and the only place their meaning exists
-is a comment above each field in a thousand-line module. A caller who wants to know what
-may be set reads the file. That is a file read per session, and worse, a caller who does
-not know a field exists never finds it and never uses it. A tool surface should answer
-this itself: one call returning the parameter set, each with its type, its range, its
-default, and one sentence on what it does, read from the implementation so the two
-cannot drift. The same applies to everything else the plugin can be asked for, including
-which geometry operations exist, which output formats it writes and which acceptance
-predicates a spec may use. Discoverability is not documentation and it is not a README.
-It is the difference between an agent that uses the tool correctly on its first attempt
-and one that spends two turns reading source before it can make a single call. Measured
-over a working day, that difference is most of the friction.
-
 ### §PW4 An error names the door that closes it
 
 A stack trace says where the code gave up, which is rarely where the caller should act.
@@ -104,6 +89,30 @@ renderer writing too little, and the remedies point at different code.
 
 `luma_bands` in the measurement vocabulary asks a related question at display size. This
 one is about precision in the file, and collapsing the two would lose both answers.
+
+### §PW39 One rule with two reaches, not two rules
+
+Two argument checks now exist and they disagree about what a bad argument is. The worker
+reads the target's signature in the child process and refuses a keyword the function
+does not take. The describe surface reads the operation's registration and refuses an
+unknown keyword, a missing required one, a value outside the declared range, and a value
+outside the declared choices.
+
+So an operation run as a job is held to a weaker contract than the same one called
+directly. A size of 8192 against a range of 16 to 4096 is refused at once by one door
+and, through the other, spawns an interpreter, imports the target and comes back a
+failed job — the expensive way to learn what the surface already knew.
+
+The parent should validate through the registry before it spawns anything, and the
+worker should keep its own check for the targets that are not registered operations: a
+project's own generator named as a file path is a legitimate target and has no
+registration. That leaves one rule with two reaches rather than two rules.
+
+The obstacle is that the parent does not import the target — deliberately, because a
+target may need an environment the parent does not have. So the registry has to be
+consultable by name without importing the implementation, which means registration has
+to happen somewhere the parent already loads, or the validation has to travel into the
+child as data rather than as a lookup.
 
 ## Block B — Seeing the result cheaply
 

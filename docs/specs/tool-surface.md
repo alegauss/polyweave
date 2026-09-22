@@ -81,8 +81,8 @@ does, because a render of nothing is nothing anybody asked for.
 ```
 
 - `code` is a stable kebab-case string, namespaced by area (`render.`, `mesh.`, `fetch.`,
-  `post.`, `config.`, `job.`, `geom.`, `spec.`). It is part of the contract and does not
-  change once published.
+  `post.`, `config.`, `job.`, `geom.`, `spec.`, `op.`). It is part of the contract and does
+  not change once published.
 - `remedy` is the call that closes it with arguments filled in wherever they are derivable.
   Where the choice is a judgement the tool cannot make, it names both doors and what
   separates them. Where only a person can supply the content, it says so and marks the blank.
@@ -93,11 +93,20 @@ does, because a render of nothing is nothing anybody asked for.
 ## 4. The surface describes itself
 
 - `describe(operation)` returns the parameter set — name, type, range, default, one sentence —
-  read from the implementation, so the documentation and the code cannot drift apart.
+  read from the implementation, so the documentation and the code cannot drift apart. It
+  cannot drift because the sentence is **part of the parameter**, carried in its annotation:
+  an operation whose parameter has none is refused where it is registered, and deleting a
+  parameter deletes its description with it.
+- **A declared range is enforced, or it is a comment.** The same declaration that `describe`
+  reports is what refuses an out-of-range argument (`op.out-of-range`), so the two cannot
+  disagree about what is allowed.
 - `capabilities()` returns what this installation can actually do on this machine: which
   renderer and version, whether an engine is reachable, which offscreen route works (PW23),
   whether a service key is present, and the remaining budget. A caller plans against this
-  rather than discovering a missing binary three calls later.
+  rather than discovering a missing binary three calls later. A version is **asked of the
+  binary**, never inferred from a path existing, and a key is reported present or absent and
+  never echoed. What no line has established yet is named as pending, with the line that
+  will establish it, because "nobody has said" and "there is none" are different answers.
 
 ## 5. Configuration is resolved per call
 
