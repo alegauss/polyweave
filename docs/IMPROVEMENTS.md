@@ -217,22 +217,6 @@ measurement that says which rungs it should be the default for.
 
 ## Block D — Fetching from a paid service without surprise
 
-### §PW19 The schema is learned once and kept
-
-A request the server refuses never enqueues a task, so a rejection is free information:
-send an empty payload to learn the required fields, then one field at a time with a
-value no enumeration could hold, to make the server print that field's permitted set. It
-works, and it is how Cottony's client was written. The trap that makes it honest is that
-an unknown field is dropped in silence, so a field passing validation proves nothing at
-all. Only an invalid value proves a field is read, and every probe therefore carries a
-deliberately made-up field as its control. None of that knowledge is kept anywhere
-today. It should be: the probe runs, its results become a schema file in the project,
-and the client validates payloads locally before sending. Then a typo in a field name is
-a local refusal rather than a silent no-op, and re-learning the schema after the service
-changes is one command instead of an afternoon. The balance is read either side of the
-probe run and the delta printed, which is the only proof that the probing really was
-free.
-
 ### §PW20 Normalise on ingest
 
 A generated mesh faces wherever the service left it, at whatever scale, with its origin

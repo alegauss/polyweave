@@ -28,7 +28,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 6 },
   { block: "B", title: "Seeing the result cheaply", open: 2 },
   { block: "C", title: "The asset compiler", open: 1 },
-  { block: "D", title: "Fetching from a paid service without surprise", open: 3 },
+  { block: "D", title: "Fetching from a paid service without surprise", open: 2 },
   { block: "E", title: "One world with the engine", open: 4 },
   { block: "F", title: "Motion", open: 4 },
   { block: "G", title: "Geometry as a declaration", open: 5 },
@@ -97,13 +97,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "C",
     symptom: "a search renders its samples one after another, so a budget of twenty-four costs twenty-four waits",
     why: "The job handles exist so four samples can run at once, and the search calls its evaluator once per sample and waits for each render before proposing the next.",
-    deps: [],
-  },
-  {
-    id: "PW19",
-    block: "D",
-    symptom: "an unknown field is dropped in silence, so a payload that validates proves nothing",
-    why: "Learning the schema takes a series of deliberately invalid values, each carrying a made-up field as its control, and none of that knowledge is kept anywhere.",
     deps: [],
   },
   {

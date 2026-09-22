@@ -40,6 +40,9 @@ _OPEN_TABLES = ("render.samples",)
 #: `project.root`, because a path elsewhere is state a colleague cannot reproduce.
 _BINARIES = ("paths.blender", "paths.godot")
 
+#: Settings that name a file inside the tree although they do not live under `[paths]`.
+_INSIDE = ("service.schema",)
+
 #: Every key, with the value used where the project declares none. The shape is the
 #: schema: a key absent from here is refused rather than ignored.
 DEFAULTS: dict[str, Any] = {
@@ -76,6 +79,8 @@ DEFAULTS: dict[str, Any] = {
     "service": {
         "base": "",  # naming no service is how a project that buys nothing says so
         "key_env": "",
+        # What the service was proved to accept, learned by probing (§PW19).
+        "schema": "polyweave.service.toml",
     },
     "budget": {
         # No budget is no spend, never an unlimited one: the absence of a ceiling is

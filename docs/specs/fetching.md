@@ -73,6 +73,32 @@ is what goes in the ledger and counts against the ceiling, and an entry where th
 disagree is flagged. It is also what makes a claim that some call is free checkable rather
 than asserted: two equal readings either side of it, written down.
 
+## The schema is learned once and kept
+
+A request the server refuses never enqueues a task, so **a rejection is free information**.
+Send an empty payload to learn the required fields; then send a value no enumeration could
+hold, to make the server print what that field does accept.
+
+**An unknown field is dropped in silence**, so a field that passes validation proves
+nothing at all. Only an invalid value proves a field is read. Every probe therefore carries
+a deliberately made-up field as its control, and a field is recorded as `proved` only where
+an invalid value came back refused *with the permitted set*. A required field that is free
+text can never be proved this way, and the schema says so rather than pretending.
+
+**Every payload the probe sends must be one the server is certain to refuse**, or the
+probing is not free. The first pass is guaranteed a refusal by having no valid value for
+anything. After that, a field already proved to be enumerated is held at an impossible
+value as an anchor — and where no anchor exists the probing stops rather than risk a
+request the server might accept and charge for.
+
+The result is `[service] schema`, TOML because a person reads and corrects it, and the
+client validates against it **before sending**. A typo in a field name becomes a local
+refusal instead of a silent no-op, and re-learning after the service changes is one call
+rather than an afternoon.
+
+The balance is read either side of the run and the difference recorded in the schema, which
+is the only proof that the probing really was free.
+
 ## Still to come in this block
 
 The service client itself, and the lock that stops two sessions spending at once.

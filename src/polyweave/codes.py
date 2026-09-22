@@ -406,6 +406,32 @@ CODES: dict[str, Code] = {
         when="a shape check with no reference, or one pointing at a path that is empty",
         doors=("point it at the drawing that asked for this shape",),
     ),
+    "fetch.no-schema": Code(
+        means="nothing is known about what this service accepts",
+        when="a payload checked before the schema has been learned once",
+        doors=("learn the schema by probing", "keep it in the project"),
+    ),
+    "fetch.schema-malformed": Code(
+        means="the learned schema is not readable",
+        when="a schema file edited into invalid TOML",
+        doors=("fix the syntax", "learn the schema again"),
+    ),
+    "fetch.unknown-field": Code(
+        means="the payload names a field the service does not have",
+        when="a typo in a field name; the service would drop it in silence, so it is "
+        "refused here instead",
+        doors=("name a field the schema carries",),
+    ),
+    "fetch.missing-field": Code(
+        means="the payload leaves out a field the service requires",
+        when="a request that would be refused remotely for a reason known locally",
+        doors=("pass the required field",),
+    ),
+    "fetch.bad-choice": Code(
+        means="the value is not one the service was proved to accept for that field",
+        when="a value outside the set a probe made the service print",
+        doors=("pass one of the proved choices",),
+    ),
     "fetch.no-task": Code(
         means="a purchase carries no task id, so nothing traces it to what was bought",
         when="a capture recorded without the service's own id for the task",
