@@ -243,21 +243,6 @@ reading the two side by side says otherwise.
 
 ## Block E — One world with the engine
 
-### §PW25 A capture declares its environment
-
-The same capture script on two machines gives two different pictures, because the game
-picks its language from the machine's locale and nothing in the script says which
-language the picture is being taken in. Cottony found this the expensive way and now
-checks, with a regular expression, that every capture script both names a locale
-constant and actually passes it to the translation server, because naming it and not
-setting it passes a naive check and still produces the wrong image. Locale is one of a
-family. Resolution, display scale, theme, time of day, random seed, and whatever else
-the running game reads from outside itself are each a way for a committed screenshot to
-depend on whose desk it was taken at. The runner should take that environment as an
-explicit argument, set it, and record it beside the image, and it should refuse a
-capture that leaves a declared-relevant setting to chance. What makes this affordable is
-that the list of settings that matter is per project and short.
-
 ### §PW47 Bake at the size the declaration gives
 
 A sprite covering a 4 x 2 world rectangle at 64 pixels per unit has to be 256 x 128

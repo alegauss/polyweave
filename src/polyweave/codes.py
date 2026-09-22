@@ -40,6 +40,7 @@ AREAS: dict[str, str] = {
     "search": "looking for parameter values that satisfy a spec",
     "engine": "running a scene script and reading its verdict",
     "units": "the scale an asset is baked at, against the one the engine draws it at",
+    "capture": "the environment a picture of the running game is taken in",
 }
 
 CODES: dict[str, Code] = {
@@ -556,6 +557,29 @@ CODES: dict[str, Code] = {
         when="a script that never quits; the frame budget is the other bound and this "
         "is the one that catches a hang the engine itself does not end",
         doors=("read the log", "raise [engine] timeout if the run is honestly slow"),
+    ),
+    # -- capture: the environment a picture is taken in ------------------------
+    "capture.undeclared": Code(
+        means="a setting the project says matters has no value to take",
+        when="a name in `[capture] declared` that nothing sets; leaving it to chance "
+        "is exactly how one machine's picture differs from another's",
+        doors=("give it a value in [capture]", "pass it to the capture"),
+    ),
+    "capture.not-reported": Code(
+        means="the script never said what environment it took the picture in",
+        when="a capture script that does not print its environment line back",
+        doors=("print the settings the run passed it, as it applied them",),
+    ),
+    "capture.not-applied": Code(
+        means="the script left out a setting it was given",
+        when="a script that names a setting and never passes it on; naming it without "
+        "setting it passes a naive check and still gives the wrong picture",
+        doors=("apply it and report it", "drop it from [capture] declared"),
+    ),
+    "capture.differs": Code(
+        means="the script applied a different value from the one it was given",
+        when="a default inside the script winning over the argument it was passed",
+        doors=("take the value from the run rather than from a constant",),
     ),
     # -- units: the scale an asset is baked at --------------------------------
     "units.undeclared": Code(

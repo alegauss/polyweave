@@ -135,6 +135,43 @@ What is not here is a bake whose size comes *from* the declaration rather than f
 rung: the renderer produces square pictures at a rung's size, and a rectangle needs both a
 non-square render and the size in the cache key. That is PW47.
 
+## A capture declares its environment
+
+The same capture script on two machines gives two different pictures, because the game
+picks its language from the machine's locale and nothing in the script says which language
+the picture is being taken in. Cottony found that the expensive way.
+
+Locale is one of a family: resolution, display scale, theme, time of day, random seed, and
+whatever else the running game reads from outside itself. Each is a way for a committed
+screenshot to depend on whose desk it was taken at. What makes this affordable is that
+**the list of settings that matter is per project and short** — `[capture] declared`, a
+table a project may add its own names to.
+
+**The check is not a regular expression**, because a pattern that proves a constant is
+passed somewhere is a pattern about one project's code, and Cottony's own experience is
+that naming a setting without applying it passes a naive check and still gives the wrong
+picture. Instead:
+
+1. the **run passes** the settings, after `--`, as `name=value`;
+2. the **script applies them and prints back what it applied**, as one
+   `environment: name=value ...` line;
+3. the **run compares** the two, and refuses where anything asked for is missing from that
+   line (`capture.not-applied`), came back different (`capture.differs`), or where no such
+   line was printed at all (`capture.not-reported`).
+
+So the script takes its values from the run rather than holding its own, and the check is
+against what it says it did rather than against how it is written. A setting the project
+declares and nothing gives a value to is `capture.undeclared` **before anything runs**,
+because leaving it to the machine is the whole symptom.
+
+A value is written the same way on both sides: `1920x1080` rather than `[1920, 1080]`,
+since the script has to print it back and a line of JSON inside a log is a line nobody
+reads. The arguments go in a fixed order, so the command is reproducible.
+
+**The environment is recorded beside the picture**, in the capture's provenance record
+alongside the route it was drawn by and the script that drew it, so a screenshot that
+differs later is compared against what it was taken under rather than against a memory.
+
 ## Still to come in this block
 
-The declared environment a capture is taken in (PW25).
+Baking at the size a unit declaration gives (PW47).

@@ -24,7 +24,6 @@
 
 ## Block E — One world with the engine
 
-- 📋 **PW25** (deps: PW22 ✅) **a capture takes its picture in whatever language and settings the runner happens to have** — The same script on two machines produces two different images, and the difference is a locale nobody declared rather than a change anybody made. → §PW25
 - 📋 **PW47** (deps: PW24 ✅) **a bake renders square at the rung's size, so a declared world rectangle can be refused but never met** — PW24's contract names the size a sprite must be, and nothing renders at it: the size is the rung's, and it is not in the cache key either. → §PW47
 
 ## Block F — Motion

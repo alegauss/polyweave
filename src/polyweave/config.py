@@ -36,6 +36,11 @@ _ENV_REF = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_]*)\}")
 #: `render.samples` is keyed by the rung names `render.rungs` declares.
 _OPEN_TABLES = ("render.samples",)
 
+#: Tables a project may add keys to while keeping the ones declared here. `[capture]`
+#: is one because the settings a picture depends on are per project and short, and a
+#: project that cannot name its own has to leave them to the machine (§PW25).
+_FREE_TABLES = ("capture",)
+
 #: Only a binary may sit outside the tree. Everything else resolves under
 #: `project.root`, because a path elsewhere is state a colleague cannot reproduce.
 _BINARIES = ("paths.blender", "paths.godot")
@@ -309,6 +314,8 @@ def _check(declared: dict, source: Path) -> None:
 def _check_key(table: str, key: str, value: Any, source: Path) -> None:
     allowed = DEFAULTS[table]
     if key not in allowed:
+        if table in _FREE_TABLES:
+            return
         near = difflib.get_close_matches(key, allowed, n=1)
         raise PolyweaveError(
             "config.unknown-key",

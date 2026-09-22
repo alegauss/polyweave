@@ -19,9 +19,9 @@ focus or visibility is involved, so the window can be minimised or moved off the
 and the capture is identical. All four of the platform's rendering drivers produce the
 same pixels.
 
-What that still needs is a **display server** — an interactive session on Windows, an X
-or Wayland server elsewhere — which is what `xvfb-run` supplies on a machine that has no
-screen at all, and is why that is a route here rather than a footnote.
+What that still needs is a **display server**: an interactive session on Windows, an
+X or Wayland server elsewhere. That is what `xvfb-run` supplies on a machine with no
+screen at all, and why it is a route here rather than a footnote.
 
 **A route is available only where it has been proved available.** `routes` writes a
 throwaway project of its own, renders one known colour through each candidate, and reads
@@ -50,9 +50,9 @@ PROVES = (0.2, 0.7, 0.35)
 #: How close a read-back pixel has to be to count as the colour that was asked for.
 NEAR = 8
 
-#: The user argument a route asks a capture script to honour. A script that ignores it
-#: still captures; its window is simply visible while it does.
-WINDOW = "--polyweave-window"
+#: What a route asks a capture script to do with its window, passed after `--`. A script
+#: that ignores it still captures; its window is simply visible while it does.
+WINDOWS = ("offscreen", "minimized")
 
 
 @dataclass(frozen=True)
@@ -305,8 +305,10 @@ def capture(script: str | Path, *, route: str = "", **how: Any) -> dict:
     root = how.get("root", ".")
     taken = route_for(root, named=route)
     args = tuple(how.pop("args", ()))
-    if taken.window and WINDOW not in args:
-        args += ("--", taken.window)
+    if taken.window and taken.window not in args:
+        # One `--` only: everything past the first is a user argument, so a second
+        # separator arrives at the script as an argument spelled "--".
+        args += (taken.window,) if "--" in args else ("--", taken.window)
     found = engine.run(
         script, args=tuple(taken.args) + args, through=taken.through, **how
     )

@@ -77,6 +77,7 @@ source    = "scripts/board.gd:CELL_PX"   # read the engine's scale where it keep
 tolerance = 0.001
 
 [capture]
+declared   = ["locale", "resolution"]  # what a picture here depends on; add your own
 locale     = "pt_BR"
 resolution = [1920, 1080]
 declared   = ["locale", "resolution", "theme"]
@@ -107,6 +108,12 @@ made. Both halves are stated or nothing is spent.
 a capture must state explicitly, and a capture leaving one to chance is refused. §PW25 is why:
 the same script on two machines produced two different images because the game read its
 language from the machine and nothing said which language the picture was in.
+
+**`[capture]` is the one table a project may add its own keys to**, because the settings a
+picture depends on are per project and a project that cannot name its own is back to
+leaving them to the machine. A name in `declared` takes its value from a key of the same
+name here, or from the call. Everywhere else, an unknown key is still a typo and is
+refused.
 
 ## Adding a key
 

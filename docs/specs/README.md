@@ -23,7 +23,7 @@ which is why §1 now names a heartbeat and a `sweep` that its first implementati
 | [rungs.md](rungs.md) | The preview ladder: what each rung is, and which question it carries | PW7, PW13–PW15 |
 | [context.md](context.md) | Judging an asset where it will be seen, and what survives at display size | PW10, PW15 |
 | [fetching.md](fetching.md) | Buying a mesh: the shape check, the ledger, the schema, the reference | PW16–PW21 |
-| [engine.md](engine.md) | Driving the engine: the verdict, real pixels offscreen, the unit contract | PW22–PW24 |
+| [engine.md](engine.md) | Driving the engine: the verdict, real pixels offscreen, units, environment | PW22–PW25 |
 | [acceptance-spec.md](acceptance-spec.md) | What "correct" means, as a file a search can aim at | PW12, PW13, PW15 |
 | [geometry.md](geometry.md) | A shape as data rather than as a program | PW30–PW34 |
 | [provenance.md](provenance.md) | What is recorded beside an artefact, and the cache key | PW6, PW14, PW17 |
