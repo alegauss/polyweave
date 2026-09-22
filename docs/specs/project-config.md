@@ -85,7 +85,7 @@ falloff    = 4.0               # both ends tear; four is the trough
 tear_ratio = 2.0
 
 [units]
-source    = "scripts/board.gd:CELL_PX"   # read the engine's scale where it keeps it
+source    = "scripts/board.gd:CELL"      # read the engine's scale where it keeps it
 tolerance = 0.001
 
 [capture]

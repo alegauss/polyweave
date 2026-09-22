@@ -28,10 +28,10 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 6 },
   { block: "B", title: "Seeing the result cheaply", open: 2 },
   { block: "C", title: "The asset compiler", open: 1 },
-  { block: "D", title: "Fetching from a paid service without surprise", open: 1 },
+  { block: "D", title: "Fetching from a paid service without surprise", open: 2 },
   { block: "E", title: "One world with the engine", open: 1 },
   { block: "F", title: "Motion", open: 0 },
-  { block: "G", title: "Geometry as a declaration", open: 0 },
+  { block: "G", title: "Geometry as a declaration", open: 1 },
   { block: "H", title: "Proof on a real game", open: 2 },
 ];
 
@@ -107,6 +107,13 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
+    id: "PW49",
+    block: "D",
+    symptom: "a fetched mesh arrives with shading painted into its texture, and nothing can take the marks back out",
+    why: "Those marks are shadows that do not move when the light does, and Cottony had to keep its own scrub pass with three thresholds found by eye, which is the fork adoption tests for.",
+    deps: [],
+  },
+  {
     id: "PW47",
     block: "E",
     symptom: "a bake renders square at the rung's size, so a declared world rectangle can be refused but never met",
@@ -114,10 +121,17 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
+    id: "PW50",
+    block: "G",
+    symptom: "a fuzzy surface cannot be declared at all, because shell texturing is a technique and no table holds one",
+    why: "Cottony's plush look is eight constants found by eye, and a table of eight keys would be one project's look compiled in while helping nobody who wanted fur instead.",
+    deps: [],
+  },
+  {
     id: "PW36",
     block: "H",
     symptom: "a real project cannot adopt the plugin without carrying its own paths and palette into it",
-    why: "Cottony is the first consumer and the test of whether the configuration boundary holds, and an adoption that needs a fork proves that it does not.",
+    why: "Porting the pipeline edits another repository, and cannot start before a before-side baseline is recorded for the asset that moves first.",
     deps: [],
   },
   {

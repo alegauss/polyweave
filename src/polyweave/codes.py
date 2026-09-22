@@ -520,6 +520,17 @@ CODES: dict[str, Code] = {
         when="a budget below one",
         doors=("give it a budget of at least one render",),
     ),
+    "search.unknown-parameter": Code(
+        means="the spec names a parameter the renderer has no knob for",
+        when="a [search.<name>] the renderer cannot receive. Found adopting Cottony "
+        "(§PW36): its rig calls the whole-rig scale `light` and the shape's weight "
+        "`form`, and neither is a parameter here, so the search died on its first "
+        "sample with a bare TypeError after the setup was already paid for",
+        doors=(
+            "rename the range to a parameter the renderer takes",
+            "drop the range if nothing here turns it",
+        ),
+    ),
     # -- engine: running a scene script and reading its verdict ---------------
     "engine.not-found": Code(
         means="no engine binary could be found to run the script with",

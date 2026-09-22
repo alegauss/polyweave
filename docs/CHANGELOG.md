@@ -58,3 +58,4 @@
 ## Block H — Proof on a real game
 
 - ✅ **PW35** **the plugin's value is asserted and never measured against what it replaced** — One asset's cost is recorded each way, with a baseline that cannot be written after the port and a verdict allowed to say the plugin made things worse (design recorded in `docs/specs/adoption.md`).
+- ✅ **PW36 (the configuration audit)** **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Cottony's whole config is a fixture no key had to be added for, and the one thing that did not survive it, a spec axis the renderer has no knob for, is refused before a render.

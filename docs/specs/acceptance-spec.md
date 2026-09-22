@@ -34,13 +34,13 @@ region  = "subject"
 min     = 0.85
 weight  = 0.5
 
-[search.light]
-min = 0.5
-max = 4.0
+[search.key]
+min = 120.0
+max = 900.0
 
-[search.form]
-min  = 1.0
-max  = 4.0
+[search.exposure]
+min  = -1.5
+max  = 1.5
 step = 0.1
 ```
 
@@ -87,6 +87,14 @@ for reasons the spec does not capture — it can tune the exposure and it cannot
 asset should be twice as large. Ranges come from the spec; where a project wants defaults for
 a parameter it always searches, they live in `polyweave.toml`. A spec with predicates and no
 ranges is not searchable, and a search over it is refused rather than run over nothing.
+
+**`<param>` is a parameter the renderer actually takes**, and one it does not is refused
+before a sample is spent (`search.unknown-parameter`, with the near match named). §PW36 found
+this the hard way: the example above used to read `[search.light]` and `[search.form]`, which
+are Cottony's names for its own rig, and neither is a parameter here. The spec loaded, the
+range came back, and the search died on its first sample with a bare `TypeError` — after the
+setup had been paid for. A project's names for its knobs do not survive adoption, and the
+place to say so is before the renders.
 
 ## How the search spends
 

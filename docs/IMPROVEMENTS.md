@@ -241,6 +241,30 @@ one reader; the second does not pretend a normalisation has an engine, a seed or
 sampler. Prefer the first with the irrelevant fields absent rather than empty, unless
 reading the two side by side says otherwise.
 
+### §PW49 Painted shading is a shadow that cannot move, and removing it needs a measured threshold rather than a found one
+
+A generative service returns a mesh whose texture has shading painted into it — a dark
+line where a seam was drawn, a smudge where the model thought a shadow belonged. Under
+the plugin's lighting those marks are wrong twice over: they are shadows that do not
+move when the light does, and they are darker than anything the rig would produce.
+Cottony found this on every fetched prop and wrote `scrub()`, with three constants found
+by eye: the widest mark to remove, how much darker a texel must be, and the size those
+are measured at.
+
+Nothing here can do it. `post` is post-conditions and `material` sets shader inputs, and
+neither reaches a texture's pixels. So a project that buys meshes keeps its own pass —
+the fork the audit was testing for.
+
+What this has to settle is where the threshold comes from. Cottony's is a fixed number
+found by hand, which is the cost the search exists to remove, so the answer is likely a
+measurement rather than a constant: a mark is darker than its surroundings by more than
+the texture's own local variation, and that variation is readable. Whether it belongs at
+fetch time, beside the normalise, or as an operation a declaration asks for, depends on
+whether an unfetched texture ever needs it — and on this evidence it does not.
+
+Measure first whether removing the marks changes the accepted render. A repair nobody
+can see is not worth a pass over every texel.
+
 ## Block E — One world with the engine
 
 ### §PW47 Bake at the size the declaration gives
@@ -269,6 +293,30 @@ wants the former, which may mean a rung of its own rather than a parameter.
 ## Block F — Motion
 
 ## Block G — Geometry as a declaration
+
+### §PW50 A fuzzy surface is an intent, and eight shell-texturing constants are the answer to it rather than the way to ask
+
+The geometry vocabulary can carve, bevel and inflate a shape, and a material can be
+given shader inputs. Neither can make a surface fuzzy. Cottony's friends are plush toys
+and its answer is shell texturing — the same surface drawn twenty times, each copy a
+little further out and keeping only the tufts tall enough to reach it, so the silhouette
+breaks into tufts rather than single hairs. Eight constants describe it: the shell
+count, the depth, the cut sharpness, a finer fibre field multiplied into the first, how
+much strand length wanders, how far the body pushes out under the clumps, and how far
+the tips lean towards their clump's crown.
+
+Every one was found by eye, and the readings that drove them are in the user's own
+words: clumps alone gave hard beads, and fibres grown straight off a smooth ball read as
+velvet rather than as sherpa.
+
+The reason this has nowhere to go is that it is a **technique**, not a number. Eight
+keys would not help a project wanting fur instead of cotton, and a `[fluff]` table would
+be the first thing here that is one project's look compiled in — the non-goal exactly.
+What a declaration should carry is the intent: a named surface with a depth and a
+coarseness, with the shell construction underneath it.
+
+So this is a vocabulary question before it is an implementation. The test is whether a
+second surface, unlike cotton, can be asked for in the same words.
 
 ## Block H — Proof on a real game
 

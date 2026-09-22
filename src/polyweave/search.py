@@ -19,6 +19,8 @@ Two things keep it honest:
 
 from __future__ import annotations
 
+import difflib
+import inspect
 import itertools
 import math
 from collections.abc import Callable, Sequence
@@ -67,6 +69,40 @@ def ranges(spec: Spec) -> dict[str, dict]:
             "add a [search.<param>] range; a parameter not named there is not searched",
         )
     return spec.search
+
+
+def turnable(draw: Callable, *wanted: dict, also: dict = ()) -> list[str]:
+    """Refuse a parameter the renderer has no knob for, before a sample is spent.
+
+    A spec's search axes and a renderer's parameters are two lists, and until §PW36
+    nothing reconciled them. Adopting Cottony is what found it: that project's rig calls
+    the whole-rig scale `light` and the shape's weight `form`, both of which the
+    acceptance spec's own worked example carried, and neither is a parameter here. The
+    spec loaded, `ranges` returned the axis, and the search died on its first sample
+    with a bare `TypeError` — no code, no remedy, and the setup already paid for.
+
+    Checked here rather than in `ranges`, because this is the one place that knows which
+    callable is about to receive the values: geometry turns its own parameters through
+    the same spec and they are not this renderer's (§PW32).
+
+    A renderer taking `**kwargs` is not checked. It has said it accepts anything, and a
+    stand-in written for a test is the usual one.
+    """
+    taken = inspect.signature(draw).parameters
+    if any(p.kind is inspect.Parameter.VAR_KEYWORD for p in taken.values()):
+        return []
+    asked = [name for one in (*wanted, dict(also)) for name in one]
+    unknown = [name for name in asked if name not in taken]
+    if not unknown:
+        return []
+    near = difflib.get_close_matches(unknown[0], taken, n=1)
+    raise PolyweaveError(
+        "search.unknown-parameter",
+        f"nothing here turns {', '.join(sorted(set(unknown)))}",
+        f"did you mean {near[0]}?"
+        if near
+        else "name a parameter the renderer takes, or drop the range",
+    )
 
 
 def _points_per_axis(axes: int, budget: int, points: int) -> int:
@@ -266,6 +302,7 @@ def renderer(
 
     at = rung or spec.needs_rung()
     draw = bake or R.bake
+    turnable(draw, ranges(spec), also=fixed or {})
 
     class Quiet:
         """A search reports its own progress; each sample does not need to.

@@ -21,6 +21,7 @@
 ## Block D — Fetching from a paid service without surprise
 
 - 📋 **PW46** (deps: —) **a normalised mesh sits beside the paid one with nothing recording what it derives from** — Ingest writes a second file and returns the transform to its caller, so the mesh the project loads is one `verify` reads as an artefact nothing recorded. → §PW46
+- 📋 **PW49** (deps: —) **a fetched mesh arrives with shading painted into its texture, and nothing can take the marks back out** — Those marks are shadows that do not move when the light does, and Cottony had to keep its own scrub pass with three thresholds found by eye, which is the fork adoption tests for. → §PW49
 
 ## Block E — One world with the engine
 
@@ -30,10 +31,20 @@
 
 ## Block G — Geometry as a declaration
 
+- 📋 **PW50** (deps: —) **a fuzzy surface cannot be declared at all, because shell texturing is a technique and no table holds one** — Cottony's plush look is eight constants found by eye, and a table of eight keys would be one project's look compiled in while helping nobody who wanted fur instead. → §PW50
+
 ## Block H — Proof on a real game
 
-- 📋 **PW36** (deps: PW5 ✅) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Cottony is the first consumer and the test of whether the configuration boundary holds, and an adoption that needs a fork proves that it does not. → §PW36
+- ⏳ **PW36** (deps: PW5 ✅) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Porting the pipeline edits another repository, and cannot start before a before-side baseline is recorded for the asset that moves first. → §PW36
 - 📋 **PW48** (deps: —) **every test input is synthetic, so nothing is ever checked against an artefact somebody made** — The suite has no real mesh, photograph or capture in it, and those are where every symptom in this backlog was measured in the first place. → §PW48
+
+## Done when — PW36
+
+- **Every piece of Cottony's pipeline runs on the plugin, with no fork** The
+  script-built tray, the fetched prop in drawn cloth, the inflated cushion, the rig, the
+  paid service and the four engine captures each pass the check the existing pipeline
+  passes, against a before-side baseline recorded before that piece moved. A piece left
+  behind is named, with what it needed.
 
 ## Non-goals
 

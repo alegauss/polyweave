@@ -1,0 +1,76 @@
+# Cottony's polyweave.toml, as the adoption in §PW36 found it.
+#
+# Every value here was read off a constant that exists in D:\Git\viglet\cottony today —
+# the file path is in the comment — rather than invented to make the config look
+# adequate. That is the whole point of keeping it: a key this project has to add, or a
+# constant with nowhere to go, is evidence about the plugin's interface and not about
+# Cottony. docs/specs/adoption.md holds what that evidence came to.
+#
+# It is a fixture and not a live config. Nothing reads it but tests/test_adoption.py,
+# which is the gate that keeps it honest: a key renamed inside the plugin turns this
+# red, which is a real consumer noticing before the consumer does.
+
+[project]
+name = "cottony"
+root = "."
+
+[paths]
+# Both binaries are found on PATH on this machine, so neither is stated — which is the
+# default doing its job and is worth recording as such.
+meshes     = "tools/art/3d"              # bake_model.py MODELS_DIR
+renders    = "docs/design/art"           # bake_model.py ART
+references = "docs/design/references"
+specs      = "docs/design/accept"
+work       = ".polyweave"
+purchases  = "tools/art/3d/meshy.lock.json"   # the ledger that is already there
+loop       = "polyweave.loop.json"
+
+[render]
+# Cottony renders at one sample count for everything: SAMPLES = 320 in bake_model.py.
+# The ladder is the plugin's contribution, and 320 is what its top rung has to match for
+# a ported render to be comparable with the one it replaces (§PW35).
+rungs        = ["sphere", "preview", "final"]
+preview_size = 256
+final_size   = 1024
+samples      = { sphere = 32, preview = 64, final = 320 }
+seed         = 7                          # bake_model.py SEED
+max_parallel = 4
+
+[service]
+base    = "https://api.meshy.ai"
+key_env = "MESHY_API_KEY"
+schema  = "polyweave.service.toml"
+
+[budget]
+# A person's decision, and this one is deliberately zero: the meshes Cottony buys are
+# already bought and in the lock file. Adoption does not re-buy them.
+credits = 0
+expires = ""
+
+[units]
+# scripts/board.gd holds `const CELL := 112`, and reading it there is what stops the two
+# numbers drifting (§PW24). The project-config example used to say CELL_PX; the constant
+# is called CELL, which the adoption found by looking.
+source    = "scripts/board.gd:CELL"
+tolerance = 0.001
+
+[capture]
+# project.godot declares two translations — cottony.en and cottony.pt_BR — so which
+# language a screenshot is in is exactly the thing that cannot be left to the machine.
+declared   = ["locale", "resolution"]
+locale     = "pt_BR"
+resolution = [1080, 1920]                 # project.godot viewport_width/height
+
+[engine]
+fixed_fps = 60
+frames    = 6000
+timeout   = 180
+
+[rig]
+# The skeleton, not the render rig. Cottony's friends are plush toys.
+plan       = "plush"
+influences = 4
+falloff    = 4.0
+
+[geometry]
+outlines = "tools/art/solid.py"

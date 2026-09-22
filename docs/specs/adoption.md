@@ -52,7 +52,72 @@ Nothing here can report a success that the numbers do not support, which is the 
 reason the line sits late in the file and is deliberately not optional: the alternative is a
 backlog whose central claim cannot be falsified.
 
+## What Cottony had to configure
+
+Binds **PW36**. The non-goal says Cottony is the first consumer and not the specification,
+so anything it needs that a second project would not is configuration. That is a claim, and
+the way to test it is to write Cottony's config out of the constants it actually has and see
+what is left over.
+
+`tests/fixtures/cottony.toml` is that file — every value read off a named constant in
+`D:\Git\viglet\cottony`, with the file it came from in the comment. `tests/test_adoption.py`
+is the gate on it, so a key renamed inside the plugin turns red here rather than in the
+consumer. The audit sorted into three piles.
+
+### One: a key already existed
+
+| Cottony has | Where | The key |
+|---|---|---|
+| `ART` | `tools/art/bake_model.py` | `[paths] renders` |
+| `MODELS_DIR` | `tools/art/bake_model.py` | `[paths] meshes` |
+| `SAMPLES = 320` | `tools/art/bake_model.py` | `[render] samples`, per rung |
+| `SEED = 7` | `tools/art/bake_model.py` | `[render] seed` |
+| `meshy.lock.json` | `tools/art/3d/` | `[paths] purchases` |
+| `MESHY_API_KEY` | `tools/art/meshy.py` | `[service] key_env` |
+| `const CELL := 112` | `scripts/board.gd` | `[units] source` |
+| viewport 1080×1920 | `project.godot` | `[capture] resolution` |
+| two translations | `project.godot` | `[capture] declared`, `locale` |
+| `FABRIC_ROUGHNESS` | `tools/art/cloth.py` | `bake(material=…)` |
+
+**No key had to be added.** That is the boundary holding, and it is the one result here that
+was hoped for rather than found.
+
+### Two: per-asset, so never configuration
+
+The fourteen-parameter rig — `fill`, `light`, `turn`, `ambient`, `key`, `form`, `roughness`,
+`shadow`, `gloss`, `square`, `scrub`, `roll`, `plate` — is declared **per model** in Cottony,
+and a project-wide key for any of it would be the wrong shape. These belong in an acceptance
+spec, one per asset, which is what §PW12 and §PW13 are for. Not a gap, and worth saying so:
+the reflex on seeing a constant is to add a key for it, and thirteen of these would have been
+thirteen keys nobody could use.
+
+### Three: nothing had a home
+
+**The names do not survive, and nothing said so.** Cottony calls the whole-rig scale `light`
+and the key's share of it `form`. Neither is a parameter the renderer has. Worse, the
+acceptance spec's own worked example in this repository used `[search.light]` and
+`[search.form]` — so the documented example could not run. The spec loaded, `ranges` returned
+the axis, and the search died on its first sample with a bare `TypeError`, after the setup
+was paid for. A spec's search axes and the renderer's parameters were two lists and nothing
+reconciled them.
+
+That is the one thing this adoption changed **inside** the plugin: an axis the renderer has
+no knob for is now refused before a render is spent (`search.unknown-parameter`), with the
+near match named. The translation itself stays a person's — `light` is a multiplier and
+`exposure` is in stops, and a wrong conversion is a different picture, not an error.
+
+**The fluff has no home at all.** `FLUFF_SHELLS`, `FLUFF_DEPTH`, `FLUFF_EDGE`, `FLUFF_FIBRE`,
+`FLUFF_FIBRE_WEIGHT`, `FLUFF_VARY`, `FLUFF_RISE`, `FLUFF_LEAN` are shell texturing — the same
+surface drawn twenty times a little further out. That is a **technique**, not a number, and
+no table here holds one. Same for `scrub` and its three constants, which are a pass over the
+rendered pixels. Both are filed rather than guessed at.
+
+### What is left of PW36
+
+The port itself. It edits a repository this one does not own, and **§PW35 requires a baseline
+recorded before anything moves** — a before side taken after the port is refused, and rightly.
+So the audit lands here and the adoption waits on a person starting the ledger.
+
 ## Still to come in this block
 
-Adopting the plugin onto a real project without carrying that project's paths and palette
-into it (PW36), and testing against artefacts somebody actually made (PW48).
+Testing against artefacts somebody actually made (PW48).
