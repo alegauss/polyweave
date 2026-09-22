@@ -30,7 +30,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "C", title: "The asset compiler", open: 1 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 1 },
   { block: "E", title: "One world with the engine", open: 1 },
-  { block: "F", title: "Motion", open: 1 },
+  { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 5 },
   { block: "H", title: "Proof on a real game", open: 3 },
 ];
@@ -111,13 +111,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "E",
     symptom: "a bake renders square at the rung's size, so a declared world rectangle can be refused but never met",
     why: "PW24's contract names the size a sprite must be, and nothing renders at it: the size is the rung's, and it is not in the cache key either.",
-    deps: [],
-  },
-  {
-    id: "PW29",
-    block: "F",
-    symptom: "a 2D screen needs frames and a 3D scene needs a clip, so the motion is authored twice",
-    why: "The same settle exists as a sprite the interface crossfades to and as something a 3D scene would play, and keeping the two in step is manual.",
     deps: [],
   },
   {

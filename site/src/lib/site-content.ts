@@ -47,6 +47,7 @@ export const meta = {
 export const repoUrl = "https://github.com/alegauss/polyweave";
 export const parentUrl = "https://alegauss.github.io/";
 export const roadmapUrl = `${repoUrl}/blob/main/docs/ROADMAP.md`;
+export const changelogUrl = `${repoUrl}/blob/main/docs/CHANGELOG.md`;
 export const specsUrl = `${repoUrl}/tree/main/docs/specs`;
 export const roadkeepUrl = "https://github.com/alegauss/roadkeep";
 

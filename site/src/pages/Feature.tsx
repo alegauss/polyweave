@@ -5,7 +5,7 @@ import { RawSvg } from "../components/ui/RawSvg";
 import type { FeatureRecord } from "../lib/features";
 import { features } from "../lib/features";
 import { blockTitle, Spelled, tasksIn } from "../lib/roadmap";
-import { roadmapUrl } from "../lib/site-content";
+import { changelogUrl, roadmapUrl } from "../lib/site-content";
 import {
   fetchDiagram,
   geometryDiagram,
@@ -87,16 +87,35 @@ export function FeaturePage({ record }: { record: FeatureRecord }) {
           <div className="sec-head reveal">
             <div className="eyebrow">The block itself</div>
             <h2>
-              {Spelled(lines.length)} open {lines.length === 1 ? "line" : "lines"}, in the
-              roadmap's own words
+              {lines.length === 0 ? (
+                <>This block is finished</>
+              ) : (
+                <>
+                  {Spelled(lines.length)} open {lines.length === 1 ? "line" : "lines"}, in
+                  the roadmap's own words
+                </>
+              )}
             </h2>
             <p>
-              Each line names the failure it exists to remove and the measurement behind it.
-              None of them has shipped. This list is generated from{" "}
-              <a href={roadmapUrl}>
-                <code>docs/ROADMAP.md</code>
-              </a>
-              , so it cannot describe a backlog the file does not have.
+              {lines.length === 0 ? (
+                <>
+                  Every line it held has shipped, so the roadmap no longer carries any —
+                  which is why there are none below. What each one turned out to be is in{" "}
+                  <a href={changelogUrl}>
+                    <code>docs/CHANGELOG.md</code>
+                  </a>
+                  .
+                </>
+              ) : (
+                <>
+                  Each line names the failure it exists to remove and the measurement
+                  behind it. None of them has shipped. This list is generated from{" "}
+                  <a href={roadmapUrl}>
+                    <code>docs/ROADMAP.md</code>
+                  </a>
+                  , so it cannot describe a backlog the file does not have.
+                </>
+              )}
             </p>
           </div>
           <div className="rows reveal">

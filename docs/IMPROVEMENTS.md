@@ -268,20 +268,6 @@ wants the former, which may mean a rung of its own rather than a parameter.
 
 ## Block F — Motion
 
-### §PW29 One clip, two outputs
-
-The same motion is needed in two shapes. A 2D screen needs frames, as a sprite sheet the
-interface crossfades or plays. A 3D scene needs a clip the engine plays on a skeleton.
-Cottony has the first and will want the second, and authoring them separately means
-keeping two things in step by hand, which is the failure this line exists to prevent.
-One authored clip should produce both: the engine's own animation resource for the 3D
-path, and a baked sprite sheet with its atlas metadata for the 2D one, rendered through
-the same rig so that the two genuinely match rather than merely resemble each other. The
-sheet's frame rate, its frame count and its trim are configuration rather than decisions
-taken inside code. The value is not only the saved second authoring pass. It is that a
-change to the timing lands in both outputs, so a screen playing the sprite version and a
-scene playing the clip cannot drift apart without someone noticing.
-
 ## Block G — Geometry as a declaration
 
 ### §PW30 A shape is a declaration, and data beats a new language

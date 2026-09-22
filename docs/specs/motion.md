@@ -185,6 +185,31 @@ separately from the raw channel list.
 A clip driving a joint the skeleton does not have is `rig.unmatched-joints` — the same
 refusal a retarget gives, for the same reason.
 
-## Still to come in this block
+## One clip, two outputs
 
-One clip producing both outputs (PW29).
+The same motion is needed in two shapes. A **2D screen needs frames**, as a sprite sheet
+the interface crossfades or plays. A **3D scene needs a clip** the engine plays on a
+skeleton. Cottony has the first and will want the second, and authoring them separately
+means keeping two things in step by hand.
+
+Both come out of the one clip: `compile` is the 3D half, and the sheet is the 2D one,
+**rendered through the same rig** so the two genuinely match rather than merely resemble
+each other. An atlas sits beside the sheet in JSON — a machine writes it and a machine
+reads it — saying where each cell is, which moment of the clip it is, and how the sheet
+was trimmed out of the rendered frame.
+
+**The trim is one rectangle for the whole clip, not one per frame.** A frame trimmed to
+its own silhouette is a frame whose subject sits somewhere slightly different from the
+last, and a sprite that jitters on its own axis is the opposite of what a settle is for.
+The union of every frame's outline, and every cell cut from it, so every cell is the same
+size and the sheet can be indexed by arithmetic.
+
+**The rate, the count, the trim and the column count are `[sprites]`**, because they are a
+project's decisions rather than ones taken inside code. The sheet's rate is its own: a clip
+authored at 24 may be sampled at 12 for a screen that plays it small, and a count can be
+asked for instead where a sheet has a shape to hit.
+
+**The value is not the saved authoring pass.** It is that a change to the timing lands in
+both outputs. Both carry the **digest of the authored clip text**, so `matched` turns
+"keeping them in step" from a discipline into a check: equal digests are a screen and a
+scene playing the same motion, and a difference says so rather than waiting to be noticed.

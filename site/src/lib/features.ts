@@ -1,5 +1,5 @@
 import type { Rich } from "./site-content";
-import { blockTitle, tasksIn } from "./roadmap";
+import { blockTitle } from "./roadmap";
 
 // The seven depth pages, one record each, one per roadmap block. The route, the title and
 // the description are all read off the same record (in routes.tsx), so a new pillar cannot
@@ -337,15 +337,12 @@ export const features: FeatureRecord[] = [
   },
 ];
 
-// Import-time, in both directions: a record naming a block the roadmap has lost would
-// otherwise publish a page with an empty backlog under a heading that promises one.
+// Import-time: a record naming a block the roadmap has lost would otherwise publish a
+// page under a heading the file does not have. `blockTitle` throws on exactly that.
+//
+// A block with no open lines is **not** that failure — it is a block that finished, and
+// the page says so. This assertion used to refuse one, which turned shipping the last
+// line of a block into a broken build.
 (function assertBlocksExist(): void {
-  for (const f of features) {
-    blockTitle(f.block);
-    if (tasksIn(f.block).length === 0) {
-      throw new Error(
-        `features: block ${f.block} ("${f.slug}") has no open lines — the page would be empty`,
-      );
-    }
-  }
+  for (const f of features) blockTitle(f.block);
 })();

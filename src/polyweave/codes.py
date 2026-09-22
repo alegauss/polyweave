@@ -583,6 +583,18 @@ CODES: dict[str, Code] = {
         "and a key beyond it never plays",
         doors=("move the key inside", "lengthen the clip"),
     ),
+    "clip.frames-differ": Code(
+        means="the frames of one clip are not all the same size",
+        when="frames rendered at different rungs, or gathered from two runs; a sheet "
+        "of cells that are not one size is a sheet nothing can index",
+        doors=("render every frame at one rung",),
+    ),
+    "clip.nothing-drawn": Code(
+        means="no frame of the clip has anything in it to trim to",
+        when="a clip rendered with the subject out of frame, or on a rung that drew "
+        "nothing at all",
+        doors=("check the rig and the rung", "look at the frames the run wrote"),
+    ),
     "clip.unreadable": Code(
         means="the clip file is not readable as the format it claims",
         when="a hand edit that left invalid TOML behind; the format is text so that a "

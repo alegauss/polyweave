@@ -72,6 +72,11 @@ schema  = "polyweave.service.toml"
 credits = 60
 expires = "2026-12-31"
 
+[sprites]
+fps     = 12                   # the 2D half of a clip has its own rate
+frames  = 0                    # or a count to hit, where zero means use the rate
+trim    = true                 # one rectangle for the whole clip, never one per frame
+
 [rig]
 plan       = "plush"           # the body plan a fetched mesh is fitted with
 influences = 4                 # one snaps every vertex to one bone, and tears
@@ -83,10 +88,10 @@ source    = "scripts/board.gd:CELL_PX"   # read the engine's scale where it keep
 tolerance = 0.001
 
 [capture]
-declared   = ["locale", "resolution"]  # what a picture here depends on; add your own
+declared   = ["locale", "resolution", "theme"]  # add your own; `theme` is this project's
 locale     = "pt_BR"
 resolution = [1920, 1080]
-declared   = ["locale", "resolution", "theme"]
+theme      = "dark"
 
 [geometry]
 outlines = "tools/art/outlines.py"   # where named shape generators come from

@@ -117,6 +117,15 @@ DEFAULTS: dict[str, Any] = {
         "declared": ["locale", "resolution"],
     },
     "geometry": {"outlines": ""},
+    "sprites": {
+        # What the 2D half of a clip is baked at. Configuration rather than decisions
+        # taken inside code: a sheet's rate, its count and its trim are a project's
+        # (§PW29). `frames` of zero takes every frame the clip has.
+        "fps": 12,
+        "frames": 0,
+        "trim": True,
+        "columns": 0,
+    },
     "rig": {
         # Which body plan a mesh gets fitted with, and how the weights fall off. The
         # plan is the only one of these a project usually changes (§PW26).

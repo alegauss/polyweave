@@ -28,8 +28,6 @@
 
 ## Block F — Motion
 
-- 📋 **PW29** (deps: PW27 ✅) **a 2D screen needs frames and a 3D scene needs a clip, so the motion is authored twice** — The same settle exists as a sprite the interface crossfades to and as something a 3D scene would play, and keeping the two in step is manual. → §PW29
-
 ## Block G — Geometry as a declaration
 
 - 📋 **PW30** (deps: —) **a shape is a Python script, so stating one means writing and debugging a program** — Cottony's tray, star, ball and props are four modules of imperative geometry code, and the shape each describes is not readable without running it. → §PW30
