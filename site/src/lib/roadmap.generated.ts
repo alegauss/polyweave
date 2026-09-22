@@ -29,7 +29,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "B", title: "Seeing the result cheaply", open: 2 },
   { block: "C", title: "The asset compiler", open: 1 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 1 },
-  { block: "E", title: "One world with the engine", open: 3 },
+  { block: "E", title: "One world with the engine", open: 2 },
   { block: "F", title: "Motion", open: 4 },
   { block: "G", title: "Geometry as a declaration", open: 5 },
   { block: "H", title: "Proof on a real game", open: 2 },
@@ -104,13 +104,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "D",
     symptom: "a normalised mesh sits beside the paid one with nothing recording what it derives from",
     why: "Ingest writes a second file and returns the transform to its caller, so the mesh the project loads is one `verify` reads as an artefact nothing recorded.",
-    deps: [],
-  },
-  {
-    id: "PW23",
-    block: "E",
-    symptom: "a real renderer needs a window, so a capture cannot run where there is no screen",
-    why: "Headless mode draws nothing at all, which makes every screenshot a manual step on a developer's desk and keeps it out of any gate.",
     deps: [],
   },
   {

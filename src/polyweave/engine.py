@@ -136,6 +136,8 @@ def run(
     fixed_fps: int | None = None,
     headless: bool = False,
     args: tuple[str, ...] = (),
+    through: tuple[str, ...] = (),
+    binary: str = "",
     launch: Any = None,
 ) -> dict:
     """Run one scene script and say what happened, in one structure.
@@ -144,6 +146,11 @@ def run(
     named groups come back in `found`, and every name in `produces` is read as a path
     that has to exist — a script that printed its line before finishing the write is a
     failure, and the exit code will not say so.
+
+    `through` is a command the engine is launched inside, for a run that needs
+    something standing up around it — a display server, most of all. `binary` names the
+    engine where the caller has already resolved it, or where the project being run is
+    not the project whose settings named it.
 
     Nothing here raises on a failed run. The verdict is the answer.
     """
@@ -165,7 +172,7 @@ def run(
             "write the path relative to the project root",
         )
 
-    command = [find(root)]
+    command = [*through, binary or find(root)]
     if headless:
         command.append("--headless")
     command += ["--path", str(where), "--fixed-fps", str(fps)]

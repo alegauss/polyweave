@@ -60,7 +60,48 @@ reconstructing it.
 the same run as a gate, and each verdict has exactly one code it closes with, so a gate
 never invents one.
 
+## Real pixels with nobody watching
+
+Godot's headless mode runs on a **dummy renderer that draws nothing**, so any capture
+needing real pixels needs a real one — which is why every visual check lands on a
+developer's desk and never in a gate, and why Block B's comparisons cannot be enforced.
+
+**The engine states the problem itself.** `--help` on 4.7.1 lists the display drivers as
+`"windows" ("vulkan", "d3d12", "opengl3", "opengl3_angle", "dummy")` and
+`"headless" ("dummy")`. The headless display driver offers the dummy rendering driver and
+nothing else; asking for `--display-driver headless --rendering-driver vulkan` does not
+change it, and the read back comes out of `dummy/storage/texture_storage.h` with no image.
+Measured, not assumed — `headless` is one of the routes here precisely so that it can be
+shown not to draw.
+
+**What works is a real display driver plus a viewport texture read back inside the
+engine**, rather than a picture grabbed off a window. Nothing about the window's contents,
+focus or visibility is involved, so the window can be minimised or moved off the desktop
+and the capture is byte-identical. All four of the platform's rendering drivers produce
+the same pixels; the rendering driver is therefore not the variable, and the display
+driver is.
+
+What that still needs is a **display server**: an interactive session on Windows, an X or
+Wayland server elsewhere. On a machine with no screen at all that is what `xvfb-run`
+supplies, which is why the virtual display is a route and not a footnote.
+
+**A route is available only where it has been proved available.** `routes` writes a
+throwaway Godot project of its own — so what is probed is the machine and not a project —
+renders one known colour through each candidate, and reads the pixel back off disk. A
+route that draws is a route whose picture was looked at. The answer is kept under
+`[paths] work`, because a probe is a second or two per route and it changes only when the
+machine does.
+
+`capture` takes the caller's script and whichever route draws here, and records which one
+it was, so a picture can be traced back to how it was taken. Where none draws, the refusal
+(`engine.no-offscreen-route`) carries what each route was tried with and why it failed.
+
+**Moving the window is the script's own line.** A route passes its wish as a user argument
+after `--`; a capture script that honours it puts its window out of the way, and one that
+ignores it still captures, with a window visible while it does. Nothing here reaches into
+the running engine from outside to move it.
+
 ## Still to come in this block
 
-Pixels without a screen (PW23), the declared environment a capture is taken in (PW25), and
-the unit contract between a baked sprite and the running game (PW24).
+The declared environment a capture is taken in (PW25), and the unit contract between a
+baked sprite and the running game (PW24).

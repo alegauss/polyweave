@@ -243,22 +243,6 @@ reading the two side by side says otherwise.
 
 ## Block E — One world with the engine
 
-### §PW23 Offscreen, but really drawn
-
-Godot's headless mode runs on a dummy renderer that draws nothing, so any capture
-needing real pixels needs a real window, which means it cannot run where there is no
-screen, which means it never runs in a gate. That pushes every visual check onto a
-developer's desk and out of automation entirely, and it is the single reason Block B's
-comparisons cannot be enforced. There are routes worth trying: a virtual display, an
-offscreen swap chain, or rendering into a viewport texture and reading it back inside
-the engine rather than grabbing a window. Which of them works on which platform and
-driver is the actual research here, and the answer has to hold on the machine this is
-developed on before it is worth anything to anyone else. What the plugin should expose
-is one call that produces pixels without the caller having to know which route was
-taken, plus a diagnostic saying which routes are available on this machine. The payoff
-is large: once a screen can be captured with nobody present, every visual comparison
-becomes a gate.
-
 ### §PW24 Units are a contract, not a coincidence
 
 Cottony's board tray renders at one unit per pixel because somebody set the render

@@ -24,7 +24,6 @@
 
 ## Block E — One world with the engine
 
-- 📋 **PW23** (deps: PW22 ✅) **a real renderer needs a window, so a capture cannot run where there is no screen** — Headless mode draws nothing at all, which makes every screenshot a manual step on a developer's desk and keeps it out of any gate. → §PW23
 - 📋 **PW24** (deps: —) **the baked sprite and the running game agree on scale only because a constant was tuned** — One unit is one pixel because somebody set the render rectangle to match a cell size the game holds separately, and nothing fails if either moves. → §PW24
 - 📋 **PW25** (deps: PW22 ✅) **a capture takes its picture in whatever language and settings the runner happens to have** — The same script on two machines produces two different images, and the difference is a locale nobody declared rather than a change anybody made. → §PW25
 

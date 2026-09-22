@@ -544,6 +544,12 @@ CODES: dict[str, Code] = {
         "somewhere other than where it said",
         doors=("check what the script wrote and where",),
     ),
+    "engine.no-offscreen-route": Code(
+        means="nothing on this machine gets the engine to draw real pixels",
+        when="a capture where there is no display server at all; the engine's own "
+        "headless mode offers only a dummy renderer, which draws nothing",
+        doors=("install xvfb-run", "run where there is a display server"),
+    ),
     "engine.timed-out": Code(
         means="the run was still going when its wall clock ran out",
         when="a script that never quits; the frame budget is the other bound and this "
