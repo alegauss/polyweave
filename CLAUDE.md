@@ -50,7 +50,7 @@ Those files are ordinary documents and are edited directly. The three below are 
 ## The docs are governed
 
 `docs/ROADMAP.md`, `docs/CHANGELOG.md` and `docs/IMPROVEMENTS.md` belong to roadkeep. A hand
-edit is refused — call the CLI, which is wired at `.roadkeep/scripts/roadkeep.py`. The skill
+edit is refused — call the CLI, which is wired at `.claude/hooks/roadkeep-launch.py`. The skill
 at `.claude/skills/roadkeep/` is the reference; `roadkeep brief` starts a task and
 `roadkeep lint` is the gate.
 

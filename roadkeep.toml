@@ -47,3 +47,6 @@ held = 60
 # with `--have`. Uncomment and name your own; an undeclared word is refused.
 # [requirements]
 # declared = ["hardware"]
+
+[install]
+wired = "0.2.489"
