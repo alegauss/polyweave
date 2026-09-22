@@ -61,6 +61,14 @@ A failed assertion is an **error**, never a warning, and its code names the asse
 check on a dense mesh — it is opt-in through the config and off by default, but the cheap
 ones above always run.
 
+A check **returns what it measured** — the face count and bounds, the dimensions and alpha
+coverage, the byte length and sha256 — because those are the same numbers §PW6 writes
+beside the artefact, and measuring them twice is how the two come to disagree.
+
+Where an assertion can be legitimately false, it names the door rather than being dropped:
+a texture that really is one flat colour passes on `allow_uniform`, and a render never
+does, because a render of nothing is nothing anybody asked for.
+
 ## 3. Errors are typed, and name the door
 
 ```json

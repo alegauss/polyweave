@@ -1,0 +1,116 @@
+"""Every operation asserts its own output before returning.
+
+`docs/specs/tool-surface.md` §2. A success returned over a result nobody checked is the
+failure mode this plugin exists partly to remove, and each assertion below is cheap
+enough that there is no argument for skipping it:
+
+    post.check("render", path, size=(512, 512))
+    post.check("boolean", result, operands=(cut, target))
+    post.check("mesh", result, optional=("manifold",))
+
+A failed assertion is an error, never a warning, and its code names the assertion. What
+a check returns is what it measured, which is what §PW6 writes beside the artefact.
+"""
+
+from __future__ import annotations
+
+from collections.abc import Sequence
+from typing import Any
+
+from ..errors import PolyweaveError
+from .files import ACCEPTS_DOWNLOAD, check_download
+from .mesh import (
+    ACCEPTS_BOOLEAN,
+    ACCEPTS_MESH,
+    check_boolean,
+    check_manifold,
+    check_mesh,
+)
+from .pixels import (
+    ACCEPTS_CAPTURE,
+    ACCEPTS_RENDER,
+    ACCEPTS_TEXTURE,
+    check_capture,
+    check_render,
+    check_texture,
+)
+
+#: What each kind of output is checked for, and which arguments say what was asked for.
+#: These always run: §2 admits no operation that produces one of these and asserts
+#: nothing.
+CHEAP: dict[str, tuple[Any, frozenset[str]]] = {
+    "mesh": (check_mesh, ACCEPTS_MESH),
+    "boolean": (check_boolean, ACCEPTS_BOOLEAN),
+    "render": (check_render, ACCEPTS_RENDER),
+    "texture": (check_texture, ACCEPTS_TEXTURE),
+    "capture": (check_capture, ACCEPTS_CAPTURE),
+    "download": (check_download, ACCEPTS_DOWNLOAD),
+}
+
+#: Assertions that cost more than the operation on a large enough input, so a project
+#: turns them on deliberately. Off by default, and PW5 wires the config that names them.
+OPTIONAL: dict[str, tuple[Any, frozenset[str]]] = {
+    "manifold": (check_manifold, frozenset({"mesh", "boolean"})),
+}
+
+
+def check(
+    produces: str,
+    subject: Any,
+    *,
+    optional: Sequence[str] = (),
+    **expected: Any,
+) -> dict:
+    """Assert what must be true of `subject`, and return what was measured."""
+    try:
+        checker, accepts = CHEAP[produces]
+    except KeyError:
+        raise PolyweaveError(
+            "post.unknown-output",
+            f"nothing is asserted about a {produces!r}",
+            f"name one of {', '.join(sorted(CHEAP))}",
+        ) from None
+
+    unknown = sorted(set(expected) - set(accepts))
+    if unknown:
+        # §3: an unknown field is refused, never dropped, or a typo is
+        # indistinguishable from a working call.
+        raise PolyweaveError(
+            "post.unknown-field",
+            f"a {produces} check takes no {', '.join(unknown)}",
+            f"it takes {', '.join(sorted(accepts)) or 'no arguments'}",
+        )
+
+    measured = checker(subject, **expected)
+
+    for name in optional:
+        try:
+            extra, applies_to = OPTIONAL[name]
+        except KeyError:
+            raise PolyweaveError(
+                "post.unknown-check",
+                f"there is no {name!r} assertion",
+                f"name one of {', '.join(sorted(OPTIONAL))}",
+            ) from None
+        if produces not in applies_to:
+            raise PolyweaveError(
+                "post.check-misapplied",
+                f"{name!r} does not apply to a {produces}",
+                f"it applies to {', '.join(sorted(applies_to))}",
+            )
+        measured.update(extra(subject))
+    return measured
+
+
+__all__ = [
+    "CHEAP",
+    "OPTIONAL",
+    "check",
+    "check_boolean",
+    "check_capture",
+    "check_download",
+    "check_manifold",
+    "check_mesh",
+    "check_render",
+    "check_texture",
+]

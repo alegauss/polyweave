@@ -34,8 +34,8 @@ also carries the non-goals, which say what this deliberately will not be.
 ## The plugin
 
 Python, under `src/polyweave`, against Python 3.11 — which is the interpreter Blender 4.2
-ships, and code here may have to run inside it. No dependencies outside the standard
-library.
+ships, and code here may have to run inside it. It depends on numpy and Pillow, and on
+nothing else.
 
 ```
 python -m pytest         # the suite, in tests/

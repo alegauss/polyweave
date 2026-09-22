@@ -37,13 +37,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 
 export const generatedTasks: GeneratedTask[] = [
   {
-    id: "PW2",
-    block: "A",
-    symptom: "a tool reports success on an empty result, so the failure is found a render later",
-    why: "Blender's EXACT boolean returns an empty mesh with no error when its target was bevelled, and that silence cost a full render to locate.",
-    deps: [],
-  },
-  {
     id: "PW3",
     block: "A",
     symptom: "a tool's parameters are learned by reading the source that implements them",
@@ -76,6 +69,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "A",
     symptom: "a renderer outlives the worker that started it, and a sweep on Windows cannot find it to end it",
     why: "taskkill walks a tree from the living parent, so a worker that died takes its handle to its children with it, and the render goes on spending a core nobody is watching.",
+    deps: [],
+  },
+  {
+    id: "PW38",
+    block: "A",
+    symptom: "a height field survives an eight-bit round trip as a staircase, and every assertion says it is fine",
+    why: "The third silent failure behind the post-conditions is a blur that quantises a gradient, invisible in a shadow and ruinous under a specular, and no colour or coverage check sees it.",
     deps: [],
   },
   {

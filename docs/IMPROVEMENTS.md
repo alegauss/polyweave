@@ -2,22 +2,6 @@
 
 ## Block A — What a tool call costs the turn
 
-### §PW2 Post-conditions, or the tool is lying
-
-Three failures in Cottony's pipeline cost a render each and none of them raised
-anything. Blender's EXACT boolean returns an empty mesh when the object it cuts has been
-bevelled, measured at 2402 faces for one cut and 0 for the same cut after a bevel. A
-blur that round-trips through eight bits turns a height field's gradient into a
-staircase, invisible in a shadow and ruinous under a specular. A payload field the
-service does not recognise is dropped in silence, so the request succeeds and the
-setting was never read. The common shape is a success returned over a result nobody
-checked. Every operation this plugin wraps should assert what must be true of its own
-output before returning: a mesh has faces, a render is not uniformly one colour, a
-texture is not fully transparent, a downloaded file is the size the response promised.
-Each assertion is cheap. The alternative is finding out two steps downstream, where the
-evidence of which step broke has already been overwritten, and where the cost is
-measured in renders rather than milliseconds.
-
 ### §PW3 The surface describes itself
 
 Cottony's render rig takes fourteen parameters, and the only place their meaning exists
@@ -97,6 +81,29 @@ failure than leaking a renderer, and a sweep that might do it is one nobody will
 The measure is whether a sweep after a killed worker leaves no renderer behind, on both
 platforms. That test needs a real child process rather than a mocked one, because the
 whole question is what the operating system does with it once the parent is gone.
+
+### §PW38 The assertion that needs to know what an image is for
+
+Two of the three silent failures the post-conditions were drawn from are asserted now:
+the boolean that returned nothing, and the download that stopped early. The third is
+not. A height field blurred through an eight-bit buffer comes back as a staircase — the
+gradient is still there, the image is not uniform, it is not transparent, it is the size
+that was asked for, and every cheap assertion passes it.
+
+What separates it from the checks already here is that it needs to know what the image
+is for. A colour texture with forty distinct levels is fine; a displacement map with
+forty is broken, and nothing in the file says which it is. So this cannot be folded into
+`texture`. It is a kind of its own, declared by the operation that produced it, carrying
+the precision it was meant to keep.
+
+The cheap form is a count of distinct values per channel over the subject region,
+against a floor the caller states. The honest form also asks what the file's own bit
+depth is, because a sixteen-bit PNG holding only 256 levels is a different bug from an
+eight-bit one: the first is a buffer in the middle of the pipeline, the second is the
+renderer writing too little, and the remedies point at different code.
+
+`luma_bands` in the measurement vocabulary asks a related question at display size. This
+one is about precision in the file, and collapsing the two would lose both answers.
 
 ## Block B — Seeing the result cheaply
 
