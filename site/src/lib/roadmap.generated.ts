@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 1 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 1 },
-  { block: "H", title: "Proof on a real game", open: 2 },
+  { block: "H", title: "Proof on a real game", open: 1 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -125,13 +125,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "G",
     symptom: "a fuzzy surface cannot be declared at all, because shell texturing is a technique and no table holds one",
     why: "Cottony's plush look is eight constants found by eye, and a table of eight keys would be one project's look compiled in while helping nobody who wanted fur instead.",
-    deps: [],
-  },
-  {
-    id: "PW36",
-    block: "H",
-    symptom: "a real project cannot adopt the plugin without carrying its own paths and palette into it",
-    why: "Porting the pipeline edits another repository, and cannot start before a before-side baseline is recorded for the asset that moves first.",
     deps: [],
   },
   {
