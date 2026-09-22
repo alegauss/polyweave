@@ -2,29 +2,6 @@
 
 ## Block A — What a tool call costs the turn
 
-### §PW38 The assertion that needs to know what an image is for
-
-Two of the three silent failures the post-conditions were drawn from are asserted now:
-the boolean that returned nothing, and the download that stopped early. The third is
-not. A height field blurred through an eight-bit buffer comes back as a staircase — the
-gradient is still there, the image is not uniform, it is not transparent, it is the size
-that was asked for, and every cheap assertion passes it.
-
-What separates it from the checks already here is that it needs to know what the image
-is for. A colour texture with forty distinct levels is fine; a displacement map with
-forty is broken, and nothing in the file says which it is. So this cannot be folded into
-`texture`. It is a kind of its own, declared by the operation that produced it, carrying
-the precision it was meant to keep.
-
-The cheap form is a count of distinct values per channel over the subject region,
-against a floor the caller states. The honest form also asks what the file's own bit
-depth is, because a sixteen-bit PNG holding only 256 levels is a different bug from an
-eight-bit one: the first is a buffer in the middle of the pipeline, the second is the
-renderer writing too little, and the remedies point at different code.
-
-`luma_bands` in the measurement vocabulary asks a related question at display size. This
-one is about precision in the file, and collapsing the two would lose both answers.
-
 ### §PW39 One rule with two reaches, not two rules
 
 Two argument checks now exist and they disagree about what a bad argument is. The worker

@@ -232,6 +232,31 @@ CODES: dict[str, Code] = {
         when="a bake whose source had no coverage at all",
         doors=("check the UVs and the source",),
     ),
+    "post.field-size": Code(
+        means="the field is not the size that was asked for",
+        when="a bake writes at a resolution other than the one requested",
+        doors=("ask for the size again", "drop the size expectation"),
+    ),
+    "post.field-shallow": Code(
+        means="the file holds fewer bits per channel than the field needs",
+        when="a renderer that wrote eight bits where sixteen were asked for. Distinct "
+        "from post.field-quantised on purpose: this is the renderer writing too "
+        "little, and the remedy is in the render settings",
+        doors=(
+            "ask the renderer for the depth the field needs",
+            "lower the depth expected",
+        ),
+    ),
+    "post.field-quantised": Code(
+        means="the field holds too few distinct values to be the gradient it should be",
+        when="a height field that went through an eight-bit buffer and came back a "
+        "staircase (§PW38). Invisible in a shadow, ruinous under a specular, and "
+        "every colour and coverage check passes it",
+        doors=(
+            "find the conversion between the renderer and the disk",
+            "lower the levels expected, if this flat was intended",
+        ),
+    ),
     "post.capture-size": Code(
         means="the capture is not the size that was asked for",
         when="an engine window opens at a resolution other than the declared one",

@@ -28,9 +28,11 @@ from .mesh import (
 )
 from .pixels import (
     ACCEPTS_CAPTURE,
+    ACCEPTS_FIELD,
     ACCEPTS_RENDER,
     ACCEPTS_TEXTURE,
     check_capture,
+    check_field,
     check_render,
     check_texture,
 )
@@ -43,6 +45,9 @@ CHEAP: dict[str, tuple[Any, frozenset[str]]] = {
     "boolean": (check_boolean, ACCEPTS_BOOLEAN),
     "render": (check_render, ACCEPTS_RENDER),
     "texture": (check_texture, ACCEPTS_TEXTURE),
+    # A field is a texture whose values are data rather than colour, and it is its own
+    # kind because only the caller knows which one an image is (§PW38).
+    "field": (check_field, ACCEPTS_FIELD),
     "capture": (check_capture, ACCEPTS_CAPTURE),
     "download": (check_download, ACCEPTS_DOWNLOAD),
 }
@@ -109,6 +114,7 @@ __all__ = [
     "check_boolean",
     "check_capture",
     "check_download",
+    "check_field",
     "check_manifold",
     "check_mesh",
     "check_render",

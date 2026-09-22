@@ -18,6 +18,29 @@ from ..image import Image, load
 ACCEPTS_RENDER = frozenset({"size", "alpha_floor", "allow_uniform"})
 ACCEPTS_TEXTURE = frozenset({"size", "alpha_floor", "allow_uniform"})
 ACCEPTS_CAPTURE = frozenset({"size"})
+ACCEPTS_FIELD = frozenset({"size", "levels", "bits", "alpha_floor"})
+
+#: Bits per channel, by the mode the file opens as. §PW38 needs the file's own depth and
+#: not the working array's, because the two failures it separates are a renderer that
+#: wrote eight bits and a buffer that flattened sixteen down to eight — and by the time
+#: an image is an RGBA byte array both look identical.
+DEPTHS: dict[str, int] = {
+    "1": 1,
+    "L": 8,
+    "P": 8,
+    "LA": 8,
+    "PA": 8,
+    "RGB": 8,
+    "RGBA": 8,
+    "CMYK": 8,
+    "YCbCr": 8,
+    "I;16": 16,
+    "I;16L": 16,
+    "I;16B": 16,
+    "I;16N": 16,
+    "I": 32,
+    "F": 32,
+}
 
 
 def as_image(subject: Any) -> Image:
@@ -133,6 +156,108 @@ def check_texture(
         allow_uniform=allow_uniform,
     )
     return _measure(image, alpha_floor)
+
+
+def _as_written(subject: Any) -> tuple[np.ndarray | None, int | None]:
+    """The file's own samples and its own bits per channel, before any conversion.
+
+    `Image` holds every picture as RGBA bytes, which is right for everything that asks a
+    question about colour and wrong for the only question this check asks. A sixteen-bit
+    height field converted to bytes has already lost the precision being measured, so
+    this reads the file a second time rather than measuring the conversion.
+
+    `(None, None)` where the subject is an already-loaded image rather than a path: the
+    file is not there to re-read, and reporting a depth inferred from the array would be
+    reporting the conversion's depth as the file's.
+    """
+    if not isinstance(subject, str | Path):
+        return None, None
+    try:
+        from PIL import Image as PILImage
+
+        with PILImage.open(subject) as opened:
+            return np.asarray(opened), DEPTHS.get(opened.mode)
+    except (OSError, ValueError):  # pragma: no cover - `as_image` already refused these
+        return None, None
+
+
+def _levels_in(samples: np.ndarray, mask: np.ndarray) -> list[int]:
+    """Distinct values per channel over the subject, which is the staircase's height.
+
+    Per channel and not over the whole array, because a field packed into three channels
+    is three separate signals and the flattest one is the one that broke.
+    """
+    if samples.ndim == 2:
+        samples = samples[:, :, None]
+    if mask.shape != samples.shape[:2]:  # pragma: no cover - a re-read that disagrees
+        mask = np.ones(samples.shape[:2], dtype=bool)
+    channels = samples[mask]
+    if not len(channels):
+        return []
+    return [int(np.unique(channels[:, c]).size) for c in range(channels.shape[1])]
+
+
+def check_field(
+    subject: Any,
+    *,
+    size: Any = None,
+    levels: int = 0,
+    bits: int = 0,
+    alpha_floor: float = 0.0,
+) -> dict:
+    """A height, normal or displacement field still carries the precision it needs.
+
+    §PW38, the third of the three silent failures the post-conditions were drawn from.
+    A height field blurred through an eight-bit buffer comes back as a staircase: the
+    gradient is still there, the image is not uniform, it is not transparent, it is the
+    size that was asked for, and every other assertion here passes it.
+
+    What separates this from `texture` is that it has to know what the image is **for**.
+    A colour texture with forty distinct levels is fine; a displacement map with forty
+    is broken, and nothing in the file says which it is. So the caller declares it, by
+    checking a `field` rather than a `texture` and by stating the precision it meant to
+    keep.
+
+    The two failures are separate codes because their remedies point at different code.
+    Too few bits in the file is the renderer writing too little. Enough bits holding too
+    few distinct values is a buffer in the middle of the pipeline that flattened them,
+    and the renderer is innocent.
+    """
+    image = as_image(subject)
+    _check_size(image, size, code="post.field-size", what="field")
+    samples, depth = _as_written(subject)
+    if samples is None:
+        samples, depth = image.rgba[:, :, :3], 8
+
+    if bits and depth is not None and depth < int(bits):
+        raise PolyweaveError(
+            "post.field-shallow",
+            f"the file holds {depth} bits per channel, and {int(bits)} was asked for",
+            f"the renderer wrote {depth} bits; ask it for {int(bits)}, or accept what "
+            f"it produced by lowering `bits`",
+        )
+
+    mask = image.subject(alpha_floor)
+    found = _levels_in(samples, mask)
+    flattest = min(found) if found else 0
+    if levels and flattest < int(levels):
+        raise PolyweaveError(
+            "post.field-quantised",
+            f"the flattest channel holds {flattest} distinct values over the subject, "
+            f"and {int(levels)} was asked for",
+            f"a {depth}-bit file this flat went through an eight-bit buffer somewhere "
+            f"between the renderer and the disk; find the conversion rather than "
+            f"re-rendering"
+            if depth and depth > 8
+            else f"the gradient was quantised before it was written; ask the renderer "
+            f"for more than {depth or 8} bits, or lower `levels`",
+        )
+
+    measured = _measure(image, alpha_floor)
+    measured["bits"] = depth
+    measured["levels"] = flattest
+    measured["levels_per_channel"] = found
+    return measured
 
 
 def check_capture(subject: Any, *, size: Any = None) -> dict:

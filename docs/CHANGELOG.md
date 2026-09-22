@@ -9,6 +9,7 @@
 - ✅ **PW5** **paths, palette and rig defaults are written into the tool, so a second project cannot run it** — Every path, tolerance, binary and budget is read from polyweave.toml on each call, over a default the plugin ships for all of it (design recorded in `docs/specs/project-config.md`).
 - ✅ **PW6** **the renderer's version is not recorded, so a render that moved cannot be told from a change** — Every artefact carries a record of the engine, seed, samples, inputs and params that made it, and the same record is the cache key (design recorded in `docs/specs/provenance.md`).
 - ✅ **PW37** **a renderer outlives the worker that started it, and a sweep on Windows cannot find it to end it** — A worker writes every process it spawns down before waiting on it, and a sweep ends those pids directly, while the recorded start time still matches (design recorded in `docs/specs/tool-surface.md`).
+- ✅ **PW38** **a height field survives an eight-bit round trip as a staircase, and every assertion says it is fine** — A field is its own checked kind, holding the file's own bit depth and its distinct values per channel, with a shallow write and a flat buffer apart (design recorded in `docs/specs/tool-surface.md`).
 
 ## Block B — Seeing the result cheaply
 

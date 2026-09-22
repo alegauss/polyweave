@@ -25,7 +25,7 @@ export interface GeneratedNonGoal {
 }
 
 export const generatedBlocks: GeneratedBlock[] = [
-  { block: "A", title: "What a tool call costs the turn", open: 5 },
+  { block: "A", title: "What a tool call costs the turn", open: 4 },
   { block: "B", title: "Seeing the result cheaply", open: 2 },
   { block: "C", title: "The asset compiler", open: 1 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 2 },
@@ -36,13 +36,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW38",
-    block: "A",
-    symptom: "a height field survives an eight-bit round trip as a staircase, and every assertion says it is fine",
-    why: "The third silent failure behind the post-conditions is a blur that quantises a gradient, invisible in a shadow and ruinous under a specular, and no colour or coverage check sees it.",
-    deps: [],
-  },
   {
     id: "PW39",
     block: "A",

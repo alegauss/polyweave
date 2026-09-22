@@ -280,6 +280,102 @@ def test_an_unknown_expectation_is_refused_rather_than_dropped(tmp_path):
     assert "size" in caught.value.remedy
 
 
+# -- a field, which is a texture that has to know what it is for (§PW38) --------
+
+
+def _field(tmp_path, name, *, levels=256, size=(64, 1), bits=8):
+    """A one-row ramp holding exactly `levels` distinct values.
+
+    A staircase and a gradient are the same picture at this size; the difference is how
+    many steps it takes to climb, which is the only thing this check measures.
+    """
+    top = (1 << bits) - 1
+    steps = np.linspace(0, top, size[0])
+    quantised = np.round(steps / top * (levels - 1)) / (levels - 1) * top
+    row = quantised.astype(np.uint16 if bits == 16 else np.uint8)
+    samples = np.tile(row, (size[1], 1))
+    path = tmp_path / name
+    PILImage.fromarray(samples).save(path)
+    return path
+
+
+def test_a_field_that_kept_its_gradient_passes_and_says_how_many_levels(tmp_path):
+    measured = post.check("field", _field(tmp_path, "h.png"), levels=60)
+    assert measured["levels"] == 64, "one per pixel of a 64-wide ramp"
+    assert measured["bits"] == 8
+
+
+def test_a_gradient_that_came_back_a_staircase_is_refused(tmp_path):
+    """The third silent failure: still a gradient, still not uniform, still the right
+    size, and every other assertion here passes it."""
+    flat = _field(tmp_path, "stairs.png", levels=4)
+    post.check("texture", flat)  # the existing checks see nothing wrong
+
+    with pytest.raises(PolyweaveError) as caught:
+        post.check("field", flat, levels=64)
+    assert caught.value.code == "post.field-quantised"
+    assert "4 distinct values" in caught.value.message
+
+
+def test_the_same_image_is_fine_as_a_texture_and_broken_as_a_field(tmp_path):
+    """Nothing in the file says which it is, so the caller declares it."""
+    flat = _field(tmp_path, "forty.png", levels=40)
+    assert post.check("texture", flat)["size"] == [64, 1]
+    with pytest.raises(PolyweaveError):
+        post.check("field", flat, levels=200)
+
+
+def test_a_file_written_too_shallow_is_a_different_failure_from_a_flattened_one(
+    tmp_path,
+):
+    """Their remedies point at different code: the renderer, or a buffer after it."""
+    with pytest.raises(PolyweaveError) as caught:
+        post.check("field", _field(tmp_path, "eight.png"), bits=16)
+    assert caught.value.code == "post.field-shallow"
+    assert "8 bits per channel" in caught.value.message
+
+
+def test_a_deep_file_holding_too_little_blames_the_buffer_and_not_the_renderer(
+    tmp_path,
+):
+    deep = _field(tmp_path, "deep.png", levels=8, size=(256, 1), bits=16)
+    measured_bits = post.check("field", deep)["bits"]
+    assert measured_bits == 16, "the file's own depth, not the working array's"
+
+    with pytest.raises(PolyweaveError) as caught:
+        post.check("field", deep, bits=16, levels=1000)
+    assert caught.value.code == "post.field-quantised"
+    assert "buffer" in caught.value.remedy
+
+
+def test_the_depth_is_read_off_the_file_and_not_off_the_loaded_array(tmp_path):
+    """`Image` holds every picture as RGBA bytes, so measuring it would measure the
+    conversion rather than what was written."""
+    deep = _field(tmp_path, "sixteen.png", levels=4096, size=(256, 1), bits=16)
+    assert post.check("field", deep)["levels"] > 255, "beyond what a byte could hold"
+
+
+def test_a_field_reports_a_level_count_per_channel(tmp_path):
+    """A field packed into three channels is three signals, and the flattest broke."""
+    rgb = np.zeros((1, 64, 3), dtype=np.uint8)
+    rgb[:, :, 0] = np.arange(64, dtype=np.uint8)
+    rgb[:, :, 1] = 7
+    rgb[:, :, 2] = np.arange(64, dtype=np.uint8) // 2
+    path = tmp_path / "packed.png"
+    PILImage.fromarray(rgb, "RGB").save(path)
+
+    measured = post.check("field", path)
+    assert measured["levels_per_channel"] == [64, 1, 32]
+    assert measured["levels"] == 1, "the flattest is what the check is about"
+
+
+def test_a_field_takes_no_argument_a_texture_takes_and_it_does_not(tmp_path):
+    with pytest.raises(PolyweaveError) as caught:
+        post.check("field", _field(tmp_path, "u.png"), allow_uniform=True)
+    assert caught.value.code == "post.unknown-field"
+    assert "levels" in caught.value.remedy
+
+
 def test_every_code_is_namespaced_and_carries_a_remedy(tmp_path):
     """§3: a code is part of the contract, and an error names the door it closes."""
     failures = [

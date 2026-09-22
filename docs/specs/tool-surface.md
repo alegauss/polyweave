@@ -63,6 +63,7 @@ it produced:
 | A boolean result | face count is not zero where both operands had faces |
 | A render | not a single uniform colour; not fully transparent; dimensions as requested |
 | A texture | not fully transparent; not a single uniform colour |
+| A field | the file's own bit depth, and distinct values per channel, are what was asked |
 | A download | byte length matches the declared length; sha256 recorded |
 | A capture | the named artefact exists on disk and is a readable image |
 
@@ -78,6 +79,21 @@ beside the artefact, and measuring them twice is how the two come to disagree.
 Where an assertion can be legitimately false, it names the door rather than being dropped:
 a texture that really is one flat colour passes on `allow_uniform`, and a render never
 does, because a render of nothing is nothing anybody asked for.
+
+**A field is its own kind because only the caller knows which one an image is.** A height
+field blurred through an eight-bit buffer comes back as a staircase, and every check above
+passes it: the gradient is there, it is not uniform, it is not transparent, it is the size
+that was asked for. What separates it from a texture is what the image is *for* — a colour
+texture with forty distinct levels is fine and a displacement map with forty is broken, and
+nothing in the file says which. So the caller declares it by checking a `field` and stating
+the precision it meant to keep, and two failures are kept apart because their remedies
+point at different code: `post.field-shallow` is the renderer writing too few bits, and
+`post.field-quantised` is enough bits holding too few distinct values, which is a buffer
+in the middle of the pipeline. The depth is read off the file rather than off the loaded
+array, since every image is held here as RGBA bytes and measuring that would measure the
+conversion. `luma_bands` in [measurements.md](measurements.md) asks a related question at
+display size; this one is about precision in the file, and collapsing the two would lose
+both answers.
 
 ## 3. Errors are typed, and name the door
 
