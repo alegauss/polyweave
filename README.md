@@ -14,7 +14,8 @@ machine against files in your own repository.
 
 ## Status
 
-Design stage. There is no code yet — `docs/ROADMAP.md` holds the plan, in eight blocks:
+Block A has started, and the rest is still design. `docs/ROADMAP.md` holds the plan, in
+eight blocks:
 
 | Block | |
 |---|---|
@@ -29,6 +30,18 @@ Design stage. There is no code yet — `docs/ROADMAP.md` holds the plan, in eigh
 
 Every line in that file was drawn from a failure measured in a real project. `docs/ROADMAP.md`
 also carries the non-goals, which say what this deliberately will not be.
+
+## The plugin
+
+Python, under `src/polyweave`, against Python 3.11 — which is the interpreter Blender 4.2
+ships, and code here may have to run inside it. No dependencies outside the standard
+library.
+
+```
+python -m pytest         # the suite, in tests/
+python -m ruff check .   # the linter
+python -m ruff format .  # the formatter
+```
 
 ## Roadmap docs
 

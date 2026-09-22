@@ -9,9 +9,10 @@ These files are ordinary documents. Nothing governs them, and they are edited di
 unlike `docs/ROADMAP.md`, `docs/CHANGELOG.md` and `docs/IMPROVEMENTS.md`, which belong to
 roadkeep and refuse a hand edit.
 
-**Status: draft.** There is no implementation. Each spec is settled enough to build
-against, and the first implementation that disagrees with one is evidence about the spec,
-not only about the code.
+**Status: draft.** §1 of [tool-surface.md](tool-surface.md) is built; everything else here
+is still ahead of its code. Each spec is settled enough to build against, and the first
+implementation that disagrees with one is evidence about the spec, not only about the code —
+which is why §1 now names a heartbeat and a `sweep` that its first implementation needed.
 
 | Spec | What it fixes | Lines it binds |
 |---|---|---|

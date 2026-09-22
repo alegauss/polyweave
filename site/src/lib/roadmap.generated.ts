@@ -37,13 +37,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 
 export const generatedTasks: GeneratedTask[] = [
   {
-    id: "PW1",
-    block: "A",
-    symptom: "an operation that takes minutes holds the turn, and nothing reports progress until it ends",
-    why: "A two-minute bake and a ten-minute fetch are both dead time a session cannot spend elsewhere, and a timeout returns no evidence of how far it got.",
-    deps: [],
-  },
-  {
     id: "PW2",
     block: "A",
     symptom: "a tool reports success on an empty result, so the failure is found a render later",
@@ -76,6 +69,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "A",
     symptom: "the renderer's version is not recorded, so a render that moved cannot be told from a change",
     why: "A bake is not byte-reproducible, and without the library versions and the seed beside the output there is no way to attribute a difference to anything.",
+    deps: [],
+  },
+  {
+    id: "PW37",
+    block: "A",
+    symptom: "a renderer outlives the worker that started it, and a sweep on Windows cannot find it to end it",
+    why: "taskkill walks a tree from the living parent, so a worker that died takes its handle to its children with it, and the render goes on spending a core nobody is watching.",
     deps: [],
   },
   {

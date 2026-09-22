@@ -16,6 +16,8 @@ start  → { job: "j_7f3a", stage: "queued" }
 poll   → { job, stage, progress?, started_at, elapsed_s }
 result → { job, status: "done" | "failed", … }   # blocks only if asked to wait
 cancel → { job, status: "cancelled" }
+list   → [ … ]                                   # every job this project knows about
+sweep  → { reaped, removed }                     # collect what was abandoned
 ```
 
 - `stage` is a short vocabulary per operation kind (`queued`, `building`, `rendering`,
@@ -23,13 +25,21 @@ cancel → { job, status: "cancelled" }
   parsing a message.
 - **State lives in a file**, `.polyweave/jobs/<job>.json`, so a handle survives the session
   that made it. A session that ends mid-render can be told what happened by the next one.
-- **A dead worker is a failure, not a hang.** The job record carries the OS process id; a
-  `poll` that finds no live process and no result returns `failed` with the code
-  `job.worker-gone`.
+- **A dead worker is a failure, not a hang.** A job carries the OS process id and a
+  heartbeat its worker keeps moving; a `poll` that finds no live process, or a live one
+  whose heartbeat stopped, and no result, returns `failed` with the code `job.worker-gone`.
+  Both are needed: a pid that no longer exists is conclusive, and a pid that does exist may
+  be a stranger who inherited the number.
 - `cancel` is not advisory. A search that has found its answer stops paying for the renders
-  it no longer needs, which is what makes PW13 affordable.
+  it no longer needs, which is what makes PW13 affordable. It ends the worker's whole
+  process tree, because a worker killed on its own leaves the renderer it started running.
+- **An abandoned job is collectable, not a leak.** `sweep` fails every job whose worker is
+  gone, kills the descendants that outlived it, and deletes the records of jobs that
+  finished long enough ago to be nobody's business.
 - Concurrency is the caller's: four handles is four parallel samples, bounded by
-  `[render] max_parallel` in the project config.
+  `[render] max_parallel` in the project config. A `start` beyond that bound is refused with
+  `job.at-capacity` rather than queued, because a queue nobody can see is a wait by another
+  name.
 
 ## 2. Every operation asserts its own output
 

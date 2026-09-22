@@ -4,7 +4,14 @@ A Claude Code plugin for making 3D assets — geometry, surface and motion — b
 what an asset should be** and letting a machine search for the parameters that satisfy it,
 on top of Blender, Godot and a generative mesh service.
 
-There is no code yet. `docs/ROADMAP.md` is the whole project.
+Block A has started. The plugin is Python under `src/polyweave`, its tests are in
+`tests/`, and the gates are `python -m pytest` and `python -m ruff check .` from the
+repository root. Everything else is still `docs/ROADMAP.md`.
+
+Shipping a roadmap line rewrites `docs/ROADMAP.md`, and `site/src/lib/roadmap.generated.ts`
+is generated from it and committed. So a ship is followed by `npm run build && npm test`
+in `site/`, and the regenerated module goes in the same commit — the site's own test
+fails on a roadmap line that was shipped without one.
 
 ## The one thing to keep in mind
 

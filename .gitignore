@@ -1,1 +1,12 @@
 .roadkeep
+
+# the plugin's working state, which `[paths] work` names and nothing outside the tree
+.polyweave/
+
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/

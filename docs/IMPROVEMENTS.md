@@ -2,22 +2,6 @@
 
 ## Block A — What a tool call costs the turn
 
-### §PW1 Long work needs a handle, not a wait
-
-A bake, a fetch and a capture all take longer than a tool call should hold. Today the
-caller blocks: two minutes for a character render, up to ten for a generative task
-polled every five seconds, three for a capture that may simply hang. The turn is spent
-waiting, and a timeout returns nothing except the timeout. What is wanted is a start
-that returns a handle immediately, a progress read that says which stage the work
-reached, and a result read that returns the artefact or the failure. That shape also
-makes concurrency free: four parameter samples are four handles rather than four waits,
-which is what makes the search in Block C affordable at all. The hard part is not the
-interface but the guarantees. A handle has to survive the session that created it, so
-the state lives in a file under the project rather than in a server's memory. An
-abandoned job has to be collectable instead of leaking a renderer process. And
-cancellation has to work, because a search that has already found its answer should stop
-paying for the renders it no longer needs.
-
 ### §PW2 Post-conditions, or the tool is lying
 
 Three failures in Cottony's pipeline cost a render each and none of them raised
@@ -92,6 +76,27 @@ correct rather than hopeful, because the cache key is exactly this record. And i
 what allows a regression to be bisected at all: a render that got worse is compared
 against the record of the last one that was right, and the fields that changed between
 them are the suspect list.
+
+### §PW37 Ending a renderer whose parent is gone
+
+A worker is killed, or simply dies, and the Blender it started keeps rendering. `cancel`
+does not have this problem: it walks the tree from a living worker, which both `taskkill
+/T` and a POSIX process group can do. `sweep` does have it, because by the time a job is
+found abandoned the worker is already gone. On POSIX the process group outlives its
+leader, so an orphan is reachable by group id. On Windows nothing connects a dead parent
+to its children, and the render runs until somebody opens Task Manager.
+
+The answer is to stop needing the tree. A worker that spawns a renderer records its pid
+in the job record before it waits on it, and a sweep ends those pids directly. Two
+things make that honest rather than hopeful. The pid is written before the wait, so a
+worker killed a millisecond later has still left the trail. And the record needs the
+child's start time beside its pid, or the reuse problem the heartbeat solves for the
+worker comes straight back for its children — killing a stranger's process is a worse
+failure than leaking a renderer, and a sweep that might do it is one nobody will run.
+
+The measure is whether a sweep after a killed worker leaves no renderer behind, on both
+platforms. That test needs a real child process rather than a mocked one, because the
+whole question is what the operating system does with it once the parent is gone.
 
 ## Block B — Seeing the result cheaply
 
