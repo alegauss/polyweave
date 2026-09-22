@@ -1,0 +1,33 @@
+# Which binaries are stored outside the Git objects.
+#
+# Git keeps every version of a file whole. An 8 MB mesh replaced three times is 24 MB in
+# every clone from then on, and the only fix afterwards rewrites history. Git LFS keeps
+# those bytes on the server beside the repository and commits a pointer of a couple of
+# hundred characters in their place.
+#
+# What this repository has that needs it: test assets. Nothing here is generated art —
+# the plugin's own tests build their inputs in code — so the only binaries that ever
+# land are artefacts copied from a real project to be tested against, and those are
+# meshes. A clone needs `git lfs install` once per machine before any of it applies.
+#
+# *.png is deliberately absent. A reference drawing is 10–21 KB, never rewritten, and
+# reading one out of a pointer is a step nobody should have to take to run the tests.
+#
+# *.gltf is absent for the reason Cottony's own list gives: that form leaves its payload
+# in a .bin beside it, and *.bin is far too generic an extension to route here. Commit
+# the self-contained .glb.
+#
+# Adding a type: add its line, then `git add --renormalize .` for anything already
+# committed under it, because a pattern on its own converts nothing already in history.
+
+# 3D meshes, which arrive from the generative service at tens of MB and are the whole
+# reason this file exists.
+*.glb       filter=lfs diff=lfs merge=lfs -text
+*.fbx       filter=lfs diff=lfs merge=lfs -text
+*.blend     filter=lfs diff=lfs merge=lfs -text
+
+# Captures and recordings, where a test ever needs one of either.
+*.mp4       filter=lfs diff=lfs merge=lfs -text
+*.mov       filter=lfs diff=lfs merge=lfs -text
+*.webm      filter=lfs diff=lfs merge=lfs -text
+*.ogg       filter=lfs diff=lfs merge=lfs -text
