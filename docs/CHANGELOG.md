@@ -28,6 +28,7 @@
 
 - ✅ **PW16** **a generated mesh's silhouette is checked after its credits are spent** — A returned shape is compared against the drawing that asked for it, on a preview where there is one, and a mismatch is a refusal with the picture (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW17** **a paid asset is deleted by the service seventy-two hours after it is made** — A bought artefact lands on disk, is hashed and recorded, and only then ledgered, so nothing ever claims an asset the service has since deleted (design recorded in `docs/specs/fetching.md`).
+- ✅ **PW18** **every fetch needs a human decision, so work stops between approvals** — A ceiling set once is spent against without asking, refused when it would be passed, and what each call really cost is the balance either side of it (design recorded in `docs/specs/fetching.md`).
 
 ## Block E — One world with the engine
 

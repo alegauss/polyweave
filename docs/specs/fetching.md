@@ -55,7 +55,25 @@ The ledger is `[paths] purchases`, inside the tree and committed with it: a paid
 record are one artefact. `held()` answers the question that matters — is every artefact the
 project paid for still present and still what it was — and names what each missing one cost.
 
+## The ceiling is approved once, not each call
+
+An agent may not decide that a mesh is worth money, and that rule is right. But enforcing it
+by stopping at each fetch and asking means a session with five meshes to fetch stops five
+times. What the rule actually constrains is **the ceiling**, not the individual call.
+
+So a person sets `[budget] credits` with an `expires`, and the plugin spends against it
+**without asking** and refuses the call that would pass it (`fetch.over-budget`). An absent,
+expired or exhausted budget permits nothing at all (`fetch.budget-closed`) — the absence of
+a ceiling is never read as permission. What is given up is the per-call veto; what is bought
+is one approval made with the whole plan in view.
+
+**The balance is read immediately before and after a spend**, and the difference between
+those two readings is what the call really cost. That number, not the caller's expectation,
+is what goes in the ledger and counts against the ceiling, and an entry where the two
+disagree is flagged. It is also what makes a claim that some call is free checkable rather
+than asserted: two equal readings either side of it, written down.
+
 ## Still to come in this block
 
-The service client, the budget ceiling and the lock that stops two sessions spending at once.
+The service client itself, and the lock that stops two sessions spending at once.
 `provenance.md` already pins the fields a `fetch` record carries.

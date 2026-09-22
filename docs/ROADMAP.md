@@ -20,7 +20,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-- 📋 **PW18** (deps: PW17 ✅) **every fetch needs a human decision, so work stops between approvals** — The rule that an agent may not spend on its own judgement is right, but it is enforced by asking each time rather than by a ceiling agreed once. → §PW18
 - 📋 **PW19** (deps: —) **an unknown field is dropped in silence, so a payload that validates proves nothing** — Learning the schema takes a series of deliberately invalid values, each carrying a made-up field as its control, and none of that knowledge is kept anywhere. → §PW19
 - 📋 **PW20** (deps: —) **a fetched mesh arrives at an arbitrary orientation, scale and origin** — The service returned a hammer standing upright where the drawing leans it, and the correction was two angles found by re-rendering until it looked right. → §PW20
 - 📋 **PW21** (deps: —) **a reference photograph brings whatever stood behind the subject back as geometry** — A picture of a plush toy returned the logo the toy was sitting on, fused into the mesh, and no camera move takes it back out again. → §PW21

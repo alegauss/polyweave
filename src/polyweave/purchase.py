@@ -17,6 +17,13 @@ because a ledger mentions it.
 
 Everything downstream keys off **the local file and its hash**, never the remote id,
 which is the identifier that stops existing.
+
+§PW18 is the other half. An agent may not decide that a mesh is worth money, and that
+rule is right — but what it constrains is the **ceiling**, not each call, so a person
+sets one in `[budget]` and the plugin spends against it without asking and refuses the
+call that would pass it. The balance is read either side of a spend, and the difference
+between those readings is what the call actually cost — the only form of that claim
+anybody can check.
 """
 
 from __future__ import annotations
@@ -28,7 +35,7 @@ from pathlib import Path
 from typing import Any
 
 from . import post, provenance
-from .config import load
+from .config import FILENAME, load
 from .errors import PolyweaveError
 from .files import read_text_retrying, write_atomic
 
@@ -42,12 +49,58 @@ def where(root: str | Path = ".") -> Path:
     return config.path("paths.purchases")
 
 
+def remaining(root: str | Path = ".", today: Any = None) -> dict:
+    """What is left of the ceiling a person set, against what has been spent.
+
+    An agent may not decide that a mesh is worth money, and that rule is right. What it
+    actually constrains is the **ceiling**, not each call — so the ceiling is approved
+    once, with the whole plan in view, instead of five interruptions.
+    """
+    declared = load(root).budget(today)
+    already = spent(root)
+    left = round(float(declared["credits"]) - already, 4)
+    return {
+        "declared": float(declared["credits"]),
+        "spent": already,
+        "left": max(0.0, left) if declared["spendable"] else 0.0,
+        "expires": declared["expires"],
+        "spendable": declared["spendable"] and left > 0,
+        "why": declared["why"]
+        or ("" if left > 0 else f"the budget of {declared['credits']} is used up"),
+    }
+
+
+def allow(cost: float, *, root: str | Path = ".", today: Any = None) -> dict:
+    """Refuse a spend that would pass the ceiling. Never asks; the answer is the file.
+
+    What is given up is the per-call veto. What is bought is an approval made once.
+    """
+    left = remaining(root, today)
+    if not left["spendable"]:
+        raise PolyweaveError(
+            "fetch.budget-closed",
+            f"nothing may be spent: {left['why']}",
+            f"set `[budget] credits` and `expires` in {load(root).source or FILENAME}; "
+            f"an absent or expired budget is never read as permission",
+        )
+    if float(cost) > left["left"]:
+        raise PolyweaveError(
+            "fetch.over-budget",
+            f"this would spend {cost} of the {left['left']} credits left",
+            f"raise `[budget] credits` above {left['spent'] + float(cost):g}, or ask "
+            f"for something that costs less",
+        )
+    return left
+
+
 def capture(
     source: bytes | str | Path,
     *,
     out: str | Path,
     task_id: str,
     credits: float = 0.0,
+    balance_before: float | None = None,
+    balance_after: float | None = None,
     prompt: str | None = None,
     reference: str | Path | None = None,
     bought: str = "mesh",
@@ -73,6 +126,16 @@ def capture(
             "a purchase with no task id cannot be traced back to what was bought",
             "pass the service's own id for the task that produced this",
         )
+
+    # What it really cost is the difference between two readings of the balance, not
+    # what the caller believed it would cost. That is also what makes a claim that some
+    # call is free verifiable rather than merely asserted.
+    measured = (
+        round(float(balance_before) - float(balance_after), 4)
+        if balance_before is not None and balance_after is not None
+        else None
+    )
+    charged = float(credits) if measured is None else measured
 
     here = Path(root).resolve()
     landed = Path(out)
@@ -101,7 +164,10 @@ def capture(
     # 2. The record, beside the artefact, carrying what the service charged for it.
     extra = {
         "task_id": task_id,
-        "credits": float(credits),
+        "credits": charged,
+        "expected_credits": float(credits),
+        "balance_before": balance_before,
+        "balance_after": balance_after,
         "bought": bought,
         "prompt": prompt,
     }
@@ -126,7 +192,11 @@ def capture(
         "sha256": record["artefact"]["sha256"],
         "bytes": record["artefact"]["bytes"],
         "task_id": task_id,
-        "credits": float(credits),
+        "credits": charged,
+        "expected_credits": float(credits),
+        "balance_before": balance_before,
+        "balance_after": balance_after,
+        "surprised": measured is not None and abs(measured - float(credits)) > 1e-9,
         "bought": bought,
         "prompt": prompt,
         "reference": extra.get("reference"),

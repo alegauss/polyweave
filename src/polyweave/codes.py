@@ -421,6 +421,17 @@ CODES: dict[str, Code] = {
         when="a capture whose transfer never completed",
         doors=("ask the service again before recording anything",),
     ),
+    "fetch.budget-closed": Code(
+        means="nothing may be spent, because no live budget says it may",
+        when="a project with no [budget], an expired one, or one already used up; an "
+        "absent ceiling is never read as permission",
+        doors=("set credits and an expiry in the project config",),
+    ),
+    "fetch.over-budget": Code(
+        means="the spend would pass the ceiling a person set",
+        when="a fetch costing more than the credits left against [budget]",
+        doors=("raise the ceiling", "ask for something that costs less"),
+    ),
     "fetch.ledger-malformed": Code(
         means="the purchase ledger is not readable",
         when="a ledger edited by hand, or truncated",

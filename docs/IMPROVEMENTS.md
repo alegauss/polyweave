@@ -217,21 +217,6 @@ measurement that says which rungs it should be the default for.
 
 ## Block D — Fetching from a paid service without surprise
 
-### §PW18 A budget approved once, spent against a ledger
-
-An agent may not decide that a mesh is worth money, and that rule is correct. But it is
-enforced today by stopping at each fetch and asking, so a session with five meshes to
-fetch stops five times and the work between them stalls. The rule the constraint
-actually expresses is about the ceiling, not about the individual call. So a person sets
-a budget in the project's configuration, in credits, with an expiry. The plugin spends
-against it without asking, refuses the call that would exceed it, and records every
-spend in a ledger with the balance read immediately before and after. The delta between
-those two readings is the proof of what a call really cost, which is also what makes the
-free-probe technique verifiable rather than merely asserted. What is given up is the
-per-call veto. What is bought is an approval made once with the whole plan in view
-instead of five interruptions. The default ceiling is small, and the ledger is the
-artefact a person reviews afterwards.
-
 ### §PW19 The schema is learned once and kept
 
 A request the server refuses never enqueues a task, so a rejection is free information:
