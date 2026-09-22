@@ -337,3 +337,105 @@ def _inside(ring, point) -> bool:
             at = one[0] + (y - one[1]) / (two[1] - one[1]) * (two[0] - one[0])
             crossings += at > x
     return crossings % 2 == 1
+
+
+# -- a drawing given volume ------------------------------------------------------------
+
+
+def test_inflating_a_panel_keeps_its_silhouette_to_the_point(tmp_path):
+    """A cushion made from a traced drawing still has the drawn outline."""
+    ring = O.rounded_square(10.0, 2.0)
+    found = check_mesh(S.inflate(ring, 4.0, resolution=16))
+    low, high = found["bounds"]
+    assert high[0] - low[0] == pytest.approx(10.0)
+    assert high[1] - low[1] == pytest.approx(10.0)
+
+
+def test_and_gives_it_the_thickness_it_was_asked_for():
+    found = check_mesh(S.inflate(O.circle(5.0, steps=24), 4.0, resolution=16))
+    low, high = found["bounds"]
+    assert high[2] - low[2] == pytest.approx(4.0)
+
+
+def test_a_cushion_swells_in_the_middle_and_not_at_the_edge():
+    """Which is what makes it look stuffed rather than extruded."""
+    ring = O.circle(5.0, steps=24)
+    points = np.asarray(S.inflate(ring, 4.0, resolution=16)["vertices"])
+    # The outline's own vertices come first, and every one of them is on the silhouette.
+    assert np.abs(points[: len(ring), 2]).max() < 1e-9, (
+        "the outline stays at zero depth"
+    )
+    assert np.allclose(points[: len(ring), :2], ring), "and exactly where it was"
+    middle = points[np.linalg.norm(points[:, :2], axis=1) < 1.0]
+    assert np.abs(middle[:, 2]).max() > 1.5
+
+
+def test_a_star_inflates_into_a_star_shaped_cushion():
+    built = S.inflate(O.star(5, 10.0, 4.0), 3.0, resolution=16)
+    found = check_mesh(built)
+    low, high = found["bounds"]
+    assert high[2] - low[2] == pytest.approx(3.0)
+    assert found["faces"] > 20
+
+
+def test_an_outline_with_no_width_has_nothing_to_inflate():
+    with pytest.raises(PolyweaveError) as caught:
+        S.inflate([[0, 0], [0, 0.0000001], [0, 0]], 1.0)
+    assert caught.value.code in ("geom.bad-solid", "geom.bad-outline")
+
+
+# -- the two that need a solver --------------------------------------------------------
+
+
+def solving():
+    from polyweave.geometry import solver
+
+    found = solver.available()
+    if not found["ready"]:
+        pytest.skip(found["why"])
+    return solver
+
+
+def test_a_carve_cuts_a_pocket_and_says_what_it_cost():
+    solver = solving()
+    plate = S.plate([0, 0, 20, 20], 4.0, 2.0)
+    seat = S.transform(S.prism(O.circle(3.0, steps=16), 10.0), at=(10, 10, -2))
+    found = solver.carve(plate, seat)
+    assert found["after"] > found["before"], "a pocket adds faces"
+    assert found["solver"] == "MANIFOLD"
+    check_mesh(found)
+
+
+def test_a_carve_that_returned_nothing_is_refused_rather_than_returned():
+    """An empty boolean raises nothing on its own, which is why §PW2 asked for this."""
+    solver = solving()
+    plate = S.plate([0, 0, 10, 10], 2.0)
+    swallowing = S.plate([-10, -10, 40, 40], 20.0, front=-8.0)
+    with pytest.raises(PolyweaveError) as caught:
+        solver.carve(plate, swallowing)
+    assert caught.value.code == "post.boolean-empty"
+    assert "assertion" in caught.value.remedy
+
+
+def test_a_bevel_softens_every_edge():
+    solver = solving()
+    before = check_mesh(S.primitive("cube", 4.0))
+    after = check_mesh(solver.bevel(S.primitive("cube", 4.0), 0.4))
+    assert after["faces"] > before["faces"]
+    low, high = after["bounds"]
+    assert high[0] - low[0] == pytest.approx(4.0, abs=0.01), "a bevel cuts in, not out"
+
+
+def test_a_build_carves_before_it_bevels():
+    """A cut against an already-bevelled object is the case that went empty."""
+    solver = solving()
+    plate = S.plate([0, 0, 20, 20], 4.0, 2.0)
+    seat = S.transform(S.prism(O.circle(3.0, steps=16), 10.0), at=(10, 10, -2))
+    found = check_mesh(solver.build(plate, cutter=seat, bevel_by=0.4))
+    assert found["faces"] > 56, "the bevel ran after the cut, on the cut result"
+
+
+def test_a_build_with_neither_is_the_mesh_it_was_given():
+    solver = solving()
+    plate = S.plate([0, 0, 20, 20], 4.0, 2.0)
+    assert check_mesh(solver.build(plate))["faces"] == check_mesh(plate)["faces"]

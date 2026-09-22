@@ -173,11 +173,26 @@ a convex hull. Whether the outline is convex decides it, so a rounded rectangle 
 single n-gon cap — which is what keeps the tray's topology, and therefore its committed
 render, from moving.
 
-**Booleans are exact by construction.** Cottony measured Blender's EXACT solver returning an
-empty mesh, with no error, for a cut against a bevelled object — 2402 faces before the bevel
-and 0 after. The compiler uses a solver that does not have that behaviour and asserts a
-non-empty result either way (§PW2). Where a bevel and a boolean both appear on a node, the
-boolean runs first.
+**The boolean solver is MANIFOLD, and the assertion is what actually protects the build.**
+Cottony measured Blender's EXACT solver returning an empty mesh, with no error, for a cut
+against a bevelled object — 2402 faces before the bevel and 0 after — and moved to MANIFOLD
+because of it.
+
+**That failure does not reproduce on Blender 5.2.1.** Rebuilt on the same shape: the tray's
+plate bevelled and then cut by all sixty-four seats returns 3210 faces under EXACT and 3206
+under MANIFOLD, and a single pocket returns 966 against 884. Neither empties. MANIFOLD is
+kept because it is the solver measured to work on the case that broke and it costs nothing
+here, not because this version still shows the symptom — and a finding about one version of
+one solver is exactly the kind of thing to date rather than to inherit.
+
+So what the build actually relies on is the **non-empty assertion** (§PW2), which holds
+whichever solver runs and whichever Blender is installed. Where a bevel and a boolean both
+appear on a node, the boolean still runs first.
+
+**`inflate` keeps the silhouette to the point.** Every boundary vertex stays exactly where
+the outline put it, at zero depth, and only the inside swells — by a function of each
+point's distance from the edge, which is what makes a panel look stuffed rather than
+extruded. A cushion made from a traced drawing therefore still has the drawn outline.
 
 ## The escape hatch is a node, not a mode
 

@@ -30,7 +30,6 @@
 
 ## Block G — Geometry as a declaration
 
-- ⏳ **PW31** (deps: PW30 ✅) **a format covering only primitives would leave every real asset in code** — Carve, bevel and inflate need a solver, so a boolean pocket cannot be stated yet. → §PW31
 - 📋 **PW32** (deps: PW13 ✅, PW30 ✅) **a shape's own numbers are unreachable from the search that tunes everything else** — Geometry constants live inside a module while the rig's live in a dataclass, so a search can reach the lighting and never the shape it is lighting. → §PW32
 - 📋 **PW33** (deps: PW30 ✅) **a shape cannot be reviewed without building it, so a wrong construction is found in the render** — Two wrong constructions of one tray's seats each looked reasonable while being written and were only visible once rendered, which is the expensive place. → §PW33
 - 📋 **PW34** (deps: PW30 ✅) **a declaration that cannot express a shape leaves no way back to code** — Any format will meet a shape it cannot state, and forcing that shape into the format produces worse geometry than the script it replaced. → §PW34
@@ -40,14 +39,6 @@
 - 📋 **PW35** (deps: PW13 ✅) **the plugin's value is asserted and never measured against what it replaced** — Nothing records how long a correct asset took before or after, so there is no way to tell a real improvement from a rearrangement of the same work. → §PW35
 - 📋 **PW36** (deps: PW5 ✅) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Cottony is the first consumer and the test of whether the configuration boundary holds, and an adoption that needs a fork proves that it does not. → §PW36
 - 📋 **PW48** (deps: —) **every test input is synthetic, so nothing is ever checked against an artefact somebody made** — The suite has no real mesh, photograph or capture in it, and those are where every symptom in this backlog was measured in the first place. → §PW48
-
-## Done when — PW31
-
-- **A boolean pocket cuts a seat into a plate and comes back non-empty** Build the tray:
-  a plate with sixty-four seats carved out of it, bevelled after the boolean and not
-  before. The face count says whether the cut happened, which is the check PW2 exists
-  for. The outlines and the constructive solids are done; carve, bevel and inflate are
-  what this waits on.
 
 ## Non-goals
 

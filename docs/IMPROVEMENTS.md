@@ -270,21 +270,6 @@ wants the former, which may mean a rung of its own rather than a parameter.
 
 ## Block G — Geometry as a declaration
 
-### §PW31 The vocabulary comes from the scripts that exist
-
-A format that covers cubes and spheres would leave every real asset in code, which is
-the failure mode to design against. The vocabulary should be read off what the existing
-scripts actually do, and they are unusually clear about it: a rounded plate, a crowned
-plate, a prism, an annulus, a radial array of points about a centre, a boolean carve, a
-bevel, a material with a colour and a roughness, and an outline extruded from a
-two-dimensional shape function. That last one is the interesting case and the most
-valuable, because it is how a star's silhouette becomes a mesh that is not merely
-similar to the drawn sprite but is the drawn sprite extruded. So the format needs to
-reference a 2D outline the project already has, whether that is a drawn image or a
-generator, and treat extrusion as a first-class operation rather than an escape into
-code. The list above is small enough to implement and was arrived at by building real
-objects, which is a better provenance than a survey of what a modelling package offers.
-
 ### §PW32 Geometry parameters join the search
 
 The rig's parameters live in a dataclass and the geometry's live inside Python modules,

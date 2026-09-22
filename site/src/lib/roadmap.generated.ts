@@ -31,7 +31,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "D", title: "Fetching from a paid service without surprise", open: 1 },
   { block: "E", title: "One world with the engine", open: 1 },
   { block: "F", title: "Motion", open: 0 },
-  { block: "G", title: "Geometry as a declaration", open: 4 },
+  { block: "G", title: "Geometry as a declaration", open: 3 },
   { block: "H", title: "Proof on a real game", open: 3 },
 ];
 
@@ -111,13 +111,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "E",
     symptom: "a bake renders square at the rung's size, so a declared world rectangle can be refused but never met",
     why: "PW24's contract names the size a sprite must be, and nothing renders at it: the size is the rung's, and it is not in the cache key either.",
-    deps: [],
-  },
-  {
-    id: "PW31",
-    block: "G",
-    symptom: "a format covering only primitives would leave every real asset in code",
-    why: "Carve, bevel and inflate need a solver, so a boolean pocket cannot be stated yet.",
     deps: [],
   },
   {
