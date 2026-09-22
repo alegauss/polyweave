@@ -29,7 +29,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "B", title: "Seeing the result cheaply", open: 2 },
   { block: "C", title: "The asset compiler", open: 1 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 1 },
-  { block: "E", title: "One world with the engine", open: 4 },
+  { block: "E", title: "One world with the engine", open: 3 },
   { block: "F", title: "Motion", open: 4 },
   { block: "G", title: "Geometry as a declaration", open: 5 },
   { block: "H", title: "Proof on a real game", open: 2 },
@@ -107,18 +107,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW22",
-    block: "E",
-    symptom: "the engine's exit code is not the verdict, so each project writes its own output parser",
-    why: "Godot exits zero on a script error and non-zero on a clean quit, so the only honest signal is a line the script printed and no error in the log.",
-    deps: [],
-  },
-  {
     id: "PW23",
     block: "E",
     symptom: "a real renderer needs a window, so a capture cannot run where there is no screen",
     why: "Headless mode draws nothing at all, which makes every screenshot a manual step on a developer's desk and keeps it out of any gate.",
-    deps: ["PW22"],
+    deps: [],
   },
   {
     id: "PW24",
@@ -132,7 +125,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "E",
     symptom: "a capture takes its picture in whatever language and settings the runner happens to have",
     why: "The same script on two machines produces two different images, and the difference is a locale nobody declared rather than a change anybody made.",
-    deps: ["PW22"],
+    deps: [],
   },
   {
     id: "PW26",

@@ -38,6 +38,7 @@ AREAS: dict[str, str] = {
     "prov": "the record written beside an artefact, and the cache key it defines",
     "compose": "putting an asset where it will actually be seen",
     "search": "looking for parameter values that satisfy a spec",
+    "engine": "running a scene script and reading its verdict",
 }
 
 CODES: dict[str, Code] = {
@@ -513,6 +514,41 @@ CODES: dict[str, Code] = {
         means="the search was given no renders to spend",
         when="a budget below one",
         doors=("give it a budget of at least one render",),
+    ),
+    # -- engine: running a scene script and reading its verdict ---------------
+    "engine.not-found": Code(
+        means="no engine binary could be found to run the script with",
+        when="neither [paths] godot, nor $GODOT, nor PATH names one",
+        doors=("set [paths] godot to the console build", "put it on PATH"),
+    ),
+    "engine.no-script": Code(
+        means="the scene script named does not exist",
+        when="a path relative to somewhere other than the project root",
+        doors=("write the path relative to the project root",),
+    ),
+    "engine.script-error": Code(
+        means="the engine reported an error while the script ran",
+        when="a parse error, a compile error, or a runtime error inside a block, "
+        "any of which the engine can still exit zero after",
+        doors=("read the errors, each with the script line it came from",),
+    ),
+    "engine.no-signal": Code(
+        means="the run printed nothing that says it did what it was for",
+        when="a script that never reached its own last line, or one whose success line "
+        "is spelled differently from the pattern the run was given",
+        doors=("read the log the run wrote", "check the success pattern"),
+    ),
+    "engine.missing-artefact": Code(
+        means="the run said it wrote a file, and the file is not there",
+        when="a script that printed its line before the write finished, or one writing "
+        "somewhere other than where it said",
+        doors=("check what the script wrote and where",),
+    ),
+    "engine.timed-out": Code(
+        means="the run was still going when its wall clock ran out",
+        when="a script that never quits; the frame budget is the other bound and this "
+        "is the one that catches a hang the engine itself does not end",
+        doors=("read the log", "raise [engine] timeout if the run is honestly slow"),
     ),
     # -- prov: what produced an artefact -------------------------------------
     "prov.unknown-kind": Code(

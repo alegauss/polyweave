@@ -243,22 +243,6 @@ reading the two side by side says otherwise.
 
 ## Block E — One world with the engine
 
-### §PW22 The runner returns a result, not a log
-
-Godot's exit code cannot be trusted. It exits zero after a script error and non-zero
-after a clean quit, so the only honest verdict is the line the script printed, the
-absence of an error pattern in the output, and the existence of the file it claims to
-have written. Cottony's capture driver encodes exactly that: a regular expression for
-the success line, another for the three spellings of a script error, a frame budget and
-a wall-clock timeout. Every project that drives the engine writes that same thing again
-from scratch. It belongs in the plugin: run a scene script and return a structured
-result naming the artefacts produced, the errors matched with their line numbers, the
-frames elapsed and whether the run was bounded out. The bounds are part of the contract.
-A capture settles in a few dozen frames, so a script still running after several
-thousand is hung and the tool should say so rather than sit there until a timeout. The
-same runner serves tests and measurement runs, which are the same problem with a
-different success line.
-
 ### §PW23 Offscreen, but really drawn
 
 Godot's headless mode runs on a dummy renderer that draws nothing, so any capture

@@ -84,6 +84,14 @@ DEFAULTS: dict[str, Any] = {
         "subject_coverage": 0.12,
     },
     "cache": {"max_bytes": 8_000_000_000},
+    "engine": {
+        # The bounds a scene script runs under. Both of them, because the frame budget
+        # is what ends a script the engine would otherwise sit in forever, and the wall
+        # clock is what ends a run the engine never reaches a frame of (§PW22).
+        "fixed_fps": 60,
+        "frames": 6000,
+        "timeout": 180,
+    },
     "service": {
         "base": "",  # naming no service is how a project that buys nothing says so
         "key_env": "",

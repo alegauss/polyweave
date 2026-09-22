@@ -58,6 +58,11 @@ subject_coverage   = 0.12      # the least of the frame a subject may fill
 [cache]
 max_bytes = 8_000_000_000
 
+[engine]
+fixed_fps = 60
+frames    = 6000               # the frame budget a scene script is bounded by
+timeout   = 180                # and the wall clock, for a run that never reaches a frame
+
 [service]
 base    = "https://api.meshy.ai"
 key_env = "MESHY_API_KEY"      # the NAME of the variable, never the value

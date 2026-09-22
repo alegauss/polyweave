@@ -35,6 +35,8 @@
 
 ## Block E — One world with the engine
 
+- ✅ **PW22** **the engine's exit code is not the verdict, so each project writes its own output parser** — One runner drives a scene script and returns a verdict read off the printed line, the errors and the file, with both bounds set and the log kept (design recorded in `docs/specs/engine.md`).
+
 ## Block F — Motion
 
 ## Block G — Geometry as a declaration

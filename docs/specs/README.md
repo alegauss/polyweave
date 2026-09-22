@@ -10,8 +10,8 @@ unlike `docs/ROADMAP.md`, `docs/CHANGELOG.md` and `docs/IMPROVEMENTS.md`, which 
 roadkeep and refuse a hand edit.
 
 **Status: part built.** [tool-surface.md](tool-surface.md), [project-config.md](project-config.md),
-[provenance.md](provenance.md) and [rungs.md](rungs.md) describe code that exists; the rest is
-still ahead of its code. Each spec is settled enough to build against, and the first
+[provenance.md](provenance.md), [rungs.md](rungs.md), [fetching.md](fetching.md) and
+[engine.md](engine.md) describe code that exists; the rest is still ahead of its code. Each spec is settled enough to build against, and the first
 implementation that disagrees with one is evidence about the spec, not only about the code —
 which is why §1 now names a heartbeat and a `sweep` that its first implementation needed.
 
@@ -22,7 +22,8 @@ which is why §1 now names a heartbeat and a `sweep` that its first implementati
 | [measurements.md](measurements.md) | The closed vocabulary a comparison may return | PW8–PW11 |
 | [rungs.md](rungs.md) | The preview ladder: what each rung is, and which question it carries | PW7, PW13–PW15 |
 | [context.md](context.md) | Judging an asset where it will be seen, and what survives at display size | PW10, PW15 |
-| [fetching.md](fetching.md) | Checking a bought shape against the drawing that asked for it | PW16 |
+| [fetching.md](fetching.md) | Buying a mesh: the shape check, the ledger, the schema, the reference | PW16–PW21 |
+| [engine.md](engine.md) | Running a scene script, and reading a verdict rather than an exit code | PW22 |
 | [acceptance-spec.md](acceptance-spec.md) | What "correct" means, as a file a search can aim at | PW12, PW13, PW15 |
 | [geometry.md](geometry.md) | A shape as data rather than as a program | PW30–PW34 |
 | [provenance.md](provenance.md) | What is recorded beside an artefact, and the cache key | PW6, PW14, PW17 |
