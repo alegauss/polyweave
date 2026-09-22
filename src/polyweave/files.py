@@ -16,18 +16,24 @@ import time
 from pathlib import Path
 
 
-def write_atomic(path: Path, text: str, attempts: int = 10) -> None:
+def write_atomic(path: Path, text: str | bytes, attempts: int = 10) -> None:
     """Replace `path` in one step, so a concurrent reader sees one version or the other.
 
     The temporary lands in the same directory because `os.replace` is only atomic within
     a filesystem. The retry is Windows: a file another process has open cannot be
     replaced there, and a worker reporting a stage loses that race often enough to
     matter.
+
+    Bytes go the same way as text. A picture read while it is being rewritten is the
+    same race as a record read while it is being rewritten, and half a PNG is worse.
     """
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_name(f"{path.name}.{os.getpid()}.{secrets.token_hex(3)}.tmp")
     try:
-        tmp.write_text(text, encoding="utf-8")
+        if isinstance(text, bytes):
+            tmp.write_bytes(text)
+        else:
+            tmp.write_text(text, encoding="utf-8")
         for attempt in range(attempts):
             try:
                 os.replace(tmp, path)

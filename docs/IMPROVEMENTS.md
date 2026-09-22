@@ -217,21 +217,6 @@ measurement that says which rungs it should be the default for.
 
 ## Block D — Fetching from a paid service without surprise
 
-### §PW21 The reference is prepared, not uploaded
-
-Whatever stands in front of or behind the subject in a reference photograph ends up in
-the mesh. Cottony sent a picture of a plush toy and got back the logo the toy had been
-sitting on, fused into the model as geometry, and no camera move removes it. The
-photograph is an input like any other and it should be processed before it is spent on:
-cut the subject out, flatten the background to something uniform, check that the subject
-fills enough of the frame, and warn where the silhouette touches an edge. Each of those
-is a routine image operation and each one prevents a specific failure that currently
-costs a whole fetch. The prepared image is what gets stored in the records, so the input
-that actually produced the mesh is the one on file rather than whichever original a
-person happened to have open. And where the project has already drawn the thing, the
-drawing is the better reference, so the tool should say so rather than let a photograph
-win by default.
-
 ### §PW46 Record what a normalisation derived
 
 Normalising a fetched mesh writes a second file beside the paid one, and nothing records

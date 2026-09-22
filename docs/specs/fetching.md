@@ -134,6 +134,45 @@ sits in the project's convention and nothing downstream carries a correction ang
 Anything that genuinely is a judgement — a deliberate lean, a pose — stays a parameter, but
 it now starts from a known frame rather than an arbitrary one.
 
+## The reference is prepared, not uploaded
+
+Whatever stands in front of or behind the subject in a reference photograph ends up in the
+mesh. Cottony sent a picture of a plush toy and got back the logo the toy had been sitting
+on, fused into the model as geometry, and no camera move removes it.
+
+A photograph is an input like any other, and every check that would have caught this is a
+routine image operation: **cut the subject out**, **flatten the background** so nothing in
+it reads as shape, **check the subject fills enough of the frame**, and **say where the
+silhouette touches an edge** — what runs off the frame is what the service invents.
+
+**The cut grows in from the frame's own edge.** The background is the pixels within
+`[tolerance] background_delta_e` of the ground colour that are *reachable* from the border,
+so a pocket of background colour enclosed by the subject stays subject and a patterned
+floor stops the fill rather than eating into the toy. The ground colour is the **mode** of
+the border and never its average: a subject that runs into the frame makes the border two
+colours, and their mean is a third colour that matches neither, which is how a cut ends up
+removing nothing at all. Of what is left, **only the largest island is the subject** — and
+that is the step that drops the logo, which the fill cannot reach but which is still a
+second thing in the picture.
+
+Two refusals, both before the spend: a background that cannot be told from the subject
+(`fetch.background-fused`) and a subject too small to be read from
+(`fetch.subject-small`). Touching an edge is a **warning** and not a refusal, because a
+tight crop is sometimes what was wanted.
+
+The background is made transparent **and** flattened to one colour behind it, because a
+service that ignores alpha still has to see something uniform there.
+
+**The prepared image is the one on file**, written under `[paths] references` with its
+digest, so the input that actually produced the mesh is recorded rather than whichever
+original a person happened to have open. It is written at a bounded size and the cut is
+computed on exactly those pixels, so what was measured is what was sent.
+
+**A drawing beats a photograph** and `pick` says so, rather than letting a photograph win
+by being the argument that was passed. A drawing is recognised mechanically — a real alpha
+channel with a transparent border — and it is passed through untouched, because a picture
+with no background does not need one cut away.
+
 ## Still to come in this block
 
 The service client itself, and the lock that stops two sessions spending at once.

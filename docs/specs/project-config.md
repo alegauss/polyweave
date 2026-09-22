@@ -32,10 +32,12 @@ root = "."                      # everything below is relative to this
 [paths]
 blender  = "C:/Program Files/Blender Foundation/Blender 4.2/blender.exe"
 godot    = "${GODOT}"           # an env var reference, resolved per call
-meshes   = "tools/art/3d"
-renders  = "docs/design/art"
-specs    = "docs/design/accept"
-work     = ".polyweave"
+meshes     = "tools/art/3d"
+references = "docs/design/references"   # prepared references, committed with the tree
+renders    = "docs/design/art"
+specs      = "docs/design/accept"
+work       = ".polyweave"
+purchases  = "polyweave.purchases.json"
 
 [render]
 rungs        = ["sphere", "preview", "final"]
@@ -46,10 +48,12 @@ seed         = 20260922
 max_parallel = 4
 
 [tolerance]
-alpha_floor      = 0.02        # what counts as a subject pixel
-render_noise     = 0.004       # below this, two renders are the same picture
-silhouette_iou   = 0.97
-delta_e          = 2.0
+alpha_floor        = 0.02      # what counts as a subject pixel
+render_noise       = 0.004     # below this, two renders are the same picture
+silhouette_iou     = 0.97
+delta_e            = 2.0
+background_delta_e = 12.0      # how far from the frame's edge colour is still ground
+subject_coverage   = 0.12      # the least of the frame a subject may fill
 
 [cache]
 max_bytes = 8_000_000_000
@@ -57,6 +61,7 @@ max_bytes = 8_000_000_000
 [service]
 base    = "https://api.meshy.ai"
 key_env = "MESHY_API_KEY"      # the NAME of the variable, never the value
+schema  = "polyweave.service.toml"
 
 [budget]
 credits = 60

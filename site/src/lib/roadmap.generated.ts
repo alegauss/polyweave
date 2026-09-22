@@ -28,7 +28,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 6 },
   { block: "B", title: "Seeing the result cheaply", open: 2 },
   { block: "C", title: "The asset compiler", open: 1 },
-  { block: "D", title: "Fetching from a paid service without surprise", open: 2 },
+  { block: "D", title: "Fetching from a paid service without surprise", open: 1 },
   { block: "E", title: "One world with the engine", open: 4 },
   { block: "F", title: "Motion", open: 4 },
   { block: "G", title: "Geometry as a declaration", open: 5 },
@@ -97,13 +97,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "C",
     symptom: "a search renders its samples one after another, so a budget of twenty-four costs twenty-four waits",
     why: "The job handles exist so four samples can run at once, and the search calls its evaluator once per sample and waits for each render before proposing the next.",
-    deps: [],
-  },
-  {
-    id: "PW21",
-    block: "D",
-    symptom: "a reference photograph brings whatever stood behind the subject back as geometry",
-    why: "A picture of a plush toy returned the logo the toy was sitting on, fused into the mesh, and no camera move takes it back out again.",
     deps: [],
   },
   {

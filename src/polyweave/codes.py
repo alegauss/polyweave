@@ -481,6 +481,18 @@ CODES: dict[str, Code] = {
         when="a ledger edited by hand, or truncated",
         doors=("restore it from version control, where it belongs",),
     ),
+    "fetch.background-fused": Code(
+        means="the subject cannot be told apart from what it is standing on",
+        when="a photograph whose background is not uniform enough to cut away, which "
+        "the service would return as geometry",
+        doors=("cut the subject out first", "photograph it against a plain ground"),
+    ),
+    "fetch.subject-small": Code(
+        means="the subject fills too little of the frame to be read from",
+        when="a photograph taken from far off, or one where the cut kept the wrong "
+        "region",
+        doors=("crop to the subject", "lower [tolerance] subject_coverage"),
+    ),
     "fetch.shape-rejected": Code(
         means="what came back does not match the silhouette that was asked for",
         when="a generative service reinterpreting a shape: a wide low cap sent and a "

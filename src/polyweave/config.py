@@ -54,6 +54,9 @@ DEFAULTS: dict[str, Any] = {
         "blender": "blender",  # found on PATH unless the project says where
         "godot": "godot",
         "meshes": "assets/3d",
+        # Prepared references, committed with the tree: the input that actually made a
+        # mesh is the one on file, not whichever original a person had open (§PW21).
+        "references": "assets/references",
         "renders": "docs/renders",
         "specs": "docs/accept",
         "work": ".polyweave",
@@ -74,6 +77,11 @@ DEFAULTS: dict[str, Any] = {
         "render_noise": 0.004,
         "silhouette_iou": 0.97,
         "delta_e": 2.0,
+        # How far from the colour at the frame's edge still counts as background when a
+        # photograph is cut out. Perceptual, so it is the same number on any hue.
+        "background_delta_e": 12.0,
+        # The least of the frame a subject may fill and still be worth spending on.
+        "subject_coverage": 0.12,
     },
     "cache": {"max_bytes": 8_000_000_000},
     "service": {
