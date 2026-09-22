@@ -2,8 +2,8 @@
 
 ## Block A — What a tool call costs the turn
 
-- 📋 **PW42** (deps: —) **a render that is black to any observer passes the check for a blank render, on one bit of edge noise** — The assertion asks whether every visible pixel is exactly one colour, and an unlit Cycles render came back with two: black, and 1/255 at the antialiased edge. → §PW42
 - 📋 **PW51** (deps: —) **a record says nothing about the tolerances its measurements were taken against** — Reading the config back gives the project's numbers now, not the artefact's, so two records carrying one measurement can mean different things and nothing says which. → §PW51
+- 📋 **PW52** (deps: —) **a render holding two opaque pixels in one corner is empty for every purpose and passes every check** — Coverage clears the alpha floor and the two pixels differ, so neither assertion fires, and the obvious number to compare against would refuse a correctly framed thin asset. → §PW52
 
 ## Block B — Seeing the result cheaply
 

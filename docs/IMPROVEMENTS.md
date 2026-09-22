@@ -2,29 +2,6 @@
 
 ## Block A — What a tool call costs the turn
 
-### §PW42 An assertion about a render needs a tolerance
-
-The check that refuses a render carrying no image asks whether every visible pixel is
-the same colour, exactly. A real render is never exactly anything. An unlit scene
-rendered through Cycles at four samples came back with two distinct colours — (0,0,0)
-across the subject and (1,1,1) on the antialiased edge — so a picture that is black to
-any observer passed the assertion that exists to catch it, on one least significant bit.
-
-The fix is a tolerance rather than equality: the range across the visible pixels,
-compared against a floor the project already declares a sibling of. `[tolerance]
-render_noise` is 0.004, which is one part in 250 and almost exactly the 1/255 seen here,
-so the number is already written down and the check is not reading it.
-
-The trap is the other direction. Raise the tolerance far enough and a render that is
-nearly flat by design — a matte card, a silhouette study — starts being refused, and the
-door out of that is `allow_uniform`, which already exists. So the tolerance wants to be
-tight, measured against a real render rather than chosen, and the test that proves it
-should be an actual unlit render rather than a constructed array.
-
-Worth doing at the same time: the same equality appears in the transparency check, where
-`max(alpha) == 0` has the same problem in reverse — a render whose only non-zero alpha
-is one stray edge pixel is empty for every purpose and passes.
-
 ### §PW51 A measurement without the tolerance it was taken against is a number, and the file cannot be read back for it
 
 A record says which mesh, which seed, which sample count and which view transform made
@@ -48,6 +25,31 @@ the spec's is the thing to settle.
 
 Measure how often a project actually changes a tolerance, because a field nobody varies
 is a field nobody needs.
+
+### §PW52 How little of a frame a subject may fill is a number nothing has measured, and the nearest one means something else
+
+The line that made flatness a tolerance expected the transparency check beside it to be
+`max(alpha) == 0`, with the same equality problem. Measured on 2026-09-22, it is not:
+the check is `not mask.any()` over `alpha > round(alpha_floor * 255)`, so it already
+asks whether anything clears the floor. The equality was gone before the line was
+written.
+
+The gap it pointed at is real all the same, and different. A 64x64 render whose only two
+opaque pixels sit in one corner passes both checks today: coverage 0.000488, above the
+floor because those pixels are fully opaque, and not flat because the two differ. It is
+empty for every purpose and nothing says so.
+
+What is missing is a floor on how much of a frame a subject must fill to be worth
+judging, and the reason it was not folded into that fix is that no number for it has
+been measured. `[tolerance] subject_coverage` is 0.12 and looks like the answer. It is
+not: it means the least of the frame a photograph's subject may fill before the cut is
+worth spending on, and a correctly framed render of a thin asset — Cottony's
+booster_wand, a rope — is well under 12% by area while being exactly right. Borrowing it
+here would refuse real work.
+
+So the number has to come from measuring real renders of the thinnest assets rather than
+from picking one. Until then a two-pixel render passes, which is a smaller failure than
+refusing a wand.
 
 ## Block B — Seeing the result cheaply
 

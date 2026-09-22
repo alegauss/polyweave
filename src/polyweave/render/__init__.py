@@ -192,6 +192,9 @@ def bake(
         float, Param("film exposure", lo=-10.0, hi=10.0, unit="stops")
     ] = 0.0,
     transparent: Annotated[bool, Param("leave the background empty")] = True,
+    allow_uniform: Annotated[
+        bool, Param("a render of one flat colour is what was wanted, not a failure")
+    ] = False,
     covers: Annotated[
         list,
         Param("the world rectangle this picture stands for, as [width, height]"),
@@ -302,12 +305,17 @@ def bake(
         seed=chosen["seed"],
     )
 
-    floor_alpha = float(config.get("tolerance.alpha_floor"))
+    # Resolved once, here, and passed down: the checks and the measures below take the
+    # numbers and default none of them (§PW40).
+    tolerances = config.tolerances()
+    floor_alpha = tolerances.alpha_floor
     asserted = post.check(
         "render",
         out_path,
         size=(chosen["size"], chosen["size"]),
         alpha_floor=floor_alpha,
+        render_noise=tolerances.render_noise,
+        allow_uniform=allow_uniform,
     )
     # The verdict and the picture are one answer to one question, so the measuring
     # happens here rather than in a call the caller has to make next.

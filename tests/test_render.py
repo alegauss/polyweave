@@ -7,6 +7,7 @@ rung really is cheap, really shares the rig, and really says which rung it came 
 
 from __future__ import annotations
 
+import numpy as np
 import pytest
 
 from polyweave import config as C
@@ -143,6 +144,9 @@ def test_the_rig_is_what_puts_light_on_the_subject(project):
         fill=0.0,
         rim=0.0,
         ambient=0.0,
+        # Which is now refused unless it is asked for: a black render is what §PW42's
+        # check exists to catch, and this test wants one on purpose.
+        allow_uniform=True,
         root=project,
     )
     # The same silhouette either way; only what reaches the film differs.
@@ -150,6 +154,52 @@ def test_the_rig_is_what_puts_light_on_the_subject(project):
         lit["asserted"]["alpha_coverage"], abs=0.02
     )
     assert _mean_luma(project / "dark.png") < _mean_luma(project / "lit2.png") / 10
+
+
+def test_a_render_that_is_black_to_any_observer_is_refused(project):
+    """§PW42, proved against a real render rather than a constructed array.
+
+    An unlit sphere through Cycles at four samples comes back with two distinct
+    colours: (0,0,0) across the subject and (1,1,1) at the antialiased edge. So the
+    assertion that asked whether every visible pixel was *exactly* one colour passed a
+    picture that is black to any observer, on one least significant bit.
+    """
+    with pytest.raises(PolyweaveError) as caught:
+        render.bake(
+            Reported(),
+            out="unlit.png",
+            rung="sphere",
+            key=0.0,
+            fill=0.0,
+            rim=0.0,
+            ambient=0.0,
+            root=project,
+        )
+    assert caught.value.code == "post.render-uniform"
+    assert "allow_uniform" in caught.value.remedy
+
+
+def test_the_edge_noise_that_used_to_get_through_is_what_the_floor_is_set_at(project):
+    """1/255 is 0.0039 and the floor is 0.0040, which is why it is caught at all."""
+    from polyweave import config, post
+    from polyweave.image import Image
+
+    floor = config.load(project).tolerances().render_noise
+    assert floor == pytest.approx(0.004)
+
+    def two_values(low, high):
+        rgba = np.zeros((8, 8, 4), dtype=np.uint8)
+        rgba[:, :, 3] = 255
+        rgba[:, :, :3] = low
+        rgba[0, 0, :3] = high
+        return Image(path=None, rgba=rgba, had_alpha=True)
+
+    with pytest.raises(PolyweaveError):
+        post.check("render", two_values(0, 1), alpha_floor=0.0, render_noise=floor)
+    # And two steps apart is a picture, not noise, so it is left alone.
+    assert post.check("render", two_values(0, 2), alpha_floor=0.0, render_noise=floor)[
+        "size"
+    ] == [8, 8]
 
 
 def _mean_luma(path) -> float:

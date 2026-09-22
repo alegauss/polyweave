@@ -56,8 +56,10 @@ CHEAP: dict[str, tuple[Any, frozenset[str]]] = {
 #: below invents a value for one — the operation resolves it and passes it down, and a
 #: call that states none is refused rather than answered against a number nobody chose.
 REQUIRES: dict[str, frozenset[str]] = {
-    "render": frozenset({"alpha_floor"}),
-    "texture": frozenset({"alpha_floor"}),
+    # `render_noise` is what decides whether a picture is flat, because flat is a
+    # tolerance and not an equality (§PW42). A capture does not ask that question.
+    "render": frozenset({"alpha_floor", "render_noise"}),
+    "texture": frozenset({"alpha_floor", "render_noise"}),
     "field": frozenset({"alpha_floor"}),
     "capture": frozenset({"alpha_floor"}),
 }

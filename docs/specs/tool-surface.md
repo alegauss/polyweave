@@ -77,8 +77,17 @@ coverage, the byte length and sha256 — because those are the same numbers §PW
 beside the artefact, and measuring them twice is how the two come to disagree.
 
 Where an assertion can be legitimately false, it names the door rather than being dropped:
-a texture that really is one flat colour passes on `allow_uniform`, and a render never
-does, because a render of nothing is nothing anybody asked for.
+a picture that really is one flat colour passes on `allow_uniform`, which `bake` exposes so
+that a render of one deliberately is possible to ask for.
+
+**Flat is a tolerance, not an equality.** A real render is never exactly anything. An unlit
+sphere through Cycles at four samples came back with two distinct colours — `(0,0,0)` across
+the subject and `(1,1,1)` on the antialiased edge — so a picture that is black to any
+observer passed the assertion that exists to catch it, on one least significant bit (§PW42).
+What is measured is the spread across the visible pixels, against `[tolerance] render_noise`.
+That floor is deliberately tight: 1/255 is 0.0039 and the floor is 0.0040, so it catches the
+render measured above and calls a two-step spread a picture. It can afford to be tight
+because `allow_uniform` is the door for a render that really is one colour.
 
 **A field is its own kind because only the caller knows which one an image is.** A height
 field blurred through an eight-bit buffer comes back as a staircase, and every check above

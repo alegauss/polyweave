@@ -136,7 +136,11 @@ def test_an_unknown_optional_check_is_refused():
 def test_an_optional_check_that_does_not_apply_is_refused(tmp_path):
     with pytest.raises(PolyweaveError) as caught:
         post.check(
-            "render", _png(tmp_path, "a.png"), optional=("manifold",), alpha_floor=0.0
+            "render",
+            _png(tmp_path, "a.png"),
+            optional=("manifold",),
+            alpha_floor=0.0,
+            render_noise=0.004,
         )
     assert caught.value.code == "post.check-misapplied"
 
@@ -160,7 +164,10 @@ def _png(tmp_path, name, *, size=(8, 8), fill=None, alpha=255):
 
 def test_a_render_with_content_passes_and_reports_its_size(tmp_path):
     measured = post.check(
-        "render", _png(tmp_path, "r.png", size=(16, 9)), alpha_floor=0.0
+        "render",
+        _png(tmp_path, "r.png", size=(16, 9)),
+        alpha_floor=0.0,
+        render_noise=0.004,
     )
     assert measured["size"] == [16, 9]
     assert measured["alpha_coverage"] == 1.0
@@ -169,7 +176,7 @@ def test_a_render_with_content_passes_and_reports_its_size(tmp_path):
 def test_a_render_of_one_flat_colour_is_refused(tmp_path):
     path = _png(tmp_path, "flat.png", fill=(17, 17, 17))
     with pytest.raises(PolyweaveError) as caught:
-        post.check("render", path, alpha_floor=0.0)
+        post.check("render", path, alpha_floor=0.0, render_noise=0.004)
     assert caught.value.code == "post.render-uniform"
     assert "#111111" in caught.value.message
     assert "allow_uniform" in caught.value.remedy
@@ -178,14 +185,14 @@ def test_a_render_of_one_flat_colour_is_refused(tmp_path):
 def test_a_fully_transparent_render_is_refused(tmp_path):
     path = _png(tmp_path, "gone.png", alpha=0)
     with pytest.raises(PolyweaveError) as caught:
-        post.check("render", path, alpha_floor=0.0)
+        post.check("render", path, alpha_floor=0.0, render_noise=0.004)
     assert caught.value.code == "post.render-transparent"
 
 
 def test_the_wrong_dimensions_are_refused_against_what_was_asked_for(tmp_path):
     path = _png(tmp_path, "small.png", size=(8, 8))
     with pytest.raises(PolyweaveError) as caught:
-        post.check("render", path, size=(512, 512), alpha_floor=0.0)
+        post.check("render", path, size=(512, 512), alpha_floor=0.0, render_noise=0.004)
     assert caught.value.code == "post.render-size"
     assert "8x8" in caught.value.message
 
@@ -193,8 +200,10 @@ def test_the_wrong_dimensions_are_refused_against_what_was_asked_for(tmp_path):
 def test_a_flat_texture_is_allowed_when_the_caller_says_so(tmp_path):
     path = _png(tmp_path, "albedo.png", fill=(200, 30, 30))
     with pytest.raises(PolyweaveError):
-        post.check("texture", path, alpha_floor=0.0)
-    assert post.check("texture", path, allow_uniform=True, alpha_floor=0.0)["size"] == [
+        post.check("texture", path, alpha_floor=0.0, render_noise=0.004)
+    assert post.check(
+        "texture", path, allow_uniform=True, alpha_floor=0.0, render_noise=0.004
+    )["size"] == [
         8,
         8,
     ]
@@ -206,7 +215,12 @@ def test_a_subject_is_the_pixels_above_the_alpha_floor(tmp_path):
     rgba[:2, :, 0] = np.arange(4, dtype=np.uint8)[None, :]
     path = tmp_path / "half.png"
     PILImage.fromarray(rgba, "RGBA").save(path)
-    assert post.check("render", path, alpha_floor=0.0)["alpha_coverage"] == 0.5
+    assert (
+        post.check("render", path, alpha_floor=0.0, render_noise=0.004)[
+            "alpha_coverage"
+        ]
+        == 0.5
+    )
 
 
 def test_a_capture_that_was_never_written_says_which_path(tmp_path):
@@ -316,8 +330,18 @@ def test_the_floor_the_caller_states_is_the_floor_that_is_used(tmp_path):
     path = tmp_path / "faint.png"
     PILImage.fromarray(rgba, "RGBA").save(path)
 
-    assert post.check("render", path, alpha_floor=0.0)["alpha_coverage"] == 1.0
-    assert post.check("render", path, alpha_floor=0.02)["alpha_coverage"] == 0.5
+    assert (
+        post.check("render", path, alpha_floor=0.0, render_noise=0.004)[
+            "alpha_coverage"
+        ]
+        == 1.0
+    )
+    assert (
+        post.check("render", path, alpha_floor=0.02, render_noise=0.004)[
+            "alpha_coverage"
+        ]
+        == 0.5
+    )
 
 
 def test_the_project_is_where_the_number_lives(tmp_path):
@@ -371,7 +395,9 @@ def test_a_gradient_that_came_back_a_staircase_is_refused(tmp_path):
     """The third silent failure: still a gradient, still not uniform, still the right
     size, and every other assertion here passes it."""
     flat = _field(tmp_path, "stairs.png", levels=4)
-    post.check("texture", flat, alpha_floor=0.0)  # the other checks see nothing wrong
+    post.check(
+        "texture", flat, alpha_floor=0.0, render_noise=0.004
+    )  # the other checks see nothing wrong
 
     with pytest.raises(PolyweaveError) as caught:
         post.check("field", flat, levels=64, alpha_floor=0.0)
@@ -382,7 +408,10 @@ def test_a_gradient_that_came_back_a_staircase_is_refused(tmp_path):
 def test_the_same_image_is_fine_as_a_texture_and_broken_as_a_field(tmp_path):
     """Nothing in the file says which it is, so the caller declares it."""
     flat = _field(tmp_path, "forty.png", levels=40)
-    assert post.check("texture", flat, alpha_floor=0.0)["size"] == [64, 1]
+    assert post.check("texture", flat, alpha_floor=0.0, render_noise=0.004)["size"] == [
+        64,
+        1,
+    ]
     with pytest.raises(PolyweaveError):
         post.check("field", flat, levels=200, alpha_floor=0.0)
 

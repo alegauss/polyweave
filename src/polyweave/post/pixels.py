@@ -23,8 +23,8 @@ import numpy as np
 from ..errors import PolyweaveError
 from ..image import Image, load
 
-ACCEPTS_RENDER = frozenset({"size", "alpha_floor", "allow_uniform"})
-ACCEPTS_TEXTURE = frozenset({"size", "alpha_floor", "allow_uniform"})
+ACCEPTS_RENDER = frozenset({"size", "alpha_floor", "render_noise", "allow_uniform"})
+ACCEPTS_TEXTURE = frozenset({"size", "alpha_floor", "render_noise", "allow_uniform"})
 ACCEPTS_CAPTURE = frozenset({"size", "alpha_floor"})
 ACCEPTS_FIELD = frozenset({"size", "levels", "bits", "alpha_floor"})
 
@@ -95,12 +95,25 @@ def _check_not_blank(
     uniform: str,
     what: str,
     alpha_floor: float,
+    render_noise: float,
     allow_uniform: bool,
 ) -> np.ndarray:
     """Not fully transparent, and not one flat colour.
 
     The two codes are passed in rather than assembled from `what`: a code is part of the
     published contract, and one built at runtime is one nothing can enumerate.
+
+    **Flat is a tolerance, not an equality** (§PW42). A real render is never exactly
+    anything: an unlit sphere through Cycles at four samples came back with two
+    distinct colours, (0,0,0) across the subject and (1,1,1) on the antialiased edge, so
+    a picture that is black to any observer passed the assertion that exists to catch
+    it, on one least significant bit. The spread across the visible pixels is measured
+    instead, and compared with `[tolerance] render_noise`.
+
+    That number is deliberately tight. 1/255 is 0.0039 and the floor is 0.0040, so this
+    catches the render measured above and would not call a two-value spread flat. The
+    door out for a render that really is one colour is `allow_uniform`, which is why the
+    tolerance does not need to be generous.
     """
     mask = image.subject(alpha_floor)
     if image.had_alpha and not mask.any():
@@ -113,14 +126,18 @@ def _check_not_blank(
     if allow_uniform:
         return mask
     visible = image.rgba[mask][:, :3]
-    if len(visible) and bool((visible.min(axis=0) == visible.max(axis=0)).all()):
-        colour = "#" + "".join(f"{int(v):02x}" for v in visible[0])
-        raise PolyweaveError(
-            uniform,
-            f"every visible pixel of the {what} is {colour}, so it carries no image",
-            f"the scene was empty or the light never fired; if a flat {colour} is what "
-            f"was wanted, pass allow_uniform=True",
-        )
+    if len(visible):
+        spread = float((visible.max(axis=0) - visible.min(axis=0)).max()) / 255.0
+        if spread <= render_noise:
+            colour = "#" + "".join(f"{int(v):02x}" for v in visible[0])
+            about = "is" if spread == 0.0 else f"is within {spread:.4f} of"
+            raise PolyweaveError(
+                uniform,
+                f"every visible pixel of the {what} {about} {colour}, so it carries "
+                f"no image",
+                f"the scene was empty or the light never fired; if a flat {colour} is "
+                f"what was wanted, pass allow_uniform=True",
+            )
     return mask
 
 
@@ -129,6 +146,7 @@ def check_render(
     *,
     size: Any = None,
     alpha_floor: float,
+    render_noise: float,
     allow_uniform: bool = False,
 ) -> dict:
     """Not a single uniform colour, not fully transparent, dimensions as requested."""
@@ -140,6 +158,7 @@ def check_render(
         uniform="post.render-uniform",
         what="render",
         alpha_floor=alpha_floor,
+        render_noise=render_noise,
         allow_uniform=allow_uniform,
     )
     return _measure(image, alpha_floor)
@@ -150,6 +169,7 @@ def check_texture(
     *,
     size: Any = None,
     alpha_floor: float,
+    render_noise: float,
     allow_uniform: bool = False,
 ) -> dict:
     """Not fully transparent, not a single uniform colour."""
@@ -161,6 +181,7 @@ def check_texture(
         uniform="post.texture-uniform",
         what="texture",
         alpha_floor=alpha_floor,
+        render_noise=render_noise,
         allow_uniform=allow_uniform,
     )
     return _measure(image, alpha_floor)
