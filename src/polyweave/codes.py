@@ -400,6 +400,21 @@ CODES: dict[str, Code] = {
         when="a position in the coordinates of a different capture, or of the asset",
         doors=("place it within the capture's own pixels",),
     ),
+    # -- fetch: asking the paid service for something -------------------------
+    "fetch.no-reference": Code(
+        means="there is no drawing to check the returned shape against",
+        when="a shape check with no reference, or one pointing at a path that is empty",
+        doors=("point it at the drawing that asked for this shape",),
+    ),
+    "fetch.shape-rejected": Code(
+        means="what came back does not match the silhouette that was asked for",
+        when="a generative service reinterpreting a shape: a wide low cap sent and a "
+        "tall dome returned, which the check exists to catch before the credits go",
+        doors=(
+            "look at the picture beside the drawing",
+            "ask again with a clearer reference",
+        ),
+    ),
     # -- search: looking for values that satisfy a spec -----------------------
     "search.nothing-to-search": Code(
         means="the spec names no parameter a search is permitted to turn",

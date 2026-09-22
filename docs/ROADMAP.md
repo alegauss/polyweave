@@ -20,7 +20,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-- 📋 **PW16** (deps: —) **a generated mesh's silhouette is checked after its credits are spent** — A wide low cap was sent and a tall dome on a long stem came back, which is thirty credits to learn something a silhouette check would have shown for nothing. → §PW16
 - 📋 **PW17** (deps: —) **a paid asset is deleted by the service seventy-two hours after it is made** — One run recorded the settings it proved and not the mesh, and the mesh is now gone, so the receipt outlived the thing that was bought. → §PW17
 - 📋 **PW18** (deps: PW17) **every fetch needs a human decision, so work stops between approvals** — The rule that an agent may not spend on its own judgement is right, but it is enforced by asking each time rather than by a ceiling agreed once. → §PW18
 - 📋 **PW19** (deps: —) **an unknown field is dropped in silence, so a payload that validates proves nothing** — Learning the schema takes a series of deliberately invalid values, each carrying a made-up field as its control, and none of that knowledge is kept anywhere. → §PW19

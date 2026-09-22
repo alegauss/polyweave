@@ -26,6 +26,8 @@
 
 ## Block D — Fetching from a paid service without surprise
 
+- ✅ **PW16** **a generated mesh's silhouette is checked after its credits are spent** — A returned shape is compared against the drawing that asked for it, on a preview where there is one, and a mismatch is a refusal with the picture (design recorded in `docs/specs/fetching.md`).
+
 ## Block E — One world with the engine
 
 ## Block F — Motion

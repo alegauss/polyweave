@@ -217,21 +217,6 @@ measurement that says which rungs it should be the default for.
 
 ## Block D — Fetching from a paid service without surprise
 
-### §PW16 Validate the shape before paying for it
-
-A generative service reinterprets silhouettes. Cottony sent a wide low cap on a short
-stem and got back a tall dome on a long stem, which is thirty credits spent to learn
-that the shape was not respected, discovered only once the money was gone. The check
-that would have caught it is cheap: render the returned mesh's front silhouette and
-compare it against the drawing that asked for it, by intersection over union, against a
-threshold. Nothing about that has to happen after payment. Two doors are worth having.
-Where the service offers any preview at all, low resolution or watermarked, take it and
-run the check there first. Where it does not, the check still runs on arrival and its
-result is recorded against the prompt, so the next attempt is informed rather than a
-re-roll. Either way the silhouette test becomes part of the fetch instead of something a
-person remembers to do afterwards, and a fetch that fails it is reported as a failure
-with a picture attached, never accepted in silence.
-
 ### §PW17 A paid artefact is captured, not referenced
 
 The service deletes a task's assets seventy-two hours after it completes. One Cottony
