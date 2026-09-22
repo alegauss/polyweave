@@ -31,7 +31,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "D", title: "Fetching from a paid service without surprise", open: 1 },
   { block: "E", title: "One world with the engine", open: 1 },
   { block: "F", title: "Motion", open: 0 },
-  { block: "G", title: "Geometry as a declaration", open: 3 },
+  { block: "G", title: "Geometry as a declaration", open: 2 },
   { block: "H", title: "Proof on a real game", open: 3 },
 ];
 
@@ -111,13 +111,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "E",
     symptom: "a bake renders square at the rung's size, so a declared world rectangle can be refused but never met",
     why: "PW24's contract names the size a sprite must be, and nothing renders at it: the size is the rung's, and it is not in the cache key either.",
-    deps: [],
-  },
-  {
-    id: "PW32",
-    block: "G",
-    symptom: "a shape's own numbers are unreachable from the search that tunes everything else",
-    why: "Geometry constants live inside a module while the rig's live in a dataclass, so a search can reach the lighting and never the shape it is lighting.",
     deps: [],
   },
   {

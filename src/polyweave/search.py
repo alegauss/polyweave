@@ -77,6 +77,36 @@ def _points_per_axis(axes: int, budget: int, points: int) -> int:
     return max(2, min(points, affordable))
 
 
+def slowest_first(names: Sequence[str], rebuilding: Sequence[str]) -> list[str]:
+    """Order the axes so the expensive ones change least often.
+
+    §PW32: rebuilding geometry costs more than re-rendering it, so a mixed search over
+    shape and rig has to order its sampling to rebuild as rarely as it can. The whole
+    fix is where a name sits in the product: the cartesian product varies its **last**
+    axis fastest, so putting the rebuilding parameters first holds one shape still while
+    every rig value is swept over it.
+    """
+    rebuilds = set(rebuilding)
+    return sorted(names, key=lambda name: (name not in rebuilds, name))
+
+
+def rebuilds_in(samples: Sequence[dict], rebuilding: Sequence[str]) -> int:
+    """How many times the geometry actually changed across a run of samples.
+
+    The number the ordering exists to keep down, reported rather than assumed.
+    """
+    watched = sorted(set(rebuilding))
+    if not watched:
+        return 0
+    count, last = 0, None
+    for sample in samples:
+        shape = tuple(round(float(sample["params"][n]), 10) for n in watched)
+        if shape != last:
+            count += 1
+            last = shape
+    return count
+
+
 def search(
     spec: Spec,
     evaluate: Callable[[dict], dict],
@@ -84,6 +114,7 @@ def search(
     budget: int = BUDGET,
     points: int = POINTS,
     passes: int = 3,
+    rebuilding: Sequence[str] = (),
 ) -> dict:
     """Search the spec's permitted parameters for values that satisfy its predicates.
 
@@ -102,7 +133,9 @@ def search(
             "give it at least one render to spend",
         )
 
-    names = sorted(permitted)
+    # The expensive axes go first, so the product holds a shape still while it sweeps
+    # everything cheap over it (§PW32). With nothing expensive this is plain sorting.
+    names = slowest_first(sorted(permitted), rebuilding)
     windows = {
         n: (float(permitted[n]["min"]), float(permitted[n]["max"])) for n in names
     }
@@ -174,6 +207,8 @@ def search(
     return {
         "asset": spec.asset,
         "searched": names,
+        "rebuilding": sorted(set(rebuilding) & set(names)),
+        "rebuilds": rebuilds_in(trace, set(rebuilding) & set(names)),
         "budget": budget,
         "spent": spent,
         "stopped": stopped,

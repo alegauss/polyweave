@@ -270,21 +270,6 @@ wants the former, which may mean a rung of its own rather than a parameter.
 
 ## Block G — Geometry as a declaration
 
-### §PW32 Geometry parameters join the search
-
-The rig's parameters live in a dataclass and the geometry's live inside Python modules,
-so the search in Block C can reach the lighting and never the shape it is lighting. That
-split is arbitrary. A bevel radius, a wall thickness, a crown height and a pitch are all
-numbers somebody tuned by rendering and looking, exactly like the exposure was. Once
-geometry is a declaration with named parameters at its head, those numbers are
-addressable, and the search can be handed a mixed space of shape and rig. Two things
-have to hold for that to be safe. Rebuilding geometry is more expensive than
-re-rendering it, so the search has to know which parameters force a rebuild and order
-its sampling accordingly, or it will pay the rebuild cost on every sample. And a
-geometry parameter needs a declared range like any other, because a wall thickness that
-goes negative does not produce a bad render but an invalid mesh, which is Block A's
-post-condition check earning its place.
-
 ### §PW33 A declaration is reviewable before it is built
 
 Two wrong constructions of Cottony's tray seats were built before the right one, and

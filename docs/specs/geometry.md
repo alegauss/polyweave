@@ -249,9 +249,21 @@ change forces only a re-render. The compiler computes that from the graph, and *
 needs it** — rebuilding geometry costs more than re-rendering it, so a mixed search over
 shape and light orders its sampling to rebuild as rarely as it can (§PW32).
 
+**The ordering is where a name sits in the product.** A cartesian product varies its last
+axis fastest, so putting the rebuilding parameters first holds one shape still while every
+rig value is swept over it. That is the whole mechanism, and the search reports the rebuilds
+it actually paid for against one per sample, so the saving is counted rather than claimed.
+
+**A parameter is the shape's if the document declares it**, which is how one search space
+carries two costs without either side being told which is which. A search naming a
+parameter the document does not have is refused (`geom.unknown-name`) — a budget spent
+turning a knob attached to nothing would otherwise be reported as a finding.
+
 Every parameter a search may touch needs a declared range for the same reason a rig parameter
 does: a wall thickness that goes negative does not produce a poor render, it produces an
-invalid mesh.
+invalid mesh. **A build that refuses is a failed sample**, scored zero and named in the
+answer, because a search that died on one invalid combination would report nothing about the
+valid ones it had already paid for.
 
 ## Conventions
 
