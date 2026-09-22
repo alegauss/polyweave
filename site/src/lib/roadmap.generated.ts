@@ -27,7 +27,7 @@ export interface GeneratedNonGoal {
 export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 6 },
   { block: "B", title: "Seeing the result cheaply", open: 2 },
-  { block: "C", title: "The asset compiler", open: 2 },
+  { block: "C", title: "The asset compiler", open: 1 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 6 },
   { block: "E", title: "One world with the engine", open: 4 },
   { block: "F", title: "Motion", open: 4 },
@@ -90,13 +90,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "B",
     symptom: "one configured noise floor calls every preview-sized render a change, because the floor moves with the rung",
     why: "Two seeds of one scene measured 0.046 apart at four samples and 0.014 at sixty-four, against a configured default of 0.004 calibrated for a final render.",
-    deps: [],
-  },
-  {
-    id: "PW15",
-    block: "C",
-    symptom: "a search reports the winning numbers and not what it rejected",
-    why: "A result nobody can inspect is one nobody can overrule, and a rig tuned against the wrong criterion looks exactly like a rig tuned against the right one.",
     deps: [],
   },
   {

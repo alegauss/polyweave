@@ -135,7 +135,21 @@ def search(
                 "result": found,
             }
             seen[key] = sample
-            trace.append({k: sample[k] for k in ("params", "score", "passed")})
+            # Every sample keeps its score against every predicate and the key its
+            # picture is cached under: a search nobody can inspect is one nobody can
+            # overrule, and §PW15 is what that costs.
+            trace.append(
+                {
+                    "params": values,
+                    "score": sample["score"],
+                    "passed": sample["passed"],
+                    "predicates": [
+                        {k: p.get(k) for k in ("id", "value", "margin", "passed")}
+                        for p in found.get("predicates", [])
+                    ],
+                    "render": found.get("render", {}),
+                }
+            )
             if best is None or sample["score"] > best["score"]:
                 best = sample
 
@@ -219,7 +233,11 @@ def renderer(
     draw = bake or R.bake
 
     class Quiet:
-        """A search reports its own progress; each sample does not need to."""
+        """A search reports its own progress; each sample does not need to.
+
+        Every method is empty on purpose: this stands in for the job's report, and a
+        sample inside a sweep has nobody to report to.
+        """
 
         def stage(self, stage, *, progress=None, note=None):
             pass
@@ -231,7 +249,7 @@ def renderer(
             pass
 
     def evaluate(values: dict) -> dict:
-        draw(
+        drawn = draw(
             Quiet(),
             out=str(out),
             rung=at,
@@ -239,7 +257,15 @@ def renderer(
             inline=False,
             **{**(fixed or {}), **values},
         )
-        return accept.check(spec, Path(root) / out, rung=at, root=root)
+        found = accept.check(spec, Path(root) / out, rung=at, root=root)
+        # The key is what lets a contact sheet be assembled afterwards, since the cache
+        # is already holding every sample's picture under it.
+        found["render"] = {
+            "cache_key": drawn.get("cache_key"),
+            "cached": drawn.get("cached"),
+            "artefact": drawn.get("artefact"),
+        }
+        return found
 
     return evaluate
 
@@ -253,14 +279,24 @@ def sweep(
     points: int = POINTS,
     rung: str | None = None,
     fixed: dict | None = None,
+    trace: str | Path | None = None,
 ) -> dict:
-    """Search by actually rendering: the whole loop, from a spec to the best values."""
-    return search(
+    """Search by actually rendering: the whole loop, from a spec to the best values.
+
+    `trace` is where to write down what it rejected. Worth passing: a search returning
+    only its winner is one nobody can overrule.
+    """
+    found = search(
         spec,
         renderer(spec, out=out, root=root, rung=rung, fixed=fixed),
         budget=budget,
         points=points,
     )
+    if trace is not None:
+        from . import trace as written
+
+        found["trace_written"] = written.write(found, out=trace, spec=spec, root=root)
+    return found
 
 
 def best_of(results: Sequence[dict]) -> dict | None:  # pragma: no cover - a convenience

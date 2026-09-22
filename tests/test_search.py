@@ -79,7 +79,10 @@ def test_the_trace_holds_every_sample_it_took():
     evaluate = peaking_at(3.0)
     found = search.search(a_spec(), evaluate, budget=9, points=3)
     assert len(found["trace"]) == found["spent"]
-    assert all({"params", "score", "passed"} == set(s) for s in found["trace"])
+    assert all(
+        {"params", "score", "passed", "predicates", "render"} == set(s)
+        for s in found["trace"]
+    )
 
 
 # -- the budget is the thing being managed ---------------------------------------------

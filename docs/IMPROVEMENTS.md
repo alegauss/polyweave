@@ -191,20 +191,6 @@ lands.
 
 ## Block C — The asset compiler
 
-### §PW15 The search shows its work
-
-A search that returns only its winner is a search nobody can overrule. The failure it
-hides is specific and likely: a spec that is satisfiable by a render a person would
-reject, where every predicate passes and the picture is still wrong. If the only output
-is a set of numbers, that outcome is indistinguishable from success. So the search
-returns a trace. The samples it evaluated, each one's score against each predicate, and
-a contact sheet of the best handful side by side. A person looks at the sheet, sees that
-the top-scoring render is not the one they would have chosen, and now knows the spec is
-wrong rather than the renderer. That is the loop this entire block exists for: the spec
-is the thing being debugged, and the search is the fastest way yet found to discover
-that it is incomplete. The trace is also what makes a result reproducible, since it
-records the seed and the search's own configuration beside the samples it scored.
-
 ### §PW45 Four samples were meant to be four handles
 
 The job system was built so that four parameter samples are four handles rather than

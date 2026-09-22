@@ -108,6 +108,26 @@ The winner is reported with its score **against every individual predicate**, so
 was satisfied by an ugly render is visible as exactly that rather than as a success, along
 with the whole trace of what was tried.
 
+## The trace
+
+A search that returns only its winner is one nobody can overrule, so it writes down what it
+rejected: `<name>.json` holding every sample with its score against every predicate, and
+`<name>.png` laying the best handful side by side, best first.
+
+The sheet is what closes the loop. A person looks at it, sees that the top-scoring render is
+not the one they would have chosen, and now knows **the spec is wrong rather than the
+renderer**. The spec is the thing being debugged, and the search is the fastest way yet found
+to discover that it is incomplete.
+
+The sheet is assembled **from the cache**, which already holds every sample's picture under
+its key, so no sample has to be rendered twice or kept anywhere else. Where the cache holds
+none of them there is nothing to lay out, and the trace says so rather than writing a sheet
+of the last render repeated.
+
+The seed and the search's own configuration — the budget, the ranges, the rung, why it
+stopped — sit beside the samples, because a result nobody can reproduce is one nobody can
+check.
+
 ## What this file deliberately cannot say
 
 Anything no measure can compute. "Reads as cloth rather than paper" is a real criterion and

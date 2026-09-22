@@ -16,7 +16,6 @@
 
 ## Block C — The asset compiler
 
-- 📋 **PW15** (deps: PW13 ✅) **a search reports the winning numbers and not what it rejected** — A result nobody can inspect is one nobody can overrule, and a rig tuned against the wrong criterion looks exactly like a rig tuned against the right one. → §PW15
 - 📋 **PW45** (deps: —) **a search renders its samples one after another, so a budget of twenty-four costs twenty-four waits** — The job handles exist so four samples can run at once, and the search calls its evaluator once per sample and waits for each render before proposing the next. → §PW45
 
 ## Block D — Fetching from a paid service without surprise
