@@ -72,6 +72,12 @@ schema  = "polyweave.service.toml"
 credits = 60
 expires = "2026-12-31"
 
+[rig]
+plan       = "plush"           # the body plan a fetched mesh is fitted with
+influences = 4                 # one snaps every vertex to one bone, and tears
+falloff    = 4.0               # both ends tear; four is the trough
+tear_ratio = 2.0
+
 [units]
 source    = "scripts/board.gd:CELL_PX"   # read the engine's scale where it keeps it
 tolerance = 0.001

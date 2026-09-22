@@ -41,6 +41,7 @@ AREAS: dict[str, str] = {
     "engine": "running a scene script and reading its verdict",
     "units": "the scale an asset is baked at, against the one the engine draws it at",
     "capture": "the environment a picture of the running game is taken in",
+    "rig": "fitting a skeleton to a mesh, and moving a pose between skeletons",
 }
 
 CODES: dict[str, Code] = {
@@ -557,6 +558,42 @@ CODES: dict[str, Code] = {
         when="a script that never quits; the frame budget is the other bound and this "
         "is the one that catches a hang the engine itself does not end",
         doors=("read the log", "raise [engine] timeout if the run is honestly slow"),
+    ),
+    # -- rig: fitting a skeleton to a mesh ------------------------------------
+    "rig.unknown-plan": Code(
+        means="there is no body plan by that name",
+        when="a plan named outside the small library of the body plans that recur",
+        doors=("name a declared plan", "state the joints"),
+    ),
+    "rig.bad-plan": Code(
+        means="the body plan does not describe a skeleton",
+        when="a joint whose parent is not in the plan, a cycle, or no root at all",
+        doors=("give every joint a parent that comes before it",),
+    ),
+    "rig.unbound-vertices": Code(
+        means="some vertices are attached to no bone, so posing leaves them behind",
+        when="a mesh with a part no bone reaches, usually a plan that does not match "
+        "the shape",
+        doors=("fit a plan that covers the shape", "widen the falloff"),
+    ),
+    "rig.tearing": Code(
+        means="a test pose stretches the mesh past what the weights should allow",
+        when="two neighbouring vertices bound to bones that move apart; one influence "
+        "per vertex is the worst case, and either end of the falloff is the next",
+        doors=(
+            "give a vertex more influences",
+            "move the falloff off its extreme",
+            "fit a plan that matches",
+        ),
+    ),
+    "rig.unmatched-joints": Code(
+        means="the pose names joints the skeleton does not have",
+        when="a clip authored against one plan played on another that spells its "
+        "joints differently; a name is the contract and a near miss is not a match",
+        doors=(
+            "name the joints the skeleton has",
+            "retarget through a plan that shares them",
+        ),
     ),
     # -- capture: the environment a picture is taken in ------------------------
     "capture.undeclared": Code(

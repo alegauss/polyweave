@@ -42,6 +42,8 @@
 
 ## Block F — Motion
 
+- ✅ **PW26 (skeleton, weights and retarget as data)** **a fetched mesh has no skeleton, so it cannot be posed at all** — A mesh is fitted with a skeleton from a small library of body plans, weighted from proximity, guarded by one test pose, and retargeted by joint name.
+
 ## Block G — Geometry as a declaration
 
 ## Block H — Proof on a real game

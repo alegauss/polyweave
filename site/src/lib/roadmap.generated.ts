@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 1 },
   { block: "F", title: "Motion", open: 4 },
   { block: "G", title: "Geometry as a declaration", open: 5 },
-  { block: "H", title: "Proof on a real game", open: 2 },
+  { block: "H", title: "Proof on a real game", open: 3 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -117,7 +117,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW26",
     block: "F",
     symptom: "a fetched mesh has no skeleton, so it cannot be posed at all",
-    why: "Every generative mesh arrives as a static surface, and rigging one by hand is the step that keeps character animation out of reach entirely.",
+    why: "Nothing writes the armature into the mesh file, so the engine cannot play what was fitted.",
     deps: [],
   },
   {
@@ -188,6 +188,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "a real project cannot adopt the plugin without carrying its own paths and palette into it",
     why: "Cottony is the first consumer and the test of whether the configuration boundary holds, and an adoption that needs a fork proves that it does not.",
+    deps: [],
+  },
+  {
+    id: "PW48",
+    block: "H",
+    symptom: "every test input is synthetic, so nothing is ever checked against an artefact somebody made",
+    why: "The suite has no real mesh, photograph or capture in it, and those are where every symptom in this backlog was measured in the first place.",
     deps: [],
   },
 ];

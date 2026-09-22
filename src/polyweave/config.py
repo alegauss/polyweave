@@ -117,6 +117,20 @@ DEFAULTS: dict[str, Any] = {
         "declared": ["locale", "resolution"],
     },
     "geometry": {"outlines": ""},
+    "rig": {
+        # Which body plan a mesh gets fitted with, and how the weights fall off. The
+        # plan is the only one of these a project usually changes (§PW26).
+        "plan": "plush",
+        # One influence snaps every vertex to one bone and tears at every boundary.
+        "influences": 4,
+        # Both ends tear: high snaps a vertex to one bone, low spreads it onto bones
+        # nowhere near it. Four sits in the trough, at 1.6x on the test figure.
+        "falloff": 4.0,
+        # How far a joint is pulled from the plan's own position onto the mesh's volume.
+        "pull": 0.6,
+        # How far an edge may stretch in a test pose before the rig is called wrong.
+        "tear_ratio": 2.0,
+    },
     "units": {
         # The scale the engine draws at. Stating it here is the weaker half; `source`
         # is the stronger one — `path/to.gd:NAME` reads it from wherever the game
