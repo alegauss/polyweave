@@ -2,30 +2,6 @@
 
 ## Block A — What a tool call costs the turn
 
-### §PW41 The half of the question verify cannot ask
-
-`verify` walks the records and checks their artefacts. It cannot walk the artefacts and
-check their records, because it has no idea which files in a project are supposed to
-have one. A mesh that was paid for, downloaded, committed, and never recorded is
-invisible to it: there is no sidecar to start from, so nothing is reported and the
-project looks sound.
-
-That is the more expensive half of the same failure. A recorded artefact that went
-missing costs a re-render. An unrecorded one that was paid for costs the credits again,
-and nothing says which of the meshes in the tree those are.
-
-What is missing is a statement of which files are supposed to carry a record. The config
-already names the directories that hold produced artefacts — `[paths] meshes` and
-`[paths] renders` — and the extensions are knowable from what the plugin writes. So the
-check is: every file under those directories with a produced extension has a sidecar,
-and anything that does not is named.
-
-The trap is that a project puts hand-made files in those directories too, and calling
-each of them a defect makes the report useless within a week. So it has to be ignorable
-per path, from the project's config rather than a flag someone remembers to pass. A
-report nobody can quieten is a report nobody reads, and this one has to stay worth
-reading for the one week in a year when a mesh goes missing.
-
 ### §PW42 An assertion about a render needs a tolerance
 
 The check that refuses a render carrying no image asks whether every visible pixel is

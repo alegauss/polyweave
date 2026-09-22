@@ -93,6 +93,14 @@ DEFAULTS: dict[str, Any] = {
         "subject_coverage": 0.12,
     },
     "cache": {"max_bytes": 8_000_000_000},
+    "provenance": {
+        # Files under a produced directory that a person made rather than the plugin, as
+        # glob patterns relative to the root. §PW41: checking that every produced file
+        # carries a record is only useful if a project can say which of them are not
+        # produced — a report nobody can quieten is a report nobody reads, and this one
+        # has to stay worth reading for the one week in a year when a mesh goes missing.
+        "handmade": [],
+    },
     "engine": {
         # The bounds a scene script runs under. Both of them, because the frame budget
         # is what ends a script the engine would otherwise sit in forever, and the wall

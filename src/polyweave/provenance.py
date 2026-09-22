@@ -21,7 +21,8 @@ import hashlib
 import json
 from collections.abc import Sequence
 from datetime import UTC, datetime
-from pathlib import Path
+from fnmatch import fnmatch
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 from . import __version__
@@ -292,11 +293,72 @@ def _round(value: Any) -> Any:
 # -- verification ------------------------------------------------------------------
 
 
+#: Which directories hold produced artefacts, and what the plugin writes into each. The
+#: other half of §PW41's question is asked over these: a file here with one of these
+#: suffixes and no sidecar was produced by something that did not record it.
+PRODUCED: dict[str, tuple[str, ...]] = {
+    "paths.meshes": (".glb", ".gltf"),
+    "paths.renders": (".png",),
+}
+
+
+def unrecorded(root: str | Path = ".") -> list[dict]:
+    """Produced files carrying no record — the half `verify` could not ask about.
+
+    §PW41. `verify` walks the records and checks their artefacts; it cannot walk the
+    artefacts and check their records, because nothing told it which files are supposed
+    to have one. So a mesh that was paid for, downloaded, committed and never recorded
+    is invisible to it, and the project reads as sound.
+
+    That is the more expensive half of the same failure. A recorded artefact that went
+    missing costs a re-render; an unrecorded one that was paid for costs the credits
+    again, and nothing says which of the meshes in the tree those are.
+
+    `[provenance] handmade` is how a project says which files here it made itself. A
+    project puts hand-made art in these directories too, and calling each of them a
+    defect makes the report useless within a week.
+    """
+    from .config import load as load_config
+
+    settings = load_config(root)
+    where = settings.root
+    excused = [str(p) for p in settings.get("provenance.handmade")]
+    out: list[dict] = []
+    for address, suffixes in PRODUCED.items():
+        directory = settings.path(address)
+        if not directory.is_dir():
+            continue
+        for found in sorted(directory.rglob("*")):
+            if not found.is_file() or found.suffix.lower() not in suffixes:
+                continue
+            here = relative(found, where)
+            if sidecar(found, where).is_file() or _excused(here, excused):
+                continue
+            out.append(
+                {"artefact": here, "expected": relative(sidecar(found, where), where)}
+            )
+    return out
+
+
+def _excused(path: str, patterns: Sequence[str]) -> bool:
+    """Whether the project already said this one is hand-made.
+
+    Matched against the path as written and against its name alone, so `*.png` excuses
+    a whole directory's worth without anybody spelling out the directory.
+    """
+    name = PurePosixPath(path).name
+    return any(fnmatch(path, pattern) or fnmatch(name, pattern) for pattern in patterns)
+
+
 def verify(root: str | Path = ".") -> dict:
     """Is every artefact the records claim to hold present, and still what it was.
 
     A report rather than a refusal: the answer to "what is missing" is a list, and one
     broken record should not hide the next.
+
+    Both directions are asked (§PW41): every record's artefact is checked, **and** every
+    produced file is checked for a record. The second is the expensive half — a paid
+    mesh with no sidecar used to read as a sound project.
     """
     where = Path(root).resolve()
     ok: list[str] = []
@@ -334,14 +396,16 @@ def verify(root: str | Path = ".") -> dict:
             continue
         ok.append(claimed)
 
+    nowhere = unrecorded(where)
     return {
         "root": str(where),
         "checked": len(ok) + len(missing) + len(changed) + len(unreadable),
-        "sound": not (missing or changed or unreadable),
+        "sound": not (missing or changed or unreadable or nowhere),
         "ok": ok,
         "missing": missing,
         "changed": changed,
         "unreadable": unreadable,
+        "unrecorded": nowhere,
     }
 
 

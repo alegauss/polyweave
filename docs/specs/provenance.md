@@ -125,6 +125,23 @@ broken record must not hide the next. Four outcomes per record: sound, the artef
 **missing**, the artefact **changed** — with both digests, so the difference is attributable
 — or the record itself is **unreadable**.
 
+**The other direction is asked too.** Walking the records cannot find an artefact that was
+produced without one: a mesh that was paid for, downloaded, committed and never recorded has
+no sidecar to start from, so nothing is reported and the project reads as sound. That is the
+more expensive half of the same failure — a recorded artefact that went missing costs a
+re-render, and an unrecorded one that was paid for costs the credits again. So `verify` also
+walks the directories the config names as holding produced work, `[paths] meshes` and
+`[paths] renders`, and reports every file there with a suffix this plugin writes (`.glb`,
+`.gltf`, `.png`) and no record, as `unrecorded`.
+
+**A project says which of those it made by hand**, through `[provenance] handmade`: glob
+patterns matched against the path and against the bare name, so `*.png` excuses an extension
+without anybody spelling out a directory. A project puts hand-made art in these directories
+too, and calling each of them a defect makes the report useless within a week. It lives in
+the config rather than in a flag because a report nobody can quieten is a report nobody
+reads, and this one has to stay worth reading for the one week in a year when a mesh goes
+missing.
+
 An input that lives outside the project tree is recorded by its absolute path rather than
 refused. Paths are not in the key, so a shared library outside the tree still yields the same
 key on another machine; what it costs is that the record alone does not say where to find

@@ -266,6 +266,90 @@ def test_verify_walks_the_whole_tree(tmp_path):
     assert P.verify(tmp_path)["ok"] == ["deep/under/here.png"]
 
 
+# -- the half verify could not ask about (§PW41) --------------------------------------
+
+
+def produced(tmp_path, *names, handmade=()):
+    """A project whose produced directories hold `names`, and a config to read it by."""
+    excused = ", ".join(f'"{p}"' for p in handmade)
+    (tmp_path / "polyweave.toml").write_text(
+        "[paths]\nmeshes = 'assets/3d'\nrenders = 'docs/renders'\n"
+        f"[provenance]\nhandmade = [{excused}]\n",
+        encoding="utf-8",
+    )
+    for name in names:
+        artefact(tmp_path, name, b"pretend")
+    return tmp_path
+
+
+def test_a_produced_file_with_no_record_is_named(tmp_path):
+    """The expensive half: a paid mesh with no sidecar used to read as sound."""
+    produced(tmp_path, "assets/3d/hammer.glb")
+    found = P.verify(tmp_path)
+    assert found["sound"] is False
+    assert found["unrecorded"] == [
+        {
+            "artefact": "assets/3d/hammer.glb",
+            "expected": "assets/3d/hammer.glb.prov.json",
+        }
+    ]
+
+
+def test_a_produced_file_with_a_record_is_not(tmp_path):
+    produced(tmp_path, "assets/3d/hammer.glb")
+    P.write(P.build("mesh", "assets/3d/hammer.glb", root=tmp_path), root=tmp_path)
+    assert P.verify(tmp_path)["unrecorded"] == []
+    assert P.verify(tmp_path)["sound"] is True
+
+
+def test_only_the_directories_that_hold_produced_work_are_walked(tmp_path):
+    """A mesh a person keeps elsewhere in the tree is nobody's business here."""
+    produced(tmp_path, "notes/sketch.glb", "assets/3d/bought.glb")
+    assert [u["artefact"] for u in P.unrecorded(tmp_path)] == ["assets/3d/bought.glb"]
+
+
+def test_only_what_the_plugin_writes_counts_as_produced(tmp_path):
+    """A .blend beside a .glb is a source, not something this made."""
+    produced(tmp_path, "assets/3d/source.blend", "docs/renders/notes.txt")
+    assert P.unrecorded(tmp_path) == []
+
+
+def test_a_project_can_say_which_files_it_made_by_hand(tmp_path):
+    """A report nobody can quieten is a report nobody reads."""
+    produced(
+        tmp_path,
+        "docs/renders/logo.png",
+        "docs/renders/mascot.png",
+        handmade=("docs/renders/logo.png",),
+    )
+    assert [u["artefact"] for u in P.unrecorded(tmp_path)] == [
+        "docs/renders/mascot.png"
+    ]
+
+
+def test_a_pattern_excuses_a_whole_directorys_worth(tmp_path):
+    produced(
+        tmp_path,
+        "docs/renders/brand/a.png",
+        "docs/renders/brand/b.png",
+        handmade=("docs/renders/brand/*",),
+    )
+    assert P.unrecorded(tmp_path) == []
+
+
+def test_a_bare_name_pattern_matches_wherever_the_file_sits(tmp_path):
+    """So `*.png` excuses the extension without anybody spelling out the directory."""
+    produced(tmp_path, "docs/renders/deep/under/here.png", handmade=("*.png",))
+    assert P.unrecorded(tmp_path) == []
+
+
+def test_a_directory_that_is_not_there_is_not_a_failure(tmp_path):
+    """A project renders nothing yet, which is a project and not a defect."""
+    (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
+    assert P.unrecorded(tmp_path) == []
+    assert P.verify(tmp_path)["sound"] is True
+
+
 # -- what an assertion measured is what gets recorded --------------------------------
 
 

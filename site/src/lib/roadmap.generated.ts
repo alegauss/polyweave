@@ -25,7 +25,7 @@ export interface GeneratedNonGoal {
 }
 
 export const generatedBlocks: GeneratedBlock[] = [
-  { block: "A", title: "What a tool call costs the turn", open: 3 },
+  { block: "A", title: "What a tool call costs the turn", open: 2 },
   { block: "B", title: "Seeing the result cheaply", open: 2 },
   { block: "C", title: "The asset compiler", open: 1 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 2 },
@@ -36,13 +36,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW41",
-    block: "A",
-    symptom: "an artefact that was produced without a record is invisible, because verify starts from the records",
-    why: "A paid mesh with no sidecar reads as a sound project, and re-buying it is the only way to find out what it was made from.",
-    deps: [],
-  },
   {
     id: "PW42",
     block: "A",
