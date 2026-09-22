@@ -217,21 +217,6 @@ measurement that says which rungs it should be the default for.
 
 ## Block D — Fetching from a paid service without surprise
 
-### §PW17 A paid artefact is captured, not referenced
-
-The service deletes a task's assets seventy-two hours after it completes. One Cottony
-run recorded the settings it had proved and did not commit the mesh or its lock entry,
-and the mesh is now simply gone: thirty credits spent for a receipt. This is not a
-discipline problem, it is a design one. The download and the record have to be a single
-transaction, so there is no window in which a session can believe the asset is safe
-because a lock file mentions it. The fetch should complete only once the file is on
-disk, hashed, and its entry written naming that hash, the prompt or reference that
-produced it, the task id, the credits consumed and the date. Everything downstream keys
-off the local file and never the remote id. A verification pass then answers the
-question that matters, which is whether every artefact the records claim to hold is
-actually present and still hashes to what was written down. Today nothing can answer
-that at all.
-
 ### §PW18 A budget approved once, spent against a ledger
 
 An agent may not decide that a mesh is worth money, and that rule is correct. But it is

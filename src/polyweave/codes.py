@@ -406,6 +406,26 @@ CODES: dict[str, Code] = {
         when="a shape check with no reference, or one pointing at a path that is empty",
         doors=("point it at the drawing that asked for this shape",),
     ),
+    "fetch.no-task": Code(
+        means="a purchase carries no task id, so nothing traces it to what was bought",
+        when="a capture recorded without the service's own id for the task",
+        doors=("pass the task id the service returned",),
+    ),
+    "fetch.unknown-purchase": Code(
+        means="the kind of thing being bought is not one this records",
+        when="a capture of something outside the declared set",
+        doors=("name a declared kind of purchase",),
+    ),
+    "fetch.nothing-arrived": Code(
+        means="there is nothing on disk to take delivery of",
+        when="a capture whose transfer never completed",
+        doors=("ask the service again before recording anything",),
+    ),
+    "fetch.ledger-malformed": Code(
+        means="the purchase ledger is not readable",
+        when="a ledger edited by hand, or truncated",
+        doors=("restore it from version control, where it belongs",),
+    ),
     "fetch.shape-rejected": Code(
         means="what came back does not match the silhouette that was asked for",
         when="a generative service reinterpreting a shape: a wide low cap sent and a "

@@ -29,8 +29,33 @@ thumbnail drawing still compare. The render goes through the project's own rig r
 a camera of its own: a silhouette taken through a different camera is a silhouette of
 something else.
 
+## A paid artefact is captured, not referenced
+
+The service deletes a task's assets seventy-two hours after it completes. One Cottony run
+recorded the settings it had proved and did not commit the mesh or its ledger entry, and the
+mesh is now gone — thirty credits spent for a receipt.
+
+That is a design problem, not a discipline one, so **the order is fixed**:
+
+1. the bytes land on disk and are asserted against the length and digest the response
+   declared;
+2. they are hashed and the provenance record is written beside them, carrying the task id,
+   the prompt or reference, and the credits consumed;
+3. **only then** is the ledger entry appended.
+
+The ledger is last so that it can never claim an asset that is not there. The reverse — a
+file nothing recorded — is what `verify` finds. Between the two there is no window in which
+a session can believe an asset is safe because a ledger mentions it, and a capture that
+fails partway leaves no entry at all.
+
+**Everything downstream keys off the local file and its hash**, never the remote id, because
+the remote id is the identifier that stops existing.
+
+The ledger is `[paths] purchases`, inside the tree and committed with it: a paid mesh and its
+record are one artefact. `held()` answers the question that matters — is every artefact the
+project paid for still present and still what it was — and names what each missing one cost.
+
 ## Still to come in this block
 
-The service client, the budget and its ledger, the lock that stops two sessions spending at
-once, and what a fetch records — each is its own line, and `provenance.md` already pins the
-fields a `fetch` record carries.
+The service client, the budget ceiling and the lock that stops two sessions spending at once.
+`provenance.md` already pins the fields a `fetch` record carries.

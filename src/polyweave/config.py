@@ -54,6 +54,9 @@ DEFAULTS: dict[str, Any] = {
         "renders": "docs/renders",
         "specs": "docs/accept",
         "work": ".polyweave",
+        # The ledger of what was paid for. Inside the tree and committed with it: a
+        # purchase and its record are one artefact (§PW17).
+        "purchases": "polyweave.purchases.json",
     },
     "render": {
         "rungs": ["sphere", "preview", "final"],

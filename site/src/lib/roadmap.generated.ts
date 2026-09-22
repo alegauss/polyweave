@@ -28,7 +28,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 6 },
   { block: "B", title: "Seeing the result cheaply", open: 2 },
   { block: "C", title: "The asset compiler", open: 1 },
-  { block: "D", title: "Fetching from a paid service without surprise", open: 5 },
+  { block: "D", title: "Fetching from a paid service without surprise", open: 4 },
   { block: "E", title: "One world with the engine", open: 4 },
   { block: "F", title: "Motion", open: 4 },
   { block: "G", title: "Geometry as a declaration", open: 5 },
@@ -100,18 +100,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW17",
-    block: "D",
-    symptom: "a paid asset is deleted by the service seventy-two hours after it is made",
-    why: "One run recorded the settings it proved and not the mesh, and the mesh is now gone, so the receipt outlived the thing that was bought.",
-    deps: [],
-  },
-  {
     id: "PW18",
     block: "D",
     symptom: "every fetch needs a human decision, so work stops between approvals",
     why: "The rule that an agent may not spend on its own judgement is right, but it is enforced by asking each time rather than by a ceiling agreed once.",
-    deps: ["PW17"],
+    deps: [],
   },
   {
     id: "PW19",
