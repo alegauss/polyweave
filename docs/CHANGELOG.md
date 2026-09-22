@@ -43,6 +43,7 @@
 ## Block F — Motion
 
 - ✅ **PW26** **a fetched mesh has no skeleton, so it cannot be posed at all** — The fitted skeleton and its weights are written into the mesh file as a glTF skin, proved by turning a joint in the re-imported file and watching it follow (design recorded in `docs/specs/motion.md`).
+- ✅ **PW27** **motion is expressed as a second static render, so nothing longer than two frames exists** — A clip has a name, a duration and channels over time, each frame renders as a still, and one measurement runs across all of them rather than at rest (design recorded in `docs/specs/motion.md`).
 
 ## Block G — Geometry as a declaration
 

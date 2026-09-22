@@ -268,20 +268,6 @@ wants the former, which may mean a rung of its own rather than a parameter.
 
 ## Block F — Motion
 
-### §PW27 Clips, not frame pairs
-
-Motion in Cottony is a second static render of the same mesh squashed to 93 per cent of
-its height, which the game crossfades to. That is a real technique and it is the right
-answer for one beat, since it keeps the face and the thread at the size they were where
-a scaled sprite would not. But it has no way to express anything longer. A walk, a
-reaction, an idle, a hit: none of them are two frames. What is missing is a clip as a
-first-class object, with a name, a duration, channels over time, and a way to be
-rendered at a rung exactly as a still is rendered. Once a clip exists, everything Block
-B does to a still applies to it: a preview at low resolution, a contact sheet of its key
-poses, a measurement of whether the silhouette stays inside its budget across the whole
-clip rather than only at rest. The squash then stays as what it honestly is, a clip of
-two poses, rather than being the only thing the pipeline can say.
-
 ### §PW28 Curves are data
 
 An animation inside a binary mesh file is a binary track. A timing change to it is

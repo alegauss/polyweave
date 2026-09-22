@@ -30,7 +30,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "C", title: "The asset compiler", open: 1 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 1 },
   { block: "E", title: "One world with the engine", open: 1 },
-  { block: "F", title: "Motion", open: 3 },
+  { block: "F", title: "Motion", open: 2 },
   { block: "G", title: "Geometry as a declaration", open: 5 },
   { block: "H", title: "Proof on a real game", open: 3 },
 ];
@@ -114,25 +114,18 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW27",
-    block: "F",
-    symptom: "motion is expressed as a second static render, so nothing longer than two frames exists",
-    why: "A settle is a squashed re-render of the same mesh, which is right for one beat and has no way to say what a walk or a reaction would be.",
-    deps: [],
-  },
-  {
     id: "PW28",
     block: "F",
     symptom: "an animation lives in a binary track, so a curve cannot be reviewed or edited as text",
     why: "A timing change inside a mesh file is invisible in a diff and unreachable by an edit, which makes every adjustment a re-export from a tool nobody scripted.",
-    deps: ["PW27"],
+    deps: [],
   },
   {
     id: "PW29",
     block: "F",
     symptom: "a 2D screen needs frames and a 3D scene needs a clip, so the motion is authored twice",
     why: "The same settle exists as a sprite the interface crossfades to and as something a 3D scene would play, and keeping the two in step is manual.",
-    deps: ["PW27"],
+    deps: [],
   },
   {
     id: "PW30",

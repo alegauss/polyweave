@@ -91,6 +91,43 @@ the count going in. That is glTF's own business and not a sign of anything; what
 checked is that **some** vertices move and not **all** of them, because a limb that carries
 the whole mesh is not a limb.
 
+## A clip, not a frame pair
+
+Motion in Cottony is **a second static render of the same mesh squashed to 93 per cent of
+its height**, which the game crossfades to. That is a real technique and the right answer
+for one beat — it keeps the face and the thread at the size they were, where a scaled
+sprite would not — but it has no way to express anything longer. A walk, a reaction, an
+idle, a hit: none of them are two frames.
+
+A clip has a **name**, a **duration**, a **frame rate** and **channels over time**. A
+channel drives one property of one joint, and the three properties are the three glTF
+animates: `rotation`, `scale`, `translation`. That vocabulary is not a coincidence — it is
+what the engine gets handed, so nothing has to be translated on the way out. The squash
+keeps its place as **what it honestly is, a clip of three poses**, rather than being the
+only thing the pipeline can say.
+
+**A node's transform propagates down the tree, and here that is a sum of weights.** A
+scale or a translation on a joint applies to everything that joint carries: the root
+carries the whole mesh, an arm carries the arm and the hand. Without that rule a scale on
+the root moves only the sliver of mesh the root bone happens to be nearest, and the squash
+does not squash. Rotation goes through the skeleton's own skinning, which already walks
+the hierarchy.
+
+Between two keys a value is **linear** by default, **step** where a key holds until the
+next one, or **ease** for a smoothstep. Not a spline: a spline is a curve somebody
+authored, and an authored one is PW28's.
+
+**A frame of a clip is a still.** Each frame is posed, written as its own mesh, and
+rendered through the same `render.bake` a still goes through — so the ladder, the cache,
+the post-conditions and every measurement in Block B apply to a clip without any of them
+having to know what a clip is. A contact sheet of the *key* moments, rather than every
+frame, is what a clip looks like in one picture.
+
+**`across` is the one thing that is new.** A measurement over every frame, reported at its
+worst and beside what it was at rest — because a silhouette that fits its budget at rest
+and not mid-stride is a silhouette nobody measured, and that is the question a still
+cannot be asked.
+
 ## Still to come in this block
 
-Clips (PW27), curves as text (PW28), and one clip producing both outputs (PW29).
+Curves as text (PW28), and one clip producing both outputs (PW29).

@@ -42,6 +42,7 @@ AREAS: dict[str, str] = {
     "units": "the scale an asset is baked at, against the one the engine draws it at",
     "capture": "the environment a picture of the running game is taken in",
     "rig": "fitting a skeleton to a mesh, and moving a pose between skeletons",
+    "clip": "motion over time, as something with a name and a duration",
 }
 
 CODES: dict[str, Code] = {
@@ -558,6 +559,34 @@ CODES: dict[str, Code] = {
         when="a script that never quits; the frame budget is the other bound and this "
         "is the one that catches a hang the engine itself does not end",
         doors=("read the log", "raise [engine] timeout if the run is honestly slow"),
+    ),
+    # -- clip: motion over time ------------------------------------------------
+    "clip.empty": Code(
+        means="the clip moves nothing",
+        when="a clip with no channels, or channels with no keys in them; a clip that "
+        "changes nothing over its duration is a still with a duration attached",
+        doors=("give it a channel with keys", "render it as a still instead"),
+    ),
+    "clip.unknown-property": Code(
+        means="a channel drives something a joint does not have",
+        when="a property outside the three glTF animates: rotation, scale, translation",
+        doors=("name rotation, scale or translation",),
+    ),
+    "clip.unknown-easing": Code(
+        means="the keyframe asks for an interpolation nothing implements",
+        when="an easing named outside the declared set",
+        doors=("name a declared easing",),
+    ),
+    "clip.outside-duration": Code(
+        means="a keyframe sits outside the clip it belongs to",
+        when="a key at a negative time, or past the duration; the duration is the clip "
+        "and a key beyond it never plays",
+        doors=("move the key inside", "lengthen the clip"),
+    ),
+    "clip.no-frames": Code(
+        means="the clip is too short or too slow to have a single frame in it",
+        when="a duration or a frame rate at or below zero",
+        doors=("give it a duration above zero", "give it a frame rate"),
     ),
     # -- rig: fitting a skeleton to a mesh ------------------------------------
     "rig.unknown-plan": Code(
