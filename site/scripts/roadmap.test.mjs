@@ -13,7 +13,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { generatedPath, readRoadkeep, renderModule } from "./roadmap.mjs";
+import { generatedPath, readRoadkeep, renderModule, waitingOn } from "./roadmap.mjs";
 
 const committed = readFileSync(generatedPath, "utf8");
 const read = readRoadkeep();
@@ -65,4 +65,14 @@ test("every dependency names a line that exists", () => {
   for (const d of new Set(deps)) {
     assert.ok(known.has(d), `${d} is depended on and is not in the roadmap`);
   }
+});
+
+test("a dependency that has shipped is no longer waited on", () => {
+  // roadkeep annotates a resolved dep in place, as `PW5 ✅`. Carrying that through
+  // would print "waits on PW5 ✅" on a line that waits on nothing, and would make the
+  // check above look for an id that left the roadmap when it shipped.
+  assert.deepEqual(waitingOn(["PW5 ✅"]), []);
+  assert.deepEqual(waitingOn(["PW9 🗑"]), []);
+  assert.deepEqual(waitingOn(["PW7", "PW5 ✅", "PW8"]), ["PW7", "PW8"]);
+  assert.deepEqual(waitingOn(undefined), []);
 });

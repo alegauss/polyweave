@@ -74,5 +74,9 @@ def test_it_lists_the_failures_a_caller_can_plan_for():
 
 def test_what_is_not_established_yet_names_the_line_that_will():
     found = capabilities(probe=False)
-    assert "PW5" in found["pending"]["budget"]
     assert "PW23" in found["pending"]["offscreen"]
+    assert "PW14" in found["pending"]["cache"]
+
+
+def test_a_budget_nobody_declared_is_not_an_unlimited_one():
+    assert capabilities(probe=False)["budget"]["spendable"] is False

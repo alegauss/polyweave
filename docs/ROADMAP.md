@@ -2,11 +2,11 @@
 
 ## Block A — What a tool call costs the turn
 
-- 📋 **PW5** (deps: —) **paths, palette and rig defaults are written into the tool, so a second project cannot run it** — Cottony's tools resolve their own repository root and import a palette module beside them, so nothing in them is reachable from a project that is not Cottony. → §PW5
 - 📋 **PW6** (deps: —) **the renderer's version is not recorded, so a render that moved cannot be told from a change** — A bake is not byte-reproducible, and without the library versions and the seed beside the output there is no way to attribute a difference to anything. → §PW6
 - 📋 **PW37** (deps: —) **a renderer outlives the worker that started it, and a sweep on Windows cannot find it to end it** — taskkill walks a tree from the living parent, so a worker that died takes its handle to its children with it, and the render goes on spending a core nobody is watching. → §PW37
 - 📋 **PW38** (deps: —) **a height field survives an eight-bit round trip as a staircase, and every assertion says it is fine** — The third silent failure behind the post-conditions is a blur that quantises a gradient, invisible in a shadow and ruinous under a specular, and no colour or coverage check sees it. → §PW38
 - 📋 **PW39** (deps: —) **a job checks only that an argument exists while a direct call checks its range, so one call has two contracts** — The worker reads a target's signature and describe reads its registration, so a value the surface would refuse still costs a spawn and a failed job to discover. → §PW39
+- 📋 **PW40** (deps: —) **a tolerance has one default in the project config and a different one in the function that uses it** — A check falls back to an alpha floor of zero while the config declares 0.02, so an operation that forgets to pass it measures the background as part of the subject. → §PW40
 
 ## Block B — Seeing the result cheaply
 
@@ -57,7 +57,7 @@
 ## Block H — Proof on a real game
 
 - 📋 **PW35** (deps: PW13) **the plugin's value is asserted and never measured against what it replaced** — Nothing records how long a correct asset took before or after, so there is no way to tell a real improvement from a rearrangement of the same work. → §PW35
-- 📋 **PW36** (deps: PW5) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Cottony is the first consumer and the test of whether the configuration boundary holds, and an adoption that needs a fork proves that it does not. → §PW36
+- 📋 **PW36** (deps: PW5 ✅) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Cottony is the first consumer and the test of whether the configuration boundary holds, and an adoption that needs a fork proves that it does not. → §PW36
 
 ## Non-goals
 

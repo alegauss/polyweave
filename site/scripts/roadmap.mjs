@@ -65,6 +65,23 @@ export function readRoadkeep() {
 
 const q = (s) => JSON.stringify(s);
 
+/** roadkeep annotates a dep it has resolved, as `PW5 ✅`. Those are no longer waited on. */
+const RESOLVED = new Set(["✅", "\u{1F5D1}"]);
+
+/**
+ * The ids a line still waits on.
+ *
+ * A dep arrives as `PW5` while it is open and `PW5 ✅` once it has shipped, so the id is
+ * the first token and anything after it says the wait is over. The page says "waits on",
+ * which stops being true the moment the dep lands.
+ */
+export function waitingOn(deps) {
+  return (deps ?? [])
+    .map((d) => d.trim().split(/\s+/))
+    .filter(([, mark]) => !mark || !RESOLVED.has(mark))
+    .map(([id]) => id);
+}
+
 /** The generated module's text, from one roadkeep read. Deterministic: same in, same out. */
 export function renderModule(read) {
   const blocks = read.blocks.blocks.map((b) => ({
@@ -77,7 +94,7 @@ export function renderModule(read) {
     block: t.block,
     symptom: t.symptom,
     why: t.why,
-    deps: t.deps ?? [],
+    deps: waitingOn(t.deps),
   }));
   const nonGoals = read.nonGoals.non_goals.map((lead) => ({
     lead,

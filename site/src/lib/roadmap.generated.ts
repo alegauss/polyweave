@@ -37,13 +37,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 
 export const generatedTasks: GeneratedTask[] = [
   {
-    id: "PW5",
-    block: "A",
-    symptom: "paths, palette and rig defaults are written into the tool, so a second project cannot run it",
-    why: "Cottony's tools resolve their own repository root and import a palette module beside them, so nothing in them is reachable from a project that is not Cottony.",
-    deps: [],
-  },
-  {
     id: "PW6",
     block: "A",
     symptom: "the renderer's version is not recorded, so a render that moved cannot be told from a change",
@@ -69,6 +62,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "A",
     symptom: "a job checks only that an argument exists while a direct call checks its range, so one call has two contracts",
     why: "The worker reads a target's signature and describe reads its registration, so a value the surface would refuse still costs a spawn and a failed job to discover.",
+    deps: [],
+  },
+  {
+    id: "PW40",
+    block: "A",
+    symptom: "a tolerance has one default in the project config and a different one in the function that uses it",
+    why: "A check falls back to an alpha floor of zero while the config declares 0.02, so an operation that forgets to pass it measures the background as part of the subject.",
     deps: [],
   },
   {
@@ -279,7 +279,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "a real project cannot adopt the plugin without carrying its own paths and palette into it",
     why: "Cottony is the first consumer and the test of whether the configuration boundary holds, and an adoption that needs a fork proves that it does not.",
-    deps: ["PW5"],
+    deps: [],
   },
 ];
 

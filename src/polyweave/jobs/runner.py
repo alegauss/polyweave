@@ -66,6 +66,25 @@ class JobStore:
         self.stale_after_s = stale_after_s
         self.python = python or sys.executable
 
+    @classmethod
+    def for_project(cls, root: str | Path = ".", **over: Any) -> JobStore:
+        """A store whose work directory and parallelism come from `polyweave.toml`.
+
+        Read here rather than at startup, so correcting the file does not need a session
+        restart — which is the friction §PW5 exists to remove.
+        """
+        from ..config import load
+
+        config = load(root)
+        return cls(
+            config.root,
+            work=config.path("paths.work"),
+            max_parallel=int(
+                config.get("render.max_parallel", over.pop("max_parallel", None))
+            ),
+            **over,
+        )
+
     # -- starting ---------------------------------------------------------------
 
     def start(

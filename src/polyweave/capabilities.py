@@ -19,6 +19,7 @@ from pathlib import Path
 
 from . import __version__
 from .codes import AREAS
+from .config import load
 from .describe import describe
 from .errors import codes
 from .jobs.stages import KINDS, TERMINAL
@@ -28,15 +29,23 @@ from .post import CHEAP, OPTIONAL
 PROBE_TIMEOUT_S = 20.0
 
 
-def _probe(binary: str, where: str | Path | None, args: tuple[str, ...]) -> dict:
-    """Find a binary and ask it its version, reporting what actually happened."""
-    found = str(where) if where else shutil.which(binary)
-    if not found or not Path(found).exists():
+def _probe(binary: str, where: str | Path, args: tuple[str, ...]) -> dict:
+    """Find a binary and ask it its version, reporting what actually happened.
+
+    `where` is either a bare name to look up on PATH — which is the default, since a
+    compiled-in path is the defect §PW5 is about — or the path a project declared.
+    """
+    named = str(where)
+    found = shutil.which(named)
+    if not found:
+        bare = Path(named).name == named
         return {
             "found": False,
-            "path": str(where) if where else None,
+            "path": named,
             "version": None,
-            "why": f"{binary} is not on PATH" if not where else f"nothing at {where}",
+            "why": f"{binary} is not on PATH"
+            if bare
+            else f"nothing runnable at {named}",
         }
     try:
         done = subprocess.run(
@@ -57,7 +66,15 @@ def _probe(binary: str, where: str | Path | None, args: tuple[str, ...]) -> dict
     }
 
 
+def _describe_binary(binary: str, where: Path, probe: bool) -> dict:
+    """Ask the binary, or say only where it would be looked for."""
+    if probe:
+        return _probe(binary, where, ("--version",))
+    return {"found": None, "path": str(where), "version": None, "why": "not probed"}
+
+
 def capabilities(
+    root: str | Path = ".",
     *,
     blender: str | Path | None = None,
     godot: str | Path | None = None,
@@ -66,20 +83,16 @@ def capabilities(
 ) -> dict:
     """What this machine can do, and what nothing has established yet.
 
-    `blender` and `godot` are where to look; PW5 passes what `polyweave.toml` declares,
-    and without them this falls back to PATH. `service_key_env` is the **name** of the
-    variable holding a key, never the key.
+    Each argument overrides what `polyweave.toml` declares, which overrides the plugin's
+    default — the resolution order, on this call rather than at startup.
+    `service_key_env` is the **name** of the variable holding a key, never the key.
     """
-    renderer = (
-        _probe("blender", blender, ("--version",))
-        if probe
-        else {"found": None, "path": str(blender) if blender else None}
-    )
-    engine = (
-        _probe("godot", godot, ("--version",))
-        if probe
-        else {"found": None, "path": str(godot) if godot else None}
-    )
+    config = load(root)
+    blender = config.path("paths.blender", blender)
+    godot = config.path("paths.godot", godot)
+    service_key_env = config.get("service.key_env", service_key_env) or None
+    renderer = _describe_binary("blender", blender, probe)
+    engine = _describe_binary("godot", godot, probe)
 
     service = {"key_env": service_key_env, "key_present": None}
     if service_key_env:
@@ -116,8 +129,14 @@ def capabilities(
             "areas": dict(AREAS),
             "codes": codes(),
         },
+        "budget": config.budget(),
+        "project": {
+            "name": config.get("project.name"),
+            "root": str(config.root),
+            "config": str(config.source) if config.source else None,
+            "work": str(config.path("paths.work")),
+        },
         "pending": {
-            "budget": "PW18 spends against it, and PW5 reads it from polyweave.toml",
             "offscreen": "PW23 establishes which offscreen route works on this machine",
             "cache": "PW14 reports what the cache holds and what it cost",
         },

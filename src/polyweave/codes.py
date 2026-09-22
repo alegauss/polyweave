@@ -286,6 +286,45 @@ CODES: dict[str, Code] = {
         when="a number arrives as a string, or the reverse",
         doors=("pass the declared type",),
     ),
+    # -- config: what a project declares, and how a value is resolved --------
+    "config.malformed": Code(
+        means="the project's config file could not be read as TOML",
+        when="a syntax error in polyweave.toml, or a file that cannot be opened",
+        doors=("fix the syntax the detail points at",),
+    ),
+    "config.unknown-table": Code(
+        means="the config declares a table the plugin has no settings under",
+        when="a misspelled table heading; it is refused rather than ignored, or a "
+        "setting would read as in effect while it was not",
+        doors=("name a declared table",),
+    ),
+    "config.unknown-key": Code(
+        means="the config sets a key that is not a setting",
+        when="a misspelled key, or one borrowed from another tool",
+        doors=("name a declared key", "read the table to see what it takes"),
+    ),
+    "config.unknown-address": Code(
+        means="the address asked for does not name a setting",
+        when="a read of a table or key that the schema does not carry",
+        doors=("list the addresses",),
+    ),
+    "config.bad-type": Code(
+        means="a setting was given a value of the wrong type",
+        when="a number written as a string, a table given a value, or a date that is "
+        "not one",
+        doors=("write the value as the declared type",),
+    ),
+    "config.path-outside": Code(
+        means="a path setting points out of the project tree",
+        when="an absolute path where only a binary may be absolute, or one that climbs "
+        "out with ..",
+        doors=("write the path relative to the project root",),
+    ),
+    "config.env-unset": Code(
+        means="a setting names an environment variable that is not set here",
+        when="a ${NAME} reference on a machine where NAME was never exported",
+        doors=("set the variable", "write the value in the config instead"),
+    ),
     # -- spec: the vocabularies a caller names things by ---------------------
     "spec.unknown-code": Code(
         means="the code asked about is not one this plugin publishes",

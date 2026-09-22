@@ -15,6 +15,7 @@ from pathlib import Path
 import pytest
 
 from polyweave import codes as C
+from polyweave import config
 from polyweave.errors import PolyweaveError, codes, explain, guard
 
 SRC = Path(__file__).resolve().parent.parent / "src" / "polyweave"
@@ -23,6 +24,12 @@ SRC = Path(__file__).resolve().parent.parent / "src" / "polyweave"
 #: particular call, because a code reaches `PolyweaveError` through a helper as often as
 #: it is written at the raise itself.
 SHAPED = re.compile(rf"^({'|'.join(C.AREAS)})\.[a-z0-9]+(-[a-z0-9]+)*$")
+
+
+#: A config address is `table.key` too, and a single-word key under a table that shares
+#: its name with an error area — `render.samples` — is shaped exactly like a code. The
+#: settings are the smaller, enumerable set, so they are what gets subtracted.
+SETTINGS = {f"{t}.{k}" for t, keys in config.DEFAULTS.items() for k in keys}
 
 
 def used_codes() -> dict[str, list[str]]:
@@ -37,6 +44,7 @@ def used_codes() -> dict[str, list[str]]:
                 isinstance(node, ast.Constant)
                 and isinstance(node.value, str)
                 and SHAPED.match(node.value)
+                and node.value not in SETTINGS
             ):
                 found.setdefault(node.value, []).append(f"{path.name}:{node.lineno}")
     return found

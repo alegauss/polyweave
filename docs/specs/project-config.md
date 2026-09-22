@@ -9,7 +9,18 @@ of it. **A default that cannot be overridden is a defect.**
 ## Resolution order
 
 Explicit call argument, then `polyweave.toml`, then the plugin default — evaluated **on every
-call**, never cached at startup, so correcting this file does not need a session restart.
+call**, never cached at startup, so correcting this file does not need a session restart. The
+file is read on each resolution rather than held; it is a few hundred bytes of TOML, and the
+read is cheaper than the round trip a stale value costs.
+
+**An unknown table or key is refused, never ignored**, with the near match named. A setting
+that is silently dropped is one the caller believes is in effect and is not, which is the
+same defect as a dropped argument (§3 of [tool-surface.md](tool-surface.md)). A value of the
+wrong type is refused the same way.
+
+**A table keyed by names the project chooses replaces the default rather than merging with
+it.** `[render] samples` is keyed by `rungs`, so a project that renames its rungs would
+otherwise inherit sample counts for rungs it does not have.
 
 ## The file
 
@@ -74,6 +85,9 @@ plugin chooses for itself, and it belongs in `.gitignore`.
 **`[budget]` is a person's decision, written down.** The plugin spends against it without
 asking and refuses the call that would exceed it (§PW18). An expired or absent budget means
 no spend at all, not an unlimited one — the absence of a ceiling is never read as permission.
+**Credits without an expiry are not spendable either**, for the same reason: a ceiling with
+no date is one nobody revisits, and an unbounded-in-time budget is not a decision anybody
+made. Both halves are stated or nothing is spent.
 
 **`[capture] declared` is the list that matters.** Every name in it is an environment setting
 a capture must state explicitly, and a capture leaving one to chance is refused. §PW25 is why:

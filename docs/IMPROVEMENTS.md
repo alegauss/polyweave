@@ -2,21 +2,6 @@
 
 ## Block A — What a tool call costs the turn
 
-### §PW5 Configuration is the project's, defaults are the plugin's
-
-Cottony's art tools resolve their own repository root from their file path, import a
-palette module that lives beside them, and write to paths spelled inline. Nothing in
-them runs from another project. A plugin cannot work that way: it is installed once and
-used by whatever repository the session happens to be in. So every path, every palette,
-every rig default, every tolerance and every external binary is read from a project
-file, and the plugin ships defaults for all of it. A default that cannot be overridden
-is a defect, and the test of whether the boundary is real is the last block in this
-file. Two rules follow from the same place. Nothing is written outside the project's own
-tree, because a cache in a home directory is state a repository cannot review and a
-colleague cannot reproduce. And the configuration is read per call rather than cached at
-startup, so correcting it does not require restarting a session, which is friction of
-exactly the kind this block exists to remove.
-
 ### §PW6 Every output carries what produced it
 
 A path-traced bake is not byte-reproducible. Two runs of one unchanged scene in Cottony
@@ -99,6 +84,29 @@ target may need an environment the parent does not have. So the registry has to 
 consultable by name without importing the implementation, which means registration has
 to happen somewhere the parent already loads, or the validation has to travel into the
 child as data rather than as a lookup.
+
+### §PW40 A number with two homes has no home
+
+`[tolerance] alpha_floor` is 0.02 in the config defaults, and `check("render", path)`
+falls back to 0.0 in its own signature. Both are defaults for one number, and they
+disagree. An operation that resolves the setting and passes it measures the subject the
+project asked for; one that forgets measures every pixel in the frame, including the
+background, and neither reports that a choice was made.
+
+The same shape waits for `render_noise`, `silhouette_iou` and `delta_e` as soon as Block
+B has a comparison to apply them to. The library functions are deliberately pure — they
+take numbers and do not read files, which is what makes them testable and what lets them
+run inside Blender — so the resolution belongs at the operation, not inside them.
+
+What is missing is that a pure function currently gets to invent a fallback. It should
+not: a tolerance has one home, and a function that needs one should require it rather
+than default it. Making the parameter required moves the mistake from a silent wrong
+answer to a refusal at the call, which is the trade this whole block is built on.
+
+The cost is that every call site resolves the config first. A resolved tolerances
+object, passed once into an operation, would carry all four together and would also give
+the provenance record the values actually in force rather than whatever the file holds
+when it is read back.
 
 ## Block B — Seeing the result cheaply
 
