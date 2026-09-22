@@ -30,6 +30,7 @@
 - ✅ **PW17** **a paid asset is deleted by the service seventy-two hours after it is made** — A bought artefact lands on disk, is hashed and recorded, and only then ledgered, so nothing ever claims an asset the service has since deleted (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW18** **every fetch needs a human decision, so work stops between approvals** — A ceiling set once is spent against without asking, refused when it would be passed, and what each call really cost is the balance either side of it (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW19** **an unknown field is dropped in silence, so a payload that validates proves nothing** — The service's shape is probed for free, kept as a file, and payloads are refused locally, so a typo is a refusal rather than a field dropped in silence (design recorded in `docs/specs/fetching.md`).
+- ✅ **PW20** **a fetched mesh arrives at an arbitrary orientation, scale and origin** — A fetched mesh is oriented, scaled and stood on its origin on arrival, against the drawing that asked for it, and the correction is kept as one matrix (design recorded in `docs/specs/fetching.md`).
 
 ## Block E — One world with the engine
 

@@ -121,6 +121,24 @@ CODES: dict[str, Code] = {
         "the message",
         doors=("read the job's log", "read the traceback in detail"),
     ),
+    # -- mesh: building or transforming geometry ------------------------------
+    "mesh.too-few-vertices": Code(
+        means="there are not enough vertices to determine a frame",
+        when="a normalisation of an empty or nearly empty mesh",
+        doors=("check that the file imported",),
+    ),
+    "mesh.degenerate": Code(
+        means="the mesh is flat or collinear, so its own axes say nothing about which "
+        "way it faces",
+        when="a normalisation of a plane, a line, or a mesh with no height",
+        doors=("orient it against a reference drawing", "state the rotation"),
+    ),
+    "mesh.ambiguous-forward": Code(
+        means="every orientation matches the reference equally well",
+        when="a symmetric mesh, or a reference that does not distinguish its front; "
+        "guessing which way is forward is a judgement this does not make",
+        doors=("give a reference that shows the front", "state the rotation"),
+    ),
     # -- post: what an operation asserts about its own output ---------------
     "post.unknown-output": Code(
         means="nothing is asserted about that kind of output",

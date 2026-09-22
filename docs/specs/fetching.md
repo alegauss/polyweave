@@ -99,6 +99,41 @@ rather than an afternoon.
 The balance is read either side of the run and the difference recorded in the schema, which
 is the only proof that the probing really was free.
 
+## A mesh is put in the project's frame on arrival
+
+A generated mesh faces wherever the service left it, at whatever scale, with its origin
+wherever the generator happened to put it. Cottony's hammer came back standing upright
+where the drawing leans it, and the fix was two angles found by re-rendering until it
+looked right — a parameter search spent on something that is not a judgement at all.
+
+Orientation, scale and origin are **mechanical**. The **principal axes** of the vertex
+cloud give a candidate frame, the **bounding box** gives the scale, and the **base of the
+silhouette** gives the origin, which is §6's own convention: a prop whose origin is its
+middle is a prop that floats.
+
+What the axes cannot settle is which of them is up and which way is forward. A frame from
+the axes alone is determined only up to **twenty-four signed permutations**, and that last
+step is settled against the reference drawing — each candidate's front outline against the
+drawing's, by intersection over union, the same measure a shape check is held to.
+
+**The outline is rasterised rather than rendered.** Deciding which of twenty-four ways
+round a mesh goes is not worth twenty-four pictures, and the outline is arithmetic: project
+the vertices along §6's azimuth zero, splat each face over a coarse grid at a fixed
+low-discrepancy set of barycentric samples, and close the result. Fixed rather than random,
+because an orientation that turns on a seed is not an answer. Both the candidate and the
+drawing are fitted to their own bounding box, so what is compared is proportion and outline
+and never how either one was framed.
+
+**Where every orientation scores the same, that is reported and not guessed**
+(`mesh.ambiguous-forward`). A symmetric mesh, or a drawing that does not distinguish its
+front, leaves the question open, and answering it is the judgement this does not make. The
+same holds for a mesh too flat or too sparse to have axes at all.
+
+The transform is applied **once, on ingest**, and recorded as one 4×4, so the stored mesh
+sits in the project's convention and nothing downstream carries a correction angle.
+Anything that genuinely is a judgement — a deliberate lean, a pose — stays a parameter, but
+it now starts from a known frame rather than an arbitrary one.
+
 ## Still to come in this block
 
 The service client itself, and the lock that stops two sessions spending at once.

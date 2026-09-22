@@ -100,17 +100,17 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW20",
-    block: "D",
-    symptom: "a fetched mesh arrives at an arbitrary orientation, scale and origin",
-    why: "The service returned a hammer standing upright where the drawing leans it, and the correction was two angles found by re-rendering until it looked right.",
-    deps: [],
-  },
-  {
     id: "PW21",
     block: "D",
     symptom: "a reference photograph brings whatever stood behind the subject back as geometry",
     why: "A picture of a plush toy returned the logo the toy was sitting on, fused into the mesh, and no camera move takes it back out again.",
+    deps: [],
+  },
+  {
+    id: "PW46",
+    block: "D",
+    symptom: "a normalised mesh sits beside the paid one with nothing recording what it derives from",
+    why: "Ingest writes a second file and returns the transform to its caller, so the mesh the project loads is one `verify` reads as an artefact nothing recorded.",
     deps: [],
   },
   {
