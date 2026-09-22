@@ -26,7 +26,7 @@ export interface GeneratedNonGoal {
 
 export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 6 },
-  { block: "B", title: "Seeing the result cheaply", open: 3 },
+  { block: "B", title: "Seeing the result cheaply", open: 2 },
   { block: "C", title: "The asset compiler", open: 4 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 6 },
   { block: "E", title: "One world with the engine", open: 4 },
@@ -76,13 +76,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "A",
     symptom: "a render that is black to any observer passes the check for a blank render, on one bit of edge noise",
     why: "The assertion asks whether every visible pixel is exactly one colour, and an unlit Cycles render came back with two: black, and 1/255 at the antialiased edge.",
-    deps: [],
-  },
-  {
-    id: "PW10",
-    block: "B",
-    symptom: "an asset is judged alone and then lands beside five siblings it does not match",
-    why: "A prop that reads correctly on its own can be the one thing on a sheet with no shadow and no specular window, which no solo render shows.",
     deps: [],
   },
   {

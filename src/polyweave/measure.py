@@ -55,14 +55,13 @@ COMPUTES: dict[str, Any] = {}
 #: Measures the vocabulary declares and no line has built yet, each naming the line that
 #: will. Refusing by name beats returning an answer that is quietly missing a field.
 PENDING = {
-    "region_colour": "PW10 judges an asset beside its siblings",
-    "delta_e": "PW10 judges an asset beside its siblings",
-    "silhouette_iou": "PW10 compares a render against a reference",
-    "silhouette_centroid_offset": "PW10 compares a render against a reference",
-    "silhouette_bbox_delta": "PW10 compares a render against a reference",
+    "region_colour": "PW12 builds the predicates an acceptance spec is made of",
+    "delta_e": "PW12 builds the predicates an acceptance spec is made of",
+    "silhouette_iou": "PW12 builds the predicates an acceptance spec is made of",
+    "silhouette_centroid_offset": "PW12 builds the predicates it compares against",
+    "silhouette_bbox_delta": "PW12 builds the predicates it compares against",
     "distance": "PW11 compares two renders with a tolerance",
     "changed_fraction": "PW11 compares two renders with a tolerance",
-    "luma_bands": "PW10 measures what survives at display size",
 }
 
 #: The set a render answers with unless a caller names others, per `measurements.md`.
@@ -170,6 +169,45 @@ def _hue_spread(image: Image, mask: np.ndarray, **_: Any) -> float:
     return round(float(1.0 - min(1.0, np.hypot(x, y))), 6)
 
 
+@_computes("luma_bands")
+def _luma_bands(
+    image: Image, mask: np.ndarray, *, display: Any = None, **_: Any
+) -> int:
+    """How many distinct luminance levels survive at the size it will be drawn.
+
+    Some detail exists in the file and is gone on the screen: Cottony's fluff read at
+    1.2 and vanished at 1.0, at a third of the sprite's authored size. Downscaling first
+    is the only way to ask that honestly, so the display size is an argument and not a
+    default — a count taken at the authored size answers a question nobody asked.
+    """
+    if display is None:
+        raise PolyweaveError(
+            "spec.measure-needs",
+            "luma_bands is a count at a display size, and none was given",
+            "pass display=<px>, the size the asset is actually drawn at",
+        )
+    box = (
+        (int(display), int(display))
+        if isinstance(display, int | float)
+        else (
+            int(display[0]),
+            int(display[1]),
+        )
+    )
+    from PIL import Image as PILImage
+
+    shown = np.where(mask[:, :, None], image.rgba, 0).astype(np.uint8)
+    small = np.asarray(
+        PILImage.fromarray(shown, "RGBA").resize(box, PILImage.LANCZOS), dtype=np.uint8
+    )
+    lit = small[:, :, 3] > 0
+    if not lit.any():
+        return 0
+    linear = srgb_to_linear(small[lit][:, :3].astype(np.float64) / 255.0)
+    luma = linear @ np.array([0.2126, 0.7152, 0.0722])
+    return int(np.unique(np.round(luma * 255).astype(np.uint8)).size)
+
+
 def statistics(values: np.ndarray) -> dict[str, float]:
     """The five a distribution is reported as, per `measurements.md`."""
     p1, p50, p99 = np.percentile(values, [1, 50, 99])
@@ -254,11 +292,13 @@ def measure(
     region: Any = None,
     alpha_floor: float = 0.0,
     rung: str | None = None,
+    **params: Any,
 ) -> list[dict]:
     """Every measure asked for, each with the region and rung it was taken at.
 
     The rung is reported and never inferred, so a verdict taken on a sphere is never
-    mistaken for one taken on the final mesh.
+    mistaken for one taken on the final mesh. `params` carries what one measure needs
+    and the others do not — `display` for `luma_bands`, a count at a stated size.
     """
     image = subject if isinstance(subject, Image) else load(subject)
     where = default_region(image) if region is None else region
@@ -275,12 +315,12 @@ def measure(
     for name in measures:
         base = _resolve(name)
         if base in DISTRIBUTIONS:
-            values = DISTRIBUTIONS[base](image, mask, alpha_floor=alpha_floor)
+            values = DISTRIBUTIONS[base](image, mask, alpha_floor=alpha_floor, **params)
             for suffix, value in statistics(values).items():
                 if name == base or name.endswith(suffix):
                     out.append(_taken(base + suffix, where, rung, value))
         else:
-            value = SCALARS[base](image, mask, alpha_floor=alpha_floor)
+            value = SCALARS[base](image, mask, alpha_floor=alpha_floor, **params)
             out.append(_taken(name, where, rung, value))
     return out
 

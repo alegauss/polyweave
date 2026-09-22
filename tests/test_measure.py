@@ -143,7 +143,7 @@ def test_a_declared_measure_nothing_computes_yet_says_which_line_builds_it(tmp_p
     with pytest.raises(PolyweaveError) as caught:
         measure.measure(png(tmp_path), ["delta_e"])
     assert caught.value.code == "spec.unmeasured"
-    assert "PW10" in caught.value.remedy
+    assert "PW12" in caught.value.remedy
 
 
 def test_a_statistic_resolves_to_its_measure(tmp_path):

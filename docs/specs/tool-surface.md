@@ -81,8 +81,8 @@ does, because a render of nothing is nothing anybody asked for.
 ```
 
 - `code` is a stable kebab-case string, namespaced by area (`render.`, `mesh.`, `fetch.`,
-  `post.`, `config.`, `job.`, `geom.`, `spec.`, `op.`). It is part of the contract and does
-  not change once published.
+  `post.`, `config.`, `job.`, `geom.`, `spec.`, `op.`, `prov.`, `compose.`). It is part of
+  the contract and does not change once published.
 - `remedy` is the call that closes it with arguments filled in wherever they are derivable.
   Where the choice is a judgement the tool cannot make, it names both doors and what
   separates them. Where only a person can supply the content, it says so and marks the blank.

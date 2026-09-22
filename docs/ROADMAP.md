@@ -11,7 +11,6 @@
 
 ## Block B — Seeing the result cheaply
 
-- 📋 **PW10** (deps: —) **an asset is judged alone and then lands beside five siblings it does not match** — A prop that reads correctly on its own can be the one thing on a sheet with no shadow and no specular window, which no solo render shows. → §PW10
 - 📋 **PW11** (deps: —) **a bake is not byte-reproducible, so a file diff cannot say whether anything changed** — Two runs of one unchanged scene differed in 29,696 pixels and none by more than 1/255, so equality is the wrong question and a tolerance is the right one. → §PW11
 - 📋 **PW43** (deps: —) **a colour measured off a render is not the colour that was authored, and nothing says so** — An emission that should land on sRGB 128 came back at 161, and at 172 after asking for the standard view transform, because this Blender ships without the colour configuration. → §PW43
 

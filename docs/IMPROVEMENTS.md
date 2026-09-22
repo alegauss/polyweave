@@ -142,21 +142,6 @@ is one stray edge pixel is empty for every purpose and passes.
 
 ## Block B — Seeing the result cheaply
 
-### §PW10 Judged in the place it will be seen
-
-An asset that reads correctly on its own can be the one wrong thing in the frame it
-lands in. Cottony's first modelled prop looked right in isolation and then sat on a
-sheet beside five drawn siblings that each had a soft specular window and a shadow
-beneath them; it had a pin-point highlight and floated. Nothing in a solo render shows
-that. So a judgement needs its context: the asset composited into the screen or the
-sheet it will appear on, at the size it will actually be drawn, beside whatever it will
-be drawn beside, with the comparison run against that composite rather than against the
-asset's own file. Two forms are worth building. A contact sheet, which places the new
-asset among its siblings so that the odd one out is visible at a glance. And an in-place
-composite, which puts it into a real capture of the screen it belongs to. Both are
-cheap, both catch a class of error that no metric on a lone render can reach, and
-neither exists today in any form.
-
 ### §PW11 Change is perceptual, not byte-wise
 
 Two runs of one unchanged path-traced scene differ. Cottony measured 29,696 differing

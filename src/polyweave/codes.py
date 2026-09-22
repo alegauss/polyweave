@@ -36,6 +36,7 @@ AREAS: dict[str, str] = {
     "spec": "an acceptance spec and its vocabulary",
     "op": "an operation's own arguments, against what it declared",
     "prov": "the record written beside an artefact, and the cache key it defines",
+    "compose": "putting an asset where it will actually be seen",
 }
 
 CODES: dict[str, Code] = {
@@ -382,6 +383,22 @@ CODES: dict[str, Code] = {
         when="a misspelled Principled BSDF socket, refused rather than dropped",
         doors=("name a socket the shader declares",),
     ),
+    # -- compose: an asset where it will be seen ------------------------------
+    "compose.no-tiles": Code(
+        means="a contact sheet was asked for with nothing to put on it",
+        when="an empty list of assets",
+        doors=("pass the asset and the siblings it is seen beside",),
+    ),
+    "compose.unknown-anchor": Code(
+        means="the anchor named is not one an asset can be placed by",
+        when="a placement asking for something other than footprint or centre",
+        doors=("anchor on the footprint, or on the centre",),
+    ),
+    "compose.outside": Code(
+        means="the asset lands entirely outside the capture it was placed into",
+        when="a position in the coordinates of a different capture, or of the asset",
+        doors=("place it within the capture's own pixels",),
+    ),
     # -- prov: what produced an artefact -------------------------------------
     "prov.unknown-kind": Code(
         means="the record names a kind of artefact that is not one of the four",
@@ -432,6 +449,12 @@ CODES: dict[str, Code] = {
         when="a rectangle outside the image, a mask of another size, or a word that is "
         "neither frame nor subject",
         doors=("give frame, subject, a rectangle, or a mask the same size",),
+    ),
+    "spec.measure-needs": Code(
+        means="the measure needs an argument the call did not give",
+        when="luma_bands without the display size it counts at; a default would answer "
+        "a question nobody asked",
+        doors=("pass the argument the measure names",),
     ),
     "spec.empty-region": Code(
         means="the region a measurement was asked for holds no pixels",

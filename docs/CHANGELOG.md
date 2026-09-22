@@ -14,6 +14,7 @@
 - ✅ **PW7** **judging a material costs a two-minute render when the verdict needs three seconds** — A question is answered from the lowest rung that carries it, on one shared rig, and the answer names the rung it came from (design recorded in `docs/specs/rungs.md`).
 - ✅ **PW8** **a render is judged by opening the file it wrote, so every verdict costs a second call** — A render returns the picture and its measurements in one answer, each measurement naming the region and the rung it was taken at (design recorded in `docs/specs/measurements.md`).
 - ✅ **PW9** **a mean over an image agrees while the look is plainly wrong** — Saturation, luma and hue spread come back as distributions over the frame or the subject, so a picture that is wrong at the 99th percentile says so (design recorded in `docs/specs/measurements.md`).
+- ✅ **PW10** **an asset is judged alone and then lands beside five siblings it does not match** — An asset is composited onto a sheet with its siblings or into the screen it belongs to, and the measurement runs on that rather than the lone file (design recorded in `docs/specs/context.md`).
 
 ## Block C — The asset compiler
 

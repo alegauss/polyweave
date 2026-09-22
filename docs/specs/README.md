@@ -21,6 +21,7 @@ which is why §1 now names a heartbeat and a `sweep` that its first implementati
 | [project-config.md](project-config.md) | What a project declares, and how a value is resolved | PW5 |
 | [measurements.md](measurements.md) | The closed vocabulary a comparison may return | PW8–PW11 |
 | [rungs.md](rungs.md) | The preview ladder: what each rung is, and which question it carries | PW7, PW13–PW15 |
+| [context.md](context.md) | Judging an asset where it will be seen, and what survives at display size | PW10, PW15 |
 | [acceptance-spec.md](acceptance-spec.md) | What "correct" means, as a file a search can aim at | PW12, PW13, PW15 |
 | [geometry.md](geometry.md) | A shape as data rather than as a program | PW30–PW34 |
 | [provenance.md](provenance.md) | What is recorded beside an artefact, and the cache key | PW6, PW14, PW17 |
