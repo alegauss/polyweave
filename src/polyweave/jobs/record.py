@@ -11,16 +11,20 @@ that made it. Four files carry one job, and each has exactly one writer:
 The pid and the heartbeat are separate files rather than fields so that the creator and
 the worker never write the same file: a merge with two writers loses one of them, and
 the loss would be the pid a `cancel` needs.
+
+The atomic write and the retrying read live in `polyweave.files`, because the cache
+needs the same two and one home for them beats two copies.
 """
 
 from __future__ import annotations
 
 import json
-import os
 import secrets
 import time
 from datetime import UTC, datetime
 from pathlib import Path
+
+from ..files import read_text_retrying, write_atomic
 
 #: Bumped when the record's fields change meaning. A record from a future schema is
 #: refused rather than misread.
@@ -63,49 +67,6 @@ class JobPaths:
         if not self.jobs.is_dir():
             return []
         return sorted(p.stem for p in self.jobs.glob("j_*.json"))
-
-
-def write_atomic(path: Path, text: str, attempts: int = 10) -> None:
-    """Replace `path` in one step, so a concurrent reader sees one version or the other.
-
-    The temporary lands in the same directory because `os.replace` is only atomic within
-    a filesystem. The retry is Windows: a file another process has open cannot be
-    replaced there, and this store is read across processes by design — a worker
-    reporting a stage loses the race against a poll often enough to matter.
-    """
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_name(f"{path.name}.{os.getpid()}.{secrets.token_hex(3)}.tmp")
-    try:
-        tmp.write_text(text, encoding="utf-8")
-        for attempt in range(attempts):
-            try:
-                os.replace(tmp, path)
-                return
-            except PermissionError:
-                if attempt == attempts - 1:
-                    raise
-                time.sleep(0.01 * (attempt + 1))
-    except BaseException:
-        tmp.unlink(missing_ok=True)
-        raise
-
-
-def read_text_retrying(path: Path, attempts: int = 5) -> str | None:
-    """Read `path`, tolerating the moment another process is replacing it.
-
-    On Windows a reader that opens a file mid-replace gets a sharing violation rather
-    than either version, so a read that would otherwise be atomic needs a retry.
-    """
-    for attempt in range(attempts):
-        try:
-            return path.read_text(encoding="utf-8")
-        except FileNotFoundError:
-            return None
-        except PermissionError:
-            if attempt == attempts - 1:
-                raise
-            time.sleep(0.02 * (attempt + 1))
-    return None
 
 
 def write_record(path: Path, record: dict) -> None:

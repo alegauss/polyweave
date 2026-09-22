@@ -21,6 +21,7 @@
 
 - ✅ **PW12** **what counts as a correct render lives in somebody's head, so it is approved by opinion** — A file per asset states what makes a render of it correct, and every predicate returns a verdict and a margin a search can climb (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW13** **a rig number is found by rendering, looking, and changing it by hand, one sample at a time** — A rig number is found by searching the range the spec permits, on a stated budget of renders, reported against every predicate it was scored on (design recorded in `docs/specs/acceptance-spec.md`).
+- ✅ **PW14** **a search re-renders states it has already rendered** — An identical render is returned from the store instead of paid for again, keyed on everything that can change it, and a hit says it was one (design recorded in `docs/specs/provenance.md`).
 
 ## Block D — Fetching from a paid service without surprise
 

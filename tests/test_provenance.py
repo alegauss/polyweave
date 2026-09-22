@@ -208,6 +208,8 @@ def test_the_key_subset_is_exactly_what_the_spec_names(tmp_path):
         "engine_name",
         "engine_version",
         "engine_bindings",
+        "engine_view_transform",
+        "engine_display_device",
         "rung",
         "seed",
         "samples",

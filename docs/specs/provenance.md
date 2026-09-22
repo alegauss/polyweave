@@ -46,9 +46,14 @@ The key is a sha256 over a canonical form of a **defined subset** of the record.
 subset exactly is what makes returning a hit safe rather than merely likely to be right.
 
 **In the key:** `kind`, `producer.version`, `engine.name`, `engine.version`,
-`engine.bindings`, `rung`, `seed`, `samples`, every `inputs[].sha256` with its `role`, and
-every entry of `params`. For a geometry build, the declaration's own sha256 and the sha256 of
-any `custom` node's source file.
+`engine.bindings`, **`engine.view_transform` and `engine.display_device`**, `rung`, `seed`,
+`samples`, every `inputs[].sha256` with its `role`, and every entry of `params`. For a
+geometry build, the declaration's own sha256 and the sha256 of any `custom` node's source
+file.
+
+The colour pipeline is in the key because it changes what lands in the file: two
+installations that disagree about it must not share an entry, and §PW43 is what that costs
+when nobody notices.
 
 **Not in the key:** `produced_at`, `elapsed_s`, `artefact`, `measurements`, and every input's
 `path`. A file that moved is the same input; a file that changed is not.
@@ -91,8 +96,15 @@ loads, the mesh that was paid for — live in the project's own tree with their 
 beside them, and those **are** committed. A paid mesh and its record are one artefact and are
 committed together; §PW17 is thirty credits of evidence for that rule.
 
-Eviction is least-recently-used against `[cache] max_bytes`. A record whose artefact is
-missing is dropped rather than repaired.
+Eviction is least-recently-used against `[cache] max_bytes`, and use is marked on a hit
+rather than on a write, so a much-read entry outlives a much-written one. A record whose
+artefact is missing — or that no longer parses — is dropped rather than repaired: half an
+entry is a hit waiting to return a file that is not there.
+
+**The key is computed before the render**, from the engine, the rung, the seed, the samples,
+the input hashes and the parameters — none of which needs a scene. A lookup therefore costs
+a renderer reset rather than an import, a decimation and a path trace, which is the whole of
+what makes it cheaper than the work it replaces.
 
 ## Two behaviours, not just a format
 

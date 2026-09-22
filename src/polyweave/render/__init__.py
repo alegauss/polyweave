@@ -15,6 +15,7 @@ import time
 from pathlib import Path
 from typing import Annotated
 
+from .. import cache as store
 from .. import measure, post, provenance
 from ..config import load
 from ..describe import Param, operation
@@ -91,6 +92,34 @@ def plan(
     }
 
 
+def _from_cache(hit, out_path, where, chosen, started, inline: bool) -> dict:
+    """A hit, **reported as a hit**.
+
+    A caller timing a sweep needs to know what it actually measured; a cache that
+    silently answers in four milliseconds makes a benchmark meaningless.
+    """
+    store.take(hit, out_path)
+    record = hit["record"]
+    landed = {**record["artefact"], "path": provenance.relative(out_path, where)}
+    provenance.write({**record, "artefact": landed}, root=where)
+    answer = {
+        "artefact": provenance.relative(out_path, where),
+        "rung": record.get("rung", chosen["rung"]),
+        "why": chosen["why"],
+        "size": chosen["size"],
+        "samples": chosen["samples"],
+        "elapsed_s": round(time.monotonic() - started, 3),
+        "cached": True,
+        "asserted": {},
+        "measurements": [],
+        "cache_key": hit["key"],
+        "recorded": record.get("measurements", {}),
+    }
+    if inline:
+        answer["image"] = measure.inline_image(out_path)
+    return answer
+
+
 def _size_for(config, rung: str) -> int:
     if rung == "final":
         return int(config.get("render.final_size"))
@@ -128,6 +157,10 @@ def bake(
     ] = "",
     inline: Annotated[
         bool, Param("carry the picture back with the numbers, base64 encoded")
+    ] = True,
+    cached: Annotated[
+        bool,
+        Param("return an identical render already paid for rather than repeat it"),
     ] = True,
     azimuth: Annotated[
         float,
@@ -173,8 +206,55 @@ def bake(
     where = Path(root).resolve()
     out_path = where / out if not Path(out).is_absolute() else Path(out)
 
+    rig = Rig().with_(
+        azimuth=azimuth,
+        elevation=elevation,
+        margin=margin,
+        focal_mm=focal_mm,
+        key=key,
+        fill=fill,
+        rim=rim,
+        light_distance=light_distance,
+        ambient=ambient,
+        exposure=exposure,
+        transparent=transparent,
+    )
+    params = {**as_params(rig), **({"material": material} if material else {})}
+    if model:
+        mesh = Path(model) if Path(model).is_absolute() else where / model
+        if not mesh.is_file():
+            raise PolyweaveError(
+                "render.no-mesh",
+                f"there is no mesh at {mesh}",
+                "check the path, or build the mesh before rendering it",
+            )
+        sources = [provenance.source("mesh", mesh, root=where)]
+    else:
+        sources = []
+
     report.stage("building", note=f"{chosen['rung']}: {chosen['carries']}")
-    scene = blender.reset()
+    # The engine and the colour pipeline are fixed before anything is built, because the
+    # key depends on both and on nothing the scene holds — so a hit costs a reset rather
+    # than an import, a decimation and a path trace.
+    scene = blender.prepare(blender.reset())
+    signature = provenance.cache_key(
+        provenance.planned(
+            "render",
+            engine=blender.engine_record(scene),
+            inputs=sources,
+            params=params,
+            rung=chosen["rung"],
+            seed=chosen["seed"],
+            samples=chosen["samples"],
+        )
+    )
+    work = config.path("paths.work")
+    if cached:
+        hit = store.look(signature, work=work)
+        if hit is not None:
+            report.stage("rendering", progress=1.0, note="cached")
+            return _from_cache(hit, out_path, where, chosen, started, inline)
+
     if chosen["subject"] == "primitive":
         subject = blender.primitive("sphere")
     else:
@@ -189,20 +269,6 @@ def bake(
         )
         subject = blender.decimate(subject, chosen["decimate"])
     blender.apply_material(subject, material)
-
-    rig = Rig().with_(
-        azimuth=azimuth,
-        elevation=elevation,
-        margin=margin,
-        focal_mm=focal_mm,
-        key=key,
-        fill=fill,
-        rim=rim,
-        light_distance=light_distance,
-        ambient=ambient,
-        exposure=exposure,
-        transparent=transparent,
-    )
     blender.place(scene, rig, subject)
 
     report.stage(
@@ -240,8 +306,8 @@ def bake(
         "render",
         out_path,
         engine=blender.engine_record(scene),
-        inputs=[provenance.source("mesh", where / model, root=where)] if model else [],
-        params={**as_params(rig), **({"material": material} if material else {})},
+        inputs=sources,
+        params=params,
         measurements={**asserted, **measure.summarise(taken)},
         rung=chosen["rung"],
         seed=chosen["seed"],
@@ -250,6 +316,9 @@ def bake(
         root=where,
     )
     provenance.write(record, root=where)
+    if cached:
+        store.put(signature, out_path, record, work=work)
+        store.evict(work=work, max_bytes=int(config.get("cache.max_bytes")))
 
     answer = {
         "artefact": record["artefact"]["path"],
@@ -258,9 +327,10 @@ def bake(
         "size": chosen["size"],
         "samples": chosen["samples"],
         "elapsed_s": elapsed,
+        "cached": False,
         "asserted": asserted,
         "measurements": taken,
-        "cache_key": provenance.cache_key(record),
+        "cache_key": signature,
     }
     if inline:
         answer["image"] = measure.inline_image(out_path)

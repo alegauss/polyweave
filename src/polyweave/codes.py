@@ -429,6 +429,11 @@ CODES: dict[str, Code] = {
         when="a path recorded from an argument rather than from what was read",
         doors=("record the path the operation actually read",),
     ),
+    "prov.bad-key": Code(
+        means="the string is not a cache key",
+        when="a lookup by something other than a digest over a provenance record",
+        doors=("compute the key from the record",),
+    ),
     "prov.no-record": Code(
         means="the artefact has no record beside it",
         when="something produced it without one, which is how a paid mesh was lost",

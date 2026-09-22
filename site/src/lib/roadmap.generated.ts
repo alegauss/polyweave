@@ -27,7 +27,7 @@ export interface GeneratedNonGoal {
 export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 6 },
   { block: "B", title: "Seeing the result cheaply", open: 2 },
-  { block: "C", title: "The asset compiler", open: 3 },
+  { block: "C", title: "The asset compiler", open: 2 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 6 },
   { block: "E", title: "One world with the engine", open: 4 },
   { block: "F", title: "Motion", open: 4 },
@@ -90,13 +90,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "B",
     symptom: "one configured noise floor calls every preview-sized render a change, because the floor moves with the rung",
     why: "Two seeds of one scene measured 0.046 apart at four samples and 0.014 at sixty-four, against a configured default of 0.004 calibrated for a final render.",
-    deps: [],
-  },
-  {
-    id: "PW14",
-    block: "C",
-    symptom: "a search re-renders states it has already rendered",
-    why: "A parameter sweep revisits neighbourhoods, and without a cache keyed on the inputs the same picture is paid for as many times as the search returns to it.",
     deps: [],
   },
   {

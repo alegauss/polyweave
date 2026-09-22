@@ -150,6 +150,41 @@ def build(
     return record
 
 
+def planned(
+    kind: str,
+    *,
+    engine: dict | None = None,
+    inputs: Sequence[dict] = (),
+    params: dict | None = None,
+    rung: str | None = None,
+    seed: int | None = None,
+    samples: int | None = None,
+) -> dict:
+    """The record of work about to be done, for a key computed before it is paid for.
+
+    The key's subset excludes the artefact, so it can be known before the artefact
+    exists — which is the whole of what makes a cache lookup cheaper than a render.
+    `cache_key(planned(…))` equals `cache_key(build(…))` for the same work.
+    """
+    if kind not in KINDS:
+        raise PolyweaveError(
+            "prov.unknown-kind",
+            f"there is no record kind {kind!r}",
+            f"use one of {', '.join(KINDS)}",
+        )
+    return {
+        "artefact": None,
+        "kind": kind,
+        "producer": {"tool": "polyweave", "version": __version__},
+        "engine": dict(engine or {}),
+        "rung": rung,
+        "seed": seed,
+        "samples": samples,
+        "inputs": [dict(i) for i in inputs],
+        "params": dict(params or {}),
+    }
+
+
 def sidecar(artefact: str | Path, root: str | Path = ".") -> Path:
     """Where the record for `artefact` lives: beside it, named after it."""
     where = Path(root).resolve()
@@ -210,6 +245,11 @@ def key_subset(record: dict) -> dict:
         "engine_name": engine.get("name"),
         "engine_version": engine.get("version"),
         "engine_bindings": engine.get("bindings"),
+        # The colour pipeline changes what lands in the file, so two installations that
+        # disagree about it must not share a key. §PW43 is what that costs when it is
+        # not noticed.
+        "engine_view_transform": engine.get("view_transform"),
+        "engine_display_device": engine.get("display_device"),
         "rung": record.get("rung"),
         "seed": record.get("seed"),
         "samples": record.get("samples"),

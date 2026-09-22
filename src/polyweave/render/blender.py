@@ -225,6 +225,17 @@ def render_to(
     return out
 
 
+def prepare(scene: Any) -> Any:
+    """Fix the engine and the colour pipeline, before anything is built or looked up.
+
+    Separated from rendering because the cache key depends on both and on nothing the
+    scene holds, so it can be known before a single face is imported.
+    """
+    scene.render.engine = "CYCLES"
+    _standard_colour(scene)
+    return scene
+
+
 def engine_record(scene: Any) -> dict:
     """What produced the picture, for the record beside it.
 

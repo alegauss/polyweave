@@ -191,21 +191,6 @@ lands.
 
 ## Block C — The asset compiler
 
-### §PW14 Renders are content-addressed
-
-A search revisits neighbourhoods, and a caller re-runs the same render across sessions.
-Without a cache every one of those is paid again at the full price of a path trace. The
-key is the provenance record from Block A: the input mesh hash, the parameter values,
-the renderer version and the seed. Everything that can change the output is in the key
-and nothing that cannot is, which is precisely what makes a hit safe to return rather
-than merely likely to be right. The store lives under the project so it can be inspected
-and deleted by hand, with a size ceiling and least-recently-used eviction, and it is
-excluded from version control. Two refinements matter more than they look. A hit should
-be reported as a hit rather than passed off as a fresh render, because a caller timing a
-sweep needs to know what it actually measured. And the cache must key the preview rungs
-too, since those are the renders a search asks for thousands of times and the full ones
-are asked for once.
-
 ### §PW15 The search shows its work
 
 A search that returns only its winner is a search nobody can overrule. The failure it
