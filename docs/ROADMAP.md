@@ -2,7 +2,7 @@
 
 ## Block A — What a tool call costs the turn
 
-- 📋 **PW4** (deps: —) **a failure arrives as a stack trace, so the fix is guessed from the frame that raised it** — A traceback names where the code gave up and not what the caller should do instead, which is the one thing needed to retry without another round trip. → §PW4
+- 🛠 **PW4** (deps: —) **a failure arrives as a stack trace, so the fix is guessed from the frame that raised it** — A traceback names where the code gave up and not what the caller should do instead, which is the one thing needed to retry without another round trip. → §PW4
 - 📋 **PW5** (deps: —) **paths, palette and rig defaults are written into the tool, so a second project cannot run it** — Cottony's tools resolve their own repository root and import a palette module beside them, so nothing in them is reachable from a project that is not Cottony. → §PW5
 - 📋 **PW6** (deps: —) **the renderer's version is not recorded, so a render that moved cannot be told from a change** — A bake is not byte-reproducible, and without the library versions and the seed beside the output there is no way to attribute a difference to anything. → §PW6
 - 📋 **PW37** (deps: —) **a renderer outlives the worker that started it, and a sweep on Windows cannot find it to end it** — taskkill walks a tree from the living parent, so a worker that died takes its handle to its children with it, and the render goes on spending a core nobody is watching. → §PW37

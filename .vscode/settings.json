@@ -1,0 +1,3 @@
+{
+  "window.title": "Polyweave ${separator} ${dirty}${activeEditorShort} ${separator} ${appName}"
+}
