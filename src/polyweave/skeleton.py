@@ -29,6 +29,7 @@ quality costs nothing but the refit and keeps every clip that names the same joi
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -448,6 +449,190 @@ def shared(one: str, other: str) -> list[str]:
     here = {name for name, _, _ in plan(one)}
     there = {name for name, _, _ in plan(other)}
     return sorted(here & there)
+
+
+# -- writing it into the file the engine reads -----------------------------------------
+
+#: The shortest a bone may be before Blender drops it for having no length. A leaf joint
+#: and a root both need a tail beyond themselves, and two joints pulled onto one spot do
+#: too.
+STUB = 1e-3
+
+
+def _tail_for(head: np.ndarray, at: np.ndarray, up: float):
+    """Where a bone ends. Its own joint, unless that is where it started."""
+    if float(np.linalg.norm(at - head)) > STUB:
+        return at
+    return head + np.array([0.0, max(up, STUB), 0.0])
+
+
+def build(subject: Any, skeleton: dict, bound: dict, *, name: str = "rigged"):
+    """The mesh, an armature of the fitted joints, and the weights between them.
+
+    Built in Blender because glTF's skin is what an engine reads, and Blender is what
+    writes one. Everything decided here was decided already, in numpy; this is the
+    write.
+    """
+    from .render import blender
+
+    bpy = blender.require()
+    points, faces = as_mesh(subject)
+    joints = skeleton.get("joints", skeleton)
+    where = {joint["name"]: np.array(joint["at"], dtype=float) for joint in joints}
+    parents = {joint["name"]: joint["parent"] for joint in joints}
+    up = float(points[:, 1].max() - points[:, 1].min()) * 0.05
+
+    mesh = bpy.data.meshes.new(f"{name}-mesh")
+    mesh.from_pydata(
+        [blender.to_blender(p) for p in points], [], [list(face) for face in faces]
+    )
+    mesh.update()
+    obj = bpy.data.objects.new(name, mesh)
+    bpy.context.scene.collection.objects.link(obj)
+
+    rig = bpy.data.objects.new(
+        f"{name}-armature", bpy.data.armatures.new(f"{name}-armature")
+    )
+    bpy.context.scene.collection.objects.link(rig)
+    bpy.context.view_layer.objects.active = rig
+    bpy.ops.object.mode_set(mode="EDIT")
+    made = {}
+    for joint in joints:
+        this = joint["name"]
+        head = where[parents[this]] if parents[this] else where[this]
+        bone = rig.data.edit_bones.new(this)
+        bone.head = blender.to_blender(head)
+        bone.tail = blender.to_blender(_tail_for(head, where[this], up))
+        made[this] = bone
+    for joint in joints:
+        if joint["parent"]:
+            made[joint["name"]].parent = made[joint["parent"]]
+    bpy.ops.object.mode_set(mode="OBJECT")
+
+    _bind(obj, rig, bound)
+    return obj, rig
+
+
+def _bind(obj: Any, rig: Any, bound: dict) -> None:
+    """Weights onto vertex groups, and the modifier that makes them mean anything."""
+    weights = np.asarray(bound["weights"], dtype=float)
+    for index, name in enumerate(bound["names"]):
+        column = weights[:, index]
+        carried = np.flatnonzero(column > 0.0)
+        if not len(carried):
+            continue
+        group = obj.vertex_groups.new(name=name)
+        # Bucketed by value: one call per distinct weight rather than one per vertex,
+        # which on a fetched mesh is the difference between seconds and minutes.
+        rounded = np.round(column[carried], 5)
+        for value in np.unique(rounded):
+            group.add(
+                [int(v) for v in carried[rounded == value]], float(value), "REPLACE"
+            )
+    obj.parent = rig
+    obj.modifiers.new(name="Armature", type="ARMATURE").object = rig
+
+
+def write(subject: Any, skeleton: dict, bound: dict, out: str | Path) -> Path:
+    """Export the rigged mesh, so the engine has a skin to play a pose on."""
+    from .render import blender
+
+    bpy = blender.require()
+    blender.reset()
+    where = Path(out)
+    where.parent.mkdir(parents=True, exist_ok=True)
+    obj, rig = build(subject, skeleton, bound)
+    for other in bpy.context.scene.objects:
+        other.select_set(other in (obj, rig))
+    bpy.context.view_layer.objects.active = rig
+    bpy.ops.export_scene.gltf(
+        filepath=str(where),
+        use_selection=True,
+        export_format="GLB" if where.suffix.lower() == ".glb" else "GLTF_SEPARATE",
+        export_skins=True,
+    )
+    return where
+
+
+def joints_in(path: str | Path) -> list[str]:
+    """The bone names a written file carries, read back off the file itself."""
+    from .render import blender
+
+    bpy = blender.require()
+    blender.reset()
+    bpy.ops.import_scene.gltf(filepath=str(Path(path)))
+    return sorted(
+        bone.name
+        for obj in bpy.data.objects
+        if obj.type == "ARMATURE"
+        for bone in obj.data.bones
+    )
+
+
+def plays(path: str | Path, joint: str, turn: Any = (0.0, 0.0, 30.0)) -> dict:
+    """Import what was written, turn one joint by name, and see if the mesh moved.
+
+    The whole claim of this half: the joints and the weights exist as data and are
+    checked there, and what is unproven is that they survive the write into a file.
+    """
+    from mathutils import Euler
+
+    from .render import blender
+
+    bpy = blender.require()
+    blender.reset()
+    bpy.ops.import_scene.gltf(filepath=str(Path(path)))
+    rig = next((o for o in bpy.data.objects if o.type == "ARMATURE"), None)
+    # The mesh this armature drives, not the first mesh in the scene: an import brings
+    # back whatever the file holds, and only one of them is the one that was skinned.
+    mesh = next(
+        (
+            o
+            for o in bpy.data.objects
+            if o.type == "MESH"
+            and any(m.type == "ARMATURE" and m.object is rig for m in o.modifiers)
+        ),
+        None,
+    )
+    if rig is None or mesh is None:
+        raise PolyweaveError(
+            "rig.unbound-vertices",
+            f"{Path(path).name} came back with "
+            f"{'no armature' if rig is None else 'no mesh'} in it",
+            "export with skins, and with both the mesh and the armature selected",
+        )
+    if joint not in rig.pose.bones:
+        raise PolyweaveError(
+            "rig.unmatched-joints",
+            f"the written file has no joint called {joint!r}",
+            f"it carries {', '.join(sorted(b.name for b in rig.pose.bones))}",
+        )
+
+    before = _evaluated(bpy, mesh)
+    posed = rig.pose.bones[joint]
+    posed.rotation_mode = "XYZ"
+    posed.rotation_euler = Euler([np.radians(float(v)) for v in turn], "XYZ")
+    bpy.context.view_layer.update()
+    after = _evaluated(bpy, mesh)
+
+    moved = np.linalg.norm(after - before, axis=1)
+    return {
+        "joint": joint,
+        "moved": int((moved > 1e-5).sum()),
+        "vertices": int(len(moved)),
+        "furthest": round(float(moved.max()), 6),
+        "bones": sorted(bone.name for bone in rig.pose.bones),
+    }
+
+
+def _evaluated(bpy: Any, obj: Any) -> np.ndarray:
+    """Where the vertices actually are, with the armature modifier applied."""
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    evaluated = obj.evaluated_get(depsgraph)
+    mesh = evaluated.to_mesh()
+    points = np.array([tuple(v.co) for v in mesh.vertices], dtype=float)
+    evaluated.to_mesh_clear()
+    return points
 
 
 def as_record(skeleton: dict, bound: dict, checked: dict) -> dict:

@@ -66,6 +66,15 @@ def blob(width=0.6, height=1.0, depth=0.4, **how):
     return tube(width, height, depth, **how)
 
 
+def rigged(tmp_path, name="rigged.glb"):
+    """The figure, fitted and written, for the half that needs the file to exist."""
+    pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
+    mesh = figure()
+    rig = skeleton.fit(mesh, named="plush", root=tmp_path)
+    bound = skeleton.weights(mesh, rig, root=tmp_path)
+    return skeleton.write(mesh, rig, bound, tmp_path / name)
+
+
 # -- the body plans that recur ------------------------------------------------------
 
 
@@ -340,6 +349,34 @@ def test_the_weights_are_not_in_it(tmp_path):
         rig, bound, skeleton.check(mesh, rig, bound, root=tmp_path)
     )
     assert "weights" not in record
+
+
+def test_a_written_file_carries_every_joint_that_was_fitted(tmp_path):
+    written = rigged(tmp_path)
+    assert set(skeleton.joints_in(written)) == {
+        joint["name"] for joint in skeleton.fit(figure(), root=tmp_path)["joints"]
+    }
+
+
+def test_turning_a_joint_in_the_written_file_moves_the_mesh(tmp_path):
+    """The whole of this half: the weights exist as data, and they survive the write."""
+    found = skeleton.plays(rigged(tmp_path), "arm.L")
+    assert found["moved"] > 0, "vertices followed the bone"
+    assert found["furthest"] > 0.01
+
+
+def test_a_joint_that_moves_nothing_would_be_a_skin_that_did_not_survive(tmp_path):
+    """Each limb carries its own share, so no single bone moves the whole mesh."""
+    written = rigged(tmp_path)
+    found = skeleton.plays(written, "head")
+    assert 0 < found["moved"] < found["vertices"]
+
+
+def test_a_joint_the_file_does_not_have_is_named_rather_than_ignored(tmp_path):
+    with pytest.raises(PolyweaveError) as caught:
+        skeleton.plays(rigged(tmp_path), "tail")
+    assert caught.value.code == "rig.unmatched-joints"
+    assert "arm.L" in caught.value.remedy
 
 
 def test_the_record_says_what_the_guards_found(tmp_path):

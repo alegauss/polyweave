@@ -42,7 +42,7 @@
 
 ## Block F — Motion
 
-- ✅ **PW26 (skeleton, weights and retarget as data)** **a fetched mesh has no skeleton, so it cannot be posed at all** — A mesh is fitted with a skeleton from a small library of body plans, weighted from proximity, guarded by one test pose, and retargeted by joint name.
+- ✅ **PW26** **a fetched mesh has no skeleton, so it cannot be posed at all** — The fitted skeleton and its weights are written into the mesh file as a glTF skin, proved by turning a joint in the re-imported file and watching it follow (design recorded in `docs/specs/motion.md`).
 
 ## Block G — Geometry as a declaration
 

@@ -30,7 +30,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "C", title: "The asset compiler", open: 1 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 1 },
   { block: "E", title: "One world with the engine", open: 1 },
-  { block: "F", title: "Motion", open: 4 },
+  { block: "F", title: "Motion", open: 3 },
   { block: "G", title: "Geometry as a declaration", open: 5 },
   { block: "H", title: "Proof on a real game", open: 3 },
 ];
@@ -114,18 +114,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW26",
-    block: "F",
-    symptom: "a fetched mesh has no skeleton, so it cannot be posed at all",
-    why: "Nothing writes the armature into the mesh file, so the engine cannot play what was fitted.",
-    deps: [],
-  },
-  {
     id: "PW27",
     block: "F",
     symptom: "motion is expressed as a second static render, so nothing longer than two frames exists",
     why: "A settle is a squashed re-render of the same mesh, which is right for one beat and has no way to say what a walk or a reaction would be.",
-    deps: ["PW26"],
+    deps: [],
   },
   {
     id: "PW28",

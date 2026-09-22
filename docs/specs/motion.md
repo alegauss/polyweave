@@ -67,8 +67,30 @@ before anything is attempted.
 does not move and nobody knows why, so `rig.unmatched-joints` lists what the pose asked for
 and what the skeleton has.
 
+## Into the file the engine reads
+
+Everything above is decided in numpy, and none of it reaches an engine until it is a
+**glTF skin**. That last step is a write and nothing more: the joints become an armature,
+the weights become vertex groups, and an armature modifier ties the two together.
+
+Two details the write has to get right. A bone with no length is dropped by Blender, so a
+**root and a leaf both need a tail beyond themselves** — a joint whose bone would start and
+end in the same place gets a short stub up the height axis instead. And weights are
+assigned **bucketed by value**, one call per distinct weight rather than one per vertex,
+which on a fetched mesh is the difference between seconds and minutes.
+
+**What proves it is playing a pose on the file, not inspecting it.** `plays` imports what
+was written into a fresh scene, turns one joint by name, and reports how many vertices
+moved and how far. A file whose bones survived but whose weights did not comes back with
+every bone present and nothing moving, and that is a case only this check catches — so it
+picks the mesh the armature actually drives rather than the first mesh in the scene, since
+an import brings back whatever the file holds.
+
+An import also re-splits vertices per face corner, so the count coming back is larger than
+the count going in. That is glTF's own business and not a sign of anything; what is
+checked is that **some** vertices move and not **all** of them, because a limb that carries
+the whole mesh is not a limb.
+
 ## Still to come in this block
 
-The armature itself, written into the mesh file so the engine can play what was fitted —
-this ships the skeleton and the weights as data, and not yet as something a glTF carries.
-Then clips (PW27), curves as text (PW28), and one clip producing both outputs (PW29).
+Clips (PW27), curves as text (PW28), and one clip producing both outputs (PW29).

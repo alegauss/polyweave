@@ -268,21 +268,6 @@ wants the former, which may mean a rung of its own rather than a parameter.
 
 ## Block F — Motion
 
-### §PW26 Rig and retarget on ingest
-
-A generated mesh arrives as a static surface with no skeleton, so it cannot be posed at
-all, and rigging one by hand is the step that keeps character animation out of reach
-entirely. For the shapes this pipeline actually produces, which are stuffed toys, props
-and rounded characters rather than anatomically demanding figures, automatic rigging is
-tractable: a skeleton fitted to the mesh's own volume, weights solved from proximity,
-and a small library of skeletons for the body plans that recur. The retarget half
-matters as much as the rig: a clip authored against one skeleton should play on another,
-so motion is made once and reused across a cast. Two guards belong here. The rig must be
-inspectable, and a render of the mesh in a test pose is the cheapest possible check that
-the weights are not tearing it. And it must be re-runnable, because a mesh refetched at
-better quality should not cost its animation. Nothing else in this block is reachable
-while every mesh is a rigid surface.
-
 ### §PW27 Clips, not frame pairs
 
 Motion in Cottony is a second static render of the same mesh squashed to 93 per cent of
