@@ -20,35 +20,12 @@ from PIL import Image as PILImage
 from polyweave import engine, offscreen
 from polyweave.errors import PolyweaveError
 
-CAPTURE = """extends SceneTree
-
-var frames := 0
-var view: SubViewport
-
-func _initialize() -> void:
-\tfor arg in OS.get_cmdline_user_args():
-\t\tif arg == "offscreen":
-\t\t\tDisplayServer.window_set_position(Vector2i(-32000, -32000))
-\t\telif arg == "minimized":
-\t\t\tDisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_MINIMIZED)
-\tview = SubViewport.new()
-\tview.size = Vector2i(32, 32)
-\tview.render_target_update_mode = SubViewport.UPDATE_ALWAYS
-\tvar patch := ColorRect.new()
-\tpatch.color = Color(0.0, 0.0, 1.0)
-\tpatch.size = Vector2(32, 32)
-\tview.add_child(patch)
-\troot.add_child(view)
-
-func _process(_delta: float) -> bool:
-\tframes += 1
-\tif frames < 4:
-\t\treturn false
-\tvar image := view.get_texture().get_image()
-\timage.save_png("res://shot.png")
-\tprint("captured: res://shot.png %d x %d" % [image.get_width(), image.get_height()])
-\treturn true
-"""
+#: The scene script these run, as a file rather than a literal (§PW48): real code
+#: living in a Python string is code nothing highlights and nothing lints, and
+#: GDScript's own tabs were two characters each in it.
+CAPTURE = (Path(__file__).parent / "fixtures" / "gdscript" / "capture.gd").read_text(
+    encoding="utf-8"
+)
 
 
 def engine_here():

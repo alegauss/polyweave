@@ -118,6 +118,40 @@ The port itself. It edits a repository this one does not own, and **§PW35 requi
 recorded before anything moves** — a before side taken after the port is refused, and rightly.
 So the audit lands here and the adoption waits on a person starting the ledger.
 
+## Testing against artefacts somebody actually made
+
+Binds **PW48**. Every other input the suite has is built in code: a box of stated
+proportions, a photograph of a rectangle on a plain ground, a figure whose limbs are where
+the plan puts its bones. That is right for the arithmetic — a test states the numbers its
+assertion depends on, which a committed PNG never does — so the builders stay. What they
+never show is an artefact anybody made, and those are where every symptom in this backlog
+was measured.
+
+`tests/fixtures/cottony/` holds copies, not a path into another checkout, because a test
+needing a sibling repository on the same disk is one nobody else runs. **One per failure
+worth reproducing, not one per asset Cottony has**: the 30 MB mascot buys nothing the 8 MB
+hammer does not, and it is not there. A capture from a running game was considered and left
+out on the same rule — §PW25 is about the settings a picture was taken under and not about
+its pixels.
+
+**What a real artefact is for is the numbers a built one cannot give.** The hammer's mesh
+and the drawing it was made from agree at a silhouette IoU of **0.4343** across 24
+orientations. The synthetic tests clear 0.8 on a box against its own outline, so a threshold
+picked from those would have called this real, correct match a failure to orient. That is
+the whole argument for the fixtures in one number.
+
+**Size is what LFS answers.** `*.glb` is routed to it and `*.png` deliberately is not: Git
+keeps every version of a file whole, so an 8 MB mesh replaced three times is 24 MB in every
+clone from then on and the only fix afterwards rewrites history, while a drawing is 11 KB
+and reading one out of a pointer is a step nobody should have to take to run the tests. The
+hammer is 132 bytes in the repository and 8 MB on disk. A checkout where `git lfs install`
+has not been run **skips** rather than failing: a pointer file is a thing that happened to
+the checkout, not a thing that is wrong with the plugin.
+
+**The GDScript belongs in files either way.** The offscreen tests ran a scene script that
+lived as a Python string literal full of escaped tabs, where nothing highlighted it and
+nothing linted it. It is `tests/fixtures/gdscript/capture.gd` now, read by the test.
+
 ## Still to come in this block
 
-Testing against artefacts somebody actually made (PW48).
+Nothing, once the port PW36 is deferred on has somebody to record its baseline.

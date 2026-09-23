@@ -127,29 +127,3 @@ sake: each piece moves only once the plugin's version passes the same check the 
 one does, and the pieces that are better left alone stay where they are. What this line
 delivers is the adoption plus a written list of everything that had to be configured,
 which is the plugin's real interface, discovered rather than designed.
-
-### §PW48 Test against what Cottony actually has
-
-Every input the suite has is built in code: a box of stated proportions, a photograph of
-a rectangle on a plain ground, a figure whose limbs are where the plan puts its bones.
-That is right for the arithmetic — the test states the numbers its assertion depends on,
-which a committed PNG never does — so the builders stay.
-
-What it never sees is an artefact anybody made. No mesh from the service, no photograph
-of a real object on a real table, no capture from a running game — and those are where
-every symptom here was measured.
-
-Cottony has them. `booster_hammer.drawn.png` is the drawing the hammer leans in and
-`booster_hammer.glb` is what came back standing upright, which is the case PW20 was
-written about. Copies, not a path into another checkout: a test needing a sibling
-repository on the same disk is one nobody else runs.
-
-Size is what LFS answers. Drawings are 10–21 KB and stay plain blobs; meshes are 1.7–30
-MB and become pointers, by the reasoning Cottony's own `.gitattributes` gives: git keeps
-every version whole, and the only fix afterwards rewrites history.
-
-The GDScript in the engine tests belongs in files either way: real code living as Python
-string literals full of escaped tabs, where nothing highlights it and nothing lints it.
-
-Which assets earn a place is open. One per failure worth reproducing, not one per asset
-Cottony has: the 30 MB mascot buys nothing the 8 MB hammer does not.

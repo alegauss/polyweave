@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 1 },
-  { block: "H", title: "Proof on a real game", open: 1 },
+  { block: "H", title: "Proof on a real game", open: 0 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -62,13 +62,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "G",
     symptom: "a fuzzy surface cannot be declared at all, because shell texturing is a technique and no table holds one",
     why: "Cottony's plush look is eight constants found by eye, and a table of eight keys would be one project's look compiled in while helping nobody who wanted fur instead.",
-    deps: [],
-  },
-  {
-    id: "PW48",
-    block: "H",
-    symptom: "every test input is synthetic, so nothing is ever checked against an artefact somebody made",
-    why: "The suite has no real mesh, photograph or capture in it, and those are where every symptom in this backlog was measured in the first place.",
     deps: [],
   },
 ];
