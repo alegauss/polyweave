@@ -153,7 +153,8 @@ sentence is the bar, and stating it as something measurable is the work.
 
 The baseline is recorded: the re-bake is pixel-identical, and the specs are
 `docs/design/accept/star_*.accept.toml`. `tools/art/search_stars.py` fits the 96 px gold
-and exits 1 until the same rig passes the other three, which §PW84 is what stops.
+and exits 1 until one rig passes all three. The gold now holds at both sizes; the dim
+misses its facet ceiling at both.
 
 ### §PW77 A bar that was measured and then left in a comment
 
@@ -285,30 +286,6 @@ If a family turns out not to port — the friends and the mascot are the candida
 this is where that is recorded honestly: what still runs by hand, and why the rig shrank
 instead of disappearing. An outcome worth having, stated, beats the same outcome
 unstated.
-
-### §PW84 A light's power does not scale with what it lights
-
-Found porting the stars (§PW76). A rig searched on the 96 px gold star, key 1.875 W and
-ambient 5.5, passed its spec. Rendered unchanged at 192 px, the gold's median fell from
-0.391 to 0.356 and its facets flattened from 0.025 to 0.014. Both big stars failed, and
-the small dim one passed on everything but one bound.
-
-`blender.place` sizes and places each area light by the subject's radius and sets its
-energy to the stated watts, so twice the size gets a quarter of the light while the
-world does not fall off at all. Cottony's `_rig` sets `power * light * reach * reach`,
-which is why three numbers could light all four stars.
-
-The fix is the same product. A light's energy becomes the stated power times the
-subject's radius squared, so `key` means the watts a subject of unit radius gets, and
-the rig is invariant to scale. The unit in `rig.UNITS` changes to say so, since saying
-the unit where a value is accepted is what that table is for.
-
-It changes what every existing `key`, `fill` and `rim` renders, so the rule goes in the
-record's params, `lights = "per radius²"`, and no cache key from before can serve a
-picture after. The defaults stay; the test states the primitive's radius.
-
-Proof: one rig, one subject at two scales under a `covers` bake, with medians within
-render noise of each other.
 
 ### §PW85 A covers bake reports a size it did not draw
 

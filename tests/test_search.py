@@ -342,8 +342,8 @@ def test_every_axis_comes_back_with_what_it_is_measured_in():
         return {}
 
     found = turnable(draw, {"fill": {}, "key": {}, "ambient": {}})
-    assert "fill (W)" in found
-    assert "key (W)" in found
+    assert "fill (W at the sphere rung's size)" in found
+    assert "key (W at the sphere rung's size)" in found
     assert any(one.startswith("ambient (") and "multiplier" in one for one in found)
 
 
@@ -374,7 +374,7 @@ def test_the_three_cottony_collisions_each_read_as_a_different_thing():
     """Named together because it is the set that was measured, not one example."""
     from polyweave.render.rig import UNITS, described
 
-    assert UNITS["fill"] == "W", "Cottony's fill is a fraction of the frame"
-    assert UNITS["key"] == "W", "Cottony's key is a width, as a share of the reach"
+    assert UNITS["fill"].startswith("W "), "Cottony's fill is a fraction of the frame"
+    assert UNITS["key"].startswith("W "), "Cottony's key is a share of the reach"
     assert "multiplier" in UNITS["ambient"], "Cottony's ambient scales the rig's"
-    assert described("fill") == "fill (W)"
+    assert described("fill") == "fill (W at the sphere rung's size)"

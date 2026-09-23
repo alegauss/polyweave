@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 12 },
+  { block: "H", title: "Proof on a real game", open: 11 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -61,8 +61,8 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW76",
     block: "H",
     symptom: "Cottony's four progress stars are lit by three constants found by hand, and no search sees them",
-    why: "One rig holding on all four once lights scale with the subject, then the stars bake through it and a person judges the after side.",
-    deps: ["PW84"],
+    why: "One rig has to hold on all four, and the dim still misses its facet ceiling at both sizes, before the stars bake through it and a person judges them.",
+    deps: [],
   },
   {
     id: "PW77",
@@ -105,13 +105,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "nothing takes bake_model.py out once its assets have moved, so the rig outlives its own replacement",
     why: "Each family porting leaves the file smaller and still running, and two live paths to one sprite is the state this whole sequence exists to end.",
     deps: ["PW81"],
-  },
-  {
-    id: "PW84",
-    block: "H",
-    symptom: "a rig found on a 96 px star goes dark and flat on the same star at 192 px",
-    why: "Light power is stated in watts while the lights' size and distance scale with the subject, so a rig fitted at one size cannot hold at another.",
-    deps: [],
   },
   {
     id: "PW85",

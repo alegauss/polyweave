@@ -207,11 +207,37 @@ def test_the_rig_a_record_carries_is_every_number_that_moved_it():
         "key",
         "fill",
         "rim",
+        "lights",
         "light_distance",
         "ambient",
         "exposure",
         "transparent",
     }
+
+
+def test_the_sphere_rung_gets_exactly_the_watts_it_was_given():
+    """§PW84 chose its reference so nothing the sphere rung drew before moves.
+
+    The primitive is a sphere of radius one, and the rig reads a subject's size off its
+    box, whose half-diagonal is root three.
+    """
+    lights = rig.lights_for(rig.Rig(key=400.0), (-1, -1, -1), (1, 1, 1))
+    assert lights[0]["energy"] == pytest.approx(400.0)
+
+
+def test_a_subject_twice_the_size_gets_four_times_the_power():
+    """§PW84: the lights stand off by the radius and are sized by it, so the power
+    that lands per unit area on the subject only holds if the watts go with its square.
+    """
+    small = rig.lights_for(rig.Rig(), (-1, -1, -1), (1, 1, 1))
+    large = rig.lights_for(rig.Rig(), (-2, -2, -2), (2, 2, 2))
+    for one, other in zip(small, large, strict=True):
+        assert other["energy"] == pytest.approx(one["energy"] * 4.0)
+
+
+def test_how_the_power_is_read_is_in_the_record():
+    """So no cache key from before §PW84 can serve a picture drawn after it."""
+    assert rig.as_params(rig.Rig())["lights"] == "per radius²"
 
 
 # -- the surface describes itself ------------------------------------------------------

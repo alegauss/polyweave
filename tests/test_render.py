@@ -581,6 +581,42 @@ def test_a_render_is_judged_at_its_own_rungs_floor(tmp_path):
 # -- two materials on one object (§PW67) ----------------------------------------------
 
 
+def test_one_rig_lights_one_shape_the_same_at_every_size(project):
+    """§PW84: a rig fitted to the 96 px star went dark on the 192 px one.
+
+    The same cube at two sizes. The camera is framed off the subject's own radius, so
+    both fill the same picture and the only thing that differs is how big the subject is
+    in the world the lights stand in.
+    """
+    from polyweave import measure
+    from polyweave.geometry import build as B
+
+    stated = {
+        "name": "cube",
+        "version": 1,
+        "output": "cube",
+        "params": {"size": 1.0},
+        "materials": {},
+        "nodes": [{"id": "cube", "op": "primitive", "kind": "cube", "size": "size"}],
+    }
+    tones = []
+    for size in (1.0, 4.0):
+        B.write(stated, project / f"cube-{size:g}.glb", root=project, size=size)
+        render.bake(
+            Reported(),
+            out=f"cube-{size:g}.png",
+            model=f"cube-{size:g}.glb",
+            rung="final",
+            inline=False,
+            root=project,
+        )
+        taken = measure.measure(
+            project / f"cube-{size:g}.png", ["luma_p50"], region="subject"
+        )
+        tones.append(taken[0]["value"])
+    assert tones[1] == pytest.approx(tones[0], abs=0.02)
+
+
 def _two_cubes(project):
     """One mesh of twelve faces: the first six wear one material, the rest another."""
     from polyweave.geometry import build as B

@@ -34,14 +34,17 @@ SENSOR_MM = 36.0
 #: lights are what light the subject — so no bound separates 0.92 W from a wattage
 #: somebody meant. What is left is to say the unit wherever a value is accepted, so the
 #: mistake is visible where it is made rather than in the render it produces.
+#: A light's unit (§PW84): watts as a subject the sphere rung's size gets them.
+WATTS = "W at the sphere rung's size"
+
 UNITS: dict[str, str] = {
     "azimuth": "degrees",
     "elevation": "degrees",
     "margin": "× the distance that exactly fits the subject",
     "focal_mm": "mm",
-    "key": "W",
-    "fill": "W",
-    "rim": "W",
+    "key": WATTS,
+    "fill": WATTS,
+    "rim": WATTS,
     "light_distance": "× the subject's radius",
     "ambient": "the world's own value, not a multiplier",
     "exposure": "stops",
@@ -71,7 +74,8 @@ class Rig:
     margin: float = 1.15
     focal_mm: float = 50.0
 
-    #: The three lights, in watts. A key at the front, a fill opposite it, a rim behind.
+    #: The three lights, in watts for a subject the sphere rung's size and scaled by the
+    #: square of the subject's own (§PW84). Key in front, fill opposite, rim behind.
     key: float = 400.0
     fill: float = 120.0
     rim: float = 200.0
@@ -125,28 +129,48 @@ def camera_for(rig: Rig, lo, hi) -> dict:
     }
 
 
+#: The bounding radius the stated watts are for: the sphere rung's primitive, radius
+#: one, whose box has a half-diagonal of root three. Chosen so every picture the sphere
+#: rung drew before §PW84 is the picture it draws after.
+REFERENCE_RADIUS = math.sqrt(3.0)
+
+#: How the lights' power is read, in the record, so no cache key taken before §PW84 can
+#: serve a picture after it.
+LIGHTS = "per radius²"
+
+
 def lights_for(rig: Rig, lo, hi) -> list[dict]:
-    """The three lights, placed relative to the camera so the ladder shares them."""
+    """The three lights, placed relative to the camera so the ladder shares them.
+
+    **The power scales with the subject** (§PW84). Each light is placed at, and sized
+    by, the subject's radius, so a stated wattage on a subject twice the size spreads
+    over four times the area: a rig fitted to a 96 px star lit the 192 px one at a
+    quarter of the strength, while the world, which does not fall off, stayed where it
+    was. The power is therefore the stated watts times the square of the subject's size
+    against the sphere rung's, which is the product Cottony's own rig always used, and
+    one rig lights one shape the same at every size.
+    """
     centre, radius = centre_and_radius(lo, hi)
     if radius <= 0.0:
         radius = 1e-6
     reach = radius * rig.light_distance
+    scale = (radius / REFERENCE_RADIUS) ** 2
     return [
         {
             "role": "key",
-            "energy": rig.key,
+            "energy": rig.key * scale,
             "location": _on_sphere(
                 centre, reach, rig.azimuth - 35.0, rig.elevation + 25.0
             ),
         },
         {
             "role": "fill",
-            "energy": rig.fill,
+            "energy": rig.fill * scale,
             "location": _on_sphere(centre, reach, rig.azimuth + 75.0, rig.elevation),
         },
         {
             "role": "rim",
-            "energy": rig.rim,
+            "energy": rig.rim * scale,
             "location": _on_sphere(
                 centre, reach, rig.azimuth + 180.0, rig.elevation + 35.0
             ),
@@ -181,6 +205,7 @@ def as_params(rig: Rig) -> dict:
         "key": rig.key,
         "fill": rig.fill,
         "rim": rig.rim,
+        "lights": LIGHTS,
         "light_distance": rig.light_distance,
         "ambient": rig.ambient,
         "exposure": rig.exposure,

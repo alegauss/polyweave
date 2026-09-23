@@ -118,7 +118,8 @@ A declared **range** was the obvious answer and does not work. The rig is legiti
 driven with every light at zero — that is how a test proves the lights are what light the
 subject — so no bound separates 0.92 W from a wattage somebody meant. What is left is to
 say the unit: `rig.UNITS` holds it as data rather than as a comment, and every axis a
-search accepts comes back as `fill (W)` rather than `fill`. That does not refuse the
+search accepts comes back as `fill (W at the sphere rung's size)` rather than `fill`, the
+watts being scaled by the square of the subject's size since §PW84. That does not refuse the
 mistake; it puts it where the person making it is looking, which is the moment the axis is
 declared rather than the render it would have produced.
 

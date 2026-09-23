@@ -21,7 +21,7 @@ from ..config import load
 from ..describe import Param, operation
 from ..errors import PolyweaveError
 from .ladder import CARRIES, RUNGS, check_rung, enabled, lowest_rung, rung_for
-from .rig import Rig, as_params
+from .rig import WATTS, Rig, as_params
 
 #: How much of the real mesh a preview keeps. Enough face count for a silhouette, far
 #: less than a final render pays for.
@@ -187,13 +187,13 @@ def bake(
         float, Param("camera focal length", lo=8.0, hi=400.0, unit="mm")
     ] = 50.0,
     key: Annotated[
-        float, Param("key light power", lo=0.0, hi=10000.0, unit="W")
+        float, Param("key light power", lo=0.0, hi=10000.0, unit=WATTS)
     ] = 400.0,
     fill: Annotated[
-        float, Param("fill light power", lo=0.0, hi=10000.0, unit="W")
+        float, Param("fill light power", lo=0.0, hi=10000.0, unit=WATTS)
     ] = 120.0,
     rim: Annotated[
-        float, Param("rim light power", lo=0.0, hi=10000.0, unit="W")
+        float, Param("rim light power", lo=0.0, hi=10000.0, unit=WATTS)
     ] = 200.0,
     light_distance: Annotated[
         float, Param("how far the lights sit, in subject radii", lo=1.0, hi=20.0)
