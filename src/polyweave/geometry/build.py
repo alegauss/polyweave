@@ -204,13 +204,53 @@ def build(
             made.append(_placed(node, instance, how(node, instance, built, here)))
         # A repeated node's id names the whole set, which is what makes the tray one
         # boolean rather than sixty-four.
-        built[one] = made[0] if len(made) == 1 else S.union(*made)
+        whole = made[0] if len(made) == 1 else S.union(*made)
+        worn = _worn(node, whole, built)
+        built[one] = {**whole, "groups": worn} if worn else whole
 
     return {
         "output": built[document["output"]],
         "built": built,
         "report": report(document, built, manifold=manifold, **given),
     }
+
+
+def _worn(node: dict, made: dict, built: dict) -> list[dict]:
+    """Which faces of this mesh wear which material (§PW67).
+
+    A material sits on a node and a document names one output, so a model in two
+    materials — Cottony's cream rope rim on its cushion face — could only be handed back
+    as a join, and the join kept one material or none. The colours were in the document,
+    survived `expand`, were read back by the review, and were gone from the mesh.
+
+    Faces, because that is the one thing a join really does know: `union` lays its
+    operands out in order, so where each one's faces landed is arithmetic. It is also
+    what a renderer wants, since a material slot is assigned per polygon.
+
+    **A boolean keeps what it cut into and nothing finer.** The cutter is gone from the
+    result and the solver does not preserve face correspondence, so a carve or a bevel
+    over one material is one group and over several is none. Claiming a range the solver
+    reordered would be worse than saying nothing.
+    """
+    if node.get("material"):
+        return [{"material": node["material"], "faces": [0, len(made["faces"])]}]
+    if node["op"] == "union":
+        groups, at = [], 0
+        for one in refers_to(node):
+            part = built[one]
+            for group in part.get("groups") or ():
+                start, stop = group["faces"]
+                groups.append(
+                    {"material": group["material"], "faces": [start + at, stop + at]}
+                )
+            at += len(part["faces"])
+        return groups
+    if node["op"] in ("carve", "bevel"):
+        source = node.get("into") or (refers_to(node) or [""])[0]
+        worn = {g["material"] for g in built.get(source, {}).get("groups") or ()}
+        if len(worn) == 1:
+            return [{"material": worn.pop(), "faces": [0, len(made["faces"])]}]
+    return []
 
 
 def _placed(node: dict, instance: dict, made: dict) -> dict:

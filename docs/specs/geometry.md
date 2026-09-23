@@ -340,6 +340,30 @@ document naming an op nothing builds is a **warning** from the structural read a
 refusal at the build, and the two cannot disagree. An op nobody declared is
 `geom.unknown-op`, whose remedy names the declared ops and the `custom` door.
 
+**A build says which faces wear which material** (§PW67). A material sits on a node and a
+document names one output, so a model in two materials — Cottony's cream rope rim on its
+cushion face — could only be handed back as a `union`, and the join kept one material or
+none. The output now carries `groups`, one `{ material, faces: [start, stop] }` per run of
+faces, absent where nothing was dressed:
+
+```json
+"groups": [
+  { "material": "cushion", "faces": [0, 38] },
+  { "material": "rope",    "faces": [38, 182] },
+  { "material": "cushion", "faces": [182, 2599] }
+]
+```
+
+Faces, because that is the one thing a join really knows: `union` lays its operands out in
+order, so where each one's faces landed is arithmetic. It is also the shape a renderer
+wants — a material slot is assigned per polygon, which Blender has always had — and
+`apply_material` takes a mapping of name to inputs beside the groups.
+
+**A boolean keeps what it cut into and nothing finer.** The cutter is gone from the result
+and the solver does not preserve face correspondence, so a carve or a bevel over one
+material is one group and over several is none. Claiming a range the solver reordered
+would be worse than saying nothing.
+
 **A repeated node's id names the whole set at build time too.** Sixty-four seats build as
 sixty-four meshes and are joined into the one mesh their id stands for, which is what lets
 `cutter = "seat"` be one boolean rather than sixty-four. **`at` places an instance and is

@@ -382,3 +382,76 @@ def test_the_boolean_left_the_face_one_solid():
     rows = {n["id"]: n for n in found["report"]["nodes"]}
     assert rows["tray"]["faces"] > rows["face"]["faces"], "the cut added the pockets"
     assert rows["tray"]["faces"] > 0, "and did not silently return nothing"
+
+
+# -- which faces wear which material (§PW67) -------------------------------------------
+
+
+def test_a_model_in_two_materials_carries_both_out_of_the_build():
+    """They were in the document, survived expand, and were gone from the mesh."""
+    solving()
+    found = B.build(G.read("tray.toml", root=COTTONY), root=COTTONY)
+    groups = found["output"]["groups"]
+    assert {one["material"] for one in groups} == {"cushion", "rope"}
+    # The ranges tile the whole mesh, in order, with nothing claimed twice.
+    at = 0
+    for one in groups:
+        assert one["faces"][0] == at
+        at = one["faces"][1]
+    assert at == len(found["output"]["faces"])
+
+
+def test_a_node_in_one_material_says_so_over_all_of_itself(tmp_path):
+    stated = one("primitive", kind="cube", size=2.0)
+    stated["nodes"][0]["material"] = "candy"
+    stated["materials"] = {"candy": {"colour": "#FFC43F"}}
+    found = B.build(stated, root=tmp_path)
+    assert found["output"]["groups"] == [{"material": "candy", "faces": [0, 6]}]
+
+
+def test_a_node_in_no_material_claims_none(tmp_path):
+    """Absent rather than empty: a mesh nobody dressed is not a mesh wearing nothing."""
+    found = B.build(one("primitive", kind="cube", size=2.0), root=tmp_path)
+    assert "groups" not in found["output"]
+
+
+def test_a_join_lays_its_operands_out_in_the_order_it_names_them(tmp_path):
+    stated = {
+        "name": "two",
+        "version": 1,
+        "params": {},
+        "materials": {"a": {}, "b": {}},
+        "nodes": [
+            {
+                "id": "one",
+                "op": "primitive",
+                "kind": "cube",
+                "size": 2.0,
+                "material": "a",
+            },
+            {
+                "id": "two",
+                "op": "primitive",
+                "kind": "cube",
+                "size": 2.0,
+                "material": "b",
+            },
+            {"id": "it", "op": "union", "inputs": ["one", "two"]},
+        ],
+        "output": "it",
+    }
+    found = B.build(stated, root=tmp_path)
+    assert found["output"]["groups"] == [
+        {"material": "a", "faces": [0, 6]},
+        {"material": "b", "faces": [6, 12]},
+    ]
+
+
+def test_a_boolean_keeps_what_it_cut_into_and_nothing_finer(tmp_path):
+    """The cutter is gone from the result, and the solver reorders what is left."""
+    solving()
+    found = B.build(G.read("tray.toml", root=COTTONY), root=COTTONY)
+    carved = found["built"]["tray"]["groups"]
+    assert carved == [
+        {"material": "cushion", "faces": [0, len(found["built"]["tray"]["faces"])]}
+    ]

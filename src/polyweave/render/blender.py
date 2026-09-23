@@ -134,12 +134,46 @@ def decimate(obj: Any, ratio: float) -> Any:
     return obj
 
 
-def apply_material(obj: Any, material: dict | None) -> Any:
-    """Put a surface on the subject, so a sphere and a mesh carry the same one."""
-    bpy = require()
+def apply_material(obj: Any, material: dict | None, *, groups: Any = None) -> Any:
+    """Put a surface on the subject, so a sphere and a mesh carry the same one.
+
+    With `groups`, several: `material` is then a mapping of name to that name's shader
+    inputs, and `groups` says which faces wear which, as a build returns them (§PW67).
+    Two materials on one object is the ordinary case for these assets — a piped cushion,
+    a sweet with a wrapper, a badge with a rim — and Blender has always had a slot per
+    polygon to hold it.
+    """
     if not material:
         return obj
-    made = bpy.data.materials.new("polyweave")
+    if groups is None:
+        obj.data.materials.clear()
+        obj.data.materials.append(_material(material, "polyweave"))
+        return obj
+
+    wanted = list(dict.fromkeys(one["material"] for one in groups))
+    missing = [name for name in wanted if name not in material]
+    if missing:
+        raise PolyweaveError(
+            "render.unknown-material-field",
+            f"the mesh wears {', '.join(missing)}, and no material was given for it",
+            f"give one per material the mesh names: {', '.join(wanted)}",
+        )
+    obj.data.materials.clear()
+    for name in wanted:
+        obj.data.materials.append(_material(material[name], name))
+
+    slot = {name: index for index, name in enumerate(wanted)}
+    for one in groups:
+        start, stop = one["faces"]
+        for polygon in obj.data.polygons[start:stop]:
+            polygon.material_index = slot[one["material"]]
+    return obj
+
+
+def _material(inputs: dict, named: str) -> Any:
+    """One Principled BSDF with those inputs on it, refusing a socket it has not got."""
+    bpy = require()
+    made = bpy.data.materials.new(named)
     made.use_nodes = True
     bsdf = made.node_tree.nodes.get("Principled BSDF")
     if bsdf is None:  # pragma: no cover - a Blender without the standard shader
@@ -148,19 +182,17 @@ def apply_material(obj: Any, material: dict | None) -> Any:
             "this Blender has no Principled BSDF to build a material on",
             "render with a Blender that ships the standard shader nodes",
         )
-    unknown = sorted(k for k in material if _socket(bsdf, k) is None)
+    unknown = sorted(k for k in inputs if _socket(bsdf, k) is None)
     if unknown:
         raise PolyweaveError(
             "render.unknown-material-field",
             f"a material has no {', '.join(unknown)}",
             f"use one of {', '.join(_socket_names(bsdf))}",
         )
-    for key, value in material.items():
+    for key, value in inputs.items():
         socket = _socket(bsdf, key)
         socket.default_value = _coerce(value, socket)
-    obj.data.materials.clear()
-    obj.data.materials.append(made)
-    return obj
+    return made
 
 
 def place(scene: Any, rig: Rig, subject: Any, *, covers: Any = None) -> dict:

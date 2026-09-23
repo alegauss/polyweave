@@ -14,11 +14,9 @@
 
 ## Block G — Geometry as a declaration
 
-- 📋 **PW67** (deps: —) **a model in two materials builds into one mesh that carries neither of them** — A material sits on a node and a document names one output, so joining the parts is the only way to hand one back and the join keeps one material or none. → §PW67
-
 ## Block H — Proof on a real game
 
-- ⏳ **PW54** (deps: PW50 ✅, PW60 ✅, PW67) **a Cottony shape is a bmesh program that exists only inside a bake, so nothing can read, diff or search it** — The drawn panels are cloth.cushion inflating a PNG rather than a primitive, and a join still loses the two materials §PW67 names. → §PW54
+- ⏳ **PW54** (deps: PW50 ✅, PW60 ✅, PW67 ✅) **a Cottony shape is a bmesh program that exists only inside a bake, so nothing can read, diff or search it** — The drawn panels are cloth.cushion inflating a PNG rather than a primitive, and a join still loses the two materials §PW67 names. → §PW54
 - 📋 **PW57** (deps: PW53 ⏸) **every Cottony look gate restates its own floor, so no asset has a bar a search can aim at** — Five check scripts measure after the render is spent, which is a verdict and never a target, and a threshold moved in one of them is invisible to the rest. → §PW57
 - 📋 **PW59** (deps: PW53 ⏸, PW54 ⏳, PW55 ✅, PW56 ⏸, PW57, PW58 ✅) **nothing says how much of Cottony still does its own version of what the plugin does** — Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion. → §PW59
 

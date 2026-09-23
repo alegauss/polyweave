@@ -14,30 +14,6 @@
 
 ## Block G — Geometry as a declaration
 
-### §PW67 Two materials on one object, which is the ordinary case
-
-A material sits on a node, and a document names one output. Cottony's tray is four parts
-in two materials: the rope rim is `#FFFAEE` and the wall and cushion face are `#F2E4D0`.
-Declared, it builds — `tests/fixtures/cottony/tray.toml` does — and the only way to hand
-back one mesh is a `union`, whose own node carries one material or none. The two colours
-survive `expand`, are read back by the review, and are gone from what the build returns.
-
-Nothing downstream recovers them. `render.bake` takes one `material` dict for the whole
-subject, so even a build that kept them has nowhere to put them.
-
-This is not the tray being unusual. A piped cushion, a sweet with a wrapper, a badge
-with a rim: two materials on one object is the ordinary case for the assets this exists
-for, and `[materials.<name>]` was put in the format because of it.
-
-Three shapes the answer could take, and they are different sizes of change. The build
-could return a mesh **per material** rather than one, which matches how a renderer wants
-them anyway and changes what a build returns. `union` could carry its operands'
-materials as face groups, which is the glTF shape and needs the mesh dict to grow a
-field. Or a declaration could name several outputs, which changes the document.
-
-Settle it against what the renderer can apply before the format moves: a face group
-nothing can put a second material on is a field describing an intention.
-
 ## Block H — Proof on a real game
 
 ### §PW36 Cottony adopts it without a fork

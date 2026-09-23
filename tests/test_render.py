@@ -545,3 +545,97 @@ def test_a_render_is_judged_at_its_own_rungs_floor(tmp_path):
     assert written["rung"] == "sphere"
     assert written["tolerances"]["render_noise"] == floors["sphere"]
     assert written["tolerances"]["render_noise"] != settings.tolerances().render_noise
+
+
+# -- two materials on one object (§PW67) ----------------------------------------------
+
+
+def _two_cubes(project):
+    """One mesh of twelve faces: the first six wear one material, the rest another."""
+    from polyweave.geometry import build as B
+
+    stated = {
+        "name": "pair",
+        "version": 1,
+        "params": {},
+        "materials": {},
+        "nodes": [
+            {
+                "id": "a",
+                "op": "primitive",
+                "kind": "cube",
+                "size": 2.0,
+                "material": "rope",
+            },
+            {
+                "id": "b",
+                "op": "primitive",
+                "kind": "cube",
+                "size": 2.0,
+                "at": [4, 0, 0],
+                "material": "cushion",
+            },
+            {"id": "it", "op": "union", "inputs": ["a", "b"]},
+        ],
+        "output": "it",
+    }
+    return B.build(stated, root=project)["output"]
+
+
+def _as_object(made):
+    """That mesh in an emptied scene, which is all these three need a renderer for."""
+    import bpy
+
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    mesh = bpy.data.meshes.new("pair")
+    mesh.from_pydata(
+        [tuple(v) for v in made["vertices"]], [], [tuple(f) for f in made["faces"]]
+    )
+    mesh.update()
+    obj = bpy.data.objects.new("pair", mesh)
+    bpy.context.collection.objects.link(obj)
+    return obj
+
+
+def test_a_mesh_in_two_materials_gets_a_slot_for_each(project):
+    """The renderer could always do this; nothing was handing it the groups."""
+    from polyweave.render import blender
+
+    made = _two_cubes(project)
+    obj = _as_object(made)
+    blender.apply_material(
+        obj,
+        {
+            "rope": {"base_color": [1, 1, 1, 1]},
+            "cushion": {"base_color": [1, 0.9, 0.8, 1]},
+        },
+        groups=made["groups"],
+    )
+    assert [m.name for m in obj.data.materials] == ["rope", "cushion"]
+    slots = {p.material_index for p in obj.data.polygons}
+    assert slots == {0, 1}, "both slots are actually used"
+    first = [p.material_index for p in obj.data.polygons][:6]
+    assert set(first) == {0}, "the first cube wears the first material"
+
+
+def test_a_material_the_mesh_names_and_nobody_gave_is_refused(project):
+    from polyweave.render import blender
+
+    made = _two_cubes(project)
+    obj = _as_object(made)
+    with pytest.raises(PolyweaveError) as caught:
+        blender.apply_material(obj, {"rope": {}}, groups=made["groups"])
+    assert caught.value.code == "render.unknown-material-field"
+    assert "cushion" in caught.value.message
+
+
+def test_one_material_and_no_groups_still_means_one_slot(project):
+    import bpy
+
+    from polyweave.render import blender
+
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    bpy.ops.mesh.primitive_cube_add()
+    obj = bpy.context.active_object
+    blender.apply_material(obj, {"base_color": [0.9, 0.2, 0.2, 1.0]})
+    assert len(obj.data.materials) == 1

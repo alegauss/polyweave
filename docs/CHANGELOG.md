@@ -76,6 +76,7 @@
 - ✅ **PW64** **an outline naming a shape cannot be given a points count, because points already names a list of them** — A shape is given the points count the document wrote, so Cottony's star builds from a declaration and the review and the build agree about it (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW65** **an annulus is a ring between two radii, so a rim that is not round cannot be declared at all** — An annulus takes two edges, so a rim that is not round is a ring rather than a boolean between two plates (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW66** **a crowned star reaches 82 units outside its own outline, and the op promises it will not** — A crowned dome keeps the silhouette it was given, concave or not, because a concave ring shrinks toward its centroid rather than along its miters (design recorded in `docs/specs/geometry.md`).
+- ✅ **PW67** **a model in two materials builds into one mesh that carries neither of them** — A build says which faces wear which material, and the renderer takes a slot per material, so a rope rim on a cushion face stays two colours (design recorded in `docs/specs/geometry.md`).
 
 ## Block H — Proof on a real game
 
