@@ -57,30 +57,6 @@ refusing a wand.
 
 ## Block D — Fetching from a paid service without surprise
 
-### §PW46 Record what a normalisation derived
-
-Normalising a fetched mesh writes a second file beside the paid one, and nothing records
-where it came from. The ledger holds the bytes that arrived and their digest, which
-stays true, but the file the rest of the project actually loads is the normalised one —
-and to `held()` and `verify` that is a file nothing recorded, the exact shape of the
-problem PW17 exists to prevent, arriving from the other direction.
-
-The normalisation already computes everything the record needs: the source path, the
-rotation, the scale, the offset and the correction as one 4x4. What is missing is the
-write. A derived artefact should carry a provenance record of its own, naming its parent
-by hash rather than by path, so the chain from the credits spent to the mesh in the
-scene is one a person can follow without guessing which file came first.
-
-That also settles what happens when one mesh is normalised twice against different
-drawings. Two records naming one parent is a fact; two files with no records is a
-question nobody can answer later.
-
-The open choice is whether the derived record has the same shape as a render's, or a
-smaller one carrying only a parent and a transform. The first keeps one vocabulary and
-one reader; the second does not pretend a normalisation has an engine, a seed or a
-sampler. Prefer the first with the irrelevant fields absent rather than empty, unless
-reading the two side by side says otherwise.
-
 ### §PW49 Painted shading is a shadow that cannot move, and removing it needs a measured threshold rather than a found one
 
 A generative service returns a mesh whose texture has shading painted into it — a dark

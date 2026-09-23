@@ -40,6 +40,23 @@ later. It is also what lets a regression be bisected: a render that got worse is
 against the record of the last one that was right, and the fields that differ are the suspect
 list.
 
+**A derived artefact carries its own record, naming its parent by hash.** Normalising a
+fetched mesh writes a second file beside the paid one, and the file the rest of the project
+loads is that second one — so without a record of its own it is an artefact nothing recorded,
+which is §PW17's problem arriving from the other direction (§PW46). The record names the
+parent by hash and by path, and the hash is what matters: a mesh that moved is the same
+parent and one that changed is not. It also settles the same mesh normalised twice against
+two drawings, which is two records naming one parent — a fact, where two files and no records
+is a question nobody can answer later. The transform is in `params`, so the chain from the
+credits spent to the mesh in the scene is one a person can follow without guessing which file
+came first.
+
+**One vocabulary, with what does not apply absent rather than empty.** A normalisation has no
+engine, no rung, no seed and no sampler, and a record carrying four nulls for them claims it
+has them and they are unknown — a different statement, and the wrong one. The key reads these
+fields with a default, so an absent field and a null one produce the same key and nothing is
+invalidated by the difference.
+
 ## The cache key
 
 The key is a sha256 over a canonical form of a **defined subset** of the record. Stating the

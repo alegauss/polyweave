@@ -138,14 +138,23 @@ def build(
         "produced_at": produced_at or _stamp(),
         "elapsed_s": elapsed_s,
         "producer": {"tool": "polyweave", "version": __version__},
-        "engine": dict(engine or {}),
-        "rung": rung,
-        "seed": seed,
-        "samples": samples,
         "inputs": [dict(i) for i in inputs],
         "params": dict(params or {}),
         "measurements": dict(measurements or {}),
     }
+    # One vocabulary for every kind, with what does not apply **absent rather than
+    # empty** (§PW46). A normalisation has no engine, no rung, no seed and no sampler,
+    # and a record carrying four nulls for them says it has them and they are unknown —
+    # which is a different claim, and the wrong one. The key reads these with `.get`,
+    # so an absent field and a null one key identically and nothing is invalidated.
+    for name, value in (
+        ("engine", dict(engine or {})),
+        ("rung", rung),
+        ("seed", seed),
+        ("samples", samples),
+    ):
+        if value or value == 0:
+            record[name] = value
     if extra:
         record.update(extra)
     return record

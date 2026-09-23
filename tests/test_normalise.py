@@ -391,3 +391,110 @@ def test_what_was_applied_is_recorded_so_nothing_downstream_repeats_it(tmp_path)
     assert record["scale"] == pytest.approx(0.125, rel=0.01)
     assert np.array(record["matrix"]).shape == (4, 4)
     assert record["source"] == str(source)
+
+
+# -- and what it derived is recorded beside it (§PW46) ---------------------------------
+
+
+def test_the_normalised_mesh_carries_a_record_of_its_own(tmp_path):
+    """The ledger holds the bytes that arrived; the project loads this one."""
+    pytest.importorskip("bpy")
+    from polyweave import provenance
+    from polyweave.normalise import write_mesh
+
+    source = write_mesh(normalise.normalise(cube(2.0, 8.0, 2.0)), tmp_path / "raw.glb")
+    found = normalise.ingest(source, out=tmp_path / "kept.glb", root=tmp_path)
+
+    written = provenance.read("kept.glb", root=tmp_path)
+    assert written["kind"] == "mesh"
+    assert Path(found["provenance"]).is_file()
+    assert written["artefact"]["path"] == "kept.glb"
+
+
+def test_the_parent_is_named_by_hash_so_a_mesh_that_moved_is_the_same_parent(tmp_path):
+    pytest.importorskip("bpy")
+    from polyweave import provenance
+    from polyweave.normalise import write_mesh
+
+    source = write_mesh(normalise.normalise(cube(2.0, 8.0, 2.0)), tmp_path / "raw.glb")
+    normalise.ingest(source, out=tmp_path / "kept.glb", root=tmp_path)
+
+    parent = provenance.read("kept.glb", root=tmp_path)["inputs"][0]
+    assert parent["role"] == "mesh"
+    assert parent["sha256"] == provenance.sha256_of(source)[0]
+    assert parent["path"] == "raw.glb"
+
+
+def test_the_transform_is_in_the_record_so_the_chain_can_be_followed(tmp_path):
+    pytest.importorskip("bpy")
+    from polyweave import provenance
+    from polyweave.normalise import write_mesh
+
+    source = write_mesh(
+        normalise.normalise(cube(2.0, 8.0, 2.0), height=None), tmp_path / "raw.glb"
+    )
+    found = normalise.ingest(source, out=tmp_path / "kept.glb", root=tmp_path)
+
+    params = provenance.read("kept.glb", root=tmp_path)["params"]
+    assert params["scale"] == pytest.approx(found["scale"])
+    assert np.array(params["matrix"]).shape == (4, 4)
+    assert params["offset"] == found["offset"]
+
+
+def test_a_normalisation_has_no_engine_seed_or_sampler_and_says_so_by_absence(tmp_path):
+    """One vocabulary, with what does not apply absent rather than null: a record
+    carrying four nulls claims it has them and they are unknown, which is not true."""
+    pytest.importorskip("bpy")
+    from polyweave import provenance
+    from polyweave.normalise import write_mesh
+
+    source = write_mesh(normalise.normalise(cube(2.0, 8.0, 2.0)), tmp_path / "raw.glb")
+    normalise.ingest(source, out=tmp_path / "kept.glb", root=tmp_path)
+
+    written = provenance.read("kept.glb", root=tmp_path)
+    assert not {"engine", "rung", "seed", "samples"} & set(written)
+    assert {"artefact", "kind", "inputs", "params", "producer"} <= set(written)
+
+
+def test_one_mesh_normalised_twice_leaves_two_records_naming_one_parent(tmp_path):
+    """Which is a fact. Two files and no records is a question nobody can answer."""
+    pytest.importorskip("bpy")
+    from polyweave import provenance
+    from polyweave.normalise import write_mesh
+
+    source = write_mesh(normalise.normalise(cube(1.0, 4.0, 1.0)), tmp_path / "raw.glb")
+    normalise.ingest(
+        source,
+        out=tmp_path / "wide.glb",
+        against=draw(tmp_path / "wide.png", 120, 30),
+        root=tmp_path,
+    )
+    normalise.ingest(
+        source,
+        out=tmp_path / "tall.glb",
+        against=draw(tmp_path / "tall.png", 30, 120),
+        root=tmp_path,
+    )
+    parents = {
+        provenance.read(n, root=tmp_path)["inputs"][0]["sha256"]
+        for n in ("wide.glb", "tall.glb")
+    }
+    assert len(parents) == 1, "two records, one parent"
+
+
+def test_verify_no_longer_reads_the_derived_mesh_as_unrecorded(tmp_path):
+    """The whole point: the mesh the project loads stops being invisible to verify."""
+    pytest.importorskip("bpy")
+    from polyweave import provenance
+    from polyweave.normalise import write_mesh
+
+    (tmp_path / "polyweave.toml").write_text(
+        "[paths]\nmeshes = 'assets/3d'\n", encoding="utf-8"
+    )
+    (tmp_path / "assets" / "3d").mkdir(parents=True)
+    source = write_mesh(
+        normalise.normalise(cube(2.0, 8.0, 2.0)), tmp_path / "assets" / "3d" / "raw.glb"
+    )
+    provenance.write(provenance.build("fetch", source, root=tmp_path), root=tmp_path)
+    normalise.ingest(source, out=tmp_path / "assets" / "3d" / "kept.glb", root=tmp_path)
+    assert provenance.unrecorded(tmp_path) == []

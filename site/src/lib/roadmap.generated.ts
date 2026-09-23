@@ -28,7 +28,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 2 },
   { block: "B", title: "Seeing the result cheaply", open: 0 },
   { block: "C", title: "The asset compiler", open: 0 },
-  { block: "D", title: "Fetching from a paid service without surprise", open: 2 },
+  { block: "D", title: "Fetching from a paid service without surprise", open: 1 },
   { block: "E", title: "One world with the engine", open: 1 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 1 },
@@ -48,13 +48,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "A",
     symptom: "a render holding two opaque pixels in one corner is empty for every purpose and passes every check",
     why: "Coverage clears the alpha floor and the two pixels differ, so neither assertion fires, and the obvious number to compare against would refuse a correctly framed thin asset.",
-    deps: [],
-  },
-  {
-    id: "PW46",
-    block: "D",
-    symptom: "a normalised mesh sits beside the paid one with nothing recording what it derives from",
-    why: "Ingest writes a second file and returns the transform to its caller, so the mesh the project loads is one `verify` reads as an artefact nothing recorded.",
     deps: [],
   },
   {

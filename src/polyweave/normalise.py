@@ -486,4 +486,47 @@ def ingest(
     for key in ("against", "silhouette_iou", "tried"):
         if key in found:
             record[key] = found[key]
+    record["provenance"] = str(_record_derivation(record, found, root))
     return record
+
+
+def _record_derivation(record: dict, found: dict, root: str | Path) -> Path:
+    """Write the sidecar that says what this mesh was derived from (§PW46).
+
+    The ledger holds the bytes that arrived and their digest, which stays true, but the
+    file the rest of the project loads is this one — and to `verify` that was a file
+    nothing recorded, which is the shape of the problem §PW17 exists to prevent arriving
+    from the other direction.
+
+    The parent is named **by hash and by path**, and the hash is what matters: a mesh
+    that moved is the same parent and one that changed is not. That is also what settles
+    the same mesh normalised twice against two drawings — two records naming one parent
+    is a fact, where two files and no records is a question nobody can answer later.
+
+    Everything in `params` is what the normalisation already computed, so the chain from
+    the credits spent to the mesh in the scene is one a person can follow without
+    guessing which file came first.
+    """
+    from . import provenance
+
+    parent = provenance.source("mesh", record["source"], root=root)
+    written = provenance.build(
+        "mesh",
+        record["mesh"],
+        inputs=[parent],
+        params={
+            "scale": record["scale"],
+            "rotation": record["rotation"],
+            "offset": record["offset"],
+            "matrix": record["matrix"],
+            **{k: found[k] for k in ("against", "tried") if k in found},
+        },
+        measurements={
+            "size": record["size"],
+            "vertices": record["vertices"],
+            "faces": record["faces"],
+            **{k: found[k] for k in ("silhouette_iou",) if k in found},
+        },
+        root=root,
+    )
+    return provenance.write(written, root=root)

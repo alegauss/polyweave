@@ -11,7 +11,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-- 📋 **PW46** (deps: —) **a normalised mesh sits beside the paid one with nothing recording what it derives from** — Ingest writes a second file and returns the transform to its caller, so the mesh the project loads is one `verify` reads as an artefact nothing recorded. → §PW46
 - 📋 **PW49** (deps: —) **a fetched mesh arrives with shading painted into its texture, and nothing can take the marks back out** — Those marks are shadows that do not move when the light does, and Cottony had to keep its own scrub pass with three thresholds found by eye, which is the fork adoption tests for. → §PW49
 
 ## Block E — One world with the engine

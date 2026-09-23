@@ -41,6 +41,7 @@
 - ✅ **PW19** **an unknown field is dropped in silence, so a payload that validates proves nothing** — The service's shape is probed for free, kept as a file, and payloads are refused locally, so a typo is a refusal rather than a field dropped in silence (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW20** **a fetched mesh arrives at an arbitrary orientation, scale and origin** — A fetched mesh is oriented, scaled and stood on its origin on arrival, against the drawing that asked for it, and the correction is kept as one matrix (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW21** **a reference photograph brings whatever stood behind the subject back as geometry** — A reference photograph is cut, flattened and checked before a fetch carries it, and the prepared picture is what the record names (design recorded in `docs/specs/fetching.md`).
+- ✅ **PW46** **a normalised mesh sits beside the paid one with nothing recording what it derives from** — A normalised mesh carries a record naming its parent by hash and holding the transform, so the chain from credits spent to mesh in scene is followable (design recorded in `docs/specs/provenance.md`).
 
 ## Block E — One world with the engine
 
