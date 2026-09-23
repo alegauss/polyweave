@@ -42,6 +42,7 @@ ANSWERS_AT = {
     "hue_spread": "sphere",
     "region_colour": "sphere",
     "delta_e": "sphere",
+    "pixel_delta_e": "sphere",
     "silhouette_iou": "preview",
     "silhouette_centroid_offset": "preview",
     "silhouette_bbox_delta": "preview",

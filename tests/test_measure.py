@@ -129,6 +129,54 @@ def test_the_alpha_floor_decides_what_counts_as_the_subject(tmp_path):
     assert measure.measure(path, only, alpha_floor=0.02, **over)[0]["value"] == 0.5
 
 
+# -- a colour at its median (§PW86) ---------------------------------------------------
+
+
+def spotted(tmp_path, spots: int):
+    """A cap in #E1714D, the drawn mushroom's, with `spots` white pixels in 16."""
+    rgba = np.zeros((4, 4, 4), dtype=np.uint8)
+    rgba[..., :3] = (0xE1, 0x71, 0x4D)
+    rgba[..., 3] = 255
+    rgba.reshape(-1, 4)[:spots, :3] = 255
+    path = tmp_path / f"cap-{spots}.png"
+    PILImage.fromarray(rgba, "RGBA").save(path)
+    return path
+
+
+def test_a_median_reads_the_body_through_its_spots(tmp_path):
+    """The mean moves with the spot count; the median does not, until spots are most."""
+    for spots in (0, 3, 6):
+        found = measure.measure(
+            spotted(tmp_path, spots), ["pixel_delta_e_p50"], target="#E1714D"
+        )
+        assert found[0]["value"] == pytest.approx(0.0, abs=1e-6)
+
+
+def test_the_mean_is_what_the_spots_pull_away(tmp_path):
+    """The reason for the measure, stated as the difference it makes."""
+    at_mean = measure.measure(spotted(tmp_path, 6), ["delta_e"], target="#E1714D")
+    assert at_mean[0]["value"] > 10.0
+
+
+def test_the_worst_of_the_region_is_still_there_to_bound(tmp_path):
+    found = measure.measure(spotted(tmp_path, 3), ["pixel_delta_e"], target="#E1714D")
+    named = {one["measure"]: one["value"] for one in found}
+    assert set(named) == {f"pixel_delta_e{s}" for s in measure.SUFFIXES}
+    assert named["pixel_delta_e_p99"] > 20.0, "white is a different colour"
+
+
+def test_a_pixel_distance_with_nothing_to_measure_to_is_refused(tmp_path):
+    with pytest.raises(PolyweaveError) as caught:
+        measure.measure(spotted(tmp_path, 0), ["pixel_delta_e_p50"])
+    assert caught.value.code == "spec.measure-needs"
+
+
+def test_it_is_answered_where_every_colour_is():
+    from polyweave.render.ladder import rung_for
+
+    assert rung_for("pixel_delta_e_p50") == "sphere"
+
+
 # -- the vocabulary is closed, and honest about what it cannot do yet -----------------
 
 

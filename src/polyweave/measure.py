@@ -385,6 +385,34 @@ def _delta_e(image: Image, mask: np.ndarray, *, target: Any = None, **_: Any) ->
     return round(ciede2000(here, there), 4)
 
 
+@_distributes("pixel_delta_e")
+def _pixel_delta_e(
+    image: Image, mask: np.ndarray, *, target: Any = None, **_: Any
+) -> np.ndarray:
+    """CIEDE2000 from every pixel of the region to a target, as a distribution.
+
+    `delta_e` measures from the region's mean, and a mean is the one statistic this
+    vocabulary exists to avoid (§PW86). Cottony's mushroom cap is covered in white
+    spots, so its recorded bar is a median: over any rectangle on it the mean is pulled
+    toward white by however many spots it catches, and `_p50` here is the body colour
+    through them. `delta_e` keeps its meaning, so no spec already written changes.
+
+    Each distinct colour is measured once, which is what makes a per-pixel CIEDE2000
+    affordable: a sprite has thousands of pixels and far fewer colours.
+    """
+    if target is None:
+        raise PolyweaveError(
+            "spec.measure-needs",
+            "pixel_delta_e is a distance to a target colour, and none was given",
+            "pass target='#RRGGBB', the colour it should read as",
+        )
+    there = to_lab(from_hex(target)) if isinstance(target, str) else np.array(target)
+    colours, which = np.unique(image.rgba[mask][:, :3], axis=0, return_inverse=True)
+    each = to_lab(colours.astype(np.float64) / 255.0)
+    apart = np.array([ciede2000(one, there) for one in each])
+    return apart[np.asarray(which).reshape(-1)]
+
+
 def ciede2000(one: np.ndarray, two: np.ndarray) -> float:
     """The CIE's 2000 colour difference, between two Lab values."""
     l1, a1, b1 = (float(v) for v in one)

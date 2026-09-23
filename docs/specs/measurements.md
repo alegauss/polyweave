@@ -75,10 +75,18 @@ cap, before the credits were spent (§PW16).
 |---|---|---|
 | `region_colour` | Lab | Mean CIELAB colour over the region |
 | `delta_e` | 0–100 | CIEDE2000 distance from `region_colour` to a target |
+| `pixel_delta_e_{p1,p50,p99,mean,std}` | 0–100 | CIEDE2000 distance from each pixel to a target |
 
 Perceptual, because the question being asked is always "does this read as the right colour",
 and RGB distance answers a different question. A `delta_e` under 2 is a difference a person
 has to look for; over 5 is a different colour.
+
+**`delta_e` is taken at the mean, and `pixel_delta_e` is the one to bound** wherever the
+region holds more than one colour (§PW86). Cottony's mushroom cap is covered in white spots,
+so the bar recorded for it is a median, and over any rectangle on it the mean is pulled toward
+white by however many spots it catches. `pixel_delta_e_p50` is the body colour through them,
+and `_p99` is how far the worst of it strays. `delta_e` keeps its meaning so that no spec
+already written changes under it.
 
 ## Comparing two renders
 
