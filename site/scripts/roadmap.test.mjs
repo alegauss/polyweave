@@ -13,7 +13,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { generatedPath, readRoadkeep, renderModule, waitingOn } from "./roadmap.mjs";
+import { generatedPath, readRoadkeep, renderModule, waitsOn } from "./roadmap.mjs";
 
 const committed = readFileSync(generatedPath, "utf8");
 const read = readRoadkeep();
@@ -64,12 +64,27 @@ test("every task sits in a declared block", () => {
   }
 });
 
-test("every dependency names a line that exists", () => {
+test("every dependency names something that exists", () => {
   // The backlog is the roadmap and the deferred store. A line that was set aside keeps
   // its id and is still waited on, so "not in the roadmap" is not the same claim as
   // "nothing declares it" — and only the second is a defect.
+  //
+  // A dep is also one of three things (§PW61): an id, a `Block X` label, or a range.
+  // The first version of this check knew only the first, so a label arrived here as a
+  // dangling id and the failure read as a typo in the backlog.
   const known = new Set([...ids, ...paused]);
   for (const d of new Set(deps)) {
+    const label = d.match(/^Block (\S+)$/);
+    if (label) {
+      assert.ok(declared.includes(label[1]), `${d} is depended on and is not declared`);
+      continue;
+    }
+    const range = d.match(/^(\w+?\d+)-(\w+?\d+)$/);
+    if (range) {
+      assert.ok(known.has(range[1]), `${d} starts at an id nothing declares`);
+      assert.ok(known.has(range[2]), `${d} ends at an id nothing declares`);
+      continue;
+    }
     assert.ok(known.has(d), `${d} is depended on and nothing declares it`);
   }
 });
@@ -80,12 +95,49 @@ test("a line that was set aside is not also open", () => {
   }
 });
 
+const dep = (id, status, kind = "task") => ({ dep: id, kind, status });
+
 test("a dependency that has shipped is no longer waited on", () => {
-  // roadkeep annotates a resolved dep in place, as `PW5 ✅`. Carrying that through
-  // would print "waits on PW5 ✅" on a line that waits on nothing, and would make the
-  // check above look for an id that left the roadmap when it shipped.
-  assert.deepEqual(waitingOn(["PW5 ✅"]), []);
-  assert.deepEqual(waitingOn(["PW9 🗑"]), []);
-  assert.deepEqual(waitingOn(["PW7", "PW5 ✅", "PW8"]), ["PW7", "PW8"]);
-  assert.deepEqual(waitingOn(undefined), []);
+  // Printing "waits on PW5" on a line that waits on nothing would also make the check
+  // above look for an id that left the roadmap when it shipped.
+  assert.deepEqual(waitsOn({ deps: [dep("PW5", "shipped")] }), []);
+  assert.deepEqual(
+    waitsOn({ deps: [dep("PW7", "open"), dep("PW5", "shipped"), dep("PW8", "open")] }),
+    ["PW7", "PW8"],
+  );
+  assert.deepEqual(waitsOn(undefined), []);
+});
+
+test("a dependency set aside is still waited on", () => {
+  // It keeps its id and nothing has satisfied it; what lifts it is a decision.
+  assert.deepEqual(waitsOn({ deps: [dep("PW53", "deferred")] }), ["PW53"]);
+});
+
+test("nothing that can never be satisfied is printed as a wait", () => {
+  // A retired task, an external dep, a label with nothing filed under it. No `ship` of
+  // anything the roadmap holds lifts these, so "waits on" is the wrong word for them.
+  assert.deepEqual(waitsOn({ deps: [dep("PW9", "unresolvable")] }), []);
+  assert.deepEqual(
+    waitsOn({ deps: [dep("Blender 5.2", "unresolvable", "external")] }),
+    [],
+  );
+});
+
+test("a block and a range survive whole", () => {
+  // The defect this replaced: `Block G` kept its first whitespace token and became a
+  // dangling `Block`. roadkeep says which grammar each dep is written in, so the
+  // generator never has to decide whether a token is an id (§PW61).
+  assert.deepEqual(waitsOn({ deps: [dep("Block A", "open", "block")] }), ["Block A"]);
+  assert.deepEqual(waitsOn({ deps: [dep("PW53-PW58", "open", "range")] }), [
+    "PW53-PW58",
+  ]);
+});
+
+test("a finished block is no longer waited on", () => {
+  assert.deepEqual(waitsOn({ deps: [dep("Block B", "shipped", "block")] }), []);
+});
+
+test("a dependency naming nothing is kept, so the gate can catch it", () => {
+  // Dropping it here would hide it from the check whose whole job is to find one.
+  assert.deepEqual(waitsOn({ deps: [dep("PW999", "unknown")] }), ["PW999"]);
 });

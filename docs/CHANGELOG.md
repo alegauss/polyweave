@@ -16,6 +16,7 @@
 - ✅ **PW42** **a render that is black to any observer passes the check for a blank render, on one bit of edge noise** — Flat is now the spread across the visible pixels against the noise floor, so the unlit render that used to pass on one bit of edge noise is refused (design recorded in `docs/specs/tool-surface.md`).
 - ✅ **PW51** **a record says nothing about the tolerances its measurements were taken against** — A record carries the tolerances its measurements were taken against, and a cache hit names which of those bars have moved since (design recorded in `docs/specs/provenance.md`).
 - ✅ **PW52** **a render holding two opaque pixels in one corner is empty for every purpose and passes every check** — A render whose subject reaches too little of the frame is refused on extent rather than area, so a speck is caught and a correctly framed rope is not (design recorded in `docs/specs/tool-surface.md`).
+- ✅ **PW61** **the site understands one of the backlog's three dep forms, so a block or a range becomes a dangling id** — The site asks roadkeep how each dep resolved instead of splitting the string, so a block survives whole and the gate reads all three forms (design recorded in `site/scripts/roadmap.mjs`).
 
 ## Block B — Seeing the result cheaply
 

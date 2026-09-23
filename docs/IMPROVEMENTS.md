@@ -2,31 +2,6 @@
 
 ## Block A — What a tool call costs the turn
 
-### §PW61 Two readers of one dep grammar, and only one of them was written against it
-
-roadkeep accepts three spellings for a dep: an id, a `Block X` label, and a range.
-`site/scripts/roadmap.mjs` was written against the first and never told about the other
-two. `waitingOn` splits each dep on whitespace and keeps the leading token, which is
-right for `PW5` and for `PW5 ✅` — the mark is what says the wait is over — and wrong the
-moment the first token is not an id.
-
-When §PW54 was filed carrying `deps: Block G`, the generated module came out holding
-`deps: ["Block"]`, and a `PW53-PW58` range came through whole. Both are dangling ids on
-a page whose entire job is to say what a line is waiting on.
-
-**The gate caught it and described it as something else.** `every dependency names a
-line that exists` failed with `Block is depended on and is not in the roadmap`, which
-reads as a typo in the backlog rather than as a parser meeting grammar it does not
-implement. Somebody reading that fixes the roadmap, and that is what happened here: both
-lines were rewritten to plain ids and the defect stayed.
-
-More cases in `waitingOn` is the wrong repair. The generator already shells out to
-roadkeep, and `deps <id>` returns the expansion with its kind, so the answer can be
-asked for rather than re-derived — the same argument that stopped a tolerance holding
-one default in the config and another in the function using it.
-
-A deferred dep no longer dangles: `generatedPaused` now holds those ids.
-
 ### §PW62 A per-rung tolerance whose only caller asks for it without the rung
 
 `render.bake` resolves its tolerances with `config.tolerances()` and names no rung — two

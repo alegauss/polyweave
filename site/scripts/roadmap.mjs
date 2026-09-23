@@ -59,7 +59,18 @@ export function readRoadkeep() {
       // every line that waited on it still does, annotated `PW53 ⏸` — so without this
       // read a deferred dep is indistinguishable from an id nothing declares.
       const paused = JSON.parse(run(["list", "--role", "deferred"]));
-      return { via: candidate.why, blocks, tasks, nonGoals, paused };
+      // roadkeep accepts three spellings for a dep — an id, a `Block X` label and a
+      // range — and only it can expand the last two. Asking beats re-deriving: this
+      // generator's own attempt turned `Block G` into a dangling `Block` (§PW61). One
+      // call per line that has any deps at all, which is a handful, and no call decides
+      // whether a token is an id.
+      const resolved = {};
+      for (const task of tasks.tasks ?? []) {
+        if ((task.deps ?? []).length) {
+          resolved[task.id] = JSON.parse(run(["deps", task.id]));
+        }
+      }
+      return { via: candidate.why, blocks, tasks, nonGoals, paused, resolved };
     } catch {
       // the next candidate, or none
     }
@@ -69,21 +80,35 @@ export function readRoadkeep() {
 
 const q = (s) => JSON.stringify(s);
 
-/** roadkeep annotates a dep it has resolved, as `PW5 ✅`. Those are no longer waited on. */
-const RESOLVED = new Set(["✅", "\u{1F5D1}"]);
+/**
+ * Which resolutions are still a wait. Everything else has settled one way or another.
+ *
+ * `shipped` has landed and `unresolvable` never will — a retired task, an external dep,
+ * a label with nothing under it — so neither is something the page can say this line is
+ * waiting for. `unknown` stays in deliberately: a dep naming nothing is a defect, and
+ * dropping it here would hide it from the gate whose whole job is to catch one.
+ */
+const WAITED = new Set(["open", "deferred", "unknown"]);
 
 /**
- * The ids a line still waits on.
+ * The ids a line still waits on, as roadkeep resolved them.
  *
- * A dep arrives as `PW5` while it is open and `PW5 ✅` once it has shipped, so the id is
- * the first token and anything after it says the wait is over. The page says "waits on",
- * which stops being true the moment the dep lands.
+ * **Asked for, not re-derived** (§PW61). A dep is an id, a `Block X` label or a range,
+ * and this generator used to keep the first whitespace token of whichever it was — right
+ * for `PW5` and for `PW5 ✅`, where the mark is what says the wait is over, and wrong the
+ * moment the first token is not an id. `Block G` became a dangling `Block`, and the gate
+ * reported a missing task rather than a grammar nothing here implements.
+ *
+ * roadkeep hands back each dep whole, with the grammar it is written in and how it
+ * resolved, so `Block G` stays `Block G` and the page says what the line says. Its
+ * members are deliberately not substituted: a line that waits on a block waits on the
+ * block, and printing the three ids it happens to hold today would be a different claim
+ * that goes stale on the next `add`.
  */
-export function waitingOn(deps) {
-  return (deps ?? [])
-    .map((d) => d.trim().split(/\s+/))
-    .filter(([, mark]) => !mark || !RESOLVED.has(mark))
-    .map(([id]) => id);
+export function waitsOn(answer) {
+  return (answer?.deps ?? [])
+    .filter((one) => WAITED.has(one.status))
+    .map((one) => one.dep);
 }
 
 /** The generated module's text, from one roadkeep read. Deterministic: same in, same out. */
@@ -98,7 +123,7 @@ export function renderModule(read) {
     block: t.block,
     symptom: t.symptom,
     why: t.why,
-    deps: waitingOn(t.deps),
+    deps: waitsOn(read.resolved?.[t.id]),
   }));
   const nonGoals = read.nonGoals.non_goals.map((lead) => ({
     lead,

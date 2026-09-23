@@ -25,7 +25,7 @@ export interface GeneratedNonGoal {
 }
 
 export const generatedBlocks: GeneratedBlock[] = [
-  { block: "A", title: "What a tool call costs the turn", open: 3 },
+  { block: "A", title: "What a tool call costs the turn", open: 2 },
   { block: "B", title: "Seeing the result cheaply", open: 0 },
   { block: "C", title: "The asset compiler", open: 0 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
@@ -36,13 +36,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW61",
-    block: "A",
-    symptom: "the site understands one of the backlog's three dep forms, so a block or a range becomes a dangling id",
-    why: "waitingOn keeps the first whitespace token, so a `Block G` dep becomes `Block`, and the gate reports a missing task rather than a grammar it cannot read.",
-    deps: [],
-  },
   {
     id: "PW62",
     block: "A",

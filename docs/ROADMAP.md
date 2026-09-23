@@ -2,7 +2,6 @@
 
 ## Block A — What a tool call costs the turn
 
-- 📋 **PW61** (deps: —) **the site understands one of the backlog's three dep forms, so a block or a range becomes a dangling id** — waitingOn keeps the first whitespace token, so a `Block G` dep becomes `Block`, and the gate reports a missing task rather than a grammar it cannot read. → §PW61
 - 📋 **PW62** (deps: PW44 ✅) **a render resolves its noise floor without naming its rung, so a sphere is judged at the floor measured for a final** — The same call hands the rung to the measurer and withholds it from the bar, so the noisiest rung gets the tightest floor and a flat sphere passes PW42's check. → §PW62
 - 📋 **PW63** (deps: —) **three of Cottony's rig constants share a name with a plugin parameter that means something else** — A port that copies fill, key or ambient across is accepted and renders the wrong picture, because the guard refuses an axis nothing takes and cannot see one whose name is taken. → §PW63
 
