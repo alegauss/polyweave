@@ -28,8 +28,9 @@ JSON, written beside every artefact this plugin produces, named `<artefact>.prov
   ],
   "params": { "light": 2.7, "form": 2.5, "ambient": 0.4, "fill": 0.92 },
   "measurements": { "saturation_p99": 0.87, "alpha_coverage": 0.41 },
-  "tolerances": { "alpha_floor": 0.02, "render_noise": 0.004, "silhouette_iou": 0.92,
-                  "delta_e": 3.0, "background_delta_e": 2.0, "subject_coverage": 0.04 }
+  "tolerances": { "alpha_floor": 0.02, "render_noise": 0.013, "silhouette_iou": 0.97,
+                  "delta_e": 2.0, "background_delta_e": 12.0, "subject_coverage": 0.12,
+                  "subject_extent": 0.05 }
 }
 ```
 
@@ -67,11 +68,11 @@ alpha floor that decided what counted as the subject sat in a file that has sinc
 edited. Reading the config back does not recover it: the record is the artefact's and the
 file is the project's *as it is now*.
 
-All six are resolved together by `Config.tolerances()` and written as a block, because an
-operation that needs one must not pick up a stale sibling (§PW40) — and because six numbers
-are what the next reader has to compare against. A record whose measurements were taken
-against no bar at all carries **no field**, by the same rule as above: a normalisation with
-no reference drawing measured nothing, and six numbers it never read would claim otherwise.
+All of them are resolved together by `Config.tolerances()` and written as a block, because an
+operation that needs one must not pick up a stale sibling (§PW40) — and because the block is
+what the next reader has to compare against. A record whose measurements were taken against
+no bar at all carries **no field**, by the same rule as above: a normalisation with no
+reference drawing measured nothing, and numbers it never read would claim otherwise.
 
 The value recorded is the one that **decided**, not the one the project would choose today.
 Where a caller passed an explicit floor, that floor is what goes in the record.

@@ -218,6 +218,16 @@ CODES: dict[str, Code] = {
         when="the subject was outside the frame, or the camera never saw it",
         doors=("check the framing before spending another render",),
     ),
+    "post.render-speck": Code(
+        means="something is in the frame and it is too small to be worth judging",
+        when="a camera that framed the subject far away or almost missed it; the two "
+        "opaque pixels left behind clear the alpha floor and differ from each other, "
+        "so neither the transparency nor the flatness check fires",
+        doors=(
+            "check the framing before spending another render",
+            "lower [tolerance] subject_extent if the asset is really this small",
+        ),
+    ),
     "post.texture-size": Code(
         means="the texture is not the size that was asked for",
         when="a bake writes at a resolution other than the one requested",

@@ -197,11 +197,21 @@ def test_the_edge_noise_that_used_to_get_through_is_what_the_floor_is_set_at(pro
         return Image(path=None, rgba=rgba, had_alpha=True)
 
     with pytest.raises(PolyweaveError):
-        post.check("render", two_values(0, 1), alpha_floor=0.0, render_noise=floor)
+        post.check(
+            "render",
+            two_values(0, 1),
+            alpha_floor=0.0,
+            render_noise=floor,
+            subject_extent=0.0,
+        )
     # And two steps apart is a picture, not noise, so it is left alone.
-    assert post.check("render", two_values(0, 2), alpha_floor=0.0, render_noise=floor)[
-        "size"
-    ] == [8, 8]
+    assert post.check(
+        "render",
+        two_values(0, 2),
+        alpha_floor=0.0,
+        render_noise=floor,
+        subject_extent=0.0,
+    )["size"] == [8, 8]
 
 
 def _mean_luma(path) -> float:

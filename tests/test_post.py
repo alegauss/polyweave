@@ -13,6 +13,7 @@ from PIL import Image as PILImage
 
 from polyweave import post
 from polyweave.errors import PolyweaveError
+from polyweave.post import pixels
 
 # -- meshes --------------------------------------------------------------------
 
@@ -141,6 +142,7 @@ def test_an_optional_check_that_does_not_apply_is_refused(tmp_path):
             optional=("manifold",),
             alpha_floor=0.0,
             render_noise=0.004,
+            subject_extent=0.0,
         )
     assert caught.value.code == "post.check-misapplied"
 
@@ -168,6 +170,7 @@ def test_a_render_with_content_passes_and_reports_its_size(tmp_path):
         _png(tmp_path, "r.png", size=(16, 9)),
         alpha_floor=0.0,
         render_noise=0.004,
+        subject_extent=0.0,
     )
     assert measured["size"] == [16, 9]
     assert measured["alpha_coverage"] == 1.0
@@ -176,7 +179,9 @@ def test_a_render_with_content_passes_and_reports_its_size(tmp_path):
 def test_a_render_of_one_flat_colour_is_refused(tmp_path):
     path = _png(tmp_path, "flat.png", fill=(17, 17, 17))
     with pytest.raises(PolyweaveError) as caught:
-        post.check("render", path, alpha_floor=0.0, render_noise=0.004)
+        post.check(
+            "render", path, alpha_floor=0.0, render_noise=0.004, subject_extent=0.0
+        )
     assert caught.value.code == "post.render-uniform"
     assert "#111111" in caught.value.message
     assert "allow_uniform" in caught.value.remedy
@@ -185,14 +190,23 @@ def test_a_render_of_one_flat_colour_is_refused(tmp_path):
 def test_a_fully_transparent_render_is_refused(tmp_path):
     path = _png(tmp_path, "gone.png", alpha=0)
     with pytest.raises(PolyweaveError) as caught:
-        post.check("render", path, alpha_floor=0.0, render_noise=0.004)
+        post.check(
+            "render", path, alpha_floor=0.0, render_noise=0.004, subject_extent=0.0
+        )
     assert caught.value.code == "post.render-transparent"
 
 
 def test_the_wrong_dimensions_are_refused_against_what_was_asked_for(tmp_path):
     path = _png(tmp_path, "small.png", size=(8, 8))
     with pytest.raises(PolyweaveError) as caught:
-        post.check("render", path, size=(512, 512), alpha_floor=0.0, render_noise=0.004)
+        post.check(
+            "render",
+            path,
+            size=(512, 512),
+            alpha_floor=0.0,
+            render_noise=0.004,
+            subject_extent=0.0,
+        )
     assert caught.value.code == "post.render-size"
     assert "8x8" in caught.value.message
 
@@ -216,9 +230,9 @@ def test_a_subject_is_the_pixels_above_the_alpha_floor(tmp_path):
     path = tmp_path / "half.png"
     PILImage.fromarray(rgba, "RGBA").save(path)
     assert (
-        post.check("render", path, alpha_floor=0.0, render_noise=0.004)[
-            "alpha_coverage"
-        ]
+        post.check(
+            "render", path, alpha_floor=0.0, render_noise=0.004, subject_extent=0.0
+        )["alpha_coverage"]
         == 0.5
     )
 
@@ -331,15 +345,15 @@ def test_the_floor_the_caller_states_is_the_floor_that_is_used(tmp_path):
     PILImage.fromarray(rgba, "RGBA").save(path)
 
     assert (
-        post.check("render", path, alpha_floor=0.0, render_noise=0.004)[
-            "alpha_coverage"
-        ]
+        post.check(
+            "render", path, alpha_floor=0.0, render_noise=0.004, subject_extent=0.0
+        )["alpha_coverage"]
         == 1.0
     )
     assert (
-        post.check("render", path, alpha_floor=0.02, render_noise=0.004)[
-            "alpha_coverage"
-        ]
+        post.check(
+            "render", path, alpha_floor=0.02, render_noise=0.004, subject_extent=0.0
+        )["alpha_coverage"]
         == 0.5
     )
 
@@ -361,6 +375,7 @@ def test_the_project_is_where_the_number_lives(tmp_path):
         "delta_e",
         "background_delta_e",
         "subject_coverage",
+        "subject_extent",
     }
 
 
@@ -487,3 +502,98 @@ def test_every_code_is_namespaced_and_carries_a_remedy(tmp_path):
         assert caught.value.code.startswith("post.")
         assert caught.value.remedy
         assert "Traceback" not in caught.value.message
+
+
+# -- a speck in a corner is not a render (§PW52) ---------------------------------------
+
+
+def _speck(tmp_path, name="speck.png", size=64):
+    """Two opaque pixels in one corner, and nothing else."""
+    canvas = np.zeros((size, size, 4), dtype=np.uint8)
+    canvas[3, 3] = (200, 90, 60, 255)
+    canvas[3, 4] = (40, 180, 220, 255)
+    path = tmp_path / name
+    PILImage.fromarray(canvas, "RGBA").save(path)
+    return path
+
+
+def _rope(tmp_path, name="rope.png", size=64):
+    """A thin subject framed exactly right: two columns spanning the full height."""
+    canvas = np.zeros((size, size, 4), dtype=np.uint8)
+    canvas[:, size // 2 : size // 2 + 2] = (200, 90, 60, 255)
+    canvas[::2, size // 2] = (40, 180, 220, 255)
+    path = tmp_path / name
+    PILImage.fromarray(canvas, "RGBA").save(path)
+    return path
+
+
+def test_extent_is_the_box_the_subject_spans_and_not_what_it_fills():
+    mask = np.zeros((100, 100), dtype=bool)
+    mask[10:60, 20] = True  # a hairline: half the height, one column
+    assert pixels.extent(mask) == pytest.approx(0.5)
+    mask[:, :] = False
+    mask[0, 0] = mask[99, 0] = True  # two pixels at opposite ends still span it
+    assert pixels.extent(mask) == pytest.approx(1.0)
+    assert pixels.extent(np.zeros((8, 8), dtype=bool)) == 0.0
+
+
+def test_a_render_that_is_two_pixels_in_a_corner_is_refused(tmp_path):
+    """It clears the alpha floor and it is not flat, so nothing else catches it."""
+    with pytest.raises(PolyweaveError) as caught:
+        post.check(
+            "render",
+            _speck(tmp_path),
+            alpha_floor=0.02,
+            render_noise=0.004,
+            subject_extent=0.05,
+        )
+    assert caught.value.code == "post.render-speck"
+    assert "check the framing" in caught.value.remedy
+
+
+def test_a_thin_subject_framed_right_is_not_refused(tmp_path):
+    """The case an area floor cannot have: a rope covers 3% and is exactly correct."""
+    measured = post.check(
+        "render",
+        _rope(tmp_path),
+        alpha_floor=0.02,
+        render_noise=0.004,
+        subject_extent=0.05,
+    )
+    assert measured["subject_extent"] == pytest.approx(1.0)
+    # And its area is the same order as the speck's, which is the whole difficulty.
+    assert measured["alpha_coverage"] < 0.04
+
+
+def test_the_bar_that_catches_the_speck_would_refuse_the_rope_by_area(tmp_path):
+    """Why `subject_coverage` could not be borrowed: on area they do not separate."""
+    at = {"alpha_floor": 0.02, "render_noise": 0.004, "subject_extent": 0.0}
+    speck = post.check("render", _speck(tmp_path), **at)["alpha_coverage"]
+    rope = post.check("render", _rope(tmp_path, "r.png"), **at)["alpha_coverage"]
+    assert speck < rope
+    # 0.12 is what `[tolerance] subject_coverage` holds, and it refuses both.
+    assert rope < 0.12
+    # On extent the two are a factor of thirty apart.
+    assert (
+        post.check("render", _rope(tmp_path, "r.png"), **at)["subject_extent"]
+        > 30 * (post.check("render", _speck(tmp_path), **at)["subject_extent"])
+    )
+
+
+def test_an_empty_render_is_still_transparent_rather_than_a_speck(tmp_path):
+    """The refusals do not overlap: nothing there is a different report from a speck."""
+    canvas = np.zeros((16, 16, 4), dtype=np.uint8)
+    path = tmp_path / "empty.png"
+    PILImage.fromarray(canvas, "RGBA").save(path)
+    with pytest.raises(PolyweaveError) as caught:
+        post.check(
+            "render", path, alpha_floor=0.02, render_noise=0.004, subject_extent=0.05
+        )
+    assert caught.value.code == "post.render-transparent"
+
+
+def test_the_bar_is_the_caller_s_and_has_no_default_here(tmp_path):
+    with pytest.raises(PolyweaveError) as caught:
+        post.check("render", _speck(tmp_path), alpha_floor=0.02, render_noise=0.004)
+    assert caught.value.code == "post.tolerance-unstated"
+    assert "subject_extent" in caught.value.message

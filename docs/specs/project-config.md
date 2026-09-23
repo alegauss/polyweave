@@ -56,7 +56,8 @@ render_noise       = { sphere = 0.025, preview = 0.020, final = 0.013 }
 silhouette_iou     = 0.97
 delta_e            = 2.0
 background_delta_e = 12.0      # how far from the frame's edge colour is still ground
-subject_coverage   = 0.12      # the least of the frame a subject may fill
+subject_coverage   = 0.12      # the least of the frame a photograph's subject may fill
+subject_extent     = 0.05      # how far a rendered subject must reach across it
 
 [cache]
 max_bytes = 8_000_000_000

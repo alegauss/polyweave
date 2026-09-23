@@ -354,6 +354,7 @@ def bake(
         size=frame,
         alpha_floor=floor_alpha,
         render_noise=tolerances.render_noise,
+        subject_extent=tolerances.subject_extent,
         allow_uniform=allow_uniform,
     )
     # The verdict and the picture are one answer to one question, so the measuring

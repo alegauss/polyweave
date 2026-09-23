@@ -183,3 +183,61 @@ def test_scrubbing_the_hammer_lifts_the_marks_and_leaves_the_rest():
     changed = float((np.abs(cleaned - pixels) > 1e-6).any(axis=2).mean())
     assert changed == pytest.approx(found["fraction"], abs=0.001)
     assert changed < 0.02, "and the other 98% of the sheet is untouched"
+
+
+# -- how far a real subject reaches across a real frame (§PW52) ------------------------
+
+
+@pytest.mark.parametrize(
+    ("named", "mesh"),
+    [("hammer", "HAMMER_MESH"), ("plush", "PLUSH_MESH")],
+)
+def test_a_real_asset_reaches_far_further_across_the_frame_than_the_bar(
+    tmp_path, named, mesh
+):
+    """The measurement `[tolerance] subject_extent` was set from, not a picked number.
+
+    Rendered through the project rig at 128px: the hammer spans 0.578 of the frame and
+    the plush body 0.539, at 0.166 and 0.168 coverage. The default is 0.05, an order of
+    magnitude below both, and a two-pixel render spans 0.016 — an order of magnitude
+    below it in the other direction.
+
+    The bar is asserted loosely here on purpose. What a real asset makes assertable is
+    that it clears the floor with room to spare on somebody else's machine; the exact
+    figures belong in the comment above `subject_extent`, beside the number they set.
+    """
+    pytest.importorskip("bpy", reason="rendering needs the renderer")
+    from polyweave import config as C
+    from polyweave import render
+    from polyweave.config import DEFAULTS
+
+    class Quiet:
+        def stage(self, *a, **k):
+            pass
+
+        def progress(self, *a, **k):
+            pass
+
+        def note(self, *a, **k):
+            pass
+
+    (tmp_path / C.FILENAME).write_text(
+        "[render]\npreview_size = 128\nfinal_size = 128\n"
+        "samples = { sphere = 4, preview = 4, final = 4 }\nseed = 11\n",
+        encoding="utf-8",
+    )
+    found = render.bake(
+        Quiet(),
+        model=str(real(globals()[mesh])),
+        out=f"{named}.png",
+        rung="preview",
+        root=tmp_path,
+        inline=False,
+        cached=False,
+    )
+    reach = found["asserted"]["subject_extent"]
+    bar = DEFAULTS["tolerance"]["subject_extent"]
+    assert reach > 5 * bar, f"{named} spans {reach:.4f} against a floor of {bar}"
+    # And it is nowhere near filling the frame either, which is why an area floor set
+    # from these would still be a guess about the next asset.
+    assert found["asserted"]["alpha_coverage"] < 0.5

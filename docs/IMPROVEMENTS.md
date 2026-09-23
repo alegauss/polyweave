@@ -2,31 +2,6 @@
 
 ## Block A — What a tool call costs the turn
 
-### §PW52 How little of a frame a subject may fill is a number nothing has measured, and the nearest one means something else
-
-The line that made flatness a tolerance expected the transparency check beside it to be
-`max(alpha) == 0`, with the same equality problem. Measured on 2026-09-22, it is not:
-the check is `not mask.any()` over `alpha > round(alpha_floor * 255)`, so it already
-asks whether anything clears the floor. The equality was gone before the line was
-written.
-
-The gap it pointed at is real all the same, and different. A 64x64 render whose only two
-opaque pixels sit in one corner passes both checks today: coverage 0.000488, above the
-floor because those pixels are fully opaque, and not flat because the two differ. It is
-empty for every purpose and nothing says so.
-
-What is missing is a floor on how much of a frame a subject must fill to be worth
-judging, and the reason it was not folded into that fix is that no number for it has
-been measured. `[tolerance] subject_coverage` is 0.12 and looks like the answer. It is
-not: it means the least of the frame a photograph's subject may fill before the cut is
-worth spending on, and a correctly framed render of a thin asset — Cottony's
-booster_wand, a rope — is well under 12% by area while being exactly right. Borrowing it
-here would refuse real work.
-
-So the number has to come from measuring real renders of the thinnest assets rather than
-from picking one. Until then a two-pixel render passes, which is a smaller failure than
-refusing a wand.
-
 ### §PW61 Two readers of one dep grammar, and only one of them was written against it
 
 roadkeep accepts three spellings for a dep: an id, a `Block X` label, and a range.

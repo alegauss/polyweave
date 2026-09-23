@@ -58,7 +58,10 @@ CHEAP: dict[str, tuple[Any, frozenset[str]]] = {
 REQUIRES: dict[str, frozenset[str]] = {
     # `render_noise` is what decides whether a picture is flat, because flat is a
     # tolerance and not an equality (§PW42). A capture does not ask that question.
-    "render": frozenset({"alpha_floor", "render_noise"}),
+    # `subject_extent` is here for the same reason as the other two: a speck in a corner
+    # passes every check that does not ask how far the subject reaches, and a default
+    # invented here would be a second home for a number that has one (§PW52).
+    "render": frozenset({"alpha_floor", "render_noise", "subject_extent"}),
     "texture": frozenset({"alpha_floor", "render_noise"}),
     "field": frozenset({"alpha_floor"}),
     "capture": frozenset({"alpha_floor"}),

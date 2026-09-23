@@ -367,7 +367,12 @@ def test_measurements_from_a_check_go_straight_into_the_record(tmp_path):
     PILImage.fromarray(rgba, "RGBA").save(path)
 
     measured = post.check(
-        "render", path, size=(8, 8), alpha_floor=0.0, render_noise=0.004
+        "render",
+        path,
+        size=(8, 8),
+        alpha_floor=0.0,
+        render_noise=0.004,
+        subject_extent=0.0,
     )
     record = P.build("render", path, measurements=measured, root=tmp_path)
     assert record["measurements"]["alpha_coverage"] == 1.0
@@ -384,6 +389,7 @@ BARS = {
     "delta_e": 3.0,
     "background_delta_e": 2.0,
     "subject_coverage": 0.04,
+    "subject_extent": 0.05,
 }
 
 

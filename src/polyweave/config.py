@@ -97,6 +97,16 @@ DEFAULTS: dict[str, Any] = {
         "background_delta_e": 12.0,
         # The least of the frame a subject may fill and still be worth spending on.
         "subject_coverage": 0.12,
+        # How far a rendered subject must reach across the frame along its longer axis
+        # to be worth judging at all (§PW52). **Extent, not area**, and that is the
+        # whole of why there is a second key rather than a reuse of the one above: a
+        # rope framed exactly right covers 1.6% of the frame, so any area floor that
+        # catches a two-pixel render refuses the rope too. Measured through the project
+        # rig on the two real meshes the suite has — the booster hammer spans 0.578 and
+        # the plush body 0.539 — against 0.016 for two stray pixels. 0.05 sits an order
+        # of magnitude clear of both, which is the margin a number nobody can re-measure
+        # on their own assets needs.
+        "subject_extent": 0.05,
     },
     "cache": {"max_bytes": 8_000_000_000},
     "provenance": {
@@ -193,6 +203,7 @@ class Tolerances:
     delta_e: float
     background_delta_e: float
     subject_coverage: float
+    subject_extent: float
 
     def as_dict(self) -> dict[str, float]:
         """What was in force, for the record written beside the artefact."""

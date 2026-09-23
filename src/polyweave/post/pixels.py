@@ -23,7 +23,9 @@ import numpy as np
 from ..errors import PolyweaveError
 from ..image import Image, load
 
-ACCEPTS_RENDER = frozenset({"size", "alpha_floor", "render_noise", "allow_uniform"})
+ACCEPTS_RENDER = frozenset(
+    {"size", "alpha_floor", "render_noise", "subject_extent", "allow_uniform"}
+)
 ACCEPTS_TEXTURE = frozenset({"size", "alpha_floor", "render_noise", "allow_uniform"})
 ACCEPTS_CAPTURE = frozenset({"size", "alpha_floor"})
 ACCEPTS_FIELD = frozenset({"size", "levels", "bits", "alpha_floor"})
@@ -69,8 +71,31 @@ def _measure(image: Image, alpha_floor: float) -> dict:
     return {
         "size": list(image.size),
         "alpha_coverage": round(coverage, 6),
+        "subject_extent": round(extent(mask), 6),
         "had_alpha": image.had_alpha,
     }
+
+
+def extent(mask: np.ndarray) -> float:
+    """How far the subject reaches across the frame, along whichever axis is longer.
+
+    The fraction of the frame its bounding box spans, not the fraction it fills. §PW52
+    is why the distinction matters: a rope framed exactly right covers 1.6% of the frame
+    by area, which is the same order as a render holding two stray pixels, so no area
+    floor separates them. It spans the full height, and the two pixels span 1.6% of it.
+
+    Zero where nothing clears the floor, which is the fully transparent case and has its
+    own refusal.
+    """
+    if not mask.any():
+        return 0.0
+    high, wide = mask.shape
+    down = np.nonzero(np.any(mask, axis=1))[0]
+    across = np.nonzero(np.any(mask, axis=0))[0]
+    return max(
+        float(down[-1] - down[0] + 1) / high,
+        float(across[-1] - across[0] + 1) / wide,
+    )
 
 
 def _check_size(image: Image, size: Any, *, code: str, what: str) -> None:
@@ -147,12 +172,13 @@ def check_render(
     size: Any = None,
     alpha_floor: float,
     render_noise: float,
+    subject_extent: float,
     allow_uniform: bool = False,
 ) -> dict:
-    """Not a single uniform colour, not fully transparent, dimensions as requested."""
+    """Not uniform, not transparent, not a speck, dimensions as requested."""
     image = as_image(subject)
     _check_size(image, size, code="post.render-size", what="render")
-    _check_not_blank(
+    mask = _check_not_blank(
         image,
         transparent="post.render-transparent",
         uniform="post.render-uniform",
@@ -161,7 +187,35 @@ def check_render(
         render_noise=render_noise,
         allow_uniform=allow_uniform,
     )
+    _check_reaches(mask, subject_extent)
     return _measure(image, alpha_floor)
+
+
+def _check_reaches(mask: np.ndarray, subject_extent: float) -> None:
+    """Something is there, and it is big enough to be worth judging (§PW52).
+
+    A 64x64 render whose only two opaque pixels sit in one corner passes every other
+    check: coverage clears the alpha floor because those pixels are fully opaque, and it
+    is not flat because the two differ. It is empty for every purpose and nothing said
+    so.
+
+    **The bar is extent, not area**, and that is what makes it safe. Measured on the two
+    real meshes the suite has, rendered through the project rig: the booster hammer
+    spans 0.578 of the frame and the plush body 0.539, at 0.166 and 0.168 coverage. A
+    rope framed exactly right spans 1.000 and covers 0.016 — the same order of area as a
+    speck, which is why every area floor high enough to catch the speck also refuses the
+    rope. On extent the two are 1.000 against 0.016.
+    """
+    reach = extent(mask)
+    if mask.any() and reach < float(subject_extent):
+        raise PolyweaveError(
+            "post.render-speck",
+            f"the subject spans {reach:.4f} of the frame and {float(subject_extent):g} "
+            f"is the least worth judging",
+            "the camera framed something far away or almost missed it; check the "
+            "framing before spending another render, or lower [tolerance] "
+            "subject_extent if the asset really is this small in frame",
+        )
 
 
 def check_texture(

@@ -522,6 +522,7 @@ def test_a_mesh_oriented_against_a_drawing_records_the_bars_it_was_judged_by(tmp
         "delta_e",
         "background_delta_e",
         "subject_coverage",
+        "subject_extent",
     }
     assert provenance.remeasure(written, written["tolerances"]) == []
 

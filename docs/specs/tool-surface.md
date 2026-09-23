@@ -89,6 +89,27 @@ That floor is deliberately tight: 1/255 is 0.0039 and the floor is 0.0040, so it
 render measured above and calls a two-step spread a picture. It can afford to be tight
 because `allow_uniform` is the door for a render that really is one colour.
 
+**A speck is not a render, and the bar for it is extent rather than area** (§PW52). A 64×64
+render whose only two opaque pixels sit in one corner passes both checks above: coverage
+clears the alpha floor because those pixels are fully opaque, and it is not flat because the
+two differ. It is empty for every purpose and nothing said so.
+
+The obvious repair is a floor on how much of the frame the subject fills, and it does not
+work. A rope or a wand framed exactly right covers about 1.6% of the frame by area — the
+same order as the speck — so every area floor high enough to catch the speck refuses the
+correctly framed thin asset. `[tolerance] subject_coverage` looks like the key for it and is
+not: it means the least of the frame a *photograph's* subject may fill before cutting it out
+is worth spending on.
+
+What separates them is how far the subject reaches. `[tolerance] subject_extent` is the
+fraction of the frame the subject's bounding box spans along its longer axis, and the two
+cases are 1.000 against 0.016. The default of 0.05 comes from rendering the two real meshes
+the suite has through the project rig: the booster hammer spans 0.578 and the plush body
+0.539, at 0.166 and 0.168 coverage. An order of magnitude of margin on each side, which is
+what a number nobody can re-measure on their own assets needs. `post.render-speck` is the
+refusal, and lowering the tolerance is the door for an asset that really is that small in
+frame.
+
 **A field is its own kind because only the caller knows which one an image is.** A height
 field blurred through an eight-bit buffer comes back as a staircase, and every check above
 passes it: the gradient is there, it is not uniform, it is not transparent, it is the size
