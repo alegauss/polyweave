@@ -131,8 +131,9 @@ same holds for a mesh too flat or too sparse to have axes at all.
 
 The transform is applied **once, on ingest**, and recorded as one 4×4, so the stored mesh
 sits in the project's convention and nothing downstream carries a correction angle.
-Anything that genuinely is a judgement — a deliberate lean, a pose — stays a parameter, but
-it now starts from a known frame rather than an arbitrary one.
+Anything that genuinely is a judgement — a pose — stays a parameter, but it now starts from
+a known frame rather than an arbitrary one. A lean the drawing already shows is not one of
+those, and is read off it (below).
 
 ## What the service painted in, and taking it out
 
@@ -156,9 +157,16 @@ dark line somebody drew deliberately and a shadow the service painted look ident
 anything measuring darkness: removing the first is a judgement about what somebody wanted.
 The flag is in the cache key, so a scrubbed render is never served for an unscrubbed one.
 
-It lives in the render path rather than beside the normalise, for a plain reason: a
-normalised mesh is rebuilt from vertices and faces and has no texture on it by the time it
-is written, and the render is where the service's own image is still attached.
+It lives in the render path rather than beside the normalise. When it was written a
+normalised mesh was rebuilt from vertices and faces and had no texture left to scrub. Since
+§PW90 the arrived object is moved in place and keeps its image, but the scrub stays where it
+is: it is a judgement per render, keyed with the render, and a stored mesh that had been
+scrubbed once would take the choice away from every render after it.
+
+**The lean comes from the drawing too** (§PW91). The twenty-four ways round are quarter
+turns of the mesh's own axes, so a drawing that tilts its subject, as Cottony's hammer is
+tilted 22 degrees, is matched by turning the four best of them about the view axis a degree
+at a time, with no render spent, and the angle is recorded beside the IoU.
 
 ## The reference is prepared, not uploaded
 
