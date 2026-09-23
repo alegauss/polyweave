@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 5 },
+  { block: "H", title: "Proof on a real game", open: 4 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -56,13 +56,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent",
     why: "The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question.",
     deps: ["PW57"],
-  },
-  {
-    id: "PW82",
-    block: "H",
-    symptom: "nothing takes bake_model.py out once its assets have moved, so the rig outlives its own replacement",
-    why: "Each family porting leaves the file smaller and still running, and two live paths to one sprite is the state this whole sequence exists to end.",
-    deps: [],
   },
   {
     id: "PW92",
@@ -97,4 +90,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW36", "PW53", "PW76", "PW77", "PW78", "PW79", "PW80", "PW81"];
+export const generatedPaused: string[] = ["PW36", "PW53", "PW76", "PW77", "PW78", "PW79", "PW80", "PW81", "PW82"];

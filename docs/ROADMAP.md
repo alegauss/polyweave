@@ -19,7 +19,6 @@
 - 📋 **PW57** (deps: PW53 ⏸) **every Cottony look gate restates its own floor, so no asset has a bar a search can aim at** — Five check scripts measure after the render is spent, which is a verdict and never a target, and a threshold moved in one of them is invisible to the rest. → §PW57
 - 📋 **PW59** (deps: PW53 ⏸, PW54 ✅, PW55 ✅, PW56 ⏳, PW57, PW58 ✅) **nothing says how much of Cottony still does its own version of what the plugin does** — Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion. → §PW59
 - ⏳ **PW56** (deps: PW57) **twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent** — The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question. → §PW56
-- 📋 **PW82** (deps: PW81 ✅) **nothing takes bake_model.py out once its assets have moved, so the rig outlives its own replacement** — Each family porting leaves the file smaller and still running, and two live paths to one sprite is the state this whole sequence exists to end. → §PW82
 - 📋 **PW92** (deps: —) **a mesh can only be sized by its height and set on its base, so a flat flying model is rescaled by hand in the game** — Starship read five provenance files to pick a scale, a centre and a hitbox per model, which is a constant per asset nothing declares. → §PW92
 
 ## Done when — PW36
