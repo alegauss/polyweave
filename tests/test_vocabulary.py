@@ -567,3 +567,70 @@ def test_every_ring_of_a_concave_dome_is_inside_the_one_below_it():
     ]
     assert reach == sorted(reach, reverse=True), "each ring is no wider than the last"
     assert reach[-1] < reach[0], "and the dome actually closes"
+
+
+# -- where a picture goes on a shape (§PW68) -------------------------------------------
+
+
+def test_a_stuffed_panel_says_where_its_drawing_lies():
+    """The drawing that gave the panel its outline is the picture on its face."""
+    ring = O.rounded_square(20.0, 4.0)
+    panel = S.inflate(ring, 6.0)
+    assert len(panel["uv"]) == len(panel["vertices"]), "one pair per vertex"
+    # Over the ring's own bounds, so the outline touches 0 and 1 on each axis.
+    assert panel["uv"].min() == pytest.approx(0.0)
+    assert panel["uv"].max() == pytest.approx(1.0)
+    check_mesh(panel)
+
+
+def test_most_meshes_carry_no_coordinates_at_all():
+    """Absent rather than zeroed: a mesh with zeros claims a corner for every face."""
+    assert "uv" not in S.primitive("cube", 2.0)
+    assert "uv" not in S.prism(O.circle(3.0), 2.0)
+    assert "uv" not in S.annulus(10.0, 4.0, 2.0)
+
+
+def test_moving_a_panel_leaves_its_picture_where_it_was():
+    """A transform reorders nothing, so the coordinates come through untouched."""
+    panel = S.inflate(O.rounded_square(20.0, 4.0), 6.0)
+    moved = S.transform(panel, at=[100, 0, 0], rotate=[0, 40, 0])
+    assert np.allclose(moved["uv"], panel["uv"])
+
+
+def test_joining_two_panels_keeps_both_pictures():
+    panel = S.inflate(O.rounded_square(20.0, 4.0), 6.0)
+    joined = S.union(panel, S.transform(panel, at=[50, 0, 0]))
+    assert len(joined["uv"]) == len(joined["vertices"])
+
+
+def test_joining_a_panel_to_something_with_none_keeps_none():
+    """All of them or none: filling the other part with zeros would place it wrongly."""
+    panel = S.inflate(O.rounded_square(20.0, 4.0), 6.0)
+    assert "uv" not in S.union(panel, S.primitive("cube", 2.0))
+
+
+def test_a_projection_can_be_told_the_frame_the_drawing_came_in():
+    """A shape smaller than the canvas it was drawn on sits where it was drawn."""
+    made = S.prism(O.rounded_square(10.0), 1.0)
+    # Ten wide, centred, in a frame forty across: it occupies the middle quarter.
+    uv = S.planar_uv(made["vertices"], [-20.0, -20.0, 40.0, 40.0])
+    assert uv.min() == pytest.approx(0.375)
+    assert uv.max() == pytest.approx(0.625)
+
+
+def test_coordinates_that_do_not_line_up_are_refused():
+    """An array one short puts the picture on the wrong part of the shape after that."""
+    panel = S.inflate(O.rounded_square(20.0, 4.0), 6.0)
+    with pytest.raises(PolyweaveError) as caught:
+        check_mesh({**panel, "uv": panel["uv"][:-1]})
+    assert caught.value.code == "post.uv-mismatched"
+    assert "one pair per vertex" in caught.value.remedy
+
+
+def test_coordinates_that_are_not_numbers_are_refused():
+    panel = S.inflate(O.rounded_square(20.0, 4.0), 6.0)
+    broken = panel["uv"].copy()
+    broken[0, 0] = np.nan
+    with pytest.raises(PolyweaveError) as caught:
+        check_mesh({**panel, "uv": broken})
+    assert caught.value.code == "post.uv-mismatched"

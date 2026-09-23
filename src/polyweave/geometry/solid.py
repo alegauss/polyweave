@@ -19,7 +19,8 @@ Two things the scripts learned the expensive way and this keeps:
   bevel** wherever a node asks for both, and the result is asserted non-empty.
 
 A mesh here is the same `{"vertices": …, "faces": …}` the rest of the plugin passes
-around, built in numpy. Nothing in this module needs Blender.
+around, built in numpy, and it carries `uv` where something worked the coordinates out
+(§PW68). Nothing in this module needs Blender.
 """
 
 from __future__ import annotations
@@ -36,11 +37,43 @@ from . import outline as O
 STEPS = 32
 
 
-def mesh(vertices: Any, faces: Any) -> dict:
-    return {
+def mesh(vertices: Any, faces: Any, uv: Any = None) -> dict:
+    """The currency everything here passes around, with its texture coordinates.
+
+    `uv` is one pair per vertex and is **absent unless something computed it** (§PW68),
+    by the same rule that keeps a normalisation free of a seed: a mesh carrying zeros
+    for coordinates nobody worked out claims to have them.
+    """
+    made = {
         "vertices": np.asarray(vertices, dtype=float).reshape(-1, 3),
         "faces": list(faces),
     }
+    if uv is not None:
+        made["uv"] = np.asarray(uv, dtype=float).reshape(-1, 2)
+    return made
+
+
+def planar_uv(points: Any, rect: Any = None) -> np.ndarray:
+    """A texture coordinate per vertex, read off where it sits in XY.
+
+    The projection a drawn panel wants: the picture that gave the shape its outline lies
+    on the shape in the plane it was drawn in, so u and v are just x and y normalised
+    over the extent. `rect` states that extent as `[x, y, width, height]` where the
+    drawing's own frame is bigger than the shape it holds; otherwise the shape's own
+    bounds are it, and the outline touches 0 and 1 on each axis.
+
+    Not for a prism's walls. A plane projected onto a face perpendicular to it smears,
+    which is why this is applied where the surface faces the drawing and not everywhere.
+    """
+    made = np.asarray(points, dtype=float).reshape(-1, 3)[:, :2]
+    if rect is None:
+        low, high = made.min(axis=0), made.max(axis=0)
+        span = np.where(high - low > 1e-12, high - low, 1.0)
+    else:
+        x, y, wide, tall = (float(v) for v in rect)
+        low = np.array([x, y])
+        span = np.array([wide or 1.0, tall or 1.0])
+    return (made - low) / span
 
 
 def _fan(count: int, start: int = 0) -> list[tuple[int, ...]]:
@@ -327,7 +360,10 @@ def transform(
     points, faces = as_mesh(subject)
     points = points * np.asarray(_triple(scale), dtype=float)
     points = points @ _turn(rotate).T
-    return mesh(points + np.asarray(_triple(at), dtype=float), faces)
+    # A transform moves a mesh and never reorders it, so whatever picture was on it is
+    # still where it was (§PW68).
+    carried = subject.get("uv") if isinstance(subject, dict) else None
+    return mesh(points + np.asarray(_triple(at), dtype=float), faces, carried)
 
 
 def _triple(value: Any) -> tuple[float, float, float]:
@@ -360,18 +396,24 @@ def union(*subjects: Any) -> dict:
     from ..post.mesh import as_mesh
 
     points, faces, offset = [], [], 0
+    coordinates: list = []
     for subject in subjects:
         these, those = as_mesh(subject)
         points.append(these)
         faces += [tuple(i + offset for i in face) for face in those]
         offset += len(these)
+        carried = subject.get("uv") if isinstance(subject, dict) else None
+        coordinates.append(None if carried is None else np.asarray(carried))
     if not points:
         raise PolyweaveError(
             "geom.bad-solid",
             "a union of nothing is nothing",
             "give it at least one node to join",
         )
-    return mesh(np.vstack(points), faces)
+    # All of them or none (§PW68). Filling a part that has no coordinates with zeros
+    # would claim a corner of the picture for every face of it.
+    uv = None if any(one is None for one in coordinates) else np.vstack(coordinates)
+    return mesh(np.vstack(points), faces, uv)
 
 
 # -- a drawing given volume -----------------------------------------------------------
@@ -470,6 +512,11 @@ def _pillow(ring: np.ndarray, grid: np.ndarray, lift: np.ndarray) -> dict:
     front = np.column_stack([grid, lift])
     back = np.column_stack([grid, -lift])
     points = np.vstack([flat, front, back])
+    # A stuffed panel is the drawing given volume, so the drawing lies on it in the
+    # plane it was drawn in (§PW68), over the ring's own bounds: the outline touches 0
+    # and 1 on each axis.
+    low, high = ring.min(axis=0), ring.max(axis=0)
+    uv = planar_uv(points, [low[0], low[1], *(high - low)])
 
     faces = []
     # Each face is a fan from the inside point nearest to each boundary edge.
@@ -490,7 +537,7 @@ def _pillow(ring: np.ndarray, grid: np.ndarray, lift: np.ndarray) -> dict:
         tuple(count + len(grid) + one for one in face)
         for face in _triangulated(grid, 0, True)
     ]
-    return mesh(points, faces)
+    return mesh(points, faces, uv)
 
 
 def _nearest(grid: np.ndarray, ring: np.ndarray) -> list[int]:

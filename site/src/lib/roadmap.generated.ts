@@ -40,7 +40,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW68",
     block: "G",
     symptom: "a built mesh has no texture coordinates, so a drawn panel is the right shape wearing nothing",
-    why: "A mesh here is vertices and faces, and Cottony's panel route builds a UV layer as it lifts the grid, because the drawing that shaped it is also its face.",
+    why: "The profile a drawn panel needs is a blurred alpha sampled on a grid, which is not what inflate computes from an outline.",
     deps: [],
   },
   {

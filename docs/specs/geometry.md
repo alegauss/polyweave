@@ -340,6 +340,24 @@ document naming an op nothing builds is a **warning** from the structural read a
 refusal at the build, and the two cannot disagree. An op nobody declared is
 `geom.unknown-op`, whose remedy names the declared ops and the `custom` door.
 
+**A mesh may carry `uv`, one pair per vertex** (§PW68), and most do not. A shape has no
+way to say where a picture goes on it otherwise, which is the whole of a drawn panel: the
+drawing that gave it its outline is also the picture on its face. Absent unless something
+worked the coordinates out, by the rule above — a mesh carrying zeros claims a corner of
+the picture for every face of itself.
+
+`inflate` fills them, because a stuffed panel is the drawing given volume, and the
+projection is planar over the outline's own bounds so the silhouette touches 0 and 1 on
+each axis. `planar_uv` takes a `[x, y, width, height]` instead where the drawing's frame
+is larger than the shape in it. It is not applied to a prism's walls: a plane projected
+onto a face perpendicular to it smears.
+
+A `transform` carries them, since it reorders nothing. A `union` carries them **only
+where every operand has them** — filling a part that has none with zeros would place that
+part's picture wrongly rather than leave it unplaced. `post.check("mesh", …)` refuses an
+array that does not line up with the vertices, because a picture placed by one that is a
+pair short is on the wrong part of the shape from there on and the render does not say so.
+
 **A build says which faces wear which material** (§PW67). A material sits on a node and a
 document names one output, so a model in two materials — Cottony's cream rope rim on its
 cushion face — could only be handed back as a `union`, and the join kept one material or

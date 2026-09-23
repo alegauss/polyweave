@@ -65,7 +65,37 @@ def check_mesh(subject: Any, *, min_faces: int = 1) -> dict:
         )
     lo = vertices.min(axis=0).tolist() if len(vertices) else [0.0, 0.0, 0.0]
     hi = vertices.max(axis=0).tolist() if len(vertices) else [0.0, 0.0, 0.0]
-    return {"faces": len(faces), "vertices": len(vertices), "bounds": [lo, hi]}
+    measured = {"faces": len(faces), "vertices": len(vertices), "bounds": [lo, hi]}
+    uv = subject.get("uv") if isinstance(subject, dict) else None
+    if uv is not None:
+        measured["uv"] = _check_uv(uv, len(vertices))
+    return measured
+
+
+def _check_uv(uv: Any, vertices: int) -> int:
+    """One texture coordinate per vertex, and every one of them a number (§PW68).
+
+    A mesh may carry no coordinates at all, and most do. What it may not carry is a set
+    that does not line up with its own vertices: a picture placed by an array one short
+    is on the wrong part of the shape after that vertex, and nothing about the render
+    says so.
+    """
+    array = np.asarray(uv, dtype=float)
+    if array.ndim != 2 or array.shape[1] != 2 or len(array) != vertices:
+        raise PolyweaveError(
+            "post.uv-mismatched",
+            f"the mesh has {vertices} vertices and {array.shape} texture coordinates",
+            "give one pair per vertex, in the same order, or leave them off; an array "
+            "that does not line up puts the picture on the wrong part of the shape",
+        )
+    if not np.isfinite(array).all():
+        raise PolyweaveError(
+            "post.uv-mismatched",
+            "some texture coordinates are not numbers",
+            "a zero-extent projection is the usual cause; check what the coordinates "
+            "were normalised over",
+        )
+    return len(array)
 
 
 def check_boolean(subject: Any, *, operands: Sequence[Any], min_faces: int = 1) -> dict:

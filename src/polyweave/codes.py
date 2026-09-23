@@ -218,6 +218,16 @@ CODES: dict[str, Code] = {
         when="the subject was outside the frame, or the camera never saw it",
         doors=("check the framing before spending another render",),
     ),
+    "post.uv-mismatched": Code(
+        means="a mesh's texture coordinates do not line up with its own vertices",
+        when="an array one short, the wrong shape, or holding something that is not a "
+        "number; a picture placed by one of those is on the wrong part of the shape "
+        "from that vertex on, and nothing about the render says so",
+        doors=(
+            "give one pair per vertex, in the same order",
+            "leave them off; most meshes carry none",
+        ),
+    ),
     "post.render-speck": Code(
         means="something is in the frame and it is too small to be worth judging",
         when="a camera that framed the subject far away or almost missed it; the two "
