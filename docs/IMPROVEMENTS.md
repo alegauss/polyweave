@@ -83,29 +83,6 @@ can see is not worth a pass over every texel.
 
 ## Block E — One world with the engine
 
-### §PW47 Bake at the size the declaration gives
-
-A sprite covering a 4 x 2 world rectangle at 64 pixels per unit has to be 256 x 128
-pixels. The renderer produces square pictures at whichever size the rung names, so such
-a declaration can only be refused, never met. PW24 put the contract in place and its
-refusal names the size it wants; nothing yet renders at it.
-
-Two things stand in the way. The first is the render: `render_to` sets one resolution on
-both axes, and the framing centres the subject in a square frame rather than mapping a
-stated world rectangle onto the pixels.
-
-The second is the cache key, and that is the part needing care. The key carries the
-rung, the seed, the samples, the inputs and the rig; the size rides along only because
-the rung implies it. Once a bake can be asked for a size the rung does not imply, the
-key has to carry it, or a square render comes back for a rectangular request — a wrong
-answer rather than a slow one. The subset is pinned in `docs/specs/provenance.md` and
-every cached entry was keyed without it, so the open question is whether the field is
-added always or only where a size was asked.
-
-There is an orthographic question underneath. A world rectangle mapped onto pixels is an
-orthographic projection; the rig is a perspective camera with a margin. A baked sprite
-wants the former, which may mean a rung of its own rather than a parameter.
-
 ## Block F — Motion
 
 ## Block G — Geometry as a declaration

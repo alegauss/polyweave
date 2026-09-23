@@ -232,14 +232,21 @@ def bake(
     )
     params = {**as_params(rig), **({"material": material} if material else {})}
     scale = None
+    # The size the picture comes out at: the rung's square, unless a world rectangle was
+    # declared, in which case the declaration decides both axes (§PW47). Before this, a
+    # 4x2 rectangle at 64 px/unit could only ever be refused, because the renderer made
+    # squares at whichever size the rung named and the contract asked for 256x128.
+    frame: tuple[int, int] = (chosen["size"], chosen["size"])
     if len(covers):
-        # Before the render, not after: a scale that disagrees is a refusal that costs
-        # nothing, and the numbers that disagree are both in it (§PW24).
-        scale = units.require(
-            {"covers": list(covers), "pixels_per_unit": pixels_per_unit},
-            size=(chosen["size"], chosen["size"]),
-            root=root,
-        )
+        # The scale is resolved the one way §PW24 resolves it — the asset's own where it
+        # states one, and the engine's where it does not — and the size follows from it
+        # rather than from the rung. No `size=` here: there is no rendered picture to
+        # check yet, and this is what decides the size the picture will be.
+        declared = {"covers": list(covers)}
+        if pixels_per_unit:
+            declared["pixels_per_unit"] = float(pixels_per_unit)
+        scale = units.require(declared, root=root)
+        frame = (int(scale["size"][0]), int(scale["size"][1]))
         params["covers"] = [float(v) for v in covers]
         params["pixels_per_unit"] = scale["pixels_per_unit"]
     if model:
@@ -291,16 +298,16 @@ def bake(
         )
         subject = blender.decimate(subject, chosen["decimate"])
     blender.apply_material(subject, material)
-    blender.place(scene, rig, subject)
+    blender.place(scene, rig, subject, covers=list(covers) or None)
 
     report.stage(
         "rendering",
-        note=f"{chosen['size']}px at {chosen['samples']} samples",
+        note=f"{frame[0]}x{frame[1]}px at {chosen['samples']} samples",
     )
     blender.render_to(
         scene,
         out_path,
-        size=chosen["size"],
+        size=frame,
         samples=chosen["samples"],
         seed=chosen["seed"],
     )
@@ -312,7 +319,7 @@ def bake(
     asserted = post.check(
         "render",
         out_path,
-        size=(chosen["size"], chosen["size"]),
+        size=frame,
         alpha_floor=floor_alpha,
         render_noise=tolerances.render_noise,
         allow_uniform=allow_uniform,

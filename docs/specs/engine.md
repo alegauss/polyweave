@@ -127,13 +127,30 @@ doing its job, not failing at it.
 **The check happens before the render, not after.** A scale that disagrees costs nothing to
 refuse, and the refusal is more useful than the same refusal with a render's worth of time
 spent behind it. `render.bake` takes `covers` and `pixels_per_unit`, checks them against
-the project's scale and against the size the rung will produce, and carries both into the
-provenance record and the answer. A bake that declares nothing is not asked about scale,
-because most renders are a preview of a thing rather than a sprite on somebody's grid.
+the project's scale, and carries both into the provenance record and the answer. A bake that
+declares nothing is not asked about scale, because most renders are a preview of a thing
+rather than a sprite on somebody's grid.
 
-What is not here is a bake whose size comes *from* the declaration rather than from the
-rung: the renderer produces square pictures at a rung's size, and a rectangle needs both a
-non-square render and the size in the cache key. That is PW47.
+**The declaration decides the size, not the rung** (§PW47). A sprite covering 4 × 2 units at
+64 px/unit is 256 × 128, and before this it could only ever be *refused* with that number,
+because the renderer made squares at whichever size the rung named. Now the scale is resolved
+the one way above — the asset's own where it states one, the engine's where it does not — and
+both axes follow from it. A rectangle landing between two pixels is still refused, because a
+sprite on half a pixel cannot sit on the grid whatever else is right.
+
+**A declared rectangle is rendered orthographically.** Mapping a world rectangle onto pixels
+at one scale *is* an orthographic projection: under the rig's perspective camera a unit at
+the front of the subject covers more pixels than one at the back, so `pixels_per_unit` would
+be a different number in every part of the frame and this contract could not be met by any
+render. It is a parameter rather than a rung of its own, because it changes one thing about
+the camera and nothing about what the ladder is for — a sprite still has a cheap rung and a
+dear one.
+
+**The cache key needed no new field.** The worry was that a size the rung does not imply
+would let a square render come back for a rectangular request. It cannot: `covers` and
+`pixels_per_unit` go into `params`, and `params` is already what the key is computed over. So
+every distinct rectangle and every distinct scale keys distinctly, and a bake that declares
+nothing keys exactly as it did, which is why no cached entry was invalidated.
 
 ## A capture declares its environment
 

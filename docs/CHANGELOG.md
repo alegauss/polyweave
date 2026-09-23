@@ -49,6 +49,7 @@
 - ✅ **PW23** **a real renderer needs a window, so a capture cannot run where there is no screen** — One call captures real pixels by whichever route draws on this machine, each route proved by a picture it drew and read back rather than assumed (design recorded in `docs/specs/engine.md`).
 - ✅ **PW24** **the baked sprite and the running game agree on scale only because a constant was tuned** — An asset declares the rectangle it covers and the scale it is baked at, checked against the engine's own number before a render, both numbers in a refusal (design recorded in `docs/specs/engine.md`).
 - ✅ **PW25** **a capture takes its picture in whatever language and settings the runner happens to have** — A capture is passed the settings it must be taken under, prints back what it applied, and is refused where the two differ; the answer is recorded beside it (design recorded in `docs/specs/engine.md`).
+- ✅ **PW47** **a bake renders square at the rung's size, so a declared world rectangle can be refused but never met** — A declared rectangle now decides both axes and gets an orthographic camera, and the key needed no new field because the declaration already rides in params (design recorded in `docs/specs/engine.md`).
 
 ## Block F — Motion
 

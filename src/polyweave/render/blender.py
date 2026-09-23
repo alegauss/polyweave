@@ -163,8 +163,21 @@ def apply_material(obj: Any, material: dict | None) -> Any:
     return obj
 
 
-def place(scene: Any, rig: Rig, subject: Any) -> dict:
-    """Camera, lights and film, computed from the rig and the subject's own bounds."""
+def place(scene: Any, rig: Rig, subject: Any, *, covers: Any = None) -> dict:
+    """Camera, lights and film, computed from the rig and the subject's own bounds.
+
+    `covers` is the world rectangle the picture stands for, as `[width, height]`, and it
+    changes the camera rather than only the framing (§PW47). A rectangle mapped onto
+    pixels at a stated scale is an **orthographic** projection: under the rig's
+    perspective camera a unit at the front of the subject covers more pixels than one at
+    the back, so `pixels_per_unit` would be a different number in every part of the
+    frame and the contract §PW24 checks could not be met by any render.
+
+    So a bake that declares what it covers gets an orthographic camera spanning exactly
+    that width, from the same direction the rig looks from. It is a parameter and not a
+    rung of its own because it changes one thing about the camera and nothing about what
+    the ladder is for: a sprite still has a cheap rung and a dear one.
+    """
     bpy = require()
     lo, hi = _bounds(subject)
     camera = camera_for(rig, lo, hi)
@@ -172,6 +185,13 @@ def place(scene: Any, rig: Rig, subject: Any) -> dict:
 
     data = bpy.data.cameras.new("polyweave-camera")
     data.lens = rig.focal_mm
+    if covers is not None:
+        wide, tall = (float(covers[0]), float(covers[1]))
+        data.type = "ORTHO"
+        # Blender's ortho_scale is the longer side of the frame in world units, so the
+        # rectangle maps onto the pixels exactly and the scale is one number everywhere.
+        data.ortho_scale = max(wide, tall)
+        camera = {**camera, "covers": [wide, tall], "projection": "orthographic"}
     obj = bpy.data.objects.new("polyweave-camera", data)
     scene.collection.objects.link(obj)
     obj.location = to_blender(camera["location"])
@@ -203,20 +223,25 @@ def render_to(
     scene: Any,
     path: str | Path,
     *,
-    size: int,
+    size: int | tuple[int, int],
     samples: int,
     seed: int,
 ) -> Path:
-    """Render the scene to a PNG with alpha, and return where it landed."""
+    """Render the scene to a PNG with alpha, and return where it landed.
+
+    `size` is one number for a square, or `(width, height)` for the rectangle a declared
+    world rectangle comes to at a stated scale (§PW47).
+    """
     bpy = require()
     out = Path(path)
     out.parent.mkdir(parents=True, exist_ok=True)
+    wide, tall = (size, size) if isinstance(size, int | float) else size
     scene.render.engine = "CYCLES"
     scene.cycles.samples = int(samples)
     scene.cycles.seed = int(seed)
     scene.cycles.use_denoising = True
-    scene.render.resolution_x = int(size)
-    scene.render.resolution_y = int(size)
+    scene.render.resolution_x = int(wide)
+    scene.render.resolution_y = int(tall)
     scene.render.resolution_percentage = 100
     scene.render.image_settings.file_format = "PNG"
     scene.render.image_settings.color_mode = "RGBA"

@@ -29,7 +29,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "B", title: "Seeing the result cheaply", open: 0 },
   { block: "C", title: "The asset compiler", open: 0 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 1 },
-  { block: "E", title: "One world with the engine", open: 1 },
+  { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 1 },
   { block: "H", title: "Proof on a real game", open: 1 },
@@ -55,13 +55,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "D",
     symptom: "a fetched mesh arrives with shading painted into its texture, and nothing can take the marks back out",
     why: "Those marks are shadows that do not move when the light does, and Cottony had to keep its own scrub pass with three thresholds found by eye, which is the fork adoption tests for.",
-    deps: [],
-  },
-  {
-    id: "PW47",
-    block: "E",
-    symptom: "a bake renders square at the rung's size, so a declared world rectangle can be refused but never met",
-    why: "PW24's contract names the size a sprite must be, and nothing renders at it: the size is the rung's, and it is not in the cache key either.",
     deps: [],
   },
   {

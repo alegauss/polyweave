@@ -15,8 +15,6 @@
 
 ## Block E — One world with the engine
 
-- 📋 **PW47** (deps: PW24 ✅) **a bake renders square at the rung's size, so a declared world rectangle can be refused but never met** — PW24's contract names the size a sprite must be, and nothing renders at it: the size is the rung's, and it is not in the cache key either. → §PW47
-
 ## Block F — Motion
 
 ## Block G — Geometry as a declaration

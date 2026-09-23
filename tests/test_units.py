@@ -269,15 +269,30 @@ def test_a_scale_that_disagrees_stops_before_anything_is_rendered(tmp_path):
     assert not (tmp_path / "tray.png").exists(), "nothing was rendered to find this"
 
 
-def test_a_rectangle_the_rung_cannot_render_is_refused_with_the_size_it_needs(tmp_path):
+def test_a_declared_rectangle_is_rendered_at_the_size_it_asks_for(tmp_path):
+    """§PW47: a 4x2 rectangle at 64 px/unit is 256x128, and used to be refused with
+    exactly that number because the renderer only made squares at the rung's size."""
+    pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
+    render = baking(
+        tmp_path, "samples = { sphere = 4 }\n\n[units]\npixels_per_unit = 64.0\n"
+    )
+    found = render.bake(
+        Quiet(), out="tray.png", rung="sphere", covers=[4.0, 2.0], root=tmp_path
+    )
+    assert found["asserted"]["size"] == [256, 128]
+    assert found["pixels_per_unit"] == 64.0
+
+
+def test_a_rectangle_landing_between_two_pixels_is_still_refused(tmp_path):
+    """What §PW47 makes renderable is a whole rectangle, not any rectangle: a sprite
+    landing on half a pixel cannot sit on the grid whatever else is right."""
     render = baking(tmp_path, "[units]\npixels_per_unit = 64.0\n")
     with pytest.raises(PolyweaveError) as caught:
         render.bake(
-            Quiet(), out="tray.png", rung="sphere", covers=[4.0, 2.0], root=tmp_path
+            Quiet(), out="tray.png", rung="sphere", covers=[4.0, 2.01], root=tmp_path
         )
-    assert caught.value.code == "units.wrong-size"
-    assert "256 x 128" in caught.value.remedy
-    assert not (tmp_path / "tray.png").exists()
+    assert caught.value.code == "units.not-whole"
+    assert not (tmp_path / "tray.png").exists(), "nothing was rendered to find this"
 
 
 def test_a_bake_that_declares_nothing_is_not_asked_about_scale(tmp_path):
@@ -297,3 +312,51 @@ def test_a_declaration_the_rung_does_match_is_carried_into_the_answer(tmp_path):
     assert out["covers"] == [3.0, 3.0]
     assert out["pixels_per_unit"] == 16.0
     assert out["size"] == 48, "3 units at 16 px/unit, and the rung agrees"
+
+
+def test_a_rectangular_request_keys_differently_from_a_square_one(tmp_path):
+    """§PW47's open question, which turns out to need no new field: the declaration
+    rides in `params`, and `params` is already what the key is computed over. So a
+    square render can never come back for a rectangular request, and no cached entry
+    is invalidated, because a bake that declares nothing keys exactly as before."""
+    from polyweave import provenance
+
+    def key(**params):
+        return provenance.cache_key(
+            provenance.planned(
+                "render", rung="sphere", seed=1, samples=4, params=params
+            )
+        )
+
+    square = key(azimuth=35.0)
+    wide = key(azimuth=35.0, covers=[4.0, 2.0], pixels_per_unit=64.0)
+    assert square != wide
+    assert wide != key(azimuth=35.0, covers=[2.0, 4.0], pixels_per_unit=64.0)
+    assert wide != key(azimuth=35.0, covers=[4.0, 2.0], pixels_per_unit=128.0)
+    assert wide == key(azimuth=35.0, covers=[4.0, 2.0], pixels_per_unit=64.0)
+
+
+def test_a_declared_rectangle_is_rendered_orthographically(tmp_path):
+    """A rectangle mapped onto pixels at one scale is an orthographic projection. Under
+    the rig's perspective camera a unit at the front covers more pixels than one at the
+    back, so the scale would be a different number in every part of the frame."""
+    pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
+    from polyweave.render import blender
+    from polyweave.render.rig import Rig
+
+    scene = blender.reset()
+    subject = blender.primitive("sphere", 1.0)
+    placed = blender.place(scene, Rig(), subject, covers=[4.0, 2.0])
+    assert placed["projection"] == "orthographic"
+    assert scene.camera.data.type == "ORTHO"
+    assert scene.camera.data.ortho_scale == pytest.approx(4.0)
+
+
+def test_a_bake_with_no_rectangle_keeps_the_perspective_rig(tmp_path):
+    pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
+    from polyweave.render import blender
+    from polyweave.render.rig import Rig
+
+    scene = blender.reset()
+    blender.place(scene, Rig(), blender.primitive("sphere", 1.0))
+    assert scene.camera.data.type == "PERSP"
