@@ -14,30 +14,6 @@
 
 ## Block G — Geometry as a declaration
 
-### §PW68 A mesh that cannot say where a picture goes on it
-
-A mesh here is `{"vertices": …, "faces": …}` and nothing else. `grep` for a UV, a
-texture coordinate or a loop layer across `src/` returns nothing, so a built shape has
-no way to say where on its surface a picture goes.
-
-That is the whole of Cottony's panel route. `cloth.cushion` reads a drawing's alpha,
-blurs it into stuffing, lifts a grid by the result and **builds a UV layer as it goes**,
-so the drawing that gave the panel its shape is also the picture on its face. Without
-coordinates the mesh is the right shape wearing nothing.
-
-§PW54 called this "an outline read off an image", which the code says it is not.
-`inflate` swells an outline's inside by each point's distance from the edge; `cushion`
-blurs the alpha itself by a share of the shorter side and samples that as a height per
-grid cell. Those agree on a plain blob and differ wherever a drawing has something
-inside it.
-
-So there are two questions and the first is the one that blocks: what a mesh carries
-beside its faces, and whether a second profile rule joins `inflate` or replaces it.
-
-The first is not only the panels' problem. A build carries face groups now, so two
-materials survive it; a material with a texture on it has nowhere to say how that
-texture lies, so the group names a picture nothing can place.
-
 ## Block H — Proof on a real game
 
 ### §PW36 Cottony adopts it without a fork
@@ -100,7 +76,7 @@ whether the edit was an improvement.
 Two routes are in scope. The arithmetic models are a declaration each. The panels are
 `cloth.cushion`, and reading it says this line assumed wrongly: not an outline read off
 an image, but the alpha blurred into a height field on a grid, carrying the UVs that
-make the drawing its own face. §PW68 is what that meets.
+make the drawing its own face. `inflate` takes a drawing now, and the profile with it.
 
 A declaration builds now, and the star already does: `tests/fixtures/cottony/star.toml`
 is `star_model.py` stated rather than programmed. The vocabulary takes the tray's rim

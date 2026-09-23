@@ -77,7 +77,7 @@
 - ✅ **PW65** **an annulus is a ring between two radii, so a rim that is not round cannot be declared at all** — An annulus takes two edges, so a rim that is not round is a ring rather than a boolean between two plates (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW66** **a crowned star reaches 82 units outside its own outline, and the op promises it will not** — A crowned dome keeps the silhouette it was given, concave or not, because a concave ring shrinks toward its centroid rather than along its miters (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW67** **a model in two materials builds into one mesh that carries neither of them** — A build says which faces wear which material, and the renderer takes a slot per material, so a rope rim on a cushion face stays two colours (design recorded in `docs/specs/geometry.md`).
-- ✅ **PW68 (what a mesh carries)** **a built mesh has no texture coordinates, so a drawn panel is the right shape wearing nothing** — A mesh carries texture coordinates where something worked them out, so a stuffed panel says where its drawing lies and a join keeps it.
+- ✅ **PW68** **a built mesh has no texture coordinates, so a drawn panel is the right shape wearing nothing** — Inflate takes a drawing as well as an outline, blurring its alpha into the height, so what is inside a drawing shapes the panel and not where it stops (design recorded in `docs/specs/geometry.md`).
 
 ## Block H — Proof on a real game
 

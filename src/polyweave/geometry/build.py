@@ -108,11 +108,34 @@ def _edge(stated: Any, root: Any) -> Any:
 
 
 def _inflate(node, instance, built, root):
+    # Two profiles, and what the node was given decides which (§PW68). An outline knows
+    # only where the shape stops, so it swells by distance from the edge; a drawing
+    # carries what is inside it too, so the alpha itself is blurred into the height.
+    if instance.get("drawing"):
+        return S.stuffed(
+            _alpha(instance["drawing"], root),
+            float(instance["thickness"]),
+            **{
+                k: v
+                for k, v in instance.items()
+                if k in ("size", "soften", "cell", "floor")
+            },
+        )
     return S.inflate(
         _outline(instance, root),
         float(instance["thickness"]),
         **_rest(instance, "steps", "front", "crown"),
     )
+
+
+def _alpha(named: Any, root: Any) -> Any:
+    """A drawing's own alpha, as the array the profile is read off."""
+    from ..image import load as load_image
+
+    where = Path(named)
+    if not where.is_absolute():
+        where = Path(root) / where
+    return load_image(where).rgba[..., 3] / 255.0
 
 
 def _union(node, instance, built, root):

@@ -469,6 +469,114 @@ def inflate(
     return _pillow(ring, grid, lift)
 
 
+#: How many pixels of a drawing one grid cell spans, when nothing says otherwise. Below
+#: this the mesh grows faster than the shape improves; above it a soft shoulder steps.
+CELL = 8
+
+
+def stuffed(
+    alpha: Any,
+    thickness: float,
+    *,
+    size: float | None = None,
+    soften: float = 0.40,
+    cell: int = CELL,
+    floor: float = 0.02,
+) -> dict:
+    """A drawing given volume **by its own alpha** rather than by its outline (§PW68).
+
+    The second of `inflate`'s two profiles, and the one a drawn panel needs. `inflate`
+    swells an outline by each point's distance from the edge, which knows only where the
+    shape stops. This blurs the alpha itself and samples the blur as a height, so
+    whatever the drawing has *inside* it shapes the surface too. The two agree on a
+    plain blob and differ everywhere else.
+
+    `soften` is the blur radius as a share of the drawing's shorter side, and it is what
+    domes the face: Cottony read 0.45 and 0.40 off a render, because at 0.10 and 0.06
+    the stuffing only rounded the rim and the cushion read as the flat card it was drawn
+    as. The blur is normalised before it is lifted, so `thickness` means the same thing
+    here as it does on an outline.
+
+    **A relief and not a pillow.** One lifted surface, because that is what a panel seen
+    front-on is and what the script this reads off builds. A cell whose corners are all
+    below the floor is dropped, which is the drop shadow's faintest tail: built down to
+    it, the panel showed a pale rectangle the size of the canvas.
+    """
+    mask = np.asarray(alpha, dtype=float)
+    if mask.ndim != 2 or min(mask.shape) < 2:
+        raise PolyweaveError(
+            "geom.bad-solid",
+            f"a drawing of {mask.shape} is not a surface to stuff",
+            "give it the alpha of a drawing, as a two-dimensional array",
+        )
+    tall, wide = mask.shape
+    body = (mask > 0.5).astype(float)
+    rise = _stuffing(body, min(wide, tall) * float(soften))
+    if rise.max() <= 1e-9:
+        raise PolyweaveError(
+            "geom.bad-solid",
+            "nothing in the drawing clears the halfway mark, so there is no body",
+            "point it at a drawing with a subject in it, not at its shadow alone",
+        )
+    rise = rise / rise.max() * float(thickness)
+
+    step = max(1, int(cell))
+    columns = list(range(0, wide, step)) + [wide - 1]
+    rows = list(range(0, tall, step)) + [tall - 1]
+    scale = (float(size) / max(wide, tall)) if size else 1.0
+    middle = np.array([wide - 1, tall - 1]) / 2.0
+
+    index, points, uv = {}, [], []
+    for y in rows:
+        for x in columns:
+            index[x, y] = len(points)
+            # y is flipped and the shape centred, as a traced outline is: an image
+            # counts rows downward and §6 counts y upward.
+            points.append(
+                [
+                    (x - middle[0]) * scale,
+                    (middle[1] - y) * scale,
+                    float(rise[y, x]),
+                ]
+            )
+            uv.append([x / (wide - 1), y / (tall - 1)])
+
+    faces = []
+    for down in range(len(rows) - 1):
+        for across in range(len(columns) - 1):
+            x0, x1 = columns[across], columns[across + 1]
+            y0, y1 = rows[down], rows[down + 1]
+            corners = ((x0, y0), (x0, y1), (x1, y1), (x1, y0))
+            if not any(mask[y, x] > floor for x, y in corners):
+                continue
+            faces.append(tuple(index[one] for one in corners))
+    if not faces:
+        raise PolyweaveError(
+            "geom.bad-solid",
+            f"every cell of the drawing is below the {floor:g} floor",
+            "lower the floor, or point it at a drawing with something in it",
+        )
+    return mesh(points, faces, uv)
+
+
+def _stuffing(body: np.ndarray, radius: float) -> np.ndarray:
+    """The body blurred into stuffing, kept inside the body it came from.
+
+    The power is what stops the dome being a cone: a straight blur falls off linearly
+    from the rim and reads as a tent, and the shoulder is where a sewn cushion's is.
+    """
+    if radius <= 0:
+        return body
+    from PIL import Image as PILImage
+    from PIL import ImageFilter
+
+    picture = PILImage.fromarray((np.clip(body, 0, 1) * 255.0).astype(np.uint8), "L")
+    wide = picture.filter(ImageFilter.GaussianBlur(radius))
+    blurred = np.asarray(wide, dtype=float) / 255.0
+    peak = max(float(blurred.max()), 1e-6)
+    return np.clip(blurred / peak, 0.0, 1.0) ** 0.6 * body
+
+
 def _inside(ring: np.ndarray, points: np.ndarray) -> np.ndarray:
     """Which of these points are inside the ring, by crossing number."""
     out = np.zeros(len(points), dtype=bool)

@@ -14,11 +14,9 @@
 
 ## Block G — Geometry as a declaration
 
-- ⏳ **PW68** (deps: —) **a built mesh has no texture coordinates, so a drawn panel is the right shape wearing nothing** — The profile a drawn panel needs is a blurred alpha sampled on a grid, which is not what inflate computes from an outline. → §PW68
-
 ## Block H — Proof on a real game
 
-- ⏳ **PW54** (deps: PW50 ✅, PW60 ✅, PW67 ✅, PW68 ⏳) **a Cottony shape is a bmesh program that exists only inside a bake, so nothing can read, diff or search it** — The drawn panels are cloth.cushion, which is a drawing's alpha blurred into a height field on a grid, carrying the UVs that make it its own face. → §PW54
+- ⏳ **PW54** (deps: PW50 ✅, PW60 ✅, PW67 ✅, PW68 ✅) **a Cottony shape is a bmesh program that exists only inside a bake, so nothing can read, diff or search it** — The drawn panels are cloth.cushion, which is a drawing's alpha blurred into a height field on a grid, carrying the UVs that make it its own face. → §PW54
 - 📋 **PW57** (deps: PW53 ⏸) **every Cottony look gate restates its own floor, so no asset has a bar a search can aim at** — Five check scripts measure after the render is spent, which is a verdict and never a target, and a threshold moved in one of them is invisible to the rest. → §PW57
 - 📋 **PW59** (deps: PW53 ⏸, PW54 ⏳, PW55 ✅, PW56 ⏸, PW57, PW58 ✅) **nothing says how much of Cottony still does its own version of what the plugin does** — Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion. → §PW59
 
@@ -40,14 +38,6 @@
   cream rope rim on a cushion face, and the join that makes it one output keeps one
   material or none (§PW67). Checked by reading the two colours off what a build returns,
   rather than off the document that stated them.
-
-## Done when — PW68
-
-- **A drawn panel comes out of a build wearing its own drawing** A mesh carries uv now,
-  inflate fills it, and a transform and a join keep it. What is left is the profile:
-  cushion blurs the alpha by a share of the shorter side and samples it per grid cell,
-  where inflate swells an outline by distance from its edge, and those differ wherever a
-  drawing has something inside it.
 
 ## Non-goals
 

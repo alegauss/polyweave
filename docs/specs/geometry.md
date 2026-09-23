@@ -166,7 +166,7 @@ counts y upward — an outline that came back mirrored is a sprite extruded back
 | `plate` | A rounded plate: a rectangle with a corner radius and a depth |
 | `crowned` | A plate with a domed face |
 | `annulus` | A ring between two edges: two radii for a round one, two outlines for any other |
-| `inflate` | A drawing given volume, as a stuffed cushion is — the route a panel takes |
+| `inflate` | A drawing given volume, as a stuffed cushion is — from an `outline` or from a `drawing` |
 | `carve` | Boolean difference: `into` minus `cutter` |
 | `union` | Boolean union of a list of ids |
 | `bevel` | A bevel applied to an existing node |
@@ -224,6 +224,35 @@ topology the solver leaves.
 the outline put it, at zero depth, and only the inside swells — by a function of each
 point's distance from the edge, which is what makes a panel look stuffed rather than
 extruded. A cushion made from a traced drawing therefore still has the drawn outline.
+
+**`inflate` has two profiles, and what the node was given decides which** (§PW68). An
+`outline` knows only where the shape stops, so the swell is distance from the edge. A
+`drawing` carries what is *inside* it, so its alpha is blurred and the blur is the height:
+a hole drawn in the middle is a hole in the surface rather than something filled in. The
+two agree on a plain blob and differ everywhere else, which is why it is one op with two
+rules rather than two names for giving a drawing volume.
+
+```toml
+[[nodes]]
+id        = "panel"
+op        = "inflate"
+drawing   = "art/booster_tray.png"
+thickness = 60.0
+size      = 984          # the longer side, in the project's units
+soften    = 0.40         # the blur, as a share of the drawing's shorter side
+```
+
+`soften` is what domes the face, and its useful range is bounded at both ends. Measured on
+a disc half its canvas across: at 0.06 nearly a third of the mesh sits within a tenth of
+full height, which is a flat top with a narrow fall-off — the reading that says "the
+cushion read as the flat card it was drawn as". At 0.20 a tenth does, and the face is
+domed. Past that the blur is wider than the shape, the field it samples is near-uniform
+inside before it is normalised, and the face flattens again.
+
+The drawn profile is a **relief and not a pillow**: one lifted surface, because that is
+what a panel seen front-on is. A cell whose corners are all below `floor` is dropped,
+which is the drop shadow's faintest tail — built down to it, the panel showed a pale
+rectangle the size of the canvas.
 
 ### Surfaces
 

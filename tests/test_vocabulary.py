@@ -634,3 +634,93 @@ def test_coordinates_that_are_not_numbers_are_refused():
     with pytest.raises(PolyweaveError) as caught:
         check_mesh({**panel, "uv": broken})
     assert caught.value.code == "post.uv-mismatched"
+
+
+# -- the second profile, read off the alpha rather than the outline (§PW68) ------------
+
+
+def ring_drawing(size=128, outer=50, inner=18):
+    """A blob with a hole in it: the case where the two profiles disagree."""
+    yy, xx = np.mgrid[0:size, 0:size]
+    far = (xx - size // 2) ** 2 + (yy - size // 2) ** 2
+    alpha = np.zeros((size, size), dtype=float)
+    alpha[far < outer**2] = 1.0
+    alpha[far < inner**2] = 0.0
+    return alpha
+
+
+def test_a_stuffed_drawing_is_shaped_by_what_is_inside_it():
+    """Which is the whole difference from inflate, and the reason for a second rule.
+
+    `inflate` knows only where the shape stops, so it swells toward the middle whatever
+    is there. This blurs the alpha, so a hole in the drawing is a hole in the surface.
+    """
+    made = S.stuffed(ring_drawing(), 10.0, size=100.0)
+    check_mesh(made)
+    points = np.asarray(made["vertices"], dtype=float)
+    middle = points[np.argmin(np.hypot(points[:, 0], points[:, 1]))]
+    assert middle[2] == pytest.approx(0.0, abs=0.01), "the hole did not fill in"
+    assert points[:, 2].max() == pytest.approx(10.0, rel=0.02), "and the ring rose"
+
+
+def test_a_stuffed_drawing_comes_out_at_the_size_it_was_asked_for():
+    made = S.stuffed(ring_drawing(), 10.0, size=100.0)
+    points = np.asarray(made["vertices"], dtype=float)
+    assert np.ptp(points[:, 0]) == pytest.approx(100.0, rel=0.02)
+    assert np.ptp(points[:, 1]) == pytest.approx(100.0, rel=0.02)
+
+
+def test_a_stuffed_drawing_wears_the_drawing_that_shaped_it():
+    made = S.stuffed(ring_drawing(), 10.0, size=100.0)
+    assert len(made["uv"]) == len(made["vertices"])
+    assert made["uv"].min() == pytest.approx(0.0)
+    assert made["uv"].max() == pytest.approx(1.0)
+
+
+def test_the_faintest_tail_of_a_shadow_is_not_built():
+    """Built down to it, the panel showed a pale rectangle the size of the canvas."""
+    alpha = ring_drawing()
+    alpha[alpha == 0.0] = 0.004  # a shadow far below the floor, over the whole canvas
+    made = S.stuffed(alpha, 10.0, size=100.0, floor=0.02)
+    whole = S.stuffed(alpha, 10.0, size=100.0, floor=0.0)
+    assert len(made["faces"]) < len(whole["faces"])
+
+
+def _at_full_height(made, thickness=10.0):
+    """How much of the mesh sits at the top, which is how flat the face reads."""
+    points = np.asarray(made["vertices"], dtype=float)
+    return float((points[:, 2] > thickness * 0.9).mean())
+
+
+def test_a_tight_blur_only_rounds_the_rim():
+    """Cottony's reading: at 0.10 and 0.06 the cushion read as the flat card it was.
+
+    Measured on a disc half the canvas across: at 0.06 nearly a third of the mesh is
+    within a tenth of full height — a flat top with a narrow fall-off at the edge —
+    against a tenth of it at 0.20, where the fall-off is spread across the face.
+    """
+    size = 128
+    yy, xx = np.mgrid[0:size, 0:size]
+    disc = ((xx - 64) ** 2 + (yy - 64) ** 2 < 50**2).astype(float)
+    tight = S.stuffed(disc, 10.0, size=100.0, soften=0.06)
+    domed = S.stuffed(disc, 10.0, size=100.0, soften=0.20)
+    assert _at_full_height(tight) > _at_full_height(domed) * 2
+
+    # And a blur wider than the shape flattens it again, because the field it samples is
+    # near-uniform inside before it is normalised. Worth knowing rather than hiding: the
+    # useful range is bounded at both ends, and `soften` is a share of the shorter side.
+    flooded = S.stuffed(disc, 10.0, size=100.0, soften=0.40)
+    assert _at_full_height(flooded) > _at_full_height(domed)
+
+
+def test_a_drawing_with_nothing_solid_in_it_has_no_body_to_stuff():
+    with pytest.raises(PolyweaveError) as caught:
+        S.stuffed(np.full((64, 64), 0.2), 10.0)
+    assert caught.value.code == "geom.bad-solid"
+    assert "no body" in caught.value.message
+
+
+def test_something_that_is_not_a_drawing_is_refused():
+    with pytest.raises(PolyweaveError) as caught:
+        S.stuffed(np.zeros((8, 8, 4)), 10.0)
+    assert caught.value.code == "geom.bad-solid"

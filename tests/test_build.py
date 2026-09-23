@@ -455,3 +455,45 @@ def test_a_boolean_keeps_what_it_cut_into_and_nothing_finer(tmp_path):
     assert carved == [
         {"material": "cushion", "faces": [0, len(found["built"]["tray"]["faces"])]}
     ]
+
+
+def test_inflate_takes_a_drawing_as_well_as_an_outline(tmp_path):
+    """§PW68: what the node was given is what decides which profile it gets.
+
+    An outline knows only where the shape stops. A drawing carries what is inside it
+    too, so a hole drawn in the middle is a hole in the surface rather than filled in.
+    """
+    from PIL import Image as PILImage
+
+    size = 128
+    yy, xx = np.mgrid[0:size, 0:size]
+    far = (xx - 64) ** 2 + (yy - 64) ** 2
+    canvas = np.zeros((size, size, 4), dtype=np.uint8)
+    canvas[far < 50**2] = (200, 90, 60, 255)
+    canvas[far < 18**2] = (0, 0, 0, 0)
+    PILImage.fromarray(canvas, "RGBA").save(tmp_path / "panel.png")
+
+    found = B.build(
+        one("inflate", drawing="panel.png", thickness=10.0, size=100.0), root=tmp_path
+    )
+    made = found["output"]
+    check_mesh(made)
+    assert "uv" in made, "a drawn panel wears the drawing that shaped it"
+    points = np.asarray(made["vertices"], dtype=float)
+    middle = points[np.argmin(np.hypot(points[:, 0], points[:, 1]))]
+    assert middle[2] == pytest.approx(0.0, abs=0.01), "the hole stayed a hole"
+    assert points[:, 2].max() == pytest.approx(10.0, rel=0.02)
+
+
+def test_inflate_over_an_outline_still_swells_from_its_edge(tmp_path):
+    """The first profile is untouched: nothing that works today moves."""
+    found = B.build(
+        one(
+            "inflate",
+            outline={"shape": "rounded_square", "size": 20.0, "corner": 4.0},
+            thickness=6.0,
+        ),
+        root=tmp_path,
+    )
+    points = np.asarray(found["output"]["vertices"], dtype=float)
+    assert np.ptp(points[:, 2]) == pytest.approx(6.0, rel=0.05), "a pillow, both ways"
