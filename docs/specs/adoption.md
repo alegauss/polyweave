@@ -180,6 +180,34 @@ question about assets and every one of them is an asset — so `held` reports th
 
 A live fetch stays a person's call and is not what this covers.
 
+## How a consumer depends on this
+
+Binds **PW70**. Cottony reaches the plugin as an ordinary Python dependency, in the file
+its CI already installs from, **pinned to a commit**:
+
+```
+polyweave @ git+https://github.com/alegauss/polyweave.git@<sha>
+```
+
+Pinned for the reason that project pins its linter, in its own words: an unpinned
+dependency is a build that breaks on somebody else's release, and the point is that the
+answer is the same in CI as on a desk. Moving it is a deliberate edit. A git URL rather
+than a release because there is no release yet; when there is one, the line changes and
+nothing else does.
+
+**What forced the question was one lookup.** Three of Cottony's runners each carried their
+own copy of "find Godot, bound the run, distrust the exit code". Two of them moving here
+left the third — `run_tests.py`, the one both CI workflows run — as the only one that did
+not read the project's config, so a person who set the project up by writing
+`polyweave.toml` got two runners working and one saying there was no Godot. Porting two
+lines needed the import, and the import needed this decision.
+
+**A binary is not stated in a committed config.** `engine.find` reads `[paths] godot`,
+then `$GODOT`, then `PATH`, and a declared path that is not there is **refused rather than
+fallen back from** — so one desk's path committed to a shared file breaks every other
+desk, including a CI that downloads its own engine and exports `$GODOT`. The refusal names
+all three places, which is what makes leaving it out safe.
+
 ## Three model routes, stated rather than programmed
 
 Binds **PW54**. `tools/art/solid.py` is 283 lines of bmesh primitives that three scripts

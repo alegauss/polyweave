@@ -130,30 +130,3 @@ Cottony's own work. The palette and the fonts are the same. What counts is what 
 of this block names, and the gate may report a fraction below one for as long as it says
 what is left and why. Two of those are already answered in `docs/specs/adoption.md`: the
 fetch ledger replays, and the motion Cottony has is two frames and no clip.
-
-### §PW70 One project, two answers to where the engine is
-
-Cottony now finds Godot two ways and they disagree. `capture_screens.py` and
-`measure_frames.py` go through `engine.find`, which reads `[paths] godot` first and then
-falls back to `$GODOT` and `PATH`. `tools/run_tests.py` keeps its own copy of that
-lookup, which knows only the last two — so a person who sets the project up by writing
-`polyweave.toml` gets two runners working and the third saying "no Godot".
-
-Nothing is broken by it: `run_tests.py` behaves exactly as it did. What changed is that
-the project now has a place where the engine is declared, and one runner does not read
-it.
-
-The lookup is three lines and the port is two. What stops it is the dependency. Both CI
-workflows run `run_tests.py`, and they install from `tools/art/requirements.txt` — so
-importing the plugin there makes CI need it, and the plugin is not published. It would
-have to be a git URL in that file, or vendored.
-
-That is a decision about how this project depends on the plugin at all, and it reaches
-further than one lookup: the same question decides whether the seven hand-run scripts
-under `tools/perf/` can have a runner that imports it, and it is the number §PW59 exists
-to state.
-
-So the smallest honest version is to settle the dependency first and port afterwards,
-and the cheapest interim is a line in `run_tests.py` saying which of the two lookups it
-is — because the failure a person actually hits is a runner that cannot start while its
-neighbours can.
