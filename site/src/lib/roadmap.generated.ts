@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 3 },
+  { block: "H", title: "Proof on a real game", open: 4 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -54,7 +54,14 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW56",
     block: "H",
     symptom: "twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent",
-    why: "capture_screens.py and measure_frames.py trust a printed line and a timeout, so the route probe and the settings comparison go unused where the engine is.",
+    why: "The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question.",
+    deps: ["PW57"],
+  },
+  {
+    id: "PW70",
+    block: "H",
+    symptom: "Cottony finds Godot two ways now, and the runner CI depends on is the one that ignores the config",
+    why: "Porting the third copy makes CI need the plugin, which is not published, so the lookup is two lines and the dependency it drags in is the whole question.",
     deps: [],
   },
 ];
