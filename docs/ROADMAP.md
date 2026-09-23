@@ -19,8 +19,7 @@
 - 📋 **PW57** (deps: PW53 ⏸) **every Cottony look gate restates its own floor, so no asset has a bar a search can aim at** — Five check scripts measure after the render is spent, which is a verdict and never a target, and a threshold moved in one of them is invisible to the rest. → §PW57
 - 📋 **PW59** (deps: PW53 ⏸, PW54 ✅, PW55 ✅, PW56 ⏳, PW57, PW58 ✅) **nothing says how much of Cottony still does its own version of what the plugin does** — Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion. → §PW59
 - ⏳ **PW56** (deps: PW57) **twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent** — The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question. → §PW56
-- 📋 **PW81** (deps: PW80 ✅) **the two friends, their lean frames and the mascot take eleven constants apiece and nothing declares one** — Cloth, face placement, unsculpt and dust were each solved by hand on the assets a player looks at most, so they move last. → §PW81
-- 📋 **PW82** (deps: PW81) **nothing takes bake_model.py out once its assets have moved, so the rig outlives its own replacement** — Each family porting leaves the file smaller and still running, and two live paths to one sprite is the state this whole sequence exists to end. → §PW82
+- 📋 **PW82** (deps: PW81 ✅) **nothing takes bake_model.py out once its assets have moved, so the rig outlives its own replacement** — Each family porting leaves the file smaller and still running, and two live paths to one sprite is the state this whole sequence exists to end. → §PW82
 - 📋 **PW92** (deps: —) **a mesh can only be sized by its height and set on its base, so a flat flying model is rescaled by hand in the game** — Starship read five provenance files to pick a scale, a centre and a hitbox per model, which is a constant per asset nothing declares. → §PW92
 
 ## Done when — PW36
@@ -88,6 +87,15 @@
 - **The boosters bake through the plugin and a person judged them** bake_model.py no
   longer renders the three boosters, and polyweave.loop.json holds an after run for
   boosters beside the before run at ef16b28.
+
+## Done when — PW81
+
+- **The five earlier families have baked through the plugin first** PW76 to PW80 are
+  shipped whole, each with a person's verdict on its after side, so this family starts
+  from a rig and a search that have held elsewhere.
+- **The five bake through the plugin or stay hand-tuned by decision** Either
+  bake_model.py no longer renders the friends and the mascot and a person judged them,
+  or a person decided they stay, and polyweave.loop.json says which.
 
 ## Non-goals
 

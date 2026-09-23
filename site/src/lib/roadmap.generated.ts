@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 6 },
+  { block: "H", title: "Proof on a real game", open: 5 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -58,18 +58,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW57"],
   },
   {
-    id: "PW81",
-    block: "H",
-    symptom: "the two friends, their lean frames and the mascot take eleven constants apiece and nothing declares one",
-    why: "Cloth, face placement, unsculpt and dust were each solved by hand on the assets a player looks at most, so they move last.",
-    deps: [],
-  },
-  {
     id: "PW82",
     block: "H",
     symptom: "nothing takes bake_model.py out once its assets have moved, so the rig outlives its own replacement",
     why: "Each family porting leaves the file smaller and still running, and two live paths to one sprite is the state this whole sequence exists to end.",
-    deps: ["PW81"],
+    deps: [],
   },
   {
     id: "PW92",
@@ -104,4 +97,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW36", "PW53", "PW76", "PW77", "PW78", "PW79", "PW80"];
+export const generatedPaused: string[] = ["PW36", "PW53", "PW76", "PW77", "PW78", "PW79", "PW80", "PW81"];
