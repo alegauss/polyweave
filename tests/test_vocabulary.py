@@ -286,6 +286,40 @@ def test_a_rotation_turns_the_mesh():
     assert high[1] - low[1] == pytest.approx(1.0)
 
 
+def signed_volume(made) -> float:
+    """Positive when every face points out, which a renderer shades as the front."""
+    points = np.asarray(made["vertices"], dtype=float)
+    total = 0.0
+    for face in made["faces"]:
+        first = points[face[0]]
+        for one, two in zip(face[1:-1], face[2:], strict=True):
+            total += float(np.dot(first, np.cross(points[one], points[two])))
+    return total / 6.0
+
+
+def test_a_transform_keeps_what_the_mesh_wears():
+    """§PW88: Cottony's board tray, scaled into cells, came back wearing nothing."""
+    beside = S.transform(S.primitive("cube", 1.0), at=(3, 0, 0))
+    worn = {
+        **S.union(S.primitive("cube", 1.0), beside),
+        "groups": [
+            {"material": "cushion", "faces": [0, 6]},
+            {"material": "rope", "faces": [6, 12]},
+        ],
+    }
+    moved = S.transform(worn, scale=1 / 112, rotate=(0, 30, 0), at=(1, 2, 3))
+    assert moved["groups"] == worn["groups"]
+    assert moved["groups"] is not worn["groups"], "a copy, so one edit is not both"
+
+
+def test_a_mirror_keeps_its_faces_pointing_out():
+    """A negative scale turns space inside out; the faces are turned back with it."""
+    cube = S.primitive("cube", 2.0)
+    assert signed_volume(cube) == pytest.approx(8.0)
+    assert signed_volume(S.transform(cube, scale=(1, 1, -1))) == pytest.approx(8.0)
+    assert signed_volume(S.transform(cube, scale=(-1, -1, 1))) == pytest.approx(8.0)
+
+
 def test_a_union_keeps_every_part(tmp_path):
     one = check_mesh(S.primitive("cube", 1.0))
     both = check_mesh(S.union(S.primitive("cube", 1.0), S.primitive("cube", 1.0)))

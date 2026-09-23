@@ -265,6 +265,31 @@ def test_a_transform_moves_what_it_was_given(tmp_path):
     assert points[:, 0].mean() == pytest.approx(5.0), "and placed where `at` says"
 
 
+def test_a_declaration_ending_in_a_transform_still_wears_its_materials(tmp_path):
+    """§PW88: the tray is drawn in pixels and handed over in cells by a transform."""
+    stated = {
+        "name": "pair",
+        "version": 1,
+        "params": {},
+        "materials": {"rope": {"colour": "#FFFAEE"}, "cushion": {"colour": "#F2E4D0"}},
+        "nodes": [
+            {"id": "a", "op": "primitive", "kind": "cube", "material": "rope"},
+            {
+                "id": "b",
+                "op": "primitive",
+                "kind": "cube",
+                "material": "cushion",
+                "at": [3, 0, 0],
+            },
+            {"id": "both", "op": "union", "inputs": ["a", "b"]},
+            {"id": "in_cells", "op": "transform", "of": "both", "scale": 0.5},
+        ],
+        "output": "in_cells",
+    }
+    found = B.build(stated, root=tmp_path)
+    assert [one["material"] for one in found["output"]["groups"]] == ["rope", "cushion"]
+
+
 # -- a model a game has, as a declaration (§PW64) --------------------------------------
 
 COTTONY = Path(__file__).parent / "fixtures" / "cottony"

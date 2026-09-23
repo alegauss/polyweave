@@ -354,16 +354,31 @@ def transform(
     scale: Any = (1, 1, 1),
     rotate: Any = (0, 0, 0),
 ) -> dict:
-    """Scale, then rotate, then place — which is the order a transform means."""
+    """Scale, then rotate, then place — which is the order a transform means.
+
+    **What the mesh wears comes with it** (§PW88). A transform moves a mesh and never
+    reorders it, so the picture on it and the ranges of faces each material covers are
+    still where they were. Rebuilding from points and faces alone left Cottony's board
+    tray, scaled from pixels into cells, wearing nothing.
+
+    **A mirror keeps its faces pointing out.** A scale with an odd number of negative
+    components turns the space inside out, and a face left in its old order then points
+    in, which a renderer shades as the back of the surface. Reversing each face undoes
+    that and moves no face, so the material ranges still hold.
+    """
     from ..post.mesh import as_mesh
 
+    stretch = np.asarray(_triple(scale), dtype=float)
     points, faces = as_mesh(subject)
-    points = points * np.asarray(_triple(scale), dtype=float)
+    points = points * stretch
     points = points @ _turn(rotate).T
-    # A transform moves a mesh and never reorders it, so whatever picture was on it is
-    # still where it was (§PW68).
-    carried = subject.get("uv") if isinstance(subject, dict) else None
-    return mesh(points + np.asarray(_triple(at), dtype=float), faces, carried)
+    if float(np.prod(stretch)) < 0.0:
+        faces = [tuple(reversed(face)) for face in faces]
+    worn = subject if isinstance(subject, dict) else {}
+    made = mesh(points + np.asarray(_triple(at), dtype=float), faces, worn.get("uv"))
+    if worn.get("groups"):
+        made["groups"] = [dict(one) for one in worn["groups"]]
+    return made
 
 
 def _triple(value: Any) -> tuple[float, float, float]:
