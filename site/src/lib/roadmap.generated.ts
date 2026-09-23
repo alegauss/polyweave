@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 2 },
+  { block: "H", title: "Proof on a real game", open: 3 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -49,6 +49,13 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "nothing says how much of Cottony still does its own version of what the plugin does",
     why: "Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion.",
     deps: ["PW53", "PW56", "PW57"],
+  },
+  {
+    id: "PW56",
+    block: "H",
+    symptom: "twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent",
+    why: "capture_screens.py and measure_frames.py trust a printed line and a timeout, so the route probe and the settings comparison go unused where the engine is.",
+    deps: [],
   },
 ];
 
@@ -76,4 +83,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW36", "PW53", "PW56"];
+export const generatedPaused: string[] = ["PW36", "PW53"];

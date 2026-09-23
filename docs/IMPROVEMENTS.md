@@ -80,8 +80,9 @@ file and passes. The site publishes it.
 stays inside it: Godot still runs the scene. What changes is who starts it, and what is
 checked once it has.
 
-Set aside: Godot is not installed here, the work is entirely in Cottony's tree, and
-Block E already ships every piece it would use.
+Godot 4.7.1 is installed and the probe answers the machine: `window-offscreen` and
+`window-minimised` work, `virtual-display` cannot on Windows, and `headless` drew
+nothing. The route exists, so what is left is Cottony's tree.
 
 ### §PW57 Five floors in five files, and not one of them is a target
 

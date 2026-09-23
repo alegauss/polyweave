@@ -17,7 +17,8 @@
 ## Block H — Proof on a real game
 
 - 📋 **PW57** (deps: PW53 ⏸) **every Cottony look gate restates its own floor, so no asset has a bar a search can aim at** — Five check scripts measure after the render is spent, which is a verdict and never a target, and a threshold moved in one of them is invisible to the rest. → §PW57
-- 📋 **PW59** (deps: PW53 ⏸, PW54 ✅, PW55 ✅, PW56 ⏸, PW57, PW58 ✅) **nothing says how much of Cottony still does its own version of what the plugin does** — Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion. → §PW59
+- 📋 **PW59** (deps: PW53 ⏸, PW54 ✅, PW55 ✅, PW56 📋, PW57, PW58 ✅) **nothing says how much of Cottony still does its own version of what the plugin does** — Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion. → §PW59
+- 📋 **PW56** (deps: —) **twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent** — capture_screens.py and measure_frames.py trust a printed line and a timeout, so the route probe and the settings comparison go unused where the engine is. → §PW56
 
 ## Done when — PW36
 
