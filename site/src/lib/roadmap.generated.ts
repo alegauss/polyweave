@@ -25,14 +25,14 @@ export interface GeneratedNonGoal {
 }
 
 export const generatedBlocks: GeneratedBlock[] = [
-  { block: "A", title: "What a tool call costs the turn", open: 2 },
+  { block: "A", title: "What a tool call costs the turn", open: 3 },
   { block: "B", title: "Seeing the result cheaply", open: 0 },
   { block: "C", title: "The asset compiler", open: 0 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 1 },
-  { block: "H", title: "Proof on a real game", open: 7 },
+  { block: "H", title: "Proof on a real game", open: 6 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -51,17 +51,17 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
+    id: "PW63",
+    block: "A",
+    symptom: "three of Cottony's rig constants share a name with a plugin parameter that means something else",
+    why: "A port that copies fill, key or ambient across is accepted and renders the wrong picture, because the guard refuses an axis nothing takes and cannot see one whose name is taken.",
+    deps: [],
+  },
+  {
     id: "PW60",
     block: "G",
     symptom: "a declaration is read, resolved and reported on, and nothing turns one into a mesh",
     why: "Every op function, the build order and the report that consumes the result all ship, and no call in the package produces the spec's own worked example.",
-    deps: [],
-  },
-  {
-    id: "PW53",
-    block: "H",
-    symptom: "Cottony lights twelve models through fourteen constants of its own, and the search never sees one of them",
-    why: "One asset moving leaves bake_model.py standing for the other eleven, so the rig the plugin exists to remove is still the thing that runs.",
     deps: [],
   },
   {
@@ -130,3 +130,6 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
     why: "Everything runs on the developer's machine against files in their own repository, because a plugin that needs an account is one that fails on the day the account does.",
   },
 ];
+
+/** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
+export const generatedPaused: string[] = ["PW36", "PW53"];

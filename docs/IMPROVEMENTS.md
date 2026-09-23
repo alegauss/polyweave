@@ -25,6 +25,8 @@ roadkeep, and `deps <id>` returns the expansion with its kind, so the answer can
 asked for rather than re-derived — the same argument that stopped a tolerance holding
 one default in the config and another in the function using it.
 
+A deferred dep no longer dangles: `generatedPaused` now holds those ids.
+
 ### §PW62 A per-rung tolerance whose only caller asks for it without the rung
 
 `render.bake` resolves its tolerances with `config.tolerances()` and names no rung — two
@@ -50,6 +52,35 @@ PW44 built the per-rung table, and the one caller that needs it does not ask for
 The fix is the argument. The test is a flat render at each rung, and it should fail at
 sphere before it is made to pass. Worth checking at the same time whether any other
 caller knows its rung and omits it.
+
+### §PW63 Three names the renderer takes, meaning something the caller did not ask for
+
+PW36's audit found that `light` and `form` name nothing the renderer has, and the guard
+it added refuses an axis no parameter takes. Three more constants are worse than
+missing: they share a name with a plugin parameter that means something else, so the
+guard passes them.
+
+Cottony's `Model` against the plugin's `Rig`, on the same three words:
+
+- `fill` is how much of the frame the model fills, 0.92. The plugin's `fill` is a fill
+  light in watts, default 120.
+- `key` is the key's width as a fraction of the framed reach, 0.55. The plugin's `key` is
+  the key's power in watts, default 400.
+- `ambient` is a multiplier on the rig's ambient, 1.0. The plugin's `ambient` is the world
+  value itself, 0.25.
+
+A port that copies `fill = 0.92` across asks for a 0.92-watt fill light and gets a
+nearly black picture, and nothing refuses it, because `fill` is a parameter the renderer
+really takes. A search handed Cottony's fill range sweeps 0.85 to 0.95 watts and reports
+a best among near-identical dark renders.
+
+`search.unknown-parameter` cannot catch this and should not be stretched to. The names
+are right and the meanings are not, which no near-match sees.
+
+What would catch it is a declared range or a unit per parameter: 0.92 W is outside
+anything a watt-valued knob would declare, and that is checkable without knowing where
+the number came from. Whether the range belongs on `Rig` or in the spec is the open
+choice.
 
 ## Block B — Seeing the result cheaply
 
@@ -120,14 +151,15 @@ plugin over the rig, and the rig is what still runs on a build.
 
 The work is a translation rather than a move, which is why it is one line per asset.
 §PW36's audit already found the sharp edge: `light` is a whole-rig multiplier and `form`
-is the key's share of it, and neither is a parameter the renderer has. An axis the
-renderer has no knob for is now refused before a render is spent, but the conversion
-itself stays a person's — `exposure` is in stops, and a wrong one is a different picture
-rather than an error.
+is the key's share of it, and neither is a parameter the renderer has. An axis with no
+knob is refused before a render is spent, but the conversion stays a person's:
+`exposure` is in stops, and a wrong one is a different picture rather than an error.
 
 So each model's constants become an acceptance spec, the spec is what `search` aims at,
 and the ledger `docs/specs/adoption.md` defines takes the before side for that asset
 before it moves. A comparison with one side recorded is refused, and rightly.
+
+Set aside: it needs a person three times over, and §PW63 traps a hand conversion.
 
 ### §PW54 A shape that exists only inside a bake cannot be read, diffed or searched
 

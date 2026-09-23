@@ -4,6 +4,7 @@
 
 - 📋 **PW61** (deps: —) **the site understands one of the backlog's three dep forms, so a block or a range becomes a dangling id** — waitingOn keeps the first whitespace token, so a `Block G` dep becomes `Block`, and the gate reports a missing task rather than a grammar it cannot read. → §PW61
 - 📋 **PW62** (deps: PW44 ✅) **a render resolves its noise floor without naming its rung, so a sphere is judged at the floor measured for a final** — The same call hands the rung to the measurer and withholds it from the bar, so the noisiest rung gets the tightest floor and a flat sphere passes PW42's check. → §PW62
+- 📋 **PW63** (deps: —) **three of Cottony's rig constants share a name with a plugin parameter that means something else** — A port that copies fill, key or ambient across is accepted and renders the wrong picture, because the guard refuses an axis nothing takes and cannot see one whose name is taken. → §PW63
 
 ## Block B — Seeing the result cheaply
 
@@ -21,13 +22,12 @@
 
 ## Block H — Proof on a real game
 
-- 📋 **PW53** (deps: PW36 ✅) **Cottony lights twelve models through fourteen constants of its own, and the search never sees one of them** — One asset moving leaves bake_model.py standing for the other eleven, so the rig the plugin exists to remove is still the thing that runs. → §PW53
 - 📋 **PW54** (deps: PW50 ✅, PW60) **a Cottony shape is a bmesh program that exists only inside a bake, so nothing can read, diff or search it** — solid.py is 283 lines of geometry as code, and it carries a second copy of the bevelled-boolean lesson, which is a copy that will drift. → §PW54
 - 📋 **PW55** (deps: —) **a Cottony fetch is bounded by nothing a tool can see, and records itself in a ledger the plugin cannot read** — meshy.py carries its own probe, lock file and expiry lesson beside the plugin's budget, schema and provenance, so one spend is recorded twice. → §PW55
 - 📋 **PW56** (deps: —) **twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent** — capture_screens.py and measure_frames.py trust a printed line and a timeout, so the route probe and the settings comparison go unused where the engine is. → §PW56
-- 📋 **PW57** (deps: PW53) **every Cottony look gate restates its own floor, so no asset has a bar a search can aim at** — Five check scripts measure after the render is spent, which is a verdict and never a target, and a threshold moved in one of them is invisible to the rest. → §PW57
+- 📋 **PW57** (deps: PW53 ⏸) **every Cottony look gate restates its own floor, so no asset has a bar a search can aim at** — Five check scripts measure after the render is spent, which is a verdict and never a target, and a threshold moved in one of them is invisible to the rest. → §PW57
 - 📋 **PW58** (deps: —) **nothing a game ships has been through the skeleton, the clip or the sprite sheet** — Cottony's whole motion surface is one mesh squashed and re-rendered, so Block F's claim rests on synthetic figures whose bones are where the plan put them. → §PW58
-- 📋 **PW59** (deps: PW53, PW54, PW55, PW56, PW57, PW58) **nothing says how much of Cottony still does its own version of what the plugin does** — Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion. → §PW59
+- 📋 **PW59** (deps: PW53 ⏸, PW54, PW55, PW56, PW57, PW58) **nothing says how much of Cottony still does its own version of what the plugin does** — Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion. → §PW59
 
 ## Done when — PW36
 

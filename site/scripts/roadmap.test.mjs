@@ -42,6 +42,10 @@ const declared = [...committed.matchAll(/\{ block: "([^"]+)", title:/g)].map((m)
 const deps = [...committed.matchAll(/^    deps: \[([^\]]*)\],$/gm)]
   .flatMap((m) => m[1].split(",").map((s) => s.trim().replace(/"/g, "")))
   .filter(Boolean);
+const paused = (committed.match(/^export const generatedPaused: string\[\] = \[([^\]]*)\];$/m)?.[1] ?? "")
+  .split(",")
+  .map((s) => s.trim().replace(/"/g, ""))
+  .filter(Boolean);
 
 test("the module has lines, blocks and non-goals at all", () => {
   assert.ok(ids.length > 0, "no tasks in the generated module");
@@ -61,9 +65,18 @@ test("every task sits in a declared block", () => {
 });
 
 test("every dependency names a line that exists", () => {
-  const known = new Set(ids);
+  // The backlog is the roadmap and the deferred store. A line that was set aside keeps
+  // its id and is still waited on, so "not in the roadmap" is not the same claim as
+  // "nothing declares it" — and only the second is a defect.
+  const known = new Set([...ids, ...paused]);
   for (const d of new Set(deps)) {
-    assert.ok(known.has(d), `${d} is depended on and is not in the roadmap`);
+    assert.ok(known.has(d), `${d} is depended on and nothing declares it`);
+  }
+});
+
+test("a line that was set aside is not also open", () => {
+  for (const id of paused) {
+    assert.ok(!ids.includes(id), `${id} is both paused and in the roadmap`);
   }
 });
 
