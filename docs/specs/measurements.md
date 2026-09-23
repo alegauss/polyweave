@@ -66,6 +66,12 @@ a statistic over nothing is not a statistic.
 The reference is an image path. Both masks are normalised to the same dimensions before
 comparison, so a render and a drawing of different sizes still compare.
 
+**With no region named, these three take the whole frame** (§PW87), where every other
+measure takes the subject. They compare two shapes, and cut to the render's own subject
+the drawing outside the render was never counted: Cottony's mushroom read 0.916 against
+its drawing that way and 0.856 over the frame, and a render missing half the drawn shape
+scored close to one. A region that is named bounds both masks alike.
+
 `silhouette_iou` is the measure that would have caught the tall dome returned for a wide low
 cap, before the credits were spent (§PW16).
 

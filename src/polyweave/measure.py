@@ -632,6 +632,13 @@ def default_region(image: Image) -> str:
     return "subject" if image.had_alpha else "frame"
 
 
+#: The measures that compare two shapes, which default to the whole frame rather than to
+#: the render's own subject (§PW87).
+SILHOUETTES = frozenset(
+    {"silhouette_iou", "silhouette_centroid_offset", "silhouette_bbox_delta"}
+)
+
+
 # -- the call ---------------------------------------------------------------------
 
 
@@ -659,19 +666,32 @@ def measure(
 
     alpha_floor = float(load_config(root).get("tolerance.alpha_floor", alpha_floor))
     image = subject if isinstance(subject, Image) else load(subject)
-    where = default_region(image) if region is None else region
-    mask = region_mask(image, where, alpha_floor)
-    if not mask.any():
-        raise PolyweaveError(
-            "spec.empty-region",
-            f"the region {_named(where)!r} holds no pixels to measure",
-            "widen the region, or lower `[tolerance] alpha_floor` if the subject is "
-            "fainter than the floor",
-        )
+    masks: dict[str, tuple[Any, np.ndarray]] = {}
+
+    def within(base: str) -> tuple[Any, np.ndarray]:
+        # Two shapes are compared over the whole frame when nobody says otherwise
+        # (§PW87): cut to the render's own subject, the reference outside the render
+        # was never counted, and a render missing half the drawing scored near one.
+        where = region
+        if where is None:
+            where = "frame" if base in SILHOUETTES else default_region(image)
+        key = repr(_named(where))
+        if key not in masks:
+            mask = region_mask(image, where, alpha_floor)
+            if not mask.any():
+                raise PolyweaveError(
+                    "spec.empty-region",
+                    f"the region {_named(where)!r} holds no pixels to measure",
+                    "widen the region, or lower `[tolerance] alpha_floor` if the "
+                    "subject is fainter than the floor",
+                )
+            masks[key] = (where, mask)
+        return masks[key]
 
     out = []
     for name in measures:
         base = resolve(name)
+        where, mask = within(base)
         if base in DISTRIBUTIONS:
             values = DISTRIBUTIONS[base](image, mask, alpha_floor=alpha_floor, **params)
             for suffix, value in statistics(values).items():

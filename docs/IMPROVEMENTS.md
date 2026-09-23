@@ -287,26 +287,6 @@ this is where that is recorded honestly: what still runs by hand, and why the ri
 instead of disappearing. An outcome worth having, stated, beats the same outcome
 unstated.
 
-### §PW87 A silhouette is scored inside the render's own outline
-
-Found writing the mushroom's spec (§PW77). The same render against the same drawing read
-0.916 with no region and 0.856 with `region = "frame"`.
-
-`measure` resolves a missing region to `subject` wherever the image has alpha, and
-`_silhouette_iou` intersects both masks with it. The render's mask is the subject, so
-the reference is cut down to wherever the render already is. What comes back is the
-share of the render the drawing covers, and a render missing half the drawn shape scores
-close to one. Every silhouette predicate written without a region reads that way,
-Cottony's four star specs included, and it is the default a person writes first.
-
-The silhouette measures compare two shapes, and the region that means that is the whole
-frame. So `silhouette_iou`, `silhouette_centroid_offset` and `silhouette_bbox_delta`
-take `frame` when no region is named, and a region that is named still bounds both masks
-alike, which is what a rectangle is for.
-
-A test states the case: a reference twice the render's area, with the render inside it,
-reads about 0.5 with no region named and not 1.0.
-
 ### §PW90 Ingest keeps the shape and drops the paint
 
 Found starting on the boosters (§PW80). The hammer and the wand are fetched meshes whose
@@ -356,3 +336,22 @@ The lean is reported in the record beside the IoU, so the number that used to be
 by hand is now a result a person can read and overrule.
 
 Test: a box leaned by a known angle is found at that angle within a degree.
+
+### §PW92 Size axis and origin
+
+Starship, the second consumer, ingested a ship and four enemies. `normalise` makes every
+one of them one unit tall, and puts the origin at the base of the footprint (the spec's
+section 6). That suits a prop on the ground. It does not suit a flat ship or a flying
+enemy: the ship came out 5.37 long for its one unit of height, and the game had to read
+each `.prov.json`, pick a scale per model, shift the mesh down by half its height and
+size a hitbox from the recorded `size`. Five constants were found by hand, the pattern
+PW81 exists to end.
+
+Build: `normalise` takes the axis the size is stated on (`height`, `length` or
+`longest`, default `height` so nothing already ingested changes) and an origin (`base`,
+the default, or `centre`). Ingest reads both per asset from the project's config and
+records them in the provenance next to `scale` and `offset`. Starship would then declare
+its ship as two units long, centred, and drop its own offsets.
+
+The recorded `size` is already the hitbox a game needs, so nothing new is emitted for
+collision.

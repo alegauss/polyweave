@@ -129,6 +129,46 @@ def test_the_alpha_floor_decides_what_counts_as_the_subject(tmp_path):
     assert measure.measure(path, only, alpha_floor=0.02, **over)[0]["value"] == 0.5
 
 
+# -- two shapes, over the whole frame (§PW87) -----------------------------------------
+
+
+def shape(tmp_path, name, columns):
+    """An 8x8 picture whose subject fills the given columns, every row."""
+    rgba = np.zeros((8, 8, 4), dtype=np.uint8)
+    rgba[:, columns, :] = 255
+    path = tmp_path / name
+    PILImage.fromarray(rgba, "RGBA").save(path)
+    return path
+
+
+def test_a_silhouette_counts_the_drawing_the_render_missed(tmp_path):
+    """Cut to the render's own subject, half a drawing missing read as a match."""
+    render = shape(tmp_path, "half.png", slice(0, 4))
+    drawing = shape(tmp_path, "whole.png", slice(0, 8))
+    found = measure.measure(render, ["silhouette_iou"], against=str(drawing))
+    assert found[0]["value"] == pytest.approx(0.5)
+    assert found[0]["region"] == "frame"
+
+
+def test_a_named_region_still_bounds_both_shapes(tmp_path):
+    render = shape(tmp_path, "half.png", slice(0, 4))
+    drawing = shape(tmp_path, "whole.png", slice(0, 8))
+    found = measure.measure(
+        render, ["silhouette_iou"], region=[0, 0, 4, 8], against=str(drawing)
+    )
+    assert found[0]["value"] == pytest.approx(1.0), "inside the rectangle they agree"
+
+
+def test_everything_else_still_measures_the_subject(tmp_path):
+    render = shape(tmp_path, "half.png", slice(0, 4))
+    drawing = shape(tmp_path, "whole.png", slice(0, 8))
+    found = measure.measure(
+        render, ["alpha_coverage", "silhouette_iou"], against=str(drawing)
+    )
+    regions = {one["measure"]: one["region"] for one in found}
+    assert regions == {"alpha_coverage": "subject", "silhouette_iou": "frame"}
+
+
 # -- a colour at its median (§PW86) ---------------------------------------------------
 
 

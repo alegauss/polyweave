@@ -79,13 +79,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW81"],
   },
   {
-    id: "PW87",
-    block: "H",
-    symptom: "a silhouette checked with no region scores a render missing half the drawn shape close to 1",
-    why: "The default region is the render's own subject, and both masks are cut to it, so the reference outside the render is never counted.",
-    deps: [],
-  },
-  {
     id: "PW90",
     block: "H",
     symptom: "a fetched mesh put in the project's frame by ingest comes back without its texture",
@@ -97,6 +90,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "orienting a mesh against its drawing finds which way round it faces but never how far it leans",
     why: "The candidates are the mesh's own axes turned by quarter turns, so Cottony's hammer, leaned 22 degrees in its drawing, still needed that roll found by hand.",
+    deps: [],
+  },
+  {
+    id: "PW92",
+    block: "H",
+    symptom: "a mesh can only be sized by its height and set on its base, so a flat flying model is rescaled by hand in the game",
+    why: "Starship read five provenance files to pick a scale, a centre and a hitbox per model, which is a constant per asset nothing declares.",
     deps: [],
   },
 ];
