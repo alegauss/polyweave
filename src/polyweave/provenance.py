@@ -331,6 +331,79 @@ def cache_key(record: dict) -> str:
     return hashlib.sha256(canonical(key_subset(record)).encode("utf-8")).hexdigest()
 
 
+#: What a rerun can say about the one before it. Closed, because a caller branches on
+#: it.
+#:
+#: `differs` is the only one that is news. `different-work` is a byte difference the key
+#: already explains, and saying nothing about it would make the interesting case harder
+#: to spot rather than easier.
+AGAIN = ("first", "reproduced", "differs", "different-work")
+
+
+def reproduced(record: dict, root: str | Path = ".") -> dict:
+    """This artefact against the last one recorded in its place (§PW71).
+
+    The key says what counts as the same work, and the artefact's own hash is left out
+    of it deliberately — so a record whose key matches the one already beside the
+    artefact, and whose digest does not, is the same work having produced a different
+    file. Nothing in the project could say that before: both runs wrote a record, both
+    records stated the same params, and the second simply overwrote the first.
+
+    It is worth saying because it is not always expected. Three of Cottony's four
+    captures are byte-identical across runs and the fourth is not, and the difference
+    between a screenshot worth reviewing and one that is only noise is this answer.
+
+    **Called before the new record is written**, since writing it is what destroys the
+    evidence. `capture.run` does that and carries the answer back.
+
+    This is a report and never a refusal, for the reason `verify` is: the plugin cannot
+    make an engine deterministic and should not pretend to. What it can do is say so.
+
+    The comparison is the key's, so two different scripts writing to one artefact under
+    one set of params read as the same work — which they are not, but they are also
+    overwriting each other, and that is a different fault from this one.
+    """
+    now = (record.get("artefact") or {}).get("sha256")
+    path = sidecar(record["artefact"]["path"], root)
+    if not path.is_file():
+        return _again("first", record, None, "")
+    try:
+        before = read(path, root)
+    except PolyweaveError as unreadable:
+        why = f"{path.name} could not be read: {unreadable.message}"
+        return _again("first", record, None, why)
+    was = (before.get("artefact") or {}).get("sha256")
+    since = before.get("produced_at")
+    if cache_key(before) != cache_key(record):
+        return _again("different-work", record, before, "")
+    if was == now:
+        return _again("reproduced", record, before, "")
+    return _again(
+        "differs",
+        record,
+        before,
+        # ASCII, deliberately: this sentence is printed to a terminal, and stdout on a
+        # Windows desk here is cp1252, where an em dash arrives as a replacement
+        # character. §PW73 is the same defect in the twenty other strings that have one.
+        f"{PurePosixPath(record['artefact']['path']).name}: the same declared settings "
+        f"produced different bytes; {(was or '?')[:12]} on "
+        f"{since or 'an unknown date'}, {(now or '?')[:12]} now",
+    )
+
+
+def _again(verdict: str, record: dict, before: dict | None, why: str) -> dict:
+    """One verdict, in the shape every caller of this reads."""
+    return {
+        "verdict": verdict,
+        "artefact": record["artefact"]["path"],
+        "key": cache_key(record),
+        "was": ((before or {}).get("artefact") or {}).get("sha256"),
+        "now": (record.get("artefact") or {}).get("sha256"),
+        "since": (before or {}).get("produced_at"),
+        "why": why,
+    }
+
+
 def _round(value: Any) -> Any:
     if isinstance(value, bool):
         return value

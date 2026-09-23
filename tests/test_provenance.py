@@ -22,8 +22,8 @@ def artefact(tmp_path, name="mascot.png", body=b"\x89PNG-pretend"):
     return path
 
 
-def a_record(tmp_path, **over):
-    artefact(tmp_path)
+def a_record(tmp_path, *, body=b"\x89PNG-pretend", **over):
+    artefact(tmp_path, body=body)
     fields = {
         "engine": {"name": "cycles", "version": "4.2.1", "bindings": "bpy 4.2.0"},
         "rung": "final",
@@ -468,3 +468,63 @@ def test_the_bars_are_read_off_whatever_the_caller_resolved(tmp_path):
     found = a_record(tmp_path, tolerances=BARS)
     assert P.remeasure(found, Tolerances(**BARS)) == []
     assert P.remeasure(found, Tolerances(**{**BARS, "delta_e": 9.0})) == ["delta_e"]
+
+
+# -- the same work, run twice (§PW71) -------------------------------------------------
+
+
+def test_the_first_of_anything_has_nothing_to_disagree_with(tmp_path):
+    assert P.reproduced(a_record(tmp_path), tmp_path)["verdict"] == "first"
+
+
+def test_the_same_work_giving_the_same_bytes_is_said_so(tmp_path):
+    P.write(a_record(tmp_path), tmp_path)
+    found = P.reproduced(a_record(tmp_path), tmp_path)
+    assert found["verdict"] == "reproduced"
+    assert found["was"] == found["now"]
+    assert found["why"] == ""
+
+
+def test_the_same_work_giving_different_bytes_is_the_whole_point(tmp_path):
+    """Both runs state the same params; only the file differs. Nothing said so."""
+    P.write(a_record(tmp_path), tmp_path)
+    found = P.reproduced(a_record(tmp_path, body=b"one frame later"), tmp_path)
+    assert found["verdict"] == "differs"
+    assert found["was"] != found["now"]
+    assert "the same declared settings produced different bytes" in found["why"]
+    assert "mascot.png" in found["why"]
+
+
+def test_a_byte_difference_the_key_already_explains_is_not_news(tmp_path):
+    """A seed that moved makes a different file, and the record says which seed."""
+    P.write(a_record(tmp_path), tmp_path)
+    found = P.reproduced(a_record(tmp_path, body=b"another seed", seed=1), tmp_path)
+    assert found["verdict"] == "different-work"
+    assert found["why"] == ""
+
+
+def test_the_verdict_names_the_key_both_runs_were_keyed_on(tmp_path):
+    P.write(a_record(tmp_path), tmp_path)
+    found = P.reproduced(a_record(tmp_path), tmp_path)
+    assert found["key"] == P.cache_key(a_record(tmp_path))
+    assert found["artefact"] == "mascot.png"
+
+
+def test_the_date_the_last_one_was_taken_comes_back_with_it(tmp_path):
+    P.write(a_record(tmp_path, produced_at="2026-09-01T10:00:00Z"), tmp_path)
+    found = P.reproduced(a_record(tmp_path, body=b"other"), tmp_path)
+    assert found["since"] == "2026-09-01T10:00:00Z"
+    assert "2026-09-01T10:00:00Z" in found["why"]
+
+
+def test_an_unreadable_record_beside_it_is_nothing_to_compare(tmp_path):
+    """Not a crash mid-capture: there is simply no previous run to read."""
+    P.sidecar(tmp_path / "mascot.png").write_text("{ truncated", encoding="utf-8")
+    found = P.reproduced(a_record(tmp_path), tmp_path)
+    assert found["verdict"] == "first"
+    assert "could not be read" in found["why"]
+
+
+def test_every_verdict_is_one_the_caller_was_told_about(tmp_path):
+    P.write(a_record(tmp_path), tmp_path)
+    assert P.reproduced(a_record(tmp_path), tmp_path)["verdict"] in P.AGAIN

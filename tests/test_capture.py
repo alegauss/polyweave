@@ -239,6 +239,66 @@ def test_the_environment_is_written_down_beside_the_picture(tmp_path):
     assert record["engine"]["route"] == "window-offscreen"
 
 
+# -- and whether the next run drew the same thing (§PW71) ------------------------------
+
+
+def a_capture(tmp_path):
+    """A project, a picture and a take that reports it — the run, twice over."""
+    script = project(tmp_path, '[capture]\ndeclared = ["locale"]\nlocale = "pt_BR"\n')
+    shot = tmp_path / "shot.png"
+    shot.write_bytes(b"\x89PNG\r\n")
+    take = taking(
+        "environment: locale=pt_BR\ncaptured: res://shot.png 24 x 24\n",
+        artefacts=(shot,),
+    )
+
+    def again(**how):
+        return capture.run(script, expect=SHOT, root=tmp_path, take=take, **how)
+
+    return shot, again
+
+
+def test_the_first_capture_has_nothing_to_disagree_with(tmp_path):
+    _, run = a_capture(tmp_path)
+    found = run()["reproduced"]
+    assert found["holds"] is True
+    assert found["artefacts"][0]["verdict"] == "first"
+
+
+def test_two_runs_that_drew_the_same_picture_say_so(tmp_path):
+    _, run = a_capture(tmp_path)
+    run()
+    found = run()["reproduced"]
+    assert found["holds"] is True
+    assert found["artefacts"][0]["verdict"] == "reproduced"
+    assert found["why"] == ""
+
+
+def test_a_capture_that_drew_something_else_the_second_time_is_named(tmp_path):
+    """Both runs applied `locale=pt_BR` and wrote OK. Only this says which is which."""
+    shot, run = a_capture(tmp_path)
+    run()
+    shot.write_bytes(b"\x89PNG\r\n-one frame later")
+    found = run()["reproduced"]
+    assert found["holds"] is False
+    assert "the same declared settings produced different bytes" in found["why"]
+    assert found["differing"][0]["artefact"] == "shot.png"
+
+
+def test_a_run_that_recorded_nothing_claims_nothing_about_the_last_one(tmp_path):
+    """Absent rather than empty: with no record written there is nothing to compare."""
+    _, run = a_capture(tmp_path)
+    assert "reproduced" not in run(record=False)
+
+
+def test_the_verdicts_are_summarised_the_way_the_environment_check_is():
+    same = {"verdict": "reproduced", "artefact": "a.png", "why": ""}
+    other = {"verdict": "differs", "artefact": "b.png", "why": "b.png: different bytes"}
+    assert capture.again([same])["holds"] is True
+    assert capture.again([same, other])["holds"] is False
+    assert capture.again([same, other])["why"] == "b.png: different bytes"
+
+
 # -- as a gate -------------------------------------------------------------------------
 
 
@@ -281,6 +341,21 @@ def test_a_constant_inside_the_script_winning_is_caught(tmp_path):
         )
     assert caught.value.code == "capture.differs"
     assert "from a constant" in caught.value.remedy
+
+
+def test_a_capture_that_did_not_reproduce_is_reported_and_never_refused(tmp_path):
+    """The plugin cannot make an engine deterministic; the gate is the environment."""
+    shot, _ = a_capture(tmp_path)
+    script = tmp_path / "shot.gd"
+    take = taking(
+        "environment: locale=pt_BR\ncaptured: res://shot.png 24 x 24\n",
+        artefacts=(shot,),
+    )
+    capture.require(script, expect=SHOT, root=tmp_path, take=take)
+    shot.write_bytes(b"\x89PNG\r\n-one frame later")
+    found = capture.require(script, expect=SHOT, root=tmp_path, take=take)
+    assert found["ok"] is True
+    assert found["reproduced"]["holds"] is False
 
 
 def test_a_capture_that_agreed_passes_through(tmp_path):

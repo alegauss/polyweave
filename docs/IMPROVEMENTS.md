@@ -131,31 +131,6 @@ of this block names, and the gate may report a fraction below one for as long as
 what is left and why. Two of those are already answered in `docs/specs/adoption.md`: the
 fetch ledger replays, and the motion Cottony has is two frames and no clip.
 
-### §PW71 A capture that does not reproduce should say so, not read as a new result
-
-Cottony's four captures were run twice on one machine, at one commit, and compared
-against each other and against what is committed. `board` and `map` came out
-byte-identical both times. `card` was byte-identical between the two runs but differs
-from the committed copy in one 185x180 box: the plush friend's face, caught on a
-different frame of its blink. `strike` differs from the committed copy and from itself —
-48,306 pixels between run one and run two, peak 169 of 255, and the changed band is not
-even the same height twice.
-
-The cause is in the capture, not the plugin: `strike.gd` waits for the effect to appear
-rather than counting frames, deliberately, because a capture written to a frame number
-goes stale the first time the timing moves. What the plugin did about it is nothing.
-Both runs printed `OK`. Both wrote a record stating `locale=pt_BR` and
-`resolution=1080x1920`, and both wrote a different `artefact.sha256` under those
-identical params.
-
-So the record is not wrong, it is silent about the one thing it is positioned to catch.
-It already hashes the artefact, and a record already sits beside the artefact from last
-time. Comparing them costs a read.
-
-The plugin cannot make Godot deterministic and should not try. It can say "the same
-declared settings produced different bytes", which is the difference between a picture
-worth reviewing and a picture that is only noise.
-
 ### §PW72 The one path in a record that is not made relative
 
 The record beside `docs/design/screenshot-strike.png` in Cottony reads `"script":
@@ -179,3 +154,27 @@ that re-runs a capture, and one desk's layout published in a file nobody reads c
 Sending `script` through `relative()` is two lines. The open question is whether `extra`
 should be relativised key by key, or whether `build()` should stop accepting raw paths
 in `extra` at all.
+
+### §PW73 The prose reaches the agent through a cp1252 pipe
+
+`python -c "print('a — b')"` on this machine prints `a ? b`, because
+`sys.stdout.encoding` is cp1252 and an em dash is not in it. Twenty runtime strings
+across `src/polyweave` carry one inside a quoted string rather than a docstring — among
+them `loop.py`'s "the cost", `units.py`'s "change the engine's deliberately" and
+`reference.py`'s "cut the". Those are refusal messages and progress lines, which is to
+say the surface this plugin is.
+
+It was found the way things here get found: a new sentence about captures that do not
+reproduce was printed by a real run, with a lozenge in the middle of it.
+
+What makes it worth a line rather than a shrug is the project's own premise. The caller
+is an agent in a terminal, judged by whether it gets the answer right on the first call
+without reading the implementation. A refusal it half-reads is the failure that premise
+exists to prevent, and the damage is worst in the messages carrying a remedy, because
+those are the long ones and the long ones hold the punctuation.
+
+Three ways out, and they are not equivalent. `reconfigure(encoding="utf-8")` fixes every
+string at once but is a plugin reaching into a process it does not own. Writing the
+strings in ASCII is a rule nothing enforces, so it decays. A lint rule over `src/` is
+enforcement without the reach, and is probably what this project wants — but that is a
+decision, and it should be made before twenty edits are spent.

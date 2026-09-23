@@ -58,17 +58,17 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW57"],
   },
   {
-    id: "PW71",
-    block: "H",
-    symptom: "two runs of one capture with the same declared settings produce different bytes, and nothing says so",
-    why: "The record hashes the artefact and states the params, so a rerun landing on another animation frame writes a fresh sha256 under identical params and reads as a new result.",
-    deps: [],
-  },
-  {
     id: "PW72",
     block: "H",
     symptom: "the provenance record's script path is absolute, so a record committed beside its artefact names one desk's drive",
     why: "relative() rewrites the artefact and every input against the root, but `extra` merges straight into the record, so `script` never passes through it.",
+    deps: [],
+  },
+  {
+    id: "PW73",
+    block: "H",
+    symptom: "a message with an em dash reaches the terminal with a replacement character in it",
+    why: "Twenty runtime strings carry one, stdout on a Windows desk here is cp1252, and the caller this plugin is written for reads exactly these lines.",
     deps: [],
   },
 ];

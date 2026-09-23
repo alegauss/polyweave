@@ -29,6 +29,11 @@ runs, since leaving it to chance is the whole symptom.
 
 The environment is recorded beside the picture, so a screenshot that differs later can
 be compared against what it was taken under rather than against a memory of it.
+
+That record is also what the next run is measured against (§PW71). Three of Cottony's
+four captures come out byte-identical every time and the fourth does not, and until a
+run had the last one's record to read, all four wrote `OK` and nothing said which was
+which.
 """
 
 from __future__ import annotations
@@ -166,14 +171,42 @@ def run(
     if not found["ok"] or not against["holds"]:
         return {**answer, "ok": False}
     if record:
-        answer["records"] = [
-            str(_record(one, asked, found, root)) for one in found["artefacts"]
-        ]
+        made = [_record(one, asked, found, root) for one in found["artefacts"]]
+        answer["records"] = [str(path) for path, _ in made]
+        answer["reproduced"] = again([verdict for _, verdict in made])
     return answer
 
 
-def _record(artefact: str, asked: dict, found: dict, root: str | Path) -> Path:
-    """The environment, beside the picture it was taken in."""
+def again(verdicts: list[dict]) -> dict:
+    """Whether this run drew what the last one drew, in `compare`'s own shape (§PW71).
+
+    `holds` is false only where the same declared settings produced a different file. A
+    first capture holds, because there is nothing it disagrees with, and so does one
+    whose key moved, because the record already explains that difference.
+
+    It is a report and not a gate. A capture that waits for an effect rather than
+    counting frames lands on whichever frame the effect arrived on, which is a
+    deliberate choice in the script and not a fault this can rule on — but it is the
+    difference between a screenshot worth reviewing and one that is only noise, so it is
+    said out loud.
+    """
+    differing = [one for one in verdicts if one["verdict"] == "differs"]
+    return {
+        "holds": not differing,
+        "artefacts": list(verdicts),
+        "differing": differing,
+        "why": "; ".join(one["why"] for one in differing),
+    }
+
+
+def _record(
+    artefact: str, asked: dict, found: dict, root: str | Path
+) -> tuple[Path, dict]:
+    """The environment, beside the picture it was taken in.
+
+    The comparison against the last record happens here rather than in `run`, because
+    writing this one is what overwrites the evidence it is compared against.
+    """
     written = provenance.build(
         "capture",
         artefact,
@@ -183,7 +216,8 @@ def _record(artefact: str, asked: dict, found: dict, root: str | Path) -> Path:
         extra={"script": found["script"], "frames": found.get("frames")},
         root=root,
     )
-    return provenance.write(written, root=root)
+    verdict = provenance.reproduced(written, root=root)
+    return provenance.write(written, root=root), verdict
 
 
 def require(script: str | Path, **how: Any) -> dict:
