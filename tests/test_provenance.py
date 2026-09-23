@@ -568,3 +568,56 @@ def test_an_unreadable_record_beside_it_is_nothing_to_compare(tmp_path):
 def test_every_verdict_is_one_the_caller_was_told_about(tmp_path):
     P.write(a_record(tmp_path), tmp_path)
     assert P.reproduced(a_record(tmp_path), tmp_path)["verdict"] in P.AGAIN
+
+
+# -- where to look when it differs (§PW74) --------------------------------------------
+
+
+def differing(tmp_path, **over):
+    """Two runs of one work whose bytes moved: the only case that has a boundary."""
+    P.write(a_record(tmp_path, **over), tmp_path)
+    return P.reproduced(a_record(tmp_path, body=b"one frame later", **over), tmp_path)
+
+
+def test_it_names_the_settings_the_picture_was_held_at(tmp_path):
+    """Cottony's message said the settings matched and never which ones they were."""
+    found = differing(tmp_path)
+    assert "form and light were pinned" in found["why"]
+    assert "something this picture depends on is not declared" in found["why"]
+
+
+def test_one_setting_is_named_in_the_singular(tmp_path):
+    assert "locale was pinned" in differing(tmp_path, params={"locale": "pt_BR"})["why"]
+
+
+def test_three_settings_read_as_a_list_and_not_a_chain_of_ands(tmp_path):
+    found = differing(tmp_path, params={"locale": "pt_BR", "scale": 2, "theme": "dark"})
+    assert "locale, scale and theme were pinned" in found["why"]
+
+
+def test_a_picture_held_at_nothing_says_that_rather_than_naming_none(tmp_path):
+    found = differing(tmp_path, params={})
+    assert "nothing was declared" in found["why"]
+    assert "pinned" not in found["why"]
+
+
+def test_the_missing_frame_is_named_because_it_is_this_record_s_own_field(tmp_path):
+    assert "no frame was recorded" in differing(tmp_path)["why"]
+
+
+def test_a_run_that_recorded_its_frame_is_not_told_it_did_not(tmp_path):
+    found = differing(tmp_path, extra={"frames": 240})
+    assert "no frame was recorded" not in found["why"]
+    assert "were pinned" in found["why"]
+
+
+def test_the_boundary_comes_back_as_names_and_not_only_as_prose(tmp_path):
+    """A runner that wants to act on it should not have to parse the sentence."""
+    assert differing(tmp_path)["pinned"] == ["form", "light"]
+
+
+def test_a_reproduced_run_carries_the_boundary_without_the_complaint(tmp_path):
+    P.write(a_record(tmp_path), tmp_path)
+    found = P.reproduced(a_record(tmp_path), tmp_path)
+    assert found["pinned"] == ["form", "light"]
+    assert found["why"] == ""

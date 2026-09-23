@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 4 },
+  { block: "H", title: "Proof on a real game", open: 3 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -56,13 +56,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent",
     why: "The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question.",
     deps: ["PW57"],
-  },
-  {
-    id: "PW74",
-    block: "H",
-    symptom: "a capture of an animated scene draws a different picture every run, and no declared setting holds it still",
-    why: "Cottony's strike burst is sampled with neither seed nor clock fixed, so the provenance check reports it differing forever and the image can never be a reference.",
-    deps: [],
   },
 ];
 

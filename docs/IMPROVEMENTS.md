@@ -130,25 +130,3 @@ Cottony's own work. The palette and the fonts are the same. What counts is what 
 of this block names, and the gate may report a fraction below one for as long as it says
 what is left and why. Two of those are already answered in `docs/specs/adoption.md`: the
 fetch ledger replays, and the motion Cottony has is two frames and no clip.
-
-### §PW74 A capture declares what and how large, never when
-
-Cottony committed two capture references whose only difference from the previous ones is
-a moving element. Every tile, number and control is identical; the mascot sits at
-another phase of its idle motion, and the cotton burst at the centre of the strike board
-is thinner, its sparkles at other positions.
-
-The two fail differently. The mascot's motion is deterministic given a fixed frame
-count, so card reproduces run to run and its shift is against the older commit — some
-timing moved between them. The burst is a particle system drawing on randomness, so
-strike reproduces against nothing, and every run draws a new picture.
-
-PW71's verdict is right to fire, and it is how this became visible at all. But it will
-now fire on strike forever, and an image that cannot be reproduced cannot be a reference
-that gates anything. The capture surface declares what the picture is of and how large
-it is, and says nothing about when: no frame, no clock, no seed.
-
-The plugin cannot make an engine deterministic, and that stays true here. What it can do
-is let a declaration carry the time and the seed a moving scene needs, so the same
-declaration asks for the same instant, and report a capture of an animated scene that
-declared neither — rather than leaving the instability to be discovered a commit later.

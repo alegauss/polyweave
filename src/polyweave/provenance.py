@@ -385,6 +385,11 @@ def reproduced(record: dict, root: str | Path = ".") -> dict:
     This is a report and never a refusal, for the reason `verify` is: the plugin cannot
     make an engine deterministic and should not pretend to. What it can do is say so.
 
+    What it says carries the boundary the picture was held at (§PW74), because "the same
+    declared settings" is only actionable once the reader knows which settings those
+    were. Cottony declared `locale` and `resolution`, and the burst it could not
+    reproduce is drawn by a particle system answering to neither.
+
     The comparison is the key's, so two different scripts writing to one artefact under
     one set of params read as the same work — which they are not, but they are also
     overwriting each other, and that is a different fault from this one.
@@ -410,8 +415,46 @@ def reproduced(record: dict, root: str | Path = ".") -> dict:
         before,
         f"{PurePosixPath(record['artefact']['path']).name}: the same declared settings "
         f"produced different bytes — {(was or '?')[:12]} on "
-        f"{since or 'an unknown date'}, {(now or '?')[:12]} now",
+        f"{since or 'an unknown date'}, {(now or '?')[:12]} now; {_boundary(record)}",
     )
+
+
+def pinned(record: dict) -> list[str]:
+    """The settings this artefact was held at, by name (§PW74)."""
+    return sorted(record.get("params") or {})
+
+
+def _naming(names: Sequence[str]) -> str:
+    """A short list as prose, because `[capture] declared` is short by design."""
+    names = list(names)
+    if len(names) < 2:
+        return names[0] if names else ""
+    return f"{', '.join(names[:-1])} and {names[-1]}"
+
+
+def _boundary(record: dict) -> str:
+    """What the picture was held at, and what the record leaves open (§PW74).
+
+    A `differs` says the settings matched and the bytes did not, which states the fault
+    without stating where to look. The settings the run pinned are the boundary: what is
+    inside it cannot be the cause, so something outside it moved and is not declared.
+    Naming them is the whole of the help, and it costs nothing to be sure of — they are
+    read off this record rather than guessed from a vocabulary of likely names, which
+    would be one project's spelling compiled in.
+
+    The frame is named separately because it is this record's own field rather than a
+    project's setting, and a run that recorded none did not pin even the instant.
+    """
+    held = _naming(pinned(record))
+    said = (
+        f"{held} {'was' if len(pinned(record)) == 1 else 'were'} pinned, so something "
+        f"this picture depends on is not declared"
+        if held
+        else "nothing was declared, so every difference here is unaccounted for"
+    )
+    if record.get("frames") in (None, ""):
+        said += ", and no frame was recorded"
+    return said
 
 
 def _again(verdict: str, record: dict, before: dict | None, why: str) -> dict:
@@ -423,6 +466,7 @@ def _again(verdict: str, record: dict, before: dict | None, why: str) -> dict:
         "was": ((before or {}).get("artefact") or {}).get("sha256"),
         "now": (record.get("artefact") or {}).get("sha256"),
         "since": (before or {}).get("produced_at"),
+        "pinned": pinned(record),
         "why": why,
     }
 
