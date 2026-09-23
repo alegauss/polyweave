@@ -237,29 +237,6 @@ The end state is one spec per asset, the gates reduced to running them, and the
 percentile argument surviving as a measurement name rather than as a paragraph in a
 script.
 
-### §PW58 The motion block has never run against something a game ships
-
-Block F shipped a skeleton fitted to a mesh, a clip authored once as text, and a sprite
-sheet whose atlas is matched to the animation. Every figure it was tested against was
-built in code, with its limbs where the plan puts its bones. That is right for the
-arithmetic, and it is not proof.
-
-Cottony's entire motion surface is `squash`: the same mesh pressed to 93% of its height,
-spread sideways by the square root of that, and re-rendered — because a scaled sprite
-squashes its own highlight and its own shadow with it. Two frames, and the game crosses
-between them.
-
-So this line splits, and the split is the point. The sheet half is direct:
-`sprites.bake`, `sprites.sheet` and `sprites.matched` do what `make_assets.py` composes
-by hand, and the settle frames are a real pair to do it with.
-
-The skeleton half gets the treatment RK97 established — look for the half that needs
-nothing new before proposing anything. `mascot.glb` and `friend_plush.glb` are bodies
-already in the repository and `skeleton.plan` names a joint set to fit them with, so the
-fit and its check are runnable today against a mesh a service returned. If the game has
-no motion worth authoring beyond the settle, that is a finding worth recording once so
-nobody checks twice, and it closes this line as honestly as a clip would.
-
 ### §PW59 Adopted is an opinion until something fails when it is not
 
 Today the number is zero. A search for `polyweave` across `D:\Git\viglet\cottony`
@@ -279,6 +256,7 @@ that already exists.
 **The denominator has to be stated or the number is a slogan.**
 `tools/art/make_assets.py` is 2,406 lines of drawn 2D generation and is not in it: this
 plugin is geometry, surface and motion in three dimensions, and a flat PNG generator is
-Cottony's own work. The palette and the fonts are the same. What counts is what §PW53 to
-§PW58 name, and the gate may report a fraction below one for as long as it says what is
-left and why.
+Cottony's own work. The palette and the fonts are the same. What counts is what the rest
+of this block names, and the gate may report a fraction below one for as long as it says
+what is left and why. Two of those are already answered in `docs/specs/adoption.md`: the
+fetch ledger replays, and the motion Cottony has is two frames and no clip.

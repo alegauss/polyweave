@@ -24,8 +24,7 @@
 
 - 📋 **PW54** (deps: PW50 ✅, PW60) **a Cottony shape is a bmesh program that exists only inside a bake, so nothing can read, diff or search it** — solid.py is 283 lines of geometry as code, and it carries a second copy of the bevelled-boolean lesson, which is a copy that will drift. → §PW54
 - 📋 **PW57** (deps: PW53 ⏸) **every Cottony look gate restates its own floor, so no asset has a bar a search can aim at** — Five check scripts measure after the render is spent, which is a verdict and never a target, and a threshold moved in one of them is invisible to the rest. → §PW57
-- 📋 **PW58** (deps: —) **nothing a game ships has been through the skeleton, the clip or the sprite sheet** — Cottony's whole motion surface is one mesh squashed and re-rendered, so Block F's claim rests on synthetic figures whose bones are where the plan put them. → §PW58
-- 📋 **PW59** (deps: PW53 ⏸, PW54, PW55 ✅, PW56 ⏸, PW57, PW58) **nothing says how much of Cottony still does its own version of what the plugin does** — Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion. → §PW59
+- 📋 **PW59** (deps: PW53 ⏸, PW54, PW55 ✅, PW56 ⏸, PW57, PW58 ✅) **nothing says how much of Cottony still does its own version of what the plugin does** — Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion. → §PW59
 
 ## Done when — PW36
 

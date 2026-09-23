@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 1 },
-  { block: "H", title: "Proof on a real game", open: 4 },
+  { block: "H", title: "Proof on a real game", open: 3 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -79,18 +79,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW53"],
   },
   {
-    id: "PW58",
-    block: "H",
-    symptom: "nothing a game ships has been through the skeleton, the clip or the sprite sheet",
-    why: "Cottony's whole motion surface is one mesh squashed and re-rendered, so Block F's claim rests on synthetic figures whose bones are where the plan put them.",
-    deps: [],
-  },
-  {
     id: "PW59",
     block: "H",
     symptom: "nothing says how much of Cottony still does its own version of what the plugin does",
     why: "Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion.",
-    deps: ["PW53", "PW54", "PW56", "PW57", "PW58"],
+    deps: ["PW53", "PW54", "PW56", "PW57"],
   },
 ];
 

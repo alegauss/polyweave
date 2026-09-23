@@ -341,3 +341,115 @@ def test_the_hashes_a_lock_file_recorded_are_asked_about_for_the_first_time(tmp_
     # The credits stay out of this project's ceiling: they were spent before it had one.
     assert purchase.spent(tmp_path) == 0.0
     assert purchase.held(tmp_path)["credits"] == found["credits"]
+
+
+# -- the motion a game actually ships (§PW58) ------------------------------------------
+
+SETTLE = COTTONY / "friend_cloud.png"
+SETTLE_LEAN = COTTONY / "friend_cloud_lean.png"
+
+#: Cottony's whole motion surface, as `bake_model.py` declares it: the same mesh pressed
+#: to this share of its height and re-rendered, because a scaled sprite squashes its own
+#: highlight and its own shadow with it.
+SQUASH = 0.93
+
+
+def _box(path):
+    """The subject's box in a real render, as the sheet's own trim would find it."""
+    from polyweave.image import load as load_image
+
+    mask = load_image(path).subject(0.02)
+    rows = np.nonzero(np.any(mask, axis=1))[0]
+    cols = np.nonzero(np.any(mask, axis=0))[0]
+    return {
+        "wide": int(cols[-1] - cols[0] + 1),
+        "tall": int(rows[-1] - rows[0] + 1),
+        "bottom": int(rows[-1]),
+    }
+
+
+def test_the_settle_a_game_ships_is_the_squash_its_constants_declare():
+    """The declared constant, recovered from the pixels that were shipped.
+
+    Not a restatement of `squash = 0.93`: these two PNGs are what the game loads, and
+    the ratio of their silhouettes is measured off them. It lands on 0.93 because the
+    frame really was re-rendered at that height rather than scaled afterwards.
+    """
+    standing, leaning = _box(real(SETTLE)), _box(real(SETTLE_LEAN))
+    assert leaning["tall"] / standing["tall"] == pytest.approx(SQUASH, abs=0.005)
+    assert leaning["wide"] > standing["wide"], "it spreads sideways as it presses down"
+    # And it settles onto the same ground line, which is what makes the crossfade read
+    # as a toy settling rather than as two toys.
+    assert leaning["bottom"] == standing["bottom"]
+
+
+def test_a_games_own_settle_pair_lays_out_as_one_sheet(tmp_path):
+    """§PW58's sheet half, against the frames a game ships rather than built ones.
+
+    Cottony has no sheet and no atlas: `hud.gd` crossfades between two loose PNGs that
+    `Art.sprite` loads separately. This is what the pair becomes when something lays it
+    out — one image and an index a machine can read.
+    """
+    import json
+
+    from polyweave import clip as C
+    from polyweave import sprites
+
+    (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
+    settle = C.clip(
+        "settle",
+        0.4,
+        channels={"root": {"scale": [(0.0, [1, 1, 1]), (0.2, [1.04, SQUASH, 1.04])]}},
+    )
+    rendered = [
+        {"artefact": str(real(SETTLE)), "at": 0.0, "frame": 0},
+        {"artefact": str(real(SETTLE_LEAN)), "at": 0.2, "frame": 1},
+    ]
+    found = sprites.sheet(settle, rendered, out=tmp_path / "settle.png", root=tmp_path)
+
+    assert found["columns"] * found["rows"] >= 2
+    assert len(found["frames"]) == 2
+    # One cell size for both, and it is the union of the two silhouettes — a frame
+    # trimmed to its own outline is a sprite that jitters on its own axis.
+    standing, leaning = _box(real(SETTLE)), _box(real(SETTLE_LEAN))
+    assert found["cell"] == [
+        max(standing["wide"], leaning["wide"]),
+        max(standing["tall"], leaning["tall"]),
+    ]
+    assert {tuple(one["rect"][2:]) for one in found["frames"]} == {tuple(found["cell"])}
+    # The trim is doing real work: a 360 square render is mostly empty margin.
+    assert found["cell"][0] < 360
+    assert found["cell"][1] < 360
+    assert Path(found["sheet"]).is_file()
+    written = json.loads(Path(found["atlas"]).read_text(encoding="utf-8"))
+    assert written["clip"] == "settle"
+
+
+def test_the_sheet_and_the_animation_agree_on_which_clip_they_are(tmp_path):
+    """The whole claim of §PW29, asked over a real pair."""
+    from polyweave import clip as C
+    from polyweave import sprites
+
+    (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
+    settle = C.clip(
+        "settle",
+        0.4,
+        channels={"root": {"scale": [(0.0, [1, 1, 1]), (0.2, [1.04, SQUASH, 1.04])]}},
+    )
+    found = sprites.sheet(
+        settle,
+        [{"artefact": str(real(SETTLE)), "at": 0.0, "frame": 0}],
+        out=tmp_path / "settle.png",
+        root=tmp_path,
+    )
+    mine = {"clip_sha256": found["clip_sha256"]}
+    assert sprites.matched(mine, found, root=tmp_path)["matched"] is True
+
+    # A different settle is a different digest, so the two stop claiming to be one clip.
+    other = C.clip(
+        "settle",
+        0.4,
+        channels={"root": {"scale": [(0.0, [1, 1, 1]), (0.2, [1, 0.8, 1])]}},
+    )
+    theirs = {"clip_sha256": C._digest(C.as_toml(other))}
+    assert sprites.matched(theirs, found, root=tmp_path)["matched"] is False

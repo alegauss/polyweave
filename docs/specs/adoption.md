@@ -164,6 +164,39 @@ question about assets and every one of them is an asset — so `held` reports th
 
 A live fetch stays a person's call and is not what this covers.
 
+## What the motion block met when it reached a real game
+
+Binds **PW58**. Block F shipped a skeleton fitted to a mesh, a clip authored as text and a
+sprite sheet matched to the animation, and every figure it was tested against was built in
+code with its limbs where the plan puts its bones. Run against a game, two things came back.
+
+**There is no clip to author.** Cottony's entire motion surface is the settle: the same mesh
+pressed to 93% of its height, spread sideways by the reciprocal square root of that, and
+**re-rendered rather than scaled** — because a scaled sprite squashes its own highlight and
+its own shadow with it. Two frames per friend, and `hud.gd` crossfades between them, loading
+each through `Art.sprite` as its own file. There is no `AtlasTexture`, no `SpriteFrames` and
+no atlas anywhere in the project.
+
+`tools/art/make_assets.py` does compose sheets, and they are not these: they are contact
+sheets of every screen, a design deliverable for a person to look at, and the file is the
+2,406 lines of drawn 2D generation that §PW59 puts outside the denominator on purpose. The
+settle frames come from `bake_model.py` instead, as 3D renders. So the sheet half of this
+line had nothing in Cottony to replace — which is worth recording once, so that nobody looks
+twice, and it closes the question as honestly as a clip would have.
+
+**The two frames carry a number.** Measured off the shipped PNGs, the leaning silhouette is
+186 px tall against the standing one's 200 — 0.930, which is the `squash` constant recovered
+from pixels rather than read back out of the file that declares it. It is also 346 px wide
+against 332, and the two share a bottom row exactly: the toy settles onto the same ground
+line, which is what makes the crossfade read as one toy rather than two. A pair built in a
+test would have had all three properties by construction and would have proved none of them.
+
+So what the plugin adds here is not motion Cottony lacks. It is that the pair becomes **one
+sheet and an index a machine can read**, cut to a single cell that is the union of both
+silhouettes — a frame trimmed to its own outline is a sprite that jitters on its own axis —
+and that the sheet and the animation carry the same clip digest, so neither can drift from
+the other unnoticed.
+
 ## Testing against artefacts somebody actually made
 
 Binds **PW48**. Every other input the suite has is built in code: a box of stated

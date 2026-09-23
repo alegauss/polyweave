@@ -20,6 +20,15 @@ buys nothing the 8 MB hammer does not, so it is not here.
 | `booster_hammer.glb` | 8.0 MB | §PW20: what came back from the service standing upright |
 | `friend_plush.glb` | 1.7 MB | §PW26: a real plush body to fit a skeleton to, and the cheapest mesh here |
 | `meshy.lock.json` | 5 KB | §PW55: five purchases, 130 credits, and the hashes nothing ever compared |
+| `friend_cloud.png` | 59 KB | §PW58: the standing frame of the only motion the game has |
+| `friend_cloud_lean.png` | 57 KB | §PW58: the same mesh re-rendered at 93% of its height |
+
+The settle pair is here because it is **the whole of Cottony's motion**, and because the
+two frames carry a number rather than only a picture: the leaning silhouette is 186 px tall
+against the standing one's 200, which recovers the `squash = 0.93` its constants declare
+from the pixels that shipped. They also share a bottom row to the pixel, which is what makes
+a crossfade read as a toy settling rather than as two toys. A built pair would have both
+properties by construction and would prove neither.
 
 `meshy.lock.json` is the whole file and not a trimmed one, because what it is here to
 reproduce is a real ledger's **variance**: four purchases from a drawing and one from
