@@ -187,30 +187,6 @@ A fuzzy surface is declarable now: a depth and a coarseness on its material, wit
 shells derived (`docs/specs/geometry.md`). What this still meets is §PW60 — a
 declaration has no builder, so a ported model is a document nothing can build.
 
-### §PW55 One spend, two ledgers, and neither knows the other
-
-`tools/art/meshy.py` is 540 lines and nearly all of it is now duplicated. It builds its
-own payload, carries its own procedure for probing a metered API for free, writes its
-own `meshy.lock.json` — task id, exact request, model asked for, cost, and the sha256 of
-the sprite that went in and the mesh that came out — and handles the 72-hour expiry
-itself, a rule RK88 paid 30 credits to learn and recorded without committing the mesh.
-
-Block D built each of those generically. `purchase.py` holds the budget, the ledger and
-what is held; `schema.py` learns the service's own field set rather than restating it;
-`reference.py` prepares the drawing; `shape.py` checks the returned silhouette against
-it; `normalise.py` orients and scales; `provenance.py` writes the sidecar and the cache
-key.
-
-**The port is provable without spending a credit**, which matters because nothing here
-spends money on an agent's own judgement. Five meshes are already in `tools/art/3d/`
-with their lock entries — `booster_hammer`, `booster_wand`, `scenery_mushroom`,
-`friend_plush`, `mascot`. Each entry replays into the plugin's ledger, and the sha256 it
-already records either matches the file on disk or does not. A lock entry whose mesh has
-moved is exactly the question that file was written to answer, and it has never been
-asked mechanically.
-
-A live fetch stays a person's call, and is not what closes this line.
-
 ### §PW56 Twelve runners, twelve ways to start Godot, and no check on what applied
 
 `tools/capture_screens.py` drives four scripts under `tools/capture/`;

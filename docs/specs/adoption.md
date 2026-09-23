@@ -123,6 +123,47 @@ The port itself. It edits a repository this one does not own, and **§PW35 requi
 recorded before anything moves** — a before side taken after the port is refused, and rightly.
 So the audit lands here and the adoption waits on a person starting the ledger.
 
+## Bringing an existing ledger in
+
+Binds **PW55**. A project adopting this plugin has usually bought things already, and its
+own client wrote them down somewhere. Cottony's is `tools/art/3d/meshy.lock.json`: five
+purchases, 130 credits, each entry holding the task id, the exact request, what it cost and
+the sha256 of what went in and what came out.
+
+`purchase.adopt` replays such entries, and **costs nothing** — every claim in a file like
+that is about a file already on disk, so nothing is asked of the service and no credit is
+spent. The mapping from the foreign field names is the caller's, because the service's
+format is not this plugin's to hard-code and a project's own paths are the thing that must
+never be compiled in. For Meshy it is this:
+
+| The lock file holds | The ledger calls it |
+|---|---|
+| `mesh` | `artefact` |
+| `mesh_sha256` | `sha256` |
+| `task_id` | `task_id` |
+| `credits_measured` | `credits` — what the balance said, not what was quoted |
+| `consumed_credits` | `expected_credits` |
+| `request.texture_prompt` or `request.prompt` | `prompt` |
+| `image` | `reference` |
+| `finished_at` (epoch ms) | `at` |
+
+**An entry is adopted only where the file is there and still hashes to what it claims.** The
+ledger is written last precisely so it can never name an asset that is not there, and
+importing past that rule hands the project back the failure it started with: a receipt for a
+mesh nobody has. A claim that no longer holds is reported as `missing` or `changed` instead.
+
+That report is the first time the question is asked mechanically. A lock file records a hash
+and nothing ever compares it. Asked of Cottony's five, all five still hash to what they were
+bought as, and none was charged differently from what the service declared.
+
+**An adopted credit does not count against the ceiling.** Those meshes were bought before
+this project had one here, and charging them to the budget a person set for today would
+refuse the next call over money already gone. They stay in the ledger, because `held` is the
+question about assets and every one of them is an asset — so `held` reports the full
+`credits` and `against_ceiling` separately.
+
+A live fetch stays a person's call and is not what this covers.
+
 ## Testing against artefacts somebody actually made
 
 Binds **PW48**. Every other input the suite has is built in code: a box of stated

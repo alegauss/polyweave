@@ -1,0 +1,144 @@
+{
+  "booster_hammer": {
+    "consumed_credits": 30,
+    "created_at": 1789659814090,
+    "credits_measured": 30,
+    "expires_at": 1789919176551,
+    "finished_at": 1789659976551,
+    "image": "tools/art/3d/booster_hammer.drawn.png",
+    "image_sha256": "a659dadfe9c3b49d272afd859e5404b7e065e4aed0fd3874de665842d2ebd20f",
+    "kept": 1,
+    "mesh": "tools/art/3d/booster_hammer.glb",
+    "mesh_bytes": 8184632,
+    "mesh_sha256": "728129bd3422d10a896434685058ef17f99fbd4b1d8ff94ab6a3a919132814e7",
+    "mode": "image-to-3d",
+    "request": {
+      "ai_model": "meshy-7",
+      "enable_pbr": false,
+      "should_remesh": false,
+      "should_texture": true,
+      "symmetry_mode": "auto",
+      "target_polycount": 30000,
+      "texture_prompt": "glossy moulded candy toy mallet, pink candy hammer head with a small gold candy heart on its face, brown candy handle, smooth and shiny, no stitching, no fabric, no grain",
+      "texture_resolution": "4k",
+      "topology": "triangle"
+    },
+    "task_id": "01a0b009-8a7d-77ed-91ac-51f59ef149d8",
+    "variants": [
+      "01a0b009-8a7d-77ed-91ac-51f59ef149d8"
+    ]
+  },
+  "booster_wand": {
+    "consumed_credits": 30,
+    "created_at": 1789659983503,
+    "credits_measured": 30,
+    "expires_at": 1789919381298,
+    "finished_at": 1789660181298,
+    "image": "tools/art/3d/booster_wand.drawn.png",
+    "image_sha256": "462ed6f4e18b91225988393243af6ce3e61cd1d1173ef64732d72b728b5fa2d9",
+    "kept": 1,
+    "mesh": "tools/art/3d/booster_wand.glb",
+    "mesh_bytes": 13639940,
+    "mesh_sha256": "8830c68ec8de6c1e60b5a20f7c8420bb7ecdf789acacbb37778e57d3a40ab199",
+    "mode": "image-to-3d",
+    "request": {
+      "ai_model": "meshy-7",
+      "enable_pbr": false,
+      "should_remesh": false,
+      "should_texture": true,
+      "symmetry_mode": "auto",
+      "target_polycount": 30000,
+      "texture_prompt": "glossy moulded candy shooting star, gold candy star trailing a curved rainbow candy ribbon in pink, gold, green and blue bands, smooth and shiny, no stitching, no fabric",
+      "texture_resolution": "4k",
+      "topology": "triangle"
+    },
+    "task_id": "01a0b00c-2397-7086-bb29-ccf86b2fea8d",
+    "variants": [
+      "01a0b00c-2397-7086-bb29-ccf86b2fea8d"
+    ]
+  },
+  "friend_plush": {
+    "consumed_credits": 20,
+    "created_at": 1789673138595,
+    "credits_measured": 20,
+    "expires_at": null,
+    "finished_at": 1789673183218,
+    "kept": 1,
+    "mesh": "tools/art/3d/friend_plush.glb",
+    "mesh_bytes": 1710004,
+    "mesh_sha256": "fba5c72409c9ef488a1cbb92f9623232b37f95363c311f989dc1d333fa0bce7a",
+    "mode": "text-to-3d",
+    "request": {
+      "ai_model": "meshy-7",
+      "art_style": "realistic",
+      "mode": "preview",
+      "prompt": "a plush cloud",
+      "should_remesh": false,
+      "symmetry_mode": "auto",
+      "target_polycount": 30000,
+      "topology": "triangle"
+    },
+    "task_id": "01a0b0d4-e97a-729d-b1e4-7011fb4a9250",
+    "variants": [
+      "01a0b0d4-e97a-729d-b1e4-7011fb4a9250"
+    ]
+  },
+  "mascot": {
+    "consumed_credits": 20,
+    "created_at": 1789681346280,
+    "credits_measured": 20,
+    "expires_at": 1789940611677,
+    "finished_at": 1789681411677,
+    "image": "docs/design/mascot.jpg",
+    "image_sha256": "26bddef23495e70a3362d8fde8b60243085fe42450fbebed6af8b53ed4e20bc5",
+    "kept": 1,
+    "mesh": "tools/art/3d/mascot.glb",
+    "mesh_bytes": 30697212,
+    "mesh_sha256": "79d3b21ea94e59e8be4dc397c566a12e48d95281bb8c036c9c261a45e686ce00",
+    "mode": "image-to-3d",
+    "request": {
+      "ai_model": "meshy-7",
+      "enable_pbr": false,
+      "should_remesh": false,
+      "should_texture": false,
+      "symmetry_mode": "auto",
+      "target_polycount": 30000,
+      "texture_prompt": "",
+      "texture_resolution": "4k",
+      "topology": "triangle"
+    },
+    "task_id": "01a0b152-251c-7389-b4a2-8fe73c7ac323",
+    "variants": [
+      "01a0b152-251c-7389-b4a2-8fe73c7ac323"
+    ]
+  },
+  "scenery_mushroom": {
+    "consumed_credits": 30,
+    "created_at": 1789658335152,
+    "credits_measured": 30,
+    "expires_at": 1789917793769,
+    "finished_at": 1789658593769,
+    "image": "tools/art/3d/scenery_mushroom.drawn.png",
+    "image_sha256": "5631a4738fb4386a6cf509d83c3990ac458ff075b8a6ab9d903d2c73643afc1f",
+    "kept": 1,
+    "mesh": "tools/art/3d/scenery_mushroom.glb",
+    "mesh_bytes": 7413620,
+    "mesh_sha256": "9798b9f9d61bbbe9ca3cdf71ed94c874225d366f1b129cfe41ef8d10b55b698d",
+    "mode": "image-to-3d",
+    "request": {
+      "ai_model": "meshy-7",
+      "enable_pbr": false,
+      "should_remesh": false,
+      "should_texture": true,
+      "symmetry_mode": "auto",
+      "target_polycount": 30000,
+      "texture_prompt": "glossy moulded candy mushroom, smooth coral orange candy cap with round cream candy spots, cream candy stem, a thin cream mould line at the cap rim, smooth and shiny, no stitching, no seams, no fabric, no grain",
+      "texture_resolution": "4k",
+      "topology": "triangle"
+    },
+    "task_id": "01a0aff2-fb8a-7078-bf94-ee024c3eeda9",
+    "variants": [
+      "01a0aff2-fb8a-7078-bf94-ee024c3eeda9"
+    ]
+  }
+}

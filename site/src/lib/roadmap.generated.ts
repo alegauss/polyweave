@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 1 },
-  { block: "H", title: "Proof on a real game", open: 6 },
+  { block: "H", title: "Proof on a real game", open: 5 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -72,13 +72,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW60"],
   },
   {
-    id: "PW55",
-    block: "H",
-    symptom: "a Cottony fetch is bounded by nothing a tool can see, and records itself in a ledger the plugin cannot read",
-    why: "meshy.py carries its own probe, lock file and expiry lesson beside the plugin's budget, schema and provenance, so one spend is recorded twice.",
-    deps: [],
-  },
-  {
     id: "PW56",
     block: "H",
     symptom: "twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent",
@@ -104,7 +97,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "nothing says how much of Cottony still does its own version of what the plugin does",
     why: "Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion.",
-    deps: ["PW53", "PW54", "PW55", "PW56", "PW57", "PW58"],
+    deps: ["PW53", "PW54", "PW56", "PW57", "PW58"],
   },
 ];
 

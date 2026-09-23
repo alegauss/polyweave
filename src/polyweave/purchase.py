@@ -206,6 +206,135 @@ def capture(
     return entry
 
 
+def adopt(entries: Any, *, root: str | Path = ".") -> dict:
+    """Bring a ledger somebody else kept into this one, spending nothing (§PW55).
+
+    A project adopting the plugin already has a record of what it bought, in whatever
+    shape its own client wrote — Cottony's is a `meshy.lock.json` holding a task id, the
+    exact request, the cost and the sha256 of what went in and what came out. Replaying
+    it is what stops one spend being recorded twice, and it costs nothing, because every
+    claim in such a file is about a file already on disk.
+
+    Each entry needs an `artefact`, a `sha256` and a `task_id`; the rest of the ledger's
+    own fields are carried across where they are given. Mapping a foreign file's field
+    names onto those is the caller's, and deliberately so: the service's format is not
+    this plugin's to hard-code, and a project's own paths are the thing that must never
+    be compiled in.
+
+    **An entry is adopted only where the file is there and still hashes to what it
+    claims.** The ledger is written last precisely so that it can never name an asset
+    that is not there (§PW17), and importing past that rule would hand the project back
+    the failure it started with: a receipt for a mesh nobody has. So a claim that no
+    longer holds is reported instead, which is also the first time anything asks that
+    question mechanically — a lock file records a hash and nothing ever compares it.
+
+    Adopting twice is a no-op. The match is on the hash, never the remote id, for the
+    same reason nothing else here keys off one: it is the identifier that stops
+    existing.
+    """
+    here = Path(root).resolve()
+    already_held = {e.get("sha256") for e in read(here)}
+    report: dict[str, list] = {
+        "adopted": [],
+        "missing": [],
+        "changed": [],
+        "already": [],
+    }
+    fresh: list[dict] = []
+
+    for stated in entries:
+        entry = dict(stated)
+        claimed = entry.get("sha256")
+        if not entry.get("task_id"):
+            raise PolyweaveError(
+                "fetch.no-task",
+                f"the entry for {entry.get('artefact')!r} carries no task id",
+                "map the service's own id for the task onto `task_id`; an entry "
+                "without one cannot be traced back to what was bought",
+            )
+        if not entry.get("artefact") or not claimed:
+            raise PolyweaveError(
+                "fetch.ledger-malformed",
+                f"an entry for task {entry['task_id']!r} names no artefact or no hash",
+                "map the file it bought onto `artefact` and its digest onto `sha256`; "
+                "everything downstream keys off the local file and its hash",
+            )
+
+        artefact = here / entry["artefact"]
+        if not artefact.is_file():
+            report["missing"].append({**entry, "expected_at": str(artefact)})
+            continue
+        digest, length = provenance.sha256_of(artefact)
+        if digest != claimed:
+            report["changed"].append({**entry, "found": digest, "recorded": claimed})
+            continue
+        if claimed in already_held:
+            report["already"].append(entry)
+            continue
+
+        already_held.add(claimed)
+        fresh.append(_adopted(entry, length, here))
+
+    if fresh:
+        write_atomic(
+            where(here), json.dumps(read(here) + fresh, indent=2, sort_keys=True) + "\n"
+        )
+        report["adopted"] = fresh
+    report["credits"] = round(sum(float(e["credits"]) for e in fresh), 4)
+    report["sound"] = not (report["missing"] or report["changed"])
+    return report
+
+
+def _adopted(entry: dict, length: int, root: Path) -> dict:
+    """One foreign entry in this ledger's shape, with a record beside its artefact.
+
+    A sidecar that already exists is left alone. This is a replay of something that
+    happened, so a record somebody already wrote is the better account of it than one
+    reconstructed from a lock file.
+    """
+    artefact = root / entry["artefact"]
+    if not provenance.sidecar(artefact, root).is_file():
+        provenance.write(
+            provenance.build(
+                "fetch",
+                artefact,
+                inputs=[provenance.source("reference", entry["reference"], root=root)]
+                if entry.get("reference")
+                and (root / entry["reference"]).is_file()
+                else [],
+                extra={
+                    "task_id": entry["task_id"],
+                    "credits": float(entry.get("credits", 0.0)),
+                    "prompt": entry.get("prompt"),
+                    "adopted": True,
+                },
+                root=root,
+            ),
+            root=root,
+        )
+    return {
+        "artefact": provenance.relative(artefact, root),
+        "sha256": entry["sha256"],
+        "bytes": length,
+        "task_id": entry["task_id"],
+        "credits": float(entry.get("credits", 0.0)),
+        "expected_credits": float(
+            entry.get("expected_credits", entry.get("credits", 0.0))
+        ),
+        "balance_before": entry.get("balance_before"),
+        "balance_after": entry.get("balance_after"),
+        "surprised": bool(entry.get("surprised", False)),
+        "bought": entry.get("bought", "mesh"),
+        "prompt": entry.get("prompt"),
+        "reference": entry.get("reference"),
+        "at": entry.get("at")
+        or datetime.now(tz=UTC).isoformat(timespec="seconds").replace("+00:00", "Z"),
+        # What separates a replay from a spend. `spent` reads this, so money that was
+        # gone before the ceiling existed does not eat it.
+        "adopted": True,
+    }
+
+
 def append(entry: dict, *, root: str | Path = ".") -> Path:
     """Add one entry, rewriting the whole file so a reader never sees half a line."""
     path = where(root)
@@ -235,8 +364,16 @@ def read(root: str | Path = ".") -> list[dict]:
 
 
 def spent(root: str | Path = ".") -> float:
-    """What this project has spent, according to its own ledger."""
-    return round(sum(float(e.get("credits", 0.0)) for e in read(root)), 4)
+    """What this project has spent against its ceiling, according to its own ledger.
+
+    **An adopted entry does not count** (§PW55). A project bringing an existing ledger
+    in bought those meshes before it had a ceiling here, and charging them to the one a
+    person set for today would refuse the next call over money already gone. They stay
+    in the ledger, because `held` is about assets and every one of them is an asset.
+    """
+    return round(
+        sum(float(e.get("credits", 0.0)) for e in read(root) if not e.get("adopted")), 4
+    )
 
 
 def find(sha: str, *, root: str | Path = ".") -> dict | None:
@@ -265,7 +402,10 @@ def held(root: str | Path = ".") -> dict:
         (present if digest == entry.get("sha256") else changed).append(entry)
     return {
         "entries": len(entries),
-        "credits": spent(here),
+        # Every entry, adopted or not: this is the question about assets, and a mesh
+        # bought before the ledger was adopted cost just as much as one bought after.
+        "credits": round(sum(float(e.get("credits", 0.0)) for e in entries), 4),
+        "against_ceiling": spent(here),
         "sound": not (missing or changed),
         "present": [e["artefact"] for e in present],
         "missing": missing,

@@ -19,6 +19,17 @@ buys nothing the 8 MB hammer does not, so it is not here.
 | `booster_hammer.drawn.png` | 11 KB | §PW20: the drawing the hammer leans in |
 | `booster_hammer.glb` | 8.0 MB | §PW20: what came back from the service standing upright |
 | `friend_plush.glb` | 1.7 MB | §PW26: a real plush body to fit a skeleton to, and the cheapest mesh here |
+| `meshy.lock.json` | 5 KB | §PW55: five purchases, 130 credits, and the hashes nothing ever compared |
+
+`meshy.lock.json` is the whole file and not a trimmed one, because what it is here to
+reproduce is a real ledger's **variance**: four purchases from a drawing and one from
+words, one bought untextured so its texture prompt is empty and its reference is the whole
+ask. A mapping written against a tidy sample would meet all three on the day it ran.
+
+Two of the five meshes it names are in this directory and three are not. That is not a gap
+to fill — an 8 MB mesh per entry buys nothing the two already here do not, and the replay
+is asserted on both answers: the ones present adopt, the ones absent come back `missing`,
+which is the right statement about this tree rather than a claim about Cottony's.
 
 **No capture from a running game.** One was considered and left out: §PW25 is about the
 settings a picture was taken under and not about its pixels, so a screenshot proves

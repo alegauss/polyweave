@@ -7,7 +7,9 @@ Thirty credits spent for a receipt.
 
 from __future__ import annotations
 
+import hashlib
 import json
+from pathlib import Path
 
 import pytest
 
@@ -216,3 +218,116 @@ def test_the_ledger_survives_being_written_twice(tmp_path):
     bought(where, out="b.glb", task_id="t_2")
     held = json.loads(purchase.where(where).read_text(encoding="utf-8"))
     assert [e["task_id"] for e in held] == ["t_1", "t_2"]
+
+
+# -- a ledger somebody else kept, replayed into this one (§PW55) -----------------------
+
+
+def a_mesh(root, name="bought.glb", body=b"glTF-pretend"):
+    path = Path(root) / name
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(body)
+    return path, hashlib.sha256(body).hexdigest()
+
+
+def an_entry(root, **over):
+    path, digest = a_mesh(root, over.pop("name", "bought.glb"))
+    return {
+        "artefact": path.name,
+        "sha256": digest,
+        "task_id": "t_01",
+        "credits": 30.0,
+        "prompt": "a candy mallet",
+        **over,
+    }
+
+
+def test_an_entry_whose_file_is_there_and_unchanged_is_adopted(tmp_path):
+    project(tmp_path)
+    found = purchase.adopt([an_entry(tmp_path)], root=tmp_path)
+    assert [e["artefact"] for e in found["adopted"]] == ["bought.glb"]
+    assert found["credits"] == 30.0
+    assert found["sound"] is True
+    assert purchase.read(tmp_path)[0]["task_id"] == "t_01"
+
+
+def test_an_entry_naming_a_file_that_is_gone_never_enters_the_ledger(tmp_path):
+    """The ledger is written last so it can never claim an asset that is not there."""
+    project(tmp_path)
+    entry = {**an_entry(tmp_path), "artefact": "never-landed.glb"}
+    found = purchase.adopt([entry], root=tmp_path)
+    assert found["adopted"] == []
+    assert found["missing"][0]["artefact"] == "never-landed.glb"
+    assert found["sound"] is False
+    assert purchase.read(tmp_path) == []
+
+
+def test_an_entry_whose_mesh_moved_is_reported_with_both_hashes(tmp_path):
+    """The question a lock file was written to answer and nothing ever asked."""
+    project(tmp_path)
+    entry = an_entry(tmp_path)
+    (tmp_path / "bought.glb").write_bytes(b"a different mesh entirely")
+    found = purchase.adopt([entry], root=tmp_path)
+    assert found["adopted"] == []
+    assert found["changed"][0]["recorded"] == entry["sha256"]
+    assert found["changed"][0]["found"] != entry["sha256"]
+    assert purchase.read(tmp_path) == []
+
+
+def test_adopting_twice_changes_nothing(tmp_path):
+    project(tmp_path)
+    entry = an_entry(tmp_path)
+    purchase.adopt([entry], root=tmp_path)
+    again = purchase.adopt([entry], root=tmp_path)
+    assert again["adopted"] == []
+    assert again["already"][0]["task_id"] == "t_01"
+    assert len(purchase.read(tmp_path)) == 1
+
+
+def test_a_replayed_spend_does_not_eat_a_ceiling_set_afterwards(tmp_path):
+    """It was gone before this project had a ceiling; charging it would refuse work."""
+    project(tmp_path, '[budget]\ncredits = 50\nexpires = "2099-12-31"\n')
+    purchase.adopt([an_entry(tmp_path)], root=tmp_path)
+    assert purchase.spent(tmp_path) == 0.0
+    assert purchase.remaining(tmp_path)["left"] == 50
+    # But it is still an asset, and `held` counts every credit that was ever paid.
+    assert purchase.held(tmp_path)["credits"] == 30.0
+    assert purchase.held(tmp_path)["against_ceiling"] == 0.0
+    assert purchase.held(tmp_path)["sound"] is True
+
+
+def test_an_adopted_mesh_gets_a_record_beside_it(tmp_path):
+    """Everything downstream keys off the record and the hash, not the remote id."""
+    from polyweave import provenance
+
+    project(tmp_path)
+    purchase.adopt([an_entry(tmp_path)], root=tmp_path)
+    written = provenance.read("bought.glb", root=tmp_path)
+    assert written["kind"] == "fetch"
+    assert written["task_id"] == "t_01"
+    assert written["adopted"] is True
+
+
+def test_a_record_somebody_already_wrote_is_left_alone(tmp_path):
+    from polyweave import provenance
+
+    project(tmp_path)
+    entry = an_entry(tmp_path)
+    mine = provenance.build("fetch", "bought.glb", extra={"mine": True}, root=tmp_path)
+    provenance.write(mine, root=tmp_path)
+    purchase.adopt([entry], root=tmp_path)
+    assert provenance.read("bought.glb", root=tmp_path)["mine"] is True
+
+
+def test_an_entry_with_no_task_id_is_a_mapping_error_and_stops_the_call(tmp_path):
+    project(tmp_path)
+    with pytest.raises(PolyweaveError) as caught:
+        purchase.adopt([{**an_entry(tmp_path), "task_id": ""}], root=tmp_path)
+    assert caught.value.code == "fetch.no-task"
+
+
+def test_an_entry_with_no_hash_is_refused_because_everything_keys_off_it(tmp_path):
+    project(tmp_path)
+    with pytest.raises(PolyweaveError) as caught:
+        purchase.adopt([{**an_entry(tmp_path), "sha256": ""}], root=tmp_path)
+    assert caught.value.code == "fetch.ledger-malformed"

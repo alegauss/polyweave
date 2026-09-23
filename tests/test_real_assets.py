@@ -241,3 +241,103 @@ def test_a_real_asset_reaches_far_further_across_the_frame_than_the_bar(
     # And it is nowhere near filling the frame either, which is why an area floor set
     # from these would still be a guess about the next asset.
     assert found["asserted"]["alpha_coverage"] < 0.5
+
+
+# -- a ledger somebody else kept, replayed (§PW55) -------------------------------------
+
+MESHY_LOCK = COTTONY / "meshy.lock.json"
+
+
+def from_meshy(entry: dict) -> dict:
+    """One `meshy.lock.json` entry in the plugin's ledger shape.
+
+    The mapping is the caller's on purpose: the service's format is not the plugin's to
+    hard-code, and `docs/specs/adoption.md` is where this table is written down. Every
+    field on the left is one the lock file already held — nothing here is invented, and
+    nothing is asked of the service.
+
+    Two of the five entries are text-to-3D and carry no reference image at all, so
+    `image` is read with a default. That is the format's own variance and not a gap:
+    a purchase made from words has no drawing, and a `reference` invented for it would
+    name a file that never existed.
+    """
+    asked = entry["request"]
+    return {
+        "artefact": entry["mesh"],
+        "sha256": entry["mesh_sha256"],
+        "task_id": entry["task_id"],
+        # What it really cost, read from the balance, against what the service declared.
+        "credits": float(entry["credits_measured"]),
+        "expected_credits": float(entry["consumed_credits"]),
+        "surprised": entry["credits_measured"] != entry["consumed_credits"],
+        "bought": "mesh",
+        "prompt": asked.get("texture_prompt") or asked.get("prompt"),
+        "reference": entry.get("image"),
+        "at": _stamp(entry["finished_at"]),
+    }
+
+
+def _stamp(epoch_ms: int) -> str:
+    from datetime import UTC, datetime
+
+    return (
+        datetime.fromtimestamp(epoch_ms / 1000, tz=UTC)
+        .isoformat(timespec="seconds")
+        .replace("+00:00", "Z")
+    )
+
+
+def test_a_real_lock_file_maps_onto_the_ledger_without_inventing_a_field():
+    import json
+
+    lock = json.loads(real(MESHY_LOCK).read_text(encoding="utf-8"))
+    assert len(lock) == 5, "five meshes, bought once each"
+    for name, entry in lock.items():
+        mapped = from_meshy(entry)
+        assert mapped["task_id"], name
+        assert len(mapped["sha256"]) == 64, name
+        assert mapped["credits"] > 0, name
+        # Every purchase says what was asked for, in words or in a drawing. Neither is
+        # required on its own: `mascot` was bought untextured, so its empty texture
+        # prompt is correct and the reference is the whole ask, and `friend_plush` came
+        # from words with no drawing at all.
+        assert mapped["prompt"] or mapped["reference"], name
+    assert sum(from_meshy(e)["credits"] for e in lock.values()) == 130.0
+    # Not one of the five was charged differently from what the service declared, which
+    # is the only form of that claim anybody can check.
+    assert not any(from_meshy(e)["surprised"] for e in lock.values())
+    assert {e["mode"] for e in lock.values()} == {"image-to-3d", "text-to-3d"}
+
+
+def test_the_hashes_a_lock_file_recorded_are_asked_about_for_the_first_time(tmp_path):
+    """§PW55's case. A lock file records a hash and nothing ever compares it.
+
+    Two of the five meshes are in this repository, which is what makes the question
+    answerable here at all. The other three stay in Cottony and come back `missing` —
+    which is the right answer about this tree and not a claim about theirs.
+    """
+    import json
+    import shutil
+
+    from polyweave import purchase
+
+    (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
+    lock = json.loads(real(MESHY_LOCK).read_text(encoding="utf-8"))
+
+    here = []
+    for entry in lock.values():
+        mapped = from_meshy(entry)
+        copied = COTTONY / Path(mapped["artefact"]).name
+        if copied.is_file() and copied.read_bytes()[:7] != b"version":
+            (tmp_path / mapped["artefact"]).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(copied, tmp_path / mapped["artefact"])
+            here.append(Path(mapped["artefact"]).name)
+
+    found = purchase.adopt([from_meshy(e) for e in lock.values()], root=tmp_path)
+    adopted = {Path(e["artefact"]).name for e in found["adopted"]}
+    assert adopted == set(here), "every mesh that is here still hashes to its entry"
+    assert found["changed"] == [], "and not one of them has moved since it was bought"
+    assert len(found["missing"]) == 5 - len(here)
+    # The credits stay out of this project's ceiling: they were spent before it had one.
+    assert purchase.spent(tmp_path) == 0.0
+    assert purchase.held(tmp_path)["credits"] == found["credits"]
