@@ -384,6 +384,44 @@ def colour_probe(path: str | Path) -> dict:
     }
 
 
+def scrub_textures(
+    obj: Any, *, reach: int | None = None, strictness: float | None = None
+):
+    """Take the painted shading out of every texture this object carries (§PW49).
+
+    Here rather than beside the normalise, because the normalised mesh is rebuilt from
+    vertices and faces and has no texture on it by the time it is written. Here is where
+    the service's own image is still attached to the thing about to be rendered.
+    """
+    import numpy as np
+
+    from .. import texture as T
+
+    require()
+    done: list[str] = []
+    found: dict = {}
+    for slot in obj.material_slots:
+        if slot.material is None or not slot.material.use_nodes:
+            continue
+        for node in slot.material.node_tree.nodes:
+            image = getattr(node, "image", None)
+            if image is None or not image.size[0] or image.name in done:
+                continue
+            wide, tall = image.size
+            pixels = np.asarray(image.pixels[:], dtype=np.float32).reshape(
+                tall, wide, -1
+            )
+            cleaned, found = T.scrub(
+                pixels,
+                reach=T.REACH if reach is None else int(reach),
+                strictness=T.STRICTNESS if strictness is None else float(strictness),
+            )
+            image.pixels = cleaned.reshape(-1).tolist()
+            done.append(image.name)
+            found = {**found, "image": image.name, "size": [wide, tall]}
+    return found
+
+
 def _socket_names(bsdf: Any) -> list[str]:
     return [i.name.lower().replace(" ", "_") for i in bsdf.inputs]
 

@@ -195,6 +195,10 @@ def bake(
     allow_uniform: Annotated[
         bool, Param("a render of one flat colour is what was wanted, not a failure")
     ] = False,
+    scrub: Annotated[
+        bool,
+        Param("take the shading a service painted into the mesh's texture back out"),
+    ] = False,
     covers: Annotated[
         list,
         Param("the world rectangle this picture stands for, as [width, height]"),
@@ -231,6 +235,12 @@ def bake(
         transparent=transparent,
     )
     params = {**as_params(rig), **({"material": material} if material else {})}
+    # In the key, and before it is computed: a scrubbed render and an unscrubbed one are
+    # different pictures, and the key is what stops one being served for the other
+    # (§PW49). What the scrub then measured goes in the answer, not here — those are its
+    # outputs and the request is what a key is over.
+    if scrub:
+        params["scrub"] = True
     scale = None
     # The size the picture comes out at: the rung's square, unless a world rectangle was
     # declared, in which case the declaration decides both axes (§PW47). Before this, a
@@ -284,6 +294,7 @@ def bake(
             report.stage("rendering", progress=1.0, note="cached")
             return _from_cache(hit, out_path, where, chosen, started, inline)
 
+    scrubbed: dict = {}
     if chosen["subject"] == "primitive":
         subject = blender.primitive("sphere")
     else:
@@ -297,6 +308,12 @@ def bake(
             where / model if not Path(model).is_absolute() else model
         )
         subject = blender.decimate(subject, chosen["decimate"])
+        if scrub:
+            # Opt-in, and Cottony's own pass was per model for the same reason: a dark
+            # line a person drew deliberately and a shadow the service painted look
+            # identical to anything measuring darkness, and removing the first is a
+            # judgement about what somebody wanted (§PW49).
+            scrubbed = blender.scrub_textures(subject)
     blender.apply_material(subject, material)
     blender.place(scene, rig, subject, covers=list(covers) or None)
 
@@ -369,6 +386,10 @@ def bake(
     if scale is not None:
         answer["covers"] = scale["covers"]
         answer["pixels_per_unit"] = scale["pixels_per_unit"]
+    if scrubbed:
+        # What the threshold came out at and how much it caught, so a scrub that took
+        # a tenth of the texture is visible as that rather than as a darker render.
+        answer["scrubbed"] = scrubbed
     if inline:
         answer["image"] = measure.inline_image(out_path)
     return answer

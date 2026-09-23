@@ -57,30 +57,6 @@ refusing a wand.
 
 ## Block D — Fetching from a paid service without surprise
 
-### §PW49 Painted shading is a shadow that cannot move, and removing it needs a measured threshold rather than a found one
-
-A generative service returns a mesh whose texture has shading painted into it — a dark
-line where a seam was drawn, a smudge where the model thought a shadow belonged. Under
-the plugin's lighting those marks are wrong twice over: they are shadows that do not
-move when the light does, and they are darker than anything the rig would produce.
-Cottony found this on every fetched prop and wrote `scrub()`, with three constants found
-by eye: the widest mark to remove, how much darker a texel must be, and the size those
-are measured at.
-
-Nothing here can do it. `post` is post-conditions and `material` sets shader inputs, and
-neither reaches a texture's pixels. So a project that buys meshes keeps its own pass —
-the fork the audit was testing for.
-
-What this has to settle is where the threshold comes from. Cottony's is a fixed number
-found by hand, which is the cost the search exists to remove, so the answer is likely a
-measurement rather than a constant: a mark is darker than its surroundings by more than
-the texture's own local variation, and that variation is readable. Whether it belongs at
-fetch time, beside the normalise, or as an operation a declaration asks for, depends on
-whether an unfetched texture ever needs it — and on this evidence it does not.
-
-Measure first whether removing the marks changes the accepted render. A repair nobody
-can see is not worth a pass over every texel.
-
 ## Block E — One world with the engine
 
 ## Block F — Motion

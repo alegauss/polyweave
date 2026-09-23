@@ -43,6 +43,7 @@ AREAS: dict[str, str] = {
     "capture": "the environment a picture of the running game is taken in",
     "rig": "fitting a skeleton to a mesh, and moving a pose between skeletons",
     "clip": "motion over time, as something with a name and a duration",
+    "texture": "the pixels a service painted, and what has to come back out of them",
     "loop": "what one asset cost to make, each way",
 }
 
@@ -231,6 +232,12 @@ CODES: dict[str, Code] = {
         means="every pixel of the texture is below the alpha floor",
         when="a bake whose source had no coverage at all",
         doors=("check the UVs and the source",),
+    ),
+    "texture.not-pixels": Code(
+        means="what was handed over is not a texture",
+        when="an array that is not height x width x channels, where a scrub or a mark "
+        "count was asked for",
+        doors=("pass the texture as floats in 0..1, with at least three channels",),
     ),
     "post.tolerance-unstated": Code(
         means="a check that needs a tolerance was given none",

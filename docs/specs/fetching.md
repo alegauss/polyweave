@@ -134,6 +134,32 @@ sits in the project's convention and nothing downstream carries a correction ang
 Anything that genuinely is a judgement — a deliberate lean, a pose — stays a parameter, but
 it now starts from a known frame rather than an arbitrary one.
 
+## What the service painted in, and taking it out
+
+A generative service returns a mesh whose texture has **shading painted into it** — a dark
+line where a seam was drawn, a smudge where the model thought a shadow belonged. Under the
+plugin's own lighting those marks are wrong twice over: they are shadows that do not move
+when the light does, and they are darker than anything the rig produces (§PW49).
+
+**The threshold is measured.** On Cottony's real hammer, a 4096-square sheet, the typical
+texel sits 0.0000 from its own surroundings, ordinary detail reaches 0.062 at the 99th
+percentile, and painted marks reach 0.372. A purely adaptive bar was tried in two spellings
+and both broke — a whole-sheet sigma flagged 7.8% because a UV sheet is mostly flat unused
+space, and a high percentile flagged nothing on a texture whose marks *were* its own tail.
+So the bar is a measured floor of 0.10 that the texture may raise and never lower.
+
+**It runs only where it shows, and only when asked.** Rendering the hammer both ways puts
+the scrub 0.0085 apart at the preview rung against a measured noise floor of 0.0315, and
+0.0452 apart at the final rung against 0.0187 — invisible on the cheap rung and 2.5× the
+floor on the dear one. And it stays opt-in, as Cottony's own pass was per model, because a
+dark line somebody drew deliberately and a shadow the service painted look identical to
+anything measuring darkness: removing the first is a judgement about what somebody wanted.
+The flag is in the cache key, so a scrubbed render is never served for an unscrubbed one.
+
+It lives in the render path rather than beside the normalise, for a plain reason: a
+normalised mesh is rebuilt from vertices and faces and has no texture on it by the time it
+is written, and the render is where the service's own image is still attached.
+
 ## The reference is prepared, not uploaded
 
 Whatever stands in front of or behind the subject in a reference photograph ends up in the

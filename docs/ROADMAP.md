@@ -11,8 +11,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-- 📋 **PW49** (deps: —) **a fetched mesh arrives with shading painted into its texture, and nothing can take the marks back out** — Those marks are shadows that do not move when the light does, and Cottony had to keep its own scrub pass with three thresholds found by eye, which is the fork adoption tests for. → §PW49
-
 ## Block E — One world with the engine
 
 ## Block F — Motion

@@ -142,3 +142,44 @@ def test_a_real_plush_body_takes_a_skeleton(tmp_path):
     span = hi - lo
     assert (inside >= lo - span * 0.2).all(), "no joint is far outside the body"
     assert (inside <= hi + span * 0.2).all()
+
+
+# -- shading the service painted into the texture (§PW49) -------------------------
+
+
+def test_the_hammers_texture_has_painted_shading_in_it():
+    """The claim the line rests on, measured rather than repeated: ordinary detail on
+    this 4096-square sheet reaches 0.062 and the marks reach 0.372."""
+    pytest.importorskip("bpy", reason="reading a texture needs the renderer")
+    import bpy
+
+    from polyweave import texture
+
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    bpy.ops.import_scene.gltf(filepath=str(real(HAMMER_MESH)))
+    image = bpy.data.images["Image_0"]
+    pixels = np.asarray(image.pixels[:], dtype=np.float32).reshape(
+        image.size[1], image.size[0], -1
+    )
+    found = texture.marks(pixels)
+    assert found["darkest"] > 0.3, "marks far darker than their surroundings"
+    assert 0.0005 < found["fraction"] < 0.02, f"a few, not a flattening: {found}"
+
+
+def test_scrubbing_the_hammer_lifts_the_marks_and_leaves_the_rest():
+    pytest.importorskip("bpy", reason="scrubbing a texture needs the renderer")
+    import bpy
+
+    from polyweave import texture
+
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    bpy.ops.import_scene.gltf(filepath=str(real(HAMMER_MESH)))
+    image = bpy.data.images["Image_0"]
+    pixels = np.asarray(image.pixels[:], dtype=np.float32).reshape(
+        image.size[1], image.size[0], -1
+    )
+    cleaned, found = texture.scrub(pixels)
+    assert cleaned.mean() > pixels.mean(), "the marks were lifted, so it is lighter"
+    changed = float((np.abs(cleaned - pixels) > 1e-6).any(axis=2).mean())
+    assert changed == pytest.approx(found["fraction"], abs=0.001)
+    assert changed < 0.02, "and the other 98% of the sheet is untouched"
