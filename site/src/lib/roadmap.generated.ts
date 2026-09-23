@@ -25,7 +25,7 @@ export interface GeneratedNonGoal {
 }
 
 export const generatedBlocks: GeneratedBlock[] = [
-  { block: "A", title: "What a tool call costs the turn", open: 2 },
+  { block: "A", title: "What a tool call costs the turn", open: 1 },
   { block: "B", title: "Seeing the result cheaply", open: 0 },
   { block: "C", title: "The asset compiler", open: 0 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
@@ -36,13 +36,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW62",
-    block: "A",
-    symptom: "a render resolves its noise floor without naming its rung, so a sphere is judged at the floor measured for a final",
-    why: "The same call hands the rung to the measurer and withholds it from the bar, so the noisiest rung gets the tightest floor and a flat sphere passes PW42's check.",
-    deps: [],
-  },
   {
     id: "PW63",
     block: "A",

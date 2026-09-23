@@ -466,3 +466,82 @@ def test_an_empty_pass_starts_no_jobs(project):
         }
     )
     assert search.in_parallel(spec, out="s.png", root=project)([]) == []
+
+
+# -- the bar a render is judged at is its own rung's (§PW62) ---------------------------
+
+
+def test_the_strictest_floor_is_the_one_that_lets_a_flat_sphere_through():
+    """Why naming no rung is the wrong default for this bar, and not a safe one.
+
+    `render_noise` is the floor below which a picture counts as flat, so a *lower* bar
+    refuses less. Final's 0.013 is the strictest number in the table and the most
+    permissive answer to "is this blank", which is backwards on the rung that has the
+    most sampler noise in it.
+    """
+    import numpy as np
+
+    from polyweave import post
+    from polyweave.image import Image
+
+    # Two values, about 0.02 apart: sampler noise at four samples, on a picture that is
+    # one colour to any observer.
+    rgba = np.zeros((8, 8, 4), dtype=np.uint8)
+    rgba[:, :, 3] = 255
+    rgba[0, 0, :3] = 5
+    speckled = Image(path=None, rgba=rgba, had_alpha=True)
+    assert post.check(
+        "render", speckled, alpha_floor=0.0, render_noise=0.013, subject_extent=0.0
+    )["size"]
+    with pytest.raises(PolyweaveError) as caught:
+        post.check(
+            "render", speckled, alpha_floor=0.0, render_noise=0.025, subject_extent=0.0
+        )
+    assert caught.value.code == "post.render-uniform"
+
+
+def test_a_render_is_judged_at_its_own_rungs_floor(tmp_path):
+    """The record PW51 writes is what makes this checkable at all."""
+    pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
+    from polyweave import config as C
+    from polyweave import provenance, render
+
+    (tmp_path / C.FILENAME).write_text(
+        "[render]\npreview_size = 32\nfinal_size = 32\n"
+        "samples = { sphere = 4, preview = 4, final = 4 }\nseed = 11\n",
+        encoding="utf-8",
+    )
+
+    class Quiet:
+        def stage(self, *a, **k):
+            pass
+
+        def progress(self, *a, **k):
+            pass
+
+        def note(self, *a, **k):
+            pass
+
+    settings = C.load(tmp_path)
+    # The three rungs really are three different floors, or the check below proves
+    # nothing: 0.025 at four samples, 0.020 at the preview, 0.013 at five hundred.
+    floors = {
+        r: settings.tolerances(r).render_noise for r in ("sphere", "preview", "final")
+    }
+    assert len(set(floors.values())) == 3
+    assert settings.tolerances().render_noise == min(floors.values())
+
+    # The sphere rung is the one that renders without a mesh, and the one that was
+    # wrong: it has the most sampler noise and was judged at the strictest bar.
+    render.bake(
+        Quiet(),
+        out="sphere.png",
+        rung="sphere",
+        root=tmp_path,
+        inline=False,
+        cached=False,
+    )
+    written = provenance.read("sphere.png", root=tmp_path)
+    assert written["rung"] == "sphere"
+    assert written["tolerances"]["render_noise"] == floors["sphere"]
+    assert written["tolerances"]["render_noise"] != settings.tolerances().render_noise

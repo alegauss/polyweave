@@ -2,32 +2,6 @@
 
 ## Block A — What a tool call costs the turn
 
-### §PW62 A per-rung tolerance whose only caller asks for it without the rung
-
-`render.bake` resolves its tolerances with `config.tolerances()` and names no rung — two
-lines after computing `chosen["rung"]`, and a few before handing that same rung to
-`measure.measure`. One call tells the measurer which rung it is on and does not tell the
-bar.
-
-`Config.tolerances(rung)` is explicit about what naming none means: it takes the
-strictest of the table, "the safe way to be wrong". The defaults are `sphere = 0.025`,
-`preview = 0.020`, `final = 0.013`, so every render is checked against 0.013 — final's
-floor, measured at five hundred samples — including the sphere rung, which runs at four.
-
-For this tolerance the strictest is the wrong direction. `render_noise` is the bar below
-which a picture counts as **flat**: the spread across the visible pixels is measured and
-anything under the floor is refused as blank (PW42). A lower floor refuses less. So a
-sphere render whose spread falls between 0.013 and 0.025 — sampler noise at four samples
-— reads as a picture with content, and the assertion passes on exactly the rung its own
-evidence came from: an unlit sphere through Cycles at four samples, black to any
-observer.
-
-PW44 built the per-rung table, and the one caller that needs it does not ask for it.
-
-The fix is the argument. The test is a flat render at each rung, and it should fail at
-sphere before it is made to pass. Worth checking at the same time whether any other
-caller knows its rung and omits it.
-
 ### §PW63 Three names the renderer takes, meaning something the caller did not ask for
 
 PW36's audit found that `light` and `form` name nothing the renderer has, and the guard

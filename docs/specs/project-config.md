@@ -134,8 +134,16 @@ noise floor is not one number. Two seeds of one unchanged sphere measured 0.0234
 sphere rung, 0.0195 at preview and 0.0122 at final, against the single 0.004 this used to
 hold — so every comparison at every rung read as a change (§PW44). `Config.tolerances(rung)`
 resolves it to the one number the comparing code wants; naming no rung takes the strictest,
-which is the safe way to be wrong, since too tight costs a look and too loose is a wrong
-answer.
+which is the safe way to be wrong **for comparing two renders**, since too tight costs a look
+and too loose is a wrong answer.
+
+**An operation that knows its rung names it, and the flatness check is why** (§PW62).
+`render_noise` is also the bar below which one picture counts as flat, and there the strictest
+number is the most permissive answer: a lower floor refuses less. `bake` resolved its
+tolerances without naming the rung it had just chosen, so every render was judged at final's
+0.013 — the sphere rung at four samples included, which has twice that much sampler noise in
+it and is the rung §PW42's own evidence came from. One bar read two ways is the trap; the
+door out is that the caller knows which rung it is on and says so.
 
 **And a measured floor beats all of them.** Those defaults are what one machine measured,
 which is still a guess about another. `measure.same` takes a `twin` — a second render of the

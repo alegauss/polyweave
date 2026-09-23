@@ -303,7 +303,14 @@ def bake(
     # below take the numbers and default none of them (§PW40). It is read here rather
     # than after the render because a hit has to be able to say which of these bars the
     # verdict it carries predates (§PW51).
-    tolerances = config.tolerances()
+    #
+    # **With the rung**, which is the half that was missing (§PW62). `render_noise` is
+    # keyed by rung because the floor at four samples is not the floor at five hundred,
+    # and naming none took the strictest of the table — so every render was checked
+    # against final's 0.013, the sphere rung at four samples included. For this bar the
+    # strictest is the wrong direction: a lower floor refuses less, so the noisiest rung
+    # got the bar that lets a flat render through.
+    tolerances = config.tolerances(chosen["rung"])
     if cached:
         hit = store.look(signature, work=work)
         if hit is not None:
