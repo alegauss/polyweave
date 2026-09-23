@@ -106,11 +106,16 @@ no knob for is now refused before a render is spent (`search.unknown-parameter`)
 near match named. The translation itself stays a person's — `light` is a multiplier and
 `exposure` is in stops, and a wrong conversion is a different picture, not an error.
 
-**The fluff has no home at all.** `FLUFF_SHELLS`, `FLUFF_DEPTH`, `FLUFF_EDGE`, `FLUFF_FIBRE`,
+**The fluff had no home at all.** `FLUFF_SHELLS`, `FLUFF_DEPTH`, `FLUFF_EDGE`, `FLUFF_FIBRE`,
 `FLUFF_FIBRE_WEIGHT`, `FLUFF_VARY`, `FLUFF_RISE`, `FLUFF_LEAN` are shell texturing — the same
 surface drawn twenty times a little further out. That is a **technique**, not a number, and
-no table here holds one. Same for `scrub` and its three constants, which are a pass over the
-rendered pixels. Both are filed rather than guessed at.
+no table here held one. Same for `scrub` and its three constants, which are a pass over the
+rendered pixels. Both were filed rather than guessed at, and both have since landed: the
+scrub as a measured pass (§PW49), and the fluff as a two-number intent on a material with
+the eight constants derived from it (§PW50, `geometry.md`). **Adopting the fuzz is therefore
+not a translation of eight values but a re-fit of two**, and the fit is worth doing against
+a render rather than by reading the old constants across — this vocabulary derives them from
+a different starting point and will not land on Cottony's eight exactly.
 
 ### What is left of PW36
 
@@ -154,4 +159,16 @@ nothing linted it. It is `tests/fixtures/gdscript/capture.gd` now, read by the t
 
 ## Still to come in this block
 
-Nothing, once the port PW36 is deferred on has somebody to record its baseline.
+The port PW36 is deferred on, once somebody records its baseline — and then the six
+surfaces that one port leaves standing.
+
+**Cottony runs on none of this today.** A search for `polyweave` across the checkout returns
+nothing, against 8,839 lines under `tools/`. §PW53 to §PW58 name the surfaces one at a time:
+the fourteen-parameter rig on the eleven models PW36 does not move, `solid.py`'s geometry as
+a program, `meshy.py`'s second ledger, the twelve GDScript runners that each start Godot
+their own way, the five look gates each holding their own floor, and a motion block that has
+never run against something a game ships.
+
+§PW59 is the one that makes *adopted* fail rather than be claimed, and it is where the
+denominator is stated: `make_assets.py`'s 2,406 lines of drawn 2D generation are not in it,
+because this plugin is geometry, surface and motion in three dimensions.

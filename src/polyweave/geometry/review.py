@@ -27,7 +27,8 @@ from typing import Any
 
 from ..errors import PolyweaveError
 from ..post.mesh import check_manifold, check_mesh
-from . import arithmetic, expand, mentions, order, refers_to, uses
+from . import arithmetic, coats, expand, mentions, order, refers_to, uses
+from . import surface as F
 
 #: A repeat above this is worth mentioning, because a document rarely means it.
 CROWDED = 500
@@ -67,7 +68,7 @@ def _outline_words(stated: Any) -> str:
     return "an outline"
 
 
-def _says(node: dict, instance: dict) -> str:
+def _says(node: dict, instance: dict, materials: dict | None = None) -> str:
     """One node, in words: what it is, before anything about how many."""
     op = node["op"]
     skip = ("id", "op", "material", "repeat", "outline", "rect", *refers_to(node))
@@ -109,6 +110,11 @@ def _says(node: dict, instance: dict) -> str:
     said = what + (f" ({rest})" if rest else "")
     if node.get("material"):
         said += f", in {node['material']}"
+        # A fuzzy surface is the one material property that changes what the shape
+        # looks like rather than only what colour it is, so it is said (§PW50).
+        coat = F.fuzz((materials or {}).get(node["material"]))
+        if coat:
+            said += f", {F.says(coat)}"
     return said
 
 
@@ -132,7 +138,7 @@ def describe(document: dict, **given: Any) -> dict:
         node, first = stated[one], by_id[one]["instances"][0]
         count = len(by_id[one]["instances"])
         grid = " by ".join(str(len(r["values"])) for r in by_id[one]["over"])
-        said = _says(node, first)
+        said = _says(node, first, resolved["materials"])
         if count > 1:
             said += f" — {count} of them"
             if len(by_id[one]["over"]) > 1:
@@ -167,8 +173,20 @@ def warn(document: dict, resolved: dict | None = None) -> list[str]:
             )
 
     read = set().union(*(uses(node) for node in document["nodes"])) or set()
+    read |= set().union(set(), *coats(document).values())
     for name in sorted(set(document["params"]) - read):
         out.append(f"the parameter {name} is declared and no node reads it")
+
+    # A node naming a material nothing declares keeps its colour and loses its fuzz,
+    # and loses it quietly — which is the shape of mistake this module is for.
+    declared = set(document["materials"])
+    for node in document["nodes"]:
+        worn = node.get("material")
+        if worn and worn not in declared:
+            out.append(
+                f"{node['id']} is in {worn}, and no material has that name, so "
+                f"whatever {worn} was meant to put on it is not there"
+            )
 
     for node in resolved["nodes"]:
         if len(node["instances"]) > CROWDED:

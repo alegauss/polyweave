@@ -370,3 +370,45 @@ def test_the_build_order_puts_every_input_before_what_needs_it(tmp_path):
     order = G.order(found)
     assert order.index("face") < order.index("tray")
     assert order.index("seat") < order.index("tray")
+
+
+# -- a surface declared over the same parameters a shape is (§PW50) --------------------
+
+
+def fuzzy(tmp_path, depth='"fluff_depth"', coarseness='"fluff_coarseness"'):
+    body = TRAY.replace(
+        "[materials.cushion]",
+        f"[materials.cushion]\nfuzz      = "
+        f"{{ depth = {depth}, coarseness = {coarseness} }}",
+    ).replace("bevel      = 2.0", "bevel      = 2.0\nfluff_depth = 3.0\n"
+              "fluff_coarseness = 0.62")
+    return tray(tmp_path, body)
+
+
+def test_a_material_s_own_values_resolve_like_a_node_s(tmp_path):
+    """Otherwise a surface declared over the parameters is not searchable at all."""
+    found = G.expand(fuzzy(tmp_path))
+    assert found["materials"]["cushion"]["fuzz"] == {"depth": 3.0, "coarseness": 0.62}
+
+
+def test_a_material_s_colour_is_a_name_and_not_arithmetic(tmp_path):
+    """The all-or-nothing rule reaches the materials table too."""
+    found = G.expand(fuzzy(tmp_path))
+    assert found["materials"]["cushion"]["colour"] == "#F2E4D0"
+
+
+def test_turning_a_surface_s_parameter_rebuilds_whatever_wears_it(tmp_path):
+    """A search told that nothing rebuilds would sample the shape it already had."""
+    found = fuzzy(tmp_path)
+    assert G.rebuilds(found, "fluff_coarseness") == ["face", "tray"]
+
+
+def test_a_node_in_no_material_is_not_rebuilt_by_one(tmp_path):
+    found = fuzzy(tmp_path)
+    assert "seat" not in G.rebuilds(found, "fluff_depth")
+
+
+def test_which_parameters_each_material_reads_is_answerable(tmp_path):
+    assert G.coats(fuzzy(tmp_path)) == {
+        "cushion": {"fluff_depth", "fluff_coarseness"}
+    }

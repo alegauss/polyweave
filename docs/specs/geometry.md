@@ -199,6 +199,64 @@ the outline put it, at zero depth, and only the inside swells — by a function 
 point's distance from the edge, which is what makes a panel look stuffed rather than
 extruded. A cushion made from a traced drawing therefore still has the drawn outline.
 
+### Surfaces
+
+A material is a table under `[materials.<name>]` and a node wears one by name. **Its values
+are expressions over the document's own parameters**, resolved like a node's, so a surface
+joins PW32's search on the same terms a shape does. A node naming a material nothing
+declares keeps its colour and loses everything else quietly, so the review warns about it.
+
+A fuzzy surface — plush, fur, moss, velvet — is **shell texturing**: the same surface drawn
+many times, each copy a little further out, each keeping only the strands tall enough to
+reach it, so the silhouette breaks into tufts rather than into single hairs. Cottony
+describes its own in eight constants, every one found by eye at two minutes a sample.
+
+**Those constants are the answer, not the way to ask** (§PW50). A table of eight keys would
+be one project's look compiled in — the non-goal exactly — and would help nobody who wanted
+fur instead of cotton. So a declaration states two numbers:
+
+```toml
+[params]
+fluff_depth      = 3.0
+fluff_coarseness = 0.62
+
+[materials.cotton]
+colour = "#F2E4D0"
+fuzz   = { depth = "fluff_depth", coarseness = "fluff_coarseness" }
+```
+
+| field | What it is |
+|---|---|
+| `depth` | How far the fuzz stands off the body, in the declaration's own units |
+| `coarseness` | Nought is fibres alone, one is clumps alone, and a plush surface is between them |
+
+**The coarseness axis is the two readings, not an invention.** Cottony measured both of its
+ends as failures: fibres grown straight off a smooth ball read as velvet rather than as
+sherpa, and clumps alone gave hard beads. What worked has both fields at once, which is why
+the fibre field's weight is simply one minus the coarseness — at either end one field stands
+alone, and in between they multiply.
+
+Everything else is derived from those two: the shell count, the cut sharpness, the clump and
+fibre scales, how far strand lengths wander, how far the body pushes out under a clump, and
+how far a tip leans towards its clump's crown. A declaration naming one of them by name is
+refused with `geom.bad-surface` and told what to state instead, because a key silently
+dropped is a surface that came back at a coarseness nobody chose.
+
+**The shell count is a function of coarseness and not of depth.** A strand needs the same
+number of samples along its length whether it is long or short, and reading the count off
+fineness keeps it free of the declaration's units — nothing in the format knows how big one
+of them is. Depth still sets the *spacing*, which is what decides whether the stack reads as
+one surface or as stripes, and it is reported rather than assumed against a screen.
+
+A surface reads back in words with the shape that wears it: `a plate 928 by 928 at 0 by 0
+(corner 28, depth 6), in cotton, fuzzy 3 deep, clumped`. The coarseness bands are named for
+what was measured at them — `fine`, `fibrous`, `clumped`, `beaded` — so a declaration that
+reads back `beaded` has been told what it asked for.
+
+What is **not** here is the noise field itself, which is a shader's and not a format's. The
+declaration fixes the stack the field is drawn onto and the threshold each shell cuts it at,
+which is the half that is reproducible from the two numbers that asked for it.
+
 ## The escape hatch is a node, not a mode
 
 Any format eventually meets a shape it cannot state, and forcing that shape into the format

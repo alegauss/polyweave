@@ -25,14 +25,14 @@ export interface GeneratedNonGoal {
 }
 
 export const generatedBlocks: GeneratedBlock[] = [
-  { block: "A", title: "What a tool call costs the turn", open: 2 },
+  { block: "A", title: "What a tool call costs the turn", open: 3 },
   { block: "B", title: "Seeing the result cheaply", open: 0 },
   { block: "C", title: "The asset compiler", open: 0 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 1 },
-  { block: "H", title: "Proof on a real game", open: 0 },
+  { block: "H", title: "Proof on a real game", open: 7 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -51,11 +51,67 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW50",
-    block: "G",
-    symptom: "a fuzzy surface cannot be declared at all, because shell texturing is a technique and no table holds one",
-    why: "Cottony's plush look is eight constants found by eye, and a table of eight keys would be one project's look compiled in while helping nobody who wanted fur instead.",
+    id: "PW61",
+    block: "A",
+    symptom: "the site understands one of the backlog's three dep forms, so a block or a range becomes a dangling id",
+    why: "waitingOn keeps the first whitespace token, so a `Block G` dep becomes `Block`, and the gate reports a missing task rather than a grammar it cannot read.",
     deps: [],
+  },
+  {
+    id: "PW60",
+    block: "G",
+    symptom: "a declaration is read, resolved and reported on, and nothing turns one into a mesh",
+    why: "Every op function, the build order and the report that consumes the result all ship, and no call in the package produces the spec's own worked example.",
+    deps: [],
+  },
+  {
+    id: "PW53",
+    block: "H",
+    symptom: "Cottony lights twelve models through fourteen constants of its own, and the search never sees one of them",
+    why: "One asset moving leaves bake_model.py standing for the other eleven, so the rig the plugin exists to remove is still the thing that runs.",
+    deps: [],
+  },
+  {
+    id: "PW54",
+    block: "H",
+    symptom: "a Cottony shape is a bmesh program that exists only inside a bake, so nothing can read, diff or search it",
+    why: "solid.py is 283 lines of geometry as code, and it carries a second copy of the bevelled-boolean lesson, which is a copy that will drift.",
+    deps: ["PW60"],
+  },
+  {
+    id: "PW55",
+    block: "H",
+    symptom: "a Cottony fetch is bounded by nothing a tool can see, and records itself in a ledger the plugin cannot read",
+    why: "meshy.py carries its own probe, lock file and expiry lesson beside the plugin's budget, schema and provenance, so one spend is recorded twice.",
+    deps: [],
+  },
+  {
+    id: "PW56",
+    block: "H",
+    symptom: "twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent",
+    why: "capture_screens.py and measure_frames.py trust a printed line and a timeout, so the route probe and the settings comparison go unused where the engine is.",
+    deps: [],
+  },
+  {
+    id: "PW57",
+    block: "H",
+    symptom: "every Cottony look gate restates its own floor, so no asset has a bar a search can aim at",
+    why: "Five check scripts measure after the render is spent, which is a verdict and never a target, and a threshold moved in one of them is invisible to the rest.",
+    deps: ["PW53"],
+  },
+  {
+    id: "PW58",
+    block: "H",
+    symptom: "nothing a game ships has been through the skeleton, the clip or the sprite sheet",
+    why: "Cottony's whole motion surface is one mesh squashed and re-rendered, so Block F's claim rests on synthetic figures whose bones are where the plan put them.",
+    deps: [],
+  },
+  {
+    id: "PW59",
+    block: "H",
+    symptom: "nothing says how much of Cottony still does its own version of what the plugin does",
+    why: "Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion.",
+    deps: ["PW53", "PW54", "PW55", "PW56", "PW57", "PW58"],
   },
 ];
 

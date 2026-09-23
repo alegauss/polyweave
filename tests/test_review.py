@@ -202,3 +202,39 @@ def test_a_typo_inside_an_expression_is_warned_about(tmp_path):
 def test_a_repeat_variable_is_in_scope_on_its_own_node(tmp_path):
     """`col` is fine on the seat and would be a typo anywhere else."""
     assert review.describe(tray(tmp_path))["warnings"] == []
+
+
+# -- a surface that changes the shape is said, not only named (§PW50) ------------------
+
+
+FUZZ = TRAY.replace(
+    "[materials.cushion]",
+    '[materials.cushion]\nfuzz      = { depth = 3.0, coarseness = 0.62 }',
+)
+
+
+def test_a_fuzzy_material_says_what_the_surface_is(tmp_path):
+    """"in cushion" does not tell anybody the plate came back covered in tufts."""
+    said = read(review.describe(tray(tmp_path, FUZZ)), "face")
+    assert "in cushion, fuzzy 3 deep, clumped" in said
+
+
+def test_a_material_that_is_only_a_colour_still_says_only_its_name(tmp_path):
+    said = read(review.describe(tray(tmp_path)), "face")
+    assert "in cushion" in said
+    assert "fuzzy" not in said
+
+
+def test_a_node_in_a_material_nothing_declares_is_warned_about(tmp_path):
+    """It keeps its colour and loses its fuzz, and loses it quietly."""
+    body = TRAY.replace('material = "cushion"', 'material = "cushon"')
+    found = review.describe(tray(tmp_path, body))
+    assert any("no material has that name" in one for one in found["warnings"])
+
+
+def test_a_parameter_only_a_material_reads_is_not_called_unread(tmp_path):
+    body = FUZZ.replace("bevel      = 2.0", "bevel      = 2.0\nfluff = 3.0").replace(
+        "depth = 3.0, coarseness", 'depth = "fluff", coarseness'
+    )
+    found = review.describe(tray(tmp_path, body))
+    assert not any("fluff" in one for one in found["warnings"])

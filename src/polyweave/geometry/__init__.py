@@ -259,7 +259,10 @@ def expand(document: dict, **given: Any) -> dict:
         "name": document["name"],
         "version": document["version"],
         "params": resolved,
-        "materials": document["materials"],
+        # A material's own values resolve like a node's, because a surface is declared
+        # as an intent over the document's parameters (§PW50) — `fuzz = { depth =
+        # "fluff_depth", … }` is only searchable if the name reaches the evaluator.
+        "materials": _value(document["materials"], resolved, "materials"),
         "nodes": instanced,
         "output": document["output"],
     }
@@ -358,14 +361,35 @@ def _named(value: Any) -> set[str]:
     return mentions(value)
 
 
+def coats(document: dict) -> dict[str, set[str]]:
+    """Which parameters each material's own values read.
+
+    A surface is declared over the same parameters a shape is (§PW50), so a material
+    reading one is a reason to rebuild and a reason not to warn that nothing reads it.
+    """
+    return {
+        name: _named(table) for name, table in (document.get("materials") or {}).items()
+    }
+
+
 def rebuilds(document: dict, parameter: str) -> list[str]:
     """Which nodes a change to this parameter forces a rebuild of, transitively.
 
     The search needs this: rebuilding geometry costs more than re-rendering it, so a
     mixed search over shape and light orders its sampling to rebuild as rarely as it
     can. A node that reads the parameter rebuilds, and so does everything downstream.
+
+    A node wearing a material whose own values read the parameter rebuilds too. Turning
+    a fuzz's coarseness changes the surface of whatever wears it, and a search told
+    that nothing rebuilds would sample the shape it already had.
     """
-    direct = {node["id"] for node in document["nodes"] if parameter in uses(node)}
+    worn = coats(document)
+    direct = {
+        node["id"]
+        for node in document["nodes"]
+        if parameter in uses(node)
+        or parameter in worn.get(node.get("material", ""), ())
+    }
     dirty = set(direct)
     changed = True
     while changed:

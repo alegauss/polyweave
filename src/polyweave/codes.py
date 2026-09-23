@@ -722,6 +722,16 @@ CODES: dict[str, Code] = {
         "nothing at all",
         doors=("check the numbers the node states",),
     ),
+    "geom.bad-surface": Code(
+        means="the surface stated on a material is not one this can build",
+        when="a fuzz with no depth or no coarseness, a depth at or below zero, a "
+        "coarseness outside nought to one, or one of the shell constants named as "
+        "though it were the way to ask; those are derived from the two that are",
+        doors=(
+            "state a depth and a coarseness",
+            "read the derived constants back with `construction`",
+        ),
+    ),
     "geom.unknown-shape": Code(
         means="there is no outline generator by that name",
         when="a shape named outside the small library the scripts were read off",
