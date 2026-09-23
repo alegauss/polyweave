@@ -323,3 +323,58 @@ def test_the_cheap_rung_is_not_worth_parallelising_and_the_dear_one_is():
 
 def test_more_lanes_make_parallel_worth_it_sooner():
     assert search.crossing_point(lanes=8) < search.crossing_point(lanes=4)
+
+
+# -- a name this renderer takes, meant differently elsewhere (§PW63) -------------------
+
+
+def test_every_axis_comes_back_with_what_it_is_measured_in():
+    """The guard refuses a name nothing takes; it cannot see a name that means else.
+
+    Cottony calls the fraction of the frame a model fills `fill`, and here `fill` is a
+    light in watts. Copying 0.92 across asks for a 0.92-watt fill light and gets a
+    nearly black picture, and nothing refuses it because `fill` is a knob this really
+    has. Saying the unit back is what puts that in front of whoever wrote it.
+    """
+    from polyweave.search import turnable
+
+    def draw(*, fill=120.0, key=400.0, ambient=0.25, exposure=0.0, **rest):
+        return {}
+
+    found = turnable(draw, {"fill": {}, "key": {}, "ambient": {}})
+    assert "fill (W)" in found
+    assert "key (W)" in found
+    assert any(one.startswith("ambient (") and "multiplier" in one for one in found)
+
+
+def test_a_near_match_is_offered_with_its_unit_too():
+    from polyweave.errors import PolyweaveError
+    from polyweave.search import turnable
+
+    def draw(*, exposure=0.0):
+        return {}
+
+    with pytest.raises(PolyweaveError) as caught:
+        turnable(draw, {"exposur": {}})
+    assert caught.value.code == "search.unknown-parameter"
+    assert "exposure (stops)" in caught.value.remedy
+
+
+def test_a_parameter_with_no_declared_unit_is_named_plainly():
+    """Nothing is invented for a knob nobody measured; it comes back as its own name."""
+    from polyweave.search import turnable
+
+    def draw(*, transparent=True):
+        return {}
+
+    assert turnable(draw, {"transparent": {}}) == ["transparent"]
+
+
+def test_the_three_cottony_collisions_each_read_as_a_different_thing():
+    """Named together because it is the set that was measured, not one example."""
+    from polyweave.render.rig import UNITS, described
+
+    assert UNITS["fill"] == "W", "Cottony's fill is a fraction of the frame"
+    assert UNITS["key"] == "W", "Cottony's key is a width, as a share of the reach"
+    assert "multiplier" in UNITS["ambient"], "Cottony's ambient scales the rig's"
+    assert described("fill") == "fill (W)"

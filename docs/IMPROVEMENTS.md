@@ -2,35 +2,6 @@
 
 ## Block A — What a tool call costs the turn
 
-### §PW63 Three names the renderer takes, meaning something the caller did not ask for
-
-PW36's audit found that `light` and `form` name nothing the renderer has, and the guard
-it added refuses an axis no parameter takes. Three more constants are worse than
-missing: they share a name with a plugin parameter that means something else, so the
-guard passes them.
-
-Cottony's `Model` against the plugin's `Rig`, on the same three words:
-
-- `fill` is how much of the frame the model fills, 0.92. The plugin's `fill` is a fill
-  light in watts, default 120.
-- `key` is the key's width as a fraction of the framed reach, 0.55. The plugin's `key` is
-  the key's power in watts, default 400.
-- `ambient` is a multiplier on the rig's ambient, 1.0. The plugin's `ambient` is the world
-  value itself, 0.25.
-
-A port that copies `fill = 0.92` across asks for a 0.92-watt fill light and gets a
-nearly black picture, and nothing refuses it, because `fill` is a parameter the renderer
-really takes. A search handed Cottony's fill range sweeps 0.85 to 0.95 watts and reports
-a best among near-identical dark renders.
-
-`search.unknown-parameter` cannot catch this and should not be stretched to. The names
-are right and the meanings are not, which no near-match sees.
-
-What would catch it is a declared range or a unit per parameter: 0.92 W is outside
-anything a watt-valued knob would declare, and that is checkable without knowing where
-the number came from. Whether the range belongs on `Rig` or in the spec is the open
-choice.
-
 ## Block B — Seeing the result cheaply
 
 ## Block C — The asset compiler
@@ -129,7 +100,8 @@ So each model's constants become an acceptance spec, the spec is what `search` a
 and the ledger `docs/specs/adoption.md` defines takes the before side for that asset
 before it moves. A comparison with one side recorded is refused, and rightly.
 
-Set aside: it needs a person three times over, and §PW63 traps a hand conversion.
+Set aside: it needs a person three times over. The trap a hand conversion walks into is
+in `docs/specs/adoption.md`.
 
 ### §PW54 A shape that exists only inside a bake cannot be read, diffed or searched
 

@@ -2,8 +2,6 @@
 
 ## Block A — What a tool call costs the turn
 
-- 📋 **PW63** (deps: —) **three of Cottony's rig constants share a name with a plugin parameter that means something else** — A port that copies fill, key or ambient across is accepted and renders the wrong picture, because the guard refuses an axis nothing takes and cannot see one whose name is taken. → §PW63
-
 ## Block B — Seeing the result cheaply
 
 ## Block C — The asset compiler

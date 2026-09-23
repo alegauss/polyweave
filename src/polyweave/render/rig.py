@@ -22,6 +22,37 @@ from dataclasses import dataclass, replace
 #: it and a silent disagreement would change every camera distance.
 SENSOR_MM = 36.0
 
+#: What each parameter is measured in. Data rather than a comment, because the failure
+#: it exists for is a **name that means something else somewhere else** (§PW63): Cottony
+#: calls the fraction of the frame a model fills `fill`, and here `fill` is a light in
+#: watts. A port that copies 0.92 across asks for a 0.92-watt fill and gets a nearly
+#: black picture, and nothing refuses it, because `fill` is a parameter this really
+#: takes.
+#:
+#: A declared *range* would not catch it, and was tried before being rejected: the rig
+#: is legitimately driven with every light at zero — that is how a test proves the
+#: lights are what light the subject — so no bound separates 0.92 W from a wattage
+#: somebody meant. What is left is to say the unit wherever a value is accepted, so the
+#: mistake is visible where it is made rather than in the render it produces.
+UNITS: dict[str, str] = {
+    "azimuth": "degrees",
+    "elevation": "degrees",
+    "margin": "× the distance that exactly fits the subject",
+    "focal_mm": "mm",
+    "key": "W",
+    "fill": "W",
+    "rim": "W",
+    "light_distance": "× the subject's radius",
+    "ambient": "the world's own value, not a multiplier",
+    "exposure": "stops",
+}
+
+
+def described(name: str) -> str:
+    """One parameter's name with what it is measured in, for anything that echoes it."""
+    unit = UNITS.get(name)
+    return f"{name} ({unit})" if unit else name
+
 
 @dataclass(frozen=True)
 class Rig:

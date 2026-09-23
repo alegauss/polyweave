@@ -25,7 +25,7 @@ export interface GeneratedNonGoal {
 }
 
 export const generatedBlocks: GeneratedBlock[] = [
-  { block: "A", title: "What a tool call costs the turn", open: 1 },
+  { block: "A", title: "What a tool call costs the turn", open: 0 },
   { block: "B", title: "Seeing the result cheaply", open: 0 },
   { block: "C", title: "The asset compiler", open: 0 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
@@ -36,13 +36,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW63",
-    block: "A",
-    symptom: "three of Cottony's rig constants share a name with a plugin parameter that means something else",
-    why: "A port that copies fill, key or ambient across is accepted and renders the wrong picture, because the guard refuses an axis nothing takes and cannot see one whose name is taken.",
-    deps: [],
-  },
   {
     id: "PW64",
     block: "G",

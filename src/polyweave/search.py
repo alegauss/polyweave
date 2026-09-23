@@ -72,7 +72,10 @@ def ranges(spec: Spec) -> dict[str, dict]:
 
 
 def turnable(draw: Callable, *wanted: dict, also: dict = ()) -> list[str]:
-    """Refuse a parameter the renderer has no knob for, before a sample is spent.
+    """Refuse a parameter the renderer has no knob for, and say what the rest are in.
+
+    Returns every axis as `name (unit)` where the unit is declared, which is the half
+    that catches a name this renderer takes and the caller means differently (§PW63).
 
     A spec's search axes and a renderer's parameters are two lists, and until §PW36
     nothing reconciled them. Adopting Cottony is what found it: that project's rig calls
@@ -88,18 +91,25 @@ def turnable(draw: Callable, *wanted: dict, also: dict = ()) -> list[str]:
     A renderer taking `**kwargs` is not checked. It has said it accepts anything, and a
     stand-in written for a test is the usual one.
     """
+    from .render.rig import described
+
     taken = inspect.signature(draw).parameters
-    if any(p.kind is inspect.Parameter.VAR_KEYWORD for p in taken.values()):
-        return []
     asked = [name for one in (*wanted, dict(also)) for name in one]
+    if any(p.kind is inspect.Parameter.VAR_KEYWORD for p in taken.values()):
+        return [described(name) for name in asked]
     unknown = [name for name in asked if name not in taken]
     if not unknown:
-        return []
+        # Every axis with what it is measured in. A name this renderer takes can still
+        # mean something else where the number came from (§PW63) — Cottony's `fill` is
+        # the fraction of the frame a model fills and this one is a light in watts — and
+        # a guard that only refuses unknown names cannot see that. Saying the unit back
+        # is what puts the mistake in front of whoever made it.
+        return [described(name) for name in asked]
     near = difflib.get_close_matches(unknown[0], taken, n=1)
     raise PolyweaveError(
         "search.unknown-parameter",
         f"nothing here turns {', '.join(sorted(set(unknown)))}",
-        f"did you mean {near[0]}?"
+        f"did you mean {described(near[0])}?"
         if near
         else "name a parameter the renderer takes, or drop the range",
     )

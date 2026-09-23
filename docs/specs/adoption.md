@@ -106,6 +106,22 @@ no knob for is now refused before a render is spent (`search.unknown-parameter`)
 near match named. The translation itself stays a person's — `light` is a multiplier and
 `exposure` is in stops, and a wrong conversion is a different picture, not an error.
 
+**Three more are worse than missing, because the name is taken** (§PW63). Cottony's `fill`
+is how much of the frame a model fills, 0.92, and this one is a fill light in watts,
+default 120. Its `key` is the key's width as a share of the framed reach, 0.55, against the
+key's power in watts, 400. Its `ambient` is a multiplier on the rig's ambient, 1.0, against
+the world value itself, 0.25. A port that copies any of them across is accepted and renders
+the wrong picture, and the guard above cannot see it: the name is right and the meaning is
+not, which no near-match finds.
+
+A declared **range** was the obvious answer and does not work. The rig is legitimately
+driven with every light at zero — that is how a test proves the lights are what light the
+subject — so no bound separates 0.92 W from a wattage somebody meant. What is left is to
+say the unit: `rig.UNITS` holds it as data rather than as a comment, and every axis a
+search accepts comes back as `fill (W)` rather than `fill`. That does not refuse the
+mistake; it puts it where the person making it is looking, which is the moment the axis is
+declared rather than the render it would have produced.
+
 **The fluff had no home at all.** `FLUFF_SHELLS`, `FLUFF_DEPTH`, `FLUFF_EDGE`, `FLUFF_FIBRE`,
 `FLUFF_FIBRE_WEIGHT`, `FLUFF_VARY`, `FLUFF_RISE`, `FLUFF_LEAN` are shell texturing — the same
 surface drawn twenty times a little further out. That is a **technique**, not a number, and
