@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 9 },
+  { block: "H", title: "Proof on a real game", open: 8 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -58,18 +58,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW57"],
   },
   {
-    id: "PW79",
-    block: "H",
-    symptom: "the three brand marks are exposed by a hand-found light and nothing states what the type should read as",
-    why: "Two blends and one constant each is the least machinery of any family, and the acceptance is the hardest to put a number on.",
-    deps: [],
-  },
-  {
     id: "PW80",
     block: "H",
     symptom: "the three booster objects each needed a scrub, a roll and a fill found by hand after the service returned them",
     why: "A fetched mesh faces wherever it was left and keeps the marks the service painted, and rule 2 forbids those on candy.",
-    deps: ["PW79"],
+    deps: [],
   },
   {
     id: "PW81",
@@ -125,4 +118,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW36", "PW53", "PW76", "PW77", "PW78"];
+export const generatedPaused: string[] = ["PW36", "PW53", "PW76", "PW77", "PW78", "PW79"];

@@ -19,8 +19,7 @@
 - 📋 **PW57** (deps: PW53 ⏸) **every Cottony look gate restates its own floor, so no asset has a bar a search can aim at** — Five check scripts measure after the render is spent, which is a verdict and never a target, and a threshold moved in one of them is invisible to the rest. → §PW57
 - 📋 **PW59** (deps: PW53 ⏸, PW54 ✅, PW55 ✅, PW56 ⏳, PW57, PW58 ✅) **nothing says how much of Cottony still does its own version of what the plugin does** — Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion. → §PW59
 - ⏳ **PW56** (deps: PW57) **twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent** — The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question. → §PW56
-- 🛠 **PW79** (deps: PW78 ✅) **the three brand marks are exposed by a hand-found light and nothing states what the type should read as** — Two blends and one constant each is the least machinery of any family, and the acceptance is the hardest to put a number on. → §PW79
-- 📋 **PW80** (deps: PW79) **the three booster objects each needed a scrub, a roll and a fill found by hand after the service returned them** — A fetched mesh faces wherever it was left and keeps the marks the service painted, and rule 2 forbids those on candy. → §PW80
+- 📋 **PW80** (deps: PW79 ✅) **the three booster objects each needed a scrub, a roll and a fill found by hand after the service returned them** — A fetched mesh faces wherever it was left and keeps the marks the service painted, and rule 2 forbids those on candy. → §PW80
 - 📋 **PW81** (deps: PW80) **the two friends, their lean frames and the mascot take eleven constants apiece and nothing declares one** — Cloth, face placement, unsculpt and dust were each solved by hand on the assets a player looks at most, so they move last. → §PW81
 - 📋 **PW82** (deps: PW81) **nothing takes bake_model.py out once its assets have moved, so the rig outlives its own replacement** — Each family porting leaves the file smaller and still running, and two live paths to one sprite is the state this whole sequence exists to end. → §PW82
 - 📋 **PW85** (deps: —) **a bake that declares the rectangle it covers answers with the rung's size, not the picture's** — The answer is built from the plan's number before the declaration resized the frame, so a 96 px star is reported as 1024. → §PW85
@@ -73,6 +72,15 @@
 - **The trays bake through the plugin with a look a person accepted** bake_model.py no
   longer renders board_tray or booster_tray, and polyweave.loop.json holds a before and
   an after run for the trays with a person's verdict.
+
+## Done when — PW79
+
+- **Each mark has a spec that says what its type must read as** docs/design/accept/
+  holds a spec for viglet_games_badge, cottony_wordmark and cottony_logo that a person
+  agreed to, and the shipped sprites pass it.
+- **The marks bake through the plugin and a person judged them** bake_model.py no longer
+  renders the three marks, and polyweave.loop.json holds an after run for brand_marks
+  beside the before run at 53a9610.
 
 ## Non-goals
 
