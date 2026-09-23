@@ -31,7 +31,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
-  { block: "G", title: "Geometry as a declaration", open: 0 },
+  { block: "G", title: "Geometry as a declaration", open: 2 },
   { block: "H", title: "Proof on a real game", open: 3 },
 ];
 
@@ -58,11 +58,25 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
+    id: "PW64",
+    block: "G",
+    symptom: "an outline naming a shape cannot be given a points count, because points already names a list of them",
+    why: "resolve strips the key before it dispatches, so a five-pointed star is refused for missing the argument the document supplied, while the review reads it correctly.",
+    deps: [],
+  },
+  {
+    id: "PW65",
+    block: "G",
+    symptom: "an annulus is a ring between two radii, so a rim that is not round cannot be declared at all",
+    why: "Cottony's tray rim is a ring between two rounded rectangles, and the vocabulary that draws both of those rings has no op that takes them.",
+    deps: [],
+  },
+  {
     id: "PW54",
     block: "H",
     symptom: "a Cottony shape is a bmesh program that exists only inside a bake, so nothing can read, diff or search it",
     why: "solid.py is 283 lines of geometry as code, and it carries a second copy of the bevelled-boolean lesson, which is a copy that will drift.",
-    deps: [],
+    deps: ["PW64", "PW65"],
   },
   {
     id: "PW57",

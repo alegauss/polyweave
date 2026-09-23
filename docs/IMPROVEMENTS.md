@@ -94,6 +94,53 @@ choice.
 
 ## Block G — Geometry as a declaration
 
+### §PW64 One key naming both a kind of outline and a generator's own argument
+
+`outline.resolve` decides what an outline is by which key is present — `shape`, `image`,
+`points` or `of` — and it strips all four out of the arguments before dispatching,
+because they name the kind rather than describe it. That is right for three of them.
+
+`points` is also the name of a generator's own argument. `star(points, outer, inner)`
+takes a point count, so `{ shape = "star", points = 5, outer = 240, inner = 120 }` is
+how a declaration asks for a five-pointed star, and `resolve` removes the 5 on its way
+past. The generator is called without it and refuses with `geom.unknown-shape: star does
+not take those arguments`, naming a missing argument the document plainly supplied.
+
+The review reads the same document correctly — "a star of inner 120.32, outer 240.64,
+points 5, extruded with a domed face" — because it never dispatches. The structural read
+says the shape is fine and the build says it is not.
+
+This is what stopped Cottony's star being declared, and the star is the shape the whole
+concave-cap finding came from.
+
+The fix is small and the choice is which way round. `points` means a literal list only
+where no `shape` is named, so reserving it conditionally — strip it for the points
+branch, pass it through for the shape branch — keeps every document that works today
+working. Renaming the generator's argument instead would change a published vocabulary
+to avoid a collision the dispatch already knows how to resolve.
+
+### §PW65 A ring the vocabulary can draw both edges of and cannot state
+
+`solid.annulus(outer, inner, depth)` takes two **radii**, so the only ring the
+vocabulary can state is a round one. Cottony's tray rim is a ring between two rounded
+rectangles — `round_rect_poly(face_box, RADIUS)` on the outside and that same ring
+offset inward by the piping width on the inside — and the vocabulary has both halves of
+it already: the `rounded_square` generator draws the outer, and `offset` draws the inner
+from it.
+
+What is missing is the op that takes two outlines rather than two numbers. A ring
+between any two closed rings is the same construction the round one already is: the two
+rings stacked, skinned between at each level, and capped by the gap between them.
+
+The workaround is a boolean and it is worse. Carving an inner plate out of an outer one
+gives the same silhouette for a solver call, a Blender round trip and whatever topology
+MANIFOLD leaves, where the direct construction is numpy and predictable.
+
+Cottony's own `solid.annulus` already takes two outlines, which is the signal the
+format's own rule names: where the same shape appears in a second project it should have
+been vocabulary. This is the first place the port meets an op stated more narrowly here
+than in the script it replaces.
+
 ## Block H — Proof on a real game
 
 ### §PW36 Cottony adopts it without a fork
@@ -139,9 +186,9 @@ Set aside: it needs a person three times over, and §PW63 traps a hand conversio
 
 `tools/art/solid.py` is 283 lines of bmesh primitives working in image coordinates
 turned on their side, imported by `tray_model.py`, `star_model.py` and any `builder` a
-`Model` carries. It exists for a good reason, stated in its own docstring: the second
-modelled asset needed the same four operations as the first, and a second copy of a
-bevel that took three attempts to get right is a copy that will drift.
+`Model` carries. It exists for a good reason from its own docstring: the second asset
+needed the same four operations as the first, and a second copy of a bevel that took
+three attempts is a copy that will drift.
 
 That reasoning now applies one level up. `solid.carve` holds the MANIFOLD lesson —
 Blender's EXACT boolean returns an empty mesh with no error at all once the object it
@@ -157,9 +204,9 @@ sixty-four seats, the star's five even points — are a declaration each. The pa
 `cloth.cushion`, which inflates a drawn PNG, and that is an outline read off an image
 rather than a primitive.
 
-A fuzzy surface is declarable now: a depth and a coarseness on its material, with the
-shells derived (`docs/specs/geometry.md`). A declaration also builds now, into the mesh
-it describes and a report per node, so a ported model is a thing this can check.
+A declaration builds now, and reading the two scripts against it found the vocabulary
+two ops short: §PW64 stops a star being asked for with a point count, and §PW65 leaves
+the rim, a ring between two rounded rectangles, with no op taking two outlines.
 
 ### §PW56 Twelve runners, twelve ways to start Godot, and no check on what applied
 
