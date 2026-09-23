@@ -137,10 +137,9 @@ PW36 and PW53 were both set aside waiting for the same thing: which asset moves 
 and what its before-side baseline is. The four progress stars are the answer.
 
 They are the smallest port that is still a real one. `star_model.builder` makes the
-geometry from code, so no mesh enters Git, nothing is fetched and nothing is paid for —
-which keeps this clear of the constraint that nothing here spends money on the agent's
-own judgement. What is hand-found is the rig alone, and it is three numbers:
-`light=1.85`, `ambient=0.42`, `key=0.14`, with a `plate` that sets the resolution.
+geometry from code, so no mesh enters Git, nothing is fetched and nothing is paid for.
+What is hand-found is the rig alone, and it is three numbers: `light=1.85`,
+`ambient=0.42`, `key=0.14`, with a `plate` that sets the resolution.
 
 What makes them worth being first rather than merely easy is that they are four sprites
 off one geometry, in two hues at two sizes. An exposure fitted to one picture would pass
@@ -153,8 +152,9 @@ sentence is the bar, and stating it as something measurable is the work.
 
 The baseline is recorded: the re-bake is pixel-identical, and the specs are
 `docs/design/accept/star_*.accept.toml`. `tools/art/search_stars.py` fits the 96 px gold
-and exits 1 until one rig passes all three. The gold now holds at both sizes; the dim
-misses its facet ceiling at both.
+and exits 1 until one rig passes all three. At key 15, ambient 6, the gold holds at both
+sizes and the dim's p99 reads 0.397 against 0.37, yet at display size matches the
+shipped sprite (`.polyweave/stars/compare.png`). A person decides which is wrong.
 
 ### §PW77 A bar that was measured and then left in a comment
 

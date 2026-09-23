@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 11 },
+  { block: "H", title: "Proof on a real game", open: 10 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -58,18 +58,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW57"],
   },
   {
-    id: "PW76",
-    block: "H",
-    symptom: "Cottony's four progress stars are lit by three constants found by hand, and no search sees them",
-    why: "One rig has to hold on all four, and the dim still misses its facet ceiling at both sizes, before the stars bake through it and a person judges them.",
-    deps: [],
-  },
-  {
     id: "PW77",
     block: "H",
     symptom: "the map's five candy props match a drawn sprite that exists only as medians in a comment",
     why: "The bar was measured and written in prose, so nothing can read it, and the sixth prop is fetched where four are built.",
-    deps: ["PW76"],
+    deps: [],
   },
   {
     id: "PW78",
@@ -139,4 +132,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW36", "PW53"];
+export const generatedPaused: string[] = ["PW36", "PW53", "PW76"];
