@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 4 },
+  { block: "H", title: "Proof on a real game", open: 3 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -56,13 +56,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent",
     why: "The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question.",
     deps: ["PW57"],
-  },
-  {
-    id: "PW75",
-    block: "H",
-    symptom: "a project that has made every capture reproducible has no way to keep it that way",
-    why: "Cottony's four captures now reproduce byte for byte, and `reproduced` is a report no gate reads, so the next change that unpins one writes its bytes and passes.",
-    deps: [],
   },
 ];
 

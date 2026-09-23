@@ -220,8 +220,25 @@ def _record(
     return provenance.write(written, root=root), verdict
 
 
+def keeps(root: str | Path = ".") -> bool:
+    """Whether a capture that stops reproducing refuses here (§PW75)."""
+    return bool(load(root).get("capture.reproducible"))
+
+
 def require(script: str | Path, **how: Any) -> dict:
-    """The same capture as a gate: an environment left to chance stops here."""
+    """The same capture as a gate: an environment left to chance stops here.
+
+    A picture that stopped reproducing stops here too, but only where the project asked
+    for it. §PW71 settled that this cannot refuse by default — the plugin cannot make an
+    engine deterministic, and a capture that waits for an effect made a choice it cannot
+    rule on — and that covers the default rather than a project that has done the work.
+    Cottony pinned its seed and reported its frame, and all four of its captures came
+    out identical over two passes; what it could not do was say so and have it kept.
+
+    Only `differs` refuses. A `first` has nothing to disagree with, and a
+    `different-work` is a key that moved, which the record already explains — refusing
+    either would fail the run that legitimately redraws a reference, which is most.
+    """
     found = run(script, **how)
     against = found["environment"]
     if not against["holds"]:
@@ -244,5 +261,15 @@ def require(script: str | Path, **how: Any) -> dict:
             engine.REFUSALS[found["verdict"]],
             f"{Path(found['script']).name} did not report a result: {found['why']}",
             f"read {found['log']}, which holds everything the run printed",
+        )
+    drew = found.get("reproduced") or {}
+    if not drew.get("holds", True) and keeps(how.get("root", ".")):
+        raise PolyweaveError(
+            "capture.not-reproduced",
+            f"{Path(found['script']).name} drew a different picture than it drew last "
+            f"time: {drew['why']}",
+            "declare whatever moved, so the run passes it and the script applies it — "
+            "or commit the new picture, which re-anchors what the next run is compared "
+            "against; [capture] reproducible is what asked for this to be a refusal",
         )
     return found

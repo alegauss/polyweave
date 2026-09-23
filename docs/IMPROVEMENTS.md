@@ -130,24 +130,3 @@ Cottony's own work. The palette and the fonts are the same. What counts is what 
 of this block names, and the gate may report a fraction below one for as long as it says
 what is left and why. Two of those are already answered in `docs/specs/adoption.md`: the
 fetch ledger replays, and the motion Cottony has is two frames and no clip.
-
-### §PW75 Earning reproducibility, and then keeping it
-
-All four of Cottony's captures reproduce byte for byte as of today, which is the first
-time the project has had that. Nothing keeps it. `reproduced` returns a verdict and
-`capture.run` carries it back, but no gate reads it: a change that unpins one of them
-writes its new bytes, reports SAME SETTINGS, DIFFERENT PICTURE into a log, and passes.
-
-PW71 settled that this must not refuse by default, and that reasoning holds — the plugin
-cannot make an engine deterministic, and a capture that waits for an effect has made a
-deliberate choice this cannot rule on. But it covers the default, not a project that has
-already done the work. Cottony declared its seed, reported its frame, and earned an
-image that could gate something; what it cannot do is say so.
-
-`require` is the shape that already exists. It takes the same run and turns the
-environment's verdict into a refusal, because an environment left to chance is the thing
-it exists to stop. There is no equivalent for the picture.
-
-The refusal is only ever on `differs`. A `first` has nothing to disagree with, and a
-`different-work` is a key that moved, which the record already explains — refusing
-either would fail the run that legitimately redraws a reference, which is most of them.

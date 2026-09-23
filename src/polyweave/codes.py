@@ -885,6 +885,16 @@ CODES: dict[str, Code] = {
         when="a default inside the script winning over the argument it was passed",
         doors=("take the value from the run rather than from a constant",),
     ),
+    "capture.not-reproduced": Code(
+        means="the picture moved although every declared setting held still",
+        when="a project with `[capture] reproducible` on, whose capture has stopped "
+        "drawing what it drew last time; off by default, because a capture nobody has "
+        "pinned would fail every run",
+        doors=(
+            "declare whatever moved, so the run passes it and the script applies it",
+            "commit the new picture, which re-anchors what the next run is compared to",
+        ),
+    ),
     # -- units: the scale an asset is baked at --------------------------------
     "units.undeclared": Code(
         means="nothing says what scale this asset is baked at",

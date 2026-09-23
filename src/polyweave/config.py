@@ -143,6 +143,11 @@ DEFAULTS: dict[str, Any] = {
         # The two that differed between two machines in §PW25, and the reason the list
         # exists at all.
         "declared": ["locale", "resolution"],
+        # Whether a capture that stops reproducing is a refusal rather than a remark
+        # (§PW75). Off, because the plugin cannot make an engine deterministic and a
+        # project that has not pinned its captures would fail every run. A project that
+        # has pinned them turns it on, and keeps what it earned.
+        "reproducible": False,
     },
     "geometry": {"outlines": ""},
     "sprites": {

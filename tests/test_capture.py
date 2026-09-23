@@ -404,3 +404,70 @@ def test_and_taking_it_in_another_one_is_a_different_record(tmp_path):
         environment={"locale": "en_GB"},
     )
     assert found["environment"]["applied"]["locale"] == "en_GB"
+
+
+# -- and keeping a picture that reproduces (§PW75) ------------------------------------
+
+
+def a_gate(tmp_path, *, kept):
+    """The same capture twice, under a project that does or does not ask for it."""
+    body = '[capture]\ndeclared = ["locale"]\nlocale = "pt_BR"\n'
+    if kept:
+        body += "reproducible = true\n"
+    script = project(tmp_path, body)
+    shot = tmp_path / "shot.png"
+    shot.write_bytes(b"\x89PNG\r\n")
+    take = taking(
+        "environment: locale=pt_BR\ncaptured: res://shot.png 24 x 24\n",
+        artefacts=(shot,),
+    )
+
+    def again(**how):
+        return capture.require(script, expect=SHOT, root=tmp_path, take=take, **how)
+
+    return shot, again
+
+
+def test_a_picture_that_stopped_reproducing_stops_the_run(tmp_path):
+    shot, gate = a_gate(tmp_path, kept=True)
+    gate()
+    shot.write_bytes(b"\x89PNG\r\n-one frame later")
+    with pytest.raises(PolyweaveError) as caught:
+        gate()
+    assert caught.value.code == "capture.not-reproduced"
+
+
+def test_the_refusal_carries_the_boundary_it_was_held_at(tmp_path):
+    """PW74's sentence is the actionable half, so the gate must not drop it."""
+    shot, gate = a_gate(tmp_path, kept=True)
+    gate()
+    shot.write_bytes(b"\x89PNG\r\n-one frame later")
+    with pytest.raises(PolyweaveError) as caught:
+        gate()
+    assert "locale was pinned" in caught.value.message
+    assert "reproducible" in caught.value.remedy
+
+
+def test_a_project_that_did_not_ask_is_only_told(tmp_path):
+    """The default, because a capture nobody pinned would fail every run."""
+    shot, gate = a_gate(tmp_path, kept=False)
+    gate()
+    shot.write_bytes(b"\x89PNG\r\n-one frame later")
+    assert gate()["reproduced"]["holds"] is False
+
+
+def test_a_first_capture_is_never_the_one_that_refuses(tmp_path):
+    _, gate = a_gate(tmp_path, kept=True)
+    assert gate()["reproduced"]["artefacts"][0]["verdict"] == "first"
+
+
+def test_a_picture_that_still_reproduces_passes_the_gate(tmp_path):
+    _, gate = a_gate(tmp_path, kept=True)
+    gate()
+    assert gate()["reproduced"]["holds"] is True
+
+
+def test_a_key_that_moved_is_not_a_picture_that_moved(tmp_path):
+    """The record already explains a different-work, so it is not this gate's."""
+    moved = {"verdict": "different-work", "artefact": "a.png", "why": ""}
+    assert capture.again([moved])["holds"] is True
