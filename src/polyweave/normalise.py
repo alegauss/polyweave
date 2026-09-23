@@ -98,17 +98,43 @@ def bounds_of(points: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     return points.min(axis=0), points.max(axis=0)
 
 
+#: Which of the mesh's extents `height` states the size on (§PW92): the up axis, the
+#: forward axis, or whichever is longest. The name stays `height` for what it always
+#: meant, and a caller sizing a flat flying model says `length` instead.
+SIZE_ON = {"height": 1, "length": 2, "longest": None}
+
+#: Where the origin goes (§PW92): §6's base of the footprint, or the middle of the box,
+#: which is where a model that flies rather than stands is held from.
+ORIGINS = ("base", "centre")
+
+
 def normalise(
     subject: Any,
     *,
     rotation: np.ndarray | None = None,
     height: float | None = 1.0,
+    size_on: str = "height",
+    origin: str = "base",
 ) -> dict:
     """Put a mesh in the project's frame: oriented, scaled, sitting on the origin.
 
-    `height` is the size along the up axis in metres, §6's unit. `None` keeps the mesh's
-    own size, for an asset that arrives already to scale.
+    `height` is the size in metres, §6's unit, along the axis `size_on` names: the up
+    axis unless told otherwise. `None` keeps the mesh's own size, for an asset that
+    arrives already to scale. `origin` is the base of the footprint unless told
+    `centre`.
+
+    **Both are stated per asset** (§PW92). Starship's ship came out 5.37 long for its
+    one unit of height and sat on its belly at the origin, so the game read each record
+    back, picked a scale and shifted the mesh down by half its height, five constants
+    found by hand. A ship is sized by its length and held from its middle.
     """
+    if size_on not in SIZE_ON or origin not in ORIGINS:
+        raise PolyweaveError(
+            "mesh.bad-frame",
+            f"a mesh cannot be sized on {size_on!r} and held from {origin!r}",
+            f"size_on is one of {', '.join(SIZE_ON)}, origin one of "
+            f"{', '.join(ORIGINS)}",
+        )
     points, faces = as_mesh(subject)
     if not len(points):
         raise PolyweaveError(
@@ -122,21 +148,24 @@ def normalise(
     span = high - low
     scale = 1.0
     if height is not None:
-        tall = float(span[1])
-        if tall <= FLAT:
+        axis = SIZE_ON[size_on]
+        along = float(span.max() if axis is None else span[axis])
+        if along <= FLAT:
             raise PolyweaveError(
                 "mesh.degenerate",
-                "the mesh has no height, so it cannot be scaled to one",
-                "pass height=None to keep the size it arrived at",
+                f"the mesh has no {size_on}, so it cannot be scaled to one",
+                "pass height=None to keep the size it arrived at, or size it on "
+                "another axis",
             )
-        scale = float(height) / tall
+        scale = float(height) / along
     scaled = turned * scale
 
     # §6: the origin is the centre of the footprint, on the ground plane — the base of
     # the silhouette, never the centre of the box. A prop whose origin is its middle is
-    # a prop that floats.
+    # a prop that floats. A model that flies says `centre`, and is held from its middle.
     low, high = bounds_of(scaled)
-    offset = np.array([(low[0] + high[0]) / 2.0, low[1], (low[2] + high[2]) / 2.0])
+    middle = (low + high) / 2.0
+    offset = middle if origin == "centre" else np.array([middle[0], low[1], middle[2]])
     placed = scaled - offset
 
     low, high = bounds_of(placed)
@@ -150,6 +179,8 @@ def normalise(
         "offset": (-offset * 1.0).round(9).tolist(),
         "size": (high - low).round(9).tolist(),
         "bounds": [low.round(9).tolist(), high.round(9).tolist()],
+        "size_on": size_on,
+        "origin": origin,
     }
 
 
@@ -602,6 +633,8 @@ def ingest(
     against: str | Path | None = None,
     rotation: np.ndarray | None = None,
     height: float | None = 1.0,
+    size_on: str = "height",
+    origin: str = "base",
     alpha_floor: float | None = None,
     root: str | Path = ".",
 ) -> dict:
@@ -610,6 +643,11 @@ def ingest(
     `against` is the drawing that asked for the shape and settles which way is forward.
     Without one the mesh keeps the way round it arrived, unless `rotation` states it —
     what never happens is a guess.
+
+    `size_on` and `origin` are this asset's own (§PW92): a ship is `height=2.0,
+    size_on="length", origin="centre"`, and both go in the record beside the scale they
+    produced. The way round is chosen first either way, because the drawing is compared
+    by proportion and outline, which neither of them moves.
 
     This is the operation, so it is where the tolerance is resolved; `orient` and
     `drawing` below it take the number and default nothing (§PW40).
@@ -628,10 +666,15 @@ def ingest(
         floor = float(settings.get("tolerance.alpha_floor", alpha_floor))
         bars = {**settings.tolerances().as_dict(), "alpha_floor": floor}
         found = orient(arrived, against=against, height=height, alpha_floor=floor)
-    else:
-        # No drawing, so nothing here was measured against a bar, and a record carrying
-        # six numbers it did not use would claim it had.
-        found = normalise(arrived, rotation=rotation, height=height)
+        rotation = found["rotation"]
+    # Placed once more with this asset's own frame. The drawing chose the way round and
+    # the lean; how big and held from where are this call's to say (§PW92).
+    placed = normalise(
+        arrived, rotation=rotation, height=height, size_on=size_on, origin=origin
+    )
+    # No drawing, so nothing here was measured against a bar, and a record carrying six
+    # numbers it did not use would claim it had.
+    found = {**(found if against is not None else {}), **placed}
 
     written = write_normalised(
         source, found, out or source.with_name(f"{source.stem}.normalised.glb")
@@ -646,6 +689,8 @@ def ingest(
         "matrix": as_matrix(found).round(9).tolist(),
         "vertices": len(found["vertices"]),
         "faces": len(found["faces"]),
+        "size_on": found["size_on"],
+        "origin": found["origin"],
     }
     for key in ("against", "silhouette_iou", "tried", "lean"):
         if key in found:
@@ -689,7 +734,9 @@ def _record_derivation(
             "rotation": record["rotation"],
             "offset": record["offset"],
             "matrix": record["matrix"],
-            **{k: found[k] for k in ("against", "tried") if k in found},
+            "size_on": record["size_on"],
+            "origin": record["origin"],
+            **{k: found[k] for k in ("against", "tried", "lean") if k in found},
         },
         measurements={
             "size": record["size"],

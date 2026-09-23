@@ -355,6 +355,59 @@ def test_the_orientation_it_chose_is_recorded_beside_the_drawing(tmp_path):
     assert np.linalg.det(np.array(found["rotation"])) == pytest.approx(1.0)
 
 
+# -- sized on its own axis, held from its own origin (§PW92) --------------------------
+
+
+def test_a_ship_is_sized_by_its_length_and_held_from_its_middle():
+    """Starship's ship came out 5.37 long for one unit of height, sat on its belly."""
+    ship = cube(1.0, 0.5, 5.0)
+    found = normalise.normalise(ship, height=2.0, size_on="length", origin="centre")
+    assert found["size"][2] == pytest.approx(2.0), "two units nose to tail"
+    low, high = (np.array(b) for b in found["bounds"])
+    assert (low + high) / 2.0 == pytest.approx(np.zeros(3)), "held from its middle"
+    assert (found["size_on"], found["origin"]) == ("length", "centre")
+
+
+def test_longest_sizes_whichever_extent_is_largest():
+    found = normalise.normalise(cube(3.0, 1.0, 2.0), height=1.0, size_on="longest")
+    assert max(found["size"]) == pytest.approx(1.0)
+    assert found["size"][0] == pytest.approx(1.0)
+
+
+def test_the_defaults_are_what_every_earlier_ingest_used():
+    found = normalise.normalise(cube(3.0, 2.0, 1.0))
+    assert found["size"][1] == pytest.approx(1.0)
+    assert found["bounds"][0][1] == pytest.approx(0.0), "standing on the ground"
+
+
+def test_an_axis_that_does_not_exist_is_refused():
+    with pytest.raises(PolyweaveError) as caught:
+        normalise.normalise(cube(), size_on="width")
+    assert caught.value.code == "mesh.bad-frame"
+    assert "length" in caught.value.remedy
+
+
+def test_ingest_records_the_frame_it_was_given(tmp_path):
+    pytest.importorskip("bpy")
+    from polyweave import provenance
+    from polyweave.normalise import write_mesh
+
+    source = write_mesh(
+        normalise.normalise(cube(1.0, 0.5, 5.0), height=None), tmp_path / "raw.glb"
+    )
+    record = normalise.ingest(
+        source,
+        out=tmp_path / "ship.glb",
+        height=2.0,
+        size_on="length",
+        origin="centre",
+        root=tmp_path,
+    )
+    assert record["size"][2] == pytest.approx(2.0)
+    params = provenance.read("ship.glb", root=tmp_path)["params"]
+    assert (params["size_on"], params["origin"]) == ("length", "centre")
+
+
 def leaning(where, degrees):
     """A tall rectangle drawn tilted, as Cottony's hammer is drawn tilted."""
     from PIL import Image as PILImage

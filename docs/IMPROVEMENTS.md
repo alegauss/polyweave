@@ -286,22 +286,3 @@ If a family turns out not to port — the friends and the mascot are the candida
 this is where that is recorded honestly: what still runs by hand, and why the rig shrank
 instead of disappearing. An outcome worth having, stated, beats the same outcome
 unstated.
-
-### §PW92 Size axis and origin
-
-Starship, the second consumer, ingested a ship and four enemies. `normalise` makes every
-one of them one unit tall, and puts the origin at the base of the footprint (the spec's
-section 6). That suits a prop on the ground. It does not suit a flat ship or a flying
-enemy: the ship came out 5.37 long for its one unit of height, and the game had to read
-each `.prov.json`, pick a scale per model, shift the mesh down by half its height and
-size a hitbox from the recorded `size`. Five constants were found by hand, the pattern
-PW81 exists to end.
-
-Build: `normalise` takes the axis the size is stated on (`height`, `length` or
-`longest`, default `height` so nothing already ingested changes) and an origin (`base`,
-the default, or `centre`). Ingest reads both per asset from the project's config and
-records them in the provenance next to `scale` and `offset`. Starship would then declare
-its ship as two units long, centred, and drop its own offsets.
-
-The recorded `size` is already the hitbox a game needs, so nothing new is emitted for
-collision.

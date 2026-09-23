@@ -134,6 +134,13 @@ CODES: dict[str, Code] = {
         when="a normalisation of an empty or nearly empty mesh",
         doors=("check that the file imported",),
     ),
+    "mesh.bad-frame": Code(
+        means="a mesh was asked to be sized on an axis or held from an origin that "
+        "does not exist",
+        when="size_on other than height, length or longest, or origin other than base "
+        "or centre",
+        doors=("name one of the axes", "name one of the origins"),
+    ),
     "mesh.degenerate": Code(
         means="the mesh is flat or collinear, so its own axes say nothing about which "
         "way it faces",

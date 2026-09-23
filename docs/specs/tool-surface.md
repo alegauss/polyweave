@@ -213,7 +213,9 @@ Stated here so that no other spec has to repeat them and no ingest has to guess 
 - **One unit is one metre** unless the asset declares `pixels_per_unit`, which is what an
   asset baked to a pixel grid uses (§PW24).
 - **Origin** is the centre of the footprint, on the ground plane — the base of the silhouette,
-  not the centre of the bounding box.
+  not the centre of the bounding box. An asset that flies rather than stands says so on
+  ingest (`origin="centre"`), and says which extent its size is stated on
+  (`size_on="length"` or `"longest"`), both recorded beside the scale (§PW92).
 - **Colour** is sRGB in every authored document and every reported hex value. Linear values
   appear only inside a renderer and are never part of an interface.
 - **Angles** are degrees in authored documents, radians nowhere a caller can see.
