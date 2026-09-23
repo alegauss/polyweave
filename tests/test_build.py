@@ -597,8 +597,9 @@ def test_a_declaration_a_colour_was_written_for_reaches_the_shader(tmp_path):
     """`colour = "#F2E4D0"` is what a person authors and `base_color` is the socket."""
     from polyweave.render import blender
 
+    # Linear, which is what the socket reads: sRGB 128 is 0.21586 of the light (§PW83).
     assert blender.as_inputs({"colour": "#FF8000"}) == {
-        "base_color": [1.0, pytest.approx(0.50196, abs=1e-4), 0.0, 1.0]
+        "base_color": [1.0, pytest.approx(0.21586, abs=1e-4), 0.0, 1.0]
     }
     assert blender.as_inputs({"roughness": 0.62}) == {"roughness": 0.62}
     assert blender.as_inputs({"colour": "#00FF0080"})["base_color"][3] == pytest.approx(

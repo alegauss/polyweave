@@ -339,7 +339,9 @@ def bake(
             # identical to anything measuring darkness, and removing the first is a
             # judgement about what somebody wanted (§PW49).
             scrubbed = blender.scrub_textures(subject)
-    blender.apply_material(subject, material)
+    # In the declaration's words as well as the shader's, so `colour = "#FFC43F"` means
+    # here what it means in a geometry file (§PW83). The key above is over the request.
+    blender.apply_material(subject, blender.as_inputs(material) if material else None)
     blender.place(scene, rig, subject, covers=list(covers) or None)
 
     report.stage(

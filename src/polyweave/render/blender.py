@@ -484,7 +484,15 @@ def as_inputs(stated: dict) -> dict:
 
 
 def _colour(value: Any) -> Any:
-    """`#F2E4D0` as the four floats a socket holds, and anything else untouched."""
+    """`#F2E4D0` as the four floats a socket holds, and anything else untouched.
+
+    **Linear, because that is what the socket reads** (§PW83). A hex colour is sRGB, the
+    way a person picks it and the way a render is measured, and a Base Color socket is
+    scene-linear. Handing it the bytes over 255 put `#FFC43F`'s green on the shader as
+    0.77 where 0.55 was meant and its blue as 0.25 where 0.05 was, lighter and greyer,
+    and a search can buy the brightness back with exposure and never the saturation.
+    Alpha is a coverage rather than a light, so it is not converted.
+    """
     if not isinstance(value, str) or not value.startswith("#"):
         return value
     digits = value[1:]
@@ -503,7 +511,15 @@ def _colour(value: Any) -> Any:
             f"{value!r} is not a colour this reads",
             "write it as #RRGGBB or #RRGGBBAA, in hexadecimal",
         ) from exc
-    return channels if len(channels) == 4 else [*channels, 1.0]
+    lit = [_linear(one) for one in channels[:3]]
+    return [*lit, channels[3] if len(channels) == 4 else 1.0]
+
+
+def _linear(channel: float) -> float:
+    """One sRGB channel, 0 to 1, as the linear light it encodes."""
+    if channel <= 0.04045:
+        return channel / 12.92
+    return ((channel + 0.055) / 1.055) ** 2.4
 
 
 def _coerce(value: Any, socket: Any) -> Any:

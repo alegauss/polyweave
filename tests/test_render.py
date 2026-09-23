@@ -299,6 +299,37 @@ def test_a_mesh_that_is_not_there_names_the_path(project):
     assert caught.value.code == "render.no-mesh"
 
 
+def test_a_colour_written_as_hex_renders_as_that_colour(project):
+    """§PW83: the socket is linear, and `#FFC43F` put on it raw came back pale.
+
+    Emission with every light off, so what reaches the film is the declared colour and
+    nothing the rig added, and the Standard transform hands it back as the same sRGB.
+    """
+    from polyweave import measure
+
+    render.bake(
+        Reported(),
+        out="gold.png",
+        rung="sphere",
+        material={
+            "colour": "#000000",
+            "emission_color": "#FFC43F",
+            "emission_strength": 1.0,
+        },
+        key=0.0,
+        fill=0.0,
+        rim=0.0,
+        ambient=0.0,
+        inline=False,
+        allow_uniform=True,
+        root=project,
+    )
+    found = measure.measure(
+        project / "gold.png", ["delta_e"], region="subject", target="#FFC43F"
+    )
+    assert found[0]["value"] < 2.0
+
+
 def test_a_material_field_the_shader_lacks_is_refused_rather_than_dropped(project):
     with pytest.raises(PolyweaveError) as caught:
         render.bake(
