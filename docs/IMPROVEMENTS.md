@@ -14,28 +14,6 @@
 
 ## Block G — Geometry as a declaration
 
-### §PW65 A ring the vocabulary can draw both edges of and cannot state
-
-`solid.annulus(outer, inner, depth)` takes two **radii**, so the only ring the
-vocabulary can state is a round one. Cottony's tray rim is a ring between two rounded
-rectangles — `round_rect_poly(face_box, RADIUS)` on the outside and that same ring
-offset inward by the piping width on the inside — and the vocabulary has both halves of
-it already: the `rounded_square` generator draws the outer, and `offset` draws the inner
-from it.
-
-What is missing is the op that takes two outlines rather than two numbers. A ring
-between any two closed rings is the same construction the round one already is: the two
-rings stacked, skinned between at each level, and capped by the gap between them.
-
-The workaround is a boolean and it is worse. Carving an inner plate out of an outer one
-gives the same silhouette for a solver call, a Blender round trip and whatever topology
-MANIFOLD leaves, where the direct construction is numpy and predictable.
-
-Cottony's own `solid.annulus` already takes two outlines, which is the signal the
-format's own rule names: where the same shape appears in a second project it should have
-been vocabulary. This is the first place the port meets an op stated more narrowly here
-than in the script it replaces.
-
 ### §PW66 A dome that keeps a convex silhouette and pushes a concave one out
 
 `solid.crowned` promises in its own docstring that "the silhouette of the plate is
@@ -125,8 +103,8 @@ sixty-four seats, the star's five even points — are a declaration each. The pa
 rather than a primitive.
 
 A declaration builds now, and the star already does: `tests/fixtures/cottony/star.toml`
-is `star_model.py` stated rather than programmed. What the tray still meets is §PW65 —
-its rim is a ring between two rounded rectangles and no op takes two outlines.
+is `star_model.py` stated rather than programmed. The vocabulary takes the tray's rim
+too, as a ring between two outlines. What is left is the tray itself and the panels.
 
 ### §PW56 Twelve runners, twelve ways to start Godot, and no check on what applied
 

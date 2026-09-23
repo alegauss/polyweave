@@ -93,12 +93,18 @@ def _crowned(node, instance, built, root):
 
 
 def _annulus(node, instance, built, root):
+    # A number is a radius and anything else is an outline (§PW65), so the two edges
+    # resolve the same way every other outline on a node does.
     return S.annulus(
-        float(instance["outer"]),
-        float(instance["inner"]),
+        _edge(instance["outer"], root),
+        _edge(instance["inner"], root),
         float(instance["depth"]),
         **_rest(instance, "profile", "resolution", "crown"),
     )
+
+
+def _edge(stated: Any, root: Any) -> Any:
+    return stated if isinstance(stated, int | float) else O.resolve(stated, root=root)
 
 
 def _inflate(node, instance, built, root):

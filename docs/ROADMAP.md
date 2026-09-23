@@ -14,12 +14,11 @@
 
 ## Block G — Geometry as a declaration
 
-- 📋 **PW65** (deps: —) **an annulus is a ring between two radii, so a rim that is not round cannot be declared at all** — Cottony's tray rim is a ring between two rounded rectangles, and the vocabulary that draws both of those rings has no op that takes them. → §PW65
 - 📋 **PW66** (deps: —) **a crowned star reaches 82 units outside its own outline, and the op promises it will not** — The dome shrinks each ring along its miters, which point outward at a reflex corner, so the one outline whose whole point is being concave is the one it breaks. → §PW66
 
 ## Block H — Proof on a real game
 
-- 📋 **PW54** (deps: PW50 ✅, PW60 ✅, PW65) **a Cottony shape is a bmesh program that exists only inside a bake, so nothing can read, diff or search it** — solid.py is 283 lines of geometry as code, and it carries a second copy of the bevelled-boolean lesson, which is a copy that will drift. → §PW54
+- 📋 **PW54** (deps: PW50 ✅, PW60 ✅) **a Cottony shape is a bmesh program that exists only inside a bake, so nothing can read, diff or search it** — solid.py is 283 lines of geometry as code, and it carries a second copy of the bevelled-boolean lesson, which is a copy that will drift. → §PW54
 - 📋 **PW57** (deps: PW53 ⏸) **every Cottony look gate restates its own floor, so no asset has a bar a search can aim at** — Five check scripts measure after the render is spent, which is a verdict and never a target, and a threshold moved in one of them is invisible to the rest. → §PW57
 - 📋 **PW59** (deps: PW53 ⏸, PW54, PW55 ✅, PW56 ⏸, PW57, PW58 ✅) **nothing says how much of Cottony still does its own version of what the plugin does** — Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion. → §PW59
 

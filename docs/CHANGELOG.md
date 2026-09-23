@@ -74,6 +74,7 @@
 - ✅ **PW50** **a fuzzy surface cannot be declared at all, because shell texturing is a technique and no table holds one** — A material declares a fuzzy surface as a depth and a coarseness, and eight shell constants are derived from those two, so fur asks as cotton does (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW60** **a declaration is read, resolved and reported on, and nothing turns one into a mesh** — A declaration builds into the mesh it describes, and the spec's own tray comes out 928 by 928 by 6 with a report per node (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW64** **an outline naming a shape cannot be given a points count, because points already names a list of them** — A shape is given the points count the document wrote, so Cottony's star builds from a declaration and the review and the build agree about it (design recorded in `docs/specs/geometry.md`).
+- ✅ **PW65** **an annulus is a ring between two radii, so a rim that is not round cannot be declared at all** — An annulus takes two edges, so a rim that is not round is a ring rather than a boolean between two plates (design recorded in `docs/specs/geometry.md`).
 
 ## Block H — Proof on a real game
 

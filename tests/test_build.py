@@ -305,3 +305,31 @@ def test_the_star_keeps_its_five_even_points(tmp_path):
     radii = np.round(np.linalg.norm(ring, axis=1), 6)
     assert len(set(radii.tolist())) == 2, "two radii, not five arms of different sizes"
     assert sorted(radii)[-5:] == [max(radii)] * 5
+
+
+def test_a_rim_is_declarable_as_two_outlines(tmp_path):
+    """§PW65: Cottony's tray rim, which no op would take before.
+
+    The inner edge is the outer one offset inward by the piping width, which is how the
+    two come to have the same points in the same order.
+    """
+    stated = one(
+        "annulus",
+        outer={"shape": "rounded_square", "size": 100.0, "corner": 20.0},
+        inner={
+            "of": {"shape": "rounded_square", "size": 100.0, "corner": 20.0},
+            "offset": -18.0,
+        },
+        depth=60.0,
+    )
+    found = B.build(stated, root=tmp_path)
+    check_mesh(found["output"])
+    points = np.asarray(found["output"]["vertices"], dtype=float)
+    assert points[:, 0].min() == pytest.approx(-50.0)
+    assert points[:, 0].max() == pytest.approx(50.0)
+    assert "a ring" in review.describe(stated)["reads"][0]
+
+
+def test_a_ring_of_two_radii_is_still_declarable_the_short_way(tmp_path):
+    found = B.build(one("annulus", outer=10.0, inner=4.0, depth=2.0), root=tmp_path)
+    check_mesh(found["output"])

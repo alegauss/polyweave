@@ -176,17 +176,42 @@ def crowned(
 
 
 def annulus(
-    outer: float, inner: float, depth: float, *, steps: int = STEPS, front: float = 0.0
+    outer: Any, inner: Any, depth: float, *, steps: int = STEPS, front: float = 0.0
 ) -> dict:
-    """A ring between two radii, which is a prism whose cap has a hole in it."""
-    if float(inner) >= float(outer):
+    """A ring between two edges, which is a prism whose cap has a hole in it.
+
+    **Two edges, not two radii** (§PW65). A number is the radius of a circle, which is
+    what a round ring wants and was all this took; an outline is that outline, which is
+    what Cottony's tray rim is — a rounded rectangle with the same rounded rectangle
+    offset inward by the piping width inside it. The vocabulary drew both of those rings
+    already and had no op that would take them.
+
+    A boolean would give the same silhouette for a solver call, a Blender round trip and
+    whatever topology MANIFOLD leaves. This is numpy and predictable.
+
+    **The two edges are walked in step**, so they must have the same number of points.
+    That is not a burden in practice and it is the construction: an inner edge is an
+    `offset` of the outer one, which keeps its count and its order by definition. Two
+    rings generated independently are refused rather than skinned into a twist.
+    """
+    out, hole = _edge(outer, steps), _edge(inner, steps)
+    if len(out) != len(hole):
         raise PolyweaveError(
             "geom.bad-solid",
-            f"an annulus of inner {inner} and outer {outer} has no ring between them",
-            "make the inner radius smaller than the outer one",
+            f"an annulus has {len(out)} points outside and {len(hole)} inside, and the "
+            f"two edges are walked in step",
+            "make the inner edge an `offset` of the outer one, which keeps its count; "
+            "two rings generated apart do not correspond and would skin into a twist",
         )
-    out, hole = O.circle(outer, steps=steps), O.circle(inner, steps=steps)
-    count = int(steps)
+    if O.area(hole) >= O.area(out):
+        raise PolyweaveError(
+            "geom.bad-solid",
+            f"an annulus encloses {O.area(out):g} outside and {O.area(hole):g} inside, "
+            f"so there is no ring between them",
+            "make the inner edge smaller than the outer one; a negative `offset` is "
+            "how an outline is brought inward",
+        )
+    count = len(out)
     levels = [float(front), float(front) + float(depth)]
     points = np.vstack(
         [np.column_stack([r, np.full(count, z)]) for z in levels for r in (out, hole)]
@@ -203,6 +228,13 @@ def annulus(
             (c + i, c + j, d + j, d + i),  # the far cap
         ]
     return mesh(points, faces)
+
+
+def _edge(stated: Any, steps: int) -> np.ndarray:
+    """One edge of a ring: a number is a circle's radius, anything else an outline."""
+    if isinstance(stated, int | float):
+        return O.circle(float(stated), steps=int(steps))
+    return O._ring(stated)
 
 
 def primitive(kind: str = "cube", size: float = 1.0, *, steps: int = STEPS) -> dict:

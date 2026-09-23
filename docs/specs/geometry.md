@@ -165,7 +165,7 @@ counts y upward — an outline that came back mirrored is a sprite extruded back
 | `prism` | An outline extruded along the depth axis |
 | `plate` | A rounded plate: a rectangle with a corner radius and a depth |
 | `crowned` | A plate with a domed face |
-| `annulus` | A ring between two radii |
+| `annulus` | A ring between two edges: two radii for a round one, two outlines for any other |
 | `inflate` | A drawing given volume, as a stuffed cushion is — the route a panel takes |
 | `carve` | Boolean difference: `into` minus `cutter` |
 | `union` | Boolean union of a list of ids |
@@ -199,6 +199,17 @@ one solver is exactly the kind of thing to date rather than to inherit.
 So what the build actually relies on is the **non-empty assertion** (§PW2), which holds
 whichever solver runs and whichever Blender is installed. Where a bevel and a boolean both
 appear on a node, the boolean still runs first.
+
+**An `annulus` takes two edges and walks them in step** (§PW65). A number is a circle's
+radius, which is all a round ring needs; an outline is that outline, which is what a rim
+that is not round needs — Cottony's tray rim is a rounded rectangle with the same rounded
+rectangle offset inward by the piping width inside it, and the vocabulary drew both of
+those rings long before an op would take them. The two edges must have the same number of
+points, which is not a burden but the construction: an inner edge is an `offset` of the
+outer one, so it keeps its count and its order by definition. Two rings generated apart do
+not correspond and are refused rather than skinned into a twist. A boolean between two
+plates gives the same silhouette for a solver call, a Blender round trip and whatever
+topology the solver leaves.
 
 **`inflate` keeps the silhouette to the point.** Every boundary vertex stays exactly where
 the outline put it, at zero depth, and only the inside swells — by a function of each

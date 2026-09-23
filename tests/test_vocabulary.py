@@ -471,3 +471,49 @@ def test_a_generator_given_an_argument_it_does_not_take_still_refuses():
     with pytest.raises(PolyweaveError) as caught:
         O.resolve({"shape": "circle", "radius": 3.0, "arms": 5})
     assert caught.value.code == "geom.unknown-shape"
+
+
+# -- a ring between two edges rather than two radii (§PW65) ----------------------------
+
+
+def test_a_ring_between_two_radii_is_what_it_always_was():
+    """The narrower form still means what it meant, and is still a circle."""
+    ring = S.annulus(10.0, 4.0, 2.0)
+    check_mesh(ring)
+    points = np.asarray(ring["vertices"], dtype=float)
+    assert np.ptp(points[:, 0]) == pytest.approx(20.0, rel=1e-3)
+
+
+def test_a_rim_between_two_rounded_rectangles_is_a_ring_too():
+    """Cottony's tray rim: a rounded rectangle with the same one offset inside it."""
+    outer = O.rounded_square(100.0, 20.0)
+    rim = S.annulus(outer, O.offset(outer, -18.0), 60.0)
+    check_mesh(rim)
+    points = np.asarray(rim["vertices"], dtype=float)
+    # A ring and not a slab: it keeps the outline's silhouette exactly, and the hole in
+    # the middle is why it is not a cream lid over the whole tray.
+    assert points[:, 0].min() == pytest.approx(-50.0)
+    assert points[:, 0].max() == pytest.approx(50.0)
+    assert not np.any(np.all(np.abs(points[:, :2]) < 20.0, axis=1)), "it has a hole"
+
+
+def test_two_edges_that_do_not_correspond_are_refused_rather_than_twisted():
+    """An inner edge is an `offset` of the outer, which keeps its count and order."""
+    with pytest.raises(PolyweaveError) as caught:
+        S.annulus(O.circle(10.0, steps=32), O.circle(4.0, steps=12), 2.0)
+    assert caught.value.code == "geom.bad-solid"
+    assert "offset" in caught.value.remedy
+
+
+def test_an_inner_edge_that_is_not_inside_has_no_ring_between_them():
+    outer = O.rounded_square(100.0, 20.0)
+    with pytest.raises(PolyweaveError) as caught:
+        S.annulus(outer, O.offset(outer, 10.0), 60.0)
+    assert caught.value.code == "geom.bad-solid"
+    assert "no ring between them" in caught.value.message
+
+
+def test_a_radius_that_is_not_inside_still_says_so():
+    with pytest.raises(PolyweaveError) as caught:
+        S.annulus(4.0, 10.0, 2.0)
+    assert caught.value.code == "geom.bad-solid"
