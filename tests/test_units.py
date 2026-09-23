@@ -7,6 +7,7 @@ agree because a person made them agree, and nothing fails if either moves.
 
 from __future__ import annotations
 
+import numpy as np
 import pytest
 
 from polyweave import units
@@ -350,6 +351,75 @@ def test_a_declared_rectangle_is_rendered_orthographically(tmp_path):
     assert placed["projection"] == "orthographic"
     assert scene.camera.data.type == "ORTHO"
     assert scene.camera.data.ortho_scale == pytest.approx(4.0)
+
+
+# -- a rectangle with a place (§PW78) -------------------------------------------------
+
+
+def test_a_placed_rectangle_is_the_size_its_corners_give():
+    found = units.declared({"covers": [-2, -1, 2, 1], "pixels_per_unit": 64})
+    assert found["covers"] == [-2.0, -1.0, 2.0, 1.0]
+    assert units.for_size(found["covers"], 64.0) == (256, 128)
+    assert units.placed(found["covers"]) == (-2.0, -1.0, 2.0, 1.0)
+    assert units.placed([4, 2]) is None, "a size has no place"
+
+
+def test_a_placed_rectangle_turned_inside_out_covers_nothing():
+    with pytest.raises(PolyweaveError) as caught:
+        units.declared({"covers": [2, 0, 0, 1]})
+    assert caught.value.code == "units.undeclared"
+
+
+def test_a_placed_rectangle_seen_from_a_turned_camera_is_refused(tmp_path):
+    """Its corners are a place in the picture plane, which is X and Y looking on."""
+    render = baking(tmp_path, "[units]\npixels_per_unit = 16.0\n")
+    with pytest.raises(PolyweaveError) as caught:
+        render.bake(
+            Quiet(), out="tray.png", rung="sphere", covers=[0, 0, 4, 2], root=tmp_path
+        )
+    assert caught.value.code == "render.placed-off-front"
+    assert "azimuth=0" in caught.value.remedy
+    assert not (tmp_path / "tray.png").exists(), "nothing was rendered to find this"
+
+
+def test_the_camera_stands_over_the_rectangle_and_not_over_the_subject():
+    """The whole of §PW78: a size is centred on the subject's bounds, a place is not."""
+    pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
+    from polyweave.render import blender
+    from polyweave.render.rig import Rig
+
+    scene = blender.reset()
+    subject = blender.primitive("sphere", 1.0)
+    front = Rig(azimuth=0.0, elevation=0.0)
+    placed = blender.place(scene, front, subject, covers=[0.0, 0.0, 4.0, 2.0])
+    assert placed["location"][:2] == pytest.approx((2.0, 1.0))
+    assert placed["look_at"][:2] == pytest.approx((2.0, 1.0))
+    assert scene.camera.data.ortho_scale == pytest.approx(4.0)
+
+
+def test_a_subject_lands_where_its_rectangle_says(tmp_path):
+    """A unit sphere at the origin, in a rectangle from -1 to 3: the left half, only."""
+    pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
+    from polyweave.image import load
+
+    render = baking(
+        tmp_path, "samples = { sphere = 4 }\n\n[units]\npixels_per_unit = 16.0\n"
+    )
+    render.bake(
+        Quiet(),
+        out="placed.png",
+        rung="sphere",
+        covers=[-1.0, -1.0, 3.0, 1.0],
+        azimuth=0.0,
+        elevation=0.0,
+        inline=False,
+        root=tmp_path,
+    )
+    alpha = load(tmp_path / "placed.png").rgba[..., 3] > 8
+    columns = np.flatnonzero(alpha.any(axis=0))
+    assert alpha.shape == (32, 64)
+    assert columns.min() <= 1
+    assert columns.max() <= 33, "the sphere stays in the half the rectangle put it in"
 
 
 def test_a_bake_with_no_rectangle_keeps_the_perspective_rig(tmp_path):

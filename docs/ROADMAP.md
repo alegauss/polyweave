@@ -19,8 +19,7 @@
 - 📋 **PW57** (deps: PW53 ⏸) **every Cottony look gate restates its own floor, so no asset has a bar a search can aim at** — Five check scripts measure after the render is spent, which is a verdict and never a target, and a threshold moved in one of them is invisible to the rest. → §PW57
 - 📋 **PW59** (deps: PW53 ⏸, PW54 ✅, PW55 ✅, PW56 ⏳, PW57, PW58 ✅) **nothing says how much of Cottony still does its own version of what the plugin does** — Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion. → §PW59
 - ⏳ **PW56** (deps: PW57) **twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent** — The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question. → §PW56
-- 🛠 **PW78** (deps: PW77 ✅) **the two trays are framed by a world rectangle written out per asset so the game's grid lands on it** — One unit has to be one pixel because board.gd addresses a cell at CELL := 112, and a render fitted to its own bounds misses that grid. → §PW78
-- 📋 **PW79** (deps: PW78) **the three brand marks are exposed by a hand-found light and nothing states what the type should read as** — Two blends and one constant each is the least machinery of any family, and the acceptance is the hardest to put a number on. → §PW79
+- 📋 **PW79** (deps: PW78 ✅) **the three brand marks are exposed by a hand-found light and nothing states what the type should read as** — Two blends and one constant each is the least machinery of any family, and the acceptance is the hardest to put a number on. → §PW79
 - 📋 **PW80** (deps: PW79) **the three booster objects each needed a scrub, a roll and a fill found by hand after the service returned them** — A fetched mesh faces wherever it was left and keeps the marks the service painted, and rule 2 forbids those on candy. → §PW80
 - 📋 **PW81** (deps: PW80) **the two friends, their lean frames and the mascot take eleven constants apiece and nothing declares one** — Cloth, face placement, unsculpt and dust were each solved by hand on the assets a player looks at most, so they move last. → §PW81
 - 📋 **PW82** (deps: PW81) **nothing takes bake_model.py out once its assets have moved, so the rig outlives its own replacement** — Each family porting leaves the file smaller and still running, and two live paths to one sprite is the state this whole sequence exists to end. → §PW82
@@ -65,6 +64,15 @@
 - **The props' before side is recorded ahead of the port** Cottony's polyweave.loop.json
   holds a before run for map_props at 2153a09, from a re-bake that reproduces the
   committed sprites.
+
+## Done when — PW78
+
+- **Both trays land where the game puts them, from the game's numbers** Cottony's
+  tools/art/frame_trays.py exits 0: the board's silhouette matches the shipped sprite to
+  the pixel and the booster tray stands within 1 px of its drawing's body.
+- **The trays bake through the plugin with a look a person accepted** bake_model.py no
+  longer renders board_tray or booster_tray, and polyweave.loop.json holds a before and
+  an after run for the trays with a person's verdict.
 
 ## Non-goals
 

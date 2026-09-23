@@ -389,6 +389,24 @@ def test_the_tray_comes_out_the_arithmetic_its_own_constants_do():
     assert high[1] - low[1] == pytest.approx(8 * 112 + 2 * 44 - 2 * 18 + 22)
 
 
+def test_the_tray_faces_the_camera_that_renders_it():
+    """§PW78: the camera stands at +Z, so what the script put nearest is the largest Z.
+
+    The rope stands proudest, then the face the seats are pressed into, then the wall,
+    and the seats cut in from the face's near side. Copied across unturned, the depths
+    rendered the tray's back, which a silhouette check could not see.
+    """
+    found = B.build(G.read("tray.toml", root=COTTONY), root=COTTONY)
+
+    def nearest(name):
+        points = np.asarray(found["built"][name]["vertices"], dtype=float)
+        return float(points[:, 2].max())
+
+    assert nearest("rim") > nearest("face") > nearest("wall")
+    seats = np.asarray(found["built"]["seat"]["vertices"], dtype=float)[:, 2]
+    assert seats.min() < nearest("face") < seats.max(), "cut in from the near side"
+
+
 def test_the_seats_are_pitched_under_the_cells_the_game_places_pieces_in():
     """A seat is under its cell by construction rather than by eye."""
     solving()

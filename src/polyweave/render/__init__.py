@@ -212,7 +212,10 @@ def bake(
     ] = False,
     covers: Annotated[
         list,
-        Param("the world rectangle this picture stands for, as [width, height]"),
+        Param(
+            "the world rectangle this picture stands for: [width, height] centred on "
+            "the subject, or [x0, y0, x1, y1] where it stands, seen from the front"
+        ),
     ] = (),
     pixels_per_unit: Annotated[
         float,
@@ -267,6 +270,19 @@ def bake(
         if pixels_per_unit:
             declared["pixels_per_unit"] = float(pixels_per_unit)
         scale = units.require(declared, root=root)
+        if units.placed(covers) is not None and (azimuth or elevation):
+            # A rectangle with a place is a place in the picture plane, which is only
+            # the world's X and Y looking straight on (§PW78). Turned, its corners
+            # would land wherever the turn put them, which is the drift it exists to
+            # stop, so it is refused before anything is built.
+            raise PolyweaveError(
+                "render.placed-off-front",
+                f"a rectangle placed at {[float(v) for v in covers]} is a place seen "
+                f"from the front, and the camera is at azimuth {azimuth:g}, elevation "
+                f"{elevation:g}",
+                "pass azimuth=0 and elevation=0, or give covers as [width, height] "
+                "to centre it on the subject from wherever the camera stands",
+            )
         frame = (int(scale["size"][0]), int(scale["size"][1]))
         params["covers"] = [float(v) for v in covers]
         params["pixels_per_unit"] = scale["pixels_per_unit"]

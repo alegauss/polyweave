@@ -146,6 +146,20 @@ render. It is a parameter rather than a rung of its own, because it changes one 
 the camera and nothing about what the ladder is for — a sprite still has a cheap rung and a
 dear one.
 
+**A rectangle can also be given a place** (§PW78). `[width, height]` is centred on the
+subject's own bounds, so a wall on one side or a cushion that bulges on another moves the
+frame, and a grid inside the frame with it. `[x0, y0, x1, y1]` is the rectangle where it
+stands in the world's X and Y, and the camera stands over its middle whatever the subject's
+bounds come to. The number comes from the game and never from the render: Cottony's board
+tray is framed from `CELL`, `BOARD_PAD` and the wall's lift, and lands on the shipped
+sprite to the pixel with every seat under its cell. The booster tray, inflated from a
+drawing with a soft shadow, sits 8 px off centred on its bounds and 0.09 px off placed.
+
+A place is a place in the picture plane, which is X and Y only looking straight on. A
+placed rectangle with a non-zero azimuth or elevation is refused before anything is built
+(`render.placed-off-front`): turned, its corners would land wherever the turn put them,
+which is the drift it exists to stop.
+
 **The cache key needed no new field.** The worry was that a size the rung does not imply
 would let a square render come back for a rectangular request. It cannot: `covers` and
 `pixels_per_unit` go into `params`, and `params` is already what the key is computed over. So

@@ -125,21 +125,52 @@ def implied(covers: Any, size: Any) -> tuple[float, float]:
 
 
 def _rectangle(value: Any) -> tuple[float, float]:
-    try:
-        wide, tall = (float(v) for v in value)
-    except (TypeError, ValueError) as exc:
-        raise PolyweaveError(
-            "units.undeclared",
-            f"{value!r} is not a rectangle",
-            "write it as [width, height]",
-        ) from exc
+    """A rectangle's width and height, whether it was stated as a size or as a place."""
+    corners = placed(value)
+    if corners is not None:
+        x0, y0, x1, y1 = corners
+        wide, tall = x1 - x0, y1 - y0
+    else:
+        try:
+            wide, tall = (float(v) for v in value)
+        except (TypeError, ValueError) as exc:
+            raise PolyweaveError(
+                "units.undeclared",
+                f"{value!r} is not a rectangle",
+                "write it as [width, height], or as [x0, y0, x1, y1] where it has a "
+                "place in the world",
+            ) from exc
     if wide <= 0 or tall <= 0:
         raise PolyweaveError(
             "units.undeclared",
-            f"a rectangle of {wide} x {tall} covers nothing",
-            "write it as [width, height], both above zero",
+            f"a rectangle of {wide:g} x {tall:g} covers nothing",
+            "write it as [width, height], both above zero, or as [x0, y0, x1, y1] "
+            "with each far corner past its near one",
         )
     return wide, tall
+
+
+def extent(value: Any) -> tuple[float, float]:
+    """A declared rectangle's width and height, for a caller outside this module."""
+    return _rectangle(value)
+
+
+def placed(value: Any) -> tuple[float, float, float, float] | None:
+    """The rectangle's corners where it was stated with a place, and None where not.
+
+    **A place is what a grid needs** (§PW78). A size alone is centred on whatever the
+    subject's bounds come to, so a wall, a bevel or a cushion that bulges on one side
+    moves the frame and the grid with it. Cottony's trays are framed by a rectangle
+    given outright for exactly that reason: the number comes from the game, and the
+    picture does not get to choose where it stands.
+    """
+    try:
+        numbers = [float(v) for v in value]
+    except (TypeError, ValueError):
+        return None
+    if len(numbers) != 4:
+        return None
+    return (numbers[0], numbers[1], numbers[2], numbers[3])
 
 
 def declared(source: Any, *, root: str | Path = ".") -> dict:
@@ -173,11 +204,12 @@ def declared(source: Any, *, root: str | Path = ".") -> dict:
         raise PolyweaveError(
             "units.undeclared",
             "the declaration says nothing about the rectangle the asset covers",
-            "add covers = [width, height], in the units the engine uses",
+            "add covers = [width, height], or [x0, y0, x1, y1] where it has a place, "
+            "in the units the engine uses",
         )
-    wide, tall = _rectangle(stated["covers"])
+    _rectangle(stated["covers"])  # refuses what is neither a size nor a place
     return {
-        "covers": [wide, tall],
+        "covers": [float(v) for v in stated["covers"]],
         "pixels_per_unit": float(stated.get("pixels_per_unit") or 0.0),
     }
 
@@ -228,10 +260,11 @@ def check(
     across, down = (int(round(v)) for v in _rectangle(size))
     found["rendered"] = [across, down]
     if (across, down) != wanted:
+        wide, tall = _rectangle(asset["covers"])
         return {
             **found,
             "holds": False,
-            "why": f"{asset['covers'][0]:g} x {asset['covers'][1]:g} units at "
+            "why": f"{wide:g} x {tall:g} units at "
             f"{mine:g} px/unit is {wanted[0]} x {wanted[1]} pixels, and the picture "
             f"is {across} x {down}",
         }

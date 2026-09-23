@@ -9,6 +9,11 @@ output  = "whole"
 # in image coordinates turned on their side and flips y into Blender's z on every ring;
 # an outline here is a closed ring in XY and a solid extrudes it along Z, so the flip
 # happens once, in the reading, and never again.
+#
+# Depth is turned round as well (§PW78). The script's camera stands at -y, so a smaller
+# depth is nearer; here the camera stands at +Z, so a larger one is. Each `front` is the
+# script's restated as -(front + depth). Copied across unturned, this tray rendered its
+# own back: the right outline to the pixel over a flat slab with no seats in it.
 [params]
 cell      = 112
 board     = 8
@@ -39,7 +44,7 @@ op       = "prism"
 material = "cushion"
 outline  = { shape = "rounded_square", size = "size", corner = "radius" }
 depth    = 70.0
-front    = -6.0
+front    = "-(-6.0 + 70.0)"
 at       = [0, "-lift", 0]
 
 # The piped rim, standing proudest of anything: rule 1's rope, as geometry. **A ring and
@@ -55,7 +60,7 @@ material = "rope"
 outer    = { shape = "rounded_square", size = "size", corner = "radius" }
 inner    = { of = { shape = "rounded_square", size = "size", corner = "radius" }, offset = "-(piping + overlap)" }
 depth    = 60.0
-front    = -52.0
+front    = "-(-52.0 + 60.0)"
 
 # The cushion face the seats are pressed into.
 [[nodes]]
@@ -64,7 +69,7 @@ op       = "prism"
 material = "cushion"
 outline  = { of = { shape = "rounded_square", size = "size", corner = "radius" }, offset = "-piping" }
 depth    = 60.0
-front    = "face_front"
+front    = "-(face_front + 60.0)"
 
 # Sixty-four seats, pitched at `cell` from `pad` — the arithmetic `board.gd` does to place
 # a piece, so a seat is under its cell by construction rather than by eye. The cutter stops
@@ -74,7 +79,7 @@ id      = "seat"
 op      = "prism"
 outline = { shape = "rounded_square", size = "cell - 2 * inset", corner = "seat_corner" }
 depth   = "20.0 + seat_depth"
-front   = "face_front - 20.0"
+front   = "-(face_front - 20.0 + 20.0 + seat_depth)"
 at      = ["pad + col * cell + cell / 2 - size / 2 - edge", "pad + row * cell + cell / 2 - size / 2 - edge", 0]
 repeat  = [
   { var = "row", from = 0, to = "board - 1" },

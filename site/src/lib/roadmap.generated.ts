@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 10 },
+  { block: "H", title: "Proof on a real game", open: 9 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -58,18 +58,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW57"],
   },
   {
-    id: "PW78",
-    block: "H",
-    symptom: "the two trays are framed by a world rectangle written out per asset so the game's grid lands on it",
-    why: "One unit has to be one pixel because board.gd addresses a cell at CELL := 112, and a render fitted to its own bounds misses that grid.",
-    deps: [],
-  },
-  {
     id: "PW79",
     block: "H",
     symptom: "the three brand marks are exposed by a hand-found light and nothing states what the type should read as",
     why: "Two blends and one constant each is the least machinery of any family, and the acceptance is the hardest to put a number on.",
-    deps: ["PW78"],
+    deps: [],
   },
   {
     id: "PW80",
@@ -132,4 +125,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW36", "PW53", "PW76", "PW77"];
+export const generatedPaused: string[] = ["PW36", "PW53", "PW76", "PW77", "PW78"];

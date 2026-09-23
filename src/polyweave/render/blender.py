@@ -15,6 +15,7 @@ import contextlib
 from pathlib import Path
 from typing import Any
 
+from .. import units
 from ..errors import PolyweaveError
 from .rig import Rig, bounds_of, camera_for, lights_for
 
@@ -218,12 +219,26 @@ def place(scene: Any, rig: Rig, subject: Any, *, covers: Any = None) -> dict:
     data = bpy.data.cameras.new("polyweave-camera")
     data.lens = rig.focal_mm
     if covers is not None:
-        wide, tall = (float(covers[0]), float(covers[1]))
+        corners = units.placed(covers)
+        wide, tall = units.extent(covers)
         data.type = "ORTHO"
         # Blender's ortho_scale is the longer side of the frame in world units, so the
         # rectangle maps onto the pixels exactly and the scale is one number everywhere.
         data.ortho_scale = max(wide, tall)
         camera = {**camera, "covers": [wide, tall], "projection": "orthographic"}
+        if corners is not None:
+            # Where the rectangle stands, and not where the subject's bounds put it
+            # (§PW78). Looking straight on, which `bake` has already insisted on, the
+            # camera slides in the picture plane and keeps its distance.
+            x0, y0, x1, y1 = corners
+            middle = ((x0 + x1) / 2.0, (y0 + y1) / 2.0)
+            location, look_at = camera["location"], camera["look_at"]
+            camera = {
+                **camera,
+                "covers": [x0, y0, x1, y1],
+                "location": (middle[0], middle[1], location[2]),
+                "look_at": (middle[0], middle[1], look_at[2]),
+            }
     obj = bpy.data.objects.new("polyweave-camera", data)
     scene.collection.objects.link(obj)
     obj.location = to_blender(camera["location"])

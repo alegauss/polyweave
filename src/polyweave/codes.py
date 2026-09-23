@@ -441,6 +441,12 @@ CODES: dict[str, Code] = {
         when="a project names a rung in [render] rungs and omits it from samples",
         doors=("set samples for that rung",),
     ),
+    "render.placed-off-front": Code(
+        means="a rectangle with a place was asked for from a camera not in front",
+        when="covers given as [x0, y0, x1, y1] with a non-zero azimuth or elevation, "
+        "where the corners would land wherever the turn put them",
+        doors=("look straight on", "give covers as [width, height]"),
+    ),
     "render.no-mesh": Code(
         means="the rung renders the real mesh and there is none to render",
         when="no model was named, the file is not there, or it imported empty",
