@@ -10,6 +10,8 @@ and imported here, so the thing being built is the thing the spec documents.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import numpy as np
 import pytest
 from tests.test_geometry import TRAY
@@ -261,3 +263,45 @@ def test_a_transform_moves_what_it_was_given(tmp_path):
     assert np.ptp(points[:, 0]) == pytest.approx(4.0), "scaled on x and not on y"
     assert np.ptp(points[:, 1]) == pytest.approx(2.0)
     assert points[:, 0].mean() == pytest.approx(5.0), "and placed where `at` says"
+
+
+# -- a model a game has, as a declaration (§PW64) --------------------------------------
+
+COTTONY = Path(__file__).parent / "fixtures" / "cottony"
+
+
+def test_cottonys_star_builds_from_a_declaration():
+    """The shape the whole concave-cap finding came from, stated rather than programmed.
+
+    `star_model.py` is 124 lines around one `crowned` call. The numbers here are its
+    own — REACH 0.47, CROWN 0.13, a depth of a tenth of the canvas, an inner radius of
+    half the outer — and they are parameters, so a search reaches them.
+    """
+    found = B.build(G.read("star.toml", root=COTTONY), root=COTTONY)
+    check_mesh(found["output"])
+    assert found["report"]["nodes"][0]["op"] == "crowned"
+    assert found["report"]["warnings"] == []
+
+
+def test_the_read_and_the_build_now_agree_about_that_star(tmp_path):
+    """They did not: the review said the shape was fine and the build refused it."""
+    document = G.read("star.toml", root=COTTONY)
+    said = review.describe(document)["reads"][0]
+    assert "a star of" in said
+    assert "points 5" in said
+    assert "domed face" in said
+    B.build(document, root=COTTONY)  # and it builds, which is the half that did not
+
+
+def test_the_star_keeps_its_five_even_points(tmp_path):
+    """The one shape whose silhouette has to stay exactly five even points."""
+    from polyweave.geometry import outline as O
+
+    document = G.read("star.toml", root=COTTONY)
+    resolved = G.expand(document)["nodes"][0]["instances"][0]
+    ring = O.resolve(resolved["outline"], root=COTTONY)
+    assert len(ring) == 10
+    # Alternating radii, five of each, and every arm the same length as its siblings.
+    radii = np.round(np.linalg.norm(ring, axis=1), 6)
+    assert len(set(radii.tolist())) == 2, "two radii, not five arms of different sizes"
+    assert sorted(radii)[-5:] == [max(radii)] * 5

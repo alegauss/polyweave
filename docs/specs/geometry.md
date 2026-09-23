@@ -136,6 +136,12 @@ would leave every real asset in code (§PW31).
 An outline appears inline on a solid node, as in `seat` above, or as its own node when two
 nodes share one.
 
+**`points` means a literal list of them only where no `shape` is named** (§PW64). It is
+also a generator's own argument — `star` takes a point count — so `{ shape = "star",
+points = 5, outer = 240, inner = 120 }` passes the 5 through to the generator, and
+`{ points = [[0, 0], [10, 0], [5, 8]] }` is the ring itself. Which key is present decides
+the kind, and the same key can be an argument to the kind it did not name.
+
 **An outline is a closed ring in XY, and a solid extrudes it along Z** — the plane the
 camera faces at azimuth zero, which is what a sprite-baked asset wants: the drawn shape
 stays the drawn shape and the depth goes away from the viewer.

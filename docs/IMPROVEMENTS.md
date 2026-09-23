@@ -14,31 +14,6 @@
 
 ## Block G — Geometry as a declaration
 
-### §PW64 One key naming both a kind of outline and a generator's own argument
-
-`outline.resolve` decides what an outline is by which key is present — `shape`, `image`,
-`points` or `of` — and it strips all four out of the arguments before dispatching,
-because they name the kind rather than describe it. That is right for three of them.
-
-`points` is also the name of a generator's own argument. `star(points, outer, inner)`
-takes a point count, so `{ shape = "star", points = 5, outer = 240, inner = 120 }` is
-how a declaration asks for a five-pointed star, and `resolve` removes the 5 on its way
-past. The generator is called without it and refuses with `geom.unknown-shape: star does
-not take those arguments`, naming a missing argument the document plainly supplied.
-
-The review reads the same document correctly — "a star of inner 120.32, outer 240.64,
-points 5, extruded with a domed face" — because it never dispatches. The structural read
-says the shape is fine and the build says it is not.
-
-This is what stopped Cottony's star being declared, and the star is the shape the whole
-concave-cap finding came from.
-
-The fix is small and the choice is which way round. `points` means a literal list only
-where no `shape` is named, so reserving it conditionally — strip it for the points
-branch, pass it through for the shape branch — keeps every document that works today
-working. Renaming the generator's argument instead would change a published vocabulary
-to avoid a collision the dispatch already knows how to resolve.
-
 ### §PW65 A ring the vocabulary can draw both edges of and cannot state
 
 `solid.annulus(outer, inner, depth)` takes two **radii**, so the only ring the
@@ -60,6 +35,30 @@ Cottony's own `solid.annulus` already takes two outlines, which is the signal th
 format's own rule names: where the same shape appears in a second project it should have
 been vocabulary. This is the first place the port meets an op stated more narrowly here
 than in the script it replaces.
+
+### §PW66 A dome that keeps a convex silhouette and pushes a concave one out
+
+`solid.crowned` promises in its own docstring that "the silhouette of the plate is
+untouched and only the face swells". Measured on Cottony's star, it is not.
+
+The star's outline spans x from −194.68 to 240.64. Crowned at the model's own numbers —
+outer 240.64, inner 120.32, depth 51.2, crown 66.56 — the mesh spans −276.49 to 240.64,
+so it reaches 81.8 units past the silhouette on one side and 34 past it on y. The same
+call on a rounded square keeps −50 to 50 exactly.
+
+The cause is the inward step. The dome shrinks the outline in stages and lifts each
+ring, and the shrink is `offset` with a negative distance, which moves each corner along
+its **miter**. That is right at a convex corner and points the wrong way at a reflex
+one, so a star's inner vertices travel outward while the ring is supposed to be
+shrinking.
+
+Which shape it is matters. `convex` exists so the solid knows a star's cap needs
+triangles, and the star is the one outline here whose whole point is being concave. The
+op Cottony's star uses is the one its concavity breaks.
+
+Two ways out, and the choice is which the crown is for: shrink each ring toward the
+outline's centroid rather than along its miters, or clamp the inward offset per vertex
+so that no point of a ring is outside the ring below it.
 
 ## Block H — Proof on a real game
 
@@ -125,9 +124,9 @@ sixty-four seats, the star's five even points — are a declaration each. The pa
 `cloth.cushion`, which inflates a drawn PNG, and that is an outline read off an image
 rather than a primitive.
 
-A declaration builds now, and reading the two scripts against it found the vocabulary
-two ops short: §PW64 stops a star being asked for with a point count, and §PW65 leaves
-the rim, a ring between two rounded rectangles, with no op taking two outlines.
+A declaration builds now, and the star already does: `tests/fixtures/cottony/star.toml`
+is `star_model.py` stated rather than programmed. What the tray still meets is §PW65 —
+its rim is a ring between two rounded rectangles and no op takes two outlines.
 
 ### §PW56 Twelve runners, twelve ways to start Godot, and no check on what applied
 

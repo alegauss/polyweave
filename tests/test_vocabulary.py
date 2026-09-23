@@ -439,3 +439,35 @@ def test_a_build_with_neither_is_the_mesh_it_was_given():
     solver = solving()
     plate = S.plate([0, 0, 20, 20], 4.0, 2.0)
     assert check_mesh(solver.build(plate))["faces"] == check_mesh(plate)["faces"]
+
+
+# -- one key naming two things (§PW64) -------------------------------------------------
+
+
+def test_a_generator_is_given_the_points_count_the_document_wrote():
+    """`points` names a kind of outline and a generator's own argument.
+
+    Stripped unconditionally, `{ shape = "star", points = 5 }` reached `star()` without
+    a count and was refused for missing the argument the declaration plainly supplied.
+    """
+    ring = O.resolve({"shape": "star", "points": 5, "outer": 240.0, "inner": 120.0})
+    assert len(ring) == 10, "two points per arm"
+    assert O.convex(ring) is False
+
+
+def test_a_literal_list_of_points_is_still_a_list_of_points():
+    """The other branch, which is the reason the key was reserved in the first place."""
+    ring = O.resolve({"points": [[0, 0], [10, 0], [5, 8]]})
+    assert len(ring) == 3
+
+
+def test_a_shape_that_takes_no_points_is_unaffected():
+    ring = O.resolve({"shape": "circle", "radius": 3.0, "steps": 12})
+    assert len(ring) == 12
+
+
+def test_a_generator_given_an_argument_it_does_not_take_still_refuses():
+    """The refusal that was firing for the wrong reason has to keep firing."""
+    with pytest.raises(PolyweaveError) as caught:
+        O.resolve({"shape": "circle", "radius": 3.0, "arms": 5})
+    assert caught.value.code == "geom.unknown-shape"

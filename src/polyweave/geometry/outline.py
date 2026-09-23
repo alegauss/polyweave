@@ -338,11 +338,16 @@ def resolve(stated: Any, *, root: str | Path = ".") -> np.ndarray:
             "give it a shape, an image, or a list of points",
         )
 
-    how = {
-        k: v
-        for k, v in stated.items()
-        if k not in ("shape", "image", "points", "offset", "radial", "of")
-    }
+    # The keys that name which kind of outline this is, stripped before dispatching
+    # because they are not arguments to it. `points` is in that list only where no
+    # `shape` is: it is also the name of a generator's own argument, and `star` takes a
+    # point count (§PW64). Stripped unconditionally, `{ shape = "star", points = 5 }`
+    # reached `star()` without one and was refused for missing an argument the document
+    # plainly supplied — while the review, which never dispatches, read it correctly.
+    names = ("shape", "image", "offset", "radial", "of")
+    if "shape" not in stated:
+        names += ("points",)
+    how = {k: v for k, v in stated.items() if k not in names}
     if "shape" in stated:
         ring = generate(str(stated["shape"]), **how)
     elif "image" in stated:

@@ -1,0 +1,30 @@
+name    = "star"
+version = 1
+output  = "star"
+
+# `tools/art/star_model.py`, as a declaration. Its own numbers and not new ones: REACH is
+# 0.47, CROWN is 0.13, the depth is a tenth of the canvas and the inner radius is half the
+# outer one. The script computes each of those inline; here they are parameters, so a
+# search reaches them and a change to one is a diff rather than an edit.
+[params]
+px    = 512
+reach = 0.47
+crown = 0.13
+depth = 0.10
+inner = 0.50
+
+[materials.candy_gold]
+colour    = "#FFC43F"
+roughness = 0.22
+
+# No bevel. Three were tried in the script and each was worse than none: on a dense
+# outline a bevel wide enough to see eats its own geometry and leaves spiked burrs at
+# every tip, and the one shape whose silhouette has to stay exactly five even points is
+# the last one to round off. The crown does the work the bevel was being asked to do.
+[[nodes]]
+id       = "star"
+op       = "crowned"
+material = "candy_gold"
+outline  = { shape = "star", points = 5, outer = "px * reach", inner = "px * reach * inner" }
+depth    = "px * depth"
+crown    = "px * crown"
