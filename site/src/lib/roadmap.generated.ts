@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 8 },
+  { block: "H", title: "Proof on a real game", open: 10 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -61,8 +61,8 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW80",
     block: "H",
     symptom: "the three booster objects each needed a scrub, a roll and a fill found by hand after the service returned them",
-    why: "A fetched mesh faces wherever it was left and keeps the marks the service painted, and rule 2 forbids those on candy.",
-    deps: [],
+    why: "Ingest has to keep a fetched texture and orient has to find a lean, then the hammer and wand come in from their drawings and a person judges them.",
+    deps: ["PW90", "PW91"],
   },
   {
     id: "PW81",
@@ -90,6 +90,20 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "a silhouette checked with no region scores a render missing half the drawn shape close to 1",
     why: "The default region is the render's own subject, and both masks are cut to it, so the reference outside the render is never counted.",
+    deps: [],
+  },
+  {
+    id: "PW90",
+    block: "H",
+    symptom: "a fetched mesh put in the project's frame by ingest comes back without its texture",
+    why: "read_mesh keeps vertices and faces only, so the UVs and the painted material a service returned are gone before write_mesh sees them.",
+    deps: [],
+  },
+  {
+    id: "PW91",
+    block: "H",
+    symptom: "orienting a mesh against its drawing finds which way round it faces but never how far it leans",
+    why: "The candidates are the mesh's own axes turned by quarter turns, so Cottony's hammer, leaned 22 degrees in its drawing, still needed that roll found by hand.",
     deps: [],
   },
 ];

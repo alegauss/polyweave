@@ -19,11 +19,13 @@
 - 📋 **PW57** (deps: PW53 ⏸) **every Cottony look gate restates its own floor, so no asset has a bar a search can aim at** — Five check scripts measure after the render is spent, which is a verdict and never a target, and a threshold moved in one of them is invisible to the rest. → §PW57
 - 📋 **PW59** (deps: PW53 ⏸, PW54 ✅, PW55 ✅, PW56 ⏳, PW57, PW58 ✅) **nothing says how much of Cottony still does its own version of what the plugin does** — Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion. → §PW59
 - ⏳ **PW56** (deps: PW57) **twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent** — The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question. → §PW56
-- 📋 **PW80** (deps: PW79 ✅) **the three booster objects each needed a scrub, a roll and a fill found by hand after the service returned them** — A fetched mesh faces wherever it was left and keeps the marks the service painted, and rule 2 forbids those on candy. → §PW80
-- 📋 **PW81** (deps: PW80) **the two friends, their lean frames and the mascot take eleven constants apiece and nothing declares one** — Cloth, face placement, unsculpt and dust were each solved by hand on the assets a player looks at most, so they move last. → §PW81
+- ⏳ **PW80** (deps: PW79 ✅, PW90, PW91) **the three booster objects each needed a scrub, a roll and a fill found by hand after the service returned them** — Ingest has to keep a fetched texture and orient has to find a lean, then the hammer and wand come in from their drawings and a person judges them. → §PW80
+- 📋 **PW81** (deps: PW80 ⏳) **the two friends, their lean frames and the mascot take eleven constants apiece and nothing declares one** — Cloth, face placement, unsculpt and dust were each solved by hand on the assets a player looks at most, so they move last. → §PW81
 - 📋 **PW82** (deps: PW81) **nothing takes bake_model.py out once its assets have moved, so the rig outlives its own replacement** — Each family porting leaves the file smaller and still running, and two live paths to one sprite is the state this whole sequence exists to end. → §PW82
 - 📋 **PW85** (deps: —) **a bake that declares the rectangle it covers answers with the rung's size, not the picture's** — The answer is built from the plan's number before the declaration resized the frame, so a 96 px star is reported as 1024. → §PW85
 - 📋 **PW87** (deps: —) **a silhouette checked with no region scores a render missing half the drawn shape close to 1** — The default region is the render's own subject, and both masks are cut to it, so the reference outside the render is never counted. → §PW87
+- 📋 **PW90** (deps: —) **a fetched mesh put in the project's frame by ingest comes back without its texture** — read_mesh keeps vertices and faces only, so the UVs and the painted material a service returned are gone before write_mesh sees them. → §PW90
+- 📋 **PW91** (deps: —) **orienting a mesh against its drawing finds which way round it faces but never how far it leans** — The candidates are the mesh's own axes turned by quarter turns, so Cottony's hammer, leaned 22 degrees in its drawing, still needed that roll found by hand. → §PW91
 
 ## Done when — PW36
 
@@ -81,6 +83,15 @@
 - **The marks bake through the plugin and a person judged them** bake_model.py no longer
   renders the three marks, and polyweave.loop.json holds an after run for brand_marks
   beside the before run at 53a9610.
+
+## Done when — PW80
+
+- **The fetched boosters come in from their drawings, textured** Ingested against
+  booster_hammer.drawn.png and booster_wand.drawn.png, both keep their texture and the
+  hammer's lean is found within a degree of the 22 found by hand.
+- **The boosters bake through the plugin and a person judged them** bake_model.py no
+  longer renders the three boosters, and polyweave.loop.json holds an after run for
+  boosters beside the before run at ef16b28.
 
 ## Non-goals
 
