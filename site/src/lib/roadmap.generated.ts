@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 1 },
-  { block: "H", title: "Proof on a real game", open: 5 },
+  { block: "H", title: "Proof on a real game", open: 4 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -70,13 +70,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "a Cottony shape is a bmesh program that exists only inside a bake, so nothing can read, diff or search it",
     why: "solid.py is 283 lines of geometry as code, and it carries a second copy of the bevelled-boolean lesson, which is a copy that will drift.",
     deps: ["PW60"],
-  },
-  {
-    id: "PW56",
-    block: "H",
-    symptom: "twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent",
-    why: "capture_screens.py and measure_frames.py trust a printed line and a timeout, so the route probe and the settings comparison go unused where the engine is.",
-    deps: [],
   },
   {
     id: "PW57",
@@ -125,4 +118,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW36", "PW53"];
+export const generatedPaused: string[] = ["PW36", "PW53", "PW56"];

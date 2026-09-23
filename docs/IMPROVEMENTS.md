@@ -211,6 +211,9 @@ file and passes. The site publishes it.
 stays inside it: Godot still runs the scene. What changes is who starts it, and what is
 checked once it has.
 
+Set aside: Godot is not installed here, the work is entirely in Cottony's tree, and
+Block E already ships every piece it would use.
+
 ### §PW57 Five floors in five files, and not one of them is a target
 
 `check_vivid.py`, `check_palette.py`, `check_markings.py`, `check_plush.py` and
