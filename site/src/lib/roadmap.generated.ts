@@ -31,18 +31,11 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
-  { block: "G", title: "Geometry as a declaration", open: 2 },
+  { block: "G", title: "Geometry as a declaration", open: 1 },
   { block: "H", title: "Proof on a real game", open: 3 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW66",
-    block: "G",
-    symptom: "a crowned star reaches 82 units outside its own outline, and the op promises it will not",
-    why: "The dome shrinks each ring along its miters, which point outward at a reflex corner, so the one outline whose whole point is being concave is the one it breaks.",
-    deps: [],
-  },
   {
     id: "PW67",
     block: "G",

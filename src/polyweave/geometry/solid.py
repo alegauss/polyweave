@@ -144,17 +144,36 @@ def crowned(
 
     The dome is made by shrinking the outline inward in steps and lifting each ring, so
     the silhouette of the plate is untouched and only the face swells.
+
+    **How a ring shrinks depends on whether the outline is concave** (§PW66), which is
+    the same question and the same answer as the cap above: `offset` moves each corner
+    along its miter, which points inward at a convex corner and *outward* at a reflex
+    one. Cottony's star came back reaching 82 units past its own silhouette that way —
+    the op promising the silhouette is untouched, breaking it on the one outline whose
+    whole point is being concave. A concave ring is scaled toward its centroid instead,
+    which nests by construction whatever the corners do. A convex one keeps the miter,
+    because that holds a corner radius constant as it shrinks where a scale would not,
+    and because nothing that works today should move.
     """
     ring = O._ring(points)
     count = len(ring)
     rings = [np.column_stack([ring, np.full(count, float(front))])]
     reach = float(np.ptp(ring, axis=0).max()) / 2.0
+    convex = O.convex(ring)
+    middle = ring.mean(axis=0)
 
     for step in range(int(steps) + 1):
         along = step / float(steps)
         inward = reach * (1.0 - math.cos(along * math.pi / 2))
         lift = float(depth) + float(crown) * math.sin(along * math.pi / 2)
-        shrunk = O.offset(ring, -inward) if inward > 1e-9 else ring
+        if inward <= 1e-9:
+            shrunk = ring
+        elif convex:
+            shrunk = O.offset(ring, -inward)
+        else:
+            # Toward the centroid by the same distance the miter would have moved it,
+            # as a share of the reach — so the two shrink at the same rate.
+            shrunk = middle + (ring - middle) * max(0.0, 1.0 - inward / reach)
         rings.append(np.column_stack([shrunk, np.full(count, float(front) + lift)]))
 
     faces = []

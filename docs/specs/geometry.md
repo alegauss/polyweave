@@ -178,6 +178,15 @@ silhouette to the pixel. `prism` over an `image` outline is the other half of th
 a star's silhouette becomes a mesh that is not merely similar to the drawn sprite but is the
 drawn sprite, extruded.
 
+**A `crowned` dome shrinks its rings by whichever rule keeps the silhouette** (§PW66) —
+the same question the cap below asks, with the same answer. `offset` moves a corner along
+its miter, which points inward at a convex corner and *outward* at a reflex one, so a
+concave outline's inner vertices travel outward while the ring is supposed to be
+shrinking: Cottony's star came back reaching 82 units past its own silhouette. A concave
+ring is scaled toward its centroid instead, which nests by construction. A convex one
+keeps the miter, because that holds a corner radius constant as it shrinks where a scale
+would not.
+
 **A concave cap is triangulated and a convex one is not.** Cottony's first star came back
 with black triangles laid across its arms, which is a cap filled as though its points were
 a convex hull. Whether the outline is convex decides it, so a rounded rectangle keeps its

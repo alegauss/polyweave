@@ -14,7 +14,6 @@
 
 ## Block G — Geometry as a declaration
 
-- 📋 **PW66** (deps: —) **a crowned star reaches 82 units outside its own outline, and the op promises it will not** — The dome shrinks each ring along its miters, which point outward at a reflex corner, so the one outline whose whole point is being concave is the one it breaks. → §PW66
 - 📋 **PW67** (deps: —) **a model in two materials builds into one mesh that carries neither of them** — A material sits on a node and a document names one output, so joining the parts is the only way to hand one back and the join keeps one material or none. → §PW67
 
 ## Block H — Proof on a real game

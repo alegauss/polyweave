@@ -75,6 +75,7 @@
 - ✅ **PW60** **a declaration is read, resolved and reported on, and nothing turns one into a mesh** — A declaration builds into the mesh it describes, and the spec's own tray comes out 928 by 928 by 6 with a report per node (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW64** **an outline naming a shape cannot be given a points count, because points already names a list of them** — A shape is given the points count the document wrote, so Cottony's star builds from a declaration and the review and the build agree about it (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW65** **an annulus is a ring between two radii, so a rim that is not round cannot be declared at all** — An annulus takes two edges, so a rim that is not round is a ring rather than a boolean between two plates (design recorded in `docs/specs/geometry.md`).
+- ✅ **PW66** **a crowned star reaches 82 units outside its own outline, and the op promises it will not** — A crowned dome keeps the silhouette it was given, concave or not, because a concave ring shrinks toward its centroid rather than along its miters (design recorded in `docs/specs/geometry.md`).
 
 ## Block H — Proof on a real game
 

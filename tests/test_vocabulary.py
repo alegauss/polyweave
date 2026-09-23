@@ -517,3 +517,53 @@ def test_a_radius_that_is_not_inside_still_says_so():
     with pytest.raises(PolyweaveError) as caught:
         S.annulus(4.0, 10.0, 2.0)
     assert caught.value.code == "geom.bad-solid"
+
+
+# -- the dome keeps the silhouette it was given (§PW66) --------------------------------
+
+
+@pytest.mark.parametrize(
+    ("named", "ring"),
+    [
+        ("a star", O.star(5, 240.64, 120.32)),
+        ("a rounded square", O.rounded_square(100.0, 10.0)),
+        ("a circle", O.circle(40.0)),
+        ("a lobed shape", O.lobed(6, 30.0, 0.35)),
+    ],
+)
+def test_a_crown_never_reaches_outside_the_outline_it_domes(named, ring):
+    """The op's own promise: the silhouette is untouched and only the face swells.
+
+    It was kept on a convex outline and broken on a concave one. `offset` moves a corner
+    along its miter, which points inward at a convex corner and outward at a reflex one,
+    so a star's inner vertices travelled outward while the ring was supposed to shrink.
+    """
+    made = S.crowned(ring, 51.2, 66.56)
+    points = np.asarray(made["vertices"], dtype=float)
+    assert points[:, 0].min() == pytest.approx(ring[:, 0].min()), named
+    assert points[:, 0].max() == pytest.approx(ring[:, 0].max()), named
+    assert points[:, 1].min() == pytest.approx(ring[:, 1].min()), named
+    assert points[:, 1].max() == pytest.approx(ring[:, 1].max()), named
+
+
+def test_a_convex_crown_still_shrinks_along_its_miter():
+    """Which is what holds a corner radius constant, and what nothing should move."""
+    ring = O.rounded_square(100.0, 10.0)
+    made = S.crowned(ring, 10.0, 15.0)
+    points = np.asarray(made["vertices"], dtype=float)
+    assert np.ptp(points[:, 2]) == pytest.approx(25.0), "depth plus crown"
+    assert O.convex(ring) is True
+
+
+def test_every_ring_of_a_concave_dome_is_inside_the_one_below_it():
+    """Which is what scaling toward the centroid gives and offsetting does not."""
+    ring = O.star(5, 240.64, 120.32)
+    made = S.crowned(ring, 51.2, 66.56)
+    points = np.asarray(made["vertices"], dtype=float)
+    rings = points.reshape(-1, len(ring), 3)
+    reach = [
+        float(np.linalg.norm(one[:, :2] - one[:, :2].mean(axis=0), axis=1).max())
+        for one in rings
+    ]
+    assert reach == sorted(reach, reverse=True), "each ring is no wider than the last"
+    assert reach[-1] < reach[0], "and the dome actually closes"

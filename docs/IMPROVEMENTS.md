@@ -14,30 +14,6 @@
 
 ## Block G — Geometry as a declaration
 
-### §PW66 A dome that keeps a convex silhouette and pushes a concave one out
-
-`solid.crowned` promises in its own docstring that "the silhouette of the plate is
-untouched and only the face swells". Measured on Cottony's star, it is not.
-
-The star's outline spans x from −194.68 to 240.64. Crowned at the model's own numbers —
-outer 240.64, inner 120.32, depth 51.2, crown 66.56 — the mesh spans −276.49 to 240.64,
-so it reaches 81.8 units past the silhouette on one side and 34 past it on y. The same
-call on a rounded square keeps −50 to 50 exactly.
-
-The cause is the inward step. The dome shrinks the outline in stages and lifts each
-ring, and the shrink is `offset` with a negative distance, which moves each corner along
-its **miter**. That is right at a convex corner and points the wrong way at a reflex
-one, so a star's inner vertices travel outward while the ring is supposed to be
-shrinking.
-
-Which shape it is matters. `convex` exists so the solid knows a star's cap needs
-triangles, and the star is the one outline here whose whole point is being concave. The
-op Cottony's star uses is the one its concavity breaks.
-
-Two ways out, and the choice is which the crown is for: shrink each ring toward the
-outline's centroid rather than along its miters, or clamp the inward offset per vertex
-so that no point of a ring is outside the ring below it.
-
 ### §PW67 Two materials on one object, which is the ordinary case
 
 A material sits on a node, and a document names one output. Cottony's tray is four parts
