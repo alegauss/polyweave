@@ -412,8 +412,18 @@ def read_mesh(path: str | Path) -> dict:
     }
 
 
-def write_mesh(found: dict, out: str | Path) -> Path:
-    """Write the normalised mesh, so nothing downstream carries the correction."""
+def write_mesh(found: dict, out: str | Path, *, materials: dict | None = None) -> Path:
+    """Write the mesh out, so nothing downstream carries the correction.
+
+    **Everything the mesh worked out comes with it** (§PW69). This used to write
+    vertices and faces alone, which is right for a normalisation and wrong for a build:
+    a panel would lose the coordinates that put its drawing on it and a tray would lose
+    the groups that keep its rope rim cream. Those were the two things the geometry
+    block had just learned to carry, dropped by the one call that could take them out.
+
+    `materials` is the document's own table, name to shader inputs, and it is needed
+    because a group names a material and a file needs the material itself.
+    """
     from .render import blender
 
     bpy = blender.require()
@@ -427,8 +437,18 @@ def write_mesh(found: dict, out: str | Path) -> Path:
         [list(face) for face in found["faces"]],
     )
     mesh.update()
+    _write_uv(mesh, found.get("uv"))
     obj = bpy.data.objects.new("normalised", mesh)
     bpy.context.scene.collection.objects.link(obj)
+    if found.get("groups"):
+        blender.apply_material(
+            obj,
+            {
+                name: blender.as_inputs(one or {})
+                for name, one in (materials or {}).items()
+            },
+            groups=found["groups"],
+        )
     for other in bpy.context.scene.objects:
         other.select_set(other is obj)
     bpy.context.view_layer.objects.active = obj
@@ -438,6 +458,21 @@ def write_mesh(found: dict, out: str | Path) -> Path:
         export_format="GLB" if where.suffix.lower() == ".glb" else "GLTF_SEPARATE",
     )
     return where
+
+
+def _write_uv(mesh: Any, uv: Any) -> None:
+    """The per-vertex coordinates onto the per-loop layer a file actually stores.
+
+    A mesh states one pair per vertex, because that is what a build computes and what
+    the arithmetic is over. Blender and glTF store one per face corner, so every corner
+    takes its own vertex's pair on the way out.
+    """
+    if uv is None:
+        return
+    pairs = np.asarray(uv, dtype=float).reshape(-1, 2)
+    layer = mesh.uv_layers.new(name="polyweave")
+    for loop in mesh.loops:
+        layer.data[loop.index].uv = tuple(pairs[loop.vertex_index])
 
 
 def ingest(

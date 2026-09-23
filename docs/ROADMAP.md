@@ -14,8 +14,6 @@
 
 ## Block G — Geometry as a declaration
 
-- 📋 **PW69** (deps: —) **a declaration that has been built reaches no renderer and no file, so the only way to see one is a test** — bake takes a model as a path and write_mesh keeps only vertices and faces, so the one call that could carry a build out drops its coordinates and its materials. → §PW69
-
 ## Block H — Proof on a real game
 
 - 📋 **PW57** (deps: PW53 ⏸) **every Cottony look gate restates its own floor, so no asset has a bar a search can aim at** — Five check scripts measure after the render is spent, which is a verdict and never a target, and a threshold moved in one of them is invisible to the rest. → §PW57

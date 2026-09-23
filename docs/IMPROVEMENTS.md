@@ -14,30 +14,6 @@
 
 ## Block G — Geometry as a declaration
 
-### §PW69 A block that ends one call short of the tool surface
-
-`geometry.build` returns a mesh, the meshes of every node, and a report. Nothing under
-`src/` calls it. The only consumers are the tests written alongside it, and a
-declaration that has been built has nowhere to go from there.
-
-Two doors are nearly there and neither fits. `render.bake` takes `model=` as **a path**,
-so a built mesh would have to be written first. `normalise.write_mesh` writes one from
-vertices and faces alone — so a panel loses the coordinates that put its drawing on it
-and a tray loses the groups that keep its rope rim cream. Those are the two things the
-last two lines added, dropped by the one call that could carry them out.
-
-So the geometry block ends one call short of being usable from the tool surface: a
-document can be read, reviewed, expanded, searched and built, and the only way to see
-the result is a test.
-
-What that call looks like is the open question. Writing a glb and pointing `bake` at it
-costs a round trip and reuses everything, including the cache key and provenance, which
-key off a file and its hash already. Handing the mesh to `bake` needs a second way in,
-because a render keys off an input's sha256 and a mesh in memory has none.
-
-The second is where a search wants to arrive: it rebuilds the geometry per sample, and
-writing each one is a file per sample.
-
 ## Block H — Proof on a real game
 
 ### §PW36 Cottony adopts it without a fork

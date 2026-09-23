@@ -530,3 +530,87 @@ def test_the_panel_reads_back_as_a_drawing_and_not_as_an_outline():
     assert "booster_tray.drawn.png" in said
     assert "by its own alpha" in said
     assert said.count("booster_tray.drawn.png") == 1, "said once, not twice"
+
+
+# -- from a declaration to a file the rest of the plugin reads (§PW69) -----------------
+
+
+def test_a_declaration_writes_itself_where_bake_can_take_it(tmp_path):
+    """The call the block ended one short of: `bake` takes a path, not a mesh."""
+    solving()
+    found = B.write(
+        G.read("star.toml", root=COTTONY), tmp_path / "star.glb", root=COTTONY
+    )
+    written = Path(found["artefact"])
+    assert written.is_file()
+    assert written.stat().st_size > 0
+    # And it is the shape that was built, measured on what survives the trip. glTF
+    # stores triangles, so the n-gons a build makes come back cut up — 86 faces out and
+    # 156 back for this star — which is the format's and not a difference in the shape.
+    from polyweave.normalise import read_mesh
+
+    back = read_mesh(written)
+    assert len(back["faces"]) >= found["report"]["nodes"][0]["faces"]
+    assert len(back["vertices"]) > 0
+    low = np.asarray(back["vertices"], dtype=float).min(axis=0)
+    high = np.asarray(back["vertices"], dtype=float).max(axis=0)
+    assert (high - low).max() == pytest.approx(
+        max(np.ptp(np.asarray(found["output"]["vertices"], dtype=float), axis=0)),
+        rel=0.01,
+    )
+
+
+def test_the_coordinates_a_panel_worked_out_survive_the_file(tmp_path):
+    """They were dropped by the one call that could carry them out."""
+    solving()
+    import bpy
+
+    from polyweave.render import blender
+
+    found = B.write(
+        G.read("panel.toml", root=COTTONY), tmp_path / "panel.glb", root=COTTONY
+    )
+    blender.reset()
+    bpy.ops.import_scene.gltf(filepath=found["artefact"])
+    obj = next(o for o in bpy.context.scene.objects if o.type == "MESH")
+    assert len(obj.data.uv_layers) == 1, "the drawing still knows where it goes"
+
+
+def test_both_of_a_trays_materials_survive_the_file(tmp_path):
+    """A cream rope rim against a cushion face, which a join alone used to flatten."""
+    solving()
+    import bpy
+
+    from polyweave.render import blender
+
+    found = B.write(
+        G.read("tray.toml", root=COTTONY), tmp_path / "tray.glb", root=COTTONY
+    )
+    blender.reset()
+    bpy.ops.import_scene.gltf(filepath=found["artefact"])
+    obj = next(o for o in bpy.context.scene.objects if o.type == "MESH")
+    assert {m.name for m in obj.data.materials} == {"cushion", "rope"}
+    assert len({p.material_index for p in obj.data.polygons}) == 2, "both are used"
+
+
+def test_a_declaration_a_colour_was_written_for_reaches_the_shader(tmp_path):
+    """`colour = "#F2E4D0"` is what a person authors and `base_color` is the socket."""
+    from polyweave.render import blender
+
+    assert blender.as_inputs({"colour": "#FF8000"}) == {
+        "base_color": [1.0, pytest.approx(0.50196, abs=1e-4), 0.0, 1.0]
+    }
+    assert blender.as_inputs({"roughness": 0.62}) == {"roughness": 0.62}
+    assert blender.as_inputs({"colour": "#00FF0080"})["base_color"][3] == pytest.approx(
+        0.50196, abs=1e-4
+    )
+
+
+def test_a_colour_nothing_can_read_is_refused(tmp_path):
+    from polyweave.errors import PolyweaveError
+    from polyweave.render import blender
+
+    with pytest.raises(PolyweaveError) as caught:
+        blender.as_inputs({"colour": "#12345"})
+    assert caught.value.code == "render.unknown-material-field"
+    assert "#RRGGBB" in caught.value.remedy

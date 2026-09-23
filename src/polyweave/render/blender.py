@@ -466,6 +466,46 @@ def _socket(bsdf: Any, key: str) -> Any:
     return None
 
 
+#: What a declaration calls a surface property, against what the shader calls it. The
+#: two vocabularies are both deliberate — `docs/specs/geometry.md` writes `colour` and a
+#: hex string because a person authors that file, and the renderer's names are Blender's
+#: own sockets discovered at runtime — so the translation lives here, on the boundary,
+#: for the same reason the Z-up conversion does (§PW69).
+NAMED = {"colour": "base_color", "color": "base_color"}
+
+
+def as_inputs(stated: dict) -> dict:
+    """A declaration's material, in the words the shader answers to.
+
+    A name the shader already has passes through, so a project that writes `roughness`
+    or `metallic` needs no table entry and a project that writes `colour` gets one.
+    """
+    return {NAMED.get(key, key): _colour(value) for key, value in stated.items()}
+
+
+def _colour(value: Any) -> Any:
+    """`#F2E4D0` as the four floats a socket holds, and anything else untouched."""
+    if not isinstance(value, str) or not value.startswith("#"):
+        return value
+    digits = value[1:]
+    if len(digits) not in (6, 8):
+        raise PolyweaveError(
+            "render.unknown-material-field",
+            f"{value!r} is not a colour this reads",
+            "write it as #RRGGBB or #RRGGBBAA, or as the numbers themselves",
+        )
+    pairs = [digits[at : at + 2] for at in range(0, len(digits), 2)]
+    try:
+        channels = [int(one, 16) / 255.0 for one in pairs]
+    except ValueError as exc:
+        raise PolyweaveError(
+            "render.unknown-material-field",
+            f"{value!r} is not a colour this reads",
+            "write it as #RRGGBB or #RRGGBBAA, in hexadecimal",
+        ) from exc
+    return channels if len(channels) == 4 else [*channels, 1.0]
+
+
 def _coerce(value: Any, socket: Any) -> Any:
     if isinstance(value, list | tuple):
         wide = list(value)

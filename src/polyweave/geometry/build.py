@@ -238,6 +238,40 @@ def build(
     }
 
 
+def write(
+    document: dict,
+    out: str | Path,
+    *,
+    root: str | Path = ".",
+    manifold: bool = False,
+    **given: Any,
+) -> dict:
+    """Build a declaration and put it where the rest of the plugin can reach it.
+
+    The call the block ended one short of (§PW69). A document could be read, reviewed,
+    expanded, searched and built, and the only way to see the result was a test: `bake`
+    takes its model as a path, so a mesh in memory had nowhere to go.
+
+    **A file rather than a handle, and that is the decision.** The cache key and the
+    provenance record key off a file and its hash already, and both are the discipline
+    this plugin is built on — a mesh in memory has no sha256 until something defines a
+    canonical serialisation for it, which is a second format to keep true. So a build
+    writes what it made, `bake(model=…)` takes it unchanged from there, and a search
+    that rebuilds per sample pays one file per sample beside the render it was going to
+    pay for anyway.
+
+    The materials go with it, because a group names one and a file needs the thing.
+    """
+    from ..normalise import write_mesh
+
+    made = build(document, root=root, manifold=manifold, **given)
+    where = Path(out)
+    if not where.is_absolute():
+        where = Path(root).resolve() / where
+    written = write_mesh(made["output"], where, materials=document["materials"])
+    return {**made, "artefact": str(written)}
+
+
 def _worn(node: dict, made: dict, built: dict) -> list[dict]:
     """Which faces of this mesh wear which material (§PW67).
 

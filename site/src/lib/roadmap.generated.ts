@@ -31,18 +31,11 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
-  { block: "G", title: "Geometry as a declaration", open: 1 },
+  { block: "G", title: "Geometry as a declaration", open: 0 },
   { block: "H", title: "Proof on a real game", open: 2 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW69",
-    block: "G",
-    symptom: "a declaration that has been built reaches no renderer and no file, so the only way to see one is a test",
-    why: "bake takes a model as a path and write_mesh keeps only vertices and faces, so the one call that could carry a build out drops its coordinates and its materials.",
-    deps: [],
-  },
   {
     id: "PW57",
     block: "H",

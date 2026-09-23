@@ -350,13 +350,34 @@ vocabulary, and it gets filed as a roadmap line rather than copied a fourth time
 ## What a build returns
 
 ```python
-from polyweave.geometry import build
+from polyweave.geometry import build, write
 
 made = build(document, root=".", board=8)   # parameters given here reach the shape
 made["output"]      # the mesh the document names
 made["built"]       # every node's mesh, by id
 made["report"]      # what came out, per node
+
+out = write(document, "assets/tray.glb", root=".")   # the same, put on disk
+out["artefact"]     # what `bake(model=…)` takes from here
 ```
+
+**A build ends in a file, and that is a decision** (§PW69). `bake` takes its model as a
+path, and the cache key and the provenance record key off a file and its hash already — a
+mesh in memory has no sha256 until something defines a canonical serialisation for it,
+which would be a second format to keep true. So a build writes what it made and the rest
+of the plugin takes it unchanged, and a search that rebuilds per sample pays one file per
+sample beside the render it was going to pay for anyway.
+
+Everything the build worked out goes with it: the texture coordinates, and a material per
+group built from the document's own `[materials]` table. What does not survive is the
+n-gons — glTF stores triangles, so an 86-face star comes back as 156. That is the file
+format and not a difference in the shape.
+
+**`colour` is translated on the boundary.** A declaration writes `colour = "#F2E4D0"`
+because a person authors that file; the renderer's names are Blender's own shader sockets,
+discovered at runtime, where it is `base_color` and four floats. `blender.as_inputs` maps
+the one onto the other and passes through every name the shader already has, in the same
+place and for the same reason the Z-up conversion happens there.
 
 A mesh, and a report — because a shape that can only be checked by looking at a render is
 one whose construction errors are found in the expensive place (§PW33). Two wrong
