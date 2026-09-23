@@ -130,3 +130,157 @@ Cottony's own work. The palette and the fonts are the same. What counts is what 
 of this block names, and the gate may report a fraction below one for as long as it says
 what is left and why. Two of those are already answered in `docs/specs/adoption.md`: the
 fetch ledger replays, and the motion Cottony has is two frames and no clip.
+
+### §PW76 The stars are the asset that moves first
+
+PW36 and PW53 were both set aside waiting for the same thing: which asset moves first,
+and what its before-side baseline is. The four progress stars are the answer.
+
+They are the smallest port that is still a real one. `star_model.builder` makes the
+geometry from code, so no mesh enters Git, nothing is fetched and nothing is paid for —
+which keeps this clear of the constraint that nothing here spends money on the agent's
+own judgement. What is hand-found is the rig alone, and it is three numbers:
+`light=1.85`, `ambient=0.42`, `key=0.14`, with a `plate` that sets the resolution.
+
+What makes them worth being first rather than merely easy is that they are four sprites
+off one geometry, in two hues at two sizes. An exposure fitted to one picture would pass
+on one and fail on the other three, so a port that holds is evidence the search
+generalises across a family rather than having been fitted.
+
+The bake file already says why the rig is shaped this way — a star's whole read is which
+facet catches the light, which is why the ambient is dropped and the key narrowed. That
+sentence is the bar, and stating it as something measurable is the work.
+
+The baseline is cheap: re-bake the four before anything changes and record their
+medians.
+
+### §PW77 A bar that was measured and then left in a comment
+
+The map's props are the family with the best-recorded target in the project and no way
+to act on it. `scenery_mushroom` carries this, verbatim: tuned against the drawn sprite
+on its cap and stem medians, 223,118,87 and 215,197,173 against 225,127,83 and
+214,198,174. Somebody measured the thing the render had to match, wrote it down, and the
+only reader is a person.
+
+That makes them the right second family. The work is not finding a bar — it is moving
+one that already exists into something a search can aim at, which is a smaller step than
+inventing the bar and the port at once.
+
+Four of the five are built from the outlines make_assets.py draws them with, so they
+carry the stars' property of costing nothing to re-render. The fifth, the mushroom, is
+fetched, and it is here rather than with the boosters because it shares the other four's
+settings exactly: one exposure, one gloss, one shadow, differing only in how much of the
+canvas each drawing spans. A port that holds across a built prop and a fetched one at
+the same numbers is worth more than one that only holds across four siblings.
+
+What it must not lose is the reason the numbers exist: each prop lands on a sheet beside
+drawn siblings, and reading as the odd one out is the failure.
+
+### §PW78 Framing that answers to a number the game already holds
+
+The board tray and the booster tray are the two assets whose framing is not a matter of
+taste. `board.gd` addresses a cell at `CELL := 112`, so the render has to put its wells
+on that grid or the game draws pieces a few pixels off their homes. The bake answers
+with `plate`: a world rectangle given outright, which replaces the fitting that `fill`
+and `size` do and sets one unit to one pixel.
+
+That is a different kind of hand-tuning from the stars' exposure, and it is why these
+two come after the families where the only loose thing was light. An exposure that is
+slightly wrong makes a picture somebody may accept. A plate that is slightly wrong makes
+a board that does not line up, and the failure is structural rather than a matter of
+looking right.
+
+Both are built rather than fetched — the booster tray is a cushion inflated from the
+lobed card drawn beside it, the board tray a grid that could not come from a service. So
+the geometry is already a declaration and what has to move is the framing contract.
+
+The thing to keep is that the number comes from the game, not from the render. A port
+that lets the picture choose its own rectangle has lost the point.
+
+### §PW79 The simplest rig with the hardest bar
+
+The brand marks are the one family where the rig is nearly nothing and the criterion is
+nearly everything. Two blends produce three sprites — the Cottony logo is baked twice,
+large for the title and small for the board's corner, because a sprite for each beats
+one scaled for both — and the whole of the hand-tuning is `light`, at 1.0 and 1.18.
+
+They are deliberately not first. A family with one constant looks like the easy port,
+and it is, right up to the point of saying what a correct render is. A wordmark is type:
+it either reads or it does not, and the failure is not a median drifting but a letter
+losing its edge. Every other family in this list can be stated as a colour and a
+contrast against something drawn; this one cannot, and taking it early would mean
+inventing an acceptance vocabulary under the pressure of the first port.
+
+By the time the stars, the props and the trays have moved, three bars exist that were
+written to be read rather than admired, and the question here is narrower: what does a
+search aim at when the subject is a shape that must stay legible.
+
+The marks also leave markings off — a rope round the silhouette of a word is not a thing
+this style has.
+
+### §PW80 What a fetched object arrives wearing
+
+The boosters are the first family whose hand-tuning is not about light at all. The
+hammer and the wand came back from the service, and each needed three separate
+corrections that no exposure search would have found.
+
+The service painted edges it saw: a dashed dark line round the hammer's head, a dark rim
+on the wand's star, both of which rule 2 forbids on candy and neither of which a prompt
+saying so prevented. `scrub` takes them back out of the texture before rendering. The
+hammer also returned standing upright where the drawing leans it, so it carries a roll
+of -22 degrees, and leaning it widens its box, so its fill had to go up to 0.72 to keep
+the drawing's size. Each of those three is a consequence of the one before it.
+
+The shuffle ball is here because it is the counter-example: it is built rather than
+fetched, after the service returned a ring instead of a ball. Having both in one task is
+the point — what a fetched object needs and what a built one does not is the comparison
+this family exists to make.
+
+The risk being carried is that a correction found for one object is a correction fitted
+to one object. A port worth having states what the correction is for, not the number it
+landed on.
+
+### §PW81 The five that are looked at, and go last
+
+The friends and the mascot carry more hand-found numbers than the other seventeen
+sprites together, and they are also the ones a player looks at. Both facts point the
+same way: last.
+
+Nothing here is only an exposure. The mesh is dressed in cloth drawn in Python and
+projected from the camera, because the service's own texture did not read as cotton. The
+face is composited on afterwards, because a sculpted face comes back as dents that shade
+and never read as eyes. The mascot needs its sculpted face taken back out first at 0.9,
+where 1.0 flattens the cheek's own light; it arrives in 34,391 pieces, so a dust
+threshold of 0.01 keeps the head and the lower body while dropping the tongue inside its
+open mouth. Its face centre was solved rather than chosen: measured at 0.444 of the
+height, then moved up by 0.09 so the mesh's cavity becomes the inside of the mouth we
+draw.
+
+The lean frames are the same mesh squashed to 0.93 and re-rendered rather than scaled,
+so the light stays where the light is while the body moves under it.
+
+Every earlier family in this list is a rehearsal for this one. If the search cannot hold
+here, the honest outcome is that these five stay hand-tuned and the rig shrinks around
+them rather than disappearing.
+
+### §PW82 The rig has to actually go
+
+This is the task PW53's objection was about. Setting it aside said that one asset moving
+leaves bake_model.py standing for the rest, so the rig the plugin exists to remove is
+still the thing that runs — and that stays true of two families, or five. It stops being
+true only when the file is gone.
+
+So the sequence needs an end that is checkable rather than assumed. After PW76 through
+PW81 there should be no `tools/art/bake_model.py`, nothing importing it, and every
+sprite under docs/design/art/ produced by the plugin. Until then Cottony has two routes
+to the same picture, and the older one keeps working, which is exactly how a replaced
+rig survives its replacement.
+
+It is filed separately rather than folded into the last family because the failure it
+guards against is not any one port going wrong. It is six ports going right and the file
+remaining, with a handful of constants nobody moved and no reason left to look at them.
+
+If a family turns out not to port — the friends and the mascot are the candidates — then
+this is where that is recorded honestly: what still runs by hand, and why the rig shrank
+instead of disappearing. An outcome worth having, stated, beats the same outcome
+unstated.

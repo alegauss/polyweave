@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 3 },
+  { block: "H", title: "Proof on a real game", open: 10 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -56,6 +56,55 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent",
     why: "The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question.",
     deps: ["PW57"],
+  },
+  {
+    id: "PW76",
+    block: "H",
+    symptom: "Cottony's four progress stars are lit by three constants found by hand, and no search sees them",
+    why: "star_model builds the geometry from code, so the rig is the only hand-tuned part: the smallest honest port, and one that has to hold across two hues and two sizes.",
+    deps: [],
+  },
+  {
+    id: "PW77",
+    block: "H",
+    symptom: "the map's five candy props match a drawn sprite that exists only as medians in a comment",
+    why: "The bar was measured and written in prose, so nothing can read it, and the sixth prop is fetched where four are built.",
+    deps: ["PW76"],
+  },
+  {
+    id: "PW78",
+    block: "H",
+    symptom: "the two trays are framed by a world rectangle written out per asset so the game's grid lands on it",
+    why: "One unit has to be one pixel because board.gd addresses a cell at CELL := 112, and a render fitted to its own bounds misses that grid.",
+    deps: ["PW77"],
+  },
+  {
+    id: "PW79",
+    block: "H",
+    symptom: "the three brand marks are exposed by a hand-found light and nothing states what the type should read as",
+    why: "Two blends and one constant each is the least machinery of any family, and the acceptance is the hardest to put a number on.",
+    deps: ["PW78"],
+  },
+  {
+    id: "PW80",
+    block: "H",
+    symptom: "the three booster objects each needed a scrub, a roll and a fill found by hand after the service returned them",
+    why: "A fetched mesh faces wherever it was left and keeps the marks the service painted, and rule 2 forbids those on candy.",
+    deps: ["PW79"],
+  },
+  {
+    id: "PW81",
+    block: "H",
+    symptom: "the two friends, their lean frames and the mascot take eleven constants apiece and nothing declares one",
+    why: "Cloth, face placement, unsculpt and dust were each solved by hand on the assets a player looks at most, so they move last.",
+    deps: ["PW80"],
+  },
+  {
+    id: "PW82",
+    block: "H",
+    symptom: "nothing takes bake_model.py out once its assets have moved, so the rig outlives its own replacement",
+    why: "Each family porting leaves the file smaller and still running, and two live paths to one sprite is the state this whole sequence exists to end.",
+    deps: ["PW81"],
   },
 ];
 
