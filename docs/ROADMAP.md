@@ -14,11 +14,12 @@
 
 ## Block G — Geometry as a declaration
 
+- 📋 **PW69** (deps: —) **a declaration that has been built reaches no renderer and no file, so the only way to see one is a test** — bake takes a model as a path and write_mesh keeps only vertices and faces, so the one call that could carry a build out drops its coordinates and its materials. → §PW69
+
 ## Block H — Proof on a real game
 
-- ⏳ **PW54** (deps: PW50 ✅, PW60 ✅, PW67 ✅, PW68 ✅) **a Cottony shape is a bmesh program that exists only inside a bake, so nothing can read, diff or search it** — The drawn panels are cloth.cushion, which is a drawing's alpha blurred into a height field on a grid, carrying the UVs that make it its own face. → §PW54
 - 📋 **PW57** (deps: PW53 ⏸) **every Cottony look gate restates its own floor, so no asset has a bar a search can aim at** — Five check scripts measure after the render is spent, which is a verdict and never a target, and a threshold moved in one of them is invisible to the rest. → §PW57
-- 📋 **PW59** (deps: PW53 ⏸, PW54 ⏳, PW55 ✅, PW56 ⏸, PW57, PW58 ✅) **nothing says how much of Cottony still does its own version of what the plugin does** — Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion. → §PW59
+- 📋 **PW59** (deps: PW53 ⏸, PW54 ✅, PW55 ✅, PW56 ⏸, PW57, PW58 ✅) **nothing says how much of Cottony still does its own version of what the plugin does** — Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion. → §PW59
 
 ## Done when — PW36
 
@@ -27,17 +28,6 @@
   paid service and the four engine captures each pass the check the existing pipeline
   passes, against a before-side baseline recorded before that piece moved. A piece left
   behind is named, with what it needed.
-
-## Done when — PW54
-
-- **Every shape those two scripts build is a declaration that builds here** The tray and
-  the star are done: tests/fixtures/cottony/*.toml build through geometry.build, at the
-  arithmetic their own constants do. What is left is the panels, which are cloth.cushion
-  inflating a drawn PNG rather than composing primitives.
-- **A ported model keeps both its materials all the way to a render** The tray is a
-  cream rope rim on a cushion face, and the join that makes it one output keeps one
-  material or none (§PW67). Checked by reading the two colours off what a build returns,
-  rather than off the document that stated them.
 
 ## Non-goals
 

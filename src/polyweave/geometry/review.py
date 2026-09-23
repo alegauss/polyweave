@@ -71,7 +71,16 @@ def _outline_words(stated: Any) -> str:
 def _says(node: dict, instance: dict, materials: dict | None = None) -> str:
     """One node, in words: what it is, before anything about how many."""
     op = node["op"]
-    skip = ("id", "op", "material", "repeat", "outline", "rect", *refers_to(node))
+    skip = (
+        "id",
+        "op",
+        "material",
+        "repeat",
+        "outline",
+        "rect",
+        "drawing",
+        *refers_to(node),
+    )
     rest = _fields(instance, skip)
     takes = refers_to(node)
 
@@ -91,7 +100,13 @@ def _says(node: dict, instance: dict, materials: dict | None = None) -> str:
     elif op == "primitive":
         what = f"a {instance.get('kind', 'cube')}"
     elif op == "inflate":
-        what = f"{_outline_words(instance.get('outline'))}, given volume"
+        # Two profiles, and which one it gets is worth saying: an outline swells from
+        # its edge, a drawing from its own alpha (§PW68).
+        what = (
+            f"{instance['drawing']}, given volume by its own alpha"
+            if instance.get("drawing")
+            else f"{_outline_words(instance.get('outline'))}, given volume"
+        )
     elif op == "carve":
         what = (
             f"{takes[0]} with {takes[1]} cut out of it" if len(takes) > 1 else "a cut"

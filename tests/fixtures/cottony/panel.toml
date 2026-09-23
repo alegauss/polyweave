@@ -1,0 +1,31 @@
+name    = "booster_tray"
+version = 1
+output  = "panel"
+
+# `tools/art/bake_model.py`'s panel route, as a declaration. The model states
+# `plate = (0, 0, 672, 244)` and `cloth.cushion(booster_tray.drawn.png)`: one unit is one
+# pixel of that drawing, so the render is the drawing's own size and the game centres it
+# where it always has.
+[params]
+wide  = 672                      # the drawing's own width, and the world it covers
+short = 244                      # its shorter side, which loft and the blur are shares of
+loft  = 0.45                     # how far the middle stands proud
+blur  = 0.40                     # what turns the alpha into stuffing
+
+# Both defaults were read off a render: at 0.10 and 0.06 the stuffing only rounded the rim
+# and the cushion read as the flat card it was drawn as.
+
+[materials.cloth]
+colour    = "#E0D3C1"
+roughness = 0.62
+
+# **The drawing, not an outline traced from it.** A traced outline knows only where the
+# panel stops; the alpha carries what is inside it, which is what gives the face its form.
+[[nodes]]
+id        = "panel"
+op        = "inflate"
+material  = "cloth"
+drawing   = "booster_tray.drawn.png"
+thickness = "short * loft"
+size      = "wide"
+soften    = "blur"

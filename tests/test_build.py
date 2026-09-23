@@ -497,3 +497,36 @@ def test_inflate_over_an_outline_still_swells_from_its_edge(tmp_path):
     )
     points = np.asarray(found["output"]["vertices"], dtype=float)
     assert np.ptp(points[:, 2]) == pytest.approx(6.0, rel=0.05), "a pillow, both ways"
+
+
+def test_cottonys_panel_builds_from_a_declaration():
+    """§PW54's other half: the route that is a drawing rather than a composition.
+
+    `bake_model.py` states `plate = (0, 0, 672, 244)` and hands the model a builder made
+    from `booster_tray.drawn.png`. One unit is one pixel of that drawing, so the panel
+    comes out the drawing's own size.
+    """
+    found = B.build(G.read("panel.toml", root=COTTONY), root=COTTONY)
+    made = found["output"]
+    check_mesh(made)
+    points = np.asarray(made["vertices"], dtype=float)
+    assert np.ptp(points[:, 0]) == pytest.approx(671.0, abs=2.0)
+    assert np.ptp(points[:, 1]) == pytest.approx(243.0, abs=2.0)
+    # The loft is a share of the shorter side, which is the drawing's 244.
+    assert points[:, 2].max() == pytest.approx(244 * 0.45, rel=0.01)
+
+
+def test_the_panel_wears_the_drawing_that_shaped_it():
+    """Which is the whole of what a drawn panel is, and what it had no way to say."""
+    found = B.build(G.read("panel.toml", root=COTTONY), root=COTTONY)
+    made = found["output"]
+    assert len(made["uv"]) == len(made["vertices"])
+    assert made["groups"] == [{"material": "cloth", "faces": [0, len(made["faces"])]}]
+
+
+def test_the_panel_reads_back_as_a_drawing_and_not_as_an_outline():
+    """The two profiles are different constructions, so the read-back says which."""
+    said = review.describe(G.read("panel.toml", root=COTTONY))["reads"][0]
+    assert "booster_tray.drawn.png" in said
+    assert "by its own alpha" in said
+    assert said.count("booster_tray.drawn.png") == 1, "said once, not twice"

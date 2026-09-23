@@ -22,6 +22,12 @@ buys nothing the 8 MB hammer does not, so it is not here.
 | `meshy.lock.json` | 5 KB | §PW55: five purchases, 130 credits, and the hashes nothing ever compared |
 | `friend_cloud.png` | 59 KB | §PW58: the standing frame of the only motion the game has |
 | `friend_cloud_lean.png` | 57 KB | §PW58: the same mesh re-rendered at 93% of its height |
+| `booster_tray.drawn.png` | 168 KB | §PW54: the drawing a panel is both shaped by and dressed in |
+
+Three `.toml` files sit beside them — `star.toml`, `tray.toml` and `panel.toml`. Those are
+not copies: they are Cottony's three model routes stated in this format, with that
+project's own numbers, and they are here because "the vocabulary can express it" is a
+claim only a real model tests.
 
 The settle pair is here because it is **the whole of Cottony's motion**, and because the
 two frames carry a number rather than only a picture: the leaning silhouette is 186 px tall

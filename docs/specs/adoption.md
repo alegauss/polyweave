@@ -180,6 +180,34 @@ question about assets and every one of them is an asset — so `held` reports th
 
 A live fetch stays a person's call and is not what this covers.
 
+## Three model routes, stated rather than programmed
+
+Binds **PW54**. `tools/art/solid.py` is 283 lines of bmesh primitives that three scripts
+import, and a shape that exists only inside a bake cannot be read, diffed or searched.
+`tests/fixtures/cottony/star.toml`, `tray.toml` and `panel.toml` are those three routes as
+declarations, with that project's own numbers as parameters a search can reach.
+
+They are here because the vocabulary being able to express a real model is a claim only a
+real model tests, and it turned out to be four ops short. Reading the scripts against the
+format found every one of them: a star could not be asked for with a point count (§PW64);
+a rim between two rounded rectangles had no op (§PW65); a crowned star reached 82 units
+past its own silhouette (§PW66); a model in two materials came back carrying neither
+(§PW67); and a drawn panel had nowhere to say where its picture goes (§PW68). Each was
+small, and none was visible until a real shape was written down.
+
+What each route exercises is different, which is why all three are kept:
+
+| Route | What it proves |
+|---|---|
+| `star.toml` | One `crowned` node over a concave outline, at 51.2 deep with a 66.56 crown |
+| `tray.toml` | Four parts in two materials, 2,599 faces, joined and carved |
+| `panel.toml` | A drawing given volume by its own alpha, wearing itself, at 672 by 244 |
+
+The conventions are restated rather than carried across. `tray_model.py` works in image
+coordinates turned on their side and flips y into Blender's z on every ring; an outline
+here is a closed ring in XY and a solid extrudes it along Z, so the flip happens once, in
+the reading.
+
 ## What the motion block met when it reached a real game
 
 Binds **PW58**. Block F shipped a skeleton fitted to a mesh, a clip authored as text and a

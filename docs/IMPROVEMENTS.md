@@ -14,6 +14,30 @@
 
 ## Block G — Geometry as a declaration
 
+### §PW69 A block that ends one call short of the tool surface
+
+`geometry.build` returns a mesh, the meshes of every node, and a report. Nothing under
+`src/` calls it. The only consumers are the tests written alongside it, and a
+declaration that has been built has nowhere to go from there.
+
+Two doors are nearly there and neither fits. `render.bake` takes `model=` as **a path**,
+so a built mesh would have to be written first. `normalise.write_mesh` writes one from
+vertices and faces alone — so a panel loses the coordinates that put its drawing on it
+and a tray loses the groups that keep its rope rim cream. Those are the two things the
+last two lines added, dropped by the one call that could carry them out.
+
+So the geometry block ends one call short of being usable from the tool surface: a
+document can be read, reviewed, expanded, searched and built, and the only way to see
+the result is a test.
+
+What that call looks like is the open question. Writing a glb and pointing `bake` at it
+costs a round trip and reuses everything, including the cache key and provenance, which
+key off a file and its hash already. Handing the mesh to `bake` needs a second way in,
+because a render keys off an input's sha256 and a mesh in memory has none.
+
+The second is where a search wants to arrive: it rebuilds the geometry per sample, and
+writing each one is a file per sample.
+
 ## Block H — Proof on a real game
 
 ### §PW36 Cottony adopts it without a fork
@@ -55,32 +79,6 @@ before it moves. A comparison with one side recorded is refused, and rightly.
 
 Set aside: it needs a person three times over. The trap a hand conversion walks into is
 in `docs/specs/adoption.md`.
-
-### §PW54 A shape that exists only inside a bake cannot be read, diffed or searched
-
-`tools/art/solid.py` is 283 lines of bmesh primitives working in image coordinates
-turned on their side, imported by `tray_model.py`, `star_model.py` and any `builder` a
-`Model` carries. It exists for a good reason from its own docstring: the second asset
-needed the same four operations as the first, and a second copy of a bevel that took
-three attempts is a copy that will drift.
-
-That reasoning now applies one level up. `solid.carve` holds the MANIFOLD lesson —
-Blender's EXACT boolean returns an empty mesh with no error at all once the object it
-cuts has been bevelled, measured at 2402 faces against 0 — as a second copy of a rule
-this plugin also carries.
-
-A program is also not a thing anything can search. A declared shape has ranges a solver
-moves; a builder has constants somebody edits and re-renders, and nothing measures
-whether the edit was an improvement.
-
-Two routes are in scope. The arithmetic models are a declaration each. The panels are
-`cloth.cushion`, and reading it says this line assumed wrongly: not an outline read off
-an image, but the alpha blurred into a height field on a grid, carrying the UVs that
-make the drawing its own face. `inflate` takes a drawing now, and the profile with it.
-
-A declaration builds now, and the star already does: `tests/fixtures/cottony/star.toml`
-is `star_model.py` stated rather than programmed. The vocabulary takes the tray's rim
-too, as a ring between two outlines. What is left is the tray itself and the panels.
 
 ### §PW56 Twelve runners, twelve ways to start Godot, and no check on what applied
 
