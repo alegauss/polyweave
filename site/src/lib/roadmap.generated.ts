@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 10 },
+  { block: "H", title: "Proof on a real game", open: 12 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -61,8 +61,8 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW76",
     block: "H",
     symptom: "Cottony's four progress stars are lit by three constants found by hand, and no search sees them",
-    why: "star_model builds the geometry from code, so the rig is the only hand-tuned part: the smallest honest port, and one that has to hold across two hues and two sizes.",
-    deps: [],
+    why: "One rig holding on all four once lights scale with the subject, then the stars bake through it and a person judges the after side.",
+    deps: ["PW84"],
   },
   {
     id: "PW77",
@@ -105,6 +105,20 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "nothing takes bake_model.py out once its assets have moved, so the rig outlives its own replacement",
     why: "Each family porting leaves the file smaller and still running, and two live paths to one sprite is the state this whole sequence exists to end.",
     deps: ["PW81"],
+  },
+  {
+    id: "PW84",
+    block: "H",
+    symptom: "a rig found on a 96 px star goes dark and flat on the same star at 192 px",
+    why: "Light power is stated in watts while the lights' size and distance scale with the subject, so a rig fitted at one size cannot hold at another.",
+    deps: [],
+  },
+  {
+    id: "PW85",
+    block: "H",
+    symptom: "a bake that declares the rectangle it covers answers with the rung's size, not the picture's",
+    why: "The answer is built from the plan's number before the declaration resized the frame, so a 96 px star is reported as 1024.",
+    deps: [],
   },
 ];
 

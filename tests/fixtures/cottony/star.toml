@@ -21,10 +21,15 @@ roughness = 0.22
 # outline a bevel wide enough to see eats its own geometry and leaves spiked burrs at
 # every tip, and the one shape whose silhouette has to stay exactly five even points is
 # the last one to round off. The crown does the work the bevel was being asked to do.
+#
+# Two things the first copy of this file got wrong, found porting it (§PW76): REACH is
+# half the star's width in the script, which fits the outline to a box, while `outer` is
+# a radius, and a star standing on two points is `outer * sin 72` either side of its
+# middle; and the script's star stands upright where this op's first point is along +x.
 [[nodes]]
 id       = "star"
 op       = "crowned"
 material = "candy_gold"
-outline  = { shape = "star", points = 5, outer = "px * reach", inner = "px * reach * inner" }
+outline  = { shape = "star", points = 5, rotation = 90, outer = "px * reach / 0.9511", inner = "px * reach * inner / 0.9511" }
 depth    = "px * depth"
 crown    = "px * crown"
