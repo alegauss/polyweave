@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 3 },
+  { block: "H", title: "Proof on a real game", open: 5 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -56,6 +56,20 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent",
     why: "The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question.",
     deps: ["PW57"],
+  },
+  {
+    id: "PW71",
+    block: "H",
+    symptom: "two runs of one capture with the same declared settings produce different bytes, and nothing says so",
+    why: "The record hashes the artefact and states the params, so a rerun landing on another animation frame writes a fresh sha256 under identical params and reads as a new result.",
+    deps: [],
+  },
+  {
+    id: "PW72",
+    block: "H",
+    symptom: "the provenance record's script path is absolute, so a record committed beside its artefact names one desk's drive",
+    why: "relative() rewrites the artefact and every input against the root, but `extra` merges straight into the record, so `script` never passes through it.",
+    deps: [],
   },
 ];
 

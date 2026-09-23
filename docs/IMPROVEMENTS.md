@@ -130,3 +130,52 @@ Cottony's own work. The palette and the fonts are the same. What counts is what 
 of this block names, and the gate may report a fraction below one for as long as it says
 what is left and why. Two of those are already answered in `docs/specs/adoption.md`: the
 fetch ledger replays, and the motion Cottony has is two frames and no clip.
+
+### §PW71 A capture that does not reproduce should say so, not read as a new result
+
+Cottony's four captures were run twice on one machine, at one commit, and compared
+against each other and against what is committed. `board` and `map` came out
+byte-identical both times. `card` was byte-identical between the two runs but differs
+from the committed copy in one 185x180 box: the plush friend's face, caught on a
+different frame of its blink. `strike` differs from the committed copy and from itself —
+48,306 pixels between run one and run two, peak 169 of 255, and the changed band is not
+even the same height twice.
+
+The cause is in the capture, not the plugin: `strike.gd` waits for the effect to appear
+rather than counting frames, deliberately, because a capture written to a frame number
+goes stale the first time the timing moves. What the plugin did about it is nothing.
+Both runs printed `OK`. Both wrote a record stating `locale=pt_BR` and
+`resolution=1080x1920`, and both wrote a different `artefact.sha256` under those
+identical params.
+
+So the record is not wrong, it is silent about the one thing it is positioned to catch.
+It already hashes the artefact, and a record already sits beside the artefact from last
+time. Comparing them costs a read.
+
+The plugin cannot make Godot deterministic and should not try. It can say "the same
+declared settings produced different bytes", which is the difference between a picture
+worth reviewing and a picture that is only noise.
+
+### §PW72 The one path in a record that is not made relative
+
+The record beside `docs/design/screenshot-strike.png` in Cottony reads `"script":
+"D:\\Git\\viglet\\cottony\\tools\\capture\\strike.gd"`, while two keys above it
+`artefact.path` reads `docs/design/screenshot-strike.png`. Both name files in the same
+checkout; one survives a clone and the other does not.
+
+The asymmetry is not a judgement that went the wrong way, it is a path that was never
+asked. `provenance.relative()` takes a path and the root and returns the posix spelling
+relative to it, falling back to the absolute only where the file genuinely lies outside
+it. `artefact` goes through it, and so does every `inputs` entry. But `build()` merges
+its `extra` mapping in raw — `record.update(extra)` — and `script` arrives only through
+`extra`, from `capture.run` and `engine.run`, which both hand over a resolved absolute
+path.
+
+It matters because these records are committed. They sit beside the artefact, and the
+artefact is a picture under `docs/design/` that gets reviewed. So the record is reviewed
+too, and it carries one machine's drive letter into the repository: churn on every desk
+that re-runs a capture, and one desk's layout published in a file nobody reads closely.
+
+Sending `script` through `relative()` is two lines. The open question is whether `extra`
+should be relativised key by key, or whether `build()` should stop accepting raw paths
+in `extra` at all.

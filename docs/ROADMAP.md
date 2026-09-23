@@ -19,6 +19,8 @@
 - 📋 **PW57** (deps: PW53 ⏸) **every Cottony look gate restates its own floor, so no asset has a bar a search can aim at** — Five check scripts measure after the render is spent, which is a verdict and never a target, and a threshold moved in one of them is invisible to the rest. → §PW57
 - 📋 **PW59** (deps: PW53 ⏸, PW54 ✅, PW55 ✅, PW56 ⏳, PW57, PW58 ✅) **nothing says how much of Cottony still does its own version of what the plugin does** — Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion. → §PW59
 - ⏳ **PW56** (deps: PW57) **twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent** — The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question. → §PW56
+- 📋 **PW71** (deps: —) **two runs of one capture with the same declared settings produce different bytes, and nothing says so** — The record hashes the artefact and states the params, so a rerun landing on another animation frame writes a fresh sha256 under identical params and reads as a new result. → §PW71
+- 📋 **PW72** (deps: —) **the provenance record's script path is absolute, so a record committed beside its artefact names one desk's drive** — relative() rewrites the artefact and every input against the root, but `extra` merges straight into the record, so `script` never passes through it. → §PW72
 
 ## Done when — PW36
 
