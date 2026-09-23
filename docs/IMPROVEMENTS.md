@@ -287,31 +287,6 @@ this is where that is recorded honestly: what still runs by hand, and why the ri
 instead of disappearing. An outcome worth having, stated, beats the same outcome
 unstated.
 
-### §PW91 Orient cannot find a lean
-
-Found starting on the boosters (§PW80). The service returned Cottony's hammer standing
-upright where its drawing leans it, and `bake_model.py` carries `roll=-22.0`, found by
-re-rendering. Leaning it widened its box, so its `fill` had to rise to 0.72 to keep the
-drawing's size. Both numbers answer one question, how does the drawing hold this object,
-and the drawing is on disk.
-
-`orient` answers the other half of that question already. It projects the mesh's front
-silhouette onto a grid for each of twenty-four ways round, scores each against the
-drawing's outline, and keeps the best, with no render spent. But the twenty-four are the
-mesh's own axes mapped onto the interface's, so every candidate is a multiple of ninety
-degrees, and a lean of twenty-two is not among them.
-
-The same projection answers the lean. After the best way round is chosen, turn it about
-the view axis across a range, one degree at a time, scoring the same IoU, and keep the
-best angle. It costs one rasterisation per degree and no renders. The size then follows
-from the drawing too: the leaned silhouette's box against the drawing's, which is what
-`fill` was standing in for.
-
-The lean is reported in the record beside the IoU, so the number that used to be found
-by hand is now a result a person can read and overrule.
-
-Test: a box leaned by a known angle is found at that angle within a degree.
-
 ### §PW92 Size axis and origin
 
 Starship, the second consumer, ingested a ship and four enemies. `normalise` makes every

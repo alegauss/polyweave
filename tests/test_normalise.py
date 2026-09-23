@@ -355,6 +355,33 @@ def test_the_orientation_it_chose_is_recorded_beside_the_drawing(tmp_path):
     assert np.linalg.det(np.array(found["rotation"])) == pytest.approx(1.0)
 
 
+def leaning(where, degrees):
+    """A tall rectangle drawn tilted, as Cottony's hammer is drawn tilted."""
+    from PIL import Image as PILImage
+    from PIL import ImageDraw
+
+    canvas = PILImage.new("RGBA", (40, 160), (0, 0, 0, 0))
+    ImageDraw.Draw(canvas).rectangle((5, 5, 34, 154), fill=(255, 255, 255, 255))
+    canvas.rotate(degrees, expand=True, resample=PILImage.NEAREST).save(where)
+    return where
+
+
+def test_a_lean_the_drawing_has_is_found_to_the_degree(tmp_path):
+    """§PW91: the quarter turns never reach 22 degrees, and the hammer needed that."""
+    found = normalise.orient(
+        cube(1.0, 5.0, 1.0), against=leaning(tmp_path / "lean.png", 20), alpha_floor=0.0
+    )
+    assert abs(found["lean"]) == pytest.approx(20, abs=1)
+    assert np.linalg.det(np.array(found["rotation"])) == pytest.approx(1.0)
+
+
+def test_a_drawing_that_stands_straight_gains_no_lean(tmp_path):
+    found = normalise.orient(
+        cube(1.0, 5.0, 1.0), against=leaning(tmp_path / "up.png", 0), alpha_floor=0.0
+    )
+    assert found["lean"] == 0
+
+
 def test_a_shape_the_drawing_cannot_tell_apart_is_said_so(tmp_path):
     """A cube against a square: every way round matches, and none of them is forward."""
     square = draw(tmp_path / "square.png", 40, 40)

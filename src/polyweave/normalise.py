@@ -26,6 +26,7 @@ pose is still a parameter — it just starts from a known frame.
 from __future__ import annotations
 
 import itertools
+import math
 from pathlib import Path
 from typing import Any
 
@@ -184,11 +185,12 @@ def choose(
     if limit:
         candidates = candidates[: int(limit)]
 
-    best, scored = None, []
+    best, scored, ranked = None, [], []
     for rotation in candidates:
         placed = normalise(subject, rotation=rotation, height=height)
         score = float(look(placed))
         scored.append(score)
+        ranked.append((score, placed["rotation"]))
         if best is None or score > best["score"]:
             best = {**placed, "score": score}
     if best is None:  # pragma: no cover - rotations always yields twenty-four
@@ -206,6 +208,9 @@ def choose(
             "guessing an orientation is a judgement this does not make",
         )
     best["tried"] = len(scored)
+    # Every way round with its score, best first, for a refinement that has to start
+    # from more than the winner (§PW91).
+    best["ranked"] = [rotation for _, rotation in sorted(ranked, key=lambda r: -r[0])]
     return best
 
 
@@ -386,14 +391,85 @@ def orient(
     judgement in the first place.
     """
     wanted = drawing(against, grid=grid, alpha_floor=alpha_floor)
-    found = choose(
-        subject,
-        lambda placed: overlap(project(placed, grid=grid), wanted),
-        height=height,
-    )
+
+    def look(placed):
+        return overlap(project(placed, grid=grid), wanted)
+
+    found = choose(subject, look, height=height)
+    found = lean(subject, found, look, height=height)
     found["against"] = str(against)
     found["silhouette_iou"] = found["score"]
     return found
+
+
+#: How far either way a drawing may lean its subject, in degrees. Past this the nearer
+#: quarter turn is the better start, and `choose` has already tried it.
+LEAN_REACH = 45
+
+#: The coarse pass's step, before the fine one closes in to a degree.
+LEAN_STEP = 3
+
+#: How many of the best ways round the lean is tried from. Cottony's hammer lies level
+#: at its best quarter turn and stands upright in its drawing, leaned 22 degrees: the
+#: lean is 68 from the winner and 22 from the runner-up.
+LEAN_FROM = 4
+
+
+def lean(subject: Any, found: dict, look: Any, *, height: float | None = 1.0) -> dict:
+    """How far the drawing tilts its subject, about the axis the camera looks along.
+
+    **The half `choose` cannot find** (§PW91). Its candidates are the mesh's own axes
+    turned by quarter turns, so a hammer its drawing leans by twenty-two degrees comes
+    back upright, and the lean used to be found by re-rendering. The same projection
+    answers it without a render: turn the chosen way round in the picture plane, score
+    each angle against the drawing, and keep the best. The size follows, because the
+    height is taken of the leaned silhouette.
+
+    A lean is kept only where it scores better than none. That is not the same as never
+    gaining one: a mesh whose proportions differ from its drawing's can fit the outline
+    a few degrees better tilted, measured at 3 on a box a quarter wider than its
+    drawing, which is why the lean is recorded where a person can read it.
+
+    It is tried from the few best ways round and not only the winner, because the way
+    round a drawing's subject stands in is the one it scores best at once leaned, which
+    upright it need not be.
+    """
+    starts = found.get("ranked") or [found["rotation"]]
+
+    def at(chosen: np.ndarray, degrees: int) -> dict:
+        turned = _about_view(degrees) @ chosen
+        placed = normalise(subject, rotation=turned, height=height)
+        return {**placed, "score": float(look(placed)), "lean": degrees}
+
+    best = {**found, "lean": 0}
+    for start in starts[:LEAN_FROM]:
+        chosen = np.asarray(start, dtype=float)
+        here = at(chosen, 0)
+        for degrees in range(-LEAN_REACH, LEAN_REACH + 1, LEAN_STEP):
+            here = _better(here, at(chosen, degrees)) if degrees else here
+        middle = here["lean"]
+        for degrees in range(middle - LEAN_STEP + 1, middle + LEAN_STEP):
+            if degrees and degrees % LEAN_STEP:
+                here = _better(here, at(chosen, degrees))
+        best = _better(best, here)
+    kept = {key: value for key, value in best.items() if key != "ranked"}
+    return {**found, **kept, "tried": found.get("tried")}
+
+
+def _better(one: dict, other: dict) -> dict:
+    return other if other["score"] > one["score"] else one
+
+
+def _about_view(degrees: float) -> np.ndarray:
+    """A turn in the picture plane: about Z, the way §6 fixes the camera as looking."""
+    angle = math.radians(float(degrees))
+    return np.array(
+        [
+            [math.cos(angle), -math.sin(angle), 0.0],
+            [math.sin(angle), math.cos(angle), 0.0],
+            [0.0, 0.0, 1.0],
+        ]
+    )
 
 
 # -- on arrival ------------------------------------------------------------------------
@@ -571,7 +647,7 @@ def ingest(
         "vertices": len(found["vertices"]),
         "faces": len(found["faces"]),
     }
-    for key in ("against", "silhouette_iou", "tried"):
+    for key in ("against", "silhouette_iou", "tried", "lean"):
         if key in found:
             record[key] = found[key]
     record["provenance"] = str(_record_derivation(record, found, root, bars))
