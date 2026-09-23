@@ -31,17 +31,24 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
-  { block: "G", title: "Geometry as a declaration", open: 0 },
+  { block: "G", title: "Geometry as a declaration", open: 1 },
   { block: "H", title: "Proof on a real game", open: 3 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
   {
+    id: "PW68",
+    block: "G",
+    symptom: "a built mesh has no texture coordinates, so a drawn panel is the right shape wearing nothing",
+    why: "A mesh here is vertices and faces, and Cottony's panel route builds a UV layer as it lifts the grid, because the drawing that shaped it is also its face.",
+    deps: [],
+  },
+  {
     id: "PW54",
     block: "H",
     symptom: "a Cottony shape is a bmesh program that exists only inside a bake, so nothing can read, diff or search it",
-    why: "The drawn panels are cloth.cushion inflating a PNG rather than a primitive, and a join still loses the two materials §PW67 names.",
-    deps: [],
+    why: "The drawn panels are cloth.cushion, which is a drawing's alpha blurred into a height field on a grid, carrying the UVs that make it its own face.",
+    deps: ["PW68"],
   },
   {
     id: "PW57",
