@@ -333,3 +333,52 @@ def test_a_rim_is_declarable_as_two_outlines(tmp_path):
 def test_a_ring_of_two_radii_is_still_declarable_the_short_way(tmp_path):
     found = B.build(one("annulus", outer=10.0, inner=4.0, depth=2.0), root=tmp_path)
     check_mesh(found["output"])
+
+
+def test_cottonys_tray_builds_from_a_declaration():
+    """§PW54: `tray_model.py` is 158 lines around four objects. This is those four.
+
+    Not the spec's simplified tray — the real one, with the side wall that shows the
+    tray's thickness below the face, the piped rope rim that is a ring and not a slab,
+    and the sixty-four seats pressed into the cushion.
+    """
+    solving()
+    found = B.build(G.read("tray.toml", root=COTTONY), root=COTTONY)
+    check_mesh(found["output"])
+    rows = {n["id"]: n for n in found["report"]["nodes"]}
+    assert rows["seat"]["instances"] == 64
+    assert rows["rim"]["op"] == "annulus", "a ring, not a cream lid over the whole tray"
+    assert found["report"]["warnings"] == []
+
+
+def test_the_tray_comes_out_the_arithmetic_its_own_constants_do():
+    """948 across: eight cells of 112, two pads of 44, less the 18 every box insets by.
+
+    And 22 taller than it is wide, which is the side wall showing below the face — the
+    whole reason the wall is a second object rather than a painted band.
+    """
+    solving()
+    found = B.build(G.read("tray.toml", root=COTTONY), root=COTTONY)
+    low, high = found["report"]["bounds"][:3], found["report"]["bounds"][3:]
+    assert high[0] - low[0] == pytest.approx(8 * 112 + 2 * 44 - 2 * 18)
+    assert high[1] - low[1] == pytest.approx(8 * 112 + 2 * 44 - 2 * 18 + 22)
+
+
+def test_the_seats_are_pitched_under_the_cells_the_game_places_pieces_in():
+    """A seat is under its cell by construction rather than by eye."""
+    solving()
+    found = B.build(G.read("tray.toml", root=COTTONY), root=COTTONY)
+    points = np.asarray(found["built"]["seat"]["vertices"], dtype=float)
+    centres = np.unique(np.round(points[:, 0] / 112.0).astype(int))
+    assert len(centres) >= 8, "eight columns, 112 apart"
+    # Each seat is inset 7 inside its own cell, so it is 98 across and not 112.
+    assert np.ptp(points[:, 0]) == pytest.approx(7 * 112 + 112 - 2 * 7, abs=1.0)
+
+
+def test_the_boolean_left_the_face_one_solid():
+    """The cutter stops short of the back, so each pocket keeps a floor."""
+    solving()
+    found = B.build(G.read("tray.toml", root=COTTONY), root=COTTONY)
+    rows = {n["id"]: n for n in found["report"]["nodes"]}
+    assert rows["tray"]["faces"] > rows["face"]["faces"], "the cut added the pockets"
+    assert rows["tray"]["faces"] > 0, "and did not silently return nothing"

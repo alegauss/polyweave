@@ -31,7 +31,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
-  { block: "G", title: "Geometry as a declaration", open: 1 },
+  { block: "G", title: "Geometry as a declaration", open: 2 },
   { block: "H", title: "Proof on a real game", open: 3 },
 ];
 
@@ -44,11 +44,18 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
+    id: "PW67",
+    block: "G",
+    symptom: "a model in two materials builds into one mesh that carries neither of them",
+    why: "A material sits on a node and a document names one output, so joining the parts is the only way to hand one back and the join keeps one material or none.",
+    deps: [],
+  },
+  {
     id: "PW54",
     block: "H",
     symptom: "a Cottony shape is a bmesh program that exists only inside a bake, so nothing can read, diff or search it",
-    why: "solid.py is 283 lines of geometry as code, and it carries a second copy of the bevelled-boolean lesson, which is a copy that will drift.",
-    deps: [],
+    why: "The drawn panels are cloth.cushion inflating a PNG rather than a primitive, and a join still loses the two materials §PW67 names.",
+    deps: ["PW67"],
   },
   {
     id: "PW57",

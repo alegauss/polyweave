@@ -15,12 +15,13 @@
 ## Block G — Geometry as a declaration
 
 - 📋 **PW66** (deps: —) **a crowned star reaches 82 units outside its own outline, and the op promises it will not** — The dome shrinks each ring along its miters, which point outward at a reflex corner, so the one outline whose whole point is being concave is the one it breaks. → §PW66
+- 📋 **PW67** (deps: —) **a model in two materials builds into one mesh that carries neither of them** — A material sits on a node and a document names one output, so joining the parts is the only way to hand one back and the join keeps one material or none. → §PW67
 
 ## Block H — Proof on a real game
 
-- 📋 **PW54** (deps: PW50 ✅, PW60 ✅) **a Cottony shape is a bmesh program that exists only inside a bake, so nothing can read, diff or search it** — solid.py is 283 lines of geometry as code, and it carries a second copy of the bevelled-boolean lesson, which is a copy that will drift. → §PW54
+- ⏳ **PW54** (deps: PW50 ✅, PW60 ✅, PW67) **a Cottony shape is a bmesh program that exists only inside a bake, so nothing can read, diff or search it** — The drawn panels are cloth.cushion inflating a PNG rather than a primitive, and a join still loses the two materials §PW67 names. → §PW54
 - 📋 **PW57** (deps: PW53 ⏸) **every Cottony look gate restates its own floor, so no asset has a bar a search can aim at** — Five check scripts measure after the render is spent, which is a verdict and never a target, and a threshold moved in one of them is invisible to the rest. → §PW57
-- 📋 **PW59** (deps: PW53 ⏸, PW54, PW55 ✅, PW56 ⏸, PW57, PW58 ✅) **nothing says how much of Cottony still does its own version of what the plugin does** — Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion. → §PW59
+- 📋 **PW59** (deps: PW53 ⏸, PW54 ⏳, PW55 ✅, PW56 ⏸, PW57, PW58 ✅) **nothing says how much of Cottony still does its own version of what the plugin does** — Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion. → §PW59
 
 ## Done when — PW36
 
@@ -29,6 +30,17 @@
   paid service and the four engine captures each pass the check the existing pipeline
   passes, against a before-side baseline recorded before that piece moved. A piece left
   behind is named, with what it needed.
+
+## Done when — PW54
+
+- **Every shape those two scripts build is a declaration that builds here** The tray and
+  the star are done: tests/fixtures/cottony/*.toml build through geometry.build, at the
+  arithmetic their own constants do. What is left is the panels, which are cloth.cushion
+  inflating a drawn PNG rather than composing primitives.
+- **A ported model keeps both its materials all the way to a render** The tray is a
+  cream rope rim on a cushion face, and the join that makes it one output keeps one
+  material or none (§PW67). Checked by reading the two colours off what a build returns,
+  rather than off the document that stated them.
 
 ## Non-goals
 
