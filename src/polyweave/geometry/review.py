@@ -177,6 +177,18 @@ def warn(document: dict, resolved: dict | None = None) -> list[str]:
     for name in sorted(set(document["params"]) - read):
         out.append(f"the parameter {name} is declared and no node reads it")
 
+    # An op nothing builds parses, expands and describes itself perfectly well, and
+    # then refuses at the build. Naming it here is the cheap half of the same answer,
+    # and it reads the builder's own table so the two cannot drift (§PW60).
+    from .build import BUILDS
+
+    for node in document["nodes"]:
+        if node["op"] not in BUILDS:
+            out.append(
+                f"{node['id']} has op {node['op']!r}, and nothing builds that, so this "
+                f"document describes a shape it cannot produce"
+            )
+
     # A node naming a material nothing declares keeps its colour and loses its fuzz,
     # and loses it quietly — which is the shape of mistake this module is for.
     declared = set(document["materials"])

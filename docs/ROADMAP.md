@@ -18,11 +18,9 @@
 
 ## Block G — Geometry as a declaration
 
-- 📋 **PW60** (deps: —) **a declaration is read, resolved and reported on, and nothing turns one into a mesh** — Every op function, the build order and the report that consumes the result all ship, and no call in the package produces the spec's own worked example. → §PW60
-
 ## Block H — Proof on a real game
 
-- 📋 **PW54** (deps: PW50 ✅, PW60) **a Cottony shape is a bmesh program that exists only inside a bake, so nothing can read, diff or search it** — solid.py is 283 lines of geometry as code, and it carries a second copy of the bevelled-boolean lesson, which is a copy that will drift. → §PW54
+- 📋 **PW54** (deps: PW50 ✅, PW60 ✅) **a Cottony shape is a bmesh program that exists only inside a bake, so nothing can read, diff or search it** — solid.py is 283 lines of geometry as code, and it carries a second copy of the bevelled-boolean lesson, which is a copy that will drift. → §PW54
 - 📋 **PW57** (deps: PW53 ⏸) **every Cottony look gate restates its own floor, so no asset has a bar a search can aim at** — Five check scripts measure after the render is spent, which is a verdict and never a target, and a threshold moved in one of them is invisible to the rest. → §PW57
 - 📋 **PW59** (deps: PW53 ⏸, PW54, PW55 ✅, PW56 ⏸, PW57, PW58 ✅) **nothing says how much of Cottony still does its own version of what the plugin does** — Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion. → §PW59
 

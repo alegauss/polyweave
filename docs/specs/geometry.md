@@ -294,23 +294,50 @@ vocabulary, and it gets filed as a roadmap line rather than copied a fourth time
 
 ## What a build returns
 
+```python
+from polyweave.geometry import build
+
+made = build(document, root=".", board=8)   # parameters given here reach the shape
+made["output"]      # the mesh the document names
+made["built"]       # every node's mesh, by id
+made["report"]      # what came out, per node
+```
+
 A mesh, and a report — because a shape that can only be checked by looking at a render is
 one whose construction errors are found in the expensive place (§PW33). Two wrong
 constructions of Cottony's tray seats each looked entirely reasonable while being written.
+
+**One table decides what an `op` is** (§PW60). `build.BUILDS` maps each op to the adapter
+that shapes a node's own fields into the call, and it is the only list of op names in the
+package that decides anything — the review reads it rather than keeping a second, so a
+document naming an op nothing builds is a **warning** from the structural read and a typed
+refusal at the build, and the two cannot disagree. An op nobody declared is
+`geom.unknown-op`, whose remedy names the declared ops and the `custom` door.
+
+**A repeated node's id names the whole set at build time too.** Sixty-four seats build as
+sixty-four meshes and are joined into the one mesh their id stands for, which is what lets
+`cutter = "seat"` be one boolean rather than sixty-four. **`at` places an instance and is
+applied last**, since it is the field a repeat varies — a seat differs from its sixty-three
+siblings in nothing but where it sits. `transform` is the exception, because `at` is its own
+argument there.
 
 ```json
 {
   "output": "tray",
   "params": { "cell": 112, "board": 8, "…": "…resolved values…" },
   "nodes": [
-    { "id": "face", "op": "plate", "faces": 1256, "instances": 1 },
-    { "id": "seat", "op": "prism", "faces": 2048, "instances": 64 },
-    { "id": "tray", "op": "carve", "faces": 9814, "instances": 1, "manifold": true }
+    { "id": "face", "op": "plate", "faces": 38, "instances": 1 },
+    { "id": "seat", "op": "prism", "faces": 2432, "instances": 64 },
+    { "id": "tray", "op": "carve", "faces": 56778, "instances": 1, "manifold": true }
   ],
   "bounds": [0, 0, 0, 928, 928, 6.0],
   "warnings": []
 }
 ```
+
+Those counts are **what this document actually produces**, measured once the builder existed
+rather than sketched before it did. The bounds are the arithmetic: eight cells of 112 with 16
+of padding either side, six deep.
 
 The report is readable before a render exists, and the per-node face count is what catches a
 boolean that silently returned nothing.

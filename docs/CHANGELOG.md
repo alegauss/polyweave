@@ -69,6 +69,7 @@
 - ✅ **PW33** **a shape cannot be reviewed without building it, so a wrong construction is found in the render** — A shape reads back in words before it is built, beside what is odd about it, and a built one reports a face count per node (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW34** **a declaration that cannot express a shape leaves no way back to code** — One node may be a project function, handed resolved arguments and its inputs as meshes, with its source hashed so a change to the code costs a rebuild (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW50** **a fuzzy surface cannot be declared at all, because shell texturing is a technique and no table holds one** — A material declares a fuzzy surface as a depth and a coarseness, and eight shell constants are derived from those two, so fur asks as cotton does (design recorded in `docs/specs/geometry.md`).
+- ✅ **PW60** **a declaration is read, resolved and reported on, and nothing turns one into a mesh** — A declaration builds into the mesh it describes, and the spec's own tray comes out 928 by 928 by 6 with a report per node (design recorded in `docs/specs/geometry.md`).
 
 ## Block H — Proof on a real game
 

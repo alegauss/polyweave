@@ -94,32 +94,6 @@ choice.
 
 ## Block G — Geometry as a declaration
 
-### §PW60 A format every piece of which is built, with nothing composing them
-
-`docs/specs/geometry.md` says what a build returns — a mesh and a per-node report — and
-the report half exists. `review.report(document, built)` takes the built meshes from its
-caller, and every test in the suite supplies that mapping by hand.
-
-Everything either side of the gap is there. Each `op` is a function: `solid.prism`,
-`solid.plate`, `solid.inflate`, `solver.carve`, `solver.bevel`, `custom.build`. `expand`
-resolves every expression and instances every repeat. `order` returns the nodes in an
-order where each input is built before what needs it, which is a walker's scaffolding
-with no walker on it. `custom.build(node, instance, built, root=…)` already takes a
-`built` mapping of id to mesh, so the convention a builder would fill is written down
-and used by one node type.
-
-What is missing is the twenty lines between them: walk `order`, dispatch on `op`,
-collect into `built`, hand it to `report`. Nothing under `src/` imports
-`polyweave.geometry` at all, so the format is a library no operation calls.
-
-The cost is that the spec's own worked example cannot be produced by any call in the
-package, and §PW54 — porting Cottony's `tray_model.py` and `star_model.py` to
-declarations — meets this on its first line.
-
-The open question is where the dispatch table lives. `outline.GENERATORS` is the
-precedent. `review._says` already enumerates the same op names in an if/elif chain, so
-whatever is chosen should be the one list both read, or the two will drift.
-
 ## Block H — Proof on a real game
 
 ### §PW36 Cottony adopts it without a fork
@@ -184,8 +158,8 @@ sixty-four seats, the star's five even points — are a declaration each. The pa
 rather than a primitive.
 
 A fuzzy surface is declarable now: a depth and a coarseness on its material, with the
-shells derived (`docs/specs/geometry.md`). What this still meets is §PW60 — a
-declaration has no builder, so a ported model is a document nothing can build.
+shells derived (`docs/specs/geometry.md`). A declaration also builds now, into the mesh
+it describes and a report per node, so a ported model is a thing this can check.
 
 ### §PW56 Twelve runners, twelve ways to start Godot, and no check on what applied
 

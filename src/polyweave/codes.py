@@ -732,6 +732,13 @@ CODES: dict[str, Code] = {
         "nothing at all",
         doors=("check the numbers the node states",),
     ),
+    "geom.unknown-op": Code(
+        means="a node names an operation nothing here builds",
+        when="a typo in an `op`, or a shape reaching for a vocabulary this does not "
+        "have; the declaration parses either way, because what an op means is the "
+        "vocabulary's question and not the document's",
+        doors=("name a declared op", "write it as a `custom` node of your own"),
+    ),
     "geom.bad-surface": Code(
         means="the surface stated on a material is not one this can build",
         when="a fuzz with no depth or no coarseness, a depth at or below zero, a "

@@ -31,7 +31,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
-  { block: "G", title: "Geometry as a declaration", open: 1 },
+  { block: "G", title: "Geometry as a declaration", open: 0 },
   { block: "H", title: "Proof on a real game", open: 3 },
 ];
 
@@ -58,18 +58,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW60",
-    block: "G",
-    symptom: "a declaration is read, resolved and reported on, and nothing turns one into a mesh",
-    why: "Every op function, the build order and the report that consumes the result all ship, and no call in the package produces the spec's own worked example.",
-    deps: [],
-  },
-  {
     id: "PW54",
     block: "H",
     symptom: "a Cottony shape is a bmesh program that exists only inside a bake, so nothing can read, diff or search it",
     why: "solid.py is 283 lines of geometry as code, and it carries a second copy of the bevelled-boolean lesson, which is a copy that will drift.",
-    deps: ["PW60"],
+    deps: [],
   },
   {
     id: "PW57",
