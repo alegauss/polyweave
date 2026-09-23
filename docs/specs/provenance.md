@@ -27,7 +27,9 @@ JSON, written beside every artefact this plugin produces, named `<artefact>.prov
     { "role": "cloth", "path": "docs/design/art/ui/cloth.png", "sha256": "c7de…" }
   ],
   "params": { "light": 2.7, "form": 2.5, "ambient": 0.4, "fill": 0.92 },
-  "measurements": { "saturation_p99": 0.87, "alpha_coverage": 0.41 }
+  "measurements": { "saturation_p99": 0.87, "alpha_coverage": 0.41 },
+  "tolerances": { "alpha_floor": 0.02, "render_noise": 0.004, "silhouette_iou": 0.92,
+                  "delta_e": 3.0, "background_delta_e": 2.0, "subject_coverage": 0.04 }
 }
 ```
 
@@ -57,6 +59,28 @@ has them and they are unknown — a different statement, and the wrong one. The 
 fields with a default, so an absent field and a null one produce the same key and nothing is
 invalidated by the difference.
 
+## A measurement without its bar is a number
+
+`measurements` says what was measured and `tolerances` says against what (§PW51). Without the
+second, two records can carry the same measurement and mean different things, because the
+alpha floor that decided what counted as the subject sat in a file that has since been
+edited. Reading the config back does not recover it: the record is the artefact's and the
+file is the project's *as it is now*.
+
+All six are resolved together by `Config.tolerances()` and written as a block, because an
+operation that needs one must not pick up a stale sibling (§PW40) — and because six numbers
+are what the next reader has to compare against. A record whose measurements were taken
+against no bar at all carries **no field**, by the same rule as above: a normalisation with
+no reference drawing measured nothing, and six numbers it never read would claim otherwise.
+
+The value recorded is the one that **decided**, not the one the project would choose today.
+Where a caller passed an explicit floor, that floor is what goes in the record.
+
+`remeasure(record, now)` names every bar that has moved since, and is empty when the verdict
+beside the artefact still stands. A record carrying no tolerances returns **every** name
+asked about, because a measurement whose bar nobody wrote down cannot be shown to still hold
+— the silence is the symptom, and reading it as agreement is what keeps the stale verdict.
+
 ## The cache key
 
 The key is a sha256 over a canonical form of a **defined subset** of the record. Stating the
@@ -72,8 +96,26 @@ The colour pipeline is in the key because it changes what lands in the file: two
 installations that disagree about it must not share an entry, and §PW43 is what that costs
 when nobody notices.
 
-**Not in the key:** `produced_at`, `elapsed_s`, `artefact`, `measurements`, and every input's
-`path`. A file that moved is the same input; a file that changed is not.
+**Not in the key:** `produced_at`, `elapsed_s`, `artefact`, `measurements`, `tolerances`, and
+every input's `path`. A file that moved is the same input; a file that changed is not.
+
+**Tolerances are out of the key, and that is a decision rather than an oversight** (§PW51).
+A tolerance is read *after* the pixels exist — the floor decides what counts as the subject
+once there is a picture to count — so a render made at one alpha floor is byte-identical to
+the same render at another. Keying on one would spend a full path trace to recompute a number
+that can be recomputed from the file already on disk, which is backwards for a cache that
+exists to stop paying for renders.
+
+What that leaves is a real hole, and it is a **stale acceptance rather than a stale picture**:
+a search that accepted on a predicate measured at one floor, re-run at another, gets its hit
+back with a verdict that no longer holds. That is answered where it happens rather than in
+the key. A hit carries `stale`, the bars its recorded measurements predate, so the picture is
+returned without a second render and the verdict is not presented as current.
+
+The measurements are **named, not re-taken, on a hit.** Re-taking the measures while leaving
+the assertions alone would write a record whose `tolerances` contradict half its own numbers,
+and re-taking both means re-asserting — an assertion that refuses on a cache read is a
+behaviour a caller has to be able to see coming, so it is not smuggled into a lookup.
 
 ### Canonicalisation
 

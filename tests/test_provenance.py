@@ -372,3 +372,93 @@ def test_measurements_from_a_check_go_straight_into_the_record(tmp_path):
     record = P.build("render", path, measurements=measured, root=tmp_path)
     assert record["measurements"]["alpha_coverage"] == 1.0
     assert record["measurements"]["size"] == [8, 8]
+
+
+# -- the bars a measurement was taken against (§PW51) ----------------------------------
+
+
+BARS = {
+    "alpha_floor": 0.02,
+    "render_noise": 0.004,
+    "silhouette_iou": 0.92,
+    "delta_e": 3.0,
+    "background_delta_e": 2.0,
+    "subject_coverage": 0.04,
+}
+
+
+def test_a_record_carries_what_its_measurements_were_taken_against(tmp_path):
+    """Otherwise two records carry one measurement and mean different things."""
+    found = a_record(tmp_path, measurements={"saturation_p99": 0.9}, tolerances=BARS)
+    assert found["tolerances"] == BARS
+
+
+def test_a_record_that_measured_against_nothing_carries_no_bars(tmp_path):
+    """Absent rather than empty: six numbers it never read would claim it had them."""
+    assert "tolerances" not in a_record(tmp_path)
+    assert "tolerances" not in a_record(tmp_path, tolerances={})
+
+
+def test_the_bars_are_not_in_the_key(tmp_path):
+    """A tolerance is read after the pixels exist, so it cannot have changed them.
+
+    Keying on one would spend a path trace to recompute a number that can be recomputed
+    from the file already on disk.
+    """
+    base = P.cache_key(a_record(tmp_path))
+    assert P.cache_key(a_record(tmp_path, tolerances=BARS)) == base
+    moved = {**BARS, "alpha_floor": 0.5}
+    assert P.cache_key(a_record(tmp_path, tolerances=moved)) == base
+
+
+def test_a_planned_key_still_matches_the_built_one_that_carries_bars(tmp_path):
+    """The lookup happens before the render, and the bars are resolved either way."""
+    built = a_record(tmp_path, tolerances=BARS)
+    planned = P.planned(
+        "render",
+        engine={"name": "cycles", "version": "4.2.1", "bindings": "bpy 4.2.0"},
+        rung="final",
+        seed=20260922,
+        samples=512,
+        params={"light": 2.7, "form": 2.5},
+    )
+    assert P.cache_key(planned) == P.cache_key(built)
+
+
+def test_a_verdict_taken_against_the_bars_in_force_still_stands(tmp_path):
+    assert P.remeasure(a_record(tmp_path, tolerances=BARS), BARS) == []
+
+
+def test_a_bar_that_moved_is_named(tmp_path):
+    found = a_record(tmp_path, tolerances=BARS)
+    assert P.remeasure(found, {**BARS, "alpha_floor": 0.5}) == ["alpha_floor"]
+    assert P.remeasure(found, {**BARS, "delta_e": 1.0, "alpha_floor": 0.5}) == [
+        "alpha_floor",
+        "delta_e",
+    ]
+
+
+def test_a_record_with_no_bars_cannot_be_shown_to_still_hold(tmp_path):
+    """The silence is the symptom, and reading it as agreement keeps the verdict."""
+    assert P.remeasure(a_record(tmp_path), BARS) == sorted(BARS)
+
+
+def test_a_bar_the_record_never_carried_is_named_too(tmp_path):
+    found = a_record(tmp_path, tolerances={"alpha_floor": 0.02})
+    assert P.remeasure(found, BARS) == sorted(set(BARS) - {"alpha_floor"})
+
+
+def test_a_bar_is_compared_at_the_key_s_own_rounding(tmp_path):
+    """A float that survived a JSON round trip is not a bar somebody moved."""
+    found = a_record(tmp_path, tolerances=BARS)
+    written = json.loads(json.dumps(found))
+    assert P.remeasure(written, {**BARS, "alpha_floor": 0.02 + 1e-12}) == []
+
+
+def test_the_bars_are_read_off_whatever_the_caller_resolved(tmp_path):
+    """A Tolerances and its dict are the same question asked two ways."""
+    from polyweave.config import Tolerances
+
+    found = a_record(tmp_path, tolerances=BARS)
+    assert P.remeasure(found, Tolerances(**BARS)) == []
+    assert P.remeasure(found, Tolerances(**{**BARS, "delta_e": 9.0})) == ["delta_e"]

@@ -2,9 +2,9 @@
 
 ## Block A — What a tool call costs the turn
 
-- 📋 **PW51** (deps: —) **a record says nothing about the tolerances its measurements were taken against** — Reading the config back gives the project's numbers now, not the artefact's, so two records carrying one measurement can mean different things and nothing says which. → §PW51
 - 📋 **PW52** (deps: —) **a render holding two opaque pixels in one corner is empty for every purpose and passes every check** — Coverage clears the alpha floor and the two pixels differ, so neither assertion fires, and the obvious number to compare against would refuse a correctly framed thin asset. → §PW52
 - 📋 **PW61** (deps: —) **the site understands one of the backlog's three dep forms, so a block or a range becomes a dangling id** — waitingOn keeps the first whitespace token, so a `Block G` dep becomes `Block`, and the gate reports a missing task rather than a grammar it cannot read. → §PW61
+- 📋 **PW62** (deps: PW44 ✅) **a render resolves its noise floor without naming its rung, so a sphere is judged at the floor measured for a final** — The same call hands the rung to the measurer and withholds it from the bar, so the noisiest rung gets the tightest floor and a flat sphere passes PW42's check. → §PW62
 
 ## Block B — Seeing the result cheaply
 

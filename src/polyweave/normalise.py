@@ -463,10 +463,19 @@ def ingest(
 
     source = Path(path)
     arrived = read_mesh(source)
+    bars: dict = {}
     if against is not None:
-        floor = float(load_config(root).get("tolerance.alpha_floor", alpha_floor))
+        # All six together, so the record can carry what was in force rather than what
+        # the file holds when it is read back (§PW51). The floor actually used is the
+        # explicit argument where there is one, so the record says what decided the
+        # mask and not what the project would decide today.
+        settings = load_config(root)
+        floor = float(settings.get("tolerance.alpha_floor", alpha_floor))
+        bars = {**settings.tolerances().as_dict(), "alpha_floor": floor}
         found = orient(arrived, against=against, height=height, alpha_floor=floor)
     else:
+        # No drawing, so nothing here was measured against a bar, and a record carrying
+        # six numbers it did not use would claim it had.
         found = normalise(arrived, rotation=rotation, height=height)
 
     written = write_mesh(
@@ -486,11 +495,13 @@ def ingest(
     for key in ("against", "silhouette_iou", "tried"):
         if key in found:
             record[key] = found[key]
-    record["provenance"] = str(_record_derivation(record, found, root))
+    record["provenance"] = str(_record_derivation(record, found, root, bars))
     return record
 
 
-def _record_derivation(record: dict, found: dict, root: str | Path) -> Path:
+def _record_derivation(
+    record: dict, found: dict, root: str | Path, tolerances: dict | None = None
+) -> Path:
     """Write the sidecar that says what this mesh was derived from (§PW46).
 
     The ledger holds the bytes that arrived and their digest, which stays true, but the
@@ -506,6 +517,10 @@ def _record_derivation(record: dict, found: dict, root: str | Path) -> Path:
     Everything in `params` is what the normalisation already computed, so the chain from
     the credits spent to the mesh in the scene is one a person can follow without
     guessing which file came first.
+
+    `tolerances` is what the silhouette IoU beside it was taken against (§PW51), and it
+    is empty where no drawing was given — a normalisation with no reference measured
+    nothing against a bar, and six numbers it never read would claim otherwise.
     """
     from . import provenance
 
@@ -527,6 +542,7 @@ def _record_derivation(record: dict, found: dict, root: str | Path) -> Path:
             "faces": record["faces"],
             **{k: found[k] for k in ("silhouette_iou",) if k in found},
         },
+        tolerances=tolerances,
         root=root,
     )
     return provenance.write(written, root=root)

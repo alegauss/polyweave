@@ -92,11 +92,21 @@ def plan(
     }
 
 
-def _from_cache(hit, out_path, where, chosen, started, inline: bool) -> dict:
-    """A hit, **reported as a hit**.
+def _from_cache(
+    hit, out_path, where, chosen, started, inline: bool, tolerances=None
+) -> dict:
+    """A hit, **reported as a hit**, and told which of its bars have since moved.
 
     A caller timing a sweep needs to know what it actually measured; a cache that
     silently answers in four milliseconds makes a benchmark meaningless.
+
+    The picture is still the picture: a tolerance is read after the pixels exist, so it
+    cannot have changed them, and the hit is returned (§PW51). What can be stale is the
+    **verdict** beside it, so `stale` names every bar the recorded measurements were
+    taken against and that the project has since changed. It is named rather than
+    re-taken here, because re-taking the measures without re-taking the assertions would
+    write a record whose tolerances contradict half its own numbers, and an assertion
+    that refuses on a cache read is a behaviour a caller has to be able to see coming.
     """
     store.take(hit, out_path)
     record = hit["record"]
@@ -114,6 +124,7 @@ def _from_cache(hit, out_path, where, chosen, started, inline: bool) -> dict:
         "measurements": [],
         "cache_key": hit["key"],
         "recorded": record.get("measurements", {}),
+        "stale": provenance.remeasure(record, tolerances) if tolerances else [],
     }
     if inline:
         answer["image"] = measure.inline_image(out_path)
@@ -288,11 +299,18 @@ def bake(
         )
     )
     work = config.path("paths.work")
+    # Resolved once, at the operation, and passed down: the checks and the measures
+    # below take the numbers and default none of them (§PW40). It is read here rather
+    # than after the render because a hit has to be able to say which of these bars the
+    # verdict it carries predates (§PW51).
+    tolerances = config.tolerances()
     if cached:
         hit = store.look(signature, work=work)
         if hit is not None:
             report.stage("rendering", progress=1.0, note="cached")
-            return _from_cache(hit, out_path, where, chosen, started, inline)
+            return _from_cache(
+                hit, out_path, where, chosen, started, inline, tolerances
+            )
 
     scrubbed: dict = {}
     if chosen["subject"] == "primitive":
@@ -329,9 +347,6 @@ def bake(
         seed=chosen["seed"],
     )
 
-    # Resolved once, here, and passed down: the checks and the measures below take the
-    # numbers and default none of them (§PW40).
-    tolerances = config.tolerances()
     floor_alpha = tolerances.alpha_floor
     asserted = post.check(
         "render",
@@ -363,6 +378,7 @@ def bake(
         rung=chosen["rung"],
         seed=chosen["seed"],
         samples=chosen["samples"],
+        tolerances=tolerances.as_dict(),
         elapsed_s=elapsed,
         root=where,
     )

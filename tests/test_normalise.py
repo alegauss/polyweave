@@ -498,3 +498,57 @@ def test_verify_no_longer_reads_the_derived_mesh_as_unrecorded(tmp_path):
     provenance.write(provenance.build("fetch", source, root=tmp_path), root=tmp_path)
     normalise.ingest(source, out=tmp_path / "assets" / "3d" / "kept.glb", root=tmp_path)
     assert provenance.unrecorded(tmp_path) == []
+
+
+def test_a_mesh_oriented_against_a_drawing_records_the_bars_it_was_judged_by(tmp_path):
+    """The silhouette IoU beside it is a number until something says against what."""
+    pytest.importorskip("bpy")
+    from polyweave import provenance
+    from polyweave.normalise import write_mesh
+
+    source = write_mesh(normalise.normalise(cube(1.0, 4.0, 1.0)), tmp_path / "raw.glb")
+    normalise.ingest(
+        source,
+        out=tmp_path / "kept.glb",
+        against=draw(tmp_path / "ref.png", 120, 30),
+        root=tmp_path,
+    )
+    written = provenance.read("kept.glb", root=tmp_path)
+    assert written["tolerances"]["alpha_floor"] == pytest.approx(0.02)
+    assert set(written["tolerances"]) == {
+        "alpha_floor",
+        "render_noise",
+        "silhouette_iou",
+        "delta_e",
+        "background_delta_e",
+        "subject_coverage",
+    }
+    assert provenance.remeasure(written, written["tolerances"]) == []
+
+
+def test_the_floor_recorded_is_the_one_that_decided_the_mask(tmp_path):
+    """Not what the project would decide today, which is the whole point (§PW51)."""
+    pytest.importorskip("bpy")
+    from polyweave import provenance
+    from polyweave.normalise import write_mesh
+
+    source = write_mesh(normalise.normalise(cube(1.0, 4.0, 1.0)), tmp_path / "raw.glb")
+    normalise.ingest(
+        source,
+        out=tmp_path / "kept.glb",
+        against=draw(tmp_path / "ref.png", 120, 30),
+        alpha_floor=0.25,
+        root=tmp_path,
+    )
+    written = provenance.read("kept.glb", root=tmp_path)
+    assert written["tolerances"]["alpha_floor"] == pytest.approx(0.25)
+
+
+def test_a_mesh_with_no_drawing_measured_nothing_against_a_bar(tmp_path):
+    pytest.importorskip("bpy")
+    from polyweave import provenance
+    from polyweave.normalise import write_mesh
+
+    source = write_mesh(normalise.normalise(cube(2.0, 8.0, 2.0)), tmp_path / "raw.glb")
+    normalise.ingest(source, out=tmp_path / "kept.glb", root=tmp_path)
+    assert "tolerances" not in provenance.read("kept.glb", root=tmp_path)

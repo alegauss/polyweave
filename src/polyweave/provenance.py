@@ -100,6 +100,7 @@ def build(
     rung: str | None = None,
     seed: int | None = None,
     samples: int | None = None,
+    tolerances: dict | None = None,
     elapsed_s: float | None = None,
     extra: dict | None = None,
     root: str | Path = ".",
@@ -109,6 +110,14 @@ def build(
 
     `extra` carries what one kind needs and the others do not — a fetch's task id,
     prompt hash and credits consumed go there, in this record rather than a second one.
+
+    `tolerances` is what the numbers in `measurements` were taken against (§PW51).
+    Without it two records can carry the same measurement and mean different things,
+    because the alpha floor that decided what counted as the subject sat in a file that
+    has since been edited — and reading the config back recovers the project's numbers
+    now, not the artefact's. An operation resolves all six with `Config.tolerances()`
+    and passes `as_dict()` here. A record whose measurements were taken against nothing
+    carries no field, by the same rule that keeps a normalisation free of a seed.
     """
     if kind not in KINDS:
         raise PolyweaveError(
@@ -152,6 +161,7 @@ def build(
         ("rung", rung),
         ("seed", seed),
         ("samples", samples),
+        ("tolerances", dict(tolerances or {})),
     ):
         if value or value == 0:
             record[name] = value
@@ -247,6 +257,12 @@ def key_subset(record: dict) -> dict:
     Stating the subset is what makes returning a hit safe rather than merely likely to
     be right. Out: when it was made, how long it took, where it landed, what it
     measured, and every input's path.
+
+    **Tolerances are deliberately out** (§PW51). A tolerance is read after the pixels
+    exist, so a render made at one alpha floor is byte-identical to the same render at
+    another, and keying on one would spend a path trace to recompute a number that can
+    be recomputed from the file already on disk. What does go stale is the verdict, and
+    `remeasure` is where that is answered.
     """
     engine = record.get("engine") or {}
     return {
@@ -269,6 +285,34 @@ def key_subset(record: dict) -> dict:
         ],
         "params": record.get("params") or {},
     }
+
+
+def remeasure(record: dict, now: Any) -> list[str]:
+    """Which tolerances this record's measurements are no longer valid under.
+
+    Empty means the verdict written beside the artefact still stands and its numbers can
+    be read as they are. A name in the list is a bar that has moved since, so what sits
+    under it was measured against something else.
+
+    **A record carrying no tolerances at all returns every name asked about**, because a
+    measurement whose bar nobody wrote down cannot be shown to still hold. Reading that
+    silence as agreement is what keeps a stale verdict, and it is the symptom §PW51 is
+    about — so the answer for a record written before the field existed is the honest
+    "unknown", spelled as the same list a caller already has to handle.
+
+    Compared at the key's own rounding, so a float that survived a JSON round trip does
+    not read as a bar somebody moved.
+    """
+    wanted = now.as_dict() if hasattr(now, "as_dict") else dict(now or {})
+    taken = record.get("tolerances") or {}
+    if not taken:
+        return sorted(wanted)
+    return sorted(
+        name
+        for name, value in wanted.items()
+        if name not in taken
+        or round(float(taken[name]), PLACES) != round(float(value), PLACES)
+    )
 
 
 def canonical(value: Any) -> str:

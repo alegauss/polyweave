@@ -280,3 +280,68 @@ def test_a_caller_may_refuse_the_cache(tmp_path):
         Quiet(), out="b.png", rung="sphere", root=tmp_path, inline=False, cached=False
     )
     assert again["cached"] is False
+
+
+# -- a hit is the picture, and says which of its bars have moved (§PW51) ---------------
+
+
+class _Quiet:
+    def stage(self, *a, **k):
+        pass
+
+    def progress(self, *a, **k):
+        pass
+
+    def note(self, *a, **k):
+        pass
+
+
+def _project(tmp_path, tolerance=""):
+    from polyweave import config as C
+
+    (tmp_path / C.FILENAME).write_text(
+        "[render]\npreview_size = 32\nfinal_size = 32\n"
+        "samples = { sphere = 4, preview = 4, final = 4 }\nseed = 11\n" + tolerance,
+        encoding="utf-8",
+    )
+
+
+def test_a_render_records_the_bars_its_measurements_were_taken_against(tmp_path):
+    pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
+    from polyweave import provenance, render
+
+    _project(tmp_path)
+    render.bake(_Quiet(), out="a.png", rung="sphere", root=tmp_path, inline=False)
+    written = provenance.read("a.png", root=tmp_path)
+    assert written["tolerances"]["alpha_floor"] == pytest.approx(0.02)
+    assert provenance.remeasure(written, written["tolerances"]) == []
+
+
+def test_a_hit_taken_under_the_same_bars_has_nothing_stale(tmp_path):
+    pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
+    from polyweave import render
+
+    _project(tmp_path)
+    at = {"rung": "sphere", "root": tmp_path, "inline": False}
+    render.bake(_Quiet(), out="a.png", **at)
+    second = render.bake(_Quiet(), out="b.png", **at)
+    assert second["cached"] is True
+    assert second["stale"] == []
+
+
+def test_a_hit_whose_floor_moved_is_still_the_picture_and_names_the_bar(tmp_path):
+    """A tolerance is read after the pixels exist, so the render is not paid again."""
+    pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
+    from polyweave import render
+
+    _project(tmp_path)
+    at = {"rung": "sphere", "root": tmp_path, "inline": False}
+    first = render.bake(_Quiet(), out="a.png", **at)
+
+    _project(tmp_path, tolerance="\n[tolerance]\nalpha_floor = 0.4\n")
+    second = render.bake(_Quiet(), out="b.png", **at)
+
+    assert second["cached"] is True
+    assert second["cache_key"] == first["cache_key"]
+    assert (tmp_path / "b.png").read_bytes() == (tmp_path / "a.png").read_bytes()
+    assert second["stale"] == ["alpha_floor"]

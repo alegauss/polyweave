@@ -37,13 +37,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 
 export const generatedTasks: GeneratedTask[] = [
   {
-    id: "PW51",
-    block: "A",
-    symptom: "a record says nothing about the tolerances its measurements were taken against",
-    why: "Reading the config back gives the project's numbers now, not the artefact's, so two records carrying one measurement can mean different things and nothing says which.",
-    deps: [],
-  },
-  {
     id: "PW52",
     block: "A",
     symptom: "a render holding two opaque pixels in one corner is empty for every purpose and passes every check",
@@ -55,6 +48,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "A",
     symptom: "the site understands one of the backlog's three dep forms, so a block or a range becomes a dangling id",
     why: "waitingOn keeps the first whitespace token, so a `Block G` dep becomes `Block`, and the gate reports a missing task rather than a grammar it cannot read.",
+    deps: [],
+  },
+  {
+    id: "PW62",
+    block: "A",
+    symptom: "a render resolves its noise floor without naming its rung, so a sphere is judged at the floor measured for a final",
+    why: "The same call hands the rung to the measurer and withholds it from the bar, so the noisiest rung gets the tightest floor and a flat sphere passes PW42's check.",
     deps: [],
   },
   {
