@@ -454,8 +454,8 @@ CODES: dict[str, Code] = {
     ),
     "render.unknown-format": Code(
         means="the mesh file is not in a format this reads",
-        when="a .blend or .obj where glTF or FBX was expected",
-        doors=("export as .glb, .gltf or .fbx",),
+        when="an .obj or another format where a .blend, glTF or FBX was expected",
+        doors=("give it a .blend", "export as .glb, .gltf or .fbx"),
     ),
     "render.unknown-primitive": Code(
         means="the primitive named does not exist",

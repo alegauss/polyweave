@@ -617,6 +617,57 @@ def test_one_rig_lights_one_shape_the_same_at_every_size(project):
     assert tones[1] == pytest.approx(tones[0], abs=0.02)
 
 
+def _blend(where, *, text=False):
+    """A `.blend` holding one cube in a material of its own, or one line of text."""
+    import bpy
+
+    from polyweave.render import blender
+
+    blender.reset()
+    if text:
+        curve = bpy.data.curves.new("words", "FONT")
+        curve.body = "Cottony"
+        made = bpy.data.objects.new("words", curve)
+        blocks = {made, curve}
+    else:
+        bpy.ops.mesh.primitive_cube_add()
+        made = bpy.context.active_object
+        paint = bpy.data.materials.new("candy_gold")
+        made.data.materials.append(paint)
+        blocks = {made, made.data, paint}
+    bpy.data.libraries.write(str(where), blocks)
+    blender.reset()
+    return where
+
+
+def test_a_blend_is_read_as_it_is(project):
+    """§PW89: the brand marks are built in Blender, and an export would lose them."""
+    from polyweave.render import blender
+
+    obj = blender.load_mesh(_blend(project / "mark.blend"))
+    assert obj.type == "MESH"
+    assert [m.name for m in obj.data.materials] == ["candy_gold"]
+
+
+def test_a_blend_with_no_mesh_in_it_says_what_it_holds(project):
+    from polyweave.render import blender
+
+    with pytest.raises(PolyweaveError) as caught:
+        blender.load_mesh(_blend(project / "words.blend", text=True))
+    assert caught.value.code == "render.no-mesh"
+    assert "only font" in caught.value.message
+    assert "convert" in caught.value.remedy
+
+
+def test_a_blend_bakes_like_any_other_mesh(project):
+    _blend(project / "mark.blend")
+    out = render.bake(
+        Reported(), out="mark.png", model="mark.blend", rung="preview", root=project
+    )
+    assert out["rung"] == "preview"
+    assert out["asserted"]["size"] == [48, 48]
+
+
 def _two_cubes(project):
     """One mesh of twelve faces: the first six wear one material, the rest another."""
     from polyweave.geometry import build as B

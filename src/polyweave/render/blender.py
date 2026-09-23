@@ -87,6 +87,13 @@ def load_mesh(path: str | Path) -> Any:
 
     glTF is the interchange the rest of this plugin speaks, and its axes are the ones §6
     fixes, so the importer's own conversion is the right one.
+
+    **A `.blend` is read as it is** (§PW89). Cottony's brand marks were built by hand in
+    Blender, and exporting them to glTF would keep a Principled BSDF's plain inputs and
+    lose the node trees that make them look as they do. So the file's mesh objects are
+    appended, owned by this scene and wearing their own materials, and nothing else of
+    the file comes with them: its cameras, lights and world are its author's rig, and
+    the rig here is this plugin's.
     """
     bpy = require()
     where = Path(path)
@@ -97,15 +104,18 @@ def load_mesh(path: str | Path) -> Any:
             "check the path, or build the mesh before rendering it",
         )
     before = set(bpy.data.objects)
-    if where.suffix.lower() in (".glb", ".gltf"):
+    suffix = where.suffix.lower()
+    if suffix in (".glb", ".gltf"):
         bpy.ops.import_scene.gltf(filepath=str(where))
-    elif where.suffix.lower() == ".fbx":
+    elif suffix == ".fbx":
         bpy.ops.import_scene.fbx(filepath=str(where))
+    elif suffix == ".blend":
+        return _join(_appended(bpy, where))
     else:
         raise PolyweaveError(
             "render.unknown-format",
             f"{where.suffix or 'that file'} is not a mesh format this reads",
-            "export the mesh as .glb, .gltf or .fbx",
+            "give it a .blend, or export the mesh as .glb, .gltf or .fbx",
         )
     arrived = [o for o in set(bpy.data.objects) - before if o.type == "MESH"]
     if not arrived:
@@ -115,6 +125,25 @@ def load_mesh(path: str | Path) -> Any:
             "check what the exporter wrote; an empty scene imports without an error",
         )
     return _join(arrived)
+
+
+def _appended(bpy: Any, where: Path) -> list:
+    """The mesh objects of a `.blend`, appended into this scene, and nothing else."""
+    with bpy.data.libraries.load(str(where.resolve()), link=False) as (source, into):
+        into.objects = list(source.objects)
+    meshes = [one for one in into.objects if one is not None and one.type == "MESH"]
+    if not meshes:
+        kinds = sorted({one.type.lower() for one in into.objects if one is not None})
+        raise PolyweaveError(
+            "render.no-mesh",
+            f"{where.name} holds no mesh object"
+            + (f", only {', '.join(kinds)}" if kinds else ""),
+            "convert the text or curve to a mesh in Blender and save the file; a "
+            "font is not geometry until somebody makes it so",
+        )
+    for one in meshes:
+        bpy.context.scene.collection.objects.link(one)
+    return meshes
 
 
 def decimate(obj: Any, ratio: float) -> Any:
