@@ -58,18 +58,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW57"],
   },
   {
-    id: "PW77",
-    block: "H",
-    symptom: "the map's five candy props match a drawn sprite that exists only as medians in a comment",
-    why: "The bar was measured and written in prose, so nothing can read it, and the sixth prop is fetched where four are built.",
-    deps: [],
-  },
-  {
     id: "PW78",
     block: "H",
     symptom: "the two trays are framed by a world rectangle written out per asset so the game's grid lands on it",
     why: "One unit has to be one pixel because board.gd addresses a cell at CELL := 112, and a render fitted to its own bounds misses that grid.",
-    deps: ["PW77"],
+    deps: [],
   },
   {
     id: "PW79",
@@ -106,6 +99,13 @@ export const generatedTasks: GeneratedTask[] = [
     why: "The answer is built from the plan's number before the declaration resized the frame, so a 96 px star is reported as 1024.",
     deps: [],
   },
+  {
+    id: "PW87",
+    block: "H",
+    symptom: "a silhouette checked with no region scores a render missing half the drawn shape close to 1",
+    why: "The default region is the render's own subject, and both masks are cut to it, so the reference outside the render is never counted.",
+    deps: [],
+  },
 ];
 
 export const generatedNonGoals: GeneratedNonGoal[] = [
@@ -132,4 +132,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW36", "PW53", "PW76"];
+export const generatedPaused: string[] = ["PW36", "PW53", "PW76", "PW77"];

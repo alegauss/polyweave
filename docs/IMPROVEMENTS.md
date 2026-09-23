@@ -304,3 +304,23 @@ and keep the rung's square as `rung_size` if anything reads it. Nothing in `src/
 today; the tests that assert `size` do so on square rungs, where the two agree. Also
 check the cache-hit path in `_from_cache`, which reports the same number for the same
 reason.
+
+### §PW87 A silhouette is scored inside the render's own outline
+
+Found writing the mushroom's spec (§PW77). The same render against the same drawing read
+0.916 with no region and 0.856 with `region = "frame"`.
+
+`measure` resolves a missing region to `subject` wherever the image has alpha, and
+`_silhouette_iou` intersects both masks with it. The render's mask is the subject, so
+the reference is cut down to wherever the render already is. What comes back is the
+share of the render the drawing covers, and a render missing half the drawn shape scores
+close to one. Every silhouette predicate written without a region reads that way,
+Cottony's four star specs included, and it is the default a person writes first.
+
+The silhouette measures compare two shapes, and the region that means that is the whole
+frame. So `silhouette_iou`, `silhouette_centroid_offset` and `silhouette_bbox_delta`
+take `frame` when no region is named, and a region that is named still bounds both masks
+alike, which is what a rectangle is for.
+
+A test states the case: a reference twice the render's area, with the render inside it,
+reads about 0.5 with no region named and not 1.0.
