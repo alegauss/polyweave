@@ -22,7 +22,7 @@ import json
 from collections.abc import Sequence
 from datetime import UTC, datetime
 from fnmatch import fnmatch
-from pathlib import Path, PurePosixPath
+from pathlib import Path, PurePath, PurePosixPath
 from typing import Any
 
 from . import __version__
@@ -36,6 +36,14 @@ SUFFIX = ".prov.json"
 #: Floats are rounded to this many places before a key is computed. Without it, 0.1 and
 #: 0.10000000000000001 are two keys for one render.
 PLACES = 6
+
+#: The `extra` keys that carry a path (§PW72). Declared here rather than remembered at
+#: each call site, because remembering is what failed: `purchase` relativised its one
+#: and `capture` did not, so a record committed beside a screenshot named a drive letter
+#: while the artefact two keys above it was relative. A value that is already a `Path`
+#: is rewritten whatever it is called, so a key added later and not listed here still
+#: comes out right as long as it arrives as a path rather than as a string.
+PATHS = ("script", "reference")
 
 _CHUNK = 1 << 20
 
@@ -110,6 +118,9 @@ def build(
 
     `extra` carries what one kind needs and the others do not — a fetch's task id,
     prompt hash and credits consumed go there, in this record rather than a second one.
+    A path among them is written the way the rest of the record writes one, relative to
+    the root; `PATHS` names the keys that carry one, and a `Path` is rewritten whatever
+    it is called (§PW72).
 
     `tolerances` is what the numbers in `measurements` were taken against (§PW51).
     Without it two records can carry the same measurement and mean different things,
@@ -166,8 +177,23 @@ def build(
         if value or value == 0:
             record[name] = value
     if extra:
-        record.update(extra)
+        record.update(_placed(extra, where))
     return record
+
+
+def _placed(extra: dict, where: Path) -> dict:
+    """`extra`, with every path in it spelled the way the rest of the record is.
+
+    The record is read on a machine that is not the one that wrote it — that is most of
+    what it is for — and it is committed beside the artefact it describes. A path in it
+    that survives a clone and one that does not cannot sit two keys apart.
+    """
+    return {
+        name: relative(value, where)
+        if value is not None and (name in PATHS or isinstance(value, PurePath))
+        else value
+        for name, value in extra.items()
+    }
 
 
 def planned(

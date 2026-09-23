@@ -172,7 +172,9 @@ def capture(
         "prompt": prompt,
     }
     if reference is not None:
-        extra["reference"] = provenance.relative(reference, here)
+        # Not relativised here: `build` does it for every path in `extra`, and this
+        # having been the only call site that remembered to is §PW72.
+        extra["reference"] = reference
     record = provenance.build(
         "fetch",
         landed,
@@ -199,7 +201,9 @@ def capture(
         "surprised": measured is not None and abs(measured - float(credits)) > 1e-9,
         "bought": bought,
         "prompt": prompt,
-        "reference": extra.get("reference"),
+        # Off the record rather than off `extra`: the record is where a path is spelled
+        # the one way both files agree on, and the ledger is committed too (§PW72).
+        "reference": record.get("reference"),
         "at": datetime.now(tz=UTC).isoformat(timespec="seconds").replace("+00:00", "Z"),
     }
     append(entry, root=here)

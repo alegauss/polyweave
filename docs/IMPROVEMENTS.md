@@ -131,30 +131,6 @@ of this block names, and the gate may report a fraction below one for as long as
 what is left and why. Two of those are already answered in `docs/specs/adoption.md`: the
 fetch ledger replays, and the motion Cottony has is two frames and no clip.
 
-### §PW72 The one path in a record that is not made relative
-
-The record beside `docs/design/screenshot-strike.png` in Cottony reads `"script":
-"D:\\Git\\viglet\\cottony\\tools\\capture\\strike.gd"`, while two keys above it
-`artefact.path` reads `docs/design/screenshot-strike.png`. Both name files in the same
-checkout; one survives a clone and the other does not.
-
-The asymmetry is not a judgement that went the wrong way, it is a path that was never
-asked. `provenance.relative()` takes a path and the root and returns the posix spelling
-relative to it, falling back to the absolute only where the file genuinely lies outside
-it. `artefact` goes through it, and so does every `inputs` entry. But `build()` merges
-its `extra` mapping in raw — `record.update(extra)` — and `script` arrives only through
-`extra`, from `capture.run` and `engine.run`, which both hand over a resolved absolute
-path.
-
-It matters because these records are committed. They sit beside the artefact, and the
-artefact is a picture under `docs/design/` that gets reviewed. So the record is reviewed
-too, and it carries one machine's drive letter into the repository: churn on every desk
-that re-runs a capture, and one desk's layout published in a file nobody reads closely.
-
-Sending `script` through `relative()` is two lines. The open question is whether `extra`
-should be relativised key by key, or whether `build()` should stop accepting raw paths
-in `extra` at all.
-
 ### §PW73 The prose reaches the agent through a cp1252 pipe
 
 `python -c "print('a — b')"` on this machine prints `a ? b`, because

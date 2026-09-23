@@ -54,6 +54,13 @@ is a question nobody can answer later. The transform is in `params`, so the chai
 credits spent to the mesh in the scene is one a person can follow without guessing which file
 came first.
 
+**Every path in the record is relative to the project root, forward slashes** — not only the
+ones the key is computed over. The record is read on a machine that is not the one that wrote
+it, and it is committed beside the artefact it describes, so a path that survives a clone and
+one that does not must not sit two keys apart. That includes the paths a single kind carries:
+a capture's `script`, a fetch's `reference`. A path genuinely outside the project tree is
+recorded absolute rather than refused, as below.
+
 **One vocabulary, with what does not apply absent rather than empty.** A normalisation has no
 engine, no rung, no seed and no sampler, and a record carrying four nulls for them claims it
 has them and they are unknown — a different statement, and the wrong one. The key reads these

@@ -470,6 +470,46 @@ def test_the_bars_are_read_off_whatever_the_caller_resolved(tmp_path):
     assert P.remeasure(found, Tolerances(**{**BARS, "delta_e": 9.0})) == ["delta_e"]
 
 
+# -- a path in the record is a path in the record (§PW72) ------------------------------
+
+
+def test_a_path_a_single_kind_carries_is_relative_like_the_rest(tmp_path):
+    """It sat two keys below a relative artefact path and named a drive letter."""
+    found = a_record(tmp_path, extra={"script": str(tmp_path / "tools" / "shot.gd")})
+    assert found["script"] == "tools/shot.gd"
+    assert found["artefact"]["path"] == "mascot.png"
+
+
+def test_a_path_handed_over_as_a_path_is_rewritten_whatever_it_is_called(tmp_path):
+    """So a key added later and never listed still comes out right."""
+    found = a_record(tmp_path, extra={"drawing": tmp_path / "art" / "ref.png"})
+    assert found["drawing"] == "art/ref.png"
+
+
+def test_what_is_not_a_path_is_left_exactly_as_it_came(tmp_path):
+    found = a_record(
+        tmp_path, extra={"task_id": "01J2", "credits": 5.0, "prompt": "a/b", "x": None}
+    )
+    assert found["task_id"] == "01J2"
+    assert found["credits"] == 5.0
+    assert found["prompt"] == "a/b"
+    assert found["x"] is None
+
+
+def test_a_path_outside_the_project_is_recorded_rather_than_refused(tmp_path):
+    """A shared library elsewhere is still where it is; paths are not in the key."""
+    outside = tmp_path.parent / "elsewhere" / "shot.gd"
+    found = a_record(tmp_path, extra={"script": str(outside)})
+    assert found["script"] == outside.resolve().as_posix()
+
+
+def test_relativising_a_path_does_not_move_the_key(tmp_path):
+    """Records written before this still key the same, so no cache is invalidated."""
+    here = a_record(tmp_path, extra={"script": str(tmp_path / "shot.gd")})
+    away = a_record(tmp_path, extra={"script": "/somewhere/else/shot.gd"})
+    assert P.cache_key(here) == P.cache_key(away)
+
+
 # -- the same work, run twice (§PW71) -------------------------------------------------
 
 
