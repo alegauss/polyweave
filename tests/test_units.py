@@ -312,7 +312,25 @@ def test_a_declaration_the_rung_does_match_is_carried_into_the_answer(tmp_path):
     )
     assert out["covers"] == [3.0, 3.0]
     assert out["pixels_per_unit"] == 16.0
-    assert out["size"] == 48, "3 units at 16 px/unit, and the rung agrees"
+    assert out["size"] == [48, 48], "3 units at 16 px/unit, and the rung agrees"
+
+
+def test_the_answer_is_the_size_that_was_drawn_and_not_the_rung_s(tmp_path):
+    """§PW85: a 96 px star was answered as 1024, the rung's square, not what it was."""
+    pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
+    render = baking(
+        tmp_path, "samples = { sphere = 4 }\n\n[units]\npixels_per_unit = 16.0\n"
+    )
+    fresh = render.bake(
+        Quiet(), out="a.png", rung="sphere", covers=[4.0, 2.0], root=tmp_path
+    )
+    assert fresh["size"] == [64, 32]
+    assert fresh["rung_size"] == 48
+    again = render.bake(
+        Quiet(), out="b.png", rung="sphere", covers=[4.0, 2.0], root=tmp_path
+    )
+    assert again["cached"] is True
+    assert again["size"] == [64, 32], "and a cache hit answers the same"
 
 
 def test_a_rectangular_request_keys_differently_from_a_square_one(tmp_path):

@@ -287,24 +287,6 @@ this is where that is recorded honestly: what still runs by hand, and why the ri
 instead of disappearing. An outcome worth having, stated, beats the same outcome
 unstated.
 
-### §PW85 A covers bake reports a size it did not draw
-
-Found porting the stars (§PW76). A final-rung bake with `covers = [96/112, 96/112]` at
-112 px a unit wrote a 96 by 96 picture and answered `"size": 1024`, which is the rung's
-square and not anything that was drawn.
-
-`bake` computes `frame` from the declaration and renders at it, then builds its answer
-from `chosen["size"]`, the plan's number from before the declaration was read. The
-provenance record is right, because it is taken off the file. The answer is the half a
-caller reads, and an agent comparing the answer against a spec's `display` or its own
-`units.check` is told a size nothing has.
-
-The fix: answer with `list(frame)`, which is the size that was rendered in every case,
-and keep the rung's square as `rung_size` if anything reads it. Nothing in `src/` does
-today; the tests that assert `size` do so on square rungs, where the two agree. Also
-check the cache-hit path in `_from_cache`, which reports the same number for the same
-reason.
-
 ### §PW87 A silhouette is scored inside the render's own outline
 
 Found writing the mushroom's spec (§PW77). The same render against the same drawing read

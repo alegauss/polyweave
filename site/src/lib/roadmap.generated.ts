@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 10 },
+  { block: "H", title: "Proof on a real game", open: 9 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -77,13 +77,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "nothing takes bake_model.py out once its assets have moved, so the rig outlives its own replacement",
     why: "Each family porting leaves the file smaller and still running, and two live paths to one sprite is the state this whole sequence exists to end.",
     deps: ["PW81"],
-  },
-  {
-    id: "PW85",
-    block: "H",
-    symptom: "a bake that declares the rectangle it covers answers with the rung's size, not the picture's",
-    why: "The answer is built from the plan's number before the declaration resized the frame, so a 96 px star is reported as 1024.",
-    deps: [],
   },
   {
     id: "PW87",

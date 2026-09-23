@@ -74,7 +74,8 @@ def test_the_sphere_rung_renders_without_a_mesh(project):
     )
     assert out["rung"] == "sphere"
     assert (project / "sphere.png").is_file()
-    assert out["size"] == 48
+    assert out["size"] == [48, 48]
+    assert out["rung_size"] == 48
     assert out["samples"] == 4
     # building, then rendering — reported more than once as the work moves through it.
     assert list(dict.fromkeys(s for s, _ in report.stages)) == ["building", "rendering"]

@@ -93,7 +93,7 @@ def plan(
 
 
 def _from_cache(
-    hit, out_path, where, chosen, started, inline: bool, tolerances=None
+    hit, out_path, where, chosen, started, inline: bool, tolerances=None, frame=None
 ) -> dict:
     """A hit, **reported as a hit**, and told which of its bars have since moved.
 
@@ -116,7 +116,8 @@ def _from_cache(
         "artefact": provenance.relative(out_path, where),
         "rung": record.get("rung", chosen["rung"]),
         "why": chosen["why"],
-        "size": chosen["size"],
+        "size": list(frame or (chosen["size"], chosen["size"])),
+        "rung_size": chosen["size"],
         "samples": chosen["samples"],
         "elapsed_s": round(time.monotonic() - started, 3),
         "cached": True,
@@ -332,7 +333,7 @@ def bake(
         if hit is not None:
             report.stage("rendering", progress=1.0, note="cached")
             return _from_cache(
-                hit, out_path, where, chosen, started, inline, tolerances
+                hit, out_path, where, chosen, started, inline, tolerances, frame
             )
 
     scrubbed: dict = {}
@@ -417,7 +418,11 @@ def bake(
         "artefact": record["artefact"]["path"],
         "rung": chosen["rung"],
         "why": chosen["why"],
-        "size": chosen["size"],
+        # What was drawn, as every other `size` here is (§PW85). The rung's square is a
+        # different number wherever a declared rectangle decided the frame, and a 96 px
+        # star used to be reported as 1024.
+        "size": list(frame),
+        "rung_size": chosen["size"],
         "samples": chosen["samples"],
         "elapsed_s": elapsed,
         "cached": False,
