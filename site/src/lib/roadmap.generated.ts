@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 9 },
+  { block: "H", title: "Proof on a real game", open: 8 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -62,7 +62,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "the three booster objects each needed a scrub, a roll and a fill found by hand after the service returned them",
     why: "Ingest has to keep a fetched texture and orient has to find a lean, then the hammer and wand come in from their drawings and a person judges them.",
-    deps: ["PW90", "PW91"],
+    deps: ["PW91"],
   },
   {
     id: "PW81",
@@ -77,13 +77,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "nothing takes bake_model.py out once its assets have moved, so the rig outlives its own replacement",
     why: "Each family porting leaves the file smaller and still running, and two live paths to one sprite is the state this whole sequence exists to end.",
     deps: ["PW81"],
-  },
-  {
-    id: "PW90",
-    block: "H",
-    symptom: "a fetched mesh put in the project's frame by ingest comes back without its texture",
-    why: "read_mesh keeps vertices and faces only, so the UVs and the painted material a service returned are gone before write_mesh sees them.",
-    deps: [],
   },
   {
     id: "PW91",

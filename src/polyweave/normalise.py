@@ -460,6 +460,50 @@ def write_mesh(found: dict, out: str | Path, *, materials: dict | None = None) -
     return where
 
 
+#: The interface's axes into Blender's, as a matrix: `blender.to_blender`, which is
+#: (x, y, z) -> (x, -z, y). Its transpose is the way back, as `read_mesh` does it.
+_TO_BLENDER = np.array([[1.0, 0.0, 0.0], [0.0, 0.0, -1.0], [0.0, 1.0, 0.0]])
+
+
+def write_normalised(source: str | Path, found: dict, out: str | Path) -> Path:
+    """The file that arrived, moved by the normalisation and written whole.
+
+    **What a service painted comes with it** (§PW90). `read_mesh` hands the maths the
+    vertices and faces, which is all an orientation needs, and writing the result from
+    those alone wrote Cottony's fetched hammer the right way round, the right size and
+    white: the texture was the whole of its colour. So the arrived object is moved in
+    place instead, by the same rotation, scale and offset the maths found, and exported
+    as it is. Its UVs, its materials and the images they read go out untouched, because
+    nothing here rebuilt them.
+    """
+    from .render import blender
+
+    bpy = blender.require()
+    from mathutils import Matrix
+
+    blender.reset()
+    obj = blender.load_mesh(source)
+    turn = np.asarray(found["rotation"], dtype=float) * float(found["scale"])
+    moved = np.eye(4)
+    moved[:3, :3] = _TO_BLENDER @ turn @ _TO_BLENDER.T
+    moved[:3, 3] = _TO_BLENDER @ np.asarray(found["offset"], dtype=float)
+    obj.data.transform(Matrix(moved.tolist()) @ obj.matrix_world)
+    obj.matrix_world = Matrix.Identity(4)
+    obj.data.update()
+
+    where = Path(out)
+    where.parent.mkdir(parents=True, exist_ok=True)
+    for other in bpy.context.scene.objects:
+        other.select_set(other is obj)
+    bpy.context.view_layer.objects.active = obj
+    bpy.ops.export_scene.gltf(
+        filepath=str(where),
+        use_selection=True,
+        export_format="GLB" if where.suffix.lower() == ".glb" else "GLTF_SEPARATE",
+    )
+    return where
+
+
 def _write_uv(mesh: Any, uv: Any) -> None:
     """The per-vertex coordinates onto the per-loop layer a file actually stores.
 
@@ -513,8 +557,8 @@ def ingest(
         # six numbers it did not use would claim it had.
         found = normalise(arrived, rotation=rotation, height=height)
 
-    written = write_mesh(
-        found, out or source.with_name(f"{source.stem}.normalised.glb")
+    written = write_normalised(
+        source, found, out or source.with_name(f"{source.stem}.normalised.glb")
     )
     record = {
         "source": str(source),

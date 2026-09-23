@@ -287,31 +287,6 @@ this is where that is recorded honestly: what still runs by hand, and why the ri
 instead of disappearing. An outcome worth having, stated, beats the same outcome
 unstated.
 
-### §PW90 Ingest keeps the shape and drops the paint
-
-Found starting on the boosters (§PW80). The hammer and the wand are fetched meshes whose
-whole colour is a texture the service painted. `ingest` is the one call that puts an
-arriving mesh in the project's frame, and it reads the file with `read_mesh`, which
-keeps vertices and faces and nothing else. `write_mesh` then writes what it was given.
-So the normalised hammer comes out the right way round, the right size, and white.
-
-Nothing flags it. The record says the mesh was oriented against its drawing at some
-silhouette IoU, which is true, and the render that follows is the first place anyone
-sees the texture is gone.
-
-`write_mesh` already carries UVs and material groups; the gap is on the reading side.
-`read_mesh` should return the UV per vertex where the file has a layer, the reverse of
-`_write_uv`, and the materials by reference. A texture is an image, so the written file
-has to carry the image the material points at, which the glTF exporter already packs
-when the material is on the object it exports.
-
-The narrow version is the one to build: carry the arriving object's materials across to
-the one `write_mesh` exports, rather than rebuilding them from a table, and keep the UVs
-through the reorientation, which moves points and never re-indexes them.
-
-Test: a textured quad ingested against nothing comes back with its UV layer and a
-material whose base colour is fed by an image.
-
 ### §PW91 Orient cannot find a lean
 
 Found starting on the boosters (§PW80). The service returned Cottony's hammer standing

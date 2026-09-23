@@ -393,6 +393,63 @@ def test_what_was_applied_is_recorded_so_nothing_downstream_repeats_it(tmp_path)
     assert record["source"] == str(source)
 
 
+def painted(where):
+    """A quad a service might return: UVs, and a colour that is only a texture."""
+    import bpy
+
+    from polyweave.render import blender
+
+    blender.reset()
+    bpy.ops.mesh.primitive_plane_add(size=2.0)
+    quad = bpy.context.active_object
+    quad.scale = (1.0, 3.0, 1.0)
+    quad.rotation_euler = (1.5707963, 0.0, 0.0)  # standing, so it has a height to scale
+    picture = bpy.data.images.new("paint", 4, 4)
+    picture.pixels = [0.9, 0.3, 0.1, 1.0] * 16
+    picture.pack()
+    paint = bpy.data.materials.new("paint")
+    paint.use_nodes = True
+    texture = paint.node_tree.nodes.new("ShaderNodeTexImage")
+    texture.image = picture
+    shader = paint.node_tree.nodes["Principled BSDF"]
+    paint.node_tree.links.new(texture.outputs["Color"], shader.inputs["Base Color"])
+    quad.data.materials.append(paint)
+    bpy.ops.export_scene.gltf(filepath=str(where), use_selection=False)
+    return where
+
+
+def test_what_a_service_painted_comes_through_ingest(tmp_path):
+    """§PW90: the fetched hammer came out the right way round, the right size, white."""
+    bpy = pytest.importorskip("bpy")
+    from polyweave.render import blender
+
+    source = painted(tmp_path / "raw.glb")
+    record = normalise.ingest(source, out=tmp_path / "kept.glb", root=tmp_path)
+    obj = blender.load_mesh(record["mesh"])
+    assert obj.data.uv_layers, "the coordinates the paint is laid on"
+    fed = [
+        node
+        for material in obj.data.materials
+        for node in material.node_tree.nodes
+        if node.type == "TEX_IMAGE" and node.image is not None
+    ]
+    assert fed, "and a material still reading its image"
+    assert bpy.data.images
+
+
+def test_the_file_written_is_where_the_maths_put_it(tmp_path):
+    """Moved in place rather than rebuilt, so the two have to agree."""
+    pytest.importorskip("bpy")
+    from polyweave.normalise import read_mesh
+
+    source = painted(tmp_path / "raw.glb")
+    record = normalise.ingest(source, out=tmp_path / "kept.glb", root=tmp_path)
+    back = np.asarray(read_mesh(record["mesh"])["vertices"], dtype=float)
+    size = back.max(axis=0) - back.min(axis=0)
+    assert size == pytest.approx(np.array(record["size"]), abs=1e-4)
+    assert back[:, 1].min() == pytest.approx(0.0, abs=1e-4), "standing on the ground"
+
+
 # -- and what it derived is recorded beside it (§PW46) ---------------------------------
 
 
