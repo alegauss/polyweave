@@ -408,11 +408,8 @@ def reproduced(record: dict, root: str | Path = ".") -> dict:
         "differs",
         record,
         before,
-        # ASCII, deliberately: this sentence is printed to a terminal, and stdout on a
-        # Windows desk here is cp1252, where an em dash arrives as a replacement
-        # character. §PW73 is the same defect in the twenty other strings that have one.
         f"{PurePosixPath(record['artefact']['path']).name}: the same declared settings "
-        f"produced different bytes; {(was or '?')[:12]} on "
+        f"produced different bytes — {(was or '?')[:12]} on "
         f"{since or 'an unknown date'}, {(now or '?')[:12]} now",
     )
 

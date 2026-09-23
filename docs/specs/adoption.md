@@ -208,6 +208,16 @@ fallen back from** — so one desk's path committed to a shared file breaks ever
 desk, including a CI that downloads its own engine and exports `$GODOT`. The refusal names
 all three places, which is what makes leaving it out safe.
 
+**A runner calls `polyweave.readable()` before it prints anything** (PW73). Nothing in the
+plugin prints its own prose: a refusal's message and remedy, and every line a run reports,
+are returned for the caller to print. So the encoding of the stream they land on belongs to
+the consumer's process, and left at the locale's on a Windows desk an em dash goes out as
+one correct cp1252 byte and reaches a UTF-8 reader as a lozenge. Nothing is lost writing
+it, which is what makes it hard to notice: the process that wrote the line saw nothing
+wrong. The call is the consumer's rather than an import side effect, because a library must
+not reconfigure a process it does not own. It returns the streams it changed, is empty when
+they were already UTF-8, and is safe to call twice. All three of Cottony's runners make it.
+
 ## Three model routes, stated rather than programmed
 
 Binds **PW54**. `tools/art/solid.py` is 283 lines of bmesh primitives that three scripts

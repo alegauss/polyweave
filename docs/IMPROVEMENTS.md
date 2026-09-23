@@ -130,27 +130,3 @@ Cottony's own work. The palette and the fonts are the same. What counts is what 
 of this block names, and the gate may report a fraction below one for as long as it says
 what is left and why. Two of those are already answered in `docs/specs/adoption.md`: the
 fetch ledger replays, and the motion Cottony has is two frames and no clip.
-
-### §PW73 The prose reaches the agent through a cp1252 pipe
-
-`python -c "print('a — b')"` on this machine prints `a ? b`, because
-`sys.stdout.encoding` is cp1252 and an em dash is not in it. Twenty runtime strings
-across `src/polyweave` carry one inside a quoted string rather than a docstring — among
-them `loop.py`'s "the cost", `units.py`'s "change the engine's deliberately" and
-`reference.py`'s "cut the". Those are refusal messages and progress lines, which is to
-say the surface this plugin is.
-
-It was found the way things here get found: a new sentence about captures that do not
-reproduce was printed by a real run, with a lozenge in the middle of it.
-
-What makes it worth a line rather than a shrug is the project's own premise. The caller
-is an agent in a terminal, judged by whether it gets the answer right on the first call
-without reading the implementation. A refusal it half-reads is the failure that premise
-exists to prevent, and the damage is worst in the messages carrying a remedy, because
-those are the long ones and the long ones hold the punctuation.
-
-Three ways out, and they are not equivalent. `reconfigure(encoding="utf-8")` fixes every
-string at once but is a plugin reaching into a process it does not own. Writing the
-strings in ASCII is a rule nothing enforces, so it decays. A lint rule over `src/` is
-enforcement without the reach, and is probably what this project wants — but that is a
-decision, and it should be made before twenty edits are spent.
