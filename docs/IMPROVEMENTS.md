@@ -430,26 +430,6 @@ written.
 
 ## Block J — A bar a person sets once
 
-### §PW108 Every verdict is evidence about a bound
-
-`loop.judged` stores `tool_passed`, `person_accepted` and a sentence, per run. So the
-ledger can count how often a person overruled the tool and never which bound the tool
-was wrong about, and the number the loop exists for cannot improve the specs it judges.
-
-A verdict records the measured value of every predicate at the moment it was given, and
-the ids a person named when they overruled, if they named any. Nothing about the call
-changes for a caller that names none.
-
-With that, per-predicate counts are arithmetic: for each bound, how often a result it
-passed was rejected, and how often a result it failed was accepted, and on which side of
-the bound. A bound overruled twice in the same direction is reported as the wrong
-number, with the values that overruled it, which is the evidence a calibration or a
-person needs.
-
-This is counting over a file, not a model of taste, so it stays inside "Spending money
-on the agent's own judgement": no call is made and no judgement is delegated. It becomes
-worth more with every verdict, which no other part of the plugin does.
-
 ### §PW109 One sheet to look at, one call to answer it
 
 The stars waited a day for one sentence from a person, and to get it an agent had to
@@ -464,9 +444,9 @@ bound (PW106, in `docs/specs/acceptance-spec.md`). The two readings are stated a
 choices: the look is wrong, or the number is.
 
 A `judge` operation takes the family and one of those choices with a sentence. It writes
-the person's verdict into the loop ledger with the values (§PW108), and where the number
-was wrong it rewrites the bound with origin `person`, the date and the sentence. One
-reply becomes one call.
+the person's verdict into the loop ledger with the values (`loop.judged`'s `check` and
+`named`, in docs/specs/adoption.md), and where the number was wrong it rewrites the
+bound with origin `person`, the date and the sentence. One reply becomes one call.
 
 A sheet and a command, never an editor, so "A graphical editor" is not touched: the
 person looks at a picture and says one word, and the agent does the rest. Nor is

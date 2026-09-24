@@ -35,8 +35,7 @@
 
 ## Block J — A bar a person sets once
 
-- 📋 **PW108** (deps: PW106 ✅) **a person's verdict is stored per run, so nothing learns which bound a rejection was about** — The ledger counts how often the tool was overruled and never on which predicate, so the one number the loop exists for cannot improve the specs it judges. → §PW108
-- 📋 **PW109** (deps: PW106 ✅, PW108) **a person judges a port from a file an agent points at, and the verdict is typed back into the spec by hand** — The judgement on the stars took one sentence and everything around it took an agent's turns, so the scarcest time in the loop is spent on paperwork. → §PW109
+- 📋 **PW109** (deps: PW106 ✅, PW108 ✅) **a person judges a port from a file an agent points at, and the verdict is typed back into the spec by hand** — The judgement on the stars took one sentence and everything around it took an agent's turns, so the scarcest time in the loop is spent on paperwork. → §PW109
 - 📋 **PW110** (deps: PW109) **nothing lists which assets wait on a person's look, so each family waits its turn in series** — Six Cottony families are chained on a person's eye, and a person who could judge all six in one sitting is asked six times over several days. → §PW110
 - 📋 **PW111** (deps: —) **no command checks committed artefacts against their specs, so a spec binds only while a search runs** — `[paths] specs` is declared and read by nothing, so a sprite overwritten after it was accepted is never held to the bar it passed. → §PW111
 - 📋 **PW112** (deps: PW111) **a spec is checked against the bake and never against what the engine draws on screen** — Once the game loads a mesh its material is what the player sees, so a spec that only reads the bake holds the intermediate artefact to the bar and not the real one. → §PW112

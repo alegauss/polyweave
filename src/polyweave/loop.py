@@ -136,21 +136,53 @@ def spent(
 
 
 def judged(
-    run: dict, *, tool_passed: bool, person_accepted: bool, why: str = ""
+    run: dict,
+    *,
+    tool_passed: bool,
+    person_accepted: bool,
+    why: str = "",
+    check: dict | None = None,
+    named: tuple[str, ...] | list[str] = (),
 ) -> dict:
     """One result, as the tool called it and as a person called it.
 
     Both, always. A tool's own verdict is worth nothing on its own here — the number
     this line is really after is the gap between the two.
+
+    `check` is what `accept.check` said of the result, and `named` the predicates a
+    person blamed when they overruled it (§PW108). With them the verdict keeps each
+    predicate's value at the moment it was given, which is what lets `bounds` say which
+    number a rejection was about. A caller passing neither records what it always did.
     """
-    run["verdicts"].append(
-        {
-            "tool_passed": bool(tool_passed),
-            "person_accepted": bool(person_accepted),
-            "why": str(why),
-            "at": time.time(),
-        }
-    )
+    verdict = {
+        "tool_passed": bool(tool_passed),
+        "person_accepted": bool(person_accepted),
+        "why": str(why),
+        "at": time.time(),
+    }
+    if check is not None:
+        verdict["predicates"] = [
+            {
+                "id": one["id"],
+                "value": one.get("value"),
+                "passed": bool(one.get("passed")),
+                "side": (one.get("bound") or {}).get("side"),
+            }
+            for one in check.get("predicates", ())
+        ]
+    if named:
+        known = {one["id"] for one in verdict.get("predicates", ())}
+        unknown = sorted(set(named) - known)
+        if unknown:
+            raise PolyweaveError(
+                "loop.unknown-predicate",
+                f"the verdict names {', '.join(unknown)}, which the check it was "
+                "given does not carry",
+                "pass the check the person judged, and name predicates from it: "
+                + (", ".join(sorted(known)) or "it has none"),
+            )
+        verdict["named"] = sorted(set(named))
+    run["verdicts"].append(verdict)
     return run
 
 
@@ -212,6 +244,77 @@ def _totals(runs: list[dict]) -> dict:
         "overruled": sum(one.get("overruled", 0) for one in runs),
         "commits": sorted({one["commit"] for one in runs if one["commit"]}),
     }
+
+
+#: How many times a bound must be overruled the same way before it is called wrong.
+#: Once is a person's mood; twice in one direction is a pattern worth a number.
+WRONG_AFTER = 2
+
+
+def bounds(root: str | Path = ".", *, asset: str | None = None) -> list[dict]:
+    """Which bounds a person overruled, which way, and with what values (§PW108).
+
+    Arithmetic over the ledger, not a model of taste. A bound is **too tight** when its
+    predicate failed and a person accepted the result anyway: the side it broke is the
+    one to move. It is **too loose** when its predicate passed, a person rejected the
+    result, and named it. A rejection naming nothing is counted as `unattributed` on
+    its asset rather than spread over every predicate that happened to pass.
+    """
+    found: dict[tuple[str, str, str], dict] = {}
+    unattributed: dict[str, int] = {}
+    for run in read(root):
+        if asset is not None and run["asset"] != asset:
+            continue
+        for verdict in run.get("verdicts", ()):
+            accepted = verdict["person_accepted"]
+            named = set(verdict.get("named", ()))
+            if not accepted and verdict["tool_passed"] and not named:
+                unattributed[run["asset"]] = unattributed.get(run["asset"], 0) + 1
+            for one in verdict.get("predicates", ()):
+                if accepted and not one["passed"]:
+                    way = "tight"
+                elif not accepted and one["passed"] and one["id"] in named:
+                    way = "loose"
+                else:
+                    continue
+                key = (run["asset"], one["id"], one.get("side") or "")
+                entry = found.setdefault(
+                    key,
+                    {
+                        "asset": key[0],
+                        "id": key[1],
+                        "side": key[2] or None,
+                        "tight": [],
+                        "loose": [],
+                    },
+                )
+                entry[way].append(one["value"])
+    out = []
+    for entry in found.values():
+        tight, loose = len(entry["tight"]), len(entry["loose"])
+        entry["wrong"] = None
+        if max(tight, loose) >= WRONG_AFTER and tight != loose:
+            bound = f"{entry['id']}'s {entry['side'] or 'bound'}"
+            if tight > loose:
+                entry["wrong"] = (
+                    f"{bound} is too tight: {tight} result(s) it failed were "
+                    f"accepted, at {_listed(entry['tight'])}"
+                )
+            else:
+                entry["wrong"] = (
+                    f"{bound} is too loose: {loose} result(s) it passed were "
+                    f"rejected for it, at {_listed(entry['loose'])}"
+                )
+        out.append(entry)
+    out.sort(key=lambda e: (e["wrong"] is None, e["asset"], e["id"], e["side"] or ""))
+    return out + [
+        {"asset": name, "unattributed": count}
+        for name, count in sorted(unattributed.items())
+    ]
+
+
+def _listed(values: list) -> str:
+    return ", ".join(f"{v:g}" if isinstance(v, int | float) else str(v) for v in values)
 
 
 def compare(asset: str, *, root: str | Path = ".") -> dict:

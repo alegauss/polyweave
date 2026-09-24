@@ -765,6 +765,11 @@ CODES: dict[str, Code] = {
         when="a comparison before the same asset has been made both ways",
         doors=("record the other way", "list what has been recorded"),
     ),
+    "loop.unknown-predicate": Code(
+        means="a verdict blames a predicate the check it was given does not carry",
+        when="a named id misspelled, or named with no check to name it from (§PW108)",
+        doors=("pass the check the person judged", "name an id from that check"),
+    ),
     "loop.malformed": Code(
         means="the ledger is not readable",
         when="a hand edit that left invalid JSON behind",

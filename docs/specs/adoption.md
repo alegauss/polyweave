@@ -24,6 +24,19 @@ was**, and nothing else recorded here would show it. So every result carries **b
 verdicts — the tool's and a person's — and the gap between them is counted. The tool's own
 verdict alone is worth nothing at this level.
 
+**A verdict says which bound it was about** (§PW108). `loop.judged` takes the `check` the
+person looked at and the predicate ids they `named` when they overruled it. The verdict
+then keeps each predicate's value, whether it passed and the side of its bound. A name the
+check does not carry is refused (`loop.unknown-predicate`). A caller passing neither
+records what it always did. `loop.bounds(root, asset=)` counts over the ledger. A bound is
+too tight when its predicate failed and a person accepted the result anyway. It is too
+loose when its predicate passed and a person rejected the result and named it. Overruled
+twice in one direction, and more often that way than the other, it is reported as the
+wrong number, with the values that overruled it. That is the evidence a calibration (§PW107)
+or a person needs. A rejection that names nothing counts as `unattributed` on its asset,
+not against every predicate that happened to pass. This is counting over a file, not a
+model of taste: nothing is called and no judgement is delegated.
+
 ## A baseline cannot be written afterwards
 
 The baseline is what the existing pipeline costs today, recorded **before anything is
