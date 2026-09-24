@@ -10,6 +10,9 @@
 
 ## Block E — One world with the engine
 
+- 📋 **PW118** (deps: —) **a capture that changes blames an undeclared setting when what moved was a file the game loaded** — After the stars moved all four Cottony captures raised the alarm, and finding the cause took a script diffing screenshots, because a capture records no inputs at all. → §PW118
+- 📋 **PW119** (deps: PW118) **nothing answers which captures and renders depend on a file, so a changed sprite means re-taking all of them** — Four captures were re-taken and diffed to learn which showed a star; a project with forty cannot, and one that re-takes too few commits a stale screenshot. → §PW119
+
 ## Block F — Motion
 
 ## Block G — Geometry as a declaration
@@ -19,6 +22,11 @@
 - 📋 **PW57** (deps: PW53 ⏸) **every Cottony look gate restates its own floor, so no asset has a bar a search can aim at** — Five check scripts measure after the render is spent, which is a verdict and never a target, and a threshold moved in one of them is invisible to the rest. → §PW57
 - 📋 **PW59** (deps: PW53 ⏸, PW54 ✅, PW55 ✅, PW56 ⏳, PW57, PW58 ✅) **nothing says how much of Cottony still does its own version of what the plugin does** — Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion. → §PW59
 - ⏳ **PW56** (deps: PW57) **twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent** — The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question. → §PW56
+- 📋 **PW114** (deps: —) **the loop ledger only times a first port, where the old rig is a three-second re-bake of constants already found** — The old rig's cost was the afternoon of retuning that returns whenever something moves, so a ledger that never measures a change cannot falsify the plugin's claim. → §PW114
+- 📋 **PW115** (deps: —) **a run's render count is whatever its caller adds up, so a cache hit can be charged as a render** — Recording the stars charged 32 renders for 28, caught only by reading the log, in a ledger that is append-only once committed. → §PW115
+- 📋 **PW116** (deps: —) **a ledger side that never measured the hand work still yields a conclusive verdict** — Every before side says in prose that the hand search was never timed, and `compare` sums it as complete and calls the stars not reduced. → §PW116
+- 📋 **PW117** (deps: —) **every symptom in the backlog was measured on one game, so the config boundary is tested by a single adopter** — A plate at CELL, a placed covers and lights scaled for two star sizes are general in form and used by nobody else, so Cottony's shape may already be compiled in. → §PW117
+- 📋 **PW120** (deps: PW105, PW115) **every family port is a hand-written script repeating the same build, search, check, bake and record steps** — Three Cottony port scripts are one skeleton with different filling, and five more families would be five more copies, each with its own small mistakes. → §PW120
 
 ## Block I — Voxel models from a declaration
 
@@ -33,6 +41,19 @@
 - 📋 **PW101** (deps: —) **building a declaration takes a Python script of the project's own** — Every consumer writes the same few lines to build, write and preview, and a project written in GDScript has no natural place to keep them. → §PW101
 - 📋 **PW102** (deps: PW93) **a Godot project reading a voxel model must write its own loader and MultiMesh setup** — Godot is one of the three tools the plugin serves, and an importer written once saves every Godot consumer the same parser. → §PW102
 - 💭 **PW103** (deps: —) **a family of models that differ in a few numbers is one document copied per member** — Enemy tiers and boss phases are one shape at other proportions or colours, and copies drift apart. → §PW103
+
+## Block J — A bar a person sets once
+
+- 📋 **PW104** (deps: —) **a search stops at the first sample inside every bound, however close to one of them it sits** — The stars passed with a facet 0.0005 under its ceiling and the search called that nothing left to gain, so a rig one release from failing ships as settled. → §PW104
+- 📋 **PW105** (deps: —) **a rig can only be searched against one spec, so a family is fitted on one member and hoped for on the rest** — When no rig holds on every member the search cannot say which two predicates conflict, and that conflict is the question a person has to answer. → §PW105
+- 📋 **PW106** (deps: —) **a spec bound does not say whether it was measured, guessed as a margin or agreed by a person** — The dim star's 0.37 was a margin nobody asked for and it blocked a port for a day, because a miss on a guess reads exactly like a miss on a look. → §PW106
+- 📋 **PW107** (deps: PW106) **a margin around a measured value is chosen by eye, never derived from how much the measure moves on its own** — A tail moves more than a median under the same harmless change, so one margin rule is too loose on one predicate and refuses an accepted look on the next. → §PW107
+- 📋 **PW108** (deps: PW106) **a person's verdict is stored per run, so nothing learns which bound a rejection was about** — The ledger counts how often the tool was overruled and never on which predicate, so the one number the loop exists for cannot improve the specs it judges. → §PW108
+- 📋 **PW109** (deps: PW106, PW108) **a person judges a port from a file an agent points at, and the verdict is typed back into the spec by hand** — The judgement on the stars took one sentence and everything around it took an agent's turns, so the scarcest time in the loop is spent on paperwork. → §PW109
+- 📋 **PW110** (deps: PW109) **nothing lists which assets wait on a person's look, so each family waits its turn in series** — Six Cottony families are chained on a person's eye, and a person who could judge all six in one sitting is asked six times over several days. → §PW110
+- 📋 **PW111** (deps: —) **no command checks committed artefacts against their specs, so a spec binds only while a search runs** — `[paths] specs` is declared and read by nothing, so a sprite overwritten after it was accepted is never held to the bar it passed. → §PW111
+- 📋 **PW112** (deps: PW111) **a spec is checked against the bake and never against what the engine draws on screen** — Once the game loads a mesh its material is what the player sees, so a spec that only reads the bake holds the intermediate artefact to the bar and not the real one. → §PW112
+- 💭 **PW113** (deps: —) **the acceptance spec is only ever aimed at a 3D bake, though nothing in its format is 3D** — Cottony writes the same kind of bar three more times outside the plugin, for a board, a music loop and drawn sprites, and whether those belong here is a scope call. → §PW113
 
 ## Done when — PW36
 

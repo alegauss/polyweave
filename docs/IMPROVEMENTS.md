@@ -10,6 +10,40 @@
 
 ## Block E — One world with the engine
 
+### §PW118 A capture that knows what the game loaded
+
+After the stars moved, all four of Cottony's captures reported the same settings making
+a different picture, "so something this picture depends on is not declared". It was true
+and it did not help: what moved was four sprites, and finding that took a script diffing
+the old and new screenshots by hand. `capture._record` passes no inputs, not even the
+script, so the record cannot name what changed.
+
+The engine can say what it loaded. A capture run records every resource path the game
+opened, from the verbose load log or a probe on the resource loader, and hashes each
+file into the record's inputs through `source` in `provenance.py`, which already exists
+for renders.
+
+Then a `differs` can name its cause: the inputs whose hashes moved since the record
+beside it, and only when none did does it fall back to blaming something undeclared. A
+changed sprite becomes an explanation, and a truly unexplained difference stays the
+alarm `reproduced` in `provenance.py` meant it to be.
+
+### §PW119 From a changed file to the artefacts that show it
+
+When the stars changed, which of Cottony's four screenshots would change was a guess, so
+all four were re-taken and diffed to find out. A project with forty captures cannot do
+that, and one that re-takes too few commits a screenshot that no longer shows the game.
+
+Once captures record their inputs (§PW118), every sidecar in the project is an edge from
+an artefact to the files it was made from. A reverse read over them answers the question
+directly: given a changed file, the artefacts whose recorded inputs include it, captures
+and renders alike, with the command each was made by.
+
+That is a read over sidecars already on disk, needing no index and no service, and the
+same walk `verify` in `provenance.py` makes. It lets a port say "these three captures
+show this sprite" before re-taking them, and lets a gate fail when a file changed and an
+artefact that depends on it did not.
+
 ## Block F — Motion
 
 ## Block G — Geometry as a declaration
@@ -262,6 +296,96 @@ this is where that is recorded honestly: what still runs by hand, and why the ri
 instead of disappearing. An outcome worth having, stated, beats the same outcome
 unstated.
 
+### §PW114 The claim is about the second change, not the first bake
+
+The stars' ledger says the work was not reduced: 8.6 s the new way against 3.3 s the
+old. It will say that for nearly every family, because the before side is a re-bake with
+the constants already found, and a re-bake is always cheap. The old rig's cost was never
+the first bake. It was the afternoon that found the constants, and it comes back every
+time something they were tuned against moves.
+
+So the comparison that tests this plugin's claim is a change, not a port. A perturbation
+run names one change to an asset that has both ways recorded: a hue in the palette, a
+sample count, a renderer version, a geometry parameter. Each way then has to get back to
+an accepted look. The plugin's way is a search against the unchanged spec; the old way
+is a person retuning the constants, timed as it happens and recorded in person-minutes.
+
+The verdict wording in `docs/specs/adoption.md` stays as it is, including the case where
+the plugin loses. What changes is which event it is about, and a ledger that can only
+ever measure the first bake cannot falsify the claim either way.
+
+### §PW115 A run recorded rather than reported
+
+`loop.spent` adds whatever its caller says. Recording the stars, the caller charged 32
+renders when 28 were rendered, because the four final bakes were the checked pictures
+handed back by the cache. The mistake was caught by reading the log, and it went against
+the plugin; the next one could go either way, and the ledger is append-only.
+
+`render.bake` already knows: every answer carries `cached`. So a run can be recorded
+rather than reported. While a run is open, each bake reports into it, counting fresh
+renders and cache hits separately, with their seconds. The caller still judges the run
+and closes it, and `spent` stays for what the plugin cannot see, such as a service call
+made elsewhere.
+
+A cache hit is not free and not a render, and the ledger should show both numbers, since
+a loop that is fast because it repeats itself is the very thing the loop ledger was
+written to catch.
+
+### §PW116 What a side did not measure, said as data
+
+Every before side in Cottony's ledger carries the same sentence in its brief: the hand
+work that found the constants was never timed, so this side understates the old cost.
+`compare` does not read briefs. It sums the numbers as if both sides were complete and
+returns a verdict, and "the work was not reduced" is the one it returns for the stars.
+
+A run can declare what it did not measure, by name: `seconds` for the hand search, or
+`renders` for work done before recording began. `compare` then says which verdicts the
+missing numbers make unreachable. A side with its seconds unmeasured cannot support "no
+faster" or "faster"; it can still support the overruling verdict, which only needs the
+counts it has.
+
+The same change adds the number the plugin is really about: person-minutes, recorded by
+whoever gave the verdict, beside the machine's seconds. The stars cost a person one
+sentence, and today the ledger has nowhere to say it.
+
+### §PW117 A second adopter while the boundary is cheap to move
+
+`docs/specs/adoption.md` records that no key had to be added for Cottony, and calls it
+the boundary holding. It is the boundary holding for one project. The features of this
+block and the last were shaped by Cottony's numbers: a plate at `CELL` pixels, a
+`covers` rectangle placed from the board, lights scaled by the square of the subject for
+its two star sizes. Each is general in form; none has been used by anybody else.
+
+A second adopter does not need to be a game, only different. This repository's own site
+has pictures, and a small fixture project with another unit, another scale and no Godot
+would stress the config in the places Cottony never pushed. What to record is the same
+as §PW36's: every key it had to set, anything that needed a change inside the plugin,
+and anything that turned out to be Cottony's shape compiled in, which the non-goal
+already calls a defect.
+
+The point is to find those while they are cheap, before Block H closes and the claim
+that the boundary holds is read as settled.
+
+### §PW120 A family stated, not scripted
+
+Cottony has three port scripts, `search_stars.py`, `frame_trays.py` and
+`ingest_boosters.py`, about a hundred lines each, and they are one skeleton: build or
+ingest the models, search or place them against their specs, check the rest, bake the
+accepted ones where the game reads them, and record the run. Every later family (PW77 to
+PW81) would be a fourth, fifth and sixth copy, each with its own small mistakes, such as
+a cache hit charged as a render.
+
+A family file states what differs: the members, each with its spec, its model or
+declaration, what its render fixes and where it is baked; the axes shared; whether the
+rig is searched, placed or given. One port operation reads it and runs the skeleton,
+using the family search (§PW105), recording into the ledger as it goes (§PW115), and
+baking only when every member passes.
+
+For the caller this plugin is designed for, that is twenty lines of TOML instead of a
+hundred of Python, and a port that reads the same across families. The scripts that
+exist stay until their family is re-expressed; the point is that the next one is never
+written.
+
 ## Block I — Voxel models from a declaration
 
 ### §PW93 Voxel output
@@ -425,3 +549,198 @@ output per variant, named after it, and the readback lists them side by side.
 
 An idea until a consumer has three members of one family. `--set` covers one-off
 overrides already.
+
+## Block J — A bar a person sets once
+
+### §PW104 Passing is not the same as passing comfortably
+
+The stars passed with the gold's brightest facet at 0.4695 against a ceiling of 0.47,
+and the search reported "the spec passed with nothing left to gain". It had a great deal
+left: `accept.py` scores a predicate 1.0 anywhere inside its bound, so the first sample
+inside every bound wins, and `search.py` stops on the pass that finds it. A rig 0.0005
+from a ceiling is one Blender release, one sample count or one hue away from failing,
+and nothing said so.
+
+Keep the verdict as it is: passed is passed, and a margin of 1.0 still means inside. Add
+a second number beside it, **headroom**: for each bounded predicate, the distance to the
+nearer bound as a share of the band, or of the bound itself where there is one side. The
+sample's headroom is the smallest of those.
+
+Once a pass has found a passing sample, the search keeps going while budget remains and
+ranks passing samples by headroom, stopping when a whole pass fails to raise it. The
+answer carries the headroom and names the predicate that set it, so the tightest bound
+is visible without reading the trace.
+
+### §PW105 One rig for the whole family, or the conflict that prevents it
+
+`search()` takes one spec and one evaluator, so Cottony's stars were fitted on the 96 px
+gold and the other three were checked afterwards in hope. That is the right test of a
+found look and the wrong way to find one: the rig that holds on all four was reachable
+directly, and when none did, the search could only say the fitted one failed elsewhere.
+
+A family is a list of members, each a spec plus what its render fixes (colour, size,
+model), sharing the searched axes. One sample renders every member, and its score is the
+worst member's, so the search climbs towards the rig the whole family accepts. Members
+can run through `search.in_parallel` since they are independent renders.
+
+When no sample passes on every member, the answer is the conflict, not a score: the pair
+of predicates on different members that no sample satisfied together, and the nearest
+sample to each side. "No rig satisfies the gold's median tone and the dim's hot facet at
+once; here is the closest to each" is exactly the question a person has to answer, asked
+by the tool instead of reconstructed by an agent from four verdicts.
+
+Fit on one and check on the rest stays possible, as the held-out test it is.
+
+### §PW106 A number that says where it came from
+
+The dim star's hot-facet ceiling was 0.37: the shipped 0.344 plus a margin somebody
+chose. It blocked the port for a day, and the fix was a person saying the margin was the
+wrong number. Nothing in the spec could have said so first, because a bound read off
+pixels, a margin put over one and a value a person agreed to are all spelled `max =
+0.37`.
+
+A bound gets an optional origin: `measured` (read off an artefact, with the value it was
+read at), `margin` (put around a measured value by hand), or `person` (agreed on a look,
+with the date). A TOML inline table beside the number keeps old specs valid, and an
+origin outside those three is refused like any unknown field.
+
+What changes is the failure. A predicate missed on a `margin` bound says the bound is a
+guess and names the measured value it guards, so the next question is whether the look
+or the number is wrong. A miss on a `person` bound says the look moved. That distinction
+is what an agent needs to decide between re-searching and asking, and today it can only
+be recovered from a comment.
+
+### §PW107 Margins measured from the noise
+
+Every margin in Cottony's star specs was chosen by eye: roughly a tenth above the
+shipped value, the same for a median as for a 99th percentile. But a tail moves more
+than a median under the same harmless change, so one margin rule is too loose on one
+predicate and too tight on the next, which is how 0.37 came to refuse a star a person
+accepted.
+
+Renders are cheap enough to measure the noise instead. Calibration takes the accepted
+artefact's request and re-renders it under changes that should not change the look: the
+seed, the sample count one rung down, the size one step either way. The spread of each
+measure across those is its noise, and the proposed bound is the accepted value plus a
+stated multiple of it, written with origin `measured` and the spread beside it.
+
+It proposes and never writes silently: the answer is the old bound, the new one and the
+spread per predicate, and applying it is a separate call. A bound with origin `person`
+is left alone, since a person's verdict outranks a statistic.
+
+### §PW108 Every verdict is evidence about a bound
+
+`loop.judged` stores `tool_passed`, `person_accepted` and a sentence, per run. So the
+ledger can count how often a person overruled the tool and never which bound the tool
+was wrong about, and the number the loop exists for cannot improve the specs it judges.
+
+A verdict records the measured value of every predicate at the moment it was given, and
+the ids a person named when they overruled, if they named any. Nothing about the call
+changes for a caller that names none.
+
+With that, per-predicate counts are arithmetic: for each bound, how often a result it
+passed was rejected, and how often a result it failed was accepted, and on which side of
+the bound. A bound overruled twice in the same direction is reported as the wrong
+number, with the values that overruled it, which is the evidence a calibration or a
+person needs.
+
+This is counting over a file, not a model of taste, so it stays inside "Spending money
+on the agent's own judgement": no call is made and no judgement is delegated. It becomes
+worth more with every verdict, which no other part of the plugin does.
+
+### §PW109 One sheet to look at, one call to answer it
+
+The stars waited a day for one sentence from a person, and to get it an agent had to
+point at `.polyweave/stars/compare.png`, explain a 99th percentile against a ceiling,
+and then edit a spec comment and a ledger entry by hand from the reply. The judgement
+was quick; everything around it was not.
+
+A review sheet is one PNG per family: for each member the old artefact beside the new
+one at the size the game shows it, the crop of the latest capture where it stands if one
+is recorded, and under each the predicates that failed in words, with the origin of the
+bound (§PW106). The two readings are stated as choices: the look is wrong, or the number
+is.
+
+A `judge` operation takes the family and one of those choices with a sentence. It writes
+the person's verdict into the loop ledger with the values (§PW108), and where the number
+was wrong it rewrites the bound with origin `person`, the date and the sentence. One
+reply becomes one call.
+
+A sheet and a command, never an editor, so "A graphical editor" is not touched: the
+person looks at a picture and says one word, and the agent does the rest. Nor is
+"Spending money on the agent's own judgement": the verdict stays the person's, and the
+agent only carries it.
+
+### §PW110 A person's time asked for once
+
+Six of Cottony's families (PW77 to PW82) are set aside for a person's look, and they are
+chained, so each one is prepared, presented and answered before the next is even
+rendered. A person who could judge all six in ten minutes is asked six times over
+several days.
+
+Pending is a read over what is already on disk: the loop ledger, the specs and the
+sidecars. An asset is pending when it has a candidate made the new way and no person's
+verdict on it. The answer lists each with its state, which is the row §PW59 needs
+anyway: made by the old way or the plugin, spec present, before side recorded, after
+side recorded, waiting on a person.
+
+With the list, candidates can be prepared ahead of the verdicts they wait on, as far as
+their dependencies allow, and every pending sheet (§PW109) is gathered into one sitting.
+Verdicts come back as a batch of `judge` calls. The queue does not decide anything and
+does not reorder the chain; it makes sure a person's time is asked for once, not once
+per family.
+
+### §PW111 The specs as a gate, with no render
+
+`[paths] specs` is declared, defaults to `docs/accept`, and is read by nothing. A spec
+is consulted only while a search runs, so the four star specs Cottony now carries stop
+protecting the stars the moment the search exits. A sprite overwritten by a generator,
+or re-exported by hand, is not checked against the bar it was accepted at.
+
+Checking needs no render: `accept.check` measures any PNG. So a verify walks the specs
+directory, finds each spec's artefact, checks it at the rung the spec states, and
+returns one verdict per spec with the predicates that failed, shaped for a CI job to
+fail on. That is the gate §PW57 reduces Cottony's five check scripts to, available
+before any of them move.
+
+The spec needs to say where its artefact is. Today the `asset` name is all it has and
+the artefact path is in the caller's script. An optional `artefact` field, relative to
+the project, is the smallest addition; without it the verify reports the spec as
+unanchored rather than guessing a path from the name, which would be one project's
+layout compiled in.
+
+### §PW112 The same bar, on the screen the player sees
+
+Cottony's style guide says it outright: once the game loads a mesh, the Godot material
+is what the player sees, and the bake becomes a reference. Its `material_match.gd`
+exists to measure the gap by hand. Every spec here is checked against a Blender render,
+which is the intermediate artefact, and the picture on screen is never held to the bar
+at all.
+
+The plugin already has the three pieces. `capture` takes the screen, `accept.check`
+takes any PNG and a region, and the measures do not care which renderer made the pixels.
+What is missing is saying where an asset stands in a capture: a capture declares named
+rectangles, and a spec may be checked against one of them as well as against its bake.
+
+So the same spec gets a second answer, on screen, and the two can disagree. A sprite
+that passes baked and fails in the capture means the engine is drawing it differently,
+which is the finding `material_match.gd` was built to make and could only make for one
+star. The bar stays one file, so moving it moves both checks.
+
+### §PW113 Is the spec wider than the renderer?
+
+Nothing in the acceptance spec is 3D. A predicate is a measure over a region of pixels,
+and `accept.check` takes a PNG from anywhere. Cottony already writes the same kind of
+bar outside this plugin, three times: `check_vivid.py` holds the board's saturation at
+the 99th percentile, `loop_music.py` fails a loop whose seam stands out spectrally, and
+`make_assets.py` draws 2,406 lines of 2D sprites with no bar at all.
+
+§PW59 puts that 2D generator outside the denominator on purpose, because this plugin is
+geometry, surface and motion in three dimensions. That is a scope decision, and this
+line asks whether it still holds for the spec alone: the renderer stays 3D, but should a
+drawn sprite, a screenshot or a sound be held to a spec in the same format, searched
+where it has parameters and checked where it does not?
+
+Answering yes widens the measures (audio has none) and nothing else. Answering no is
+worth writing down as a non-goal, so the next agent that notices does not file this
+again.
