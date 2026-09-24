@@ -481,6 +481,51 @@ The manifold check is **opt-in**, because it walks every edge of every face and 
 mesh costs more than the operation that produced it — the same line §2 draws between a cheap
 assertion and an expensive one.
 
+## Cells instead of triangles
+
+A document may ask for cells (§PW93). A game that draws its actors as cubes and breaks them
+apart when they are hit reads which cells exist and what each one wears, and a mesh says
+neither.
+
+```toml
+[voxels]
+across = 16          # cells along the longest side; or `cell = 0.5`, a size, never both
+```
+
+Either value may be an expression over `[params]`, and `voxelize(document, cell=…)` or
+`across=…` overrides the table for one call. Neither or both is `geom.bad-voxels`.
+
+**Evaluated on the grid.** The grid is centred on what the output covers and a cell is
+filled where its centre is inside. `primitive`, `prism` and `plate` answer that by their own
+formula, `transform` by moving the sample points backwards, `union` and `carve` as set
+operations: exact, no Blender and no solver. `inflate`, `crowned`, `annulus` and `custom`
+have no test of their own and are built as meshes and read by ray parity. A `bevel` passes
+its input through.
+
+**A later node paints.** A cell wears the material of the last node **in the document** that
+covers it and carries one. Document order rather than build order, because build order breaks
+ties by name, and a canopy written after the hull should win whatever the two are called.
+
+`build.write(document, "ship.glb")` on such a document writes `ship.voxels.json` beside the
+mesh, and the mesh is the same cells as cubes with only their exposed faces, grouped by
+material, so `bake` and every render take it unchanged:
+
+```json
+{
+  "name": "ship", "cell": 1.0, "size": [16, 7, 5], "origin": [-8.0, -3.5, -2.5],
+  "palette": [ { "name": "hull", "colour": "#808080" }, { "name": "glass", "glow": 2.0 } ],
+  "nodes": ["hull", "canopy", "ship"],
+  "cells": { "x": [], "y": [], "z": [], "palette": [], "node": [] },
+  "count": 312
+}
+```
+
+`cells` is five flat arrays of one entry per cell: its grid index on each axis, its slot in
+`palette`, and the index in `nodes` of the node that decided what it wears. A palette entry is
+the material's resolved table with its keys passed through untouched, since `glow` means
+something to a game and nothing here; a cell nothing painted wears an entry whose name is
+empty. The readback is one line: `a voxel model 16 by 7 by 5, 312 cells in 3 materials`.
+
 ## Rebuilding
 
 A parameter change forces a rebuild of every node that references it, transitively; a rig

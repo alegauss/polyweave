@@ -261,8 +261,17 @@ def write(
     pay for anyway.
 
     The materials go with it, because a group names one and a file needs the thing.
+
+    A document declaring `[voxels]` answers cells instead (§PW93): the cells go beside
+    `out` as `<stem>.voxels.json` and `out` holds the same cubes, so everything that
+    takes a mesh still takes it.
     """
     from ..normalise import write_mesh
+
+    if document.get("voxels"):
+        from .voxels import write as cells
+
+        return cells(document, out, root=root, **given)
 
     made = build(document, root=root, manifold=manifold, **given)
     where = Path(out)

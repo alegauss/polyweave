@@ -128,7 +128,7 @@ def parse(stated: dict, *, named: str = "a declaration") -> dict:
             f"name one of {', '.join(sorted(seen))}",
         )
     _refuse_cycles(nodes, seen, named)
-    return {
+    document = {
         "name": str(stated["name"]),
         "version": int(stated.get("version", 1)),
         "params": dict(stated.get("params") or {}),
@@ -136,6 +136,11 @@ def parse(stated: dict, *, named: str = "a declaration") -> dict:
         "nodes": [dict(node) for node in nodes],
         "output": output,
     }
+    # Only where it is asked for (§PW93): a document without it builds triangles as it
+    # always did, and one with it answers cells as well.
+    if stated.get("voxels"):
+        document["voxels"] = dict(stated["voxels"])
+    return document
 
 
 def refers_to(node: dict) -> list[str]:

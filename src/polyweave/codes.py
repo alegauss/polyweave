@@ -788,6 +788,12 @@ CODES: dict[str, Code] = {
         "ends rather than one that repeats nothing",
         doors=("give each range a var, a from and a to", "use a step above zero"),
     ),
+    "geom.bad-voxels": Code(
+        means="the document asks for cells and does not say how big one is",
+        when="a [voxels] table with neither `cell` nor `across`, or with both, or a "
+        "size that is not above zero; two ways of saying one number would disagree",
+        doors=("give [voxels] a `cell` size", "give [voxels] an `across` count"),
+    ),
     # -- clip: motion over time ------------------------------------------------
     "clip.empty": Code(
         means="the clip moves nothing",

@@ -388,32 +388,6 @@ written.
 
 ## Block I — Voxel models from a declaration
 
-### §PW93 Voxel output
-
-A document gains `[voxels]` with `cell` (a size) or `across` (cells along the longest
-axis), and its build answers occupancy instead of triangles. Starship is the consumer:
-its actors are declared here and drawn and shattered as cells.
-
-Evaluation is grid-native. Each op answers an inside-test at cell centres: `primitive`
-analytically, `prism` as the ring test `solid._inside` times its depth range, `plate` as
-a rounded rectangle, `transform` by inverse-transforming the sample points, `union` and
-`carve` as set operations. Exact, no Blender and no MANIFOLD, in milliseconds, so a
-search can afford thousands. Ops with no inside-test (`inflate`, `crowned`, `annulus`,
-`custom`) are voxelized from their mesh by ray parity along one axis.
-
-A cell wears the material of the last node in build order that covers it, so a later
-node paints: a cockpit over a hull.
-
-The build writes `<name>.voxels.json`: cell size, dimensions, origin, the palette (each
-material's resolved table, keys passed through untouched, since `glow` means something
-to a game and nothing here), and the cells as flat arrays of x, y, z, palette index and
-node. Beside it, the same cubes as a `.glb` with material groups, so `bake`, the look
-and every render take it unchanged. The readback says `a voxel model 16 by 7 by 5, 312
-cells in 3 materials`. Provenance and cache key as a mesh's do.
-
-This is the compiler answering another question about the same declaration. It generates
-nothing a service would, so the non-goals hold.
-
 ### §PW94 Voxel contact sheet
 
 Cells are already an image. An orthographic view along an axis is the nearest cell per

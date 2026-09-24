@@ -33,7 +33,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
   { block: "H", title: "Proof on a real game", open: 8 },
-  { block: "I", title: "Voxel models from a declaration", open: 11 },
+  { block: "I", title: "Voxel models from a declaration", open: 10 },
   { block: "J", title: "A bar a person sets once", open: 10 },
 ];
 
@@ -109,25 +109,18 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW105", "PW115"],
   },
   {
-    id: "PW93",
-    block: "I",
-    symptom: "a declaration can only become a triangle mesh, so a game that draws and breaks cells has nothing to read",
-    why: "Starship builds its ship and enemies from cubes that fly apart when shot, and a mesh says neither which cells exist nor what each one wears.",
-    deps: [],
-  },
-  {
     id: "PW94",
     block: "I",
     symptom: "a voxel model cannot be seen without starting Blender and paying for a render",
     why: "Authoring a shape is dozens of small edits, and each one needs a look that costs milliseconds rather than a render.",
-    deps: ["PW93"],
+    deps: [],
   },
   {
     id: "PW95",
     block: "I",
     symptom: "a shape placed cell by cell, like layered pixel art, has no op and would take dozens of cube nodes",
     why: "Hand-placed details such as a cockpit, an eye or a stripe give voxel art its character, and a primitive per cell is unreadable.",
-    deps: ["PW93"],
+    deps: [],
   },
   {
     id: "PW96",
@@ -141,28 +134,28 @@ export const generatedTasks: GeneratedTask[] = [
     block: "I",
     symptom: "a voxel model with floating cells, one-cell threads or too many cells builds without complaint",
     why: "Each reads badly on screen or costs a game frames, and all of them are countable from the cells before anything renders.",
-    deps: ["PW93"],
+    deps: [],
   },
   {
     id: "PW98",
     block: "I",
     symptom: "fitting a voxel model to a concept drawing or a fetched mesh is guessing numbers by hand",
     why: "The search already tunes declared parameters against a measure, and a voxel silhouette is measurable in microseconds without a render.",
-    deps: ["PW93", "PW94"],
+    deps: ["PW94"],
   },
   {
     id: "PW99",
     block: "I",
     symptom: "a game breaking a voxel model must work out its fragments and damage order itself at runtime",
     why: "Grouping cells into fragments and ordering them for erosion is geometry the build already holds, and precomputing it keeps the kill frame cheap.",
-    deps: ["PW93"],
+    deps: [],
   },
   {
     id: "PW100",
     block: "I",
     symptom: "a fetched mesh cannot be the starting block of a voxel model",
     why: "A Meshy hull voxelized, then cut and painted by a declaration, would keep what was bought and still get hand-made detail.",
-    deps: ["PW93"],
+    deps: [],
   },
   {
     id: "PW101",
@@ -176,7 +169,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "I",
     symptom: "a Godot project reading a voxel model must write its own loader and MultiMesh setup",
     why: "Godot is one of the three tools the plugin serves, and an importer written once saves every Godot consumer the same parser.",
-    deps: ["PW93"],
+    deps: [],
   },
   {
     id: "PW103",

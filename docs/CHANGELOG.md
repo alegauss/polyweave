@@ -119,5 +119,7 @@
 
 ## Block I — Voxel models from a declaration
 
+- ✅ **PW93** **a declaration can only become a triangle mesh, so a game that draws and breaks cells has nothing to read** — A [voxels] declaration builds as cells in milliseconds, painted by the last node covering them, written as flat arrays beside the same cubes as mesh (design recorded in `docs/specs/geometry.md`).
+
 ## Block J — A bar a person sets once
 
