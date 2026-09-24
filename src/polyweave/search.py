@@ -314,6 +314,121 @@ def search(
     }
 
 
+def family(
+    members: Sequence[dict],
+    *,
+    name: str = "family",
+    ranges: dict | None = None,
+    **how: Any,
+) -> dict:
+    """One set of values searched against every member of a family at once (§PW105).
+
+    Each member is `{"name", "spec", "evaluate"}`: its own spec and the evaluator that
+    renders it with what it fixes (colour, size, model). A sample passes when every
+    member passes, scores the worst member's score and has the least headroom any member
+    left, so the search climbs towards what the whole family accepts rather than what
+    one member does. The axes are `ranges`, or the first member's `[search]`.
+
+    Where nothing passes on every member, the answer carries the `conflict`: the pair of
+    predicates on different members that each passed somewhere and never together, and
+    the sample nearest each side. That is the question a person has to answer.
+    """
+    if not members:
+        raise PolyweaveError(
+            "search.no-evaluator",
+            "a family search was given no members",
+            "give it at least one member, each with a name, a spec and an evaluator",
+        )
+    seen: list[dict] = []
+
+    def evaluate(values: dict) -> dict:
+        answers = {one["name"]: one["evaluate"](values) for one in members}
+        seen.append({"params": dict(values), "answers": answers})
+        return _joined(answers)
+
+    axes = ranges or members[0]["spec"].search
+    spec = Spec(asset=name, rung=None, predicates=(), search=dict(axes))
+    found = search(spec, evaluate, **how)
+    found["members"] = {
+        one["name"]: _joined(
+            {one["name"]: _answer_at(seen, found["best"], one["name"])}
+        )
+        for one in members
+    }
+    if not found["passed"]:
+        found["conflict"] = _conflict(seen)
+    return found
+
+
+def _joined(answers: dict[str, dict]) -> dict:
+    """Several members' answers to one sample, as one answer: the worst of each."""
+    predicates, rooms = [], []
+    for member, answer in answers.items():
+        for one in answer.get("predicates", ()):
+            predicates.append({**one, "id": f"{member}:{one.get('id')}"})
+        rooms.append((answer.get("headroom"), f"{member}:{answer.get('tightest')}"))
+    measured = [(room, who) for room, who in rooms if room is not None]
+    tightest = min(measured) if measured and len(measured) == len(rooms) else None
+    return {
+        "passed": all(a.get("passed") for a in answers.values()),
+        "score": min(float(a.get("score", 0.0)) for a in answers.values()),
+        "predicates": predicates,
+        "failed": [
+            f"{member}:{one}"
+            for member, answer in answers.items()
+            for one in answer.get("failed", ())
+        ],
+        "headroom": tightest[0] if tightest else None,
+        "tightest": tightest[1] if tightest else None,
+    }
+
+
+def _answer_at(seen: list[dict], params: dict, member: str) -> dict:
+    for sample in seen:
+        if sample["params"] == params:
+            return sample["answers"][member]
+    return {}  # pragma: no cover - the best is always one of the samples seen
+
+
+def _conflict(seen: list[dict]) -> dict | None:
+    """The two predicates, on different members, that no sample satisfied together."""
+    held: dict[str, set[int]] = {}
+    margins: dict[str, dict[int, float]] = {}
+    for index, sample in enumerate(seen):
+        for member, answer in sample["answers"].items():
+            for one in answer.get("predicates", ()):
+                key = f"{member}:{one.get('id')}"
+                held.setdefault(key, set())
+                margins.setdefault(key, {})[index] = float(
+                    one.get("margin", 0.0) or 0.0
+                )
+                if one.get("passed"):
+                    held[key].add(index)
+    reached = sorted(key for key, where in held.items() if where)
+    pairs = [
+        (min(len(held[a]), len(held[b])), a, b)
+        for i, a in enumerate(reached)
+        for b in reached[i + 1 :]
+        if a.split(":")[0] != b.split(":")[0] and not held[a] & held[b]
+    ]
+    never = sorted(key for key, where in held.items() if not where)
+    if not pairs:
+        # No two held apart: what failed is a predicate nothing ever satisfied, and
+        # naming it is the whole of the answer.
+        return {"between": None, "closest_to": {}, "never": never} if never else None
+    _, one, other = max(pairs)
+
+    def nearest(keep: str, reach: str) -> dict:
+        index = max(held[keep], key=lambda i: margins[reach].get(i, 0.0))
+        return seen[index]["params"]
+
+    return {
+        "between": [one, other],
+        "closest_to": {one: nearest(one, other), other: nearest(other, one)},
+        "never": never,
+    }
+
+
 def _ranked(sample: dict) -> tuple[float, float]:
     """Score first; among samples that pass, the one with more room wins (§PW104)."""
     room = sample.get("headroom")

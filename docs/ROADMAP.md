@@ -26,13 +26,12 @@
 - 📋 **PW115** (deps: —) **a run's render count is whatever its caller adds up, so a cache hit can be charged as a render** — Recording the stars charged 32 renders for 28, caught only by reading the log, in a ledger that is append-only once committed. → §PW115
 - 📋 **PW116** (deps: —) **a ledger side that never measured the hand work still yields a conclusive verdict** — Every before side says in prose that the hand search was never timed, and `compare` sums it as complete and calls the stars not reduced. → §PW116
 - 📋 **PW117** (deps: —) **every symptom in the backlog was measured on one game, so the config boundary is tested by a single adopter** — A plate at CELL, a placed covers and lights scaled for two star sizes are general in form and used by nobody else, so Cottony's shape may already be compiled in. → §PW117
-- 📋 **PW120** (deps: PW105, PW115) **every family port is a hand-written script repeating the same build, search, check, bake and record steps** — Three Cottony port scripts are one skeleton with different filling, and five more families would be five more copies, each with its own small mistakes. → §PW120
+- 📋 **PW120** (deps: PW105 ✅, PW115) **every family port is a hand-written script repeating the same build, search, check, bake and record steps** — Three Cottony port scripts are one skeleton with different filling, and five more families would be five more copies, each with its own small mistakes. → §PW120
 
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once
 
-- 📋 **PW105** (deps: —) **a rig can only be searched against one spec, so a family is fitted on one member and hoped for on the rest** — When no rig holds on every member the search cannot say which two predicates conflict, and that conflict is the question a person has to answer. → §PW105
 - 📋 **PW106** (deps: —) **a spec bound does not say whether it was measured, guessed as a margin or agreed by a person** — The dim star's 0.37 was a margin nobody asked for and it blocked a port for a day, because a miss on a guess reads exactly like a miss on a look. → §PW106
 - 📋 **PW107** (deps: PW106) **a margin around a measured value is chosen by eye, never derived from how much the measure moves on its own** — A tail moves more than a median under the same harmless change, so one margin rule is too loose on one predicate and refuses an accepted look on the next. → §PW107
 - 📋 **PW108** (deps: PW106) **a person's verdict is stored per run, so nothing learns which bound a rejection was about** — The ledger counts how often the tool was overruled and never on which predicate, so the one number the loop exists for cannot improve the specs it judges. → §PW108

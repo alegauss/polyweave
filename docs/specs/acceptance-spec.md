@@ -87,6 +87,16 @@ passed is still passed. A search whose evaluator measures headroom ranks passing
 it and keeps going while a pass still raises it, stopping when one does not; one that does
 not measure it stops at the first pass, as before.
 
+**A family is searched as one** (§PW105). `search.family(members)` takes each member as its
+own spec and the evaluator that renders it with what it fixes, and hands every sample to all
+of them. The sample passes only where every member passes, scores the worst member's score
+and has the least headroom any member left, so the search climbs towards what the whole
+family accepts; a predicate is named `<member>:<id>`. Fitting on one and checking the rest
+stays possible as the held-out test it is. Where nothing passes on every member, the answer
+carries a `conflict`: the two predicates on different members that each held somewhere and
+never together, with the sample nearest each side, and any predicate no sample ever held.
+That is the question a person has to answer, asked by the tool.
+
 **`rung` is a floor.** It raises the rung a verdict on this asset may be taken at and never
 lowers one the predicates themselves require, and a verdict offered from lower down is
 refused (`spec.rung-too-low`) rather than quietly accepted.

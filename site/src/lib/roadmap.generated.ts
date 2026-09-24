@@ -34,7 +34,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "G", title: "Geometry as a declaration", open: 0 },
   { block: "H", title: "Proof on a real game", open: 8 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
-  { block: "J", title: "A bar a person sets once", open: 9 },
+  { block: "J", title: "A bar a person sets once", open: 8 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -106,14 +106,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "every family port is a hand-written script repeating the same build, search, check, bake and record steps",
     why: "Three Cottony port scripts are one skeleton with different filling, and five more families would be five more copies, each with its own small mistakes.",
-    deps: ["PW105", "PW115"],
-  },
-  {
-    id: "PW105",
-    block: "J",
-    symptom: "a rig can only be searched against one spec, so a family is fitted on one member and hoped for on the rest",
-    why: "When no rig holds on every member the search cannot say which two predicates conflict, and that conflict is the question a person has to answer.",
-    deps: [],
+    deps: ["PW115"],
   },
   {
     id: "PW106",

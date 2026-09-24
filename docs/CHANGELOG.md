@@ -136,3 +136,4 @@
 ## Block J — A bar a person sets once
 
 - ✅ **PW104** **a search stops at the first sample inside every bound, however close to one of them it sits** — A check reports each bound's headroom and the tightest, and a search keeps looking past the first pass while a pass still raises the headroom (design recorded in `docs/specs/acceptance-spec.md`).
+- ✅ **PW105** **a rig can only be searched against one spec, so a family is fitted on one member and hoped for on the rest** — A family search scores each sample by its worst member and, where nothing holds on all, names the two predicates that never hold together (design recorded in `docs/specs/acceptance-spec.md`).

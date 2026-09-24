@@ -378,8 +378,8 @@ a cache hit charged as a render.
 A family file states what differs: the members, each with its spec, its model or
 declaration, what its render fixes and where it is baked; the axes shared; whether the
 rig is searched, placed or given. One port operation reads it and runs the skeleton,
-using the family search (§PW105), recording into the ledger as it goes (§PW115), and
-baking only when every member passes.
+using the family search (`search.family`, PW105), recording into the ledger as it goes
+(§PW115), and baking only when every member passes.
 
 For the caller this plugin is designed for, that is twenty lines of TOML instead of a
 hundred of Python, and a port that reads the same across families. The scripts that
@@ -389,26 +389,6 @@ written.
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once
-
-### §PW105 One rig for the whole family, or the conflict that prevents it
-
-`search()` takes one spec and one evaluator, so Cottony's stars were fitted on the 96 px
-gold and the other three were checked afterwards in hope. That is the right test of a
-found look and the wrong way to find one: the rig that holds on all four was reachable
-directly, and when none did, the search could only say the fitted one failed elsewhere.
-
-A family is a list of members, each a spec plus what its render fixes (colour, size,
-model), sharing the searched axes. One sample renders every member, and its score is the
-worst member's, so the search climbs towards the rig the whole family accepts. Members
-can run through `search.in_parallel` since they are independent renders.
-
-When no sample passes on every member, the answer is the conflict, not a score: the pair
-of predicates on different members that no sample satisfied together, and the nearest
-sample to each side. "No rig satisfies the gold's median tone and the dim's hot facet at
-once; here is the closest to each" is exactly the question a person has to answer, asked
-by the tool instead of reconstructed by an agent from four verdicts.
-
-Fit on one and check on the rest stays possible, as the held-out test it is.
 
 ### §PW106 A number that says where it came from
 
