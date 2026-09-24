@@ -34,8 +34,10 @@ import tomllib
 from collections.abc import Callable
 from dataclasses import replace
 from pathlib import Path
+from typing import Annotated
 
 from . import accept, loop, search
+from .describe import Param, operation
 from .errors import PolyweaveError
 
 #: How a family's rig is arrived at.
@@ -178,6 +180,19 @@ def port(
             else "not every member passed, so nothing was baked"
         ),
     }
+
+
+@operation("port.run", kind="search")
+def ported(
+    family: Annotated[str, Param("the family file, as a path under the project")],
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
+    run: Annotated[dict, Param("an open loop run every render counts into")] = None,
+) -> dict:
+    """Port a family from its file: build, search as one, bake if every member passes.
+
+    The verdict on the look stays a person's, given with `verdict.judge`.
+    """
+    return port(family, root=root, run=run)
 
 
 def _built(making: Callable, member: dict, here: Path) -> str:

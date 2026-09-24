@@ -162,6 +162,7 @@
 - ✅ **PW149** **a bound is calibrated from the noise only from Python, since describe does not list calibrate** — calibrate.run and calibrate.apply are operations; apply by name cannot replace a person's bound, and pending falls to 216 (design recorded in `docs/specs/tool-surface.md`).
 - ✅ **PW150** **a person's verdict is carried only from Python, since describe does not list verdict** — verdict.sheet, verdict.sitting and verdict.judge are operations, judge's three choices declared; pending falls to 213 (design recorded in `docs/specs/tool-surface.md`).
 - ✅ **PW151** **the loop ledger is kept only from Python, since describe does not list loop** — The ledger is ten loop operations, the open run passed as JSON between them; pending falls to 200 (design recorded in `docs/specs/tool-surface.md`).
+- ✅ **PW152** **a family's port and a search's trace are reached only from Python, since describe lists neither** — port.run ports a family by its file path and trace.read reads a sweep's trace back, both by name; pending falls to 193 (design recorded in `docs/specs/tool-surface.md`).
 
 ## Block L — What a run leaves as evidence
 

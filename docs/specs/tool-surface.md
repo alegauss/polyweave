@@ -207,7 +207,8 @@ both answers.
   no `person` flag, so an agent calling by name can never overrule a person's bound
   (§PW149), and `verdict.sheet`, `verdict.sitting` and `verdict.judge`, whose choice is
   declared so `validate` refuses a fourth (§PW150), and the ledger's ten `loop.*` calls,
-  with the open run passed back and forth as JSON (§PW151). A module's leftover helpers may be
+  with the open run passed back and forth as JSON (§PW151), and `port.run` and
+  `trace.read` (§PW152). A module's leftover helpers may be
   listed as internal one function at a time. `describe()` loads
   the registry before answering, so a fresh process no longer lists only what it happened
   to have imported.

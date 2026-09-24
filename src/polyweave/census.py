@@ -50,6 +50,9 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.loop:recording": ("internal", "in process only: bakes report into it"),
     "polyweave.loop:bake_seen": ("internal", "what a bake calls on its way out"),
     "polyweave.loop:overruled": ("internal", "one run's count, in loop.finish"),
+    "polyweave.port:read": ("internal", "a family file checked, inside port.run"),
+    "polyweave.port:port": ("internal", "port.run with its renderer as a test hook"),
+    "polyweave.trace": ("internal", "search.sweep writes it, trace.read reads it"),
     # -- internal: helpers an operation calls, never a caller's first call ----------
     "polyweave.cache": ("internal", "the render cache, reached through bake's cached"),
     "polyweave.census": ("internal", "this census's own walk"),
@@ -97,7 +100,6 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.measure": ("pending", "the measurement vocabulary"),
     "polyweave.normalise": ("pending", "a mesh brought to the conventions"),
     "polyweave.offscreen": ("pending", "the routes a capture can draw by"),
-    "polyweave.port": ("pending", "a family's port, stated"),
     "polyweave.provenance": ("pending", "the record beside every artefact"),
     "polyweave.purchase": ("pending", "the ledger of what was bought"),
     "polyweave.reference": ("pending", "a reference prepared for a fetch"),
@@ -107,7 +109,6 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.skeleton": ("pending", "a skeleton fitted to a mesh"),
     "polyweave.sprites": ("pending", "a clip baked to a sprite sheet"),
     "polyweave.texture": ("pending", "a service's paint taken back out"),
-    "polyweave.trace": ("pending", "what a search rejected"),
     "polyweave.units": ("pending", "the scale an asset is baked at"),
 }
 

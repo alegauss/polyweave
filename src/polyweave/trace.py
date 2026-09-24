@@ -25,12 +25,13 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any
 
 from . import cache as store
 from . import compose
 from .accept import Spec
 from .config import load
+from .describe import Param, operation
 from .files import write_atomic
 
 #: How many of the best samples go on the sheet. Enough to see a trend, few enough to
@@ -143,6 +144,9 @@ def write(
     return {"trace": str(written), **laid_out, "samples": len(record["samples"])}
 
 
-def read(path: str | Path) -> dict[str, Any]:
+@operation("trace.read")
+def read(
+    path: Annotated[str, Param("the trace's .json, as search.sweep wrote it")],
+) -> dict[str, Any]:
     """Read a trace back, which is what makes a past search arguable."""
     return json.loads(Path(path).read_text(encoding="utf-8"))
