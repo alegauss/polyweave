@@ -430,25 +430,6 @@ written.
 
 ## Block J — A bar a person sets once
 
-### §PW110 A person's time asked for once
-
-Six of Cottony's families (PW77 to PW82) are set aside for a person's look, and they are
-chained, so each one is prepared, presented and answered before the next is even
-rendered. A person who could judge all six in ten minutes is asked six times over
-several days.
-
-Pending is a read over what is already on disk: the loop ledger, the specs and the
-sidecars. An asset is pending when it has a candidate made the new way and no person's
-verdict on it. The answer lists each with its state, which is the row §PW59 needs
-anyway: made by the old way or the plugin, spec present, before side recorded, after
-side recorded, waiting on a person.
-
-With the list, candidates can be prepared ahead of the verdicts they wait on, as far as
-their dependencies allow, and every pending sheet (`verdict.sheet`, in
-docs/specs/acceptance-spec.md) is gathered into one sitting. Verdicts come back as a
-batch of `judge` calls. The queue does not decide anything and does not reorder the
-chain; it makes sure a person's time is asked for once, not once per family.
-
 ### §PW111 The specs as a gate, with no render
 
 `[paths] specs` is declared, defaults to `docs/accept`, and is read by nothing. A spec

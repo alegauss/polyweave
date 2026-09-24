@@ -118,6 +118,30 @@ def sheet(
     return {"sheet": str(where), "members": said, "choices": dict(CHOICES)}
 
 
+def sitting(
+    families: dict[str, list[dict]],
+    *,
+    out: str | Path,
+    root: str | Path = ".",
+) -> dict:
+    """Every pending family's sheet in one folder, so a person looks once (§PW110).
+
+    `loop.pending` says which assets wait; the caller groups them into families with
+    their members, and this lays each out as `<out>/<family>.png`. The answers come
+    back as one `judge` call per family.
+    """
+    folder = Path(out)
+    sheets = {
+        name: sheet(members, out=folder / f"{name}.png", root=root)
+        for name, members in families.items()
+    }
+    return {
+        "sheets": sheets,
+        "says": f"{len(sheets)} famil{'y' if len(sheets) == 1 else 'ies'} to look at "
+        f"in one sitting, each answered with judge(<members>, <choice>, <why>)",
+    }
+
+
 def judge(
     members: list[dict],
     choice: str,

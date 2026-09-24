@@ -313,6 +313,105 @@ def bounds(root: str | Path = ".", *, asset: str | None = None) -> list[dict]:
     ]
 
 
+def pending(root: str | Path = ".") -> dict:
+    """Which assets wait on a person's look, and where every asset stands (§PW110).
+
+    A read over what is already on disk and nothing else: the ledger, the specs under
+    `[paths] specs` and the render records under `[paths] renders`. A render is a
+    candidate for an asset when its file is named after it (`<asset>.png`), and the
+    asset **waits** when its newest candidate is newer than the last verdict a person
+    gave on it, or when it has none. The list decides nothing and reorders nothing; it
+    is what lets a person's time be asked for once rather than once per family.
+    """
+    from datetime import datetime
+
+    from . import accept, provenance
+
+    settings = load(root)
+    here = Path(root).resolve()
+    rows: dict[str, dict] = {}
+
+    def row(name: str) -> dict:
+        return rows.setdefault(
+            name,
+            {
+                "asset": name,
+                "spec": None,
+                "before": False,
+                "after": False,
+                "candidate": None,
+                "judged": None,
+                "waiting": False,
+            },
+        )
+
+    specs = settings.path("paths.specs")
+    for found in sorted(specs.rglob(f"*{accept.SUFFIX}")) if specs.is_dir() else ():
+        try:
+            name = accept.read(found).asset
+        except PolyweaveError:
+            name = found.name[: -len(accept.SUFFIX)]
+        row(name)["spec"] = provenance.relative(found, here)
+
+    judged_at: dict[str, float] = {}
+    for run in read(root):
+        one = row(run["asset"])
+        one[run["way"]] = True
+        for verdict in run.get("verdicts", ()):
+            judged_at[run["asset"]] = max(
+                judged_at.get(run["asset"], 0.0), float(verdict.get("at", 0.0))
+            )
+
+    made = _candidates(settings.path("paths.renders"), set(rows), here)
+    for name, one in rows.items():
+        if name in made:
+            one["candidate"] = made[name][1]
+        if name in judged_at:
+            one["judged"] = datetime.fromtimestamp(judged_at[name]).isoformat(
+                timespec="seconds"
+            )
+        one["waiting"] = name in made and made[name][0] > judged_at.get(name, 0.0)
+    listed = sorted(rows.values(), key=lambda r: (not r["waiting"], r["asset"]))
+    waiting = [r["asset"] for r in listed if r["waiting"]]
+    return {
+        "assets": listed,
+        "pending": waiting,
+        "says": f"{len(waiting)} asset(s) wait on a person's look: "
+        + (", ".join(waiting) or "none")
+        + ("; one sitting can take all of them" if len(waiting) > 1 else ""),
+    }
+
+
+def _candidates(
+    renders: Path, names: set[str], here: Path
+) -> dict[str, tuple[float, str]]:
+    """The newest render of each named asset, as (when, artefact), off its record."""
+    from datetime import datetime
+
+    from . import provenance
+
+    made: dict[str, tuple[float, str]] = {}
+    if not renders.is_dir():
+        return made
+    for found in sorted(renders.rglob(f"*{provenance.SUFFIX}")):
+        try:
+            record = provenance.read(found, here)
+        except PolyweaveError:
+            continue
+        artefact = (record.get("artefact") or {}).get("path") or ""
+        name = Path(artefact).stem
+        if name not in names or record.get("kind") != "render":
+            continue
+        stamp = str(record.get("produced_at") or "").replace("Z", "+00:00")
+        try:
+            when = datetime.fromisoformat(stamp).timestamp()
+        except ValueError:
+            continue
+        if when >= made.get(name, (float("-inf"), ""))[0]:
+            made[name] = (when, artefact)
+    return made
+
+
 def _listed(values: list) -> str:
     return ", ".join(f"{v:g}" if isinstance(v, int | float) else str(v) for v in values)
 

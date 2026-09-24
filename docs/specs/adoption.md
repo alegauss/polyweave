@@ -37,6 +37,17 @@ or a person needs. A rejection that names nothing counts as `unattributed` on it
 not against every predicate that happened to pass. This is counting over a file, not a
 model of taste: nothing is called and no judgement is delegated.
 
+**What waits on a person is a read, not a memory** (§PW110). `loop.pending(root)` reads
+the ledger, the specs under `[paths] specs` and the render records under `[paths]
+renders`, and nothing else. It gives one row per asset: its spec, whether a before and an
+after side are recorded, its newest candidate, when a person last judged it, and whether
+it is `waiting`. A render is a candidate for an asset when its file is named after it
+(`<asset>.png`). The asset waits when its newest candidate is newer than the last verdict
+on it. The waiting assets come first, and `says` counts them. Grouped into families, they
+go to `verdict.sitting(families, out=)`, which writes every sheet as `<out>/<family>.png`
+so a person looks once. The answers come back as one `judge` call per family. The list
+decides nothing and reorders nothing.
+
 ## A baseline cannot be written afterwards
 
 The baseline is what the existing pipeline costs today, recorded **before anything is
