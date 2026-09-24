@@ -770,6 +770,21 @@ CODES: dict[str, Code] = {
         when="a named id misspelled, or named with no check to name it from (§PW108)",
         doors=("pass the check the person judged", "name an id from that check"),
     ),
+    "loop.unknown-choice": Code(
+        means="a verdict is none of the things a person says of a family",
+        when="a choice other than accept, look or number (§PW109)",
+        doors=("say accept, look or number",),
+    ),
+    "loop.no-reason": Code(
+        means="a verdict came without the person's sentence",
+        when="judge called with an empty why",
+        doors=("pass the person's own words",),
+    ),
+    "loop.no-failed-bound": Code(
+        means="a bound was called wrong for refusing a look, and none refused it",
+        when="number said of a family every member of which passes",
+        doors=("say accept", "say look and name the bound that let it through"),
+    ),
     "loop.malformed": Code(
         means="the ledger is not readable",
         when="a hand edit that left invalid JSON behind",

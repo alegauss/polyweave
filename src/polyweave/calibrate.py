@@ -143,7 +143,7 @@ def propose(
             if origin.get("origin") == "person":
                 one["kept"] = "a person agreed on it, which outranks a statistic"
             else:
-                new = _placed(value, spread * multiple, side)
+                new = placed(value, spread * multiple, side)
                 one["new"] = new
                 bounds.setdefault(p.id, {})[side] = {
                     "value": new,
@@ -246,7 +246,7 @@ def _values(spec: Spec, picture, rung, root) -> dict[str, float]:
     return {r["id"]: float(r["value"]) for r in found["predicates"]}
 
 
-def _placed(value: float, room: float, side: str) -> float:
+def placed(value: float, room: float, side: str) -> float:
     """The accepted value moved out by its room, rounded away from it at four places."""
     if side == "max":
         return math.ceil((value + room) * 1e4) / 1e4
@@ -256,12 +256,20 @@ def _placed(value: float, room: float, side: str) -> float:
 # -- applying -------------------------------------------------------------------------
 
 
-def apply(spec_path: str | Path, proposal: dict, *, root: str | Path = ".") -> dict:
+def apply(
+    spec_path: str | Path,
+    proposal: dict,
+    *,
+    root: str | Path = ".",
+    person: bool = False,
+) -> dict:
     """Write a proposal's bounds into the spec, and only those.
 
     Each bound is one line rewritten in place, so a person's comments and layout stay.
     A bound that has moved since the proposal was made is refused, because the
-    proposal was measured against the old one; a person's bound is never written over.
+    proposal was measured against the old one. A person's bound is never written over
+    by a statistic; `person` says the proposal is a person's own verdict (§PW109),
+    which may replace one.
     """
     where = Path(spec_path)
     where = where if where.is_absolute() else Path(root) / where
@@ -281,7 +289,7 @@ def apply(spec_path: str | Path, proposal: dict, *, root: str | Path = ".") -> d
             )
         for side, bound in sides.items():
             now = p.minimum if side == "min" else p.maximum
-            if (p.origins.get(side) or {}).get("origin") == "person":
+            if not person and (p.origins.get(side) or {}).get("origin") == "person":
                 kept.append(f"{name}:{side}")
                 continue
             if now != bound["old"]:
@@ -343,7 +351,14 @@ def _bound_line(lines, block, side, name, where) -> int:
 
 
 def _inline(bound: dict) -> str:
-    return (
-        f'{{ value = {bound["value"]:g}, origin = "measured", '
-        f"measured = {bound['measured']:g}, spread = {bound['spread']:g} }}"
-    )
+    """A bound as one inline table: its value, its origin, then whatever it carries."""
+    import json
+
+    def spelled(value) -> str:
+        # A JSON string is a TOML basic string for everything a sentence holds.
+        return f"{value:g}" if isinstance(value, int | float) else json.dumps(value)
+
+    keys = ["value", "origin"] + [
+        k for k in accept.BOUND_KEYS if k not in ("value", "origin") and k in bound
+    ]
+    return "{ " + ", ".join(f"{k} = {spelled(bound[k])}" for k in keys) + " }"

@@ -140,6 +140,7 @@
 - ✅ **PW106** **a spec bound does not say whether it was measured, guessed as a margin or agreed by a person** — A bound may say it was measured, a margin or a person's, and a miss names that bound and what it means, listing misses on a margin as guessed (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW107** **a margin around a measured value is chosen by eye, never derived from how much the measure moves on its own** — calibrate re-renders an accepted picture under seed, samples and size, and proposes each bound as its value plus three spreads (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW108** **a person's verdict is stored per run, so nothing learns which bound a rejection was about** — A verdict keeps each predicate's value and the ids a person blamed, and loop.bounds names a bound overruled twice one way, with the values behind it (design recorded in `docs/specs/adoption.md`).
+- ✅ **PW109** **a person judges a port from a file an agent points at, and the verdict is typed back into the spec by hand** — verdict.sheet shows a family with its failures in words; verdict.judge logs the reply and rewrites a wrong bound as the person's (design recorded in `docs/specs/acceptance-spec.md`).
 
 ## Block K — Reached without reading the source
 

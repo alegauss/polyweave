@@ -34,7 +34,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "G", title: "Geometry as a declaration", open: 0 },
   { block: "H", title: "Proof on a real game", open: 8 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
-  { block: "J", title: "A bar a person sets once", open: 5 },
+  { block: "J", title: "A bar a person sets once", open: 4 },
   { block: "K", title: "Reached without reading the source", open: 11 },
   { block: "L", title: "What a run leaves as evidence", open: 7 },
   { block: "M", title: "What a game needs beyond the look", open: 3 },
@@ -126,18 +126,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW115"],
   },
   {
-    id: "PW109",
-    block: "J",
-    symptom: "a person judges a port from a file an agent points at, and the verdict is typed back into the spec by hand",
-    why: "The judgement on the stars took one sentence and everything around it took an agent's turns, so the scarcest time in the loop is spent on paperwork.",
-    deps: [],
-  },
-  {
     id: "PW110",
     block: "J",
     symptom: "nothing lists which assets wait on a person's look, so each family waits its turn in series",
     why: "Six Cottony families are chained on a person's eye, and a person who could judge all six in one sitting is asked six times over several days.",
-    deps: ["PW109"],
+    deps: [],
   },
   {
     id: "PW111",

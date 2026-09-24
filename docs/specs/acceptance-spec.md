@@ -112,6 +112,23 @@ takes `seed`, `samples` and `size` so the variants can be made, and a search may
 any of the three (`search.noise-axis`), because that would pick whichever sample the
 noise happened to favour.
 
+**A person's verdict is one sheet and one call** (§PW109). `verdict.sheet(members, out=)`
+puts a whole family on one PNG. A member is `name`, `spec`, `new`, and optionally `old`,
+`capture` with a crop `box`, and `shown`, the size the game draws it. Each member gets a
+row: old, new and the capture at the size shown, with every failed predicate in words
+under it, including where its bound came from. The answer carries the same words and the
+three choices, so an agent can ask the question without opening the picture.
+`verdict.judge(members, choice, why, run=, named=)` carries the reply. `accept` means the
+look is right. `look` means the renders go back and the bounds stay, with `named`
+blaming the bounds that let it through. `number` means a bound that failed is wrong, and
+each failed bound is rewritten to the measured value (rounded outward) as
+`origin = "person"`, with the date and the sentence. It is the one writer allowed to
+replace a person's bound. Each member's verdict goes into the open loop run with its
+check. With no run open, the answer says it was not recorded. The codes are
+`loop.unknown-choice`, `loop.no-reason` and `loop.no-failed-bound`, the last for `number`
+said of a family that all passes. A sheet and a command, never an editor, and the verdict
+stays the person's.
+
 **A pass also says how comfortably** (§PW104). The margin is 1 anywhere inside a bound, so
 Cottony's stars passed with a facet at 0.4695 under a ceiling of 0.47 and the search called
 that nothing left to gain. Each predicate now also carries its `headroom`: the distance to

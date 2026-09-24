@@ -430,29 +430,6 @@ written.
 
 ## Block J — A bar a person sets once
 
-### §PW109 One sheet to look at, one call to answer it
-
-The stars waited a day for one sentence from a person, and to get it an agent had to
-point at `.polyweave/stars/compare.png`, explain a 99th percentile against a ceiling,
-and then edit a spec comment and a ledger entry by hand from the reply. The judgement
-was quick; everything around it was not.
-
-A review sheet is one PNG per family: for each member the old artefact beside the new
-one at the size the game shows it, the crop of the latest capture where it stands if one
-is recorded, and under each the predicates that failed in words, with the origin of the
-bound (PW106, in `docs/specs/acceptance-spec.md`). The two readings are stated as
-choices: the look is wrong, or the number is.
-
-A `judge` operation takes the family and one of those choices with a sentence. It writes
-the person's verdict into the loop ledger with the values (`loop.judged`'s `check` and
-`named`, in docs/specs/adoption.md), and where the number was wrong it rewrites the
-bound with origin `person`, the date and the sentence. One reply becomes one call.
-
-A sheet and a command, never an editor, so "A graphical editor" is not touched: the
-person looks at a picture and says one word, and the agent does the rest. Nor is
-"Spending money on the agent's own judgement": the verdict stays the person's, and the
-agent only carries it.
-
 ### §PW110 A person's time asked for once
 
 Six of Cottony's families (PW77 to PW82) are set aside for a person's look, and they are
@@ -467,10 +444,10 @@ anyway: made by the old way or the plugin, spec present, before side recorded, a
 side recorded, waiting on a person.
 
 With the list, candidates can be prepared ahead of the verdicts they wait on, as far as
-their dependencies allow, and every pending sheet (§PW109) is gathered into one sitting.
-Verdicts come back as a batch of `judge` calls. The queue does not decide anything and
-does not reorder the chain; it makes sure a person's time is asked for once, not once
-per family.
+their dependencies allow, and every pending sheet (`verdict.sheet`, in
+docs/specs/acceptance-spec.md) is gathered into one sitting. Verdicts come back as a
+batch of `judge` calls. The queue does not decide anything and does not reorder the
+chain; it makes sure a person's time is asked for once, not once per family.
 
 ### §PW111 The specs as a gate, with no render
 
