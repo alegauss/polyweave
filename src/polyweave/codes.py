@@ -1103,6 +1103,11 @@ CODES: dict[str, Code] = {
         "never an expression",
         doors=("write a number", "add the measure that answers the question"),
     ),
+    "spec.bad-origin": Code(
+        means="a bound written as a table does not say where its number came from",
+        when="an origin missing, or other than measured, margin or person",
+        doors=("say measured, margin or person", "write the bound as a bare number"),
+    ),
     "spec.bad-colour": Code(
         means="the target is not a colour",
         when="a name or a malformed hex where #RRGGBB was expected",

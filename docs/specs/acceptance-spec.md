@@ -77,6 +77,24 @@ how close it came: against a `min` it is `value / min` below the bound and 1 at 
 and against a `max` it is `max / value` above the bound and 1 at or below it. A predicate
 carrying both takes the worse of the two.
 
+**A bound can say where its number came from** (§PW106). A bare number is still a bound. A
+table beside it says which of three it is:
+
+```toml
+max = { value = 0.37, origin = "margin", measured = 0.3438 }       # put over a value by hand
+max = { value = 0.41, origin = "person", date = "2026-09-24", why = "same star at size" }
+min = { value = 0.30, origin = "measured", measured = 0.3207 }     # read off an artefact
+```
+
+It takes `value`, `origin`, `measured`, `date` and `why`, and an origin other than those
+three is refused (`spec.bad-origin`), because a bound that cannot say where it came from is
+the guess this exists to expose. What changes is the failure: each predicate's result names
+the bound that decided it (`bound`: the side broken, or the nearer one on a pass, with its
+origin), and a miss says what it means — on a `margin` that the number may be what is
+wrong, on a `person` bound that the look moved, on a `measured` one that the render
+drifted. The check lists the misses on a margin as `guessed`, which is what an agent needs
+to choose between searching again and asking. The dim star's 0.37 would have said so.
+
 **A pass also says how comfortably** (§PW104). The margin is 1 anywhere inside a bound, so
 Cottony's stars passed with a facet at 0.4695 under a ceiling of 0.47 and the search called
 that nothing left to gain. Each predicate now also carries its `headroom`: the distance to

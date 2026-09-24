@@ -4,6 +4,25 @@
 
 ## Block B — Seeing the result cheaply
 
+### §PW141 A render answered as two digests
+
+A bake answers with its measurements, and `measure.same` compares two renders within the
+rung's noise floor. Both answer the question they were asked. Neither leaves behind a
+short answer that a later session can compare without the pictures: whether the outline
+moved, and whether only the surface did.
+
+Shio's render digest splits exactly there. It keeps a structural hash and an appearance
+hash, so "I restyled it" and "I broke the outline" are different answers, and it keeps
+its markers out of both, so that a warning appearing does not read as a change of shape.
+
+Here the bake adds a digest to what it returns and to its record. It contains the
+silhouette's box and footprint anchor, coverage, luma at the fifth, fiftieth and
+ninety-fifth percentile, which is the percentile rule Cottony's pipeline already judges
+by, the palette per declared slot and the triangle count. It adds `shape_digest` over
+the silhouette figures quantised at the rung's noise floor and `look_digest` over the
+tonal and palette figures, so a render that moved only by noise keeps both hashes. The
+PNG stays the artefact for a person.
+
 ## Block C — The asset compiler
 
 ## Block D — Fetching from a paid service without surprise
@@ -390,25 +409,6 @@ written.
 
 ## Block J — A bar a person sets once
 
-### §PW106 A number that says where it came from
-
-The dim star's hot-facet ceiling was 0.37: the shipped 0.344 plus a margin somebody
-chose. It blocked the port for a day, and the fix was a person saying the margin was the
-wrong number. Nothing in the spec could have said so first, because a bound read off
-pixels, a margin put over one and a value a person agreed to are all spelled `max =
-0.37`.
-
-A bound gets an optional origin: `measured` (read off an artefact, with the value it was
-read at), `margin` (put around a measured value by hand), or `person` (agreed on a look,
-with the date). A TOML inline table beside the number keeps old specs valid, and an
-origin outside those three is refused like any unknown field.
-
-What changes is the failure. A predicate missed on a `margin` bound says the bound is a
-guess and names the measured value it guards, so the next question is whether the look
-or the number is wrong. A miss on a `person` bound says the look moved. That distinction
-is what an agent needs to decide between re-searching and asking, and today it can only
-be recovered from a comment.
-
 ### §PW107 Margins measured from the noise
 
 Every margin in Cottony's star specs was chosen by eye: roughly a tenth above the
@@ -457,8 +457,8 @@ was quick; everything around it was not.
 A review sheet is one PNG per family: for each member the old artefact beside the new
 one at the size the game shows it, the crop of the latest capture where it stands if one
 is recorded, and under each the predicates that failed in words, with the origin of the
-bound (§PW106). The two readings are stated as choices: the look is wrong, or the number
-is.
+bound (PW106, in `docs/specs/acceptance-spec.md`). The two readings are stated as
+choices: the look is wrong, or the number is.
 
 A `judge` operation takes the family and one of those choices with a sentence. It writes
 the person's verdict into the loop ledger with the values (§PW108), and where the number
@@ -543,3 +543,383 @@ where it has parameters and checked where it does not?
 Answering yes widens the measures (audio has none) and nothing else. Answering no is
 worth writing down as a non-goal, so the next agent that notices does not file this
 again.
+
+## Block K — Reached without reading the source
+
+### §PW123 A typo is not a file that is not a shape
+
+`build_all` in `cli.py` reads each `*.toml` under the folder and, on any
+`PolyweaveError` from `G.read`, continues, so that a project config, a spec or a lock in
+the same tree is passed over. The same except clause catches `geom.unknown-field`, the
+refusal that section 3 of tool-surface.md exists to guarantee: a declaration with a
+misspelt key disappears from the build, nothing is printed, and the exit status is 0. A
+project's asset step is one line, `build --all`, so this is the path an agent actually
+runs, and it is the path where a typo is least visible.
+
+The two cases differ before any refusal: a file that is not a shape carries no shape
+table at all, and a shape that fails carries one and fails inside it. So the walk
+decides *is this a declaration* from the document's top-level keys, skips only the files
+that are not, and answers a declaration that fails with the same `refused` entry a
+single build gives, with a non-zero exit. `test_cli.py` covers only the non-shape case;
+the missing test is a folder holding one good declaration and one with an unknown key.
+
+### §PW124 Every operation declared, and the census before the fixes
+
+`describe.MODULES` is `("polyweave.render",)` and `@operation` decorates one function in
+the package. `capabilities()["operations"]` therefore lists the bake, and the rest of
+the surface an agent needs, from `search.run` to `geometry.build` and the voxel checks,
+is known only to a reader of docstrings. That is the failure CLAUDE.md names: a feature
+that needs a source read to use has not landed.
+
+Shio's lesson (SH338) is about order. Eleven of its lints guarded internal consistency
+and none guarded reachability, so a consistency defect became a permanent guard and a
+reachability defect a one-off fix that came back. `test_errors.py` here is the same
+shape: it proves every code is declared and used, and nothing proves an operation can be
+found.
+
+So the instrument lands first. A test walks the public functions of the plugin's modules
+and classifies each as a registered operation or as an entry in an exact list of
+exceptions, each with its reason; an exception that is no longer needed fails too. A
+second test starts from what `capabilities()` returns and asserts every operation, code
+area and measure is named within two reads. Then the operations are registered, one
+module per commit, against a list that can only shrink.
+
+### §PW125 A command line derived from the registry
+
+`python -m polyweave` answers `build` and nothing else. `capabilities`, `explain`,
+`describe`, the job verbs, `search`, `accept.check`, `verify`, `sweep` and
+`godot.install` are reachable from Python only, so an agent in Cottony that wants to
+know whether Blender is present writes and runs a script, and a person reading its
+transcript cannot tell the question from the answer.
+
+Once every operation is registered (§PW124), its declaration already says everything a
+subcommand needs: the name, each parameter's type, range, default and sentence, and
+which parameters are required. So the command line is derived from the registry rather
+than written beside it, one subcommand per operation, and a parameter added to an
+operation is a flag without a second edit.
+
+Roadkeep paid for doing this late. Its verbs printed text and JSON from separate code
+until one migration, forty commits long, made each handler return one answer object that
+both renderings read. The cheap version is to start there: an operation returns data,
+one renderer prints it, `--json` prints the same fields, and a test asserts that the
+text never says something the JSON lacks.
+
+### §PW126 A served surface that is a shape over the registry
+
+Roadkeep moved to a served surface on its second day, because arguments written in prose
+are guessed; the plugin here has none, and its `.mcp.json` serves only roadkeep. An
+agent reads a skill or a docstring, composes a call, and learns the range of `elevation`
+from `op.out-of-range`.
+
+The same registry that yields the command line (§PW125) yields a tool per operation:
+`description` from the operation's docstring, one property per parameter with its
+sentence, `minimum` and `maximum` from the declared range, `enum` from its choices, and
+`additionalProperties: false`, so a misspelt argument is refused by the client. A call
+runs the operation in-process and answers with the fields `--json` prints. Nothing about
+an operation is written a second time, which is Shio's tenth law: the server is a shape
+over the services, never a third contract.
+
+Two budgets come with it from the first day, because both projects that went before paid
+for adding them late: characters per tool and for the whole list, held by a test, each
+raise argued where the number is set. A tool whose operation needs Blender is listed
+only where `capabilities` found one, and still answers elsewhere with the refusal that
+names what is missing.
+
+### §PW127 A door is a call, and every door is run
+
+`PolyweaveError` refuses a code without a remedy, which is stronger than either sibling
+project began with. What it cannot check is the remedy itself: "pass `glaze: {roughness:
+0.22}`" names an argument by memory, and when that argument is renamed the sentence
+keeps offering it. Roadkeep lived with this for four hundred commits, one call site at a
+time, before one type turned a command into text and a census ran every door it could
+build.
+
+So a remedy that names a call carries it as data: the operation and the arguments filled
+in, plus a blank where only the caller can supply the value. The prose is rendered from
+that, as a command line, a tool call or a Python call, whichever surface asked. The
+codes table's `doors` take the same form.
+
+The census that holds it parses every complete door against the derived command line
+(§PW125) and fails on an operation or a flag that does not exist. It also takes the
+lesson Shio pinned as SH1074: where a refusal teaches a form, a test asserts that the
+form it teaches is accepted.
+
+### §PW128 The four fields a refusal is missing
+
+The wire form is `code`, `message`, `remedy` and `detail`. When the refusal is about a
+name, the set of names that would have worked is known at the raise site and thrown
+away: `config.py` runs `difflib` and folds the result into prose, and
+`geom.unknown-shape` or an unknown measure says only what was not found. An agent then
+reads the source or guesses again.
+
+Shio's teaching errors carry four more fields, each omitted when empty: `allowed`, the
+sorted set the value is checked against; `did_you_mean`, the nearest of them; `example`,
+the smallest correct fragment; and `at`, a path into the document, such as
+`parts[3].bevel`. Its rule for the suggestion is worth taking whole: case- and
+separator-insensitive, deterministic on ties, and silent when nothing is close, because
+a wrong guess costs more than none.
+
+A test holds it: every raise under a code whose meaning is an unknown name passes
+`allowed`, and every `example` a refusal prints is accepted when fed back.
+
+### §PW129 A ceiling on the reads every session makes
+
+Registering every operation (§PW124) is the right move, and it multiplies the size of
+`describe()` and of `capabilities()`, which carries it. Both are read at the start of a
+session, so their size is paid on every one. Shio treats tokens as a measured budget: a
+properties file sets a ceiling per response and per tool, a test estimates at four
+characters a token, and a raise is argued in the file where the number lives.
+
+Here it is one file under `tests/`: ceilings for `describe()`, `capabilities()` split
+into the cheap check and the probe that renders, the largest error a code can produce,
+the `--help` of each verb, and the answer of a search run. The test prints its table on
+a green run too, because a figure seen only when the build breaks goes stale. Headroom
+is bounded by the smallest regression the test must catch, never a flat percentage, so
+an eleventh operation with a padded description is refused and a typo fix is not.
+
+### §PW130 A canonical task, and a naive client beside it
+
+The plugin's claim is about an agent's first call, and no test makes a first call. Every
+test was written by someone who had read the implementation. Shio found its worst class
+this way: an unrecognised argument reported success and did something else, and only a
+client written to use plausible wrong names counted it.
+
+Two instruments, both cheap. A canonical task, "declare a small prop and reach a passing
+verdict", is driven through the derived command line (§PW125) and counted in calls,
+renders, cache hits and estimated tokens, with an exact figure for calls and a loose one
+for the rest. A naive client then replays it with the spellings a model reaches for
+first, such as `size` for `extent` or `samples` as a string, and asserts that each one
+is refused with an `allowed` set, never accepted and ignored.
+
+Shio retired its headline ratio because the baseline got leaner and the ratio fell with
+no change to the agent's path. So the floors here are per mechanism: what the cache
+saves, what a preview rung saves, what a parallel search saves.
+
+### §PW131 An asset's brief in one read
+
+Roadkeep's `brief` starts a task in one call, and Shio's context pack replaced the reads
+a session opened with. The unit here is an asset, and its state is spread over the
+geometry declaration, the acceptance spec, the provenance record beside the artefact and
+the loop ledger.
+
+`polyweave brief <asset>` answers in one bounded payload: the declaration as one line
+per part; each predicate of the spec with its bound and where that bound came from,
+which PW106 now records; the last verdict and which predicates it failed; whether the
+artefact on disk still matches its record; the cache entries held; what the budget has
+left if the asset was bought; and, from the codes table, the doors for the failures it
+names. A `digest` over the whole answer lets a session that already holds it ask whether
+anything moved.
+
+It is a read over files that exist and writes nothing, so it can land before the rest of
+Block J, whose verdicts it will later report.
+
+### §PW132 Installed as a plugin, and announced in one line
+
+Everything under `.claude/` here serves a session changing this repository: the roadkeep
+skill, the audit, the scanner and verifier. Nothing serves a session driving the plugin
+from another one. Cottony installs it from a pinned commit through `requirements.txt`,
+and its art-pipeline skill never mentions it.
+
+Both sibling projects answer this the same way. A `.claude-plugin` manifest, with this
+repository as its own marketplace, carries a skill for a *driving* session: a short
+orientation built around the loop of four calls (brief, build, search, check) with the
+rest on reference pages opened on demand, and size ceilings held by a test. Shio's rule
+keeps the two sets apart: a plugin skill serves a session driving the tool, a project
+skill a session changing it, and no name appears on both sides.
+
+A SessionStart notice of one line, under a character budget a test holds, says which
+declarations and specs this project has and which call answers instead of opening them.
+A launcher that finds the engine, as roadkeep's does, reports which copy answered, since
+Cottony's pin and the editable install on this desk are already two copies.
+
+### §PW133 The declaration is the source, and the guard says so
+
+The plugin's premise is roadkeep's in another material: the declaration is the source
+and the mesh is derived from it, just as a roadmap line is derived from its fields.
+Roadkeep holds that with a hook, not a rule in a skill. A `Write` or `Edit` on a
+governed file is denied, and the denial names the command to run instead.
+
+The same hook fits here. A `PreToolUse` guard denies an edit to a file that has a build
+stamp or a provenance record beside it, and names the declaration to change and the
+`build` to run. A `Stop` hook checks only the artefacts this turn touched against their
+records, which is the at-the-write form of the check §PW111 asks for.
+
+Roadkeep's constraints come with it. The screen before any import uses the standard
+library only, so numpy and Blender are never loaded to decide a write. Any failure
+inside the hook allows the edit. A shell command gets `ask`, not `deny`, because nobody
+parses it to see what it writes.
+
+## Block L — What a run leaves as evidence
+
+### §PW134 One gate that keeps its log and stamps what ran
+
+`python -m pytest` with `-q` prints a count and a dot per test. On a machine without
+Blender the whole render path skips, and "passed" says nothing about whether a picture
+was drawn. Shio met the same thing with its database tests, which report zero seconds
+without Docker, so a green verify claimed a proof it never made.
+
+A small script runs the gate instead of the bare command. It does four things:
+
+- keeps the whole output in a fixed-name log, and copies a red one aside, because the next run, made to see whether it reproduces, truncates it
+- writes an untracked stamp with the commit, the exit code, and the counts passed, failed and skipped
+- counts the real-renderer tests that actually ran, so "Blender tests: 0 ran" is part of the result
+- holds a lock while it runs
+
+The lock is there because two overlapping runs share `.polyweave/`, and Shio measured
+what that costs: a false red of three errors against a tree that was green. The exit
+code always survives; a gate piped into `grep` reports `grep`'s.
+
+### §PW135 A log is evidence, not source
+
+`.gitignore` covers the plugin's working state, the Python caches and the build output,
+and nothing an agent writes while it waits on a gate. The suite takes about five minutes
+with Blender and Godot present, so an agent runs it in the background and redirects it
+to a file it reads afterwards. Shio's root holds seventy-four such files, and the rule
+that ignores them was added only after one was committed with the fix it was taken for,
+because the commit tool stages the whole tree.
+
+The fix is one line, `/*.log`, plus the directory the gate stamps of §PW134 will use. It
+goes first because it is the cheapest item in this block, and every other item here
+writes a file of this kind.
+
+### §PW136 The gates run where the pin is read
+
+`.github/workflows` holds `roadkeep.yml` and `site.yml`. The suite and the linter run
+when someone types them, on a machine that has Blender and Godot, and nowhere else.
+Cottony's `requirements.txt` installs this repository at a commit hash, so its CI builds
+against code that no machine but this desk ever tested, while the editable install here
+means the pin is never exercised locally either.
+
+A workflow runs ruff and the suite on the lowest and highest Python the plugin supports.
+Without `bpy` or `$GODOT` the render path skips, so the job prints the gate stamp of
+§PW134, including how many real-renderer tests ran, and the summary says outright that
+CI proves the pure half. Whether a runner gets Blender is a later decision with its own
+cost; a green job that claims less than it proved is not.
+
+The same job runs `claude plugin validate` once §PW132 ships a manifest, as roadkeep's
+gate does against a pinned CLI.
+
+### §PW137 A status is derived, never typed
+
+`prerender.test.mjs` fails unless the landing page states that there is no
+implementation, and `site-content.ts` says so. `README.md` lists eight blocks and says
+the rest is design, `CLAUDE.md` says Block A has started, the specs index calls three
+specs ahead of code that shipped as PW8 to PW12, and `capabilities()` still names PW14
+and PW23 as pending. The test that was written to keep the page honest now keeps it
+wrong.
+
+Both sibling projects reached the same rule. Roadkeep's site commits nothing generated
+and builds every figure from the CLI. Shio fails a build on a number in its agent
+documents that does not cite the run that measured it (SH974). Here the roadmap module
+is already generated; what is typed is the claim about status.
+
+So the page and the README take the status from roadkeep's block list, which already
+says which blocks are finished, the test asserts the page agrees with it, and the
+`pending` entries are dropped once a test finds that the line they name has shipped.
+
+### §PW138 The specs read against the code
+
+Section 3 of tool-surface.md lists the areas a code is namespaced by: twelve of them.
+`codes.AREAS` declares nineteen; engine, units, capture, rig, clip, texture and loop
+were added with their lines and never reached the spec. No test reads a spec file for
+names, except one that parses the acceptance-spec example, and the geometry test copies
+its tray out of `geometry.md` rather than reading it.
+
+Shio's docs gate is the model. For each kind of name a document may spell, a reader
+extracts it from the documents and another from the source, and the test fails on either
+difference. Here the kinds are error codes and areas, registered operations, measures,
+config keys and CLI flags, read out of `docs/specs/*.md` and the published skill.
+
+Two of its rules are what keep it honest. Each reader is tested against a fixture that
+plants a name only it can find, and a reader that finds nothing throws instead of
+passing, because an empty population makes every check against it pass.
+
+### §PW139 A capacity check held until the record exists
+
+`JobStore.start` counts the jobs that are not terminal and refuses with
+`job.at-capacity` at the bound, then allocates an id, writes the record and spawns the
+worker. Between the count and the record nothing is held. A search in parallel starts
+its samples in a loop, and two sessions on one project, which roadkeep and Shio both run
+as a matter of course, can each count three of four and each start a fourth.
+
+Roadkeep fixed its version by holding one lock from the read that decides to the write
+that records: an `O_EXCL` lock file keyed on the project, a token so only its owner
+releases it, and a stale lock reaped after a bound. The same lock here spans the count
+and the record. The spawn can happen after release, because the record already counts.
+The test starts two jobs on threads against a bound of one and expects exactly one
+refusal.
+
+### §PW140 One answer to what a build was made from
+
+The `stamp` function in `cli.py` hashes the declaration, the `--set` values and every
+file the document names. It does not hash the plugin's version, so after a fix to the
+builder `build --all` answers `cached` and keeps the output the defect produced. It does
+not hash `--preview`, so a second run that asks for a preview returns before writing
+one.
+
+Beside it, provenance defines a cache key for renders, and `verify` walks `paths.meshes`
+for `.glb` files. The geometry build and the voxel writer produce `.glb` files without a
+record, so a project whose meshes directory holds them is told its own outputs are
+unrecorded.
+
+Roadkeep's rule applies: a list a second place has to be joined to is derived from the
+first. The build writes a provenance record like every other producer, the stamp becomes
+that record's key with the plugin version and every flag that changes an output in it,
+and one test builds twice across a changed version and expects a rebuild.
+
+## Block M — What a game needs beyond the look
+
+### §PW142 Draw the skin, keep the volume
+
+The Godot addon of PW102 reads `<name>.voxels.json` into packed arrays and offers
+`multimesh()`, which sets one instance per entry in `centres`. The file already carries
+`depth` per cell, 1 on the surface, because a hit chips cells in that order. A solid
+model eight cells across has 512 cells and 296 on its skin, so the helper draws about
+1.7 times what can be seen, and the ratio grows with the cube of the size.
+
+The helper can draw only the cells at depth 1 and expose the rest for the game's own
+shattering, which needs them. When a hit removes surface cells, the ones beneath are
+revealed by depth, which is the order the data already states.
+
+It is an idea and not a measured failure: no Cottony model has been profiled, and how
+the game draws stays the game's own code, as the addon says. What would promote it is
+one frame time measured with and without the buried cells on the target device.
+
+### §PW143 A cost bar beside the look bar
+
+An acceptance spec is a set of predicates over measures, and every measure today reads
+pixels. The plugin already knows the numbers a game pays at run time, because the
+post-conditions of section 2 of tool-surface.md measure them: the face count of a mesh,
+its material slots, a texture's dimensions and bit depth, and the cell count of a voxel
+model. None of them can be a predicate.
+
+So the measures gain a cost family, read off the artefact rather than the render:
+triangles, materials, draw calls implied by them, texture memory, and cells drawn. A
+spec bounds them like any other, `triangles <= 1200`. A search that finds a better look
+at twice the cost then answers with the predicate it broke rather than a pass.
+
+It is an idea: Cottony bakes most of its art to sprites, where the cost is the sprite's
+and not the mesh's. The voxel models that Block I brought to Godot are the first
+artefacts drawn as meshes in the game, and they are where a first bar would be measured.
+
+### §PW144 A rig as data a project can apply
+
+Shio's blueprints are appliable starting points. A package reuses the formats that
+already exist, takes named parameters with no conditionals, is validated when it loads,
+and carries a `verify` promise that runs after it is applied. Re-applying it with the
+recorded parameters reproduces the result.
+
+The nearest thing here is the rig a search settles on, and today it is not kept. PW76
+made the stars a search rather than a set of constants: `search_stars.py` fits the rig
+on one sprite with a budget of sixty renders, checks it on the other three and bakes.
+The rig it found exists only in that run's answer, so the next run searches it again,
+with the cache as the only thing standing between that and sixty renders. The half the
+search may not turn, the fixed angles, the material and the cell size, sits in the
+script as constants.
+
+A recipe would be a directory holding a geometry declaration with parameters, the rig
+the search found as data together with its fixed half, an acceptance spec and the
+measures that must pass after apply. `apply <recipe> --set height=0.6` builds, bakes and
+checks, re-searching only when a check fails, and records the recipe and its parameters
+in provenance. It is an idea that PW120's port skeleton and PW117's second adopter would
+each test.

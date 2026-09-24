@@ -48,15 +48,18 @@ class Predicate:
     maximum: float | None = None
     weight: float = 1.0
     arguments: dict = field(default_factory=dict)
+    #: Where each bound came from, by side, for the bounds written as a table (§PW106).
+    origins: dict = field(default_factory=dict)
 
     def as_dict(self) -> dict:
         out = {"id": self.id, "measure": self.measure, "weight": self.weight}
         if self.region is not None:
             out["region"] = self.region
-        if self.minimum is not None:
-            out["min"] = self.minimum
-        if self.maximum is not None:
-            out["max"] = self.maximum
+        for side, value in (("min", self.minimum), ("max", self.maximum)):
+            if value is None:
+                continue
+            origin = self.origins.get(side)
+            out[side] = {"value": value, **origin} if origin else value
         out.update(self.arguments)
         return out
 
@@ -182,13 +185,51 @@ def _predicate(entry: dict, index: int) -> Predicate:
         maximum=_number(entry, "max", name),
         weight=float(entry.get("weight", 1.0)),
         arguments={k: entry[k] for k in ARGUMENTS if k in entry},
+        origins={
+            side: found
+            for side in BOUNDS
+            if (found := _origin(entry, side, name)) is not None
+        },
     )
+
+
+#: Where a bound's number came from (§PW106): read off an artefact, put around a
+#: measured value by hand, or agreed by a person on a look.
+ORIGINS = ("measured", "margin", "person")
+
+#: What a bound written as a table may say beside its number.
+BOUND_KEYS = ("value", "origin", "measured", "date", "why")
+
+
+def _origin(entry: dict, key: str, name: str) -> dict | None:
+    """A bound's origin, where it was written as a table; None for a bare number."""
+    stated = entry.get(key)
+    if not isinstance(stated, dict):
+        return None
+    unknown = sorted(set(stated) - set(BOUND_KEYS))
+    if unknown:
+        raise PolyweaveError(
+            "spec.unknown-field",
+            f"{name}'s {key} has no {', '.join(unknown)}",
+            f"a bound written as a table takes {', '.join(BOUND_KEYS)}",
+        )
+    origin = stated.get("origin")
+    if origin not in ORIGINS:
+        raise PolyweaveError(
+            "spec.bad-origin",
+            f"{name}'s {key} says it came from {origin!r}",
+            f"say which of {', '.join(ORIGINS)} it is; a bound that cannot say where "
+            "it came from is the guess this field exists to expose",
+        )
+    return {k: v for k, v in stated.items() if k != "value"}
 
 
 def _number(entry: dict, key: str, name: str) -> float | None:
     if key not in entry:
         return None
     value = entry[key]
+    if isinstance(value, dict):
+        value = value.get("value")
     if isinstance(value, bool) or not isinstance(value, int | float):
         raise PolyweaveError(
             "spec.bad-bound",
@@ -320,6 +361,7 @@ def check(
                 "passed": _passes(scalar, p),
                 "margin": margin(scalar, p.minimum, p.maximum),
                 "headroom": headroom(scalar, p.minimum, p.maximum),
+                **_bound(p, scalar),
             }
         )
 
@@ -337,7 +379,61 @@ def check(
         # The smallest room any bound left, and whose it was (§PW104).
         "headroom": tightest["headroom"] if tightest else None,
         "tightest": tightest["id"] if tightest else None,
+        # Misses on a bound somebody guessed, where the number may be what is wrong.
+        "guessed": [
+            r["id"]
+            for r in results
+            if not r["passed"] and r["bound"].get("origin") == "margin"
+        ],
     }
+
+
+def _bound(p: Predicate, value: float) -> dict:
+    """The bound that decided a predicate, where it came from, and what a miss means.
+
+    §PW106: a bound read off pixels, a margin put over one and a value a person agreed
+    to were all spelled `max = 0.37`, so a miss on a guess read exactly like a miss on
+    a look. The side is the one broken, or the nearer one where nothing is.
+    """
+    low, high = p.minimum, p.maximum
+    if low is not None and value < low:
+        side = "min"
+    elif high is not None and value > high:
+        side = "max"
+    elif low is not None and high is not None:
+        side = "min" if value - low <= high - value else "max"
+    else:
+        side = "min" if low is not None else "max"
+    origin = p.origins.get(side) or {}
+    answer = {"bound": {"side": side, **origin}}
+    broken = (side == "min" and value < low) or (side == "max" and value > high)
+    if broken and origin:
+        answer["why"] = _meaning(p.id, side, origin)
+    return answer
+
+
+def _meaning(name: str, side: str, origin: dict) -> str:
+    kind = origin["origin"]
+    if kind == "margin":
+        guarded = origin.get("measured")
+        return (
+            f"{name} missed its {side}, a margin put by hand"
+            + (f" over the measured {guarded:g}" if guarded is not None else "")
+            + ": the number may be what is wrong, not the look"
+        )
+    if kind == "person":
+        when = origin.get("date")
+        return (
+            f"{name} missed its {side}, which a person agreed on"
+            + (f" {when}" if when else "")
+            + ": the look moved"
+        )
+    read = origin.get("measured")
+    return (
+        f"{name} missed its {side}, read off an artefact"
+        + (f" at {read:g}" if read is not None else "")
+        + ": the render drifted from what it was measured on"
+    )
 
 
 def _scalar(value: Any, p: Predicate) -> float:

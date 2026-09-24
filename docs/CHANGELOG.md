@@ -137,3 +137,11 @@
 
 - ✅ **PW104** **a search stops at the first sample inside every bound, however close to one of them it sits** — A check reports each bound's headroom and the tightest, and a search keeps looking past the first pass while a pass still raises the headroom (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW105** **a rig can only be searched against one spec, so a family is fitted on one member and hoped for on the rest** — A family search scores each sample by its worst member and, where nothing holds on all, names the two predicates that never hold together (design recorded in `docs/specs/acceptance-spec.md`).
+- ✅ **PW106** **a spec bound does not say whether it was measured, guessed as a margin or agreed by a person** — A bound may say it was measured, a margin or a person's, and a miss names that bound and what it means, listing misses on a margin as guessed (design recorded in `docs/specs/acceptance-spec.md`).
+
+## Block K — Reached without reading the source
+
+## Block L — What a run leaves as evidence
+
+## Block M — What a game needs beyond the look
+

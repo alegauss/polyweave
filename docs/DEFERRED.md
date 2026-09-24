@@ -29,3 +29,9 @@
 
 ## Block J — A bar a person sets once
 
+## Block K — Reached without reading the source
+
+## Block L — What a run leaves as evidence
+
+## Block M — What a game needs beyond the look
+
