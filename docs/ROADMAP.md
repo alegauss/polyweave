@@ -35,8 +35,6 @@
 
 ## Block J — A bar a person sets once
 
-- 💭 **PW113** (deps: —) **the acceptance spec is only ever aimed at a 3D bake, though nothing in its format is 3D** — Cottony writes the same kind of bar three more times outside the plugin, for a board, a music loop and drawn sprites, and whether those belong here is a scope call. → §PW113
-
 ## Block K — Reached without reading the source
 
 - 📋 **PW123** (deps: —) **`build --all` skips a declaration it refuses to read, so a typo drops an asset from the build and exits 0** — The loop swallows every refusal so it can pass over TOML that is not a shape, and an unknown field is exactly such a refusal. → §PW123
@@ -129,6 +127,12 @@
 - **The five bake through the plugin or stay hand-tuned by decision** Either
   bake_model.py no longer renders the friends and the mascot and a person judged them,
   or a person decided they stay, and polyweave.loop.json says which.
+
+## Done when — PW113
+
+- **The owner has said whether sound belongs in the acceptance spec** Either a non-goal
+  forbidding measures of audio is on the list, or a line exists that adds the first
+  audio measure; both are checkable in `non-goal list` and the roadmap.
 
 ## Non-goals
 

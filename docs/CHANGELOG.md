@@ -144,6 +144,7 @@
 - ✅ **PW110** **nothing lists which assets wait on a person's look, so each family waits its turn in series** — loop.pending lists every asset whose newest render no person has judged, and verdict.sitting lays all their sheets out for one look (design recorded in `docs/specs/adoption.md`).
 - ✅ **PW111** **no command checks committed artefacts against their specs, so a spec binds only while a search runs** — A spec may name its artefact, and `python -m polyweave verify` checks each one as committed, with no render, and exits non-zero on a failure (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW112** **a spec is checked against the bake and never against what the engine draws on screen** — A capture script names where it drew each asset, a spec's screen points at one, and verify checks it there and says when screen and bake disagree (design recorded in `docs/specs/acceptance-spec.md`).
+- ✅ **PW113 (pictures)** **the acceptance spec is only ever aimed at a 3D bake, though nothing in its format is 3D** — Any PNG is held to a spec, a drawn sprite as much as a bake, and the spec says so; nothing new was needed.
 
 ## Block K — Reached without reading the source
 

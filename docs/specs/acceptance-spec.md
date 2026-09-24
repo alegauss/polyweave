@@ -244,6 +244,20 @@ The seed and the search's own configuration — the budget, the ranges, the rung
 stopped — sit beside the samples, because a result nobody can reproduce is one nobody can
 check.
 
+## Any picture, not only a bake
+
+Nothing in this format is 3D (§PW113). A predicate is a measure over a region of pixels,
+and `accept.check`, `verify` and `check_screen` take a PNG from anywhere. A drawn 2D
+sprite, a board screenshot or a sheet some other generator made can be held to a spec in
+this same file, with `artefact` naming it. Where its maker has parameters, a search can
+turn them through `search.search` with its own evaluator. The renderer stays 3D; the bar
+does not have to. Cottony's `check_vivid.py`, a board held at its 99th-percentile
+saturation, is a spec with one predicate. It needs nothing new.
+
+Sound is outside this for now. The vocabulary has no measure of audio, and whether a
+music loop's seam belongs to the same kind of bar is a scope decision, not a missing
+predicate.
+
 ## What this file deliberately cannot say
 
 Anything no measure can compute. "Reads as cloth rather than paper" is a real criterion and

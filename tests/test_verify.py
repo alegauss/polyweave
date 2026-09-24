@@ -85,6 +85,22 @@ def test_the_command_passes_and_speaks_json(tmp_path, capsys):
     assert json.loads(capsys.readouterr().out)["counts"]["passed"] == 1
 
 
+def test_a_drawn_sprite_with_no_record_is_held_to_a_spec_like_a_bake(tmp_path):
+    """§PW113: nothing in the format is 3D, so a 2D sprite needs nothing new."""
+    specs = tmp_path / "docs" / "accept"
+    specs.mkdir(parents=True)
+    (specs / "board.accept.toml").write_text(
+        'asset = "board"\nartefact = "art/board.png"\n\n[[predicate]]\n'
+        'id = "vivid"\nmeasure = "saturation_p99"\nregion = "frame"\nmin = 0.5\n',
+        encoding="utf-8",
+    )
+    (tmp_path / "art").mkdir()
+    Image.new("RGB", (32, 32), (230, 40, 40)).save(tmp_path / "art" / "board.png")
+    (one,) = accept.verify(tmp_path)["specs"]
+    assert one["status"] == "passed"
+    assert one["rung"] is None
+
+
 def test_an_unknown_top_level_field_is_still_refused(tmp_path):
     with pytest.raises(PolyweaveError) as refused:
         accept.parse({"asset": "a", "artefacts": "x", "predicate": []})
