@@ -11,8 +11,9 @@ into a gate.
 ## Shape
 
 ```toml
-asset = "mascot"
-rung  = "final"          # the lowest preview rung a verdict may be taken at
+asset    = "mascot"
+artefact = "docs/renders/mascot.png"   # optional: the file `verify` holds to this
+rung     = "final"       # the lowest preview rung a verdict may be taken at
 
 [[predicate]]
 id      = "face-reads-cream"
@@ -148,6 +149,17 @@ stays possible as the held-out test it is. Where nothing passes on every member,
 carries a `conflict`: the two predicates on different members that each held somewhere and
 never together, with the sample nearest each side, and any predicate no sample ever held.
 That is the question a person has to answer, asked by the tool.
+
+**A spec can name the file it holds to its bar, and then binds after the search exits**
+(§PW111). `artefact = "sprites/star.png"`, relative to the project, is optional.
+`accept.verify(root)`, and `python -m polyweave verify` on the command line, walks every
+spec under `[paths] specs` and checks each artefact as it sits on disk, with no render.
+Where the artefact has a record, the check uses the rung the record names. Each spec
+comes back as `passed`, `failed` (with the failed predicates in words), `missing`,
+`refused`, or `unanchored` when it names no file. An unanchored spec is reported, never
+given a path guessed from its name, which would be one project's layout compiled in. The
+answer's `passed`, and the command's exit status, fail on anything failed, missing or
+refused, so a CI job can stand on it. An unanchored spec does not fail.
 
 **`rung` is a floor.** It raises the rung a verdict on this asset may be taken at and never
 lowers one the predicates themselves require, and a verdict offered from lower down is

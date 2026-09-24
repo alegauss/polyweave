@@ -73,6 +73,8 @@ class Spec:
     predicates: tuple[Predicate, ...]
     search: dict
     path: Path | None = None
+    #: The committed file this spec holds to its bar, relative to the project (§PW111).
+    artefact: str | None = None
 
     def needs_rung(self) -> str:
         """The lowest rung a verdict on this asset may be taken at.
@@ -110,12 +112,14 @@ def read(path: str | Path, root: str | Path = ".") -> Spec:
 
 
 def parse(declared: dict, path: Path | None = None) -> Spec:
-    unknown = sorted(set(declared) - {"asset", "rung", "predicate", "search"})
+    unknown = sorted(
+        set(declared) - {"asset", "artefact", "rung", "predicate", "search"}
+    )
     if unknown:
         raise PolyweaveError(
             "spec.unknown-field",
             f"an acceptance spec has no {', '.join(unknown)}",
-            "it takes asset, rung, [[predicate]] and [search.<param>]",
+            "it takes asset, artefact, rung, [[predicate]] and [search.<param>]",
         )
     rung = declared.get("rung")
     if rung is not None:
@@ -144,6 +148,7 @@ def parse(declared: dict, path: Path | None = None) -> Spec:
         predicates=predicates,
         search=_search(declared.get("search") or {}),
         path=path,
+        artefact=str(declared["artefact"]) if declared.get("artefact") else None,
     )
 
 
@@ -437,6 +442,76 @@ def _meaning(name: str, side: str, origin: dict) -> str:
         + (f" with {noise:g} of noise" if noise is not None else "")
         + ": the render drifted from what it was measured on"
     )
+
+
+# -- the specs as a gate ---------------------------------------------------------------
+
+
+def verify(root: str | Path = ".", *, under: str | Path | None = None) -> dict:
+    """Every spec under `[paths] specs` against the artefact it names (§PW111).
+
+    A spec is consulted while a search runs and not after it, so a sprite overwritten
+    after it was accepted was never held to the bar it passed. This needs no render:
+    each spec's `artefact` is checked as it sits on disk, at the rung its own record
+    says it was made at where there is one. A spec naming no artefact is reported as
+    `unanchored` rather than given a path guessed from its name, which would be one
+    project's layout compiled in.
+
+    `passed` is false when any artefact fails, is missing, or its spec is refused, so a
+    CI job fails on it; an unanchored spec is said, not failed.
+    """
+    from . import provenance
+    from .config import load as load_config
+
+    here = Path(root).resolve()
+    folder = Path(under) if under else load_config(here).path("paths.specs")
+    folder = folder if folder.is_absolute() else here / folder
+    results = []
+    for found in sorted(folder.rglob(f"*{SUFFIX}")) if folder.is_dir() else ():
+        one = {"spec": provenance.relative(found, here)}
+        try:
+            spec = read(found)
+        except PolyweaveError as refused:
+            results.append({**one, "status": "refused", "refusal": refused.as_dict()})
+            continue
+        one.update(asset=spec.asset, artefact=spec.artefact)
+        if not spec.artefact:
+            results.append({**one, "status": "unanchored"})
+            continue
+        picture = here / spec.artefact
+        if not picture.is_file():
+            results.append({**one, "status": "missing"})
+            continue
+        try:
+            made_at = provenance.read(picture, here).get("rung")
+        except PolyweaveError:
+            made_at = None
+        try:
+            checked = check(spec, picture, rung=made_at, root=here)
+        except PolyweaveError as refused:
+            results.append({**one, "status": "refused", "refusal": refused.as_dict()})
+            continue
+        results.append(
+            {
+                **one,
+                "status": "passed" if checked["passed"] else "failed",
+                "rung": made_at,
+                "failed": [
+                    r.get("why") or f"{r['id']}: {r['measure']} is {r['value']:g}"
+                    for r in checked["predicates"]
+                    if not r["passed"]
+                ],
+            }
+        )
+    counts = {
+        status: sum(1 for r in results if r["status"] == status)
+        for status in ("passed", "failed", "missing", "refused", "unanchored")
+    }
+    return {
+        "specs": results,
+        "counts": counts,
+        "passed": not (counts["failed"] or counts["missing"] or counts["refused"]),
+    }
 
 
 def _scalar(value: Any, p: Predicate) -> float:

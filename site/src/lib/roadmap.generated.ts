@@ -34,7 +34,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "G", title: "Geometry as a declaration", open: 0 },
   { block: "H", title: "Proof on a real game", open: 8 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
-  { block: "J", title: "A bar a person sets once", open: 3 },
+  { block: "J", title: "A bar a person sets once", open: 2 },
   { block: "K", title: "Reached without reading the source", open: 11 },
   { block: "L", title: "What a run leaves as evidence", open: 7 },
   { block: "M", title: "What a game needs beyond the look", open: 3 },
@@ -126,18 +126,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW115"],
   },
   {
-    id: "PW111",
-    block: "J",
-    symptom: "no command checks committed artefacts against their specs, so a spec binds only while a search runs",
-    why: "`[paths] specs` is declared and read by nothing, so a sprite overwritten after it was accepted is never held to the bar it passed.",
-    deps: [],
-  },
-  {
     id: "PW112",
     block: "J",
     symptom: "a spec is checked against the bake and never against what the engine draws on screen",
     why: "Once the game loads a mesh its material is what the player sees, so a spec that only reads the bake holds the intermediate artefact to the bar and not the real one.",
-    deps: ["PW111"],
+    deps: [],
   },
   {
     id: "PW113",
@@ -164,7 +157,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW125",
     block: "K",
     symptom: "an agent in a consumer can ask what the machine can do, explain a code or start a job only by writing Python",
-    why: "The command line has one verb, `build`, so a GDScript project writes a script to reach the rest, which is the port scripts' cost at its smallest.",
+    why: "The command line has two verbs, `build` and `verify`, so a GDScript project writes a script to reach the rest, which is the port scripts' cost at its smallest.",
     deps: ["PW124"],
   },
   {

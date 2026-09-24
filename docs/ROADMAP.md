@@ -35,15 +35,14 @@
 
 ## Block J — A bar a person sets once
 
-- 📋 **PW111** (deps: —) **no command checks committed artefacts against their specs, so a spec binds only while a search runs** — `[paths] specs` is declared and read by nothing, so a sprite overwritten after it was accepted is never held to the bar it passed. → §PW111
-- 📋 **PW112** (deps: PW111) **a spec is checked against the bake and never against what the engine draws on screen** — Once the game loads a mesh its material is what the player sees, so a spec that only reads the bake holds the intermediate artefact to the bar and not the real one. → §PW112
+- 📋 **PW112** (deps: PW111 ✅) **a spec is checked against the bake and never against what the engine draws on screen** — Once the game loads a mesh its material is what the player sees, so a spec that only reads the bake holds the intermediate artefact to the bar and not the real one. → §PW112
 - 💭 **PW113** (deps: —) **the acceptance spec is only ever aimed at a 3D bake, though nothing in its format is 3D** — Cottony writes the same kind of bar three more times outside the plugin, for a board, a music loop and drawn sprites, and whether those belong here is a scope call. → §PW113
 
 ## Block K — Reached without reading the source
 
 - 📋 **PW123** (deps: —) **`build --all` skips a declaration it refuses to read, so a typo drops an asset from the build and exits 0** — The loop swallows every refusal so it can pass over TOML that is not a shape, and an unknown field is exactly such a refusal. → §PW123
 - 📋 **PW124** (deps: —) **`describe` knows one operation, so search, accept, geometry and voxels are still learned by reading their source** — PW3 shipped self-description and only `render.bake` took it up; every operation since arrived as a plain function, and no test notices one more. → §PW124
-- 📋 **PW125** (deps: PW124) **an agent in a consumer can ask what the machine can do, explain a code or start a job only by writing Python** — The command line has one verb, `build`, so a GDScript project writes a script to reach the rest, which is the port scripts' cost at its smallest. → §PW125
+- 📋 **PW125** (deps: PW124) **an agent in a consumer can ask what the machine can do, explain a code or start a job only by writing Python** — The command line has two verbs, `build` and `verify`, so a GDScript project writes a script to reach the rest, which is the port scripts' cost at its smallest. → §PW125
 - 📋 **PW126** (deps: PW125) **an agent's first call is guessed from prose, because no tool schema carries the plugin's names, ranges and choices** — A range declared on a parameter reaches the caller only as a refusal, where a served schema would have stopped the wrong call before it spawned anything. → §PW126
 - 📋 **PW127** (deps: PW125) **a remedy is a sentence, so nothing checks that the call it names exists or accepts those arguments** — Roadkeep found one of 118 remedy rows had ever been run and several named flags its own parser rejected, and remedies here are the same unchecked prose. → §PW127
 - 📋 **PW128** (deps: —) **a refused name says what was wrong but never which names would have worked** — An unknown measure, primitive, material slot or operation is where an agent guesses, and the near match exists only inside a sentence the config reader writes. → §PW128

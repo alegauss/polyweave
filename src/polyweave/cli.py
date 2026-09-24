@@ -12,6 +12,10 @@ skips a document whose stamp still matches, so a project's asset step is one lin
 
 **Blender only where a node needs it.** A voxel build of the grid-native ops never
 does; its cubes' mesh is written when Blender is there and left out when it is not.
+
+`python -m polyweave verify` is the other verb (§PW111): every spec under `[paths]
+specs` checked against the artefact it names, with no render, exiting non-zero when one
+fails so a CI job can stand on it.
 """
 
 from __future__ import annotations
@@ -228,6 +232,29 @@ def _printed(answer: dict) -> list[str]:
     return lines
 
 
+def _verify(stated: argparse.Namespace) -> int:
+    """`verify`: the specs as a gate, one line per spec, non-zero when one fails."""
+    from . import accept
+
+    found = accept.verify(stated.root, under=stated.specs)
+    if stated.json:
+        print(json.dumps(found, indent=1))
+    else:
+        for one in found["specs"]:
+            print(f"{one['status']:<10} {one['spec']}")
+            for line in one.get("failed", ()):
+                print(f"  {line}")
+            if one["status"] == "refused":
+                print(f"  {one['refusal']['code']}: {one['refusal']['message']}")
+            if one["status"] == "missing":
+                print(f"  no file at {one['artefact']}")
+            if one["status"] == "unanchored":
+                print("  names no artefact; add `artefact = <path>` to hold it to this")
+        counted = [f"{n} {k}" for k, n in found["counts"].items() if n]
+        print(", ".join(counted) or "no specs")
+    return 0 if found["passed"] else 1
+
+
 def main(argv: list[str] | None = None) -> int:
     """The command line; returns the exit status."""
     from . import readable
@@ -253,7 +280,17 @@ def main(argv: list[str] | None = None) -> int:
     )
     build.add_argument("--preview", action="store_true", help="also write a cheap look")
     build.add_argument("--json", action="store_true", help="print the answer as data")
+    verify = commands.add_parser(
+        "verify", help="check every committed artefact against its acceptance spec"
+    )
+    verify.add_argument(
+        "--root", default=".", help="the project the paths resolve against"
+    )
+    verify.add_argument("--specs", help="where the specs are; [paths] specs by default")
+    verify.add_argument("--json", action="store_true", help="print the answer as data")
     stated = parser.parse_args(argv)
+    if stated.command == "verify":
+        return _verify(stated)
 
     if bool(stated.document) == bool(stated.folder):
         parser.error("name one document, or a folder with --all")

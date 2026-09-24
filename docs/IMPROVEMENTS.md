@@ -430,25 +430,6 @@ written.
 
 ## Block J — A bar a person sets once
 
-### §PW111 The specs as a gate, with no render
-
-`[paths] specs` is declared, defaults to `docs/accept`, and is read by nothing. A spec
-is consulted only while a search runs, so the four star specs Cottony now carries stop
-protecting the stars the moment the search exits. A sprite overwritten by a generator,
-or re-exported by hand, is not checked against the bar it was accepted at.
-
-Checking needs no render: `accept.check` measures any PNG. So a verify walks the specs
-directory, finds each spec's artefact, checks it at the rung the spec states, and
-returns one verdict per spec with the predicates that failed, shaped for a CI job to
-fail on. That is the gate §PW57 reduces Cottony's five check scripts to, available
-before any of them move.
-
-The spec needs to say where its artefact is. Today the `asset` name is all it has and
-the artefact path is in the caller's script. An optional `artefact` field, relative to
-the project, is the smallest addition; without it the verify reports the spec as
-unanchored rather than guessing a path from the name, which would be one project's
-layout compiled in.
-
 ### §PW112 The same bar, on the screen the player sees
 
 Cottony's style guide says it outright: once the game loads a mesh, the Godot material
@@ -527,9 +508,9 @@ module per commit, against a list that can only shrink.
 
 ### §PW125 A command line derived from the registry
 
-`python -m polyweave` answers `build` and nothing else. `capabilities`, `explain`,
-`describe`, the job verbs, `search`, `accept.check`, `verify`, `sweep` and
-`godot.install` are reachable from Python only, so an agent in Cottony that wants to
+`python -m polyweave` answers `build`, and `verify` for the specs, and nothing else.
+`capabilities`, `explain`, `describe`, the job verbs, `search`, `accept.check`, `sweep`
+and `godot.install` are reachable from Python only, so an agent in Cottony that wants to
 know whether Blender is present writes and runs a script, and a person reading its
 transcript cannot tell the question from the answer.
 
@@ -683,7 +664,7 @@ governed file is denied, and the denial names the command to run instead.
 The same hook fits here. A `PreToolUse` guard denies an edit to a file that has a build
 stamp or a provenance record beside it, and names the declaration to change and the
 `build` to run. A `Stop` hook checks only the artefacts this turn touched against their
-records, which is the at-the-write form of the check §PW111 asks for.
+records, which is the at-the-write form of the check `python -m polyweave verify` makes.
 
 Roadkeep's constraints come with it. The screen before any import uses the standard
 library only, so numpy and Blender are never loaded to decide a write. Any failure
