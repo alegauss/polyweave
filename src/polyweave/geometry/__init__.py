@@ -51,7 +51,9 @@ __all__ = [
 REFERS = ("into", "cutter", "of", "inputs", "operands", "on")
 
 #: Fields that are the node's own bookkeeping and never an expression to evaluate.
-KEEPS = ("id", "op", "material", "repeat", "fn")
+#: A `cells` node's rows are text a person drew (§PW95), and a row reading `a` must not
+#: become the parameter called `a`.
+KEEPS = ("id", "op", "material", "repeat", "fn", "layers", "legend")
 
 
 def read(path: str | Path, *, root: str | Path = ".") -> dict:

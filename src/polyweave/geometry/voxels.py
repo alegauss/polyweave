@@ -56,21 +56,44 @@ _EPS = 1e-9
 
 @dataclass
 class _Found:
-    """Which of the sample points are inside, and who decides what each one wears."""
+    """Which of the sample points are inside, and who decides what each one wears.
+
+    `wears` is per point and not per node, because a `cells` node paints each of its
+    cells from its own legend (§PW95).
+    """
 
     inside: np.ndarray
     key: np.ndarray
     owner: np.ndarray
+    wears: np.ndarray
 
     @classmethod
     def of(cls, inside: np.ndarray, rank: int) -> _Found:
         mark = np.where(inside, rank, -1)
-        return cls(inside, mark.copy(), mark)
+        return cls(inside, mark.copy(), mark, np.full(len(inside), "", dtype=object))
 
-    def painted(self, rank: int) -> _Found:
-        key = np.where(self.inside, rank + _PAINTED, self.key)
-        owner = np.where(self.inside, rank, self.owner)
-        return _Found(self.inside, key, owner)
+    @classmethod
+    def drawn(cls, inside: np.ndarray, rank: int, wears: np.ndarray) -> _Found:
+        """Cells that each name what they wear, painting where they name anything."""
+        worn = inside & (wears != "")
+        key = np.where(inside, np.where(worn, rank + _PAINTED, rank), -1)
+        return cls(inside, key, np.where(inside, rank, -1), np.where(inside, wears, ""))
+
+    def painted(self, rank: int, material: str) -> _Found:
+        return _Found(
+            self.inside,
+            np.where(self.inside, rank + _PAINTED, self.key),
+            np.where(self.inside, rank, self.owner),
+            np.where(self.inside, material, self.wears),
+        )
+
+    def only(self, kept: np.ndarray) -> _Found:
+        return _Found(
+            kept,
+            np.where(kept, self.key, -1),
+            np.where(kept, self.owner, -1),
+            np.where(kept, self.wears, ""),
+        )
 
 
 def _merge(one: _Found, other: _Found) -> _Found:
@@ -80,18 +103,22 @@ def _merge(one: _Found, other: _Found) -> _Found:
         one.inside | other.inside,
         np.where(takes, other.key, one.key),
         np.where(takes, other.owner, one.owner),
+        np.where(takes, other.wears, one.wears),
     )
 
 
 class _Model:
     """One resolved document, able to say where each node is and what is inside it."""
 
-    def __init__(self, document: dict, root: Path, given: dict) -> None:
+    def __init__(
+        self, document: dict, root: Path, given: dict, cell: float | None = None
+    ) -> None:
         self.document, self.root, self.given = document, root, given
         self.resolved = expand(document, **given)
         self.stated = {node["id"]: node for node in document["nodes"]}
         self.instanced = {node["id"]: node for node in self.resolved["nodes"]}
         self.rank = {node["id"]: at for at, node in enumerate(document["nodes"])}
+        self.cell = cell or stated_cell(document, self.resolved["params"])
         self._meshes: dict | None = None
 
     # -- where a node is ---------------------------------------------------------------
@@ -144,6 +171,9 @@ class _Model:
             return self.bounds(node["into"])
         if op == "bevel":
             return self.bounds(refers_to(node)[0])
+        if op == "cells":
+            size = self.size_of(node, instance)
+            return np.zeros(3), np.asarray(lattice(node)["size"], dtype=float) * size
         points = np.asarray(self._traced(node, instance)["vertices"], dtype=float)
         return points.min(axis=0), points.max(axis=0)
 
@@ -159,7 +189,7 @@ class _Model:
             part = self._op_inside(node, instance, here)
             found = part if found is None else _merge(found, part)
         if node.get("material"):
-            found = found.painted(self.rank[one])
+            found = found.painted(self.rank[one], node["material"])
         return found
 
     def _op_inside(self, node: dict, instance: dict, points: np.ndarray) -> _Found:
@@ -184,13 +214,37 @@ class _Model:
         if op == "carve":
             into = self.inside(node["into"], points)
             cut = self.inside(node["cutter"], points).inside
-            kept = into.inside & ~cut
-            return _Found(
-                kept, np.where(kept, into.key, -1), np.where(kept, into.owner, -1)
-            )
+            return into.only(into.inside & ~cut)
         if op == "bevel":
             return self.inside(refers_to(node)[0], points)
+        if op == "cells":
+            return self._drawn(node, instance, points)
         return _Found.of(_parity(self._traced(node, instance), points), rank)
+
+    def _drawn(self, node: dict, instance: dict, points: np.ndarray) -> _Found:
+        """A `cells` node: which drawn cell each point falls in, and what it wears."""
+        grid, size = lattice(node), self.size_of(node, instance)
+        index = np.floor(points / size + _EPS).astype(np.int64, copy=False)
+        within = np.all((index >= 0) & (index < np.asarray(grid["size"])), axis=1)
+        wears = np.full(len(points), "", dtype=object)
+        filled = np.zeros(len(points), dtype=bool)
+        if within.any():
+            at = tuple(index[within].T)
+            filled[within] = grid["filled"][at]
+            wears[within] = grid["wears"][at]
+        return _Found.drawn(filled, self.rank[node["id"]], wears)
+
+    def size_of(self, node: dict, instance: dict) -> float:
+        """How big a `cells` node's cells are: its own `cell`, or the document's."""
+        size = instance.get("cell") or self.cell
+        if not size or float(size) <= 0:
+            raise PolyweaveError(
+                "geom.bad-cells",
+                f"{node['id']} draws cells and nothing says how big one is",
+                "give the node a `cell`, or give [voxels] a `cell` rather than only "
+                "`across`; the drawing's cells cannot wait for the bounds they make",
+            )
+        return float(size)
 
     # -- the pieces the tests are made of ----------------------------------------------
 
@@ -311,6 +365,100 @@ def _crosses(
     return (over & (height > probe[:, 2])).astype(int)
 
 
+# -- cells drawn as text ---------------------------------------------------------------
+
+#: The character a `cells` drawing leaves empty.
+EMPTY = "."
+
+
+def lattice(node: dict) -> dict:
+    """A `cells` node's drawing, read into arrays over its own grid (§PW95).
+
+    `layers` is a list of slices along z, the first at the front; each is a list of
+    rows written top to bottom, one character a cell, so a row reads as it looks.
+    `legend` names what each character wears and `.` is empty. A character the legend
+    does not name is refused rather than left empty, since a typo that erased a cell
+    would look exactly like a cell that was meant not to be there.
+    """
+    layers, legend = node.get("layers"), dict(node.get("legend") or {})
+    named = node.get("id", "a cells node")
+    if (
+        not isinstance(layers, list)
+        or not layers
+        or not all(
+            isinstance(layer, list) and layer and all(isinstance(r, str) for r in layer)
+            for layer in layers
+        )
+    ):
+        raise PolyweaveError(
+            "geom.bad-cells",
+            f"{named} has no layers of rows to read",
+            "give it `layers`, a list of slices, each a list of strings of one "
+            "character per cell",
+        )
+    tall, wide = len(layers[0]), len(layers[0][0])
+    for depth, layer in enumerate(layers):
+        if len(layer) != tall or any(len(row) != wide for row in layer):
+            raise PolyweaveError(
+                "geom.bad-cells",
+                f"{named}: layer {depth} is not {wide} by {tall} like the first one",
+                "make every row and every layer the same size; pad with `.` where a "
+                "slice has fewer cells",
+            )
+    unknown = sorted(
+        {c for layer in layers for row in layer for c in row} - set(legend) - {EMPTY}
+    )
+    if unknown:
+        raise PolyweaveError(
+            "geom.bad-cells",
+            f"{named} draws {', '.join(repr(c) for c in unknown)}, which its legend "
+            f"does not name",
+            "add each one to `legend` with the material it wears, or write `.` for an "
+            "empty cell",
+        )
+    size = (wide, tall, len(layers))
+    filled = np.zeros(size, dtype=bool)
+    wears = np.full(size, "", dtype=object)
+    for z, layer in enumerate(layers):
+        for row, text in enumerate(layer):
+            y = tall - 1 - row
+            for x, character in enumerate(text):
+                if character != EMPTY:
+                    filled[x, y, z] = True
+                    wears[x, y, z] = str(legend[character] or "")
+    return {"size": size, "filled": filled, "wears": wears}
+
+
+def stated_cell(document: dict, params: dict) -> float | None:
+    """The cell size `[voxels]` gives outright, or None where it gives only `across`."""
+    stated = (document.get("voxels") or {}).get("cell")
+    if stated in (None, ""):
+        return None
+    return float(evaluate(stated, params, where="voxels.cell"))
+
+
+def drawn_mesh(node: dict, size: float) -> dict:
+    """A `cells` node as cubes, for a document built as triangles rather than cells."""
+    grid = lattice(node)
+    where = np.argwhere(grid["filled"])
+    names = list(dict.fromkeys(grid["wears"][tuple(where.T)].tolist()))
+    slot = {one: at for at, one in enumerate(names)}
+    return cubes(
+        {
+            "cell": size,
+            "size": list(grid["size"]),
+            "origin": [0.0, 0.0, 0.0],
+            "palette": [{"name": one} for one in names],
+            "cells": {
+                "x": where[:, 0].tolist(),
+                "y": where[:, 1].tolist(),
+                "z": where[:, 2].tolist(),
+                "palette": [slot[one] for one in grid["wears"][tuple(where.T)]],
+            },
+        }
+    )
+
+
 # -- the grid --------------------------------------------------------------------------
 
 
@@ -355,16 +503,22 @@ def voxelize(
     """Which cells a declaration fills, and what each one wears.
 
     The grid is centred on what the output covers, so a symmetric shape comes back
-    symmetric, and a cell is filled where its centre is inside. `cell` or `across`
+    symmetric, and a cell is filled where its centre is inside. A document with a
+    `cells` node is the exception: its grid sits on whole cells from the origin, so a
+    drawn cell is a cell of the model and not split between two. `cell` or `across`
     override the document's own `[voxels]` for this call.
     """
-    model = _Model(document, Path(root).resolve(), given)
+    model = _Model(document, Path(root).resolve(), given, cell=cell)
     output = document["output"]
     low, high = model.bounds(output)
     extent = high - low
     size = _cell(document, model.resolved["params"], extent, cell=cell, across=across)
-    counts = np.maximum(np.ceil(extent / size - 1e-6).astype(int), 1)
-    origin = (low + high) / 2.0 - counts * size / 2.0
+    if any(node["op"] == "cells" for node in document["nodes"]):
+        origin = np.floor(low / size + 1e-6) * size
+        counts = np.maximum(np.ceil((high - origin) / size - 1e-6).astype(int), 1)
+    else:
+        counts = np.maximum(np.ceil(extent / size - 1e-6).astype(int), 1)
+        origin = (low + high) / 2.0 - counts * size / 2.0
 
     index = np.stack(
         np.meshgrid(*(np.arange(n) for n in counts), indexing="ij"), axis=-1
@@ -372,13 +526,9 @@ def voxelize(
     found = model.inside(output, origin + (index + 0.5) * size)
     filled = index[found.inside]
     owners = found.owner[found.inside]
-    keys = found.key[found.inside]
 
     names = [node["id"] for node in document["nodes"]]
-    wears = [
-        document["nodes"][one].get("material", "") if key >= _PAINTED else ""
-        for one, key in zip(owners.tolist(), keys.tolist(), strict=True)
-    ]
+    wears = [str(one) for one in found.wears[found.inside].tolist()]
     materials = model.resolved["materials"]
     palette_names = [one for one in materials if one in set(wears)]
     palette_names += sorted({one for one in wears if one not in palette_names})

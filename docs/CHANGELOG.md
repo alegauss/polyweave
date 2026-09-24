@@ -121,6 +121,7 @@
 
 - ✅ **PW93** **a declaration can only become a triangle mesh, so a game that draws and breaks cells has nothing to read** — A [voxels] declaration builds as cells in milliseconds, painted by the last node covering them, written as flat arrays beside the same cubes as mesh (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW94** **a voxel model cannot be seen without starting Blender and paying for a render** — A voxel build writes a contact sheet beside its cells: front, side, top and isometric views in flat colour, drawn in milliseconds with no renderer (design recorded in `docs/specs/geometry.md`).
+- ✅ **PW95** **a shape placed cell by cell, like layered pixel art, has no op and would take dozens of cube nodes** — A cells node draws a block as text rows per layer with a legend, painting over earlier nodes, carvable, and built as cubes in a mesh document (design recorded in `docs/specs/geometry.md`).
 
 ## Block J — A bar a person sets once
 

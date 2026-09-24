@@ -119,6 +119,8 @@ def _says(node: dict, instance: dict, materials: dict | None = None) -> str:
         what = f"{takes[0]}, moved" if takes else "a transform"
     elif op == "custom":
         what = f"whatever {node.get('fn', 'a project function')} builds"
+    elif op == "cells":
+        what = _drawing(node)
     else:
         what = f"a {op}"
 
@@ -131,6 +133,24 @@ def _says(node: dict, instance: dict, materials: dict | None = None) -> str:
         if coat:
             said += f", {F.says(coat)}"
     return said
+
+
+def _drawing(node: dict) -> str:
+    """`3 layers of 8 by 5, 41 cells in hull and glass` (§PW95)."""
+    from .voxels import lattice
+
+    try:
+        grid = lattice(node)
+    except PolyweaveError as refused:
+        return f"cells that cannot be read: {refused.message}"
+    wide, tall, deep = grid["size"]
+    count = int(grid["filled"].sum())
+    worn = [one for one in dict.fromkeys(grid["wears"][grid["filled"]].tolist()) if one]
+    said = (
+        f"{deep} layer{'' if deep == 1 else 's'} of {wide} by {tall}, "
+        f"{count} cell{'' if count == 1 else 's'}"
+    )
+    return said + (f" in {' and '.join(worn)}" if worn else "")
 
 
 def _article(word: str) -> str:
@@ -214,6 +234,13 @@ def warn(document: dict, resolved: dict | None = None) -> list[str]:
                 f"{node['id']} is in {worn}, and no material has that name, so "
                 f"whatever {worn} was meant to put on it is not there"
             )
+        # A drawing's legend names materials the same way, one per character.
+        for mark, drawn in sorted((node.get("legend") or {}).items()):
+            if drawn and drawn not in declared:
+                out.append(
+                    f"{node['id']} draws {mark!r} in {drawn}, and no material has that "
+                    f"name, so whatever {drawn} was meant to put on it is not there"
+                )
 
     for node in resolved["nodes"]:
         if len(node["instances"]) > CROWDED:
@@ -239,7 +266,7 @@ def _typos(document: dict, resolved: dict) -> list[str]:
     for node in document["nodes"]:
         over = {r["var"] for r in _repeats(node)}
         for field, value in node.items():
-            if field in ("id", "op", "material", "fn"):
+            if field in ("id", "op", "material", "fn", "layers", "legend"):
                 continue
             for where, text in _strings(value, f"{node['id']}.{field}"):
                 names = mentions(text)

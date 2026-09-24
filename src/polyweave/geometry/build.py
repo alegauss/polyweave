@@ -169,6 +169,21 @@ def _custom(node, instance, built, root):
     return custom.build(node, instance, built, root=root)
 
 
+def _cells(node, instance, built, root):
+    # Cells drawn as text build as their cubes here, so a drawing is not voxel-only
+    # (§PW95): a canopy painted in cells sits on a hull built as triangles.
+    from .voxels import drawn_mesh
+
+    size = instance.get("cell")
+    if not size:
+        raise PolyweaveError(
+            "geom.bad-cells",
+            f"{node['id']} draws cells and nothing says how big one is",
+            "give the node a `cell`, or give the document a [voxels] `cell`",
+        )
+    return drawn_mesh(node, float(size))
+
+
 #: Every op a declaration may name, and what turns its fields into a mesh. The one list
 #: of op names in the package that decides anything; `review` reads it rather than
 #: keeping a second.
@@ -184,6 +199,7 @@ BUILDS: dict[str, Callable] = {
     "carve": _carve,
     "bevel": _bevel,
     "custom": _custom,
+    "cells": _cells,
 }
 
 #: The ops that consume `at` themselves, so the placement below leaves them alone.
@@ -206,11 +222,13 @@ def build(
     expensive place, so the report comes back with the mesh and not on request.
     """
     from .review import report
+    from .voxels import stated_cell
 
     here = Path(root).resolve()
     resolved = expand(document, **given)
     stated = {node["id"]: node for node in document["nodes"]}
     instanced = {node["id"]: node for node in resolved["nodes"]}
+    cell = stated_cell(document, resolved["params"])
 
     built: dict[str, dict] = {}
     for one in order(document):
@@ -224,6 +242,8 @@ def build(
                 f"node pointing at a function of your own",
             )
         for instance in instanced[one]["instances"]:
+            if node["op"] == "cells" and cell and not instance.get("cell"):
+                instance = {**instance, "cell": cell}
             made.append(_placed(node, instance, how(node, instance, built, here)))
         # A repeated node's id names the whole set, which is what makes the tray one
         # boolean rather than sixty-four.

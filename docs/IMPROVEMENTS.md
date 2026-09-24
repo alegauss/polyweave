@@ -388,22 +388,6 @@ written.
 
 ## Block I — Voxel models from a declaration
 
-### §PW95 Cells written as text
-
-`op = "cells"`: `layers` is a list of slices along z, each a list of strings, one
-character per cell; `legend` maps a character to a material and `.` is empty. The cell
-size and origin are the document's `[voxels]`, and `at` places the block as on any node.
-
-It mixes with the other ops. A hull from a `prism`, a canopy painted over it from
-`cells`, a vent carved out with `carve`. In mesh mode the same node builds as cubes, so
-it is not voxel-only.
-
-Text because it diffs, reviews in a pull request and is what an agent writes fluently.
-It is where the creative half of a model lives, while the grid, the booleans and the
-painting order stay the compiler's.
-
-The readback: `cockpit: 3 layers of 8 by 5, 41 cells in hull and glass`.
-
 ### §PW96 Mirror
 
 `op = "mirror"` with `of` (a node id), `axis` and `plane` (default 0). On a mesh it

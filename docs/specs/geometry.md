@@ -526,6 +526,33 @@ the material's resolved table with its keys passed through untouched, since `glo
 something to a game and nothing here; a cell nothing painted wears an entry whose name is
 empty. The readback is one line: `a voxel model 16 by 7 by 5, 312 cells in 3 materials`.
 
+**Cells can be drawn by hand** (§PW95), which is where a voxel model's character lives: a
+cockpit, an eye, a stripe. `op = "cells"` takes `layers`, slices along z with the first at
+the front, each a list of rows written top to bottom with one character a cell; `legend`
+names what each character wears and `.` is empty:
+
+```toml
+[[nodes]]
+id = "cockpit"
+op = "cells"
+at = [4, 2, 0]
+legend = { h = "hull", g = "glass" }
+layers = [
+  ["..hhhh..", ".hhhhhh.", "hhhhhhhh", ".hhhhhh.", "..hhhh.."],
+  ["........", "..gggg..", ".gggggg.", "..gggg..", "........"],
+]
+```
+
+The rows are text and never arithmetic, so a row reading `a` is not the parameter `a`. A
+cell is the node's own `cell` or the document's `[voxels] cell`; a document giving only
+`across` is refused (`geom.bad-cells`), because a drawing's cells cannot wait for the
+bounds they help make. So is a ragged block or a character the legend does not name, since
+a typo that erased a cell would look like one meant not to be there. With a drawing in it,
+the model's grid sits on whole cells from the origin rather than centred, so a drawn cell
+is one cell of the model. It mixes with every other op, and a document built as triangles
+builds it as its cubes. It reads back as `cockpit: 2 layers of 8 by 5, 42 cells in hull
+and glass`.
+
 **And a look that costs milliseconds** (§PW94). Beside the cells goes `ship.voxels.png`, a
 contact sheet drawn from the grid with numpy and Pillow: front (along +Z), side (in from
 +X, the back on the left), top (down from +Y, the front at the bottom) and an isometric

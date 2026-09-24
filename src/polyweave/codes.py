@@ -794,6 +794,16 @@ CODES: dict[str, Code] = {
         "size that is not above zero; two ways of saying one number would disagree",
         doors=("give [voxels] a `cell` size", "give [voxels] an `across` count"),
     ),
+    "geom.bad-cells": Code(
+        means="a `cells` node's text does not describe a block of cells",
+        when="layers or rows of different lengths, a character the legend does not "
+        "name, or no size for a cell because [voxels] states only `across`",
+        doors=(
+            "make every row and every layer the same size",
+            "add the character to `legend`, or use `.` for an empty cell",
+            "give the node or [voxels] a `cell` size",
+        ),
+    ),
     # -- clip: motion over time ------------------------------------------------
     "clip.empty": Code(
         means="the clip moves nothing",
