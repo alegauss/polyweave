@@ -388,23 +388,6 @@ written.
 
 ## Block I — Voxel models from a declaration
 
-### §PW94 Voxel contact sheet
-
-Cells are already an image. An orthographic view along an axis is the nearest cell per
-pixel column in its palette colour; an isometric view is cube tops and two sides shaded
-by face. Both are numpy and Pillow at a fixed number of pixels per cell, with no light
-and no engine.
-
-One PNG contact sheet per build: front, side, top and isometric, with an optional grid
-and node labels, written beside the json. The agent reads the PNG, edits the declaration
-and looks again, inside one turn.
-
-It stays inside "Replacing Blender, Godot or the generative service": it replaces no
-renderer, only skips one for a draft, with flat colours, no neon and no bloom. The final
-look stays the engine's and the render ladder's. It is to a voxel model what the
-readback in words is to a declaration: the cheapest look that can still be disagreed
-with.
-
 ### §PW95 Cells written as text
 
 `op = "cells"`: `layers` is a list of slices along z, each a list of strings, one

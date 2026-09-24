@@ -479,13 +479,19 @@ def write(
     *,
     root: str | Path = ".",
     mesh: bool = True,
+    sheet: bool = True,
     **given: Any,
 ) -> dict:
     """The cells as `<stem>.voxels.json`, and beside it the same cubes as `out`.
 
     `out` is the mesh's path, as `build.write` takes it, so `bake` and every render read
     a voxel model unchanged. `mesh=False` writes the cells alone, needing no Blender.
+    A contact sheet goes beside the cells as `<stem>.voxels.png` (§PW94) unless
+    `sheet=False`; `pixels`, `grid` and `labels` are passed to it.
     """
+    from . import voxel_sheet
+
+    drawn = voxel_sheet.options(given)
     made = voxelize(document, root=root, **given)
     where = Path(out)
     if not where.is_absolute():
@@ -494,6 +500,9 @@ def write(
     cells.parent.mkdir(parents=True, exist_ok=True)
     cells.write_text(json.dumps(_plain(made), indent=1) + "\n", encoding="utf-8")
     answer = {"model": made, "says": made["says"], "voxels": str(cells)}
+    if sheet:
+        looked = voxel_sheet.sheet(made, voxel_sheet.beside(cells), **drawn)
+        answer["sheet"] = looked["sheet"]
     if mesh:
         from ..normalise import write_mesh
 

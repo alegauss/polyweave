@@ -526,6 +526,14 @@ the material's resolved table with its keys passed through untouched, since `glo
 something to a game and nothing here; a cell nothing painted wears an entry whose name is
 empty. The readback is one line: `a voxel model 16 by 7 by 5, 312 cells in 3 materials`.
 
+**And a look that costs milliseconds** (§PW94). Beside the cells goes `ship.voxels.png`, a
+contact sheet drawn from the grid with numpy and Pillow: front (along +Z), side (in from
++X, the back on the left), top (down from +Y, the front at the bottom) and an isometric
+view whose sides are a step darker than its tops. Flat palette colours, no light and no
+engine, so it replaces no renderer and only skips one for a draft. `pixels` sets a cell's
+size in the picture, `grid` rules the cell edges and `labels` names each node over a cell
+of it the front view shows; `sheet=False` leaves it out.
+
 ## Rebuilding
 
 A parameter change forces a rebuild of every node that references it, transitively; a rig

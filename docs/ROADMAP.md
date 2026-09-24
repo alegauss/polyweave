@@ -30,11 +30,10 @@
 
 ## Block I — Voxel models from a declaration
 
-- 📋 **PW94** (deps: PW93 ✅) **a voxel model cannot be seen without starting Blender and paying for a render** — Authoring a shape is dozens of small edits, and each one needs a look that costs milliseconds rather than a render. → §PW94
 - 📋 **PW95** (deps: PW93 ✅) **a shape placed cell by cell, like layered pixel art, has no op and would take dozens of cube nodes** — Hand-placed details such as a cockpit, an eye or a stripe give voxel art its character, and a primitive per cell is unreadable. → §PW95
 - 📋 **PW96** (deps: —) **a symmetric shape must be declared whole, so its two halves can drift apart** — Ships and most enemies are mirror-symmetric, and declaring one half halves the work and makes asymmetry impossible by construction. → §PW96
 - 📋 **PW97** (deps: PW93 ✅) **a voxel model with floating cells, one-cell threads or too many cells builds without complaint** — Each reads badly on screen or costs a game frames, and all of them are countable from the cells before anything renders. → §PW97
-- 📋 **PW98** (deps: PW93 ✅, PW94) **fitting a voxel model to a concept drawing or a fetched mesh is guessing numbers by hand** — The search already tunes declared parameters against a measure, and a voxel silhouette is measurable in microseconds without a render. → §PW98
+- 📋 **PW98** (deps: PW93 ✅, PW94 ✅) **fitting a voxel model to a concept drawing or a fetched mesh is guessing numbers by hand** — The search already tunes declared parameters against a measure, and a voxel silhouette is measurable in microseconds without a render. → §PW98
 - 📋 **PW99** (deps: PW93 ✅) **a game breaking a voxel model must work out its fragments and damage order itself at runtime** — Grouping cells into fragments and ordering them for erosion is geometry the build already holds, and precomputing it keeps the kill frame cheap. → §PW99
 - 💭 **PW100** (deps: PW93 ✅) **a fetched mesh cannot be the starting block of a voxel model** — A Meshy hull voxelized, then cut and painted by a declaration, would keep what was bought and still get hand-made detail. → §PW100
 - 📋 **PW101** (deps: —) **building a declaration takes a Python script of the project's own** — Every consumer writes the same few lines to build, write and preview, and a project written in GDScript has no natural place to keep them. → §PW101

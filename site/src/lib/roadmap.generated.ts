@@ -33,7 +33,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
   { block: "H", title: "Proof on a real game", open: 8 },
-  { block: "I", title: "Voxel models from a declaration", open: 10 },
+  { block: "I", title: "Voxel models from a declaration", open: 9 },
   { block: "J", title: "A bar a person sets once", open: 10 },
 ];
 
@@ -109,13 +109,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW105", "PW115"],
   },
   {
-    id: "PW94",
-    block: "I",
-    symptom: "a voxel model cannot be seen without starting Blender and paying for a render",
-    why: "Authoring a shape is dozens of small edits, and each one needs a look that costs milliseconds rather than a render.",
-    deps: [],
-  },
-  {
     id: "PW95",
     block: "I",
     symptom: "a shape placed cell by cell, like layered pixel art, has no op and would take dozens of cube nodes",
@@ -141,7 +134,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "I",
     symptom: "fitting a voxel model to a concept drawing or a fetched mesh is guessing numbers by hand",
     why: "The search already tunes declared parameters against a measure, and a voxel silhouette is measurable in microseconds without a render.",
-    deps: ["PW94"],
+    deps: [],
   },
   {
     id: "PW99",
