@@ -46,6 +46,7 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.accept:margin": ("internal", "one predicate's margin"),
     "polyweave.accept:headroom": ("internal", "one predicate's headroom"),
     "polyweave.search": ("internal", "the search's parts; search.sweep is the whole"),
+    "polyweave.calibrate": ("internal", "the parts calibrate.run and .apply assemble"),
     # -- internal: helpers an operation calls, never a caller's first call ----------
     "polyweave.cache": ("internal", "the render cache, reached through bake's cached"),
     "polyweave.census": ("internal", "this census's own walk"),
@@ -79,7 +80,6 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.geometry.voxel_fit": ("internal", "a voxel build's fitting"),
     "polyweave.geometry.voxel_sheet": ("internal", "a voxel build's contact sheet"),
     # -- pending: a caller's surface, not yet registered with describe ---------------
-    "polyweave.calibrate": ("pending", "measuring a bound's room from the noise"),
     "polyweave.capture": ("pending", "a picture of the running game"),
     "polyweave.cli": ("pending", "the command line's builders"),
     "polyweave.clip": ("pending", "motion as a named clip"),

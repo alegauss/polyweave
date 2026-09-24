@@ -24,10 +24,11 @@ import math
 import re
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any
 
 from . import accept, provenance
 from .accept import Spec
+from .describe import Param, operation
 from .errors import PolyweaveError
 
 #: How many spreads of noise a bound leaves above the accepted value. Stated in every
@@ -216,6 +217,36 @@ def calibrate(
     found["accepted"] = provenance.relative(picture, here)
     found["changes"] = changes
     return found
+
+
+@operation("calibrate.run", kind="bake")
+def calibrated(
+    spec: Annotated[str, Param("the acceptance spec, as a path under the project")],
+    accepted: Annotated[str, Param("the render a person accepted, with its record")],
+    multiple: Annotated[
+        float, Param("how many spreads of noise a bound leaves", lo=0.0)
+    ] = MULTIPLE,
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
+) -> dict:
+    """Render an accepted picture again under harmless changes, and propose its bounds.
+
+    Proposes and writes nothing: `calibrate.apply` is the separate call.
+    """
+    return calibrate(accept.read(spec, root), accepted, root=root, multiple=multiple)
+
+
+@operation("calibrate.apply")
+def applied(
+    spec: Annotated[str, Param("the acceptance spec the proposal was measured on")],
+    proposal: Annotated[dict, Param("what calibrate.run returned")],
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
+) -> dict:
+    """Write a calibration's proposed bounds into the spec, leaving a person's alone.
+
+    A person's own verdict replacing a person's bound is `verdict.judge`, never this:
+    an agent does not overrule the bar a person set.
+    """
+    return apply(spec, proposal, root=root)
 
 
 def _baked(root: Path) -> Callable[[dict, Path], Any]:

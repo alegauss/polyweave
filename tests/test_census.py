@@ -7,7 +7,7 @@ from polyweave.capabilities import capabilities
 
 #: How much surface is still unregistered. Registering a module lowers it, and this
 #: number is lowered with it: it may only fall, never rise.
-PENDING = 222
+PENDING = 216
 
 
 def test_every_public_function_is_classified():
@@ -94,6 +94,33 @@ def test_a_search_is_described_as_a_job_with_its_budget_bounded():
     budget = next(p for p in found["parameters"] if p["name"] == "budget")
     assert budget["range"] == [1, None]
     assert describe._REGISTRY["search.worth_parallel"].fn(11.44) is True
+
+
+def test_calibrate_apply_by_name_never_overrules_a_persons_bound(tmp_path):
+    (tmp_path / "s.accept.toml").write_text(
+        "asset = 's'\n[[predicate]]\nid = 'tone'\nmeasure = 'luma_p99'\n"
+        "max = { value = 0.4, origin = 'person', date = '2026-09-24' }\n",
+        encoding="utf-8",
+    )
+    names = {p["name"] for p in describe.describe("calibrate.apply")["parameters"]}
+    assert "person" not in names
+    proposal = {
+        "apply": {
+            "tone": {
+                "max": {
+                    "value": 0.3,
+                    "origin": "measured",
+                    "measured": 0.29,
+                    "spread": 0.001,
+                    "old": 0.4,
+                }
+            }
+        }
+    }
+    done = describe._REGISTRY["calibrate.apply"].fn(
+        "s.accept.toml", proposal, root=str(tmp_path)
+    )
+    assert done["kept"] == ["tone:max"]
 
 
 def test_a_fresh_read_of_the_operations_loads_them():
