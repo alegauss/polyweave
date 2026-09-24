@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
+from pathlib import Path
 
 import pytest
 
@@ -93,6 +94,36 @@ def test_all_skips_what_has_not_changed_and_rebuilds_what_has(tmp_path, capsys):
     again = json.loads(printed.out)
     assert [one["status"] for one in again] == ["built"]
     assert again[0]["says"].startswith("a voxel model 3 by 3 by 3")
+
+
+def test_all_reports_a_declaration_with_a_typo_and_fails(tmp_path, capsys):
+    """§PW123: a declaration `read` refused used to drop out silently, exiting 0."""
+    (tmp_path / "art").mkdir()
+    declared(tmp_path / "art")
+    (tmp_path / "art" / "typo.toml").write_text(
+        VOXEL.replace('name = "box"\noutput = "box"', 'name = "typo"\noutput = "bxo"'),
+        encoding="utf-8",
+    )
+    (tmp_path / "art" / "spec.toml").write_text(
+        "asset = 'box'\n[[predicate]]\nid = 'a'\n", encoding="utf-8"
+    )
+    status, printed = run(tmp_path, "--all", "art", "--json", capsys=capsys)
+    found = {Path(one["document"]).name: one for one in json.loads(printed.out)}
+    assert status == 1
+    assert set(found) == {"box.toml", "typo.toml"}
+    assert found["box.toml"]["status"] == "built"
+    assert found["typo.toml"]["status"] == "refused"
+    assert found["typo.toml"]["refusal"]["code"] == "geom.unknown-node"
+
+
+def test_all_reports_a_declaration_that_is_not_even_toml(tmp_path, capsys):
+    (tmp_path / "art").mkdir()
+    broken = tmp_path / "art" / "broken.toml"
+    broken.write_text("[[nodes]\nid = 1\n", encoding="utf-8")
+    status, printed = run(tmp_path, "--all", "art", "--json", capsys=capsys)
+    (one,) = json.loads(printed.out)
+    assert status == 1
+    assert one["refusal"]["code"] == "geom.unreadable"
 
 
 def test_a_mesh_declaration_writes_its_mesh_and_a_silhouette(tmp_path, capsys):

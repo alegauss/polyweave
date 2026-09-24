@@ -31,11 +31,11 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
-  { block: "G", title: "Geometry as a declaration", open: 0 },
+  { block: "G", title: "Geometry as a declaration", open: 1 },
   { block: "H", title: "Proof on a real game", open: 3 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
-  { block: "K", title: "Reached without reading the source", open: 11 },
+  { block: "K", title: "Reached without reading the source", open: 10 },
   { block: "L", title: "What a run leaves as evidence", open: 7 },
   { block: "M", title: "What a game needs beyond the look", open: 3 },
 ];
@@ -53,6 +53,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "B",
     symptom: "a bake after `preview_size` changed is served the old-size picture from the cache, as a hit",
     why: "The rung's size is read from the project file and is in no field the cache key covers, so every measure on the hit answers for a size nobody asked for.",
+    deps: [],
+  },
+  {
+    id: "PW146",
+    block: "G",
+    symptom: "a misspelt key in a geometry declaration is accepted silently, at the top level or on a node",
+    why: "parse checks names, ids and the output and reads nothing else, so a typo builds the shape without that field and says nothing.",
     deps: [],
   },
   {
@@ -75,13 +82,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent",
     why: "The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question.",
     deps: ["PW57"],
-  },
-  {
-    id: "PW123",
-    block: "K",
-    symptom: "`build --all` skips a declaration it refuses to read, so a typo drops an asset from the build and exits 0",
-    why: "The loop swallows every refusal so it can pass over TOML that is not a shape, and an unknown field is exactly such a refusal.",
-    deps: [],
   },
   {
     id: "PW124",

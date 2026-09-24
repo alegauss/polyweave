@@ -155,6 +155,8 @@
 
 ## Block K — Reached without reading the source
 
+- ✅ **PW123** **`build --all` skips a declaration it refuses to read, so a typo drops an asset from the build and exits 0** — build --all tells a declaration from other TOML by its nodes or voxels key, so one that fails comes back refused and the build exits 1 (design superseded: no geom.unknown-field existed (PW146)).
+
 ## Block L — What a run leaves as evidence
 
 ## Block M — What a game needs beyond the look

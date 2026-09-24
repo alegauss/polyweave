@@ -17,6 +17,8 @@
 
 ## Block G — Geometry as a declaration
 
+- 📋 **PW146** (deps: —) **a misspelt key in a geometry declaration is accepted silently, at the top level or on a node** — parse checks names, ids and the output and reads nothing else, so a typo builds the shape without that field and says nothing. → §PW146
+
 ## Block H — Proof on a real game
 
 - 📋 **PW57** (deps: PW53 ⏸) **every Cottony look gate restates its own floor, so no asset has a bar a search can aim at** — Five check scripts measure after the render is spent, which is a verdict and never a target, and a threshold moved in one of them is invisible to the rest. → §PW57
@@ -29,7 +31,6 @@
 
 ## Block K — Reached without reading the source
 
-- 📋 **PW123** (deps: —) **`build --all` skips a declaration it refuses to read, so a typo drops an asset from the build and exits 0** — The loop swallows every refusal so it can pass over TOML that is not a shape, and an unknown field is exactly such a refusal. → §PW123
 - 📋 **PW124** (deps: —) **`describe` knows one operation, so search, accept, geometry and voxels are still learned by reading their source** — PW3 shipped self-description and only `render.bake` took it up; every operation since arrived as a plain function, and no test notices one more. → §PW124
 - 📋 **PW125** (deps: PW124) **an agent in a consumer can ask what the machine can do, explain a code or start a job only by writing Python** — The command line has two verbs, `build` and `verify`, so a GDScript project writes a script to reach the rest, which is the port scripts' cost at its smallest. → §PW125
 - 📋 **PW126** (deps: PW125) **an agent's first call is guessed from prose, because no tool schema carries the plugin's names, ranges and choices** — A range declared on a parameter reaches the caller only as a refusal, where a served schema would have stopped the wrong call before it spawned anything. → §PW126

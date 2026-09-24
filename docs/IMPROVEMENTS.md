@@ -54,6 +54,28 @@ with the new size.
 
 ## Block G — Geometry as a declaration
 
+### §PW146 A declaration refuses a key it does not read
+
+Found shipping PW123, whose design assumed a `geom.unknown-field` refusal existed. It
+does not. `geometry.parse` checks a name, the nodes, their ids, the output and cycles,
+and reads nothing else. So a document with `colour_of = 1` at the top level, or a
+primitive with `sizee = 9` beside its `size`, parses, builds and describes itself with
+no warning. The shape that comes out is the one without the misspelt field, which is the
+silent drop section 3 of tool-surface.md says no surface here makes.
+
+The acceptance spec already works this way: every table has its closed list of keys, and
+a key outside it is refused where it is written, with the list in the remedy. The
+geometry equivalent has two halves. The document's own keys are fixed (name, output,
+params, materials, voxels, variants and the rest the reader already consumes). Each op's
+fields are what its builder reads, so the op table in `geometry/build.py` or `voxels.py`
+should declare them as data beside the function, not leave them implicit in the code.
+`parse` refuses a key in neither, with the nearest real one named, as
+`geom.unknown-field`.
+
+The test is a document with one misspelt key at each level, refused before anything is
+built. Then every fixture under tests/fixtures/cottony has to parse unchanged, which is
+the check that the lists are complete.
+
 ## Block H — Proof on a real game
 
 ### §PW36 Cottony adopts it without a fork
@@ -325,23 +347,6 @@ worth writing down as a non-goal, so the next agent that notices does not file t
 again.
 
 ## Block K — Reached without reading the source
-
-### §PW123 A typo is not a file that is not a shape
-
-`build_all` in `cli.py` reads each `*.toml` under the folder and, on any
-`PolyweaveError` from `G.read`, continues, so that a project config, a spec or a lock in
-the same tree is passed over. The same except clause catches `geom.unknown-field`, the
-refusal that section 3 of tool-surface.md exists to guarantee: a declaration with a
-misspelt key disappears from the build, nothing is printed, and the exit status is 0. A
-project's asset step is one line, `build --all`, so this is the path an agent actually
-runs, and it is the path where a typo is least visible.
-
-The two cases differ before any refusal: a file that is not a shape carries no shape
-table at all, and a shape that fails carries one and fails inside it. So the walk
-decides *is this a declaration* from the document's top-level keys, skips only the files
-that are not, and answers a declaration that fails with the same `refused` entry a
-single build gives, with a non-zero exit. `test_cli.py` covers only the non-shape case;
-the missing test is a folder holding one good declaration and one with an unknown key.
 
 ### §PW124 Every operation declared, and the census before the fixes
 

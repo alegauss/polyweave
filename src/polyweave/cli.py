@@ -194,21 +194,43 @@ def _silhouette(mesh: dict, folder: Path, document: dict) -> str:
     return str(where)
 
 
-def build_all(folder: str | Path, **how: Any) -> list[dict]:
-    """Every declaration under a folder, skipping the ones whose stamp still matches."""
-    from . import geometry as G
+#: The top-level keys that make a TOML file a declaration rather than a config, a spec
+#: or a lock. Decided before any refusal, so a shape that fails is reported (§PW123).
+SHAPE_KEYS = ("nodes", "voxels")
 
+
+def is_declaration(source: Path) -> bool:
+    """Whether a TOML file is meant as a shape, whatever else is wrong with it.
+
+    A file that does not parse is counted as one: it cannot say it is something else,
+    and passing over it silently is how an asset drops out of the build.
+    """
+    import tomllib
+
+    try:
+        stated = tomllib.loads(source.read_text(encoding="utf-8-sig"))
+    except (tomllib.TOMLDecodeError, UnicodeDecodeError):
+        return True
+    return any(key in stated for key in SHAPE_KEYS)
+
+
+def build_all(folder: str | Path, **how: Any) -> list[dict]:
+    """Every declaration under a folder, skipping the ones whose stamp still matches.
+
+    Only files that are not shapes at all are passed over. §PW123: the walk used to
+    skip any file `read` refused, so a declaration with a misspelt key vanished from
+    the build with nothing printed and an exit of 0 — on the one path a project's asset
+    step actually runs. A declaration that fails now comes back `refused`, as a single
+    build does.
+    """
     root = Path(how.get("root", ".")).resolve()
     under = Path(folder)
     under = under if under.is_absolute() else root / under
-    answers = []
-    for source in sorted(under.rglob("*.toml")):
-        try:
-            G.read(source, root=root)
-        except PolyweaveError:
-            continue  # a TOML file that is not a shape: a config, a spec, a lock
-        answers.append(build_one(source, force=False, **how))
-    return answers
+    return [
+        build_one(source, force=False, **how)
+        for source in sorted(under.rglob("*.toml"))
+        if is_declaration(source)
+    ]
 
 
 def _printed(answer: dict) -> list[str]:
