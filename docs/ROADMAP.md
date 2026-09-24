@@ -30,7 +30,6 @@
 
 ## Block I — Voxel models from a declaration
 
-- 📋 **PW102** (deps: PW93 ✅) **a Godot project reading a voxel model must write its own loader and MultiMesh setup** — Godot is one of the three tools the plugin serves, and an importer written once saves every Godot consumer the same parser. → §PW102
 - 💭 **PW103** (deps: —) **a family of models that differ in a few numbers is one document copied per member** — Enemy tiers and boss phases are one shape at other proportions or colours, and copies drift apart. → §PW103
 
 ## Block J — A bar a person sets once

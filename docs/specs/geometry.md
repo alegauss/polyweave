@@ -608,6 +608,21 @@ in the model's units, its mass in cells and its palette slot) and two more cell 
 being 1, which is the order a hit chips them. A size that is not `1 <= smallest <=
 largest` whole cells is `geom.bad-fracture`.
 
+**A Godot project reads the cells with a loader written once** (§PW102).
+`polyweave.godot.install(project)` copies `addons/polyweave_voxels/` into a Godot project,
+replacing an older copy, and refuses a folder with no `project.godot`. Its `voxels.gd`
+turns a `.voxels.json` into a voxel model resource: each cell's middle in the model's
+units, its palette slot, each slot's colour and whole material table (`glow` and the rest
+passed through, numbers arriving as Godot's floats), and the fracture plan's fragments,
+fragment column and depths where the build made them. `multimesh()` hands back one
+MultiMesh, a cube a cell in its palette colour, or a mesh the game gives. How the game
+draws, lights and shatters it stays the game's. The file carries `format` and the loader
+refuses any number but its own rather than half-read it.
+
+**A loader and not an import plugin.** Godot picks an importer by the last extension
+alone, so one claiming `json` would take every JSON file in a project — Cottony's route
+table and every provenance record among them.
+
 **A model's proportions can be fitted to a reference** (§PW98). `voxel_fit.fit(document,
 reference, ranges=…, views=[…])` searches the parameters the ranges name — or the
 document's own `[search.<param>]` tables, with `min`, `max` and an optional `step` — for the

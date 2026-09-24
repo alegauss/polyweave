@@ -388,19 +388,6 @@ written.
 
 ## Block I — Voxel models from a declaration
 
-### §PW102 Godot importer for voxel models
-
-An addon, `addons/polyweave_voxels/`, that polyweave installs into a Godot project. An
-`EditorImportPlugin` turns `*.voxels.json` into a `VoxelModel` resource holding packed
-cell transforms, palette colours, the palette's other keys as a Dictionary, fragments
-and erosion order, plus a MultiMesh ready to assign.
-
-How the game draws, lights and shatters the model stays the game's own code. The
-importer ends where the data becomes Godot's.
-
-`engine.py`'s headless import proves it in the tests. The addon carries the json schema
-version it reads and refuses another.
-
 ### §PW103 Variants
 
 `[variants.<name>]` tables of parameter overrides in one document; the build writes one

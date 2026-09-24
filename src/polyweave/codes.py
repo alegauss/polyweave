@@ -641,6 +641,16 @@ CODES: dict[str, Code] = {
         when="neither [paths] godot, nor $GODOT, nor PATH names one",
         doors=("set [paths] godot to the console build", "put it on PATH"),
     ),
+    "engine.not-a-project": Code(
+        means="the folder an addon was to go into is not a Godot project",
+        when="a path one level off, or a project not yet created",
+        doors=("point it at the folder holding project.godot",),
+    ),
+    "engine.unknown-addon": Code(
+        means="no addon of that name ships with polyweave",
+        when="a typo in the addon's name",
+        doors=("name one the refusal lists",),
+    ),
     "engine.no-script": Code(
         means="the scene script named does not exist",
         when="a path relative to somewhere other than the project root",

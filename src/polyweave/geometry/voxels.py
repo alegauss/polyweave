@@ -44,6 +44,10 @@ __all__ = ["SUFFIX", "TRACED", "says", "voxelize", "write"]
 #: What the cells are written as, beside the cubes' mesh.
 SUFFIX = ".voxels.json"
 
+#: The version of that file's shape. Raised whenever a reader of the old one would
+#: misread the new one.
+FORMAT = 1
+
 #: The ops with no inside-test of their own, voxelised from the mesh they build. A
 #: `mesh` node is one (§PW100): filled by parity, a closed hull comes out solid.
 TRACED = ("inflate", "crowned", "annulus", "custom", "mesh")
@@ -637,6 +641,9 @@ def voxelize(
     at = {one: slot for slot, one in enumerate(palette_names)}
 
     made = {
+        # What a reader checks before trusting the rest; the Godot loader refuses
+        # another number rather than half-read it (§PW102).
+        "format": FORMAT,
         "name": document["name"],
         "cell": float(size),
         "size": [int(n) for n in counts],
