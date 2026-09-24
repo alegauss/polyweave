@@ -30,7 +30,7 @@
 
 ## Block I — Voxel models from a declaration
 
-- 💭 **PW100** (deps: PW93 ✅) **a fetched mesh cannot be the starting block of a voxel model** — A Meshy hull voxelized, then cut and painted by a declaration, would keep what was bought and still get hand-made detail. → §PW100
+- ⏳ **PW100** (deps: PW93 ✅) **a fetched mesh cannot be the starting block of a voxel model** — Each cell should take its colour from the mesh's own texture at the nearest surface point, which needs the UVs and the image read through Blender. → §PW100
 - 📋 **PW101** (deps: —) **building a declaration takes a Python script of the project's own** — Every consumer writes the same few lines to build, write and preview, and a project written in GDScript has no natural place to keep them. → §PW101
 - 📋 **PW102** (deps: PW93 ✅) **a Godot project reading a voxel model must write its own loader and MultiMesh setup** — Godot is one of the three tools the plugin serves, and an importer written once saves every Godot consumer the same parser. → §PW102
 - 💭 **PW103** (deps: —) **a family of models that differ in a few numbers is one document copied per member** — Enemy tiers and boss phases are one shape at other proportions or colours, and copies drift apart. → §PW103
@@ -110,6 +110,12 @@
 - **The five bake through the plugin or stay hand-tuned by decision** Either
   bake_model.py no longer renders the friends and the mascot and a person judged them,
   or a person decided they stay, and polyweave.loop.json says which.
+
+## Done when — PW100
+
+- **A textured mesh's cells wear its texture's colours** Voxelising a mesh whose base
+  colour is a texture gives each cell the texel at its nearest surface point, quantised
+  to the count the node states, checked on a fixture mesh painted in two known colours.
 
 ## Non-goals
 

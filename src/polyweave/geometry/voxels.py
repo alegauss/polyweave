@@ -44,8 +44,9 @@ __all__ = ["SUFFIX", "TRACED", "says", "voxelize", "write"]
 #: What the cells are written as, beside the cubes' mesh.
 SUFFIX = ".voxels.json"
 
-#: The ops with no inside-test of their own, voxelised from the mesh they build.
-TRACED = ("inflate", "crowned", "annulus", "custom")
+#: The ops with no inside-test of their own, voxelised from the mesh they build. A
+#: `mesh` node is one (§PW100): filled by parity, a closed hull comes out solid.
+TRACED = ("inflate", "crowned", "annulus", "custom", "mesh")
 
 #: What a painted cell's key is lifted by, so any node carrying a material outranks any
 #: node that does not, whatever their order.
@@ -120,6 +121,7 @@ class _Model:
         self.rank = {node["id"]: at for at, node in enumerate(document["nodes"])}
         self.cell = cell or stated_cell(document, self.resolved["params"])
         self._meshes: dict | None = None
+        self._traced_by: dict[int, dict] = {}
 
     # -- where a node is ---------------------------------------------------------------
 
@@ -278,7 +280,18 @@ class _Model:
         return ring, min(front, far), max(front, far)
 
     def _traced(self, node: dict, instance: dict) -> dict:
-        """The mesh an op with no inside-test builds, for ray parity to read."""
+        """The mesh an op with no inside-test builds, for ray parity to read.
+
+        Built once per instance: the bounds and every inside-test ask for it, and a
+        `mesh` node reading its file through Blender each time would cost a load per
+        question.
+        """
+        kept = self._traced_by.get(id(instance))
+        if kept is None:
+            kept = self._traced_by[id(instance)] = self._trace(node, instance)
+        return kept
+
+    def _trace(self, node: dict, instance: dict) -> dict:
         from .build import BUILDS
 
         built = {}

@@ -112,7 +112,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW100",
     block: "I",
     symptom: "a fetched mesh cannot be the starting block of a voxel model",
-    why: "A Meshy hull voxelized, then cut and painted by a declaration, would keep what was bought and still get hand-made detail.",
+    why: "Each cell should take its colour from the mesh's own texture at the nearest surface point, which needs the UVs and the image read through Blender.",
     deps: [],
   },
   {

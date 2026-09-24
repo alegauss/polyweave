@@ -172,6 +172,7 @@ counts y upward — an outline that came back mirrored is a sprite extruded back
 | `bevel` | A bevel applied to an existing node |
 | `transform` | Translate, rotate and scale an existing node |
 | `mirror` | An existing node and its reflection across the plane `axis = plane`, joined |
+| `mesh` | A mesh file under the project (`path`, a `.glb` or `.blend`), in the project's axes |
 | `cells` | Cells drawn by hand as text — see "Cells instead of triangles" |
 | `custom` | A project function — see below |
 
@@ -179,6 +180,13 @@ counts y upward — an outline that came back mirrored is a sprite extruded back
 silhouette to the pixel. `prism` over an `image` outline is the other half of the same idea:
 a star's silhouette becomes a mesh that is not merely similar to the drawn sprite but is the
 drawn sprite, extruded.
+
+**A bought mesh can be the block a declaration starts from** (§PW100). `op = "mesh"` reads
+the file through Blender into the interface's axes, as ingest does, so a hull fetched from
+the service is cut and painted by the nodes after it rather than being the end of the
+line. As cells it is filled by ray parity, so a closed hull comes out solid rather than a
+shell, and it wears its node's `material`; the colour its own texture puts on each cell is
+not read yet. A path with no file is `geom.bad-solid`.
 
 **A symmetric shape is declared once** (§PW96). `mirror` takes `of`, an `axis` written as
 the letter `x`, `y` or `z` (never an expression, so it cannot resolve to a parameter

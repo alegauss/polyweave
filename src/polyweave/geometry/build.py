@@ -184,6 +184,25 @@ def _cells(node, instance, built, root):
     return drawn_mesh(node, float(size))
 
 
+def _mesh(node, instance, built, root):
+    # A mesh file as a node, in the project's own axes (§PW100): a hull bought from the
+    # service becomes the block a declaration cuts and paints, rather than the end.
+    from ..normalise import read_mesh
+
+    stated = instance.get("path")
+    where = Path(str(stated or ""))
+    if not where.is_absolute():
+        where = Path(root) / where
+    if not stated or not where.is_file():
+        raise PolyweaveError(
+            "geom.bad-solid",
+            f"{node['id']} takes its shape from {stated!r}, and there is no file there",
+            "give `path` a mesh file under the project, as a .glb or a .blend",
+        )
+    found = read_mesh(where)
+    return S.mesh(found["vertices"], found["faces"])
+
+
 def _mirror(node, instance, built, root):
     return S.mirror(
         built[refers_to(node)[0]],
@@ -209,6 +228,7 @@ BUILDS: dict[str, Callable] = {
     "custom": _custom,
     "cells": _cells,
     "mirror": _mirror,
+    "mesh": _mesh,
 }
 
 #: The ops that consume `at` themselves, so the placement below leaves them alone.

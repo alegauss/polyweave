@@ -121,6 +121,9 @@ def _says(node: dict, instance: dict, materials: dict | None = None) -> str:
         what = f"whatever {node.get('fn', 'a project function')} builds"
     elif op == "cells":
         what = _drawing(node)
+    elif op == "mesh":
+        what = f"the mesh in {instance.get('path', '?')}"
+        rest = _fields(instance, (*skip, "path"))
     elif op == "mirror":
         letter = str(node.get("axis", "x")).lower()
         plane = _number(instance.get("plane", 0))
