@@ -23,9 +23,10 @@ from collections.abc import Sequence
 from datetime import UTC, datetime
 from fnmatch import fnmatch
 from pathlib import Path, PurePath, PurePosixPath
-from typing import Any
+from typing import Annotated, Any
 
 from . import __version__
+from .describe import Param, operation
 from .errors import PolyweaveError
 
 #: What a record may describe. Closed, because a reader branches on it.
@@ -249,7 +250,14 @@ def write(record: dict, root: str | Path = ".") -> Path:
     return path
 
 
-def read(path: str | Path, root: str | Path = ".") -> dict:
+ROOT = Param("the project the records are under")
+
+
+@operation("provenance.read")
+def read(
+    path: Annotated[str, Param("an artefact, or its .prov.json, under the project")],
+    root: Annotated[str, ROOT] = ".",
+) -> dict:
     """Read a record, by its own path or by the path of the artefact it describes."""
     where = Path(root).resolve()
     candidate = Path(path)
@@ -518,7 +526,8 @@ PRODUCED: dict[str, tuple[str, ...]] = {
 }
 
 
-def unrecorded(root: str | Path = ".") -> list[dict]:
+@operation("provenance.unrecorded")
+def unrecorded(root: Annotated[str, ROOT] = ".") -> list[dict]:
     """Produced files carrying no record — the half `verify` could not ask about.
 
     §PW41. `verify` walks the records and checks their artefacts; it cannot walk the
@@ -566,7 +575,8 @@ def _excused(path: str, patterns: Sequence[str]) -> bool:
     return any(fnmatch(path, pattern) or fnmatch(name, pattern) for pattern in patterns)
 
 
-def verify(root: str | Path = ".") -> dict:
+@operation("provenance.verify")
+def verify(root: Annotated[str, ROOT] = ".") -> dict:
     """Is every artefact the records claim to hold present, and still what it was.
 
     A report rather than a refusal: the answer to "what is missing" is a list, and one
@@ -643,7 +653,11 @@ def _made_by(record: dict) -> str:
     return f"{kind} by {script}" if script else kind
 
 
-def dependents(path: str | Path, root: str | Path = ".") -> dict:
+@operation("provenance.dependents")
+def dependents(
+    path: Annotated[str, Param("the input file, under the project")],
+    root: Annotated[str, ROOT] = ".",
+) -> dict:
     """Every artefact whose record names this file as an input (§PW119).
 
     When Cottony's stars changed, which of its four screenshots would change was a
@@ -671,7 +685,8 @@ def dependents(path: str | Path, root: str | Path = ".") -> dict:
     return {"input": wanted, "artefacts": found}
 
 
-def outdated(root: str | Path = ".") -> dict:
+@operation("provenance.outdated")
+def outdated(root: Annotated[str, ROOT] = ".") -> dict:
     """Artefacts made from a file that has changed since, and not made again (§PW119).
 
     The gate half: a file moved and an artefact depending on it did not, so a committed
