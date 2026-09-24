@@ -35,18 +35,6 @@
   mismatch fails the run. Left are the seven under tools/perf/ that have no driver, and
   run_tests.py, which is a third copy of the lookup and is PW70.
 
-## Done when — PW76
-
-- **One searched rig passes all four star specs unchanged** tools/art/search_stars.py in
-  Cottony exits 0: fitted on the 96 px gold, the same values pass star_dim,
-  star_gold_big and star_dim_big without being searched on them.
-- **The four sprites bake through the plugin and a person judged them** bake_model.py no
-  longer renders the stars, and polyweave.loop.json holds an after run for stars with a
-  person's verdict, so loop.compare has both sides.
-- **A before side recorded ahead of the port** Cottony's polyweave.loop.json holds a
-  before run for stars at f90de32, taken from a re-bake that is pixel-identical to the
-  committed sprites.
-
 ## Done when — PW77
 
 - **Each of the five props has an acceptance spec a person agreed to**
