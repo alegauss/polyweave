@@ -379,14 +379,26 @@ def drawing(reference: str | Path, *, grid: int = GRID, alpha_floor: float):
     from .image import load as load_image
 
     mask = load_image(reference).subject(alpha_floor)
-    rows = np.flatnonzero(mask.any(axis=1))
-    columns = np.flatnonzero(mask.any(axis=0))
-    if not rows.size or not columns.size:
+    if not mask.any():
         raise PolyweaveError(
             "fetch.no-reference",
             f"every pixel of {reference} is background, so it draws no shape",
             "point it at the drawing that asked for this shape",
         )
+    return fitted(mask, grid=grid)
+
+
+def fitted(mask: np.ndarray, *, grid: int = GRID) -> np.ndarray:
+    """A mask cropped to what it covers and fitted onto the grid, proportions kept.
+
+    The one framing every silhouette here is compared in, so a drawing, a mesh and a
+    voxel model (§PW98) differ in outline and proportion and never in how they were
+    framed. An empty mask stays empty.
+    """
+    rows = np.flatnonzero(mask.any(axis=1))
+    columns = np.flatnonzero(mask.any(axis=0))
+    if not rows.size or not columns.size:
+        return np.zeros((grid, grid), dtype=bool)
     box = mask[rows[0] : rows[-1] + 1, columns[0] : columns[-1] + 1]
     tall, wide = box.shape
     span, inner = max(tall, wide), grid - 2

@@ -30,7 +30,6 @@
 
 ## Block I — Voxel models from a declaration
 
-- 📋 **PW98** (deps: PW93 ✅, PW94 ✅) **fitting a voxel model to a concept drawing or a fetched mesh is guessing numbers by hand** — The search already tunes declared parameters against a measure, and a voxel silhouette is measurable in microseconds without a render. → §PW98
 - 📋 **PW99** (deps: PW93 ✅) **a game breaking a voxel model must work out its fragments and damage order itself at runtime** — Grouping cells into fragments and ordering them for erosion is geometry the build already holds, and precomputing it keeps the kill frame cheap. → §PW99
 - 💭 **PW100** (deps: PW93 ✅) **a fetched mesh cannot be the starting block of a voxel model** — A Meshy hull voxelized, then cut and painted by a declaration, would keep what was bought and still get hand-made detail. → §PW100
 - 📋 **PW101** (deps: —) **building a declaration takes a Python script of the project's own** — Every consumer writes the same few lines to build, write and preview, and a project written in GDScript has no natural place to keep them. → §PW101

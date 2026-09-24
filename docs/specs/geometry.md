@@ -556,6 +556,18 @@ fix is a local edit rather than a hunt:
 refusal is a model with no cells (`post.voxels-empty`). The limits are a game's, so the
 project config holds them and nothing in the check defaults them.
 
+**A model's proportions can be fitted to a reference** (§PW98). `voxel_fit.fit(document,
+reference, ranges=…, views=[…])` searches the parameters the ranges name — or the
+document's own `[search.<param>]` tables, with `min`, `max` and an optional `step` — for the
+best overlap between the model's silhouette and the reference's. The reference is a
+drawing's alpha, which can only stand for the front view, or a mesh, projected from the
+front, from +X for the side and from +Y for the top. Both outlines are cropped to their own
+bounds and fitted onto one grid (`normalise.fitted`), so proportion and outline are compared
+and framing never is. Each sample is a voxel build, milliseconds rather than a render. A
+sample the checks find floating or over budget scores zero, since a fit that only works
+with a piece in the air is not one. The answer is the best parameters, the overlap per view,
+the model they build and, with `sheet`, its contact sheet.
+
 **Cells can be drawn by hand** (§PW95), which is where a voxel model's character lives: a
 cockpit, an eye, a stripe. `op = "cells"` takes `layers`, slices along z with the first at
 the front, each a list of rows written top to bottom with one character a cell; `legend`

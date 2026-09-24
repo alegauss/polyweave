@@ -142,6 +142,9 @@ def parse(stated: dict, *, named: str = "a declaration") -> dict:
     # always did, and one with it answers cells as well.
     if stated.get("voxels"):
         document["voxels"] = dict(stated["voxels"])
+    # How far a fit may move each parameter (§PW98), where the document says so itself.
+    if stated.get("search"):
+        document["search"] = {k: dict(v) for k, v in stated["search"].items()}
     return document
 
 

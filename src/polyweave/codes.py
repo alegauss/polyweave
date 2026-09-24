@@ -800,6 +800,16 @@ CODES: dict[str, Code] = {
         "size that is not above zero; two ways of saying one number would disagree",
         doors=("give [voxels] a `cell` size", "give [voxels] an `across` count"),
     ),
+    "geom.bad-fit": Code(
+        means="a voxel fit was asked for something it cannot compare",
+        when="no parameter to move, a view that is not front, side or top, or a "
+        "drawing asked to stand for a view it does not show",
+        doors=(
+            "give ranges, or a [search.<param>] table in the document",
+            "name views among front, side and top",
+            "fit a drawing on the front view, or give a mesh for more",
+        ),
+    ),
     "geom.bad-cells": Code(
         means="a `cells` node's text does not describe a block of cells",
         when="layers or rows of different lengths, a character the legend does not "

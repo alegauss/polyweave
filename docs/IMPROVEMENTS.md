@@ -388,22 +388,6 @@ written.
 
 ## Block I — Voxel models from a declaration
 
-### §PW98 Search a voxel model against a reference
-
-The reference is a drawing's alpha, or a mesh (a Meshy fetch) projected the way
-`normalise.project` already does. The measure is the overlap of the model's projected
-cells with the reference mask at the grid's resolution, per view, with the voxel checks
-as constraints: a sample that floats cells or breaks the budget scores zero.
-
-The search sweeps the ranges the document declares, as it does for any shape parameter.
-Each sample is a voxel build, milliseconds and not a render, so thousands of samples
-take seconds. The answer is the best parameters, their contact sheet and the score per
-view.
-
-This is the split of work: the author declares the parts, what they mean and how far
-each may move, and the search finds the proportions. A Meshy model bought for a ship
-then becomes a target the declared ship is fitted to, not a mesh to chop into cubes.
-
 ### §PW99 Fracture plan
 
 An optional `[voxels.fracture]` with a fragment size range in cells and a seed. The
