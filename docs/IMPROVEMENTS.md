@@ -302,27 +302,6 @@ this is where that is recorded honestly: what still runs by hand, and why the ri
 instead of disappearing. An outcome worth having, stated, beats the same outcome
 unstated.
 
-### §PW120 A family stated, not scripted
-
-Cottony has three port scripts, `search_stars.py`, `frame_trays.py` and
-`ingest_boosters.py`, about a hundred lines each, and they are one skeleton: build or
-ingest the models, search or place them against their specs, check the rest, bake the
-accepted ones where the game reads them, and record the run. Every later family (PW77 to
-PW81) would be a fourth, fifth and sixth copy, each with its own small mistakes, such as
-a cache hit charged as a render.
-
-A family file states what differs: the members, each with its spec, its model or
-declaration, what its render fixes and where it is baked; the axes shared; whether the
-rig is searched, placed or given. One port operation reads it and runs the skeleton,
-using the family search (`search.family`, PW105), recording into the ledger as it goes
-(inside `loop.recording`, in docs/specs/adoption.md), and baking only when every member
-passes.
-
-For the caller this plugin is designed for, that is twenty lines of TOML instead of a
-hundred of Python, and a port that reads the same across families. The scripts that
-exist stay until their family is re-expressed; the point is that the next one is never
-written.
-
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once

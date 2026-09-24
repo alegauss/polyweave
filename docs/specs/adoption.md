@@ -205,6 +205,22 @@ The port itself. It edits a repository this one does not own, and **§PW35 requi
 recorded before anything moves** — a before side taken after the port is refused, and rightly.
 So the audit lands here and the adoption waits on a person starting the ledger.
 
+## A family is stated, not scripted
+
+Binds **PW120**. Cottony's three port scripts, about a hundred lines each, are one skeleton:
+build or ingest the models, search the rig against their specs, bake the accepted ones
+where the game reads them, and record the run. `port.port(family_file, run=)` runs that
+skeleton from a TOML file that states only what differs. It gives the `family`, its `rig`
+(`searched` over `[search.<axis>]` ranges, or `given` as a `[given]` table), a `budget`,
+and one `[[member]]` per asset. A member has its `spec`, a `model` or a `declaration` built
+first, what its render `fixes`, where the search renders it (`out`) and where it is
+`bake`d. The axes belong to the family, so every member's spec is searched over them
+together, through `search.family`. Nothing is baked unless every member passes. The bakes
+run at the final rung and are checked there. With a run open, every render counts itself
+into it, finals included. Anything else in the file is `search.bad-family`. The verdict on
+the look is still a person's, given with `verdict.judge`. The scripts that exist stay until
+their family is re-expressed. The next one need not be written.
+
 ## A second adopter, unlike the first
 
 Binds **PW117**. "No key had to be added" was the boundary holding for one project, and the

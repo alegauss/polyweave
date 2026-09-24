@@ -640,6 +640,13 @@ CODES: dict[str, Code] = {
             "drop the range if nothing here turns it",
         ),
     ),
+    "search.bad-family": Code(
+        means="a family file cannot be ported as it is written",
+        when="an unknown key, a rig that is neither searched nor given, no axes or "
+        "values for it, no members, or a member without a name, spec, out and exactly "
+        "one of model and declaration (§PW120)",
+        doors=("fix the family file as the message says",),
+    ),
     "search.noise-axis": Code(
         means="the spec asks a search to turn something that only moves the noise",
         when="a [search.seed], [search.samples] or [search.size]: the best sample "
