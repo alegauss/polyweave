@@ -7,7 +7,7 @@ from polyweave.capabilities import capabilities
 
 #: How much surface is still unregistered. Registering a module lowers it, and this
 #: number is lowered with it: it may only fall, never rise.
-PENDING = 147
+PENDING = 112
 
 
 def test_every_public_function_is_classified():
@@ -158,6 +158,23 @@ def test_a_measure_is_taken_by_name_with_its_arguments_declared(tmp_path):
     assert one["measure"] == "delta_e" and one["value"] < 1.0
     names = {p["name"] for p in describe.describe("measure.take")["parameters"]}
     assert {"target", "against", "display", "delta"} <= names
+
+
+def test_a_declaration_is_described_and_built_by_name(tmp_path):
+    (tmp_path / "box.toml").write_text(
+        'name = "box"\noutput = "box"\n\n[params]\nsize = 4\n\n[voxels]\ncell = 1\n\n'
+        '[[nodes]]\nid = "box"\nop = "primitive"\nkind = "cube"\nsize = "size"\n',
+        encoding="utf-8",
+    )
+    root = str(tmp_path)
+    said = describe._REGISTRY["geometry.describe"].fn("box.toml", root=root)
+    assert said["reads"]
+    built = describe._REGISTRY["geometry.build"].fn(
+        "box.toml", root=root, given={"size": 2}
+    )
+    assert built["status"] == "built"
+    assert built["says"].startswith("a voxel model 2 by 2 by 2")
+    assert describe._REGISTRY["geometry.variants"].fn("box.toml", root=root) == []
 
 
 def test_a_fresh_read_of_the_operations_loads_them():

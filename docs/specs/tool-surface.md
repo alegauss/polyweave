@@ -211,7 +211,9 @@ both answers.
   `trace.read` (§PW152), and `provenance.read`, `.verify`, `.unrecorded`, `.dependents` and
   `.outdated` (§PW153), and `render.plan`, `units.check`, `units.engine_scale` and
   `units.read_number` (§PW154), and `measure.take`, which names the four arguments a
-  measure takes, `measure.same` and `measure.available` (§PW155). A module's leftover helpers may be
+  measure takes, `measure.same` and `measure.available` (§PW155), and `geometry.build`,
+  `geometry.build_all`, `geometry.describe` and `geometry.variants`, which take a
+  declaration's path and its param values as one table (§PW156). A module's leftover helpers may be
   listed as internal one function at a time. `describe()` loads
   the registry before answering, so a fresh process no longer lists only what it happened
   to have imported.

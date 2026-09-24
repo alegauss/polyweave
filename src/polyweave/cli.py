@@ -27,8 +27,9 @@ import importlib.util
 import json
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any
 
+from .describe import Param, operation
 from .errors import PolyweaveError
 
 #: What a stamp beside a build's outputs is called.
@@ -87,14 +88,15 @@ def _has_blender() -> bool:
     return importlib.util.find_spec("bpy") is not None
 
 
+@operation("geometry.build")
 def build_one(
-    source: str | Path,
+    source: Annotated[str, Param("the declaration, as a path under the project")],
     *,
-    out: str | Path | None = None,
-    root: str | Path = ".",
-    given: dict | None = None,
-    preview: bool = False,
-    force: bool = True,
+    out: Annotated[str, Param("where to write; its own folder if unset")] = None,
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
+    given: Annotated[dict, Param("values set for the declaration's params")] = None,
+    preview: Annotated[bool, Param("also write a cheap look: a silhouette")] = False,
+    force: Annotated[bool, Param("build even where the stamp still matches")] = True,
 ) -> dict:
     """Build one declaration and say what came out; a refusal is an answer too."""
     from . import geometry as G
@@ -214,7 +216,15 @@ def is_declaration(source: Path) -> bool:
     return any(key in stated for key in SHAPE_KEYS)
 
 
-def build_all(folder: str | Path, **how: Any) -> list[dict]:
+@operation("geometry.build_all")
+def build_all(
+    folder: Annotated[str, Param("the folder whose declarations are built")],
+    *,
+    out: Annotated[str, Param("where to write; each one's folder if unset")] = None,
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
+    given: Annotated[dict, Param("values set for every declaration's params")] = None,
+    preview: Annotated[bool, Param("also write a cheap look for each")] = False,
+) -> list[dict]:
     """Every declaration under a folder, skipping the ones whose stamp still matches.
 
     Only files that are not shapes at all are passed over. §PW123: the walk used to
@@ -223,11 +233,13 @@ def build_all(folder: str | Path, **how: Any) -> list[dict]:
     step actually runs. A declaration that fails now comes back `refused`, as a single
     build does.
     """
-    root = Path(how.get("root", ".")).resolve()
+    here = Path(root).resolve()
     under = Path(folder)
-    under = under if under.is_absolute() else root / under
+    under = under if under.is_absolute() else here / under
     return [
-        build_one(source, force=False, **how)
+        build_one(
+            source, out=out, root=root, given=given, preview=preview, force=False
+        )
         for source in sorted(under.rglob("*.toml"))
         if is_declaration(source)
     ]

@@ -99,6 +99,8 @@ MODULES: tuple[str, ...] = (
     "polyweave.provenance",
     "polyweave.units",
     "polyweave.measure",
+    "polyweave.cli",
+    "polyweave.geometry.review",
 )
 
 

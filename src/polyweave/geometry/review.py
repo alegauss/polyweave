@@ -23,8 +23,9 @@ exactly what it said and what it said was wrong.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Annotated, Any
 
+from ..describe import Param, operation
 from ..errors import PolyweaveError
 from ..post.mesh import check_manifold, check_mesh
 from . import arithmetic, coats, expand, mentions, order, refers_to, uses
@@ -381,3 +382,26 @@ def report(
         "bounds": [*bounds[0], *bounds[1]] if bounds else None,
         "warnings": warnings + warn(document, resolved),
     }
+
+
+@operation("geometry.describe")
+def described(
+    source: Annotated[str, Param("the declaration, as a path under the project")],
+    given: Annotated[dict, Param("values set for the declaration's params")] = None,
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
+) -> dict:
+    """A declaration read back in words, with its warnings, and nothing built."""
+    from . import read
+
+    return describe(read(source, root=root), **(given or {}))
+
+
+@operation("geometry.variants")
+def variants_of(
+    source: Annotated[str, Param("the declaration, as a path under the project")],
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
+) -> list[str]:
+    """The members a declaration names beside itself, one per variant."""
+    from . import read, variants
+
+    return variants(read(source, root=root))
