@@ -336,23 +336,6 @@ this is where that is recorded honestly: what still runs by hand, and why the ri
 instead of disappearing. An outcome worth having, stated, beats the same outcome
 unstated.
 
-### §PW116 What a side did not measure, said as data
-
-Every before side in Cottony's ledger carries the same sentence in its brief: the hand
-work that found the constants was never timed, so this side understates the old cost.
-`compare` does not read briefs. It sums the numbers as if both sides were complete and
-returns a verdict, and "the work was not reduced" is the one it returns for the stars.
-
-A run can declare what it did not measure, by name: `seconds` for the hand search, or
-`renders` for work done before recording began. `compare` then says which verdicts the
-missing numbers make unreachable. A side with its seconds unmeasured cannot support "no
-faster" or "faster"; it can still support the overruling verdict, which only needs the
-counts it has.
-
-The same change adds the number the plugin is really about: person-minutes, recorded by
-whoever gave the verdict, beside the machine's seconds. The stars cost a person one
-sentence, and today the ledger has nowhere to say it.
-
 ### §PW117 A second adopter while the boundary is cheap to move
 
 `docs/specs/adoption.md` records that no key had to be added for Cottony, and calls it

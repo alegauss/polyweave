@@ -102,6 +102,17 @@ The verdict is one sentence, and the order it checks in is the order that matter
    gone", which is the specific failure this line exists to catch;
 4. **faster with nothing else higher** — the only case that is unambiguously a win.
 
+**A side can say what it did not measure** (§PW116). Every before side of Cottony's ledger
+said in its brief that the hand search was never timed, and `compare`, which does not read
+briefs, summed it as complete and called the stars not reduced. `loop.start(...,
+unmeasured=["seconds"])` names the costs a run never measured: `seconds`, `renders`,
+`calls`, `credits` or `person_minutes`. Anything else is `loop.unknown-measure`. A
+comparison lists them per side under `unmeasured`, and they take verdicts out of reach
+rather than deciding them. With seconds unmeasured the verdict is **inconclusive**:
+neither faster nor slower can be said. A cost left unmeasured is never said to have gone
+up, and a faster verdict names it. The overruling verdict still stands, because it needs
+only the verdict counts.
+
 Nothing here can report a success that the numbers do not support, which is the whole
 reason the line sits late in the file and is deliberately not optional: the alternative is a
 backlog whose central claim cannot be falsified.

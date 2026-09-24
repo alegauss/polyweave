@@ -42,6 +42,9 @@ from .files import write_atomic
 #: The two things being compared: the pipeline as it was, and the plugin.
 WAYS = ("before", "after")
 
+#: The costs a run records, and so the ones it can say it did not measure (§PW116).
+MEASURED = ("seconds", "renders", "calls", "credits", "person_minutes")
+
 
 def _where(root: str | Path) -> Path:
     settings = load(root)
@@ -89,6 +92,7 @@ def start(
     brief: str = "",
     who: str = "",
     change: str | None = None,
+    unmeasured: tuple[str, ...] | list[str] = (),
 ) -> dict:
     """Begin recording one asset made one way.
 
@@ -100,7 +104,20 @@ def start(
     first bake but the retuning that returns whenever something moves, so each way
     getting back to an accepted look after one named change is the comparison that can
     falsify the claim. The same rule holds per change: its baseline comes first.
+
+    `unmeasured` names what this run did not measure (§PW116) — `seconds` for a hand
+    search nobody timed, `renders` for work done before recording began — so a
+    comparison can say which verdicts the missing numbers put out of reach instead of
+    summing a partial side as a whole one.
     """
+    unknown = sorted(set(unmeasured) - set(MEASURED))
+    if unknown:
+        raise PolyweaveError(
+            "loop.unknown-measure",
+            f"a run cannot leave {', '.join(unknown)} unmeasured; it records no such "
+            "number",
+            f"name some of {', '.join(MEASURED)}",
+        )
     if way not in WAYS:
         raise PolyweaveError(
             "loop.unknown-way",
@@ -147,6 +164,7 @@ def start(
         "cache_hits": 0,
         "verdicts": [],
         **({"change": str(change)} if change is not None else {}),
+        **({"unmeasured": sorted(set(unmeasured))} if unmeasured else {}),
     }
 
 
@@ -534,6 +552,12 @@ def compare(asset: str, *, root: str | Path = ".", change: str | None = None) ->
             "overruled",
         )
     }
+    # What either side said it never measured (§PW116): those numbers are partial, and
+    # the verdicts that rest on them are out of reach rather than decided.
+    missing = {
+        way: sorted({n for one in sides[way] for n in one.get("unmeasured", ())})
+        for way in WAYS
+    }
     return {
         "asset": asset,
         "event": f"after {change}" if change is not None else "the first port",
@@ -541,7 +565,10 @@ def compare(asset: str, *, root: str | Path = ".", change: str | None = None) ->
         "before": before,
         "after": after,
         "changed": changed,
-        "verdict": _verdict(changed, before, after),
+        "unmeasured": missing,
+        "verdict": _verdict(
+            changed, before, after, set(missing["before"]) | set(missing["after"])
+        ),
     }
 
 
@@ -554,13 +581,25 @@ def _change(before: float, after: float) -> dict:
     }
 
 
-def _verdict(changed: dict, before: dict, after: dict) -> str:
-    """One sentence, and it is allowed to say the plugin made things worse."""
+def _verdict(
+    changed: dict, before: dict, after: dict, unmeasured: set[str] = frozenset()
+) -> str:
+    """One sentence, and it is allowed to say the plugin made things worse.
+
+    The overruling verdict needs only the counts of verdicts, so it stands whatever a
+    side left unmeasured. Faster, slower and moved all rest on the costs, and a cost a
+    side never measured cannot decide them (§PW116).
+    """
     if after["overruled"] > before["overruled"]:
         return (
             f"a person overruled the tool {after['overruled']} times against "
             f"{before['overruled']}: faster or not, it is approving work that gets "
             f"rejected"
+        )
+    if "seconds" in unmeasured:
+        return (
+            "inconclusive: a side never measured its seconds, so neither faster nor "
+            "slower can be said; only a rise in overruling could have been"
         )
     seconds = changed["seconds"]
     if seconds["delta"] >= 0:
@@ -568,14 +607,21 @@ def _verdict(changed: dict, before: dict, after: dict) -> str:
             f"it took {seconds['delta']:+g}s, so the work was not reduced by this "
             f"measure"
         )
-    moved = [
+    watched = [
         name
         for name in ("renders", "calls", "credits", "person_minutes")
-        if changed[name]["delta"] > 0
+        if name not in unmeasured
     ]
+    moved = [name for name in watched if changed[name]["delta"] > 0]
     if moved:
         return (
             f"{-seconds['delta']:g}s faster, but {', '.join(moved)} went up — the cost "
             f"may have moved rather than gone"
+        )
+    if len(watched) < 4:
+        unseen = sorted(set(unmeasured) - {"seconds"})
+        return (
+            f"{-seconds['delta']:g}s faster, with nothing measured higher; "
+            f"{', '.join(unseen)} went unmeasured on a side"
         )
     return f"{-seconds['delta']:g}s faster, with nothing else higher"

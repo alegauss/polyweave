@@ -765,6 +765,12 @@ CODES: dict[str, Code] = {
         when="a comparison before the same asset has been made both ways",
         doors=("record the other way", "list what has been recorded"),
     ),
+    "loop.unknown-measure": Code(
+        means="a run says it left unmeasured a number the ledger does not record",
+        when="unmeasured naming something other than seconds, renders, calls, credits "
+        "or person_minutes (§PW116)",
+        doors=("name one of the costs a run records",),
+    ),
     "loop.not-ported": Code(
         means="a change was measured on an asset not yet made both ways",
         when="a run naming a change for an asset with no first-port before and after "
