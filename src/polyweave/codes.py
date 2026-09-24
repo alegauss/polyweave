@@ -765,6 +765,12 @@ CODES: dict[str, Code] = {
         when="a comparison before the same asset has been made both ways",
         doors=("record the other way", "list what has been recorded"),
     ),
+    "loop.not-ported": Code(
+        means="a change was measured on an asset not yet made both ways",
+        when="a run naming a change for an asset with no first-port before and after "
+        "(§PW114); the change has nothing to be measured against",
+        doors=("record the port first, both ways",),
+    ),
     "loop.unknown-predicate": Code(
         means="a verdict blames a predicate the check it was given does not carry",
         when="a named id misspelled, or named with no check to name it from (§PW108)",

@@ -85,11 +85,18 @@ def start(
     root: str | Path = ".",
     brief: str = "",
     who: str = "",
+    change: str | None = None,
 ) -> dict:
     """Begin recording one asset made one way.
 
     A baseline started after the plugin has already made this asset is **refused**: the
     whole value of a baseline is that nobody knew the answer when it was taken.
+
+    `change` names a perturbation of an asset already made both ways (§PW114): a hue in
+    the palette, a sample count, a renderer version. The old rig's cost was never the
+    first bake but the retuning that returns whenever something moves, so each way
+    getting back to an accepted look after one named change is the comparison that can
+    falsify the claim. The same rule holds per change: its baseline comes first.
     """
     if way not in WAYS:
         raise PolyweaveError(
@@ -97,12 +104,25 @@ def start(
             f"{way!r} is neither of the two ways being compared",
             f"say one of {', '.join(WAYS)}",
         )
+    runs = [r for r in read(root) if r["asset"] == asset]
+    if change is not None:
+        ported = {r["way"] for r in runs if r.get("change") is None}
+        if ported != set(WAYS):
+            raise PolyweaveError(
+                "loop.not-ported",
+                f"{asset} has not been made both ways, so a change to it has nothing "
+                "to be measured against",
+                "record the port first: a before and an after run with no change",
+            )
     if way == "before":
-        already = [r for r in read(root) if r["asset"] == asset and r["way"] == "after"]
+        already = [
+            r for r in runs if r["way"] == "after" and r.get("change") == change
+        ]
         if already:
+            event = f"after {change!r}" if change is not None else "the new way"
             raise PolyweaveError(
                 "loop.baseline-too-late",
-                f"{asset} has already been made the new way {len(already)} time(s), "
+                f"{asset} has already been made {event} {len(already)} time(s), "
                 f"so a baseline taken now is not one",
                 "record the baseline before porting the asset, or measure an asset "
                 "that has not been ported; a baseline written once the answer is "
@@ -120,18 +140,31 @@ def start(
         "calls": 0,
         "credits": 0,
         "seconds": 0.0,
+        "person_minutes": 0.0,
         "verdicts": [],
+        **({"change": str(change)} if change is not None else {}),
     }
 
 
 def spent(
-    run: dict, *, renders: int = 0, calls: int = 0, credits: int = 0, seconds: float = 0
+    run: dict,
+    *,
+    renders: int = 0,
+    calls: int = 0,
+    credits: int = 0,
+    seconds: float = 0,
+    person_minutes: float = 0,
 ) -> dict:
-    """Add to what this run has cost so far. Called as the work happens."""
+    """Add to what this run has cost so far. Called as the work happens.
+
+    `person_minutes` is a person's own time, timed as it happens: retuning constants by
+    hand is what the old way costs after a change, and the machine's seconds miss it.
+    """
     run["renders"] += int(renders)
     run["calls"] += int(calls)
     run["credits"] += int(credits)
     run["seconds"] += float(seconds)
+    run["person_minutes"] = run.get("person_minutes", 0.0) + float(person_minutes)
     return run
 
 
@@ -240,6 +273,7 @@ def _totals(runs: list[dict]) -> dict:
         "renders": sum(one["renders"] for one in runs),
         "calls": sum(one["calls"] for one in runs),
         "credits": sum(one["credits"] for one in runs),
+        "person_minutes": round(sum(one.get("person_minutes", 0.0) for one in runs), 3),
         "results": sum(one.get("results", 0) for one in runs),
         "overruled": sum(one.get("overruled", 0) for one in runs),
         "commits": sorted({one["commit"] for one in runs if one["commit"]}),
@@ -416,30 +450,55 @@ def _listed(values: list) -> str:
     return ", ".join(f"{v:g}" if isinstance(v, int | float) else str(v) for v in values)
 
 
-def compare(asset: str, *, root: str | Path = ".") -> dict:
+def changes(asset: str, *, root: str | Path = ".") -> list[str]:
+    """Every change an asset has been measured through, in the order first recorded."""
+    named = [one.get("change") for one in read(root) if one["asset"] == asset]
+    return list(dict.fromkeys(c for c in named if c is not None))
+
+
+def compare(asset: str, *, root: str | Path = ".", change: str | None = None) -> dict:
     """The two ways side by side, with what changed between them.
 
     Where a number went up, it says so. A loop that spends fewer seconds and twice the
     renders has moved the cost rather than removed it, and that is exactly the thing
     this line exists to make visible.
+
+    Without `change` this is the first port; with one it is the runs that got the asset
+    back to an accepted look after that change (§PW114), which is the event the claim
+    is about. `event` says which was compared, and `changes` lists the others.
     """
-    runs = [one for one in read(root) if one["asset"] == asset]
+    runs = [
+        one
+        for one in read(root)
+        if one["asset"] == asset and one.get("change") == change
+    ]
     sides = {way: [one for one in runs if one["way"] == way] for way in WAYS}
     if not sides["before"] or not sides["after"]:
         missing = "before" if not sides["before"] else "after"
+        event = f" after {change!r}" if change is not None else ""
         raise PolyweaveError(
             "loop.nothing-to-compare",
-            f"{asset} has no {missing} run recorded, so there is nothing to compare",
+            f"{asset} has no {missing} run recorded{event}, so there is nothing to "
+            "compare",
             f"record the {missing} way; a claim measured on one side is not measured",
         )
 
     before, after = _totals(sides["before"]), _totals(sides["after"])
     changed = {
         name: _change(before[name], after[name])
-        for name in ("seconds", "renders", "calls", "credits", "overruled")
+        for name in (
+            "seconds",
+            "renders",
+            "calls",
+            "credits",
+            "person_minutes",
+            "overruled",
+        )
     }
     return {
         "asset": asset,
+        "event": f"after {change}" if change is not None else "the first port",
+        "changes": changes(asset, root=root),
         "before": before,
         "after": after,
         "changed": changed,
@@ -471,7 +530,9 @@ def _verdict(changed: dict, before: dict, after: dict) -> str:
             f"measure"
         )
     moved = [
-        name for name in ("renders", "calls", "credits") if changed[name]["delta"] > 0
+        name
+        for name in ("renders", "calls", "credits", "person_minutes")
+        if changed[name]["delta"] > 0
     ]
     if moved:
         return (

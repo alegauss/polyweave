@@ -336,24 +336,6 @@ this is where that is recorded honestly: what still runs by hand, and why the ri
 instead of disappearing. An outcome worth having, stated, beats the same outcome
 unstated.
 
-### §PW114 The claim is about the second change, not the first bake
-
-The stars' ledger says the work was not reduced: 8.6 s the new way against 3.3 s the
-old. It will say that for nearly every family, because the before side is a re-bake with
-the constants already found, and a re-bake is always cheap. The old rig's cost was never
-the first bake. It was the afternoon that found the constants, and it comes back every
-time something they were tuned against moves.
-
-So the comparison that tests this plugin's claim is a change, not a port. A perturbation
-run names one change to an asset that has both ways recorded: a hue in the palette, a
-sample count, a renderer version, a geometry parameter. Each way then has to get back to
-an accepted look. The plugin's way is a search against the unchanged spec; the old way
-is a person retuning the constants, timed as it happens and recorded in person-minutes.
-
-The verdict wording in `docs/specs/adoption.md` stays as it is, including the case where
-the plugin loses. What changes is which event it is about, and a ledger that can only
-ever measure the first bake cannot falsify the claim either way.
-
 ### §PW115 A run recorded rather than reported
 
 `loop.spent` adds whatever its caller says. Recording the stars, the caller charged 32

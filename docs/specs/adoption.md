@@ -61,6 +61,24 @@ ledger is append-only and committed with the tree.
 A comparison with only one side recorded is refused too. A claim measured on one side is not
 measured.
 
+## The claim is about the second change, not the first bake
+
+Binds **PW114**. The stars' first comparison said the work was not reduced: 8.6 s the new
+way against a 3.3 s re-bake of constants already found. A first port will say that for
+nearly every family, because the old rig's cost was never the first bake. It was the
+afternoon that found the constants, and that afternoon comes back whenever something they
+were tuned against moves.
+
+So a run can name a `change` (`loop.start(asset, way, change="palette hue")`): one
+perturbation of an asset already made both ways. It can be a hue, a sample count, a
+renderer version or a geometry parameter. Each way then has to get back to an accepted
+look. The old way is a person retuning, and `spent(person_minutes=)` records their time as
+it happens. A change on an asset with no first port is refused (`loop.not-ported`), and
+the baseline rule holds per change: a before started after that change's after is
+`loop.baseline-too-late`. `compare(asset, change=)` compares that change's runs alone and
+says which `event` it was about, with the asset's other `changes` beside it. The verdict's
+wording is unchanged. Person-minutes are among the costs it watches for having moved.
+
 ## The comparison is allowed to say it got worse
 
 The verdict is one sentence, and the order it checks in is the order that matters:

@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 2 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 8 },
+  { block: "H", title: "Proof on a real game", open: 7 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 11 },
@@ -89,13 +89,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent",
     why: "The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question.",
     deps: ["PW57"],
-  },
-  {
-    id: "PW114",
-    block: "H",
-    symptom: "the loop ledger only times a first port, where the old rig is a three-second re-bake of constants already found",
-    why: "The old rig's cost was the afternoon of retuning that returns whenever something moves, so a ledger that never measures a change cannot falsify the plugin's claim.",
-    deps: [],
   },
   {
     id: "PW115",
