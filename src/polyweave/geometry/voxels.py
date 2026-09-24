@@ -575,7 +575,31 @@ def voxelize(
         "count": len(filled),
     }
     made["says"] = says(made)
+    made["checks"] = _checked(made, document, model.resolved["params"], root)
     return made
+
+
+def _checked(made: dict, document: dict, params: dict, root: str | Path) -> dict:
+    """What the cells are checked for (§PW97), with the project's own limits.
+
+    `parts` and `extent` are the model's and come from its `[voxels]`; the budget, the
+    thread length and the symmetry bar are the game's and come from the project config.
+    """
+    from .. import post
+    from ..config import load
+
+    settings = load(root)
+    table = document.get("voxels") or {}
+    extent = table.get("extent") or settings.get("voxels.extent")
+    return post.check(
+        "voxels",
+        made,
+        parts=int(evaluate(table.get("parts", 1), params, where="voxels.parts")),
+        thread=int(settings.get("voxels.thread")),
+        budget=int(settings.get("voxels.budget")),
+        extent=[evaluate(v, params, where="voxels.extent") for v in extent or ()],
+        near_symmetry=float(settings.get("voxels.near_symmetry")),
+    )
 
 
 def says(model: dict) -> str:

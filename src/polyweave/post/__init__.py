@@ -36,6 +36,7 @@ from .pixels import (
     check_render,
     check_texture,
 )
+from .voxels import ACCEPTS_VOXELS, check_voxels
 
 #: What each kind of output is checked for, and which arguments say what was asked for.
 #: These always run: §2 admits no operation that produces one of these and asserts
@@ -50,6 +51,9 @@ CHEAP: dict[str, tuple[Any, frozenset[str]]] = {
     "field": (check_field, ACCEPTS_FIELD),
     "capture": (check_capture, ACCEPTS_CAPTURE),
     "download": (check_download, ACCEPTS_DOWNLOAD),
+    # A voxel model's findings are reported rather than refused, all but an empty one
+    # (§PW97), so it measures more than it asserts.
+    "voxels": (check_voxels, ACCEPTS_VOXELS),
 }
 
 #: What a kind cannot be checked without. A tolerance has one home (§PW40), so no check
@@ -65,6 +69,8 @@ REQUIRES: dict[str, frozenset[str]] = {
     "texture": frozenset({"alpha_floor", "render_noise"}),
     "field": frozenset({"alpha_floor"}),
     "capture": frozenset({"alpha_floor"}),
+    # A game's own numbers, which the project config holds and nothing here invents.
+    "voxels": ACCEPTS_VOXELS,
 }
 
 #: Assertions that cost more than the operation on a large enough input, so a project
@@ -148,4 +154,5 @@ __all__ = [
     "check_mesh",
     "check_render",
     "check_texture",
+    "check_voxels",
 ]

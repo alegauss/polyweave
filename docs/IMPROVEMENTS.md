@@ -388,21 +388,6 @@ written.
 
 ## Block I — Voxel models from a declaration
 
-### §PW97 Voxel checks
-
-`post.check("voxels", …)`, run by every voxel build and reported with the readback:
-
-- connected components: one body, unless the document declares separate parts;
-- cells joined to the rest only through an edge or a corner, which read as broken off;
-- threads one cell thick longer than a set length, which vanish at a distance;
-- the cell count against a budget;
-- symmetry, as the share of cells with a mirror partner;
-- bounds against a target extent.
-
-Every finding names its cells, so the fix is a local edit rather than a hunt. The
-budget, the thread length and the extent come from the project's config, because a game
-decides how many cubes it can afford and the plugin must not.
-
 ### §PW98 Search a voxel model against a reference
 
 The reference is a drawing's alpha, or a mesh (a Meshy fetch) projected the way

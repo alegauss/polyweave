@@ -123,6 +123,7 @@
 - ✅ **PW94** **a voxel model cannot be seen without starting Blender and paying for a render** — A voxel build writes a contact sheet beside its cells: front, side, top and isometric views in flat colour, drawn in milliseconds with no renderer (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW95** **a shape placed cell by cell, like layered pixel art, has no op and would take dozens of cube nodes** — A cells node draws a block as text rows per layer with a legend, painting over earlier nodes, carvable, and built as cubes in a mesh document (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW96** **a symmetric shape must be declared whole, so its two halves can drift apart** — A mirror op joins a half to its reflection across any plane, faces still outward and materials carried, and in cells keeps a column on the plane once (design recorded in `docs/specs/geometry.md`).
+- ✅ **PW97** **a voxel model with floating cells, one-cell threads or too many cells builds without complaint** — Every voxel build reports floating and edge-held pieces, long threads, near-symmetry, budget and extent, naming the cells, with the project's limits (design recorded in `docs/specs/geometry.md`).
 
 ## Block J — A bar a person sets once
 

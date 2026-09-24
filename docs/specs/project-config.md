@@ -104,6 +104,12 @@ theme      = "dark"
 
 [geometry]
 outlines = "tools/art/outlines.py"   # where named shape generators come from
+
+[voxels]
+budget        = 4000           # the most cells a model may have; zero is no ceiling
+thread        = 3              # the longest run one cell thick before it is reported
+extent        = []             # [x, y, z] a model should span; a document's own wins
+near_symmetry = 0.9            # this symmetric in x and short of whole is reported
 ```
 
 ## A tolerance has one home

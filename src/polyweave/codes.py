@@ -184,6 +184,12 @@ CODES: dict[str, Code] = {
         when="an operation that should have built geometry built none",
         doors=("check the operation's inputs before rendering anything",),
     ),
+    "post.voxels-empty": Code(
+        means="a voxel build filled no cells",
+        when="a grid coarser than the smallest part, or a carve that took the whole "
+        "shape away",
+        doors=("make the cells smaller", "check what the carve cuts"),
+    ),
     "post.mesh-nan": Code(
         means="vertices carry NaN coordinates, so the mesh has no position",
         when="a degenerate transform, or a normal of zero length",

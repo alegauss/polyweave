@@ -538,6 +538,24 @@ the material's resolved table with its keys passed through untouched, since `glo
 something to a game and nothing here; a cell nothing painted wears an entry whose name is
 empty. The readback is one line: `a voxel model 16 by 7 by 5, 312 cells in 3 materials`.
 
+**Every voxel build is checked before it renders** (§PW97), by `post.check("voxels", …)`,
+and the answer comes back as the model's `checks`: how many parts it is in, how many pieces
+face to face, the longest thread, the share of cells with a partner across the middle in x,
+and its extent. Anything worth a second look is a finding that **names its cells**, so the
+fix is a local edit rather than a hunt:
+
+- `floating`: cells in no touch with the body, beyond the `parts` the document's `[voxels]`
+  declares (one unless it says otherwise);
+- `diagonal`: cells meeting the rest only at an edge or a corner, which read as broken off;
+- `thread`: a run one cell thick longer than `[voxels] thread` in the project config;
+- `symmetry`: cells without a partner in a model at least `near_symmetry` symmetric;
+- `budget` and `extent`: over the project's cell budget, or more than a cell off the
+  extent the document or the project states.
+
+**Findings are reported, not refused**, because a loose antenna may be the design; the only
+refusal is a model with no cells (`post.voxels-empty`). The limits are a game's, so the
+project config holds them and nothing in the check defaults them.
+
 **Cells can be drawn by hand** (§PW95), which is where a voxel model's character lives: a
 cockpit, an eye, a stripe. `op = "cells"` takes `layers`, slices along z with the first at
 the front, each a list of rows written top to bottom with one character a cell; `legend`

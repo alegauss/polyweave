@@ -150,6 +150,19 @@ DEFAULTS: dict[str, Any] = {
         "reproducible": False,
     },
     "geometry": {"outlines": ""},
+    "voxels": {
+        # What a voxel build is checked against (§PW97). A game decides how many cubes
+        # it can draw and how thin a part may be before it vanishes, so these are the
+        # project's. A budget of zero is no ceiling and an empty extent no target.
+        "budget": 0,
+        # The longest run one cell thick before it is reported.
+        "thread": 3,
+        # [x, y, z] in the declaration's units; a document's own [voxels] extent wins.
+        "extent": [],
+        # A model at least this symmetric in x and short of whole is reported, because
+        # that is what two halves drifting apart looks like.
+        "near_symmetry": 0.9,
+    },
     "sprites": {
         # What the 2D half of a clip is baked at. Configuration rather than decisions
         # taken inside code: a sheet's rate, its count and its trim are a project's
