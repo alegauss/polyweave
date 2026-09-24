@@ -387,6 +387,25 @@ out = write(document, "assets/tray.glb", root=".")   # the same, put on disk
 out["artefact"]     # what `bake(model=…)` takes from here
 ```
 
+**Or from the command line, with no script of the project's own** (§PW101):
+
+```
+python -m polyweave build art/ship.toml --out build --set wing=3.5 --preview
+python -m polyweave build --all art --json
+```
+
+It prints the readback, the value it came out as, the warnings, the voxel findings and
+what it wrote, and exits 1 on a refusal with the code and the remedy (2 for a `--set` that
+sets nothing). `--json` prints the same as data, and the work's own chatter, Blender's
+exporter included, goes to stderr so stdout carries the answer alone. `--preview` adds the
+cheapest look: a voxel model's contact sheet, or a mesh's front silhouette drawn from the
+faces. `--all` builds every declaration under a folder, passing over TOML that is not a
+shape, and skips one whose stamp — `<name>.build.json`, the hash of the document, the
+values set and every file it names — still matches its outputs. Blender is needed only
+where a node needs it: a voxel build writes its cubes' mesh when Blender is there and
+leaves it out when not. A declaration saved with a byte-order mark, as Windows PowerShell
+5.1 writes one, reads like any other.
+
 **A build ends in a file, and that is a decision** (§PW69). `bake` takes its model as a
 path, and the cache key and the provenance record key off a file and its hash already — a
 mesh in memory has no sha256 until something defines a canonical serialisation for it,

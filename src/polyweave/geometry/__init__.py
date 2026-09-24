@@ -70,7 +70,11 @@ def read(path: str | Path, *, root: str | Path = ".") -> dict:
             "check the path, or write the declaration before reading it",
         )
     try:
-        return parse(tomllib.loads(where.read_text(encoding="utf-8")), named=where.name)
+        # `utf-8-sig`: Windows PowerShell 5.1 writes a byte-order mark with every UTF-8
+        # file it saves, and TOML refuses one, so a shape written from that shell read
+        # as not TOML at all (§PW101).
+        text = where.read_text(encoding="utf-8-sig")
+        return parse(tomllib.loads(text), named=where.name)
     except tomllib.TOMLDecodeError as exc:
         raise PolyweaveError(
             "geom.unreadable",

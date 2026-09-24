@@ -128,6 +128,7 @@
 - ✅ **PW98** **fitting a voxel model to a concept drawing or a fetched mesh is guessing numbers by hand** — A voxel fit searches declared ranges for the best overlap with a drawing or mesh per view, in under a second, scoring floating or over-budget cells zero (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW99** **a game breaking a voxel model must work out its fragments and damage order itself at runtime** — A [voxels.fracture] plan splits cells into seeded connected fragments that keep to one material, and ranks each cell by its depth from the surface (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW100** **a fetched mesh cannot be the starting block of a voxel model** — A textured mesh node's cells wear its texture's colours, sampled off the surface and quantised to the count the node states; the hammer takes two seconds (design recorded in `docs/specs/geometry.md`).
+- ✅ **PW101** **building a declaration takes a Python script of the project's own** — python -m polyweave build writes a declaration's outputs with its readback and findings, as text or JSON, and --all skips what has not changed (design recorded in `docs/specs/geometry.md`).
 
 ## Block J — A bar a person sets once
 

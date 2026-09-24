@@ -388,18 +388,6 @@ written.
 
 ## Block I — Voxel models from a declaration
 
-### §PW101 A build command
-
-`python -m polyweave build <doc.toml>` with `--out <dir>`, `--set name=value`
-(repeatable) and `--preview`. It prints the readback, the report, warnings and check
-findings, and exits non-zero on a refusal. `--json` gives the same as data.
-
-`--all <dir>` builds every declaration under a folder and skips cache hits, so a
-project's asset step is one line that costs nothing when nothing changed.
-
-It runs on the caller's interpreter, and needs `bpy` only when a node in the document
-needs Blender, which a voxel build of the grid-native ops never does.
-
 ### §PW102 Godot importer for voxel models
 
 An addon, `addons/polyweave_voxels/`, that polyweave installs into a Godot project. An

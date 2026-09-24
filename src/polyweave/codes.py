@@ -389,6 +389,11 @@ CODES: dict[str, Code] = {
         when="a number arrives as a string, or the reverse",
         doors=("pass the declared type",),
     ),
+    "op.bad-setting": Code(
+        means="a value set on the command line does not name what it sets",
+        when="a `--set` with no `=` in it, or nothing before it",
+        doors=("write it as name=value",),
+    ),
     # -- config: what a project declares, and how a value is resolved --------
     "config.malformed": Code(
         means="the project's config file could not be read as TOML",
