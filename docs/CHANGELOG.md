@@ -158,6 +158,7 @@
 - ✅ **PW123** **`build --all` skips a declaration it refuses to read, so a typo drops an asset from the build and exits 0** — build --all tells a declaration from other TOML by its nodes or voxels key, so one that fails comes back refused and the build exits 1 (design superseded: no geom.unknown-field existed (PW146)).
 - ✅ **PW124 (census)** **`describe` knows one operation, so search, accept, geometry and voxels are still learned by reading their source** — Every public function is registered, an entry, internal or pending; capabilities names the pending modules, and their count can only fall.
 - ✅ **PW147** **an acceptance spec can be checked or verified only from Python, since describe does not list accept** — accept.check, accept.verify and accept.check_screen are operations describe returns, called with paths alone; pending falls to 236 (design recorded in `docs/specs/tool-surface.md`).
+- ✅ **PW148** **a rendered search is reached only from Python, since describe does not list search** — search.sweep, asynchronous with a spec path, and search.worth_parallel are operations describe returns; pending falls to 222 (design recorded in `docs/specs/tool-surface.md`).
 
 ## Block L — What a run leaves as evidence
 

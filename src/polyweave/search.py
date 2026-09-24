@@ -25,10 +25,11 @@ import itertools
 import math
 from collections.abc import Callable, Iterator, Sequence
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any
 
 from . import accept, loop
 from .accept import Spec
+from .describe import Param, operation
 from .errors import PolyweaveError
 
 #: How many points each axis gets in a pass, before the window closes around the best.
@@ -643,8 +644,16 @@ def crossing_point(*, lanes: int = 4, start_s: float = WORKER_START_S) -> float:
     return float(start_s) / max(1, int(lanes) - 1)
 
 
+@operation("search.worth_parallel")
 def worth_parallel(
-    seconds_per_render: float, *, lanes: int = 4, start_s: float = WORKER_START_S
+    seconds_per_render: Annotated[
+        float, Param("what one render costs at this rung", lo=0.0, unit="s")
+    ],
+    *,
+    lanes: Annotated[int, Param("how many run at once", lo=1)] = 4,
+    start_s: Annotated[
+        float, Param("what a worker costs before it renders", lo=0.0, unit="s")
+    ] = WORKER_START_S,
 ) -> bool:
     """Whether four handles beat four waits, for a render that costs this much."""
     return float(seconds_per_render) > crossing_point(lanes=lanes, start_s=start_s)
@@ -675,22 +684,31 @@ def _chunked(items: list, size: int) -> Iterator[list]:
         yield items[start : start + size]
 
 
+@operation("search.sweep", kind="search")
 def sweep(
-    spec: Spec,
+    spec: Annotated[str, Param("the acceptance spec, as a path under the project")],
     *,
-    out: str | Path,
-    root: str | Path = ".",
-    budget: int = BUDGET,
-    points: int = POINTS,
-    rung: str | None = None,
-    fixed: dict | None = None,
-    trace: str | Path | None = None,
+    out: Annotated[str, Param("where each sample's picture is written")],
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
+    budget: Annotated[int, Param("how many renders it may spend", lo=1)] = BUDGET,
+    points: Annotated[int, Param("points per axis in a pass", lo=2)] = POINTS,
+    rung: Annotated[str, Param("the rung, or the spec's own where empty")] = "",
+    fixed: Annotated[
+        dict, Param("render arguments held still, such as the model")
+    ] = None,
+    trace: Annotated[
+        str, Param("where to write what it rejected, as <name>.json and .png")
+    ] = "",
 ) -> dict:
-    """Search by actually rendering: the whole loop, from a spec to the best values.
+    """Search a spec's permitted parameters by actually rendering, and return the best.
 
     `trace` is where to write down what it rejected. Worth passing: a search returning
-    only its winner is one nobody can overrule.
+    only its winner is one nobody can overrule. `spec` may also be a `Spec` in memory.
     """
+    if not isinstance(spec, Spec):
+        spec = accept.read(spec, root)
+    rung = rung or None
+    trace = trace or None
     found = search(
         spec,
         renderer(spec, out=out, root=root, rung=rung, fixed=fixed),

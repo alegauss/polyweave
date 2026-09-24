@@ -45,6 +45,7 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.accept:check": ("internal", "the in-process check, on a Spec object"),
     "polyweave.accept:margin": ("internal", "one predicate's margin"),
     "polyweave.accept:headroom": ("internal", "one predicate's headroom"),
+    "polyweave.search": ("internal", "the search's parts; search.sweep is the whole"),
     # -- internal: helpers an operation calls, never a caller's first call ----------
     "polyweave.cache": ("internal", "the render cache, reached through bake's cached"),
     "polyweave.census": ("internal", "this census's own walk"),
@@ -100,7 +101,6 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.reference": ("pending", "a reference prepared for a fetch"),
     "polyweave.render": ("pending", "render.plan, the read before a bake"),
     "polyweave.schema": ("pending", "what the service was proved to accept"),
-    "polyweave.search": ("pending", "searching a rig against a spec"),
     "polyweave.shape": ("pending", "a silhouette's shape"),
     "polyweave.skeleton": ("pending", "a skeleton fitted to a mesh"),
     "polyweave.sprites": ("pending", "a clip baked to a sprite sheet"),

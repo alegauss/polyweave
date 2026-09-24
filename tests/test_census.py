@@ -7,7 +7,7 @@ from polyweave.capabilities import capabilities
 
 #: How much surface is still unregistered. Registering a module lowers it, and this
 #: number is lowered with it: it may only fall, never rise.
-PENDING = 236
+PENDING = 222
 
 
 def test_every_public_function_is_classified():
@@ -63,7 +63,8 @@ def test_everything_capabilities_names_is_one_read_away():
     for name in found["measures"]["names"]:
         assert measure.resolve(name)
     assert set(found["unregistered"]) == set(census.pending_modules())
-    assert "polyweave.search" in found["unregistered"]
+    assert "polyweave.search" not in found["unregistered"]
+    assert all(module.startswith("polyweave") for module in found["unregistered"])
 
 
 def test_a_spec_is_checked_by_name_with_nothing_but_paths(tmp_path):
@@ -85,6 +86,14 @@ def test_a_spec_is_checked_by_name_with_nothing_but_paths(tmp_path):
     assert {"accept.check", "accept.verify", "accept.check_screen"} <= set(
         describe.operations()
     )
+
+
+def test_a_search_is_described_as_a_job_with_its_budget_bounded():
+    found = describe.describe("search.sweep")
+    assert found["asynchronous"] is True
+    budget = next(p for p in found["parameters"] if p["name"] == "budget")
+    assert budget["range"] == [1, None]
+    assert describe._REGISTRY["search.worth_parallel"].fn(11.44) is True
 
 
 def test_a_fresh_read_of_the_operations_loads_them():
