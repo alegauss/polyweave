@@ -67,6 +67,11 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.capture": ("internal", "the environment's parts, inside capture.run"),
     "polyweave.engine": ("internal", "run with its launch hook, behind engine.run"),
     "polyweave.offscreen": ("internal", "a route as an object; offscreen.routes"),
+    "polyweave.shape": ("internal", "silhouette with its bake hook, and the gate"),
+    "polyweave.reference": ("internal", "the cut and its tests, inside .prepare"),
+    "polyweave.normalise": ("internal", "a mesh's maths, in memory, inside ingest"),
+    "polyweave.compose": ("internal", "the Image objects compose.place returns"),
+    "polyweave.texture": ("internal", "the scrub on pixels in memory, in the bake"),
     # -- internal: helpers an operation calls, never a caller's first call ----------
     "polyweave.cache": ("internal", "the render cache, reached through bake's cached"),
     "polyweave.census": ("internal", "this census's own walk"),
@@ -101,13 +106,8 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.geometry.voxel_sheet": ("internal", "a voxel build's contact sheet"),
     # -- pending: a caller's surface, not yet registered with describe ---------------
     "polyweave.clip": ("pending", "motion as a named clip"),
-    "polyweave.compose": ("pending", "an asset where it will be seen"),
-    "polyweave.normalise": ("pending", "a mesh brought to the conventions"),
-    "polyweave.reference": ("pending", "a reference prepared for a fetch"),
-    "polyweave.shape": ("pending", "a silhouette's shape"),
     "polyweave.skeleton": ("pending", "a skeleton fitted to a mesh"),
     "polyweave.sprites": ("pending", "a clip baked to a sprite sheet"),
-    "polyweave.texture": ("pending", "a service's paint taken back out"),
 }
 
 

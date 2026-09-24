@@ -57,10 +57,11 @@ the whole of the difference.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Annotated, Any
 
 import numpy as np
 
+from .describe import Param, operation
 from .errors import PolyweaveError
 
 #: How far around a texel counts as "its surroundings", in texels. Wide enough to see
@@ -169,7 +170,10 @@ def scrub(
     return rgba, {k: found[k] for k in ("bar", "variation", "darkest", "fraction")}
 
 
-def worth_scrubbing(rung: str) -> bool:
+@operation("texture.worth_scrubbing")
+def worth_scrubbing(
+    rung: Annotated[str, Param("the rung the render is at")],
+) -> bool:
     """Whether the repair shows at this rung, measured rather than assumed.
 
     Invisible at preview and 2.5x the noise floor at final, on the real hammer. A pass

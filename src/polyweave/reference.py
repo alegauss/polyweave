@@ -25,12 +25,13 @@ from __future__ import annotations
 
 from io import BytesIO
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any
 
 import numpy as np
 
 from . import measure
 from .config import load
+from .describe import Param, operation
 from .errors import PolyweaveError
 from .files import write_atomic
 from .image import Image
@@ -347,3 +348,34 @@ def ready(subject: Any, *, root: str | Path = ".", **how: Any) -> dict:
             "why": "it is already a drawing, with no background to cut",
         }
     return {**prepare(path, root=root, **how), "prepared": True, "why": ""}
+
+
+@operation("reference.pick")
+def picked(
+    candidates: Annotated[list, Param("the pictures to choose between, by path")],
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
+) -> dict:
+    """Which of several pictures is the one to fetch from, and why."""
+    return pick(*candidates, root=root)
+
+
+@operation("reference.prepare")
+def prepared(
+    photo: Annotated[str, Param("the photograph, as a path under the project")],
+    out: Annotated[str, Param("where the prepared reference is written")] = None,
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
+    tolerance: Annotated[
+        float, Param("how far from the edge colour is still background")
+    ] = None,
+    coverage: Annotated[float, Param("the least of the frame it fills")] = None,
+    longest: Annotated[int, Param("the longest side it is sized to", lo=16)] = 1024,
+) -> dict:
+    """A photograph cut from its background and sized, ready to send to the service."""
+    return prepare(
+        photo,
+        out=out,
+        root=root,
+        tolerance=tolerance,
+        coverage=coverage,
+        longest=longest,
+    )

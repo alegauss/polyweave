@@ -216,7 +216,10 @@ both answers.
   declaration's path and its param values as one table (§PW156), and the purchase
   ledger's seven reads and the service schema's three (§PW157), and `engine.find`,
   `engine.run`, `capture.run`, `capture.declared`, `offscreen.routes` and `godot.install`,
-  none carrying the hooks its tests stand in with (§PW158). A module's leftover helpers may be
+  none carrying the hooks its tests stand in with (§PW158), and `shape.check`,
+  `shape.silhouette`, `reference.pick`, `reference.prepare`, `normalise.ingest`,
+  `compose.place`, `compose.sheet` and `texture.worth_scrubbing` (§PW159). A declared
+  `choices` is read off the module's own constant, never retyped beside it. A module's leftover helpers may be
   listed as internal one function at a time. `describe()` loads
   the registry before answering, so a fresh process no longer lists only what it happened
   to have imported.

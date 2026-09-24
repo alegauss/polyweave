@@ -19,11 +19,12 @@ from __future__ import annotations
 import math
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any
 
 import numpy as np
 from PIL import Image as PILImage
 
+from .describe import Param, operation
 from .errors import PolyweaveError
 from .image import Image, load
 
@@ -146,3 +147,36 @@ def _write(canvas: PILImage.Image, out: str | Path | None) -> Image:
     where.parent.mkdir(parents=True, exist_ok=True)
     canvas.save(where)
     return _as_image(canvas, where)
+
+
+def _landed(made: Image, out: str) -> dict:
+    return {"out": str(made.path or out), "size": [made.width, made.height]}
+
+
+@operation("compose.place")
+def placed(
+    asset: Annotated[str, Param("the asset's picture, by path")],
+    into: Annotated[str, Param("the scene or background it is put in, by path")],
+    *,
+    out: Annotated[str, Param("where the composed picture is written")],
+    at: Annotated[list, Param("where it stands, [x, y] in pixels")] = (0, 0),
+    width: Annotated[int, Param("the width it is drawn at, if not its own")] = None,
+    anchor: Annotated[
+        str, Param("what `at` names", choices=ANCHORS)
+    ] = "footprint",
+) -> dict:
+    """An asset put where it will actually be seen, and written to a file."""
+    made = place(asset, into, at=tuple(at), width=width, anchor=anchor, out=out)
+    return _landed(made, out)
+
+
+@operation("compose.sheet")
+def sheeted(
+    tiles: Annotated[list, Param("the pictures to lay out, by path")],
+    *,
+    out: Annotated[str, Param("where the sheet is written")],
+    columns: Annotated[int, Param("how many across; square if unset")] = None,
+    cell: Annotated[int, Param("each tile's cell", lo=8, unit="px")] = 256,
+) -> dict:
+    """Several pictures laid out on one sheet, in order, and written to a file."""
+    return _landed(sheet(tiles, columns=columns, cell=cell, out=out), out)

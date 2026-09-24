@@ -28,10 +28,11 @@ from __future__ import annotations
 import itertools
 import math
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any
 
 import numpy as np
 
+from .describe import Param, operation
 from .errors import PolyweaveError
 from .post.mesh import as_mesh
 
@@ -808,3 +809,30 @@ def _record_derivation(
         root=root,
     )
     return provenance.write(written, root=root)
+
+
+@operation("normalise.ingest")
+def ingested(
+    path: Annotated[str, Param("the mesh a service or a person made")],
+    *,
+    out: Annotated[str, Param("where the normalised mesh is written")] = None,
+    against: Annotated[str, Param("a drawing to orient it by, if any")] = None,
+    height: Annotated[float, Param("the size it is scaled to", lo=0.0)] = 1.0,
+    size_on: Annotated[
+        str, Param("which extent height means", choices=tuple(SIZE_ON))
+    ] = "height",
+    origin: Annotated[str, Param("where its origin goes", choices=ORIGINS)] = "base",
+    alpha_floor: Annotated[float, Param("the drawing's alpha floor, if any")] = None,
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
+) -> dict:
+    """A mesh brought to the conventions: upright, centred, sized, and recorded."""
+    return ingest(
+        path,
+        out=out,
+        against=against,
+        height=height,
+        size_on=size_on,
+        origin=origin,
+        alpha_floor=alpha_floor,
+        root=root,
+    )

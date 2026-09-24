@@ -107,6 +107,11 @@ MODULES: tuple[str, ...] = (
     "polyweave.capture",
     "polyweave.offscreen",
     "polyweave.godot",
+    "polyweave.shape",
+    "polyweave.reference",
+    "polyweave.normalise",
+    "polyweave.compose",
+    "polyweave.texture",
 )
 
 

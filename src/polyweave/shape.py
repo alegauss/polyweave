@@ -19,10 +19,11 @@ accepted in silence.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any
 
 from . import measure
 from .config import load
+from .describe import Param, operation
 from .errors import PolyweaveError
 
 #: Meshes this can render a silhouette of. Anything else is already a picture.
@@ -76,14 +77,17 @@ def silhouette(
     )
 
 
+@operation("shape.check", kind="bake")
 def check(
-    subject: Any,
+    subject: Annotated[Any, Param("the mesh, as a path under the project")],
     *,
-    against: str | Path,
-    root: str | Path = ".",
-    threshold: float | None = None,
-    out: str | Path | None = None,
-    rung: str = "preview",
+    against: Annotated[str, Param("the drawing its silhouette must match")],
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
+    threshold: Annotated[
+        float, Param("the least IoU that passes; the project's if unset")
+    ] = None,
+    out: Annotated[str, Param("where the silhouette render is written")] = None,
+    rung: Annotated[str, Param("the rung the silhouette is rendered at")] = "preview",
 ) -> dict:
     """Does this shape hold against the drawing that asked for it.
 
@@ -154,3 +158,15 @@ def require(subject: Any, **how: Any) -> dict:
             f"{found['bbox_delta']}px",
         )
     return found
+
+
+@operation("shape.silhouette", kind="bake")
+def outlined(
+    mesh: Annotated[str, Param("the mesh, as a path under the project")],
+    *,
+    out: Annotated[str, Param("where the silhouette is written")],
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
+    rung: Annotated[str, Param("the rung it is rendered at")] = "preview",
+) -> dict:
+    """A mesh's silhouette, rendered and cut to its alpha, from the rig's own camera."""
+    return silhouette(mesh, out=out, root=root, rung=rung)

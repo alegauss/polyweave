@@ -7,7 +7,7 @@ from polyweave.capabilities import capabilities
 
 #: How much surface is still unregistered. Registering a module lowers it, and this
 #: number is lowered with it: it may only fall, never rise.
-PENDING = 73
+PENDING = 40
 
 
 def test_every_public_function_is_classified():
@@ -199,6 +199,33 @@ def test_the_engine_side_is_described_without_its_test_hooks():
         assert hook not in names
         assert "expect" in names
     assert describe.describe("capture.run")["asynchronous"] is True
+
+
+def test_a_declared_choice_is_the_modules_own_list():
+    """A choice typed out beside the code drifts; these are read off it."""
+    from polyweave import compose, normalise
+
+    def choices(op, name):
+        found = describe.describe(op)["parameters"]
+        return next(p for p in found if p["name"] == name)["choices"]
+
+    assert choices("compose.place", "anchor") == list(compose.ANCHORS)
+    assert choices("normalise.ingest", "size_on") == list(normalise.SIZE_ON)
+    assert choices("normalise.ingest", "origin") == list(normalise.ORIGINS)
+
+
+def test_a_sheet_is_laid_out_by_name_and_says_where_it_landed(tmp_path):
+    from PIL import Image
+
+    for n in range(3):
+        Image.new("RGBA", (8, 8), (40 * n, 90, 90, 255)).save(tmp_path / f"{n}.png")
+    made = describe._REGISTRY["compose.sheet"].fn(
+        [str(tmp_path / f"{n}.png") for n in range(3)],
+        out=str(tmp_path / "sheet.png"),
+        cell=16,
+    )
+    assert (tmp_path / "sheet.png").is_file()
+    assert made["size"][0] >= 16
 
 
 def test_a_fresh_read_of_the_operations_loads_them():
