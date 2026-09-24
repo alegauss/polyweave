@@ -29,7 +29,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "B", title: "Seeing the result cheaply", open: 2 },
   { block: "C", title: "The asset compiler", open: 0 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
-  { block: "E", title: "One world with the engine", open: 1 },
+  { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
   { block: "H", title: "Proof on a real game", open: 4 },
@@ -53,13 +53,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "B",
     symptom: "a bake after `preview_size` changed is served the old-size picture from the cache, as a hit",
     why: "The rung's size is read from the project file and is in no field the cache key covers, so every measure on the hit answers for a size nobody asked for.",
-    deps: [],
-  },
-  {
-    id: "PW119",
-    block: "E",
-    symptom: "nothing answers which captures and renders depend on a file, so a changed sprite means re-taking all of them",
-    why: "Four captures were re-taken and diffed to learn which showed a star; a project with forty cannot, and one that re-takes too few commits a stale screenshot.",
     deps: [],
   },
   {

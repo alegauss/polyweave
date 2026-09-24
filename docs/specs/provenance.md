@@ -213,3 +213,18 @@ An input that lives outside the project tree is recorded by its absolute path ra
 refused. Paths are not in the key, so a shared library outside the tree still yields the same
 key on another machine; what it costs is that the record alone does not say where to find
 that file on a machine that has it elsewhere.
+
+## Which artefacts a file shows up in
+
+Binds **PW119**. When Cottony's stars changed, which of its four screenshots would change
+was a guess, so all four were re-taken and diffed. Every record is already an edge from an
+artefact to the files it was made from, and since captures record what the game loaded
+(see [engine.md](engine.md)) that covers screenshots as well as renders. So the reverse is a
+read, with no index and no service. It walks the same sidecars `verify` does.
+
+- `dependents(path)` gives every artefact whose record names the file as an input. Each
+  comes with its kind, what made it (`capture by scenes/title.gd`) and the input's role.
+- `outdated()` is the gate half. It lists every artefact with an input whose file no longer
+  hashes to what the record says, or is gone, and names those inputs under `moved`.
+  `sound` is false while any is left, so a sprite that changed while a screenshot showing
+  it did not is caught before that screenshot is committed as the game's.

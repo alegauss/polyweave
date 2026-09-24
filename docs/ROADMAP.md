@@ -13,8 +13,6 @@
 
 ## Block E — One world with the engine
 
-- 📋 **PW119** (deps: PW118 ✅) **nothing answers which captures and renders depend on a file, so a changed sprite means re-taking all of them** — Four captures were re-taken and diffed to learn which showed a star; a project with forty cannot, and one that re-takes too few commits a stale screenshot. → §PW119
-
 ## Block F — Motion
 
 ## Block G — Geometry as a declaration

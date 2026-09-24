@@ -50,22 +50,6 @@ with the new size.
 
 ## Block E — One world with the engine
 
-### §PW119 From a changed file to the artefacts that show it
-
-When the stars changed, which of Cottony's four screenshots would change was a guess, so
-all four were re-taken and diffed to find out. A project with forty captures cannot do
-that, and one that re-takes too few commits a screenshot that no longer shows the game.
-
-Now that captures record their inputs (docs/specs/engine.md), every sidecar in the
-project is an edge from an artefact to the files it was made from. A reverse read over
-them answers the question directly: given a changed file, the artefacts whose recorded
-inputs include it, captures and renders alike, with the command each was made by.
-
-That is a read over sidecars already on disk, needing no index and no service, and the
-same walk `verify` in `provenance.py` makes. It lets a port say "these three captures
-show this sprite" before re-taking them, and lets a gate fail when a file changed and an
-artefact that depends on it did not.
-
 ## Block F — Motion
 
 ## Block G — Geometry as a declaration

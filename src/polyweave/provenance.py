@@ -625,5 +625,80 @@ def verify(root: str | Path = ".") -> dict:
     }
 
 
+def _records(where: Path):
+    """Every readable record under the root, with the artefact it names."""
+    for found in sorted(where.rglob(f"*{SUFFIX}")):
+        try:
+            record = read(found, where)
+        except PolyweaveError:
+            continue
+        if (record.get("artefact") or {}).get("path"):
+            yield record
+
+
+def _made_by(record: dict) -> str:
+    """What made an artefact, in words a person can act on."""
+    kind = record.get("kind", "")
+    script = record.get("script")
+    return f"{kind} by {script}" if script else kind
+
+
+def dependents(path: str | Path, root: str | Path = ".") -> dict:
+    """Every artefact whose record names this file as an input (§PW119).
+
+    When Cottony's stars changed, which of its four screenshots would change was a
+    guess, so all four were re-taken and diffed. Every record is already an edge from an
+    artefact to what it was made from, so the reverse read answers it directly: captures
+    and renders alike, each with what made it. No index and no service; the same walk
+    `verify` makes.
+    """
+    where = Path(root).resolve()
+    wanted = relative(path, where)
+    found = [
+        {
+            "artefact": record["artefact"]["path"],
+            "kind": record.get("kind"),
+            "made_by": _made_by(record),
+            "role": next(
+                i.get("role")
+                for i in record.get("inputs") or ()
+                if i.get("path") == wanted
+            ),
+        }
+        for record in _records(where)
+        if any(i.get("path") == wanted for i in record.get("inputs") or ())
+    ]
+    return {"input": wanted, "artefacts": found}
+
+
+def outdated(root: str | Path = ".") -> dict:
+    """Artefacts made from a file that has changed since, and not made again (§PW119).
+
+    The gate half: a file moved and an artefact depending on it did not, so a committed
+    screenshot no longer shows the game. `sound` is false while any is left.
+    """
+    where = Path(root).resolve()
+    stale = []
+    for record in _records(where):
+        moved = []
+        for one in record.get("inputs") or ():
+            named = one.get("path")
+            if not named:
+                continue
+            source = where / named
+            now = sha256_of(source)[0] if source.is_file() else None
+            if now != one.get("sha256"):
+                moved.append(named)
+        if moved:
+            stale.append(
+                {
+                    "artefact": record["artefact"]["path"],
+                    "made_by": _made_by(record),
+                    "moved": moved,
+                }
+            )
+    return {"outdated": stale, "sound": not stale}
+
+
 def _stamp() -> str:
     return datetime.now(tz=UTC).isoformat(timespec="seconds").replace("+00:00", "Z")
