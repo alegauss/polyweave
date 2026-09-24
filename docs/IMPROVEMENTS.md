@@ -261,3 +261,167 @@ If a family turns out not to port — the friends and the mascot are the candida
 this is where that is recorded honestly: what still runs by hand, and why the rig shrank
 instead of disappearing. An outcome worth having, stated, beats the same outcome
 unstated.
+
+## Block I — Voxel models from a declaration
+
+### §PW93 Voxel output
+
+A document gains `[voxels]` with `cell` (a size) or `across` (cells along the longest
+axis), and its build answers occupancy instead of triangles. Starship is the consumer:
+its actors are declared here and drawn and shattered as cells.
+
+Evaluation is grid-native. Each op answers an inside-test at cell centres: `primitive`
+analytically, `prism` as the ring test `solid._inside` times its depth range, `plate` as
+a rounded rectangle, `transform` by inverse-transforming the sample points, `union` and
+`carve` as set operations. Exact, no Blender and no MANIFOLD, in milliseconds, so a
+search can afford thousands. Ops with no inside-test (`inflate`, `crowned`, `annulus`,
+`custom`) are voxelized from their mesh by ray parity along one axis.
+
+A cell wears the material of the last node in build order that covers it, so a later
+node paints: a cockpit over a hull.
+
+The build writes `<name>.voxels.json`: cell size, dimensions, origin, the palette (each
+material's resolved table, keys passed through untouched, since `glow` means something
+to a game and nothing here), and the cells as flat arrays of x, y, z, palette index and
+node. Beside it, the same cubes as a `.glb` with material groups, so `bake`, the look
+and every render take it unchanged. The readback says `a voxel model 16 by 7 by 5, 312
+cells in 3 materials`. Provenance and cache key as a mesh's do.
+
+This is the compiler answering another question about the same declaration. It generates
+nothing a service would, so the non-goals hold.
+
+### §PW94 Voxel contact sheet
+
+Cells are already an image. An orthographic view along an axis is the nearest cell per
+pixel column in its palette colour; an isometric view is cube tops and two sides shaded
+by face. Both are numpy and Pillow at a fixed number of pixels per cell, with no light
+and no engine.
+
+One PNG contact sheet per build: front, side, top and isometric, with an optional grid
+and node labels, written beside the json. The agent reads the PNG, edits the declaration
+and looks again, inside one turn.
+
+It stays inside "Replacing Blender, Godot or the generative service": it replaces no
+renderer, only skips one for a draft, with flat colours, no neon and no bloom. The final
+look stays the engine's and the render ladder's. It is to a voxel model what the
+readback in words is to a declaration: the cheapest look that can still be disagreed
+with.
+
+### §PW95 Cells written as text
+
+`op = "cells"`: `layers` is a list of slices along z, each a list of strings, one
+character per cell; `legend` maps a character to a material and `.` is empty. The cell
+size and origin are the document's `[voxels]`, and `at` places the block as on any node.
+
+It mixes with the other ops. A hull from a `prism`, a canopy painted over it from
+`cells`, a vent carved out with `carve`. In mesh mode the same node builds as cubes, so
+it is not voxel-only.
+
+Text because it diffs, reviews in a pull request and is what an agent writes fluently.
+It is where the creative half of a model lives, while the grid, the booleans and the
+painting order stay the compiler's.
+
+The readback: `cockpit: 3 layers of 8 by 5, 41 cells in hull and glass`.
+
+### §PW96 Mirror
+
+`op = "mirror"` with `of` (a node id), `axis` and `plane` (default 0). On a mesh it
+reflects, flips the winding so normals stay outward, and joins the two halves; on cells
+it reflects the indices, and a centre column that lies on the plane is kept once rather
+than doubled.
+
+It is an op rather than a flag, so the half can still be carved or painted before it is
+mirrored, and something asymmetric (a single antenna, a damage scar) can be added after.
+
+The readback: `ship: hull_half mirrored across x = 0`. A mirror of something already
+symmetric is a review warning, since it doubles the cells or faces for nothing.
+
+### §PW97 Voxel checks
+
+`post.check("voxels", …)`, run by every voxel build and reported with the readback:
+
+- connected components: one body, unless the document declares separate parts;
+- cells joined to the rest only through an edge or a corner, which read as broken off;
+- threads one cell thick longer than a set length, which vanish at a distance;
+- the cell count against a budget;
+- symmetry, as the share of cells with a mirror partner;
+- bounds against a target extent.
+
+Every finding names its cells, so the fix is a local edit rather than a hunt. The
+budget, the thread length and the extent come from the project's config, because a game
+decides how many cubes it can afford and the plugin must not.
+
+### §PW98 Search a voxel model against a reference
+
+The reference is a drawing's alpha, or a mesh (a Meshy fetch) projected the way
+`normalise.project` already does. The measure is the overlap of the model's projected
+cells with the reference mask at the grid's resolution, per view, with the voxel checks
+as constraints: a sample that floats cells or breaks the budget scores zero.
+
+The search sweeps the ranges the document declares, as it does for any shape parameter.
+Each sample is a voxel build, milliseconds and not a render, so thousands of samples
+take seconds. The answer is the best parameters, their contact sheet and the score per
+view.
+
+This is the split of work: the author declares the parts, what they mean and how far
+each may move, and the search finds the proportions. A Meshy model bought for a ship
+then becomes a target the declared ship is fitted to, not a mesh to chop into cubes.
+
+### §PW99 Fracture plan
+
+An optional `[voxels.fracture]` with a fragment size range in cells and a seed. The
+build partitions the cells into fragments of connected cells in that range, preferring
+not to cross a material or node boundary, so a cockpit flies off whole. Each fragment
+carries its cells, centre and mass.
+
+The same pass ranks every cell by its depth from the surface, a distance transform over
+the grid, which is the order damage takes: a hit chips the outermost cells nearest it
+first.
+
+Both go in the json. A game spawns one piece per fragment instead of one per cell, which
+divides its debris count by the mean fragment size, and chipping on hit becomes a
+lookup. Deterministic from the seed, so the same model always breaks the same way and a
+test can say where.
+
+### §PW100 A mesh as a node
+
+`op = "mesh"` with `path` to a `.glb` imports it as a node in the project's frame. In
+voxel mode it is filled by ray parity, so a closed hull comes out solid rather than as a
+shell, and each cell takes the texture colour at its nearest surface point.
+
+An idea, held until a model declared from parts alone has been tried: fitting a
+declaration to a mesh by search may make importing it unnecessary, and a voxelized scan
+tends to come out as a blob at the ten to twenty cells a game can afford.
+
+### §PW101 A build command
+
+`python -m polyweave build <doc.toml>` with `--out <dir>`, `--set name=value`
+(repeatable) and `--preview`. It prints the readback, the report, warnings and check
+findings, and exits non-zero on a refusal. `--json` gives the same as data.
+
+`--all <dir>` builds every declaration under a folder and skips cache hits, so a
+project's asset step is one line that costs nothing when nothing changed.
+
+It runs on the caller's interpreter, and needs `bpy` only when a node in the document
+needs Blender, which a voxel build of the grid-native ops never does.
+
+### §PW102 Godot importer for voxel models
+
+An addon, `addons/polyweave_voxels/`, that polyweave installs into a Godot project. An
+`EditorImportPlugin` turns `*.voxels.json` into a `VoxelModel` resource holding packed
+cell transforms, palette colours, the palette's other keys as a Dictionary, fragments
+and erosion order, plus a MultiMesh ready to assign.
+
+How the game draws, lights and shatters the model stays the game's own code. The
+importer ends where the data becomes Godot's.
+
+`engine.py`'s headless import proves it in the tests. The addon carries the json schema
+version it reads and refuses another.
+
+### §PW103 Variants
+
+`[variants.<name>]` tables of parameter overrides in one document; the build writes one
+output per variant, named after it, and the readback lists them side by side.
+
+An idea until a consumer has three members of one family. `--set` covers one-off
+overrides already.
