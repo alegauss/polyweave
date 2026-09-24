@@ -34,8 +34,10 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from contextvars import ContextVar
 from pathlib import Path
+from typing import Annotated
 
 from .config import load
+from .describe import Param, operation
 from .errors import PolyweaveError
 from .files import write_atomic
 
@@ -51,7 +53,11 @@ def _where(root: str | Path) -> Path:
     return settings.path("paths.loop")
 
 
-def read(root: str | Path = ".") -> list[dict]:
+ROOT = Param("the project whose ledger this is")
+
+
+@operation("loop.runs")
+def read(root: Annotated[str, ROOT] = ".") -> list[dict]:
     """Every run recorded, oldest first."""
     where = _where(root)
     if not where.is_file():
@@ -84,15 +90,24 @@ def _commit(root: str | Path) -> str:
     return done.stdout.strip() if done.returncode == 0 else ""
 
 
+@operation("loop.start")
 def start(
-    asset: str,
-    way: str,
+    asset: Annotated[str, Param("the asset being made")],
+    way: Annotated[str, Param("which of the two ways", choices=WAYS)],
     *,
-    root: str | Path = ".",
-    brief: str = "",
-    who: str = "",
-    change: str | None = None,
-    unmeasured: tuple[str, ...] | list[str] = (),
+    root: Annotated[str, ROOT] = ".",
+    brief: Annotated[str, Param("what was asked for, in a sentence")] = "",
+    who: Annotated[str, Param("who is doing the work")] = "",
+    change: Annotated[
+        str, Param("the change to a ported asset this run measures, if any")
+    ] = None,
+    unmeasured: Annotated[
+        list,
+        Param(
+            "the costs this run will not measure, from seconds, renders, calls, "
+            "credits and person_minutes"
+        ),
+    ] = (),
 ) -> dict:
     """Begin recording one asset made one way.
 
@@ -168,14 +183,20 @@ def start(
     }
 
 
+RUN = Param("the open run, as loop.start returned it")
+
+
+@operation("loop.spent")
 def spent(
-    run: dict,
+    run: Annotated[dict, RUN],
     *,
-    renders: int = 0,
-    calls: int = 0,
-    credits: int = 0,
-    seconds: float = 0,
-    person_minutes: float = 0,
+    renders: Annotated[int, Param("fresh renders spent", lo=0)] = 0,
+    calls: Annotated[int, Param("tool calls spent", lo=0)] = 0,
+    credits: Annotated[int, Param("service credits spent", lo=0)] = 0,
+    seconds: Annotated[float, Param("wall-clock spent", lo=0, unit="s")] = 0,
+    person_minutes: Annotated[
+        float, Param("a person's own time spent", lo=0, unit="min")
+    ] = 0,
 ) -> dict:
     """Add to what this run has cost so far. Called as the work happens.
 
@@ -223,14 +244,15 @@ def bake_seen(answer: dict) -> None:
     )
 
 
+@operation("loop.judged")
 def judged(
-    run: dict,
+    run: Annotated[dict, RUN],
     *,
-    tool_passed: bool,
-    person_accepted: bool,
-    why: str = "",
-    check: dict | None = None,
-    named: tuple[str, ...] | list[str] = (),
+    tool_passed: Annotated[bool, Param("whether the tool passed the result")],
+    person_accepted: Annotated[bool, Param("whether a person accepted it")],
+    why: Annotated[str, Param("the person's sentence")] = "",
+    check: Annotated[dict, Param("what accept.check said of the result")] = None,
+    named: Annotated[list, Param("the predicates the person blamed")] = (),
 ) -> dict:
     """One result, as the tool called it and as a person called it.
 
@@ -283,7 +305,15 @@ def overruled(run: dict) -> int:
     )
 
 
-def finish(run: dict, *, root: str | Path = ".", accepted: bool | None = None) -> dict:
+@operation("loop.finish")
+def finish(
+    run: Annotated[dict, RUN],
+    *,
+    root: Annotated[str, ROOT] = ".",
+    accepted: Annotated[
+        bool, Param("whether it was accepted; the last verdict where unset")
+    ] = None,
+) -> dict:
     """Close the run and append it to the ledger, which is append-only."""
     if not run["verdicts"] and accepted is None:
         raise PolyweaveError(
@@ -315,7 +345,9 @@ def finish(run: dict, *, root: str | Path = ".", accepted: bool | None = None) -
 # -- reading it back -------------------------------------------------------------------
 
 
-def assets(root: str | Path = ".") -> list[str]:
+@operation("loop.assets")
+def assets(root: Annotated[str, ROOT] = ".") -> list[str]:
+    """Every asset the ledger has a run for."""
     return sorted({one["asset"] for one in read(root)})
 
 
@@ -342,7 +374,12 @@ def _totals(runs: list[dict]) -> dict:
 WRONG_AFTER = 2
 
 
-def bounds(root: str | Path = ".", *, asset: str | None = None) -> list[dict]:
+@operation("loop.bounds")
+def bounds(
+    root: Annotated[str, ROOT] = ".",
+    *,
+    asset: Annotated[str, Param("one asset only; every asset where unset")] = None,
+) -> list[dict]:
     """Which bounds a person overruled, which way, and with what values (§PW108).
 
     Arithmetic over the ledger, not a model of taste. A bound is **too tight** when its
@@ -404,7 +441,8 @@ def bounds(root: str | Path = ".", *, asset: str | None = None) -> list[dict]:
     ]
 
 
-def pending(root: str | Path = ".") -> dict:
+@operation("loop.pending")
+def pending(root: Annotated[str, ROOT] = ".") -> dict:
     """Which assets wait on a person's look, and where every asset stands (§PW110).
 
     A read over what is already on disk and nothing else: the ledger, the specs under
@@ -507,13 +545,24 @@ def _listed(values: list) -> str:
     return ", ".join(f"{v:g}" if isinstance(v, int | float) else str(v) for v in values)
 
 
-def changes(asset: str, *, root: str | Path = ".") -> list[str]:
+@operation("loop.changes")
+def changes(
+    asset: Annotated[str, Param("the asset")], *, root: Annotated[str, ROOT] = "."
+) -> list[str]:
     """Every change an asset has been measured through, in the order first recorded."""
     named = [one.get("change") for one in read(root) if one["asset"] == asset]
     return list(dict.fromkeys(c for c in named if c is not None))
 
 
-def compare(asset: str, *, root: str | Path = ".", change: str | None = None) -> dict:
+@operation("loop.compare")
+def compare(
+    asset: Annotated[str, Param("the asset made both ways")],
+    *,
+    root: Annotated[str, ROOT] = ".",
+    change: Annotated[
+        str, Param("the change to compare after; the first port where unset")
+    ] = None,
+) -> dict:
     """The two ways side by side, with what changed between them.
 
     Where a number went up, it says so. A loop that spends fewer seconds and twice the

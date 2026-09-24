@@ -161,6 +161,7 @@
 - ✅ **PW148** **a rendered search is reached only from Python, since describe does not list search** — search.sweep, asynchronous with a spec path, and search.worth_parallel are operations describe returns; pending falls to 222 (design recorded in `docs/specs/tool-surface.md`).
 - ✅ **PW149** **a bound is calibrated from the noise only from Python, since describe does not list calibrate** — calibrate.run and calibrate.apply are operations; apply by name cannot replace a person's bound, and pending falls to 216 (design recorded in `docs/specs/tool-surface.md`).
 - ✅ **PW150** **a person's verdict is carried only from Python, since describe does not list verdict** — verdict.sheet, verdict.sitting and verdict.judge are operations, judge's three choices declared; pending falls to 213 (design recorded in `docs/specs/tool-surface.md`).
+- ✅ **PW151** **the loop ledger is kept only from Python, since describe does not list loop** — The ledger is ten loop operations, the open run passed as JSON between them; pending falls to 200 (design recorded in `docs/specs/tool-surface.md`).
 
 ## Block L — What a run leaves as evidence
 

@@ -7,7 +7,7 @@ from polyweave.capabilities import capabilities
 
 #: How much surface is still unregistered. Registering a module lowers it, and this
 #: number is lowered with it: it may only fall, never rise.
-PENDING = 213
+PENDING = 200
 
 
 def test_every_public_function_is_classified():
@@ -121,6 +121,24 @@ def test_calibrate_apply_by_name_never_overrules_a_persons_bound(tmp_path):
         "s.accept.toml", proposal, root=str(tmp_path)
     )
     assert done["kept"] == ["tone:max"]
+
+
+def test_a_ledger_run_is_driven_by_name_with_the_run_as_json(tmp_path):
+    import json
+
+    def call(name, **args):
+        fn = describe._REGISTRY[name].fn
+        answer = fn(**describe.validate(name, args))
+        return json.loads(json.dumps(answer))  # what a caller over a wire gets
+
+    root = str(tmp_path)
+    for way, seconds in (("before", 9.0), ("after", 3.0)):
+        run = call("loop.start", asset="star", way=way, root=root)
+        run = call("loop.spent", run=run, seconds=seconds)
+        run = call("loop.judged", run=run, tool_passed=True, person_accepted=True)
+        call("loop.finish", run=run, root=root)
+    assert "faster" in call("loop.compare", asset="star", root=root)["verdict"]
+    assert call("loop.assets", root=root) == ["star"]
 
 
 def test_a_fresh_read_of_the_operations_loads_them():

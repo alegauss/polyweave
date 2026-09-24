@@ -47,6 +47,9 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.accept:headroom": ("internal", "one predicate's headroom"),
     "polyweave.search": ("internal", "the search's parts; search.sweep is the whole"),
     "polyweave.calibrate": ("internal", "the parts calibrate.run and .apply assemble"),
+    "polyweave.loop:recording": ("internal", "in process only: bakes report into it"),
+    "polyweave.loop:bake_seen": ("internal", "what a bake calls on its way out"),
+    "polyweave.loop:overruled": ("internal", "one run's count, in loop.finish"),
     # -- internal: helpers an operation calls, never a caller's first call ----------
     "polyweave.cache": ("internal", "the render cache, reached through bake's cached"),
     "polyweave.census": ("internal", "this census's own walk"),
@@ -91,7 +94,6 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.geometry.tuning": ("pending", "a declaration's parameters searched"),
     "polyweave.geometry.voxels": ("pending", "a voxel model built and checked"),
     "polyweave.godot": ("pending", "installing the Godot side"),
-    "polyweave.loop": ("pending", "the ledger of what one asset cost"),
     "polyweave.measure": ("pending", "the measurement vocabulary"),
     "polyweave.normalise": ("pending", "a mesh brought to the conventions"),
     "polyweave.offscreen": ("pending", "the routes a capture can draw by"),
