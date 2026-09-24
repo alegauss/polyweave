@@ -800,6 +800,14 @@ CODES: dict[str, Code] = {
         "size that is not above zero; two ways of saying one number would disagree",
         doors=("give [voxels] a `cell` size", "give [voxels] an `across` count"),
     ),
+    "geom.bad-fracture": Code(
+        means="the fracture plan does not describe fragments that can exist",
+        when="a size that is not two whole numbers, a smallest fragment under one "
+        "cell, or a smallest above the largest",
+        doors=(
+            "write size = [smallest, largest] in cells, with 1 <= smallest <= largest",
+        ),
+    ),
     "geom.bad-fit": Code(
         means="a voxel fit was asked for something it cannot compare",
         when="no parameter to move, a view that is not front, side or top, or a "

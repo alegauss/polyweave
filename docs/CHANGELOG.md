@@ -125,6 +125,7 @@
 - ✅ **PW96** **a symmetric shape must be declared whole, so its two halves can drift apart** — A mirror op joins a half to its reflection across any plane, faces still outward and materials carried, and in cells keeps a column on the plane once (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW97** **a voxel model with floating cells, one-cell threads or too many cells builds without complaint** — Every voxel build reports floating and edge-held pieces, long threads, near-symmetry, budget and extent, naming the cells, with the project's limits (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW98** **fitting a voxel model to a concept drawing or a fetched mesh is guessing numbers by hand** — A voxel fit searches declared ranges for the best overlap with a drawing or mesh per view, in under a second, scoring floating or over-budget cells zero (design recorded in `docs/specs/geometry.md`).
+- ✅ **PW99** **a game breaking a voxel model must work out its fragments and damage order itself at runtime** — A [voxels.fracture] plan splits cells into seeded connected fragments that keep to one material, and ranks each cell by its depth from the surface (design recorded in `docs/specs/geometry.md`).
 
 ## Block J — A bar a person sets once
 

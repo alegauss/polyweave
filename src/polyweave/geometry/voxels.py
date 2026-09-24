@@ -576,6 +576,11 @@ def voxelize(
     }
     made["says"] = says(made)
     made["checks"] = _checked(made, document, model.resolved["params"], root)
+    stated = (document.get("voxels") or {}).get("fracture")
+    if stated:
+        from .fracture import plan
+
+        made["fracture"] = plan(made, stated)
     return made
 
 

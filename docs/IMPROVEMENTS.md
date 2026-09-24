@@ -388,22 +388,6 @@ written.
 
 ## Block I — Voxel models from a declaration
 
-### §PW99 Fracture plan
-
-An optional `[voxels.fracture]` with a fragment size range in cells and a seed. The
-build partitions the cells into fragments of connected cells in that range, preferring
-not to cross a material or node boundary, so a cockpit flies off whole. Each fragment
-carries its cells, centre and mass.
-
-The same pass ranks every cell by its depth from the surface, a distance transform over
-the grid, which is the order damage takes: a hit chips the outermost cells nearest it
-first.
-
-Both go in the json. A game spawns one piece per fragment instead of one per cell, which
-divides its debris count by the mean fragment size, and chipping on hit becomes a
-lookup. Deterministic from the seed, so the same model always breaks the same way and a
-test can say where.
-
 ### §PW100 A mesh as a node
 
 `op = "mesh"` with `path` to a `.glb` imports it as a node in the project's frame. In

@@ -556,6 +556,25 @@ fix is a local edit rather than a hunt:
 refusal is a model with no cells (`post.voxels-empty`). The limits are a game's, so the
 project config holds them and nothing in the check defaults them.
 
+**How a model breaks is planned at build time** (§PW99), so a game spawns one piece per
+fragment rather than one per cell and does no geometry on the kill frame:
+
+```toml
+[voxels.fracture]
+size = [8, 24]       # the smallest and largest fragment, in cells
+seed = 1             # the same seed breaks the same way, so a test can say where
+```
+
+Cells are first grouped into connected regions of one material and one node, and a region
+that fits in one fragment is one, so a cockpit flies off whole. Larger regions are cut into
+connected fragments grown from seeded starting cells to a size drawn in the range, and a
+leftover under the smallest joins a neighbour in its region where that still fits. The model
+gains a `fracture` table (each fragment's cells as indices into the cell columns, its centre
+in the model's units, its mass in cells and its palette slot) and two more cell columns:
+`fragment`, and `depth`, each cell's distance in face steps from the surface, the outermost
+being 1, which is the order a hit chips them. A size that is not `1 <= smallest <=
+largest` whole cells is `geom.bad-fracture`.
+
 **A model's proportions can be fitted to a reference** (§PW98). `voxel_fit.fit(document,
 reference, ranges=…, views=[…])` searches the parameters the ranges name — or the
 document's own `[search.<param>]` tables, with `min`, `max` and an optional `step` — for the
