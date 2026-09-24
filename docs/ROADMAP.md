@@ -35,7 +35,6 @@
 
 ## Block J — A bar a person sets once
 
-- 📋 **PW112** (deps: PW111 ✅) **a spec is checked against the bake and never against what the engine draws on screen** — Once the game loads a mesh its material is what the player sees, so a spec that only reads the bake holds the intermediate artefact to the bar and not the real one. → §PW112
 - 💭 **PW113** (deps: —) **the acceptance spec is only ever aimed at a 3D bake, though nothing in its format is 3D** — Cottony writes the same kind of bar three more times outside the plugin, for a board, a music loop and drawn sprites, and whether those belong here is a scope call. → §PW113
 
 ## Block K — Reached without reading the source

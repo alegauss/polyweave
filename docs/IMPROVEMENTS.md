@@ -430,24 +430,6 @@ written.
 
 ## Block J — A bar a person sets once
 
-### §PW112 The same bar, on the screen the player sees
-
-Cottony's style guide says it outright: once the game loads a mesh, the Godot material
-is what the player sees, and the bake becomes a reference. Its `material_match.gd`
-exists to measure the gap by hand. Every spec here is checked against a Blender render,
-which is the intermediate artefact, and the picture on screen is never held to the bar
-at all.
-
-The plugin already has the three pieces. `capture` takes the screen, `accept.check`
-takes any PNG and a region, and the measures do not care which renderer made the pixels.
-What is missing is saying where an asset stands in a capture: a capture declares named
-rectangles, and a spec may be checked against one of them as well as against its bake.
-
-So the same spec gets a second answer, on screen, and the two can disagree. A sprite
-that passes baked and fails in the capture means the engine is drawing it differently,
-which is the finding `material_match.gd` was built to make and could only make for one
-star. The bar stays one file, so moving it moves both checks.
-
 ### §PW113 Is the spec wider than the renderer?
 
 Nothing in the acceptance spec is 3D. A predicate is a measure over a region of pixels,

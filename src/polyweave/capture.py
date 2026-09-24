@@ -52,6 +52,22 @@ REPORTED = re.compile(r"^environment:[ \t]*(?P<pairs>.*)$", re.MULTILINE)
 #: How one setting is written, both ways along.
 PAIR = re.compile(r"(?P<name>[A-Za-z_][\w.-]*)=(?P<value>\S*)")
 
+#: Where a script says an asset stands in its picture, in pixels: one line per asset,
+#: `region: star_dim=412,96,508,192` (§PW112). The script knows where it drew each
+#: thing, so it says so, and a spec can be held to that rectangle of the screen.
+REGION = re.compile(
+    r"^region:[ \t]*(?P<name>[A-Za-z_][\w.-]*)=(?P<box>-?\d+,-?\d+,-?\d+,-?\d+)[ \t]*$",
+    re.MULTILINE,
+)
+
+
+def regions(output: str) -> dict[str, list[int]]:
+    """Every named rectangle a script printed, as `[x0, y0, x1, y1]`."""
+    return {
+        found.group("name"): [int(v) for v in found.group("box").split(",")]
+        for found in REGION.finditer(output or "")
+    }
+
 
 def declared(root: str | Path = ".") -> list[str]:
     """The settings this project says a picture depends on."""
@@ -167,11 +183,14 @@ def run(
 
     log = Path(found["log"]).read_text(encoding="utf-8", errors="replace")
     against = compare(asked, applied(log))
-    answer = {**found, "environment": against}
+    answer = {**found, "environment": against, "regions": regions(log)}
     if not found["ok"] or not against["holds"]:
         return {**answer, "ok": False}
     if record:
-        made = [_record(one, asked, found, root) for one in found["artefacts"]]
+        made = [
+            _record(one, asked, {**found, "regions": answer["regions"]}, root)
+            for one in found["artefacts"]
+        ]
         answer["records"] = [str(path) for path, _ in made]
         answer["reproduced"] = again([verdict for _, verdict in made])
     return answer
@@ -213,7 +232,11 @@ def _record(
         engine={"route": found.get("route", ""), "about": found.get("about", "")},
         params=dict(asked),
         elapsed_s=found.get("seconds"),
-        extra={"script": found["script"], "frames": found.get("frames")},
+        extra={
+            "script": found["script"],
+            "frames": found.get("frames"),
+            **({"regions": found["regions"]} if found.get("regions") else {}),
+        },
         root=root,
     )
     verdict = provenance.reproduced(written, root=root)

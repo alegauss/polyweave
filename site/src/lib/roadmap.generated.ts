@@ -34,7 +34,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "G", title: "Geometry as a declaration", open: 0 },
   { block: "H", title: "Proof on a real game", open: 8 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
-  { block: "J", title: "A bar a person sets once", open: 2 },
+  { block: "J", title: "A bar a person sets once", open: 1 },
   { block: "K", title: "Reached without reading the source", open: 11 },
   { block: "L", title: "What a run leaves as evidence", open: 7 },
   { block: "M", title: "What a game needs beyond the look", open: 3 },
@@ -124,13 +124,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "every family port is a hand-written script repeating the same build, search, check, bake and record steps",
     why: "Three Cottony port scripts are one skeleton with different filling, and five more families would be five more copies, each with its own small mistakes.",
     deps: ["PW115"],
-  },
-  {
-    id: "PW112",
-    block: "J",
-    symptom: "a spec is checked against the bake and never against what the engine draws on screen",
-    why: "Once the game loads a mesh its material is what the player sees, so a spec that only reads the bake holds the intermediate artefact to the bar and not the real one.",
-    deps: [],
   },
   {
     id: "PW113",

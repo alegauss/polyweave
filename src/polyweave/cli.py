@@ -250,6 +250,13 @@ def _verify(stated: argparse.Namespace) -> int:
                 print(f"  no file at {one['artefact']}")
             if one["status"] == "unanchored":
                 print("  names no artefact; add `artefact = <path>` to hold it to this")
+            screen = one.get("screen") or {}
+            for line in screen.get("failed", ()):
+                print(f"  on screen: {line}")
+            if screen.get("status") == "refused":
+                print(f"  on screen: {screen['refusal']['message']}")
+            if one.get("disagree"):
+                print(f"  {one['disagree']}")
         counted = [f"{n} {k}" for k, n in found["counts"].items() if n]
         print(", ".join(counted) or "no specs")
     return 0 if found["passed"] else 1

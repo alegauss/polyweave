@@ -75,6 +75,8 @@ class Spec:
     path: Path | None = None
     #: The committed file this spec holds to its bar, relative to the project (§PW111).
     artefact: str | None = None
+    #: Where the asset stands on screen: a capture and the region it named (§PW112).
+    screen: dict | None = None
 
     def needs_rung(self) -> str:
         """The lowest rung a verdict on this asset may be taken at.
@@ -113,13 +115,26 @@ def read(path: str | Path, root: str | Path = ".") -> Spec:
 
 def parse(declared: dict, path: Path | None = None) -> Spec:
     unknown = sorted(
-        set(declared) - {"asset", "artefact", "rung", "predicate", "search"}
+        set(declared) - {"asset", "artefact", "screen", "rung", "predicate", "search"}
     )
     if unknown:
         raise PolyweaveError(
             "spec.unknown-field",
             f"an acceptance spec has no {', '.join(unknown)}",
-            "it takes asset, artefact, rung, [[predicate]] and [search.<param>]",
+            "it takes asset, artefact, screen, rung, [[predicate]] and "
+            "[search.<param>]",
+        )
+    screen = declared.get("screen")
+    if screen is not None and (
+        not isinstance(screen, dict)
+        or set(screen) != {"capture", "region"}
+        or not all(isinstance(v, str) and v for v in screen.values())
+    ):
+        raise PolyweaveError(
+            "spec.unknown-field",
+            f"screen is {screen!r}, which does not say where the asset stands",
+            'write screen = { capture = "<picture>", region = "<name>" }, the region '
+            "being one the capture script printed",
         )
     rung = declared.get("rung")
     if rung is not None:
@@ -149,6 +164,7 @@ def parse(declared: dict, path: Path | None = None) -> Spec:
         search=_search(declared.get("search") or {}),
         path=path,
         artefact=str(declared["artefact"]) if declared.get("artefact") else None,
+        screen=dict(screen) if screen else None,
     )
 
 
@@ -459,6 +475,10 @@ def verify(root: str | Path = ".", *, under: str | Path | None = None) -> dict:
 
     `passed` is false when any artefact fails, is missing, or its spec is refused, so a
     CI job fails on it; an unanchored spec is said, not failed.
+
+    A spec with a `screen` gets a second answer, on the capture (§PW112), and the spec
+    fails where either does. Where the bake passes and the screen fails, `disagree`
+    says the engine draws it differently, which is the finding the second check is for.
     """
     from . import provenance
     from .config import load as load_config
@@ -474,35 +494,16 @@ def verify(root: str | Path = ".", *, under: str | Path | None = None) -> dict:
         except PolyweaveError as refused:
             results.append({**one, "status": "refused", "refusal": refused.as_dict()})
             continue
-        one.update(asset=spec.asset, artefact=spec.artefact)
-        if not spec.artefact:
-            results.append({**one, "status": "unanchored"})
-            continue
-        picture = here / spec.artefact
-        if not picture.is_file():
-            results.append({**one, "status": "missing"})
-            continue
-        try:
-            made_at = provenance.read(picture, here).get("rung")
-        except PolyweaveError:
-            made_at = None
-        try:
-            checked = check(spec, picture, rung=made_at, root=here)
-        except PolyweaveError as refused:
-            results.append({**one, "status": "refused", "refusal": refused.as_dict()})
-            continue
-        results.append(
-            {
-                **one,
-                "status": "passed" if checked["passed"] else "failed",
-                "rung": made_at,
-                "failed": [
-                    r.get("why") or f"{r['id']}: {r['measure']} is {r['value']:g}"
-                    for r in checked["predicates"]
-                    if not r["passed"]
-                ],
-            }
-        )
+        one.update(asset=spec.asset, artefact=spec.artefact, **_baked(spec, here))
+        if spec.screen:
+            one["screen"] = _attempt(lambda s=spec: check_screen(s, root=here))
+            one["status"] = _worse(one["status"], one["screen"]["status"])
+            if one.get("baked") == "passed" and one["screen"]["status"] == "failed":
+                one["disagree"] = (
+                    f"{spec.asset} passes baked and fails on screen: the engine "
+                    "draws it differently from the bake"
+                )
+        results.append(one)
     counts = {
         status: sum(1 for r in results if r["status"] == status)
         for status in ("passed", "failed", "missing", "refused", "unanchored")
@@ -512,6 +513,95 @@ def verify(root: str | Path = ".", *, under: str | Path | None = None) -> dict:
         "counts": counts,
         "passed": not (counts["failed"] or counts["missing"] or counts["refused"]),
     }
+
+
+#: How bad each answer is, worst last: a spec reads as the worse of its two answers.
+_ORDER = ("unanchored", "passed", "failed", "missing", "refused")
+
+
+def _worse(one: str, other: str) -> str:
+    return max(one, other, key=_ORDER.index)
+
+
+def _failed(checked: dict) -> list[str]:
+    return [
+        r.get("why") or f"{r['id']}: {r['measure']} is {r['value']:g}"
+        for r in checked["predicates"]
+        if not r["passed"]
+    ]
+
+
+def _attempt(checking) -> dict:
+    """One check as a status and what failed, a refusal kept rather than raised."""
+    try:
+        checked = checking()
+    except PolyweaveError as refused:
+        return {"status": "refused", "refusal": refused.as_dict()}
+    return {
+        "status": "passed" if checked["passed"] else "failed",
+        "failed": _failed(checked),
+        **({"box": checked["screen"]["box"]} if "screen" in checked else {}),
+    }
+
+
+def _baked(spec: Spec, here: Path) -> dict:
+    """The spec against its committed artefact, at the rung its record names."""
+    from . import provenance
+
+    if not spec.artefact:
+        return {"status": "unanchored"}
+    picture = here / spec.artefact
+    if not picture.is_file():
+        return {"status": "missing", "baked": "missing"}
+    try:
+        made_at = provenance.read(picture, here).get("rung")
+    except PolyweaveError:
+        made_at = None
+    found = _attempt(lambda: check(spec, picture, rung=made_at, root=here))
+    return {**found, "baked": found["status"], "rung": made_at}
+
+
+def check_screen(spec: Spec, *, root: str | Path = ".") -> dict:
+    """The same spec, held to where the asset stands in a capture (§PW112).
+
+    Once the game loads a mesh, its material is what the player sees and the bake is a
+    reference. The capture's record carries the rectangles its script printed, and the
+    spec's `screen` names one; the predicates are checked on that crop exactly as they
+    are on a bake, so the bar stays one file and moving it moves both checks.
+    """
+    import numpy as np
+
+    from . import provenance
+    from .image import Image, load
+
+    if not spec.screen:
+        raise PolyweaveError(
+            "spec.no-screen",
+            f"{spec.asset} says nothing about where it stands on screen",
+            'add screen = { capture = "<picture>", region = "<name>" } to the spec',
+        )
+    here = Path(root).resolve()
+    picture = here / spec.screen["capture"]
+    named = provenance.read(picture, here).get("regions") or {}
+    box = named.get(spec.screen["region"])
+    if box is None:
+        raise PolyweaveError(
+            "spec.no-screen",
+            f"{spec.screen['capture']} names no region {spec.screen['region']!r}",
+            "have the capture script print `region: "
+            f"{spec.screen['region']}=x0,y0,x1,y1`, or name one of: "
+            + (", ".join(sorted(named)) or "it printed none"),
+        )
+    whole = load(picture)
+    x0, y0, x1, y1 = (int(v) for v in box)
+    crop = Image(
+        path=None,
+        rgba=np.ascontiguousarray(whole.rgba[y0:y1, x0:x1]),
+        had_alpha=whole.had_alpha,
+    )
+    found = check(spec, crop, root=here)
+    found["screen"] = {**spec.screen, "box": [x0, y0, x1, y1]}
+    return found
 
 
 def _scalar(value: Any, p: Predicate) -> float:

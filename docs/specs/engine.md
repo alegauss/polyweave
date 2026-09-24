@@ -203,6 +203,14 @@ reads. The arguments go in a fixed order, so the command is reproducible.
 alongside the route it was drawn by and the script that drew it, so a screenshot that
 differs later is compared against what it was taken under rather than against a memory.
 
+**A script can say where it drew each asset** (§PW112). A line `region: star_dim=412,96,508,192`
+names a rectangle of the picture in pixels, `[x0, y0, x1, y1]`, and the script can print one
+per asset it placed, since it knows where it put each one. The run keeps them as `regions`
+in its answer and in the capture's record. They sit outside the cache key, like the rest of
+`extra`. An acceptance spec's `screen` names a capture and one of those regions. That is how
+the same bar is held to what the player sees as well as to the bake (see
+[acceptance-spec.md](acceptance-spec.md)).
+
 ## Still to come in this block
 
 Baking at the size a unit declaration gives (PW47).

@@ -161,6 +161,16 @@ given a path guessed from its name, which would be one project's layout compiled
 answer's `passed`, and the command's exit status, fail on anything failed, missing or
 refused, so a CI job can stand on it. An unanchored spec does not fail.
 
+**The same bar holds on screen** (§PW112). Once the game loads a mesh, its material is what
+the player sees and the bake is a reference. `screen = { capture = "captures/title.png",
+region = "star" }` names a capture and a rectangle its script printed (see
+[engine.md](engine.md)). `accept.check_screen(spec)` checks the predicates on that crop
+exactly as on a bake. `verify` gives such a spec a second answer, under `screen`, and the
+spec takes the worse of the two. Where the bake passes and the screen fails, `disagree`
+says the engine draws it differently from the bake, which is the finding this is for. A
+region the capture never printed is `spec.no-screen`, and the refusal names the regions it
+did print. The bar stays one file, so moving it moves both checks.
+
 **`rung` is a floor.** It raises the rung a verdict on this asset may be taken at and never
 lowers one the predicates themselves require, and a verdict offered from lower down is
 refused (`spec.rung-too-low`) rather than quietly accepted.

@@ -1155,6 +1155,15 @@ CODES: dict[str, Code] = {
         when="a bound spread over a sub-table or a multi-line inline table",
         doors=("write it as a number or an inline table on one line",),
     ),
+    "spec.no-screen": Code(
+        means="the spec cannot be found on screen",
+        when="a screen check on a spec with no `screen`, or a region the capture's "
+        "record does not carry (§PW112)",
+        doors=(
+            "add screen = { capture, region } to the spec",
+            "have the capture script print `region: <name>=x0,y0,x1,y1`",
+        ),
+    ),
     "spec.bad-colour": Code(
         means="the target is not a colour",
         when="a name or a malformed hex where #RRGGBB was expected",
