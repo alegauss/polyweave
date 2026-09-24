@@ -204,6 +204,17 @@ reads. The arguments go in a fixed order, so the command is reproducible.
 alongside the route it was drawn by and the script that drew it, so a screenshot that
 differs later is compared against what it was taken under rather than against a memory.
 
+**A capture records what the game loaded** (§PW118). After Cottony's stars moved, all four
+of its captures reported the same settings making a different picture, "so something this
+picture depends on is not declared". That was true and no help: four sprites had moved, and
+finding that took a script diffing screenshots. The run now reads each resource the game
+opened off its log, as Godot's `--verbose` spells it (`Loading resource: res://...`) or as
+the script says it (`loaded: res://...`). It hashes the script and every one of those files
+into the record's `inputs`, and names under `unread` any it could not find on disk. The key
+covers input hashes, so a changed sprite makes a `different-work`, and its `moved` names the
+files whose hashes changed since the last record. Only when every input is unchanged does a
+`differs` still blame something undeclared.
+
 **A script can say where it drew each asset** (§PW112). A line `region: star_dim=412,96,508,192`
 names a rectangle of the picture in pixels, `[x0, y0, x1, y1]`, and the script can print one
 per asset it placed, since it knows where it put each one. The run keeps them as `regions`

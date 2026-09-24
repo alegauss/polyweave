@@ -50,34 +50,16 @@ with the new size.
 
 ## Block E — One world with the engine
 
-### §PW118 A capture that knows what the game loaded
-
-After the stars moved, all four of Cottony's captures reported the same settings making
-a different picture, "so something this picture depends on is not declared". It was true
-and it did not help: what moved was four sprites, and finding that took a script diffing
-the old and new screenshots by hand. `capture._record` passes no inputs, not even the
-script, so the record cannot name what changed.
-
-The engine can say what it loaded. A capture run records every resource path the game
-opened, from the verbose load log or a probe on the resource loader, and hashes each
-file into the record's inputs through `source` in `provenance.py`, which already exists
-for renders.
-
-Then a `differs` can name its cause: the inputs whose hashes moved since the record
-beside it, and only when none did does it fall back to blaming something undeclared. A
-changed sprite becomes an explanation, and a truly unexplained difference stays the
-alarm `reproduced` in `provenance.py` meant it to be.
-
 ### §PW119 From a changed file to the artefacts that show it
 
 When the stars changed, which of Cottony's four screenshots would change was a guess, so
 all four were re-taken and diffed to find out. A project with forty captures cannot do
 that, and one that re-takes too few commits a screenshot that no longer shows the game.
 
-Once captures record their inputs (§PW118), every sidecar in the project is an edge from
-an artefact to the files it was made from. A reverse read over them answers the question
-directly: given a changed file, the artefacts whose recorded inputs include it, captures
-and renders alike, with the command each was made by.
+Now that captures record their inputs (docs/specs/engine.md), every sidecar in the
+project is an edge from an artefact to the files it was made from. A reverse read over
+them answers the question directly: given a changed file, the artefacts whose recorded
+inputs include it, captures and renders alike, with the command each was made by.
 
 That is a read over sidecars already on disk, needing no index and no service, and the
 same walk `verify` in `provenance.py` makes. It lets a port say "these three captures

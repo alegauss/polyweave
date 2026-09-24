@@ -13,8 +13,7 @@
 
 ## Block E — One world with the engine
 
-- 📋 **PW118** (deps: —) **a capture that changes blames an undeclared setting when what moved was a file the game loaded** — After the stars moved all four Cottony captures raised the alarm, and finding the cause took a script diffing screenshots, because a capture records no inputs at all. → §PW118
-- 📋 **PW119** (deps: PW118) **nothing answers which captures and renders depend on a file, so a changed sprite means re-taking all of them** — Four captures were re-taken and diffed to learn which showed a star; a project with forty cannot, and one that re-takes too few commits a stale screenshot. → §PW119
+- 📋 **PW119** (deps: PW118 ✅) **nothing answers which captures and renders depend on a file, so a changed sprite means re-taking all of them** — Four captures were re-taken and diffed to learn which showed a star; a project with forty cannot, and one that re-takes too few commits a stale screenshot. → §PW119
 
 ## Block F — Motion
 

@@ -29,7 +29,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "B", title: "Seeing the result cheaply", open: 2 },
   { block: "C", title: "The asset compiler", open: 0 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
-  { block: "E", title: "One world with the engine", open: 2 },
+  { block: "E", title: "One world with the engine", open: 1 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
   { block: "H", title: "Proof on a real game", open: 4 },
@@ -56,18 +56,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW118",
-    block: "E",
-    symptom: "a capture that changes blames an undeclared setting when what moved was a file the game loaded",
-    why: "After the stars moved all four Cottony captures raised the alarm, and finding the cause took a script diffing screenshots, because a capture records no inputs at all.",
-    deps: [],
-  },
-  {
     id: "PW119",
     block: "E",
     symptom: "nothing answers which captures and renders depend on a file, so a changed sprite means re-taking all of them",
     why: "Four captures were re-taken and diffed to learn which showed a star; a project with forty cannot, and one that re-takes too few commits a stale screenshot.",
-    deps: ["PW118"],
+    deps: [],
   },
   {
     id: "PW57",

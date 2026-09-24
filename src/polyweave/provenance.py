@@ -406,7 +406,16 @@ def reproduced(record: dict, root: str | Path = ".") -> dict:
     was = (before.get("artefact") or {}).get("sha256")
     since = before.get("produced_at")
     if cache_key(before) != cache_key(record):
-        return _again("different-work", record, before, "")
+        # A key moves when an input did, and saying which is what turns an alarm into
+        # an explanation (§PW118): four captures changed because four sprites did.
+        moved = inputs_moved(before, record)
+        why = (
+            f"{PurePosixPath(record['artefact']['path']).name}: "
+            f"{_naming(moved)} changed since {since or 'the last record'}"
+            if moved
+            else ""
+        )
+        return {**_again("different-work", record, before, why), "moved": moved}
     if was == now:
         return _again("reproduced", record, before, "")
     return _again(
@@ -417,6 +426,20 @@ def reproduced(record: dict, root: str | Path = ".") -> dict:
         f"produced different bytes — {(was or '?')[:12]} on "
         f"{since or 'an unknown date'}, {(now or '?')[:12]} now; {_boundary(record)}",
     )
+
+
+def inputs_moved(before: dict, now: dict) -> list[str]:
+    """The input paths whose hash differs between two records, or that one lacks."""
+
+    def hashed(record: dict) -> dict[str, str]:
+        return {
+            i["path"]: i.get("sha256", "")
+            for i in record.get("inputs") or ()
+            if i.get("path")
+        }
+
+    was, is_ = hashed(before), hashed(now)
+    return sorted(p for p in set(was) | set(is_) if was.get(p) != is_.get(p))
 
 
 def pinned(record: dict) -> list[str]:

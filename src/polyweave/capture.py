@@ -61,6 +61,38 @@ REGION = re.compile(
 )
 
 
+#: A resource the game opened, as Godot's `--verbose` log spells it or as a script says
+#: it with one `loaded: res://...` line of its own (§PW118).
+LOADED = re.compile(
+    r"^[ \t]*(?:loaded:|Loading resource:)[ \t]*(?P<path>res://\S+?)[ \t]*$",
+    re.MULTILINE,
+)
+
+
+def loaded(output: str) -> list[str]:
+    """Every project resource the run says it opened, once each, in order of path."""
+    return sorted({found.group("path") for found in LOADED.finditer(output or "")})
+
+
+def inputs(script: str | Path, opened: list[str], root: str | Path) -> dict:
+    """The script and every loaded resource, hashed, as a record's inputs.
+
+    A resource outside the project, or one the log names that is not on disk, is said
+    under `unread` rather than dropped silently, since an input the record cannot hash
+    is one a later difference cannot be pinned on.
+    """
+    where = load(root).root
+    found = [provenance.source("script", script, root=where)]
+    unread = []
+    for name in opened:
+        path = where / name.removeprefix("res://")
+        if path.is_file():
+            found.append(provenance.source("loaded", path, root=where))
+        else:
+            unread.append(name)
+    return {"inputs": found, "unread": unread}
+
+
 def regions(output: str) -> dict[str, list[int]]:
     """Every named rectangle a script printed, as `[x0, y0, x1, y1]`."""
     return {
@@ -183,12 +215,24 @@ def run(
 
     log = Path(found["log"]).read_text(encoding="utf-8", errors="replace")
     against = compare(asked, applied(log))
-    answer = {**found, "environment": against, "regions": regions(log)}
+    answer = {
+        **found,
+        "environment": against,
+        "regions": regions(log),
+        "loaded": loaded(log),
+    }
     if not found["ok"] or not against["holds"]:
         return {**answer, "ok": False}
     if record:
+        read = inputs(found["script"], answer["loaded"], root)
+        answer["unread"] = read["unread"]
         made = [
-            _record(one, asked, {**found, "regions": answer["regions"]}, root)
+            _record(
+                one,
+                asked,
+                {**found, "regions": answer["regions"], "inputs": read["inputs"]},
+                root,
+            )
             for one in found["artefacts"]
         ]
         answer["records"] = [str(path) for path, _ in made]
@@ -230,6 +274,7 @@ def _record(
         "capture",
         artefact,
         engine={"route": found.get("route", ""), "about": found.get("about", "")},
+        inputs=found.get("inputs") or (),
         params=dict(asked),
         elapsed_s=found.get("seconds"),
         extra={
