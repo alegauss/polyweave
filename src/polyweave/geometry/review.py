@@ -121,6 +121,11 @@ def _says(node: dict, instance: dict, materials: dict | None = None) -> str:
         what = f"whatever {node.get('fn', 'a project function')} builds"
     elif op == "cells":
         what = _drawing(node)
+    elif op == "mirror":
+        letter = str(node.get("axis", "x")).lower()
+        plane = _number(instance.get("plane", 0))
+        what = f"{takes[0] if takes else 'nothing'} mirrored across {letter} = {plane}"
+        rest = _fields(instance, (*skip, "plane"))
     else:
         what = f"a {op}"
 
@@ -294,6 +299,39 @@ def _strings(value: Any, where: str):
             yield from _strings(one, f"{where}[{index}]")
 
 
+def _overlapping_mirrors(document: dict, resolved: dict, built: dict) -> list[str]:
+    """A mirror whose half already reaches across its plane (§PW96).
+
+    Mirrored, that half lands on itself: the faces there are doubled for nothing, and
+    something already symmetric was mirrored again. Found off the built half's bounds,
+    which is why it is here and not in the free read.
+    """
+    from . import solid as S
+
+    out = []
+    instanced = {node["id"]: node for node in resolved["nodes"]}
+    for node in document["nodes"]:
+        if node["op"] != "mirror" or not refers_to(node):
+            continue
+        half = built.get(refers_to(node)[0])
+        if half is None or not len(half["vertices"]):
+            continue
+        try:
+            along = S.axis(node.get("axis", "x"))
+        except PolyweaveError:
+            continue
+        plane = float(instanced[node["id"]]["instances"][0].get("plane", 0.0))
+        low, high = check_mesh(half)["bounds"]
+        if low[along] < plane - 1e-6 and high[along] > plane + 1e-6:
+            letter = "xyz"[along]
+            out.append(
+                f"{node['id']} mirrors {refers_to(node)[0]}, which already reaches "
+                f"both sides of {letter} = {_number(plane)}, so the two halves overlap "
+                f"there"
+            )
+    return out
+
+
 # -- the one that costs a build --------------------------------------------------------
 
 
@@ -330,6 +368,7 @@ def report(
                 warnings.append(f"{one}: {refused.message}")
         rows.append(row)
 
+    warnings += _overlapping_mirrors(document, resolved, built)
     output = built.get(document["output"])
     bounds = check_mesh(output)["bounds"] if output is not None else None
     return {

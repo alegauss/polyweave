@@ -431,6 +431,44 @@ def union(*subjects: Any) -> dict:
     return mesh(np.vstack(points), faces, uv)
 
 
+#: A mirror's axis, by the letter a document writes or the index it means.
+AXES = {"x": 0, "y": 1, "z": 2}
+
+
+def axis(stated: Any) -> int:
+    """Which axis a mirror reflects along, refusing anything that is not one."""
+    found = AXES.get(str(stated).lower()) if isinstance(stated, str) else stated
+    if found not in (0, 1, 2) or isinstance(found, bool):
+        raise PolyweaveError(
+            "geom.bad-solid",
+            f"a mirror across {stated!r} names no axis",
+            "write axis as x, y or z",
+        )
+    return int(found)
+
+
+def mirror(subject: Any, along: int, plane: float = 0.0) -> dict:
+    """The subject and its reflection across a plane, joined (§PW96).
+
+    The reflection is a scale of -1 on one axis, which `transform` already turns the
+    faces of so they keep pointing out, placed so the plane stays where it is. The
+    halves are joined rather than booleaned, like a `union`, and what each face wears
+    comes with it twice.
+    """
+    flip, at = [1.0, 1.0, 1.0], [0.0, 0.0, 0.0]
+    flip[along], at[along] = -1.0, 2.0 * float(plane)
+    reflected = transform(subject, scale=flip, at=at)
+    joined = union(subject, reflected)
+    worn = subject.get("groups") if isinstance(subject, dict) else None
+    if worn:
+        half = len(subject["faces"])
+        joined["groups"] = [dict(one) for one in worn] + [
+            {**one, "faces": [one["faces"][0] + half, one["faces"][1] + half]}
+            for one in worn
+        ]
+    return joined
+
+
 # -- a drawing given volume -----------------------------------------------------------
 
 

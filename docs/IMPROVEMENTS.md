@@ -388,19 +388,6 @@ written.
 
 ## Block I — Voxel models from a declaration
 
-### §PW96 Mirror
-
-`op = "mirror"` with `of` (a node id), `axis` and `plane` (default 0). On a mesh it
-reflects, flips the winding so normals stay outward, and joins the two halves; on cells
-it reflects the indices, and a centre column that lies on the plane is kept once rather
-than doubled.
-
-It is an op rather than a flag, so the half can still be carved or painted before it is
-mirrored, and something asymmetric (a single antenna, a damage scar) can be added after.
-
-The readback: `ship: hull_half mirrored across x = 0`. A mirror of something already
-symmetric is a review warning, since it doubles the cells or faces for nothing.
-
 ### §PW97 Voxel checks
 
 `post.check("voxels", …)`, run by every voxel build and reported with the readback:

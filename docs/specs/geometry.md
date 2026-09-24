@@ -171,12 +171,24 @@ counts y upward — an outline that came back mirrored is a sprite extruded back
 | `union` | Boolean union of a list of ids |
 | `bevel` | A bevel applied to an existing node |
 | `transform` | Translate, rotate and scale an existing node |
+| `mirror` | An existing node and its reflection across the plane `axis = plane`, joined |
+| `cells` | Cells drawn by hand as text — see "Cells instead of triangles" |
 | `custom` | A project function — see below |
 
 `inflate` is the operation that gives a drawn panel its volume while keeping the drawn
 silhouette to the pixel. `prism` over an `image` outline is the other half of the same idea:
 a star's silhouette becomes a mesh that is not merely similar to the drawn sprite but is the
 drawn sprite, extruded.
+
+**A symmetric shape is declared once** (§PW96). `mirror` takes `of`, an `axis` written as
+the letter `x`, `y` or `z` (never an expression, so it cannot resolve to a parameter
+called `x`) and a `plane` along it, 0 unless stated. The reflection is a scale of −1, whose
+faces `transform` already turns to keep pointing out, joined to the half with what each
+face wears carried to both. Cells take a point where it or its reflection is inside the
+half, so a column on the plane is kept once. It is an op rather than a flag, so the half
+can be carved or painted before it is mirrored and an antenna added after. It reads back
+as `ship: hull_half mirrored across x = 0`, and a half that already reaches both sides of
+its plane is a build warning, since the two halves then overlap for nothing.
 
 **A `crowned` dome shrinks its rings by whichever rule keeps the silhouette** (§PW66) —
 the same question the cap below asks, with the same answer. `offset` moves a corner along

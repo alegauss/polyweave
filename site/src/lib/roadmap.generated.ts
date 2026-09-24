@@ -33,7 +33,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
   { block: "H", title: "Proof on a real game", open: 8 },
-  { block: "I", title: "Voxel models from a declaration", open: 8 },
+  { block: "I", title: "Voxel models from a declaration", open: 7 },
   { block: "J", title: "A bar a person sets once", open: 10 },
 ];
 
@@ -107,13 +107,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "every family port is a hand-written script repeating the same build, search, check, bake and record steps",
     why: "Three Cottony port scripts are one skeleton with different filling, and five more families would be five more copies, each with its own small mistakes.",
     deps: ["PW105", "PW115"],
-  },
-  {
-    id: "PW96",
-    block: "I",
-    symptom: "a symmetric shape must be declared whole, so its two halves can drift apart",
-    why: "Ships and most enemies are mirror-symmetric, and declaring one half halves the work and makes asymmetry impossible by construction.",
-    deps: [],
   },
   {
     id: "PW97",

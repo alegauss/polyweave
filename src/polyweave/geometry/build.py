@@ -184,6 +184,14 @@ def _cells(node, instance, built, root):
     return drawn_mesh(node, float(size))
 
 
+def _mirror(node, instance, built, root):
+    return S.mirror(
+        built[refers_to(node)[0]],
+        S.axis(node.get("axis", "x")),
+        float(instance.get("plane", 0.0)),
+    )
+
+
 #: Every op a declaration may name, and what turns its fields into a mesh. The one list
 #: of op names in the package that decides anything; `review` reads it rather than
 #: keeping a second.
@@ -200,6 +208,7 @@ BUILDS: dict[str, Callable] = {
     "bevel": _bevel,
     "custom": _custom,
     "cells": _cells,
+    "mirror": _mirror,
 }
 
 #: The ops that consume `at` themselves, so the placement below leaves them alone.

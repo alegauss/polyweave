@@ -30,7 +30,6 @@
 
 ## Block I — Voxel models from a declaration
 
-- 📋 **PW96** (deps: —) **a symmetric shape must be declared whole, so its two halves can drift apart** — Ships and most enemies are mirror-symmetric, and declaring one half halves the work and makes asymmetry impossible by construction. → §PW96
 - 📋 **PW97** (deps: PW93 ✅) **a voxel model with floating cells, one-cell threads or too many cells builds without complaint** — Each reads badly on screen or costs a game frames, and all of them are countable from the cells before anything renders. → §PW97
 - 📋 **PW98** (deps: PW93 ✅, PW94 ✅) **fitting a voxel model to a concept drawing or a fetched mesh is guessing numbers by hand** — The search already tunes declared parameters against a measure, and a voxel silhouette is measurable in microseconds without a render. → §PW98
 - 📋 **PW99** (deps: PW93 ✅) **a game breaking a voxel model must work out its fragments and damage order itself at runtime** — Grouping cells into fragments and ordering them for erosion is geometry the build already holds, and precomputing it keeps the kill frame cheap. → §PW99

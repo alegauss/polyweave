@@ -52,8 +52,8 @@ REFERS = ("into", "cutter", "of", "inputs", "operands", "on")
 
 #: Fields that are the node's own bookkeeping and never an expression to evaluate.
 #: A `cells` node's rows are text a person drew (§PW95), and a row reading `a` must not
-#: become the parameter called `a`.
-KEEPS = ("id", "op", "material", "repeat", "fn", "layers", "legend")
+#: become the parameter called `a`; a mirror's `axis` is a letter for the same reason.
+KEEPS = ("id", "op", "material", "repeat", "fn", "layers", "legend", "axis")
 
 
 def read(path: str | Path, *, root: str | Path = ".") -> dict:

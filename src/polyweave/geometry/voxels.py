@@ -174,6 +174,13 @@ class _Model:
         if op == "cells":
             size = self.size_of(node, instance)
             return np.zeros(3), np.asarray(lattice(node)["size"], dtype=float) * size
+        if op == "mirror":
+            low, high = self.bounds(refers_to(node)[0])
+            along, plane = _mirrored(node, instance)
+            flipped_low, flipped_high = low.copy(), high.copy()
+            flipped_low[along] = 2 * plane - high[along]
+            flipped_high[along] = 2 * plane - low[along]
+            return np.minimum(low, flipped_low), np.maximum(high, flipped_high)
         points = np.asarray(self._traced(node, instance)["vertices"], dtype=float)
         return points.min(axis=0), points.max(axis=0)
 
@@ -219,6 +226,14 @@ class _Model:
             return self.inside(refers_to(node)[0], points)
         if op == "cells":
             return self._drawn(node, instance, points)
+        if op == "mirror":
+            # A point is in the mirror where it or its reflection is in the half, so a
+            # column on the plane is one set of cells and never counted twice.
+            source = refers_to(node)[0]
+            along, plane = _mirrored(node, instance)
+            reflected = points.copy()
+            reflected[:, along] = 2 * plane - reflected[:, along]
+            return _merge(self.inside(source, points), self.inside(source, reflected))
         return _Found.of(_parity(self._traced(node, instance), points), rank)
 
     def _drawn(self, node: dict, instance: dict, points: np.ndarray) -> _Found:
@@ -296,6 +311,11 @@ def _primitive(instance: dict, points: np.ndarray) -> np.ndarray:
         f"there is no primitive called {kind!r}",
         "name one of cube, plane, cylinder, sphere",
     )
+
+
+def _mirrored(node: dict, instance: dict) -> tuple[int, float]:
+    """A mirror's axis and where its plane sits along it."""
+    return S.axis(node.get("axis", "x")), float(instance.get("plane", 0.0))
 
 
 def _forward(points: np.ndarray, instance: dict) -> np.ndarray:
