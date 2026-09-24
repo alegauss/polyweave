@@ -19,10 +19,11 @@ import base64
 import math
 from collections.abc import Iterable, Sequence
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any
 
 import numpy as np
 
+from .describe import Param, operation
 from .errors import PolyweaveError
 from .image import Image, load
 
@@ -736,6 +737,7 @@ def resolve(name: str) -> str:
     )
 
 
+@operation("measure.available")
 def available() -> dict:
     """What can be measured now, and what is declared and still ahead of its code."""
     return {"computed": sorted(COMPUTES), "pending": dict(sorted(PENDING.items()))}
@@ -798,17 +800,27 @@ def noise_floor(
     return float(summarise(taken)["distance"])
 
 
+PICTURE = Param("a picture, as a path under the project")
+REGION = Param("where to measure: frame, subject, a rectangle, or a mask file")
+FLOOR = Param("the alpha below which a pixel is background; the project's if unset")
+
+
+@operation("measure.same")
 def same(
-    subject: Any,
-    against: Any,
+    subject: Annotated[Any, PICTURE],
+    against: Annotated[Any, Param("the other picture, as a path under the project")],
     *,
-    tolerance: float | None = None,
-    delta: float | None = None,
-    region: Any = None,
-    alpha_floor: float | None = None,
-    twin: Any = None,
-    rung: str | None = None,
-    root: str | Path = ".",
+    tolerance: Annotated[
+        float, Param("the distance still called the same; measured or the rung's")
+    ] = None,
+    delta: Annotated[float, Param("the colour difference a pixel may move by")] = None,
+    region: Annotated[Any, REGION] = None,
+    alpha_floor: Annotated[float, FLOOR] = None,
+    twin: Annotated[
+        Any, Param("a second render of the unchanged scene, to measure the floor")
+    ] = None,
+    rung: Annotated[str, Param("the rung both were rendered at")] = None,
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
 ) -> dict:
     """Whether two renders are the same picture, with a tolerance rather than equality.
 
@@ -890,6 +902,52 @@ def _rung_of(subject: Any, root: str | Path) -> str | None:
         return read_record(subject, root=root).get("rung")
     except PolyweaveError:
         return None
+
+
+@operation("measure.take")
+def taken(
+    subject: Annotated[str, PICTURE],
+    measures: Annotated[list, Param("the measures to take, by name")] = DEFAULT,
+    *,
+    region: Annotated[Any, REGION] = None,
+    alpha_floor: Annotated[float, FLOOR] = None,
+    rung: Annotated[str, Param("the rung the picture was made at, if known")] = None,
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
+    target: Annotated[str, Param("the colour delta_e is measured to")] = None,
+    against: Annotated[
+        str, Param("the picture a silhouette or distance compares with")
+    ] = None,
+    display: Annotated[list, Param("the size luma_bands counts at")] = None,
+    delta: Annotated[float, Param("the difference changed_fraction counts")] = None,
+) -> list[dict]:
+    """Take measurements of a picture, each with the region and rung it was taken at.
+
+    `measure` is the same with any argument a measure takes; this names the four the
+    vocabulary has, so a caller reaching it by name can be told what they are.
+    """
+    extra = {
+        name: value
+        for name, value in (
+            ("target", target),
+            ("against", against),
+            ("display", display),
+            ("delta", delta),
+        )
+        if value is not None
+    }
+    here = Path(root)
+    picture = Path(subject) if Path(subject).is_absolute() else here / subject
+    if isinstance(extra.get("against"), str):
+        extra["against"] = str(here / extra["against"])
+    return measure(
+        picture,
+        list(measures),
+        region=region,
+        alpha_floor=alpha_floor,
+        rung=rung,
+        root=root,
+        **extra,
+    )
 
 
 def summarise(measurements: Iterable[dict]) -> dict:

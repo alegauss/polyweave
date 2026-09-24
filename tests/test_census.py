@@ -7,7 +7,7 @@ from polyweave.capabilities import capabilities
 
 #: How much surface is still unregistered. Registering a module lowers it, and this
 #: number is lowered with it: it may only fall, never rise.
-PENDING = 163
+PENDING = 147
 
 
 def test_every_public_function_is_classified():
@@ -139,6 +139,25 @@ def test_a_ledger_run_is_driven_by_name_with_the_run_as_json(tmp_path):
         call("loop.finish", run=run, root=root)
     assert "faster" in call("loop.compare", asset="star", root=root)["verdict"]
     assert call("loop.assets", root=root) == ["star"]
+
+
+def test_a_measure_is_taken_by_name_with_its_arguments_declared(tmp_path):
+    from PIL import Image
+
+    Image.new("RGBA", (8, 8), (230, 40, 40, 255)).save(tmp_path / "board.png")
+    args = describe.validate(
+        "measure.take",
+        {
+            "subject": "board.png",
+            "measures": ["delta_e"],
+            "target": "#E62828",
+            "root": str(tmp_path),
+        },
+    )
+    (one,) = describe._REGISTRY["measure.take"].fn(**args)
+    assert one["measure"] == "delta_e" and one["value"] < 1.0
+    names = {p["name"] for p in describe.describe("measure.take")["parameters"]}
+    assert {"target", "against", "display", "delta"} <= names
 
 
 def test_a_fresh_read_of_the_operations_loads_them():

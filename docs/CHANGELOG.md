@@ -165,6 +165,7 @@
 - ✅ **PW152** **a family's port and a search's trace are reached only from Python, since describe lists neither** — port.run ports a family by its file path and trace.read reads a sweep's trace back, both by name; pending falls to 193 (design recorded in `docs/specs/tool-surface.md`).
 - ✅ **PW153** **an artefact's record, and what depends on a file, are read only from Python, since describe lists no provenance** — provenance.read, verify, unrecorded, dependents and outdated are operations describe returns; pending falls to 174 (design recorded in `docs/specs/tool-surface.md`).
 - ✅ **PW154** **a render's plan and an asset's scale are checked only from Python, since describe lists neither** — render.plan and units.check, engine_scale and read_number are operations describe returns; pending falls to 163 (design recorded in `docs/specs/tool-surface.md`).
+- ✅ **PW155** **a picture is measured only from Python, since describe does not list the measurement vocabulary** — measure.take, same and available are operations, take naming the four arguments a measure takes; pending falls to 147 (design recorded in `docs/specs/tool-surface.md`).
 
 ## Block L — What a run leaves as evidence
 

@@ -55,6 +55,7 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.trace": ("internal", "search.sweep writes it, trace.read reads it"),
     "polyweave.provenance": ("internal", "what producers use to write a record"),
     "polyweave.units": ("internal", "a rectangle's arithmetic, inside units.check"),
+    "polyweave.measure": ("internal", "the arithmetic under measure.take and .same"),
     # -- internal: helpers an operation calls, never a caller's first call ----------
     "polyweave.cache": ("internal", "the render cache, reached through bake's cached"),
     "polyweave.census": ("internal", "this census's own walk"),
@@ -99,7 +100,6 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.geometry.tuning": ("pending", "a declaration's parameters searched"),
     "polyweave.geometry.voxels": ("pending", "a voxel model built and checked"),
     "polyweave.godot": ("pending", "installing the Godot side"),
-    "polyweave.measure": ("pending", "the measurement vocabulary"),
     "polyweave.normalise": ("pending", "a mesh brought to the conventions"),
     "polyweave.offscreen": ("pending", "the routes a capture can draw by"),
     "polyweave.purchase": ("pending", "the ledger of what was bought"),
