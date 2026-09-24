@@ -406,6 +406,28 @@ where a node needs it: a voxel build writes its cubes' mesh when Blender is ther
 leaves it out when not. A declaration saved with a byte-order mark, as Windows PowerShell
 5.1 writes one, reads like any other.
 
+**A family of models is one document** (§PW103). Enemy tiers and boss phases are one
+shape at other proportions or colours, and copies of a document drift apart. So a document
+declares its variants beside itself:
+
+```toml
+[variants.scout]
+span = 2                          # a parameter from [params]
+
+[variants.boss]
+span = 8
+
+[variants.boss.materials.hull]    # keys merged into a material from [materials]
+colour = "#C03030"
+glow = 1.5
+```
+
+`geometry.variant(document, "boss")` is the member: the document with those overrides,
+named `ship_boss`. A variant naming a parameter or a material the document does not declare
+is refused (`geom.unknown-name`), because a misspelled override would build the base shape
+and call it the variant. `python -m polyweave build` writes the document and every variant,
+one output each under the member's name, and reads them back side by side.
+
 **A build ends in a file, and that is a decision** (§PW69). `bake` takes its model as a
 path, and the cache key and the provenance record key off a file and its hash already — a
 mesh in memory has no sha256 until something defines a canonical serialisation for it,

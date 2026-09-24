@@ -45,6 +45,8 @@ __all__ = [
     "parse",
     "read",
     "rebuilds",
+    "variant",
+    "variants",
 ]
 
 #: Fields on a node that name other nodes rather than carrying a value.
@@ -149,7 +151,57 @@ def parse(stated: dict, *, named: str = "a declaration") -> dict:
     # How far a fit may move each parameter (§PW98), where the document says so itself.
     if stated.get("search"):
         document["search"] = {k: dict(v) for k, v in stated["search"].items()}
+    # One shape at other proportions or colours (§PW103), kept in the one document.
+    if stated.get("variants"):
+        document["variants"] = {k: dict(v) for k, v in stated["variants"].items()}
     return document
+
+
+def variants(document: dict) -> list[str]:
+    """The names of a document's variants, in a stable order."""
+    return sorted(document.get("variants") or {})
+
+
+def variant(document: dict, name: str) -> dict:
+    """One member of a family: the document with a variant's overrides applied (§PW103).
+
+    A variant names parameters the document declares and, under `materials`, tables
+    that change a declared material's keys; it is named `<document>_<variant>` so its
+    outputs sit beside the others'. Anything it names that the document does not have
+    is refused, because a misspelled override would build the base shape and call it
+    the variant.
+    """
+    table = dict((document.get("variants") or {}).get(name) or {})
+    if not table and name not in (document.get("variants") or {}):
+        raise PolyweaveError(
+            "geom.unknown-name",
+            f"{document['name']} has no variant called {name!r}",
+            f"name one of {', '.join(variants(document)) or 'none: it declares none'}",
+        )
+    painted = dict(table.pop("materials", None) or {})
+    unknown = sorted(set(table) - set(document["params"]))
+    unknown += sorted(
+        f"materials.{one}" for one in set(painted) - set(document["materials"])
+    )
+    if unknown:
+        raise PolyweaveError(
+            "geom.unknown-name",
+            f"variant {name!r} of {document['name']} sets {', '.join(unknown)}, which "
+            f"the document does not declare",
+            "override a parameter from [params] or a material from [materials]; a "
+            "variant only changes what the shape already has",
+        )
+    materials = {
+        key: {**dict(value), **dict(painted.get(key) or {})}
+        for key, value in document["materials"].items()
+    }
+    member = {
+        **{k: v for k, v in document.items() if k != "variants"},
+        "name": f"{document['name']}_{name}",
+        "params": {**document["params"], **table},
+        "materials": materials,
+    }
+    return member
 
 
 def refers_to(node: dict) -> list[str]:

@@ -94,7 +94,6 @@ def build_one(
 ) -> dict:
     """Build one declaration and say what came out; a refusal is an answer too."""
     from . import geometry as G
-    from .geometry import review
 
     here = Path(root).resolve()
     where = Path(source)
@@ -115,41 +114,16 @@ def build_one(
             ):
                 return {**answer, "status": "cached", "outputs": kept["outputs"]}
 
-        said = review.describe(document, **given)
-        answer["reads"] = said["reads"]
-        answer["warnings"] = list(said["warnings"])
-        mesh = folder / f"{document['name']}.glb"
-        if document.get("voxels"):
-            from .geometry import voxels
-
-            written = voxels.write(
-                document, mesh, root=here, mesh=_has_blender(), sheet=preview, **given
-            )
-            answer["says"] = written["says"]
-            answer["findings"] = [
-                f"{one['check']}: {one['says']}"
-                for one in written["model"]["checks"]["findings"]
-            ]
-            answer["outputs"] = [
-                written[key]
-                for key in ("artefact", "voxels", "sheet")
-                if written.get(key)
-            ]
-        else:
-            from .geometry.build import write
-
-            written = write(document, mesh, root=here, **given)
-            answer["warnings"] += [
-                one
-                for one in written["report"]["warnings"]
-                if one not in answer["warnings"]
-            ]
-            answer["says"] = f"a mesh of {len(written['output']['faces'])} faces"
-            answer["outputs"] = [written["artefact"]]
-            if preview:
-                answer["outputs"].append(
-                    _silhouette(written["output"], folder, document)
-                )
+        # The document and each of its variants (§PW103), one output apiece, named after
+        # the member; a document with none is a family of one.
+        members = [document] + [
+            G.variant(document, one) for one in G.variants(document)
+        ]
+        built = [_member(one, folder, here, given, preview) for one in members]
+        answer.update({k: v for k, v in built[0].items() if k != "name"})
+        if len(built) > 1:
+            answer["members"] = built
+            answer["outputs"] = [path for one in built for path in one["outputs"]]
         mark.write_text(
             json.dumps({"stamp": made_from, "outputs": answer["outputs"]}, indent=1)
             + "\n",
@@ -158,6 +132,47 @@ def build_one(
     except PolyweaveError as refused:
         answer["status"] = "refused"
         answer["refusal"] = refused.as_dict()
+    return answer
+
+
+def _member(
+    document: dict, folder: Path, here: Path, given: dict, preview: bool
+) -> dict:
+    """One member of a family built and written, and what it said."""
+    from .geometry import review
+
+    said = review.describe(document, **given)
+    answer: dict = {
+        "name": document["name"],
+        "reads": said["reads"],
+        "warnings": list(said["warnings"]),
+    }
+    mesh = folder / f"{document['name']}.glb"
+    if document.get("voxels"):
+        from .geometry import voxels
+
+        written = voxels.write(
+            document, mesh, root=here, mesh=_has_blender(), sheet=preview, **given
+        )
+        answer["says"] = written["says"]
+        answer["findings"] = [
+            f"{one['check']}: {one['says']}"
+            for one in written["model"]["checks"]["findings"]
+        ]
+        answer["outputs"] = [
+            written[key] for key in ("artefact", "voxels", "sheet") if written.get(key)
+        ]
+        return answer
+    from .geometry.build import write
+
+    written = write(document, mesh, root=here, **given)
+    answer["warnings"] += [
+        one for one in written["report"]["warnings"] if one not in answer["warnings"]
+    ]
+    answer["says"] = f"a mesh of {len(written['output']['faces'])} faces"
+    answer["outputs"] = [written["artefact"]]
+    if preview:
+        answer["outputs"].append(_silhouette(written["output"], folder, document))
     return answer
 
 
@@ -200,12 +215,16 @@ def _printed(answer: dict) -> list[str]:
         if refusal.get("remedy"):
             lines.append(f"  do: {refusal['remedy']}")
         return lines
-    lines += [f"  {one}" for one in answer.get("reads", ())]
-    if answer.get("says"):
-        lines.append(f"  = {answer['says']}")
-    lines += [f"  warning: {one}" for one in answer.get("warnings", ())]
-    lines += [f"  finding: {one}" for one in answer.get("findings", ())]
-    lines += [f"  wrote {one}" for one in answer.get("outputs", ())]
+    for member in answer.get("members") or [answer]:
+        if answer.get("members"):
+            lines.append(f"  {member['name']}:")
+        indent = "    " if answer.get("members") else "  "
+        lines += [f"{indent}{one}" for one in member.get("reads", ())]
+        if member.get("says"):
+            lines.append(f"{indent}= {member['says']}")
+        lines += [f"{indent}warning: {one}" for one in member.get("warnings", ())]
+        lines += [f"{indent}finding: {one}" for one in member.get("findings", ())]
+        lines += [f"{indent}wrote {one}" for one in member.get("outputs", ())]
     return lines
 
 

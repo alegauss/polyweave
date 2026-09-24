@@ -30,8 +30,6 @@
 
 ## Block I — Voxel models from a declaration
 
-- 🛠 **PW103** (deps: —) **a family of models that differ in a few numbers is one document copied per member** — Enemy tiers and boss phases are one shape at other proportions or colours, and copies drift apart. → §PW103
-
 ## Block J — A bar a person sets once
 
 - 📋 **PW104** (deps: —) **a search stops at the first sample inside every bound, however close to one of them it sits** — The stars passed with a facet 0.0005 under its ceiling and the search called that nothing left to gain, so a rig one release from failing ships as settled. → §PW104

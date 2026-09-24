@@ -388,14 +388,6 @@ written.
 
 ## Block I — Voxel models from a declaration
 
-### §PW103 Variants
-
-`[variants.<name>]` tables of parameter overrides in one document; the build writes one
-output per variant, named after it, and the readback lists them side by side.
-
-An idea until a consumer has three members of one family. `--set` covers one-off
-overrides already.
-
 ## Block J — A bar a person sets once
 
 ### §PW104 Passing is not the same as passing comfortably
