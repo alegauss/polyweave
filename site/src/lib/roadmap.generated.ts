@@ -34,7 +34,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "G", title: "Geometry as a declaration", open: 0 },
   { block: "H", title: "Proof on a real game", open: 8 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
-  { block: "J", title: "A bar a person sets once", open: 10 },
+  { block: "J", title: "A bar a person sets once", open: 9 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -107,13 +107,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "every family port is a hand-written script repeating the same build, search, check, bake and record steps",
     why: "Three Cottony port scripts are one skeleton with different filling, and five more families would be five more copies, each with its own small mistakes.",
     deps: ["PW105", "PW115"],
-  },
-  {
-    id: "PW104",
-    block: "J",
-    symptom: "a search stops at the first sample inside every bound, however close to one of them it sits",
-    why: "The stars passed with a facet 0.0005 under its ceiling and the search called that nothing left to gain, so a rig one release from failing ships as settled.",
-    deps: [],
   },
   {
     id: "PW105",

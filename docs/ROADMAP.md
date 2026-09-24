@@ -32,7 +32,6 @@
 
 ## Block J — A bar a person sets once
 
-- 📋 **PW104** (deps: —) **a search stops at the first sample inside every bound, however close to one of them it sits** — The stars passed with a facet 0.0005 under its ceiling and the search called that nothing left to gain, so a rig one release from failing ships as settled. → §PW104
 - 📋 **PW105** (deps: —) **a rig can only be searched against one spec, so a family is fitted on one member and hoped for on the rest** — When no rig holds on every member the search cannot say which two predicates conflict, and that conflict is the question a person has to answer. → §PW105
 - 📋 **PW106** (deps: —) **a spec bound does not say whether it was measured, guessed as a margin or agreed by a person** — The dim star's 0.37 was a margin nobody asked for and it blocked a port for a day, because a miss on a guess reads exactly like a miss on a look. → §PW106
 - 📋 **PW107** (deps: PW106) **a margin around a measured value is chosen by eye, never derived from how much the measure moves on its own** — A tail moves more than a median under the same harmless change, so one margin rule is too loose on one predicate and refuses an accepted look on the next. → §PW107

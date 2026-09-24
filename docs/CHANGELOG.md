@@ -135,3 +135,4 @@
 
 ## Block J — A bar a person sets once
 
+- ✅ **PW104** **a search stops at the first sample inside every bound, however close to one of them it sits** — A check reports each bound's headroom and the tightest, and a search keeps looking past the first pass while a pass still raises the headroom (design recorded in `docs/specs/acceptance-spec.md`).

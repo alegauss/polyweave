@@ -242,6 +242,26 @@ def margin(value: float, low: float | None, high: float | None) -> float:
     return round(float(max(0.0, min(1.0, min(scores)))), 6)
 
 
+def headroom(value: float, low: float | None, high: float | None) -> float | None:
+    """How far inside its bound a value sits, as a share of the room it had (§PW104).
+
+    `margin` is 1.0 anywhere inside, which is right for the verdict and says nothing
+    about how close a pass came: the stars' gold facet passed at 0.4695 under 0.47.
+    This is the distance to the nearer bound, as a share of the band where there are
+    two and of the bound itself where there is one. Below zero is outside. None where
+    nothing bounds the value.
+    """
+    shares = []
+    if low is not None and high is not None and high > low:
+        shares.append(min(value - low, high - value) / (high - low))
+    else:
+        if low is not None:
+            shares.append((value - low) / (abs(low) or 1.0))
+        if high is not None:
+            shares.append((high - value) / (abs(high) or 1.0))
+    return round(float(min(shares)), 6) if shares else None
+
+
 def check(
     spec: Spec,
     subject: Any,
@@ -299,10 +319,13 @@ def check(
                 "weight": p.weight,
                 "passed": _passes(scalar, p),
                 "margin": margin(scalar, p.minimum, p.maximum),
+                "headroom": headroom(scalar, p.minimum, p.maximum),
             }
         )
 
     total = sum(r["weight"] for r in results) or 1.0
+    bounded = [r for r in results if r["headroom"] is not None]
+    tightest = min(bounded, key=lambda r: r["headroom"]) if bounded else None
     return {
         "asset": spec.asset,
         "rung": rung,
@@ -311,6 +334,9 @@ def check(
         "score": round(sum(r["margin"] * r["weight"] for r in results) / total, 6),
         "predicates": results,
         "failed": [r["id"] for r in results if not r["passed"]],
+        # The smallest room any bound left, and whose it was (§PW104).
+        "headroom": tightest["headroom"] if tightest else None,
+        "tightest": tightest["id"] if tightest else None,
     }
 
 

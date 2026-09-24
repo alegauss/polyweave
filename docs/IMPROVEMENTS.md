@@ -390,25 +390,6 @@ written.
 
 ## Block J — A bar a person sets once
 
-### §PW104 Passing is not the same as passing comfortably
-
-The stars passed with the gold's brightest facet at 0.4695 against a ceiling of 0.47,
-and the search reported "the spec passed with nothing left to gain". It had a great deal
-left: `accept.py` scores a predicate 1.0 anywhere inside its bound, so the first sample
-inside every bound wins, and `search.py` stops on the pass that finds it. A rig 0.0005
-from a ceiling is one Blender release, one sample count or one hue away from failing,
-and nothing said so.
-
-Keep the verdict as it is: passed is passed, and a margin of 1.0 still means inside. Add
-a second number beside it, **headroom**: for each bounded predicate, the distance to the
-nearer bound as a share of the band, or of the bound itself where there is one side. The
-sample's headroom is the smallest of those.
-
-Once a pass has found a passing sample, the search keeps going while budget remains and
-ranks passing samples by headroom, stopping when a whole pass fails to raise it. The
-answer carries the headroom and names the predicate that set it, so the tightest bound
-is visible without reading the trace.
-
 ### §PW105 One rig for the whole family, or the conflict that prevents it
 
 `search()` takes one spec and one evaluator, so Cottony's stars were fitted on the 96 px

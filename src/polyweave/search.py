@@ -206,6 +206,7 @@ def search(
     trace: list[dict] = []
     seen: dict[tuple, dict] = {}
     best: dict | None = None
+    roomiest: float | None = None
     spent = 0
     stopped = "the budget ran out"
 
@@ -244,6 +245,7 @@ def search(
                 "params": values,
                 "score": float(found.get("score", 0.0)),
                 "passed": bool(found.get("passed", False)),
+                "headroom": found.get("headroom"),
                 "result": found,
             }
             seen[key] = sample
@@ -262,12 +264,21 @@ def search(
                     "render": found.get("render", {}),
                 }
             )
-            if best is None or sample["score"] > best["score"]:
+            if best is None or _ranked(sample) > _ranked(best):
                 best = sample
 
         if best is not None and best["passed"] and best["score"] >= 1.0:
-            stopped = "the spec passed with nothing left to gain"
-            break
+            # Passing is not the same as passing comfortably (§PW104). Where the
+            # evaluator measures headroom the search keeps going while a pass still
+            # raises it; where it does not, a pass is all there is to find.
+            room = best.get("headroom")
+            if room is None:
+                stopped = "the spec passed with nothing left to gain"
+                break
+            if roomiest is not None and room <= roomiest + 1e-9:
+                stopped = "the spec passed, and a further pass found no more headroom"
+                break
+            roomiest = room
         if spent >= budget:
             break
         windows = _close_around(best, windows, steps, per_axis)
@@ -296,8 +307,18 @@ def search(
         "best": best["params"],
         "predicates": best["result"].get("predicates", []),
         "failed": best["result"].get("failed", []),
+        # How far inside its tightest bound the answer sits, and which bound that is.
+        "headroom": best["result"].get("headroom"),
+        "tightest": best["result"].get("tightest"),
         "trace": trace,
     }
+
+
+def _ranked(sample: dict) -> tuple[float, float]:
+    """Score first; among samples that pass, the one with more room wins (§PW104)."""
+    room = sample.get("headroom")
+    passing = sample["passed"] and room is not None
+    return (sample["score"], float(room) if passing else float("-inf"))
 
 
 def _close_around(best, windows, steps, per_axis) -> dict:

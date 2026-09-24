@@ -77,6 +77,16 @@ how close it came: against a `min` it is `value / min` below the bound and 1 at 
 and against a `max` it is `max / value` above the bound and 1 at or below it. A predicate
 carrying both takes the worse of the two.
 
+**A pass also says how comfortably** (§PW104). The margin is 1 anywhere inside a bound, so
+Cottony's stars passed with a facet at 0.4695 under a ceiling of 0.47 and the search called
+that nothing left to gain. Each predicate now also carries its `headroom`: the distance to
+the nearer bound as a share of the band where there are two, or of the bound itself where
+there is one, below zero outside and absent where nothing bounds it. A check reports the
+smallest as `headroom` and names its predicate as `tightest`. The verdict is untouched —
+passed is still passed. A search whose evaluator measures headroom ranks passing samples by
+it and keeps going while a pass still raises it, stopping when one does not; one that does
+not measure it stops at the first pass, as before.
+
 **`rung` is a floor.** It raises the rung a verdict on this asset may be taken at and never
 lowers one the predicates themselves require, and a verdict offered from lower down is
 refused (`spec.rung-too-low`) rather than quietly accepted.
