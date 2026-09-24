@@ -118,7 +118,8 @@ states its own pixels per unit. A **check** compares them, and a disagreement is
 sprite that cannot sit on the grid whatever else is right.
 
 **The engine's number is read from where the engine keeps it.** `[units] source` is
-`path/to/file.gd:NAME`, read out of a GDScript constant, a JSON key or an ini-shaped one.
+`path/to/file.gd:NAME`, read out of a GDScript, TypeScript or Rust constant, a typed
+C-family one (`const int CELL = 112`, §PW117), a JSON key or an ini-shaped one.
 Stating the number in `polyweave.toml` instead (`[units] pixels_per_unit`) is the weaker
 half of the same idea, because a copy that can drift is the coincidence this exists to
 remove. Where the constant is renamed or moved, that is `units.unreadable` — the check

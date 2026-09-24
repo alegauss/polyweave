@@ -50,9 +50,11 @@ downscale, is about the render and needs all of it.
 An acceptance spec's own `rung` is a **floor**, not a choice: it raises the rung a verdict on
 that asset may be taken at, and never lowers one the measures require.
 
-A measure outside [measurements.md](measurements.md) is refused as `spec.unknown-measure`,
-and a question needing a rung the project disabled is refused as `render.rung-disabled` —
-both rather than quietly answering from somewhere else.
+A measure outside [measurements.md](measurements.md) is refused as `spec.unknown-measure`.
+A question whose rung the project disabled is answered at the cheapest **higher** rung it
+enables. That rung carries everything below it, and `why` names the rung that was skipped
+(§PW117). It is never answered from a lower rung, and never quietly. Where no enabled rung
+at or above it exists, it is refused as `render.rung-disabled`.
 
 ## Planning costs nothing
 

@@ -33,9 +33,13 @@ from .config import load
 from .errors import PolyweaveError
 
 #: How a number is spelled where a game keeps one. Tried in order, and the first that
-#: matches wins: a GDScript constant, a key in a JSON file, a key in an ini-shaped one.
+#: matches wins: a GDScript, TypeScript or Rust constant, a typed C-family one
+#: (`const int CELL = 112`, `static readonly float PPU = 48f`, §PW117), a key in a JSON
+#: file, a key in an ini-shaped one.
 READS = (
     r"(?:const|var)\s+{name}\s*(?::\s*[\w\[\], ]+?)?\s*:?=\s*(-?\d+(?:\.\d+)?)",
+    r"\b(?:const|static|final|readonly|constexpr)\b[^=;\n]*?\b{name}\s*=\s*"
+    r"(-?\d+(?:\.\d+)?)",
     r"[\"']{name}[\"']\s*:\s*(-?\d+(?:\.\d+)?)",
     r"^[ \t]*{name}\s*=\s*(-?\d+(?:\.\d+)?)",
 )

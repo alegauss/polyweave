@@ -20,7 +20,15 @@ from .. import measure, post, provenance, units
 from ..config import load
 from ..describe import Param, operation
 from ..errors import PolyweaveError
-from .ladder import CARRIES, RUNGS, check_rung, enabled, lowest_rung, rung_for
+from .ladder import (
+    CARRIES,
+    RUNGS,
+    check_rung,
+    enabled,
+    lowest_enabled,
+    lowest_rung,
+    rung_for,
+)
 from .rig import WATTS, Rig, as_params
 
 #: How much of the real mesh a preview keeps. Enough face count for a silhouette, far
@@ -59,11 +67,16 @@ def plan(
         chosen = check_rung(rung)
         why = "named by the caller"
     elif asking:
-        chosen = lowest_rung(asking, floor)
+        needed = lowest_rung(asking, floor)
+        chosen = lowest_enabled(needed, offered) or needed
         why = f"the lowest rung that carries {', '.join(sorted(set(asking)))}"
+        if chosen != needed:
+            why += f", {needed} being one this project does not enable"
+    elif floor:
+        chosen = lowest_enabled(floor, offered) or check_rung(floor)
+        why = "the asset's own floor"
     else:
-        chosen = check_rung(floor) if floor else offered[0]
-        why = "the asset's own floor" if floor else "the cheapest rung enabled"
+        chosen, why = offered[0], "the cheapest rung enabled"
 
     if chosen not in offered:
         raise PolyweaveError(

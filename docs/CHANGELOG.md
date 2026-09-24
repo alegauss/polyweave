@@ -120,6 +120,7 @@
 - ✅ **PW114** **the loop ledger only times a first port, where the old rig is a three-second re-bake of constants already found** — A run can name a change to a ported asset, record a person's minutes, and be compared on that change alone, the baseline rule held per change (design recorded in `docs/specs/adoption.md`).
 - ✅ **PW115** **a run's render count is whatever its caller adds up, so a cache hit can be charged as a render** — Inside loop.recording, every bake counts itself into the run as a render or a cache hit, so no caller's arithmetic reaches the ledger (design recorded in `docs/specs/adoption.md`).
 - ✅ **PW116** **a ledger side that never measured the hand work still yields a conclusive verdict** — A run names what it never measured, and compare lists it and calls a side with untimed seconds inconclusive instead of not reduced (design recorded in `docs/specs/adoption.md`).
+- ✅ **PW117** **every symptom in the backlog was measured on one game, so the config boundary is tested by a single adopter** — A web-page adopter needed no new key but found two Cottony shapes compiled in: all three rungs assumed, and scales read only from GDScript (design recorded in `docs/specs/adoption.md`).
 
 ## Block I — Voxel models from a declaration
 

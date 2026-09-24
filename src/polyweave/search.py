@@ -492,7 +492,7 @@ def renderer(
     """
     from . import render as R
 
-    at = rung or spec.needs_rung()
+    at = rung or _rung_for(spec, root)
     draw = bake or R.bake
     turnable(draw, ranges(spec), also=fixed or {})
 
@@ -561,7 +561,7 @@ def in_parallel(
     """
     from .jobs import JobStore
 
-    at = rung or spec.needs_rung()
+    at = rung or _rung_for(spec, root)
     turnable(_bake_signature(), ranges(spec), also=fixed or {})
     jobs = store or JobStore.for_project(root)
     where = Path(out)
@@ -648,6 +648,18 @@ def worth_parallel(
 ) -> bool:
     """Whether four handles beat four waits, for a render that costs this much."""
     return float(seconds_per_render) > crossing_point(lanes=lanes, start_s=start_s)
+
+
+def _rung_for(spec: Spec, root: str | Path) -> str:
+    """The cheapest rung this project enables that carries the spec's predicates.
+
+    Asked of the project rather than of the ladder alone (§PW117): a project that does
+    not render spheres searches a material on its preview instead of being refused.
+    """
+    from . import render as R
+
+    asked = [p.measure for p in spec.predicates]
+    return R.plan(asking=asked or None, floor=spec.rung, root=root)["rung"]
 
 
 def _bake_signature() -> Callable:

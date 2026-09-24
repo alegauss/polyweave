@@ -205,6 +205,27 @@ The port itself. It edits a repository this one does not own, and **§PW35 requi
 recorded before anything moves** — a before side taken after the port is refused, and rightly.
 So the audit lands here and the adoption waits on a person starting the ledger.
 
+## A second adopter, unlike the first
+
+Binds **PW117**. "No key had to be added" was the boundary holding for one project, and the
+features since were shaped by that project's numbers. So `tests/fixtures/website.toml` is a
+project chosen to differ: a web page with pictures, no Godot, no locale to pin, two rungs
+instead of three, a smaller ladder, and a scale kept in a TypeScript module.
+`tests/test_second_adopter.py` is its gate. It set `[paths] renders` and `specs`, `[render]
+rungs`, sizes, samples and seed, `[units] source`, and an empty `[capture] declared`.
+Again, no key had to be added. Two things inside the plugin did change, and both were
+Cottony's shape compiled in:
+
+- **Every project was assumed to enable all three rungs.** A project with no sphere was
+  refused any material question (`render.rung-disabled`), though its preview carries
+  everything the sphere does. `plan`, and the search's own rung choice, now take the
+  cheapest enabled rung at or above the one the question needs, and `why` says which rung
+  was skipped. A question nothing enabled can carry is still refused.
+- **A scale could only be read from a GDScript constant, a JSON key or an ini line.**
+  TypeScript's `export const PIXELS_PER_METRE: number = 48` already read. A typed
+  C-family constant, such as `public const int CELL = 112` or `static readonly float`, did
+  not, and it now does.
+
 ## Bringing an existing ledger in
 
 Binds **PW55**. A project adopting this plugin has usually bought things already, and its

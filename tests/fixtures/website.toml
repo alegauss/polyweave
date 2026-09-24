@@ -1,0 +1,31 @@
+# A second adopter, chosen to be unlike Cottony (§PW117).
+#
+# A web page with pictures on it: no Godot, no board, no locale to pin, a scale kept in a
+# TypeScript module rather than a GDScript constant, two rungs rather than three, and a
+# smaller ladder. Every key below is one such a project would really have to set; what it
+# did not have to set is the defaults doing their job. tests/test_second_adopter.py is the
+# gate on it, and docs/specs/adoption.md holds what it came to.
+
+[project]
+name = "website"
+
+[paths]
+renders = "public/renders"
+specs   = "src/accept"
+
+[render]
+# No sphere: the page never shows a material on its own, so it never renders one. A
+# material question is answered on the preview instead of refused.
+rungs        = ["preview", "final"]
+preview_size = 128
+final_size   = 512
+samples      = { preview = 16, final = 128 }
+seed         = 3
+
+[units]
+# The page lays pictures out at a scale its own code holds, in TypeScript.
+source = "src/lib/scale.ts:PIXELS_PER_METRE"
+
+[capture]
+# Nothing on the page reads the machine's locale or size, so nothing is declared.
+declared = []

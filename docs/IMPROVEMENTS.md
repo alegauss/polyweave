@@ -336,24 +336,6 @@ this is where that is recorded honestly: what still runs by hand, and why the ri
 instead of disappearing. An outcome worth having, stated, beats the same outcome
 unstated.
 
-### §PW117 A second adopter while the boundary is cheap to move
-
-`docs/specs/adoption.md` records that no key had to be added for Cottony, and calls it
-the boundary holding. It is the boundary holding for one project. The features of this
-block and the last were shaped by Cottony's numbers: a plate at `CELL` pixels, a
-`covers` rectangle placed from the board, lights scaled by the square of the subject for
-its two star sizes. Each is general in form; none has been used by anybody else.
-
-A second adopter does not need to be a game, only different. This repository's own site
-has pictures, and a small fixture project with another unit, another scale and no Godot
-would stress the config in the places Cottony never pushed. What to record is the same
-as §PW36's: every key it had to set, anything that needed a change inside the plugin,
-and anything that turned out to be Cottony's shape compiled in, which the non-goal
-already calls a defect.
-
-The point is to find those while they are cheap, before Block H closes and the claim
-that the boundary holds is read as settled.
-
 ### §PW120 A family stated, not scripted
 
 Cottony has three port scripts, `search_stars.py`, `frame_trays.py` and

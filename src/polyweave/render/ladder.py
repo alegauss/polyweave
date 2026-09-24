@@ -94,6 +94,18 @@ def lowest_rung(measures: Iterable[str], floor: str | None = None) -> str:
     return max(needed, key=RUNGS.index)
 
 
+def lowest_enabled(needed: str, offered: Iterable[str]) -> str | None:
+    """The cheapest rung a project enables at or above `needed`, or None.
+
+    A rung that carries a question carries everything below it too, so a project that
+    does not render spheres answers a material question on its preview. Refusing it
+    instead assumed every project enables all three rungs, which is one adopter's shape
+    (§PW117).
+    """
+    at = RUNGS.index(check_rung(needed))
+    return next((r for r in RUNGS[at:] if r in set(offered)), None)
+
+
 def enabled(configured: Iterable[str]) -> tuple[str, ...]:
     """The project's rungs, in ladder order, refusing any the ladder cannot render."""
     chosen = {check_rung(r) for r in configured}
