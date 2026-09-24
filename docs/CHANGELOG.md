@@ -19,6 +19,7 @@
 - ✅ **PW61** **the site understands one of the backlog's three dep forms, so a block or a range becomes a dangling id** — The site asks roadkeep how each dep resolved instead of splitting the string, so a block survives whole and the gate reads all three forms (design recorded in `site/scripts/roadmap.mjs`).
 - ✅ **PW62** **a render resolves its noise floor without naming its rung, so a sphere is judged at the floor measured for a final** — A render is judged at its own rung's noise floor, so the sphere gets the 0.025 measured at four samples rather than final's 0.013 (design recorded in `docs/specs/project-config.md`).
 - ✅ **PW63** **three of Cottony's rig constants share a name with a plugin parameter that means something else** — Every rig parameter declares its unit and a search says each axis back as fill (W), so a number that meant a fraction elsewhere shows as it is written (design recorded in `docs/specs/adoption.md`).
+- ✅ **PW121** **on Windows every console program a background job starts opens a terminal window of its own** — A background worker on Windows gets a hidden console of its own, so the engine or a Python child it starts no longer opens a terminal window.
 
 ## Block B — Seeing the result cheaply
 

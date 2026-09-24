@@ -246,8 +246,13 @@ def spawn_detached(
             "close_fds": True,
         }
         if WINDOWS:  # pragma: no cover - platform-specific
+            # A console of its own that nobody sees, rather than none at all. With no
+            # console (DETACHED_PROCESS) every console program the worker starts — the
+            # engine for a capture, a Python child — is given a new one, and Windows
+            # opens a window for each. This console is still not the session's, so the
+            # worker outlives the session all the same, and its children inherit it.
             kwargs["creationflags"] = (
-                subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP
+                subprocess.CREATE_NO_WINDOW | subprocess.CREATE_NEW_PROCESS_GROUP
             )
         else:
             # Its own session, so `kill_tree` can take the whole group at once.

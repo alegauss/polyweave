@@ -30,7 +30,7 @@
 
 ## Block I — Voxel models from a declaration
 
-- 📋 **PW101** (deps: —) **building a declaration takes a Python script of the project's own** — Every consumer writes the same few lines to build, write and preview, and a project written in GDScript has no natural place to keep them. → §PW101
+- 🛠 **PW101** (deps: —) **building a declaration takes a Python script of the project's own** — Every consumer writes the same few lines to build, write and preview, and a project written in GDScript has no natural place to keep them. → §PW101
 - 📋 **PW102** (deps: PW93 ✅) **a Godot project reading a voxel model must write its own loader and MultiMesh setup** — Godot is one of the three tools the plugin serves, and an importer written once saves every Godot consumer the same parser. → §PW102
 - 💭 **PW103** (deps: —) **a family of models that differ in a few numbers is one document copied per member** — Enemy tiers and boss phases are one shape at other proportions or colours, and copies drift apart. → §PW103
 
