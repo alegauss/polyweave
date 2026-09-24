@@ -5,6 +5,7 @@
 ## Block B — Seeing the result cheaply
 
 - 📋 **PW141** (deps: —) **a bake does not say whether its silhouette moved or only its look, so two bakes are compared by measuring both again** — An agent asking "did my bevel change the outline" re-runs the measures on both pictures, when one string per question would answer it across sessions. → §PW141
+- 📋 **PW145** (deps: —) **a bake after `preview_size` changed is served the old-size picture from the cache, as a hit** — The rung's size is read from the project file and is in no field the cache key covers, so every measure on the hit answers for a size nobody asked for. → §PW145
 
 ## Block C — The asset compiler
 
@@ -34,7 +35,6 @@
 
 ## Block J — A bar a person sets once
 
-- 📋 **PW107** (deps: PW106 ✅) **a margin around a measured value is chosen by eye, never derived from how much the measure moves on its own** — A tail moves more than a median under the same harmless change, so one margin rule is too loose on one predicate and refuses an accepted look on the next. → §PW107
 - 📋 **PW108** (deps: PW106 ✅) **a person's verdict is stored per run, so nothing learns which bound a rejection was about** — The ledger counts how often the tool was overruled and never on which predicate, so the one number the loop exists for cannot improve the specs it judges. → §PW108
 - 📋 **PW109** (deps: PW106 ✅, PW108) **a person judges a port from a file an agent points at, and the verdict is typed back into the spec by hand** — The judgement on the stars took one sentence and everything around it took an agent's turns, so the scarcest time in the loop is spent on paperwork. → §PW109
 - 📋 **PW110** (deps: PW109) **nothing lists which assets wait on a person's look, so each family waits its turn in series** — Six Cottony families are chained on a person's eye, and a person who could judge all six in one sitting is asked six times over several days. → §PW110

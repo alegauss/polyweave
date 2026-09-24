@@ -222,16 +222,44 @@ def bake(
         float,
         Param("the scale it is baked at; the project's own where this is left out"),
     ] = 0.0,
+    seed: Annotated[
+        int, Param("the path tracer's seed; the project's where this is negative")
+    ] = -1,
+    samples: Annotated[
+        int, Param("samples per pixel; the rung's where this is zero", lo=0)
+    ] = 0,
+    size: Annotated[
+        int,
+        Param("the square's side; the rung's where this is zero", lo=0, unit="px"),
+    ] = 0,
     root: Annotated[str, Param("the project to resolve settings against")] = ".",
 ) -> dict:
     """Render one subject at the cheapest rung that can answer the question.
 
     The rig is the same at every rung; only what stands in front of it changes.
+
+    `seed`, `samples` and `size` are the changes that should not change the look, which
+    is what calibrating a bound re-renders under (§PW107). They default to the
+    project's, and a search is refused them as axes: one that picks a lucky seed has
+    fitted the noise, not the asset.
     """
     from . import blender
 
     started = time.monotonic()
     chosen = plan(rung or None, list(asking) or None, floor=floor or None, root=root)
+    if seed >= 0:
+        chosen["seed"] = int(seed)
+    if samples:
+        chosen["samples"] = int(samples)
+    if size and len(covers):
+        raise PolyweaveError(
+            "render.size-with-covers",
+            f"a size of {size} px was asked for and a world rectangle decides the size",
+            "leave size out, or change pixels_per_unit, which is what a rectangle's "
+            "size follows from",
+        )
+    if size:
+        chosen["size"] = int(size)
     config = load(root)
     where = Path(root).resolve()
     out_path = where / out if not Path(out).is_absolute() else Path(out)
@@ -256,6 +284,9 @@ def bake(
     # outputs and the request is what a key is over.
     if scrub:
         params["scrub"] = True
+    if size:
+        # A size asked for is a different picture from the rung's, so it is in the key.
+        params["size"] = int(size)
     scale = None
     # The size the picture comes out at: the rung's square, unless a world rectangle was
     # declared, in which case the declaration decides both axes (§PW47). Before this, a

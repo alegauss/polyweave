@@ -38,6 +38,10 @@ POINTS = 3
 #: wall-clock: the budget is the thing being managed, and it has to be legible.
 BUDGET = 24
 
+#: What a render takes that should not change the look (§PW107). A search turning one
+#: would pick whichever seed the noise happened to favour.
+NOISE = ("seed", "samples", "size")
+
 
 def grid(
     low: float, high: float, points: int, step: float | None = None
@@ -93,6 +97,15 @@ def turnable(draw: Callable, *wanted: dict, also: dict = ()) -> list[str]:
     """
     from .render.rig import described
 
+    noise = sorted({name for one in wanted for name in one} & set(NOISE))
+    if noise:
+        raise PolyweaveError(
+            "search.noise-axis",
+            f"a search may not turn {', '.join(noise)}, which changes the noise and "
+            "should not change the look",
+            "drop the range; a bound's room for that noise is what `calibrate` "
+            "measures (§PW107)",
+        )
     taken = inspect.signature(draw).parameters
     asked = [name for one in (*wanted, dict(also)) for name in one]
     if any(p.kind is inspect.Parameter.VAR_KEYWORD for p in taken.values()):

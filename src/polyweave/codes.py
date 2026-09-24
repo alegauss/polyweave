@@ -465,6 +465,11 @@ CODES: dict[str, Code] = {
         "where the corners would land wherever the turn put them",
         doors=("look straight on", "give covers as [width, height]"),
     ),
+    "render.size-with-covers": Code(
+        means="a size was asked for where a world rectangle already decides it",
+        when="size given beside covers; the rectangle and its scale fix both axes",
+        doors=("leave size out", "change pixels_per_unit instead"),
+    ),
     "render.no-mesh": Code(
         means="the rung renders the real mesh and there is none to render",
         when="no model was named, the file is not there, or it imported empty",
@@ -634,6 +639,12 @@ CODES: dict[str, Code] = {
             "rename the range to a parameter the renderer takes",
             "drop the range if nothing here turns it",
         ),
+    ),
+    "search.noise-axis": Code(
+        means="the spec asks a search to turn something that only moves the noise",
+        when="a [search.seed], [search.samples] or [search.size]: the best sample "
+        "would be whichever the noise favoured, which is fitting it (§PW107)",
+        doors=("drop the range", "calibrate the bounds against that noise instead"),
     ),
     # -- engine: running a scene script and reading its verdict ---------------
     "engine.not-found": Code(
@@ -1107,6 +1118,22 @@ CODES: dict[str, Code] = {
         means="a bound written as a table does not say where its number came from",
         when="an origin missing, or other than measured, margin or person",
         doors=("say measured, margin or person", "write the bound as a bare number"),
+    ),
+    "spec.no-variants": Code(
+        means="a bound was to be calibrated with nothing to measure its noise against",
+        when="a proposal given the accepted picture and no variant of it (§PW107)",
+        doors=("render the accepted request again under a harmless change",),
+    ),
+    "spec.stale-proposal": Code(
+        means="the spec moved after the calibration it is being given was measured",
+        when="a bound edited, or a predicate renamed or removed, between calibrating "
+        "and applying",
+        doors=("calibrate again against the spec as it is now",),
+    ),
+    "spec.unwritable-bound": Code(
+        means="a bound is not written on one line, so it cannot be rewritten in place",
+        when="a bound spread over a sub-table or a multi-line inline table",
+        doors=("write it as a number or an inline table on one line",),
     ),
     "spec.bad-colour": Code(
         means="the target is not a colour",

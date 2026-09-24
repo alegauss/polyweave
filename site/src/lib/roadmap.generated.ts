@@ -26,7 +26,7 @@ export interface GeneratedNonGoal {
 
 export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 0 },
-  { block: "B", title: "Seeing the result cheaply", open: 1 },
+  { block: "B", title: "Seeing the result cheaply", open: 2 },
   { block: "C", title: "The asset compiler", open: 0 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
   { block: "E", title: "One world with the engine", open: 2 },
@@ -34,7 +34,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "G", title: "Geometry as a declaration", open: 0 },
   { block: "H", title: "Proof on a real game", open: 8 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
-  { block: "J", title: "A bar a person sets once", open: 7 },
+  { block: "J", title: "A bar a person sets once", open: 6 },
   { block: "K", title: "Reached without reading the source", open: 11 },
   { block: "L", title: "What a run leaves as evidence", open: 7 },
   { block: "M", title: "What a game needs beyond the look", open: 3 },
@@ -46,6 +46,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "B",
     symptom: "a bake does not say whether its silhouette moved or only its look, so two bakes are compared by measuring both again",
     why: "An agent asking \"did my bevel change the outline\" re-runs the measures on both pictures, when one string per question would answer it across sessions.",
+    deps: [],
+  },
+  {
+    id: "PW145",
+    block: "B",
+    symptom: "a bake after `preview_size` changed is served the old-size picture from the cache, as a hit",
+    why: "The rung's size is read from the project file and is in no field the cache key covers, so every measure on the hit answers for a size nobody asked for.",
     deps: [],
   },
   {
@@ -117,13 +124,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "every family port is a hand-written script repeating the same build, search, check, bake and record steps",
     why: "Three Cottony port scripts are one skeleton with different filling, and five more families would be five more copies, each with its own small mistakes.",
     deps: ["PW115"],
-  },
-  {
-    id: "PW107",
-    block: "J",
-    symptom: "a margin around a measured value is chosen by eye, never derived from how much the measure moves on its own",
-    why: "A tail moves more than a median under the same harmless change, so one margin rule is too loose on one predicate and refuses an accepted look on the next.",
-    deps: [],
   },
   {
     id: "PW108",

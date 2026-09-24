@@ -197,8 +197,9 @@ def _predicate(entry: dict, index: int) -> Predicate:
 #: measured value by hand, or agreed by a person on a look.
 ORIGINS = ("measured", "margin", "person")
 
-#: What a bound written as a table may say beside its number.
-BOUND_KEYS = ("value", "origin", "measured", "date", "why")
+#: What a bound written as a table may say beside its number. `spread` is how far the
+#: measure moved on its own under harmless changes, where calibration found it (§PW107).
+BOUND_KEYS = ("value", "origin", "measured", "spread", "date", "why")
 
 
 def _origin(entry: dict, key: str, name: str) -> dict | None:
@@ -429,9 +430,11 @@ def _meaning(name: str, side: str, origin: dict) -> str:
             + ": the look moved"
         )
     read = origin.get("measured")
+    noise = origin.get("spread")
     return (
         f"{name} missed its {side}, read off an artefact"
         + (f" at {read:g}" if read is not None else "")
+        + (f" with {noise:g} of noise" if noise is not None else "")
         + ": the render drifted from what it was measured on"
     )
 

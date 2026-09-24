@@ -95,6 +95,23 @@ wrong, on a `person` bound that the look moved, on a `measured` one that the ren
 drifted. The check lists the misses on a margin as `guessed`, which is what an agent needs
 to choose between searching again and asking. The dim star's 0.37 would have said so.
 
+**A margin is measured from the noise, not chosen by eye** (§PW107). A tail moves more than
+a median under the same harmless change, so one margin rule is too loose on one predicate
+and too tight on the next. `calibrate.calibrate(spec, accepted)` reads the accepted
+render's own record back as the bake that made it, and renders it again under the changes
+that should not change the look: two more seeds, the sample count of the rung below, and
+the size one eighth smaller and larger (the scale, for a declared rectangle). A
+predicate's `spread` is the range of its value across the accepted picture and those.
+The proposed bound is the accepted value plus three spreads (`multiple`, stated in the
+answer), written as `origin = "measured"` with `measured` and `spread` beside it. It
+proposes and writes nothing; `calibrate.apply(spec_path, proposal)` is the separate
+call. It rewrites each bound's line in place, so comments survive. It refuses a bound
+that moved after the proposal was measured (`spec.stale-proposal`) and one not written
+on a single line (`spec.unwritable-bound`), and it leaves a `person` bound alone. `bake`
+takes `seed`, `samples` and `size` so the variants can be made, and a search may not turn
+any of the three (`search.noise-axis`), because that would pick whichever sample the
+noise happened to favour.
+
 **A pass also says how comfortably** (§PW104). The margin is 1 anywhere inside a bound, so
 Cottony's stars passed with a facet at 0.4695 under a ceiling of 0.47 and the search called
 that nothing left to gain. Each predicate now also carries its `headroom`: the distance to

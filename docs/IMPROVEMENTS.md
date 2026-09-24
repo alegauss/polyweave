@@ -23,6 +23,27 @@ the silhouette figures quantised at the rung's noise floor and `look_digest` ove
 tonal and palette figures, so a render that moved only by noise keeps both hashes. The
 PNG stays the artefact for a person.
 
+### §PW145 A rung's size is not in the cache key
+
+`render.bake` computes its cache key from the request's `params`, the engine record, the
+inputs, the rung, the seed and the sample count. The size of a picture that declares no
+world rectangle comes from `[render] preview_size` or `final_size`, and neither is in
+any of those. So a project that changes `preview_size` from 256 to 128 and bakes the
+same request again is served the 256 px picture from the cache, reported as a hit, and
+every measure on it answers for a size nobody asked for.
+
+Found building PW107, which had to put an explicit `size` override into `params` so its
+variants key apart. The rung's own size never got the same treatment. engine.md says a
+bake that declares nothing "keys exactly as it did", which is true, and that is the
+problem.
+
+The fix is to key on the frame that is actually drawn: put the resolved `(width,
+height)` into the planned record (as `params["frame"]`, or a top-level field `cache_key`
+reads) for every bake, not only the ones that override it. Every existing key changes
+once, which the cache survives, since a miss only costs a render. The test is to bake
+one request, change `preview_size` in the project file, bake it again, and see a miss
+with the new size.
+
 ## Block C — The asset compiler
 
 ## Block D — Fetching from a paid service without surprise
@@ -408,24 +429,6 @@ written.
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once
-
-### §PW107 Margins measured from the noise
-
-Every margin in Cottony's star specs was chosen by eye: roughly a tenth above the
-shipped value, the same for a median as for a 99th percentile. But a tail moves more
-than a median under the same harmless change, so one margin rule is too loose on one
-predicate and too tight on the next, which is how 0.37 came to refuse a star a person
-accepted.
-
-Renders are cheap enough to measure the noise instead. Calibration takes the accepted
-artefact's request and re-renders it under changes that should not change the look: the
-seed, the sample count one rung down, the size one step either way. The spread of each
-measure across those is its noise, and the proposed bound is the accepted value plus a
-stated multiple of it, written with origin `measured` and the spread beside it.
-
-It proposes and never writes silently: the answer is the old bound, the new one and the
-spread per predicate, and applying it is a separate call. A bound with origin `person`
-is left alone, since a person's verdict outranks a statistic.
 
 ### §PW108 Every verdict is evidence about a bound
 
