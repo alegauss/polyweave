@@ -21,9 +21,10 @@ import tomllib
 from collections.abc import Callable, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any
 
 from .config import load
+from .describe import Param, operation
 from .errors import PolyweaveError
 from .files import read_text_retrying, write_atomic
 
@@ -42,7 +43,8 @@ def where(root: str | Path = ".") -> Path:
     return config.path("service.schema")
 
 
-def read(root: str | Path = ".") -> dict:
+@operation("schema.read")
+def read(root: Annotated[str, Param("the project whose schema this is")] = ".") -> dict:
     """The schema this project has learned, or nothing if it never has."""
     path = where(root)
     text = read_text_retrying(path)
@@ -66,8 +68,12 @@ def write(schema: dict, root: str | Path = ".") -> Path:
     return path
 
 
+@operation("schema.validate")
 def validate(
-    payload: dict, *, root: str | Path = ".", schema: dict | None = None
+    payload: Annotated[dict, Param("the request about to be sent")],
+    *,
+    root: Annotated[str, Param("the project whose schema this is")] = ".",
+    schema: Annotated[dict, Param("a schema to use instead of the learned one")] = None,
 ) -> dict:
     """Refuse a payload here, before sending, against what the service takes.
 
@@ -207,7 +213,10 @@ def _valid(fields: dict, base: dict | None) -> dict:
     return payload
 
 
-def proved(schema: dict) -> list[str]:
+@operation("schema.proved")
+def proved(
+    schema: Annotated[dict, Param("a schema, as schema.read returns it")],
+) -> list[str]:
     """The fields an invalid value was actually refused for, and nothing else."""
     return sorted(n for n, f in (schema.get("field") or {}).items() if f.get("proved"))
 

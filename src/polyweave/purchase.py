@@ -32,10 +32,11 @@ import json
 import shutil
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any
 
 from . import post, provenance
 from .config import FILENAME, load
+from .describe import Param, operation
 from .errors import PolyweaveError
 from .files import read_text_retrying, write_atomic
 
@@ -49,13 +50,24 @@ def where(root: str | Path = ".") -> Path:
     return config.path("paths.purchases")
 
 
-def remaining(root: str | Path = ".", today: Any = None) -> dict:
+@operation("purchase.remaining")
+def remaining(
+    root: Annotated[str, Param("the project whose ledger this is")] = ".",
+    today: Annotated[
+        str, Param("the date the ceiling is judged on; today if unset")
+    ] = None,
+) -> dict:
     """What is left of the ceiling a person set, against what has been spent.
 
     An agent may not decide that a mesh is worth money, and that rule is right. What it
     actually constrains is the **ceiling**, not each call — so the ceiling is approved
     once, with the whole plan in view, instead of five interruptions.
     """
+    if isinstance(today, str):
+        # By name the date arrives as text; in process it may already be a date.
+        from datetime import date
+
+        today = date.fromisoformat(today)
     declared = load(root).budget(today)
     already = spent(root)
     left = round(float(declared["credits"]) - already, 4)
@@ -70,7 +82,15 @@ def remaining(root: str | Path = ".", today: Any = None) -> dict:
     }
 
 
-def allow(cost: float, *, root: str | Path = ".", today: Any = None) -> dict:
+@operation("purchase.allow")
+def allow(
+    cost: Annotated[float, Param("what the spend would cost", lo=0.0, unit="credits")],
+    *,
+    root: Annotated[str, Param("the project whose ledger this is")] = ".",
+    today: Annotated[
+        str, Param("the date the ceiling is judged on; today if unset")
+    ] = None,
+) -> dict:
     """Refuse a spend that would pass the ceiling. Never asks; the answer is the file.
 
     What is given up is the per-call veto. What is bought is an approval made once.
@@ -210,7 +230,14 @@ def capture(
     return entry
 
 
-def adopt(entries: Any, *, root: str | Path = ".") -> dict:
+@operation("purchase.adopt")
+def adopt(
+    entries: Annotated[
+        Any, Param("another ledger's entries, or the file holding them")
+    ],
+    *,
+    root: Annotated[str, Param("the project whose ledger this is")] = ".",
+) -> dict:
     """Bring a ledger somebody else kept into this one, spending nothing (§PW55).
 
     A project adopting the plugin already has a record of what it bought, in whatever
@@ -303,8 +330,7 @@ def _adopted(entry: dict, length: int, root: Path) -> dict:
                 "fetch",
                 artefact,
                 inputs=[provenance.source("reference", entry["reference"], root=root)]
-                if entry.get("reference")
-                and (root / entry["reference"]).is_file()
+                if entry.get("reference") and (root / entry["reference"]).is_file()
                 else [],
                 extra={
                     "task_id": entry["task_id"],
@@ -348,7 +374,10 @@ def append(entry: dict, *, root: str | Path = ".") -> Path:
     return path
 
 
-def read(root: str | Path = ".") -> list[dict]:
+@operation("purchase.ledger")
+def read(
+    root: Annotated[str, Param("the project whose ledger this is")] = ".",
+) -> list[dict]:
     """Everything this project has bought, oldest first."""
     path = where(root)
     text = read_text_retrying(path)
@@ -367,7 +396,10 @@ def read(root: str | Path = ".") -> list[dict]:
     return list(held)
 
 
-def spent(root: str | Path = ".") -> float:
+@operation("purchase.spent")
+def spent(
+    root: Annotated[str, Param("the project whose ledger this is")] = ".",
+) -> float:
     """What this project has spent against its ceiling, according to its own ledger.
 
     **An adopted entry does not count** (§PW55). A project bringing an existing ledger
@@ -380,7 +412,12 @@ def spent(root: str | Path = ".") -> float:
     )
 
 
-def find(sha: str, *, root: str | Path = ".") -> dict | None:
+@operation("purchase.find")
+def find(
+    sha: Annotated[str, Param("the sha256 of the file bought")],
+    *,
+    root: Annotated[str, Param("the project whose ledger this is")] = ".",
+) -> dict | None:
     """The entry for a file, looked up by **its hash rather than a remote id**.
 
     The remote id is the one that stops existing, so nothing downstream keys off it.
@@ -388,7 +425,8 @@ def find(sha: str, *, root: str | Path = ".") -> dict | None:
     return next((e for e in read(root) if e.get("sha256") == sha), None)
 
 
-def held(root: str | Path = ".") -> dict:
+@operation("purchase.held")
+def held(root: Annotated[str, Param("the project whose ledger this is")] = ".") -> dict:
     """Is everything this project paid for still here, and still what it was.
 
     The question §PW17 says nothing could answer: `provenance.verify` walks the records,

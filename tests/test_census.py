@@ -7,7 +7,7 @@ from polyweave.capabilities import capabilities
 
 #: How much surface is still unregistered. Registering a module lowers it, and this
 #: number is lowered with it: it may only fall, never rise.
-PENDING = 112
+PENDING = 94
 
 
 def test_every_public_function_is_classified():
@@ -175,6 +175,22 @@ def test_a_declaration_is_described_and_built_by_name(tmp_path):
     assert built["status"] == "built"
     assert built["says"].startswith("a voxel model 2 by 2 by 2")
     assert describe._REGISTRY["geometry.variants"].fn("box.toml", root=root) == []
+
+
+def test_the_budget_is_asked_by_name_with_a_date_as_text(tmp_path):
+    (tmp_path / "polyweave.toml").write_text(
+        '[budget]\ncredits = 50\nexpires = "2026-12-31"\n', encoding="utf-8"
+    )
+    import pytest
+
+    from polyweave.errors import PolyweaveError
+
+    fn = describe._REGISTRY["purchase.allow"].fn
+    root = str(tmp_path)
+    assert fn(20.0, root=root, today="2026-09-24")["left"] == 50
+    with pytest.raises(PolyweaveError) as refused:
+        fn(20.0, root=root, today="2027-01-02")
+    assert refused.value.code == "fetch.budget-closed"
 
 
 def test_a_fresh_read_of_the_operations_loads_them():

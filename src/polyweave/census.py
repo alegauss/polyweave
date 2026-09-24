@@ -62,6 +62,8 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.geometry.review": ("internal", "the words geometry.describe says"),
     "polyweave.geometry.tuning": ("internal", "a shape search, with callable hooks"),
     "polyweave.geometry.voxels": ("internal", "the voxel model a build writes"),
+    "polyweave.purchase": ("internal", "what a fetch writes when it has paid"),
+    "polyweave.schema": ("internal", "learning the schema, which sends requests"),
     # -- internal: helpers an operation calls, never a caller's first call ----------
     "polyweave.cache": ("internal", "the render cache, reached through bake's cached"),
     "polyweave.census": ("internal", "this census's own walk"),
@@ -102,9 +104,7 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.godot": ("pending", "installing the Godot side"),
     "polyweave.normalise": ("pending", "a mesh brought to the conventions"),
     "polyweave.offscreen": ("pending", "the routes a capture can draw by"),
-    "polyweave.purchase": ("pending", "the ledger of what was bought"),
     "polyweave.reference": ("pending", "a reference prepared for a fetch"),
-    "polyweave.schema": ("pending", "what the service was proved to accept"),
     "polyweave.shape": ("pending", "a silhouette's shape"),
     "polyweave.skeleton": ("pending", "a skeleton fitted to a mesh"),
     "polyweave.sprites": ("pending", "a clip baked to a sprite sheet"),
