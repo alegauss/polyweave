@@ -33,7 +33,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
   { block: "H", title: "Proof on a real game", open: 8 },
-  { block: "I", title: "Voxel models from a declaration", open: 4 },
+  { block: "I", title: "Voxel models from a declaration", open: 3 },
   { block: "J", title: "A bar a person sets once", open: 10 },
 ];
 
@@ -107,13 +107,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "every family port is a hand-written script repeating the same build, search, check, bake and record steps",
     why: "Three Cottony port scripts are one skeleton with different filling, and five more families would be five more copies, each with its own small mistakes.",
     deps: ["PW105", "PW115"],
-  },
-  {
-    id: "PW100",
-    block: "I",
-    symptom: "a fetched mesh cannot be the starting block of a voxel model",
-    why: "Each cell should take its colour from the mesh's own texture at the nearest surface point, which needs the UVs and the image read through Blender.",
-    deps: [],
   },
   {
     id: "PW101",

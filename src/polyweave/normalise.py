@@ -518,17 +518,65 @@ def _about_view(degrees: float) -> np.ndarray:
 # -- on arrival ------------------------------------------------------------------------
 
 
-def read_mesh(path: str | Path) -> dict:
-    """Vertices and faces of a mesh file, in the interface's own axes."""
+def read_mesh(path: str | Path, *, colour: bool = False) -> dict:
+    """Vertices and faces of a mesh file, in the interface's own axes.
+
+    With `colour`, also what paints it (§PW100): each face corner's texture coordinate
+    as `corners`, one row per corner in the order the faces list them, and the base
+    colour image as `image`, rows top to bottom and RGBA in 0..1. Either is absent
+    where the file has none.
+    """
     from .render import blender
 
     blender.reset()  # nothing from an earlier ingest still standing in the scene
     obj = blender.load_mesh(path)
     world = [obj.matrix_world @ v.co for v in obj.data.vertices]
-    return {
+    found = {
         "vertices": np.array([(v.x, v.z, -v.y) for v in world], dtype=float),
         "faces": [tuple(p.vertices) for p in obj.data.polygons],
     }
+    if colour:
+        found.update(_painted(obj))
+    return found
+
+
+def _painted(obj: Any) -> dict:
+    """A loaded object's corner coordinates and base colour image, where it has them."""
+    out: dict = {}
+    data = obj.data
+    layer = data.uv_layers.active
+    if layer is not None:
+        # Read whole rather than corner by corner: a bought mesh has a hundred thousand
+        # of them, and the per-item way spent seconds getting there.
+        flat = np.zeros(len(layer.data) * 2)
+        layer.data.foreach_get("uv", flat)
+        starts = np.zeros(len(data.polygons), dtype=np.int64)
+        data.polygons.foreach_get("loop_start", starts)
+        counts = np.zeros(len(data.polygons), dtype=np.int64)
+        data.polygons.foreach_get("loop_total", counts)
+        uv = flat.reshape(-1, 2)
+        loops = np.concatenate(
+            [np.arange(s, s + n) for s, n in zip(starts, counts, strict=True)] or [[]]
+        ).astype(np.int64)
+        out["corners"] = uv[loops] if len(loops) else uv[:0]
+    for material in data.materials:
+        tree = getattr(material, "node_tree", None) if material else None
+        for node in tree.nodes if tree else ():
+            if node.type == "TEX_IMAGE" and node.image is not None:
+                wide, tall = node.image.size
+                if not wide or not tall:
+                    continue
+                channels = node.image.channels
+                pixels = np.zeros(wide * tall * channels, dtype=np.float32)
+                node.image.pixels.foreach_get(pixels)
+                pixels = pixels.astype(float).reshape(tall, wide, channels)[::-1]
+                if channels < 4:
+                    pixels = np.concatenate(
+                        [pixels, np.ones((tall, wide, 4 - channels))], axis=2
+                    )
+                out["image"] = pixels[..., :4]
+                return out
+    return out
 
 
 def write_mesh(found: dict, out: str | Path, *, materials: dict | None = None) -> Path:

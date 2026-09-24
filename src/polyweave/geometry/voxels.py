@@ -122,6 +122,10 @@ class _Model:
         self.cell = cell or stated_cell(document, self.resolved["params"])
         self._meshes: dict | None = None
         self._traced_by: dict[int, dict] = {}
+        self._coloured: dict[int, dict] = {}
+        #: Materials the model found rather than the document declared: a textured
+        #: mesh's quantised colours, one per palette slot.
+        self.found_materials: dict[str, dict] = {}
 
     # -- where a node is ---------------------------------------------------------------
 
@@ -228,6 +232,8 @@ class _Model:
             return self.inside(refers_to(node)[0], points)
         if op == "cells":
             return self._drawn(node, instance, points)
+        if op == "mesh" and not node.get("material"):
+            return self._textured(node, instance, points)
         if op == "mirror":
             # A point is in the mirror where it or its reflection is in the half, so a
             # column on the plane is one set of cells and never counted twice.
@@ -250,6 +256,34 @@ class _Model:
             filled[within] = grid["filled"][at]
             wears[within] = grid["wears"][at]
         return _Found.drawn(filled, self.rank[node["id"]], wears)
+
+    def _textured(self, node: dict, instance: dict, points: np.ndarray) -> _Found:
+        """A mesh node's cells, each in the colour of the surface nearest it (§PW100).
+
+        A mesh with no texture is filled as any traced op is. One with a texture paints
+        its cells from the palette its surface quantises to, as materials named after
+        the node, and they paint like any material does.
+        """
+        from . import voxel_colour as C
+
+        mesh = self._traced(node, instance)
+        inside = _parity(mesh, points)
+        rank = self.rank[node["id"]]
+        colours = self._coloured.get(id(instance))
+        if colours is None:
+            colours = C.painted(mesh, int(instance.get("colours", 8))) or {}
+            self._coloured[id(instance)] = colours
+            for slot, colour in enumerate(colours.get("palette", ())):
+                self.found_materials[f"{node['id']}.{slot}"] = {
+                    "colour": C.hexed(colour)
+                }
+        if not colours:
+            return _Found.of(inside, rank)
+        wears = np.full(len(points), "", dtype=object)
+        if inside.any():
+            slots = C.nearest(colours, points[inside])
+            wears[inside] = [f"{node['id']}.{slot}" for slot in slots]
+        return _Found.drawn(inside, rank, wears)
 
     def size_of(self, node: dict, instance: dict) -> float:
         """How big a `cells` node's cells are: its own `cell`, or the document's."""
@@ -292,8 +326,14 @@ class _Model:
         return kept
 
     def _trace(self, node: dict, instance: dict) -> dict:
-        from .build import BUILDS
+        from .build import BUILDS, mesh_file
 
+        if node["op"] == "mesh":
+            from ..normalise import read_mesh
+
+            # Its paint too, unless a material of the node's own covers it anyway.
+            where = mesh_file(node, instance, self.root)
+            return read_mesh(where, colour=not node.get("material"))
         built = {}
         if refers_to(node):
             if self._meshes is None:
@@ -369,33 +409,58 @@ def _parity(mesh: dict, points: np.ndarray) -> np.ndarray:
     if not near.any():
         return out
     probe = points[near] + np.array([1.3e-7, 0.7e-7, 0.0])
+    corners = vertices[_triangles(mesh["faces"])]  # (triangles, 3 corners, xyz)
+    if not len(corners):
+        return out
+    # Sorted along x and taken a batch at a time, so each batch spans a narrow strip
+    # and only the points under that strip are tested against it (§PW100: a bought
+    # hull of forty thousand triangles took eight seconds one triangle at a time).
+    corners = corners[np.argsort(corners[:, :, 0].mean(axis=1), kind="stable")]
     crossings = np.zeros(len(probe), dtype=int)
-    for face in mesh["faces"]:
-        for second in range(1, len(face) - 1):
-            a, b, c = (
-                vertices[face[0]],
-                vertices[face[second]],
-                vertices[face[second + 1]],
-            )
-            crossings += _crosses(a, b, c, probe)
+    for start in range(0, len(corners), _BATCH):
+        batch = corners[start : start + _BATCH]
+        lo, hi = batch[:, :, :2].min(axis=(0, 1)), batch[:, :, :2].max(axis=(0, 1))
+        under = np.flatnonzero(
+            np.all((probe[:, :2] >= lo) & (probe[:, :2] <= hi), axis=1)
+            & (probe[:, 2] < batch[:, :, 2].max())
+        )
+        if len(under):
+            crossings[under] += _crosses(batch, probe[under])
     out[near] = crossings % 2 == 1
     return out
 
 
-def _crosses(
-    a: np.ndarray, b: np.ndarray, c: np.ndarray, probe: np.ndarray
-) -> np.ndarray:
-    """Which points a triangle sits above, seen straight down the z axis."""
-    denominator = (b[1] - c[1]) * (a[0] - c[0]) + (c[0] - b[0]) * (a[1] - c[1])
-    if abs(denominator) < 1e-15:
-        return np.zeros(len(probe), dtype=int)
-    x, y = probe[:, 0] - c[0], probe[:, 1] - c[1]
-    u = ((b[1] - c[1]) * x + (c[0] - b[0]) * y) / denominator
-    v = ((c[1] - a[1]) * x + (a[0] - c[0]) * y) / denominator
+#: How many triangles are tested against their points at once.
+_BATCH = 256
+
+
+def _triangles(faces: list) -> np.ndarray:
+    """Every face as a fan of triangles, as vertex indices."""
+    return np.asarray(
+        [
+            (face[0], face[second], face[second + 1])
+            for face in faces
+            for second in range(1, len(face) - 1)
+        ],
+        dtype=np.int64,
+    ).reshape(-1, 3)
+
+
+def _crosses(batch: np.ndarray, probe: np.ndarray) -> np.ndarray:
+    """How many of a batch of triangles sit above each point, seen down the z axis."""
+    a, b, c = batch[:, 0, None, :], batch[:, 1, None, :], batch[:, 2, None, :]
+    denominator = (b[..., 1] - c[..., 1]) * (a[..., 0] - c[..., 0]) + (
+        c[..., 0] - b[..., 0]
+    ) * (a[..., 1] - c[..., 1])
+    flat = np.abs(denominator) < 1e-15
+    denominator = np.where(flat, 1.0, denominator)
+    x, y = probe[None, :, 0] - c[..., 0], probe[None, :, 1] - c[..., 1]
+    u = ((b[..., 1] - c[..., 1]) * x + (c[..., 0] - b[..., 0]) * y) / denominator
+    v = ((c[..., 1] - a[..., 1]) * x + (a[..., 0] - c[..., 0]) * y) / denominator
     w = 1.0 - u - v
-    over = (u >= 0) & (v >= 0) & (w >= 0)
-    height = u * a[2] + v * b[2] + w * c[2]
-    return (over & (height > probe[:, 2])).astype(int)
+    over = (u >= 0) & (v >= 0) & (w >= 0) & ~flat
+    height = u * a[..., 2] + v * b[..., 2] + w * c[..., 2]
+    return (over & (height > probe[None, :, 2])).sum(axis=0)
 
 
 # -- cells drawn as text ---------------------------------------------------------------
@@ -562,7 +627,7 @@ def voxelize(
 
     names = [node["id"] for node in document["nodes"]]
     wears = [str(one) for one in found.wears[found.inside].tolist()]
-    materials = model.resolved["materials"]
+    materials = {**model.found_materials, **model.resolved["materials"]}
     palette_names = [one for one in materials if one in set(wears)]
     palette_names += sorted({one for one in wears if one not in palette_names})
     palette = [

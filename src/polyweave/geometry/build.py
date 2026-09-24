@@ -184,11 +184,8 @@ def _cells(node, instance, built, root):
     return drawn_mesh(node, float(size))
 
 
-def _mesh(node, instance, built, root):
-    # A mesh file as a node, in the project's own axes (§PW100): a hull bought from the
-    # service becomes the block a declaration cuts and paints, rather than the end.
-    from ..normalise import read_mesh
-
+def mesh_file(node: dict, instance: dict, root: Any) -> Path:
+    """The file a `mesh` node names, refused where there is none."""
     stated = instance.get("path")
     where = Path(str(stated or ""))
     if not where.is_absolute():
@@ -199,7 +196,15 @@ def _mesh(node, instance, built, root):
             f"{node['id']} takes its shape from {stated!r}, and there is no file there",
             "give `path` a mesh file under the project, as a .glb or a .blend",
         )
-    found = read_mesh(where)
+    return where
+
+
+def _mesh(node, instance, built, root):
+    # A mesh file as a node, in the project's own axes (§PW100): a hull bought from the
+    # service becomes the block a declaration cuts and paints, rather than the end.
+    from ..normalise import read_mesh
+
+    found = read_mesh(mesh_file(node, instance, root))
     return S.mesh(found["vertices"], found["faces"])
 
 

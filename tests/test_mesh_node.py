@@ -78,6 +78,84 @@ def test_a_path_with_no_file_is_refused(tmp_path):
     assert refused.value.code == "geom.bad-solid"
 
 
+def two_colours(tmp_path, name="painted.glb"):
+    """Two unit cubes side by side along x, the left one red and the right one blue.
+
+    Each cube's texture coordinates all land on one texel of a two-pixel image, so
+    which colour a cell should wear is known before anything is voxelised.
+    """
+    bpy = pytest.importorskip("bpy")
+    from polyweave.render import blender
+
+    blender.reset()
+    corners = [(x, y, z) for x in (0, 2) for y in (0, 2) for z in (0, 2)]
+    quads = [
+        (0, 1, 3, 2),
+        (4, 6, 7, 5),
+        (0, 4, 5, 1),
+        (2, 3, 7, 6),
+        (0, 2, 6, 4),
+        (1, 5, 7, 3),
+    ]
+    vertices, faces = [], []
+    for shift in (0, 2):
+        start = len(vertices)
+        vertices += [(x + shift, y, z) for x, y, z in corners]
+        faces += [tuple(start + i for i in quad) for quad in quads]
+    mesh = bpy.data.meshes.new("painted")
+    mesh.from_pydata(vertices, [], faces)
+    layer = mesh.uv_layers.new(name="uv")
+    for polygon in mesh.polygons:
+        u = 0.25 if polygon.index < 6 else 0.75
+        for index in polygon.loop_indices:
+            layer.data[index].uv = (u, 0.5)
+    image = bpy.data.images.new("paint", width=2, height=1)
+    image.pixels[:] = [1, 0, 0, 1, 0, 0, 1, 1]
+    material = bpy.data.materials.new("paint")
+    material.use_nodes = True
+    texture = material.node_tree.nodes.new("ShaderNodeTexImage")
+    texture.image = image
+    shader = material.node_tree.nodes["Principled BSDF"]
+    material.node_tree.links.new(texture.outputs["Color"], shader.inputs["Base Color"])
+    mesh.materials.append(material)
+    obj = bpy.data.objects.new("painted", mesh)
+    bpy.context.scene.collection.objects.link(obj)
+    for other in bpy.context.scene.objects:
+        other.select_set(other is obj)
+    bpy.ops.export_scene.gltf(
+        filepath=str(tmp_path / name), use_selection=True, export_format="GLB"
+    )
+    return name
+
+
+def test_a_textured_mesh_wears_its_textures_colours(tmp_path):
+    name = two_colours(tmp_path)
+    made = V.voxelize(hull(name), root=tmp_path)
+    colours = {entry["colour"] for entry in made["palette"]}
+    assert colours == {"#FF0000", "#0000FF"}
+    names = [entry["name"] for entry in made["palette"]]
+    found = made["cells"]
+    worn = {
+        made["palette"][slot]["colour"]
+        for x, slot in zip(found["x"], found["palette"], strict=True)
+        if x < made["size"][0] // 2
+    }
+    assert worn == {"#FF0000"}
+    assert all(one.startswith("hull.") for one in names)
+
+
+def test_a_texture_is_quantised_to_the_count_the_node_states(tmp_path):
+    name = two_colours(tmp_path)
+    made = V.voxelize(hull(name, colours=1), root=tmp_path)
+    assert len(made["palette"]) == 1
+
+
+def test_a_material_on_the_node_covers_the_texture(tmp_path):
+    name = two_colours(tmp_path)
+    made = V.voxelize(hull(name, material="hull"), root=tmp_path)
+    assert [entry["name"] for entry in made["palette"]] == ["hull"]
+
+
 def test_the_readback_names_the_file():
     said = review.describe(hull("art/hull.glb"))["reads"]
     assert said == ["hull: the mesh in art/hull.glb"]

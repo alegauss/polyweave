@@ -185,8 +185,14 @@ drawn sprite, extruded.
 the file through Blender into the interface's axes, as ingest does, so a hull fetched from
 the service is cut and painted by the nodes after it rather than being the end of the
 line. As cells it is filled by ray parity, so a closed hull comes out solid rather than a
-shell, and it wears its node's `material`; the colour its own texture puts on each cell is
-not read yet. A path with no file is `geom.bad-solid`.
+shell. With a `material` it wears that. Without one, a textured mesh keeps what it was
+painted: its surface is sampled at every triangle's middle and corners, each sample takes
+the texel under its texture coordinate, the samples are quantised once to `colours`
+(eight unless the node says) by a k-means seeded along brightness, and each cell wears
+the slot of the sample nearest it. The slots are materials named `<node>.<n>` with their
+`colour`, so a later node still paints over them. Cottony's fetched hammer comes out 23 by
+24 by 11, 2004 cells in its six colours, in about two seconds, most of it Blender reading
+the file. A path with no file is `geom.bad-solid`.
 
 **A symmetric shape is declared once** (§PW96). `mirror` takes `of`, an `axis` written as
 the letter `x`, `y` or `z` (never an expression, so it cannot resolve to a parameter

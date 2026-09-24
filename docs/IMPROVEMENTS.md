@@ -388,26 +388,6 @@ written.
 
 ## Block I — Voxel models from a declaration
 
-### §PW100 A mesh as a node
-
-`op = "mesh"` has landed: `path` names a `.glb` or `.blend` under the project, read
-through `normalise.read_mesh` into the interface's axes, filled solid by ray parity as
-cells and wearing its node's `material`. `docs/specs/geometry.md` has the rest.
-
-What is left is the colour a bought mesh already carries. A fetched hull is painted by
-the service, and a cell of it should take the texture's colour at the nearest surface
-point rather than one flat material. That needs `read_mesh` to hand back each face
-corner's UV and the base colour image, both only reachable through Blender, then per
-filled cell the nearest triangle, the UV there by barycentric weights and the texel
-under it.
-
-The colours then have to land in a palette a game can use: quantise them to a small
-count, stated on the node, so a hull becomes a handful of materials rather than one per
-cell. A cell painted by a later node still wears that node's material, as every other
-cell does.
-
-Measure it on Cottony's fetched hammer, whose texture ingest keeps since PW90.
-
 ### §PW101 A build command
 
 `python -m polyweave build <doc.toml>` with `--out <dir>`, `--set name=value`
