@@ -156,6 +156,22 @@ def test_a_material_on_the_node_covers_the_texture(tmp_path):
     assert [entry["name"] for entry in made["palette"]] == ["hull"]
 
 
+def test_a_textured_mesh_writes_its_cubes_in_the_colours_it_found(tmp_path):
+    name = two_colours(tmp_path)
+    answer = V.write(hull(name), "cubes.glb", root=tmp_path, sheet=False)
+    assert (tmp_path / "cubes.glb").is_file()
+    assert answer["model"]["count"] == 16
+
+
+def test_a_key_only_the_game_reads_rides_in_the_cells_and_not_the_mesh(tmp_path):
+    name = written(tmp_path, S.plate([0, 0, 4, 2], 2.0))
+    document = hull(name, material="hull")
+    document["materials"]["hull"]["glow"] = 1.5
+    answer = V.write(document, "cubes.glb", root=tmp_path, sheet=False)
+    assert (tmp_path / "cubes.glb").is_file()
+    assert answer["model"]["palette"][0]["glow"] == 1.5
+
+
 def test_the_readback_names_the_file():
     said = review.describe(hull("art/hull.glb"))["reads"]
     assert said == ["hull: the mesh in art/hull.glb"]

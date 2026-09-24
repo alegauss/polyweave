@@ -789,8 +789,18 @@ def write(
         answer["sheet"] = looked["sheet"]
     if mesh:
         from ..normalise import write_mesh
+        from ..render.blender import shader_keys
 
-        written = write_mesh(cubes(made), where, materials=document.get("materials"))
+        # The palette and not the document's table: a textured mesh's colours are
+        # materials the model found (§PW100). And only what the shader has, since a key
+        # like `glow` is for the game, rides in the cells' file, and Blender refuses it.
+        shaded = shader_keys()
+        painted = {
+            entry["name"]: {k: v for k, v in entry.items() if k in shaded}
+            for entry in made["palette"]
+            if entry["name"]
+        }
+        written = write_mesh(cubes(made), where, materials=painted)
         answer["artefact"] = str(written)
     return answer
 

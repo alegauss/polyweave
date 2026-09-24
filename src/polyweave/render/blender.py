@@ -498,6 +498,22 @@ def scrub_textures(
     return found
 
 
+def shader_keys() -> set[str]:
+    """Every name a declared material can set on this Blender's shader, `colour` too.
+
+    Read off a Principled BSDF made and thrown away, because the sockets are the running
+    Blender's to say and not a list to keep here.
+    """
+    bpy = require()
+    probe = bpy.data.materials.new("polyweave-probe")
+    try:
+        probe.use_nodes = True
+        bsdf = probe.node_tree.nodes.get("Principled BSDF")
+        return set(_socket_names(bsdf)) | set(NAMED) if bsdf else set(NAMED)
+    finally:
+        bpy.data.materials.remove(probe)
+
+
 def _socket_names(bsdf: Any) -> list[str]:
     return [i.name.lower().replace(" ", "_") for i in bsdf.inputs]
 
