@@ -61,6 +61,18 @@ ledger is append-only and committed with the tree.
 A comparison with only one side recorded is refused too. A claim measured on one side is not
 measured.
 
+## A run is recorded, not reported
+
+Binds **PW115**. `loop.spent` adds whatever its caller says. Recording the stars charged
+32 renders for 28, because four final bakes were cache hits the caller counted as renders.
+It was caught only by reading the log, in a ledger that is append-only once committed. A
+bake already knows which it was. Inside `with loop.recording(run):` every `render.bake`
+counts itself into the run: a fresh render adds to `renders`, a hit to `cache_hits`, and
+both add their seconds to `render_seconds`. The parallel search counts its workers' bakes
+the same way, since no run is open in a worker. A comparison shows `cache_hits` beside
+`renders`. A hit is not free and not a render, and a loop that is fast because it repeats
+itself should be visible as that. `spent` stays for what the plugin cannot see.
+
 ## The claim is about the second change, not the first bake
 
 Binds **PW114**. The stars' first comparison said the work was not reduced: 8.6 s the new

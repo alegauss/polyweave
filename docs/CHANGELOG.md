@@ -118,6 +118,7 @@
 - ✅ **PW81 (the baseline)** **the two friends, their lean frames and the mascot take eleven constants apiece and nothing declares one** — The friends' and the mascot's before side is recorded from a byte-identical re-bake of all five sprites.
 - ✅ **PW92** **a mesh can only be sized by its height and set on its base, so a flat flying model is rescaled by hand in the game** — Ingest sizes a mesh on its height, length or longest extent and holds it from its base or centre, per asset and on the record, so a ship is two units long and centred.
 - ✅ **PW114** **the loop ledger only times a first port, where the old rig is a three-second re-bake of constants already found** — A run can name a change to a ported asset, record a person's minutes, and be compared on that change alone, the baseline rule held per change (design recorded in `docs/specs/adoption.md`).
+- ✅ **PW115** **a run's render count is whatever its caller adds up, so a cache hit can be charged as a render** — Inside loop.recording, every bake counts itself into the run as a render or a cache hit, so no caller's arithmetic reaches the ledger (design recorded in `docs/specs/adoption.md`).
 
 ## Block I — Voxel models from a declaration
 

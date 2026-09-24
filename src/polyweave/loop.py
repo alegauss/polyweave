@@ -30,6 +30,9 @@ import json
 import subprocess
 import time
 import uuid
+from collections.abc import Iterator
+from contextlib import contextmanager
+from contextvars import ContextVar
 from pathlib import Path
 
 from .config import load
@@ -141,6 +144,7 @@ def start(
         "credits": 0,
         "seconds": 0.0,
         "person_minutes": 0.0,
+        "cache_hits": 0,
         "verdicts": [],
         **({"change": str(change)} if change is not None else {}),
     }
@@ -166,6 +170,39 @@ def spent(
     run["seconds"] += float(seconds)
     run["person_minutes"] = run.get("person_minutes", 0.0) + float(person_minutes)
     return run
+
+
+#: The run bakes report into while one is open in this context (§PW115).
+_OPEN: ContextVar[dict | None] = ContextVar("polyweave_loop_run", default=None)
+
+
+@contextmanager
+def recording(run: dict) -> Iterator[dict]:
+    """Let every bake in this block count itself into `run`, rather than the caller.
+
+    Recording the stars charged 32 renders for 28, because four of the final bakes were
+    cache hits and the caller added them up as renders. A bake already knows which it
+    was, so it says so here: a fresh render adds to `renders`, a hit to `cache_hits`,
+    and both add their seconds to `render_seconds`. `spent` stays for what the plugin
+    cannot see, such as a service call made elsewhere.
+    """
+    token = _OPEN.set(run)
+    try:
+        yield run
+    finally:
+        _OPEN.reset(token)
+
+
+def bake_seen(answer: dict) -> None:
+    """One bake's answer, counted into the open run where there is one."""
+    run = _OPEN.get()
+    if run is None:
+        return
+    key = "cache_hits" if answer.get("cached") else "renders"
+    run[key] = run.get(key, 0) + 1
+    run["render_seconds"] = round(
+        run.get("render_seconds", 0.0) + float(answer.get("elapsed_s") or 0.0), 3
+    )
 
 
 def judged(
@@ -271,6 +308,8 @@ def _totals(runs: list[dict]) -> dict:
         "accepted": len(accepted),
         "seconds": round(sum(one["seconds"] for one in runs), 3),
         "renders": sum(one["renders"] for one in runs),
+        # Not free and not a render: a loop fast because it repeats itself shows here.
+        "cache_hits": sum(one.get("cache_hits", 0) for one in runs),
         "calls": sum(one["calls"] for one in runs),
         "credits": sum(one["credits"] for one in runs),
         "person_minutes": round(sum(one.get("person_minutes", 0.0) for one in runs), 3),

@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 2 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 7 },
+  { block: "H", title: "Proof on a real game", open: 6 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 11 },
@@ -91,13 +91,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW57"],
   },
   {
-    id: "PW115",
-    block: "H",
-    symptom: "a run's render count is whatever its caller adds up, so a cache hit can be charged as a render",
-    why: "Recording the stars charged 32 renders for 28, caught only by reading the log, in a ledger that is append-only once committed.",
-    deps: [],
-  },
-  {
     id: "PW116",
     block: "H",
     symptom: "a ledger side that never measured the hand work still yields a conclusive verdict",
@@ -116,7 +109,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "every family port is a hand-written script repeating the same build, search, check, bake and record steps",
     why: "Three Cottony port scripts are one skeleton with different filling, and five more families would be five more copies, each with its own small mistakes.",
-    deps: ["PW115"],
+    deps: [],
   },
   {
     id: "PW123",

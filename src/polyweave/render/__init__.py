@@ -363,9 +363,11 @@ def bake(
         hit = store.look(signature, work=work)
         if hit is not None:
             report.stage("rendering", progress=1.0, note="cached")
-            return _from_cache(
+            served = _from_cache(
                 hit, out_path, where, chosen, started, inline, tolerances, frame
             )
+            _counted(served)
+            return served
 
     scrubbed: dict = {}
     if chosen["subject"] == "primitive":
@@ -470,4 +472,12 @@ def bake(
         answer["scrubbed"] = scrubbed
     if inline:
         answer["image"] = measure.inline_image(out_path)
+    _counted(answer)
     return answer
+
+
+def _counted(answer: dict) -> None:
+    """Tell an open loop run what this bake was: a render, or a hit (§PW115)."""
+    from .. import loop
+
+    loop.bake_seen(answer)

@@ -27,7 +27,7 @@ from collections.abc import Callable, Iterator, Sequence
 from pathlib import Path
 from typing import Any
 
-from . import accept
+from . import accept, loop
 from .accept import Spec
 from .errors import PolyweaveError
 
@@ -599,6 +599,8 @@ def in_parallel(
                     # a missing path instead of as whatever actually went wrong.
                     raise PolyweaveError.from_dict(done.get("error") or {})
                 drawn = done.get("result") or {}
+                # The bake ran in a worker, where no run is open, so it is counted here.
+                loop.bake_seen(drawn)
                 checked = accept.check(spec, Path(root) / picture, rung=at, root=root)
                 checked["render"] = {
                     "cache_key": drawn.get("cache_key"),

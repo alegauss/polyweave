@@ -336,23 +336,6 @@ this is where that is recorded honestly: what still runs by hand, and why the ri
 instead of disappearing. An outcome worth having, stated, beats the same outcome
 unstated.
 
-### §PW115 A run recorded rather than reported
-
-`loop.spent` adds whatever its caller says. Recording the stars, the caller charged 32
-renders when 28 were rendered, because the four final bakes were the checked pictures
-handed back by the cache. The mistake was caught by reading the log, and it went against
-the plugin; the next one could go either way, and the ledger is append-only.
-
-`render.bake` already knows: every answer carries `cached`. So a run can be recorded
-rather than reported. While a run is open, each bake reports into it, counting fresh
-renders and cache hits separately, with their seconds. The caller still judges the run
-and closes it, and `spent` stays for what the plugin cannot see, such as a service call
-made elsewhere.
-
-A cache hit is not free and not a render, and the ledger should show both numbers, since
-a loop that is fast because it repeats itself is the very thing the loop ledger was
-written to catch.
-
 ### §PW116 What a side did not measure, said as data
 
 Every before side in Cottony's ledger carries the same sentence in its brief: the hand
@@ -401,7 +384,8 @@ A family file states what differs: the members, each with its spec, its model or
 declaration, what its render fixes and where it is baked; the axes shared; whether the
 rig is searched, placed or given. One port operation reads it and runs the skeleton,
 using the family search (`search.family`, PW105), recording into the ledger as it goes
-(§PW115), and baking only when every member passes.
+(inside `loop.recording`, in docs/specs/adoption.md), and baking only when every member
+passes.
 
 For the caller this plugin is designed for, that is twenty lines of TOML instead of a
 hundred of Python, and a port that reads the same across families. The scripts that
