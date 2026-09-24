@@ -103,6 +103,10 @@ MODULES: tuple[str, ...] = (
     "polyweave.geometry.review",
     "polyweave.purchase",
     "polyweave.schema",
+    "polyweave.engine",
+    "polyweave.capture",
+    "polyweave.offscreen",
+    "polyweave.godot",
 )
 
 

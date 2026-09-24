@@ -35,9 +35,10 @@ import shutil
 import subprocess
 import time
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any
 
 from .config import load
+from .describe import Param, operation
 from .errors import PolyweaveError
 from .files import write_atomic
 from .jobs import children
@@ -57,7 +58,10 @@ AT = re.compile(r"\((res://[^\s:]+:\d+)\)")
 FRAMES = re.compile(r"\bframes: *(\d+)\b")
 
 
-def find(root: str | Path = ".") -> str:
+@operation("engine.find")
+def find(
+    root: Annotated[str, Param("the project whose [paths] godot is read")] = ".",
+) -> str:
     """The engine binary: what the project names, then $GODOT, then PATH."""
     settings = load(root)
     named = str(settings.get("paths.godot") or "").strip()
@@ -321,4 +325,33 @@ def require(script: str | Path, **how: Any) -> dict:
         f"{Path(found['script']).name} did not report a result: {found['why']}",
         f"read {found['log']}, which holds everything the run printed",
         detail="\n".join(error["text"] for error in found["errors"][:5]) or None,
+    )
+
+
+@operation("engine.run")
+def ran(
+    script: Annotated[str, Param("the scene script, as a path under the project")],
+    *,
+    expect: Annotated[str, Param("the line that means it worked, as a pattern")],
+    root: Annotated[str, Param("the project the engine runs")] = ".",
+    produces: Annotated[
+        list, Param("the named groups of expect that are paths it must have written")
+    ] = (),
+    frames: Annotated[int, Param("the frame budget; the project's if unset")] = None,
+    timeout: Annotated[
+        float, Param("the wall clock; the project's if unset", unit="s")
+    ] = None,
+    headless: Annotated[bool, Param("run with no window")] = False,
+    args: Annotated[list, Param("user arguments passed after the script")] = (),
+) -> dict:
+    """Run one scene script and say what happened: the verdict, not the log."""
+    return run(
+        script,
+        expect=expect,
+        root=root,
+        produces=tuple(produces),
+        frames=frames,
+        timeout=timeout,
+        headless=headless,
+        args=tuple(args),
     )

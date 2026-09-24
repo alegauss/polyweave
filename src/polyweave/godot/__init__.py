@@ -8,7 +8,9 @@ from __future__ import annotations
 
 import shutil
 from pathlib import Path
+from typing import Annotated
 
+from ..describe import Param, operation
 from ..errors import PolyweaveError
 
 __all__ = ["ADDONS", "install"]
@@ -17,7 +19,11 @@ __all__ = ["ADDONS", "install"]
 ADDONS = {"polyweave_voxels": Path(__file__).parent / "addons" / "polyweave_voxels"}
 
 
-def install(project: str | Path, addon: str = "polyweave_voxels") -> dict:
+@operation("godot.install")
+def install(
+    project: Annotated[str, Param("the Godot project to install into")],
+    addon: Annotated[str, Param("which addon")] = "polyweave_voxels",
+) -> dict:
     """Copy an addon into a Godot project's `addons/`, replacing an older copy.
 
     Refused where the folder is not a Godot project, since an addon copied beside no

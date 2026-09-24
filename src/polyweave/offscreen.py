@@ -37,10 +37,11 @@ import shutil
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any
 
 from . import engine
 from .config import load
+from .describe import Param, operation
 from .errors import PolyweaveError
 from .files import write_atomic
 
@@ -247,7 +248,12 @@ def _kept(root: str | Path) -> Path:
     return load(root).path("paths.work") / "offscreen" / "routes.json"
 
 
-def routes(root: str | Path = ".", *, recheck: bool = False) -> dict:
+@operation("offscreen.routes")
+def routes(
+    root: Annotated[str, Param("the project whose engine is probed")] = ".",
+    *,
+    recheck: Annotated[bool, Param("probe again rather than read the last")] = False,
+) -> dict:
     """Which routes draw on this machine, proved rather than assumed.
 
     Kept once probed: the answer is a second or two of engine start-up per route and it

@@ -40,10 +40,11 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any
 
 from . import engine, offscreen, provenance
 from .config import load
+from .describe import Param, operation
 from .errors import PolyweaveError
 
 #: What a script prints back to say what it actually applied.
@@ -101,7 +102,10 @@ def regions(output: str) -> dict[str, list[int]]:
     }
 
 
-def declared(root: str | Path = ".") -> list[str]:
+@operation("capture.declared")
+def declared(
+    root: Annotated[str, Param("the project whose [capture] declared is read")] = ".",
+) -> list[str]:
     """The settings this project says a picture depends on."""
     return [str(name) for name in load(root).get("capture.declared") or ()]
 
@@ -341,3 +345,22 @@ def require(script: str | Path, **how: Any) -> dict:
             "against; [capture] reproducible is what asked for this to be a refusal",
         )
     return found
+
+
+@operation("capture.run", kind="capture")
+def taken(
+    script: Annotated[str, Param("the scene script, as a path under the project")],
+    *,
+    expect: Annotated[str, Param("the line naming the picture, as a pattern")],
+    root: Annotated[str, Param("the project the engine runs")] = ".",
+    environment: Annotated[
+        dict, Param("the settings to take it in; [capture] where unset")
+    ] = None,
+    record: Annotated[bool, Param("write the environment beside the picture")] = True,
+    strict: Annotated[
+        bool, Param("refuse, as require does, rather than report a failed run")
+    ] = False,
+) -> dict:
+    """Take a picture in a stated environment, and check it was the stated one."""
+    how = {"expect": expect, "root": root, "environment": environment, "record": record}
+    return require(script, **how) if strict else run(script, **how)

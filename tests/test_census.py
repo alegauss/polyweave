@@ -7,7 +7,7 @@ from polyweave.capabilities import capabilities
 
 #: How much surface is still unregistered. Registering a module lowers it, and this
 #: number is lowered with it: it may only fall, never rise.
-PENDING = 94
+PENDING = 73
 
 
 def test_every_public_function_is_classified():
@@ -191,6 +191,14 @@ def test_the_budget_is_asked_by_name_with_a_date_as_text(tmp_path):
     with pytest.raises(PolyweaveError) as refused:
         fn(20.0, root=root, today="2027-01-02")
     assert refused.value.code == "fetch.budget-closed"
+
+
+def test_the_engine_side_is_described_without_its_test_hooks():
+    for name, hook in (("engine.run", "launch"), ("capture.run", "take")):
+        names = {p["name"] for p in describe.describe(name)["parameters"]}
+        assert hook not in names
+        assert "expect" in names
+    assert describe.describe("capture.run")["asynchronous"] is True
 
 
 def test_a_fresh_read_of_the_operations_loads_them():

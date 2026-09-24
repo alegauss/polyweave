@@ -64,6 +64,9 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.geometry.voxels": ("internal", "the voxel model a build writes"),
     "polyweave.purchase": ("internal", "what a fetch writes when it has paid"),
     "polyweave.schema": ("internal", "learning the schema, which sends requests"),
+    "polyweave.capture": ("internal", "the environment's parts, inside capture.run"),
+    "polyweave.engine": ("internal", "run with its launch hook, behind engine.run"),
+    "polyweave.offscreen": ("internal", "a route as an object; offscreen.routes"),
     # -- internal: helpers an operation calls, never a caller's first call ----------
     "polyweave.cache": ("internal", "the render cache, reached through bake's cached"),
     "polyweave.census": ("internal", "this census's own walk"),
@@ -97,13 +100,9 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.geometry.voxel_fit": ("internal", "a voxel build's fitting"),
     "polyweave.geometry.voxel_sheet": ("internal", "a voxel build's contact sheet"),
     # -- pending: a caller's surface, not yet registered with describe ---------------
-    "polyweave.capture": ("pending", "a picture of the running game"),
     "polyweave.clip": ("pending", "motion as a named clip"),
     "polyweave.compose": ("pending", "an asset where it will be seen"),
-    "polyweave.engine": ("pending", "running a scene script"),
-    "polyweave.godot": ("pending", "installing the Godot side"),
     "polyweave.normalise": ("pending", "a mesh brought to the conventions"),
-    "polyweave.offscreen": ("pending", "the routes a capture can draw by"),
     "polyweave.reference": ("pending", "a reference prepared for a fetch"),
     "polyweave.shape": ("pending", "a silhouette's shape"),
     "polyweave.skeleton": ("pending", "a skeleton fitted to a mesh"),

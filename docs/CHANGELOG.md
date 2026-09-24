@@ -168,6 +168,7 @@
 - ✅ **PW155** **a picture is measured only from Python, since describe does not list the measurement vocabulary** — measure.take, same and available are operations, take naming the four arguments a measure takes; pending falls to 147 (design recorded in `docs/specs/tool-surface.md`).
 - ✅ **PW156** **a declaration is built or read back only from Python, since describe lists no geometry** — geometry.build, build_all, describe and variants are operations taking a declaration's path; pending falls to 112 (design recorded in `docs/specs/tool-surface.md`).
 - ✅ **PW157** **the purchase ledger and the service schema are read only from Python, since describe lists neither** — Seven purchase and three schema operations are registered, a date taken as text; writing and learning stay behind the fetch; pending falls to 94 (design recorded in `docs/specs/tool-surface.md`).
+- ✅ **PW158** **the engine is found, run and captured only from Python, since describe lists nothing of the engine side** — engine.find and run, capture.run and declared, offscreen.routes and godot.install are operations, free of test hooks; pending falls to 73 (design recorded in `docs/specs/tool-surface.md`).
 
 ## Block L — What a run leaves as evidence
 
