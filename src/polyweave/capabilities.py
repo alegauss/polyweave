@@ -18,11 +18,13 @@ import sys
 from pathlib import Path
 
 from . import __version__
+from .census import pending_modules
 from .codes import AREAS
 from .config import load
 from .describe import describe
 from .errors import codes
 from .jobs.stages import KINDS, TERMINAL
+from .measure import COMPUTES, SUFFIXES
 from .post import CHEAP, OPTIONAL
 
 #: Long enough for a cold start off a slow disk, short enough not to hold the turn.
@@ -158,6 +160,13 @@ def capabilities(
         "engine": {"godot": engine},
         "service": service,
         "operations": describe(),
+        # Surface that exists and is not yet an operation (§PW124): named, so a caller
+        # knows to look for it, until each module is registered and leaves this list.
+        "unregistered": pending_modules(),
+        "measures": {
+            "names": sorted(COMPUTES),
+            "suffixes": list(SUFFIXES),
+        },
         "jobs": {
             "kinds": {kind: list(stages) for kind, stages in KINDS.items()},
             "terminal": list(TERMINAL),

@@ -221,11 +221,18 @@ def for_target(target: str) -> str | None:
 
 def operations() -> list[str]:
     """Every operation name, sorted."""
+    load()
     return sorted(_REGISTRY)
 
 
 def describe(name: str | None = None) -> dict | list[dict]:
-    """One operation's parameter set, or every operation's."""
+    """One operation's parameter set, or every operation's.
+
+    The registry is loaded first (§PW124): registration is an import's side effect, so
+    a fresh process asking `capabilities()` used to list whatever happened to have been
+    imported, which could be nothing.
+    """
+    load()
     if name is None:
         return [_REGISTRY[n].as_dict() for n in operations()]
     try:

@@ -87,7 +87,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW124",
     block: "K",
     symptom: "`describe` knows one operation, so search, accept, geometry and voxels are still learned by reading their source",
-    why: "PW3 shipped self-description and only `render.bake` took it up; every operation since arrived as a plain function, and no test notices one more.",
+    why: "Register the pending modules with @operation, one module per commit, lowering test_census.PENDING each time.",
     deps: [],
   },
   {

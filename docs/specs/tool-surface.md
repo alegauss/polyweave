@@ -192,6 +192,17 @@ both answers.
   what came back, alongside the transform in force. An installation that cannot measure
   colour says so, before a spec is written against it, rather than answering confidently.
   The check belongs to the probing read, because it costs a render.
+- **What is not yet an operation is still named** (§PW124). `capabilities()` carries
+  `unregistered`, every module whose surface is not yet registered with what it is for,
+  and `measures`, the vocabulary's names and statistic suffixes. `polyweave.census`
+  classifies every public function in the package: a registered operation, an `entry`
+  read a caller starts from (`capabilities`, `describe`, `explain`), or, by its module,
+  `internal` (a helper an operation calls) or `pending`. `tests/test_census.py` refuses
+  one left unclassified and one listed that no longer needs to be. It pins the pending
+  count so that count can only fall, and it checks that every operation, code, area and
+  measure `capabilities` names can be followed up with a single read. `describe()` loads
+  the registry before answering, so a fresh process no longer lists only what it happened
+  to have imported.
 
 ## 5. Configuration is resolved per call
 
