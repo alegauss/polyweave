@@ -49,12 +49,17 @@ __all__ = [
 ]
 
 
+@operation("render.plan")
 def plan(
-    rung: str | None = None,
-    asking: list[str] | None = None,
+    rung: Annotated[str, Param("the rung to render at, if the caller names it")] = None,
+    asking: Annotated[
+        list, Param("the measures the answer has to carry, if no rung is named")
+    ] = None,
     *,
-    floor: str | None = None,
-    root: str | Path = ".",
+    floor: Annotated[
+        str, Param("the lowest rung a verdict on this asset may be taken at")
+    ] = None,
+    root: Annotated[str, Param("the project to resolve settings against")] = ".",
 ) -> dict:
     """Which rung will answer, how big it will be, and why that one.
 

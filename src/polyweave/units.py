@@ -27,9 +27,10 @@ import json
 import math
 import re
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any
 
 from .config import load
+from .describe import Param, operation
 from .errors import PolyweaveError
 
 #: How a number is spelled where a game keeps one. Tried in order, and the first that
@@ -48,7 +49,15 @@ READS = (
 CLOSE = 1e-6
 
 
-def read_number(address: str, *, root: str | Path = ".") -> float:
+ROOT = Param("the project whose scale this is")
+
+
+@operation("units.read_number")
+def read_number(
+    address: Annotated[str, Param("path/to/file:NAME, relative to the project")],
+    *,
+    root: Annotated[str, ROOT] = ".",
+) -> float:
     """One number, out of the file the project says holds it.
 
     `address` is `path/to/file:NAME`, relative to the project. Reading it here rather
@@ -84,7 +93,8 @@ def read_number(address: str, *, root: str | Path = ".") -> float:
     )
 
 
-def engine_scale(root: str | Path = ".") -> dict:
+@operation("units.engine_scale")
+def engine_scale(root: Annotated[str, ROOT] = ".") -> dict:
     """The pixels per unit the engine draws at, and where that number came from."""
     settings = load(root)
     source = str(settings.get("units.source") or "").strip()
@@ -218,13 +228,20 @@ def declared(source: Any, *, root: str | Path = ".") -> dict:
     }
 
 
+@operation("units.check")
 def check(
-    source: Any,
+    source: Annotated[
+        Any, Param("the asset's declaration: covers and pixels_per_unit, or a file")
+    ],
     *,
-    size: Any = None,
-    root: str | Path = ".",
-    pixels_per_unit: float | None = None,
-    tolerance: float | None = None,
+    size: Annotated[list, Param("the picture made, [width, height], if any")] = None,
+    root: Annotated[str, ROOT] = ".",
+    pixels_per_unit: Annotated[
+        float, Param("the scale baked at, where the declaration omits it", lo=0.0)
+    ] = None,
+    tolerance: Annotated[
+        float, Param("how far apart two scales may be; the project's where unset")
+    ] = None,
 ) -> dict:
     """Does the asset's scale agree with the engine's, and with its own pixels.
 

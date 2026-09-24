@@ -54,6 +54,7 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.port:port": ("internal", "port.run with its renderer as a test hook"),
     "polyweave.trace": ("internal", "search.sweep writes it, trace.read reads it"),
     "polyweave.provenance": ("internal", "what producers use to write a record"),
+    "polyweave.units": ("internal", "a rectangle's arithmetic, inside units.check"),
     # -- internal: helpers an operation calls, never a caller's first call ----------
     "polyweave.cache": ("internal", "the render cache, reached through bake's cached"),
     "polyweave.census": ("internal", "this census's own walk"),
@@ -103,13 +104,11 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.offscreen": ("pending", "the routes a capture can draw by"),
     "polyweave.purchase": ("pending", "the ledger of what was bought"),
     "polyweave.reference": ("pending", "a reference prepared for a fetch"),
-    "polyweave.render": ("pending", "render.plan, the read before a bake"),
     "polyweave.schema": ("pending", "what the service was proved to accept"),
     "polyweave.shape": ("pending", "a silhouette's shape"),
     "polyweave.skeleton": ("pending", "a skeleton fitted to a mesh"),
     "polyweave.sprites": ("pending", "a clip baked to a sprite sheet"),
     "polyweave.texture": ("pending", "a service's paint taken back out"),
-    "polyweave.units": ("pending", "the scale an asset is baked at"),
 }
 
 
