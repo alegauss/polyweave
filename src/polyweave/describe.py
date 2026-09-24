@@ -87,7 +87,7 @@ _REGISTRY: dict[str, Operation] = {}
 #: is complete before anything is looked up in it (§PW39). Only this package's own
 #: modules are ever imported here: a project's target may need an environment the caller
 #: does not have, which is exactly why a job spawns rather than importing.
-MODULES: tuple[str, ...] = ("polyweave.render",)
+MODULES: tuple[str, ...] = ("polyweave.render", "polyweave.accept")
 
 
 def _type_name(annotation: Any) -> str:

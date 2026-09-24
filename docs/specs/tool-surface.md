@@ -200,7 +200,10 @@ both answers.
   `internal` (a helper an operation calls) or `pending`. `tests/test_census.py` refuses
   one left unclassified and one listed that no longer needs to be. It pins the pending
   count so that count can only fall, and it checks that every operation, code, area and
-  measure `capabilities` names can be followed up with a single read. `describe()` loads
+  measure `capabilities` names can be followed up with a single read. Registered so far:
+  `render.bake`, and `accept.check`, `accept.verify` and `accept.check_screen`, which take
+  paths because a call's arguments are JSON (§PW147). A module's leftover helpers may be
+  listed as internal one function at a time. `describe()` loads
   the registry before answering, so a fresh process no longer lists only what it happened
   to have imported.
 

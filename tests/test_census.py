@@ -7,7 +7,7 @@ from polyweave.capabilities import capabilities
 
 #: How much surface is still unregistered. Registering a module lowers it, and this
 #: number is lowered with it: it may only fall, never rise.
-PENDING = 243
+PENDING = 236
 
 
 def test_every_public_function_is_classified():
@@ -20,21 +20,27 @@ def test_every_public_function_is_classified():
 
 def test_no_entry_or_module_is_listed_that_no_longer_needs_to_be():
     names = census.public()
+    registered = {op.target for op in describe._REGISTRY.values()}
     stale_entries = sorted(set(census.ENTRY) - set(names))
     live_modules = set(names.values())
-    stale_modules = sorted(set(census.MODULES) - live_modules)
-    registered = {op.target for op in describe._REGISTRY.values()}
+    listed_functions = [key for key in census.MODULES if ":" in key]
+    listed_modules = [key for key in census.MODULES if ":" not in key]
+    stale_functions = sorted(
+        key for key in listed_functions if key not in names or key in registered
+    )
+    stale_modules = sorted(set(listed_modules) - live_modules)
     wholly_registered = sorted(
         module
-        for module in census.MODULES
+        for module in listed_modules
         if module in live_modules
         and all(
-            target in registered or target in census.ENTRY
+            target in registered or target in census.ENTRY or target in census.MODULES
             for target, owner in names.items()
             if owner == module
         )
     )
     assert stale_entries == []
+    assert stale_functions == [], "these are gone or registered; take them off"
     assert stale_modules == []
     assert wholly_registered == [], "take these off census.MODULES: nothing is left"
 
@@ -58,6 +64,27 @@ def test_everything_capabilities_names_is_one_read_away():
         assert measure.resolve(name)
     assert set(found["unregistered"]) == set(census.pending_modules())
     assert "polyweave.search" in found["unregistered"]
+
+
+def test_a_spec_is_checked_by_name_with_nothing_but_paths(tmp_path):
+    """accept is registered: an agent reaches it from describe, with JSON arguments."""
+    from PIL import Image
+
+    (tmp_path / "star.accept.toml").write_text(
+        "asset = 'star'\n[[predicate]]\nid = 'tone'\nmeasure = 'luma_p99'\n"
+        "region = 'frame'\nmax = 0.37\n",
+        encoding="utf-8",
+    )
+    Image.new("RGBA", (8, 8), (102, 102, 102, 255)).save(tmp_path / "star.png")
+    args = describe.validate(
+        "accept.check",
+        {"spec": "star.accept.toml", "subject": "star.png", "root": str(tmp_path)},
+    )
+    target = describe._REGISTRY["accept.check"].fn
+    assert target(**args)["passed"] is True
+    assert {"accept.check", "accept.verify", "accept.check_screen"} <= set(
+        describe.operations()
+    )
 
 
 def test_a_fresh_read_of_the_operations_loads_them():

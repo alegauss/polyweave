@@ -36,8 +36,15 @@ ENTRY = {
     "polyweave:readable": "a runner's output made UTF-8 before it prints",
 }
 
-#: Every other module with public functions: internal, or pending registration.
+#: Every other module with public functions: internal, or pending registration. A key
+#: may also be one `module:function`, for a helper left in a module that is registered.
 MODULES: dict[str, tuple[str, str]] = {
+    # -- functions left in a registered module --------------------------------------
+    "polyweave.accept:read": ("internal", "a Spec in process; accept.check reads it"),
+    "polyweave.accept:parse": ("internal", "a Spec from a table already in memory"),
+    "polyweave.accept:check": ("internal", "the in-process check, on a Spec object"),
+    "polyweave.accept:margin": ("internal", "one predicate's margin"),
+    "polyweave.accept:headroom": ("internal", "one predicate's headroom"),
     # -- internal: helpers an operation calls, never a caller's first call ----------
     "polyweave.cache": ("internal", "the render cache, reached through bake's cached"),
     "polyweave.census": ("internal", "this census's own walk"),
@@ -71,7 +78,6 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.geometry.voxel_fit": ("internal", "a voxel build's fitting"),
     "polyweave.geometry.voxel_sheet": ("internal", "a voxel build's contact sheet"),
     # -- pending: a caller's surface, not yet registered with describe ---------------
-    "polyweave.accept": ("pending", "reading and checking an acceptance spec"),
     "polyweave.calibrate": ("pending", "measuring a bound's room from the noise"),
     "polyweave.capture": ("pending", "a picture of the running game"),
     "polyweave.cli": ("pending", "the command line's builders"),
@@ -142,6 +148,9 @@ def census() -> dict:
             found["registered"].append(target)
         elif target in ENTRY:
             found["entry"].append(target)
+        elif target in MODULES:
+            # A function listed by itself, where its module is otherwise registered.
+            found[MODULES[target][0]].append(target)
         elif module in MODULES:
             found[MODULES[module][0]].append(target)
         else:
@@ -154,5 +163,5 @@ def pending_modules() -> dict[str, str]:
     return {
         module: reason
         for module, (kind, reason) in MODULES.items()
-        if kind == "pending"
+        if kind == "pending" and ":" not in module
     }

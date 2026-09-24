@@ -20,9 +20,10 @@ from __future__ import annotations
 import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any
 
 from . import measure as M
+from .describe import Param, operation
 from .errors import PolyweaveError
 from .render.ladder import RUNGS, check_rung, lowest_rung
 
@@ -410,6 +411,25 @@ def check(
     }
 
 
+@operation("accept.check")
+def checked(
+    spec: Annotated[str, Param("the acceptance spec, as a path under the project")],
+    subject: Annotated[str, Param("the picture to check, as a path under the project")],
+    rung: Annotated[
+        str, Param("the rung the picture was made at, if known", choices=RUNGS + ("",))
+    ] = "",
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
+) -> dict:
+    """Check one picture against one spec: each predicate's value, verdict and margin.
+
+    The form a caller reaches by name: paths in, the answer out. `check` is the same
+    work on a `Spec` already in memory.
+    """
+    here = Path(root)
+    picture = Path(subject) if Path(subject).is_absolute() else here / subject
+    return check(read(spec, here), picture, rung=rung or None, root=here)
+
+
 def _bound(p: Predicate, value: float) -> dict:
     """The bound that decided a predicate, where it came from, and what a miss means.
 
@@ -463,7 +483,12 @@ def _meaning(name: str, side: str, origin: dict) -> str:
 # -- the specs as a gate ---------------------------------------------------------------
 
 
-def verify(root: str | Path = ".", *, under: str | Path | None = None) -> dict:
+@operation("accept.verify")
+def verify(
+    root: Annotated[str, Param("the project the specs and artefacts are under")] = ".",
+    *,
+    under: Annotated[str, Param("where the specs are; [paths] specs by default")] = "",
+) -> dict:
     """Every spec under `[paths] specs` against the artefact it names (§PW111).
 
     A spec is consulted while a search runs and not after it, so a sprite overwritten
@@ -561,7 +586,12 @@ def _baked(spec: Spec, here: Path) -> dict:
     return {**found, "baked": found["status"], "rung": made_at}
 
 
-def check_screen(spec: Spec, *, root: str | Path = ".") -> dict:
+@operation("accept.check_screen")
+def check_screen(
+    spec: Annotated[str, Param("the acceptance spec, as a path under the project")],
+    *,
+    root: Annotated[str, Param("the project the spec and capture are under")] = ".",
+) -> dict:
     """The same spec, held to where the asset stands in a capture (§PW112).
 
     Once the game loads a mesh, its material is what the player sees and the bake is a
@@ -574,6 +604,8 @@ def check_screen(spec: Spec, *, root: str | Path = ".") -> dict:
     from . import provenance
     from .image import Image, load
 
+    if not isinstance(spec, Spec):
+        spec = read(spec, root)
     if not spec.screen:
         raise PolyweaveError(
             "spec.no-screen",
