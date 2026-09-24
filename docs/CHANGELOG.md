@@ -160,6 +160,7 @@
 - ✅ **PW147** **an acceptance spec can be checked or verified only from Python, since describe does not list accept** — accept.check, accept.verify and accept.check_screen are operations describe returns, called with paths alone; pending falls to 236 (design recorded in `docs/specs/tool-surface.md`).
 - ✅ **PW148** **a rendered search is reached only from Python, since describe does not list search** — search.sweep, asynchronous with a spec path, and search.worth_parallel are operations describe returns; pending falls to 222 (design recorded in `docs/specs/tool-surface.md`).
 - ✅ **PW149** **a bound is calibrated from the noise only from Python, since describe does not list calibrate** — calibrate.run and calibrate.apply are operations; apply by name cannot replace a person's bound, and pending falls to 216 (design recorded in `docs/specs/tool-surface.md`).
+- ✅ **PW150** **a person's verdict is carried only from Python, since describe does not list verdict** — verdict.sheet, verdict.sitting and verdict.judge are operations, judge's three choices declared; pending falls to 213 (design recorded in `docs/specs/tool-surface.md`).
 
 ## Block L — What a run leaves as evidence
 

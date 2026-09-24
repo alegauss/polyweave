@@ -92,6 +92,7 @@ MODULES: tuple[str, ...] = (
     "polyweave.accept",
     "polyweave.search",
     "polyweave.calibrate",
+    "polyweave.verdict",
 )
 
 

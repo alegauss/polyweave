@@ -107,7 +107,6 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.texture": ("pending", "a service's paint taken back out"),
     "polyweave.trace": ("pending", "what a search rejected"),
     "polyweave.units": ("pending", "the scale an asset is baked at"),
-    "polyweave.verdict": ("pending", "a person's verdict, on one sheet"),
 }
 
 

@@ -205,7 +205,8 @@ both answers.
   paths because a call's arguments are JSON (§PW147), and `search.sweep`, asynchronous, and
   `search.worth_parallel` (§PW148), and `calibrate.run` and `calibrate.apply`, which takes
   no `person` flag, so an agent calling by name can never overrule a person's bound
-  (§PW149). A module's leftover helpers may be
+  (§PW149), and `verdict.sheet`, `verdict.sitting` and `verdict.judge`, whose choice is
+  declared so `validate` refuses a fourth (§PW150). A module's leftover helpers may be
   listed as internal one function at a time. `describe()` loads
   the registry before answering, so a fresh process no longer lists only what it happened
   to have imported.

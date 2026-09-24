@@ -19,8 +19,10 @@ from __future__ import annotations
 
 from datetime import date as Date
 from pathlib import Path
+from typing import Annotated
 
 from . import accept, calibrate, loop
+from .describe import Param, operation
 from .errors import PolyweaveError
 
 #: What a person can say of a family, and what each one means for the spec.
@@ -51,11 +53,17 @@ def _said(result: dict) -> str:
     )
 
 
+MEMBERS = (
+    "each member: name, spec and new, and optionally old, capture with box, and shown"
+)
+
+
+@operation("verdict.sheet")
 def sheet(
-    members: list[dict],
+    members: Annotated[list, Param(MEMBERS)],
     *,
-    out: str | Path,
-    root: str | Path = ".",
+    out: Annotated[str, Param("where the sheet is written, under the project")],
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
 ) -> dict:
     """The family on one picture: old beside new at the size shown, and what failed.
 
@@ -118,11 +126,14 @@ def sheet(
     return {"sheet": str(where), "members": said, "choices": dict(CHOICES)}
 
 
+@operation("verdict.sitting")
 def sitting(
-    families: dict[str, list[dict]],
+    families: Annotated[
+        dict, Param("each family's name to its members, as for a sheet")
+    ],
     *,
-    out: str | Path,
-    root: str | Path = ".",
+    out: Annotated[str, Param("the folder every family's sheet is written into")],
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
 ) -> dict:
     """Every pending family's sheet in one folder, so a person looks once (§PW110).
 
@@ -142,15 +153,18 @@ def sitting(
     }
 
 
+@operation("verdict.judge")
 def judge(
-    members: list[dict],
-    choice: str,
-    why: str,
+    members: Annotated[list, Param(MEMBERS)],
+    choice: Annotated[
+        str, Param("what the person said of the family", choices=tuple(CHOICES))
+    ],
+    why: Annotated[str, Param("the person's own sentence, as they said it")],
     *,
-    root: str | Path = ".",
-    run: dict | None = None,
-    named: tuple[str, ...] | list[str] = (),
-    when: str | None = None,
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
+    run: Annotated[dict, Param("the open loop run the verdict is recorded in")] = None,
+    named: Annotated[list, Param("the predicates the person blamed, for look")] = (),
+    when: Annotated[str, Param("the date of the verdict; today where empty")] = "",
 ) -> dict:
     """What a person said of a family, carried into the ledger and the spec.
 
