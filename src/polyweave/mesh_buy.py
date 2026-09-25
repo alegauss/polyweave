@@ -179,7 +179,7 @@ def _reached(name: str, about: dict) -> tuple[str, str]:
 def _json(method: str, url: str, key: str, payload: dict | None = None) -> dict:
     """One JSON call with the bearer key, a refusal turned into a code."""
     body = json.dumps(payload).encode("utf-8") if payload is not None else None
-    headers = {"Authorization": f"Bearer {key}"}
+    headers = {"Authorization": f"Bearer {key}", "User-Agent": picture.AGENT}
     if body is not None:
         headers["Content-Type"] = "application/json"
     request = urllib.request.Request(url, data=body, headers=headers, method=method)  # noqa: S310

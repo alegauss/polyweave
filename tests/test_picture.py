@@ -453,3 +453,32 @@ def test_collecting_what_nobody_owes_is_refused(tmp_path, service):
     with pytest.raises(PolyweaveError) as caught:
         picture.collect("ideogram:nothing", root=tmp_path)
     assert caught.value.code == "fetch.no-task"
+
+
+# -- every request names its agent (§PW193) ------------------------------------------
+
+
+def test_the_picture_is_fetched_with_a_named_agent(monkeypatch):
+    """Cloudflare refuses Python's default agent with error 1010, after the charge."""
+    import io
+
+    seen = {}
+
+    class Answer(io.BytesIO):
+        status = 200
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_):
+            return False
+
+    def urlopen(request, timeout):
+        seen["agent"] = request.get_header("User-agent")
+        return Answer(PNG)
+
+    monkeypatch.setattr("urllib.request.urlopen", urlopen)
+    assert picture._download("https://ideogram.ai/api/images/ephemeral/x.png") == PNG
+    assert seen["agent"].startswith("polyweave/")
+    picture._get("https://api.ideogram.ai/v1/generations/g", "k")
+    assert seen["agent"].startswith("polyweave/")

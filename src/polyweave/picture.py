@@ -31,7 +31,7 @@ import urllib.request
 import uuid
 from typing import Annotated
 
-from . import provenance, purchase, schema, style
+from . import __version__, provenance, purchase, schema, style
 from .config import load
 from .describe import Param, operation
 from .errors import PolyweaveError
@@ -45,6 +45,11 @@ MODELS = {"4.0": ("ideogram-v4", "text_prompt"), "3.0": ("ideogram-v3", "prompt"
 #: answers 429, so the client never holds more open than this in one process.
 INFLIGHT = 10
 _inflight = threading.BoundedSemaphore(INFLIGHT)
+
+#: What every request says it is. The service's image host sits behind Cloudflare, which
+#: refuses Python's default agent with error 1010, so a picture was drawn, charged and
+#: then could not be read (§PW193). A named agent is what a service's logs should see.
+AGENT = f"polyweave/{__version__} (+https://github.com/alegauss/polyweave)"
 
 #: How long one request may take before it is called failed. A picture takes seconds.
 TIMEOUT = 120
@@ -698,7 +703,9 @@ def _reported(answer: dict, unit: str) -> float | None:
 
 def _get(url: str, key: str) -> tuple[int, bytes]:
     """GET one URL with the key, inside the account's allowance of calls in flight."""
-    request = urllib.request.Request(url, headers={"Api-Key": key})  # noqa: S310
+    request = urllib.request.Request(  # noqa: S310
+        url, headers={"Api-Key": key, "User-Agent": AGENT}
+    )
     with _inflight:
         try:
             with urllib.request.urlopen(request, timeout=TIMEOUT) as answer:  # noqa: S310
@@ -823,6 +830,7 @@ def _send(
         method="POST",
         headers={
             "Api-Key": key,
+            "User-Agent": AGENT,
             "Content-Type": f"multipart/form-data; boundary={boundary}",
         },
     )
@@ -844,7 +852,8 @@ def _send(
 def _download(link: str) -> bytes:
     """The picture's bytes, fetched at once: the link the service gives expires."""
     try:
-        with urllib.request.urlopen(link, timeout=TIMEOUT) as answer:  # noqa: S310
+        fetched = urllib.request.Request(link, headers={"User-Agent": AGENT})  # noqa: S310
+        with urllib.request.urlopen(fetched, timeout=TIMEOUT) as answer:  # noqa: S310
             return answer.read()
     except urllib.error.URLError as exc:
         raise PolyweaveError(
