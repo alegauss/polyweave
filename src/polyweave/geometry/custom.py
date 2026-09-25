@@ -103,6 +103,9 @@ def build(node: dict, instance: dict, built: dict, *, root: str | Path = ".") ->
                 "geom.unknown-node",
                 f"{node['id']} takes {one!r} as {name}, and nothing built it",
                 f"name a node built before this one: {', '.join(sorted(built))}",
+                given=one,
+                allowed=built,
+                at=f"nodes.{node['id']}.inputs.{name}",
             )
         inputs[name] = built[one]
 

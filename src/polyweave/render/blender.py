@@ -118,6 +118,8 @@ def load_mesh(path: str | Path) -> Any:
             "render.unknown-format",
             f"{where.suffix or 'that file'} is not a mesh format this reads",
             "give it a .blend, or export the mesh as .glb, .gltf or .fbx",
+            given=suffix,
+            allowed=(".blend", ".fbx", ".glb", ".gltf"),
         )
     arrived = [o for o in set(bpy.data.objects) - before if o.type == "MESH"]
     if not arrived:
@@ -189,6 +191,8 @@ def apply_material(obj: Any, material: dict | None, *, groups: Any = None) -> An
             "render.unknown-material-field",
             f"the mesh wears {', '.join(missing)}, and no material was given for it",
             f"give one per material the mesh names: {', '.join(wanted)}",
+            given=missing[0],
+            allowed=list(material),
         )
     obj.data.materials.clear()
     for name in wanted:
@@ -565,6 +569,8 @@ def _colour(value: Any) -> Any:
             "render.unknown-material-field",
             f"{value!r} is not a colour this reads",
             "write it as #RRGGBB or #RRGGBBAA, or as the numbers themselves",
+            allowed=(),
+            example="#FFC43F",
         )
     pairs = [digits[at : at + 2] for at in range(0, len(digits), 2)]
     try:
@@ -574,6 +580,8 @@ def _colour(value: Any) -> Any:
             "render.unknown-material-field",
             f"{value!r} is not a colour this reads",
             "write it as #RRGGBB or #RRGGBBAA, in hexadecimal",
+            allowed=(),
+            example="#FFC43F",
         ) from exc
     lit = [_linear(one) for one in channels[:3]]
     return [*lit, channels[3] if len(channels) == 4 else 1.0]

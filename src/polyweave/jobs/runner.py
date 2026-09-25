@@ -324,6 +324,8 @@ class JobStore:
                 "job.unknown",
                 f"no job {job!r} under {self.work}",
                 "list the jobs, or start a new one",
+                given=job,
+                allowed=self.paths.ids(),
             )
         if state.get("schema") != rec.SCHEMA:
             raise PolyweaveError(

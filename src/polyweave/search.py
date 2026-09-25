@@ -132,6 +132,8 @@ def turnable(draw: Callable, *wanted: dict, also: dict = ()) -> list[str]:
         f"did you mean {described(near[0])}?"
         if near
         else "name a parameter the renderer takes, or drop the range",
+        given=unknown[0],
+        allowed=taken,
     )
 
 

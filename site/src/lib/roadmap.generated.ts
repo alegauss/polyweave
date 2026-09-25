@@ -35,7 +35,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "H", title: "Proof on a real game", open: 3 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
-  { block: "K", title: "Reached without reading the source", open: 7 },
+  { block: "K", title: "Reached without reading the source", open: 6 },
   { block: "L", title: "What a run leaves as evidence", open: 7 },
   { block: "M", title: "What a game needs beyond the look", open: 3 },
 ];
@@ -82,13 +82,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent",
     why: "The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question.",
     deps: ["PW57"],
-  },
-  {
-    id: "PW128",
-    block: "K",
-    symptom: "a refused name says what was wrong but never which names would have worked",
-    why: "Pass allowed and given at the 37 unknown-name raises that still lack them, lowering test_names.UNCONVERTED each time.",
-    deps: [],
   },
   {
     id: "PW129",

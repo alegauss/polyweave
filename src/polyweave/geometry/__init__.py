@@ -134,6 +134,9 @@ def parse(stated: dict, *, named: str = "a declaration") -> dict:
             "geom.unknown-node",
             f"{named} names {output!r} as its output, and no node has that id",
             f"name one of {', '.join(sorted(seen))}",
+            given=output,
+            allowed=seen,
+            at="output",
         )
     _refuse_cycles(nodes, seen, named)
     document = {
@@ -177,6 +180,8 @@ def variant(document: dict, name: str) -> dict:
             "geom.unknown-name",
             f"{document['name']} has no variant called {name!r}",
             f"name one of {', '.join(variants(document)) or 'none: it declares none'}",
+            given=name,
+            allowed=variants(document),
         )
     painted = dict(table.pop("materials", None) or {})
     unknown = sorted(set(table) - set(document["params"]))
@@ -190,6 +195,10 @@ def variant(document: dict, name: str) -> dict:
             f"the document does not declare",
             "override a parameter from [params] or a material from [materials]; a "
             "variant only changes what the shape already has",
+            given=unknown[0],
+            allowed=[f"params.{p}" for p in document["params"]]
+            + [f"materials.{m}" for m in document["materials"]],
+            at=f"variants.{name}",
         )
     materials = {
         key: {**dict(value), **dict(painted.get(key) or {})}
@@ -229,6 +238,9 @@ def _refuse_cycles(nodes: list[dict], ids: set[str], named: str) -> None:
                     "geom.unknown-node",
                     f"{named}: {node['id']!r} takes {one!r}, and no node has that id",
                     f"name one of {', '.join(sorted(ids))}",
+                    given=one,
+                    allowed=ids,
+                    at=f"nodes.{node['id']}",
                 )
     settled: set[str] = set()
     walking: set[str] = set()

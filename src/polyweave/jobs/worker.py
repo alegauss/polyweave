@@ -121,6 +121,8 @@ def check_args(fn: Any, args: dict) -> None:
             if len(unknown) == 1
             else f"{', '.join(unknown)} are not arguments of this target",
             f"it takes {', '.join(accepted[1:]) or 'no arguments'}",
+            given=unknown[0],
+            allowed=accepted[1:],
         )
 
 

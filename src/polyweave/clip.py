@@ -351,6 +351,8 @@ def across(rendered: list[dict], named: str, *, worst: str = "max") -> dict:
                 f"no frame of this clip carries {named!r}",
                 f"ask for it when the frames are rendered; they carry "
                 f"{', '.join(sorted(measure.summarise(found['measurements'])))}",
+                given=named,
+                allowed=measure.summarise(found["measurements"]),
             )
         taken.append(float(value))
     if not taken:

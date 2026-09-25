@@ -139,6 +139,8 @@ def capture(
             "fetch.unknown-purchase",
             f"there is no such thing to buy as a {bought!r}",
             f"name one of {', '.join(BOUGHT)}",
+            given=bought,
+            allowed=BOUGHT,
         )
     if not task_id:
         raise PolyweaveError(

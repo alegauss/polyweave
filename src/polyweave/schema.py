@@ -97,6 +97,8 @@ def validate(
             f"the service has no {', '.join(unknown)}",
             f"it takes {', '.join(sorted(fields))}; a field it does not know is "
             f"dropped in silence, so this is refused here instead",
+            given=unknown[0],
+            allowed=fields,
         )
     missing = sorted(
         name for name, f in fields.items() if f.get("required") and name not in payload

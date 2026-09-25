@@ -153,6 +153,8 @@ def explain(code: str) -> dict:
             if near
             else f"codes() lists them; {area!r} covers "
             f"{_codes.AREAS.get(area, 'nothing here')}",
+            given=code,
+            allowed=_codes.CODES,
         ) from None
     return {
         "code": code,
@@ -174,6 +176,8 @@ def codes(area: str | None = None) -> list[str]:
             "spec.unknown-area",
             f"{area!r} is not an area",
             f"name one of {', '.join(sorted(_codes.AREAS))}",
+            given=area,
+            allowed=_codes.AREAS,
         )
     return _codes.in_area(area)
 

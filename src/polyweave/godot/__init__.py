@@ -42,6 +42,8 @@ def install(
             "engine.unknown-addon",
             f"there is no addon called {addon!r}",
             f"name one of {', '.join(sorted(ADDONS))}",
+            given=addon,
+            allowed=ADDONS,
         )
     target = root / "addons" / addon
     if target.exists():

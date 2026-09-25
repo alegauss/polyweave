@@ -18,6 +18,7 @@ goes away from the viewer.
 
 from __future__ import annotations
 
+import inspect
 import math
 from pathlib import Path
 from typing import Any
@@ -205,6 +206,7 @@ def generate(named: str, **how: Any) -> np.ndarray:
             "geom.unknown-shape",
             f"{named} does not take those arguments: {exc}",
             f"check what {named} takes",
+            allowed=inspect.signature(GENERATORS[named]).parameters,
         ) from exc
 
 

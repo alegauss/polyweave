@@ -722,6 +722,8 @@ def resolve(name: str) -> str:
                 "spec.unknown-measure",
                 f"{base!r} is one number, so there is no {name!r}",
                 f"ask for {base!r} on its own",
+                given=name,
+                allowed=(base,),
             )
         return base
     if base in PENDING:

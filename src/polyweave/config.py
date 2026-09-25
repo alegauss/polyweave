@@ -251,6 +251,8 @@ class Config:
                 "config.unknown-address",
                 f"{address!r} is not a setting",
                 f"name one of {', '.join(self.addresses()[:6])}, and so on",
+                given=address,
+                allowed=self.addresses(),
             )
         value = self._merged
         for part in address.split("."):
@@ -259,6 +261,8 @@ class Config:
                     "config.unknown-address",
                     f"{address!r} is not a setting",
                     f"read {table} to see what it holds",
+                    given=address,
+                    allowed=self.addresses(),
                 )
             value = value[part]
         return _expand(value, address)
@@ -297,6 +301,8 @@ class Config:
                 "config.unknown-address",
                 f"there is no [{name}] table",
                 f"name one of {', '.join(sorted(DEFAULTS))}",
+                given=name,
+                allowed=DEFAULTS,
             )
         return {k: _expand(v, f"{name}.{k}") for k, v in self._merged[name].items()}
 
@@ -424,6 +430,8 @@ def _check(declared: dict, source: Path) -> None:
                 f"did you mean [{near[0]}]?"
                 if near
                 else f"the tables are {', '.join(sorted(DEFAULTS))}",
+                given=table,
+                allowed=DEFAULTS,
             )
         if not isinstance(values, dict):
             raise PolyweaveError(
@@ -447,6 +455,9 @@ def _check_key(table: str, key: str, value: Any, source: Path) -> None:
             f"did you mean {table}.{near[0]}?"
             if near
             else f"[{table}] takes {', '.join(sorted(allowed))}",
+            given=key,
+            allowed=allowed,
+            at=f"{table}.{key}",
         )
     default = allowed[key]
     if f"{table}.{key}" in _OPEN_TABLES:

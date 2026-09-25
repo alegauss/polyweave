@@ -106,6 +106,8 @@ def _walk(node: ast.AST, names: dict, source: str, where: str) -> float:
                 f"{_at(where)}{source!r} names {node.id!r}, which is not in scope",
                 f"declare it in [params], or name a variable this node repeats over; "
                 f"in scope here: {near}",
+                given=node.id,
+                allowed=names,
             )
         return float(names[node.id])
 

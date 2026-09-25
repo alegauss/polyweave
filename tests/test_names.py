@@ -15,7 +15,7 @@ SOURCE = Path(__file__).parents[1] / "src" / "polyweave"
 
 #: Raises under an unknown-name code that do not yet pass `allowed`. It may only fall:
 #: a site converted lowers it, and a new site must pass `allowed` from the start.
-UNCONVERTED = 37
+UNCONVERTED = 0
 
 
 def unknown_name_raises() -> list[tuple[str, int, bool]]:
@@ -79,6 +79,18 @@ def test_an_unknown_argument_names_the_ones_the_operation_takes():
         describe.validate("render.plan", {"asknig": ["luma_p99"]})
     assert refused.value.did_you_mean == "asking"
     assert "floor" in refused.value.allowed
+
+
+def test_a_misspelt_config_key_names_the_one_meant_and_where(tmp_path):
+    from polyweave import config
+
+    (tmp_path / "polyweave.toml").write_text(
+        "[render]\npreveiw_size = 128\n", encoding="utf-8"
+    )
+    with pytest.raises(PolyweaveError) as refused:
+        config.load(tmp_path)
+    assert refused.value.did_you_mean == "preview_size"
+    assert refused.value.at == "render.preveiw_size"
 
 
 def test_the_fields_are_left_out_when_empty_and_survive_the_wire(tmp_path):

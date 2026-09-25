@@ -124,6 +124,8 @@ def parse(declared: dict, path: Path | None = None) -> Spec:
             f"an acceptance spec has no {', '.join(unknown)}",
             "it takes asset, artefact, screen, rung, [[predicate]] and "
             "[search.<param>]",
+            given=unknown[0],
+            allowed=("asset", "artefact", "screen", "rung", "predicate", "search"),
         )
     screen = declared.get("screen")
     if screen is not None and (
@@ -136,6 +138,9 @@ def parse(declared: dict, path: Path | None = None) -> Spec:
             f"screen is {screen!r}, which does not say where the asset stands",
             'write screen = { capture = "<picture>", region = "<name>" }, the region '
             "being one the capture script printed",
+            allowed=("capture", "region"),
+            example='screen = { capture = "captures/title.png", region = "star" }',
+            at="screen",
         )
     rung = declared.get("rung")
     if rung is not None:
@@ -191,6 +196,9 @@ def _predicate(entry: dict, index: int) -> Predicate:
             f"the predicate {name!r} has no {', '.join(unknown)}",
             f"a predicate takes {', '.join(FIELDS)}, and "
             f"{', '.join(ARGUMENTS)} for the measure",
+            given=unknown[0],
+            allowed=(*FIELDS, *ARGUMENTS),
+            at=f"predicate.{name}",
         )
     M.resolve(str(entry["measure"]))  # refuses a name the vocabulary does not carry
     if not any(b in entry for b in BOUNDS):
@@ -235,6 +243,9 @@ def _origin(entry: dict, key: str, name: str) -> dict | None:
             "spec.unknown-field",
             f"{name}'s {key} has no {', '.join(unknown)}",
             f"a bound written as a table takes {', '.join(BOUND_KEYS)}",
+            given=unknown[0],
+            allowed=BOUND_KEYS,
+            at=f"predicate.{name}.{key}",
         )
     origin = stated.get("origin")
     if origin not in ORIGINS:
@@ -276,6 +287,9 @@ def _search(declared: dict) -> dict:
                 "spec.unknown-field",
                 f"[search.{name}] has no {', '.join(unknown)}",
                 "a search range takes min, max and step",
+                given=unknown[0],
+                allowed=("min", "max", "step"),
+                at=f"search.{name}",
             )
         if "min" not in bounds or "max" not in bounds:
             raise PolyweaveError(

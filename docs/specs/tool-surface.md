@@ -171,9 +171,10 @@ both answers.
   goes for `example`, a correct fragment that is accepted when fed back, and `at`, a path
   into the input such as `channels.spine.scale`. The suggestion follows Shio's rule: case-
   and separator-insensitive, deterministic on ties, and silent when nothing is close,
-  because a wrong guess costs more than none. `tests/test_names.py` pins how many raises
-  under an unknown-name code still pass no `allowed`, so the number only falls and a new
-  one must pass it from the start.
+  because a wrong guess costs more than none. `tests/test_names.py` holds every raise
+  under an unknown-name code to passing `allowed`, and a new one must pass it from the
+  start. A value not chosen from a set, such as a malformed colour, passes `allowed=()`
+  and an `example`, which says there is no set to list.
 
 ## 4. The surface describes itself
 

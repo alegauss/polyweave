@@ -348,24 +348,6 @@ again.
 
 ## Block K — Reached without reading the source
 
-### §PW128 The four fields a refusal is missing
-
-The wire form is `code`, `message`, `remedy` and `detail`. When the refusal is about a
-name, the set of names that would have worked is known at the raise site and thrown
-away: `config.py` runs `difflib` and folds the result into prose, and
-`geom.unknown-shape` or an unknown measure says only what was not found. An agent then
-reads the source or guesses again.
-
-Shio's teaching errors carry four more fields, each omitted when empty: `allowed`, the
-sorted set the value is checked against; `did_you_mean`, the nearest of them; `example`,
-the smallest correct fragment; and `at`, a path into the document, such as
-`parts[3].bevel`. Its rule for the suggestion is worth taking whole: case- and
-separator-insensitive, deterministic on ties, and silent when nothing is close, because
-a wrong guess costs more than none.
-
-A test holds it: every raise under a code whose meaning is an unknown name passes
-`allowed`, and every `example` a refusal prints is accepted when fed back.
-
 ### §PW129 A ceiling on the reads every session makes
 
 Registering every operation (done; the census in docs/specs/tool-surface.md) was the

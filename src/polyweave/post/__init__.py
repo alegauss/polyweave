@@ -95,6 +95,8 @@ def check(
             "post.unknown-output",
             f"nothing is asserted about a {produces!r}",
             f"name one of {', '.join(sorted(CHEAP))}",
+            given=produces,
+            allowed=CHEAP,
         ) from None
 
     unknown = sorted(set(expected) - set(accepts))
@@ -105,6 +107,8 @@ def check(
             "post.unknown-field",
             f"a {produces} check takes no {', '.join(unknown)}",
             f"it takes {', '.join(sorted(accepts)) or 'no arguments'}",
+            given=unknown[0],
+            allowed=accepts,
         )
 
     required = REQUIRES.get(produces, frozenset())
@@ -131,6 +135,8 @@ def check(
                 "post.unknown-check",
                 f"there is no {name!r} assertion",
                 f"name one of {', '.join(sorted(OPTIONAL))}",
+                given=name,
+                allowed=OPTIONAL,
             ) from None
         if produces not in applies_to:
             raise PolyweaveError(

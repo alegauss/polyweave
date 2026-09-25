@@ -44,6 +44,8 @@ def addressable(document: dict, names: Any) -> dict[str, list[str]]:
             "geom.unknown-name",
             f"the search names {', '.join(unknown)}, which this shape does not declare",
             f"name a parameter the document has: {', '.join(sorted(declared))}",
+            given=unknown[0],
+            allowed=declared,
         )
     return {name: rebuilds(document, name) for name in sorted(names)}
 

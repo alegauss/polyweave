@@ -136,6 +136,8 @@ def build(
             "prov.unknown-kind",
             f"there is no record kind {kind!r}",
             f"use one of {', '.join(KINDS)}",
+            given=kind,
+            allowed=KINDS,
         )
     where = Path(root).resolve()
     path = Path(artefact)
@@ -218,6 +220,8 @@ def planned(
             "prov.unknown-kind",
             f"there is no record kind {kind!r}",
             f"use one of {', '.join(KINDS)}",
+            given=kind,
+            allowed=KINDS,
         )
     return {
         "artefact": None,
