@@ -272,6 +272,27 @@ unstated.
 
 ## Block M — What a game needs beyond the look
 
+### §PW207 Saying what polyweave is now: a game's layers, declared and checked
+
+polyweave started as a way to make 3D assets without hand-tuning a render rig. The same
+loop has since been used for every layer of a game: declare what a thing has to be, let
+a machine search for values that satisfy it, check the result with measures, and leave
+taste to a person's verdict. Pictures held to a canon, units shared with the engine and
+captures of the running game came first. Blocks P, Q and R add music and sound, the
+world's words, and levels. Each layer has its own discipline, and they meet in one
+project config, one provenance record and one verdict page.
+
+The descriptions an agent reads to choose a tool say none of that:
+- `pyproject.toml`, `.claude-plugin/plugin.json` and `marketplace.json`;
+- the skill's own `description`, which decides when it triggers;
+- the README's first paragraph, the package docstring, and the site's title, meta description, hero text, `llms.txt` and OG card.
+
+Each is rewritten to one sentence of the same idea: a Claude Code plugin for making a
+game's parts, from assets and sound to text and levels, by declaring what each must
+satisfy, on top of Blender, Godot and paid generators. It claims only what has shipped
+and names the rest as the roadmap. The skill's trigger words gain world, level and
+sound, only for the operations that exist.
+
 ## Block N — Pictures held to a canon
 
 ### §PW180 Canon pictures as style references
@@ -414,3 +435,246 @@ The block is proven when its first consumer uses it. Cottony's music and effects
 declared in its `polyweave.toml`, made by `music.render` and `sound.synth`, and held to
 `*.accept.toml` bounds, and its own audio scripts are removed. Anything Cottony needs
 that a second game would not becomes configuration.
+
+## Block Q — Words held to the world
+
+### §PW196 A game's world as a declaration beside its prose
+
+Starship's `docs/design/world.md` is about 1,300 words of prose with a glossary table in
+it: code name, on-screen name, what it is. A person reads it well. A tool can only match
+strings against it, and no game file uses any of its names yet, so nothing can say the
+world and the game have drifted apart.
+
+The prose stays the source a person writes. Beside it, a `*.world.toml` in the
+consumer's repository declares what a check needs. Each entity has an id, the code name
+the game's scripts use, the name a player reads, a kind (place, faction, character,
+enemy, item), the faction it belongs to, the `[style.<family>]` its pictures are held
+to, and where in the run it first appears. Rules sit in the same file: the longest line
+a player reads, which speakers never speak, and which names are never shown.
+
+`world.read` returns one entity or all of them. `world.validate` reports a duplicate
+name, a faction nobody declared, and a style family `polyweave.toml` lacks, each against
+the source's own line with a remedy. The file is authored by a person and read by the
+plugin. Nothing here writes it, for the reason the non-goal on a game's story gives.
+
+This is the registry every later line in the block checks against, and the first thing
+Block R's level declarations can refer to by id.
+
+### §PW197 Player-facing text checked against the world
+
+Starship's roughly 25 player-facing strings are literals in GDScript, `.tscn` and
+`.tres` files. A check that reads them with a regular expression would be a pattern
+about one project's code, which is the shape the capture environment already refused for
+locale settings. So the contract is a string table. The game reads its text through
+Godot's translation CSV with `tr()`, one key per line and one column per locale, and
+polyweave reads that file. `[words] table` in `polyweave.toml` names it, and a key may
+carry a speaker column.
+
+`words.check` holds each row to the world:
+- Every capitalised name in a line is one the world shows.
+- No code name reaches the screen.
+- No line is longer than the world's limit, counted per locale.
+- A speaker the world says never speaks has no line.
+- A name a rule hides, like Starship's unnamed pilot, never appears.
+
+Each finding names the key, the locale and the rule, and gives the remedy.
+
+What the check cannot see is a string still hardcoded in a script. `words.unlisted`
+reports what it can prove instead: literal strings passed to a label's `text` in the
+project's scenes, as a count and a list, so moving text into the table has a measure.
+Starship's RK73 rename is the natural moment to adopt the table, since it touches every
+one of those strings anyway.
+
+### §PW198 An asset's brief read from the world it belongs to
+
+A picture or a mesh for a character starts from words: what the thing is, what it wears,
+what it must never look like. Today those words are typed into each `picture.buy` or
+`mesh.buy` call, while Starship's bible already holds them. A prompt written again per
+call drifts the way styles were found to drift before `[style]` existed, one adjective
+at a time.
+
+An entity in the world declaration may carry a `look` table: a short description, the
+traits that must show, and the ones that must not. `picture.buy` and `mesh.buy` take
+`entity=<id>`. The call composes its prompt from that table, holds it to the
+`[style.<family>]` the entity names, and records the entity id in the provenance
+sidecar. Where the call also passes its own words, they add detail, and the world's
+traits win where the two disagree, the same precedence the style skeleton already has
+over a prompt.
+
+The record is what makes the link useful later. Provenance can already say which
+artefacts were made from a changed input file. With the entity id in each record, that
+answer for the world file narrows to what was drawn from the one entity that changed, so
+a character's new look names the pictures and meshes that now describe someone else.
+Rebuying them is still a person's decision under the purchase ceiling, not something a
+world edit triggers.
+
+### §PW199 A line's tone judged by a person, and a canon of lines
+
+Starship's bible says crew lines are short, warm and often funny, never heroic speeches,
+that humour lives in the crew and never in the enemy, and that nothing grim is ever
+shown. None of that is a rule a check can apply, and a model asked to apply it is the
+agent judging its own output, which a non-goal forbids.
+
+So tone goes where looks already go. `words.sheet` puts the table's new or changed lines
+on the verdict page from Block O, grouped by speaker. Each line sits beside the world's
+tone rules and a few lines the canon already holds for that speaker. A person marks each
+one approved, or rejected with a reason. `verdict.judge` records the answer, and
+approved lines join a lines canon that works like the picture canon: only a verdict adds
+to it.
+
+The canon feeds back into writing. `world.read` for a speaker returns their approved
+lines as examples, so an agent drafting a new crew line starts from what a person
+already accepted rather than from the adjectives. `words.check` reports a line with no
+verdict as unjudged. That keeps the gate's two questions separate: whether the text
+obeys the world's rules is mechanical, and whether it sounds like the world is a
+person's call.
+
+### §PW200 Starship held to its own world
+
+Starship is the consumer with a world to hold to. Its bible names the Spinhold, the
+Holders, the Lattice and its three Foremen, and the crew, and none of those names reach
+the screen yet. The draft is still open under RK88 with four questions unanswered, which
+is why this line waits on it: formalising a world whose answers may still change costs a
+second pass over every entity.
+
+Adoption is done when four things are true:
+- `world.md` stays the prose, and a `starship.world.toml` beside it declares every name in its glossary, with the three factions tied to `[style.brand]`, `[style.holders]` and `[style.lattice]`.
+- RK73's rename moves every player-facing string into the translation table, `words.unlisted` counts zero, and `words.check` passes.
+- The crew lines RK89 adds pass through `words.sheet`, and the ones a person approves form the lines canon.
+- The next Lattice enemy or Foreman picture is bought with `entity=`, and its sidecar names the entity.
+
+The measure is the census Block H uses: which of Starship's text and character assets
+are declared, checked and judged through polyweave, and which still sit in scripts. A
+string left in GDScript is a line this adoption has not reached, and the count says so.
+
+## Block R — Levels measured before a person plays them
+
+### §PW201 Whether a bot's win rate says how hard a level feels
+
+The block rests on one premise: that a cheap simulated player, run headlessly over many
+seeds, ranks a game's levels by difficulty the way a person playing them would. If it
+does, a level's difficulty becomes a number a search can aim at. If it does not, every
+later line tunes against noise.
+
+The spike runs in Cottony, where it is cheapest. The match rules already run headlessly,
+and `match3_test.gd` has a `find_move` that agrees with a brute-force rescan. A
+throwaway GDScript bot plays each of the 20 shipped levels over 200 seeds, first
+greedily and then with a one-move lookahead. It reports each level's win rate and the
+moves left at a win, at the median and the tenth percentile. It spends nothing, and it
+lives outside the package.
+
+The verdict is a person's. They play a sample of eight levels, spread across the bot's
+ranking, and say whether the order matches what they felt and where it does not. An
+agent does not judge the proxy it built, for the reason the non-goal on looks gives.
+
+If yes, the findings go into the designs below: which bot, how many seeds, and which
+percentile carries the feel. If no, the open lines are retired with the spike as the
+reason, and levels stay hand-tuned.
+
+### §PW202 A level probe the game runs and polyweave reads
+
+A match-3 bot and a shooter's threat count have nothing in common except their shape. A
+script inside the game takes a level and some seeds, plays or analyses it, and returns
+numbers. polyweave cannot own that script, since it would be one genre compiled in. It
+can own the handshake, the way the capture environment already does.
+
+`[levels] probe` in `polyweave.toml` names the script and the measures it reports, each
+with a unit and a direction. `level.probe` runs it through the existing engine runner.
+The level file and the seeds are passed after `--`, the same as capture settings. The
+script prints one `level: name=value ...` line per seed. polyweave checks that every
+declared measure came back and that nothing undeclared did, and a line missing a measure
+is a refusal rather than a zero.
+
+Across the seeds, polyweave aggregates each measure at the percentiles the project asks
+for, because a level's feel lives in its bad runs as much as its median, the same lesson
+that measures a look at a percentile. The result is written beside the level with its
+seeds, the probe's hash and the engine version. A later run is compared against that
+record, so a change in the rules that moves a level's difficulty is reported, not
+rediscovered by a player.
+
+### §PW203 A level declaration compiled by the game's own step
+
+Both consumers already treat levels as data. Cottony has 20 JSON files written by
+`make_levels.py` from a difficulty curve. Starship has 15 `.tres` waves under three
+phases, and its own comment says a harder wave is a different file, never a multiplier
+in code. What neither has is a layer that checks a level before the engine sees it, ties
+it to the world, and records how it was made.
+
+A `*.level.toml` is the source a person or an agent edits. Its schema is the project's,
+declared in `[levels] schema` as a JSON Schema, because the plugin must not know what a
+wave or a goal is. `level.validate` checks it against that schema. Where the project
+declares a world (§PW196), every field the schema marks as an entity reference must name
+one of its ids, so a wave that spawns an enemy the world never declared fails with the
+line and a remedy.
+
+`level.compile` runs the project's declared compile command, which turns the source into
+the engine's own resource: Starship's `.tres` or Cottony's JSON. It then writes a
+provenance sidecar naming the source, the schema and the command's hash. The compiled
+file is still what the game loads, so nothing at runtime depends on polyweave. A
+hand-tuned level, like the files `make_levels.py` refuses to overwrite, stays a source
+file a person owns.
+
+### §PW204 Difficulty bounds and a search over a level's parameters
+
+Once a probe reports measures and a level compiles from a declaration, a level's
+difficulty works like any other asset property. The acceptance spec already states
+bounds on measures. A `*.accept.toml` for a level bounds the probe's measures at a
+percentile: win rate at the median between 0.45 and 0.70, and moves left at the tenth
+percentile no lower than one. `accept.check` reads the probe's record and passes or
+fails.
+
+A level set needs one more kind of bound, because a game's difficulty is a curve and not
+a single level. A set spec names its levels in order and states the shape: difficulty
+never falls by more than a declared step between neighbours, rises across each region,
+and dips after a boss. Each is checked against the measures and reported as the pair of
+levels that broke it.
+
+`search.sweep` then searches a level's declared parameters (Cottony's target and moves,
+a wave's count and interval) for values that pass. Every candidate is compiled and
+probed, and all of them run locally at no cost. What the search returns is a proposal.
+Which candidate ships, and whether a level that passes also feels right, are decided on
+the verdict page with the bot's numbers shown next to it, because the bot is a proxy
+that PW201 tested once and a person holds to account afterwards.
+
+### §PW205 A second genre: Starship's waves measured without a bot
+
+A bot that plays a shooter well is a project of its own, so Starship cannot prove the
+level contract by playing. It can prove it by analysis, and that is the useful test: a
+probe that reads a wave without running it has to fit the same handshake as one that
+plays a board over 200 seeds.
+
+Starship's probe loads a compiled wave `.tres` headlessly. From each group's count, delay and interval it lays the spawns on a timeline and reports four measures:
+- the peak and median enemies alive at once, per second of the wave;
+- a threat total weighted per enemy kind, with the weights in the project's config;
+- the share of the `time_limit` that the last spawn leaves for clearing;
+- how many humans a keeper wave puts at risk at once.
+
+Seeds are irrelevant here and pass as one, which the contract must allow without special
+cases.
+
+`check_phase_waves` already asserts that the enemy total rises each phase. A set spec
+over these measures states that rule and the ones it misses, such as no spike of more
+than a declared factor between neighbouring waves. The line is done when both genres
+pass through `level.probe` and `level.compile` with no change to polyweave between them,
+and the set spec follows once §PW204 lands. A change needed for the second genre is the
+evidence that the first one leaked in, which is what the non-goal "One genre's level
+format built in" forbids.
+
+### §PW206 Cottony's levels made through polyweave
+
+Cottony is where the level loop pays for itself first. Its 20 shipped levels are JSON
+files generated from curve constants that `make_levels.py` reads out of `level_set.gd`
+with a regular expression. Any level without a file falls back to that same curve at
+runtime, so level 900 is only as good as a curve nobody has measured.
+
+Adoption is done when:
+- Each of the 20 levels is a `*.level.toml` under a schema Cottony declares, and `level.compile` writes the JSON the game already loads.
+- The match-3 probe from PW201 is Cottony's declared `[levels] probe`, and every level carries a probe record.
+- A set spec holds the 20 levels to the curve a person agreed on the verdict page, and `accept.check` passes on all of them.
+- `make_levels.py` is deleted, and the runtime fallback curve is fitted from the accepted levels rather than typed.
+
+The census from Block H counts which of Cottony's levels are made this way. The fallback
+curve is the part to watch: it is still a formula for levels nobody declared, and the
+probe can at least sample it. Probing levels 21 to 200 from the curve and reporting
+where they leave the set spec's bounds says whether the endless tail keeps the promise
+the first twenty make.

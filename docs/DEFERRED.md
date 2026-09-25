@@ -43,3 +43,7 @@
 
 ## Block P — Music and sound a game can ship
 
+## Block Q — Words held to the world
+
+## Block R — Levels measured before a person plays them
+

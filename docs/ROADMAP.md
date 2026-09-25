@@ -30,6 +30,8 @@
 
 ## Block M — What a game needs beyond the look
 
+- 📋 **PW207** (deps: —) **Every public description still calls polyweave a tool for 3D assets** — Blocks P, Q and R make sound, words and levels, so an agent choosing a plugin from its description never reaches for this one outside a mesh. → §PW207
+
 ## Block N — Pictures held to a canon
 
 ## Block O — A person sees and answers
@@ -45,6 +47,23 @@
 - 📋 **PW190** (deps: PW185) **Realistic sound effects have no bounded way to be bought from a service** — A synthesiser does footsteps and glass badly, and a paid fetch without a ceiling is the surprise Block D exists to prevent. → §PW190
 - 📋 **PW191** (deps: PW187, PW189) **Rendered audio does not record which instruments made it or what their licences owe** — Sample libraries carry licences from CC0 to credit-required, and a game cannot ship credits nobody recorded. → §PW191
 - 📋 **PW192** (deps: PW188, PW189, PW190, PW191) **Cottony still makes its audio outside polyweave** — The block is proven only when its first consumer's music and effects are declared, made and accepted here. → §PW192
+
+## Block Q — Words held to the world
+
+- 📋 **PW196** (deps: —) **No declaration says which names, factions and characters a game's world holds** — Starship's bible is prose, so no tool can tell a name on screen from one the world never had. → §PW196
+- 📋 **PW197** (deps: PW196) **Text a player reads is never checked against the world's names and rules** — Starship shows KEEPERS where its bible says Lattice, and a line over 60 characters or a code name on screen fails nothing. → §PW197
+- 📋 **PW198** (deps: PW196) **A character's picture or mesh is bought from a description retyped by hand** — The world already says who the Mason is and whose palette it wears, so a prompt written again per call is where an asset leaves the canon. → §PW198
+- 📋 **PW199** (deps: PW197) **Whether a line keeps the world's tone has nowhere to be answered but a chat** — Warm, short and never heroic is a judgement no rule measures, so it needs a person's recorded verdict and a canon of lines they approved. → §PW199
+- 📋 **PW200** (deps: PW197, PW198, PW199, Starship RK88) **Starship's screen still shows names its world bible replaced** — The block is proven only when its first consumer's text, lines and character assets are held to a declared world through polyweave. → §PW200
+
+## Block R — Levels measured before a person plays them
+
+- 📋 **PW201** (deps: —) **Nobody knows if a scripted bot's win rate tracks how hard a level feels to a person** — Every later line in this block tunes levels against a simulated player, so a person's verdict on that proxy decides whether the block proceeds or is retired. → §PW201
+- 📋 **PW202** (deps: PW201) **A game's own headless play of a level has no way to report what it measured** — Only the game can play its own rules, so polyweave needs a contract for what the game's probe prints, not a simulator of its own. → §PW202
+- 📋 **PW203** (deps: PW201) **A level declared as data cannot reach the engine without each game's own converter** — Cottony writes JSON from a curve and Starship hand-edits .tres waves, so neither level is validated, linked to the world or recorded before it lands. → §PW203
+- 📋 **PW204** (deps: PW202, PW203) **A level's difficulty has no bar a search can aim at, and a level set has no curve to hold** — Cottony's curve constants were set by feel and never measured, so a level can be unwinnable or trivial and nothing fails. → §PW204
+- 📋 **PW205** (deps: PW202, PW203) **A shooter's waves have no measure of threat, so the level contract is proven on one genre only** — A contract only Cottony's match-3 has exercised may still assume a board, and Starship's check_phase_waves counts enemies without asking how many arrive at once. → §PW205
+- 📋 **PW206** (deps: PW204, PW205) **Cottony's levels are still tuned by a curve nobody measured** — The block is proven only when its first consumer's shipped levels are declared, compiled, probed and accepted here, and make_levels.py has nothing left to do. → §PW206
 
 ## Done when — PW36
 
@@ -143,6 +162,14 @@
 - **A hosted service or an account to sign into** Everything runs on the developer's
   machine against files in their own repository, because a plugin that needs an account
   is one that fails on the day the account does.
-- **An agent accepting or rejecting its own look** A look is what a person agreed to, so
-  an agent that can write the verdict on its own run turns the one check the loop cannot
-  automate into one more number it tunes.
+- **An agent accepting or rejecting its own look** A look, a sound, a line a character
+  says and how hard a level feels are each what a person agreed to, so an agent that can
+  write the verdict on its own run turns the one check the loop cannot automate into one
+  more number it tunes.
+- **One genre's level format built in** A match-3 level is three numbers and a shooter's
+  is a spawn timeline, so polyweave checks, compiles and measures a level through what
+  the project declares, and a schema that assumes a genre fails the next game; PW205
+  exists to catch that.
+- **Writing a game's story for it** A world is a person's authorship, so polyweave holds
+  what the game shows to the world a person declared and routes a line's tone to their
+  verdict, and never invents the canon it then checks against.

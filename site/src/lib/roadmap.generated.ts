@@ -37,10 +37,12 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
   { block: "L", title: "What a run leaves as evidence", open: 0 },
-  { block: "M", title: "What a game needs beyond the look", open: 0 },
+  { block: "M", title: "What a game needs beyond the look", open: 1 },
   { block: "N", title: "Pictures held to a canon", open: 0 },
   { block: "O", title: "A person sees and answers", open: 0 },
   { block: "P", title: "Music and sound a game can ship", open: 9 },
+  { block: "Q", title: "Words held to the world", open: 5 },
+  { block: "R", title: "Levels measured before a person plays them", open: 6 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -64,6 +66,13 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent",
     why: "The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question.",
     deps: ["PW57"],
+  },
+  {
+    id: "PW207",
+    block: "M",
+    symptom: "Every public description still calls polyweave a tool for 3D assets",
+    why: "Blocks P, Q and R make sound, words and levels, so an agent choosing a plugin from its description never reaches for this one outside a mesh.",
+    deps: [],
   },
   {
     id: "PW184",
@@ -128,6 +137,83 @@ export const generatedTasks: GeneratedTask[] = [
     why: "The block is proven only when its first consumer's music and effects are declared, made and accepted here.",
     deps: ["PW188", "PW189", "PW190", "PW191"],
   },
+  {
+    id: "PW196",
+    block: "Q",
+    symptom: "No declaration says which names, factions and characters a game's world holds",
+    why: "Starship's bible is prose, so no tool can tell a name on screen from one the world never had.",
+    deps: [],
+  },
+  {
+    id: "PW197",
+    block: "Q",
+    symptom: "Text a player reads is never checked against the world's names and rules",
+    why: "Starship shows KEEPERS where its bible says Lattice, and a line over 60 characters or a code name on screen fails nothing.",
+    deps: ["PW196"],
+  },
+  {
+    id: "PW198",
+    block: "Q",
+    symptom: "A character's picture or mesh is bought from a description retyped by hand",
+    why: "The world already says who the Mason is and whose palette it wears, so a prompt written again per call is where an asset leaves the canon.",
+    deps: ["PW196"],
+  },
+  {
+    id: "PW199",
+    block: "Q",
+    symptom: "Whether a line keeps the world's tone has nowhere to be answered but a chat",
+    why: "Warm, short and never heroic is a judgement no rule measures, so it needs a person's recorded verdict and a canon of lines they approved.",
+    deps: ["PW197"],
+  },
+  {
+    id: "PW200",
+    block: "Q",
+    symptom: "Starship's screen still shows names its world bible replaced",
+    why: "The block is proven only when its first consumer's text, lines and character assets are held to a declared world through polyweave.",
+    deps: ["PW197", "PW198", "PW199"],
+  },
+  {
+    id: "PW201",
+    block: "R",
+    symptom: "Nobody knows if a scripted bot's win rate tracks how hard a level feels to a person",
+    why: "Every later line in this block tunes levels against a simulated player, so a person's verdict on that proxy decides whether the block proceeds or is retired.",
+    deps: [],
+  },
+  {
+    id: "PW202",
+    block: "R",
+    symptom: "A game's own headless play of a level has no way to report what it measured",
+    why: "Only the game can play its own rules, so polyweave needs a contract for what the game's probe prints, not a simulator of its own.",
+    deps: ["PW201"],
+  },
+  {
+    id: "PW203",
+    block: "R",
+    symptom: "A level declared as data cannot reach the engine without each game's own converter",
+    why: "Cottony writes JSON from a curve and Starship hand-edits .tres waves, so neither level is validated, linked to the world or recorded before it lands.",
+    deps: ["PW201"],
+  },
+  {
+    id: "PW204",
+    block: "R",
+    symptom: "A level's difficulty has no bar a search can aim at, and a level set has no curve to hold",
+    why: "Cottony's curve constants were set by feel and never measured, so a level can be unwinnable or trivial and nothing fails.",
+    deps: ["PW202", "PW203"],
+  },
+  {
+    id: "PW205",
+    block: "R",
+    symptom: "A shooter's waves have no measure of threat, so the level contract is proven on one genre only",
+    why: "A contract only Cottony's match-3 has exercised may still assume a board, and Starship's check_phase_waves counts enemies without asking how many arrive at once.",
+    deps: ["PW202", "PW203"],
+  },
+  {
+    id: "PW206",
+    block: "R",
+    symptom: "Cottony's levels are still tuned by a curve nobody measured",
+    why: "The block is proven only when its first consumer's shipped levels are declared, compiled, probed and accepted here, and make_levels.py has nothing left to do.",
+    deps: ["PW204", "PW205"],
+  },
 ];
 
 export const generatedNonGoals: GeneratedNonGoal[] = [
@@ -153,7 +239,15 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
   },
   {
     lead: "An agent accepting or rejecting its own look",
-    why: "A look is what a person agreed to, so an agent that can write the verdict on its own run turns the one check the loop cannot automate into one more number it tunes.",
+    why: "A look, a sound, a line a character says and how hard a level feels are each what a person agreed to, so an agent that can write the verdict on its own run turns the one check the loop cannot automate into one more number it tunes.",
+  },
+  {
+    lead: "One genre's level format built in",
+    why: "A match-3 level is three numbers and a shooter's is a spawn timeline, so polyweave checks, compiles and measures a level through what the project declares, and a schema that assumes a genre fails the next game; PW205 exists to catch that.",
+  },
+  {
+    lead: "Writing a game's story for it",
+    why: "A world is a person's authorship, so polyweave holds what the game shows to the world a person declared and routes a line's tone to their verdict, and never invents the canon it then checks against.",
   },
 ];
 

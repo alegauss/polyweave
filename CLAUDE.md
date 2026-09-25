@@ -1,8 +1,13 @@
 # polyweave
 
-A Claude Code plugin for making 3D assets — geometry, surface and motion — by **declaring
-what an asset should be** and letting a machine search for the parameters that satisfy it,
-on top of Blender, Godot and a generative mesh service.
+A Claude Code plugin for making a game's parts with an agent — 3D assets, pictures, sound,
+the world's words and levels — by **declaring what each part should be** and letting a
+machine search for the parameters that satisfy it, on top of Blender, Godot and paid
+generators. It began as 3D assets, and the same loop now reaches every layer of a game:
+a declaration, measures that check it, a search that aims at it, and a person's verdict
+where only taste can answer. The layers share one project config, one provenance record and
+one verdict page, which is what lets them be judged together. Public copy catches up
+under PW207.
 
 The plugin is Python under `src/polyweave`, its tests are in `tests/`, and the gates are
 `python tools/gate.py` (pytest, keeping its log in `.polyweave/gate/` and saying which
