@@ -33,8 +33,9 @@ from polyweave.errors import PolyweaveError
 #: 52,311 with picture.buy (§PW163), a whole paid call and so wider than the average,
 #: then 53,672 with purchase.reconcile (§PW164) and picture.describe (§PW165),
 #: then 54,332 with style.read and picture.buy's `family` (§PW166), then 55,585
-#: with style.drift (§PW167) and picture.gate (§PW168).
-DESCRIBE = 56_200
+#: with style.drift (§PW167) and picture.gate (§PW168), 56,301 with picture.letters
+#: (§PW169).
+DESCRIBE = 56_900
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -43,8 +44,9 @@ DESCRIBE = 56_200
 #: picture.buy and its five refusals (§PW163), then 61,418 with reconcile, describe,
 #: fetch.unpriced and fetch.seed-unproved (§PW164, §PW165), then 62,247 with
 #: style.read and the style area's four codes (§PW166), then 62,817 with style.drift
-#: and style.no-subject (§PW167), then 63,520 with picture.gate (§PW168).
-CAPABILITIES = 64_100
+#: and style.no-subject (§PW167), then 63,520 with picture.gate (§PW168), then
+#: 64,354 with picture.letters, the OCR probe and fetch.ocr-failed (§PW169).
+CAPABILITIES = 64_900
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
@@ -53,8 +55,9 @@ HELP_VERB = 4_000
 #: 11,792 once measure.digest is a verb (§PW141), 11,933 with cost.read (§PW143),
 #: 12,066 with motion.bake (§PW160), 12,216 with sound.measure (§PW113), 12,385
 #: with picture.buy (§PW163), 12,712 with purchase.reconcile and picture.describe
-#: (§PW164, §PW165), 13,013 with style.read and style.drift (§PW166, §PW167).
-HELP_TOP = 13_200
+#: (§PW164, §PW165), 13,013 with style.read and style.drift (§PW166, §PW167), 13,327
+#: with picture.gate and picture.letters (§PW168, §PW169).
+HELP_TOP = 13_500
 #: A search's answer over its default budget of 24 samples: 3,739.
 SEARCH = 4_000
 

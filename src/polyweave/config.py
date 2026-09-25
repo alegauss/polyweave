@@ -44,7 +44,7 @@ _FREE_TABLES = ("capture",)
 
 #: Only a binary may sit outside the tree. Everything else resolves under
 #: `project.root`, because a path elsewhere is state a colleague cannot reproduce.
-_BINARIES = ("paths.blender", "paths.godot")
+_BINARIES = ("paths.blender", "paths.godot", "paths.tesseract")
 
 #: Settings that name a file inside the tree although they do not live under `[paths]`.
 _INSIDE = ("service.schema",)
@@ -75,6 +75,9 @@ DEFAULTS: dict[str, Any] = {
     "paths": {
         "blender": "blender",  # found on PATH unless the project says where
         "godot": "godot",
+        # What reads lettering back off a picture (§PW169). Optional: without it a
+        # picture's declared text is reported unchecked, never passed.
+        "tesseract": "tesseract",
         "meshes": "assets/3d",
         # Prepared references, committed with the tree: the input that actually made a
         # mesh is the one on file, not whichever original a person had open (§PW21).

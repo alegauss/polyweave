@@ -197,6 +197,24 @@ it. **No taste enters the choice**: of those that pass, the highest IoU is `chos
 person wants to choose, that is a verdict sheet. How many pictures an attempt may buy is
 bounded by the ceiling, never by the agent deciding one more is worth it.
 
+### The letters are read back
+
+Lettering is what the picture service does best and the one defect no palette or silhouette
+measure sees: a letter missing, an accent dropped (§PW169). `picture.letters` holds a
+picture to the text it was asked to carry. That is the `text` elements of the structured
+prompt on its record, or `texts` where the caller gives them. `picture.gate` runs it on every
+candidate.
+
+**The reader is a binary on the machine**, `[paths] tesseract`, found and reported by
+`capabilities` under `ocr` the way Blender and Godot are. Its language is the project's
+`[capture] locale` (`pt_BR` reads as `por`), so a game in Portuguese is read in Portuguese.
+**The comparison folds case and whitespace and never folds accents**, because a dropped
+accent is the defect. A refusal gives the text asked for and the text read side by side.
+
+**An absent engine is a stated gap, not a pass.** Without one, the report is
+`checked: false` and `passed: null`, and `picture.gate` names the unchecked text under
+`lettering_unchecked` rather than letting it through silently.
+
 The synchronous endpoints carry no task id, so the entry's `task_id` is the service name,
 the answer's `created` time and the seed. The asynchronous variants and their poll are not
 built yet.

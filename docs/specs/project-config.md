@@ -32,6 +32,7 @@ root = "."                      # everything below is relative to this
 [paths]
 blender  = "C:/Program Files/Blender Foundation/Blender 4.2/blender.exe"
 godot    = "${GODOT}"           # an env var reference, resolved per call
+tesseract = "tesseract"         # reads lettering back off a picture; optional
 meshes     = "tools/art/3d"
 references = "docs/design/references"   # prepared references, committed with the tree
 renders    = "docs/design/art"

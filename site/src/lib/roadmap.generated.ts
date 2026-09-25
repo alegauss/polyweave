@@ -38,7 +38,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "K", title: "Reached without reading the source", open: 0 },
   { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
-  { block: "N", title: "Pictures held to a canon", open: 6 },
+  { block: "N", title: "Pictures held to a canon", open: 5 },
   { block: "O", title: "A person sees and answers", open: 6 },
 ];
 
@@ -63,13 +63,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent",
     why: "The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question.",
     deps: ["PW57"],
-  },
-  {
-    id: "PW169",
-    block: "N",
-    symptom: "lettering drawn into a picture can be misspelt or lose its accents, and nothing reads the letters back",
-    why: "Text is the service's strength and the one defect no palette or silhouette measure sees, and a game in Portuguese loses its accents first.",
-    deps: [],
   },
   {
     id: "PW170",

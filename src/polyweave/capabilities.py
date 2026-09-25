@@ -142,6 +142,7 @@ def capabilities(
         service_key_env = service_key_env or declared[only]["key_env"] or None
     renderer = _describe_binary("blender", blender, probe)
     engine = _describe_binary("godot", godot, probe)
+    reader = _describe_binary("tesseract", config.path("paths.tesseract"), probe)
     # Blender also ships as an importable module, and a worker that has it needs no
     # binary at all. Reporting only the binary would call a machine that can render one
     # that cannot.
@@ -176,6 +177,8 @@ def capabilities(
             "colour": _colour(config.path("paths.work"), probe),
         },
         "engine": {"godot": engine},
+        # Reads the letters back off a picture; absent means lettering goes unchecked.
+        "ocr": {"tesseract": reader},
         # The one service where there is one, and none where a caller has to choose.
         "service": service,
         "services": services,

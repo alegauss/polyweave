@@ -612,6 +612,12 @@ CODES: dict[str, Code] = {
         "the field; a dropped seed records a picture as repeatable when it is not",
         doors=("learn the schema", "ask without a seed and keep the one reported"),
     ),
+    "fetch.ocr-failed": Code(
+        means="the OCR engine is present and could not read the picture",
+        when="tesseract without the language data the project's locale needs, or a "
+        "file it cannot open",
+        doors=("install the language data", "pass languages"),
+    ),
     "fetch.unpriced": Code(
         means="no price is declared for what is being bought, so its cost is not known",
         when="a picture on a model and speed with no row in the service's prices; it "

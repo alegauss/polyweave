@@ -50,8 +50,9 @@ TOOL_BUDGET = 4500
 #: a paid request itself, and `service` on six purchase and schema tools (§PW162).
 #: Raised to 48,300 at 47,679 for purchase.reconcile (§PW164) and picture.describe
 #: (§PW165), a quote held against the bill and an approved picture's own prompt.
-#: Raised to 49,400 at 48,759 for style.read (§PW166) and style.drift (§PW167).
-LIST_BUDGET = 49400
+#: Raised to 49,400 at 48,759 for style.read (§PW166) and style.drift (§PW167), and
+#: to 50,600 at 50,015 for picture.gate (§PW168) and picture.letters (§PW169).
+LIST_BUDGET = 50600
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

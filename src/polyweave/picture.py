@@ -311,12 +311,22 @@ def gate(
                 f"{key} drifted: {drifted['measures'][key].get('which_way', 'off')}"
                 for key in drifted["drifted"]
             )
+        lettering = letters(candidate, root=here)
+        failed.extend(
+            f"lettering: asked for {one['asked']!r}, read {one['read']!r}"
+            for one in lettering["texts"]
+            if one["passed"] is False
+        )
         found = {
             "picture": candidate,
             "passed": not failed,
             "silhouette_iou": held["silhouette_iou"],
             "failed": failed,
             "style_judged": bool(drifted and drifted["judged"]),
+            # Declared lettering with no engine to read it is named, never passed.
+            "lettering_unchecked": [
+                one["asked"] for one in lettering["texts"] if one["passed"] is None
+            ],
         }
         _written_against(path, found, here)
         looked.append(found)
@@ -330,6 +340,126 @@ def gate(
         "candidates": looked,
         "not_checked": list(style.NOT_CHECKED[:1]),
     }
+
+
+#: A project's `[capture] locale` as the reader's language, so a game in Portuguese is
+#: read in Portuguese and its accents are letters rather than noise. Anything not here
+#: is passed as `languages`.
+LANGUAGES = {
+    "en": "eng",
+    "pt": "por",
+    "es": "spa",
+    "fr": "fra",
+    "de": "deu",
+    "it": "ita",
+}
+
+
+@operation("picture.letters")
+def letters(
+    picture: Annotated[str, Param("the picture, under the project")],
+    texts: Annotated[
+        list, Param("the lettering it must carry; its record's text elements if unset")
+    ] = None,
+    *,
+    languages: Annotated[
+        str, Param("the reader's languages, as tesseract names them")
+    ] = (None),
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
+) -> dict:
+    """Read the lettering back off a picture and hold it to what was asked (§PW169).
+
+    The text a picture must carry is the text elements of the structured prompt it was
+    bought with, or `texts`. The comparison folds case and whitespace and **never folds
+    accents**, because a dropped accent is the defect. Where no OCR engine is installed
+    the picture is reported unchecked, by name, and never passed.
+    """
+    import difflib
+    import shutil
+
+    config = load(root)
+    path = config.root / picture
+    asked = list(texts) if texts is not None else _declared_text(path, config.root)
+    if not asked:
+        return {
+            "picture": picture,
+            "checked": False,
+            "passed": None,
+            "texts": [],
+            "why": "no lettering was declared for this picture",
+        }
+    engine = shutil.which(str(config.path("paths.tesseract")))
+    if not engine:
+        return {
+            "picture": picture,
+            "checked": False,
+            "passed": None,
+            "texts": [{"asked": one, "read": None, "passed": None} for one in asked],
+            "why": f"no OCR engine at {config.path('paths.tesseract')}: the lettering "
+            f"is unchecked, which is not a pass",
+        }
+    locale = str(config.get("capture.locale") or "").split("_")[0].lower()
+    language = languages or LANGUAGES.get(locale, "eng")
+    read = _read_letters(engine, path, language)
+    lines = [_folded(line) for line in read.splitlines() if line.strip()]
+    whole = _folded(read)
+    found = []
+    for one in asked:
+        wanted = _folded(one)
+        near = difflib.get_close_matches(wanted, lines, n=1, cutoff=0.0)
+        found.append(
+            {
+                "asked": one,
+                "read": wanted if wanted in whole else (near[0] if near else ""),
+                "passed": wanted in whole,
+            }
+        )
+    return {
+        "picture": picture,
+        "checked": True,
+        "passed": all(one["passed"] for one in found),
+        "texts": found,
+        "languages": language,
+        "why": "",
+    }
+
+
+def _declared_text(path, here) -> list[str]:
+    """The text elements of the structured prompt a picture was bought with."""
+    try:
+        record = provenance.read(path, root=here)
+    except PolyweaveError:
+        return []
+    prompt = (record.get("details") or {}).get("json_prompt") or {}
+    elements = (prompt.get("compositional_deconstruction") or {}).get("elements") or []
+    return [e["text"] for e in elements if e.get("type") == "text" and e.get("text")]
+
+
+def _folded(text: str) -> str:
+    """Case and whitespace folded, accents kept: they are the letters at risk."""
+    return " ".join(str(text).casefold().split())
+
+
+def _read_letters(engine: str, path, language: str) -> str:
+    """What the OCR engine reads off the picture."""
+    import subprocess
+
+    done = subprocess.run(  # noqa: S603 - the engine is the project's own binary
+        [engine, str(path), "stdout", "-l", language],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        timeout=TIMEOUT,
+        check=False,
+    )
+    if done.returncode != 0:
+        raise PolyweaveError(
+            "fetch.ocr-failed",
+            f"the OCR engine could not read {path}",
+            f"check that the {language} language data is installed for it",
+            detail=(done.stderr or "")[:400],
+        )
+    return done.stdout
 
 
 def _written_against(path, found: dict, here) -> None:

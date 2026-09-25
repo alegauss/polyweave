@@ -274,29 +274,6 @@ unstated.
 
 ## Block N — Pictures held to a canon
 
-### §PW169 Reading the letters back
-
-Lettering is the thing this service does best, and it is the reason to use it for a
-title, a sign, a label on a crate. It is also the one place a picture can be wrong in a
-way no palette or silhouette measure sees: a letter missing, an accent dropped, a word
-spelled the way the model preferred. A game in Portuguese loses its accents first.
-
-**The text a picture was asked to carry is declared**, as an element of the structured
-prompt (PW165) — which is already where 4.0 wants it — so there is something to read
-back against.
-
-**The letters are read back mechanically**, by an OCR engine found the way Blender and
-Godot are found: a binary on the machine, named in `[paths]`, reported by `capabilities`
-as present or absent. The comparison is exact after case and whitespace folding, and
-never after accent folding, because a dropped accent is precisely the defect.
-
-**An absent engine is a stated gap, not a pass.** Where no OCR engine is installed, a
-picture with declared text is reported as unchecked, by name, and a picture that failed
-is refused with the word it read and the word it was asked for side by side.
-
-This line is an idea rather than a plan because it adds a dependency no other line here
-needs, and it should wait until a real title or sign has actually come back misspelt.
-
 ### §PW170 A variation measured against its parent
 
 Refinement is where consistency is lost. A character is approved, asked for holding a
