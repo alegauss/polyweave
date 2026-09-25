@@ -109,6 +109,7 @@ MODULES: tuple[str, ...] = (
     "polyweave.picture",
     "polyweave.style",
     "polyweave.variation",
+    "polyweave.fitting",
     "polyweave.engine",
     "polyweave.capture",
     "polyweave.offscreen",

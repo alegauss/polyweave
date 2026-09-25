@@ -38,7 +38,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "K", title: "Reached without reading the source", open: 0 },
   { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
-  { block: "N", title: "Pictures held to a canon", open: 5 },
+  { block: "N", title: "Pictures held to a canon", open: 4 },
   { block: "O", title: "A person sees and answers", open: 6 },
 ];
 
@@ -63,13 +63,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent",
     why: "The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question.",
     deps: ["PW57"],
-  },
-  {
-    id: "PW171",
-    block: "N",
-    symptom: "2D art from a picture service arrives at the size and margin it chose, not the project's grid",
-    why: "An icon or UI piece needs the project's pixel size, padding and a clean alpha edge, and that fix is mechanical, so it belongs on arrival.",
-    deps: [],
   },
   {
     id: "PW178",

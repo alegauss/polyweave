@@ -34,9 +34,10 @@ JSON, written beside every artefact this plugin produces, named `<artefact>.prov
 }
 ```
 
-`kind` is `render`, `mesh`, `capture` or `fetch`. A `fetch` carries the service fields §PW17
-requires — task id, prompt or reference hash, credits consumed — in the same record rather
-than a second one.
+`kind` is `render`, `mesh`, `capture`, `fetch` or `picture`, the last a bought picture put
+on the project's grid (§PW171). A `fetch` carries the service fields §PW17 requires — task
+id, prompt or reference hash, credits consumed — in the same record rather than a second
+one.
 
 It costs nothing to write and it is the only thing that makes a difference explicable weeks
 later. It is also what lets a regression be bisected: a render that got worse is compared

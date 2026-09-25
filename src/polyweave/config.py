@@ -184,6 +184,15 @@ DEFAULTS: dict[str, Any] = {
         # The style block every structured prompt starts from, as the service spells
         # it: medium, lighting, aesthetics. It wins over a prompt that says otherwise.
         "skeleton": {},
+        # The grid a picture of this family is put on when it arrives (§PW171): the
+        # cell in pixels as [width, height], empty to leave the size alone; the margin
+        # inside it; where the subject sits, `centre` for an icon and `base` for what
+        # stands on the ground; and the filter, `smooth` for painted art and `pixel` for
+        # pixel art, which is never smoothed and is quantised to the palette.
+        "cell": [],
+        "margin": 0,
+        "anchor": "centre",
+        "filter": "smooth",
     },
     "voxels": {
         # What a voxel build is checked against (§PW97). A game decides how many cubes
@@ -690,6 +699,9 @@ def _check_key(table: str, key: str, value: Any, source: Path) -> None:
     _check_value(f"{table}.{key}", key, value, source)
 
 
+#: Settings whose value is one of a few words.
+_CHOICES = {"anchor": ("centre", "base"), "filter": ("smooth", "pixel")}
+
 #: A colour as a palette states it.
 _HEX = re.compile(r"#[0-9a-fA-F]{6}")
 
@@ -698,6 +710,25 @@ def _check_value(address: str, key: str, value: Any, source: Path) -> None:
     """The settings whose type alone does not say whether a value is one."""
     if key == "prices":
         _check_prices(address, value, source)
+    elif key in _CHOICES and value not in _CHOICES[key]:
+        raise PolyweaveError(
+            "config.bad-type",
+            f"{address} is {value!r} in {source.name}, which is not one of "
+            f"{', '.join(_CHOICES[key])}",
+            f"write one of {', '.join(_CHOICES[key])}",
+            given=str(value),
+            allowed=_CHOICES[key],
+            at=address,
+        )
+    elif key == "cell" and value and (
+        len(value) != 2 or not all(isinstance(v, int) and v > 0 for v in value)
+    ):
+        raise PolyweaveError(
+            "config.bad-type",
+            f"{address} is {value!r} in {source.name}, and a cell is two whole numbers",
+            "write it as [width, height] in pixels, or [] to leave the size alone",
+            at=address,
+        )
     elif key == "palette":
         wrong = [c for c in value if not isinstance(c, str) or not _HEX.fullmatch(c)]
         if wrong:

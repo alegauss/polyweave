@@ -30,7 +30,7 @@ from .describe import Param, operation
 from .errors import PolyweaveError
 
 #: What a record may describe. Closed, because a reader branches on it.
-KINDS = ("render", "mesh", "capture", "fetch")
+KINDS = ("render", "mesh", "capture", "fetch", "picture")
 
 SUFFIX = ".prov.json"
 

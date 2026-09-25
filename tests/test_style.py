@@ -56,10 +56,10 @@ def test_each_family_declares_its_own_look(tmp_path):
 
 def test_a_bare_style_is_one_family(tmp_path):
     where = project(tmp_path, '[style]\npalette = ["#000000"]\n')
-    assert C.load(where).style() == (
-        "default",
-        {"canon": "", "palette": ["#000000"], "skeleton": {}},
-    )
+    family, declared = C.load(where).style()
+    assert family == "default"
+    assert declared["palette"] == ["#000000"]
+    assert declared["canon"] == "" and declared["skeleton"] == {}
 
 
 def test_a_palette_colour_is_a_value_not_a_name(tmp_path):

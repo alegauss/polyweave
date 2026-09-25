@@ -243,6 +243,26 @@ The synchronous endpoints carry no task id, so the entry's `task_id` is the serv
 the answer's `created` time and the seed. The asynchronous variants and their poll are not
 built yet.
 
+## A picture is put on the project's grid on arrival
+
+A picture service returns an image at a size, margin and position it chose, and an icon or
+a flat sprite needs the project's (§PW171). That fix is mechanical, so `picture.fit` makes it
+once, from the family's `[style]` `cell`, `margin`, `anchor` and `filter`:
+
+- the fringe's colour is replaced by the subject's own, grown outward from its opaque
+  pixels, so a halo of the generator's background never reaches the engine. The halo's
+  ΔE is measured before and after, and alpha is kept, so the edge stays soft;
+- the subject is trimmed to its alpha, then scaled to fit the cell inside the margin.
+  `smooth` resamples, and `pixel` is never smoothed: its alpha is all or nothing and its
+  colours are taken from the family's palette;
+- it is placed at the anchor: `centre` for an icon, `base` (on the bottom margin) for what
+  stands on the ground, the convention a mesh's origin already follows.
+
+**The fitted file is what the engine loads**, with a `picture` record naming the original as
+its input and carrying the whole transform: trim box, scale, size, offset, cell, margin,
+anchor, filter and halo. The original stays on file, so a changed cell is one refit, never a
+second purchase. An empty `cell` leaves the size alone and only trims, defringes and pads.
+
 ## A mesh is put in the project's frame on arrival
 
 A generated mesh faces wherever the service left it, at whatever scale, with its origin

@@ -115,6 +115,10 @@ outlines = "tools/art/outlines.py"   # where named shape generators come from
 canon    = "docs/design/canon"     # pictures a person approved; only a verdict adds one
 palette  = ["#f2c14e", "#3a2e39"]  # as values, never names
 skeleton = { medium = "flat vector", lighting = "soft" }   # every structured prompt's start
+cell     = [64, 64]                # the grid a picture is put on when it arrives
+margin   = 2
+anchor   = "centre"                # or "base", for what stands on the ground
+filter   = "smooth"                # or "pixel": never smoothed, quantised to the palette
 
 [voxels]
 budget        = 4000           # the most cells a model may have; zero is no ceiling

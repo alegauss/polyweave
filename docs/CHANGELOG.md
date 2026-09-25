@@ -212,6 +212,7 @@
 - ✅ **PW168** **a reference drawing reaches the mesh service unchecked, so a wrong silhouette is found only once the mesh is paid for** — picture.gate refuses a picture that is no drawing, runs off the frame, misses the outline or drifts, says why, and keeps the best IoU (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW169** **lettering drawn into a picture can be misspelt or lose its accents, and nothing reads the letters back** — picture.letters reads lettering back with tesseract in the project's language, keeps accents, and reports an absent engine as unchecked (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW170** **a variation of an approved picture can change what was approved, and nothing compares it to the one it came from** — picture.vary buys a remix or masked edit with its parent on record; against_parent refuses change outside the mask and drift from the canon (design recorded in `docs/specs/fetching.md`).
+- ✅ **PW171** **2D art from a picture service arrives at the size and margin it chose, not the project's grid** — picture.fit defringes, trims and fits a picture to its family's cell and anchor, pixel art unsmoothed, with the transform on its record (design recorded in `docs/specs/fetching.md`).
 
 ## Block O — A person sees and answers
 

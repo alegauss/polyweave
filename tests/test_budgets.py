@@ -34,8 +34,9 @@ from polyweave.errors import PolyweaveError
 #: then 53,672 with purchase.reconcile (§PW164) and picture.describe (§PW165),
 #: then 54,332 with style.read and picture.buy's `family` (§PW166), then 55,585
 #: with style.drift (§PW167) and picture.gate (§PW168), 56,301 with picture.letters
-#: (§PW169), 58,365 with picture.vary and picture.against_parent (§PW170).
-DESCRIBE = 59_000
+#: (§PW169), 58,365 with picture.vary and picture.against_parent (§PW170), 59,062
+#: with picture.fit (§PW171).
+DESCRIBE = 59_700
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -46,8 +47,9 @@ DESCRIBE = 59_000
 #: style.read and the style area's four codes (§PW166), then 62,817 with style.drift
 #: and style.no-subject (§PW167), then 63,520 with picture.gate (§PW168), then
 #: 64,354 with picture.letters, the OCR probe and fetch.ocr-failed (§PW169), then
-#: 66,456 with picture.vary, picture.against_parent and their two codes (§PW170).
-CAPABILITIES = 67_000
+#: 66,456 with picture.vary, picture.against_parent and their two codes (§PW170),
+#: then 67,153 with picture.fit (§PW171).
+CAPABILITIES = 67_800
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

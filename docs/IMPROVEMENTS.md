@@ -274,30 +274,6 @@ unstated.
 
 ## Block N — Pictures held to a canon
 
-### §PW171 A picture put on the project's grid on arrival
-
-A picture service returns an image at a size it chose, with a margin it chose, centred
-where it chose. An icon, a UI piece or a flat sprite needs the project's pixel size, the
-project's padding and an alpha edge that sits cleanly on the game's own background.
-Fixing that by hand is the same kind of work as turning a mesh round until it faces
-forward, and it gets the same answer: it is mechanical, so it happens on arrival (PW20).
-
-**On ingest, once, recorded as one transform:**
-
-- trim to the alpha's bounding box, then fit to the family's declared cell — `[sprites]` and
-  `[units] pixels_per_unit` already say what a cell is;
-- pad by the declared margin, anchored where the family says: centre for an icon, the base
-  for anything that stands on the ground, the convention a mesh's origin already follows;
-- downscale with a filter chosen by the family, never by the picture — a pixel-art family
-  quantises to its palette with no smoothing, a painted one resamples;
-- check the fringe: a halo of the generator's background colour around the alpha is the
-  commonest defect a cut-out has, and it is measured and removed rather than noticed in the
-  engine.
-
-**The ingested file is what the engine loads**, and `compose.sheet` takes it like any
-other frame. The original stays on file with its digest, so a change to the family's
-cell size is one re-ingest and never one more purchase.
-
 ### §PW178 Buying a picture asynchronously
 
 `picture.buy` sends the synchronous endpoints, so one call holds a connection open until
