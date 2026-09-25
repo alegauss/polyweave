@@ -23,7 +23,7 @@ This page only groups them by what you are trying to do.
 | A project's look | `style.read`, `style.drift` (before a person looks; only `verdict.judge` grows a canon) |
 | Buy a drawing | `picture.buy`, `picture.gate` (before the mesh is bought), `picture.letters`, `picture.describe`, `picture.vary`, `picture.against_parent`, `picture.fit` (onto the family's grid), `picture.collect` |
 | Before buying a mesh | `reference.pick`, `reference.prepare`, `shape.check`, `shape.silhouette`, `shape.turntable` |
-| Paid meshes | `purchase.remaining`, `purchase.allow`, `purchase.held`, `schema.validate`, `schema.read`, `schema.proved` |
+| Paid meshes | `mesh.buy` (from words, or a picture the gate passed), `purchase.remaining`, `purchase.allow`, `purchase.held`, `schema.validate`, `schema.read`, `schema.proved` |
 | The purchase ledger | `purchase.spent`, `purchase.ledger`, `purchase.find`, `purchase.adopt`, `purchase.reconcile` |
 | After buying | `normalise.ingest`, `texture.worth_scrubbing` |
 | Bake a clip | `motion.bake` (the animation and the sheet, from files) |

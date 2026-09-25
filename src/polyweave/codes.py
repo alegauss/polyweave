@@ -633,6 +633,12 @@ CODES: dict[str, Code] = {
         when="a picture bought directly rather than as a variation of an approved one",
         doors=("measure it against its canon with style.drift",),
     ),
+    "fetch.picture-ungated": Code(
+        means="a mesh was asked for from a picture the gate never passed",
+        when="a picture never put through picture.gate, one it refused, or one changed "
+        "since; a silhouette is settled on the picture before the mesh is paid for",
+        doors=("run picture.gate and buy from the picture it chooses",),
+    ),
     "fetch.unpriced": Code(
         means="no price is declared for what is being bought, so its cost is not known",
         when="a picture on a model and speed with no row in the service's prices; it "

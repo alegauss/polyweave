@@ -216,6 +216,7 @@
 - ✅ **PW178** **a picture is bought only synchronously, so each call holds a connection open until it is drawn** — picture.buy sends the async route, polls the generation id to its end or a timeout, keeps it as the task id, and runs as a fetch job (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW179** **a picture paid for whose download then fails is charged to no ceiling, so the next spend is judged too high** — A picture charged for and never delivered is owed beside the ledger and counted against the ceiling; picture.collect lands it later (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW181** **an approved picture cannot be reframed to another aspect ratio, so an icon and a banner of it are two separate pictures** — picture.vary reframes a picture into a new frame, and against_parent finds where the parent landed and refuses if it changed (design recorded in `docs/specs/fetching.md`).
+- ✅ **PW183** **a mesh is bought by each consumer's own Meshy client, so the plugin never sees a mesh bought from a picture** — mesh.buy buys an untextured mesh from words or a gated picture, measured by two balance readings, and refuses a picture the gate never passed.
 
 ## Block O — A person sees and answers
 

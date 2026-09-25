@@ -269,6 +269,27 @@ again. Once the picture lands it is ledgered like any other and the charge leave
 list, so it is counted once. A retry that fails again replaces its own entry. A link that
 has expired leaves the charge owed for good, because the money went either way.
 
+## A mesh is bought through the plugin
+
+`mesh.buy` is the plugin's own Meshy client (§PW183), so a consumer keeps its prompts and
+nothing else. It buys one untextured mesh from a `prompt` (`/openapi/v2/text-to-3d`, preview
+mode) or from `picture_path` (`/openapi/v1/image-to-3d`, the picture sent as a data URI,
+`should_texture` off), at `model` and `polycount`, against that service's own ceiling:
+
+1. the price is the `prices` row for `model`, and a model with no row is refused;
+2. `purchase.allow` is asked, and the account's balance is read;
+3. the task is sent and polled every five seconds, for at most fifteen minutes, reporting as
+   a `fetch` job's `building` stage;
+4. the `.glb` is taken delivery of, the balance is read again, and the difference between
+   the readings is the cost on the ledger, `measured: true`.
+
+**A picture must have passed the gate.** `picture.gate` writes `<name>.gate.json` beside each
+candidate. `mesh.buy` refuses a picture with none, one the gate refused, or one whose bytes
+changed since (`fetch.picture-ungated`). So a mesh bought from a picture always had its
+silhouette settled on the picture first. A 402 from the service is `fetch.over-budget` on
+the account itself, a 429 `fetch.rate-limited`, and a failed or cancelled task ledgers
+nothing.
+
 ## A picture is put on the project's grid on arrival
 
 A picture service returns an image at a size, margin and position it chose, and an icon or
