@@ -348,24 +348,6 @@ again.
 
 ## Block K — Reached without reading the source
 
-### §PW130 A canonical task, and a naive client beside it
-
-The plugin's claim is about an agent's first call, and no test makes a first call. Every
-test was written by someone who had read the implementation. Shio found its worst class
-this way: an unrecognised argument reported success and did something else, and only a
-client written to use plausible wrong names counted it.
-
-Two instruments, both cheap. A canonical task, "declare a small prop and reach a passing
-verdict", is driven through the derived command line (`commands.py`) and counted in
-calls, renders, cache hits and estimated tokens, with an exact figure for calls and a
-loose one for the rest. A naive client then replays it with the spellings a model
-reaches for first, such as `size` for `extent` or `samples` as a string, and asserts
-that each one is refused with an `allowed` set, never accepted and ignored.
-
-Shio retired its headline ratio because the baseline got leaner and the ratio fell with
-no change to the agent's path. So the floors here are per mechanism: what the cache
-saves, what a preview rung saves, what a parallel search saves.
-
 ### §PW131 An asset's brief in one read
 
 Roadkeep's `brief` starts a task in one call, and Shio's context pack replaced the reads

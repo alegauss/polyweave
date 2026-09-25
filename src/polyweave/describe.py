@@ -281,6 +281,7 @@ def validate(name: str, args: dict) -> dict:
 
     A range that nothing enforces is a comment, and a comment is what §PW3 is about.
     """
+    load()  # a fresh process called an operation unknown before it was imported
     try:
         registered = _REGISTRY[name]
     except KeyError:
@@ -317,8 +318,50 @@ def validate(name: str, args: dict) -> dict:
     return resolved
 
 
+#: The smallest correct value of each type, for a refusal to show.
+_EXAMPLES = {
+    "str": '"text"',
+    "int": "3",
+    "float": "0.5",
+    "bool": "true",
+    "list": '["a"]',
+    "dict": '{"a": 1}',
+}
+
+#: What a value of each declared type may be. A type not here (`Any`) takes anything.
+_ACCEPTS: dict[str, tuple[type, ...]] = {
+    "str": (str,),
+    "int": (int,),
+    "float": (int, float),
+    "bool": (bool,),
+    "list": (list, tuple),
+    "dict": (dict,),
+}
+
+
 def _check_value(name: str, declared: dict, value: Any) -> None:
     what = declared["name"]
+    kinds = _ACCEPTS.get(declared["type"])
+    # §PW130: only a ranged value used to be type-checked, so `preview: "yes"` passed
+    # and read as true, and `given: "size=2"` reached a function expecting a table.
+    # None stays allowed: it is how a caller leaves an optional value to its default.
+    wrong = (
+        kinds is not None
+        and value is not None
+        and (
+            not isinstance(value, kinds)
+            or (isinstance(value, bool) and bool not in kinds)
+        )
+    )
+    if wrong:
+        raise PolyweaveError(
+            "op.bad-type",
+            f"{what} is a {declared['type']} on {name}, and a "
+            f"{type(value).__name__} was passed",
+            f"pass a {declared['type']}",
+            example=_EXAMPLES.get(declared["type"]),
+            at=what,
+        )
     choices = declared.get("choices")
     if choices is not None and value not in choices:
         raise PolyweaveError(

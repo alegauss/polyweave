@@ -31,7 +31,6 @@
 
 ## Block K — Reached without reading the source
 
-- 📋 **PW130** (deps: PW125 ✅) **every test calls the surface correctly, so a silently dropped argument or a wrong first call is never measured** — Shio's naive client found six silent drops in twelve calls that its benchmark, driving a correct script, could not see. → §PW130
 - 📋 **PW131** (deps: PW125 ✅) **starting work on an asset means opening its declaration, spec, record and last verdict one file at a time** — An asset's state is split across four files, so an agent opens each before it can say what is left, and no read answers that question whole. → §PW131
 - 📋 **PW132** (deps: —) **an agent in a consumer is never told the plugin exists, because it ships no manifest, skill or session notice** — Six of Cottony's tools import the plugin and not one of its agent documents names it, so each session rediscovers it from a script's imports. → §PW132
 - 📋 **PW133** (deps: PW125 ✅) **an agent may hand-edit a built mesh or voxel file, and nothing notices the output no longer follows its declaration** — The build stamp hashes inputs only and geometry outputs carry no record, so an edited output is reported cached and rebuilt only when an input moves. → §PW133

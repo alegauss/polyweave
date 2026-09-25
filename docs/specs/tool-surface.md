@@ -184,6 +184,16 @@ both answers.
   refusal lists at most `ALLOWED_CAP` (40) names in `allowed`. Past that it keeps the
   nearest to the name refused and says how many there were in `allowed_total`, since an
   unknown code listing all 200 codes cost 4,400 characters.
+- **A first call is measured, not assumed** (§PW130). `tests/test_first_call.py` drives
+  the canonical task, declaring a small prop and reaching a passing verdict, through the
+  derived command line. It takes exactly three calls (describe, build, check), and the
+  answers' size is held to a loose token ceiling. A second build of an unchanged
+  declaration comes back `cached`, which is the cache's own floor. A naive client replays
+  the spellings a model reaches for first, such as `rungs`, `spec_path`, `path`,
+  `preview: "yes"`, `given: "size=2"` or `samples: "64"`, and each must be refused with
+  something to act on. `validate` now checks every value against its declared type, not
+  only a ranged one, which is what let `preview: "yes"` through and read it as true. It
+  loads the registry first, so a fresh process no longer calls a real operation unknown.
 
 ## 4. The surface describes itself
 
