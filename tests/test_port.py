@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+
 import pytest
 from PIL import Image
 
@@ -156,3 +158,69 @@ def test_a_family_that_cannot_be_ported_is_refused(tmp_path, edit, says):
         port.read(root / "family.toml")
     assert refused.value.code == "search.bad-family"
     assert says in refused.value.message
+
+
+# -- the rig a search found is kept (§PW144) -------------------------------------------
+
+
+def searches(baker):
+    return len([c for c in baker.calls if c.get("rung") != "final"])
+
+
+def test_a_found_rig_is_kept_and_the_next_port_starts_from_it(tmp_path):
+    root = project(tmp_path)
+    first = port.port(root / "family.toml", root=root, bake=Baker(root))
+    kept = json.loads((root / "family.rig.json").read_text(encoding="utf-8"))
+    assert kept["values"] == first["values"]
+    assert kept["fixed"]["star_dim"] == {"key": 300.0}
+    assert first["rig_from"] == "searched"
+
+    baker = Baker(root)
+    again = port.port(root / "family.toml", root=root, bake=baker)
+    assert again["rig_from"] == "kept"
+    assert again["values"] == first["values"]
+    assert again["passed"]
+    assert searches(baker) == 2  # one render per member, no search
+
+
+def test_a_kept_rig_that_no_longer_passes_is_searched_again(tmp_path):
+    root = project(tmp_path)
+    port.port(root / "family.toml", root=root, bake=Baker(root))
+    (root / "family.rig.json").write_text(
+        json.dumps({"values": {"exposure": 0.9}}), encoding="utf-8"
+    )
+    baker = Baker(root)
+    found = port.port(root / "family.toml", root=root, bake=baker)
+    assert found["rig_from"] == "searched"
+    assert found["passed"]
+    assert searches(baker) > 2
+
+
+def test_fresh_searches_even_where_the_kept_rig_passes(tmp_path):
+    root = project(tmp_path)
+    port.port(root / "family.toml", root=root, bake=Baker(root))
+    found = port.port(root / "family.toml", root=root, bake=Baker(root), fresh=True)
+    assert found["rig_from"] == "searched"
+
+
+def test_a_rig_kept_outside_the_familys_axes_is_not_a_guess_it_may_make(tmp_path):
+    root = project(tmp_path)
+    (root / "family.rig.json").write_text(
+        json.dumps({"values": {"exposure": -3.0}}), encoding="utf-8"
+    )
+    found = port.port(root / "family.toml", root=root, bake=Baker(root))
+    assert found["rig_from"] == "searched"
+
+
+def test_another_family_starts_from_a_kept_rig(tmp_path):
+    root = project(tmp_path)
+    port.port(root / "family.toml", root=root, bake=Baker(root))
+    text = (root / "family.toml").read_text(encoding="utf-8")
+    (root / "moons.toml").write_text(
+        text.replace('family = "stars"', 'family = "moons"\nstart = "family.rig.json"'),
+        encoding="utf-8",
+    )
+    baker = Baker(root)
+    found = port.port(root / "moons.toml", root=root, bake=baker)
+    assert found["rig_from"] == "started"
+    assert searches(baker) == 2

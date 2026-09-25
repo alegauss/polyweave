@@ -370,25 +370,3 @@ present, and skipped where it is not, as the render tests are.
 ## Block L — What a run leaves as evidence
 
 ## Block M — What a game needs beyond the look
-
-### §PW144 A rig as data a project can apply
-
-Shio's blueprints are appliable starting points. A package reuses the formats that
-already exist, takes named parameters with no conditionals, is validated when it loads,
-and carries a `verify` promise that runs after it is applied. Re-applying it with the
-recorded parameters reproduces the result.
-
-The nearest thing here is the rig a search settles on, and today it is not kept. PW76
-made the stars a search rather than a set of constants: `search_stars.py` fits the rig
-on one sprite with a budget of sixty renders, checks it on the other three and bakes.
-The rig it found exists only in that run's answer, so the next run searches it again,
-with the cache as the only thing standing between that and sixty renders. The half the
-search may not turn, the fixed angles, the material and the cell size, sits in the
-script as constants.
-
-A recipe would be a directory holding a geometry declaration with parameters, the rig
-the search found as data together with its fixed half, an acceptance spec and the
-measures that must pass after apply. `apply <recipe> --set height=0.6` builds, bakes and
-checks, re-searching only when a check fails, and records the recipe and its parameters
-in provenance. It is an idea that PW120's port skeleton and PW117's second adopter would
-each test.

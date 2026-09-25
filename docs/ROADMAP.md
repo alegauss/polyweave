@@ -37,8 +37,6 @@
 
 ## Block M — What a game needs beyond the look
 
-- 💭 **PW144** (deps: —) **the rig a search found is kept nowhere, so each run searches it again and no other game can start from it** — `search_stars.py` spends up to sixty renders finding the stars' rig again, and the half it holds fixed is constants in the script, where no other family can reuse it. → §PW144
-
 ## Done when — PW36
 
 - **Every piece of Cottony's pipeline runs on the plugin, with no fork** The

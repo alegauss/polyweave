@@ -195,3 +195,4 @@
 
 - ✅ **PW142** **a voxel model is drawn with every filled cell, including the ones buried where no face of them can be seen** — The addon draws skin() alone on request, read off depths or neighbours, and exposed_by() names what a hit uncovers; the frame cost is unmeasured (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW143** **an acceptance spec bounds how an asset looks and never what it costs the game to draw** — A spec bounds triangles, materials, draw calls, texture bytes and cells, read off the .glb, voxel model or texture it names, so costly looks fail (design recorded in `docs/specs/acceptance-spec.md`).
+- ✅ **PW144** **the rig a search found is kept nowhere, so each run searches it again and no other game can start from it** — A passing searched port keeps its rig beside the family file; the next port renders at it before searching, and another family can start from it (design recorded in `docs/specs/adoption.md`).

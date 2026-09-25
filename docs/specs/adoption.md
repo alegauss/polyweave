@@ -221,6 +221,18 @@ into it, finals included. Anything else in the file is `search.bad-family`. The 
 the look is still a person's, given with `verdict.judge`. The scripts that exist stay until
 their family is re-expressed. The next one need not be written.
 
+**The rig a search found is kept** (§PW144). A passing searched port writes
+`<family>.rig.json` beside the family file: the values, the axes they were found in, and
+each member's `fixes`, the half the search may not turn. The next port renders each member
+once at that rig and searches only if one fails, so the stars no longer pay up to sixty
+renders to find the same rig again. A kept rig whose values fall outside the family's
+current axes is ignored, since the search could never have proposed it. `start = "<a
+kept rig>"` in another family's file makes that rig its first guess. `fresh` searches
+regardless. The answer says where the rig came from, as `rig_from`: `kept`, `started`,
+`searched` or `given`. This is the appliable half of Shio's blueprints. The
+geometry-with-parameters half is already a declaration, and a recipe that bundles them
+waits on a second family wanting one.
+
 ## A second adopter, unlike the first
 
 Binds **PW117**. "No key had to be added" was the boundary holding for one project, and the

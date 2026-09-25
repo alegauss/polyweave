@@ -25,11 +25,19 @@ states only what differs, and `port` runs the skeleton:
 One rig is searched against every member at once (`search.family`), every bake counts
 itself into the ledger run when one is open (`loop.recording`), and nothing is baked
 unless every member passes. Whether the look is right stays a person's verdict.
+
+**The rig a search found is kept** (§PW144), as `<family>.rig.json` beside the family
+file: the values, the axes they were found in and each member's fixed half. The next
+port tries it first and searches only when a member fails at it, so the stars no longer
+spend up to sixty renders finding the same rig. `start = "<a kept rig>"` in another
+family's file starts that family from it, which is how one game's rig becomes another's
+first guess rather than a set of constants in a script.
 """
 
 from __future__ import annotations
 
 import contextlib
+import json
 import tomllib
 from collections.abc import Callable
 from dataclasses import replace
@@ -44,8 +52,54 @@ from .errors import PolyweaveError
 RIGS = ("searched", "given")
 
 #: What a family file and each of its members may say.
-FAMILY_KEYS = ("family", "rig", "budget", "search", "given", "member")
+FAMILY_KEYS = ("family", "rig", "budget", "search", "given", "start", "member")
 MEMBER_KEYS = ("name", "spec", "model", "declaration", "fixes", "out", "bake")
+
+#: What the rig a search found is kept as, beside the family file (§PW144).
+KEPT = ".rig.json"
+
+
+def _beside(family: Path) -> Path:
+    """Where a family's found rig is kept: `stars.toml` keeps `stars.rig.json`."""
+    return family.with_name(family.stem + KEPT)
+
+
+def _kept(where: Path, axes: dict) -> dict | None:
+    """A kept rig's values, where every one still lies inside the family's own axes.
+
+    A rig found in other ranges is not a guess this family may make: its values would
+    be ones the family's search could never have proposed.
+    """
+    try:
+        kept = json.loads(where.read_text(encoding="utf-8"))
+    except (FileNotFoundError, json.JSONDecodeError):
+        return None
+    values = {k: v for k, v in (kept.get("values") or {}).items() if k in axes}
+    if not values or set(values) != set(axes):
+        return None
+    inside = all(
+        float(axes[k].get("min", v)) <= float(v) <= float(axes[k].get("max", v))
+        for k, v in values.items()
+    )
+    return values if inside else None
+
+
+def _keep(where: Path, family: dict, values: dict, axes: dict) -> None:
+    fixed = {one["name"]: one.get("fixes") or {} for one in family["member"]}
+    where.write_text(
+        json.dumps(
+            {
+                "family": family.get("family"),
+                "values": values,
+                "axes": axes,
+                "fixed": fixed,
+            },
+            indent=1,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
 
 
 def read(path: str | Path, root: str | Path = ".") -> dict:
@@ -104,8 +158,12 @@ def port(
     run: dict | None = None,
     bake: Callable | None = None,
     build: Callable | None = None,
+    fresh: bool = False,
 ) -> dict:
     """Run a family's port: build, search or take the rig, bake if every member passes.
+
+    A searched family tries the rig it kept, or the one its `start` names, before it
+    searches, and keeps what a passing search finds. `fresh` searches regardless.
 
     `bake` is the renderer, `render.bake` unless a test stands one in; `build` turns a
     declaration into a mesh, `cli.build_one` by default. With `run` open, every bake
@@ -140,9 +198,26 @@ def port(
             }
         )
 
+    keeping = _beside(family["path"])
+    starting = (
+        (here / family["start"] if family.get("start") else keeping)
+        if family["rig"] == "searched" and not fresh
+        else None
+    )
+    first = _kept(starting, family["search"]) if starting else None
     recording = loop.recording(run) if run is not None else contextlib.nullcontext()
     with recording:
-        if family["rig"] == "searched":
+        found, came_from = None, family["rig"]
+        if first is not None:
+            # The kept rig first: one render per member, and a search only if one fails.
+            found = _at(members, first)
+            came_from = "kept" if starting == keeping else "started"
+            if not found["passed"]:
+                found = None
+                came_from = "searched"
+        if found is not None:
+            values, passed = first, True
+        elif family["rig"] == "searched":
             found = search.family(
                 members,
                 name=family.get("family", "family"),
@@ -150,19 +225,19 @@ def port(
                 budget=int(family.get("budget", search.BUDGET)),
             )
             values, passed = found["best"], found["passed"]
+            if passed:
+                _keep(keeping, family, values, family["search"])
         else:
             values = dict(family["given"])
-            answers = {m["name"]: m["evaluate"](values) for m in members}
-            found = {
-                "members": answers,
-                "passed": all(a["passed"] for a in answers.values()),
-            }
+            found = _at(members, values)
             passed = found["passed"]
         baked = _baked(draw, specs, values, here) if passed else []
 
     return {
         "family": family.get("family"),
         "rig": family["rig"],
+        "rig_from": came_from,
+        **({"kept": _named(keeping, here)} if keeping.is_file() else {}),
         "values": values,
         "passed": passed,
         "members": {
@@ -187,12 +262,24 @@ def ported(
     family: Annotated[str, Param("the family file, as a path under the project")],
     root: Annotated[str, Param("the project the paths resolve against")] = ".",
     run: Annotated[dict, Param("an open loop run every render counts into")] = None,
+    fresh: Annotated[bool, Param("search even where the kept rig passes")] = False,
 ) -> dict:
     """Port a family from its file: build, search as one, bake if every member passes.
 
     The verdict on the look stays a person's, given with `verdict.judge`.
     """
-    return port(family, root=root, run=run)
+    return port(family, root=root, run=run, fresh=fresh)
+
+
+def _named(where: Path, here: Path) -> str:
+    inside = where.is_relative_to(here)
+    return where.relative_to(here).as_posix() if inside else str(where)
+
+
+def _at(members: list[dict], values: dict) -> dict:
+    """Every member rendered and checked at one rig."""
+    answers = {m["name"]: m["evaluate"](values) for m in members}
+    return {"members": answers, "passed": all(a["passed"] for a in answers.values())}
 
 
 def _built(making: Callable, member: dict, here: Path) -> str:

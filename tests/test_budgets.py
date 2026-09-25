@@ -26,11 +26,13 @@ from polyweave.errors import PolyweaveError
 #: describe(): 74 operations measured 46,946. One more average operation is ~630.
 #: Raised for asset.brief (§PW131), which took 435 and left 19: 75 measure 47,381.
 #: Raised for measure.digest (§PW141), a bake's two hashes readable off any picture
-#: by path: 48,154, with headroom under one more operation.
-DESCRIBE = 48_600
+#: by path: 48,154, with headroom under one more operation. Then 48,709 with cost.read
+#: (§PW143) and port.run's `fresh` (§PW144).
+DESCRIBE = 49_200
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
-#: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141).
-CAPABILITIES = 55_700
+#: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
+#: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144).
+CAPABILITIES = 56_300
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
