@@ -51,8 +51,7 @@
 
 ## Block Q — Words held to the world
 
-- 📋 **PW199** (deps: PW197 ✅) **Whether a line keeps the world's tone has nowhere to be answered but a chat** — Warm, short and never heroic is a judgement no rule measures, so it needs a person's recorded verdict and a canon of lines they approved. → §PW199
-- 📋 **PW200** (deps: PW197 ✅, PW198 ✅, PW199, Starship RK88) **Starship's screen still shows names its world bible replaced** — The block is proven only when its first consumer's text, lines and character assets are held to a declared world through polyweave. → §PW200
+- 📋 **PW200** (deps: PW197 ✅, PW198 ✅, PW199 ✅, Starship RK88) **Starship's screen still shows names its world bible replaced** — The block is proven only when its first consumer's text, lines and character assets are held to a declared world through polyweave. → §PW200
 
 ## Block R — Levels measured before a person plays them
 

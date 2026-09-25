@@ -140,6 +140,11 @@ def test_a_look_of_the_wrong_shape_is_reported_on_its_own_line(tmp_path):
     ]
 
 
+def test_a_tone_that_is_not_a_list_of_sentences_is_reported(tmp_path):
+    _project(tmp_path, GOOD + 'tone = "warm"\n')
+    assert _codes(world.validate(root=str(tmp_path))) == [("world.bad-value", 21)]
+
+
 def test_the_file_is_found_named_or_refused_among_several(tmp_path):
     _project(tmp_path)
     (tmp_path / "other.world.toml").write_text(GOOD, encoding="utf-8")

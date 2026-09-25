@@ -805,6 +805,12 @@ CODES: dict[str, Code] = {
         when="words.check in a project whose text is still literals in its scripts",
         doors=("move the text into Godot's translation CSV and set [words] table",),
     ),
+    "words.no-canon": Code(
+        means="polyweave.toml names no lines canon, so a verdict on a line has nowhere "
+        "to be kept",
+        when="words.sheet, or a verdict on a line, before [words] canon is set",
+        doors=("set [words] canon to a JSON file under the project",),
+    ),
     "words.unreadable-table": Code(
         means="the string table is missing, or has no header naming keys and a locale",
         when="a moved or misspelled [words] table, or a CSV with no header row",

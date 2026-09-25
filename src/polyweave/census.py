@@ -91,6 +91,10 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.world:still_drawn": ("internal", "provenance.outdated, per entity"),
     "polyweave.picture:from_world": ("internal", "entity= on picture and mesh.buy"),
     "polyweave.words:table": ("internal", "the string table, inside words.check"),
+    "polyweave.words:held": ("internal", "every verdict on a line, oldest first"),
+    "polyweave.words:verdicts": ("internal", "the latest verdict on each line"),
+    "polyweave.words:approved": ("internal", "a speaker's canon, in world.read"),
+    "polyweave.words:judged": ("internal", "verdict.judge is the one caller"),
     # -- internal: helpers an operation calls, never a caller's first call ----------
     "polyweave.cache": ("internal", "the render cache, reached through bake's cached"),
     "polyweave.census": ("internal", "this census's own walk"),

@@ -41,7 +41,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "N", title: "Pictures held to a canon", open: 1 },
   { block: "O", title: "A person sees and answers", open: 0 },
   { block: "P", title: "Music and sound a game can ship", open: 8 },
-  { block: "Q", title: "Words held to the world", open: 2 },
+  { block: "Q", title: "Words held to the world", open: 1 },
   { block: "R", title: "Levels measured before a person plays them", open: 6 },
   { block: "S", title: "Playing the game, not only rendering it", open: 7 },
 ];
@@ -139,18 +139,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW188", "PW189", "PW190", "PW191"],
   },
   {
-    id: "PW199",
-    block: "Q",
-    symptom: "Whether a line keeps the world's tone has nowhere to be answered but a chat",
-    why: "Warm, short and never heroic is a judgement no rule measures, so it needs a person's recorded verdict and a canon of lines they approved.",
-    deps: [],
-  },
-  {
     id: "PW200",
     block: "Q",
     symptom: "Starship's screen still shows names its world bible replaced",
     why: "The block is proven only when its first consumer's text, lines and character assets are held to a declared world through polyweave.",
-    deps: ["PW199"],
+    deps: [],
   },
   {
     id: "PW201",

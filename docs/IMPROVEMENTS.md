@@ -463,27 +463,6 @@ that a second game would not becomes configuration.
 
 ## Block Q — Words held to the world
 
-### §PW199 A line's tone judged by a person, and a canon of lines
-
-Starship's bible says crew lines are short, warm and often funny, never heroic speeches,
-that humour lives in the crew and never in the enemy, and that nothing grim is ever
-shown. None of that is a rule a check can apply, and a model asked to apply it is the
-agent judging its own output, which a non-goal forbids.
-
-So tone goes where looks already go. `words.sheet` puts the table's new or changed lines
-on the verdict page from Block O, grouped by speaker. Each line sits beside the world's
-tone rules and a few lines the canon already holds for that speaker. A person marks each
-one approved, or rejected with a reason. `verdict.judge` records the answer, and
-approved lines join a lines canon that works like the picture canon: only a verdict adds
-to it.
-
-The canon feeds back into writing. `world.read` for a speaker returns their approved
-lines as examples, so an agent drafting a new crew line starts from what a person
-already accepted rather than from the adjectives. `words.check` reports a line with no
-verdict as unjudged. That keeps the gate's two questions separate: whether the text
-obeys the world's rules is mechanical, and whether it sounds like the world is a
-person's call.
-
 ### §PW200 Starship held to its own world
 
 Starship is the consumer with a world to hold to. Its bible names the Spinhold, the

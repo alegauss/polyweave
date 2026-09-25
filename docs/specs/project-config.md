@@ -124,6 +124,7 @@ filter   = "smooth"                # or "pixel": never smoothed, quantised to th
 table    = "i18n/strings.csv"      # Godot's translation CSV, one column per locale
 speaker  = "_speaker"              # the column naming who speaks, as a world entity id
 ordinary = ["START", "OK"]         # capitalised words that are not names
+canon    = "docs/design/lines.json"  # a person's verdicts on lines; only a verdict adds
 
 [voxels]
 budget        = 4000           # the most cells a model may have; zero is no ceiling

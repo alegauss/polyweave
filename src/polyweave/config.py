@@ -204,6 +204,9 @@ DEFAULTS: dict[str, Any] = {
         # Capitalised words that are not names, such as START on a title screen, so the
         # name check passes over them.
         "ordinary": [],
+        # Where a person's verdicts on lines are kept, as JSON (§PW199): the approved
+        # ones are the lines canon, and only `verdict.judge` writes it.
+        "canon": "",
     },
     "voxels": {
         # What a voxel build is checked against (§PW97). A game decides how many cubes

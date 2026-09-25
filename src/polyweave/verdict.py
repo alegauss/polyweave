@@ -171,8 +171,14 @@ def sitting(
 MANIFEST = "sitting.json"
 
 
-def _manifest(folder: Path, families: dict, sheets: dict, root) -> None:
-    """The sitting as data, and its place in the project's index of sittings."""
+def _manifest(
+    folder: Path, families: dict, sheets: dict, root, choices: dict | None = None
+) -> None:
+    """The sitting as data, and its place in the project's index of sittings.
+
+    `choices` are the words the page offers, where a sitting's are not a picture's: a
+    sitting of lines offers accept and look, in words about a line (§PW199).
+    """
     import json
     from datetime import UTC, datetime
 
@@ -193,7 +199,7 @@ def _manifest(folder: Path, families: dict, sheets: dict, root) -> None:
             }
             for name, members in families.items()
         },
-        "choices": dict(CHOICES),
+        "choices": dict(choices or CHOICES),
     }
     write_atomic(where / MANIFEST, json.dumps(manifest, indent=2) + "\n")
     index = config.path("paths.work") / "sittings.json"
@@ -227,7 +233,8 @@ def judge(
 
     A member carrying `canon` names a style family, and on a verdict that accepts the
     look its `new` picture joins that family's canon, with this verdict on its record
-    (§PW166). This is the only door into a canon.
+    (§PW166). This is the only door into a canon. A member carrying `line`, laid out by
+    `words.sheet`, is a line of text, and its verdict goes into the lines canon.
     """
     if choice not in CHOICES:
         raise PolyweaveError(
@@ -308,6 +315,20 @@ def judge(
                 when=stamp,
                 root=here,
             )
+        kept_line = None
+        if member.get("line"):
+            from . import words
+
+            # A line laid out by words.sheet: the verdict is kept in the lines canon,
+            # and this is the only door into it (§PW199).
+            kept_line = words.judged(
+                member,
+                accepted=accepted,
+                choice=choice,
+                why=why,
+                when=stamp,
+                root=here,
+            )
         answers.append(
             {
                 "name": member["name"],
@@ -316,6 +337,7 @@ def judge(
                 "named": mine,
                 "rewritten": rewritten,
                 "canon": joined,
+                **({"line": kept_line} if kept_line else {}),
                 # What the check said, as `loop.judged` takes it, so an answer given
                 # where no run was open can still be carried into one (§PW173).
                 "check": {

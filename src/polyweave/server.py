@@ -58,8 +58,9 @@ TOOL_BUDGET = 4500
 #: picture.collect (§PW179) and picture.vary's reframe (§PW181), and to 55,800 at
 #: 55,151 for mesh.buy (§PW183), and to 56,600 at 56,059 for world.read and
 #: world.validate (§PW196), and to 57,400 at 56,827 for words.check and
-#: words.unlisted (§PW197).
-LIST_BUDGET = 57400
+#: words.unlisted (§PW197), and to 58,400 at 57,832 for words.sheet and entity= on
+#: the two purchases (§PW198, §PW199).
+LIST_BUDGET = 58400
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

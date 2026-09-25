@@ -37,7 +37,8 @@ unshown = ["nemesis"]     # entities whose name is never shown
 - `[entity.<id>.look]` is optional: a `description` and two lists of texts, `shows` (the
   traits that must appear) and `never` (the ones that must not). It is what a picture or
   a mesh of the entity is bought from.
-- `[rules]` is optional, and each of its three keys is too.
+- `[rules]` is optional, and each of its keys is too. `tone` is a list of sentences no
+  check applies: it is what a person judges a line by.
 - Any other table, entity field or rule is refused, as an unknown config key is: a field
   that is silently dropped is a setting the author believes is in effect and is not.
 
@@ -102,6 +103,29 @@ A column whose header starts with an underscore is one Godot skips; `[words] spe
 | `words.hidden-name` | `unshown` | any word of an unshown entity's name that no shown name shares |
 
 A `{placeholder}`, a `%s` and a BBCode tag are not read as words.
+
+`words.check` also returns `unjudged`: the keys whose current text no person has given a
+verdict on. They do not fail the check, because whether a line obeys the world's rules is
+mechanical and whether it sounds like the world is a person's call.
+
+## A line's tone, judged by a person
+
+`[words] canon` names a JSON file holding every verdict a person gave on a line, oldest
+first: the `key`, the `speaker`, the `text` in every locale, its `sha256`, `approved`,
+and the `verdict` (`choice`, `why`, `when`). A verdict covers a line only while its text
+is the one judged, so a changed line is unjudged again, and the canon keeps what was
+approved as it was approved.
+
+`words.sheet` lays out every unjudged line as a sitting for the review page, one family
+a line, named `<speaker>.<key>` so a speaker's lines sit together. Each sheet shows the
+line in every locale, its speaker, the world's `tone`, the speaker's last approved lines
+(`examples`, three by default) and any rule `words.check` says it breaks. The page offers
+`accept` (it joins the canon) and `look` (it stays out, with the reason). The answer goes
+through `verdict.judge`, whose line members are the only writer of the canon; `number`
+is refused, since a line has no bound to move.
+
+`world.read` with `entity` returns that speaker's approved `lines`, the examples a new
+line starts from.
 
 `words.unlisted` answers what the check cannot see: every literal `text` a node carries
 in the project's `.tscn` files that is not a key of the table, as `count` and

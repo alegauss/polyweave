@@ -22,6 +22,7 @@ game have drifted apart. The prose stays the source a person writes, and beside 
     longest_line = 80         # the longest line a player reads, in characters
     silent = ["drone"]        # entities that never speak
     unshown = ["nemesis"]     # entities whose name is never shown
+    tone = ["short and warm", "never a heroic speech"]   # what a person judges by
 
 `world.read` returns the declaration or one entity of it, and refuses a file whose
 shape is wrong. `world.validate` reports everything wrong with it, each finding against
@@ -67,7 +68,7 @@ ENTITY_KEYS = {
 LOOK_KEYS = {"description": str, "shows": list, "never": list}
 
 #: Every key `[rules]` may carry.
-RULE_KEYS = ("longest_line", "silent", "unshown")
+RULE_KEYS = ("longest_line", "silent", "unshown", "tone")
 
 _WORLD = Param("the *.world.toml; needed only where the project holds several")
 _ROOT = Param("the project the world belongs to")
@@ -280,6 +281,17 @@ def _parse(source: Path) -> tuple[dict, dict, _Findings]:
                 "rules",
                 key,
             )
+    tone = rules.get("tone")
+    if tone is not None and not _shaped(tone, list):
+        faults.add(
+            PolyweaveError(
+                "world.bad-value",
+                f"[rules] tone is {tone!r}, and it is a list of sentences",
+                'write it as tone = ["short and warm", "never a heroic speech"]',
+            ),
+            "rules",
+            "tone",
+        )
     return entities, rules, faults
 
 
@@ -412,7 +424,11 @@ def read(
     world: Annotated[str, _WORLD] = None,
     root: Annotated[str, _ROOT] = ".",
 ) -> dict:
-    """The world's entities and rules as the project declares them, or one entity."""
+    """The world's entities and rules as the project declares them, or one entity.
+
+    One entity comes with `lines`: what a person approved of its speech (§PW199), the
+    examples a new line for it starts from.
+    """
     source, entities, rules = declared(world, root)
     here = provenance.relative(source, Path(root))
     if entity is None:
@@ -428,7 +444,9 @@ def read(
             given=entity,
             allowed=list(entities),
         )
-    return {"world": here, "entity": entities[entity]}
+    from .words import approved
+
+    return {"world": here, "entity": entities[entity], "lines": approved(entity, root)}
 
 
 @operation("world.validate")
