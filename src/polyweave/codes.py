@@ -437,6 +437,15 @@ CODES: dict[str, Code] = {
         when="a ${NAME} reference on a machine where NAME was never exported",
         doors=("set the variable", "write the value in the config instead"),
     ),
+    "config.services-mixed": Code(
+        means="a paid service or its ceiling is declared two ways at once",
+        when="bare [service] keys beside a [service.<name>] table, a bare [budget] "
+        "beside named services, or a [budget.<name>] for no declared service",
+        doors=(
+            "move every service under its own [service.<name>]",
+            "name the ceiling after a declared service",
+        ),
+    ),
     # -- render: producing a picture from a scene -----------------------------
     "render.no-renderer": Code(
         means="Blender is not importable here, so nothing can render",
@@ -577,6 +586,23 @@ CODES: dict[str, Code] = {
         means="the spend would pass the ceiling a person set",
         when="a fetch costing more than the credits left against [budget]",
         doors=("raise the ceiling", "ask for something that costs less"),
+    ),
+    "fetch.service-unnamed": Code(
+        means="the project declares more than one paid service and the call named none",
+        when="a spend or a read of the ceiling with several [service.<name>] tables; "
+        "guessing which balance to draw on is what a ceiling exists to prevent",
+        doors=("pass the service by name",),
+    ),
+    "fetch.unknown-service": Code(
+        means="the service named is not one the project declares",
+        when="a misspelled service name, or one whose [service.<name>] was removed",
+        doors=("name a declared service",),
+    ),
+    "fetch.ledger-unattributed": Code(
+        means="a ledger entry names no service, and several could have been charged",
+        when="a ledger written while the project had one service, read after it "
+        "declared a second",
+        doors=("add the service each entry was bought from to its `service` field",),
     ),
     "fetch.ledger-malformed": Code(
         means="the purchase ledger is not readable",

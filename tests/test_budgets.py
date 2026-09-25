@@ -28,12 +28,15 @@ from polyweave.errors import PolyweaveError
 #: Raised for measure.digest (§PW141), a bake's two hashes readable off any picture
 #: by path: 48,154, with headroom under one more operation. Then 48,709 with cost.read
 #: (§PW143) and port.run's `fresh` (§PW144), 49,694 with motion.bake (§PW160).
-DESCRIBE = 50_200
+#: 50,895 with `service` on six purchase and schema operations (§PW162): no operation
+#: was added, and a call that has to name its balance cannot do it without the field.
+DESCRIBE = 51_500
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
-#: motion.bake and rig.no-mesh (§PW160).
-CAPABILITIES = 57_300
+#: motion.bake and rig.no-mesh (§PW160), then 58,501 with `service`, its three
+#: refusals and the per-service keys and ceilings (§PW162).
+CAPABILITIES = 59_100
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

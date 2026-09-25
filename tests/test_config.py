@@ -207,7 +207,10 @@ def test_a_live_budget_is_spendable(tmp_path):
         project(tmp_path, '[budget]\ncredits = 60\nexpires = "2026-12-31"\n')
     ).budget(today=date(2026, 9, 22))
     assert found == {
-        "credits": 60,
+        "service": "default",
+        "amount": 60,
+        "unit": "credits",
+        "table": "[budget]",
         "expires": "2026-12-31",
         "spendable": True,
         "why": "",

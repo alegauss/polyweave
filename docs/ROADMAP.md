@@ -32,8 +32,7 @@
 
 ## Block N — Pictures held to a canon
 
-- 📋 **PW162** (deps: —) **a project can name only one paid service, so a second one's key, schema and ceiling have nowhere to live** — `[service]` and `[budget]` are Meshy's shape, credits and all, and an image service billing per picture in dollars would have to overwrite them. → §PW162
-- 📋 **PW163** (deps: PW162) **no picture can be bought, so every drawing a mesh starts from still has to come from a person** — A drawing is the input the mesh service reads best, and a transparent picture costs cents where the mesh it steers costs thirty credits. → §PW163
+- 📋 **PW163** (deps: PW162 ✅) **no picture can be bought, so every drawing a mesh starts from still has to come from a person** — A drawing is the input the mesh service reads best, and a transparent picture costs cents where the mesh it steers costs thirty credits. → §PW163
 - 📋 **PW164** (deps: PW163) **an image service reports no balance, so what a picture cost cannot be measured the way a mesh's is** — The ledger proves a cost with two balance readings, and without them an image entry is either unmeasured or invented, and nothing says which. → §PW164
 - 📋 **PW165** (deps: PW163) **a picture cannot be made again from its record, because the service rewrites the prompt it was given** — Ideogram 4.0 turns a text prompt into its own before drawing, so a record of only what was sent describes a picture nobody asked for. → §PW165
 - 📋 **PW166** (deps: PW165) **nothing says what a project's pictures should look like, so each prompt restates a house style by hand and drifts** — Consistency asked of a generator in prose is luck, while a style declared once as approved pictures, palette and prompt skeleton is an input every call carries. → §PW166

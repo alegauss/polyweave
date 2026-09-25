@@ -50,64 +50,85 @@ def where(root: str | Path = ".") -> Path:
     return config.path("paths.purchases")
 
 
+#: Which service a call draws on. Needed only where the project declares several.
+_SERVICE = Param("the [service.<name>] to use; needed only where there are several")
+
+
 @operation("purchase.remaining")
 def remaining(
     root: Annotated[str, Param("the project whose ledger this is")] = ".",
     today: Annotated[
         str, Param("the date the ceiling is judged on; today if unset")
     ] = None,
+    service: Annotated[str, _SERVICE] = None,
 ) -> dict:
-    """What is left of the ceiling a person set, against what has been spent.
+    """What is left of one service's ceiling, against what was spent on that service.
 
     An agent may not decide that a mesh is worth money, and that rule is right. What it
     actually constrains is the **ceiling**, not each call — so the ceiling is approved
-    once, with the whole plan in view, instead of five interruptions.
+    once, with the whole plan in view, instead of five interruptions. Each service has
+    its own, in its own unit, and a spend on one never draws on another's (§PW162).
     """
     if isinstance(today, str):
         # By name the date arrives as text; in process it may already be a date.
         from datetime import date
 
         today = date.fromisoformat(today)
-    declared = load(root).budget(today)
-    already = spent(root)
-    left = round(float(declared["credits"]) - already, 4)
+    declared = load(root).budget(today, service)
+    already = spent(root, declared["service"])
+    left = round(float(declared["amount"]) - already, 4)
     return {
-        "declared": float(declared["credits"]),
+        "service": declared["service"],
+        "unit": declared["unit"],
+        "declared": float(declared["amount"]),
         "spent": already,
         "left": max(0.0, left) if declared["spendable"] else 0.0,
         "expires": declared["expires"],
         "spendable": declared["spendable"] and left > 0,
         "why": declared["why"]
-        or ("" if left > 0 else f"the budget of {declared['credits']} is used up"),
+        or (
+            ""
+            if left > 0
+            else f"the budget of {declared['amount']} {declared['unit']} is used up"
+        ),
+        "table": declared["table"],
     }
 
 
 @operation("purchase.allow")
 def allow(
-    cost: Annotated[float, Param("what the spend would cost", lo=0.0, unit="credits")],
+    cost: Annotated[
+        float, Param("what the spend would cost, in the service's own unit", lo=0.0)
+    ],
     *,
     root: Annotated[str, Param("the project whose ledger this is")] = ".",
     today: Annotated[
         str, Param("the date the ceiling is judged on; today if unset")
     ] = None,
+    service: Annotated[str, _SERVICE] = None,
 ) -> dict:
     """Refuse a spend that would pass the ceiling. Never asks; the answer is the file.
 
     What is given up is the per-call veto. What is bought is an approval made once.
+    Where the project declares several services, one has to be named: guessing which
+    balance to draw on is the one mistake a ceiling exists to prevent.
     """
-    left = remaining(root, today)
+    left = remaining(root, today, service)
+    table = left["table"]
+    key = "credits" if table == "[budget]" else "amount"
     if not left["spendable"]:
         raise PolyweaveError(
             "fetch.budget-closed",
-            f"nothing may be spent: {left['why']}",
-            f"set `[budget] credits` and `expires` in {load(root).source or FILENAME}; "
+            f"nothing may be spent on {left['service']}: {left['why']}",
+            f"set `{table} {key}` and `expires` in {load(root).source or FILENAME}; "
             f"an absent or expired budget is never read as permission",
         )
     if float(cost) > left["left"]:
         raise PolyweaveError(
             "fetch.over-budget",
-            f"this would spend {cost} of the {left['left']} credits left",
-            f"raise `[budget] credits` above {left['spent'] + float(cost):g}, or ask "
+            f"this would spend {cost} of the {left['left']} {left['unit']} left for "
+            f"{left['service']}",
+            f"raise `{table} {key}` above {left['spent'] + float(cost):g}, or ask "
             f"for something that costs less",
         )
     return left
@@ -127,13 +148,17 @@ def capture(
     declared_length: int | None = None,
     sha256: str | None = None,
     engine: dict | None = None,
+    service: str | None = None,
     root: str | Path = ".",
 ) -> dict:
     """Put a bought artefact somewhere it will outlive the service, and write it down.
 
     Returns the ledger entry. The call completes only once the file is on disk, hashed,
     recorded and ledgered — a fetch that fails partway leaves no entry claiming it.
+    The entry names the service it was bought from, resolved before anything lands, so
+    a spend is always charged to the ceiling it was allowed against.
     """
+    service = load(root).service(service)
     if bought not in BOUGHT:
         raise PolyweaveError(
             "fetch.unknown-purchase",
@@ -186,6 +211,7 @@ def capture(
     # 2. The record, beside the artefact, carrying what the service charged for it.
     extra = {
         "task_id": task_id,
+        "service": service,
         "credits": charged,
         "expected_credits": float(credits),
         "balance_before": balance_before,
@@ -216,6 +242,8 @@ def capture(
         "sha256": record["artefact"]["sha256"],
         "bytes": record["artefact"]["bytes"],
         "task_id": task_id,
+        "service": service,
+        # In the service's own unit, whatever it is; the name is the ledger's first one.
         "credits": charged,
         "expected_credits": float(credits),
         "balance_before": balance_before,
@@ -349,6 +377,7 @@ def _adopted(entry: dict, length: int, root: Path) -> dict:
         "sha256": entry["sha256"],
         "bytes": length,
         "task_id": entry["task_id"],
+        "service": entry.get("service"),
         "credits": float(entry.get("credits", 0.0)),
         "expected_credits": float(
             entry.get("expected_credits", entry.get("credits", 0.0))
@@ -401,17 +430,52 @@ def read(
 @operation("purchase.spent")
 def spent(
     root: Annotated[str, Param("the project whose ledger this is")] = ".",
+    service: Annotated[str, _SERVICE] = None,
 ) -> float:
-    """What this project has spent against its ceiling, according to its own ledger.
+    """What this project has spent against one service's ceiling, by its own ledger.
 
     **An adopted entry does not count** (§PW55). A project bringing an existing ledger
     in bought those meshes before it had a ceiling here, and charging them to the one a
     person set for today would refuse the next call over money already gone. They stay
     in the ledger, because `held` is about assets and every one of them is an asset.
+
+    The sum is in that service's unit and counts only its entries (§PW162).
     """
-    return round(
-        sum(float(e.get("credits", 0.0)) for e in read(root) if not e.get("adopted")), 4
-    )
+    config = load(root)
+    name = config.service(service)
+    by_service, unattributed = _charged(read(root), config)
+    if unattributed:
+        raise PolyweaveError(
+            "fetch.ledger-unattributed",
+            f"{len(unattributed)} ledger entries name no service, and the project "
+            f"declares {len(config.services())}, so whose ceiling they drew on is a "
+            f"guess",
+            "add the service each was bought from as its `service` field, e.g. for "
+            f"{unattributed[0]['artefact']}",
+            detail=", ".join(e["artefact"] for e in unattributed),
+            allowed=sorted(config.services()),
+        )
+    return by_service.get(name, 0.0)
+
+
+def _charged(entries: list[dict], config) -> tuple[dict[str, float], list[dict]]:
+    """What each service's ceiling was charged, and the entries nothing can attribute.
+
+    An entry written before the ledger named services belongs to the only service a
+    project declares; once there are several, it belongs to none of them by default.
+    """
+    only = next(iter(config.services())) if len(config.services()) == 1 else None
+    sums: dict[str, float] = {}
+    unattributed = []
+    for entry in entries:
+        if entry.get("adopted"):
+            continue
+        name = entry.get("service") or only
+        if name is None:
+            unattributed.append(entry)
+            continue
+        sums[name] = round(sums.get(name, 0.0) + float(entry.get("credits", 0.0)), 4)
+    return sums, unattributed
 
 
 @operation("purchase.find")
@@ -436,6 +500,8 @@ def held(root: Annotated[str, Param("the project whose ledger this is")] = ".") 
     """
     here = Path(root).resolve()
     entries = read(here)
+    config = load(here)
+    by_service, unattributed = _charged(entries, config)
     missing, changed, present = [], [], []
     for entry in entries:
         artefact = here / entry["artefact"]
@@ -449,7 +515,12 @@ def held(root: Annotated[str, Param("the project whose ledger this is")] = ".") 
         # Every entry, adopted or not: this is the question about assets, and a mesh
         # bought before the ledger was adopted cost just as much as one bought after.
         "credits": round(sum(float(e.get("credits", 0.0)) for e in entries), 4),
-        "against_ceiling": spent(here),
+        # One number where there is one ceiling; per service where there are several,
+        # because credits and dollars do not add up to anything (§PW162).
+        "against_ceiling": by_service.get(next(iter(config.services())), 0.0)
+        if len(config.services()) == 1
+        else {name: by_service.get(name, 0.0) for name in config.services()},
+        "unattributed": [e["artefact"] for e in unattributed],
         "sound": not (missing or changed),
         "present": [e["artefact"] for e in present],
         "missing": missing,

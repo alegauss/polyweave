@@ -111,6 +111,14 @@ def _describe_binary(binary: str, where: Path, probe: bool) -> dict:
     return {"found": None, "path": str(where), "version": None, "why": "not probed"}
 
 
+def _key(key_env: str | None) -> dict:
+    """Whether a service's key is set here, by the variable's name alone."""
+    return {
+        "key_env": key_env,
+        "key_present": bool(os.environ.get(key_env)) if key_env else None,
+    }
+
+
 def capabilities(
     root: str | Path = ".",
     *,
@@ -128,7 +136,10 @@ def capabilities(
     config = load(root)
     blender = config.path("paths.blender", blender)
     godot = config.path("paths.godot", godot)
-    service_key_env = config.get("service.key_env", service_key_env) or None
+    declared = config.services()
+    only = next(iter(declared)) if len(declared) == 1 else None
+    if only:
+        service_key_env = service_key_env or declared[only]["key_env"] or None
     renderer = _describe_binary("blender", blender, probe)
     engine = _describe_binary("godot", godot, probe)
     # Blender also ships as an importable module, and a worker that has it needs no
@@ -136,11 +147,14 @@ def capabilities(
     # that cannot.
     module = _blender_module() if probe else {"found": None, "why": "not probed"}
 
-    service = {"key_env": service_key_env, "key_present": None}
-    if service_key_env:
-        # The name is reported and the value never is: a capability read that echoes a
-        # secret is a capability read nobody can paste into a bug report.
-        service["key_present"] = bool(os.environ.get(service_key_env))
+    # The name is reported and the value never is: a capability read that echoes a
+    # secret is a capability read nobody can paste into a bug report. Each service by
+    # its own name, since two keys are two questions (§PW162).
+    services = {
+        name: _key(service_key_env if name == only else about["key_env"] or None)
+        for name, about in declared.items()
+    }
+    service = services[only] if only else None
 
     return {
         "polyweave": __version__,
@@ -162,7 +176,9 @@ def capabilities(
             "colour": _colour(config.path("paths.work"), probe),
         },
         "engine": {"godot": engine},
+        # The one service where there is one, and none where a caller has to choose.
         "service": service,
+        "services": services,
         "operations": describe(),
         # Surface that exists and is not yet an operation (§PW124): named, so a caller
         # knows to look for it, until each module is registered and leaves this list.
@@ -185,7 +201,8 @@ def capabilities(
             "areas": dict(AREAS),
             "codes": codes(),
         },
-        "budget": config.budget(),
+        "budget": config.budget() if only else None,
+        "budgets": {name: config.budget(service=name) for name in declared},
         "project": {
             "name": config.get("project.name"),
             "root": str(config.root),

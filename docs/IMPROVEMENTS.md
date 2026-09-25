@@ -274,29 +274,6 @@ unstated.
 
 ## Block N — Pictures held to a canon
 
-### §PW162 More than one paid service
-
-`[service]` and `[budget]` were written for one service, and it shows: one `base`, one
-`key_env`, one `schema`, and a ceiling counted in Meshy's credits. An image service
-bills per picture in dollars, and there is no place for its key or its ceiling that does
-not overwrite the mesh service's.
-
-**A service is a named table.** `[service.meshy]` and `[service.ideogram]` each carry
-`base`, `key_env` and `schema`, and each has its own `[budget.<name>]` with `amount`,
-`unit` and `expires`. A bare `[service]` still reads as the one service it always was,
-so no project that adopted the plugin has to change its file on the day this lands.
-
-**Ceilings never pool.** Credits and dollars are not one number, and a spend against one
-service is judged only against that service's ceiling. `purchase.allow` takes the
-service by name and refuses an unnamed one where more than one is declared — guessing
-which balance to draw on is the one mistake a ceiling exists to prevent.
-
-**The ledger entry names its service**, and `purchase.spent` and `remaining` answer per
-service. `capabilities` reports each key as present or absent by name, never by value.
-
-This is the prerequisite for everything else in the block, and it is useful on its own:
-the next service after this one costs a table, not a refactor.
-
 ### §PW163 Buying a picture
 
 The plugin prefers a drawing to a photograph (PW21), and today every drawing comes from

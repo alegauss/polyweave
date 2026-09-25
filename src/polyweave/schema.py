@@ -37,16 +37,23 @@ CONTROL = "polyweave_control_field"
 IMPOSSIBLE = "__polyweave_impossible__"
 
 
-def where(root: str | Path = ".") -> Path:
+#: Which service's schema. Each has its own file, so learning one never overwrites the
+#: other's (§PW162).
+_SERVICE = Param("the [service.<name>] to use; needed only where there are several")
+
+
+def where(root: str | Path = ".", service: str | None = None) -> Path:
     """Where the learned schema lives. TOML, because a person reads and corrects it."""
-    config = load(root)
-    return config.path("service.schema")
+    return load(root).service_path(service)
 
 
 @operation("schema.read")
-def read(root: Annotated[str, Param("the project whose schema this is")] = ".") -> dict:
-    """The schema this project has learned, or nothing if it never has."""
-    path = where(root)
+def read(
+    root: Annotated[str, Param("the project whose schema this is")] = ".",
+    service: Annotated[str, _SERVICE] = None,
+) -> dict:
+    """What this project has learned of one service, or nothing if it never has."""
+    path = where(root, service)
     text = read_text_retrying(path)
     if text is None:
         return {}
@@ -61,9 +68,9 @@ def read(root: Annotated[str, Param("the project whose schema this is")] = ".") 
         ) from exc
 
 
-def write(schema: dict, root: str | Path = ".") -> Path:
+def write(schema: dict, root: str | Path = ".", service: str | None = None) -> Path:
     """Write the schema where the client will read it before every send."""
-    path = where(root)
+    path = where(root, service)
     write_atomic(path, _as_toml(schema))
     return path
 
@@ -74,19 +81,21 @@ def validate(
     *,
     root: Annotated[str, Param("the project whose schema this is")] = ".",
     schema: Annotated[dict, Param("a schema to use instead of the learned one")] = None,
+    service: Annotated[str, _SERVICE] = None,
 ) -> dict:
     """Refuse a payload here, before sending, against what the service takes.
 
     A local refusal beats a silent no-op: a field the service drops is a setting the
     caller believes is in effect and is not.
     """
-    known = schema if schema is not None else read(root)
+    known = schema if schema is not None else read(root, service)
     fields = known.get("field") or {}
     if not fields:
         raise PolyweaveError(
             "fetch.no-schema",
             "nothing is known about what this service accepts",
-            f"learn it once and keep it in {where(root)}; until then a payload cannot "
+            f"learn it once and keep it in {where(root, service)}; until then a "
+            f"payload cannot "
             f"be checked before it is sent",
         )
 
@@ -131,6 +140,7 @@ def learn(
     root: str | Path = ".",
     control: str = CONTROL,
     balance: Callable[[], float] | None = None,
+    service: str | None = None,
 ) -> dict:
     """Probe the service for its shape, spending nothing, and keep what comes back.
 
@@ -202,7 +212,7 @@ def learn(
         else round(spent_before - spent_after, 4),
         "field": fields,
     }
-    write(schema, root)
+    write(schema, root, service)
     return schema
 
 

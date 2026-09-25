@@ -135,7 +135,15 @@ def _bought(artefact: dict | None, here: Path) -> dict | None:
     entry = purchase.find(artefact["sha256"], root=str(here))
     if not entry:
         return None
-    return {"entry": entry, "budget": purchase.remaining(str(here))}
+    # The ceiling of the service this was bought from, never another one's (§PW162).
+    # An entry nothing can attribute gets no ceiling rather than a guessed one.
+    try:
+        budget = purchase.remaining(str(here), service=entry.get("service"))
+    except PolyweaveError as refused:
+        if refused.code not in ("fetch.unknown-service", "fetch.service-unnamed"):
+            raise
+        budget = None
+    return {"entry": entry, "budget": budget}
 
 
 @operation("asset.brief")

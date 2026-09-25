@@ -203,5 +203,7 @@
 
 ## Block N — Pictures held to a canon
 
+- ✅ **PW162** **a project can name only one paid service, so a second one's key, schema and ceiling have nowhere to live** — Each paid service is a named table with its own key, schema and ceiling in its own unit, and a spend among several must name one (design recorded in `docs/specs/project-config.md`).
+
 ## Block O — A person sees and answers
 

@@ -49,6 +49,19 @@ _BINARIES = ("paths.blender", "paths.godot")
 #: Settings that name a file inside the tree although they do not live under `[paths]`.
 _INSIDE = ("service.schema",)
 
+#: Tables that hold either one paid service or several named ones (§PW162). A bare
+#: `[service]` is the one service it always was; `[service.meshy]` beside
+#: `[service.ideogram]` is two, each with its own `[budget.<name>]`.
+_NAMED_TABLES = ("service", "budget")
+
+#: What the bare `[service]` is called wherever a service has to be named: in the
+#: ledger, in `remaining`, in `capabilities`.
+DEFAULT_SERVICE = "default"
+
+#: What one named ceiling takes. `credits` is the bare table's word and not this one's:
+#: a named ceiling always says its unit, because two services never share one.
+_NAMED_BUDGET = {"amount": 0, "unit": "credits", "expires": ""}
+
 #: Every key, with the value used where the project declares none. The shape is the
 #: schema: a key absent from here is refused rather than ignored.
 DEFAULTS: dict[str, Any] = {
@@ -134,6 +147,7 @@ DEFAULTS: dict[str, Any] = {
     "budget": {
         # No budget is no spend, never an unlimited one: the absence of a ceiling is
         # not read as permission.
+        # A ceiling in another unit is a named one, `[budget.<name>]` (§PW162).
         "credits": 0,
         "expires": "",
     },
@@ -339,28 +353,102 @@ class Config:
         }
         return Tolerances(render_noise=float(noise), **values)
 
+    # -- the paid services ------------------------------------------------------
+
+    def services(self) -> dict[str, dict]:
+        """Every paid service the project declares, by name (§PW162).
+
+        A bare `[service]` is one service, called `default`. Named tables are as many
+        as the project writes, and a named one's learned schema defaults to a file of
+        its own, so two services never overwrite what the other was proved to accept.
+        """
+        named = _named(self._declared.get("service", {}))
+        if not named:
+            bare = self.table("service")
+            return {DEFAULT_SERVICE: {k: bare[k] for k in DEFAULTS["service"]}}
+        return {
+            name: {
+                **DEFAULTS["service"],
+                "schema": f"polyweave.service.{name}.toml",
+                **{k: _expand(v, f"service.{name}.{k}") for k, v in stated.items()},
+            }
+            for name, stated in named.items()
+        }
+
+    def service(self, name: str | None = None) -> str:
+        """The one service a call means, resolved and never guessed.
+
+        Naming none is right only where the project declares one. With several, the
+        call is refused: which balance to draw on is the one choice a ceiling exists
+        to take away from whoever is spending.
+        """
+        declared = self.services()
+        if name is None:
+            if len(declared) == 1:
+                return next(iter(declared))
+            raise PolyweaveError(
+                "fetch.service-unnamed",
+                f"the project declares {len(declared)} paid services and the call "
+                f"named none of them",
+                f"pass the service: one of {', '.join(sorted(declared))}",
+                allowed=sorted(declared),
+            )
+        if name not in declared:
+            near = difflib.get_close_matches(name, declared, n=1)
+            raise PolyweaveError(
+                "fetch.unknown-service",
+                f"{name!r} is not a service this project declares",
+                f"did you mean {near[0]!r}?"
+                if near
+                else f"name one of {', '.join(sorted(declared))}",
+                given=name,
+                allowed=sorted(declared),
+            )
+        return name
+
+    def service_path(self, name: str | None = None) -> Path:
+        """Where one service's learned schema lives, inside the tree."""
+        chosen = self.service(name)
+        if chosen == DEFAULT_SERVICE and not _named(self._declared.get("service", {})):
+            return self.path("service.schema")
+        return self.path(f"service.{chosen}.schema", self.services()[chosen]["schema"])
+
     # -- the one read that is a decision ---------------------------------------
 
-    def budget(self, today: date | None = None) -> dict:
-        """What may be spent, which is a person's decision written down.
+    def budget(self, today: date | None = None, service: str | None = None) -> dict:
+        """What may be spent on one service, which is a person's decision written down.
 
         An expired or absent budget means no spend at all. The plugin never reads the
         absence of a ceiling as permission, because the balance being spent is real.
+        **Ceilings never pool**: each service is judged against its own, in its own
+        unit, because credits and dollars are not one number.
         """
-        credits = int(self.get("budget.credits"))
-        expires = str(self.get("budget.expires")).strip()
-        if credits <= 0:
-            return {
-                "credits": credits,
-                "expires": expires or None,
-                "spendable": False,
-                "why": f"no credits are declared in [budget] of {FILENAME}",
-            }
+        name = self.service(service)
+        if _named(self._declared.get("service", {})):
+            stated = _named(self._declared.get("budget", {})).get(name, {})
+            ceiling = {**_NAMED_BUDGET, **stated}
+            table = f"[budget.{name}]"
+            amount, unit = ceiling["amount"], str(ceiling["unit"])
+        else:
+            ceiling = self.table("budget")
+            table = "[budget]"
+            amount, unit = ceiling["credits"], "credits"
+        expires = str(_expand(ceiling["expires"], f"{table}.expires")).strip()
+        found = {
+            "service": name,
+            "amount": amount,
+            "unit": unit,
+            # Where the person raises it, which is what a refusal has to name.
+            "table": table,
+            "expires": expires or None,
+            "spendable": False,
+            "why": "",
+        }
+        if amount <= 0:
+            return {**found, "why": f"no {unit} are declared in {table} of {FILENAME}"}
         if not expires:
             return {
-                "credits": credits,
-                "expires": None,
-                "spendable": False,
+                **found,
                 "why": "the budget has no expiry, and one without a date never lapses",
             }
         try:
@@ -368,22 +456,12 @@ class Config:
         except ValueError:
             raise PolyweaveError(
                 "config.bad-type",
-                f"[budget] expires is {expires!r}, which is not a date",
+                f"{table} expires is {expires!r}, which is not a date",
                 "write it as YYYY-MM-DD",
             ) from None
         if when < (today or date.today()):
-            return {
-                "credits": credits,
-                "expires": expires,
-                "spendable": False,
-                "why": f"the budget expired on {expires}",
-            }
-        return {
-            "credits": credits,
-            "expires": expires,
-            "spendable": True,
-            "why": "",
-        }
+            return {**found, "why": f"the budget expired on {expires}"}
+        return {**found, "spendable": True}
 
 
 def load(root: str | Path = ".") -> Config:
@@ -439,8 +517,73 @@ def _check(declared: dict, source: Path) -> None:
                 f"[{table}] is a table, and {source.name} gives it a value",
                 f"write it as [{table}] with keys under it",
             )
+        if table in _NAMED_TABLES and _named(values):
+            _check_named(table, values, source)
+            continue
         for key, value in values.items():
             _check_key(table, key, value, source)
+    _check_services(declared, source)
+
+
+def _named(values: dict) -> dict[str, dict]:
+    """The `[table.<name>]` subtables of a table that may hold several services."""
+    return {k: v for k, v in values.items() if isinstance(v, dict)}
+
+
+def _check_named(table: str, values: dict, source: Path) -> None:
+    """Each `[service.<name>]` or `[budget.<name>]` takes the keys one service has."""
+    loose = sorted(k for k, v in values.items() if not isinstance(v, dict))
+    if loose:
+        raise PolyweaveError(
+            "config.services-mixed",
+            f"{source.name} sets {', '.join(f'{table}.{k}' for k in loose)} beside "
+            f"named [{table}.<name>] tables, so whose they are is a guess",
+            f"move them under the [{table}.<name>] they belong to",
+            at=table,
+        )
+    allowed = DEFAULTS["service"] if table == "service" else _NAMED_BUDGET
+    for name, stated in values.items():
+        for key, value in stated.items():
+            if key not in allowed:
+                near = difflib.get_close_matches(key, allowed, n=1)
+                raise PolyweaveError(
+                    "config.unknown-key",
+                    f"{source.name} sets {table}.{name}.{key}, which is not a setting",
+                    f"did you mean {table}.{name}.{near[0]}?"
+                    if near
+                    else f"[{table}.{name}] takes {', '.join(sorted(allowed))}",
+                    given=key,
+                    allowed=allowed,
+                    at=f"{table}.{name}.{key}",
+                )
+            _check_type(f"{table}.{name}.{key}", allowed[key], value, source)
+
+
+def _check_services(declared: dict, source: Path) -> None:
+    """A ceiling belongs to a service, and is stated one way (§PW162)."""
+    services = _named(declared.get("service", {}))
+    budget = declared.get("budget", {})
+    ceilings = _named(budget)
+    if services and budget and not ceilings:
+        raise PolyweaveError(
+            "config.services-mixed",
+            f"{source.name} names {len(services)} services and gives one bare "
+            f"[budget], which says nothing about whose ceiling it is",
+            f"write it as [budget.<name>] for one of {', '.join(sorted(services))}",
+            at="budget",
+        )
+    stray = sorted(set(ceilings) - set(services))
+    if stray:
+        raise PolyweaveError(
+            "config.services-mixed",
+            f"{source.name} declares [budget.{stray[0]}], and there is no "
+            f"[service.{stray[0]}] for it to be the ceiling of",
+            f"declare [service.{stray[0]}], or name the ceiling after one of "
+            f"{', '.join(sorted(services)) or 'the declared services'}",
+            given=stray[0],
+            allowed=sorted(services),
+            at=f"budget.{stray[0]}",
+        )
 
 
 def _check_key(table: str, key: str, value: Any, source: Path) -> None:
@@ -459,15 +602,18 @@ def _check_key(table: str, key: str, value: Any, source: Path) -> None:
             allowed=allowed,
             at=f"{table}.{key}",
         )
-    default = allowed[key]
     if f"{table}.{key}" in _OPEN_TABLES:
         return
+    _check_type(f"{table}.{key}", allowed[key], value, source)
+
+
+def _check_type(address: str, default: Any, value: Any, source: Path) -> None:
     if isinstance(default, bool) != isinstance(value, bool) or not isinstance(
         value, type(default) if not isinstance(default, int | float) else int | float
     ):
         raise PolyweaveError(
             "config.bad-type",
-            f"{table}.{key} is a {type(default).__name__}, and {source.name} gives "
+            f"{address} is a {type(default).__name__}, and {source.name} gives "
             f"a {type(value).__name__}",
             f"write it as a {type(default).__name__}",
         )

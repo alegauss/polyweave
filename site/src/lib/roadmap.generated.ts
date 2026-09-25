@@ -38,7 +38,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "K", title: "Reached without reading the source", open: 0 },
   { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
-  { block: "N", title: "Pictures held to a canon", open: 10 },
+  { block: "N", title: "Pictures held to a canon", open: 9 },
   { block: "O", title: "A person sees and answers", open: 6 },
 ];
 
@@ -65,18 +65,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW57"],
   },
   {
-    id: "PW162",
-    block: "N",
-    symptom: "a project can name only one paid service, so a second one's key, schema and ceiling have nowhere to live",
-    why: "`[service]` and `[budget]` are Meshy's shape, credits and all, and an image service billing per picture in dollars would have to overwrite them.",
-    deps: [],
-  },
-  {
     id: "PW163",
     block: "N",
     symptom: "no picture can be bought, so every drawing a mesh starts from still has to come from a person",
     why: "A drawing is the input the mesh service reads best, and a transparent picture costs cents where the mesh it steers costs thirty credits.",
-    deps: ["PW162"],
+    deps: [],
   },
   {
     id: "PW164",

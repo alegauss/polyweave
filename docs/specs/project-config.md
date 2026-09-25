@@ -180,6 +180,54 @@ no spend at all, not an unlimited one — the absence of a ceiling is never read
 no date is one nobody revisits, and an unbounded-in-time budget is not a decision anybody
 made. Both halves are stated or nothing is spent.
 
+## More than one paid service
+
+A bare `[service]` and `[budget]` describe one service, which every call names as `default`.
+A project buying from two writes each as a named table instead (§PW162):
+
+```toml
+[service.meshy]
+base    = "https://api.meshy.ai"
+key_env = "MESHY_API_KEY"
+schema  = "polyweave.service.toml"     # a named service's default is polyweave.service.<name>.toml
+
+[service.ideogram]
+key_env = "IDEOGRAM_API_KEY"
+
+[budget.meshy]
+amount  = 60
+unit    = "credits"
+expires = "2026-12-31"
+
+[budget.ideogram]
+amount  = 20.0
+unit    = "USD"
+expires = "2026-12-31"
+```
+
+**Ceilings never pool.** Credits and dollars are not one number, so a spend is judged only
+against its own service's ceiling, in that ceiling's unit. A named service with no
+`[budget.<name>]` may spend nothing, like a project with no `[budget]`.
+
+**A call names its service wherever there is more than one.** `purchase.allow`,
+`remaining`, `spent`, `schema.read` and `schema.validate` take `service`. Naming none is
+refused with `fetch.service-unnamed` when several are declared, and a name nothing declares
+with `fetch.unknown-service`. Guessing which balance to draw on is the one mistake a ceiling
+exists to prevent.
+
+**Declaring one two ways is refused** (`config.services-mixed`): bare `[service]` keys beside
+named tables, a bare `[budget]` beside named services, or a `[budget.<name>]` for no declared
+service. A bare `[budget]` is always in credits, so a single service that bills in anything
+else is declared as a named one.
+
+**The ledger entry names its service.** An entry from before it did is charged to the only
+service a project declares. Once there are several, `spent` refuses such an entry with
+`fetch.ledger-unattributed` rather than charging it to a ceiling it may not have drawn on, and
+`held` names it under `unattributed`. `held` reports `against_ceiling` as one number for one
+service and per service for several. `capabilities` reports each key under `services`, by the
+variable's name and never its value, with each ceiling under `budgets`. The single-service
+`service` and `budget` fields are null once there are several.
+
 **`[capture] declared` is the list that matters.** Every name in it is an environment setting
 a capture must state explicitly, and a capture leaving one to chance is refused. §PW25 is why:
 the same script on two machines produced two different images because the game read its

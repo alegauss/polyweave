@@ -67,6 +67,11 @@ expired or exhausted budget permits nothing at all (`fetch.budget-closed`) — t
 a ceiling is never read as permission. What is given up is the per-call veto; what is bought
 is one approval made with the whole plan in view.
 
+A project buying from more than one service gives each its own ceiling, `[budget.<name>]`
+with an `amount` and a `unit`, and the ceilings never pool: a spend is judged only against
+the ceiling of the service it draws on, which the call names. The contract is in
+[project-config.md](project-config.md#more-than-one-paid-service).
+
 **The balance is read immediately before and after a spend**, and the difference between
 those two readings is what the call really cost. That number, not the caller's expectation,
 is what goes in the ledger and counts against the ceiling, and an entry where the two
@@ -91,7 +96,7 @@ anything. After that, a field already proved to be enumerated is held at an impo
 value as an anchor — and where no anchor exists the probing stops rather than risk a
 request the server might accept and charge for.
 
-The result is `[service] schema`, TOML because a person reads and corrects it, and the
+The result is `[service] schema`, one file per named service, TOML because a person reads and corrects it, and the
 client validates against it **before sending**. A typo in a field name becomes a local
 refusal instead of a silent no-op, and re-learning after the service changes is one call
 rather than an afternoon.
