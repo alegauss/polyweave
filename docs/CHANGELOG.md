@@ -174,6 +174,7 @@
 - ✅ **PW126** **an agent's first call is guessed from prose, because no tool schema carries the plugin's names, ranges and choices** — python -m polyweave serve lists each operation as an MCP tool whose schema has its ranges, choices and required fields, within budgets (design recorded in `docs/specs/tool-surface.md`).
 - ✅ **PW127** **a remedy is a sentence, so nothing checks that the call it names exists or accepts those arguments** — A remedy naming a call carries it as a door, operation and arguments, and a test parses every door in the source and codes table as a command (design recorded in `docs/specs/tool-surface.md`).
 - ✅ **PW128** **a refused name says what was wrong but never which names would have worked** — Every unknown-name refusal passes allowed, so each names the names that work, the nearest and where; test_names holds all 62 sites.
+- ✅ **PW129** **nothing bounds what `describe`, `capabilities` or an error costs the turn that reads it** — A test holds describe, capabilities, the largest refusal, --help and a search's answer to measured ceilings, and a long allowed list is cut to 40 (design recorded in `docs/specs/tool-surface.md`).
 
 ## Block L — What a run leaves as evidence
 

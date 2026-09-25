@@ -175,6 +175,15 @@ both answers.
   under an unknown-name code to passing `allowed`, and a new one must pass it from the
   start. A value not chosen from a set, such as a malformed colour, passes `allowed=()`
   and an `example`, which says there is no set to list.
+- **The reads every session makes have ceilings** (§PW129). `tests/test_budgets.py` holds
+  `describe()`, `capabilities(probe=False)`, the largest refusal, the widest verb's
+  `--help`, the top-level `--help` and a 24-sample search's answer, each in characters.
+  Every ceiling is what was measured plus headroom sized to the smallest regression it
+  must catch: one more average operation fails, and a typo fix does not. A raise is
+  argued beside the number, and the table prints on a green run (`pytest -s`). A
+  refusal lists at most `ALLOWED_CAP` (40) names in `allowed`. Past that it keeps the
+  nearest to the name refused and says how many there were in `allowed_total`, since an
+  unknown code listing all 200 codes cost 4,400 characters.
 
 ## 4. The surface describes itself
 

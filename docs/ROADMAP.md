@@ -31,7 +31,6 @@
 
 ## Block K — Reached without reading the source
 
-- 📋 **PW129** (deps: PW124 ✅) **nothing bounds what `describe`, `capabilities` or an error costs the turn that reads it** — The reads an agent makes every session have no ceiling, so each operation registered makes them longer and nothing measures by how much. → §PW129
 - 📋 **PW130** (deps: PW125 ✅) **every test calls the surface correctly, so a silently dropped argument or a wrong first call is never measured** — Shio's naive client found six silent drops in twelve calls that its benchmark, driving a correct script, could not see. → §PW130
 - 📋 **PW131** (deps: PW125 ✅) **starting work on an asset means opening its declaration, spec, record and last verdict one file at a time** — An asset's state is split across four files, so an agent opens each before it can say what is left, and no read answers that question whole. → §PW131
 - 📋 **PW132** (deps: —) **an agent in a consumer is never told the plugin exists, because it ships no manifest, skill or session notice** — Six of Cottony's tools import the plugin and not one of its agent documents names it, so each session rediscovers it from a script's imports. → §PW132

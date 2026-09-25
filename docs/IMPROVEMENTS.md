@@ -348,22 +348,6 @@ again.
 
 ## Block K — Reached without reading the source
 
-### §PW129 A ceiling on the reads every session makes
-
-Registering every operation (done; the census in docs/specs/tool-surface.md) was the
-right move, and it multiplies the size of `describe()` and of `capabilities()`, which
-carries it. Both are read at the start of a session, so their size is paid on every one.
-Shio treats tokens as a measured budget: a properties file sets a ceiling per response
-and per tool, a test estimates at four characters a token, and a raise is argued in the
-file where the number lives.
-
-Here it is one file under `tests/`: ceilings for `describe()`, `capabilities()` split
-into the cheap check and the probe that renders, the largest error a code can produce,
-the `--help` of each verb, and the answer of a search run. The test prints its table on
-a green run too, because a figure seen only when the build breaks goes stale. Headroom
-is bounded by the smallest regression the test must catch, never a flat percentage, so
-an eleventh operation with a padded description is refused and a typo fix is not.
-
 ### §PW130 A canonical task, and a naive client beside it
 
 The plugin's claim is about an agent's first call, and no test makes a first call. Every

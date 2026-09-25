@@ -71,8 +71,12 @@ class PolyweaveError(Exception):
         self.call = call
         #: Where the refusal is about a name (§PW128): the names that would have
         #: worked, the nearest of them, a correct fragment, and where in the input.
-        self.allowed = sorted({str(one) for one in allowed}) if allowed else []
-        self.did_you_mean = near(given, self.allowed) if given is not None else None
+        every = sorted({str(one) for one in allowed}) if allowed else []
+        self.did_you_mean = near(given, every) if given is not None else None
+        #: A long set is cut to the names nearest the one refused (§PW129): the 200
+        #: codes an unknown code was checked against cost the reader 4,400 characters.
+        self.allowed_total = len(every) if len(every) > ALLOWED_CAP else 0
+        self.allowed = _nearest(given, every) if self.allowed_total else every
         self.example = example
         self.at = at
 
@@ -83,7 +87,7 @@ class PolyweaveError(Exception):
             out["detail"] = self.detail
         if self.call:
             out["call"] = _doors.as_data(self.call)
-        for name in ("allowed", "did_you_mean", "example", "at"):
+        for name in ("allowed", "allowed_total", "did_you_mean", "example", "at"):
             value = getattr(self, name)
             if value:
                 out[name] = value
@@ -105,10 +109,32 @@ class PolyweaveError(Exception):
             at=payload.get("at"),
         )
         back.did_you_mean = payload.get("did_you_mean")
+        back.allowed_total = payload.get("allowed_total", 0)
         return back
 
     def __repr__(self) -> str:  # pragma: no cover - debugging aid
         return f"PolyweaveError({self.code!r}, {self.message!r})"
+
+
+#: The most names a refusal lists. Past it, the nearest to the name refused are kept
+#: and `allowed_total` says how many there were; `codes()` lists every one.
+ALLOWED_CAP = 40
+
+
+def _nearest(given: Any, every: list[str]) -> list[str]:
+    """The `ALLOWED_CAP` names closest to `given`, in order of name; the first ones
+    when nothing was given. Deterministic: ties fall to the name."""
+    if given is None:
+        return every[:ALLOWED_CAP]
+    wanted = _plain(given)
+    ranked = sorted(
+        every,
+        key=lambda one: (
+            -difflib.SequenceMatcher(None, wanted, _plain(one)).ratio(),
+            one,
+        ),
+    )
+    return sorted(ranked[:ALLOWED_CAP])
 
 
 def _plain(name: str) -> str:
