@@ -21,7 +21,7 @@ This page only groups them by what you are trying to do.
 | The game side | `capture.run`, `capture.declared`, `engine.run`, `godot.install` |
 | Scale against the engine | `units.check`, `units.engine_scale`, `units.read_number` |
 | A project's look | `style.read` (a family's palette, skeleton and canon; only `verdict.judge` adds to the canon), `style.drift` (refuse drift from the canon by number, before a person looks) |
-| Buy a drawing | `picture.buy` (one picture, against its service's own ceiling), `picture.describe` (an approved picture back into its structured prompt) |
+| Buy a drawing | `picture.buy` (one picture, against its service's own ceiling), `picture.describe` (an approved picture back into its structured prompt), `picture.gate` (settle the silhouette on the pictures before a mesh is bought) |
 | Before buying a mesh | `reference.pick`, `reference.prepare`, `shape.check`, `shape.silhouette` |
 | Paid meshes | `purchase.remaining`, `purchase.allow`, `purchase.held`, `schema.validate`, `schema.read`, `schema.proved` |
 | The purchase ledger | `purchase.spent`, `purchase.ledger`, `purchase.find`, `purchase.adopt`, `purchase.reconcile` (a quoted price against the bill) |

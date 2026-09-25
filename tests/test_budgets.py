@@ -32,8 +32,9 @@ from polyweave.errors import PolyweaveError
 #: was added, and a call that has to name its balance cannot do it without the field.
 #: 52,311 with picture.buy (§PW163), a whole paid call and so wider than the average,
 #: then 53,672 with purchase.reconcile (§PW164) and picture.describe (§PW165),
-#: then 54,332 with style.read and picture.buy's `family` (§PW166).
-DESCRIBE = 54_900
+#: then 54,332 with style.read and picture.buy's `family` (§PW166), then 55,585
+#: with style.drift (§PW167) and picture.gate (§PW168).
+DESCRIBE = 56_200
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -42,8 +43,8 @@ DESCRIBE = 54_900
 #: picture.buy and its five refusals (§PW163), then 61,418 with reconcile, describe,
 #: fetch.unpriced and fetch.seed-unproved (§PW164, §PW165), then 62,247 with
 #: style.read and the style area's four codes (§PW166), then 62,817 with style.drift
-#: and style.no-subject (§PW167).
-CAPABILITIES = 63_400
+#: and style.no-subject (§PW167), then 63,520 with picture.gate (§PW168).
+CAPABILITIES = 64_100
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

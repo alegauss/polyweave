@@ -35,6 +35,7 @@ from . import provenance, purchase, schema, style
 from .config import load
 from .describe import Param, operation
 from .errors import PolyweaveError
+from .files import write_atomic
 
 #: The models this client knows the request shape of. They spell the prompt field
 #: differently, which is the reason the choice is a parameter and not a guess.
@@ -251,6 +252,93 @@ def describe_picture(
         service=name,
         root=here,
     )
+
+
+@operation("picture.gate")
+def gate(
+    candidates: Annotated[list, Param("the pictures bought for one asset, by path")],
+    outline: Annotated[str, Param("the declared silhouette they must match")],
+    *,
+    family: Annotated[
+        str, Param("the asset family whose canon they are held to")
+    ] = None,
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
+) -> dict:
+    """Settle the silhouette on the pictures, before a mesh is bought from one (§PW168).
+
+    Each candidate must be a drawing (real alpha, a clear border), fill enough of the
+    frame and touch no edge of it, match the declared outline by IoU against
+    `[tolerance] silhouette_iou`, and, where the project declares a style, not drift
+    from its family's canon. A picture costs cents and a mesh thirty credits, so this
+    is where the outline is refused.
+
+    **A failure is a record, not a re-roll**: each candidate's failures are written
+    beside it as `<name>.gate.json`, with the prompt it was bought with, so the next
+    prompt is corrected from them. **No taste enters the choice**: of those that pass,
+    the highest IoU is `chosen`, and where none passes nothing is.
+    """
+    from . import reference, shape
+    from .image import load as load_image
+
+    config = load(root)
+    here = config.root
+    coverage = config.tolerances().subject_coverage
+    floor = config.tolerances().alpha_floor
+    styled = style.in_force(config, family) is not None
+    looked = []
+    for candidate in candidates:
+        path = here / candidate
+        image = load_image(path)
+        failed: list[str] = []
+        if not reference.is_drawing(image):
+            failed.append("not a drawing: no real alpha, or a border that is not clear")
+        mask = image.subject(floor)
+        filled = round(float(mask.mean()), 4)
+        if filled < coverage:
+            failed.append(f"fills {filled} of the frame, under {coverage}")
+        edges = reference._touching(mask)
+        if edges:
+            failed.append(f"runs off the {', '.join(edges)} of the frame")
+        held = shape.check(str(path), against=outline, root=here)
+        if not held["holds"]:
+            failed.append(
+                f"{held['why']}; the centroid is {held['centroid_offset']}px out and "
+                f"the box differs by {held['bbox_delta']}px"
+            )
+        drifted = style.drift(candidate, family, root=here) if styled else None
+        if drifted and drifted["passed"] is False:
+            failed.extend(
+                f"{key} drifted: {drifted['measures'][key].get('which_way', 'off')}"
+                for key in drifted["drifted"]
+            )
+        found = {
+            "picture": candidate,
+            "passed": not failed,
+            "silhouette_iou": held["silhouette_iou"],
+            "failed": failed,
+            "style_judged": bool(drifted and drifted["judged"]),
+        }
+        _written_against(path, found, here)
+        looked.append(found)
+    passing = [one for one in looked if one["passed"]]
+    chosen = max(passing, key=lambda one: one["silhouette_iou"]) if passing else None
+    return {
+        "chosen": chosen["picture"] if chosen else None,
+        "why": "the highest silhouette IoU of those that passed"
+        if chosen
+        else "none passed; each one's failures are written beside it",
+        "candidates": looked,
+        "not_checked": list(style.NOT_CHECKED[:1]),
+    }
+
+
+def _written_against(path, found: dict, here) -> None:
+    """The gate's answer beside the picture, with the prompt that bought it."""
+    digest, _ = provenance.sha256_of(path)
+    bought = purchase.find(digest, root=here) or {}
+    record = {**found, "prompt": bought.get("prompt"), "sha256": digest}
+    beside = path.with_suffix(".gate.json")
+    write_atomic(beside, json.dumps(record, indent=2, sort_keys=True) + "\n")
 
 
 def _one_prompt(prompt: str | None, json_prompt: dict | None, model: str) -> None:

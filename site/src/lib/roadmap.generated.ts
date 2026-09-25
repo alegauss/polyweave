@@ -38,7 +38,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "K", title: "Reached without reading the source", open: 0 },
   { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
-  { block: "N", title: "Pictures held to a canon", open: 7 },
+  { block: "N", title: "Pictures held to a canon", open: 6 },
   { block: "O", title: "A person sees and answers", open: 6 },
 ];
 
@@ -63,13 +63,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent",
     why: "The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question.",
     deps: ["PW57"],
-  },
-  {
-    id: "PW168",
-    block: "N",
-    symptom: "a reference drawing reaches the mesh service unchecked, so a wrong silhouette is found only once the mesh is paid for",
-    why: "A picture costs cents and a mesh thirty credits, so the outline belongs settled on the picture before anything dearer is bought.",
-    deps: [],
   },
   {
     id: "PW169",

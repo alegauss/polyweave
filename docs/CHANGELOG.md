@@ -209,6 +209,7 @@
 - ✅ **PW165** **a picture cannot be made again from its record, because the service rewrites the prompt it was given** — A picture's record keeps the prompt sent and the one drawn from, its seed and size; json_prompt is drawn as written, and describe makes a picture one (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW166** **nothing says what a project's pictures should look like, so each prompt restates a house style by hand and drifts** — Each family's palette and skeleton are declared once and composed into every structured prompt, and only a verdict adds to a canon (design recorded in `docs/specs/project-config.md`).
 - ✅ **PW167** **a picture that drifts from the canon is found by a person looking, after it was already offered as a candidate** — style.drift holds palette, value, saturation, line, edge and light to the canon's own spread and says which way a picture drifted (design recorded in `docs/specs/project-config.md`).
+- ✅ **PW168** **a reference drawing reaches the mesh service unchecked, so a wrong silhouette is found only once the mesh is paid for** — picture.gate refuses a picture that is no drawing, runs off the frame, misses the outline or drifts, says why, and keeps the best IoU (design recorded in `docs/specs/fetching.md`).
 
 ## Block O — A person sees and answers
 

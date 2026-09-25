@@ -32,7 +32,6 @@
 
 ## Block N — Pictures held to a canon
 
-- 📋 **PW168** (deps: PW163 ✅, PW167 ✅) **a reference drawing reaches the mesh service unchecked, so a wrong silhouette is found only once the mesh is paid for** — A picture costs cents and a mesh thirty credits, so the outline belongs settled on the picture before anything dearer is bought. → §PW168
 - 💭 **PW169** (deps: PW165 ✅) **lettering drawn into a picture can be misspelt or lose its accents, and nothing reads the letters back** — Text is the service's strength and the one defect no palette or silhouette measure sees, and a game in Portuguese loses its accents first. → §PW169
 - 📋 **PW170** (deps: PW165 ✅, PW167 ✅) **a variation of an approved picture can change what was approved, and nothing compares it to the one it came from** — Refining through remix or edit is where proportions and palette quietly move, and the approved parent is what it should be measured against. → §PW170
 - 📋 **PW171** (deps: PW163 ✅) **2D art from a picture service arrives at the size and margin it chose, not the project's grid** — An icon or UI piece needs the project's pixel size, padding and a clean alpha edge, and that fix is mechanical, so it belongs on arrival. → §PW171

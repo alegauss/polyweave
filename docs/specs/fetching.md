@@ -175,6 +175,28 @@ to the service's describe call and writes the structured prompt it returns besid
 starts from the approved picture's own terms. It is priced by the `describe` row of `prices`
 and ledgered as `bought = "description"`.
 
+### The silhouette is settled on the picture
+
+A picture costs cents and a mesh thirty credits, so the outline is refused on the picture
+(§PW168). `picture.gate` takes the pictures bought for one asset and the declared
+silhouette. That is a picture of the outline, typically `shape.silhouette` of the mesh
+`geometry.build` makes from the asset's declaration. A candidate passes only if every step
+does:
+
+1. it is a drawing: a real alpha channel and a clear border (`reference.is_drawing`);
+2. its subject fills at least `[tolerance] subject_coverage` of the frame and touches no
+   edge of it, because what runs off the frame is what the mesh service invents;
+3. its silhouette matches the declared one by IoU against `[tolerance] silhouette_iou`;
+4. where the project declares a style, it does not drift from its family's canon
+   (`style.drift`).
+
+**A failure is a record, not a re-roll.** Each candidate's answer is written beside it as
+`<name>.gate.json` with the prompt it was bought with, the IoU, the centroid offset, the
+box difference and which measure drifted which way, so the next prompt is corrected from
+it. **No taste enters the choice**: of those that pass, the highest IoU is `chosen`. Where a
+person wants to choose, that is a verdict sheet. How many pictures an attempt may buy is
+bounded by the ceiling, never by the agent deciding one more is worth it.
+
 The synchronous endpoints carry no task id, so the entry's `task_id` is the service name,
 the answer's `created` time and the seed. The asynchronous variants and their poll are not
 built yet.

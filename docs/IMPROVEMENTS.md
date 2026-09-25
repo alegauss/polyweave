@@ -274,33 +274,6 @@ unstated.
 
 ## Block N — Pictures held to a canon
 
-### §PW168 The silhouette settled on the picture
-
-Cottony asked for a wide low cap and got a tall dome, and learned it after thirty
-credits (PW16). The shape check now runs before a mesh is accepted, but the drawing the
-mesh is made from is still whatever a person supplied, and a drawing is where the
-silhouette is decided, for cents rather than credits.
-
-**The chain, each step refusing before the next is paid for:**
-
-1. the geometry declaration gives the outline and the proportions;
-2. a structured prompt is composed from it and from the family's style (PW165, PW166),
-   and a transparent picture is generated;
-3. `reference.pick` confirms it is a drawing — real alpha, clear border — and
-   `reference.prepare` confirms the subject fills the frame and touches no edge;
-4. its outline is compared to the declared one by IoU, against `[tolerance] silhouette_iou`,
-   and its style against the canon (PW167);
-5. only a picture that passed all of it is handed to the mesh service.
-
-**A picture that fails is a record, not a re-roll.** Its failure — centroid offset,
-which edge is too long, which measure drifted — is written against its prompt, so the
-next attempt is informed.
-
-**No taste enters the choice.** Where several pictures pass, the highest IoU goes
-forward, a rule and not an opinion. Where a person wants to choose, it is a verdict
-sheet. How many pictures an attempt may buy is bounded by the ceiling, never by the
-agent deciding one more is worth it.
-
 ### §PW169 Reading the letters back
 
 Lettering is the thing this service does best, and it is the reason to use it for a
