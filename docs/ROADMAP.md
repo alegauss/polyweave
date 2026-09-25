@@ -34,6 +34,8 @@
 
 ## Block N — Pictures held to a canon
 
+- 📋 **PW209** (deps: —) **a variation is held to its parent pixel for pixel, which a service that redraws the whole picture can never meet** — Starship's reframed Mote kept the drawing visibly and still ran a pooled delta E of 15.5 at p95, so the check refuses what a person would keep. → §PW209
+
 ## Block O — A person sees and answers
 
 ## Block P — Music and sound a game can ship

@@ -316,6 +316,31 @@ family with references should refuse a structured call rather than drop them.
 Check first whether 4.0 has gained a reference field, and learn it by the schema probe,
 since a reference the service ignores is dropped without an error.
 
+### §PW209 What a variation kept, measured as a person means it
+
+`picture.against_parent` holds a variation to its parent pixel for pixel: pooled ΔE
+against `[tolerance] delta_e` (2.0) outside an edit's mask, and over the parent's placed
+frame for a reframe. That premise is false for the services it is used with. Ideogram's
+inpaint and reframe redraw the whole picture, the part they were asked to keep included.
+
+The evidence is Starship's Mote. Its reframe to a 1536x640 banner visibly kept the
+drawing: the parent was found at scale 0.625 and x 448. The pooled ΔE over the placed
+frame still ran p50 6.8, p95 15.5 and max 23.1, and over the subject alone p95 44.6.
+Every generative variation fails a colour-match tolerance, so nothing separates a
+reframe that kept the Mote from one that redrew it.
+
+**Measure what a person means by kept, not the pixels.** Outside the mask, or inside the
+reframe's placed frame:
+
+- the silhouette, framed alike as the gate frames it (PW194), against a bar of its own;
+- the look, with the drift measures (palette distance, value, saturation, line weight)
+  compared with the parent's own, at percentiles, against a floor set from the spread of
+  a few variations a person accepted, the way the canon sets drift floors.
+
+Keep the pixel check only where a service is known to preserve the unmasked region, and
+say in the answer which instrument was used. Until a floor is measured, the answer
+reports the numbers and `judged: false`, as `style.drift` does with a one-picture canon.
+
 ## Block O — A person sees and answers
 
 ## Block P — Music and sound a game can ship

@@ -38,7 +38,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "K", title: "Reached without reading the source", open: 0 },
   { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 1 },
-  { block: "N", title: "Pictures held to a canon", open: 0 },
+  { block: "N", title: "Pictures held to a canon", open: 1 },
   { block: "O", title: "A person sees and answers", open: 0 },
   { block: "P", title: "Music and sound a game can ship", open: 9 },
   { block: "Q", title: "Words held to the world", open: 5 },
@@ -72,6 +72,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "M",
     symptom: "Every public description still calls polyweave a tool for 3D assets",
     why: "Blocks P, Q and R make sound, words and levels, so an agent choosing a plugin from its description never reaches for this one outside a mesh.",
+    deps: [],
+  },
+  {
+    id: "PW209",
+    block: "N",
+    symptom: "a variation is held to its parent pixel for pixel, which a service that redraws the whole picture can never meet",
+    why: "Starship's reframed Mote kept the drawing visibly and still ran a pooled delta E of 15.5 at p95, so the check refuses what a person would keep.",
     deps: [],
   },
   {
