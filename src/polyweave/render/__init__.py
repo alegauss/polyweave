@@ -145,6 +145,9 @@ def _from_cache(
         "cache_key": hit["key"],
         "recorded": record.get("measurements", {}),
         "stale": provenance.remeasure(record, tolerances) if tolerances else [],
+        # The digest the render was recorded with, where it was (§PW141): a hit is the
+        # same picture, so it is the same two answers.
+        **record.get("digest", {}),
     }
     if inline:
         answer["image"] = measure.inline_image(out_path)
@@ -452,6 +455,16 @@ def bake(
         rung=chosen["rung"],
     )
 
+    # Two short answers a later session compares without the pictures: did the outline
+    # move, and did the look (§PW141). Quantised at this rung's noise floor.
+    digested = measure.digests(
+        measure.load(out_path),
+        alpha_floor=floor_alpha,
+        noise=tolerances.render_noise,
+        triangles=blender.triangles(subject),
+    )
+    digest = {k: digested[k] for k in ("shape_digest", "look_digest", "quantum")}
+
     elapsed = round(time.monotonic() - started, 3)
     record = provenance.build(
         "render",
@@ -465,6 +478,7 @@ def bake(
         samples=chosen["samples"],
         tolerances=tolerances.as_dict(),
         elapsed_s=elapsed,
+        extra={"digest": digest},
         root=where,
     )
     provenance.write(record, root=where)
@@ -487,6 +501,7 @@ def bake(
         "asserted": asserted,
         "measurements": taken,
         "cache_key": signature,
+        **digest,
     }
     if scale is not None:
         answer["covers"] = scale["covers"]

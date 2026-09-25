@@ -908,6 +908,116 @@ def _rung_of(subject: Any, root: str | Path) -> str | None:
         return None
 
 
+# -- a render as two short answers (§PW141) -----------------------------------------
+
+#: The luma percentiles the look is read at: Cottony judges a look at a percentile and
+#: never at a mean, and the fifth and ninety-fifth are where a restyle shows first.
+LOOK_PERCENTILES = (5, 50, 95)
+
+
+def figures(image: Image, *, alpha_floor: float, triangles: int | None = None) -> dict:
+    """What the two digests are over: the outline's figures, and the look's.
+
+    Split where Shio's render digest splits, so "I restyled it" and "I broke the
+    outline" are different answers. The box and the footprint anchor are fractions of
+    the frame, so two sizes of one render agree; the palette is the subject's mean Lab.
+    """
+    subject = image.subject(alpha_floor)
+    box = _boxes(subject)
+    if box is None:
+        raise PolyweaveError(
+            "spec.empty-region",
+            "the picture holds no subject above the alpha floor, so it has no outline",
+            "lower `[tolerance] alpha_floor` if the subject is fainter than the floor",
+        )
+    tall, wide = subject.shape
+    x0, y0, x1, y1 = box
+    ground = np.flatnonzero(subject[y1])
+    shape: dict = {
+        "box": [x0 / wide, y0 / tall, (x1 + 1) / wide, (y1 + 1) / tall],
+        "anchor": [(float(ground.mean()) + 0.5) / wide, (y1 + 1) / tall],
+        "coverage": float(subject.mean()),
+    }
+    if triangles is not None:
+        shape["triangles"] = int(triangles)
+    luma = np.percentile(_luma(image, subject), LOOK_PERCENTILES)
+    at = zip(LOOK_PERCENTILES, luma, strict=True)
+    look = {
+        "luma": {f"p{p}": float(v) for p, v in at},
+        "palette": _region_colour(image, subject),
+    }
+    return {"shape": shape, "look": look}
+
+
+def _quantised(value: Any, step: float) -> Any:
+    """A figure in whole steps of the noise floor, so noise alone moves no hash."""
+    if isinstance(value, dict):
+        return {k: _quantised(v, step) for k, v in value.items()}
+    if isinstance(value, list):
+        return [_quantised(v, step) for v in value]
+    if isinstance(value, int):
+        return value
+    return round(float(value) / step)
+
+
+def _hashed(value: Any) -> str:
+    import hashlib
+    import json
+
+    text = json.dumps(value, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
+
+
+def digests(
+    image: Image, *, alpha_floor: float, noise: float, triangles: int | None = None
+) -> dict:
+    """`shape_digest` and `look_digest`, with the figures and the step they are over.
+
+    Each figure is quantised at the rung's noise floor before it is hashed: a luma or
+    a fraction of the frame in steps of `noise`, a Lab colour in steps of `noise` times
+    a hundred, so a render that moved only by sampler noise keeps both. A figure close
+    to a step's edge can still cross it, which is what `figures` is returned for.
+    """
+    found = figures(image, alpha_floor=alpha_floor, triangles=triangles)
+    look = found["look"]
+    return {
+        "shape_digest": _hashed(_quantised(found["shape"], noise)),
+        "look_digest": _hashed(
+            {
+                "luma": _quantised(look["luma"], noise),
+                "palette": _quantised(look["palette"], noise * DELTA_E_FULL),
+            }
+        ),
+        "quantum": noise,
+        "figures": found,
+    }
+
+
+@operation("measure.digest")
+def digest(
+    subject: Annotated[str, PICTURE],
+    *,
+    rung: Annotated[str, Param("the rung it was baked at; else its record's")] = None,
+    alpha_floor: Annotated[float, FLOOR] = None,
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
+) -> dict:
+    """Whether the outline moved or only the look: two short hashes a later session
+    can compare without the pictures (§PW141)."""
+    from .config import load as load_config
+
+    config = load_config(root)
+    floor_alpha = float(config.get("tolerance.alpha_floor", alpha_floor))
+    at = rung or _rung_of(subject, root)
+    where = Path(subject)
+    where = where if where.is_absolute() else config.root / where
+    found = digests(
+        load(where),
+        alpha_floor=floor_alpha,
+        noise=config.tolerances(at).render_noise,
+    )
+    return {**found, "rung": at}
+
+
 @operation("measure.take")
 def taken(
     subject: Annotated[str, PICTURE],

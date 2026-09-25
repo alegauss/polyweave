@@ -9,7 +9,7 @@ This page only groups them by what you are trying to do.
 | Start on an asset | `asset.brief`, `loop.pending` |
 | Make a shape | `geometry.build`, `geometry.build_all`, `geometry.describe`, `geometry.variants` |
 | Render | `render.plan` (free), `render.bake` (costs a render) |
-| Measure | `measure.take`, `measure.same`, `measure.available` |
+| Measure | `measure.take`, `measure.same`, `measure.available`, `measure.digest` (did the outline move, or only the look) |
 | Judge against the bar | `accept.check`, `accept.verify`, `accept.check_screen` |
 | Search for numbers | `search.sweep`, `port.run` (a whole family), `trace.read` |
 | See it where it is seen | `compose.place`, `compose.sheet` |

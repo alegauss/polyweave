@@ -4,25 +4,6 @@
 
 ## Block B — Seeing the result cheaply
 
-### §PW141 A render answered as two digests
-
-A bake answers with its measurements, and `measure.same` compares two renders within the
-rung's noise floor. Both answer the question they were asked. Neither leaves behind a
-short answer that a later session can compare without the pictures: whether the outline
-moved, and whether only the surface did.
-
-Shio's render digest splits exactly there. It keeps a structural hash and an appearance
-hash, so "I restyled it" and "I broke the outline" are different answers, and it keeps
-its markers out of both, so that a warning appearing does not read as a change of shape.
-
-Here the bake adds a digest to what it returns and to its record. It contains the
-silhouette's box and footprint anchor, coverage, luma at the fifth, fiftieth and
-ninety-fifth percentile, which is the percentile rule Cottony's pipeline already judges
-by, the palette per declared slot and the triangle count. It adds `shape_digest` over
-the silhouette figures quantised at the rung's noise floor and `look_digest` over the
-tonal and palette figures, so a render that moved only by noise keeps both hashes. The
-PNG stays the artefact for a person.
-
 ### §PW145 A rung's size is not in the cache key
 
 `render.bake` computes its cache key from the request's `params`, the engine record, the
@@ -43,6 +24,24 @@ reads) for every bake, not only the ones that override it. Every existing key ch
 once, which the cache survives, since a miss only costs a render. The test is to bake
 one request, change `preview_size` in the project file, bake it again, and see a miss
 with the new size.
+
+### §PW161 A palette per material slot
+
+PW141 gave a bake a `look_digest` whose palette is the subject's mean Lab colour. The
+design asked for one colour per declared material slot, and a render has no way to say
+which pixels wear which slot: `apply_material` puts a slot on each polygon, and the
+picture keeps only the blended result.
+
+That matters for the assets this project makes. A piped cushion, a sweet with its
+wrapper and a badge with a rim are two materials each. Restyling the smaller one moves
+the mean by a fraction of what it moved the slot, so a change a person would see can sit
+inside one quantisation step and leave the look digest where it was.
+
+The fix is a second, cheap pass at the same rig: every slot rendered as a flat emission
+of its own index colour, no lights and one sample, giving a mask per slot at the size of
+the picture. The palette becomes the mean Lab over each mask, keyed by slot name, and
+the masks are not kept. The test restyles the small slot of a two-slot mesh and expects
+the look digest to move while the mean-colour version does not.
 
 ## Block C — The asset compiler
 

@@ -168,6 +168,11 @@ def decimate(obj: Any, ratio: float) -> Any:
     return obj
 
 
+def triangles(obj: Any) -> int:
+    """How many triangles the subject was drawn with, after any decimation (§PW141)."""
+    return sum(len(polygon.vertices) - 2 for polygon in obj.data.polygons)
+
+
 def apply_material(obj: Any, material: dict | None, *, groups: Any = None) -> Any:
     """Put a surface on the subject, so a sphere and a mesh carry the same one.
 

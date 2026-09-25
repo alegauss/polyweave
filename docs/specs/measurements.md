@@ -163,3 +163,23 @@ for is the same defect as a dropped argument, one layer up.
 `alpha_coverage` is a fraction **of its region**, not of the frame — a measurement taken
 over a rectangle answers about that rectangle, or a region would only ever report its own
 size.
+
+## Two digests: did the outline move, or only the look
+
+**A bake leaves two 16-character hashes** in its answer and in its record (§PW141):
+`shape_digest` over the outline and `look_digest` over the look, split where Shio's render
+digest splits, so "I restyled it" and "I broke the outline" are different answers a later
+session reads without the pictures. A cache hit returns the ones it was recorded with.
+
+- The outline: the subject's box and its footprint anchor (the middle of its lowest row),
+  as fractions of the frame, its coverage, and the triangle count the renderer drew.
+- The look: luma at the 5th, 50th and 95th percentile, by the percentile rule above, and
+  the subject's mean Lab colour as the palette.
+
+Each figure is **quantised at the rung's `render_noise`** before it is hashed, a Lab colour
+at a hundred times that, so a render that moved only by sampler noise keeps both. A figure
+sitting on a step's edge can still cross it, which is why the answer also carries
+`quantum`, and `measure.digest` returns the figures themselves. `measure.digest` reads the
+same two off any picture by path, at the rung its record names. The palette is one colour
+for the subject, not one per declared material slot: that needs a mask per slot, which the
+render does not produce yet.

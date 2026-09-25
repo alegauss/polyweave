@@ -30,6 +30,7 @@
 - ✅ **PW11** **a bake is not byte-reproducible, so a file diff cannot say whether anything changed** — Two renders are compared with a tolerance rather than byte-wise, and a path tracer's own noise sits fifty times below a real change (design recorded in `docs/specs/measurements.md`).
 - ✅ **PW43** **a colour measured off a render is not the colour that was authored, and nothing says so** — Capabilities renders one known colour and reports what came back, so an installation that cannot measure colour says so before a spec is built on it (design recorded in `docs/specs/tool-surface.md`).
 - ✅ **PW44** **one configured noise floor calls every preview-sized render a change, because the floor moves with the rung** — The floor is keyed by rung and read for the one a render records, and a twin render measures it outright, right at any sample count anywhere (design recorded in `docs/specs/project-config.md`).
+- ✅ **PW141** **a bake does not say whether its silhouette moved or only its look, so two bakes are compared by measuring both again** — A bake returns and records a shape and a look digest quantised at the rung's noise floor; measure.digest reads both off any picture (design recorded in `docs/specs/measurements.md`).
 
 ## Block C — The asset compiler
 
