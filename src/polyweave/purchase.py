@@ -74,7 +74,8 @@ def remaining(
         from datetime import date
 
         today = date.fromisoformat(today)
-    declared = load(root).budget(today, service)
+    config = load(root)
+    declared = config.budget(today, service)
     already = spent(root, declared["service"])
     left = round(float(declared["amount"]) - already, 4)
     return {
@@ -82,6 +83,11 @@ def remaining(
         "unit": declared["unit"],
         "declared": float(declared["amount"]),
         "spent": already,
+        # How much of `spent` is a declared price rather than a reading (§PW164). It
+        # counts in full: under-counting is what would let a session pass the ceiling.
+        "quoted": _charged(read(root), config, quoted=True)[0].get(
+            declared["service"], 0.0
+        ),
         "left": max(0.0, left) if declared["spendable"] else 0.0,
         "expires": declared["expires"],
         "spendable": declared["spendable"] and left > 0,
@@ -150,6 +156,7 @@ def capture(
     engine: dict | None = None,
     service: str | None = None,
     details: dict | None = None,
+    outputs: int = 1,
     root: str | Path = ".",
 ) -> dict:
     """Put a bought artefact somewhere it will outlive the service, and write it down.
@@ -255,6 +262,12 @@ def capture(
         "balance_before": balance_before,
         "balance_after": balance_after,
         "surprised": measured is not None and abs(measured - float(credits)) > 1e-9,
+        # Read off two balances, or quoted from a declared price: a ledger that cannot
+        # tell the two apart has stopped being evidence (§PW164).
+        "measured": measured is not None,
+        # How many outputs the service billed this call for, which is what a usage
+        # export counts and so what `reconcile` matches on (§PW164).
+        "outputs": int(outputs),
         "bought": bought,
         "prompt": prompt,
         # Off the record rather than off `extra`: the record is where a path is spelled
@@ -352,6 +365,96 @@ def adopt(
     return report
 
 
+#: How far apart a ledger entry and a usage row may be in time and still be one call.
+#: The ledger's time is when the picture landed, a few seconds after the service billed.
+RECONCILE_WINDOW = 300
+
+
+@operation("purchase.reconcile")
+def reconcile(
+    rows: Annotated[
+        Any, Param("the service's usage rows, each {at, cost, count}, or their file")
+    ],
+    *,
+    service: Annotated[str, SERVICE] = None,
+    root: Annotated[str, Param("the project whose ledger this is")] = ".",
+) -> dict:
+    """Hold each quoted price against what the service's usage export says it billed.
+
+    A price declared in `[service] prices` is a quote, and a quote goes stale without
+    anyone noticing (§PW164). A person downloads the service's usage export, and each
+    row is matched to the quoted entry nearest it in time with the same count of
+    outputs. The billed amount becomes the entry's `credits`, the quote stays as
+    `expected_credits`, and a difference sets `surprised`, as a measured one does.
+
+    Mapping the export's columns onto `at`, `cost` and `count` is the caller's, as it is
+    for `adopt`: the service's format is not this plugin's to hard-code. A row nothing
+    matches is reported, because a charge with no entry is money the ceiling never saw.
+    """
+    here = Path(root).resolve()
+    config = load(here)
+    name = config.service(service)
+    if isinstance(rows, str | Path):
+        rows = json.loads(Path(here / rows).read_text(encoding="utf-8"))
+    ledger = read(here)
+    only = next(iter(config.services())) if len(config.services()) == 1 else None
+    open_ = [
+        i
+        for i, e in enumerate(ledger)
+        if (e.get("service") or only) == name
+        and not _measured(e)
+        and not e.get("adopted")
+    ]
+    matched, unmatched = [], []
+    for row in sorted(rows, key=lambda r: str(r.get("at", ""))):
+        billed_at = _moment(row.get("at"), "a usage row")
+        count = int(row.get("count", 1))
+        near = [
+            (abs((_moment(ledger[i]["at"], "an entry") - billed_at).total_seconds()), i)
+            for i in open_
+            if int(ledger[i].get("outputs", 1)) == count
+        ]
+        near = [pair for pair in near if pair[0] <= RECONCILE_WINDOW]
+        if not near:
+            unmatched.append(dict(row))
+            continue
+        _, i = min(near)
+        open_.remove(i)
+        billed = round(float(row["cost"]), 4)
+        entry = ledger[i]
+        entry.update(
+            expected_credits=float(entry.get("credits", 0.0)),
+            credits=billed,
+            measured=True,
+            surprised=abs(billed - float(entry.get("credits", 0.0))) > 1e-9,
+            reconciled={"at": row.get("at"), "cost": billed, "count": count},
+        )
+        matched.append(entry)
+    if matched:
+        write_atomic(where(here), json.dumps(ledger, indent=2, sort_keys=True) + "\n")
+    return {
+        "service": name,
+        "matched": matched,
+        "surprised": [e["artefact"] for e in matched if e["surprised"]],
+        # Billed and in no entry: a picture paid for whose download failed looks so.
+        "unmatched_rows": unmatched,
+        # Still quoted: what the export did not cover.
+        "still_quoted": [ledger[i]["artefact"] for i in open_],
+    }
+
+
+def _moment(stamp: Any, what: str) -> datetime:
+    try:
+        moment = datetime.fromisoformat(str(stamp).replace("Z", "+00:00"))
+    except ValueError:
+        raise PolyweaveError(
+            "fetch.ledger-malformed",
+            f"{what} carries the time {stamp!r}, which is not an ISO date and time",
+            "map the export's time column onto `at` as YYYY-MM-DDTHH:MM:SSZ",
+        ) from None
+    return moment if moment.tzinfo else moment.replace(tzinfo=UTC)
+
+
 def _adopted(entry: dict, length: int, root: Path) -> dict:
     """One foreign entry in this ledger's shape, with a record beside its artefact.
 
@@ -391,6 +494,7 @@ def _adopted(entry: dict, length: int, root: Path) -> dict:
         "balance_before": entry.get("balance_before"),
         "balance_after": entry.get("balance_after"),
         "surprised": bool(entry.get("surprised", False)),
+        "measured": _measured(entry),
         "bought": entry.get("bought", "mesh"),
         "prompt": entry.get("prompt"),
         "reference": entry.get("reference"),
@@ -464,17 +568,19 @@ def spent(
     return by_service.get(name, 0.0)
 
 
-def _charged(entries: list[dict], config) -> tuple[dict[str, float], list[dict]]:
+def _charged(entries: list[dict], config, quoted: bool = False) -> tuple[dict, list]:
     """What each service's ceiling was charged, and the entries nothing can attribute.
 
     An entry written before the ledger named services belongs to the only service a
     project declares; once there are several, it belongs to none of them by default.
+    With `quoted`, only what was priced from a table rather than read off two balances
+    is summed (§PW164): the part of a total that is somebody's figure, not a reading.
     """
     only = next(iter(config.services())) if len(config.services()) == 1 else None
     sums: dict[str, float] = {}
     unattributed = []
     for entry in entries:
-        if entry.get("adopted"):
+        if entry.get("adopted") or (quoted and _measured(entry)):
             continue
         name = entry.get("service") or only
         if name is None:
@@ -482,6 +588,23 @@ def _charged(entries: list[dict], config) -> tuple[dict[str, float], list[dict]]
             continue
         sums[name] = round(sums.get(name, 0.0) + float(entry.get("credits", 0.0)), 4)
     return sums, unattributed
+
+
+def _measured(entry: dict) -> bool:
+    """Whether an entry's cost was read off two balances rather than quoted."""
+    if "measured" in entry:
+        return bool(entry["measured"])
+    return (
+        entry.get("balance_before") is not None
+        and entry.get("balance_after") is not None
+    )
+
+
+def _per_service(sums: dict[str, float], config) -> float | dict[str, float]:
+    """One number where there is one ceiling; per service where there are several."""
+    if len(config.services()) == 1:
+        return sums.get(next(iter(config.services())), 0.0)
+    return {name: sums.get(name, 0.0) for name in config.services()}
 
 
 @operation("purchase.find")
@@ -523,10 +646,10 @@ def held(root: Annotated[str, Param("the project whose ledger this is")] = ".") 
         "credits": round(sum(float(e.get("credits", 0.0)) for e in entries), 4),
         # One number where there is one ceiling; per service where there are several,
         # because credits and dollars do not add up to anything (§PW162).
-        "against_ceiling": by_service.get(next(iter(config.services())), 0.0)
-        if len(config.services()) == 1
-        else {name: by_service.get(name, 0.0) for name in config.services()},
+        "against_ceiling": _per_service(by_service, config),
         "unattributed": [e["artefact"] for e in unattributed],
+        # What of that was a declared price, never read off a balance (§PW164).
+        "quoted": _per_service(_charged(entries, config, quoted=True)[0], config),
         "sound": not (missing or changed),
         "present": [e["artefact"] for e in present],
         "missing": missing,

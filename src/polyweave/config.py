@@ -143,6 +143,9 @@ DEFAULTS: dict[str, Any] = {
         "key_env": "",
         # What the service was proved to accept, learned by probing (§PW19).
         "schema": "polyweave.service.toml",
+        # A price per output, keyed `<model>:<speed>` or `<model>`, for a service with
+        # no balance to read: what it charges is then quoted, and says so (§PW164).
+        "prices": {},
     },
     "budget": {
         # No budget is no spend, never an unlimited one: the absence of a ceiling is
@@ -525,14 +528,22 @@ def _check(declared: dict, source: Path) -> None:
     _check_services(declared, source)
 
 
+#: Settings of one service whose value is itself a table, so not a named service.
+_TABLE_SETTINGS = ("prices",)
+
+
 def _named(values: dict) -> dict[str, dict]:
     """The `[table.<name>]` subtables of a table that may hold several services."""
-    return {k: v for k, v in values.items() if isinstance(v, dict)}
+    return {
+        k: v
+        for k, v in values.items()
+        if isinstance(v, dict) and k not in _TABLE_SETTINGS
+    }
 
 
 def _check_named(table: str, values: dict, source: Path) -> None:
     """Each `[service.<name>]` or `[budget.<name>]` takes the keys one service has."""
-    loose = sorted(k for k, v in values.items() if not isinstance(v, dict))
+    loose = sorted(set(values) - set(_named(values)))
     if loose:
         raise PolyweaveError(
             "config.services-mixed",
@@ -557,6 +568,8 @@ def _check_named(table: str, values: dict, source: Path) -> None:
                     at=f"{table}.{name}.{key}",
                 )
             _check_type(f"{table}.{name}.{key}", allowed[key], value, source)
+            if key == "prices":
+                _check_prices(f"{table}.{name}.{key}", value, source)
 
 
 def _check_services(declared: dict, source: Path) -> None:
@@ -605,6 +618,21 @@ def _check_key(table: str, key: str, value: Any, source: Path) -> None:
     if f"{table}.{key}" in _OPEN_TABLES:
         return
     _check_type(f"{table}.{key}", allowed[key], value, source)
+    if key == "prices":
+        _check_prices(f"{table}.{key}", value, source)
+
+
+def _check_prices(address: str, prices: dict, source: Path) -> None:
+    """A price is a number above nothing: a free row would under-count the ceiling."""
+    for row, price in prices.items():
+        if isinstance(price, bool) or not isinstance(price, int | float) or price <= 0:
+            raise PolyweaveError(
+                "config.bad-type",
+                f"{address}.{row} is {price!r} in {source.name}, and a price is a "
+                f"number above zero",
+                "write what one output costs, in the unit of the service's ceiling",
+                at=f"{address}.{row}",
+            )
 
 
 def _check_type(address: str, default: Any, value: Any, source: Path) -> None:

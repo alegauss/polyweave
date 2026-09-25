@@ -76,6 +76,7 @@ timeout   = 180                # and the wall clock, for a run that never reache
 base    = "https://api.meshy.ai"
 key_env = "MESHY_API_KEY"      # the NAME of the variable, never the value
 schema  = "polyweave.service.toml"
+prices  = {}                   # a quoted price per output, for a service with no balance
 
 [budget]
 credits = 60
@@ -192,7 +193,9 @@ key_env = "MESHY_API_KEY"
 schema  = "polyweave.service.toml"     # a named service's default is polyweave.service.<name>.toml
 
 [service.ideogram]
+base    = "https://api.ideogram.ai"
 key_env = "IDEOGRAM_API_KEY"
+prices  = { "4.0" = 0.06, "4.0:TURBO" = 0.03 }   # per picture, in the ceiling's unit
 
 [budget.meshy]
 amount  = 60

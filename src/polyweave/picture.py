@@ -53,7 +53,6 @@ TIMEOUT = 120
 def buy(
     prompt: Annotated[str, Param("what the picture shows")],
     out: Annotated[str, Param("where it is written, under the project")],
-    cost: Annotated[float, Param("its price, in the ceiling's unit", lo=0.0)],
     *,
     transparent: Annotated[bool, Param("a PNG with alpha, read as a drawing")] = True,
     model: Annotated[str, Param("the model", choices=tuple(MODELS))] = "4.0",
@@ -66,8 +65,10 @@ def buy(
     """Buy one picture against the service's ceiling and keep it before anything else.
 
     Returns the ledger entry, with where the picture landed. Nothing is spent where the
-    ceiling would not allow it, where the key is not set, or where the payload names a
-    field the learned schema does not carry.
+    ceiling would not allow it, where the key is not set, where no price is declared for
+    the model and speed, or where the payload names a field the learned schema does not
+    carry. The price is the project's `prices` table, never the caller's figure, and the
+    entry says it was quoted rather than measured (§PW164).
     """
     if model not in MODELS:
         raise PolyweaveError(
@@ -77,17 +78,11 @@ def buy(
             given=model,
             allowed=MODELS,
         )
-    if not float(cost) > 0:
-        raise PolyweaveError(
-            "fetch.cost-unstated",
-            "a picture was asked for at no cost, and none is free",
-            "pass what one picture costs on this model and speed, in the unit of "
-            "the service's ceiling; that is what is charged against it",
-        )
     config = load(root)
     name = config.service(service)
     about = config.services()[name]
     base, key = _reached(name, about)
+    price = _price(name, about.get("prices") or {}, model, rendering_speed)
 
     path, prompt_field = MODELS[model]
     payload: dict = {prompt_field: prompt}
@@ -103,7 +98,7 @@ def buy(
     if schema.read(root, name).get("field"):
         schema.validate(payload, root=root, service=name)
 
-    purchase.allow(float(cost), root=root, service=name)
+    purchase.allow(price, root=root, service=name)
 
     endpoint = f"{base.rstrip('/')}/v1/{path}/generate"
     if transparent:
@@ -123,13 +118,17 @@ def buy(
         )
 
     body = _download(link)
+    # The service bills per picture returned, so an answer carrying more than was asked
+    # for is charged as many prices, although only the first is kept.
+    returned = max(1, len(answer.get("data") or ()))
     entry = purchase.capture(
         body,
         out=out,
         # The synchronous answer carries no id of its own, so the id is what it does
         # carry: when it was made and the seed it was made with.
         task_id=f"{name}:{answer.get('created')}:{drawn.get('seed')}",
-        credits=float(cost),
+        credits=round(price * returned, 4),
+        outputs=returned,
         prompt=prompt,
         bought="image",
         engine={"name": name, "model": model},
@@ -144,6 +143,27 @@ def buy(
         root=root,
     )
     return entry
+
+
+def _price(name: str, prices: dict, model: str, speed: str | None) -> float:
+    """What one picture costs, from the declared table, or a refusal (§PW164).
+
+    A row is `<model>:<speed>`, or `<model>` for the speed the service defaults to. A
+    call with no row is refused rather than priced at zero: under-counting is the
+    direction that lets a session pass a ceiling a person set.
+    """
+    row = f"{model}:{speed}" if speed else model
+    if row in prices:
+        return float(prices[row])
+    raise PolyweaveError(
+        "fetch.unpriced",
+        f"[service.{name}] prices has no row {row!r}, so what the picture costs is "
+        f"not known",
+        f"add {row!r} = <price of one picture> to [service.{name}] prices, in the "
+        f"unit of its ceiling",
+        given=row,
+        allowed=sorted(prices),
+    )
 
 
 def _reached(name: str, about: dict) -> tuple[str, str]:

@@ -274,31 +274,6 @@ unstated.
 
 ## Block N — Pictures held to a canon
 
-### §PW164 A price that says it was quoted
-
-The ledger's proof of what something cost is two readings of the balance, one either
-side of the spend (PW18). Ideogram publishes no balance endpoint, so an image entry
-would be either unmeasured or invented, and a ledger that cannot tell those two apart
-has stopped being evidence.
-
-**The price is declared, and says it was declared.** `[service.ideogram] prices` maps a
-model and speed to a price per output image — the service bills per picture returned, so
-a request for four is four prices. The entry carries `credits` from that table and
-`measured = false`, and every read that sums spend says how much of its total was quoted
-rather than read.
-
-**A quoted price is not trusted forever.** When a person supplies the service's own
-usage export, `purchase.reconcile` matches its rows to ledger entries by time and count
-and records the difference, the same `surprised` flag a measured entry carries. A table
-that has gone stale is found on the first reconcile rather than on the invoice.
-
-**The ceiling counts quoted spend in full.** Under-counting is the direction that lets a
-session pass a ceiling a person set, so where the table has no row for a model, the call
-is refused rather than priced at zero.
-
-This is a deliberate exception to the fetching contract, which is why it is its own
-line: the contract should say it, not a comment in the client.
-
 ### §PW165 A picture its record can make again
 
 Ideogram 4.0 rewrites a text prompt before it draws — the response returns "a
@@ -510,8 +485,9 @@ second, separate list of charges with no asset: `purchase.capture` is never call
 the charge is written to a `pending` list that `spent` counts and `held` reports as
 lost, until a retry of the link lands the asset and moves the entry into the ledger.
 This keeps the ledger's rule (every entry has its file) and the ceiling's rule (every
-charge is counted). Decide it together with PW164, which settles how a picture's cost is
-known at all.
+charge is counted). PW164 shipped `purchase.reconcile`, which already names such a
+charge after the fact: a usage row nothing matches lands in `unmatched_rows`. What is
+missing is counting it before the next spend, not finding it.
 
 ## Block O — A person sees and answers
 

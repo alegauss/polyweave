@@ -23,7 +23,7 @@ This page only groups them by what you are trying to do.
 | Buy a drawing | `picture.buy` (one picture, against its service's own ceiling) |
 | Before buying a mesh | `reference.pick`, `reference.prepare`, `shape.check`, `shape.silhouette` |
 | Paid meshes | `purchase.remaining`, `purchase.allow`, `purchase.held`, `schema.validate`, `schema.read`, `schema.proved` |
-| The purchase ledger | `purchase.spent`, `purchase.ledger`, `purchase.find`, `purchase.adopt` |
+| The purchase ledger | `purchase.spent`, `purchase.ledger`, `purchase.find`, `purchase.adopt`, `purchase.reconcile` (a quoted price against the bill) |
 | After buying | `normalise.ingest`, `texture.worth_scrubbing` |
 | Bake a clip | `motion.bake` (the animation and the sheet, from files) |
 | Motion | `clip.new`, `clip.read`, `clip.set_key`, `clip.retime`, `clip.write`, `clip.compiled` |

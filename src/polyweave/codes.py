@@ -604,11 +604,11 @@ CODES: dict[str, Code] = {
         "declared a second",
         doors=("add the service each entry was bought from to its `service` field",),
     ),
-    "fetch.cost-unstated": Code(
-        means="a purchase was asked for at no cost, so nothing would count against the "
-        "ceiling",
-        when="a picture bought with cost 0; no call to a paid service is free",
-        doors=("pass what one costs, in the unit of the service's ceiling",),
+    "fetch.unpriced": Code(
+        means="no price is declared for what is being bought, so its cost is not known",
+        when="a picture on a model and speed with no row in the service's prices; it "
+        "is refused rather than priced at zero, which would under-count the ceiling",
+        doors=("add the row to [service.<name>] prices",),
     ),
     "fetch.service-unconfigured": Code(
         means="the service named cannot be reached: no base, or no key in this "

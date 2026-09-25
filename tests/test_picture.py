@@ -17,7 +17,8 @@ PNG = b"\x89PNG\r\n\x1a\n" + b"\x00" * 60
 PROJECT = (
     '[service.meshy]\nbase = "https://api.meshy.ai"\nkey_env = "POLYWEAVE_TEST_M"\n\n'
     '[service.ideogram]\nbase = "https://api.ideogram.ai"\n'
-    'key_env = "POLYWEAVE_TEST_I"\n\n'
+    'key_env = "POLYWEAVE_TEST_I"\n'
+    'prices = { "4.0" = 0.08, "4.0:QUALITY" = 5.0, "3.0" = 0.06 }\n\n'
     '[budget.meshy]\namount = 60\nexpires = "2099-12-31"\n\n'
     '[budget.ideogram]\namount = 1.0\nunit = "USD"\nexpires = "2099-12-31"\n'
 )
@@ -63,7 +64,6 @@ def buy(tmp_path, **over):
     fields = {
         "prompt": "a plush booster",
         "out": "refs/booster.png",
-        "cost": 0.08,
         "service": "ideogram",
         "root": tmp_path,
     }
@@ -107,22 +107,70 @@ def test_the_transparent_endpoint_is_the_default_and_the_prompt_field_is_the_mod
     assert key == "sk-picture"
     assert payload == {"text_prompt": "a plush booster"}
 
-    buy(tmp_path, out="refs/b.png", model="3.0", transparent=False, seed=7)
+    entry = buy(tmp_path, out="refs/b.png", model="3.0", transparent=False, seed=7)
+    assert entry["credits"] == 0.06
     endpoint, _, payload = service.sent[1]
     assert endpoint == "https://api.ideogram.ai/v1/ideogram-v3/generate"
     assert payload == {"prompt": "a plush booster", "seed": 7}
 
 
 def test_a_spend_past_the_ceiling_never_reaches_the_service(tmp_path, service):
-    error = refused(tmp_path, cost=5.0)
+    error = refused(tmp_path, rendering_speed="QUALITY")
     assert error.code == "fetch.over-budget"
     assert service.sent == []
     assert purchase.read(tmp_path) == []
 
 
-def test_a_picture_asked_for_at_no_cost_is_refused(tmp_path, service):
-    assert refused(tmp_path, cost=0).code == "fetch.cost-unstated"
+# -- a price that says it was quoted (§PW164) ----------------------------------------
+
+
+def test_a_picture_is_priced_from_the_table_and_says_it_was_quoted(tmp_path, service):
+    entry = buy(tmp_path)
+    assert entry["credits"] == 0.08
+    assert entry["measured"] is False
+    left = purchase.remaining(tmp_path, service="ideogram")
+    assert left["spent"] == left["quoted"] == 0.08
+    assert purchase.held(tmp_path)["quoted"] == {"ideogram": 0.08, "meshy": 0.0}
+
+
+def test_a_model_and_speed_with_no_price_is_refused_rather_than_free(tmp_path, service):
+    error = refused(tmp_path, rendering_speed="TURBO")
+    assert error.code == "fetch.unpriced"
+    assert "'4.0:TURBO'" in error.message
     assert service.sent == []
+
+
+def test_an_answer_with_more_pictures_is_charged_for_each(tmp_path, service):
+    service.answer = {**ANSWER, "data": ANSWER["data"] * 3}
+    assert buy(tmp_path)["credits"] == 0.24
+
+
+def test_a_price_that_is_not_a_positive_number_is_refused(tmp_path):
+    from polyweave import config
+
+    (tmp_path / "polyweave.toml").write_text(
+        '[service.ideogram]\nprices = { "4.0" = 0 }\n', encoding="utf-8"
+    )
+    with pytest.raises(PolyweaveError) as caught:
+        config.load(tmp_path)
+    assert caught.value.code == "config.bad-type"
+
+
+def test_a_cost_read_off_two_balances_is_measured(tmp_path):
+    (tmp_path / "polyweave.toml").write_text(
+        '[budget]\ncredits = 60\nexpires = "2099-12-31"\n', encoding="utf-8"
+    )
+    entry = purchase.capture(
+        PNG,
+        out="a.glb",
+        task_id="t",
+        credits=30,
+        balance_before=100.0,
+        balance_after=70.0,
+        root=tmp_path,
+    )
+    assert entry["measured"] is True
+    assert purchase.remaining(tmp_path)["quoted"] == 0.0
 
 
 def test_a_payload_the_learned_schema_refuses_is_never_sent(tmp_path, service):
@@ -171,3 +219,55 @@ def test_an_answer_marked_unsafe_with_no_picture_is_a_refused_prompt(tmp_path, s
 
 def test_the_client_never_holds_more_calls_open_than_the_account_allows():
     assert picture._inflight._value == picture.INFLIGHT == 10
+
+
+# -- a quote is not trusted forever --------------------------------------------------
+
+
+def _bought_at(tmp_path, service, at, out):
+    entry = buy(tmp_path, out=out)
+    ledger = purchase.read(tmp_path)
+    ledger[-1]["at"] = at
+    purchase.where(tmp_path).write_text(json.dumps(ledger), encoding="utf-8")
+    return entry
+
+
+def test_a_usage_row_turns_a_quote_into_what_was_billed(tmp_path, service):
+    _bought_at(tmp_path, service, "2026-09-22T10:00:05Z", "a.png")
+    found = purchase.reconcile(
+        [{"at": "2026-09-22T10:00:00Z", "cost": 0.1, "count": 1}],
+        service="ideogram",
+        root=tmp_path,
+    )
+    assert found["surprised"] == ["a.png"]
+    entry = purchase.read(tmp_path)[0]
+    assert entry["credits"] == 0.1
+    assert entry["expected_credits"] == 0.08
+    assert entry["measured"] is True
+    assert purchase.remaining(tmp_path, service="ideogram")["quoted"] == 0.0
+
+
+def test_a_billed_row_with_no_entry_is_named(tmp_path, service):
+    _bought_at(tmp_path, service, "2026-09-22T10:00:05Z", "a.png")
+    found = purchase.reconcile(
+        [
+            {"at": "2026-09-22T10:00:00Z", "cost": 0.08},
+            {"at": "2026-09-22T12:00:00Z", "cost": 0.08},
+        ],
+        service="ideogram",
+        root=tmp_path,
+    )
+    assert found["surprised"] == []
+    assert [r["at"] for r in found["unmatched_rows"]] == ["2026-09-22T12:00:00Z"]
+    assert found["still_quoted"] == []
+
+
+def test_a_row_far_from_every_entry_matches_none(tmp_path, service):
+    _bought_at(tmp_path, service, "2026-09-22T10:00:00Z", "a.png")
+    found = purchase.reconcile(
+        [{"at": "2026-09-23T10:00:00Z", "cost": 0.08}],
+        service="ideogram",
+        root=tmp_path,
+    )
+    assert found["matched"] == []
+    assert found["still_quoted"] == ["a.png"]

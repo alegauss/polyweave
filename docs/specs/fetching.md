@@ -115,15 +115,41 @@ same order:
 1. the payload is checked against `[service.<name>] schema` where one is learned. The models
    spell the prompt differently (`text_prompt` on 4.0, `prompt` on 3.0), so a schema learned
    from one refuses the other's payload before it is sent;
-2. `purchase.allow` is asked for `cost`, against that service's own ceiling. The price is
-   the caller's to state, in the ceiling's unit, and a cost of zero is refused
-   (`fetch.cost-unstated`), because no call to a paid service is free;
+2. `purchase.allow` is asked for the picture's price, against that service's own ceiling.
+   The price comes from the project's table, never the caller (below);
 3. the request is sent. A 422 is `fetch.prompt-refused`, a 429 `fetch.rate-limited`, and
    anything else `fetch.service-error`. None of them ledgers anything. The client holds no
    more than ten calls open at once in one process, the account's default;
 4. the picture is captured at once, because the service's links expire. The entry is
    `bought = "image"`, and the record carries the model, the speed and the resolution the
    answer reported, which may not be the ones asked for.
+
+### A price that says it was quoted
+
+**This is a deliberate exception to reading the balance.** Ideogram publishes no balance
+endpoint, so what a picture cost cannot be read off two balances the way a mesh's is
+(§PW164). The price is declared instead, in `[service.<name>] prices`, keyed `<model>` for
+the speed the service defaults to and `<model>:<speed>` for another. The service bills per
+picture returned, so an answer carrying three is charged three prices.
+
+**A quoted price says it was quoted.** Every ledger entry carries `measured`: true where the
+cost is the difference between two balance readings, false where it came from the table.
+`purchase.remaining` and `purchase.held` report `quoted`, how much of what was spent is a
+declared price rather than a reading, so a total never passes off a figure as evidence.
+
+**The ceiling counts quoted spend in full**, because under-counting is the direction that
+lets a session pass a ceiling a person set. A model and speed with no row are refused
+(`fetch.unpriced`) rather than priced at zero, and a row that is not a number above zero is
+refused when the file is read.
+
+**A quote is not trusted forever.** `purchase.reconcile` takes the service's own usage export,
+its columns mapped by the caller onto `at`, `cost` and `count` as `adopt` maps a foreign
+ledger, and matches each row to the quoted entry nearest it in time, within five minutes,
+with the same count of outputs (`outputs` on the entry). The billed amount becomes the
+entry's `credits`, the quote stays as `expected_credits`, the entry becomes `measured`, and a
+difference sets `surprised`. A row nothing matches is reported under `unmatched_rows`,
+because a charge with no entry is money the ceiling never saw. A stale price table is
+found on the first reconcile rather than on the invoice.
 
 The synchronous endpoints carry no task id, so the entry's `task_id` is the service name,
 the answer's `created` time and the seed. The asynchronous variants and their poll are not
