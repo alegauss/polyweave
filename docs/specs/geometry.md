@@ -400,8 +400,10 @@ sets nothing). `--json` prints the same as data, and the work's own chatter, Ble
 exporter included, goes to stderr so stdout carries the answer alone. `--preview` adds the
 cheapest look: a voxel model's contact sheet, or a mesh's front silhouette drawn from the
 faces. `--all` builds every declaration under a folder, passing over TOML that is not a
-shape, and skips one whose stamp — `<name>.build.json`, the hash of the document, the
-values set and every file it names — still matches its outputs. Blender is needed only
+shape, and skips one whose stamp — `<name>.build.json` — still matches its outputs. The
+stamp is the cache key of the provenance record the build writes beside every output
+(§PW140): the document, the values set, every file it names, `--preview` and the plugin's
+version, so a fixed builder rebuilds what the defect made and `unrecorded` finds nothing. Blender is needed only
 where a node needs it: a voxel build writes its cubes' mesh when Blender is there and
 leaves it out when not. A declaration saved with a byte-order mark, as Windows PowerShell
 5.1 writes one, reads like any other.

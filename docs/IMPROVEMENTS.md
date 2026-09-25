@@ -370,24 +370,6 @@ present, and skipped where it is not, as the render tests are.
 
 ## Block L — What a run leaves as evidence
 
-### §PW140 One answer to what a build was made from
-
-The `stamp` function in `cli.py` hashes the declaration, the `--set` values and every
-file the document names. It does not hash the plugin's version, so after a fix to the
-builder `build --all` answers `cached` and keeps the output the defect produced. It does
-not hash `--preview`, so a second run that asks for a preview returns before writing
-one.
-
-Beside it, provenance defines a cache key for renders, and `verify` walks `paths.meshes`
-for `.glb` files. The geometry build and the voxel writer produce `.glb` files without a
-record, so a project whose meshes directory holds them is told its own outputs are
-unrecorded.
-
-Roadkeep's rule applies: a list a second place has to be joined to is derived from the
-first. The build writes a provenance record like every other producer, the stamp becomes
-that record's key with the plugin version and every flag that changes an output in it,
-and one test builds twice across a changed version and expects a rebuild.
-
 ## Block M — What a game needs beyond the look
 
 ### §PW142 Draw the skin, keep the volume

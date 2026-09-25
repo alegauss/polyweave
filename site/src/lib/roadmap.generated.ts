@@ -36,7 +36,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 1 },
-  { block: "L", title: "What a run leaves as evidence", open: 1 },
+  { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 3 },
 ];
 
@@ -88,13 +88,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "K",
     symptom: "a clip is baked to an animation and a sheet only from Python, since every step takes a mesh and a rig in memory",
     why: "The census lists compile, frames, sprites.bake and skeleton.fit as internal, so motion is the one surface a GDScript project still needs a script for.",
-    deps: [],
-  },
-  {
-    id: "PW140",
-    block: "L",
-    symptom: "a build is reported cached after the plugin that built it changed, because its stamp hashes the inputs alone",
-    why: "The stamp leaves out the plugin's version and `--preview`, and geometry writes no provenance record, so two answers to \"what made this\" already disagree.",
     deps: [],
   },
   {

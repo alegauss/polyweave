@@ -35,8 +35,6 @@
 
 ## Block L — What a run leaves as evidence
 
-- 📋 **PW140** (deps: —) **a build is reported cached after the plugin that built it changed, because its stamp hashes the inputs alone** — The stamp leaves out the plugin's version and `--preview`, and geometry writes no provenance record, so two answers to "what made this" already disagree. → §PW140
-
 ## Block M — What a game needs beyond the look
 
 - 💭 **PW142** (deps: —) **a voxel model is drawn with every filled cell, including the ones buried where no face of them can be seen** — `multimesh()` instances every centre while the same file records each cell's depth, so a solid model pays for its whole volume and not its skin. → §PW142

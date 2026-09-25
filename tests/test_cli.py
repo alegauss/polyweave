@@ -96,6 +96,46 @@ def test_all_skips_what_has_not_changed_and_rebuilds_what_has(tmp_path, capsys):
     assert again[0]["says"].startswith("a voxel model 3 by 3 by 3")
 
 
+def test_all_rebuilds_after_the_plugin_changed(tmp_path, capsys, monkeypatch):
+    """§PW140: the stamp hashed the inputs alone, so a fixed builder kept the output
+    the defect had produced and called it cached."""
+    (tmp_path / "art").mkdir()
+    declared(tmp_path / "art")
+    run(tmp_path, "--all", "art", "--json", capsys=capsys)
+
+    monkeypatch.setattr("polyweave.provenance.__version__", "9.9.9-fixed")
+    _, printed = run(tmp_path, "--all", "art", "--json", capsys=capsys)
+    assert [one["status"] for one in json.loads(printed.out)] == ["built"]
+
+
+def test_a_preview_is_not_answered_from_a_build_without_one(tmp_path, capsys):
+    (tmp_path / "art").mkdir()
+    declared(tmp_path / "art")
+    run(tmp_path, "--all", "art", "--json", capsys=capsys)
+    _, printed = run(tmp_path, "--all", "art", "--preview", "--json", capsys=capsys)
+    (again,) = json.loads(printed.out)
+    assert again["status"] == "built"
+    assert any(one.endswith(".png") for one in again["outputs"])
+
+
+def test_every_output_carries_the_record_the_stamp_is_the_key_of(tmp_path, capsys):
+    from polyweave import provenance
+
+    (tmp_path / "polyweave.toml").write_text(
+        '[paths]\nmeshes = "art"\n', encoding="utf-8"
+    )
+    (tmp_path / "art").mkdir()
+    declared(tmp_path / "art")
+    _, printed = run(tmp_path, "--all", "art", "--json", capsys=capsys)
+    (built,) = json.loads(printed.out)
+    stamped = json.loads((tmp_path / "art" / "box.build.json").read_text("utf-8"))
+    for output in built["outputs"]:
+        record = provenance.read(output, root=str(tmp_path))
+        assert provenance.cache_key(record) == stamped["stamp"]
+        assert record["params"]["made_by"] == "geometry.build"
+    assert provenance.unrecorded(str(tmp_path)) == []
+
+
 def test_all_reports_a_declaration_with_a_typo_and_fails(tmp_path, capsys):
     """§PW123: a declaration `read` refused used to drop out silently, exiting 0."""
     (tmp_path / "art").mkdir()

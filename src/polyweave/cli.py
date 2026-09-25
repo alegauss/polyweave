@@ -6,8 +6,9 @@ to keep Python. So the plugin ships them, as a command whose answer is readable 
 agent: the readback, the report, the warnings and the findings, and a non-zero exit on a
 refusal. `--json` is the same answer as data.
 
-**A build that changed nothing costs nothing.** Each output gets a stamp beside it: the
-hash of the document, of the values set for it, and of every file it names. `--all`
+**A build that changed nothing costs nothing.** Each output gets a provenance record
+beside it, and the build a stamp: that record's cache key, over the document, the values
+set for it, every file it names, `--preview` and the plugin's version (§PW140). `--all`
 skips a document whose stamp still matches, so a project's asset step is one line.
 
 **Blender only where a node needs it.** A voxel build of the grid-native ops never
@@ -23,7 +24,6 @@ from __future__ import annotations
 
 import argparse
 import contextlib
-import hashlib
 import importlib.util
 import json
 import sys
@@ -73,16 +73,45 @@ def _named_files(value: Any, root: Path, found: set) -> None:
             found.add(where)
 
 
-def stamp(source: Path, document: dict, given: dict, root: Path) -> str:
-    """What a build's outputs were made from, as one hash."""
-    digest = hashlib.sha256(source.read_bytes())
-    digest.update(json.dumps(given, sort_keys=True).encode())
+def made_from(
+    source: Path, document: dict, given: dict, preview: bool, root: Path
+) -> dict:
+    """What a build's outputs are made from, as a provenance record not yet written.
+
+    One answer to "what made this" (§PW140): the stamp is this record's cache key, so
+    the plugin's version and every flag that changes an output are in it, and the
+    record written beside each output is the same one. The stamp used to hash the
+    inputs alone, and a build was reported cached after the builder that made it had
+    been fixed.
+    """
+    from . import provenance
+
     named: set = set()
     _named_files(document, root, named)
-    for where in sorted(named):
-        digest.update(str(where.relative_to(root)).encode())
-        digest.update(where.read_bytes())
-    return digest.hexdigest()
+    inputs = [provenance.source("declaration", source, root)] + [
+        provenance.source("named", where, root) for where in sorted(named)
+    ]
+    return {
+        "inputs": inputs,
+        "params": {"made_by": "geometry.build", "given": given, "preview": preview},
+    }
+
+
+def stamp(made: dict) -> str:
+    """What a build's outputs were made from, as one hash: the record's cache key."""
+    from . import provenance
+
+    return provenance.cache_key(provenance.planned("mesh", **made))
+
+
+def _recorded(outputs: list[str], made: dict, root: Path) -> None:
+    """A provenance record beside each output, like every other producer's."""
+    from . import provenance
+
+    for output in outputs:
+        suffix = Path(output).suffix.lower()
+        kind = "render" if suffix == ".png" else "mesh"
+        provenance.write(provenance.build(kind, output, root=root, **made), root=root)
 
 
 def _has_blender() -> bool:
@@ -113,10 +142,11 @@ def build_one(
         folder = folder if folder.is_absolute() else here / folder
         folder.mkdir(parents=True, exist_ok=True)
         mark = folder / f"{document['name']}{STAMP}"
-        made_from = stamp(where, document, given, here)
+        made = made_from(where, document, given, preview, here)
+        key = stamp(made)
         if not force and mark.is_file():
             kept = json.loads(mark.read_text(encoding="utf-8"))
-            if kept.get("stamp") == made_from and all(
+            if kept.get("stamp") == key and all(
                 Path(one).is_file() for one in kept.get("outputs", ())
             ):
                 return {**answer, "status": "cached", "outputs": kept["outputs"]}
@@ -131,10 +161,11 @@ def build_one(
         if len(built) > 1:
             answer["members"] = built
             answer["outputs"] = [path for one in built for path in one["outputs"]]
+        _recorded(answer["outputs"], made, here)
         # The source rides in the stamp so the edit guard can name the declaration to
         # change instead of the file an agent was about to edit by hand (§PW133).
         stamped = {
-            "stamp": made_from,
+            "stamp": key,
             "source": where.relative_to(here).as_posix()
             if where.is_relative_to(here)
             else str(where),
