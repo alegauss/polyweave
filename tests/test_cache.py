@@ -254,6 +254,36 @@ def test_a_preview_rung_is_cached_too(tmp_path):
     assert held["entries"] == 1
 
 
+def test_a_changed_rung_size_is_a_miss_at_the_new_size(tmp_path):
+    """§PW145: the size came from the project file and was in no keyed field, so a
+    smaller `preview_size` was served the larger picture as a hit."""
+    pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
+    from polyweave import config as C
+    from polyweave import render
+
+    settings = (
+        "[render]\npreview_size = {size}\nfinal_size = 32\n"
+        "samples = {{ sphere = 4, preview = 4, final = 4 }}\nseed = 11\n"
+    )
+
+    class Quiet:
+        def stage(self, *a, **k):
+            pass
+
+    (tmp_path / C.FILENAME).write_text(settings.format(size=32), encoding="utf-8")
+    at = {"rung": "sphere", "root": tmp_path, "inline": False}
+    first = render.bake(Quiet(), out="a.png", **at)
+    (tmp_path / C.FILENAME).write_text(settings.format(size=24), encoding="utf-8")
+    again = render.bake(Quiet(), out="b.png", **at)
+
+    assert first["size"] == [32, 32]
+    assert again["cached"] is False
+    assert again["size"] == [24, 24]
+    assert again["cache_key"] != first["cache_key"]
+    with PILImage.open(tmp_path / "b.png") as drawn:
+        assert drawn.size == (24, 24)
+
+
 def test_a_caller_may_refuse_the_cache(tmp_path):
     pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
     from polyweave import config as C

@@ -164,8 +164,11 @@ which is the drift it exists to stop.
 **The cache key needed no new field.** The worry was that a size the rung does not imply
 would let a square render come back for a rectangular request. It cannot: `covers` and
 `pixels_per_unit` go into `params`, and `params` is already what the key is computed over. So
-every distinct rectangle and every distinct scale keys distinctly, and a bake that declares
-nothing keys exactly as it did, which is why no cached entry was invalidated.
+every distinct rectangle and every distinct scale keys distinctly. A bake that declared
+nothing then keyed exactly as it did, and that was the gap (§PW145): its size came from
+`[render] preview_size` or `final_size`, in no keyed field, so a smaller `preview_size` was
+served the larger picture as a hit. Every bake now puts the frame it actually draws into
+`params` as `frame`, which changed every key once; a miss costs one render.
 
 ## A capture declares its environment
 

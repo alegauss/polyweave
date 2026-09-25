@@ -4,27 +4,6 @@
 
 ## Block B — Seeing the result cheaply
 
-### §PW145 A rung's size is not in the cache key
-
-`render.bake` computes its cache key from the request's `params`, the engine record, the
-inputs, the rung, the seed and the sample count. The size of a picture that declares no
-world rectangle comes from `[render] preview_size` or `final_size`, and neither is in
-any of those. So a project that changes `preview_size` from 256 to 128 and bakes the
-same request again is served the 256 px picture from the cache, reported as a hit, and
-every measure on it answers for a size nobody asked for.
-
-Found building PW107, which had to put an explicit `size` override into `params` so its
-variants key apart. The rung's own size never got the same treatment. engine.md says a
-bake that declares nothing "keys exactly as it did", which is true, and that is the
-problem.
-
-The fix is to key on the frame that is actually drawn: put the resolved `(width,
-height)` into the planned record (as `params["frame"]`, or a top-level field `cache_key`
-reads) for every bake, not only the ones that override it. Every existing key changes
-once, which the cache survives, since a miss only costs a render. The test is to bake
-one request, change `preview_size` in the project file, bake it again, and see a miss
-with the new size.
-
 ### §PW161 A palette per material slot
 
 PW141 gave a bake a `look_digest` whose palette is the subject's mean Lab colour. The

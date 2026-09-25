@@ -340,6 +340,10 @@ def bake(
         frame = (int(scale["size"][0]), int(scale["size"][1]))
         params["covers"] = [float(v) for v in covers]
         params["pixels_per_unit"] = scale["pixels_per_unit"]
+    # The frame actually drawn is in the key for every bake (§PW145). A rung's size is
+    # read from the project file, so changing `preview_size` changed the picture and not
+    # the key, and the old size was served as a hit.
+    params["frame"] = [int(frame[0]), int(frame[1])]
     if model:
         mesh = Path(model) if Path(model).is_absolute() else where / model
         if not mesh.is_file():

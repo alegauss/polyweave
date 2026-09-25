@@ -4,7 +4,6 @@
 
 ## Block B — Seeing the result cheaply
 
-- 📋 **PW145** (deps: —) **a bake after `preview_size` changed is served the old-size picture from the cache, as a hit** — The rung's size is read from the project file and is in no field the cache key covers, so every measure on the hit answers for a size nobody asked for. → §PW145
 - 📋 **PW161** (deps: —) **a look digest's palette is one mean colour, so restyling the small slot of a two-material asset may not move it** — The render keeps no mask per material slot, so a wrapper or rim recoloured moves the mean by less than one quantisation step. → §PW161
 
 ## Block C — The asset compiler

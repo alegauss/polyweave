@@ -255,6 +255,9 @@ def test_every_rung_records_the_same_rig(project, mesh):
     )
     one = provenance.read("r1.png", root=project)["params"]
     two = provenance.read("r2.png", root=project)["params"]
+    # The frame is each rung's own size, keyed so a changed size is a miss (§PW145);
+    # everything else is the rig, and the rig is the same.
+    assert one.pop("frame") != two.pop("frame")
     assert one == two
 
 

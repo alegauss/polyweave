@@ -31,6 +31,7 @@
 - ✅ **PW43** **a colour measured off a render is not the colour that was authored, and nothing says so** — Capabilities renders one known colour and reports what came back, so an installation that cannot measure colour says so before a spec is built on it (design recorded in `docs/specs/tool-surface.md`).
 - ✅ **PW44** **one configured noise floor calls every preview-sized render a change, because the floor moves with the rung** — The floor is keyed by rung and read for the one a render records, and a twin render measures it outright, right at any sample count anywhere (design recorded in `docs/specs/project-config.md`).
 - ✅ **PW141** **a bake does not say whether its silhouette moved or only its look, so two bakes are compared by measuring both again** — A bake returns and records a shape and a look digest quantised at the rung's noise floor; measure.digest reads both off any picture (design recorded in `docs/specs/measurements.md`).
+- ✅ **PW145** **a bake after `preview_size` changed is served the old-size picture from the cache, as a hit** — Every bake keys on the frame it draws, so a changed preview_size misses and renders at the new size; every existing key changed once (design recorded in `docs/specs/engine.md`).
 
 ## Block C — The asset compiler
 

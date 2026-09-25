@@ -26,7 +26,7 @@ export interface GeneratedNonGoal {
 
 export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 0 },
-  { block: "B", title: "Seeing the result cheaply", open: 2 },
+  { block: "B", title: "Seeing the result cheaply", open: 1 },
   { block: "C", title: "The asset compiler", open: 0 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
   { block: "E", title: "One world with the engine", open: 0 },
@@ -41,13 +41,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW145",
-    block: "B",
-    symptom: "a bake after `preview_size` changed is served the old-size picture from the cache, as a hit",
-    why: "The rung's size is read from the project file and is in no field the cache key covers, so every measure on the hit answers for a size nobody asked for.",
-    deps: [],
-  },
   {
     id: "PW161",
     block: "B",
