@@ -34,18 +34,30 @@ from .describe import Param, operation
 from .errors import PolyweaveError
 
 #: What a variation can be, and the service call each is.
-OPERATIONS = {"remix": "ideogram-v3/remix", "edit": "ideogram-v3/inpaint"}
+OPERATIONS = {
+    "remix": "ideogram-v3/remix",
+    "edit": "ideogram-v3/inpaint",
+    # The same picture in another frame, the new area drawn in (§PW181). It takes no
+    # prompt: what may change is only the border the new shape adds.
+    "reframe": "ideogram-v3/reframe",
+}
 
 
 @operation("picture.vary")
 def vary(
     parent: Annotated[str, Param("the approved picture, under the project")],
     out: Annotated[str, Param("where the variation is written, under the project")],
-    prompt: Annotated[str, Param("what the variation should show")],
+    prompt: Annotated[
+        str, Param("what the variation should show; a reframe takes none")
+    ] = None,
     *,
     change: Annotated[
-        str, Param("remix the whole, or edit inside a mask", choices=tuple(OPERATIONS))
+        str,
+        Param("remix the whole, edit in a mask, or reframe", choices=tuple(OPERATIONS)),
     ] = "edit",
+    resolution: Annotated[
+        str, Param("for a reframe: the new frame, as WIDTHxHEIGHT the service offers")
+    ] = None,
     region: Annotated[
         str, Param("for an edit: the described element to change, by its words")
     ] = None,
@@ -63,9 +75,10 @@ def vary(
 
     An edit changes only what its mask allows, and the mask is `mask`, or the box of the
     parent's described element whose words contain `region`. A remix redraws the whole
-    at `strength` (the service's `image_weight`). Both are priced by the `remix` or
-    `edit` row of `prices`. Both endpoints take a text prompt only, so a family's style
-    is not carried into the request; `picture.against_parent` measures it afterwards.
+    at `strength` (the service's `image_weight`). A reframe puts the whole parent in a
+    new `resolution` and draws only the border it adds. Each is priced by its row of
+    `prices`. The endpoints take a text prompt at most, so a family's style is not
+    carried into the request; `picture.against_parent` measures it afterwards.
     """
     if change not in OPERATIONS:
         raise PolyweaveError(
@@ -84,13 +97,28 @@ def vary(
             f"there is no picture at {source} to vary",
             "name the approved picture, as a path under the project",
         )
+    if change == "reframe" and not resolution:
+        raise PolyweaveError(
+            "fetch.missing-field",
+            "a reframe needs the frame it puts the picture in",
+            "pass resolution, as WIDTHxHEIGHT from the sizes the service offers",
+        )
+    if change != "reframe" and not prompt:
+        raise PolyweaveError(
+            "fetch.missing-field",
+            f"a{'n' if change == 'edit' else ''} {change} needs a prompt saying what "
+            f"the variation should show",
+            "pass prompt",
+        )
     name = config.service(service)
     about = config.services()[name]
     base, key = picture._reached(name, about)
     price = picture._price(name, about.get("prices") or {}, change, rendering_speed)
 
     files = {"image": (source.name, source.read_bytes(), picture._mime(source))}
-    payload: dict = {"prompt": prompt}
+    payload: dict = (
+        {"resolution": resolution} if change == "reframe" else {"prompt": prompt}
+    )
     mask_path = mask_from = None
     if change == "edit":
         mask_path, mask_from = _mask_for(source, region, mask, here, out)
@@ -133,6 +161,7 @@ def vary(
                 "sha256": provenance.sha256_of(source)[0],
             },
             "change": change,
+            "frame": resolution,
             "region": region,
             "strength": strength,
             "mask": provenance.relative(mask_path, here) if mask_path else None,
@@ -270,9 +299,11 @@ def against_parent(
     tolerances = config.tolerances()
     parent = load_image(here / lineage["path"])
     child = load_image(here / variation)
+    details = record["details"]
+    if details.get("change") == "reframe":
+        return _reframed(variation, lineage["path"], parent, child, config, family)
     if child.size != parent.size:
         child = _resized(child, parent.size)
-    details = record["details"]
     kept = np.ones(parent.rgba.shape[:2], dtype=bool)
     if details.get("mask"):
         kept = load_image(here / details["mask"]).rgba[..., 0] > 127
@@ -309,6 +340,113 @@ def against_parent(
     found["passed"] = not failed
     found["not_checked"] = ["whether it shows what was asked for"]
     return found
+
+
+#: The side, in pixels, both pictures are brought down to before the placement search:
+#: enough to see where the parent landed, and cheap enough to try every offset.
+SEARCH_SIDE = 96
+
+
+def _reframed(variation: str, parent_path: str, parent, child, config, family) -> dict:
+    """Is the whole parent still there in the reframe, and did only the border change.
+
+    The service may place the parent at its own size or fit it to the new frame, so
+    both scales are tried at every offset, on small copies, and the best placement is
+    refined at full size. Where even the best placement differs by more than
+    `[tolerance] delta_e`, the reframe redrew what it was asked to keep (§PW181).
+    """
+    from . import measure
+
+    tolerances = config.tolerances()
+    before = measure._composited(parent)
+    after = measure._composited(child)
+    ph, pw = before.shape[:2]
+    ch, cw = after.shape[:2]
+    scales = sorted({1.0, round(min(cw / pw, ch / ph), 6)})
+    best = None
+    for scale in scales:
+        sw, sh = max(1, round(pw * scale)), max(1, round(ph * scale))
+        if sw > cw or sh > ch:
+            continue
+        placed = _scaled(parent, (sw, sh))
+        field_of = measure._composited(placed)
+        shrink = max(1, max(cw, ch) // SEARCH_SIDE)
+        small_child = after[::shrink, ::shrink]
+        small_parent = field_of[::shrink, ::shrink]
+        h, w = small_parent.shape[:2]
+        for y in range(0, small_child.shape[0] - h + 1):
+            for x in range(0, small_child.shape[1] - w + 1):
+                gap = float(
+                    np.linalg.norm(
+                        small_child[y : y + h, x : x + w] - small_parent, axis=-1
+                    ).mean()
+                )
+                if best is None or gap < best[0]:
+                    best = (gap, scale, x * shrink, y * shrink, field_of)
+    if best is None:
+        raise PolyweaveError(
+            "fetch.no-parent",
+            f"{parent_path} does not fit inside {variation} at any scale tried",
+            "a reframe grows the frame; check it is the reframe of this parent",
+        )
+    _, scale, x0, y0, field_of = best
+    h, w = field_of.shape[:2]
+    refined = min(
+        (
+            (
+                float(
+                    np.linalg.norm(
+                        after[y : y + h, x : x + w] - field_of, axis=-1
+                    ).mean()
+                ),
+                x,
+                y,
+            )
+            for y in range(max(0, y0 - 4), min(ch - h, y0 + 4) + 1)
+            for x in range(max(0, x0 - 4), min(cw - w, x0 + 4) + 1)
+        ),
+    )
+    _, x, y = refined
+    region = np.linalg.norm(after[y : y + h, x : x + w] - field_of, axis=-1)
+    worst = float(measure.pooled(region, np.ones(region.shape, dtype=bool)).max())
+    failed = []
+    if worst > tolerances.delta_e:
+        failed.append(
+            f"where the parent sits in the reframe a patch moved by delta E "
+            f"{worst:.1f}, over {tolerances.delta_e}: the reframe redrew what it was "
+            f"asked to keep"
+        )
+    found = {
+        "variation": variation,
+        "parent": parent_path,
+        "placed": {"scale": scale, "x": x, "y": y, "width": w, "height": h},
+        "held_delta_e": round(worst, 4),
+    }
+    if style.in_force(config, family) is not None:
+        drifted = style.drift(variation, family, root=config.root)
+        found["canon"] = {"judged": drifted["judged"], "drifted": drifted["drifted"]}
+        failed.extend(
+            f"{key} drifted from the canon: "
+            f"{drifted['measures'][key].get('which_way', 'off')}"
+            for key in drifted["drifted"]
+        )
+    found.update(
+        failed=failed,
+        passed=not failed,
+        not_checked=["whether the drawn-in border belongs with the picture"],
+    )
+    return found
+
+
+def _scaled(image, size):
+    from PIL import Image as PILImage
+
+    from .image import Image
+
+    if image.size == size:
+        return image
+    scaled = PILImage.fromarray(image.rgba).resize(size, PILImage.Resampling.LANCZOS)
+    return Image(path=image.path, rgba=np.asarray(scaled), had_alpha=image.had_alpha)
 
 
 def _resized(image, size):

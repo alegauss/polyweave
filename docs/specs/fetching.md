@@ -236,8 +236,16 @@ one, is refused (`fetch.no-region`). A `mask` file may be given instead.
 unmasked region with the parent pixel for pixel, pooled, against `[tolerance] delta_e`, and
 the silhouette there against `[tolerance] silhouette_iou`. Where a style is declared, it also
 holds the variation to its family's canon. What the variation should show stays the
-person's verdict. There is no reframe yet: no reframe endpoint was documented when this
-shipped.
+person's verdict.
+
+**A reframe keeps the whole parent** (§PW181). `picture.vary(change="reframe",
+resolution=)` sends the parent to `/v1/ideogram-v3/reframe` with the new frame and no
+prompt, priced by the `reframe` row, and the new area is drawn in. `against_parent` needs no
+mask for it. It searches where the parent landed, at its own size and fitted to the new
+frame, at every offset on small copies, then refines the best placement at full size. The
+placement's pooled ΔE must sit within `[tolerance] delta_e`, or the reframe redrew what it
+was asked to keep. The answer names the `placed` scale and offset. What the drawn-in border
+should look like stays the person's.
 
 **The request goes to the asynchronous route** (§PW178): `/v1/ideogram-v4/async/generate`,
 or `.../async/generate-transparent`. The answer is a `generation_id` at once, so no

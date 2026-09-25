@@ -134,3 +134,86 @@ def test_a_picture_with_no_parent_has_nothing_to_hold_it_against(tmp_path, paren
     with pytest.raises(PolyweaveError) as caught:
         variation.against_parent("hero.png", root=tmp_path)
     assert caught.value.code == "fetch.no-parent"
+
+
+# -- reframing an approved picture (§PW181) ------------------------------------------
+
+
+def reframed(parent, size, at, scale=1.0, touch=None):
+    """The parent set into a wider frame with a new border drawn round it."""
+    frame = Image.new("RGBA", size, (90, 140, 200, 255))
+    placed = (
+        parent
+        if scale == 1.0
+        else parent.resize(
+            (round(parent.width * scale), round(parent.height * scale)), Image.LANCZOS
+        )
+    )
+    frame.alpha_composite(placed, at)
+    if touch:
+        ImageDraw.Draw(frame).rectangle(touch, fill=(10, 200, 10, 255))
+    return frame
+
+
+def solid_parent():
+    image = figure()
+    ground = Image.new("RGBA", image.size, (255, 255, 255, 255))
+    ground.alpha_composite(image)
+    return ground
+
+
+def test_a_reframe_sends_the_frame_and_no_prompt(tmp_path, parent, monkeypatch):
+    (tmp_path / C.FILENAME).write_text(
+        PROJECT.replace('"remix" = 0.06', '"remix" = 0.06, "reframe" = 0.06'), "utf-8"
+    )
+    solid_parent().save(tmp_path / "hero.png")
+    came_back(monkeypatch, reframed(solid_parent(), (160, 64), (48, 0)))
+    variation.vary(
+        "hero.png", "wide.png", change="reframe", resolution="1536x640", root=tmp_path
+    )
+    assert parent["endpoint"].endswith("/v1/ideogram-v3/reframe")
+    assert parent["payload"] == {"resolution": "1536x640"}
+    found = variation.against_parent("wide.png", root=tmp_path)
+    assert found["passed"] is True, found["failed"]
+    assert found["placed"]["scale"] == 1.0
+    assert (found["placed"]["x"], found["placed"]["y"]) == (48, 0)
+
+
+def test_a_reframe_that_fitted_the_parent_to_the_frame_is_found(
+    tmp_path, parent, monkeypatch
+):
+    (tmp_path / C.FILENAME).write_text(
+        PROJECT.replace('"remix" = 0.06', '"reframe" = 0.06'), "utf-8"
+    )
+    solid_parent().save(tmp_path / "hero.png")
+    came_back(monkeypatch, reframed(solid_parent(), (96, 48), (24, 0), scale=0.75))
+    variation.vary(
+        "hero.png", "small.png", change="reframe", resolution="96x48", root=tmp_path
+    )
+    found = variation.against_parent("small.png", root=tmp_path)
+    assert found["placed"]["scale"] == 0.75
+    assert found["passed"] is True, found["failed"]
+
+
+def test_a_reframe_that_redrew_the_parent_is_refused(tmp_path, parent, monkeypatch):
+    (tmp_path / C.FILENAME).write_text(
+        PROJECT.replace('"remix" = 0.06', '"reframe" = 0.06'), "utf-8"
+    )
+    solid_parent().save(tmp_path / "hero.png")
+    came_back(
+        monkeypatch,
+        reframed(solid_parent(), (160, 64), (48, 0), touch=(60, 10, 90, 40)),
+    )
+    variation.vary(
+        "hero.png", "wide.png", change="reframe", resolution="1536x640", root=tmp_path
+    )
+    found = variation.against_parent("wide.png", root=tmp_path)
+    assert found["passed"] is False
+    assert "redrew what it was asked to keep" in found["failed"][0]
+
+
+def test_a_reframe_with_no_frame_is_refused_before_anything_is_sent(tmp_path, parent):
+    with pytest.raises(PolyweaveError) as caught:
+        variation.vary("hero.png", "wide.png", change="reframe", root=tmp_path)
+    assert caught.value.code == "fetch.missing-field"
+    assert parent == {}

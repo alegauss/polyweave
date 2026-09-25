@@ -295,23 +295,4 @@ family with references should refuse a structured call rather than drop them.
 Check first whether 4.0 has gained a reference field, and learn it by the schema probe,
 since a reference the service ignores is dropped without an error.
 
-### §PW181 Reframing an approved picture
-
-PW170 built two of the three variations its design named: a remix and an edit inside a
-mask. The third, reframe (the same picture in another aspect ratio, with the new area
-drawn in), was left out because the service's public reference, read when PW170 shipped,
-documented no reframe endpoint for 3.0 or 4.0.
-
-A reframe is the variation a game needs most often: one approved character as a square
-icon, a tall card and a wide banner. It has the clearest rule of the three. **Everything
-the parent held must still be there, unscaled**, and only the added border is new. So
-`picture.against_parent` needs no mask from a person. The parent's own frame, placed
-where the reframe put it, is the region that must not have changed. Finding where it
-landed is an alignment problem: search the offset that minimises the pooled delta E, and
-refuse where the best offset still differs.
-
-Build it as a third `change` of `picture.vary` once the endpoint is confirmed, priced by
-a `reframe` row of `prices`, and learn its fields by the schema probe before trusting
-any of them.
-
 ## Block O — A person sees and answers

@@ -50,8 +50,9 @@ DESCRIBE = 61_200
 #: 64,354 with picture.letters, the OCR probe and fetch.ocr-failed (§PW169), then
 #: 66,456 with picture.vary, picture.against_parent and their two codes (§PW170),
 #: then 67,153 with picture.fit (§PW171), then 68,672 with verdict.answers,
-#: loop.unknown-sitting and shape.turntable (§PW173, §PW176).
-CAPABILITIES = 69_300
+#: loop.unknown-sitting and shape.turntable (§PW173, §PW176), then 69,329 with
+#: picture.collect and the reframe (§PW179, §PW181).
+CAPABILITIES = 69_900
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

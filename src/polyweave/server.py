@@ -54,8 +54,9 @@ TOOL_BUDGET = 4500
 #: to 50,600 at 50,015 for picture.gate (§PW168) and picture.letters (§PW169), and to
 #: 52,400 at 51,765 for picture.vary and picture.against_parent (§PW170), and to
 #: 53,300 at 52,889 for picture.fit (§PW171) and verdict.answers (§PW173), and to
-#: 54,200 at 53,692 for shape.turntable (§PW176).
-LIST_BUDGET = 54200
+#: 54,200 at 53,692 for shape.turntable (§PW176), and to 54,800 at 54,240 for
+#: picture.collect (§PW179) and picture.vary's reframe (§PW181).
+LIST_BUDGET = 54800
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

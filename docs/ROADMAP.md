@@ -32,8 +32,6 @@
 
 ## Block N — Pictures held to a canon
 
-- 📋 **PW181** (deps: PW170 ✅) **an approved picture cannot be reframed to another aspect ratio, so an icon and a banner of it are two separate pictures** — A reframe keeps everything the parent held and adds only a border, which is the easiest variation to hold to what it must not change. → §PW181
-
 ## Block O — A person sees and answers
 
 ## Done when — PW36
