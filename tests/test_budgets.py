@@ -39,7 +39,8 @@ from polyweave.errors import PolyweaveError
 #: shape.turntable (§PW176).
 #: 62,294 with mesh.buy (§PW183), the plugin's own Meshy client.
 #: 63,323 with world.read and world.validate (§PW196), the first of Block Q.
-DESCRIBE = 63_900
+#: 64,142 with words.check and words.unlisted (§PW197).
+DESCRIBE = 64_700
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -56,7 +57,8 @@ DESCRIBE = 63_900
 #: picture.collect and the reframe (§PW179, §PW181).
 #: 70,456 with mesh.buy and fetch.picture-ungated (§PW183).
 #: 71,792 with world.read, world.validate and the world area's codes (§PW196).
-CAPABILITIES = 72_400
+#: 72,851 with words.check, words.unlisted and the words area's codes (§PW197).
+CAPABILITIES = 73_400
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
@@ -71,7 +73,8 @@ HELP_VERB = 4_000
 #: verdict.answers (§PW171, §PW172, §PW173).
 #: 14,416 with mesh.buy (§PW183).
 #: 14,722 with world.read and world.validate (§PW196).
-HELP_TOP = 15_000
+#: 15,116 with words.check and words.unlisted (§PW197).
+HELP_TOP = 15_400
 #: A search's answer over its default budget of 24 samples: 3,739.
 SEARCH = 4_000
 

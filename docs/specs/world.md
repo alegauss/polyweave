@@ -58,3 +58,29 @@ Both find the file themselves where the project holds one, skipping dot-director
 refuse with `world.several` where it holds more than one and the call named none.
 
     python -m polyweave world.validate --world docs/design/starship.world.toml --json
+
+## The text a player reads
+
+The text is held to the world through a string table, never through a pattern about one
+project's scripts: the game reads it through Godot's translation CSV with `tr()`, one key
+per row and one column per locale, and `[words] table` in polyweave.toml names the file.
+A column whose header starts with an underscore is one Godot skips; `[words] speaker`
+(default `_speaker`) names the one holding the id of the entity that speaks the line.
+
+`words.check` returns `passed`, the locales, the row count and `findings`, each with the
+`key`, the `locale` (none for a speaker finding), the `rule` and the CSV `row`:
+
+| Code | Rule | What it finds |
+|---|---|---|
+| `words.unknown-name` | `names` | a word capitalised mid-sentence, or in capitals anywhere, that is no word of a shown name, no code name and not in `[words] ordinary` |
+| `words.code-name` | `code_names` | an entity's `code` on screen, where it differs from every shown name |
+| `words.too-long` | `longest_line` | a line over `[rules] longest_line`, split at a newline or Godot's escaped `\n` |
+| `words.silent-speaks` | `silent` | a row whose speaker the rules call silent |
+| `words.unknown-speaker` | `speaker` | a row whose speaker is no entity |
+| `words.hidden-name` | `unshown` | any word of an unshown entity's name that no shown name shares |
+
+A `{placeholder}`, a `%s` and a BBCode tag are not read as words.
+
+`words.unlisted` answers what the check cannot see: every literal `text` a node carries
+in the project's `.tscn` files that is not a key of the table, as `count` and
+`literals` with the scene, line and node.

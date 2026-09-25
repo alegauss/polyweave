@@ -28,7 +28,7 @@ needed.
 | [acceptance-spec.md](acceptance-spec.md) | What "correct" means, as a file a search can aim at | PW12, PW13, PW15 |
 | [geometry.md](geometry.md) | A shape as data rather than as a program | PW30–PW34 |
 | [provenance.md](provenance.md) | What is recorded beside an artefact, and the cache key | PW6, PW14, PW17 |
-| [world.md](world.md) | A game's names, factions and characters, declared beside its prose | PW196–PW200 |
+| [world.md](world.md) | A game's names, factions and characters declared beside its prose, and the text a player reads held to them | PW196–PW200 |
 | [adoption.md](adoption.md) | What one asset cost to make each way, so the claim can be falsified | PW35 |
 
 ## Two format rules, so nobody has to decide twice

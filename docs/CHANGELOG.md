@@ -238,6 +238,7 @@
 ## Block Q — Words held to the world
 
 - ✅ **PW196** **No declaration says which names, factions and characters a game's world holds** — A *.world.toml declares a game's entities; world.validate reports duplicate names, unknown factions and style families on their lines (design recorded in `docs/specs/world.md`).
+- ✅ **PW197** **Text a player reads is never checked against the world's names and rules** — words.check holds Godot's translation CSV to the world per locale; words.unlisted counts scene literals outside it (design recorded in `docs/specs/world.md`).
 
 ## Block R — Levels measured before a person plays them
 

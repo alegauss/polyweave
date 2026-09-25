@@ -194,6 +194,17 @@ DEFAULTS: dict[str, Any] = {
         "anchor": "centre",
         "filter": "smooth",
     },
+    "words": {
+        # The text a player reads, as the game reads it (§PW197): Godot's translation
+        # CSV, one key per row and one column per locale. A column whose header starts
+        # with an underscore is one Godot skips, and `speaker` names the one that says
+        # who speaks the line, as an entity id of the world.
+        "table": "",
+        "speaker": "_speaker",
+        # Capitalised words that are not names, such as START on a title screen, so the
+        # name check passes over them.
+        "ordinary": [],
+    },
     "voxels": {
         # What a voxel build is checked against (§PW97). A game decides how many cubes
         # it can draw and how thin a part may be before it vanishes, so these are the

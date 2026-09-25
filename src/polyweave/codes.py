@@ -51,6 +51,7 @@ AREAS: dict[str, str] = {
     "loop": "what one asset cost to make, each way",
     "style": "what a project's pictures look like, and the canon a person grows",
     "world": "a game's names, factions and characters, declared beside its prose",
+    "words": "the text a player reads, held to the world it is set in",
 }
 
 CODES: dict[str, Code] = {
@@ -791,6 +792,54 @@ CODES: dict[str, Code] = {
         means="an id names no entity the world declares",
         when="world.read asked for an entity that is not there, or a rule naming one",
         doors=("name a declared entity", "declare [entity.<id>]"),
+    ),
+    # -- words: the text a player reads ---------------------------------------
+    "words.no-table": Code(
+        means="polyweave.toml names no string table, so there is no text to check",
+        when="words.check in a project whose text is still literals in its scripts",
+        doors=("move the text into Godot's translation CSV and set [words] table",),
+    ),
+    "words.unreadable-table": Code(
+        means="the string table is missing, or has no header naming keys and a locale",
+        when="a moved or misspelled [words] table, or a CSV with no header row",
+        doors=("write the CSV there", "correct [words] table"),
+    ),
+    "words.unknown-name": Code(
+        means="a line names something with a capitalised word the world shows as no "
+        "name",
+        when="an old name left on screen after a rename, or a word written in capitals "
+        "that is not a name at all",
+        doors=(
+            "use the world's name",
+            "add the word to [words] ordinary",
+            "declare it in the world",
+        ),
+    ),
+    "words.code-name": Code(
+        means="a line shows an entity's code name, which the scripts use and a player "
+        "never should",
+        when="a key's text copied from the code rather than the world's name",
+        doors=("write the name the world declares",),
+    ),
+    "words.too-long": Code(
+        means="a line is longer than the world's [rules] longest_line",
+        when="a long sentence, often in the locale whose words are longest",
+        doors=("shorten it", "break it with \\n"),
+    ),
+    "words.unknown-speaker": Code(
+        means="a line's speaker is no entity the world declares",
+        when="a misspelled speaker id, or a character not yet in the world",
+        doors=("name a declared entity", "declare [entity.<id>]"),
+    ),
+    "words.silent-speaks": Code(
+        means="a line is given to an entity the world says never speaks",
+        when="dialogue written for a character the world keeps silent",
+        doors=("give the line to another speaker", "take it out of [rules] silent"),
+    ),
+    "words.hidden-name": Code(
+        means="a line shows a name the world keeps unshown",
+        when="an unnamed character named on screen",
+        doors=("refer to it without its name", "take it out of [rules] unshown"),
     ),
     # -- search: looking for values that satisfy a spec -----------------------
     "search.nothing-to-search": Code(

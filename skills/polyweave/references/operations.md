@@ -20,7 +20,7 @@ This page only groups them by what you are trying to do.
 | Provenance | `provenance.read`, `provenance.verify`, `provenance.dependents`, `provenance.outdated`, `provenance.unrecorded` |
 | The game side | `capture.run`, `capture.declared`, `engine.run`, `godot.install` |
 | Scale against the engine | `units.check`, `units.engine_scale`, `units.read_number` |
-| World | `world.read`, `world.validate` |
+| World | `world.read`, `world.validate`, `words.check`, `words.unlisted` |
 | A project's look | `style.read`, `style.drift` (before a person looks; only `verdict.judge` grows a canon) |
 | Buy a drawing | `picture.buy`, `picture.gate` (before the mesh is bought), `picture.letters`, `picture.describe`, `picture.vary`, `picture.against_parent`, `picture.fit` (onto the family's grid), `picture.collect` |
 | Before buying a mesh | `reference.pick`, `reference.prepare`, `shape.check`, `shape.silhouette`, `shape.turntable` |

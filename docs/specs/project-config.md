@@ -120,6 +120,11 @@ margin   = 2
 anchor   = "centre"                # or "base", for what stands on the ground
 filter   = "smooth"                # or "pixel": never smoothed, quantised to the palette
 
+[words]
+table    = "i18n/strings.csv"      # Godot's translation CSV, one column per locale
+speaker  = "_speaker"              # the column naming who speaks, as a world entity id
+ordinary = ["START", "OK"]         # capitalised words that are not names
+
 [voxels]
 budget        = 4000           # the most cells a model may have; zero is no ceiling
 thread        = 3              # the longest run one cell thick before it is reported

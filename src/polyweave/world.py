@@ -263,9 +263,15 @@ def _parse(source: Path) -> tuple[dict, dict, _Findings]:
     return entities, rules, faults
 
 
-def _refuse_on(faults: _Findings) -> None:
+def declared(
+    world: str | None = None, root: str | Path = "."
+) -> tuple[Path, dict, dict]:
+    """The world file, its entities and its rules, refused where its shape is wrong."""
+    source = find(world, root)
+    entities, rules, faults = _parse(source)
     if faults.found:
         raise faults.found[0][0]
+    return source, entities, rules
 
 
 @operation("world.read")
@@ -275,9 +281,7 @@ def read(
     root: Annotated[str, _ROOT] = ".",
 ) -> dict:
     """The world's entities and rules as the project declares them, or one entity."""
-    source = find(world, root)
-    entities, rules, faults = _parse(source)
-    _refuse_on(faults)
+    source, entities, rules = declared(world, root)
     here = provenance.relative(source, Path(root))
     if entity is None:
         return {"world": here, "entities": entities, "rules": rules}

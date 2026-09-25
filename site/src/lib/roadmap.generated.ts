@@ -41,7 +41,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "N", title: "Pictures held to a canon", open: 1 },
   { block: "O", title: "A person sees and answers", open: 0 },
   { block: "P", title: "Music and sound a game can ship", open: 8 },
-  { block: "Q", title: "Words held to the world", open: 4 },
+  { block: "Q", title: "Words held to the world", open: 3 },
   { block: "R", title: "Levels measured before a person plays them", open: 6 },
   { block: "S", title: "Playing the game, not only rendering it", open: 7 },
 ];
@@ -139,13 +139,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW188", "PW189", "PW190", "PW191"],
   },
   {
-    id: "PW197",
-    block: "Q",
-    symptom: "Text a player reads is never checked against the world's names and rules",
-    why: "Starship shows KEEPERS where its bible says Lattice, and a line over 60 characters or a code name on screen fails nothing.",
-    deps: [],
-  },
-  {
     id: "PW198",
     block: "Q",
     symptom: "A character's picture or mesh is bought from a description retyped by hand",
@@ -157,14 +150,14 @@ export const generatedTasks: GeneratedTask[] = [
     block: "Q",
     symptom: "Whether a line keeps the world's tone has nowhere to be answered but a chat",
     why: "Warm, short and never heroic is a judgement no rule measures, so it needs a person's recorded verdict and a canon of lines they approved.",
-    deps: ["PW197"],
+    deps: [],
   },
   {
     id: "PW200",
     block: "Q",
     symptom: "Starship's screen still shows names its world bible replaced",
     why: "The block is proven only when its first consumer's text, lines and character assets are held to a declared world through polyweave.",
-    deps: ["PW197", "PW198", "PW199"],
+    deps: ["PW198", "PW199"],
   },
   {
     id: "PW201",

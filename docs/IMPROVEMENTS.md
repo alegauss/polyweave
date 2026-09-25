@@ -463,31 +463,6 @@ that a second game would not becomes configuration.
 
 ## Block Q — Words held to the world
 
-### §PW197 Player-facing text checked against the world
-
-Starship's roughly 25 player-facing strings are literals in GDScript, `.tscn` and
-`.tres` files. A check that reads them with a regular expression would be a pattern
-about one project's code, which is the shape the capture environment already refused for
-locale settings. So the contract is a string table. The game reads its text through
-Godot's translation CSV with `tr()`, one key per line and one column per locale, and
-polyweave reads that file. `[words] table` in `polyweave.toml` names it, and a key may
-carry a speaker column.
-
-`words.check` holds each row to the world:
-- Every capitalised name in a line is one the world shows.
-- No code name reaches the screen.
-- No line is longer than the world's limit, counted per locale.
-- A speaker the world says never speaks has no line.
-- A name a rule hides, like Starship's unnamed pilot, never appears.
-
-Each finding names the key, the locale and the rule, and gives the remedy.
-
-What the check cannot see is a string still hardcoded in a script. `words.unlisted`
-reports what it can prove instead: literal strings passed to a label's `text` in the
-project's scenes, as a count and a list, so moving text into the table has a measure.
-Starship's RK73 rename is the natural moment to adopt the table, since it touches every
-one of those strings anyway.
-
 ### §PW198 An asset's brief read from the world it belongs to
 
 A picture or a mesh for a character starts from words: what the thing is, what it wears,

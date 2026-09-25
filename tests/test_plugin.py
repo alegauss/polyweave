@@ -14,7 +14,9 @@ SKILL = REPO / "skills" / "polyweave"
 #: The driving skill is read whole when it triggers, so it is held to a size; the
 #: reference pages are opened on demand and held separately.
 SKILL_BUDGET = 3_400
-REFERENCE_BUDGET = 3_000
+#: 3,100 once the world's four operations joined operations.md (§PW196, §PW197): a
+#: table row per task, and Block Q is a task no row covered.
+REFERENCE_BUDGET = 3_100
 
 
 def test_the_manifest_and_the_marketplace_name_the_plugin():
