@@ -39,7 +39,7 @@
 
 ## Block O — A person sees and answers
 
-- 📋 **PW176** (deps: PW172 ✅) **two versions of an asset are compared side by side, where a few ΔE of drift or a grown silhouette goes unseen** — Eyes compare a difference well only when both are in one place, so a slider, an onion skin and a difference map show what side by side hides. → §PW176
+- ⏳ **PW176** (deps: PW172 ✅) **two versions of an asset are compared side by side, where a few ΔE of drift or a grown silhouette goes unseen** — A mesh is still compared only as two pictures; its turntable at the rig's own angles, with the drawing's silhouette over the front view, is not shown. → §PW176
 - 📋 **PW177** (deps: PW172 ✅, PW166 ✅) **the canon is a folder of files, so what a family is meant to look like is never seen whole** — A canon that quietly became two styles is found only by opening every file, and only a person's click should ever change what it holds. → §PW177
 
 ## Done when — PW36
@@ -120,6 +120,13 @@
   Cottony family, a person answers on the review page, the ledger holds that verdict
   through judge alone, and the agent's next candidate follows from verdict.answers with
   no chat message in between.
+
+## Done when — PW176
+
+- **A mesh compares as a turntable at the rig's own angles** The page shows two versions
+  of a mesh as frames rendered at the project rig's angles, never a viewer's camera,
+  with the reference drawing's silhouette laid over the front view, and a test reads
+  those frames off disk.
 
 ## Non-goals
 

@@ -99,7 +99,10 @@ function family(sitting, name, laid, choices, answers, assets) {
   }
   const form = element("form");
   const marks = [];
-  for (const member of laid.members || []) form.append(marker(member, marks));
+  for (const member of laid.members || []) {
+    if (member.old) form.append(compare(member.old, member.new, "slider", null));
+    form.append(marker(member, marks));
+  }
   const options = element("div", { class: "choices", role: "radiogroup" });
   for (const [word, meaning] of Object.entries(choices)) {
     const input = element("input", { type: "radio", name: "choice", value: word });
@@ -141,6 +144,80 @@ function family(sitting, name, laid, choices, answers, assets) {
   return box;
 }
 
+// Two versions in one place (§PW176): side by side, a slider across one picture, an
+// onion skin at an opacity the person sets, and a difference map lit only above the
+// noise floor. It opens in the mode that suits what is compared; the person can switch.
+const file = (path) => "/file?path=" + encodeURIComponent(path);
+
+function compare(oldPath, newPath, mode, maskPath) {
+  const box = element("div", { class: "compare" });
+  const tabs = element("div", { class: "tabs", role: "tablist" });
+  const stage = element("div", { class: "stage" });
+  const modes = {
+    side: () => {
+      const both = element("div", { class: "side" });
+      both.append(element("img", { src: file(oldPath), alt: "before: " + oldPath }),
+        element("img", { src: file(newPath), alt: "after: " + newPath }));
+      return both;
+    },
+    slider: () => {
+      const frame = element("div", { class: "layers" });
+      const top = element("img", { src: file(newPath), alt: "after, over before" });
+      frame.append(element("img", { src: file(oldPath), alt: "before" }), top);
+      if (maskPath) {
+        frame.append(element("img", { src: file(maskPath), alt: "the edit's mask", class: "mask" }));
+      }
+      const range = element("input", { type: "range", min: "0", max: "100", value: "50",
+        "aria-label": "how much of the new picture shows" });
+      const set = () => { top.style.clipPath = "inset(0 " + (100 - range.value) + "% 0 0)"; };
+      range.addEventListener("input", set);
+      set();
+      const holder = element("div");
+      holder.append(frame, range);
+      return holder;
+    },
+    onion: () => {
+      const frame = element("div", { class: "layers" });
+      const top = element("img", { src: file(newPath), alt: "after, over before" });
+      frame.append(element("img", { src: file(oldPath), alt: "before" }), top);
+      const range = element("input", { type: "range", min: "0", max: "100", value: "50",
+        "aria-label": "the new picture's opacity" });
+      const set = () => { top.style.opacity = range.value / 100; };
+      range.addEventListener("input", set);
+      set();
+      const holder = element("div");
+      holder.append(frame, range);
+      return holder;
+    },
+    difference: () => {
+      const holder = element("div", {}, "Measuring the difference.");
+      fetch("/api/compare?old=" + encodeURIComponent(oldPath) + "&new=" + encodeURIComponent(newPath))
+        .then((answer) => answer.json())
+        .then((found) => {
+          holder.replaceChildren();
+          if (!found.map) { holder.textContent = found.message || "No map could be made."; return; }
+          holder.append(element("img", { src: file(found.map), alt: "where the two differ above noise" }),
+            element("p", { class: "says" }, found.changed_patches + " of " + found.patches +
+              " patches past a floor of " + found.tolerance + " (" + (found.tolerance_from || "") + ")"));
+        });
+      return holder;
+    },
+  };
+  const show = (name) => {
+    for (const tab of tabs.children) tab.setAttribute("aria-selected", String(tab.dataset.mode === name));
+    stage.replaceChildren(modes[name]());
+  };
+  for (const name of Object.keys(modes)) {
+    const tab = element("button", { type: "button", role: "tab" }, name);
+    tab.dataset.mode = name;
+    tab.addEventListener("click", () => show(name));
+    tabs.append(tab);
+  }
+  box.append(tabs, stage);
+  show(modes[mode] ? mode : "side");
+  return box;
+}
+
 // The refused beside the kept (§PW175): each gate run's candidates in two lanes, every
 // one with the numbers it was judged on, and a refused one can be promoted by a person.
 function candidate(run, one) {
@@ -161,6 +238,7 @@ function candidate(run, one) {
     facts.append(element("li", {}, "cost " + one.bought.credits + " on " + one.bought.service + left));
   }
   card.append(facts);
+  if (one.compare) card.append(compare(one.compare.old, one.picture, one.compare.mode, one.compare.mask));
   if (!one.passed) {
     const form = element("form");
     const why = element("textarea", {

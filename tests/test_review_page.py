@@ -332,3 +332,55 @@ def test_there_is_no_bound_to_move_on_a_picture_with_no_spec(gated):
         {"gate": ran["id"], "picture": "dome.png", "choice": "number", "why": "x"},
     )
     assert status == 400 and said["code"] == "loop.no-failed-bound"
+
+
+# -- comparing in one place (§PW176) -------------------------------------------------
+
+
+def test_the_difference_map_lights_only_what_is_above_the_noise_floor(page):
+    base, where = page
+    Image.new("RGBA", (64, 64), (120, 120, 120, 255)).save(where / "a.png")
+    moved = Image.new("RGBA", (64, 64), (120, 120, 120, 255))
+    moved.paste((200, 60, 60, 255), (0, 0, 16, 16))
+    moved.save(where / "b.png")
+    _, body, _ = get(base + "/api/compare?old=a.png&new=b.png")
+    found = json.loads(body)
+    assert found["changed_patches"] == 4  # the one 16-pixel square, in 8-pixel patches
+    with Image.open(where / found["map"]) as shown:
+        assert shown.getpixel((4, 4))[:3] == (255, 59, 48)
+        assert shown.getpixel((40, 40))[0] < 100
+    _, body, _ = get(base + "/api/compare?old=a.png&new=a.png")
+    assert json.loads(body)["changed_patches"] == 0
+
+
+def test_nothing_outside_the_project_is_compared(page):
+    base, _ = page
+    with pytest.raises(urllib.error.HTTPError) as caught:
+        get(base + "/api/compare?old=../x.png&new=review/stars.png")
+    assert caught.value.code == 404
+
+
+def test_a_refused_picture_is_compared_with_the_canon_as_a_difference_map(page):
+    from PIL import ImageDraw
+
+    from polyweave import picture
+
+    base, where = page
+    (where / "polyweave.toml").write_text('[style]\ncanon = "canon"\n', "utf-8")
+    (where / "canon").mkdir()
+
+    def drawn(path, box):
+        image = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
+        ImageDraw.Draw(image).ellipse(box, fill=(242, 193, 78, 255))
+        image.save(path)
+
+    drawn(where / "canon" / "c0.png", (14, 44, 114, 84))
+    (where / "canon" / "canon.json").write_text(
+        json.dumps([{"picture": "c0.png", "sha256": "0"}]), "utf-8"
+    )
+    drawn(where / "outline.png", (14, 44, 114, 84))
+    drawn(where / "dome.png", (44, 8, 84, 120))
+    picture.gate(["dome.png"], "outline.png", root=where)
+    _, body, _ = get(base + "/api/state")
+    one = json.loads(body)["gates"][-1]["candidates"][0]
+    assert one["compare"] == {"old": "canon/c0.png", "mode": "difference", "mask": None}

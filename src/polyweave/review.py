@@ -28,6 +28,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
+import numpy as np
+
 from . import loop, verdict
 from .config import load
 from .errors import PolyweaveError
@@ -81,7 +83,102 @@ def looked_at(root) -> list[dict]:
                 except PolyweaveError:
                     left[service] = None
             one["ceiling"] = left.get(service)
+            one["compare"] = _compared_with(root, run, one)
     return found
+
+
+def _compared_with(root, run: dict, one: dict) -> dict | None:
+    """What a candidate is best compared against, and how (§PW176).
+
+    A variation against its parent, as a slider with its mask outlined; anything else
+    against its family's first canon picture, as a difference map.
+    """
+    from . import provenance, style
+
+    config = load(root)
+    here = config.root
+    try:
+        details = provenance.read(one["picture"], root=here).get("details") or {}
+    except PolyweaveError:
+        details = {}
+    if (details.get("parent") or {}).get("path"):
+        return {
+            "old": details["parent"]["path"],
+            "mode": "slider",
+            "mask": details.get("mask"),
+        }
+    try:
+        _, declared = config.style(run.get("family"))
+    except PolyweaveError:
+        return None
+    canon = style.admitted(declared)
+    if not canon:
+        return None
+    first = provenance.relative(Path(declared["canon"]) / canon[0]["picture"], here)
+    return {"old": first, "mode": "difference", "mask": None}
+
+
+def difference(root, old: str, new: str) -> dict:
+    """Where two pictures differ above the noise floor, as a picture (§PW176).
+
+    The floor is the one `measure.same` resolves, and the map lights a patch only where
+    its pooled difference is past it, so what shows is what is above noise and not every
+    resampled pixel. The map is derived output, written under `[paths] work`.
+    """
+    import hashlib
+
+    from PIL import Image as PILImage
+
+    from . import measure
+    from .image import Image
+    from .image import load as load_image
+
+    config = load(root)
+    here = config.root
+    before, after = load_image(here / old), load_image(here / new)
+    if after.size == before.size:
+        said = measure.same(str(here / new), str(here / old), root=str(here))
+    else:
+        # Scaled to the old one's size, so a pixel is compared with its own; the floor
+        # is then the strictest rung's, since no one render's record applies.
+        scaled = PILImage.fromarray(after.rgba).resize(
+            before.size, PILImage.Resampling.LANCZOS
+        )
+        after = Image(
+            path=after.path, rgba=np.asarray(scaled), had_alpha=after.had_alpha
+        )
+        said = {
+            "tolerance": config.tolerances().render_noise,
+            "tolerance_from": "[tolerance] render_noise, the new picture scaled to the "
+            "old one's size",
+        }
+    bar = float(said["tolerance"]) * measure.DELTA_E_FULL
+    field = measure._delta_field(after, before)
+    block = measure.POOL
+    every = np.ones(field.shape, dtype=bool)
+    patches = measure.pooled(field, every, block) > bar
+    lit = np.kron(patches, np.ones((block, block), dtype=bool))[
+        : field.shape[0], : field.shape[1]
+    ]
+    grey = after.rgba[..., :3].mean(axis=2, keepdims=True).repeat(3, axis=2) * 0.45
+    shown = np.where(lit[..., None], np.array([255.0, 59.0, 48.0]), grey).astype(
+        np.uint8
+    )
+    digest = hashlib.sha256(f"{old}\0{new}".encode()).hexdigest()[:16]
+    target = config.path("paths.work") / "compare" / f"{digest}.png"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    PILImage.fromarray(shown).save(target)
+    from .provenance import relative
+
+    return {
+        "map": relative(target, here),
+        "changed_patches": int(patches.sum()),
+        "patches": int(patches.size),
+        "tolerance": said["tolerance"],
+        "same": said.get("same"),
+        "distance": said.get("distance"),
+        "tolerance_from": said.get("tolerance_from"),
+    }
 
 
 def _overruled(root, body: dict) -> tuple[list[dict], str, str]:
@@ -241,6 +338,18 @@ def _mark(member: dict, shapes: list, config) -> dict:
     }
 
 
+def _served(here: Path, wanted: str) -> bool:
+    """Whether a path is one the page may be sent: inside the project, a picture or a
+    record."""
+    target = (here / wanted).resolve()
+    return (
+        bool(wanted)
+        and target.is_relative_to(here)
+        and target.suffix.lower() in SERVED
+        and target.is_file()
+    )
+
+
 def server(root=".", port: int = 0) -> ThreadingHTTPServer:
     """The page's server for one project, bound and not yet serving."""
     here = load(root).root
@@ -264,6 +373,14 @@ def server(root=".", port: int = 0) -> ThreadingHTTPServer:
                         "gates": looked_at(here),
                     }
                 )
+            if asked.path == "/api/compare":
+                query = parse_qs(asked.query)
+                old, new = (query.get(k, [""])[0] for k in ("old", "new"))
+                if all(_served(here, one) for one in (old, new)):
+                    try:
+                        return self._json(difference(here, old, new))
+                    except PolyweaveError as refused:
+                        return self._json(refused.as_dict(), HTTPStatus.BAD_REQUEST)
             if asked.path == "/file":
                 wanted = (parse_qs(asked.query).get("path") or [""])[0]
                 target = (here / wanted).resolve()

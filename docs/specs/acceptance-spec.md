@@ -182,6 +182,18 @@ tool's verdict, so the answer records the tool refusing what the person accepted
 the evidence a tolerance is loosened from. `number` is refused for such a member, since it
 has no bound to move.
 
+**Two versions are compared in one place** (§PW176), because a few ΔE of drift or a
+silhouette a pixel wider is what side by side hides. Four ways, switchable: side by side;
+a slider across one picture, old on one side and new on the other; onion skin at an
+opacity the person sets; and a difference map. `GET /api/compare?old=&new=` makes the map
+from the pooled per-patch ΔE `measure.same` uses, lit only where a patch is past the
+tolerance `same` resolves, so a resampled pixel never lights up. The map is written under
+`[paths] work`/`compare/`. A new picture of another size is scaled to the old one's, and
+the floor is then the strictest rung's. **The comparison is chosen by what is compared**:
+a variation against its parent opens as a slider with its mask laid over, a gate candidate
+with no parent against its family's first canon picture as a difference map, and a sitting
+member with an `old` as a slider.
+
 **A pass also says how comfortably** (§PW104). The margin is 1 anywhere inside a bound, so
 Cottony's stars passed with a facet at 0.4695 under a ceiling of 0.47 and the search called
 that nothing left to gain. Each predicate now also carries its `headroom`: the distance to

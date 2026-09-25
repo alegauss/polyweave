@@ -96,7 +96,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW176",
     block: "O",
     symptom: "two versions of an asset are compared side by side, where a few ΔE of drift or a grown silhouette goes unseen",
-    why: "Eyes compare a difference well only when both are in one place, so a slider, an onion skin and a difference map show what side by side hides.",
+    why: "A mesh is still compared only as two pictures; its turntable at the rig's own angles, with the drawing's silhouette over the front view, is not shown.",
     deps: [],
   },
   {

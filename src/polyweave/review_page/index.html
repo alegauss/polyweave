@@ -66,6 +66,16 @@
   .candidate img { max-width: 160px; }
   .candidate ul { margin: 0; padding-left: 18px; }
   .candidate form { grid-column: 1 / -1; }
+  .compare { grid-column: 1 / -1; margin: 8px 0; }
+  .tabs { display: flex; gap: 4px; margin-bottom: 6px; }
+  .tabs button { margin: 0; padding: 4px 10px; background: var(--line); color: var(--ink); }
+  .tabs button[aria-selected="true"] { background: var(--accent); color: #fff; }
+  .side { display: flex; gap: 8px; flex-wrap: wrap; }
+  .side img, .layers img, .stage > div > img { max-width: 320px; }
+  .layers { position: relative; display: inline-block; }
+  .layers img + img { position: absolute; left: 0; top: 0; }
+  .layers img.mask { opacity: 0.35; filter: invert(1); mix-blend-mode: multiply; }
+  .compare input[type=range] { display: block; width: 320px; max-width: 100%; }
   table { border-collapse: collapse; width: 100%; background: var(--panel); }
   td, th { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: left; }
 </style>
