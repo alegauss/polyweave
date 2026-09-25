@@ -49,7 +49,11 @@ sweep  → { reaped, removed, orphans }            # collect what was abandoned
 - Concurrency is the caller's: four handles is four parallel samples, bounded by
   `[render] max_parallel` in the project config. A `start` beyond that bound is refused with
   `job.at-capacity` rather than queued, because a queue nobody can see is a wait by another
-  name.
+  name. The count and the new job's record are written under one lock
+  (`<work>/jobs/start.lock`, `O_EXCL`, released only by the token that took it, reaped
+  after ten seconds), so two sessions starting at once cannot both take the last slot
+  (§PW139). The spawn follows the release, since the record already counts, and a job
+  recorded but not yet spawned is still starting while its birth beat is fresh.
 
 ## 2. Every operation asserts its own output
 

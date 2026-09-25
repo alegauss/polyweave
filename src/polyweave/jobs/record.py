@@ -21,6 +21,7 @@ needs the same two and one home for them beats two copies.
 
 from __future__ import annotations
 
+import contextlib
 import json
 import os
 import secrets
@@ -76,10 +77,57 @@ class JobPaths:
             self.log(job),
         ]
 
+    def starting(self) -> Path:
+        """The lock a start holds from counting the running jobs to recording one."""
+        return self.jobs / "start.lock"
+
     def ids(self) -> list[str]:
         if not self.jobs.is_dir():
             return []
         return sorted(p.stem for p in self.jobs.glob("j_*.json"))
+
+
+#: How long the start lock may stand before a waiter takes it as abandoned. What it
+#: covers is a list and a write, so ten seconds is a holder that died, never a slow one.
+LOCK_STALE_S = 10.0
+
+
+@contextlib.contextmanager
+def holding(path: Path, *, stale_s: float = LOCK_STALE_S, poll_s: float = 0.01):
+    """Hold `path` as a lock from the read that decides to the write that records it.
+
+    Roadkeep's fix for the race that minted one id twice (§PW139): an `O_EXCL` file, a
+    token so only its owner releases it, and a stale one reaped after `stale_s`.
+    """
+    token = secrets.token_hex(8)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    while True:
+        try:
+            fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+        except FileExistsError:
+            try:
+                age = time.time() - path.stat().st_mtime
+            except FileNotFoundError:
+                continue
+            if age > stale_s:
+                with contextlib.suppress(FileNotFoundError, PermissionError):
+                    path.unlink()
+                continue
+            time.sleep(poll_s)
+            continue
+        except PermissionError:
+            # Windows refuses the create while another holder's unlink is pending.
+            time.sleep(poll_s)
+            continue
+        with os.fdopen(fd, "w", encoding="utf-8") as held:
+            held.write(token)
+        break
+    try:
+        yield
+    finally:
+        with contextlib.suppress(FileNotFoundError, PermissionError):
+            if path.read_text(encoding="utf-8") == token:
+                path.unlink()
 
 
 def write_record(path: Path, record: dict) -> None:

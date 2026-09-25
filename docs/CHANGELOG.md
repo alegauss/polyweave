@@ -187,6 +187,7 @@
 - ✅ **PW136** **no pytest or ruff runs anywhere but a desk, so a consumer pinned to a commit gets one nobody gated** — A gates workflow runs ruff and the gate on Python 3.11 and 3.13, prints the stamp saying CI proves the pure half, and validates the plugin manifests (design recorded in `.github/workflows/gates.yml`).
 - ✅ **PW137** **the site's own test requires the page to say there is no implementation, after a hundred lines have shipped** — The site states built blocks and open lines from the generated roadmap, a test holds it; README, CLAUDE.md, specs and capabilities() dropped stale status (design recorded in `site/README.md`).
 - ✅ **PW138** **the tool-surface spec names twelve error areas and the code declares nineteen, and nothing reads one against the other** — Six readers hold the specs and skill to the code's areas, names, measures, config, key and commands; the drift they found is fixed (design recorded in `tests/test_spec_names.py`).
+- ✅ **PW139** **two jobs started at once can both pass the capacity check, so `[render] max_parallel` is exceeded** — An O_EXCL start lock spans the count and the record, so two starts at a bound of one give one refusal; a job not yet spawned is no longer reaped (design recorded in `docs/specs/tool-surface.md`).
 
 ## Block M — What a game needs beyond the look
 

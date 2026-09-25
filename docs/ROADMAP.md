@@ -35,7 +35,6 @@
 
 ## Block L — What a run leaves as evidence
 
-- 📋 **PW139** (deps: —) **two jobs started at once can both pass the capacity check, so `[render] max_parallel` is exceeded** — `start` lists the running jobs and then spawns with nothing held between the two, the shape of roadkeep's race that minted one id twice. → §PW139
 - 📋 **PW140** (deps: —) **a build is reported cached after the plugin that built it changed, because its stamp hashes the inputs alone** — The stamp leaves out the plugin's version and `--preview`, and geometry writes no provenance record, so two answers to "what made this" already disagree. → §PW140
 
 ## Block M — What a game needs beyond the look

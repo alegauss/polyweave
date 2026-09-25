@@ -110,6 +110,26 @@ class JobStore:
         operation = describe.for_target(target)
         if operation is not None:
             describe.validate(operation, args)
+        # Held from the count to the record (§PW139): two starts that both counted three
+        # of four would each start a fourth. The spawn comes after the release, because
+        # the record already counts.
+        with rec.holding(self.paths.starting()):
+            state = self._recorded(target, kind=kind, args=args, label=label)
+        job = state["job"]
+        record_path = self.paths.record(job)
+        pid = process.spawn_detached(
+            [self.python, "-m", "polyweave.jobs.worker", str(record_path)],
+            cwd=self.root,
+            env=self._child_env(path, env),
+            log_path=self.paths.log(job),
+        )
+        rec.write_atomic(self.paths.pid(job), f"{pid}\n")
+        return self._view(state, pid=pid)
+
+    def _recorded(
+        self, target: str, *, kind: str, args: dict, label: str | None
+    ) -> dict:
+        """Count what is running, refuse at the bound, write the new job's record."""
         running = [v for v in self.list() if not is_terminal(v["stage"])]
         if len(running) >= self.max_parallel:
             held = ", ".join(v["job"] for v in running)
@@ -149,15 +169,7 @@ class JobStore:
         # the first real beat is a grace period rather than an instant failure.
         rec.write_beat(self.paths.beat(job), now)
         rec.write_record(record_path, state)
-
-        pid = process.spawn_detached(
-            [self.python, "-m", "polyweave.jobs.worker", str(record_path)],
-            cwd=self.root,
-            env=self._child_env(path, env),
-            log_path=self.paths.log(job),
-        )
-        rec.write_atomic(self.paths.pid(job), f"{pid}\n")
-        return self._view(state, pid=pid)
+        return state
 
     def _child_env(
         self,
@@ -342,9 +354,14 @@ class JobStore:
         conclusive, and a pid that does exist may be a stranger who inherited the
         number, which only a heartbeat that stopped moving can tell you.
         """
+        beat = rec.read_beat(self.paths.beat(state["job"]))
+        if pid is None:
+            # Recorded and not yet spawned: another start is between its record and its
+            # pid (§PW139). The beat written at birth is the grace; a creator that died
+            # there is gone once it goes stale.
+            return beat is None or (time.time() - beat) > self.stale_after_s
         if not process.alive(pid):
             return True
-        beat = rec.read_beat(self.paths.beat(state["job"]))
         if beat is None:  # pragma: no cover - the creator always writes one
             return False
         return (time.time() - beat) > self.stale_after_s

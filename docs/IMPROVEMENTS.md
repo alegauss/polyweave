@@ -370,21 +370,6 @@ present, and skipped where it is not, as the render tests are.
 
 ## Block L — What a run leaves as evidence
 
-### §PW139 A capacity check held until the record exists
-
-`JobStore.start` counts the jobs that are not terminal and refuses with
-`job.at-capacity` at the bound, then allocates an id, writes the record and spawns the
-worker. Between the count and the record nothing is held. A search in parallel starts
-its samples in a loop, and two sessions on one project, which roadkeep and Shio both run
-as a matter of course, can each count three of four and each start a fourth.
-
-Roadkeep fixed its version by holding one lock from the read that decides to the write
-that records: an `O_EXCL` lock file keyed on the project, a token so only its owner
-releases it, and a stale lock reaped after a bound. The same lock here spans the count
-and the record. The spawn can happen after release, because the record already counts.
-The test starts two jobs on threads against a bound of one and expects exactly one
-refusal.
-
 ### §PW140 One answer to what a build was made from
 
 The `stamp` function in `cli.py` hashes the declaration, the `--set` values and every

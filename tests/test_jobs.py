@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import os
+import threading
 import time
 
 import pytest
@@ -15,6 +16,8 @@ import pytest
 from conftest import wait_for
 from polyweave.errors import PolyweaveError
 from polyweave.jobs import KINDS, JobStore, stages_for
+from polyweave.jobs import record as rec
+from polyweave.jobs.record import holding
 
 TARGET = "support.jobtargets"
 
@@ -286,6 +289,73 @@ def test_concurrency_is_bounded_and_says_how_to_raise_it(tmp_path, target_path):
     # And the slot comes back once one ends.
     assert store.poll(second["job"])["status"] == "cancelled"
     start(store, "immediate", target_path)
+
+
+def test_two_starts_at_once_cannot_both_take_the_last_slot(
+    tmp_path, target_path, monkeypatch
+):
+    """§PW139: the count and the record are held under one lock. The window between
+    them is widened here so the race, if it were there, would be lost every run."""
+    store = JobStore(root=tmp_path, max_parallel=1, heartbeat_s=0.2)
+    counted = JobStore.list
+
+    def slow_count(self):
+        views = counted(self)
+        time.sleep(0.3)
+        return views
+
+    monkeypatch.setattr(JobStore, "list", slow_count)
+    outcomes: list[str] = []
+
+    def one():
+        try:
+            start(store, "sleeper", target_path, args={"seconds": 60})
+            outcomes.append("started")
+        except PolyweaveError as refused:
+            outcomes.append(refused.code)
+
+    threads = [threading.Thread(target=one) for _ in range(2)]
+    try:
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join(timeout=30)
+        assert sorted(outcomes) == ["job.at-capacity", "started"]
+    finally:
+        monkeypatch.setattr(JobStore, "list", counted)
+        for view in store.list():
+            if view["status"] is None:
+                store.cancel(view["job"])
+    assert not store.paths.starting().exists()
+
+
+def test_a_lock_its_holder_abandoned_is_taken_after_the_bound(tmp_path):
+    lock = tmp_path / "jobs" / "start.lock"
+    lock.parent.mkdir()
+    lock.write_text("somebody who died", encoding="utf-8")
+    old = time.time() - 60
+    os.utime(lock, (old, old))
+    with holding(lock, stale_s=10):
+        assert lock.read_text(encoding="utf-8") != "somebody who died"
+    assert not lock.exists()
+
+
+def test_only_the_holder_releases_the_lock(tmp_path):
+    lock = tmp_path / "start.lock"
+    with holding(lock):
+        lock.write_text("a reaper's own token", encoding="utf-8")
+    assert lock.read_text(encoding="utf-8") == "a reaper's own token"
+
+
+def test_a_job_recorded_and_not_yet_spawned_is_not_gone(store):
+    """Between a start's record and its pid another start may count it: it is still
+    starting, not a worker that died."""
+    job = "j_00000000"
+    store.paths.jobs.mkdir(parents=True, exist_ok=True)
+    rec.write_beat(store.paths.beat(job))
+    assert store._worker_gone({"job": job}, None) is False
+    rec.write_beat(store.paths.beat(job), time.time() - 3600)
+    assert store._worker_gone({"job": job}, None) is True
 
 
 def test_parallel_handles_run_at_the_same_time(store, target_path):
