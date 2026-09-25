@@ -204,6 +204,7 @@
 ## Block N — Pictures held to a canon
 
 - ✅ **PW162** **a project can name only one paid service, so a second one's key, schema and ceiling have nowhere to live** — Each paid service is a named table with its own key, schema and ceiling in its own unit, and a spend among several must name one (design recorded in `docs/specs/project-config.md`).
+- ✅ **PW163** **no picture can be bought, so every drawing a mesh starts from still has to come from a person** — picture.buy buys one Ideogram picture against its own ceiling, checked first, refused as a code, and captured before its link expires (design recorded in `docs/specs/fetching.md`).
 
 ## Block O — A person sees and answers
 

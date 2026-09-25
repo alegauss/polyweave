@@ -46,7 +46,9 @@ TOOL_BUDGET = 4500
 #: The most the whole list may cost, which is what every session pays to learn the
 #: surface: 74 tools measured 41,683 characters when this was set, and this is a tenth
 #: above. A raise is argued here, beside the number, never made silently in the test.
-LIST_BUDGET = 46000
+#: Raised to 47,000 at 46,491 for picture.buy (§PW163), the first operation that sends
+#: a paid request itself, and `service` on six purchase and schema tools (§PW162).
+LIST_BUDGET = 47000
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

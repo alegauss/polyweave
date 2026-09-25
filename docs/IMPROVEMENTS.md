@@ -274,32 +274,6 @@ unstated.
 
 ## Block N — Pictures held to a canon
 
-### §PW163 Buying a picture
-
-The plugin prefers a drawing to a photograph (PW21), and today every drawing comes from
-a person, because the agent cannot draw. Ideogram 4.0 generates an image, and its
-transparent endpoint delivers a PNG with a real alpha channel — exactly the form
-`reference.pick` recognises as a drawing. That makes the image service the cheap first
-step in front of the dear one.
-
-**The plugin speaks to the service itself**, which it has never done for meshes: until
-now a consumer's own client fetched and the plugin captured. The client is small —
-generate, generate transparent, and the poll for the async variants — and it goes
-through the same doors a mesh does:
-
-- the payload is validated against the learned `[service.ideogram] schema` before sending
-  (PW19), which matters here because 3.0 and 4.0 spell the prompt field differently;
-- `purchase.allow` is asked before the call, against that service's ceiling (PW18);
-- the picture is captured before anything else happens, because the service's links expire
-  and the order in PW17 is the only one that cannot leave a receipt without an asset.
-
-**`bought` gains `image`.** The record carries the model, the speed and the resolution
-the response reported, which may differ from the one asked for.
-
-**The service's own refusals are codes, not tracebacks**: a prompt refused as unsafe
-(422) and a rate limit (429) each name what to do next, and the client never holds more
-calls in flight than the account allows, which by default is ten.
-
 ### §PW164 A price that says it was quoted
 
 The ledger's proof of what something cost is two readings of the balance, one either
@@ -501,6 +475,43 @@ forward, and it gets the same answer: it is mechanical, so it happens on arrival
 **The ingested file is what the engine loads**, and `compose.sheet` takes it like any
 other frame. The original stays on file with its digest, so a change to the family's
 cell size is one re-ingest and never one more purchase.
+
+### §PW178 Buying a picture asynchronously
+
+`picture.buy` sends the synchronous endpoints, so one call holds a connection open until
+the picture is drawn, and ten of them fill the account's default of ten in flight.
+Ideogram also takes the same request asynchronously: the answer is a generation id at
+once, and `GET /v1/generations/{generation_id}` returns the picture when it is ready.
+
+**Build the asynchronous variant as a job**, the way a long bake already is:
+`picture.buy` gains the job kind, the request is sent to the async route, the generation
+id is the entry's `task_id` (which is what the synchronous answer never carried), and
+the poll is the job's own stage. Capture still happens the moment the poll returns a
+link, because the link expires.
+
+What to check before building: the exact async route and the poll's answer shape, which
+the public reference names but did not spell out when PW163 shipped. A poll that is
+never answered must end on the job's timeout rather than hold a slot for ever.
+
+### §PW179 A paid picture that never arrived
+
+`picture.buy` asks `purchase.allow`, the service draws and charges, and only then is the
+picture downloaded. If that download fails, the refusal says the picture was paid for
+and gives the link, but nothing is ledgered, because the ledger is written last so that
+it never names an asset that is not there. The spend is therefore invisible to `spent`
+and `remaining`, and the next call is judged against a ceiling that is too high.
+
+The same window exists for a mesh, but there the balance is read either side, so the
+next reading shows the money gone. A picture service reports no balance (PW164), so for
+pictures nothing ever shows it.
+
+**The two rules conflict, and neither may give way silently.** One way through is a
+second, separate list of charges with no asset: `purchase.capture` is never called, but
+the charge is written to a `pending` list that `spent` counts and `held` reports as
+lost, until a retry of the link lands the asset and moves the entry into the ledger.
+This keeps the ledger's rule (every entry has its file) and the ceiling's rule (every
+charge is counted). Decide it together with PW164, which settles how a picture's cost is
+known at all.
 
 ## Block O — A person sees and answers
 

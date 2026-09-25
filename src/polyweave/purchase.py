@@ -41,7 +41,7 @@ from .errors import PolyweaveError
 from .files import read_text_retrying, write_atomic
 
 #: What a project may buy. `kind` in the record stays `fetch` for all of them.
-BOUGHT = ("mesh", "texture")
+BOUGHT = ("mesh", "texture", "image")
 
 
 def where(root: str | Path = ".") -> Path:
@@ -51,7 +51,7 @@ def where(root: str | Path = ".") -> Path:
 
 
 #: Which service a call draws on. Needed only where the project declares several.
-_SERVICE = Param("the [service.<name>] to use; needed only where there are several")
+SERVICE = Param("the [service.<name>] to use; needed only where there are several")
 
 
 @operation("purchase.remaining")
@@ -60,7 +60,7 @@ def remaining(
     today: Annotated[
         str, Param("the date the ceiling is judged on; today if unset")
     ] = None,
-    service: Annotated[str, _SERVICE] = None,
+    service: Annotated[str, SERVICE] = None,
 ) -> dict:
     """What is left of one service's ceiling, against what was spent on that service.
 
@@ -105,7 +105,7 @@ def allow(
     today: Annotated[
         str, Param("the date the ceiling is judged on; today if unset")
     ] = None,
-    service: Annotated[str, _SERVICE] = None,
+    service: Annotated[str, SERVICE] = None,
 ) -> dict:
     """Refuse a spend that would pass the ceiling. Never asks; the answer is the file.
 
@@ -149,9 +149,13 @@ def capture(
     sha256: str | None = None,
     engine: dict | None = None,
     service: str | None = None,
+    details: dict | None = None,
     root: str | Path = ".",
 ) -> dict:
     """Put a bought artefact somewhere it will outlive the service, and write it down.
+
+    `details` is what the service reported about what it made (a picture's model, speed
+    and resolution, which may not be the ones asked for), kept on the record.
 
     Returns the ledger entry. The call completes only once the file is on disk, hashed,
     recorded and ledgered — a fetch that fails partway leaves no entry claiming it.
@@ -219,6 +223,8 @@ def capture(
         "bought": bought,
         "prompt": prompt,
     }
+    if details:
+        extra["details"] = dict(details)
     if reference is not None:
         # Not relativised here: `build` does it for every path in `extra`, and this
         # having been the only call site that remembered to is §PW72.
@@ -430,7 +436,7 @@ def read(
 @operation("purchase.spent")
 def spent(
     root: Annotated[str, Param("the project whose ledger this is")] = ".",
-    service: Annotated[str, _SERVICE] = None,
+    service: Annotated[str, SERVICE] = None,
 ) -> float:
     """What this project has spent against one service's ceiling, by its own ledger.
 

@@ -104,6 +104,31 @@ rather than an afternoon.
 The balance is read either side of the run and the difference recorded in the schema, which
 is the only proof that the probing really was free.
 
+## A picture is bought by the plugin itself
+
+`picture.buy` is the first call the plugin sends to a paid service on its own, rather than
+capturing what a consumer's client fetched (§PW163). It buys one picture from Ideogram,
+by default through the transparent endpoint, whose PNG carries a real alpha channel and so
+reads as a drawing to `reference.pick`. It goes through the same doors a mesh does, in the
+same order:
+
+1. the payload is checked against `[service.<name>] schema` where one is learned. The models
+   spell the prompt differently (`text_prompt` on 4.0, `prompt` on 3.0), so a schema learned
+   from one refuses the other's payload before it is sent;
+2. `purchase.allow` is asked for `cost`, against that service's own ceiling. The price is
+   the caller's to state, in the ceiling's unit, and a cost of zero is refused
+   (`fetch.cost-unstated`), because no call to a paid service is free;
+3. the request is sent. A 422 is `fetch.prompt-refused`, a 429 `fetch.rate-limited`, and
+   anything else `fetch.service-error`. None of them ledgers anything. The client holds no
+   more than ten calls open at once in one process, the account's default;
+4. the picture is captured at once, because the service's links expire. The entry is
+   `bought = "image"`, and the record carries the model, the speed and the resolution the
+   answer reported, which may not be the ones asked for.
+
+The synchronous endpoints carry no task id, so the entry's `task_id` is the service name,
+the answer's `created` time and the seed. The asynchronous variants and their poll are not
+built yet.
+
 ## A mesh is put in the project's frame on arrival
 
 A generated mesh faces wherever the service left it, at whatever scale, with its origin

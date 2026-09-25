@@ -38,7 +38,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "K", title: "Reached without reading the source", open: 0 },
   { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
-  { block: "N", title: "Pictures held to a canon", open: 9 },
+  { block: "N", title: "Pictures held to a canon", open: 10 },
   { block: "O", title: "A person sees and answers", open: 6 },
 ];
 
@@ -65,25 +65,18 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW57"],
   },
   {
-    id: "PW163",
-    block: "N",
-    symptom: "no picture can be bought, so every drawing a mesh starts from still has to come from a person",
-    why: "A drawing is the input the mesh service reads best, and a transparent picture costs cents where the mesh it steers costs thirty credits.",
-    deps: [],
-  },
-  {
     id: "PW164",
     block: "N",
     symptom: "an image service reports no balance, so what a picture cost cannot be measured the way a mesh's is",
     why: "The ledger proves a cost with two balance readings, and without them an image entry is either unmeasured or invented, and nothing says which.",
-    deps: ["PW163"],
+    deps: [],
   },
   {
     id: "PW165",
     block: "N",
     symptom: "a picture cannot be made again from its record, because the service rewrites the prompt it was given",
     why: "Ideogram 4.0 turns a text prompt into its own before drawing, so a record of only what was sent describes a picture nobody asked for.",
-    deps: ["PW163"],
+    deps: [],
   },
   {
     id: "PW166",
@@ -104,7 +97,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "N",
     symptom: "a reference drawing reaches the mesh service unchecked, so a wrong silhouette is found only once the mesh is paid for",
     why: "A picture costs cents and a mesh thirty credits, so the outline belongs settled on the picture before anything dearer is bought.",
-    deps: ["PW163", "PW167"],
+    deps: ["PW167"],
   },
   {
     id: "PW169",
@@ -125,7 +118,21 @@ export const generatedTasks: GeneratedTask[] = [
     block: "N",
     symptom: "2D art from a picture service arrives at the size and margin it chose, not the project's grid",
     why: "An icon or UI piece needs the project's pixel size, padding and a clean alpha edge, and that fix is mechanical, so it belongs on arrival.",
-    deps: ["PW163"],
+    deps: [],
+  },
+  {
+    id: "PW178",
+    block: "N",
+    symptom: "a picture is bought only synchronously, so each call holds a connection open until it is drawn",
+    why: "The service takes the same request asynchronously and answers with an id to poll, which is also the task id the synchronous answer lacks.",
+    deps: [],
+  },
+  {
+    id: "PW179",
+    block: "N",
+    symptom: "a picture paid for whose download then fails is charged to no ceiling, so the next spend is judged too high",
+    why: "The ledger is written only once the asset is on disk, and a picture service reports no balance to reveal the spend afterwards.",
+    deps: ["PW164"],
   },
   {
     id: "PW172",

@@ -604,6 +604,35 @@ CODES: dict[str, Code] = {
         "declared a second",
         doors=("add the service each entry was bought from to its `service` field",),
     ),
+    "fetch.cost-unstated": Code(
+        means="a purchase was asked for at no cost, so nothing would count against the "
+        "ceiling",
+        when="a picture bought with cost 0; no call to a paid service is free",
+        doors=("pass what one costs, in the unit of the service's ceiling",),
+    ),
+    "fetch.service-unconfigured": Code(
+        means="the service named cannot be reached: no base, or no key in this "
+        "environment",
+        when="a [service.<name>] with no base, or a key_env that is unset here",
+        doors=("set base under the service", "export the variable key_env names"),
+    ),
+    "fetch.prompt-refused": Code(
+        means="the service refused the prompt as failing its safety check",
+        when="a 422 from the picture service, or an answer marked unsafe with no "
+        "picture in it; a refused request is not charged",
+        doors=("reword the prompt",),
+    ),
+    "fetch.rate-limited": Code(
+        means="the account has more requests in flight than the service allows",
+        when="a 429, from calls made elsewhere on the same account",
+        doors=("wait for the calls already out to finish, then ask again",),
+    ),
+    "fetch.service-error": Code(
+        means="the service answered with something other than what was asked for",
+        when="an unreachable host, a 401 for a key it refuses, a 400 for a payload it "
+        "refuses, or a body that is not JSON",
+        doors=("read the detail the service sent",),
+    ),
     "fetch.ledger-malformed": Code(
         means="the purchase ledger is not readable",
         when="a ledger edited by hand, or truncated",
