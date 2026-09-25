@@ -348,28 +348,6 @@ again.
 
 ## Block K — Reached without reading the source
 
-### §PW126 A served surface that is a shape over the registry
-
-Roadkeep moved to a served surface on its second day, because arguments written in prose
-are guessed; the plugin here has none, and its `.mcp.json` serves only roadkeep. An
-agent reads a skill or a docstring, composes a call, and learns the range of `elevation`
-from `op.out-of-range`.
-
-The same registry that yields the command line (`commands.py`, in
-docs/specs/tool-surface.md) yields a tool per operation: `description` from the
-operation's docstring, one property per parameter with its sentence, `minimum` and
-`maximum` from the declared range, `enum` from its choices, and `additionalProperties:
-false`, so a misspelt argument is refused by the client. A call runs the operation
-in-process and answers with the fields `--json` prints. Nothing about an operation is
-written a second time, which is Shio's tenth law: the server is a shape over the
-services, never a third contract.
-
-Two budgets come with it from the first day, because both projects that went before paid
-for adding them late: characters per tool and for the whole list, held by a test, each
-raise argued where the number is set. A tool whose operation needs Blender is listed
-only where `capabilities` found one, and still answers elsewhere with the refusal that
-names what is missing.
-
 ### §PW127 A door is a call, and every door is run
 
 `PolyweaveError` refuses a code without a remedy, which is stronger than either sibling

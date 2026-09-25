@@ -6,6 +6,10 @@
         "${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/roadkeep-launch.py",
         "mcp"
       ]
+    },
+    "polyweave": {
+      "command": "python",
+      "args": ["-m", "polyweave", "serve"]
     }
   }
 }

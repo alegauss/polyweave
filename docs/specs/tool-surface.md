@@ -235,7 +235,19 @@ both answers.
   answer, two renderings**: `--json` prints the operation's data, and the text is that
   data flattened to `path: value` lines, so the text can never say what the JSON lacks. A
   refusal prints its code and remedy to stderr and exits 1. `build` and `verify` keep
-  their own shape, since consumers already call them. A module's leftover helpers may be
+  their own shape, since consumers already call them.
+- **The same registry is served as MCP tools** (§PW126). `python -m polyweave serve`
+  speaks newline-delimited JSON-RPC on stdio and is in `.mcp.json` beside roadkeep. It
+  handles `initialize`, `tools/list`, `tools/call` and `ping`, written in `server.py`
+  rather than added as a dependency. Each operation is one tool named with `_` for `.`
+  (`accept_check`). Its schema carries each parameter's sentence and unit, `minimum` and
+  `maximum` from its range, `enum` from its choices, `required` where it has no default,
+  and `additionalProperties: false`. A call answers with the data `--json` prints, and a
+  refusal is an error result carrying the code. Anything the work prints goes to stderr,
+  since stdout is the protocol. A tool whose work needs Blender is listed only where
+  `bpy` imports or a binary is on `PATH`. Two budgets hold from the first day,
+  `TOOL_BUDGET` for one tool and `LIST_BUDGET` for the list, set from what was measured
+  and raised only with the reason beside the number. A module's leftover helpers may be
   listed as internal one function at a time. `describe()` loads
   the registry before answering, so a fresh process no longer lists only what it happened
   to have imported.

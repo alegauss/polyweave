@@ -171,6 +171,7 @@
 - ✅ **PW158** **the engine is found, run and captured only from Python, since describe lists nothing of the engine side** — engine.find and run, capture.run and declared, offscreen.routes and godot.install are operations, free of test hooks; pending falls to 73 (design recorded in `docs/specs/tool-surface.md`).
 - ✅ **PW159** **a mesh's outline, a reference, an ingest and a composed picture are made only from Python, since describe lists none** — Eight operations cover shape, reference, normalise, compose and texture by path, choices read off the code; pending falls to 40 (design recorded in `docs/specs/tool-surface.md`).
 - ✅ **PW125** **an agent in a consumer can ask what the machine can do, explain a code or start a job only by writing Python** — Every operation is a python -m polyweave subcommand derived from its declaration, with --job for async work and text read off the JSON (design recorded in `docs/specs/tool-surface.md`).
+- ✅ **PW126** **an agent's first call is guessed from prose, because no tool schema carries the plugin's names, ranges and choices** — python -m polyweave serve lists each operation as an MCP tool whose schema has its ranges, choices and required fields, within budgets (design recorded in `docs/specs/tool-surface.md`).
 
 ## Block L — What a run leaves as evidence
 

@@ -79,6 +79,7 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.cache": ("internal", "the render cache, reached through bake's cached"),
     "polyweave.census": ("internal", "this census's own walk"),
     "polyweave.commands": ("internal", "the command line derived from the registry"),
+    "polyweave.server": ("internal", "the MCP server derived from the registry"),
     "polyweave.codes": ("internal", "the code table, read through errors.explain"),
     "polyweave.config": ("internal", "the project file, reported by capabilities"),
     "polyweave.describe": ("internal", "the registry's own machinery"),

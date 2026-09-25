@@ -31,7 +31,6 @@
 
 ## Block K — Reached without reading the source
 
-- 📋 **PW126** (deps: PW125 ✅) **an agent's first call is guessed from prose, because no tool schema carries the plugin's names, ranges and choices** — A range declared on a parameter reaches the caller only as a refusal, where a served schema would have stopped the wrong call before it spawned anything. → §PW126
 - 📋 **PW127** (deps: PW125 ✅) **a remedy is a sentence, so nothing checks that the call it names exists or accepts those arguments** — Roadkeep found one of 118 remedy rows had ever been run and several named flags its own parser rejected, and remedies here are the same unchecked prose. → §PW127
 - 📋 **PW128** (deps: —) **a refused name says what was wrong but never which names would have worked** — An unknown measure, primitive, material slot or operation is where an agent guesses, and the near match exists only inside a sentence the config reader writes. → §PW128
 - 📋 **PW129** (deps: PW124 ✅) **nothing bounds what `describe`, `capabilities` or an error costs the turn that reads it** — The reads an agent makes every session have no ceiling, so each operation registered makes them longer and nothing measures by how much. → §PW129

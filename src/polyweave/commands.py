@@ -31,8 +31,8 @@ from typing import Any
 
 from .errors import PolyweaveError
 
-#: The verbs that are not operations: the first reads, and the job handle's.
-VERBS = ("capabilities", "explain", "describe", "job")
+#: The verbs that are not operations: the first reads, the job handle's, and the server.
+VERBS = ("capabilities", "explain", "describe", "job", "serve")
 
 #: What `job` does with a handle.
 JOB_ACTIONS = ("list", "poll", "result", "cancel")
@@ -129,6 +129,7 @@ def add_operations(commands: Any) -> None:
     job.add_argument("--root", default=".")
     job.add_argument("--wait", action="store_true", help="for result: wait for it")
     job.add_argument("--json", action="store_true")
+    commands.add_parser("serve", help="serve every operation as an MCP tool, on stdio")
 
 
 def answer_for(stated: argparse.Namespace) -> Any:
@@ -214,6 +215,11 @@ def _flat(value: list) -> bool:
 
 def run(stated: argparse.Namespace) -> int:
     """Answer one derived subcommand; a refusal is printed and exits 1."""
+    if stated.command == "serve":
+        from .server import serve
+
+        serve()
+        return 0
     try:
         # Anything the work prints (Blender's exporter logs to stdout) goes to stderr,
         # so stdout carries the answer alone.
