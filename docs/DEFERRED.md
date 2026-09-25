@@ -53,5 +53,7 @@
 
 ## Block S — Playing the game, not only rendering it
 
+- ⏸ **PW211** (deps: —) **Nobody knows if an agent can drive a Godot game from its menu to a won level and get the same result twice** — set aside (Needs Godot .NET in Cottony.): Every later line in this block rests on GodotTestDriver or a fallback, and it needs Godot .NET in games that are GDScript only. → §PW211
+
 ## Block T — Adopting polyweave in a project
 
