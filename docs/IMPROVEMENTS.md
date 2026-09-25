@@ -274,41 +274,13 @@ unstated.
 
 ## Block N — Pictures held to a canon
 
-### §PW166 A style declared once, and a canon only a person grows
-
-A generator asked for consistency in prose gives consistency by luck. Two pictures of
-one character from one prompt differ in palette, line weight and proportion, and a
-refinement drifts further from the picture it refines. Consistency has to be an **input
-every call carries**, not an adjective in a prompt.
-
-**A project declares its style once**, in `[style]`, and never in the plugin — Cottony
-and Spinhole are two games with two looks, and a default that cannot be overridden is a
-defect:
-
-- `canon` — a directory of pictures a person approved, each with its described prompt
-  (PW165);
-- `palette` — the colours a picture may use, as values, not names;
-- `skeleton` — the style block every structured prompt starts from: medium, lighting,
-  aesthetics, and what is always excluded;
-- `references` — which canon pictures are sent as style references, where the model takes
-  them, and one character reference per recurring character.
-
-**The canon grows only by a person's verdict.** A picture joins it through
-`verdict.judge`, and the canon's own record names the verdict that admitted it. An agent
-that could add its own output to the canon would make its drift the standard, which is
-the non-goal about an agent accepting its own look, written as a file permission.
-
-**Style is per asset family, not per project alone**: `[style.icons]` and
-`[style.characters]` may differ, and an asset names the family it belongs to, so a
-sprite sheet is never measured against the canon of a title screen.
-
 ### §PW167 Drift, measured against the canon
 
 The agent's part in consistency is to **refuse drift by number before a person spends
 attention on it**, and never to decide that a picture which passes looks right. Today
 the only check is a person looking, after the picture was offered.
 
-**Drift, against the canon of the asset's family (§PW166):**
+**Drift, against the canon of the asset's family (PW166):**
 
 - palette — each subject pixel's ΔE to the nearest declared colour, at the 95th percentile;
 - value and saturation — the 5th and 95th percentiles of the subject;
@@ -338,7 +310,7 @@ silhouette is decided, for cents rather than credits.
 **The chain, each step refusing before the next is paid for:**
 
 1. the geometry declaration gives the outline and the proportions;
-2. a structured prompt is composed from it and from the family's style (PW165, §PW166),
+2. a structured prompt is composed from it and from the family's style (PW165, PW166),
    and a transparent picture is generated;
 3. `reference.pick` confirms it is a drawing — real alpha, clear border — and
    `reference.prepare` confirms the subject fills the frame and touches no edge;
@@ -464,6 +436,27 @@ This keeps the ledger's rule (every entry has its file) and the ceiling's rule (
 charge is counted). PW164 shipped `purchase.reconcile`, which already names such a
 charge after the fact: a usage row nothing matches lands in `unmatched_rows`. What is
 missing is counting it before the next spend, not finding it.
+
+### §PW180 Canon pictures as style references
+
+PW166 declared a style as a palette and a skeleton, and a canon a person grows. Its
+design also named `references`: which canon pictures go to the service as style
+references, and one character reference per recurring character. That part did not land,
+because no model this client sends to takes a reference picture together with a
+structured prompt.
+
+3.0 takes `style_reference_images` and `character_reference_images`, as uploaded files,
+but only with a text prompt, and a text prompt has nowhere to carry the skeleton or the
+palette. The 4.0 generate reference, read when PW166 shipped, lists no reference field.
+
+**Build it where a model takes both.** Add `references` to `[style.<family>]`, naming
+canon pictures by file name. Send them as repeated file fields: `_send` currently maps
+one field to one file, so it needs a list. Record each reference's digest on the
+picture's record, so a regeneration sends the same pictures. Until a model takes both, a
+family with references should refuse a structured call rather than drop them.
+
+Check first whether 4.0 has gained a reference field, and learn it by the schema probe,
+since a reference the service ignores is dropped without an error.
 
 ## Block O — A person sees and answers
 
@@ -594,10 +587,10 @@ network, so the page works offline like everything else here.
 
 ### §PW177 The canon on one board
 
-The canon (§PW166) is a folder of files and a table in the config. What a family is
-meant to look like is therefore never seen whole, and a canon that has quietly become
-two styles — the early pictures and the late ones — is found only by somebody opening
-every file.
+The canon (PW166) is a folder of files and a table in the config. What a family is meant
+to look like is therefore never seen whole, and a canon that has quietly become two
+styles — the early pictures and the late ones — is found only by somebody opening every
+file.
 
 **The page has a board per family**: every canon picture, the palette as swatches, the
 prompt skeleton as text, and the spread the drift floor is measured from (§PW167), so a

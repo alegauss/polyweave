@@ -31,7 +31,7 @@ import urllib.request
 import uuid
 from typing import Annotated
 
-from . import provenance, purchase, schema
+from . import provenance, purchase, schema, style
 from .config import load
 from .describe import Param, operation
 from .errors import PolyweaveError
@@ -64,6 +64,9 @@ def buy(
     aspect_ratio: Annotated[str, Param("as the service spells it")] = None,
     rendering_speed: Annotated[str, Param("as the service spells it")] = None,
     seed: Annotated[int, Param("for a picture that can be asked for again")] = None,
+    family: Annotated[
+        str, Param("the asset family whose [style] it is held to")
+    ] = None,
     service: Annotated[str, purchase.SERVICE] = None,
     root: Annotated[str, Param("the project whose ledger this is")] = ".",
 ) -> dict:
@@ -79,6 +82,10 @@ def buy(
     service says it drew from, the seed it reports, the model, speed and resolution. A
     text prompt on 4.0 is rewritten before drawing, so `json_prompt` is the one that
     makes the same picture again; `picture.describe` turns an approved picture into one.
+
+    Where the project declares a `[style]`, the structured prompt is composed over the
+    family's skeleton and palette before anything else (§PW166), and a text prompt is
+    refused, because it has nowhere to carry them.
     """
     if model not in MODELS:
         raise PolyweaveError(
@@ -90,6 +97,17 @@ def buy(
         )
     _one_prompt(prompt, json_prompt, model)
     config = load(root)
+    held_to = style.in_force(config, family)
+    if held_to is not None:
+        if json_prompt is None:
+            raise PolyweaveError(
+                "style.needs-structure",
+                f"the {held_to[0]} style is carried by a structured prompt, and this "
+                f"call gave text",
+                "pass json_prompt on 4.0; its style block starts from the family's "
+                "skeleton and its palette is the family's",
+            )
+        json_prompt = style.compose(json_prompt, held_to[1])
     name = config.service(service)
     about = config.services()[name]
     base, key = _reached(name, about)
@@ -164,6 +182,7 @@ def buy(
             # What it reports, which is the seed a second call asks for.
             "seed": drawn.get("seed"),
             "json_prompt": json_prompt,
+            "family": held_to[0] if held_to else None,
             # What the service says it drew from. On a text prompt to 4.0 this is not
             # what was sent, and it is the only account of the picture that is true.
             "returned_prompt": drawn.get("prompt"),

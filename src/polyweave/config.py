@@ -52,7 +52,10 @@ _INSIDE = ("service.schema",)
 #: Tables that hold either one paid service or several named ones (§PW162). A bare
 #: `[service]` is the one service it always was; `[service.meshy]` beside
 #: `[service.ideogram]` is two, each with its own `[budget.<name>]`.
-_NAMED_TABLES = ("service", "budget")
+_NAMED_TABLES = ("service", "budget", "style")
+
+#: What a bare `[style]` is called: a project with one look has one family (§PW166).
+DEFAULT_FAMILY = "default"
 
 #: What the bare `[service]` is called wherever a service has to be named: in the
 #: ledger, in `remaining`, in `capabilities`.
@@ -167,6 +170,18 @@ DEFAULTS: dict[str, Any] = {
         "reproducible": False,
     },
     "geometry": {"outlines": ""},
+    "style": {
+        # What a project's pictures look like, declared once and never in the plugin:
+        # two games have two looks (§PW166). `[style.<family>]` gives each asset family
+        # its own, so a sprite sheet is never held to a title screen's canon.
+        # The directory of pictures a person approved; only a verdict adds to it.
+        "canon": "",
+        # The colours a picture may use, as #rrggbb values rather than names.
+        "palette": [],
+        # The style block every structured prompt starts from, as the service spells
+        # it: medium, lighting, aesthetics. It wins over a prompt that says otherwise.
+        "skeleton": {},
+    },
     "voxels": {
         # What a voxel build is checked against (§PW97). A game decides how many cubes
         # it can draw and how thin a part may be before it vanishes, so these are the
@@ -327,6 +342,10 @@ class Config:
         """Every setting a project may declare, as `table.key`."""
         return [f"{t}.{k}" for t in sorted(DEFAULTS) for k in sorted(DEFAULTS[t])]
 
+    def states(self, table: str) -> bool:
+        """Whether the project wrote this table at all, rather than take the default."""
+        return bool(self._declared.get(table))
+
     def declared(self, address: str) -> bool:
         """Whether the project stated this itself, rather than taking the default."""
         table, _, key = address.partition(".")
@@ -415,6 +434,52 @@ class Config:
         if chosen == DEFAULT_SERVICE and not _named(self._declared.get("service", {})):
             return self.path("service.schema")
         return self.path(f"service.{chosen}.schema", self.services()[chosen]["schema"])
+
+    # -- the look ---------------------------------------------------------------
+
+    def styles(self) -> dict[str, dict]:
+        """Every asset family's declared style, by name (§PW166).
+
+        A bare `[style]` is one family, `default`; `[style.<family>]` tables are as many
+        as the project writes. `canon` resolves to a directory inside the tree.
+        """
+        named = _named(self._declared.get("style", {}))
+        stated = named or {DEFAULT_FAMILY: self._declared.get("style", {})}
+        found = {}
+        for family, own in stated.items():
+            style = {**DEFAULTS["style"], **own}
+            address = f"style.{family}.canon" if named else "style.canon"
+            style["canon"] = (
+                str(self.path(address, style["canon"])) if style["canon"] else ""
+            )
+            found[family] = style
+        return found
+
+    def style(self, family: str | None = None) -> tuple[str, dict]:
+        """One family's style, resolved as a service is: never guessed among several."""
+        declared = self.styles()
+        if family is None:
+            if len(declared) == 1:
+                return next(iter(declared.items()))
+            raise PolyweaveError(
+                "style.family-unnamed",
+                f"the project declares {len(declared)} styles and the call named none",
+                f"pass the asset's family: one of {', '.join(sorted(declared))}",
+                allowed=sorted(declared),
+            )
+        if family not in declared:
+            near = difflib.get_close_matches(family, declared, n=1)
+            raise PolyweaveError(
+                "style.unknown-family",
+                f"{family!r} is not a family this project declares a style for",
+                f"did you mean {near[0]!r}?"
+                if near
+                else f"name one of {', '.join(sorted(declared))}, or declare "
+                f"[style.{family}]",
+                given=family,
+                allowed=sorted(declared),
+            )
+        return family, declared[family]
 
     # -- the one read that is a decision ---------------------------------------
 
@@ -529,7 +594,7 @@ def _check(declared: dict, source: Path) -> None:
 
 
 #: Settings of one service whose value is itself a table, so not a named service.
-_TABLE_SETTINGS = ("prices",)
+_TABLE_SETTINGS = ("prices", "skeleton")
 
 
 def _named(values: dict) -> dict[str, dict]:
@@ -552,7 +617,9 @@ def _check_named(table: str, values: dict, source: Path) -> None:
             f"move them under the [{table}.<name>] they belong to",
             at=table,
         )
-    allowed = DEFAULTS["service"] if table == "service" else _NAMED_BUDGET
+    allowed = {"service": DEFAULTS["service"], "style": DEFAULTS["style"]}.get(
+        table, _NAMED_BUDGET
+    )
     for name, stated in values.items():
         for key, value in stated.items():
             if key not in allowed:
@@ -568,8 +635,7 @@ def _check_named(table: str, values: dict, source: Path) -> None:
                     at=f"{table}.{name}.{key}",
                 )
             _check_type(f"{table}.{name}.{key}", allowed[key], value, source)
-            if key == "prices":
-                _check_prices(f"{table}.{name}.{key}", value, source)
+            _check_value(f"{table}.{name}.{key}", key, value, source)
 
 
 def _check_services(declared: dict, source: Path) -> None:
@@ -618,8 +684,27 @@ def _check_key(table: str, key: str, value: Any, source: Path) -> None:
     if f"{table}.{key}" in _OPEN_TABLES:
         return
     _check_type(f"{table}.{key}", allowed[key], value, source)
+    _check_value(f"{table}.{key}", key, value, source)
+
+
+#: A colour as a palette states it.
+_HEX = re.compile(r"#[0-9a-fA-F]{6}")
+
+
+def _check_value(address: str, key: str, value: Any, source: Path) -> None:
+    """The settings whose type alone does not say whether a value is one."""
     if key == "prices":
-        _check_prices(f"{table}.{key}", value, source)
+        _check_prices(address, value, source)
+    elif key == "palette":
+        wrong = [c for c in value if not isinstance(c, str) or not _HEX.fullmatch(c)]
+        if wrong:
+            raise PolyweaveError(
+                "config.bad-type",
+                f"{address} holds {wrong[0]!r} in {source.name}, and a palette colour "
+                f"is a value, not a name",
+                "write each colour as #rrggbb",
+                at=address,
+            )
 
 
 def _check_prices(address: str, prices: dict, source: Path) -> None:

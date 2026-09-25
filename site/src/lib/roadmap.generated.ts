@@ -65,18 +65,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW57"],
   },
   {
-    id: "PW166",
-    block: "N",
-    symptom: "nothing says what a project's pictures should look like, so each prompt restates a house style by hand and drifts",
-    why: "Consistency asked of a generator in prose is luck, while a style declared once as approved pictures, palette and prompt skeleton is an input every call carries.",
-    deps: [],
-  },
-  {
     id: "PW167",
     block: "N",
     symptom: "a picture that drifts from the canon is found by a person looking, after it was already offered as a candidate",
     why: "The agent's part is to refuse drift by number before a person spends attention, never to decide that a picture which passes looks right.",
-    deps: ["PW166"],
+    deps: [],
   },
   {
     id: "PW168",
@@ -121,6 +114,13 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
+    id: "PW180",
+    block: "N",
+    symptom: "no canon picture is ever sent as a style reference, so a family's look reaches the service only as words",
+    why: "A reference picture holds line weight and proportion that no palette or style block states, and the canon already holds the approved ones.",
+    deps: [],
+  },
+  {
     id: "PW172",
     block: "O",
     symptom: "a person sees a render or picture only by opening files by hand, so a verdict rests on the agent's description",
@@ -160,7 +160,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "O",
     symptom: "the canon is a folder of files, so what a family is meant to look like is never seen whole",
     why: "A canon that quietly became two styles is found only by opening every file, and only a person's click should ever change what it holds.",
-    deps: ["PW172", "PW166"],
+    deps: ["PW172"],
   },
 ];
 

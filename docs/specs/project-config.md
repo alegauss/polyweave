@@ -110,6 +110,11 @@ reproducible = true            # a capture that stops reproducing is refused
 [geometry]
 outlines = "tools/art/outlines.py"   # where named shape generators come from
 
+[style]
+canon    = "docs/design/canon"     # pictures a person approved; only a verdict adds one
+palette  = ["#f2c14e", "#3a2e39"]  # as values, never names
+skeleton = { medium = "flat vector", lighting = "soft" }   # every structured prompt's start
+
 [voxels]
 budget        = 4000           # the most cells a model may have; zero is no ceiling
 thread        = 3              # the longest run one cell thick before it is reported
@@ -230,6 +235,31 @@ service a project declares. Once there are several, `spent` refuses such an entr
 service and per service for several. `capabilities` reports each key under `services`, by the
 variable's name and never its value, with each ceiling under `budgets`. The single-service
 `service` and `budget` fields are null once there are several.
+
+## A style declared once
+
+What a project's pictures look like is declared in `[style]`, and never in the plugin: two
+games have two looks (§PW166). A bare `[style]` is one family, `default`; a project with
+several writes `[style.<family>]` tables, and a call names its family the way it names a
+service. It is refused when several are declared and none is named (`style.family-unnamed`),
+so a sprite sheet is never held to a title screen's canon.
+
+- `canon`: a directory under the project holding pictures a person approved, each with its
+  described prompt beside it where there is one, and `canon.json` saying which verdict
+  admitted each;
+- `palette`: the colours a picture may use, as `#rrggbb` values, refused as names;
+- `skeleton`: the style block every structured prompt starts from, as the service spells it.
+
+**Every picture carries it.** Where a project declares a style, `picture.buy` composes the
+structured prompt over the family's skeleton. The skeleton's keys win over the prompt's, and
+the family's palette is the palette. A text prompt is refused (`style.needs-structure`),
+because it has nowhere to carry either. `style.read` returns a family's style and its canon.
+
+**The canon grows only by a person's verdict.** A `verdict.judge` member carrying `canon`, the
+family's name, joins that family's canon when the verdict accepts the look. The picture and
+its `<name>.prompt.json` are copied in, and the verdict's choice, sentence and date are
+written to `canon.json`. Admission is not an operation, so no other call can add to a canon.
+An agent that could admit its own output would make its drift the standard.
 
 **`[capture] declared` is the list that matters.** Every name in it is an environment setting
 a capture must state explicitly, and a capture leaving one to chance is refused. §PW25 is why:

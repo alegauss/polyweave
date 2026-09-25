@@ -49,6 +49,7 @@ AREAS: dict[str, str] = {
     "clip": "motion over time, as something with a name and a duration",
     "texture": "the pixels a service painted, and what has to come back out of them",
     "loop": "what one asset cost to make, each way",
+    "style": "what a project's pictures look like, and the canon a person grows",
 }
 
 CODES: dict[str, Code] = {
@@ -665,6 +666,29 @@ CODES: dict[str, Code] = {
             "look at the picture beside the drawing",
             "ask again with a clearer reference",
         ),
+    ),
+    # -- style: what a project's pictures look like ---------------------------
+    "style.family-unnamed": Code(
+        means="the project declares several styles and the call named no family",
+        when="a picture bought with [style.<family>] tables and no family; a sprite "
+        "held to a title screen's look is the mistake the families exist to prevent",
+        doors=("pass the asset's family",),
+    ),
+    "style.unknown-family": Code(
+        means="no style is declared for the family named",
+        when="a misspelled family, or one whose [style.<family>] was never written",
+        doors=("name a declared family", "declare [style.<family>]"),
+    ),
+    "style.needs-structure": Code(
+        means="a style is carried by a structured prompt, and the call gave text",
+        when="a picture asked for in a family with a text prompt, which the service "
+        "would rewrite and which has no place for a palette or a style block",
+        doors=("pass json_prompt",),
+    ),
+    "style.no-canon": Code(
+        means="the family has no canon directory, so nothing can be admitted to it",
+        when="a verdict naming a canon family whose [style] declares no canon",
+        doors=("set canon under the family's [style]",),
     ),
     # -- search: looking for values that satisfy a spec -----------------------
     "search.nothing-to-search": Code(

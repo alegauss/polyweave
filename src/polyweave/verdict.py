@@ -21,7 +21,7 @@ from datetime import date as Date
 from pathlib import Path
 from typing import Annotated
 
-from . import accept, calibrate, loop
+from . import accept, calibrate, loop, style
 from .describe import Param, operation
 from .doors import Blank, door
 from .errors import PolyweaveError
@@ -55,7 +55,8 @@ def _said(result: dict) -> str:
 
 
 MEMBERS = (
-    "each member: name, spec and new, and optionally old, capture with box, and shown"
+    "each member: name, spec and new, and optionally old, capture with box, shown, "
+    "and canon, the style family an accepted picture joins"
 )
 
 
@@ -174,6 +175,10 @@ def judge(
     person blamed, for a `look` — where a member carries them. On `number`, every bound
     that failed is rewritten to the value measured, with origin `person`, the date and
     the sentence: the person has accepted the look at that value.
+
+    A member carrying `canon` names a style family, and on a verdict that accepts the
+    look its `new` picture joins that family's canon, with this verdict on its record
+    (§PW166). This is the only door into a canon.
     """
     if choice not in CHOICES:
         raise PolyweaveError(
@@ -237,6 +242,16 @@ def judge(
                 root=here,
                 person=True,
             )["written"]
+        joined = None
+        if accepted and member.get("canon"):
+            joined = style.admit(
+                member["new"],
+                family=member["canon"],
+                why=why,
+                choice=choice,
+                when=stamp,
+                root=here,
+            )
         answers.append(
             {
                 "name": member["name"],
@@ -244,6 +259,7 @@ def judge(
                 "person_accepted": accepted,
                 "named": mine,
                 "rewritten": rewritten,
+                "canon": joined,
             }
         )
     return {

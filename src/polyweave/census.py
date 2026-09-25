@@ -66,6 +66,7 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.geometry.voxels": ("internal", "the voxel model a build writes"),
     "polyweave.purchase": ("internal", "what a fetch writes when it has paid"),
     "polyweave.schema": ("internal", "learning the schema, which sends requests"),
+    "polyweave.style": ("internal", "compose and admit; verdict.judge is admit's door"),
     "polyweave.capture": ("internal", "the environment's parts, inside capture.run"),
     "polyweave.engine": ("internal", "run with its launch hook, behind engine.run"),
     "polyweave.offscreen": ("internal", "a route as an object; offscreen.routes"),
