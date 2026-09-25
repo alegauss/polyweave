@@ -104,9 +104,15 @@ def sheet(
         )
 
     gap, line = 8, 14
+    # Every line is measured with the font that draws it, the choices under the rows
+    # included: a choice cut off at the sheet's edge is one a person is never offered
+    # (§PW182), and a guess at a character's width is what cut them off.
+    measuring = ImageDraw.Draw(Image.new("RGBA", (1, 1)))
+    choices = [f"{word}: {meaning}" for word, meaning in CHOICES.items()]
+    texts = [text for _, lines in rows for text in lines] + choices
     width = max(
         max(sum(t.width + gap for t in tiles) for tiles, _ in rows),
-        max(6 * len(text) for _, lines in rows for text in lines),
+        max(int(measuring.textlength(text)) + gap for text in texts),
     )
     height = sum(max((t.height for t in tiles), default=0) + gap for tiles, _ in rows)
     height += sum(line * len(lines) + gap for _, lines in rows) + line * 4

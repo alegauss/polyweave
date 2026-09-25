@@ -129,3 +129,16 @@ def test_naming_a_predicate_no_member_carries_is_refused(tmp_path):
             named=["no-hot-facets"],
         )
     assert refused.value.code == "loop.unknown-predicate"
+
+
+def test_the_choices_fit_on_a_sheet_of_small_members(tmp_path):
+    """§PW182: a sheet of narrow pictures cut its choice lines off at the edge."""
+    from PIL import ImageDraw
+
+    family = [member(tmp_path, "star_dim", BRIGHT, old=False)]
+    found = verdict.sheet(family, out="review/small.png", root=tmp_path)
+    with Image.open(found["sheet"]) as laid:
+        width = laid.width
+    pen = ImageDraw.Draw(Image.new("RGBA", (1, 1)))
+    widest = max(pen.textlength(f"{w}: {m}") for w, m in verdict.CHOICES.items())
+    assert width >= widest
