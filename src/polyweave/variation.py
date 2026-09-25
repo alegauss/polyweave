@@ -11,9 +11,12 @@ picture to the one it came from, because nothing recorded that it came from one.
 - **The mask comes from the request, not from a person drawing one.** An edit named by
   region takes it from the parent's described element boxes (`picture.describe`), so an
   edit an agent asks for is bounded where the approved picture said that element was.
-- **Outside the mask, nothing should have changed.** `picture.against_parent` compares
-  the unmasked region pixel for pixel, pooled, against `[tolerance] delta_e`, and
-  measures the variation against its family's canon where a style is declared.
+- **Outside the mask, nothing should have changed.** `picture.against_parent` measures
+  what was to be kept as a person means kept, because the services redraw the whole
+  picture (§PW209): the outline framed alike and the look's drift measures, against the
+  spread of variations a person accepted. Pixel for pixel, against `[tolerance]
+  delta_e`, only for a service that says it `preserves` them. It also measures the
+  variation against its family's canon where a style is declared.
 
 What a variation should look like stays the person's verdict; what it must not have
 changed is a number.
@@ -278,15 +281,58 @@ def against_parent(
 ) -> dict:
     """What a variation changed that it was not asked to, against its parent.
 
-    Outside the mask, every pooled patch must sit within `[tolerance] delta_e` of the
-    parent: a change there is the edit redrawing what it was not asked to. The
-    silhouette outside the mask is held to `[tolerance] silhouette_iou`. A remix has no
-    mask, so it is measured against the canon alone, where a style is declared.
+    What it was asked to keep is outside an edit's mask, or the parent's placed frame
+    in a reframe. A service that redraws the whole picture never keeps it pixel for
+    pixel, so it is measured as a person means kept (§PW209): the silhouette framed
+    alike, and the look's drift measures beside the parent's, each against the spread of
+    variations a person accepted, and `judged` is false until two have been. Where
+    `[service] preserves` says the service leaves those pixels alone, they are held to
+    `[tolerance] delta_e` instead. `instrument` says which. A remix has no mask, so it
+    is measured against the canon alone, where a style is declared.
     """
-    from . import measure
+    config = load(root)
+    tolerances = config.tolerances()
+    cut = _kept_region(variation, config)
+    record = cut["record"]
+    found: dict = {"variation": variation, "parent": cut["parent_path"]}
+    failed: list[str] = []
+    preserves = bool(
+        (config.services().get(record.get("service")) or {}).get("preserves")
+    )
+    if cut["change"] == "remix":
+        found["instrument"] = "canon"
+    elif preserves:
+        found["instrument"] = "pixels"
+        failed += _pixels(cut, found, tolerances)
+    else:
+        found["instrument"] = "kept"
+        failed += _judged_kept(cut, found, config, family)
+    if cut["change"] == "reframe":
+        found["placed"] = cut["placed"]
+    if style.in_force(config, family) is not None:
+        drifted = style.drift(variation, family, root=config.root)
+        found["canon"] = {"judged": drifted["judged"], "drifted": drifted["drifted"]}
+        failed.extend(
+            f"{key} drifted from the canon: "
+            f"{drifted['measures'][key].get('which_way', 'off')}"
+            for key in drifted["drifted"]
+        )
+    found.update(
+        failed=failed,
+        passed=not failed,
+        not_checked=[
+            "whether the drawn-in border belongs with the picture"
+            if cut["change"] == "reframe"
+            else "whether it shows what was asked for"
+        ],
+    )
+    return found
+
+
+def _kept_region(variation: str, config) -> dict:
+    """The variation and its parent, each cut to what it was asked to keep."""
     from .image import load as load_image
 
-    config = load(root)
     here = config.root
     record = provenance.read(variation, root=here)
     lineage = (record.get("details") or {}).get("parent")
@@ -296,50 +342,230 @@ def against_parent(
             f"{variation} records no parent, so there is nothing to hold it against",
             "measure it against its canon with style.drift instead",
         )
-    tolerances = config.tolerances()
     parent = load_image(here / lineage["path"])
     child = load_image(here / variation)
     details = record["details"]
+    cut = {"record": record, "parent_path": lineage["path"]}
     if details.get("change") == "reframe":
-        return _reframed(variation, lineage["path"], parent, child, config, family)
+        placed, held = _placed(variation, lineage["path"], parent, child)
+        size = (placed["width"], placed["height"])
+        box = (placed["x"], placed["y"], placed["x"] + size[0], placed["y"] + size[1])
+        return {
+            **cut,
+            "change": "reframe",
+            "placed": placed,
+            "held_delta_e": held,
+            "parent": _scaled(parent, size),
+            "child": _cropped(child, box),
+            "kept": None,
+        }
     if child.size != parent.size:
         child = _resized(child, parent.size)
-    kept = np.ones(parent.rgba.shape[:2], dtype=bool)
-    if details.get("mask"):
-        kept = load_image(here / details["mask"]).rgba[..., 0] > 127
+    if not details.get("mask"):
+        return {**cut, "change": "remix", "parent": parent, "child": child}
+    kept = load_image(here / details["mask"]).rgba[..., 0] > 127
+    return {
+        **cut,
+        "change": "edit",
+        "parent": _only(parent, kept),
+        "child": _only(child, kept),
+        "whole_parent": parent,
+        "whole_child": child,
+        "kept": kept,
+    }
+
+
+def _pixels(cut: dict, found: dict, tolerances) -> list[str]:
+    """The kept region pixel for pixel, for a service stated to leave it alone."""
+    from . import measure
+
     failed = []
-    found: dict = {"variation": variation, "parent": lineage["path"]}
-    if details.get("mask"):
-        field = measure._delta_field(child, parent)
-        worst = float(measure.pooled(field, kept).max()) if kept.any() else 0.0
-        found["unmasked_delta_e"] = round(worst, 4)
+    if cut["change"] == "reframe":
+        worst = cut["held_delta_e"]
+        found["held_delta_e"] = round(worst, 4)
         if worst > tolerances.delta_e:
             failed.append(
-                f"outside the mask a patch moved by delta E {worst:.1f}, over "
-                f"{tolerances.delta_e}: the edit redrew what it was not asked to"
+                f"where the parent sits in the reframe a patch moved by delta E "
+                f"{worst:.1f}, over {tolerances.delta_e}: the reframe redrew what it "
+                f"was asked to keep"
             )
-        mine = child.subject(tolerances.alpha_floor) & kept
-        theirs = parent.subject(tolerances.alpha_floor) & kept
-        union = int((mine | theirs).sum())
-        iou = round(float((mine & theirs).sum()) / union, 6) if union else 1.0
-        found["unmasked_silhouette_iou"] = iou
-        if iou < tolerances.silhouette_iou:
-            failed.append(
-                f"outside the mask the outline overlaps the parent's by {iou}, under "
-                f"{tolerances.silhouette_iou}"
-            )
-    if style.in_force(config, family) is not None:
-        drifted = style.drift(variation, family, root=here)
-        found["canon"] = {"judged": drifted["judged"], "drifted": drifted["drifted"]}
-        failed.extend(
-            f"{key} drifted from the canon: "
-            f"{drifted['measures'][key].get('which_way', 'off')}"
-            for key in drifted["drifted"]
+        return failed
+    kept, child, parent = cut["kept"], cut["whole_child"], cut["whole_parent"]
+    field = measure._delta_field(child, parent)
+    worst = float(measure.pooled(field, kept).max()) if kept.any() else 0.0
+    found["unmasked_delta_e"] = round(worst, 4)
+    if worst > tolerances.delta_e:
+        failed.append(
+            f"outside the mask a patch moved by delta E {worst:.1f}, over "
+            f"{tolerances.delta_e}: the edit redrew what it was not asked to"
         )
-    found["failed"] = failed
-    found["passed"] = not failed
-    found["not_checked"] = ["whether it shows what was asked for"]
+    mine = child.subject(tolerances.alpha_floor) & kept
+    theirs = parent.subject(tolerances.alpha_floor) & kept
+    union = int((mine | theirs).sum())
+    iou = round(float((mine & theirs).sum()) / union, 6) if union else 1.0
+    found["unmasked_silhouette_iou"] = iou
+    if iou < tolerances.silhouette_iou:
+        failed.append(
+            f"outside the mask the outline overlaps the parent's by {iou}, under "
+            f"{tolerances.silhouette_iou}"
+        )
+    return failed
+
+
+#: The drift measures a kept region is compared on: the look, not the pixels (§PW209).
+LOOK = (
+    "palette_delta_e_p95",
+    "value_p5",
+    "value_p95",
+    "saturation_p5",
+    "saturation_p95",
+    "line_weight",
+)
+
+
+def _kept(cut: dict, config, family) -> dict:
+    """What a person means by kept, in numbers: the outline, and the look's drift."""
+    floor = config.tolerances().alpha_floor
+    held = style.in_force(config, family)
+    palette = list((held[1] if held else {}).get("palette") or [])
+    mine = style.features(cut["child"], palette, floor)
+    theirs = style.features(cut["parent"], palette, floor)
+    return {
+        "silhouette_iou": _framed_iou(
+            cut["child"].subject(floor), cut["parent"].subject(floor)
+        ),
+        "look": {
+            key: {
+                "value": mine[key],
+                "parent": theirs[key],
+                "off": round(mine[key] - theirs[key], 4),
+            }
+            for key in LOOK
+            if mine.get(key) is not None and theirs.get(key) is not None
+        },
+    }
+
+
+def _judged_kept(cut: dict, found: dict, config, family) -> list[str]:
+    """The kept measures against the spread of variations a person accepted."""
+    mine = _kept(cut, config, family)
+    variation = found["variation"]
+    accepted = [
+        _kept(_kept_region(path, config), config, family)
+        for path in _accepted(config)
+        if path != variation
+    ]
+    judged = len(accepted) >= 2
+    failed = []
+    outline_floor = min(a["silhouette_iou"] for a in accepted) if judged else None
+    if judged and mine["silhouette_iou"] < outline_floor - 1e-6:
+        failed.append(
+            f"framed alike, the kept outline overlaps the parent's by "
+            f"{mine['silhouette_iou']}, under the {outline_floor} of the least-kept "
+            f"variation a person accepted"
+        )
+    for key, one in mine["look"].items():
+        offs = [abs(a["look"][key]["off"]) for a in accepted if key in a["look"]]
+        one["floor"] = round(max(offs), 4) if judged and len(offs) >= 2 else None
+        one["drifted"] = one["floor"] is not None and abs(one["off"]) > one["floor"]
+        if one["drifted"]:
+            failed.append(
+                f"{key} moved {one['off']:+g} from the parent's, past the "
+                f"{one['floor']} the accepted variations moved"
+            )
+    plural = "" if len(accepted) == 1 else "s"
+    found["kept"] = {
+        **mine,
+        "judged": judged,
+        "accepted": len(accepted),
+        "floor": f"the spread of {len(accepted)} variations a person accepted"
+        if judged
+        else f"none: {len(accepted)} accepted variation{plural} measured, and a "
+        f"floor is the spread of at least two",
+    }
+    return failed
+
+
+def _accepted(config) -> list[str]:
+    """Every variation a person accepted on the review page, by path."""
+    from . import review, verdict
+
+    here = config.root
+    offered = {one["manifest"]: one["families"] for one in review.sittings(here)}
+    found: list[str] = []
+    for answer in verdict.answers(root=str(here))["answers"]:
+        members = (
+            (offered.get(answer.get("sitting")) or {}).get(answer.get("family")) or {}
+        ).get("members") or []
+        named = {m.get("name"): m.get("new") for m in members}
+        for said in answer.get("members") or ():
+            path = named.get(said.get("name"))
+            if not said.get("person_accepted") or not path or path in found:
+                continue
+            try:
+                record = provenance.read(path, root=here)
+            except PolyweaveError:
+                continue
+            details = record.get("details") or {}
+            if details.get("parent") and (
+                details.get("mask") or details.get("change") == "reframe"
+            ):
+                found.append(path)
     return found
+
+
+#: The square both outlines are fitted into before they are compared.
+FRAMED = 128
+
+
+def _framed_iou(mine, theirs) -> float:
+    """Two outlines trimmed to their own box and fitted alike, then overlapped.
+
+    Where a service redrew the picture it may move or rescale the subject by a few
+    pixels, and a raw overlap measures that placement rather than the shape (§PW194).
+    """
+    a, b = _fitted(mine), _fitted(theirs)
+    union = int((a | b).sum())
+    return round(float((a & b).sum()) / union, 6) if union else 1.0
+
+
+def _fitted(mask):
+    from PIL import Image as PILImage
+
+    rows, columns = mask.nonzero()
+    canvas = np.zeros((FRAMED, FRAMED), dtype=bool)
+    if not len(rows):
+        return canvas
+    trimmed = mask[rows.min() : rows.max() + 1, columns.min() : columns.max() + 1]
+    height, width = trimmed.shape
+    scale = FRAMED / max(height, width)
+    size = (max(1, round(width * scale)), max(1, round(height * scale)))
+    drawn = PILImage.fromarray(trimmed.astype(np.uint8) * 255).resize(
+        size, PILImage.Resampling.NEAREST
+    )
+    top, left = (FRAMED - size[1]) // 2, (FRAMED - size[0]) // 2
+    canvas[top : top + size[1], left : left + size[0]] = np.asarray(drawn) > 127
+    return canvas
+
+
+def _only(image, kept):
+    """The image with everything outside the kept region made transparent."""
+    from .image import Image
+
+    rgba = image.rgba.copy()
+    rgba[..., 3] = np.where(kept, rgba[..., 3], 0)
+    return Image(path=image.path, rgba=rgba, had_alpha=True)
+
+
+def _cropped(image, box):
+    from .image import Image
+
+    left, top, right, bottom = box
+    return Image(
+        path=image.path,
+        rgba=image.rgba[top:bottom, left:right].copy(),
+        had_alpha=image.had_alpha,
+    )
 
 
 #: The side, in pixels, both pictures are brought down to before the placement search:
@@ -347,17 +573,15 @@ def against_parent(
 SEARCH_SIDE = 96
 
 
-def _reframed(variation: str, parent_path: str, parent, child, config, family) -> dict:
-    """Is the whole parent still there in the reframe, and did only the border change.
+def _placed(variation: str, parent_path: str, parent, child) -> tuple[dict, float]:
+    """Where the whole parent sits in the reframe, and how far that region moved.
 
     The service may place the parent at its own size or fit it to the new frame, so
     both scales are tried at every offset, on small copies, and the best placement is
-    refined at full size. Where even the best placement differs by more than
-    `[tolerance] delta_e`, the reframe redrew what it was asked to keep (§PW181).
+    refined at full size (§PW181).
     """
     from . import measure
 
-    tolerances = config.tolerances()
     before = measure._composited(parent)
     after = measure._composited(child)
     ph, pw = before.shape[:2]
@@ -391,51 +615,20 @@ def _reframed(variation: str, parent_path: str, parent, child, config, family) -
         )
     _, scale, x0, y0, field_of = best
     h, w = field_of.shape[:2]
-    refined = min(
+    _, x, y = min(
         (
-            (
-                float(
-                    np.linalg.norm(
-                        after[y : y + h, x : x + w] - field_of, axis=-1
-                    ).mean()
-                ),
-                x,
-                y,
-            )
-            for y in range(max(0, y0 - 4), min(ch - h, y0 + 4) + 1)
-            for x in range(max(0, x0 - 4), min(cw - w, x0 + 4) + 1)
-        ),
+            float(
+                np.linalg.norm(after[y : y + h, x : x + w] - field_of, axis=-1).mean()
+            ),
+            x,
+            y,
+        )
+        for y in range(max(0, y0 - 4), min(ch - h, y0 + 4) + 1)
+        for x in range(max(0, x0 - 4), min(cw - w, x0 + 4) + 1)
     )
-    _, x, y = refined
     region = np.linalg.norm(after[y : y + h, x : x + w] - field_of, axis=-1)
     worst = float(measure.pooled(region, np.ones(region.shape, dtype=bool)).max())
-    failed = []
-    if worst > tolerances.delta_e:
-        failed.append(
-            f"where the parent sits in the reframe a patch moved by delta E "
-            f"{worst:.1f}, over {tolerances.delta_e}: the reframe redrew what it was "
-            f"asked to keep"
-        )
-    found = {
-        "variation": variation,
-        "parent": parent_path,
-        "placed": {"scale": scale, "x": x, "y": y, "width": w, "height": h},
-        "held_delta_e": round(worst, 4),
-    }
-    if style.in_force(config, family) is not None:
-        drifted = style.drift(variation, family, root=config.root)
-        found["canon"] = {"judged": drifted["judged"], "drifted": drifted["drifted"]}
-        failed.extend(
-            f"{key} drifted from the canon: "
-            f"{drifted['measures'][key].get('which_way', 'off')}"
-            for key in drifted["drifted"]
-        )
-    found.update(
-        failed=failed,
-        passed=not failed,
-        not_checked=["whether the drawn-in border belongs with the picture"],
-    )
-    return found
+    return {"scale": scale, "x": x, "y": y, "width": w, "height": h}, worst
 
 
 def _scaled(image, size):

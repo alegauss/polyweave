@@ -78,6 +78,7 @@ base    = "https://api.meshy.ai"
 key_env = "MESHY_API_KEY"      # the NAME of the variable, never the value
 schema  = "polyweave.service.toml"
 prices  = {}                   # a quoted price per output, for a service with no balance
+preserves = false              # true only where an edit leaves the unmasked pixels alone
 
 [budget]
 credits = 60

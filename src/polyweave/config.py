@@ -152,6 +152,10 @@ DEFAULTS: dict[str, Any] = {
         # A price per output, keyed `<model>:<speed>` or `<model>`, for a service with
         # no balance to read: what it charges is then quoted, and says so (§PW164).
         "prices": {},
+        # Whether the service's edit and reframe leave what they were asked to keep
+        # untouched, pixel for pixel (§PW209). Ideogram's redraw the whole picture, so
+        # a variation is held to its parent pixel for pixel only where this is stated.
+        "preserves": False,
     },
     "budget": {
         # No budget is no spend, never an unlimited one: the absence of a ceiling is

@@ -223,6 +223,7 @@
 - ✅ **PW195** **a transparent picture is uploaded with the colour its generator left under full transparency** — Every picture a service is sent has the colour under full transparency cleared to black, so a service that drops alpha shows only what a viewer saw.
 - ✅ **PW208** **a picture a person promoted from the gate's refused lane cannot be bought from, because mesh.buy asks only the gate** — mesh.buy accepts a picture the gate saw and a person promoted from its refused lane on the review page, as well as one the gate passed.
 - ✅ **PW210** **a scene script's expected line anchored with ^ never matches below the log's first line** — A script's expected line is matched in line mode, so an anchored pattern finds the line wherever in the log the script printed it.
+- ✅ **PW209** **a variation is held to its parent pixel for pixel, which a service that redraws the whole picture can never meet** — picture.against_parent measures what was kept as the outline framed alike and the look's drift, floored by accepted variations; pixels only where a service preserves.
 
 ## Block O — A person sees and answers
 

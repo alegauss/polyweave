@@ -62,6 +62,13 @@ def parent(tmp_path, monkeypatch):
     return sent
 
 
+def preserving(tmp_path):
+    """A service that says its edit leaves the unmasked pixels alone (§PW209)."""
+    (tmp_path / C.FILENAME).write_text(
+        PROJECT.replace("[budget]", "preserves = true\n\n[budget]"), "utf-8"
+    )
+
+
 def came_back(monkeypatch, image):
     monkeypatch.setattr(picture, "_download", lambda link: png(image))
 
@@ -101,6 +108,7 @@ def test_an_edit_that_kept_everything_outside_its_mask_passes(
 def test_an_edit_that_redrew_what_it_was_not_asked_to_is_refused(
     tmp_path, parent, monkeypatch
 ):
+    preserving(tmp_path)
     came_back(monkeypatch, figure(hand=(60, 60, 200), body=(230, 120, 40), wide=4))
     variation.vary(
         "hero.png", "v.png", "holding a lantern", region="left hand", root=tmp_path
@@ -197,7 +205,10 @@ def test_a_reframe_that_fitted_the_parent_to_the_frame_is_found(
 
 def test_a_reframe_that_redrew_the_parent_is_refused(tmp_path, parent, monkeypatch):
     (tmp_path / C.FILENAME).write_text(
-        PROJECT.replace('"remix" = 0.06', '"reframe" = 0.06'), "utf-8"
+        PROJECT.replace('"remix" = 0.06', '"reframe" = 0.06').replace(
+            "[budget]", "preserves = true\n\n[budget]"
+        ),
+        "utf-8",
     )
     solid_parent().save(tmp_path / "hero.png")
     came_back(
@@ -217,3 +228,86 @@ def test_a_reframe_with_no_frame_is_refused_before_anything_is_sent(tmp_path, pa
         variation.vary("hero.png", "wide.png", change="reframe", root=tmp_path)
     assert caught.value.code == "fetch.missing-field"
     assert parent == {}
+
+
+# -- what a person means by kept (§PW209) --------------------------------------------
+
+
+def _varied(tmp_path, monkeypatch, out, image):
+    came_back(monkeypatch, image)
+    variation.vary(
+        "hero.png", out, "holding a lantern", region="left hand", root=tmp_path
+    )
+
+
+def _accepted(tmp_path, *paths):
+    """A sitting of variations, and a person's accept of each on the review page."""
+    from polyweave import verdict
+
+    families = {p: [{"name": p, "new": p}] for p in paths}
+    sheets = {p: {"sheet": str(tmp_path / p), "members": []} for p in paths}
+    verdict._manifest(tmp_path / "review", families, sheets, tmp_path)
+    for p in paths:
+        verdict.record_answer(
+            {
+                "choice": "accept",
+                "why": "still the hero",
+                "members": [{"name": p, "person_accepted": True}],
+            },
+            sitting="review/sitting.json",
+            family=p,
+            root=tmp_path,
+        )
+
+
+def test_a_redrawing_service_is_measured_as_kept_and_unjudged_at_first(
+    tmp_path, parent, monkeypatch
+):
+    _varied(
+        tmp_path, monkeypatch, "v.png", figure(hand=(60, 60, 200), body=(230, 120, 40))
+    )
+    found = variation.against_parent("v.png", root=tmp_path)
+    assert found["instrument"] == "kept"
+    assert "unmasked_delta_e" not in found
+    assert found["kept"]["judged"] is False
+    assert found["kept"]["floor"].startswith("none: 0 accepted variations")
+    assert found["kept"]["look"]["saturation_p95"]["off"] != 0
+    assert found["passed"] is True
+
+
+def test_a_variation_is_held_to_the_spread_of_the_ones_a_person_accepted(
+    tmp_path, parent, monkeypatch
+):
+    _varied(tmp_path, monkeypatch, "a.png", figure(hand=(60, 60, 200)))
+    _varied(
+        tmp_path, monkeypatch, "b.png", figure(hand=(60, 200, 60), body=(240, 190, 80))
+    )
+    _accepted(tmp_path, "a.png", "b.png")
+    _varied(tmp_path, monkeypatch, "kept.png", figure(hand=(200, 200, 60)))
+    kept = variation.against_parent("kept.png", root=tmp_path)
+    assert kept["kept"]["judged"] is True and kept["kept"]["accepted"] == 2
+    assert kept["passed"] is True, kept["failed"]
+    _varied(tmp_path, monkeypatch, "far.png", figure(body=(60, 90, 200), wide=6))
+    far = variation.against_parent("far.png", root=tmp_path)
+    assert far["passed"] is False
+    assert any("the accepted variations moved" in f for f in far["failed"])
+
+
+def test_a_reframe_by_a_redrawing_service_reports_kept_not_pixels(
+    tmp_path, parent, monkeypatch
+):
+    (tmp_path / C.FILENAME).write_text(
+        PROJECT.replace('"remix" = 0.06', '"reframe" = 0.06'), "utf-8"
+    )
+    solid_parent().save(tmp_path / "hero.png")
+    came_back(
+        monkeypatch,
+        reframed(solid_parent(), (160, 64), (48, 0), touch=(60, 10, 90, 40)),
+    )
+    variation.vary(
+        "hero.png", "wide.png", change="reframe", resolution="1536x640", root=tmp_path
+    )
+    found = variation.against_parent("wide.png", root=tmp_path)
+    assert found["instrument"] == "kept"
+    assert found["placed"]["x"] == 48
+    assert "held_delta_e" not in found and found["kept"]["judged"] is False
