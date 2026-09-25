@@ -73,6 +73,8 @@ def primitive(kind: str = "sphere", radius: float = 1.0) -> Any:
             "render.unknown-primitive",
             f"there is no {kind!r} primitive",
             "use 'sphere', which is the shape a surface is read on",
+            given=kind,
+            allowed=("sphere",),
         )
     # Smooth enough for a surface to read on, and a fraction of the faces a character
     # carries — the cheap rung being cheap is the whole point of it.
@@ -218,6 +220,8 @@ def _material(inputs: dict, named: str) -> Any:
             "render.unknown-material-field",
             f"a material has no {', '.join(unknown)}",
             f"use one of {', '.join(_socket_names(bsdf))}",
+            given=unknown[0],
+            allowed=_socket_names(bsdf),
         )
     for key, value in inputs.items():
         socket = _socket(bsdf, key)

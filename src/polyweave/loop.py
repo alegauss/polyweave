@@ -133,12 +133,16 @@ def start(
             f"a run cannot leave {', '.join(unknown)} unmeasured; it records no such "
             "number",
             f"name some of {', '.join(MEASURED)}",
+            given=unknown[0],
+            allowed=MEASURED,
         )
     if way not in WAYS:
         raise PolyweaveError(
             "loop.unknown-way",
             f"{way!r} is neither of the two ways being compared",
             f"say one of {', '.join(WAYS)}",
+            given=way,
+            allowed=WAYS,
         )
     runs = [r for r in read(root) if r["asset"] == asset]
     if change is not None:
@@ -292,6 +296,8 @@ def judged(
                 "given does not carry",
                 "pass the check the person judged, and name predicates from it: "
                 + (", ".join(sorted(known)) or "it has none"),
+                given=unknown[0],
+                allowed=known,
             )
         verdict["named"] = sorted(set(named))
     run["verdicts"].append(verdict)

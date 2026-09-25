@@ -39,6 +39,8 @@ def stages_for(kind: str) -> tuple[str, ...]:
             "job.unknown-kind",
             f"there is no operation kind {kind!r}",
             f"pass kind as one of {', '.join(sorted(KINDS))}",
+            given=kind,
+            allowed=KINDS,
         ) from None
     return running + TERMINAL
 
@@ -51,6 +53,8 @@ def check_stage(kind: str, stage: str) -> str:
             "job.unknown-stage",
             f"a {kind} job has no stage {stage!r}",
             f"report one of {', '.join(allowed)}",
+            given=stage,
+            allowed=allowed,
         )
     return stage
 

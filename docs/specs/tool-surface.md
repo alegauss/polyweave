@@ -165,6 +165,15 @@ both answers.
   door the codes table teaches is parsed by the derived command line, so the form a
   refusal teaches is one that is accepted. The prose `remedy` stays: a door is added
   where a remedy names a call, and a remedy that is a judgement has no call to carry.
+- **A refused name says which names would have worked** (§PW128). A raise passes
+  `given` (the name refused) and `allowed` (the set it was checked against), and the wire
+  form adds `allowed`, sorted, and `did_you_mean`, each left out when empty. The same
+  goes for `example`, a correct fragment that is accepted when fed back, and `at`, a path
+  into the input such as `channels.spine.scale`. The suggestion follows Shio's rule: case-
+  and separator-insensitive, deterministic on ties, and silent when nothing is close,
+  because a wrong guess costs more than none. `tests/test_names.py` pins how many raises
+  under an unknown-name code still pass no `allowed`, so the number only falls and a new
+  one must pass it from the start.
 
 ## 4. The surface describes itself
 

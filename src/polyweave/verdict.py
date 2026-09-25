@@ -180,6 +180,8 @@ def judge(
             "loop.unknown-choice",
             f"{choice!r} is not something a person says of a family here",
             f"say one of {', '.join(CHOICES)}",
+            given=choice,
+            allowed=CHOICES,
         )
     if not str(why).strip():
         raise PolyweaveError(
@@ -197,6 +199,8 @@ def judge(
             "loop.unknown-predicate",
             f"the verdict names {', '.join(unknown)}, which no member's spec carries",
             "name predicates from: " + ", ".join(sorted(carried)),
+            given=unknown[0],
+            allowed=carried,
         )
     accepted = choice != "look"
     if choice == "number" and all(found["passed"] for *_, found in checked):

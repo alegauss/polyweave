@@ -322,6 +322,8 @@ def primitive(kind: str = "cube", size: float = 1.0, *, steps: int = STEPS) -> d
         "geom.unknown-shape",
         f"there is no primitive called {kind!r}",
         "name one of cube, plane, cylinder, sphere",
+        given=kind,
+        allowed=("cube", "plane", "cylinder", "sphere"),
     )
 
 

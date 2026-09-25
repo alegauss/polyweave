@@ -367,6 +367,8 @@ def _primitive(instance: dict, points: np.ndarray) -> np.ndarray:
         "geom.unknown-shape",
         f"there is no primitive called {kind!r}",
         "name one of cube, plane, cylinder, sphere",
+        given=kind,
+        allowed=("cube", "plane", "cylinder", "sphere"),
     )
 
 

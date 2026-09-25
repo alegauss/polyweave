@@ -16,7 +16,8 @@ import contextlib
 import difflib
 import re
 import traceback
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator
+from typing import Any
 
 from . import codes as _codes
 from . import doors as _doors
@@ -41,6 +42,10 @@ class PolyweaveError(Exception):
         detail: str | None = None,
         *,
         call: dict | None = None,
+        given: str | None = None,
+        allowed: Iterable[str] | None = None,
+        example: str | None = None,
+        at: str | None = None,
     ) -> None:
         if not _CODE.match(code):
             raise ValueError(
@@ -64,20 +69,30 @@ class PolyweaveError(Exception):
         self.detail = detail
         #: The call the remedy names, as data, where it names one (§PW127).
         self.call = call
+        #: Where the refusal is about a name (§PW128): the names that would have
+        #: worked, the nearest of them, a correct fragment, and where in the input.
+        self.allowed = sorted({str(one) for one in allowed}) if allowed else []
+        self.did_you_mean = near(given, self.allowed) if given is not None else None
+        self.example = example
+        self.at = at
 
     def as_dict(self) -> dict:
-        """The wire form, with `detail` and `call` present only when there is one."""
+        """The wire form, every optional field present only when it has something."""
         out = {"code": self.code, "message": self.message, "remedy": self.remedy}
         if self.detail:
             out["detail"] = self.detail
         if self.call:
             out["call"] = _doors.as_data(self.call)
+        for name in ("allowed", "did_you_mean", "example", "at"):
+            value = getattr(self, name)
+            if value:
+                out[name] = value
         return out
 
     @classmethod
     def from_dict(cls, payload: dict) -> PolyweaveError:
         call = payload.get("call")
-        return cls(
+        back = cls(
             payload["code"],
             payload["message"],
             payload["remedy"],
@@ -85,10 +100,39 @@ class PolyweaveError(Exception):
             call={"operation": call["operation"], "arguments": call["arguments"]}
             if call
             else None,
+            allowed=payload.get("allowed"),
+            example=payload.get("example"),
+            at=payload.get("at"),
         )
+        back.did_you_mean = payload.get("did_you_mean")
+        return back
 
     def __repr__(self) -> str:  # pragma: no cover - debugging aid
         return f"PolyweaveError({self.code!r}, {self.message!r})"
+
+
+def _plain(name: str) -> str:
+    """A name with case and separators taken out, which is how a typo differs."""
+    return re.sub(r"[\s_\-.]+", "", str(name).lower())
+
+
+def near(given: Any, allowed: Iterable[str]) -> str | None:
+    """The one allowed name `given` most likely meant, or None when nothing is close.
+
+    Shio's rule, taken whole: case- and separator-insensitive, deterministic on ties,
+    and silent when nothing is close, because a wrong guess costs more than none.
+    """
+    choices = sorted({str(one) for one in allowed})
+    if given is None or not choices or str(given) in choices:
+        return None
+    wanted = _plain(given)
+    by_plain: dict[str, str] = {}
+    for one in choices:
+        by_plain.setdefault(_plain(one), one)
+    if wanted in by_plain and by_plain[wanted] != str(given):
+        return by_plain[wanted]
+    found = difflib.get_close_matches(wanted, list(by_plain), n=1, cutoff=0.75)
+    return by_plain[found[0]] if found else None
 
 
 def explain(code: str) -> dict:

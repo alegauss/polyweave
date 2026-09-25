@@ -145,6 +145,8 @@ def call(name: str, arguments: dict | None) -> dict:
                 "op.unknown",
                 f"there is no tool named {name!r}",
                 "tools/list names every one",
+                given=name,
+                allowed=by_tool,
             )
         registered = D._REGISTRY[by_tool[name]]
         args = D.validate(registered.name, dict(arguments or {}))

@@ -108,6 +108,8 @@ def place(
             "compose.unknown-anchor",
             f"there is no {anchor!r} anchor",
             f"use one of {', '.join(ANCHORS)}",
+            given=anchor,
+            allowed=ANCHORS,
         )
     canvas = _as_pil(into).copy()
     scaled = _as_pil(asset)

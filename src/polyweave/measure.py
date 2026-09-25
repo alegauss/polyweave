@@ -734,6 +734,8 @@ def resolve(name: str) -> str:
         "spec.unknown-measure",
         f"{name!r} is not a measure",
         f"name one of {', '.join(sorted(set(COMPUTES) | set(PENDING)))}",
+        given=name,
+        allowed=set(COMPUTES) | set(PENDING),
     )
 
 

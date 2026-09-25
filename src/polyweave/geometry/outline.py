@@ -195,6 +195,8 @@ def generate(named: str, **how: Any) -> np.ndarray:
             "geom.unknown-shape",
             f"there is no outline generator called {named!r}",
             f"name one of {', '.join(sorted(GENERATORS))}, or trace an image",
+            given=named,
+            allowed=GENERATORS,
         )
     try:
         return GENERATORS[named](**how)

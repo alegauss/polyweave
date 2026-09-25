@@ -87,7 +87,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW128",
     block: "K",
     symptom: "a refused name says what was wrong but never which names would have worked",
-    why: "An unknown measure, primitive, material slot or operation is where an agent guesses, and the near match exists only inside a sentence the config reader writes.",
+    why: "Pass allowed and given at the 37 unknown-name raises that still lack them, lowering test_names.UNCONVERTED each time.",
     deps: [],
   },
   {

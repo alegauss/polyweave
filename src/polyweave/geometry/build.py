@@ -274,6 +274,9 @@ def build(
                 f"{one!r} has op {node['op']!r}, and nothing builds that",
                 f"name one of {', '.join(sorted(BUILDS))}, or write it as a `custom` "
                 f"node pointing at a function of your own",
+                given=node["op"],
+                allowed=BUILDS,
+                at=f"nodes.{one}.op",
             )
         for instance in instanced[one]["instances"]:
             if node["op"] == "cells" and cell and not instance.get("cell"):

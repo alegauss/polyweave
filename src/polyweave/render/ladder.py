@@ -61,6 +61,9 @@ def check_rung(rung: str) -> str:
             f"there is no rung called {rung!r}",
             f"name one of {', '.join(RUNGS)}; a project chooses which are enabled and "
             f"how big they are, not what they mean",
+            given=rung,
+            allowed=RUNGS,
+            example="preview",
         )
     return rung
 
@@ -76,6 +79,9 @@ def rung_for(measure: str) -> str:
             f"{measure!r} is not a measure",
             f"name one of {', '.join(sorted(ANSWERS_AT))}, with a statistic suffix "
             f"where it takes one",
+            given=measure,
+            allowed=ANSWERS_AT,
+            example="saturation_p99",
         ) from None
 
 

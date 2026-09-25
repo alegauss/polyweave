@@ -115,6 +115,8 @@ def plan(
             "rig.unknown-plan",
             f"there is no body plan called {named!r}",
             f"name one of {', '.join(sorted(PLANS))}",
+            given=named,
+            allowed=PLANS,
         )
     return check_plan(PLANS[named])
 

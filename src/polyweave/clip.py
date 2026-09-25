@@ -74,6 +74,8 @@ def clip(
             "clip.unknown-easing",
             f"there is no easing called {easing!r}",
             f"name one of {', '.join(EASINGS)}",
+            given=easing,
+            allowed=EASINGS,
         )
     if float(duration) <= 0 or int(fps) <= 0:
         raise PolyweaveError(
@@ -90,6 +92,9 @@ def clip(
                     "clip.unknown-property",
                     f"{joint!r} has a channel for {prop!r}, which is not a property",
                     f"name one of {', '.join(PROPERTIES)}",
+                    given=prop,
+                    allowed=PROPERTIES,
+                    at=f"channels.{joint}",
                 )
             ordered = _keys(joint, prop, keys, float(duration))
             if ordered:
@@ -120,6 +125,9 @@ def _keys(joint: str, prop: str, keys: Any, duration: float) -> list:
                 "clip.unknown-easing",
                 f"{joint}.{prop} at {when}s asks for {ease!r}",
                 f"name one of {', '.join(EASINGS)}",
+                given=ease,
+                allowed=EASINGS,
+                at=f"channels.{joint}.{prop}",
             )
         if not 0.0 <= float(when) <= duration:
             raise PolyweaveError(

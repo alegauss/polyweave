@@ -271,6 +271,8 @@ def describe(name: str | None = None) -> dict | list[dict]:
             f"there is no operation named {name!r}",
             f"describe() with no argument lists them; there "
             f"{'is 1' if len(_REGISTRY) == 1 else f'are {len(_REGISTRY)}'}",
+            given=name,
+            allowed=_REGISTRY,
         ) from None
 
 
@@ -286,6 +288,8 @@ def validate(name: str, args: dict) -> dict:
             "op.unknown",
             f"there is no operation named {name!r}",
             "describe() with no argument lists them",
+            given=name,
+            allowed=_REGISTRY,
         ) from None
 
     declared = {p["name"]: p for p in registered.parameters}
@@ -295,6 +299,8 @@ def validate(name: str, args: dict) -> dict:
             "op.unknown-argument",
             f"{name} takes no {', '.join(unknown)}",
             f"it takes {', '.join(declared) or 'no arguments'}",
+            given=unknown[0],
+            allowed=declared,
         )
     missing = sorted(n for n, p in declared.items() if p["required"] and n not in args)
     if missing:
