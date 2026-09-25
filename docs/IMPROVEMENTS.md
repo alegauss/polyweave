@@ -274,32 +274,6 @@ unstated.
 
 ## Block N — Pictures held to a canon
 
-### §PW167 Drift, measured against the canon
-
-The agent's part in consistency is to **refuse drift by number before a person spends
-attention on it**, and never to decide that a picture which passes looks right. Today
-the only check is a person looking, after the picture was offered.
-
-**Drift, against the canon of the asset's family (PW166):**
-
-- palette — each subject pixel's ΔE to the nearest declared colour, at the 95th percentile;
-- value and saturation — the 5th and 95th percentiles of the subject;
-- line weight — stroke width from a distance transform of the edges;
-- edge — alpha fringe width and halo colour;
-- light — the dominant shading direction;
-- silhouette — IoU against a declared outline, where there is one.
-
-**Percentiles, never means**: right on average and wrong in one hand is wrong.
-
-**The bar is measured from the canon itself.** The spread among approved pictures is the
-floor below which a difference means nothing, as a twin render sets the noise floor. A
-family with one canon picture has no spread, and says so rather than inventing one.
-
-**A refusal says which way** — palette ΔE 14 against a floor of 6, warmer; line weight
-twice the canon's — because that is what the next prompt is corrected from. What these
-measures cannot see, a face that became a different character, stays the person's
-verdict, and the report says it was not checked.
-
 ### §PW168 The silhouette settled on the picture
 
 Cottony asked for a wide low cap and got a tall dome, and learned it after thirty
@@ -315,7 +289,7 @@ silhouette is decided, for cents rather than credits.
 3. `reference.pick` confirms it is a drawing — real alpha, clear border — and
    `reference.prepare` confirms the subject fills the frame and touches no edge;
 4. its outline is compared to the declared one by IoU, against `[tolerance] silhouette_iou`,
-   and its style against the canon (§PW167);
+   and its style against the canon (PW167);
 5. only a picture that passed all of it is handed to the mesh service.
 
 **A picture that fails is a record, not a re-roll.** Its failure — centroid offset,
@@ -362,7 +336,7 @@ strength (`image_weight` for a remix), and the mask where there was one. So a re
 parent names every variation made from it.
 
 **A variation is measured against its parent, and against the canon.** Against the canon
-with the drift measures (§PW167); against the parent with one more, which only a lineage
+with the drift measures (PW167); against the parent with one more, which only a lineage
 makes possible: **outside the mask, nothing should have changed.** The unmasked region
 is compared pixel for pixel after alignment, and a change there beyond the noise floor
 is the remix redrawing what it was not asked to.
@@ -537,7 +511,7 @@ pixels.
 
 ### §PW175 The refused beside the kept
 
-The agent refuses drift before a person looks (§PW167), which is right — and makes the
+The agent refuses drift before a person looks (PW167), which is right — and makes the
 agent the one filter nobody checks. A picture wrongly refused is never seen, so a bar
 set too tight costs good work silently, and the person has no way to find out.
 
@@ -593,7 +567,7 @@ styles — the early pictures and the late ones — is found only by somebody op
 file.
 
 **The page has a board per family**: every canon picture, the palette as swatches, the
-prompt skeleton as text, and the spread the drift floor is measured from (§PW167), so a
+prompt skeleton as text, and the spread the drift floor is measured from (PW167), so a
 person sees what the canon looks like and how tolerant it made the agent.
 
 **A picture joins the canon by a click, and only by one.** "Add to canon" is a `judge`

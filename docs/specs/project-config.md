@@ -261,6 +261,18 @@ its `<name>.prompt.json` are copied in, and the verdict's choice, sentence and d
 written to `canon.json`. Admission is not an operation, so no other call can add to a canon.
 An agent that could admit its own output would make its drift the standard.
 
+**Drift is refused by number before a person looks** (§PW167). `style.drift` measures a
+picture and every canon picture of its family, always at a percentile of the subject, never
+a mean: the palette distance (each pixel's ΔE to the nearest declared colour, at the 95th),
+value and saturation (5th and 95th), line weight (stroke width from repeated erosion of the
+ink, the subject's darker half where its tones span at least 20 L*), the edge (fringe width
+and halo ΔE) and the direction light falls from. **The floor is the canon's own spread**:
+how far its approved pictures sit from their median. A family with fewer than two canon
+pictures has no spread, so its report is `judged: false` and says so, rather than inventing a
+floor. A refusal says which way each measure went (warmer, thicker lines, light turned 40
+degrees), because the next prompt is corrected from that. `not_checked` names what a number
+cannot see, such as whether it is still the same character, and that stays the person's.
+
 **`[capture] declared` is the list that matters.** Every name in it is an environment setting
 a capture must state explicitly, and a capture leaving one to chance is refused. §PW25 is why:
 the same script on two machines produced two different images because the game read its

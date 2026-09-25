@@ -685,6 +685,12 @@ CODES: dict[str, Code] = {
         "would rewrite and which has no place for a palette or a style block",
         doors=("pass json_prompt",),
     ),
+    "style.no-subject": Code(
+        means="the picture has no pixel above the alpha floor, so there is no look "
+        "to measure",
+        when="an empty or fully transparent frame given to style.drift",
+        doors=("check the picture is the asset",),
+    ),
     "style.no-canon": Code(
         means="the family has no canon directory, so nothing can be admitted to it",
         when="a verdict naming a canon family whose [style] declares no canon",

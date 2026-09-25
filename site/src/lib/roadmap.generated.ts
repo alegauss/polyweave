@@ -38,7 +38,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "K", title: "Reached without reading the source", open: 0 },
   { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
-  { block: "N", title: "Pictures held to a canon", open: 8 },
+  { block: "N", title: "Pictures held to a canon", open: 7 },
   { block: "O", title: "A person sees and answers", open: 6 },
 ];
 
@@ -65,18 +65,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW57"],
   },
   {
-    id: "PW167",
-    block: "N",
-    symptom: "a picture that drifts from the canon is found by a person looking, after it was already offered as a candidate",
-    why: "The agent's part is to refuse drift by number before a person spends attention, never to decide that a picture which passes looks right.",
-    deps: [],
-  },
-  {
     id: "PW168",
     block: "N",
     symptom: "a reference drawing reaches the mesh service unchecked, so a wrong silhouette is found only once the mesh is paid for",
     why: "A picture costs cents and a mesh thirty credits, so the outline belongs settled on the picture before anything dearer is bought.",
-    deps: ["PW167"],
+    deps: [],
   },
   {
     id: "PW169",
@@ -90,7 +83,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "N",
     symptom: "a variation of an approved picture can change what was approved, and nothing compares it to the one it came from",
     why: "Refining through remix or edit is where proportions and palette quietly move, and the approved parent is what it should be measured against.",
-    deps: ["PW167"],
+    deps: [],
   },
   {
     id: "PW171",
@@ -146,7 +139,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "O",
     symptom: "a person sees the pictures the agent kept and never the ones it refused, so a wrong refusal is invisible",
     why: "The drift check makes the agent a filter nobody audits, and a bar set too tight costs good work in silence unless the refused are shown.",
-    deps: ["PW172", "PW167"],
+    deps: ["PW172"],
   },
   {
     id: "PW176",

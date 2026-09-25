@@ -196,5 +196,5 @@ def test_nothing_but_a_verdict_can_add_to_a_canon():
     from polyweave.describe import describe
 
     names = {one["operation"] for one in describe()}
-    assert "style.read" in names
-    assert not any(n.startswith("style.") and n != "style.read" for n in names)
+    assert {"style.read", "style.drift"} <= names
+    assert "style.admit" not in names

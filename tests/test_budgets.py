@@ -41,8 +41,9 @@ DESCRIBE = 54_900
 #: refusals and the per-service keys and ceilings (§PW162), then 60,039 with
 #: picture.buy and its five refusals (§PW163), then 61,418 with reconcile, describe,
 #: fetch.unpriced and fetch.seed-unproved (§PW164, §PW165), then 62,247 with
-#: style.read and the style area's four codes (§PW166).
-CAPABILITIES = 62_800
+#: style.read and the style area's four codes (§PW166), then 62,817 with style.drift
+#: and style.no-subject (§PW167).
+CAPABILITIES = 63_400
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
@@ -51,8 +52,8 @@ HELP_VERB = 4_000
 #: 11,792 once measure.digest is a verb (§PW141), 11,933 with cost.read (§PW143),
 #: 12,066 with motion.bake (§PW160), 12,216 with sound.measure (§PW113), 12,385
 #: with picture.buy (§PW163), 12,712 with purchase.reconcile and picture.describe
-#: (§PW164, §PW165).
-HELP_TOP = 12_900
+#: (§PW164, §PW165), 13,013 with style.read and style.drift (§PW166, §PW167).
+HELP_TOP = 13_200
 #: A search's answer over its default budget of 24 samples: 3,739.
 SEARCH = 4_000
 
