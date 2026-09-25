@@ -43,6 +43,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "P", title: "Music and sound a game can ship", open: 9 },
   { block: "Q", title: "Words held to the world", open: 5 },
   { block: "R", title: "Levels measured before a person plays them", open: 6 },
+  { block: "S", title: "Playing the game, not only rendering it", open: 7 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -220,6 +221,55 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "Cottony's levels are still tuned by a curve nobody measured",
     why: "The block is proven only when its first consumer's shipped levels are declared, compiled, probed and accepted here, and make_levels.py has nothing left to do.",
     deps: ["PW204", "PW205"],
+  },
+  {
+    id: "PW211",
+    block: "S",
+    symptom: "Nobody knows if an agent can drive a Godot game from its menu to a won level and get the same result twice",
+    why: "Every later line in this block rests on GodotTestDriver or a fallback, and it needs Godot .NET in games that are GDScript only.",
+    deps: [],
+  },
+  {
+    id: "PW212",
+    block: "S",
+    symptom: "A running game cannot be held between two tool calls, so each question an agent asks it costs a fresh launch",
+    why: "GodotTestDriver lives inside the game with no socket, so the game needs a listener an agent's calls can reach, paused between them.",
+    deps: ["PW211"],
+  },
+  {
+    id: "PW213",
+    block: "S",
+    symptom: "An agent has no tool that opens a game, acts in it and reads it back within one session",
+    why: "The driver answers on a socket, and an agent in a terminal reaches polyweave through its tools, so the session needs a door on that surface.",
+    deps: ["PW212"],
+  },
+  {
+    id: "PW214",
+    block: "S",
+    symptom: "A flow an agent found by driving the game is lost when the session closes, so nothing replays it",
+    why: "A test that needs an agent in the loop costs tokens and judgement on every run, so what a session proved has to become a file the runner replays alone.",
+    deps: ["PW213"],
+  },
+  {
+    id: "PW215",
+    block: "S",
+    symptom: "Nothing stops the driver, or the .NET runtime it brought, from shipping inside a release export",
+    why: "A listener that runs any method it is asked to is a way into the game, so its absence from a player's build has to be checked, not assumed.",
+    deps: ["PW212"],
+  },
+  {
+    id: "PW216",
+    block: "S",
+    symptom: "A real-time game has never been driven frame by frame, so the driver is proven on a turn-based board only",
+    why: "Cottony waits for the player and Starship does not, so pausing the tree between calls is only shown to hold once a shooter's physics and spawns replay the same.",
+    deps: ["PW214"],
+  },
+  {
+    id: "PW217",
+    block: "S",
+    symptom: "Cottony's flow from title screen to a won level is checked by no test, so a broken menu ships unseen",
+    why: "The block is proven only when its first consumer keeps its main flows as replayed tests in its own release script, beside a clean release check.",
+    deps: ["PW214", "PW215", "PW216"],
   },
 ];
 

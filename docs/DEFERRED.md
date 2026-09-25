@@ -47,3 +47,5 @@
 
 ## Block R — Levels measured before a person plays them
 
+## Block S — Playing the game, not only rendering it
+

@@ -67,6 +67,16 @@
 - 📋 **PW205** (deps: PW202, PW203) **A shooter's waves have no measure of threat, so the level contract is proven on one genre only** — A contract only Cottony's match-3 has exercised may still assume a board, and Starship's check_phase_waves counts enemies without asking how many arrive at once. → §PW205
 - 📋 **PW206** (deps: PW204, PW205) **Cottony's levels are still tuned by a curve nobody measured** — The block is proven only when its first consumer's shipped levels are declared, compiled, probed and accepted here, and make_levels.py has nothing left to do. → §PW206
 
+## Block S — Playing the game, not only rendering it
+
+- 📋 **PW211** (deps: —) **Nobody knows if an agent can drive a Godot game from its menu to a won level and get the same result twice** — Every later line in this block rests on GodotTestDriver or a fallback, and it needs Godot .NET in games that are GDScript only. → §PW211
+- 📋 **PW212** (deps: PW211) **A running game cannot be held between two tool calls, so each question an agent asks it costs a fresh launch** — GodotTestDriver lives inside the game with no socket, so the game needs a listener an agent's calls can reach, paused between them. → §PW212
+- 📋 **PW213** (deps: PW212) **An agent has no tool that opens a game, acts in it and reads it back within one session** — The driver answers on a socket, and an agent in a terminal reaches polyweave through its tools, so the session needs a door on that surface. → §PW213
+- 📋 **PW214** (deps: PW213) **A flow an agent found by driving the game is lost when the session closes, so nothing replays it** — A test that needs an agent in the loop costs tokens and judgement on every run, so what a session proved has to become a file the runner replays alone. → §PW214
+- 📋 **PW215** (deps: PW212) **Nothing stops the driver, or the .NET runtime it brought, from shipping inside a release export** — A listener that runs any method it is asked to is a way into the game, so its absence from a player's build has to be checked, not assumed. → §PW215
+- 📋 **PW216** (deps: PW214) **A real-time game has never been driven frame by frame, so the driver is proven on a turn-based board only** — Cottony waits for the player and Starship does not, so pausing the tree between calls is only shown to hold once a shooter's physics and spawns replay the same. → §PW216
+- 📋 **PW217** (deps: PW214, PW215, PW216) **Cottony's flow from title screen to a won level is checked by no test, so a broken menu ships unseen** — The block is proven only when its first consumer keeps its main flows as replayed tests in its own release script, beside a clean release check. → §PW217
+
 ## Done when — PW36
 
 - **Every piece of Cottony's pipeline runs on the plugin, with no fork** The

@@ -703,3 +703,152 @@ curve is the part to watch: it is still a formula for levels nobody declared, an
 probe can at least sample it. Probing levels 21 to 200 from the curve and reporting
 where they leave the set spec's bounds says whether the endless tail keeps the promise
 the first twenty make.
+
+## Block S — Playing the game, not only rendering it
+
+### §PW211 Whether GodotTestDriver can carry an agent through a game
+
+polyweave runs the engine one shot at a time: a script, a frame budget, a line in the
+log. Nothing holds a game open while an agent decides what to press next, so a flow
+through menus, a level and a win is tested by no one.
+
+GodotTestDriver is the first candidate because it already has the parts a driver needs.
+Drivers target nodes through a producer lambda, input goes through
+`Input.ParseInputEvent`, and waits can count frames. The spike measures its three costs.
+It is C# and needs the Godot .NET build, while Cottony and Starship are GDScript on the
+standard 4.7 build. It runs only inside the game, with no socket. Its waits in seconds
+use the wall clock, not game time.
+
+The spike runs in Cottony, outside the package, and spends nothing. It adds the .NET
+build and GodotTestDriver, and a C# harness goes from the title screen to a won first
+level. It reads GDScript properties with `Get` and calls GDScript methods with `Call`.
+It advances by frame counts only, with the tree paused between steps. The sequence runs
+ten times and the final states are compared.
+
+The findings are what adding .NET took and whether it changed the export, whether
+driving GDScript nodes works, and whether ten runs out of ten agree. If not, the
+fallback is gdUnit4's SceneRunner, which is GDScript, tried against the same flow. The
+later lines take whichever passes.
+
+### §PW212 A driver inside the game, stepped by the agent
+
+An agent's turn takes seconds and the game runs at sixty frames a second. A game left
+running between two calls has moved on by the time the second arrives, and no sequence
+of calls can be replayed. So the driver holds the tree paused and advances only when
+told to, by a count of frames at the fixed rate the engine runner already sets. The seed
+of every random source is set at start. The same calls then give the same game.
+
+The driver is an addon and autoload that the project installs. It is loaded only under a
+`polyweave_driver` feature tag, listens on loopback with a token printed at start, and
+dispatches to whatever PW211 chose, so its commands stay the same if the library
+changes. The commands are `query`, which returns a node's properties by path, group or
+class, and `input`, which sends an action, a key, or a click on a node's centre. The
+others are `step`, which advances by a number of frames, `wait`, which waits for a
+signal, a node or a value within a frame budget, `call`, which runs a method the game
+exposes for setup, and `shot`.
+
+Waits count frames and never seconds, which removes the wall-clock waits PW211 found.
+The contract goes in `docs/specs/driving.md` before code, as the capture environment's
+did, because the addon, the tools and the recorded test all read it.
+
+### §PW213 Game session tools an agent calls
+
+`game.open` launches the project through the existing engine runner with the driver's
+feature tag and a display where a `shot` is wanted, since `--headless` renders nothing.
+It waits for the token line and returns a session id. `game.query`, `game.input`,
+`game.step`, `game.wait`, `game.call` and `game.shot` each forward one command of the
+PW212 contract, and `game.close` ends the process and says why it ended.
+
+Each answer carries the frame the game is on and any error the engine printed since the
+last call, read with the same error pattern the runner uses. A script error in the
+middle of a flow is then reported by the step that caused it, not found later in a log.
+A session the agent forgot is closed after `[driving] idle` seconds, so no Godot process
+outlives the conversation.
+
+A `game.query` answer is structured and costs few tokens, and a `game.shot` answer is an
+image and costs many. So a shot returns a path and the image's dimensions, and the agent
+chooses to read it, as `capture_run` already does. A shot answers questions about where
+things are and what is on the screen. Whether the screen looks right is still a person's
+verdict and goes to the verdict page, under the non-goal on an agent judging its own
+look.
+
+### §PW214 A driven flow kept as a test that replays without an agent
+
+Playwright's recorder turns a session somebody clicked through into a script that runs
+without them. This is the same step for a game, and it is what turns exploring into
+testing.
+
+`game.keep` writes the session's commands so far to a flow file under the project's
+tests. Each input and step becomes a line, and each `query` or `wait` the agent chose to
+keep becomes an expectation: a node, a property and the value it held. The agent names
+what the flow proves and removes the steps it took by mistake. Nothing is kept
+automatically, because a session includes wrong turns.
+
+`game.replay` runs a flow in one launch through the engine runner. The driver reads the
+file inside the game instead of over a socket, so a flow runs as fast as the engine and
+a continuous-integration job needs no agent. The verdict follows the runner's rules:
+every expectation held, no error was printed, and the frame budget was not hit. A
+failure names the first expectation that broke, the frame it broke on, and a shot of
+that frame.
+
+The flow format is declared in `docs/specs/driving.md` beside the commands, so a flow is
+a declaration like a geometry or a capture, and it is recorded with its engine version
+and driver hash. A later run on a different engine reports that difference.
+
+### §PW215 A release export checked for the driver
+
+The driver is loaded only under a feature tag, and the addon is excluded from export
+presets. Either can fail without anything noticing: a preset added later without the
+exclusion, an autoload that loads without checking the tag, or a `call` target left in
+game code with no guard. The loopback binding and the token limit who can reach the
+driver while it runs. They do nothing about a driver that ships.
+
+`game.release_check` takes an exported pack, or runs the project's release preset in the
+scratch folder, and lists the files in the pack. It fails if any driver file is present
+or if the project's autoloads name the driver without the feature check. If PW211 chose
+GodotTestDriver, it also fails when the GodotTestDriver or GoDotTest assemblies are
+present, because a library meant for tests only has no place in a player's build.
+
+The check is a gate, not advice: `require` closes with one code per finding, in the same
+way the engine runner's gate does, so a project can put it in its own release script. It
+reads a pack and spends nothing, and it never edits a preset. The finding names the
+preset and the line to change, and the person who owns the release makes that change.
+
+### §PW216 Starship driven frame by frame
+
+A match-3 board changes only when the player moves, so a driver that pauses between
+calls can hardly fail on it. A shooter is the harder case. Enemies spawn on a timer,
+bullets move under physics, and a frame counted twice or a timer driven by the wall
+clock is enough to make two runs of one flow differ.
+
+The proof is a Starship flow kept by `game.keep`. It starts the first phase, holds fire
+and a direction for a set number of frames, and expects the score, the player's health
+and the number of live enemies at three frames along the way. Replayed ten times, it has
+to give the same values ten times.
+
+When it does not, the finding names the frame where the runs diverged and the node whose
+value differed. The fix belongs in the game or in the driver's contract, and the finding
+says which. A timer on `Time.get_ticks_msec` is the game's to change. A `SceneTreeTimer`
+that keeps running while the tree is paused is the driver's to handle. What the flow
+checks is the game's own rules, not whether the phase is fun or fair, since those remain
+a person's verdict and Block R's measure.
+
+### §PW217 Cottony's flows kept and replayed
+
+Cottony's tests check the match rules headlessly and its screens by capture. Neither
+presses a button. A menu whose signal was disconnected by a scene edit, a level-select
+button that opens the wrong level, and a win screen that never appears would all pass
+every current check.
+
+The proof is that an agent, given only the session tools and no reading of Cottony's
+scenes, drives three flows and keeps them. The first goes from the title to a won first
+level. The second opens a later level from level select and loses it. The third goes
+through settings and back with a changed value that persists. The flows sit in Cottony's
+tests, `game.replay` runs them in its release script, and `game.release_check` passes on
+its export.
+
+The count is part of the evidence. It is how many calls each flow took to find and how
+many tokens a session spent, recorded in the ledger entry, so the cost of exploring is a
+measured number that later work can reduce. A flow that needed the agent to read the
+source counts as a failure of the tools, under the block on reaching things without
+reading the source, and it is filed as its own line.
