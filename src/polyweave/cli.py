@@ -13,9 +13,10 @@ skips a document whose stamp still matches, so a project's asset step is one lin
 **Blender only where a node needs it.** A voxel build of the grid-native ops never
 does; its cubes' mesh is written when Blender is there and left out when it is not.
 
-`python -m polyweave verify` is the other verb (§PW111): every spec under `[paths]
-specs` checked against the artefact it names, with no render, exiting non-zero when one
-fails so a CI job can stand on it.
+`python -m polyweave verify` is the second (§PW111): every spec under `[paths] specs`
+checked against the artefact it names, with no render, exiting non-zero when one fails
+so a CI job can stand on it. Every other subcommand is derived from the registry, one
+per operation, in `commands.py` (§PW125).
 """
 
 from __future__ import annotations
@@ -329,9 +330,16 @@ def main(argv: list[str] | None = None) -> int:
     )
     verify.add_argument("--specs", help="where the specs are; [paths] specs by default")
     verify.add_argument("--json", action="store_true", help="print the answer as data")
+    # Every registered operation, and the first reads, derived from the registry
+    # (§PW125); `build` and `verify` keep their own shape, since consumers call them.
+    from . import commands as derived
+
+    derived.add_operations(commands)
     stated = parser.parse_args(argv)
     if stated.command == "verify":
         return _verify(stated)
+    if stated.command != "build":
+        return derived.run(stated)
 
     if bool(stated.document) == bool(stated.folder):
         parser.error("name one document, or a folder with --all")

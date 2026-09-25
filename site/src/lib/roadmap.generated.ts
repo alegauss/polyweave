@@ -35,7 +35,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "H", title: "Proof on a real game", open: 3 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
-  { block: "K", title: "Reached without reading the source", open: 10 },
+  { block: "K", title: "Reached without reading the source", open: 9 },
   { block: "L", title: "What a run leaves as evidence", open: 7 },
   { block: "M", title: "What a game needs beyond the look", open: 3 },
 ];
@@ -84,25 +84,18 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW57"],
   },
   {
-    id: "PW125",
-    block: "K",
-    symptom: "an agent in a consumer can ask what the machine can do, explain a code or start a job only by writing Python",
-    why: "The command line has two verbs, `build` and `verify`, so a GDScript project writes a script to reach the rest, which is the port scripts' cost at its smallest.",
-    deps: [],
-  },
-  {
     id: "PW126",
     block: "K",
     symptom: "an agent's first call is guessed from prose, because no tool schema carries the plugin's names, ranges and choices",
     why: "A range declared on a parameter reaches the caller only as a refusal, where a served schema would have stopped the wrong call before it spawned anything.",
-    deps: ["PW125"],
+    deps: [],
   },
   {
     id: "PW127",
     block: "K",
     symptom: "a remedy is a sentence, so nothing checks that the call it names exists or accepts those arguments",
     why: "Roadkeep found one of 118 remedy rows had ever been run and several named flags its own parser rejected, and remedies here are the same unchecked prose.",
-    deps: ["PW125"],
+    deps: [],
   },
   {
     id: "PW128",
@@ -123,14 +116,14 @@ export const generatedTasks: GeneratedTask[] = [
     block: "K",
     symptom: "every test calls the surface correctly, so a silently dropped argument or a wrong first call is never measured",
     why: "Shio's naive client found six silent drops in twelve calls that its benchmark, driving a correct script, could not see.",
-    deps: ["PW125"],
+    deps: [],
   },
   {
     id: "PW131",
     block: "K",
     symptom: "starting work on an asset means opening its declaration, spec, record and last verdict one file at a time",
     why: "An asset's state is split across four files, so an agent opens each before it can say what is left, and no read answers that question whole.",
-    deps: ["PW125"],
+    deps: [],
   },
   {
     id: "PW132",
@@ -144,7 +137,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "K",
     symptom: "an agent may hand-edit a built mesh or voxel file, and nothing notices the output no longer follows its declaration",
     why: "The build stamp hashes inputs only and geometry outputs carry no record, so an edited output is reported cached and rebuilt only when an input moves.",
-    deps: ["PW125"],
+    deps: [],
   },
   {
     id: "PW160",

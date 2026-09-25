@@ -223,7 +223,19 @@ both answers.
   clip's own document (`clip.new`, `.read`, `.write`, `.set_key`, `.retime`,
   `.compiled`), the skeleton's plan and rigged-file reads, and `sprites.matched`. With
   those, nothing is pending. What stays internal says why. Baking a clip still needs a
-  mesh and a fitted rig in memory, and a path-based `motion.bake` is §PW160. A module's leftover helpers may be
+  mesh and a fitted rig in memory, and a path-based `motion.bake` is §PW160.
+- **The command line is derived from the registry** (§PW125). `python -m polyweave <op>`
+  exists for every registered operation, named as the operation is (`accept.check`),
+  with one `--<param>` flag per declared parameter and the sentence, unit and choices as
+  its help. A flag's value is read by its declared type: a number, flag, list or table as
+  JSON, a string as the text given, and `any` as JSON where it reads as JSON and text
+  where it does not. An asynchronous operation takes `--job`, which starts it through the
+  job store and prints the handle, and `job list|poll|result|cancel <handle>` answers for
+  it. `capabilities`, `explain [code]` and `describe [op]` are verbs beside them. **One
+  answer, two renderings**: `--json` prints the operation's data, and the text is that
+  data flattened to `path: value` lines, so the text can never say what the JSON lacks. A
+  refusal prints its code and remedy to stderr and exits 1. `build` and `verify` keep
+  their own shape, since consumers already call them. A module's leftover helpers may be
   listed as internal one function at a time. `describe()` loads
   the registry before answering, so a fresh process no longer lists only what it happened
   to have imported.

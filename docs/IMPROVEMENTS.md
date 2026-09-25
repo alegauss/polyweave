@@ -348,26 +348,6 @@ again.
 
 ## Block K — Reached without reading the source
 
-### §PW125 A command line derived from the registry
-
-`python -m polyweave` answers `build`, and `verify` for the specs, and nothing else.
-`capabilities`, `explain`, `describe`, the job verbs, `search`, `accept.check`, `sweep`
-and `godot.install` are reachable from Python only, so an agent in Cottony that wants to
-know whether Blender is present writes and runs a script, and a person reading its
-transcript cannot tell the question from the answer.
-
-Now that every operation is registered (the census in docs/specs/tool-surface.md), its
-declaration already says everything a subcommand needs: the name, each parameter's type,
-range, default and sentence, and which parameters are required. So the command line is
-derived from the registry rather than written beside it, one subcommand per operation,
-and a parameter added to an operation is a flag without a second edit.
-
-Roadkeep paid for doing this late. Its verbs printed text and JSON from separate code
-until one migration, forty commits long, made each handler return one answer object that
-both renderings read. The cheap version is to start there: an operation returns data,
-one renderer prints it, `--json` prints the same fields, and a test asserts that the
-text never says something the JSON lacks.
-
 ### §PW126 A served surface that is a shape over the registry
 
 Roadkeep moved to a served surface on its second day, because arguments written in prose
@@ -375,13 +355,14 @@ are guessed; the plugin here has none, and its `.mcp.json` serves only roadkeep.
 agent reads a skill or a docstring, composes a call, and learns the range of `elevation`
 from `op.out-of-range`.
 
-The same registry that yields the command line (§PW125) yields a tool per operation:
-`description` from the operation's docstring, one property per parameter with its
-sentence, `minimum` and `maximum` from the declared range, `enum` from its choices, and
-`additionalProperties: false`, so a misspelt argument is refused by the client. A call
-runs the operation in-process and answers with the fields `--json` prints. Nothing about
-an operation is written a second time, which is Shio's tenth law: the server is a shape
-over the services, never a third contract.
+The same registry that yields the command line (`commands.py`, in
+docs/specs/tool-surface.md) yields a tool per operation: `description` from the
+operation's docstring, one property per parameter with its sentence, `minimum` and
+`maximum` from the declared range, `enum` from its choices, and `additionalProperties:
+false`, so a misspelt argument is refused by the client. A call runs the operation
+in-process and answers with the fields `--json` prints. Nothing about an operation is
+written a second time, which is Shio's tenth law: the server is a shape over the
+services, never a third contract.
 
 Two budgets come with it from the first day, because both projects that went before paid
 for adding them late: characters per tool and for the whole list, held by a test, each
@@ -404,9 +385,9 @@ that, as a command line, a tool call or a Python call, whichever surface asked. 
 codes table's `doors` take the same form.
 
 The census that holds it parses every complete door against the derived command line
-(§PW125) and fails on an operation or a flag that does not exist. It also takes the
-lesson Shio pinned as SH1074: where a refusal teaches a form, a test asserts that the
-form it teaches is accepted.
+(`commands.py`) and fails on an operation or a flag that does not exist. It also takes
+the lesson Shio pinned as SH1074: where a refusal teaches a form, a test asserts that
+the form it teaches is accepted.
 
 ### §PW128 The four fields a refusal is missing
 
@@ -450,11 +431,11 @@ this way: an unrecognised argument reported success and did something else, and 
 client written to use plausible wrong names counted it.
 
 Two instruments, both cheap. A canonical task, "declare a small prop and reach a passing
-verdict", is driven through the derived command line (§PW125) and counted in calls,
-renders, cache hits and estimated tokens, with an exact figure for calls and a loose one
-for the rest. A naive client then replays it with the spellings a model reaches for
-first, such as `size` for `extent` or `samples` as a string, and asserts that each one
-is refused with an `allowed` set, never accepted and ignored.
+verdict", is driven through the derived command line (`commands.py`) and counted in
+calls, renders, cache hits and estimated tokens, with an exact figure for calls and a
+loose one for the rest. A naive client then replays it with the spellings a model
+reaches for first, such as `size` for `extent` or `samples` as a string, and asserts
+that each one is refused with an `allowed` set, never accepted and ignored.
 
 Shio retired its headline ratio because the baseline got leaner and the ratio fell with
 no change to the agent's path. So the floors here are per mechanism: what the cache
