@@ -37,7 +37,7 @@
        width measured against whichever font the machine that typed it happened to have. -->
   <rect x="90" y="530" width="{{chip-width}}" height="46" rx="23" fill="#171331" stroke="#2f2760"/>
   <circle cx="118" cy="553" r="6" fill="#E0A33C"/>
-  <text id="chip" x="136" y="561" font-family="DejaVu Sans, sans-serif" font-size="20" fill="#a9a1cf">Design stage · the plan is the artefact · no code yet</text>
+  <text id="chip" x="136" y="561" font-family="DejaVu Sans, sans-serif" font-size="20" fill="#a9a1cf">Declare the bar · search the numbers · check the look</text>
 
   <text x="1110" y="561" text-anchor="end" font-family="DejaVu Sans Mono, monospace" font-size="20" fill="#857cae">alegauss.github.io/polyweave</text>
 </svg>

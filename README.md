@@ -14,22 +14,15 @@ machine against files in your own repository.
 
 ## Status
 
-Block A has started, and the rest is still design. `docs/ROADMAP.md` holds the plan, in
-eight blocks:
+The status is not typed here, because a typed status goes stale: this file said "Block A
+has started" a hundred shipped lines after most blocks were built. `docs/ROADMAP.md` holds
+what is still open, block by block, and `docs/CHANGELOG.md` what has shipped; the site's
+landing page states the count, derived from the roadmap. Every line in that file was drawn
+from a failure measured in a real project, and it also carries the non-goals, which say
+what this deliberately will not be.
 
-| Block | |
-|---|---|
-| A | What a tool call costs the turn |
-| B | Seeing the result cheaply |
-| C | The asset compiler |
-| D | Fetching from a paid service without surprise |
-| E | One world with the engine |
-| F | Motion |
-| G | Geometry as a declaration |
-| H | Proof on a real game |
-
-Every line in that file was drawn from a failure measured in a real project. `docs/ROADMAP.md`
-also carries the non-goals, which say what this deliberately will not be.
+No number anywhere is yet a measurement of polyweave: that is Block H, where a real game
+adopts the plugin and the loop ledger records what an asset cost to make each way.
 
 ## The plugin
 
@@ -39,8 +32,12 @@ nothing else. Blender is optional: `pip install -e ".[blender]"` brings `bpy` in
 render path, and without it `capabilities()` says so and a render refuses rather than
 importing a renderer nobody asked for.
 
+It is served as a Claude Code plugin from this repository: `.claude-plugin/` holds the
+manifest, `skills/polyweave/` the skill that drives it, and `python -m polyweave serve`
+the MCP server every operation is exposed through.
+
 ```
-python -m pytest         # the suite, in tests/
+python tools/gate.py     # the suite, in tests/, under a lock, stamped
 python -m ruff check .   # the linter
 python -m ruff format .  # the formatter
 ```
@@ -57,9 +54,9 @@ directly, and they are settled enough to build against.
 ## The site
 
 `site/` is the public page, at `alegauss.github.io/polyweave/` once Pages is pointed at the
-`site` workflow. It describes the product the roadmap specifies, in the present tense, and
-says on the page — second, above everything but the hero — that none of it is built.
+`site` workflow. It says on the page — second, above everything but the hero — how many
+blocks are built and how many lines are still open.
 
 Everything it counts is generated from `docs/ROADMAP.md` through roadkeep rather than typed,
-so the page cannot disagree with the file, and `npm test` fails the build if the page stops
-saying there is no implementation. See [`site/README.md`](site/README.md).
+so the page cannot disagree with the file, and `npm test` fails the build if the stated
+status differs from the roadmap's. See [`site/README.md`](site/README.md).

@@ -370,24 +370,6 @@ present, and skipped where it is not, as the render tests are.
 
 ## Block L — What a run leaves as evidence
 
-### §PW137 A status is derived, never typed
-
-`prerender.test.mjs` fails unless the landing page states that there is no
-implementation, and `site-content.ts` says so. `README.md` lists eight blocks and says
-the rest is design, `CLAUDE.md` says Block A has started, the specs index calls three
-specs ahead of code that shipped as PW8 to PW12, and `capabilities()` still names PW14
-and PW23 as pending. The test that was written to keep the page honest now keeps it
-wrong.
-
-Both sibling projects reached the same rule. Roadkeep's site commits nothing generated
-and builds every figure from the CLI. Shio fails a build on a number in its agent
-documents that does not cite the run that measured it (SH974). Here the roadmap module
-is already generated; what is typed is the claim about status.
-
-So the page and the README take the status from roadkeep's block list, which already
-says which blocks are finished, the test asserts the page agrees with it, and the
-`pending` entries are dropped once a test finds that the line they name has shipped.
-
 ### §PW138 The specs read against the code
 
 Section 3 of tool-surface.md lists the areas a code is namespaced by: twelve of them.

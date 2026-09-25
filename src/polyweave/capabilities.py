@@ -30,6 +30,10 @@ from .post import CHEAP, OPTIONAL
 #: Long enough for a cold start off a slow disk, short enough not to hold the turn.
 PROBE_TIMEOUT_S = 20.0
 
+#: What is not established yet, keyed by topic, each value naming the open roadmap
+#: line that establishes it. Empty today: the two it held (PW14, PW23) have shipped.
+PENDING: dict[str, str] = {}
+
 
 def _probe(binary: str, where: str | Path, args: tuple[str, ...]) -> dict:
     """Find a binary and ask it its version, reporting what actually happened.
@@ -188,8 +192,7 @@ def capabilities(
             "config": str(config.source) if config.source else None,
             "work": str(config.path("paths.work")),
         },
-        "pending": {
-            "offscreen": "PW23 establishes which offscreen route works on this machine",
-            "cache": "PW14 reports what the cache holds and what it cost",
-        },
+        # What is not established yet, each naming the open line that will establish it.
+        # An entry leaves once its line ships (§PW137): a test reads the changelog.
+        "pending": dict(PENDING),
     }

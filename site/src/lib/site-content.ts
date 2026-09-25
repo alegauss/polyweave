@@ -16,7 +16,7 @@
 //      named as such. There is no measurement of polyweave on this site, because there is
 //      no polyweave yet to measure. A page for a product that searches for evidence does
 //      not get to assert its own.
-import { Spelled, blockCount, spelled, taskCount } from "./roadmap";
+import { Spelled, blockCount, finishedCount, spelled, taskCount } from "./roadmap";
 import { conventions as conventionRows, sessionTerminal } from "./diagrams";
 
 /** How many commands the transcript actually runs, so the sentence under it can say. */
@@ -106,7 +106,7 @@ export const sponsor = {
 /* ------------------------------------------------------------------ hero */
 
 export const hero = {
-  badge: `Design stage · ${spelled(blockCount())} blocks, ${taskCount()} lines · nothing shipped`,
+  badge: `${Spelled(finishedCount())} of ${spelled(blockCount())} blocks built · ${taskCount()} lines open`,
   titleLead: "Say what the asset has to be.",
   titleAccent: "Let it find the numbers.",
   sub: [
@@ -135,28 +135,30 @@ export const hero = {
 };
 
 /* ------------------------------------------------------------------ the stage band */
-// The first thing after the transcript, and deliberately not in a footnote. A site that
-// describes an unbuilt product in the present tense is fine; one that lets a reader
-// discover that on GitHub is not.
+// The first thing after the transcript, and deliberately not in a footnote. Its status
+// is derived from the roadmap, never typed (§PW137): the typed version said there was no
+// code a hundred shipped lines after it stopped being true, and a test defended it.
 
 export const stage = {
   eyebrow: "Read this first",
-  heading: "There is no code yet.",
+  heading: `${Spelled(finishedCount())} of ${spelled(blockCount())} blocks are built.`,
   body: [
-    "polyweave is at design stage. What this page describes is the product ",
+    "polyweave is Python under ",
+    { code: "src/polyweave" },
+    ", served as a Claude Code plugin. What this page describes is the product ",
     { code: "docs/ROADMAP.md" },
     " and ",
     { code: "docs/specs/" },
-    " specify: ",
-    { b: `${taskCount()} lines across ${spelled(blockCount())} blocks` },
-    ", none of them shipped. ",
+    " specify, and ",
+    { b: `${taskCount()} lines are still open across ${spelled(blockCount() - finishedCount())} blocks` },
+    ". ",
   ] as Rich,
   body2: [
     "Every measurement quoted here was taken in ",
     { b: "Cottony" },
     ", the game the backlog was drawn from, and describes the cost polyweave exists to remove. ",
     { b: "None of it is a benchmark of polyweave" },
-    ", because there is nothing yet to benchmark — and the line that has to ship before any of this becomes a measurement is on the roadmap too, at the very end.",
+    ": the loop ledger that would measure the plugin against the hand-tuned way has only begun to record runs, and a claim this page cannot cite a run for is one it does not make.",
   ] as Rich,
 };
 
@@ -722,8 +724,8 @@ export const specs = {
     ", at whatever length that takes.",
   ] as Rich,
   status: [
-    { b: "Status: draft." },
-    " There is no implementation. Each spec is settled enough to build against, and the first implementation that disagrees with one is evidence about the spec, not only about the code.",
+    { b: "Status: the contract the code is held to." },
+    " Each spec is written ahead of, or beside, the lines that implement it, and a shipped line records its design in one. Where the code and a spec disagree, that is evidence about the spec, not only about the code.",
   ] as Rich,
   table: [
     {

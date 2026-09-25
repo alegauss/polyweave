@@ -20,7 +20,7 @@ export const blocks = generatedBlocks;
 export const tasks = generatedTasks;
 export const nonGoals = generatedNonGoals;
 
-/** Every line on the roadmap, across every block. */
+/** Every line still open on the roadmap, across every block. */
 export function taskCount(): number {
   return tasks.length;
 }
@@ -29,9 +29,18 @@ export function blockCount(): number {
   return blocks.length;
 }
 
-/** Lines still open. Zero of these have shipped, and the status band says so out loud. */
+/** Lines still open, as each block counts them. */
 export function openCount(): number {
   return blocks.reduce((n, b) => n + b.open, 0);
+}
+
+/**
+ * Blocks with nothing left open: the status the page states, derived rather than
+ * typed (§PW137). A typed status is what said "there is no code yet" a hundred shipped
+ * lines after it stopped being true.
+ */
+export function finishedCount(): number {
+  return blocks.filter((b) => b.open === 0).length;
 }
 
 export function tasksIn(block: string): GeneratedTask[] {

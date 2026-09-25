@@ -7,7 +7,9 @@ as much as when one is there.
 
 from __future__ import annotations
 
+import re
 import sys
+from pathlib import Path
 
 import pytest
 
@@ -74,10 +76,28 @@ def test_it_lists_the_failures_a_caller_can_plan_for():
     assert found["errors"]["areas"]["post"]
 
 
-def test_what_is_not_established_yet_names_the_line_that_will():
-    found = capabilities(probe=False)
-    assert "PW23" in found["pending"]["offscreen"]
-    assert "PW14" in found["pending"]["cache"]
+def _stale(pending: dict[str, str]) -> list[str]:
+    """Each pending entry that names no line, or a line the changelog records."""
+    changelog = (Path(__file__).parent.parent / "docs" / "CHANGELOG.md").read_text(
+        encoding="utf-8"
+    )
+    shipped = set(re.findall(r"\*\*(PW\d+)\*\*", changelog))
+    return [
+        topic
+        for topic, says in pending.items()
+        if not (named := re.findall(r"\bPW\d+\b", says)) or shipped.intersection(named)
+    ]
+
+
+def test_what_is_not_established_yet_names_an_open_line():
+    """A pending entry names the line that establishes it, and leaves when that line
+    ships (§PW137): the two this used to pin had shipped long before anyone looked."""
+    assert _stale(capabilities(probe=False)["pending"]) == []
+
+
+def test_an_entry_whose_line_shipped_is_caught():
+    old = {"cache": "PW14 reports what the cache holds", "vague": "somebody will"}
+    assert _stale(old) == ["cache", "vague"]
 
 
 def test_a_budget_nobody_declared_is_not_an_unlimited_one():

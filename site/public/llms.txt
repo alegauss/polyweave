@@ -5,11 +5,11 @@
 > on top of Blender, Godot and a generative mesh service. It runs on the developer's own
 > machine, against files in their own repository: no GUI, no account, no hosted service.
 
-**There is nothing to install. polyweave is at design stage and has no implementation.**
-What exists is the plan and the contracts, and both are readable now:
-[`docs/ROADMAP.md`](https://github.com/alegauss/polyweave/blob/main/docs/ROADMAP.md) holds
-thirty-six lines across eight blocks, none shipped, each one a failure measured in a real
-project rather than a feature somebody wanted;
+**polyweave is Python under `src/polyweave`, installed as a Claude Code plugin from this
+repository.** Its status is not typed here: the landing page states it, derived from
+[`docs/ROADMAP.md`](https://github.com/alegauss/polyweave/blob/main/docs/ROADMAP.md),
+whose every line, shipped or open, is a failure measured in a real project rather than a
+feature somebody wanted;
 [`docs/specs/`](https://github.com/alegauss/polyweave/tree/main/docs/specs) holds the
 contracts that more than one of those lines depends on. Every measurement quoted on the
 site or in this file was taken in **Cottony**, the game the backlog was drawn from, and

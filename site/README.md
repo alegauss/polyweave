@@ -29,18 +29,19 @@ GitHub Pages derives the base path from the repository name, so Vite's `base` is
 
 ## The one rule this site is held to
 
-**It describes a product that does not exist, so it never claims to have measured one.**
+**It states where the project stands from the roadmap, and never claims a result no run
+has measured.**
 
-polyweave is at design stage. Writing about a settled design in the present tense is the
-right way to write about it; letting a reader discover on GitHub that none of it is built
-is not. So:
+A status typed into the copy goes stale: this page said "there is no code yet" a hundred
+shipped lines after the code arrived, and its own test defended the sentence. So:
 
-- The landing page carries a status band, second on the page, saying there is no code yet —
-  and `scripts/prerender.test.mjs` fails the build if the words come out.
+- The landing page carries a status band, second on the page, built from
+  `roadmap.generated.ts`: how many blocks have nothing left open, and how many lines do.
+  `scripts/prerender.test.mjs` fails the build if the page disagrees with the module.
 - Every measurement quoted is Cottony's, named as Cottony's, and describes the cost
   polyweave exists to remove.
 - `scripts/lint.test.mjs` refuses copy that claims a result for polyweave ("faster than",
-  "we measured", "benchmarked"). There is nothing to benchmark.
+  "we measured", "benchmarked"). The loop ledger that would measure it has only begun.
 
 A site for a tool whose argument is *an unmeasured claim is worthless* does not get to make
 one.

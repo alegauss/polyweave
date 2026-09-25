@@ -9,13 +9,11 @@ These files are ordinary documents. Nothing governs them, and they are edited di
 unlike `docs/ROADMAP.md`, `docs/CHANGELOG.md` and `docs/IMPROVEMENTS.md`, which belong to
 roadkeep and refuse a hand edit.
 
-**Status: part built.** [tool-surface.md](tool-surface.md), [project-config.md](project-config.md),
-[provenance.md](provenance.md), [rungs.md](rungs.md), [fetching.md](fetching.md),
-[engine.md](engine.md), [motion.md](motion.md), [geometry.md](geometry.md) and
-[adoption.md](adoption.md) describe code that exists; the rest is still ahead of its
-code. Each spec is settled enough to build against, and the first
-implementation that disagrees with one is evidence about the spec, not only about the code —
-which is why §1 now names a heartbeat and a `sweep` that its first implementation needed.
+**Every spec here describes code that exists**, and is the contract that code is held to.
+Which of its lines are still open is `docs/ROADMAP.md`'s to say, not this index's. An
+implementation that disagrees with a spec is evidence about the spec, not only about the
+code — which is why §1 names a heartbeat and a `sweep` that its first implementation
+needed.
 
 | Spec | What it fixes | Lines it binds |
 |---|---|---|
@@ -26,7 +24,7 @@ which is why §1 now names a heartbeat and a `sweep` that its first implementati
 | [context.md](context.md) | Judging an asset where it will be seen, and what survives at display size | PW10, PW15 |
 | [fetching.md](fetching.md) | Buying a mesh: the shape check, the ledger, the schema, the reference | PW16–PW21 |
 | [engine.md](engine.md) | Driving the engine: the verdict, real pixels offscreen, units, environment | PW22–PW25 |
-| [motion.md](motion.md) | A skeleton fitted to a mesh, and a clip authored once as text | PW26–PW29 |
+| [motion.md](motion.md) | A skeleton fitted to a mesh, and a clip and its curves authored once as TOML | PW26–PW29 |
 | [acceptance-spec.md](acceptance-spec.md) | What "correct" means, as a file a search can aim at | PW12, PW13, PW15 |
 | [geometry.md](geometry.md) | A shape as data rather than as a program | PW30–PW34 |
 | [provenance.md](provenance.md) | What is recorded beside an artefact, and the cache key | PW6, PW14, PW17 |
@@ -43,10 +41,8 @@ arrives as TOML.
 
 ## Deliberately not specced yet
 
-- **The clip and curve format** (PW28). It depends on decisions PW26 makes about skeletons,
-  and a format written before them would be guessing. PW28's own section holds the
-  requirements until then.
 - **The paid-service lock and ledger** (PW17, PW18). One file written by one task, and
   §PW17 already pins its fields. It becomes a spec here if a second consumer appears.
-- **The MCP tool list.** Which calls exist is implementation, and it follows from
-  [tool-surface.md](tool-surface.md) rather than needing its own document.
+- **The MCP tool list.** It is served, and derived from the operation registry, so a
+  document listing it would be a copy that drifts: `python -m polyweave serve` answers
+  `tools/list`, and [tool-surface.md](tool-surface.md) says how each call behaves.

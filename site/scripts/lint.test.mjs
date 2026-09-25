@@ -73,6 +73,6 @@ test("no copy claims a measured result for polyweave", () => {
   assert.deepEqual(
     hits.map(String),
     [],
-    "the copy states a result polyweave has not produced — there is no implementation",
+    "the copy states a result no recorded run of polyweave has produced",
   );
 });

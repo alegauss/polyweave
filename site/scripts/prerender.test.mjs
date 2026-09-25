@@ -1,7 +1,7 @@
 // The site's own claims, asserted against the built output. These read dist/, so they run
 // after `npm run build` (which is what CI does). A claim that has gone false — a route with
 // no file, a duplicate title, a twin that leaked the nav or the call to action, a card that
-// is not 1200x630, a landing page that no longer says the project is unbuilt — fails here
+// is not 1200x630, a landing page whose status disagrees with the roadmap — fails here
 // rather than being invisible until somebody reads the page against the repository.
 import { test, before } from "node:test";
 import assert from "node:assert/strict";
@@ -78,32 +78,42 @@ test("the landing twin carries the session — the product an agent can grep", (
 });
 
 // --- the honesty gate ---
-// The one thing this site must never stop saying. Every page in the manifest describes an
-// unbuilt product in the present tense, which is the right way to write about a settled
-// design and is only honest while the landing page says, above the fold's worth of
-// scrolling, that none of it exists. If this ever fails, the fix is the copy, not the test.
+// The one thing this site must never stop saying is where the project stands, and it
+// says it from the roadmap rather than from a sentence somebody typed (§PW137). This gate
+// used to require "There is no code yet" and so defended a false page a hundred shipped
+// lines after the code arrived. It now requires the page to agree with the generated
+// module: how many blocks have nothing open, and how many lines are left. If this ever
+// fails, the fix is the copy or the roadmap, not the test.
 
-test("the landing page states that there is no implementation", () => {
+// The site's own rule (roadmap.ts): prose counts up to twelve in words, then in digits.
+const SPELLED = [
+  "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
+  "ten", "eleven", "twelve",
+];
+const spell = (n) => SPELLED[n] ?? String(n);
+const Spell = (n) => spell(n).charAt(0).toUpperCase() + spell(n).slice(1);
+
+test("the landing page states the status the roadmap derives", () => {
   const md = readFileSync(join(distDir, "index.md"), "utf8");
+  const opens = [...generated.matchAll(/\{ block: "[^"]+", title: "[^"]*", open: (\d+) \}/g)]
+    .map((m) => Number(m[1]));
+  const finished = opens.filter((n) => n === 0).length;
+  assert.ok(opens.length > 0, "the generated module declares no blocks");
   assert.ok(
-    md.includes("There is no code yet"),
-    "the landing page no longer says the project is unbuilt",
+    md.includes(`${Spell(finished)} of ${spell(opens.length)} blocks are built`),
+    `the landing page does not say ${finished} of ${opens.length} blocks are built`,
   );
-  assert.ok(
-    md.includes("none of them shipped"),
-    "the landing page no longer says nothing has shipped",
-  );
+  assert.ok(!md.includes("There is no code yet"), "the landing page denies the code again");
 });
 
 test("the landing page states the roadmap's own counts", () => {
   const md = readFileSync(join(distDir, "index.md"), "utf8");
   const lines = [...generated.matchAll(/^    id: "([^"]+)",$/gm)].length;
-  const blocks = [...generated.matchAll(/\{ block: "([^"]+)", title:/g)].length;
   assert.ok(
-    md.includes(`${lines} lines across`),
-    `the landing page does not state ${lines} lines`,
+    md.includes(`${lines} lines are still open`),
+    `the landing page does not state ${lines} open lines`,
   );
-  assert.ok(lines > 0 && blocks > 0, "the generated module is empty");
+  assert.ok(lines > 0, "the generated module is empty");
 });
 
 test("every non-goal in the roadmap reaches the landing page", () => {
