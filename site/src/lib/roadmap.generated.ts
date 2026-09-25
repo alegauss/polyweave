@@ -39,7 +39,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 4 },
-  { block: "O", title: "A person sees and answers", open: 3 },
+  { block: "O", title: "A person sees and answers", open: 2 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -90,13 +90,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "N",
     symptom: "an approved picture cannot be reframed to another aspect ratio, so an icon and a banner of it are two separate pictures",
     why: "A reframe keeps everything the parent held and adds only a border, which is the easiest variation to hold to what it must not change.",
-    deps: [],
-  },
-  {
-    id: "PW175",
-    block: "O",
-    symptom: "a person sees the pictures the agent kept and never the ones it refused, so a wrong refusal is invisible",
-    why: "The drift check makes the agent a filter nobody audits, and a bar set too tight costs good work in silence unless the refused are shown.",
     deps: [],
   },
   {

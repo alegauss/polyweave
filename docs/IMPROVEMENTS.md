@@ -354,30 +354,6 @@ any of them.
 
 ## Block O — A person sees and answers
 
-### §PW175 The refused beside the kept
-
-The agent refuses drift before a person looks (PW167), which is right — and makes the
-agent the one filter nobody checks. A picture wrongly refused is never seen, so a bar
-set too tight costs good work silently, and the person has no way to find out.
-
-**The page shows the refused beside the kept.** Each family has two lanes: the
-candidates offered, and the ones the agent set aside, each with the measure that refused
-it, the value, and the floor — palette ΔE 14 against 6, warmer. The refused lane is
-collapsed by default and never absent.
-
-**A person may overrule a refusal.** Promoting a refused picture is a verdict like any
-other, through `judge`, and it records that the bar was wrong for this one — the
-evidence a tolerance is loosened from, where today the only evidence is a person
-noticing.
-
-**Every picture carries its numbers.** Beside each candidate: the drift report, the
-silhouette IoU where there is one, what it cost, and what is left of that service's
-ceiling. A decision is made with the same facts the agent used, never with fewer.
-
-**What was not checked is shown as unchecked.** A measure a family cannot compute — no
-spread in a one-picture canon, no OCR engine — appears as a gap by name, so a clean
-report is never mistaken for a complete one.
-
 ### §PW176 Comparing in one place
 
 Two versions of an asset side by side hide exactly what the drift measures find: a

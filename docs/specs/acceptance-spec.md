@@ -169,6 +169,19 @@ version, and only then by a described element's box. The record's `mask_from` sa
 (`given`, `person` or `described`), and `picture.against_parent` then checks the region the
 person drew.
 
+**The refused are shown beside the kept** (§PW175), because a filter nobody sees into is a
+filter nobody audits. Every `picture.gate` run appends its answer to `[paths]
+work`/`gates.jsonl`. Each candidate carries its failures, its silhouette IoU, every drifted
+measure's value, canon, floor and direction, what was left unchecked by name (no OCR
+engine, a canon too small to have a floor), and what it cost from which service. The page
+lays each run out in two lanes: the kept, and the refused, collapsed and never absent, with
+what is left of each service's ceiling read at the time of looking. **A person may promote
+a refused picture.** That is the same one write, `verdict.judge`, with the picture taken
+from the gate's own log. A member with no acceptance spec carries the gate's refusal as the
+tool's verdict, so the answer records the tool refusing what the person accepted, which is
+the evidence a tolerance is loosened from. `number` is refused for such a member, since it
+has no bound to move.
+
 **A pass also says how comfortably** (§PW104). The margin is 1 anywhere inside a bound, so
 Cottony's stars passed with a facet at 0.4695 under a ceiling of 0.47 and the search called
 that nothing left to gain. Each predicate now also carries its `headroom`: the distance to

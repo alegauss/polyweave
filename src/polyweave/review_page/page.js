@@ -141,6 +141,67 @@ function family(sitting, name, laid, choices, answers, assets) {
   return box;
 }
 
+// The refused beside the kept (§PW175): each gate run's candidates in two lanes, every
+// one with the numbers it was judged on, and a refused one can be promoted by a person.
+function candidate(run, one) {
+  const card = element("div", { class: "candidate" });
+  card.append(element("img", {
+    src: "/file?path=" + encodeURIComponent(one.picture), alt: one.picture,
+  }));
+  const facts = element("ul");
+  facts.append(element("li", {}, one.picture + ": silhouette IoU " + one.silhouette_iou));
+  for (const failed of one.failed) facts.append(element("li", { class: "fails" }, failed));
+  for (const [measure, number] of Object.entries(one.drift || {})) {
+    facts.append(element("li", {}, measure + " " + number.value + " against " +
+      number.canon + " ± " + number.floor + (number.which_way ? ", " + number.which_way : "")));
+  }
+  for (const gap of one.unchecked || []) facts.append(element("li", {}, "unchecked: " + gap));
+  if (one.bought) {
+    const left = one.ceiling ? ", " + one.ceiling.left + " " + one.ceiling.unit + " left" : "";
+    facts.append(element("li", {}, "cost " + one.bought.credits + " on " + one.bought.service + left));
+  }
+  card.append(facts);
+  if (!one.passed) {
+    const form = element("form");
+    const why = element("textarea", {
+      placeholder: "Why this one is right after all.", "aria-label": "why",
+    });
+    const send = element("button", { type: "submit" }, "Promote: the bar was wrong for this one");
+    const said = element("p", { class: "answer", "aria-live": "polite" });
+    form.append(why, send, said);
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!why.value.trim()) { said.textContent = "Write a sentence first."; return; }
+      send.disabled = true;
+      const answer = await fetch("/api/judge", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Polyweave": "1" },
+        body: JSON.stringify({ gate: run.id, picture: one.picture, choice: "accept", why: why.value }),
+      });
+      const body = await answer.json();
+      said.textContent = answer.ok ? "Recorded: promoted." : body.code + ": " + body.message;
+      if (answer.ok) form.reset();
+    });
+    card.append(form);
+  }
+  return card;
+}
+
+function gateRun(run) {
+  const box = element("article", { class: "family" });
+  box.append(element("h2", {}, "Gate of " + run.at + (run.family ? " (" + run.family + ")" : "")));
+  box.append(element("p", { class: "says" }, "chosen: " + (run.chosen || "none") + " — " + run.why));
+  const kept = run.candidates.filter((one) => one.passed);
+  const refused = run.candidates.filter((one) => !one.passed);
+  const keptLane = element("div", { class: "lane" }, element("h3", {}, "Kept (" + kept.length + ")"));
+  for (const one of kept) keptLane.append(candidate(run, one));
+  const refusedLane = element("details", { class: "lane" },
+    element("summary", {}, "Refused (" + refused.length + ")"));
+  for (const one of refused) refusedLane.append(candidate(run, one));
+  box.append(keptLane, refusedLane);
+  return box;
+}
+
 async function draw() {
   const found = await state();
   document.getElementById("says").textContent = found.pending.says;
@@ -153,6 +214,9 @@ async function draw() {
         sitting.manifest, name, laid, sitting.choices, found.answers, found.pending.assets));
     }
   }
+  const gates = document.getElementById("gates");
+  gates.replaceChildren();
+  for (const run of (found.gates || []).slice().reverse()) gates.append(gateRun(run));
   const rows = document.querySelector("#pending tbody");
   rows.replaceChildren();
   for (const asset of found.pending.assets) {

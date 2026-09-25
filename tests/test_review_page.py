@@ -260,3 +260,75 @@ def test_a_persons_mark_outranks_the_described_region_for_an_edit(page, monkeypa
     record = provenance.read("renders/v.png", root=where)
     assert record["details"]["mask_from"] == "person"
     assert record["details"]["mask"].startswith(".polyweave/marks/")
+
+
+# -- the refused beside the kept (§PW175) --------------------------------------------
+
+
+@pytest.fixture
+def gated(page):
+    from PIL import ImageDraw
+
+    from polyweave import picture
+
+    base, where = page
+
+    def drawn(name, box):
+        image = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
+        ImageDraw.Draw(image).ellipse(box, fill=(242, 193, 78, 255))
+        image.save(where / name)
+
+    drawn("outline.png", (14, 44, 114, 84))
+    drawn("wide.png", (15, 44, 115, 84))
+    drawn("dome.png", (44, 8, 84, 120))
+    ran = picture.gate(["wide.png", "dome.png"], "outline.png", root=where)
+    return base, where, ran
+
+
+def test_the_page_shows_what_the_gate_refused_with_its_numbers(gated):
+    base, _, ran = gated
+    _, body, _ = get(base + "/api/state")
+    run = json.loads(body)["gates"][-1]
+    assert run["id"] == ran["id"] and run["chosen"] == "wide.png"
+    refused = [one for one in run["candidates"] if not one["passed"]]
+    assert [one["picture"] for one in refused] == ["dome.png"]
+    assert "centroid" in refused[0]["failed"][0]
+    assert refused[0]["silhouette_iou"] < 0.97
+
+
+def test_a_person_may_promote_a_refused_picture_and_it_is_an_overruling(gated):
+    from polyweave import verdict
+
+    base, where, ran = gated
+    status, said = post(
+        base + "/api/judge",
+        {
+            "gate": ran["id"],
+            "picture": "dome.png",
+            "choice": "accept",
+            "why": "the dome is what I wanted after all",
+        },
+    )
+    assert status == 200
+    one = verdict.answers(root=where)["answers"][-1]
+    assert one["sitting"] == f"gate:{ran['id']}" and one["family"] == "dome"
+    member = one["members"][0]
+    assert member["tool_passed"] is False and member["person_accepted"] is True
+
+
+def test_a_promotion_the_gate_never_saw_is_refused(gated):
+    base, _, ran = gated
+    status, said = post(
+        base + "/api/judge",
+        {"gate": ran["id"], "picture": "other.png", "choice": "accept", "why": "x"},
+    )
+    assert status == 400 and said["code"] == "loop.unknown-sitting"
+
+
+def test_there_is_no_bound_to_move_on_a_picture_with_no_spec(gated):
+    base, _, ran = gated
+    status, said = post(
+        base + "/api/judge",
+        {"gate": ran["id"], "picture": "dome.png", "choice": "number", "why": "x"},
+    )
+    assert status == 400 and said["code"] == "loop.no-failed-bound"

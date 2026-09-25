@@ -317,6 +317,13 @@ def gate(
             for one in lettering["texts"]
             if one["passed"] is False
         )
+        unchecked = [
+            f"lettering {one['asked']!r}: no OCR engine to read it"
+            for one in lettering["texts"]
+            if one["passed"] is None
+        ]
+        if drifted and not drifted["judged"]:
+            unchecked.append(f"style: {drifted['floor']}")
         found = {
             "picture": candidate,
             "passed": not failed,
@@ -327,12 +334,23 @@ def gate(
             "lettering_unchecked": [
                 one["asked"] for one in lettering["texts"] if one["passed"] is None
             ],
+            # The numbers behind a refusal, so a person decides with the same facts the
+            # agent used (§PW175): each drifted measure's value, floor and direction.
+            "drift": {
+                key: {
+                    k: drifted["measures"][key].get(k)
+                    for k in ("value", "canon", "floor", "which_way")
+                }
+                for key in (drifted or {}).get("drifted", ())
+            },
+            "unchecked": unchecked,
+            "bought": _bought(path, here),
         }
         _written_against(path, found, here)
         looked.append(found)
     passing = [one for one in looked if one["passed"]]
     chosen = max(passing, key=lambda one: one["silhouette_iou"]) if passing else None
-    return {
+    answer = {
         "chosen": chosen["picture"] if chosen else None,
         "why": "the highest silhouette IoU of those that passed"
         if chosen
@@ -340,6 +358,47 @@ def gate(
         "candidates": looked,
         "not_checked": list(style.NOT_CHECKED[:1]),
     }
+    answer["id"] = _logged(answer, outline=outline, family=family, config=config)
+    return answer
+
+
+#: Every gate's answer, one line each, so the page can show the refused beside the kept
+#: (§PW175): a filter nobody can see into is a filter nobody audits.
+GATES = "gates.jsonl"
+
+
+def _logged(answer: dict, *, outline: str, family, config) -> str:
+    import uuid
+    from datetime import UTC, datetime
+
+    line = {
+        "id": uuid.uuid4().hex[:12],
+        "at": datetime.now(tz=UTC).isoformat(timespec="seconds"),
+        "outline": outline,
+        "family": family,
+        **answer,
+    }
+    path = config.path("paths.work") / GATES
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as appended:
+        appended.write(json.dumps(line, sort_keys=True) + "\n")
+    return line["id"]
+
+
+def _bought(path, here) -> dict | None:
+    """What a candidate cost and from which service, off the ledger."""
+    entry = purchase.find(provenance.sha256_of(path)[0], root=here)
+    if not entry:
+        return None
+    return {"credits": entry.get("credits"), "service": entry.get("service")}
+
+
+def gates(root=".") -> list[dict]:
+    """Every gate this project ran, oldest first."""
+    from .files import read_text_retrying
+
+    text = read_text_retrying(load(root).path("paths.work") / GATES) or ""
+    return [json.loads(line) for line in text.splitlines() if line.strip()]
 
 
 #: A project's `[capture] locale` as the reader's language, so a game in Portuguese is

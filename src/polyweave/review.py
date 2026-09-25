@@ -62,9 +62,69 @@ def sittings(root) -> list[dict]:
     return found
 
 
+def looked_at(root) -> list[dict]:
+    """Every gate run, each candidate with what is left of its service's ceiling.
+
+    The refused beside the kept (§PW175), with the numbers the agent used and what is
+    left to spend, read now rather than when the gate ran.
+    """
+    from . import picture, purchase
+
+    left: dict = {}
+    found = picture.gates(root)
+    for run in found:
+        for one in run["candidates"]:
+            service = (one.get("bought") or {}).get("service")
+            if service and service not in left:
+                try:
+                    left[service] = purchase.remaining(str(root), service=service)
+                except PolyweaveError:
+                    left[service] = None
+            one["ceiling"] = left.get(service)
+    return found
+
+
+def _overruled(root, body: dict) -> tuple[list[dict], str, str]:
+    """A refused picture promoted by a person: the members, the sitting and family."""
+    from . import picture
+
+    ran = {one["id"]: one for one in picture.gates(root)}
+    run = ran.get(str(body.get("gate") or ""))
+    held = {one["picture"]: one for one in (run or {}).get("candidates", ())}
+    chosen = held.get(str(body.get("picture") or ""))
+    if chosen is None:
+        raise PolyweaveError(
+            "loop.unknown-sitting",
+            "the page named a gate run or a picture this project has no record of",
+            "overrule a picture the page lists under a gate",
+            given=str(body.get("picture")),
+            allowed=sorted(held),
+        )
+    name = Path(chosen["picture"]).stem
+    member = {"name": name, "new": chosen["picture"], "passed": chosen["passed"]}
+    return [member], f"gate:{run['id']}", name
+
+
 def answer(root, body: dict) -> dict:
-    """The page's one write: a person's verdict on one family of one sitting."""
+    """The page's one write: a person's verdict on one family of one sitting.
+
+    A refused picture promoted from a gate's lane is the same write: a verdict through
+    `judge`, whose record says the tool refused what the person accepted, which is the
+    evidence a tolerance is loosened from (§PW175).
+    """
     config = load(root)
+    if body.get("gate"):
+        members, listed, family = _overruled(root, body)
+        said = verdict.judge(
+            members,
+            str(body.get("choice") or ""),
+            str(body.get("why") or ""),
+            root=str(config.root),
+        )
+        said["answer"] = verdict.record_answer(
+            said, sitting=listed, family=family, root=config.root
+        )
+        return said
     listed = str(body.get("sitting") or "")
     offered = {one["manifest"]: one for one in sittings(root)}
     if listed not in offered:
@@ -201,6 +261,7 @@ def server(root=".", port: int = 0) -> ThreadingHTTPServer:
                         "pending": loop.pending(str(here)),
                         "sittings": sittings(here),
                         "answers": verdict.answers(root=str(here))["answers"],
+                        "gates": looked_at(here),
                     }
                 )
             if asked.path == "/file":

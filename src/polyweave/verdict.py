@@ -35,7 +35,11 @@ CHOICES = {
 }
 
 
-def _checked(member: dict, root: Path) -> tuple[accept.Spec, Path, dict]:
+def _checked(member: dict, root: Path) -> tuple[accept.Spec | None, Path | None, dict]:
+    if not member.get("spec"):
+        # A picture the gate refused has no acceptance spec: what the tool said of it
+        # is the gate's verdict, which the member carries (§PW175).
+        return None, None, {"passed": bool(member.get("passed")), "predicates": []}
     spec_path = Path(member["spec"])
     spec_path = spec_path if spec_path.is_absolute() else root / spec_path
     spec = accept.read(spec_path)
@@ -259,6 +263,13 @@ def judge(
                 choice="accept",
                 why=Blank("the person's own words"),
             ),
+        )
+    if choice == "number" and any(spec is None for _, spec, *_ in checked):
+        raise PolyweaveError(
+            "loop.no-failed-bound",
+            "a member has no acceptance spec, so there is no bound for number to move",
+            "say accept to overrule the gate that refused it; the tolerance that did "
+            "is the project's, in [tolerance]",
         )
     stamp = when or Date.today().isoformat()
     answers = []
