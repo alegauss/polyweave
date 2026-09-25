@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python -m polyweave notice --root \"${CLAUDE_PROJECT_DIR:-.}\""
+          }
+        ]
+      }
+    ]
+  }
+}

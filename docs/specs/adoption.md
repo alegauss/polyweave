@@ -321,6 +321,20 @@ wrong. The call is the consumer's rather than an import side effect, because a l
 not reconfigure a process it does not own. It returns the streams it changed, is empty when
 they were already UTF-8, and is safe to call twice. All three of Cottony's runners make it.
 
+**A consumer's agent is told the plugin exists** (§PW132). Six of Cottony's tools
+imported it and none of its agent documents named it, so each session rediscovered it
+from a script's imports. The repository is now a Claude Code plugin and its own
+marketplace. `.claude-plugin/plugin.json` declares the `polyweave` MCP server inline,
+since the root `.mcp.json` also launches this repository's roadkeep and would break in
+someone else's project. `skills/polyweave/` is a skill for a session *driving* the tool:
+the four-call loop (brief, build, search, check) and its rules, with two reference pages
+opened on demand. `hooks/hooks.json` runs `python -m polyweave notice` at SessionStart.
+That prints one line saying which installed copy answered, how many declarations and
+specs the project holds, and that `asset.brief` answers where one stands.
+`tests/test_plugin.py` holds the notice to 240 characters and the skill to 3,400. It
+requires every operation the skill names to exist, and keeps plugin and project skill
+names apart, because a plugin skill drives the tool and a project skill changes it.
+
 ## Three model routes, stated rather than programmed
 
 Binds **PW54**. `tools/art/solid.py` is 283 lines of bmesh primitives that three scripts

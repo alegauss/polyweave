@@ -177,6 +177,7 @@
 - ✅ **PW129** **nothing bounds what `describe`, `capabilities` or an error costs the turn that reads it** — A test holds describe, capabilities, the largest refusal, --help and a search's answer to measured ceilings, and a long allowed list is cut to 40 (design recorded in `docs/specs/tool-surface.md`).
 - ✅ **PW130** **every test calls the surface correctly, so a silently dropped argument or a wrong first call is never measured** — A canonical task runs in three counted calls, and a naive client's first guesses are each refused; validate now type-checks every argument (design recorded in `docs/specs/tool-surface.md`).
 - ✅ **PW131** **starting work on an asset means opening its declaration, spec, record and last verdict one file at a time** — asset.brief says where an asset stands in one read: its shape, its bar and origins, its artefact against its record, its last verdict, a digest (design recorded in `docs/specs/tool-surface.md`).
+- ✅ **PW132** **an agent in a consumer is never told the plugin exists, because it ships no manifest, skill or session notice** — The repo is a Claude Code plugin and marketplace: an MCP server, a driving skill, and a one-line SessionStart notice, held to size by a test (design recorded in `docs/specs/adoption.md`).
 
 ## Block L — What a run leaves as evidence
 

@@ -1,0 +1,11 @@
+{
+  "name": "polyweave",
+  "owner": { "name": "Alexandre Oliveira" },
+  "plugins": [
+    {
+      "name": "polyweave",
+      "source": "./",
+      "description": "Declare what a 3D asset must satisfy and let a search find the parameters that satisfy it."
+    }
+  ]
+}

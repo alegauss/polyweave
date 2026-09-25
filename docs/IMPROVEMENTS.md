@@ -348,25 +348,6 @@ again.
 
 ## Block K — Reached without reading the source
 
-### §PW132 Installed as a plugin, and announced in one line
-
-Everything under `.claude/` here serves a session changing this repository: the roadkeep
-skill, the audit, the scanner and verifier. Nothing serves a session driving the plugin
-from another one. Cottony installs it from a pinned commit through `requirements.txt`,
-and its art-pipeline skill never mentions it.
-
-Both sibling projects answer this the same way. A `.claude-plugin` manifest, with this
-repository as its own marketplace, carries a skill for a *driving* session: a short
-orientation built around the loop of four calls (brief, build, search, check) with the
-rest on reference pages opened on demand, and size ceilings held by a test. Shio's rule
-keeps the two sets apart: a plugin skill serves a session driving the tool, a project
-skill a session changing it, and no name appears on both sides.
-
-A SessionStart notice of one line, under a character budget a test holds, says which
-declarations and specs this project has and which call answers instead of opening them.
-A launcher that finds the engine, as roadkeep's does, reports which copy answered, since
-Cottony's pin and the editable install on this desk are already two copies.
-
 ### §PW133 The declaration is the source, and the guard says so
 
 The plugin's premise is roadkeep's in another material: the declaration is the source
@@ -451,8 +432,8 @@ Without `bpy` or `$GODOT` the render path skips, so the job prints the gate stam
 CI proves the pure half. Whether a runner gets Blender is a later decision with its own
 cost; a green job that claims less than it proved is not.
 
-The same job runs `claude plugin validate` once §PW132 ships a manifest, as roadkeep's
-gate does against a pinned CLI.
+The same job runs `claude plugin validate` on the manifest in `.claude-plugin/`, as
+roadkeep's gate does against a pinned CLI.
 
 ### §PW137 A status is derived, never typed
 

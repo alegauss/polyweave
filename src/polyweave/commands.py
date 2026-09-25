@@ -32,7 +32,10 @@ from typing import Any
 from .errors import PolyweaveError
 
 #: The verbs that are not operations: the first reads, the job handle's, and the server.
-VERBS = ("capabilities", "explain", "describe", "job", "serve")
+VERBS = ("capabilities", "explain", "describe", "job", "serve", "notice")
+
+#: The most a session notice may cost, in characters: one line, read every session.
+NOTICE_BUDGET = 240
 
 #: What `job` does with a handle.
 JOB_ACTIONS = ("list", "poll", "result", "cancel")
@@ -130,6 +133,8 @@ def add_operations(commands: Any) -> None:
     job.add_argument("--wait", action="store_true", help="for result: wait for it")
     job.add_argument("--json", action="store_true")
     commands.add_parser("serve", help="serve every operation as an MCP tool, on stdio")
+    notice = commands.add_parser("notice", help="the one line a session starts with")
+    notice.add_argument("--root", default=".")
 
 
 def answer_for(stated: argparse.Namespace) -> Any:
@@ -185,6 +190,35 @@ def _job(stated: argparse.Namespace) -> Any:
     return store.result(stated.handle, wait=stated.wait)
 
 
+def notice(root: str = ".") -> str:
+    """The one line a session in a consumer starts with (§PW132).
+
+    It says which copy of the plugin answered, since a pinned install and an editable
+    one are two copies, what this project holds, and which call answers instead of
+    opening those files. Held to `NOTICE_BUDGET` by a test.
+    """
+    from pathlib import Path
+
+    from . import __file__ as where
+    from . import __version__
+    from .cli import is_declaration
+
+    here = Path(root)
+    shapes = specs = 0
+    for source in here.rglob("*.toml") if here.is_dir() else ():
+        if any(part.startswith(".") for part in source.relative_to(here).parts[:-1]):
+            continue
+        if source.name.endswith(".accept.toml"):
+            specs += 1
+        elif is_declaration(source):
+            shapes += 1
+    copy = Path(where).resolve().parent.parent.as_posix()
+    return (
+        f"polyweave {__version__} ({copy}): {shapes} declarations, {specs} specs here; "
+        "`asset.brief --asset <name>` says where one stands, `describe` lists the rest."
+    )
+
+
 def as_data(answer: Any) -> Any:
     """The answer as JSON has it: a path is its text, a tuple a list."""
     return json.loads(json.dumps(answer, default=str))
@@ -219,6 +253,9 @@ def run(stated: argparse.Namespace) -> int:
         from .server import serve
 
         serve()
+        return 0
+    if stated.command == "notice":
+        print(notice(stated.root))
         return 0
     try:
         # Anything the work prints (Blender's exporter logs to stdout) goes to stderr,
