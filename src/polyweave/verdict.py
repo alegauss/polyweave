@@ -331,8 +331,14 @@ def judge(
 ANSWERS = "answers.jsonl"
 
 
-def record_answer(said: dict, *, sitting: str, family: str, root) -> dict:
-    """Append one answer from the page, for the agent that offered the sitting."""
+def record_answer(
+    said: dict, *, sitting: str, family: str, root, marks: list | None = None
+) -> dict:
+    """Append one answer from the page, for the agent that offered the sitting.
+
+    `marks` are where the person said it is wrong, each a mask the size of the picture
+    it was drawn on, with that picture's digest (§PW174).
+    """
     import json
     from datetime import UTC, datetime
 
@@ -345,6 +351,7 @@ def record_answer(said: dict, *, sitting: str, family: str, root) -> dict:
         "choice": said["choice"],
         "why": said["why"],
         "members": said["members"],
+        "marks": list(marks or ()),
     }
     path = load(root).path("paths.work") / ANSWERS
     path.parent.mkdir(parents=True, exist_ok=True)

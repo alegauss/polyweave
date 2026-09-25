@@ -157,6 +157,18 @@ same file is what a background wait watches instead of polling. The page reads a
 five seconds unless an answer is being written, and shows each family's answers with any
 newer candidate for its members, so the person sees their sentence acted on.
 
+**A mark says where** (§PW174). On the page a person may drag boxes over any member's own
+picture, in that picture's pixels. The API also takes a loose `outline` of points. With the
+answer they become a mask the picture's size, black where marked, in `[paths]
+work`/`marks/`, and the answer's `marks` names the member, the picture, **its digest**, the
+mask, the shapes and, for a render, the camera it was drawn from. A mark on a member the
+family does not have is refused before the verdict is recorded. `picture.vary` bounds an
+edit by an explicit `mask` first, then **the newest mark a person drew on that very
+picture**, matched by digest so a mark never applies to another picture or an earlier
+version, and only then by a described element's box. The record's `mask_from` says which
+(`given`, `person` or `described`), and `picture.against_parent` then checks the region the
+person drew.
+
 **A pass also says how comfortably** (§PW104). The margin is 1 anywhere inside a bound, so
 Cottony's stars passed with a facet at 0.4695 under a ceiling of 0.47 and the search called
 that nothing left to gain. Each predicate now also carries its `headroom`: the distance to

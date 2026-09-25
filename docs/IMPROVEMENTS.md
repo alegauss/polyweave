@@ -354,30 +354,6 @@ any of them.
 
 ## Block O — A person sees and answers
 
-### §PW174 A mark says where
-
-"The left hand is too big" says what and not where. The agent then guesses the region,
-and an edit bounded by a guess is one that redraws what the person liked.
-
-**A person may mark where.** On the page, a rectangle or a loose outline drawn over the
-picture is kept with the sentence it belongs to. It is stored as a mask image beside the
-answer, at the picture's own pixel size, with the digest of the picture it was drawn on,
-so a mask can never be applied to a different picture than the one it was drawn over.
-
-**The mask is what an edit is bounded by.** A variation (PW170) takes the region from
-the person's mask where one exists, and from the described element boxes only where none
-does — a person's mark outranks the agent's reading. The check that nothing outside the
-mask changed then runs on the region the person actually drew.
-
-**A mark is also a named predicate.** `judge` already takes `named`, the predicates a
-person blamed for a look. A region with a sentence is the same thing with a place
-attached, so a look verdict carries both and a later search can aim at the part that
-failed .
-
-For a mesh, the mark is drawn on the render, and the answer carries the camera it was
-drawn from, so the region can be traced back onto the surface rather than applied to
-pixels.
-
 ### §PW175 The refused beside the kept
 
 The agent refuses drift before a person looks (PW167), which is right — and makes the

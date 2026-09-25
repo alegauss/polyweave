@@ -85,19 +85,100 @@ def answer(root, body: dict) -> dict:
             given=family,
             allowed=sorted(families),
         )
+    members = families[family]["members"]
+    # Checked before the verdict, so a mark that cannot be kept never leaves a verdict
+    # recorded without the place it was about.
+    shapes = _shapes(members, body.get("marks") or [])
     said = verdict.judge(
-        families[family]["members"],
+        members,
         str(body.get("choice") or ""),
         str(body.get("why") or ""),
         root=str(config.root),
         named=list(body.get("named") or ()),
     )
+    marks = [_mark(member, drawn, config) for member, drawn in shapes]
     # An event on disk, so the agent that offered the sitting resumes on it without
     # the person saying so again in chat (§PW173).
     said["answer"] = verdict.record_answer(
-        said, sitting=listed, family=family, root=config.root
+        said, sitting=listed, family=family, root=config.root, marks=marks
     )
     return said
+
+
+def _shapes(members: list[dict], marks: list) -> list[tuple[dict, list]]:
+    """Each mark matched to the member it was drawn on, its shapes checked (§PW174)."""
+    named = {m["name"]: m for m in members}
+    found = []
+    for mark in marks:
+        member = named.get(str(mark.get("member")))
+        if member is None:
+            raise PolyweaveError(
+                "loop.unknown-sitting",
+                f"a mark names {mark.get('member')!r}, which is not in this family",
+                f"mark one of {', '.join(sorted(named))}",
+                given=str(mark.get("member")),
+                allowed=sorted(named),
+            )
+        shapes = [
+            s for s in mark.get("shapes") or [] if s.get("box") or s.get("outline")
+        ]
+        if shapes:
+            found.append((member, shapes))
+    return found
+
+
+def _mark(member: dict, shapes: list, config) -> dict:
+    """A person's mark as a mask the size of the picture it was drawn on.
+
+    Black where they marked, white elsewhere, which is the edit call's own convention,
+    kept with the digest of the picture, so it can never bound an edit of another.
+    """
+    from datetime import UTC, datetime
+
+    from PIL import Image, ImageDraw
+
+    from . import provenance
+
+    here = config.root
+    picture = here / member["new"]
+    with Image.open(picture) as opened:
+        size = opened.size
+    mask = Image.new("L", size, 255)
+    pen = ImageDraw.Draw(mask)
+    for shape in shapes:
+        if shape.get("box"):
+            left, top, right, bottom = (float(v) for v in shape["box"])
+            pen.rectangle(
+                (
+                    min(left, right),
+                    min(top, bottom),
+                    max(left, right),
+                    max(top, bottom),
+                ),
+                fill=0,
+            )
+        else:
+            pen.polygon(
+                [tuple(float(v) for v in point) for point in shape["outline"]], fill=0
+            )
+    stamp = datetime.now(tz=UTC).strftime("%Y%m%dT%H%M%S%f")
+    target = config.path("paths.work") / "marks" / f"{stamp}-{member['name']}.png"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    mask.save(target)
+    try:
+        record = provenance.read(picture, root=here)
+    except PolyweaveError:
+        record = {}
+    return {
+        "member": member["name"],
+        "picture": member["new"],
+        "sha256": provenance.sha256_of(picture)[0],
+        "mask": provenance.relative(target, here),
+        "shapes": shapes,
+        # For a render, the camera the mark was drawn from, so the region can be
+        # traced back onto the surface rather than applied to pixels.
+        "camera": record.get("camera"),
+    }
 
 
 def server(root=".", port: int = 0) -> ThreadingHTTPServer:

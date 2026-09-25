@@ -180,3 +180,83 @@ def test_the_page_is_given_the_answers_to_show_beside_the_family(page):
     post(base + "/api/judge", judged(choice="accept", why="yes"))
     _, body, _ = get(base + "/api/state")
     assert json.loads(body)["answers"][0]["why"] == "yes"
+
+
+# -- a mark says where (§PW174) ------------------------------------------------------
+
+
+def marked(box):
+    return [{"member": "star_dim", "shapes": [{"box": box}]}]
+
+
+def test_a_mark_is_kept_as_a_mask_the_size_of_the_picture_it_was_drawn_on(page):
+    base, where = page
+    status, said = post(
+        base + "/api/judge",
+        judged(
+            choice="look",
+            why="the left point is too long",
+            marks=marked([2, 4, 10, 12]),
+        ),
+    )
+    assert status == 200
+    mark = said["answer"]["marks"][0]
+    assert mark["picture"] == "renders/star_dim.png"
+    with Image.open(where / mark["mask"]) as mask:
+        assert mask.size == (24, 24)
+        assert mask.getpixel((5, 8)) == 0 and mask.getpixel((20, 20)) == 255
+    from polyweave import provenance
+
+    assert mark["sha256"] == provenance.sha256_of(where / "renders" / "star_dim.png")[0]
+
+
+def test_a_mark_on_a_member_the_family_does_not_have_is_refused_before_the_verdict(
+    page,
+):
+    base, where = page
+    status, said = post(
+        base + "/api/judge",
+        judged(marks=[{"member": "star_gold", "shapes": [{"box": [0, 0, 4, 4]}]}]),
+    )
+    assert status == 400 and said["code"] == "loop.unknown-sitting"
+    spec = (where / "accept" / "star_dim.accept.toml").read_text(encoding="utf-8")
+    assert "same star at size" not in spec
+
+
+def test_a_persons_mark_outranks_the_described_region_for_an_edit(page, monkeypatch):
+    from polyweave import picture, variation
+
+    base, where = page
+    post(
+        base + "/api/judge",
+        judged(choice="look", why="this corner", marks=marked([0, 0, 6, 6])),
+    )
+    (where / "polyweave.toml").write_text(
+        '[service]\nbase = "https://api.ideogram.ai"\nkey_env = "POLYWEAVE_TEST_I"\n'
+        'prices = { "edit" = 0.06 }\n\n'
+        '[budget]\ncredits = 60\nexpires = "2099-12-31"\n',
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("POLYWEAVE_TEST_I", "sk")
+    sent = {}
+
+    def send(endpoint, key, payload, files=None):
+        sent["files"] = files
+        return 200, json.dumps(
+            {"created": "t", "data": [{"seed": 1, "url": "https://p/x.png"}]}
+        ).encode()
+
+    monkeypatch.setattr(picture, "_send", send)
+    monkeypatch.setattr(
+        picture,
+        "_download",
+        lambda link: (where / "renders" / "star_dim.png").read_bytes(),
+    )
+    variation.vary(
+        "renders/star_dim.png", "renders/v.png", "fix it", region="anything", root=where
+    )
+    from polyweave import provenance
+
+    record = provenance.read("renders/v.png", root=where)
+    assert record["details"]["mask_from"] == "person"
+    assert record["details"]["mask"].startswith(".polyweave/marks/")

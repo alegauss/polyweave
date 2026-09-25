@@ -50,6 +50,13 @@
   }
   button:disabled { opacity: 0.5; cursor: default; }
   .answer { margin-top: 8px; color: var(--quiet); white-space: pre-wrap; }
+  .mark { display: inline-block; margin: 8px 12px 0 0; vertical-align: top; }
+  .mark .frame { position: relative; display: inline-block; }
+  .mark img { max-width: 320px; image-rendering: pixelated; }
+  .mark canvas {
+    position: absolute; left: 0; top: 0; cursor: crosshair; touch-action: none;
+  }
+  .mark p { margin: 0 0 4px; color: var(--quiet); }
   table { border-collapse: collapse; width: 100%; background: var(--panel); }
   td, th { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: left; }
 </style>

@@ -91,9 +91,9 @@ def vary(
 
     files = {"image": (source.name, source.read_bytes(), picture._mime(source))}
     payload: dict = {"prompt": prompt}
-    mask_path = None
+    mask_path = mask_from = None
     if change == "edit":
-        mask_path = _mask_for(source, region, mask, here, out)
+        mask_path, mask_from = _mask_for(source, region, mask, here, out)
         files["mask"] = ("mask.png", mask_path.read_bytes(), "image/png")
     elif strength is not None:
         payload["image_weight"] = int(strength)
@@ -136,6 +136,8 @@ def vary(
             "region": region,
             "strength": strength,
             "mask": provenance.relative(mask_path, here) if mask_path else None,
+            # Whose the region was: a person's mark outranks the described boxes.
+            "mask_from": mask_from,
             "resolution": drawn.get("resolution"),
             "seed": drawn.get("seed"),
             "returned_prompt": drawn.get("prompt"),
@@ -144,8 +146,14 @@ def vary(
     )
 
 
-def _mask_for(source: Path, region, mask, here: Path, out: str) -> Path:
-    """The edit's mask: the file given, or the parent's described box for the region."""
+def _mask_for(source: Path, region, mask, here: Path, out: str) -> tuple[Path, str]:
+    """The edit's mask: the file given, then the person's mark, then a described box.
+
+    A person's mark outranks the agent's reading of the picture (§PW174): where they
+    drew on this very picture on the review page, that is where the edit may change,
+    whatever `region` says. The mark is matched by the picture's digest, so a mark
+    drawn on another picture, or on an earlier version of this one, never applies.
+    """
     if mask:
         given = here / mask
         if not given.is_file():
@@ -155,7 +163,10 @@ def _mask_for(source: Path, region, mask, here: Path, out: str) -> Path:
                 "name a black-and-white picture the parent's size, black where it may "
                 "change",
             )
-        return given
+        return given, "given"
+    marked = person_marked(source, here)
+    if marked is not None:
+        return marked, "person"
     if not region:
         raise PolyweaveError(
             "fetch.missing-field",
@@ -210,7 +221,21 @@ def _mask_for(source: Path, region, mask, here: Path, out: str) -> Path:
     buffer = io.BytesIO()
     drawn.save(buffer, format="PNG")
     target.write_bytes(buffer.getvalue())
-    return target
+    return target, "described"
+
+
+def person_marked(source: Path, here: Path) -> Path | None:
+    """The newest mask a person drew on exactly this picture, or none."""
+    from . import verdict
+
+    digest = provenance.sha256_of(source)[0]
+    marks = [
+        mark
+        for one in verdict.answers(root=str(here))["answers"]
+        for mark in one.get("marks") or ()
+        if mark.get("sha256") == digest and (here / mark["mask"]).is_file()
+    ]
+    return here / marks[-1]["mask"] if marks else None
 
 
 @operation("picture.against_parent")
