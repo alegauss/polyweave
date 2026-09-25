@@ -958,6 +958,11 @@ CODES: dict[str, Code] = {
         doors=("give it a duration above zero", "give it a frame rate"),
     ),
     # -- rig: fitting a skeleton to a mesh ------------------------------------
+    "rig.no-mesh": Code(
+        means="a clip was asked to move a mesh that is not there",
+        when="motion.bake naming a .glb that was never built or has moved",
+        doors=("name the mesh the clip is for, as a path under the project",),
+    ),
     "rig.unknown-plan": Code(
         means="there is no body plan by that name",
         when="a plan named outside the small library of the body plans that recur",

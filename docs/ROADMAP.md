@@ -28,8 +28,6 @@
 
 ## Block K — Reached without reading the source
 
-- 📋 **PW160** (deps: —) **a clip is baked to an animation and a sheet only from Python, since every step takes a mesh and a rig in memory** — The census lists compile, frames, sprites.bake and skeleton.fit as internal, so motion is the one surface a GDScript project still needs a script for. → §PW160
-
 ## Block L — What a run leaves as evidence
 
 ## Block M — What a game needs beyond the look

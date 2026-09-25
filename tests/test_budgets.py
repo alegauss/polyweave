@@ -27,19 +27,21 @@ from polyweave.errors import PolyweaveError
 #: Raised for asset.brief (§PW131), which took 435 and left 19: 75 measure 47,381.
 #: Raised for measure.digest (§PW141), a bake's two hashes readable off any picture
 #: by path: 48,154, with headroom under one more operation. Then 48,709 with cost.read
-#: (§PW143) and port.run's `fresh` (§PW144).
-DESCRIBE = 49_200
+#: (§PW143) and port.run's `fresh` (§PW144), 49,694 with motion.bake (§PW160).
+DESCRIBE = 50_200
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
-#: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144).
-CAPABILITIES = 56_300
+#: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
+#: motion.bake and rig.no-mesh (§PW160).
+CAPABILITIES = 57_300
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
 HELP_VERB = 4_000
 #: The top-level `--help`, naming every verb: 11,346. One more verb line is ~150.
-#: 11,792 once measure.digest is a verb (§PW141), 11,933 with cost.read (§PW143).
-HELP_TOP = 12_050
+#: 11,792 once measure.digest is a verb (§PW141), 11,933 with cost.read (§PW143),
+#: 12,066 with motion.bake (§PW160).
+HELP_TOP = 12_200
 #: A search's answer over its default budget of 24 samples: 3,739.
 SEARCH = 4_000
 

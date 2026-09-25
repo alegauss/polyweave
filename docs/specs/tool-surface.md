@@ -277,7 +277,8 @@ both answers.
   clip's own document (`clip.new`, `.read`, `.write`, `.set_key`, `.retime`,
   `.compiled`), the skeleton's plan and rigged-file reads, and `sprites.matched`. With
   those, nothing is pending. What stays internal says why. Baking a clip still needs a
-  mesh and a fitted rig in memory, and a path-based `motion.bake` is §PW160.
+  mesh and a fitted rig in memory, so `motion.bake` takes the clip, the mesh and the
+  body plan by name and does all of it (§PW160).
 - **The command line is derived from the registry** (§PW125). `python -m polyweave <op>`
   exists for every registered operation, named as the operation is (`accept.check`),
   with one `--<param>` flag per declared parameter and the sentence, unit and choices as

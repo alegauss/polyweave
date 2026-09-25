@@ -36,7 +36,7 @@ SKILL = ROOT / "skills" / "polyweave"
 
 #: A name a document spells ahead of its code, with the open line that builds it. Only
 #: an open line may be named here; the test below refuses one that has shipped.
-AHEAD = {"motion.bake": "PW160"}
+AHEAD: dict[str, str] = {}
 
 #: What a backticked dotted token is when it is a file rather than a name.
 _FILES = (".md", ".py", ".toml", ".json", ".gd", ".png", ".godot")

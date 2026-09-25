@@ -304,26 +304,6 @@ again.
 
 ## Block K — Reached without reading the source
 
-### §PW160 A clip baked by name
-
-Found finishing PW124's census. A clip's own document is a plain table, so creating,
-reading, keying, retiming and writing one are operations, and so are the skeleton's plan
-and the reads of a rigged file. What turns a clip into something a game plays is not
-reachable by name. `clip.compile`, `clip.frames`, `sprites.bake`, `sprites.both`,
-`skeleton.fit`, `skeleton.weights` and `skeleton.write` each take a mesh and a fitted
-rig as objects in memory, `(rig, bound)` from `skeleton.fit`, that a JSON call cannot
-carry. So the census lists them internal, and baking a clip still needs a Python script.
-
-The shape of the fix is the one `port.run` took. One operation, `motion.bake`, takes the
-clip file, the mesh file and the body plan by name. It fits the skeleton, weights it,
-compiles the animation, bakes the sprite sheet at the project's `[sprites]` settings,
-and returns the paths written and `sprites.matched`'s verdict on the pair. It is of kind
-`bake`. The fit's own numbers (pull, influences, falloff) come from `[rig]`, as they do
-now.
-
-The test is a clip written by `clip.write` and a small mesh, baked by name with Blender
-present, and skipped where it is not, as the render tests are.
-
 ## Block L — What a run leaves as evidence
 
 ## Block M — What a game needs beyond the look

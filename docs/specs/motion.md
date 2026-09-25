@@ -213,3 +213,12 @@ asked for instead where a sheet has a shape to hit.
 both outputs. Both carry the **digest of the authored clip text**, so `matched` turns
 "keeping them in step" from a discipline into a check: equal digests are a screen and a
 scene playing the same motion, and a difference says so rather than waiting to be noticed.
+
+**Both are baked by name** (§PW160). Every step between a clip and what a game plays took a
+mesh and a fitted rig as objects in memory, which a JSON call cannot carry, so a GDScript
+project needed a Python script for motion and for nothing else. `motion.bake` takes the
+clip file, the mesh file and the body plan by name. It fits the skeleton, weights it,
+compiles the animation to `<out>.glb` and bakes the sheet to `<out>.png` with its atlas.
+It answers with the three paths and `matched`'s verdict on the pair. The fit's numbers come
+from `[rig]` and the sheet's from `[sprites]`, as they do for a script. A mesh that is not
+there is refused (`rig.no-mesh`) before anything is fitted.
