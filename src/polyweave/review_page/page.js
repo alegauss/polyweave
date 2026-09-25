@@ -280,6 +280,42 @@ function gateRun(run) {
   return box;
 }
 
+// A mesh turned at the rig's own camera, never a viewer's (§PW176): the two newest
+// turntables of one mesh, frame by frame, each pair in the four ways, and the drawing
+// that asked for the shape laid over the front view.
+function meshes(turntables) {
+  const byAsset = {};
+  for (const one of turntables) (byAsset[one.asset] = byAsset[one.asset] || []).push(one);
+  const section = element("section");
+  for (const [asset, turned] of Object.entries(byAsset)) {
+    const box = element("article", { class: "family" }, element("h2", {}, asset + ", turned"));
+    const newest = turned[turned.length - 1];
+    const before = turned.length > 1 ? turned[turned.length - 2] : null;
+    const pick = element("input", { type: "range", min: "0", max: String(newest.frames.length - 1),
+      value: "0", "aria-label": "which frame round the up axis" });
+    const said = element("p", { class: "says" });
+    const stage = element("div");
+    const show = () => {
+      const at = Number(pick.value);
+      const frame = newest.frames[at];
+      said.textContent = "azimuth " + frame.azimuth + "°, elevation " + newest.elevation + "°" +
+        (before ? " — " + before.at + " against " + newest.at : " — only one turntable so far");
+      stage.replaceChildren(before && before.frames[at]
+        ? compare(before.frames[at].picture, frame.picture, "slider", null)
+        : element("img", { src: file(frame.picture), alt: asset + " at " + frame.azimuth + "°" }));
+    };
+    pick.addEventListener("input", show);
+    show();
+    box.append(pick, said, stage);
+    if (newest.against) {
+      box.append(element("h3", {}, "The front view against the drawing"),
+        compare(newest.against, newest.front, "onion", null));
+    }
+    section.append(box);
+  }
+  return section;
+}
+
 async function draw() {
   const found = await state();
   document.getElementById("says").textContent = found.pending.says;
@@ -292,6 +328,7 @@ async function draw() {
         sitting.manifest, name, laid, sitting.choices, found.answers, found.pending.assets));
     }
   }
+  document.getElementById("meshes").replaceChildren(meshes(found.turntables || []));
   const gates = document.getElementById("gates");
   gates.replaceChildren();
   for (const run of (found.gates || []).slice().reverse()) gates.append(gateRun(run));

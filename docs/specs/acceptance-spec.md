@@ -194,6 +194,15 @@ a variation against its parent opens as a slider with its mask laid over, a gate
 with no parent against its family's first canon picture as a difference map, and a sitting
 member with an `old` as a slider.
 
+**A mesh is turned at the rig's own camera, never a viewer's**, because a mesh seen through
+another camera is a mesh seen differently. `shape.turntable(mesh, out=, against=)` bakes
+`frames` pictures (eight by default) through the project's own `render.bake`, at the rig's
+elevation and distance with its azimuth stepped round the up axis from the rig's own. It
+also bakes the front view, the one `shape.check` scores. It writes them and a
+`turntable.json` into `out`, listed once in `[paths] work`/`turntables.json`. The page
+compares the two newest turntables of one mesh frame by frame, in the same four ways, and
+lays `against`, the drawing that asked for the shape, over the front view.
+
 **A pass also says how comfortably** (§PW104). The margin is 1 anywhere inside a bound, so
 Cottony's stars passed with a facet at 0.4695 under a ceiling of 0.47 and the search called
 that nothing left to gain. Each predicate now also carries its `headroom`: the distance to

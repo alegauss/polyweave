@@ -37,6 +37,19 @@ def is_mesh(subject: Any) -> bool:
     return isinstance(subject, str | Path) and Path(subject).suffix.lower() in MESHES
 
 
+class _Quiet:
+    """Nothing to report to: these renders are steps inside one call."""
+
+    def stage(self, stage, *, progress=None, note=None):
+        """A bake's stage, which nobody is watching here."""
+
+    def progress(self, value, *, note=None):
+        """A bake's progress, which nobody is watching here."""
+
+    def note(self, text):
+        """A bake's remark, which nobody is watching here."""
+
+
 def silhouette(
     mesh: str | Path,
     *,
@@ -53,21 +66,9 @@ def silhouette(
     """
     from . import render as R
 
-    class Quiet:
-        """Nothing to report to: this is one render inside a check."""
-
-        def stage(self, stage, *, progress=None, note=None):
-            pass
-
-        def progress(self, value, *, note=None):
-            pass
-
-        def note(self, text):
-            pass
-
     draw = bake or R.bake
     return draw(
-        Quiet(),
+        _Quiet(),
         out=str(out),
         model=str(mesh),
         rung=rung,
@@ -158,6 +159,108 @@ def require(subject: Any, **how: Any) -> dict:
             f"{found['bbox_delta']}px",
         )
     return found
+
+
+#: Frames a turntable takes by default: every 45 degrees round the up axis.
+TURNS = 8
+
+#: Where turntables are listed, so the review page can find two of one mesh (§PW176).
+TURNTABLES = "turntables.json"
+
+
+def turntable(
+    mesh: str | Path,
+    *,
+    out: str | Path,
+    against: str | Path | None = None,
+    root: str | Path = ".",
+    rung: str = "preview",
+    frames: int = TURNS,
+    bake: Any = None,
+) -> dict:
+    """A mesh turned at the rig's own camera, and its front view, for a person to see.
+
+    Never a camera of the viewer's choosing: a mesh seen through another camera is a
+    mesh seen differently. Each frame is the rig's elevation and distance with its
+    azimuth stepped round the up axis, and the front view is the one the shape check
+    scores, so `against`, the drawing that asked for the shape, can be laid over it.
+    The frames and a `turntable.json` go in `out`, which is listed for the review page.
+    """
+    import json
+    from datetime import UTC, datetime
+
+    from . import provenance
+    from . import render as R
+    from .files import read_text_retrying, write_atomic
+    from .render.rig import Rig
+
+    config = load(root)
+    here = config.root
+    folder = Path(out) if Path(out).is_absolute() else here / out
+    folder.mkdir(parents=True, exist_ok=True)
+    draw = bake or R.bake
+    base = Rig()
+    turned = []
+    for step in range(max(1, int(frames))):
+        azimuth = (base.azimuth + step * 360.0 / max(1, int(frames))) % 360.0
+        target = folder / f"turn_{step:02d}.png"
+        draw(
+            _Quiet(),
+            out=str(target),
+            model=str(mesh),
+            rung=rung,
+            root=str(here),
+            inline=False,
+            azimuth=azimuth,
+            elevation=base.elevation,
+        )
+        turned.append(
+            {"azimuth": round(azimuth, 3), "picture": provenance.relative(target, here)}
+        )
+    front = folder / "front.png"
+    draw(
+        _Quiet(),
+        out=str(front),
+        model=str(mesh),
+        rung=rung,
+        root=str(here),
+        inline=False,
+        **FRONT,
+    )
+    manifest = {
+        "at": datetime.now(tz=UTC).isoformat(timespec="seconds"),
+        "mesh": provenance.relative(here / mesh, here),
+        "asset": Path(str(mesh)).stem,
+        "rung": rung,
+        "elevation": base.elevation,
+        "frames": turned,
+        "front": provenance.relative(front, here),
+        "against": str(against) if against else None,
+    }
+    write_atomic(folder / "turntable.json", json.dumps(manifest, indent=2) + "\n")
+    index = config.path("paths.work") / TURNTABLES
+    listed = provenance.relative(folder / "turntable.json", here)
+    held = [
+        one for one in json.loads(read_text_retrying(index) or "[]") if one != listed
+    ]
+    write_atomic(index, json.dumps([*held, listed], indent=2) + "\n")
+    return manifest
+
+
+@operation("shape.turntable", kind="bake")
+def turned(
+    mesh: Annotated[str, Param("the mesh, as a path under the project")],
+    *,
+    out: Annotated[str, Param("the folder the frames are written into")],
+    against: Annotated[str, Param("the drawing to lay over the front view")] = None,
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
+    rung: Annotated[str, Param("the rung the frames are rendered at")] = "preview",
+    frames: Annotated[int, Param("how many frames round the up axis", lo=1)] = TURNS,
+) -> dict:
+    """A mesh turned at the rig's own camera, for the review page (§PW176)."""
+    return turntable(
+        mesh, out=out, against=against, root=root, rung=rung, frames=frames
+    )
 
 
 @operation("shape.silhouette", kind="bake")

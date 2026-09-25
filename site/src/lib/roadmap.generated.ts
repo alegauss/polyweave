@@ -39,7 +39,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 4 },
-  { block: "O", title: "A person sees and answers", open: 2 },
+  { block: "O", title: "A person sees and answers", open: 1 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -90,13 +90,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "N",
     symptom: "an approved picture cannot be reframed to another aspect ratio, so an icon and a banner of it are two separate pictures",
     why: "A reframe keeps everything the parent held and adds only a border, which is the easiest variation to hold to what it must not change.",
-    deps: [],
-  },
-  {
-    id: "PW176",
-    block: "O",
-    symptom: "two versions of an asset are compared side by side, where a few ΔE of drift or a grown silhouette goes unseen",
-    why: "A mesh is still compared only as two pictures; its turntable at the rig's own angles, with the drawing's silhouette over the front view, is not shown.",
     deps: [],
   },
   {

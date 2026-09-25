@@ -384,3 +384,38 @@ def test_a_refused_picture_is_compared_with_the_canon_as_a_difference_map(page):
     _, body, _ = get(base + "/api/state")
     one = json.loads(body)["gates"][-1]["candidates"][0]
     assert one["compare"] == {"old": "canon/c0.png", "mode": "difference", "mask": None}
+
+
+def test_a_mesh_is_turned_at_the_rigs_own_camera_and_listed_for_the_page(page):
+    from polyweave import shape
+    from polyweave.render.rig import Rig
+
+    base, where = page
+    asked = []
+
+    def bake(report, *, out, model, rung, root, inline, azimuth, elevation):
+        asked.append((azimuth, elevation))
+        Image.new("RGBA", (16, 16), (100, 100, 100, 255)).save(out)
+        return {"artefact": out}
+
+    (where / "m.glb").write_bytes(b"glTF")
+    for _ in range(2):
+        shape.turntable(
+            "m.glb",
+            out="turns/m",
+            against="review/stars.png",
+            root=where,
+            frames=4,
+            bake=bake,
+        )
+    rig = Rig()
+    assert asked[:4] == [
+        ((rig.azimuth + step * 90.0) % 360.0, rig.elevation) for step in range(4)
+    ]
+    assert asked[4] == (0.0, 0.0)  # the front view, the one the shape check scores
+    _, body, _ = get(base + "/api/state")
+    turned = json.loads(body)["turntables"]
+    assert len(turned) == 1  # one folder, listed once however often it is redone
+    assert turned[0]["asset"] == "m"
+    assert [f["picture"] for f in turned[0]["frames"]][0] == "turns/m/turn_00.png"
+    assert turned[0]["against"] == "review/stars.png"

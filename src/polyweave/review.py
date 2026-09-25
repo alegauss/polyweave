@@ -202,6 +202,20 @@ def _overruled(root, body: dict) -> tuple[list[dict], str, str]:
     return [member], f"gate:{run['id']}", name
 
 
+def turntables(root) -> list[dict]:
+    """Every turntable laid out in this project, newest last (§PW176)."""
+    from .shape import TURNTABLES
+
+    config = load(root)
+    index = config.path("paths.work") / TURNTABLES
+    found = []
+    for listed in json.loads(read_text_retrying(index) or "[]"):
+        text = read_text_retrying(config.root / listed)
+        if text is not None:
+            found.append({"manifest": listed, **json.loads(text)})
+    return found
+
+
 def answer(root, body: dict) -> dict:
     """The page's one write: a person's verdict on one family of one sitting.
 
@@ -371,6 +385,7 @@ def server(root=".", port: int = 0) -> ThreadingHTTPServer:
                         "sittings": sittings(here),
                         "answers": verdict.answers(root=str(here))["answers"],
                         "gates": looked_at(here),
+                        "turntables": turntables(here),
                     }
                 )
             if asked.path == "/api/compare":

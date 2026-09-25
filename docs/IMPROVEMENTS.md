@@ -354,32 +354,6 @@ any of them.
 
 ## Block O — A person sees and answers
 
-### §PW176 Comparing in one place
-
-Two versions of an asset side by side hide exactly what the drift measures find: a
-palette a few ΔE warmer, a line a pixel thicker, a silhouette that grew. Eyes compare a
-difference well only when the two are in the same place.
-
-**Pictures, four ways:**
-
-- side by side, at the size the game shows them and at full size;
-- a slider across one picture, the old on one side and the new on the other;
-- onion skin, one over the other at an opacity the person sets;
-- a difference map, computed by `measure.same` against the noise floor, so what lights up is
-  what is above noise and not every resampled pixel.
-
-**Meshes, turned.** A glTF is shown as a turntable at the project's own rig angles,
-never at a camera of the viewer's choosing — a mesh seen through a different camera is a
-mesh seen differently. The reference drawing's silhouette can be laid over the front
-view, which is the picture the shape check already scored, now visible.
-
-**The comparison is chosen by what is compared**: a variation against its parent (PW170)
-opens as a slider with the mask outlined, a refused picture against the canon as a
-difference map. The person can switch.
-
-The viewer loads its 3D library from the plugin's own static files, never from a
-network, so the page works offline like everything else here.
-
 ### §PW177 The canon on one board
 
 The canon (PW166) is a folder of files and a table in the config. What a family is meant
