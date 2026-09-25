@@ -37,7 +37,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 1 },
   { block: "L", title: "What a run leaves as evidence", open: 0 },
-  { block: "M", title: "What a game needs beyond the look", open: 2 },
+  { block: "M", title: "What a game needs beyond the look", open: 1 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -88,13 +88,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "K",
     symptom: "a clip is baked to an animation and a sheet only from Python, since every step takes a mesh and a rig in memory",
     why: "The census lists compile, frames, sprites.bake and skeleton.fit as internal, so motion is the one surface a GDScript project still needs a script for.",
-    deps: [],
-  },
-  {
-    id: "PW143",
-    block: "M",
-    symptom: "an acceptance spec bounds how an asset looks and never what it costs the game to draw",
-    why: "A search that passes every look predicate may triple the triangles, materials or texture memory, and nothing in the spec would refuse the rig that did it.",
     deps: [],
   },
   {

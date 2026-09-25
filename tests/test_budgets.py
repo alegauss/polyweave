@@ -36,8 +36,8 @@ ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
 HELP_VERB = 4_000
 #: The top-level `--help`, naming every verb: 11,346. One more verb line is ~150.
-#: 11,792 once measure.digest is a verb (§PW141).
-HELP_TOP = 11_900
+#: 11,792 once measure.digest is a verb (§PW141), 11,933 with cost.read (§PW143).
+HELP_TOP = 12_050
 #: A search's answer over its default budget of 24 samples: 3,739.
 SEARCH = 4_000
 

@@ -371,23 +371,6 @@ present, and skipped where it is not, as the render tests are.
 
 ## Block M — What a game needs beyond the look
 
-### §PW143 A cost bar beside the look bar
-
-An acceptance spec is a set of predicates over measures, and every measure today reads
-pixels. The plugin already knows the numbers a game pays at run time, because the
-post-conditions of section 2 of tool-surface.md measure them: the face count of a mesh,
-its material slots, a texture's dimensions and bit depth, and the cell count of a voxel
-model. None of them can be a predicate.
-
-So the measures gain a cost family, read off the artefact rather than the render:
-triangles, materials, draw calls implied by them, texture memory, and cells drawn. A
-spec bounds them like any other, `triangles <= 1200`. A search that finds a better look
-at twice the cost then answers with the predicate it broke rather than a pass.
-
-It is an idea: Cottony bakes most of its art to sprites, where the cost is the sprite's
-and not the mesh's. The voxel models that Block I brought to Godot are the first
-artefacts drawn as meshes in the game, and they are where a first bar would be measured.
-
 ### §PW144 A rig as data a project can apply
 
 Shio's blueprints are appliable starting points. A package reuses the formats that

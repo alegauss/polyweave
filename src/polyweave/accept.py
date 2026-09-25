@@ -22,6 +22,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Annotated, Any
 
+from . import cost
 from . import measure as M
 from .describe import Param, operation
 from .errors import PolyweaveError
@@ -32,7 +33,7 @@ SUFFIX = ".accept.toml"
 #: What a predicate may say, beyond the arguments its own measure takes. `min` and
 #: `max` are the only comparisons: a predicate states a bound, never an expression.
 BOUNDS = ("min", "max")
-FIELDS = ("id", "measure", "region", "weight", *BOUNDS)
+FIELDS = ("id", "measure", "region", "weight", "of", *BOUNDS)
 
 #: Arguments a predicate may pass through to the measure it names.
 ARGUMENTS = ("target", "against", "display", "delta")
@@ -51,11 +52,15 @@ class Predicate:
     arguments: dict = field(default_factory=dict)
     #: Where each bound came from, by side, for the bounds written as a table (§PW106).
     origins: dict = field(default_factory=dict)
+    #: The file a cost is read off (§PW143); a look predicate reads the picture.
+    of: str | None = None
 
     def as_dict(self) -> dict:
         out = {"id": self.id, "measure": self.measure, "weight": self.weight}
         if self.region is not None:
             out["region"] = self.region
+        if self.of is not None:
+            out["of"] = self.of
         for side, value in (("min", self.minimum), ("max", self.maximum)):
             if value is None:
                 continue
@@ -85,7 +90,9 @@ class Spec:
         Its own `rung` is a floor and never a ceiling: it raises what the predicates
         require and can never lower it.
         """
-        return lowest_rung([p.measure for p in self.predicates], self.rung)
+        # A cost is read off the file, so it asks nothing of the ladder (§PW143).
+        looks = [p.measure for p in self.predicates if not cost.is_cost(p.measure)]
+        return lowest_rung(looks, self.rung)
 
 
 # -- reading ------------------------------------------------------------------------
@@ -187,7 +194,8 @@ def _predicate(entry: dict, index: int) -> Predicate:
         raise PolyweaveError(
             "spec.no-measure",
             f"the predicate {name!r} names no measure",
-            f"name one of {', '.join(sorted(M.COMPUTES))}",
+            f"name one of {', '.join(sorted(M.COMPUTES))}, or a cost: "
+            f"{', '.join(cost.COSTS)}",
         )
     unknown = sorted(set(entry) - set(FIELDS) - set(ARGUMENTS))
     if unknown:
@@ -200,7 +208,8 @@ def _predicate(entry: dict, index: int) -> Predicate:
             allowed=(*FIELDS, *ARGUMENTS),
             at=f"predicate.{name}",
         )
-    M.resolve(str(entry["measure"]))  # refuses a name the vocabulary does not carry
+    if not cost.is_cost(str(entry["measure"])):
+        M.resolve(str(entry["measure"]))  # refuses a name the vocabulary does not carry
     if not any(b in entry for b in BOUNDS):
         raise PolyweaveError(
             "spec.no-bound",
@@ -214,6 +223,7 @@ def _predicate(entry: dict, index: int) -> Predicate:
         minimum=_number(entry, "min", name),
         maximum=_number(entry, "max", name),
         weight=float(entry.get("weight", 1.0)),
+        of=str(entry["of"]) if entry.get("of") else None,
         arguments={k: entry[k] for k in ARGUMENTS if k in entry},
         origins={
             side: found
@@ -371,6 +381,9 @@ def check(
 
     results = []
     for p in spec.predicates:
+        if cost.is_cost(p.measure):
+            results.append(_costed(p, subject, root))
+            continue
         arguments = dict(p.arguments)
         for key in ("against", "target"):
             if key == "against" and isinstance(arguments.get(key), str):
@@ -442,6 +455,27 @@ def checked(
     here = Path(root)
     picture = Path(subject) if Path(subject).is_absolute() else here / subject
     return check(read(spec, here), picture, rung=rung or None, root=here)
+
+
+def _costed(p: Predicate, subject: Any, root: str | Path) -> dict:
+    """A cost predicate, read off the file the game draws rather than the picture."""
+    where = cost.source(subject, p.of, root)
+    value = float(cost.take(p.measure, where))
+    return {
+        "id": p.id,
+        "measure": p.measure,
+        "of": p.of or str(where),
+        "region": None,
+        "rung": None,
+        "value": value,
+        "min": p.minimum,
+        "max": p.maximum,
+        "weight": p.weight,
+        "passed": _passes(value, p),
+        "margin": margin(value, p.minimum, p.maximum),
+        "headroom": headroom(value, p.minimum, p.maximum),
+        **_bound(p, value),
+    }
 
 
 def _bound(p: Predicate, value: float) -> dict:

@@ -258,6 +258,29 @@ Sound is outside this for now. The vocabulary has no measure of audio, and wheth
 music loop's seam belongs to the same kind of bar is a scope decision, not a missing
 predicate.
 
+## What it costs to draw
+
+A spec bounds what an asset costs the game as it bounds how it looks (§PW143), so a search
+that finds a better look at twice the triangles answers with the predicate it broke:
+
+```toml
+[[predicate]]
+id      = "budget"
+measure = "triangles"
+of      = "art/block.voxels.json"
+max     = 1200
+```
+
+A cost is read off the file the game draws and never off pixels, so it asks nothing of
+the ladder and reports no rung. `of` names the file. Where it is left out the cost is read
+off the mesh the picture's own record names as its input. A `.glb` answers `triangles`,
+`materials`, `draw_calls` (one per primitive) and `texture_bytes` (every embedded image
+as uncompressed RGBA8, without mipmaps). A `.voxels.json` answers `cells`,
+`cells_drawn` (the skin), `triangles` (twelve per drawn cube), `materials` and
+`draw_calls`, and a `.png` answers `texture_bytes`. A cost a file cannot answer is
+refused (`spec.no-cost-source`) with the ones it can. `cost.read` gives all of a file's
+costs, which is where a first bar is measured.
+
 ## What this file deliberately cannot say
 
 Anything no measure can compute. "Reads as cloth rather than paper" is a real criterion and

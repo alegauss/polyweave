@@ -1196,6 +1196,12 @@ CODES: dict[str, Code] = {
         when="a name or a malformed hex where #RRGGBB was expected",
         doors=("write it as #RRGGBB",),
     ),
+    "spec.no-cost-source": Code(
+        means="a cost predicate has no file to read off, or one that cannot say",
+        when="a triangles bound with no `of` on a picture recording no mesh, or a "
+        "texture's byte count asked of a voxel model",
+        doors=("name the .glb, .voxels.json or .png the game draws with `of`",),
+    ),
     "spec.unbounded-measure": Code(
         means="the measure answers with something a bound cannot hold",
         when="a bound on a measure that returns a set or a colour rather than a number",
