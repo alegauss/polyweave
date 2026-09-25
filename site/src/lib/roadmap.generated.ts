@@ -41,7 +41,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "N", title: "Pictures held to a canon", open: 1 },
   { block: "O", title: "A person sees and answers", open: 0 },
   { block: "P", title: "Music and sound a game can ship", open: 8 },
-  { block: "Q", title: "Words held to the world", open: 5 },
+  { block: "Q", title: "Words held to the world", open: 4 },
   { block: "R", title: "Levels measured before a person plays them", open: 6 },
   { block: "S", title: "Playing the game, not only rendering it", open: 7 },
 ];
@@ -139,25 +139,18 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW188", "PW189", "PW190", "PW191"],
   },
   {
-    id: "PW196",
-    block: "Q",
-    symptom: "No declaration says which names, factions and characters a game's world holds",
-    why: "Starship's bible is prose, so no tool can tell a name on screen from one the world never had.",
-    deps: [],
-  },
-  {
     id: "PW197",
     block: "Q",
     symptom: "Text a player reads is never checked against the world's names and rules",
     why: "Starship shows KEEPERS where its bible says Lattice, and a line over 60 characters or a code name on screen fails nothing.",
-    deps: ["PW196"],
+    deps: [],
   },
   {
     id: "PW198",
     block: "Q",
     symptom: "A character's picture or mesh is bought from a description retyped by hand",
     why: "The world already says who the Mason is and whose palette it wears, so a prompt written again per call is where an asset leaves the canon.",
-    deps: ["PW196"],
+    deps: [],
   },
   {
     id: "PW199",

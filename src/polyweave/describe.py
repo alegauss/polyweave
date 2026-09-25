@@ -124,6 +124,7 @@ MODULES: tuple[str, ...] = (
     "polyweave.skeleton",
     "polyweave.sprites",
     "polyweave.motion",
+    "polyweave.world",
 )
 
 

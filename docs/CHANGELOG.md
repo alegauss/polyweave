@@ -237,6 +237,8 @@
 
 ## Block Q — Words held to the world
 
+- ✅ **PW196** **No declaration says which names, factions and characters a game's world holds** — A *.world.toml declares a game's entities; world.validate reports duplicate names, unknown factions and style families on their lines (design recorded in `docs/specs/world.md`).
+
 ## Block R — Levels measured before a person plays them
 
 ## Block S — Playing the game, not only rendering it

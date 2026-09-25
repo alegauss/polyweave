@@ -20,13 +20,14 @@ This page only groups them by what you are trying to do.
 | Provenance | `provenance.read`, `provenance.verify`, `provenance.dependents`, `provenance.outdated`, `provenance.unrecorded` |
 | The game side | `capture.run`, `capture.declared`, `engine.run`, `godot.install` |
 | Scale against the engine | `units.check`, `units.engine_scale`, `units.read_number` |
+| World | `world.read`, `world.validate` |
 | A project's look | `style.read`, `style.drift` (before a person looks; only `verdict.judge` grows a canon) |
 | Buy a drawing | `picture.buy`, `picture.gate` (before the mesh is bought), `picture.letters`, `picture.describe`, `picture.vary`, `picture.against_parent`, `picture.fit` (onto the family's grid), `picture.collect` |
 | Before buying a mesh | `reference.pick`, `reference.prepare`, `shape.check`, `shape.silhouette`, `shape.turntable` |
 | Paid meshes | `mesh.buy` (from words, or a picture the gate passed), `purchase.remaining`, `purchase.allow`, `purchase.held`, `schema.validate`, `schema.read`, `schema.proved` |
 | The purchase ledger | `purchase.spent`, `purchase.ledger`, `purchase.find`, `purchase.adopt`, `purchase.reconcile` |
 | After buying | `normalise.ingest`, `texture.worth_scrubbing` |
-| Bake a clip | `motion.bake` (the animation and the sheet, from files) |
+| Bake a clip | `motion.bake` (animation and sheet, from files) |
 | Motion | `clip.new`, `clip.read`, `clip.set_key`, `clip.retime`, `clip.write`, `clip.compiled` |
 | A skeleton | `skeleton.plan`, `skeleton.shared`, `skeleton.joints_in`, `skeleton.plays`, `sprites.matched` |
 

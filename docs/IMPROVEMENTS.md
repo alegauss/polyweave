@@ -463,28 +463,6 @@ that a second game would not becomes configuration.
 
 ## Block Q — Words held to the world
 
-### §PW196 A game's world as a declaration beside its prose
-
-Starship's `docs/design/world.md` is about 1,300 words of prose with a glossary table in
-it: code name, on-screen name, what it is. A person reads it well. A tool can only match
-strings against it, and no game file uses any of its names yet, so nothing can say the
-world and the game have drifted apart.
-
-The prose stays the source a person writes. Beside it, a `*.world.toml` in the
-consumer's repository declares what a check needs. Each entity has an id, the code name
-the game's scripts use, the name a player reads, a kind (place, faction, character,
-enemy, item), the faction it belongs to, the `[style.<family>]` its pictures are held
-to, and where in the run it first appears. Rules sit in the same file: the longest line
-a player reads, which speakers never speak, and which names are never shown.
-
-`world.read` returns one entity or all of them. `world.validate` reports a duplicate
-name, a faction nobody declared, and a style family `polyweave.toml` lacks, each against
-the source's own line with a remedy. The file is authored by a person and read by the
-plugin. Nothing here writes it, for the reason the non-goal on a game's story gives.
-
-This is the registry every later line in the block checks against, and the first thing
-Block R's level declarations can refer to by id.
-
 ### §PW197 Player-facing text checked against the world
 
 Starship's roughly 25 player-facing strings are literals in GDScript, `.tscn` and
@@ -628,9 +606,9 @@ it to the world, and records how it was made.
 A `*.level.toml` is the source a person or an agent edits. Its schema is the project's,
 declared in `[levels] schema` as a JSON Schema, because the plugin must not know what a
 wave or a goal is. `level.validate` checks it against that schema. Where the project
-declares a world (§PW196), every field the schema marks as an entity reference must name
-one of its ids, so a wave that spawns an enemy the world never declared fails with the
-line and a remedy.
+declares a world (`docs/specs/world.md`), every field the schema marks as an entity
+reference must name one of its ids, so a wave that spawns an enemy the world never
+declared fails with the line and a remedy.
 
 `level.compile` runs the project's declared compile command, which turns the source into
 the engine's own resource: Starship's `.tres` or Cottony's JSON. It then writes a

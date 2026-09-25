@@ -83,6 +83,7 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.clip": ("internal", "compiling needs a mesh and a rig: motion.bake"),
     "polyweave.skeleton": ("internal", "fitting a mesh in memory: motion.bake"),
     "polyweave.sprites": ("internal", "baking needs a mesh and a rig: motion.bake"),
+    "polyweave.world:find": ("internal", "which world file, inside world.read"),
     # -- internal: helpers an operation calls, never a caller's first call ----------
     "polyweave.cache": ("internal", "the render cache, reached through bake's cached"),
     "polyweave.census": ("internal", "this census's own walk"),

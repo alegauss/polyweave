@@ -142,8 +142,8 @@ both answers.
 
 - `code` is a stable kebab-case string, namespaced by area (`render.`, `mesh.`, `fetch.`,
   `post.`, `config.`, `job.`, `geom.`, `spec.`, `op.`, `prov.`, `compose.`, `search.`,
-  `engine.`, `units.`, `capture.`, `rig.`, `clip.`, `texture.`, `loop.`, `style.`). It is
-  part of the contract and does not change once published. `codes.AREAS` is the list, and
+  `engine.`, `units.`, `capture.`, `rig.`, `clip.`, `texture.`, `loop.`, `style.`,
+  `world.`). It is part of the contract and does not change once published. `codes.AREAS` is the list, and
   `tests/test_spec_names.py` holds this one to it (§PW138).
 - `remedy` is the call that closes it with arguments filled in wherever they are derivable.
   Where the choice is a judgement the tool cannot make, it names both doors and what

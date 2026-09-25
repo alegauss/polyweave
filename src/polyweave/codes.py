@@ -50,6 +50,7 @@ AREAS: dict[str, str] = {
     "texture": "the pixels a service painted, and what has to come back out of them",
     "loop": "what one asset cost to make, each way",
     "style": "what a project's pictures look like, and the canon a person grows",
+    "world": "a game's names, factions and characters, declared beside its prose",
 }
 
 CODES: dict[str, Code] = {
@@ -728,6 +729,68 @@ CODES: dict[str, Code] = {
         means="the family has no canon directory, so nothing can be admitted to it",
         when="a verdict naming a canon family whose [style] declares no canon",
         doors=("set canon under the family's [style]",),
+    ),
+    # -- world: a game's names, factions and characters -----------------------
+    "world.none": Code(
+        means="no *.world.toml was found where the call looked",
+        when="a project that has not declared its world yet, or a world path "
+        "misspelled",
+        doors=("write a *.world.toml beside the world's prose", "name the file"),
+    ),
+    "world.several": Code(
+        means="the project holds several world files and the call named none",
+        when="a world read or validated without world= in a project with more than "
+        "one *.world.toml",
+        doors=("pass world",),
+    ),
+    "world.malformed": Code(
+        means="the world file is not readable as TOML",
+        when="a syntax error, or one entity's table written twice",
+        doors=("fix the syntax the detail points at",),
+    ),
+    "world.unknown-key": Code(
+        means="the world file declares a table, entity field or rule a world does "
+        "not have",
+        when="a misspelled field, or a table other than [entity.<id>] and [rules]",
+        doors=("use a key the message lists",),
+    ),
+    "world.missing-field": Code(
+        means="an entity lacks a field every entity carries",
+        when="an entity with no name or no kind",
+        doors=("write the field under the entity's table",),
+    ),
+    "world.bad-value": Code(
+        means="a field of the world file holds a value of the wrong type",
+        when="a number where a name belongs, an empty name, or a rule that is not "
+        "a whole number or a list of ids",
+        doors=("write the value in the shape the message gives",),
+    ),
+    "world.bad-kind": Code(
+        means="an entity's kind is not one a world knows",
+        when="a kind other than place, faction, character, enemy or item",
+        doors=("make it one of the five kinds",),
+    ),
+    "world.duplicate-name": Code(
+        means="two entities share the name a player reads or the code the scripts use",
+        when="a character and a place both called the same thing, or a copied entity "
+        "whose name was never changed",
+        doors=("give one of them another name",),
+    ),
+    "world.unknown-faction": Code(
+        means="an entity belongs to a faction no entity of kind faction declares",
+        when="a misspelled faction, or one never written as an entity",
+        doors=("declare the faction as an entity", "name a declared faction"),
+    ),
+    "world.unknown-family": Code(
+        means="an entity is held to a style family polyweave.toml does not declare",
+        when="a family misspelled in the world file, or one whose [style.<family>] "
+        "was never written",
+        doors=("declare [style.<family>]", "name a declared family"),
+    ),
+    "world.unknown-entity": Code(
+        means="an id names no entity the world declares",
+        when="world.read asked for an entity that is not there, or a rule naming one",
+        doors=("name a declared entity", "declare [entity.<id>]"),
     ),
     # -- search: looking for values that satisfy a spec -----------------------
     "search.nothing-to-search": Code(
