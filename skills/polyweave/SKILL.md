@@ -1,6 +1,6 @@
 ---
 name: polyweave
-description: Drive the polyweave plugin to make or change a 3D asset - build a geometry declaration, check a render or sprite against its acceptance spec, search a rig for values that pass, and record the verdict. Use when a project has *.accept.toml specs or geometry declarations, when asked to bake, render, port or check an asset, or when a script imports polyweave.
+description: Drive the polyweave plugin to make or check a game's parts - build a geometry declaration, check a render, sprite or sound loop against its acceptance spec, search a rig for values that pass, hold the text a player reads to the world's declared names, and record the verdict. Use when a project has *.accept.toml specs, geometry declarations or a *.world.toml, when asked to bake, render, port or check an asset, a sound loop or a game's text, or when a script imports polyweave.
 ---
 
 # Driving polyweave

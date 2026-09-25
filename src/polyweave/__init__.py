@@ -1,4 +1,4 @@
-"""polyweave — 3D assets declared rather than dialled in.
+"""polyweave — a game's parts declared rather than dialled in.
 
 Nothing is imported here on purpose. The caller is an agent whose turn is the budget,
 and a package that pulls in its whole surface to answer one call spends that budget

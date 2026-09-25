@@ -272,27 +272,6 @@ unstated.
 
 ## Block M — What a game needs beyond the look
 
-### §PW207 Saying what polyweave is now: a game's layers, declared and checked
-
-polyweave started as a way to make 3D assets without hand-tuning a render rig. The same
-loop has since been used for every layer of a game: declare what a thing has to be, let
-a machine search for values that satisfy it, check the result with measures, and leave
-taste to a person's verdict. Pictures held to a canon, units shared with the engine and
-captures of the running game came first. Blocks P, Q and R add music and sound, the
-world's words, and levels. Each layer has its own discipline, and they meet in one
-project config, one provenance record and one verdict page.
-
-The descriptions an agent reads to choose a tool say none of that:
-- `pyproject.toml`, `.claude-plugin/plugin.json` and `marketplace.json`;
-- the skill's own `description`, which decides when it triggers;
-- the README's first paragraph, the package docstring, and the site's title, meta description, hero text, `llms.txt` and OG card.
-
-Each is rewritten to one sentence of the same idea: a Claude Code plugin for making a
-game's parts, from assets and sound to text and levels, by declaring what each must
-satisfy, on top of Blender, Godot and paid generators. It claims only what has shipped
-and names the rest as the roadmap. The skill's trigger words gain world, level and
-sound, only for the operations that exist.
-
 ## Block N — Pictures held to a canon
 
 ### §PW180 Canon pictures as style references

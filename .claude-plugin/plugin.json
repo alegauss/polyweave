@@ -1,10 +1,10 @@
 {
   "name": "polyweave",
   "version": "0.1.0",
-  "description": "Make 3D assets by declaring what they must satisfy: build a declaration, search a rig against an acceptance spec, check the result, on Blender and Godot.",
+  "description": "Make a game's parts by declaring what each must satisfy: 3D assets, pictures, sound loops and the world's text, searched and checked on Blender, Godot and paid generators.",
   "author": { "name": "Alexandre Oliveira" },
   "license": "MIT",
-  "keywords": ["3d", "blender", "godot", "assets", "acceptance"],
+  "keywords": ["gamedev", "3d", "blender", "godot", "assets", "sound", "world", "acceptance"],
   "mcpServers": {
     "polyweave": {
       "command": "python",

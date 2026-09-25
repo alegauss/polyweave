@@ -1,9 +1,11 @@
 # polyweave
 
-> A Claude Code plugin for making 3D assets — geometry, surface and motion — by declaring
-> what an asset has to satisfy and letting a search find the parameters that satisfy it,
-> on top of Blender, Godot and a generative mesh service. It runs on the developer's own
-> machine, against files in their own repository: no GUI, no account, no hosted service.
+> A Claude Code plugin for making a game's parts by declaring what each has to satisfy and
+> letting a search find the parameters that satisfy it: 3D assets (geometry, surface and
+> motion) and the pictures they start from, sound loops held to a seam, and the names and
+> lines of the game's world. Levels are next, on the roadmap. It works on top of Blender,
+> Godot and paid generators, on the developer's own machine, against files in their own
+> repository: no GUI, no account, no hosted service.
 
 **polyweave is Python under `src/polyweave`, installed as a Claude Code plugin from this
 repository.** Its status is not typed here: the landing page states it, derived from

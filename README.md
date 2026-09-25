@@ -1,7 +1,9 @@
 # polyweave
 
-A Claude Code plugin for making 3D assets — geometry, surface and motion — on top of
-Blender, Godot and a generative mesh service.
+A Claude Code plugin for making a game's parts by declaring what each has to satisfy:
+3D assets (geometry, surface and motion) and the pictures they start from, sound loops
+held to a seam, and the names and lines of the game's world. It works on top of Blender,
+Godot and paid generators. Levels are next, on the roadmap.
 
 The premise: generating a mesh is the cheap part. The expensive part is everything between
 *having a mesh* and *knowing it is right*, and today that is a person changing one number at

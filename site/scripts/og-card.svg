@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="polyweave — say what the asset has to be, and let it find the numbers">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="polyweave — say what each part has to be, and let it find the numbers">
   <defs>
     <linearGradient id="pw-bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#0b0916"/>
@@ -25,10 +25,10 @@
   <text x="252" y="164" font-family="DejaVu Sans, sans-serif" font-size="52" font-weight="bold" fill="#ece9fb">polyweave</text>
   <text x="254" y="200" font-family="DejaVu Sans Mono, monospace" font-size="20" fill="#857cae">part of alegauss</text>
 
-  <text x="90" y="348" font-family="DejaVu Sans, sans-serif" font-size="60" font-weight="bold" fill="#ece9fb">Say what the asset has to be.</text>
+  <text x="90" y="348" font-family="DejaVu Sans, sans-serif" font-size="60" font-weight="bold" fill="#ece9fb">Say what each part has to be.</text>
   <text x="90" y="420" font-family="DejaVu Sans, sans-serif" font-size="60" font-weight="bold" fill="#A996FF">Let it find the numbers.</text>
 
-  <text x="92" y="486" font-family="DejaVu Sans, sans-serif" font-size="25" fill="#a9a1cf">A Claude Code plugin for 3D assets, on Blender, Godot and a mesh service.</text>
+  <text x="92" y="486" font-family="DejaVu Sans, sans-serif" font-size="25" fill="#a9a1cf">A Claude Code plugin for a game's parts, on Blender, Godot and generators.</text>
 
   <!-- The status chip. It carries no count on purpose: the counts on the site are generated
        from the roadmap and this card is rasterised from a template, so a number typed here

@@ -6,7 +6,7 @@
     {
       "name": "polyweave",
       "source": "./",
-      "description": "Declare what a 3D asset must satisfy and let a search find the parameters that satisfy it."
+      "description": "Declare what a game's parts must satisfy (3D assets, pictures, sound loops, the world's text) and let a search find and check them."
     }
   ]
 }

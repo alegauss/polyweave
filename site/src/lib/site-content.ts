@@ -33,13 +33,13 @@ export type Rich = Run[];
 /* ------------------------------------------------------------------ meta + chrome */
 
 export const meta = {
-  title: "polyweave — declare what a 3D asset has to be, and let it search",
+  title: "polyweave — declare what a game's parts have to be, and let it search",
   description:
-    "A Claude Code plugin that makes 3D assets by declaring what they have to satisfy and searching for the parameters that satisfy it, on top of Blender, Godot and a generative mesh service. Runs on your machine, against files in your own repository.",
+    "A Claude Code plugin that makes a game's parts (3D assets, pictures, sound loops and the world's text) by declaring what each has to satisfy and searching for the parameters that satisfy it, on top of Blender, Godot and paid generators. Runs on your machine, against files in your own repository.",
   og: {
     title: "polyweave",
     description:
-      "State what an asset has to satisfy; let a search find the parameters that satisfy it. Measured against your own reference, not against an opinion.",
+      "State what each part of a game has to satisfy; let a search find the parameters that satisfy it. Measured against your own reference, not against an opinion.",
     url: "https://alegauss.github.io/polyweave/",
   },
 } as const;
@@ -69,7 +69,7 @@ export const footer = {
     { href: specsUrl, label: "Contracts" },
   ],
   disclaimer:
-    "polyweave is an independent open-source project. It orchestrates Blender, Godot and a generative mesh service and re-implements none of them; it is not affiliated with, endorsed by or sponsored by any of their authors, and every mark named on this page belongs to its owner. Nothing here is installable yet — the plan, and the evidence behind each line of it, is in docs/ROADMAP.md. © 2026 Alexandre Oliveira.",
+    "polyweave is an independent open-source project. It orchestrates Blender, Godot and paid generators and re-implements none of them; it is not affiliated with, endorsed by or sponsored by any of their authors, and every mark named on this page belongs to its owner. Nothing here is installable yet — the plan, and the evidence behind each line of it, is in docs/ROADMAP.md. © 2026 Alexandre Oliveira.",
 } as const;
 
 /* --------------------------------------------------------------- sponsor */
@@ -107,14 +107,14 @@ export const sponsor = {
 
 export const hero = {
   badge: `${Spelled(finishedCount())} of ${spelled(blockCount())} blocks built · ${taskCount()} lines open`,
-  titleLead: "Say what the asset has to be.",
+  titleLead: "Say what each part has to be.",
   titleAccent: "Let it find the numbers.",
   sub: [
-    "polyweave is a Claude Code plugin for making 3D assets — geometry, surface and motion. You state what an asset has to ",
+    "polyweave is a Claude Code plugin for making a game's parts: 3D assets and the pictures they start from, sound loops, and the names and lines of its world, with levels next on the roadmap. You state what a part has to ",
     { b: "satisfy" },
     "; it searches for the parameters that satisfy it, measuring against ",
     { b: "your own reference" },
-    " rather than against an opinion. On top of Blender, Godot and a generative mesh service, on your machine, against files in your own repository.",
+    " rather than against an opinion. On top of Blender, Godot and paid generators, on your machine, against files in your own repository.",
   ] as Rich,
   // No emoji on these three, and that is a writing rule rather than a taste: an emoji glued
   // to the front of a feature line is the most recognisable mannerism of a generated landing

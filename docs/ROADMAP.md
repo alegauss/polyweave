@@ -30,8 +30,6 @@
 
 ## Block M — What a game needs beyond the look
 
-- 📋 **PW207** (deps: —) **Every public description still calls polyweave a tool for 3D assets** — Blocks P, Q and R make sound, words and levels, so an agent choosing a plugin from its description never reaches for this one outside a mesh. → §PW207
-
 ## Block N — Pictures held to a canon
 
 - 📋 **PW209** (deps: —) **a variation is held to its parent pixel for pixel, which a service that redraws the whole picture can never meet** — Starship's reframed Mote kept the drawing visibly and still ran a pooled delta E of 15.5 at p95, so the check refuses what a person would keep. → §PW209
