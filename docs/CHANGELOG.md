@@ -221,6 +221,7 @@
 - ✅ **PW194** **the picture gate compares silhouettes where each service framed them, so placement and size swamp the shape** — The gate trims each silhouette to its alpha and fits it into one square before comparing, so a shape scores the same wherever and however large it was drawn.
 - ✅ **PW195** **a transparent picture is uploaded with the colour its generator left under full transparency** — Every picture a service is sent has the colour under full transparency cleared to black, so a service that drops alpha shows only what a viewer saw.
 - ✅ **PW208** **a picture a person promoted from the gate's refused lane cannot be bought from, because mesh.buy asks only the gate** — mesh.buy accepts a picture the gate saw and a person promoted from its refused lane on the review page, as well as one the gate passed.
+- ✅ **PW210** **a scene script's expected line anchored with ^ never matches below the log's first line** — A script's expected line is matched in line mode, so an anchored pattern finds the line wherever in the log the script printed it.
 
 ## Block O — A person sees and answers
 

@@ -177,7 +177,10 @@ def run(
     """
     settings = load(root)
     where = settings.root
-    wanted = re.compile(expect) if isinstance(expect, str) else expect
+    # `expect` is a line, so `^` and `$` are a line's ends: searched over the whole log
+    # without this, `^SHOT` only ever matched a log whose first line was the shot, and
+    # Starship's first capture through polyweave printed it and still failed (§PW210).
+    wanted = re.compile(expect, re.MULTILINE) if isinstance(expect, str) else expect
     bad = re.compile(errors) if isinstance(errors, str) else errors
     budget = int(settings.get("engine.frames", frames))
     clock = float(settings.get("engine.timeout", timeout))

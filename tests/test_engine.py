@@ -371,3 +371,18 @@ def test_with_nothing_named_anywhere_it_says_so(tmp_path, monkeypatch):
         engine.find(tmp_path)
     assert caught.value.code == "engine.not-found"
     assert "PATH" in caught.value.remedy
+
+
+def test_an_anchored_expected_line_is_found_below_the_first_line(tmp_path):
+    """§PW210: `^` in the line a script prints is that line's start, not the log's."""
+    script = project(tmp_path)
+    found = engine.run(
+        script,
+        expect=r"^checks ran: (?P<ran>\d+), failed: (?P<failed>\d+)$",
+        root=tmp_path,
+        launch=says(
+            "Godot Engine v4.7\nenvironment: locale=en\nchecks ran: 3, failed: 0\n"
+        ),
+    )
+    assert found["ok"] is True
+    assert found["found"] == {"ran": "3", "failed": "0"}
