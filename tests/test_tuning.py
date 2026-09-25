@@ -35,7 +35,7 @@ depth = 4
 id     = "tray"
 op     = "bevel"
 of     = "face"
-amount = "bevel"
+bevel  = "bevel"
 """
 
 SPEC = """

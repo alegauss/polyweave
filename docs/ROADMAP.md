@@ -16,8 +16,6 @@
 
 ## Block G — Geometry as a declaration
 
-- 📋 **PW146** (deps: —) **a misspelt key in a geometry declaration is accepted silently, at the top level or on a node** — parse checks names, ids and the output and reads nothing else, so a typo builds the shape without that field and says nothing. → §PW146
-
 ## Block H — Proof on a real game
 
 - 📋 **PW57** (deps: PW53 ⏸) **every Cottony look gate restates its own floor, so no asset has a bar a search can aim at** — Five check scripts measure after the render is spent, which is a verdict and never a target, and a threshold moved in one of them is invisible to the rest. → §PW57

@@ -128,6 +128,7 @@ def parse(stated: dict, *, named: str = "a declaration") -> dict:
                 "node's own field rather than the document's output",
             )
 
+    _refuse_unread(stated, nodes, named)
     output = stated.get("output") or nodes[-1]["id"]
     if output not in seen:
         raise PolyweaveError(
@@ -158,6 +159,59 @@ def parse(stated: dict, *, named: str = "a declaration") -> dict:
     if stated.get("variants"):
         document["variants"] = {k: dict(v) for k, v in stated["variants"].items()}
     return document
+
+
+#: What a document may say at its top level (§PW146).
+DOCUMENT_FIELDS = (
+    "name", "version", "params", "materials", "nodes", "output",
+    "voxels", "search", "variants",
+)
+
+#: What one `repeat` range may say.
+REPEAT_FIELDS = ("var", "from", "to", "step")
+
+
+def _refuse_unread(stated: dict, nodes: list[dict], named: str) -> None:
+    """Refuse a key nothing reads, where it is written, naming the nearest real one.
+
+    A misspelt field used to build the shape without it and say nothing, the silent
+    drop section 3 of the tool surface says no surface here makes (§PW146).
+    """
+    from .build import FIELDS, NODE_FIELDS
+
+    def refuse(key: str, allowed, at: str, where: str) -> None:
+        raise PolyweaveError(
+            "geom.unknown-field",
+            f"{named}: {where} has no field {key!r}, so it would build without it",
+            f"name one of {', '.join(sorted(allowed))}",
+            given=key,
+            allowed=tuple(allowed),
+            at=at,
+        )
+
+    for key in stated:
+        if key not in DOCUMENT_FIELDS:
+            refuse(key, DOCUMENT_FIELDS, key, "a declaration")
+    for node in nodes:
+        op = node["op"]
+        if op not in FIELDS:
+            continue  # an unknown op is refused at build, with the ops that exist
+        takes = FIELDS[op]
+        if takes is None:
+            continue
+        allowed = (*NODE_FIELDS, *takes)
+        for key in node:
+            if key not in allowed:
+                refuse(key, allowed, f"nodes.{node['id']}.{key}", f"a {op} node")
+        for stated_range in node.get("repeat") or ():
+            for key in stated_range if isinstance(stated_range, dict) else ():
+                if key not in REPEAT_FIELDS:
+                    refuse(
+                        key,
+                        REPEAT_FIELDS,
+                        f"nodes.{node['id']}.repeat.{key}",
+                        "a repeat range",
+                    )
 
 
 def variants(document: dict) -> list[str]:

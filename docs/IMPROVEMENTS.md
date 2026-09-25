@@ -32,28 +32,6 @@ the look digest to move while the mean-colour version does not.
 
 ## Block G — Geometry as a declaration
 
-### §PW146 A declaration refuses a key it does not read
-
-Found shipping PW123, whose design assumed a `geom.unknown-field` refusal existed. It
-does not. `geometry.parse` checks a name, the nodes, their ids, the output and cycles,
-and reads nothing else. So a document with `colour_of = 1` at the top level, or a
-primitive with `sizee = 9` beside its `size`, parses, builds and describes itself with
-no warning. The shape that comes out is the one without the misspelt field, which is the
-silent drop section 3 of tool-surface.md says no surface here makes.
-
-The acceptance spec already works this way: every table has its closed list of keys, and
-a key outside it is refused where it is written, with the list in the remedy. The
-geometry equivalent has two halves. The document's own keys are fixed (name, output,
-params, materials, voxels, variants and the rest the reader already consumes). Each op's
-fields are what its builder reads, so the op table in `geometry/build.py` or `voxels.py`
-should declare them as data beside the function, not leave them implicit in the code.
-`parse` refuses a key in neither, with the nearest real one named, as
-`geom.unknown-field`.
-
-The test is a document with one misspelt key at each level, refused before anything is
-built. Then every fixture under tests/fixtures/cottony has to parse unchanged, which is
-the check that the lists are complete.
-
 ## Block H — Proof on a real game
 
 ### §PW36 Cottony adopts it without a fork

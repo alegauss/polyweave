@@ -729,6 +729,11 @@ CODES: dict[str, Code] = {
         "that can depend on anything but its parameters breaks the cache key",
         doors=("write it with the operators and functions the grammar names",),
     ),
+    "geom.unknown-field": Code(
+        means="a declaration or a node carries a key nothing reads",
+        when="`sizee = 9` beside `size` on a primitive, or `materails` at the top",
+        doors=("spell it as one of the fields the refusal lists",),
+    ),
     "geom.unknown-name": Code(
         means="the expression names something the document does not declare",
         when="a parameter spelled differently here than in [params], or a repeat "

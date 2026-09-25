@@ -84,6 +84,7 @@
 - ✅ **PW67** **a model in two materials builds into one mesh that carries neither of them** — A build says which faces wear which material, and the renderer takes a slot per material, so a rope rim on a cushion face stays two colours (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW68** **a built mesh has no texture coordinates, so a drawn panel is the right shape wearing nothing** — Inflate takes a drawing as well as an outline, blurring its alpha into the height, so what is inside a drawing shapes the panel and not where it stops (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW69** **a declaration that has been built reaches no renderer and no file, so the only way to see one is a test** — A declaration writes itself to a file that bake takes, carrying the coordinates and the materials the build worked out (design recorded in `docs/specs/geometry.md`).
+- ✅ **PW146** **a misspelt key in a geometry declaration is accepted silently, at the top level or on a node** — parse refuses a key nothing reads with geom.unknown-field, per document, node, repeat and op; it caught a fixture whose bevel said amount (design recorded in `docs/specs/geometry.md`).
 
 ## Block H — Proof on a real game
 

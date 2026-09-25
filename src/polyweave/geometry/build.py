@@ -236,6 +236,43 @@ BUILDS: dict[str, Callable] = {
     "mesh": _mesh,
 }
 
+#: What every node may say, whatever its op: its name, what it builds, what it wears,
+#: how it repeats and where it sits.
+NODE_FIELDS = ("id", "op", "material", "repeat", "at")
+
+#: The fields that name another node, for the ops that take one (§PW146).
+_TAKES = ("inputs", "operands", "of", "on")
+
+#: What each op reads beyond `NODE_FIELDS`, declared beside the adapters that read it
+#: so a key no builder reads is refused where it is written rather than dropped
+#: (§PW146). `custom` is open: its fields are the function's own arguments.
+FIELDS: dict[str, tuple[str, ...] | None] = {
+    "primitive": ("kind", "size", "steps"),
+    "prism": ("outline", "depth", "front"),
+    "plate": ("rect", "depth", "corner", "front"),
+    "crowned": ("outline", "depth", "crown", "front", "steps"),
+    "annulus": ("outer", "inner", "depth", "front", "steps"),
+    "inflate": (
+        "outline",
+        "thickness",
+        "profile",
+        "resolution",
+        "drawing",
+        "size",
+        "soften",
+        "cell",
+        "floor",
+    ),
+    "union": _TAKES,
+    "transform": (*_TAKES, "scale", "rotate"),
+    "carve": ("into", "cutter", "bevel"),
+    "bevel": (*_TAKES, "bevel"),
+    "custom": None,
+    "cells": ("layers", "legend", "cell", "axis"),
+    "mirror": (*_TAKES, "axis", "plane"),
+    "mesh": ("path", "colours"),
+}
+
 #: The ops that consume `at` themselves, so the placement below leaves them alone.
 PLACES = ("transform",)
 

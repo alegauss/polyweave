@@ -82,6 +82,16 @@ example had it wrong. A node carrying an `output` key is refused with that expla
 rather than read as though it meant the document. Where nothing names an output, the last
 node is it.
 
+**A key nothing reads is refused where it is written** (§PW146), as `geom.unknown-field`
+with the path to it and the nearest real name. The document takes `name`, `version`,
+`params`, `materials`, `nodes`, `output`, `voxels`, `search` and `variants`. Every node
+takes `id`, `op`, `material`, `repeat` and `at`, a repeat range takes `var`, `from`, `to`
+and `step`, and each op takes the fields `FIELDS` in `geometry/build.py` declares beside
+the adapter that reads them, so the list and the reading cannot drift apart. `custom` is
+open, since its fields are its function's arguments. A misspelt field used to build the
+shape without it; the first thing the refusal caught was a test fixture whose bevel said
+`amount` where the builder reads `bevel`.
+
 ## Values and expressions
 
 A value is a number, a string holding an expression, or a boolean. **Where any element of an
