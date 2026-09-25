@@ -307,10 +307,12 @@ tested it, and every later line spends effort on it.
 
 The spike runs outside the package, in a throwaway directory. The agent composes three
 loops of one to two minutes (chiptune, synthwave and a small orchestral cue) as
-multi-track scores with drums, and a script renders each through Surge XT and sfizz or
-FluidSynth, driven from DawDreamer or Pedalboard, with one fixed mix and master chain.
-Ten retro sound effects come from a seeded sfxr-style synthesiser. Each file is measured
-with `sound.measure` for seam, loudness and peak.
+multi-track scores with drums, each written in two candidate notations for the patterns,
+such as ABC and Strudel's mini-notation, so the one the agent gets wrong least and a
+person finds easiest to change is chosen. A script renders each through Surge XT and
+sfizz or FluidSynth, driven from DawDreamer or Pedalboard, with one fixed mix and master
+chain. Ten retro sound effects come from a seeded sfxr-style synthesiser. Each file is
+measured with `sound.measure` for seam, loudness and peak.
 
 The verdict is a person's: they listen beside a track from a paid generator such as Suno
 and say whether the result is good enough for Cottony. An agent does not judge its own
@@ -333,17 +335,26 @@ lands under a new `paths.audio` default. Acceptance bounds stay in `*.accept.tom
 which already reads `sound.*` measures; the declaration only says what exists and where.
 Nothing about Cottony is compiled in, per the non-goal on one project's paths.
 
-### §PW186 Music as data an agent writes and polyweave checks
+### §PW186 Music as an editable source an agent writes and polyweave checks
 
 An agent composes well only when its output is structured and a validator answers it,
-which is the loop piano's score format proved. polyweave needs its own, in Python:
-tracks carrying an instrument or General MIDI program, a drum track, tempo and meter,
-named sections, and explicit loop points.
+which is the loop piano's score format proved. But a piece is also something a person
+reopens and changes, so the file that is edited and the model that is checked are two
+layers.
 
-A `music.validate` operation reports errors with remedies in the house style, and
-`music.to_midi` writes a standard MIDI file, so any DAW can open the result. Piano's
-JSON format is the reference for the note model and can be read as input, but polyweave
-does not depend on piano's runtime.
+The source is a `*.music.toml` in the consumer's repository, beside its `*.accept.toml`,
+laid out like a tracker: tracks naming an instrument and a layer, short named patterns
+written in a compact text notation with one line per bar or phrase, and an arrangement
+that chains patterns into sections, with tempo, meter, key and the loop span. Changing a
+riff is one line, the arrangement follows, and a diff reads as music. An agent asked to
+darken the bridge edits one pattern rather than rewriting the piece.
+
+The note model, absolute ticks per note in the shape of piano's JSON, is derived from
+that source and never edited. `music.validate` compiles the source into it and reports
+errors against the source's own line, with remedies in the house style; `music.to_midi`
+writes a standard MIDI file from it, so any DAW can open the result. Piano's JSON can be
+read as input, but polyweave does not depend on piano's runtime. Which notation fills
+the patterns is what the spike settles.
 
 ### §PW187 Rendering a score without a DAW open
 
@@ -373,7 +384,8 @@ stems line up.
 Cottony synthesises its effects with its own `tools/audio/make_sfx.py`, which a second
 project would have to copy. `sound.synth` ports it the way `sound.measure` ported the
 seam measures from `loop_music.py`: an sfxr-style generator (oscillator, envelope, pitch
-slide, noise, filter) driven by declared parameters and a seed, writing mono 16-bit WAV.
+slide, noise, filter) driven by a TOML table of parameters and a seed, so a person tunes
+an effect by editing a number, writing mono 16-bit WAV.
 
 The same seed gives the same bytes, so a verdict on an effect holds across runs.
 
