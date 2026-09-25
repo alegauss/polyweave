@@ -13,6 +13,11 @@ game have drifted apart. The prose stays the source a person writes, and beside 
     style = "portrait"        # the [style.<family>] its pictures are held to
     first = "act 1"           # where in the run it first appears
 
+    [entity.ada.look]         # what a picture or mesh of it is bought from (§PW198)
+    description = "a tall captain in a patched blue greatcoat"
+    shows = ["a brass eyepiece"]
+    never = ["a weapon"]
+
     [rules]
     longest_line = 80         # the longest line a player reads, in characters
     silent = ["drone"]        # entities that never speak
@@ -28,6 +33,8 @@ story gives.
 from __future__ import annotations
 
 import difflib
+import hashlib
+import json
 import re
 import tomllib
 from pathlib import Path
@@ -53,7 +60,11 @@ ENTITY_KEYS = {
     "faction": False,
     "style": False,
     "first": False,
+    "look": False,
 }
+
+#: What an entity's `look` may say, and the type of each (§PW198).
+LOOK_KEYS = {"description": str, "shows": list, "never": list}
 
 #: Every key `[rules]` may carry.
 RULE_KEYS = ("longest_line", "silent", "unshown")
@@ -127,7 +138,14 @@ class _Findings:
         self.found: list[tuple[PolyweaveError, int | None]] = []
 
     def add(self, error: PolyweaveError, table: str, key: str | None = None) -> None:
-        line = _line(self.lines, table, key) or _line(self.lines, table)
+        tried = [(table, key), (table, None)]
+        parent, _, last = table.rpartition(".")
+        if parent:
+            # A sub-table may be written inline, as `look = {...}` in its parent.
+            tried += [(parent, last), (parent, None)]
+        line = next(
+            (n for t, k in tried if (n := _line(self.lines, t, k)) is not None), None
+        )
         error.at = f"{self.source.name}:{line}" if line else self.source.name
         self.found.append((error, line))
 
@@ -194,7 +212,7 @@ def _parse(source: Path) -> tuple[dict, dict, _Findings]:
                 ),
                 table,
             )
-        for key in (k for k in ENTITY_KEYS if k in own):
+        for key in (k for k in ENTITY_KEYS if k in own and k != "look"):
             if not isinstance(own[key], str) or not own[key].strip():
                 faults.add(
                     PolyweaveError(
@@ -217,6 +235,8 @@ def _parse(source: Path) -> tuple[dict, dict, _Findings]:
                 table,
                 "kind",
             )
+        if "look" in own:
+            _look(own["look"], table, faults)
         entities[ident] = {"id": ident, "code": ident, **own}
     rules = declared.get("rules") or {}
     if not isinstance(rules, dict):
@@ -261,6 +281,118 @@ def _parse(source: Path) -> tuple[dict, dict, _Findings]:
                 key,
             )
     return entities, rules, faults
+
+
+def _look(look, table: str, faults: _Findings) -> None:
+    """An entity's look: a table of a description and two lists of traits."""
+    where = f"{table}.look"
+    if not isinstance(look, dict):
+        faults.add(
+            PolyweaveError(
+                "world.bad-value",
+                f"[{table}] look is {look!r}, and a look is a table",
+                f"write it as [{where}] with description, shows and never under it",
+            ),
+            where,
+        )
+        return
+    for key in sorted(set(look) - set(LOOK_KEYS)):
+        faults.add(
+            PolyweaveError(
+                "world.unknown-key",
+                f"[{where}] declares {key}, which a look does not have",
+                f"use one of {', '.join(LOOK_KEYS)}",
+                given=key,
+                allowed=list(LOOK_KEYS),
+            ),
+            where,
+            key,
+        )
+    for key, kind in LOOK_KEYS.items():
+        value = look.get(key)
+        if value is None or _shaped(value, kind):
+            continue
+        faults.add(
+            PolyweaveError(
+                "world.bad-value",
+                f"[{where}] {key} is {value!r}, and it is "
+                + ("a non-empty text" if kind is str else "a list of texts"),
+                f'write it as {key} = "..."'
+                if kind is str
+                else f'write it as {key} = ["...", "..."]',
+            ),
+            where,
+            key,
+        )
+
+
+def _shaped(value, kind: type) -> bool:
+    if kind is str:
+        return isinstance(value, str) and bool(value.strip())
+    return isinstance(value, list) and all(
+        isinstance(v, str) and v.strip() for v in value
+    )
+
+
+def look_digest(entity: dict) -> str:
+    """What a bought picture or mesh of an entity was drawn from, as one hash.
+
+    The name, kind, style and look: what a prompt is composed of, and nothing else, so
+    an edit elsewhere in the world, or to this entity's faction, does not call it stale.
+    """
+    drawn = {k: entity.get(k) for k in ("name", "kind", "style", "look")}
+    text = json.dumps(drawn, sort_keys=True, ensure_ascii=False)
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def still_drawn(world: str | Path, ident: str, digest: str) -> bool:
+    """Whether the world file still describes this entity as the digest recorded it.
+
+    A world that no longer parses, or no longer holds the entity, does not.
+    """
+    try:
+        entities, _, faults = _parse(Path(world))
+    except PolyweaveError:
+        return False
+    if faults.found or ident not in entities:
+        return False
+    return look_digest(entities[ident]) == digest
+
+
+def brief(
+    entity: str, world: str | None = None, root: str | Path = "."
+) -> tuple[Path, dict]:
+    """One entity a purchase is made from, refused where the world lacks it."""
+    source, entities, _ = declared(world, root)
+    if entity not in entities:
+        near = difflib.get_close_matches(entity, entities, n=1)
+        raise PolyweaveError(
+            "world.unknown-entity",
+            f"the world declares no entity {entity!r} to buy a picture or mesh of",
+            f"did you mean {near[0]!r}?"
+            if near
+            else f"name one it declares, or write [entity.{entity}] in the world",
+            given=entity,
+            allowed=list(entities),
+        )
+    return source, entities[entity]
+
+
+def described(entity: dict, detail: str | None = None) -> str:
+    """An entity's look as one description: the world's words first, then the call's.
+
+    The world's traits close it, so where the call's detail disagrees with them the
+    last word a service reads is the world's.
+    """
+    look = entity.get("look") or {}
+    said = [str(look.get("description") or entity["name"]).rstrip(". ")]
+    if detail:
+        said.append(str(detail).strip().rstrip("."))
+    if look.get("shows"):
+        said.append("It shows " + ", ".join(look["shows"]))
+    if look.get("never"):
+        said.append("It never shows " + ", ".join(look["never"]))
+    return ". ".join(said) + "."
 
 
 def declared(

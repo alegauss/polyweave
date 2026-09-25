@@ -201,12 +201,15 @@ def capture(
     details: dict | None = None,
     outputs: int = 1,
     reported: float | None = None,
+    inputs: list[dict] | None = None,
     root: str | Path = ".",
 ) -> dict:
     """Put a bought artefact somewhere it will outlive the service, and write it down.
 
     `details` is what the service reported about what it made (a picture's model, speed
-    and resolution, which may not be the ones asked for), kept on the record.
+    and resolution, which may not be the ones asked for), kept on the record. `inputs`
+    are files it was made from beside the reference, such as the world an entity's look
+    was read from (§PW198), each as `provenance.source` gives it.
 
     Returns the ledger entry. The call completes only once the file is on disk, hashed,
     recorded and ledgered — a fetch that fails partway leaves no entry claiming it.
@@ -286,9 +289,12 @@ def capture(
         "fetch",
         landed,
         engine=engine or {"name": "service"},
-        inputs=[provenance.source("reference", reference, root=here)]
-        if reference is not None
-        else [],
+        inputs=(
+            [provenance.source("reference", reference, root=here)]
+            if reference is not None
+            else []
+        )
+        + list(inputs or ()),
         measurements=checked,
         extra=extra,
         root=here,

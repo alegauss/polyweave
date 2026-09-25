@@ -85,6 +85,11 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.sprites": ("internal", "baking needs a mesh and a rig: motion.bake"),
     "polyweave.world:find": ("internal", "which world file, inside world.read"),
     "polyweave.world:declared": ("internal", "the parsed world, for words.check"),
+    "polyweave.world:brief": ("internal", "one entity, for a purchase's entity="),
+    "polyweave.world:described": ("internal", "an entity's look as a prompt"),
+    "polyweave.world:look_digest": ("internal", "what a purchase records it drew"),
+    "polyweave.world:still_drawn": ("internal", "provenance.outdated, per entity"),
+    "polyweave.picture:from_world": ("internal", "entity= on picture and mesh.buy"),
     "polyweave.words:table": ("internal", "the string table, inside words.check"),
     # -- internal: helpers an operation calls, never a caller's first call ----------
     "polyweave.cache": ("internal", "the render cache, reached through bake's cached"),

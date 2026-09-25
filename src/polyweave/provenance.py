@@ -682,6 +682,9 @@ def dependents(
                 for i in record.get("inputs") or ()
                 if i.get("path") == wanted
             ),
+            # Which entity of a world it was drawn from, so the answer for a world
+            # file can be narrowed to one character (§PW198).
+            **({"entity": _entity(record)["id"]} if _entity(record) else {}),
         }
         for record in _records(where)
         if any(i.get("path") == wanted for i in record.get("inputs") or ())
@@ -706,7 +709,7 @@ def outdated(root: Annotated[str, ROOT] = ".") -> dict:
                 continue
             source = where / named
             now = sha256_of(source)[0] if source.is_file() else None
-            if now != one.get("sha256"):
+            if now != one.get("sha256") and not _same_entity(record, one, source):
                 moved.append(named)
         if moved:
             stale.append(
@@ -717,6 +720,26 @@ def outdated(root: Annotated[str, ROOT] = ".") -> dict:
                 }
             )
     return {"outdated": stale, "sound": not stale}
+
+
+def _entity(record: dict) -> dict | None:
+    """The world entity a purchase was drawn from, where it was (§PW198)."""
+    return (record.get("details") or {}).get("entity")
+
+
+def _same_entity(record: dict, one: dict, source: Path) -> bool:
+    """Whether a changed world still describes this record's entity as it was drawn.
+
+    A world file holds every entity, so any edit changes its hash. What was bought from
+    one entity is stale only when that entity's look changed, and the digest recorded
+    beside the id is what says so.
+    """
+    drawn = _entity(record)
+    if one.get("role") != "world" or not drawn or not source.is_file():
+        return False
+    from .world import still_drawn
+
+    return still_drawn(source, drawn["id"], drawn["sha256"])
 
 
 def _stamp() -> str:

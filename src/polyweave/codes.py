@@ -793,6 +793,12 @@ CODES: dict[str, Code] = {
         when="world.read asked for an entity that is not there, or a rule naming one",
         doors=("name a declared entity", "declare [entity.<id>]"),
     ),
+    "world.family-mismatch": Code(
+        means="a purchase drawn from an entity named a style family other than the one "
+        "the world holds the entity to",
+        when="picture.buy with entity and a family the entity's style is not",
+        doors=("leave family unset", "pass the entity's own family"),
+    ),
     # -- words: the text a player reads ---------------------------------------
     "words.no-table": Code(
         means="polyweave.toml names no string table, so there is no text to check",

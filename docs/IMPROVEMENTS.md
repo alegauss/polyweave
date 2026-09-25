@@ -463,29 +463,6 @@ that a second game would not becomes configuration.
 
 ## Block Q — Words held to the world
 
-### §PW198 An asset's brief read from the world it belongs to
-
-A picture or a mesh for a character starts from words: what the thing is, what it wears,
-what it must never look like. Today those words are typed into each `picture.buy` or
-`mesh.buy` call, while Starship's bible already holds them. A prompt written again per
-call drifts the way styles were found to drift before `[style]` existed, one adjective
-at a time.
-
-An entity in the world declaration may carry a `look` table: a short description, the
-traits that must show, and the ones that must not. `picture.buy` and `mesh.buy` take
-`entity=<id>`. The call composes its prompt from that table, holds it to the
-`[style.<family>]` the entity names, and records the entity id in the provenance
-sidecar. Where the call also passes its own words, they add detail, and the world's
-traits win where the two disagree, the same precedence the style skeleton already has
-over a prompt.
-
-The record is what makes the link useful later. Provenance can already say which
-artefacts were made from a changed input file. With the entity id in each record, that
-answer for the world file narrows to what was drawn from the one entity that changed, so
-a character's new look names the pictures and meshes that now describe someone else.
-Rebuying them is still a person's decision under the purchase ceiling, not something a
-world edit triggers.
-
 ### §PW199 A line's tone judged by a person, and a canon of lines
 
 Starship's bible says crew lines are short, warm and often funny, never heroic speeches,

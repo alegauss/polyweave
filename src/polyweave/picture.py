@@ -57,6 +57,10 @@ AGENT = f"polyweave/{__version__} (+https://github.com/alegauss/polyweave)"
 #: How long one request may take before it is called failed. A picture takes seconds.
 TIMEOUT = 120
 
+#: The two parameters a purchase drawn from the world takes (§PW198).
+ENTITY = Param("a world entity to compose the prompt from")
+WORLD = Param("the *.world.toml, needed only among several")
+
 
 @operation("picture.buy", kind="fetch", injects=("report",))
 def buy(
@@ -77,6 +81,8 @@ def buy(
     family: Annotated[
         str, Param("the asset family whose [style] it is held to")
     ] = None,
+    entity: Annotated[str, ENTITY] = None,
+    world: Annotated[str, WORLD] = None,
     service: Annotated[str, purchase.SERVICE] = None,
     root: Annotated[str, Param("the project whose ledger this is")] = ".",
 ) -> dict:
@@ -96,6 +102,10 @@ def buy(
     Where the project declares a `[style]`, the structured prompt is composed over the
     family's skeleton and palette before anything else (§PW166), and a text prompt is
     refused, because it has nowhere to carry them.
+
+    With `entity`, the description is the world's (§PW198): its look opens the prompt,
+    the call's own words add detail, its traits close it, its style family is the one
+    in force, and the record names the entity and a hash of what it was drawn from.
     """
     if model not in MODELS:
         raise PolyweaveError(
@@ -110,6 +120,11 @@ def buy(
             "fetch.missing-field",
             "a picture was asked for with nowhere to write it",
             "pass out, a path under the project",
+        )
+    drawn_from = None
+    if entity is not None:
+        drawn_from, family, prompt, json_prompt = from_world(
+            entity, world, root, family, prompt, json_prompt, structured=model == "4.0"
         )
     _one_prompt(prompt, json_prompt, model)
     config = load(root)
@@ -213,9 +228,58 @@ def buy(
             # What the service says it drew from. On a text prompt to 4.0 this is not
             # what was sent, and it is the only account of the picture that is true.
             "returned_prompt": drawn.get("prompt"),
+            "entity": drawn_from,
         },
     }
+    if drawn_from:
+        kept["inputs"] = [provenance.source("world", drawn_from["world"], root=root)]
     return _delivered(link, kept, root)
+
+
+def from_world(
+    entity: str,
+    world: str | None,
+    root,
+    family: str | None,
+    prompt: str | None,
+    json_prompt: dict | None,
+    *,
+    structured: bool,
+) -> tuple[dict, str | None, str | None, dict | None]:
+    """A purchase's prompt and family composed from one entity of the world (§PW198).
+
+    Returns what the record names, the family in force, and the prompt to send: a
+    structured one where the model takes one, whose `high_level_description` is the
+    world's, and text otherwise. A family the call names that is not the entity's own is
+    refused, because a character held to two styles is the drift the world prevents.
+    """
+    from .world import brief, described, look_digest
+
+    source, found = brief(entity, world, root)
+    own = found.get("style")
+    if family is not None and own and family != own:
+        raise PolyweaveError(
+            "world.family-mismatch",
+            f"{entity} is held to the {own!r} style in the world, and the call named "
+            f"{family!r}",
+            f"leave family unset, or pass {own!r}",
+            given=family,
+            allowed=[own],
+        )
+    if structured:
+        base = dict(json_prompt or {})
+        base["high_level_description"] = described(
+            found, base.get("high_level_description") or prompt
+        )
+        json_prompt, prompt = base, None
+    else:
+        prompt = described(found, prompt)
+    record = {
+        "id": entity,
+        "world": provenance.relative(source, Path(root).resolve()),
+        "sha256": look_digest(found),
+    }
+    return record, family or own, prompt, json_prompt
 
 
 def _delivered(link: str, kept: dict, root) -> dict:

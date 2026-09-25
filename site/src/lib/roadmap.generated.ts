@@ -41,7 +41,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "N", title: "Pictures held to a canon", open: 1 },
   { block: "O", title: "A person sees and answers", open: 0 },
   { block: "P", title: "Music and sound a game can ship", open: 8 },
-  { block: "Q", title: "Words held to the world", open: 3 },
+  { block: "Q", title: "Words held to the world", open: 2 },
   { block: "R", title: "Levels measured before a person plays them", open: 6 },
   { block: "S", title: "Playing the game, not only rendering it", open: 7 },
 ];
@@ -139,13 +139,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW188", "PW189", "PW190", "PW191"],
   },
   {
-    id: "PW198",
-    block: "Q",
-    symptom: "A character's picture or mesh is bought from a description retyped by hand",
-    why: "The world already says who the Mason is and whose palette it wears, so a prompt written again per call is where an asset leaves the canon.",
-    deps: [],
-  },
-  {
     id: "PW199",
     block: "Q",
     symptom: "Whether a line keeps the world's tone has nowhere to be answered but a chat",
@@ -157,7 +150,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "Q",
     symptom: "Starship's screen still shows names its world bible replaced",
     why: "The block is proven only when its first consumer's text, lines and character assets are held to a declared world through polyweave.",
-    deps: ["PW198", "PW199"],
+    deps: ["PW199"],
   },
   {
     id: "PW201",

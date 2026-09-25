@@ -34,6 +34,9 @@ unshown = ["nemesis"]     # entities whose name is never shown
   because TOML refuses a table written twice.
 - `name` and `kind` are required. `code`, `faction`, `style` and `first` are optional and
   are text.
+- `[entity.<id>.look]` is optional: a `description` and two lists of texts, `shows` (the
+  traits that must appear) and `never` (the ones that must not). It is what a picture or
+  a mesh of the entity is bought from.
 - `[rules]` is optional, and each of its three keys is too.
 - Any other table, entity field or rule is refused, as an unknown config key is: a field
   that is silently dropped is a setting the author believes is in effect and is not.
@@ -58,6 +61,25 @@ Both find the file themselves where the project holds one, skipping dot-director
 refuse with `world.several` where it holds more than one and the call named none.
 
     python -m polyweave world.validate --world docs/design/starship.world.toml --json
+
+## An asset bought from an entity
+
+`picture.buy` and `mesh.buy` take `entity=<id>` (and `world` where the project holds
+several). The prompt is composed from the entity: its look's description, or its name
+where it has no look, then the call's own words as detail, then `It shows ...` and
+`It never shows ...` from its traits, so where the call's words disagree the last word
+the service reads is the world's. On 4.0 that is the structured prompt's
+`high_level_description`, composed over the entity's style family as any structured
+prompt is. A `family` other than the entity's own `style` is refused with
+`world.family-mismatch`. A mesh bought from a picture still needs the gate, and records
+the entity all the same.
+
+The record carries `details.entity` (the id, the world file and the SHA-256 of the
+entity's name, kind, style and look) and the world file as an input with the role
+`world`. So `provenance.dependents` on the world names each artefact's entity, and
+`provenance.outdated` counts a changed world against an artefact only where that
+entity's own digest changed. Buying again is still a person's decision under the
+purchase ceiling; a world edit triggers nothing.
 
 ## The text a player reads
 

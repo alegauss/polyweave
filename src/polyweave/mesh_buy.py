@@ -29,7 +29,7 @@ import urllib.request
 from pathlib import Path
 from typing import Annotated
 
-from . import picture, purchase
+from . import picture, provenance, purchase
 from .config import load
 from .describe import Param, operation
 from .errors import PolyweaveError
@@ -57,6 +57,8 @@ def buy(
         str, Param("the service's model, e.g. meshy-6-lite")
     ] = "meshy-6-lite",
     polycount: Annotated[int, Param("the triangles to aim at", lo=100)] = 8000,
+    entity: Annotated[str, picture.ENTITY] = None,
+    world: Annotated[str, picture.WORLD] = None,
     service: Annotated[str, purchase.SERVICE] = None,
     root: Annotated[str, Param("the project whose ledger this is")] = ".",
 ) -> dict:
@@ -66,6 +68,9 @@ def buy(
     of the task say it was; the `prices` row for `model` only decides whether it may be
     spent. A picture is refused unless the gate passed it, so a mesh bought from a
     picture had its silhouette settled on the picture first.
+
+    With `entity` and no picture, the prompt is the world's description of it, with the
+    call's own words as detail (§PW198); either way the record names the entity.
     """
     if not out:
         raise PolyweaveError(
@@ -73,6 +78,13 @@ def buy(
             "a mesh was asked for with nowhere to write it",
             "pass out, a .glb path under the project",
         )
+    drawn_from = None
+    if entity is not None:
+        drawn_from, _, composed, _ = picture.from_world(
+            entity, world, root, None, prompt, None, structured=False
+        )
+        if picture_path is None:
+            prompt = composed
     if (prompt is None) == (picture_path is None):
         raise PolyweaveError(
             "fetch.missing-field",
@@ -140,7 +152,15 @@ def buy(
         bought="mesh",
         engine={"name": name, "model": model},
         service=name,
-        details={"route": route, "model": model, "polycount": int(polycount)},
+        details={
+            "route": route,
+            "model": model,
+            "polycount": int(polycount),
+            "entity": drawn_from,
+        },
+        inputs=[provenance.source("world", drawn_from["world"], root=here)]
+        if drawn_from
+        else None,
         root=here,
     )
 

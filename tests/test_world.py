@@ -128,6 +128,18 @@ def test_a_missing_name_and_a_bad_rule_are_findings(tmp_path):
     ]
 
 
+def test_a_look_of_the_wrong_shape_is_reported_on_its_own_line(tmp_path):
+    text = GOOD.replace(
+        '[entity.drone]\nname = "Drone"',
+        '[entity.drone]\nname = "Drone"\nlook = { shows = "a red eye", hue = 2 }',
+    )
+    _project(tmp_path, text)
+    assert sorted(_codes(world.validate(root=str(tmp_path)))) == [
+        ("world.bad-value", 15),
+        ("world.unknown-key", 15),
+    ]
+
+
 def test_the_file_is_found_named_or_refused_among_several(tmp_path):
     _project(tmp_path)
     (tmp_path / "other.world.toml").write_text(GOOD, encoding="utf-8")
