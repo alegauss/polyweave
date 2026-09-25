@@ -53,3 +53,5 @@
 
 ## Block S — Playing the game, not only rendering it
 
+## Block T — Adopting polyweave in a project
+

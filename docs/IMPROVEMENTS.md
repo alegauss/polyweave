@@ -740,3 +740,74 @@ many tokens a session spent, recorded in the ledger entry, so the cost of explor
 measured number that later work can reduce. A flow that needed the agent to read the
 source counts as a failure of the tools, under the block on reaching things without
 reading the source, and it is filed as its own line.
+
+## Block T — Adopting polyweave in a project
+
+### §PW218 polyweave init writes the project config from the tree
+
+Starship shows what adoption costs today. Its `polyweave.toml` was written by hand, one
+key at a time, and an agent in that tree had nothing telling it the file existed or what
+it bound. The spec in `docs/specs/project-config.md` is the only guide, and it has to be
+read before the first call. That is the round trip the tool surface exists to remove.
+
+`python -m polyweave init` (and the `project.init` operation behind it) reads the tree
+and proposes the file:
+
+- `[project] name` comes from the directory, or from `project.godot`'s `config/name`.
+- `[paths] godot` is `${GODOT}` when that variable is set. Blender comes from `engine.find`, never as a desk's absolute path.
+- `meshes`, `renders`, `specs` and `work` come from folders that already exist (`assets/models`, `*.accept.toml`), otherwise from the defaults.
+- `[capture]`, `[style]` and `[words]` are written only when there is something to point them at: a translation CSV, or a canon folder.
+
+By default it prints the proposal and writes nothing. `--write` writes it and refuses an
+existing file, naming `--merge`, which adds only missing tables and never changes a
+value a person wrote. The result validates against the same loader every call uses, so
+an unknown key cannot be written.
+
+**It never writes a `[budget]`.** A ceiling is a person's to set, so init names the
+table as missing and says who fills it (non-goal: spending on the agent's own
+judgement). A `[service]` is proposed only from a key variable that already exists,
+never from the absence of one.
+
+### §PW219 init wires the project's agent to polyweave
+
+A valid `polyweave.toml` is not an adopted project. Starship had one and a committed
+ledger, and a session in that tree still saw no polyweave tool, because `.mcp.json`
+declared only roadkeep. There was no `AGENTS.md` or `CLAUDE.md`, and the skill ships
+only with the plugin, which the project had not enabled. The fix was hand-written on
+2026-09-25 (starship `1ad2094`). This line makes that fix a call.
+
+`init --agent` does three things, each idempotent:
+
+- **It declares the server.** It adds `polyweave` to `.mcp.json` (`python -m polyweave serve`) and to `enabledMcpjsonServers` in `.claude/settings.json`, leaving every other server and key as it found them. Where the plugin is already enabled for the project, it says so and declares nothing, because two servers would give every tool twice.
+- **It writes the project's section into `AGENTS.md`,** between `<!-- polyweave:begin -->` and `<!-- polyweave:end -->`. The section is drawn from the config: where the specs, renders, canons and ledger live, which budgets exist and that a person set them, and the rules the skill states (brief first, a look is a person's, a refusal is the answer). A `CLAUDE.md` that does not import `AGENTS.md` gets the import line. Text outside the markers is never touched.
+- **It stamps the section with the version** that wrote it, so the check in the next line can say it is stale.
+
+The section names operations from the registry, never from prose, so a renamed operation
+cannot survive in it.
+
+### §PW220 init --check says what an adoption is missing
+
+Adoption decays quietly. A desk loses its `GODOT` variable, a folder named in `[paths]`
+is moved, the plugin gains an operation the `AGENTS.md` section never names, or a budget
+expires. Each of these is found today by the first call that fails, halfway through a
+task.
+
+`init --check` (and `project.check`) reads everything the two lines before it write, and
+reports a list. Each entry carries a `code` and a `remedy` in the refusal shape the
+surface already uses:
+
+- the config loads and every key is known;
+- every input in `[paths]` exists, and every engine resolves through `engine.find`;
+- the server is declared once, by `.mcp.json` or the plugin but not both;
+- the `AGENTS.md` section exists, carries the running version, and names no operation the registry lacks;
+- each `[service]` key variable is set (checked by name, never read), and each `[budget]` is current;
+- no produced file lacks its provenance record.
+
+It exits non-zero on any error, so a project can put it in its own gate. It never
+repairs. The remedy names the `init` flag that would, and a person or agent runs that.
+
+**It is also the evidence for the block.** It runs against copies of starship and
+Cottony in the test suite. Starship's hand-written adoption (`1ad2094`) must check
+clean, and so must what `init --write --agent` produces from starship with
+`polyweave.toml` and `AGENTS.md` removed. Any difference between the two is a defect in
+the lines before this one.

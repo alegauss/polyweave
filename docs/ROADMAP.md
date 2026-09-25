@@ -69,6 +69,12 @@
 - 📋 **PW216** (deps: PW214) **A real-time game has never been driven frame by frame, so the driver is proven on a turn-based board only** — Cottony waits for the player and Starship does not, so pausing the tree between calls is only shown to hold once a shooter's physics and spawns replay the same. → §PW216
 - 📋 **PW217** (deps: PW214, PW215, PW216) **Cottony's flow from title screen to a won level is checked by no test, so a broken menu ships unseen** — The block is proven only when its first consumer keeps its main flows as replayed tests in its own release script, beside a clean release check. → §PW217
 
+## Block T — Adopting polyweave in a project
+
+- 📋 **PW218** (deps: —) **A new project writes polyweave.toml by hand, key by key, against a spec it has to read first** — `polyweave init` proposes the file from what the tree already holds, so a project is configured in one call and never by guessing a key. → §PW218
+- 📋 **PW219** (deps: PW218) **A configured project still hides polyweave from its agent: no server declared, no skill, no word in AGENTS.md** — `init --agent` declares the MCP server and writes a marked AGENTS.md section from the project's paths, so the next session calls polyweave directly. → §PW219
+- 📋 **PW220** (deps: PW219) **Nothing says an adopted project has drifted: an engine gone, a path missing, a stale agent section** — `init --check` reports every gap between the tree and a working adoption, each with its remedy, and writes nothing, so a session starts from one read. → §PW220
+
 ## Done when — PW36
 
 - **Every piece of Cottony's pipeline runs on the plugin, with no fork** The
