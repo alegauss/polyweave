@@ -348,23 +348,6 @@ again.
 
 ## Block K — Reached without reading the source
 
-### §PW133 The declaration is the source, and the guard says so
-
-The plugin's premise is roadkeep's in another material: the declaration is the source
-and the mesh is derived from it, just as a roadmap line is derived from its fields.
-Roadkeep holds that with a hook, not a rule in a skill. A `Write` or `Edit` on a
-governed file is denied, and the denial names the command to run instead.
-
-The same hook fits here. A `PreToolUse` guard denies an edit to a file that has a build
-stamp or a provenance record beside it, and names the declaration to change and the
-`build` to run. A `Stop` hook checks only the artefacts this turn touched against their
-records, which is the at-the-write form of the check `python -m polyweave verify` makes.
-
-Roadkeep's constraints come with it. The screen before any import uses the standard
-library only, so numpy and Blender are never loaded to decide a write. Any failure
-inside the hook allows the edit. A shell command gets `ask`, not `deny`, because nobody
-parses it to see what it writes.
-
 ### §PW160 A clip baked by name
 
 Found finishing PW124's census. A clip's own document is a plain table, so creating,

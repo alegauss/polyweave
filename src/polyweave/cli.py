@@ -131,11 +131,16 @@ def build_one(
         if len(built) > 1:
             answer["members"] = built
             answer["outputs"] = [path for one in built for path in one["outputs"]]
-        mark.write_text(
-            json.dumps({"stamp": made_from, "outputs": answer["outputs"]}, indent=1)
-            + "\n",
-            encoding="utf-8",
-        )
+        # The source rides in the stamp so the edit guard can name the declaration to
+        # change instead of the file an agent was about to edit by hand (§PW133).
+        stamped = {
+            "stamp": made_from,
+            "source": where.relative_to(here).as_posix()
+            if where.is_relative_to(here)
+            else str(where),
+            "outputs": [str(Path(one).resolve()) for one in answer["outputs"]],
+        }
+        mark.write_text(json.dumps(stamped, indent=1) + "\n", encoding="utf-8")
     except PolyweaveError as refused:
         answer["status"] = "refused"
         answer["refusal"] = refused.as_dict()

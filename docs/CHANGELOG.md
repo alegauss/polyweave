@@ -178,6 +178,7 @@
 - ✅ **PW130** **every test calls the surface correctly, so a silently dropped argument or a wrong first call is never measured** — A canonical task runs in three counted calls, and a naive client's first guesses are each refused; validate now type-checks every argument (design recorded in `docs/specs/tool-surface.md`).
 - ✅ **PW131** **starting work on an asset means opening its declaration, spec, record and last verdict one file at a time** — asset.brief says where an asset stands in one read: its shape, its bar and origins, its artefact against its record, its last verdict, a digest (design recorded in `docs/specs/tool-surface.md`).
 - ✅ **PW132** **an agent in a consumer is never told the plugin exists, because it ships no manifest, skill or session notice** — The repo is a Claude Code plugin and marketplace: an MCP server, a driving skill, and a one-line SessionStart notice, held to size by a test (design recorded in `docs/specs/adoption.md`).
+- ✅ **PW133** **an agent may hand-edit a built mesh or voxel file, and nothing notices the output no longer follows its declaration** — The plugin's guard denies a hand edit to a built or recorded file, naming the declaration, and a Stop hook catches one that slipped by (design recorded in `docs/specs/adoption.md`).
 
 ## Block L — What a run leaves as evidence
 

@@ -31,7 +31,6 @@
 
 ## Block K — Reached without reading the source
 
-- 📋 **PW133** (deps: PW125 ✅) **an agent may hand-edit a built mesh or voxel file, and nothing notices the output no longer follows its declaration** — The build stamp hashes inputs only and geometry outputs carry no record, so an edited output is reported cached and rebuilt only when an input moves. → §PW133
 - 📋 **PW160** (deps: —) **a clip is baked to an animation and a sheet only from Python, since every step takes a mesh and a rig in memory** — The census lists compile, frames, sprites.bake and skeleton.fit as internal, so motion is the one surface a GDScript project still needs a script for. → §PW160
 
 ## Block L — What a run leaves as evidence

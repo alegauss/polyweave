@@ -335,6 +335,18 @@ specs the project holds, and that `asset.brief` answers where one stands.
 requires every operation the skill names to exist, and keeps plugin and project skill
 names apart, because a plugin skill drives the tool and a project skill changes it.
 
+**A derived file is not edited by hand** (§PW133). A built mesh or voxel file follows its
+declaration, and the build stamp hashes only inputs, so a hand edit went unnoticed and
+kept being reported `cached`. The plugin's `hooks/guard.py` holds the rule where it is
+broken, as roadkeep's guard does for its files. On `PreToolUse` it denies a Write or Edit
+to a file a build stamp lists as an output, or that carries a provenance record. The
+denial names the declaration to change and the `geometry.build` to run; the stamp now
+records its `source` for that. A shell command naming such a file gets `ask`, because
+nobody parses what a command writes. On `SessionStart` it marks the time. On `Stop`, any
+recorded artefact changed since then that no longer matches its record blocks the stop
+and is named, and a stop already continuing because of it is let through. It uses the
+standard library only, and any failure inside allows the edit.
+
 ## Three model routes, stated rather than programmed
 
 Binds **PW54**. `tools/art/solid.py` is 283 lines of bmesh primitives that three scripts
