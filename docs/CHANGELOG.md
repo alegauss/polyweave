@@ -186,6 +186,7 @@
 - ✅ **PW135** **a test log written at the repository root is staged by the commit tool, because nothing ignores `*.log`** — A log at the repository root and the gate's own files are ignored, so a redirected run can never be staged with the fix it was taken for.
 - ✅ **PW136** **no pytest or ruff runs anywhere but a desk, so a consumer pinned to a commit gets one nobody gated** — A gates workflow runs ruff and the gate on Python 3.11 and 3.13, prints the stamp saying CI proves the pure half, and validates the plugin manifests (design recorded in `.github/workflows/gates.yml`).
 - ✅ **PW137** **the site's own test requires the page to say there is no implementation, after a hundred lines have shipped** — The site states built blocks and open lines from the generated roadmap, a test holds it; README, CLAUDE.md, specs and capabilities() dropped stale status (design recorded in `site/README.md`).
+- ✅ **PW138** **the tool-surface spec names twelve error areas and the code declares nineteen, and nothing reads one against the other** — Six readers hold the specs and skill to the code's areas, names, measures, config, key and commands; the drift they found is fixed (design recorded in `tests/test_spec_names.py`).
 
 ## Block M — What a game needs beyond the look
 

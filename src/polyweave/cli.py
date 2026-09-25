@@ -307,43 +307,13 @@ def main(argv: list[str] | None = None) -> int:
     from . import readable
 
     readable()
-    parser = argparse.ArgumentParser(prog="python -m polyweave")
-    commands = parser.add_subparsers(dest="command", required=True)
-    build = commands.add_parser(
-        "build", help="build a declaration, or every one under a folder"
-    )
-    build.add_argument("document", nargs="?", help="the declaration to build")
-    build.add_argument(
-        "--all", dest="folder", help="build every declaration under a folder"
-    )
-    build.add_argument(
-        "--out", help="where to write; the document's own folder by default"
-    )
-    build.add_argument(
-        "--root", default=".", help="the project the paths resolve against"
-    )
-    build.add_argument(
-        "--set", action="append", default=[], help="name=value, repeatable"
-    )
-    build.add_argument("--preview", action="store_true", help="also write a cheap look")
-    build.add_argument("--json", action="store_true", help="print the answer as data")
-    verify = commands.add_parser(
-        "verify", help="check every committed artefact against its acceptance spec"
-    )
-    verify.add_argument(
-        "--root", default=".", help="the project the paths resolve against"
-    )
-    verify.add_argument("--specs", help="where the specs are; [paths] specs by default")
-    verify.add_argument("--json", action="store_true", help="print the answer as data")
-    # Every registered operation, and the first reads, derived from the registry
-    # (§PW125); `build` and `verify` keep their own shape, since consumers call them.
-    from . import commands as derived
-
-    derived.add_operations(commands)
+    parser = command_line()
     stated = parser.parse_args(argv)
     if stated.command == "verify":
         return _verify(stated)
     if stated.command != "build":
+        from . import commands as derived
+
         return derived.run(stated)
 
     if bool(stated.document) == bool(stated.folder):
@@ -377,3 +347,42 @@ def main(argv: list[str] | None = None) -> int:
         for answer in answers:
             print("\n".join(_printed(answer)))
     return 1 if any(one["status"] == "refused" for one in answers) else 0
+
+
+def command_line() -> argparse.ArgumentParser:
+    """Every command and flag, built without running anything, so a document that
+    spells a command can be parsed against it (§PW138)."""
+    parser = argparse.ArgumentParser(prog="python -m polyweave")
+    commands = parser.add_subparsers(dest="command", required=True)
+    build = commands.add_parser(
+        "build", help="build a declaration, or every one under a folder"
+    )
+    build.add_argument("document", nargs="?", help="the declaration to build")
+    build.add_argument(
+        "--all", dest="folder", help="build every declaration under a folder"
+    )
+    build.add_argument(
+        "--out", help="where to write; the document's own folder by default"
+    )
+    build.add_argument(
+        "--root", default=".", help="the project the paths resolve against"
+    )
+    build.add_argument(
+        "--set", action="append", default=[], help="name=value, repeatable"
+    )
+    build.add_argument("--preview", action="store_true", help="also write a cheap look")
+    build.add_argument("--json", action="store_true", help="print the answer as data")
+    verify = commands.add_parser(
+        "verify", help="check every committed artefact against its acceptance spec"
+    )
+    verify.add_argument(
+        "--root", default=".", help="the project the paths resolve against"
+    )
+    verify.add_argument("--specs", help="where the specs are; [paths] specs by default")
+    verify.add_argument("--json", action="store_true", help="print the answer as data")
+    # Every registered operation, and the first reads, derived from the registry
+    # (§PW125); `build` and `verify` keep their own shape, since consumers call them.
+    from . import commands as derived
+
+    derived.add_operations(commands)
+    return parser

@@ -85,14 +85,17 @@ expires = "2026-12-31"
 fps     = 12                   # the 2D half of a clip has its own rate
 frames  = 0                    # or a count to hit, where zero means use the rate
 trim    = true                 # one rectangle for the whole clip, never one per frame
+columns = 0                    # frames across the sheet; zero lays them out square
 
 [rig]
 plan       = "plush"           # the body plan a fetched mesh is fitted with
 influences = 4                 # one snaps every vertex to one bone, and tears
 falloff    = 4.0               # both ends tear; four is the trough
+pull       = 0.6               # how far a joint moves off the plan onto the mesh
 tear_ratio = 2.0
 
 [units]
+pixels_per_unit = 0.0          # the weaker half; `source` is the stronger
 source    = "scripts/board.gd:CELL"      # read the engine's scale where it keeps it
 tolerance = 0.001
 
@@ -101,6 +104,7 @@ declared   = ["locale", "resolution", "theme"]  # add your own; `theme` is this 
 locale     = "pt_BR"
 resolution = [1920, 1080]
 theme      = "dark"
+reproducible = true            # a capture that stops reproducing is refused
 
 [geometry]
 outlines = "tools/art/outlines.py"   # where named shape generators come from

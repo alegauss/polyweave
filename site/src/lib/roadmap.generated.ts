@@ -36,7 +36,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 1 },
-  { block: "L", title: "What a run leaves as evidence", open: 3 },
+  { block: "L", title: "What a run leaves as evidence", open: 2 },
   { block: "M", title: "What a game needs beyond the look", open: 3 },
 ];
 
@@ -88,13 +88,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "K",
     symptom: "a clip is baked to an animation and a sheet only from Python, since every step takes a mesh and a rig in memory",
     why: "The census lists compile, frames, sprites.bake and skeleton.fit as internal, so motion is the one surface a GDScript project still needs a script for.",
-    deps: [],
-  },
-  {
-    id: "PW138",
-    block: "L",
-    symptom: "the tool-surface spec names twelve error areas and the code declares nineteen, and nothing reads one against the other",
-    why: "A name a spec spells that the code lacks, or the reverse, is found only by a reader who checks both, which is the drift the specs exist to prevent.",
     deps: [],
   },
   {

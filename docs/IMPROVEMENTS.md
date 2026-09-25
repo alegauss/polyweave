@@ -370,23 +370,6 @@ present, and skipped where it is not, as the render tests are.
 
 ## Block L — What a run leaves as evidence
 
-### §PW138 The specs read against the code
-
-Section 3 of tool-surface.md lists the areas a code is namespaced by: twelve of them.
-`codes.AREAS` declares nineteen; engine, units, capture, rig, clip, texture and loop
-were added with their lines and never reached the spec. No test reads a spec file for
-names, except one that parses the acceptance-spec example, and the geometry test copies
-its tray out of `geometry.md` rather than reading it.
-
-Shio's docs gate is the model. For each kind of name a document may spell, a reader
-extracts it from the documents and another from the source, and the test fails on either
-difference. Here the kinds are error codes and areas, registered operations, measures,
-config keys and CLI flags, read out of `docs/specs/*.md` and the published skill.
-
-Two of its rules are what keep it honest. Each reader is tested against a fixture that
-plants a name only it can find, and a reader that finds nothing throws instead of
-passing, because an empty population makes every check against it pass.
-
 ### §PW139 A capacity check held until the record exists
 
 `JobStore.start` counts the jobs that are not terminal and refuses with
