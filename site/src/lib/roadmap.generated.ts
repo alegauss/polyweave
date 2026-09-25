@@ -40,6 +40,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 0 },
   { block: "O", title: "A person sees and answers", open: 0 },
+  { block: "P", title: "Music and sound a game can ship", open: 9 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -63,6 +64,69 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent",
     why: "The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question.",
     deps: ["PW57"],
+  },
+  {
+    id: "PW184",
+    block: "P",
+    symptom: "Nobody knows if agent-composed, headlessly rendered music sounds good enough to ship in a game",
+    why: "Every later line in this block spends effort on that premise, so a person's listening verdict decides whether the block proceeds or is retired.",
+    deps: [],
+  },
+  {
+    id: "PW185",
+    block: "P",
+    symptom: "No declaration says which music and sound effects a game needs or where they land",
+    why: "Cottony keeps that list in its own scripts, so polyweave cannot say which audio is missing or out of bounds.",
+    deps: ["PW184"],
+  },
+  {
+    id: "PW186",
+    block: "P",
+    symptom: "An agent cannot write multi-track music as data that polyweave validates",
+    why: "An agent composes well only when a validator answers its output, and no format here has tracks, drums or loop points.",
+    deps: ["PW184"],
+  },
+  {
+    id: "PW187",
+    block: "P",
+    symptom: "A composed score cannot become a WAV or OGG file without a DAW open",
+    why: "Nothing renders music headlessly, so the only route to game audio is a person in a DAW or a paid generator.",
+    deps: ["PW185", "PW186"],
+  },
+  {
+    id: "PW188",
+    block: "P",
+    symptom: "One theme cannot play at several intensities that stay in step",
+    why: "Game music changes with play, and layers rendered separately drift unless they share one length and grid.",
+    deps: ["PW187"],
+  },
+  {
+    id: "PW189",
+    block: "P",
+    symptom: "Retro sound effects are synthesised by each consumer's own script",
+    why: "A second project would have to copy Cottony's generator, which the non-goal on one project's paths forbids.",
+    deps: ["PW185"],
+  },
+  {
+    id: "PW190",
+    block: "P",
+    symptom: "Realistic sound effects have no bounded way to be bought from a service",
+    why: "A synthesiser does footsteps and glass badly, and a paid fetch without a ceiling is the surprise Block D exists to prevent.",
+    deps: ["PW185"],
+  },
+  {
+    id: "PW191",
+    block: "P",
+    symptom: "Rendered audio does not record which instruments made it or what their licences owe",
+    why: "Sample libraries carry licences from CC0 to credit-required, and a game cannot ship credits nobody recorded.",
+    deps: ["PW187", "PW189"],
+  },
+  {
+    id: "PW192",
+    block: "P",
+    symptom: "Cottony still makes its audio outside polyweave",
+    why: "The block is proven only when its first consumer's music and effects are declared, made and accepted here.",
+    deps: ["PW188", "PW189", "PW190", "PW191"],
   },
 ];
 

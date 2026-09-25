@@ -296,3 +296,109 @@ Check first whether 4.0 has gained a reference field, and learn it by the schema
 since a reference the service ignores is dropped without an error.
 
 ## Block O — A person sees and answers
+
+## Block P — Music and sound a game can ship
+
+### §PW184 Whether agent-composed music is good enough to ship
+
+The block rests on one premise: that an agent writing music as data, rendered headlessly
+through existing open-source engines, sounds good enough for a casual game. Nothing has
+tested it, and every later line spends effort on it.
+
+The spike runs outside the package, in a throwaway directory. The agent composes three
+loops of one to two minutes (chiptune, synthwave and a small orchestral cue) as
+multi-track scores with drums, and a script renders each through Surge XT and sfizz or
+FluidSynth, driven from DawDreamer or Pedalboard, with one fixed mix and master chain.
+Ten retro sound effects come from a seeded sfxr-style synthesiser. Each file is measured
+with `sound.measure` for seam, loudness and peak.
+
+The verdict is a person's: they listen beside a track from a paid generator such as Suno
+and say whether the result is good enough for Cottony. An agent does not judge its own
+sound, for the reason the non-goal on looks gives.
+
+If the answer is yes, the findings (which engine, which instrument libraries, which
+licences) are written into the designs below and the block proceeds. If it is no, every
+open line in this block is retired with the spike's outcome as the reason, and paid
+generation becomes the path instead.
+
+### §PW185 Declaring what a game needs to hear
+
+A game's audio is a list the consumer owns: music per level or state, and a sound per
+event. Today that list lives in Cottony's scripts, so polyweave cannot say which files
+are missing or out of bounds.
+
+A `[sound.<family>]` table, shaped like `[style.<family>]`, names each cue with its kind
+(music loop, stinger, effect), its target duration and loudness, and where the file
+lands under a new `paths.audio` default. Acceptance bounds stay in `*.accept.toml`,
+which already reads `sound.*` measures; the declaration only says what exists and where.
+Nothing about Cottony is compiled in, per the non-goal on one project's paths.
+
+### §PW186 Music as data an agent writes and polyweave checks
+
+An agent composes well only when its output is structured and a validator answers it,
+which is the loop piano's score format proved. polyweave needs its own, in Python:
+tracks carrying an instrument or General MIDI program, a drum track, tempo and meter,
+named sections, and explicit loop points.
+
+A `music.validate` operation reports errors with remedies in the house style, and
+`music.to_midi` writes a standard MIDI file, so any DAW can open the result. Piano's
+JSON format is the reference for the note model and can be read as input, but polyweave
+does not depend on piano's runtime.
+
+### §PW187 Rendering a score without a DAW open
+
+`music.render` turns a validated score into WAV and OGG headlessly, orchestrating
+engines that already exist rather than writing a synthesiser, as the non-goal on
+replacing tools requires. Which engines (Surge XT, sfizz, FluidSynth, through DawDreamer
+or Pedalboard) is what the spike settles.
+
+What decides how professional the result sounds is the instruments and the mix more than
+the notes, so the render applies one fixed, declared chain: per-track levels, bus
+compression, and a limiter to the declared loudness. A loop's reverb tail is wrapped
+into its start, so the seam `sound.measure` checks is clean. Instrument libraries are
+configuration and are never bundled.
+
+### §PW188 One theme at several intensities
+
+Game music changes with play: calm, tense, combat. A score can declare layers that share
+one length and grid, and `music.render` writes one stem per layer, so the game fades
+layers in and out and they never drift.
+
+Each stem is measured like any other file, and the acceptance spec can bound their
+summed loudness. The Godot side stays the consumer's; polyweave only guarantees that the
+stems line up.
+
+### §PW189 Retro effects from a seed
+
+Cottony synthesises its effects with its own `tools/audio/make_sfx.py`, which a second
+project would have to copy. `sound.synth` ports it the way `sound.measure` ported the
+seam measures from `loop_music.py`: an sfxr-style generator (oscillator, envelope, pitch
+slide, noise, filter) driven by declared parameters and a seed, writing mono 16-bit WAV.
+
+The same seed gives the same bytes, so a verdict on an effect holds across runs.
+
+### §PW190 Realistic effects bought under a budget
+
+Footsteps, glass or rain are not what a synthesiser does well. `sound.buy` fetches from
+a paid effects service such as ElevenLabs, following the pattern `mesh.buy` and
+`picture.buy` set: config names the service and its prices, `purchase.allow` checks the
+ceiling, and `purchase.capture` writes, hashes and ledgers the file.
+
+No budget means no spend, and the decision to spend stays with a person.
+
+### §PW191 Where a rendered sound's instruments came from
+
+A render uses sample libraries and presets whose licences differ: CC0, CC-BY needing
+credit, or terms that forbid redistribution. `music.render` and `sound.synth` write a
+provenance sidecar naming the score, the engine and each instrument with its licence,
+through `provenance` rather than the purchase ledger, since nothing was bought.
+
+A render that uses a library whose licence is undeclared is refused, and `provenance`
+can list the credits a game owes.
+
+### §PW192 Cottony's audio made through polyweave
+
+The block is proven when its first consumer uses it. Cottony's music and effects are
+declared in its `polyweave.toml`, made by `music.render` and `sound.synth`, and held to
+`*.accept.toml` bounds, and its own audio scripts are removed. Anything Cottony needs
+that a second game would not becomes configuration.
