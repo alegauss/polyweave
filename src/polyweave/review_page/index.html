@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>polyweave review</title>
+<style>
+  :root {
+    --ground: #f6f5f2; --panel: #ffffff; --ink: #1f1d1a; --quiet: #6b665e;
+    --line: #dedad3; --accent: #3a5bd9; --fail: #b3261e; --pass: #1e7a3a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #17171a; --panel: #212126; --ink: #ecebe8; --quiet: #a09c95;
+      --line: #34343b; --accent: #8aa2ff; --fail: #ff8a80; --pass: #7fd99a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 16px; background: var(--ground); color: var(--ink);
+    font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  main { max-width: 1100px; margin: 0 auto; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  h2 { font-size: 16px; margin: 24px 0 8px; }
+  .says { color: var(--quiet); margin: 0 0 16px; }
+  .family {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    padding: 16px; margin: 0 0 16px;
+  }
+  .family img {
+    display: block; max-width: 100%; height: auto; border-radius: 4px;
+    image-rendering: pixelated; background: #808080;
+  }
+  .member { margin: 8px 0 0; }
+  .fails { color: var(--fail); } .passes { color: var(--pass); }
+  .choices { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 8px; }
+  .choices label {
+    border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; cursor: pointer;
+  }
+  .choices input { margin-right: 6px; }
+  textarea {
+    width: 100%; min-height: 56px; font: inherit; color: var(--ink);
+    background: var(--ground); border: 1px solid var(--line); border-radius: 6px;
+    padding: 8px;
+  }
+  button {
+    font: inherit; margin-top: 8px; padding: 8px 14px; border-radius: 6px; border: 0;
+    background: var(--accent); color: #fff; cursor: pointer;
+  }
+  button:disabled { opacity: 0.5; cursor: default; }
+  .answer { margin-top: 8px; color: var(--quiet); white-space: pre-wrap; }
+  table { border-collapse: collapse; width: 100%; background: var(--panel); }
+  td, th { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: left; }
+</style>
+</head>
+<body>
+<main>
+  <h1>polyweave review</h1>
+  <p class="says" id="says">Reading what is on disk.</p>
+  <section id="sittings"></section>
+  <h2>Where every asset stands</h2>
+  <table id="pending"><thead><tr>
+    <th>asset</th><th>waiting</th><th>newest candidate</th><th>last judged</th>
+  </tr></thead><tbody></tbody></table>
+</main>
+<script src="/page.js"></script>
+</body>
+</html>

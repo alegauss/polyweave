@@ -39,7 +39,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 4 },
-  { block: "O", title: "A person sees and answers", open: 6 },
+  { block: "O", title: "A person sees and answers", open: 5 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -93,18 +93,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW172",
-    block: "O",
-    symptom: "a person sees a render or picture only by opening files by hand, so a verdict rests on the agent's description",
-    why: "The look is the one step reserved to a person, and it is the slowest because nothing puts the picture in front of them.",
-    deps: [],
-  },
-  {
     id: "PW173",
     block: "O",
     symptom: "an answer given on the page reaches the agent only when the person says so again in chat",
     why: "A session that offered five families should resume on the first answer, from what was said, without re-reading the ledger to find out.",
-    deps: ["PW172"],
+    deps: [],
   },
   {
     id: "PW174",
@@ -118,21 +111,21 @@ export const generatedTasks: GeneratedTask[] = [
     block: "O",
     symptom: "a person sees the pictures the agent kept and never the ones it refused, so a wrong refusal is invisible",
     why: "The drift check makes the agent a filter nobody audits, and a bar set too tight costs good work in silence unless the refused are shown.",
-    deps: ["PW172"],
+    deps: [],
   },
   {
     id: "PW176",
     block: "O",
     symptom: "two versions of an asset are compared side by side, where a few ΔE of drift or a grown silhouette goes unseen",
     why: "Eyes compare a difference well only when both are in one place, so a slider, an onion skin and a difference map show what side by side hides.",
-    deps: ["PW172"],
+    deps: [],
   },
   {
     id: "PW177",
     block: "O",
     symptom: "the canon is a folder of files, so what a family is meant to look like is never seen whole",
     why: "A canon that quietly became two styles is found only by opening every file, and only a person's click should ever change what it holds.",
-    deps: ["PW172"],
+    deps: [],
   },
 ];
 

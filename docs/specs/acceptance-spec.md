@@ -130,6 +130,23 @@ check. With no run open, the answer says it was not recorded. The codes are
 said of a family that all passes. A sheet and a command, never an editor, and the verdict
 stays the person's.
 
+**The sheet is put in front of the person on one local page** (§PW172). `verdict.sitting`
+writes `<out>/sitting.json` beside its sheets, with each family's members, sheet and failed
+predicates, and lists it in `[paths] work`/`sittings.json`. `python -m polyweave review`
+serves one page from static files shipped with the plugin, on the standard library's server,
+**bound to 127.0.0.1 and nothing else**, and prints its address. The page is a reader: it
+shows `loop.pending`, every listed sitting's sheets and failed predicates, and nothing it
+does not read from disk, so it keeps no state and cannot disagree with the files. A file
+is served only from inside the project, and only as a picture or a record.
+
+**It has one write**, `POST /api/judge`, which calls `verdict.judge` with the members taken
+from the sitting's own manifest rather than from the page, and the person's choice and
+sentence. A sitting or family the project never laid out is `loop.unknown-sitting`. The
+post must carry `X-Polyweave: 1`, a header a browser will not send across origins without a
+preflight this server never answers, so another site open in the same browser cannot post
+a verdict. The page records no loop run of its own. An answer given there reaches the
+spec and the canon, and the agent's run is PW173's.
+
 **A pass also says how comfortably** (§PW104). The margin is 1 anywhere inside a bound, so
 Cottony's stars passed with a facet at 0.4695 under a ceiling of 0.47 and the search called
 that nothing left to gain. Each predicate now also carries its `headroom`: the distance to

@@ -342,6 +342,10 @@ def main(argv: list[str] | None = None) -> int:
     stated = parser.parse_args(argv)
     if stated.command == "verify":
         return _verify(stated)
+    if stated.command == "review":
+        from . import review
+
+        return review.run(stated.root, stated.port)
     if stated.command != "build":
         from . import commands as derived
 
@@ -411,6 +415,15 @@ def command_line() -> argparse.ArgumentParser:
     )
     verify.add_argument("--specs", help="where the specs are; [paths] specs by default")
     verify.add_argument("--json", action="store_true", help="print the answer as data")
+    review = commands.add_parser(
+        "review", help="serve one local page to look at sittings and answer them"
+    )
+    review.add_argument(
+        "--root", default=".", help="the project the paths resolve against"
+    )
+    review.add_argument(
+        "--port", type=int, default=0, help="the port on 127.0.0.1; any free one if 0"
+    )
     # Every registered operation, and the first reads, derived from the registry
     # (§PW125); `build` and `verify` keep their own shape, since consumers call them.
     from . import commands as derived

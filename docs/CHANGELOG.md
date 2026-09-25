@@ -216,3 +216,4 @@
 
 ## Block O — A person sees and answers
 
+- ✅ **PW172** **a person sees a render or picture only by opening files by hand, so a verdict rests on the agent's description** — polyweave review serves one page on 127.0.0.1 that shows every sitting's sheets from disk and has one write, verdict.judge (design recorded in `docs/specs/acceptance-spec.md`).

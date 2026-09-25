@@ -915,6 +915,12 @@ CODES: dict[str, Code] = {
         when="a named id misspelled, or named with no check to name it from (§PW108)",
         doors=("pass the check the person judged", "name an id from that check"),
     ),
+    "loop.unknown-sitting": Code(
+        means="the verdict names a sitting or a family the project never laid out",
+        when="an answer from the review page for a sitting folder since removed, or a "
+        "family not in it",
+        doors=("answer a sitting the page lists",),
+    ),
     "loop.unknown-choice": Code(
         means="a verdict is none of the things a person says of a family",
         when="a choice other than accept, look or number (§PW109)",

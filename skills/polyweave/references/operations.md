@@ -14,7 +14,7 @@ This page only groups them by what you are trying to do.
 | Search for numbers | `search.sweep`, `port.run` (a whole family), `trace.read` |
 | See it where it is seen | `compose.place`, `compose.sheet` |
 | Size a bound from noise | `calibrate.run`, then `calibrate.apply` |
-| Carry a person's verdict | `verdict.sheet`, `verdict.sitting`, `verdict.judge` |
+| Carry a person's verdict | `verdict.sheet`, `verdict.sitting`, `verdict.judge`; `python -m polyweave review` puts a sitting in front of the person |
 | Keep the ledger | `loop.start`, `loop.spent`, `loop.judged`, `loop.finish`, `loop.compare` |
 | Read the ledger | `loop.runs`, `loop.assets`, `loop.changes`, `loop.bounds` |
 | Provenance | `provenance.read`, `provenance.verify`, `provenance.dependents`, `provenance.outdated`, `provenance.unrecorded` |

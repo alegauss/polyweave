@@ -354,37 +354,11 @@ any of them.
 
 ## Block O — A person sees and answers
 
-### §PW172 One local page to look at
-
-A verdict is the one step the loop cannot automate, and today it is the slowest. The
-person sees a render or a picture only by opening files by hand, so in practice they see
-the agent's description of it — which is the agent's judgement arriving where the
-person's was asked for. `verdict.sheet` and `sitting` (PW109, PW110) made one picture
-per family; nothing puts it in front of anybody.
-
-**`polyweave review` serves one local page**, bound to 127.0.0.1 and nothing else, and
-prints its address. It opens in any browser, including the one inside the editor beside
-the conversation. No build, no packaging, no account: the page ships with the plugin as
-static files, and the server is the standard library's.
-
-**The page is a reader.** Everything it shows is already on disk — `loop.pending`, the
-sheets, the provenance records, the ledger — and it keeps no state of its own, so it can
-never disagree with the files. Closing it loses nothing; a second one open shows the
-same.
-
-**It has one write**: `verdict.judge` with the person's choice and sentence, the call an
-agent makes from a reply in chat. There is no second path into the ledger or the spec
-for a bug to live on.
-
-That is why this is not the graphical editor the non-goal excludes: it edits nothing,
-and the agent loses no door by it — every answer it records is one the agent could have
-carried.
-
 ### §PW173 An answer the agent can wait on
 
-A person answering on the page (§PW172) has answered; the agent does not know it.
-Without a way back, the person switches to the chat to say "done", and the agent reads
-the files to find out what was said — a round trip the page existed to remove.
+A person answering on the page (PW172) has answered; the agent does not know it. Without
+a way back, the person switches to the chat to say "done", and the agent reads the files
+to find out what was said — a round trip the page existed to remove.
 
 **Every answer is an event on disk.** `verdict.judge` already writes the ledger; the
 page's call also appends one line to `[paths] work`/`answers.jsonl` — who answered which

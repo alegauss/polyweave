@@ -148,11 +148,50 @@ def sitting(
         name: sheet(members, out=folder / f"{name}.png", root=root)
         for name, members in families.items()
     }
+    _manifest(folder, families, sheets, root)
     return {
         "sheets": sheets,
         "says": f"{len(sheets)} famil{'y' if len(sheets) == 1 else 'ies'} to look at "
         f"in one sitting, each answered with judge(<members>, <choice>, <why>)",
     }
+
+
+#: What a sitting leaves beside its sheets, so the page can put it in front of a person
+#: and answer it with the members it was laid out from (§PW172).
+MANIFEST = "sitting.json"
+
+
+def _manifest(folder: Path, families: dict, sheets: dict, root) -> None:
+    """The sitting as data, and its place in the project's index of sittings."""
+    import json
+    from datetime import UTC, datetime
+
+    from .config import load
+    from .files import read_text_retrying, write_atomic
+    from .provenance import relative
+
+    config = load(root)
+    here = config.root
+    where = folder if folder.is_absolute() else here / folder
+    manifest = {
+        "at": datetime.now(tz=UTC).isoformat(timespec="seconds"),
+        "families": {
+            name: {
+                "members": list(members),
+                "sheet": relative(Path(sheets[name]["sheet"]), here),
+                "said": sheets[name]["members"],
+            }
+            for name, members in families.items()
+        },
+        "choices": dict(CHOICES),
+    }
+    write_atomic(where / MANIFEST, json.dumps(manifest, indent=2) + "\n")
+    index = config.path("paths.work") / "sittings.json"
+    held = json.loads(read_text_retrying(index) or "[]")
+    mine = relative(where / MANIFEST, here)
+    write_atomic(
+        index, json.dumps([*[h for h in held if h != mine], mine], indent=2) + "\n"
+    )
 
 
 @operation("verdict.judge")
