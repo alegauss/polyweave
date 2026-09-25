@@ -1,7 +1,12 @@
 .roadkeep
 
-# the plugin's working state, which `[paths] work` names and nothing outside the tree
+# the plugin's working state, which `[paths] work` names and nothing outside the tree;
+# tools/gate.py keeps its log and stamp under it too
 .polyweave/
+
+# a run redirected to a file at the root is evidence, not source, and the commit tool
+# stages the whole tree
+/*.log
 
 __pycache__/
 *.py[cod]

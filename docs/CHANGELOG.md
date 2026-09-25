@@ -183,6 +183,7 @@
 ## Block L — What a run leaves as evidence
 
 - ✅ **PW134** **a green suite with Blender and Godot absent reads the same as one that rendered, and leaves no record it ran** — tools/gate.py runs the suite under a lock, keeps its log and a red copy, and stamps the counts and how many tests skipped for each absent engine (design recorded in `tools/gate.py`).
+- ✅ **PW135** **a test log written at the repository root is staged by the commit tool, because nothing ignores `*.log`** — A log at the repository root and the gate's own files are ignored, so a redirected run can never be staged with the fix it was taken for.
 
 ## Block M — What a game needs beyond the look
 

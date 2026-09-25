@@ -65,6 +65,20 @@ def test_a_live_lock_refuses_and_a_dead_one_is_taken_over(gate):
     assert gate.lock().read_text(encoding="utf-8") == str(os.getpid())
 
 
+def test_a_log_at_the_root_and_the_gates_own_files_are_never_staged():
+    """§PW135: the commit tool stages the whole tree, so a redirected run must not."""
+    import subprocess
+
+    root = SCRIPT.parents[1]
+    for path in ("pytest.log", ".polyweave/gate/stamp.json"):
+        done = subprocess.run(
+            ["git", "check-ignore", "--no-index", "-q", path],
+            cwd=root,
+            check=False,
+        )
+        assert done.returncode == 0, f"{path} is not ignored"
+
+
 def test_a_red_run_keeps_its_log_aside_and_its_exit_code(gate, tmp_path):
     (tmp_path / "test_red.py").write_text(
         "def test_red():\n    assert False\n", encoding="utf-8"

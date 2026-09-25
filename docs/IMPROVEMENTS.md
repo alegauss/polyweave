@@ -370,19 +370,6 @@ present, and skipped where it is not, as the render tests are.
 
 ## Block L — What a run leaves as evidence
 
-### §PW135 A log is evidence, not source
-
-`.gitignore` covers the plugin's working state, the Python caches and the build output,
-and nothing an agent writes while it waits on a gate. The suite takes about five minutes
-with Blender and Godot present, so an agent runs it in the background and redirects it
-to a file it reads afterwards. Shio's root holds seventy-four such files, and the rule
-that ignores them was added only after one was committed with the fix it was taken for,
-because the commit tool stages the whole tree.
-
-The fix is one line, `/*.log`, plus the directory `tools/gate.py` stamps into. It goes
-first because it is the cheapest item in this block, and every other item here writes a
-file of this kind.
-
 ### §PW136 The gates run where the pin is read
 
 `.github/workflows` holds `roadkeep.yml` and `site.yml`. The suite and the linter run

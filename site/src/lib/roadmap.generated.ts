@@ -36,7 +36,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 1 },
-  { block: "L", title: "What a run leaves as evidence", open: 6 },
+  { block: "L", title: "What a run leaves as evidence", open: 5 },
   { block: "M", title: "What a game needs beyond the look", open: 3 },
 ];
 
@@ -88,13 +88,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "K",
     symptom: "a clip is baked to an animation and a sheet only from Python, since every step takes a mesh and a rig in memory",
     why: "The census lists compile, frames, sprites.bake and skeleton.fit as internal, so motion is the one surface a GDScript project still needs a script for.",
-    deps: [],
-  },
-  {
-    id: "PW135",
-    block: "L",
-    symptom: "a test log written at the repository root is staged by the commit tool, because nothing ignores `*.log`",
-    why: "`run-commit.cmd` stages everything, which is how Shio committed sh545.log with a fix, and a five-minute suite is exactly the run an agent redirects to a file.",
     deps: [],
   },
   {
