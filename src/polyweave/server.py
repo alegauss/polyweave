@@ -48,7 +48,9 @@ TOOL_BUDGET = 4500
 #: above. A raise is argued here, beside the number, never made silently in the test.
 #: Raised to 47,000 at 46,491 for picture.buy (§PW163), the first operation that sends
 #: a paid request itself, and `service` on six purchase and schema tools (§PW162).
-LIST_BUDGET = 47000
+#: Raised to 48,300 at 47,679 for purchase.reconcile (§PW164) and picture.describe
+#: (§PW165), a quote held against the bill and an approved picture's own prompt.
+LIST_BUDGET = 48300
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

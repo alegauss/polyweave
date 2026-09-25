@@ -151,6 +151,30 @@ difference sets `surprised`. A row nothing matches is reported under `unmatched_
 because a charge with no entry is money the ceiling never saw. A stale price table is
 found on the first reconcile rather than on the invoice.
 
+### A picture its record can make again
+
+Ideogram 4.0 rewrites a text prompt before it draws, and its answer returns the prompt it
+drew from, so a record holding only what was sent describes a picture nobody asked for
+(§PW165). Three rules follow.
+
+**`json_prompt` is the prompt that is drawn as written.** `picture.buy` takes either a text
+`prompt` or a structured `json_prompt` (a high-level description, a background, ordered
+elements, and a style), never both, and the structured one only on 4.0. It is sent as a
+JSON field and kept on the record.
+
+**The record holds everything a second call needs**: the prompt sent (on the ledger entry),
+and on the record's `details` the structured prompt, the prompt the answer says it drew
+from (`returned_prompt`), the seed the answer reports, the model, the speed, the aspect ratio
+and the resolution. **A seed is asked for only where the learned schema proved the field**
+(`fetch.seed-unproved` otherwise), because a dropped seed records a picture as repeatable
+when it is not. A call without one still records the seed the answer reports.
+
+**An approved picture can be turned back into a prompt.** `picture.describe` sends a picture
+to the service's describe call and writes the structured prompt it returns beside it, as
+`<name>.prompt.json`, with a record naming the picture as its input, so the next variation
+starts from the approved picture's own terms. It is priced by the `describe` row of `prices`
+and ledgered as `bought = "description"`.
+
 The synchronous endpoints carry no task id, so the entry's `task_id` is the service name,
 the answer's `created` time and the seed. The asynchronous variants and their poll are not
 built yet.

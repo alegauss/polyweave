@@ -274,30 +274,6 @@ unstated.
 
 ## Block N — Pictures held to a canon
 
-### §PW165 A picture its record can make again
-
-Ideogram 4.0 rewrites a text prompt before it draws — the response returns "a
-potentially modified prompt" — so a record holding only what was sent describes a
-picture nobody asked for. Regenerating from it gives a different picture, and refining
-it means refining a prompt the service never used.
-
-**The structured prompt is the default.** 4.0 accepts a `json_prompt` — a description, a
-background, an ordered list of elements, and a style block of aesthetics, medium,
-lighting and palette — in place of free text, and it is not rewritten. The plugin
-composes that object from the asset's declaration and the project's style, and the
-object is what goes in the record.
-
-**The record holds everything a second call needs**: the prompt sent, the prompt
-returned, the seed the response reported, the model, the speed, the resolution, and the
-digest of every reference image. Whether a given model *accepts* a seed back is a fact
-about the service, so it is learned by the schema probe rather than assumed.
-
-**An approved picture can be turned back into a prompt.** The describe endpoint converts
-an image to the same structured form, with element bounding boxes. A picture a person
-approved is described once, and that description is committed beside it as a file —
-which is what makes the next variation start from the approved picture's own terms
-rather than from a paraphrase of it.
-
 ### §PW166 A style declared once, and a canon only a person grows
 
 A generator asked for consistency in prose gives consistency by luck. Two pictures of
@@ -310,7 +286,7 @@ and Spinhole are two games with two looks, and a default that cannot be overridd
 defect:
 
 - `canon` — a directory of pictures a person approved, each with its described prompt
-  (§PW165);
+  (PW165);
 - `palette` — the colours a picture may use, as values, not names;
 - `skeleton` — the style block every structured prompt starts from: medium, lighting,
   aesthetics, and what is always excluded;
@@ -362,7 +338,7 @@ silhouette is decided, for cents rather than credits.
 **The chain, each step refusing before the next is paid for:**
 
 1. the geometry declaration gives the outline and the proportions;
-2. a structured prompt is composed from it and from the family's style (§PW165, §PW166),
+2. a structured prompt is composed from it and from the family's style (PW165, §PW166),
    and a transparent picture is generated;
 3. `reference.pick` confirms it is a drawing — real alpha, clear border — and
    `reference.prepare` confirms the subject fills the frame and touches no edge;
@@ -387,7 +363,7 @@ way no palette or silhouette measure sees: a letter missing, an accent dropped, 
 spelled the way the model preferred. A game in Portuguese loses its accents first.
 
 **The text a picture was asked to carry is declared**, as an element of the structured
-prompt (§PW165) — which is already where 4.0 wants it — so there is something to read
+prompt (PW165) — which is already where 4.0 wants it — so there is something to read
 back against.
 
 **The letters are read back mechanically**, by an OCR engine found the way Blender and
@@ -421,7 +397,7 @@ is the remix redrawing what it was not asked to.
 
 **The mask comes from the request, not from a person drawing one.** Where the change is
 named by region — "the left hand", "the background" — the region is taken from the
-parent's described element boxes (§PW165), so an edit an agent asks for is an edit
+parent's described element boxes (PW165), so an edit an agent asks for is an edit
 bounded where the approved picture already said that element was.
 
 What a variation *should* look like is still the person's verdict; what it must not have

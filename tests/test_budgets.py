@@ -30,15 +30,17 @@ from polyweave.errors import PolyweaveError
 #: (§PW143) and port.run's `fresh` (§PW144), 49,694 with motion.bake (§PW160).
 #: 50,895 with `service` on six purchase and schema operations (§PW162): no operation
 #: was added, and a call that has to name its balance cannot do it without the field.
-#: 52,311 with picture.buy (§PW163), a whole paid call and so wider than the average.
-DESCRIBE = 52_900
+#: 52,311 with picture.buy (§PW163), a whole paid call and so wider than the average,
+#: then 53,672 with purchase.reconcile (§PW164) and picture.describe (§PW165).
+DESCRIBE = 54_300
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
 #: motion.bake and rig.no-mesh (§PW160), then 58,501 with `service`, its three
 #: refusals and the per-service keys and ceilings (§PW162), then 60,039 with
-#: picture.buy and its five refusals (§PW163).
-CAPABILITIES = 60_600
+#: picture.buy and its five refusals (§PW163), then 61,418 with reconcile, describe,
+#: fetch.unpriced and fetch.seed-unproved (§PW164, §PW165).
+CAPABILITIES = 62_000
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
@@ -46,8 +48,9 @@ HELP_VERB = 4_000
 #: The top-level `--help`, naming every verb: 11,346. One more verb line is ~150.
 #: 11,792 once measure.digest is a verb (§PW141), 11,933 with cost.read (§PW143),
 #: 12,066 with motion.bake (§PW160), 12,216 with sound.measure (§PW113), 12,385
-#: with picture.buy (§PW163).
-HELP_TOP = 12_550
+#: with picture.buy (§PW163), 12,712 with purchase.reconcile and picture.describe
+#: (§PW164, §PW165).
+HELP_TOP = 12_900
 #: A search's answer over its default budget of 24 samples: 3,739.
 SEARCH = 4_000
 

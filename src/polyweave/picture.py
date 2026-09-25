@@ -31,7 +31,7 @@ import urllib.request
 import uuid
 from typing import Annotated
 
-from . import purchase, schema
+from . import provenance, purchase, schema
 from .config import load
 from .describe import Param, operation
 from .errors import PolyweaveError
@@ -51,9 +51,14 @@ TIMEOUT = 120
 
 @operation("picture.buy")
 def buy(
-    prompt: Annotated[str, Param("what the picture shows")],
     out: Annotated[str, Param("where it is written, under the project")],
+    prompt: Annotated[
+        str, Param("what it shows, as text the service may rewrite")
+    ] = None,
     *,
+    json_prompt: Annotated[
+        dict, Param("what it shows, structured, which 4.0 draws without rewriting")
+    ] = None,
     transparent: Annotated[bool, Param("a PNG with alpha, read as a drawing")] = True,
     model: Annotated[str, Param("the model", choices=tuple(MODELS))] = "4.0",
     aspect_ratio: Annotated[str, Param("as the service spells it")] = None,
@@ -69,6 +74,11 @@ def buy(
     the model and speed, or where the payload names a field the learned schema does not
     carry. The price is the project's `prices` table, never the caller's figure, and the
     entry says it was quoted rather than measured (§PW164).
+
+    The record holds what a second call needs (§PW165): the prompt sent, the prompt the
+    service says it drew from, the seed it reports, the model, speed and resolution. A
+    text prompt on 4.0 is rewritten before drawing, so `json_prompt` is the one that
+    makes the same picture again; `picture.describe` turns an approved picture into one.
     """
     if model not in MODELS:
         raise PolyweaveError(
@@ -78,6 +88,7 @@ def buy(
             given=model,
             allowed=MODELS,
         )
+    _one_prompt(prompt, json_prompt, model)
     config = load(root)
     name = config.service(service)
     about = config.services()[name]
@@ -85,7 +96,8 @@ def buy(
     price = _price(name, about.get("prices") or {}, model, rendering_speed)
 
     path, prompt_field = MODELS[model]
-    payload: dict = {prompt_field: prompt}
+    sent = prompt if json_prompt is None else json.dumps(json_prompt, sort_keys=True)
+    payload: dict = {prompt_field if json_prompt is None else "json_prompt": sent}
     for field, value in (
         ("aspect_ratio", aspect_ratio),
         ("rendering_speed", rendering_speed),
@@ -93,9 +105,19 @@ def buy(
     ):
         if value is not None:
             payload[field] = value
+    learned = schema.read(root, name).get("field") or {}
+    if seed is not None and not (learned.get("seed") or {}).get("proved"):
+        # A field the service drops is dropped in silence, and a seed that was dropped
+        # records a picture as repeatable when it is not. So it is learned, not assumed.
+        raise PolyweaveError(
+            "fetch.seed-unproved",
+            f"nothing has proved that {name} reads a seed on {model}",
+            "learn the service's schema, which proves each field it reads, or ask "
+            "without a seed and keep the one the answer reports",
+        )
     # Checked where a schema has been learned. The fields above are this client's own,
     # so where nothing is learned there is no caller's typo for a check to catch.
-    if schema.read(root, name).get("field"):
+    if learned:
         schema.validate(payload, root=root, service=name)
 
     purchase.allow(price, root=root, service=name)
@@ -129,7 +151,7 @@ def buy(
         task_id=f"{name}:{answer.get('created')}:{drawn.get('seed')}",
         credits=round(price * returned, 4),
         outputs=returned,
-        prompt=prompt,
+        prompt=sent,
         bought="image",
         engine={"name": name, "model": model},
         service=name,
@@ -137,12 +159,104 @@ def buy(
             "model": model,
             "transparent": bool(transparent),
             "rendering_speed": rendering_speed,
+            "aspect_ratio": aspect_ratio,
             "resolution": drawn.get("resolution"),
+            # What it reports, which is the seed a second call asks for.
             "seed": drawn.get("seed"),
+            "json_prompt": json_prompt,
+            # What the service says it drew from. On a text prompt to 4.0 this is not
+            # what was sent, and it is the only account of the picture that is true.
+            "returned_prompt": drawn.get("prompt"),
         },
         root=root,
     )
     return entry
+
+
+@operation("picture.describe")
+def describe_picture(
+    picture: Annotated[str, Param("an approved picture, under the project")],
+    out: Annotated[str, Param("where the description goes; beside it if unset")] = None,
+    *,
+    service: Annotated[str, purchase.SERVICE] = None,
+    root: Annotated[str, Param("the project whose ledger this is")] = ".",
+) -> dict:
+    """Turn an approved picture into the structured prompt 4.0 draws it from (§PW165).
+
+    The service's describe call returns the picture as a `json_prompt`: a description,
+    a background, its elements with their bounding boxes, and a style. It is written as
+    a file beside the picture, `<name>.prompt.json`, with a record naming the picture
+    it came from, so the next variation starts from the approved picture's own terms
+    rather than a paraphrase. It is priced by the `describe` row of `prices`, and
+    ledgered like anything else bought.
+    """
+    config = load(root)
+    here = config.root
+    name = config.service(service)
+    about = config.services()[name]
+    base, key = _reached(name, about)
+    source = here / picture
+    if not source.is_file():
+        raise PolyweaveError(
+            "fetch.no-reference",
+            f"there is no picture at {source} to describe",
+            "name a picture under the project, as a path relative to its root",
+        )
+    price = _price(name, about.get("prices") or {}, "describe", None)
+    purchase.allow(price, root=here, service=name)
+
+    answer = _answered(
+        f"{base.rstrip('/')}/v1/ideogram-v4/describe",
+        key,
+        {"include_bbox": "true"},
+        files={"image_file": (source.name, source.read_bytes(), _mime(source))},
+    )
+    described = answer.get("json_prompt")
+    if not isinstance(described, dict):
+        raise PolyweaveError(
+            "fetch.nothing-arrived",
+            "the service answered with no structured description",
+            "ask again; nothing was ledgered",
+            detail=json.dumps(answer)[:400],
+        )
+    target = out or str(source.with_suffix(".prompt.json").relative_to(here))
+    return purchase.capture(
+        (json.dumps(described, indent=2, sort_keys=True) + "\n").encode("utf-8"),
+        out=target,
+        task_id=f"{name}:describe:{provenance.sha256_of(source)[0][:16]}",
+        credits=price,
+        prompt=None,
+        reference=picture,
+        bought="description",
+        engine={"name": name, "model": "4.0"},
+        service=name,
+        root=here,
+    )
+
+
+def _one_prompt(prompt: str | None, json_prompt: dict | None, model: str) -> None:
+    """Exactly one of the two, and the structured one only where the model reads it."""
+    if (prompt is None) == (json_prompt is None):
+        raise PolyweaveError(
+            "fetch.missing-field",
+            "a picture takes a prompt or a json_prompt, and this call gave "
+            + ("neither" if prompt is None else "both"),
+            "pass json_prompt on 4.0, which is drawn as written, or a text prompt",
+        )
+    if json_prompt is not None and model != "4.0":
+        raise PolyweaveError(
+            "fetch.unknown-field",
+            f"{model} takes no json_prompt; only 4.0 draws from a structured prompt",
+            "pass a text prompt for 3.0, or ask 4.0",
+            given="json_prompt",
+            allowed=("prompt",),
+        )
+
+
+def _mime(path) -> str:
+    return {".png": "image/png", ".webp": "image/webp"}.get(
+        path.suffix.lower(), "image/jpeg"
+    )
 
 
 def _price(name: str, prices: dict, model: str, speed: str | None) -> float:
@@ -187,9 +301,11 @@ def _reached(name: str, about: dict) -> tuple[str, str]:
     return about["base"], key
 
 
-def _answered(endpoint: str, key: str, payload: dict) -> dict:
+def _answered(
+    endpoint: str, key: str, payload: dict, files: dict | None = None
+) -> dict:
     """Send one request and read its answer, turning a refusal into a code."""
-    status, body = _send(endpoint, key, payload)
+    status, body = _send(endpoint, key, payload, files)
     if status == 200:
         try:
             return json.loads(body)
@@ -224,19 +340,31 @@ def _answered(endpoint: str, key: str, payload: dict) -> dict:
     )
 
 
-def _send(endpoint: str, key: str, payload: dict) -> tuple[int, bytes]:
-    """POST the payload as a form, holding no more calls open than the account may."""
+def _send(
+    endpoint: str, key: str, payload: dict, files: dict | None = None
+) -> tuple[int, bytes]:
+    """POST the payload as a form, holding no more calls open than the account may.
+
+    `files` maps a field to `(filename, bytes, content type)`, for a picture sent up.
+    """
     boundary = uuid.uuid4().hex
-    parts = []
+    parts: list[bytes] = []
     for field, value in payload.items():
         parts.append(
             f'--{boundary}\r\nContent-Disposition: form-data; name="{field}"\r\n\r\n'
-            f"{value}\r\n"
+            f"{value}\r\n".encode()
         )
-    parts.append(f"--{boundary}--\r\n")
+    for field, (filename, content, kind) in (files or {}).items():
+        parts.append(
+            f'--{boundary}\r\nContent-Disposition: form-data; name="{field}"; '
+            f'filename="{filename}"\r\nContent-Type: {kind}\r\n\r\n'.encode()
+            + content
+            + b"\r\n"
+        )
+    parts.append(f"--{boundary}--\r\n".encode())
     request = urllib.request.Request(  # noqa: S310 - the base is the project's own
         endpoint,
-        data="".join(parts).encode("utf-8"),
+        data=b"".join(parts),
         method="POST",
         headers={
             "Api-Key": key,

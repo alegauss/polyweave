@@ -18,7 +18,8 @@ PROJECT = (
     '[service.meshy]\nbase = "https://api.meshy.ai"\nkey_env = "POLYWEAVE_TEST_M"\n\n'
     '[service.ideogram]\nbase = "https://api.ideogram.ai"\n'
     'key_env = "POLYWEAVE_TEST_I"\n'
-    'prices = { "4.0" = 0.08, "4.0:QUALITY" = 5.0, "3.0" = 0.06 }\n\n'
+    'prices = { "4.0" = 0.08, "4.0:QUALITY" = 5.0, "3.0" = 0.06, '
+    '"describe" = 0.01 }\n\n'
     '[budget.meshy]\namount = 60\nexpires = "2099-12-31"\n\n'
     '[budget.ideogram]\namount = 1.0\nunit = "USD"\nexpires = "2099-12-31"\n'
 )
@@ -42,8 +43,9 @@ class Service:
     def __init__(self, status=200, answer=ANSWER):
         self.status, self.answer, self.sent = status, answer, []
 
-    def send(self, endpoint, key, payload):
+    def send(self, endpoint, key, payload, files=None):
         self.sent.append((endpoint, key, dict(payload)))
+        self.files = files
         body = (
             self.answer if isinstance(self.answer, bytes) else json.dumps(self.answer)
         )
@@ -107,6 +109,10 @@ def test_the_transparent_endpoint_is_the_default_and_the_prompt_field_is_the_mod
     assert key == "sk-picture"
     assert payload == {"text_prompt": "a plush booster"}
 
+    proved = {"required": False, "proved": True, "choices": []}
+    schema.write(
+        {"field": {"prompt": {"required": True}, "seed": proved}}, tmp_path, "ideogram"
+    )
     entry = buy(tmp_path, out="refs/b.png", model="3.0", transparent=False, seed=7)
     assert entry["credits"] == 0.06
     endpoint, _, payload = service.sent[1]
@@ -271,3 +277,66 @@ def test_a_row_far_from_every_entry_matches_none(tmp_path, service):
     )
     assert found["matched"] == []
     assert found["still_quoted"] == ["a.png"]
+
+
+# -- a picture its record can make again (§PW165) -----------------------------------
+
+STRUCTURED = {
+    "high_level_description": "a plush booster on its own",
+    "compositional_deconstruction": {"background": "none", "elements": []},
+}
+
+
+def test_a_structured_prompt_is_sent_as_written_and_kept(tmp_path, service):
+    buy(tmp_path, prompt=None, json_prompt=STRUCTURED)
+    _, _, payload = service.sent[0]
+    assert json.loads(payload["json_prompt"]) == STRUCTURED
+    assert "text_prompt" not in payload
+    record = provenance.read("refs/booster.png", root=tmp_path)
+    assert record["details"]["json_prompt"] == STRUCTURED
+
+
+def test_the_prompt_the_service_drew_from_is_recorded_beside_the_one_sent(
+    tmp_path, service
+):
+    entry = buy(tmp_path)
+    assert entry["prompt"] == "a plush booster"
+    record = provenance.read("refs/booster.png", root=tmp_path)
+    assert record["details"]["returned_prompt"] == "a plush booster, rewritten"
+    assert record["details"]["seed"] == 42
+
+
+def test_a_seed_nothing_proved_the_service_reads_is_refused(tmp_path, service):
+    assert refused(tmp_path, seed=7).code == "fetch.seed-unproved"
+    assert service.sent == []
+
+
+@pytest.mark.parametrize(
+    ("over", "code"),
+    [
+        ({"prompt": None}, "fetch.missing-field"),
+        ({"json_prompt": STRUCTURED}, "fetch.missing-field"),
+        (
+            {"prompt": None, "json_prompt": STRUCTURED, "model": "3.0"},
+            "fetch.unknown-field",
+        ),
+    ],
+)
+def test_one_prompt_and_only_the_kind_the_model_reads(tmp_path, service, over, code):
+    assert refused(tmp_path, **over).code == code
+
+
+def test_an_approved_picture_is_described_into_a_file_beside_it(tmp_path, service):
+    buy(tmp_path)
+    service.answer = {"json_prompt": STRUCTURED}
+    entry = picture.describe_picture(
+        "refs/booster.png", service="ideogram", root=tmp_path
+    )
+    beside = tmp_path / "refs" / "booster.prompt.json"
+    assert json.loads(beside.read_text(encoding="utf-8")) == STRUCTURED
+    assert entry["bought"] == "description"
+    assert entry["credits"] == 0.01
+    assert service.sent[-1][0] == "https://api.ideogram.ai/v1/ideogram-v4/describe"
+    assert service.files["image_file"][1] == PNG
+    record = provenance.read("refs/booster.prompt.json", root=tmp_path)
+    assert record["inputs"][0]["path"] == "refs/booster.png"

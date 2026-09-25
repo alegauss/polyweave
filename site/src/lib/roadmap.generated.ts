@@ -38,7 +38,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "K", title: "Reached without reading the source", open: 0 },
   { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
-  { block: "N", title: "Pictures held to a canon", open: 9 },
+  { block: "N", title: "Pictures held to a canon", open: 8 },
   { block: "O", title: "A person sees and answers", open: 6 },
 ];
 
@@ -65,18 +65,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW57"],
   },
   {
-    id: "PW165",
-    block: "N",
-    symptom: "a picture cannot be made again from its record, because the service rewrites the prompt it was given",
-    why: "Ideogram 4.0 turns a text prompt into its own before drawing, so a record of only what was sent describes a picture nobody asked for.",
-    deps: [],
-  },
-  {
     id: "PW166",
     block: "N",
     symptom: "nothing says what a project's pictures should look like, so each prompt restates a house style by hand and drifts",
     why: "Consistency asked of a generator in prose is luck, while a style declared once as approved pictures, palette and prompt skeleton is an input every call carries.",
-    deps: ["PW165"],
+    deps: [],
   },
   {
     id: "PW167",
@@ -97,14 +90,14 @@ export const generatedTasks: GeneratedTask[] = [
     block: "N",
     symptom: "lettering drawn into a picture can be misspelt or lose its accents, and nothing reads the letters back",
     why: "Text is the service's strength and the one defect no palette or silhouette measure sees, and a game in Portuguese loses its accents first.",
-    deps: ["PW165"],
+    deps: [],
   },
   {
     id: "PW170",
     block: "N",
     symptom: "a variation of an approved picture can change what was approved, and nothing compares it to the one it came from",
     why: "Refining through remix or edit is where proportions and palette quietly move, and the approved parent is what it should be measured against.",
-    deps: ["PW165", "PW167"],
+    deps: ["PW167"],
   },
   {
     id: "PW171",
