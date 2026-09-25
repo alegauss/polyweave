@@ -65,13 +65,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW57"],
   },
   {
-    id: "PW170",
-    block: "N",
-    symptom: "a variation of an approved picture can change what was approved, and nothing compares it to the one it came from",
-    why: "Refining through remix or edit is where proportions and palette quietly move, and the approved parent is what it should be measured against.",
-    deps: [],
-  },
-  {
     id: "PW171",
     block: "N",
     symptom: "2D art from a picture service arrives at the size and margin it chose, not the project's grid",
@@ -97,6 +90,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "N",
     symptom: "no canon picture is ever sent as a style reference, so a family's look reaches the service only as words",
     why: "A reference picture holds line weight and proportion that no palette or style block states, and the canon already holds the approved ones.",
+    deps: [],
+  },
+  {
+    id: "PW181",
+    block: "N",
+    symptom: "an approved picture cannot be reframed to another aspect ratio, so an icon and a banner of it are two separate pictures",
+    why: "A reframe keeps everything the parent held and adds only a border, which is the easiest variation to hold to what it must not change.",
     deps: [],
   },
   {

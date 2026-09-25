@@ -274,31 +274,6 @@ unstated.
 
 ## Block N — Pictures held to a canon
 
-### §PW170 A variation measured against its parent
-
-Refinement is where consistency is lost. A character is approved, asked for holding a
-lantern, and comes back with longer legs and a warmer coat — and nothing compares the
-new picture to the one it came from, because nothing records that it came from one.
-
-**A variation has a parent.** Remix, edit-with-mask and reframe each take an approved
-picture and return a new one; the record carries the parent's digest, the operation, its
-strength (`image_weight` for a remix), and the mask where there was one. So a replaced
-parent names every variation made from it.
-
-**A variation is measured against its parent, and against the canon.** Against the canon
-with the drift measures (PW167); against the parent with one more, which only a lineage
-makes possible: **outside the mask, nothing should have changed.** The unmasked region
-is compared pixel for pixel after alignment, and a change there beyond the noise floor
-is the remix redrawing what it was not asked to.
-
-**The mask comes from the request, not from a person drawing one.** Where the change is
-named by region — "the left hand", "the background" — the region is taken from the
-parent's described element boxes (PW165), so an edit an agent asks for is an edit
-bounded where the approved picture already said that element was.
-
-What a variation *should* look like is still the person's verdict; what it must not have
-changed is a number.
-
 ### §PW171 A picture put on the project's grid on arrival
 
 A picture service returns an image at a size it chose, with a margin it chose, centred
@@ -382,6 +357,25 @@ family with references should refuse a structured call rather than drop them.
 Check first whether 4.0 has gained a reference field, and learn it by the schema probe,
 since a reference the service ignores is dropped without an error.
 
+### §PW181 Reframing an approved picture
+
+PW170 built two of the three variations its design named: a remix and an edit inside a
+mask. The third, reframe (the same picture in another aspect ratio, with the new area
+drawn in), was left out because the service's public reference, read when PW170 shipped,
+documented no reframe endpoint for 3.0 or 4.0.
+
+A reframe is the variation a game needs most often: one approved character as a square
+icon, a tall card and a wide banner. It has the clearest rule of the three. **Everything
+the parent held must still be there, unscaled**, and only the added border is new. So
+`picture.against_parent` needs no mask from a person. The parent's own frame, placed
+where the reframe put it, is the region that must not have changed. Finding where it
+landed is an alignment problem: search the offset that minimises the pooled delta E, and
+refuse where the best offset still differs.
+
+Build it as a third `change` of `picture.vary` once the endpoint is confirmed, priced by
+a `reframe` row of `prices`, and learn its fields by the schema probe before trusting
+any of them.
+
 ## Block O — A person sees and answers
 
 ### §PW172 One local page to look at
@@ -445,7 +439,7 @@ picture is kept with the sentence it belongs to. It is stored as a mask image be
 answer, at the picture's own pixel size, with the digest of the picture it was drawn on,
 so a mask can never be applied to a different picture than the one it was drawn over.
 
-**The mask is what an edit is bounded by.** A variation (§PW170) takes the region from
+**The mask is what an edit is bounded by.** A variation (PW170) takes the region from
 the person's mask where one exists, and from the described element boxes only where none
 does — a person's mark outranks the agent's reading. The check that nothing outside the
 mask changed then runs on the region the person actually drew.
@@ -502,9 +496,9 @@ never at a camera of the viewer's choosing — a mesh seen through a different c
 mesh seen differently. The reference drawing's silhouette can be laid over the front
 view, which is the picture the shape check already scored, now visible.
 
-**The comparison is chosen by what is compared**: a variation against its parent
-(§PW170) opens as a slider with the mask outlined, a refused picture against the canon
-as a difference map. The person can switch.
+**The comparison is chosen by what is compared**: a variation against its parent (PW170)
+opens as a slider with the mask outlined, a refused picture against the canon as a
+difference map. The person can switch.
 
 The viewer loads its 3D library from the plugin's own static files, never from a
 network, so the page works offline like everything else here.

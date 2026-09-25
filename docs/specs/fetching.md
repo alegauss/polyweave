@@ -215,6 +215,30 @@ accent is the defect. A refusal gives the text asked for and the text read side 
 `checked: false` and `passed: null`, and `picture.gate` names the unchecked text under
 `lettering_unchecked` rather than letting it through silently.
 
+### A variation is measured against its parent
+
+Refinement is where consistency is lost (§PW170). `picture.vary` sends an approved picture to
+the service's remix call (`/v1/ideogram-v3/remix`, with `strength` as `image_weight`) or its
+edit call (`/v1/ideogram-v3/inpaint`, with a mask, black where it may change). Each is priced
+by the `remix` or `edit` row of `prices`. Both take a text prompt only, so a family's style
+is not carried into the request, and is measured afterwards.
+
+**A variation has a parent.** Its record carries the parent's path and digest, the change,
+the strength, the region and the mask, with the parent as its input, so
+`provenance.dependents` of a replaced parent names every variation made from it.
+
+**The mask comes from the request.** An edit names a `region` by the words of one of the
+parent's described elements (`picture.describe`), and that element's box becomes the mask,
+written beside the variation as `<name>.mask.png`. A region matching no element, or more than
+one, is refused (`fetch.no-region`). A `mask` file may be given instead.
+
+**Outside the mask, nothing should have changed.** `picture.against_parent` compares the
+unmasked region with the parent pixel for pixel, pooled, against `[tolerance] delta_e`, and
+the silhouette there against `[tolerance] silhouette_iou`. Where a style is declared, it also
+holds the variation to its family's canon. What the variation should show stays the
+person's verdict. There is no reframe yet: no reframe endpoint was documented when this
+shipped.
+
 The synchronous endpoints carry no task id, so the entry's `task_id` is the service name,
 the answer's `created` time and the seed. The asynchronous variants and their poll are not
 built yet.

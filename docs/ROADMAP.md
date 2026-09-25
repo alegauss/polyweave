@@ -32,11 +32,11 @@
 
 ## Block N — Pictures held to a canon
 
-- 📋 **PW170** (deps: PW165 ✅, PW167 ✅) **a variation of an approved picture can change what was approved, and nothing compares it to the one it came from** — Refining through remix or edit is where proportions and palette quietly move, and the approved parent is what it should be measured against. → §PW170
 - 📋 **PW171** (deps: PW163 ✅) **2D art from a picture service arrives at the size and margin it chose, not the project's grid** — An icon or UI piece needs the project's pixel size, padding and a clean alpha edge, and that fix is mechanical, so it belongs on arrival. → §PW171
 - 📋 **PW178** (deps: PW163 ✅) **a picture is bought only synchronously, so each call holds a connection open until it is drawn** — The service takes the same request asynchronously and answers with an id to poll, which is also the task id the synchronous answer lacks. → §PW178
 - 📋 **PW179** (deps: PW163 ✅, PW164 ✅) **a picture paid for whose download then fails is charged to no ceiling, so the next spend is judged too high** — The ledger is written only once the asset is on disk, and a picture service reports no balance to reveal the spend afterwards. → §PW179
 - 📋 **PW180** (deps: PW166 ✅) **no canon picture is ever sent as a style reference, so a family's look reaches the service only as words** — A reference picture holds line weight and proportion that no palette or style block states, and the canon already holds the approved ones. → §PW180
+- 📋 **PW181** (deps: PW170 ✅) **an approved picture cannot be reframed to another aspect ratio, so an icon and a banner of it are two separate pictures** — A reframe keeps everything the parent held and adds only a border, which is the easiest variation to hold to what it must not change. → §PW181
 
 ## Block O — A person sees and answers
 

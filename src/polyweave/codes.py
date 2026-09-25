@@ -618,6 +618,21 @@ CODES: dict[str, Code] = {
         "file it cannot open",
         doors=("install the language data", "pass languages"),
     ),
+    "fetch.no-region": Code(
+        means="an edit's region names no single described element of the parent",
+        when="a region matching none or several of the boxes picture.describe found, "
+        "or a parent never described",
+        doors=(
+            "describe the parent",
+            "name one element by more of its words",
+            "pass a mask",
+        ),
+    ),
+    "fetch.no-parent": Code(
+        means="the picture records no parent to measure it against",
+        when="a picture bought directly rather than as a variation of an approved one",
+        doors=("measure it against its canon with style.drift",),
+    ),
     "fetch.unpriced": Code(
         means="no price is declared for what is being bought, so its cost is not known",
         when="a picture on a model and speed with no row in the service's prices; it "
