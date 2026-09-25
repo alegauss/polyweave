@@ -29,6 +29,7 @@ from typing import Annotated, Any
 from . import accept, provenance
 from .accept import Spec
 from .describe import Param, operation
+from .doors import Blank, door
 from .errors import PolyweaveError
 
 #: How many spreads of noise a bound leaves above the accepted value. Stated in every
@@ -317,6 +318,9 @@ def apply(
                 "spec.stale-proposal",
                 f"the proposal bounds {name!r} and {where.name} has no such predicate",
                 "calibrate again against the spec as it is now",
+                call=door(
+                    "calibrate.run", spec=str(where), accepted=Blank("the render")
+                ),
             )
         for side, bound in sides.items():
             now = p.minimum if side == "min" else p.maximum
@@ -329,6 +333,9 @@ def apply(
                     f"{name}'s {side} is {now} and the proposal was measured against "
                     f"{bound['old']}",
                     "calibrate again against the spec as it is now",
+                    call=door(
+                        "calibrate.run", spec=str(where), accepted=Blank("the render")
+                    ),
                 )
             at = _bound_line(lines, blocks[name], side, name, where)
             lead = re.match(r"\s*(min|max)\s*=\s*", lines[at]).group(0)

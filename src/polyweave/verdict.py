@@ -23,6 +23,7 @@ from typing import Annotated
 
 from . import accept, calibrate, loop
 from .describe import Param, operation
+from .doors import Blank, door
 from .errors import PolyweaveError
 
 #: What a person can say of a family, and what each one means for the spec.
@@ -204,6 +205,12 @@ def judge(
             "every member passes, so no bound is wrong for refusing the look",
             "say accept; a bound that passed a look the person rejects is named with "
             "look and named=",
+            call=door(
+                "verdict.judge",
+                members=members,
+                choice="accept",
+                why=Blank("the person's own words"),
+            ),
         )
     stamp = when or Date.today().isoformat()
     answers = []

@@ -19,6 +19,7 @@ import traceback
 from collections.abc import Iterator
 
 from . import codes as _codes
+from . import doors as _doors
 
 # `area.kebab-case`, the namespaces §3 fixes. A code is part of the published contract,
 # so it is checked where it is constructed rather than where it is read.
@@ -38,6 +39,8 @@ class PolyweaveError(Exception):
         message: str,
         remedy: str,
         detail: str | None = None,
+        *,
+        call: dict | None = None,
     ) -> None:
         if not _CODE.match(code):
             raise ValueError(
@@ -59,21 +62,29 @@ class PolyweaveError(Exception):
         self.message = message
         self.remedy = remedy
         self.detail = detail
+        #: The call the remedy names, as data, where it names one (§PW127).
+        self.call = call
 
     def as_dict(self) -> dict:
-        """The wire form, with `detail` present only when there is one."""
+        """The wire form, with `detail` and `call` present only when there is one."""
         out = {"code": self.code, "message": self.message, "remedy": self.remedy}
         if self.detail:
             out["detail"] = self.detail
+        if self.call:
+            out["call"] = _doors.as_data(self.call)
         return out
 
     @classmethod
     def from_dict(cls, payload: dict) -> PolyweaveError:
+        call = payload.get("call")
         return cls(
             payload["code"],
             payload["message"],
             payload["remedy"],
             payload.get("detail"),
+            call={"operation": call["operation"], "arguments": call["arguments"]}
+            if call
+            else None,
         )
 
     def __repr__(self) -> str:  # pragma: no cover - debugging aid
@@ -106,6 +117,7 @@ def explain(code: str) -> dict:
         "means": declared.means,
         "when": declared.when,
         "doors": list(declared.doors),
+        "calls": [_doors.as_data(one) for one in declared.calls],
     }
 
 

@@ -348,25 +348,6 @@ again.
 
 ## Block K — Reached without reading the source
 
-### §PW127 A door is a call, and every door is run
-
-`PolyweaveError` refuses a code without a remedy, which is stronger than either sibling
-project began with. What it cannot check is the remedy itself: "pass `glaze: {roughness:
-0.22}`" names an argument by memory, and when that argument is renamed the sentence
-keeps offering it. Roadkeep lived with this for four hundred commits, one call site at a
-time, before one type turned a command into text and a census ran every door it could
-build.
-
-So a remedy that names a call carries it as data: the operation and the arguments filled
-in, plus a blank where only the caller can supply the value. The prose is rendered from
-that, as a command line, a tool call or a Python call, whichever surface asked. The
-codes table's `doors` take the same form.
-
-The census that holds it parses every complete door against the derived command line
-(`commands.py`) and fails on an operation or a flag that does not exist. It also takes
-the lesson Shio pinned as SH1074: where a refusal teaches a form, a test asserts that
-the form it teaches is accepted.
-
 ### §PW128 The four fields a refusal is missing
 
 The wire form is `code`, `message`, `remedy` and `detail`. When the refusal is about a

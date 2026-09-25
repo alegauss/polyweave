@@ -30,6 +30,7 @@ from typing import Annotated, Any
 from . import accept, loop
 from .accept import Spec
 from .describe import Param, operation
+from .doors import Blank, door
 from .errors import PolyweaveError
 
 #: How many points each axis gets in a pass, before the window closes around the best.
@@ -106,6 +107,11 @@ def turnable(draw: Callable, *wanted: dict, also: dict = ()) -> list[str]:
             "should not change the look",
             "drop the range; a bound's room for that noise is what `calibrate` "
             "measures (§PW107)",
+            call=door(
+                "calibrate.run",
+                spec=Blank("the spec"),
+                accepted=Blank("the render a person accepted"),
+            ),
         )
     taken = inspect.signature(draw).parameters
     asked = [name for one in (*wanted, dict(also)) for name in one]

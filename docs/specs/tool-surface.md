@@ -155,6 +155,16 @@ both answers.
 - An operation putting a boundary around work it did not write turns whatever came out into
   a typed failure, traceback in `detail`. A failure that is already typed passes through
   untouched, because wrapping it would bury the better answer.
+- **A remedy that names a call carries it as data** (§PW127). `call=door("loop.start",
+  asset=asset, way="before")` puts the operation and its arguments on the error, with a
+  `Blank("…")` where only the caller has the value. The wire form's `call` holds them and
+  the rendered `command` (`python -m polyweave loop.start --asset star --way before`). A
+  code's `calls` in the table are the same data, returned by `explain`.
+  `tests/test_doors.py` parses every `door(...)` in the source and fails on an operation
+  that does not exist, an argument it does not take, or a required one left out. Every
+  door the codes table teaches is parsed by the derived command line, so the form a
+  refusal teaches is one that is accepted. The prose `remedy` stays: a door is added
+  where a remedy names a call, and a remedy that is a judgement has no call to carry.
 
 ## 4. The surface describes itself
 

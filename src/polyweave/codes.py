@@ -16,12 +16,16 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from .doors import Blank, door
+
 
 @dataclass(frozen=True)
 class Code:
     means: str
     when: str
     doors: tuple[str, ...] = field(default_factory=tuple)
+    #: The doors that are calls, as data a test parses (§PW127).
+    calls: tuple[dict, ...] = field(default_factory=tuple)
 
 
 #: What each area is about, so an unknown code can at least be placed.
@@ -652,6 +656,9 @@ CODES: dict[str, Code] = {
         when="a [search.seed], [search.samples] or [search.size]: the best sample "
         "would be whichever the noise favoured, which is fitting it (§PW107)",
         doors=("drop the range", "calibrate the bounds against that noise instead"),
+        calls=(
+            door("calibrate.run", spec=Blank("the spec"), accepted=Blank("the render")),
+        ),
     ),
     # -- engine: running a scene script and reading its verdict ---------------
     "engine.not-found": Code(
@@ -783,6 +790,7 @@ CODES: dict[str, Code] = {
         when="a run naming a change for an asset with no first-port before and after "
         "(§PW114); the change has nothing to be measured against",
         doors=("record the port first, both ways",),
+        calls=(door("loop.start", asset=Blank("the asset"), way="before"),),
     ),
     "loop.unknown-predicate": Code(
         means="a verdict blames a predicate the check it was given does not carry",

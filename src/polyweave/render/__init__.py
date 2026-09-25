@@ -19,6 +19,7 @@ from .. import cache as store
 from .. import measure, post, provenance, units
 from ..config import load
 from ..describe import Param, operation
+from ..doors import Blank, door
 from ..errors import PolyweaveError
 from .ladder import (
     CARRIES,
@@ -396,6 +397,12 @@ def bake(
                 "render.no-mesh",
                 f"the {chosen['rung']} rung renders the real mesh and none was named",
                 "pass `model`, or ask a question the sphere rung can carry",
+                call=door(
+                    "render.bake",
+                    out=str(out),
+                    model=Blank("the mesh"),
+                    rung=chosen["rung"],
+                ),
             )
         subject = blender.load_mesh(
             where / model if not Path(model).is_absolute() else model

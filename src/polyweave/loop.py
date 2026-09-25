@@ -38,6 +38,7 @@ from typing import Annotated
 
 from .config import load
 from .describe import Param, operation
+from .doors import door
 from .errors import PolyweaveError
 from .files import write_atomic
 
@@ -148,6 +149,7 @@ def start(
                 f"{asset} has not been made both ways, so a change to it has nothing "
                 "to be measured against",
                 "record the port first: a before and an after run with no change",
+                call=door("loop.start", asset=asset, way="before", root=str(root)),
             )
     if way == "before":
         already = [

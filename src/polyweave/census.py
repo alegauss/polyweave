@@ -80,6 +80,7 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.census": ("internal", "this census's own walk"),
     "polyweave.commands": ("internal", "the command line derived from the registry"),
     "polyweave.server": ("internal", "the MCP server derived from the registry"),
+    "polyweave.doors": ("internal", "a remedy's call as data, carried by errors"),
     "polyweave.codes": ("internal", "the code table, read through errors.explain"),
     "polyweave.config": ("internal", "the project file, reported by capabilities"),
     "polyweave.describe": ("internal", "the registry's own machinery"),
