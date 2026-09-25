@@ -219,7 +219,11 @@ both answers.
   none carrying the hooks its tests stand in with (§PW158), and `shape.check`,
   `shape.silhouette`, `reference.pick`, `reference.prepare`, `normalise.ingest`,
   `compose.place`, `compose.sheet` and `texture.worth_scrubbing` (§PW159). A declared
-  `choices` is read off the module's own constant, never retyped beside it. A module's leftover helpers may be
+  `choices` is read off the module's own constant, never retyped beside it. Last, the
+  clip's own document (`clip.new`, `.read`, `.write`, `.set_key`, `.retime`,
+  `.compiled`), the skeleton's plan and rigged-file reads, and `sprites.matched`. With
+  those, nothing is pending. What stays internal says why. Baking a clip still needs a
+  mesh and a fitted rig in memory, and a path-based `motion.bake` is §PW160. A module's leftover helpers may be
   listed as internal one function at a time. `describe()` loads
   the registry before answering, so a fresh process no longer lists only what it happened
   to have imported.

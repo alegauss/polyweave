@@ -30,11 +30,12 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any
 
 import numpy as np
 
 from . import measure, skeleton
+from .describe import Param, operation
 from .errors import PolyweaveError
 from .post.mesh import as_mesh
 
@@ -56,13 +57,16 @@ EASINGS = ("linear", "step", "ease")
 FPS = 24
 
 
+@operation("clip.new")
 def clip(
-    name: str,
-    duration: float,
+    name: Annotated[str, Param("what the clip is called")],
+    duration: Annotated[float, Param("how long it lasts", lo=0.0, unit="s")],
     *,
-    fps: int = FPS,
-    channels: dict | None = None,
-    easing: str = "linear",
+    fps: Annotated[int, Param("the rate it is authored at", lo=1)] = FPS,
+    channels: Annotated[dict, Param("each joint's keyed properties, if any")] = None,
+    easing: Annotated[
+        str, Param("the easing between keys", choices=EASINGS)
+    ] = "linear",
 ) -> dict:
     """One clip, checked for being motion at all."""
     if easing not in EASINGS:
@@ -422,7 +426,12 @@ def write(subject: dict, path: str | Path, *, root: str | Path = ".") -> Path:
     return where
 
 
-def read(path: str | Path, *, root: str | Path = ".") -> dict:
+@operation("clip.read")
+def read(
+    path: Annotated[str, Param("the clip file, as a path under the project")],
+    *,
+    root: Annotated[str, Param("the project the path resolves against")] = ".",
+) -> dict:
     """Read one back, refusing a file that is TOML and is not a clip."""
     import tomllib
 
@@ -479,8 +488,14 @@ def read(path: str | Path, *, root: str | Path = ".") -> dict:
 # -- changing a curve, which is the most iterated part ---------------------------------
 
 
+@operation("clip.set_key")
 def set_key(
-    subject: dict, joint: str, prop: str, when: float, value: Any, ease: str = ""
+    subject: Annotated[dict, Param("the clip, as clip.read or clip.new returns it")],
+    joint: Annotated[str, Param("the joint keyed")],
+    prop: Annotated[str, Param("the property keyed on it")],
+    when: Annotated[float, Param("where in the clip", lo=0.0, unit="s")],
+    value: Annotated[Any, Param("the value at that moment")],
+    ease: Annotated[str, Param("the easing into this key; the clip's if empty")] = "",
 ) -> dict:
     """A key set or replaced, as a new clip. The change an agent makes directly.
 
@@ -503,7 +518,11 @@ def set_key(
     )
 
 
-def retime(subject: dict, duration: float) -> dict:
+@operation("clip.retime")
+def retime(
+    subject: Annotated[dict, Param("the clip, as clip.read or clip.new returns it")],
+    duration: Annotated[float, Param("the new span", lo=0.0, unit="s")],
+) -> dict:
     """The same shape over a different span — the change that gets made most."""
     scale = float(duration) / subject["duration"]
     channels = {
@@ -665,7 +684,10 @@ def compile(
 ADDRESSED = re.compile(r'pose\.bones\["([^"]+)"\]')
 
 
-def compiled(path: str | Path) -> dict:
+@operation("clip.compiled")
+def compiled(
+    path: Annotated[str, Param("a compiled animation file")],
+) -> dict:
     """What a written file actually carries, read back off the file itself.
 
     The channel list is longer than the clip's own. glTF has no sparse animation, so the
@@ -711,3 +733,14 @@ def _curves(action: Any):
         for strip in layer.strips:
             for bag in getattr(strip, "channelbags", ()):
                 yield from bag.fcurves
+
+
+@operation("clip.write")
+def written(
+    subject: Annotated[dict, Param("the clip, as clip.read or clip.new returns it")],
+    path: Annotated[str, Param("where the clip file is written")],
+    *,
+    root: Annotated[str, Param("the project the path resolves against")] = ".",
+) -> str:
+    """Write the authored clip, the source and not an export, and say where."""
+    return str(write(subject, path, root=root))

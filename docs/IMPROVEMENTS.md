@@ -348,27 +348,6 @@ again.
 
 ## Block K — Reached without reading the source
 
-### §PW124 Every operation declared, and the census before the fixes
-
-`describe.MODULES` is `("polyweave.render",)` and `@operation` decorates one function in
-the package. `capabilities()["operations"]` therefore lists the bake, and the rest of
-the surface an agent needs, from `search.run` to `geometry.build` and the voxel checks,
-is known only to a reader of docstrings. That is the failure CLAUDE.md names: a feature
-that needs a source read to use has not landed.
-
-Shio's lesson (SH338) is about order. Eleven of its lints guarded internal consistency
-and none guarded reachability, so a consistency defect became a permanent guard and a
-reachability defect a one-off fix that came back. `test_errors.py` here is the same
-shape: it proves every code is declared and used, and nothing proves an operation can be
-found.
-
-So the instrument lands first. A test walks the public functions of the plugin's modules
-and classifies each as a registered operation or as an entry in an exact list of
-exceptions, each with its reason; an exception that is no longer needed fails too. A
-second test starts from what `capabilities()` returns and asserts every operation, code
-area and measure is named within two reads. Then the operations are registered, one
-module per commit, against a list that can only shrink.
-
 ### §PW125 A command line derived from the registry
 
 `python -m polyweave` answers `build`, and `verify` for the specs, and nothing else.
@@ -377,11 +356,11 @@ and `godot.install` are reachable from Python only, so an agent in Cottony that 
 know whether Blender is present writes and runs a script, and a person reading its
 transcript cannot tell the question from the answer.
 
-Once every operation is registered (§PW124), its declaration already says everything a
-subcommand needs: the name, each parameter's type, range, default and sentence, and
-which parameters are required. So the command line is derived from the registry rather
-than written beside it, one subcommand per operation, and a parameter added to an
-operation is a flag without a second edit.
+Now that every operation is registered (the census in docs/specs/tool-surface.md), its
+declaration already says everything a subcommand needs: the name, each parameter's type,
+range, default and sentence, and which parameters are required. So the command line is
+derived from the registry rather than written beside it, one subcommand per operation,
+and a parameter added to an operation is a flag without a second edit.
 
 Roadkeep paid for doing this late. Its verbs printed text and JSON from separate code
 until one migration, forty commits long, made each handler return one answer object that
@@ -449,11 +428,12 @@ A test holds it: every raise under a code whose meaning is an unknown name passe
 
 ### §PW129 A ceiling on the reads every session makes
 
-Registering every operation (§PW124) is the right move, and it multiplies the size of
-`describe()` and of `capabilities()`, which carries it. Both are read at the start of a
-session, so their size is paid on every one. Shio treats tokens as a measured budget: a
-properties file sets a ceiling per response and per tool, a test estimates at four
-characters a token, and a raise is argued in the file where the number lives.
+Registering every operation (done; the census in docs/specs/tool-surface.md) was the
+right move, and it multiplies the size of `describe()` and of `capabilities()`, which
+carries it. Both are read at the start of a session, so their size is paid on every one.
+Shio treats tokens as a measured budget: a properties file sets a ceiling per response
+and per tool, a test estimates at four characters a token, and a raise is argued in the
+file where the number lives.
 
 Here it is one file under `tests/`: ceilings for `describe()`, `capabilities()` split
 into the cheap check and the probe that renders, the largest error a code can produce,
@@ -533,6 +513,26 @@ Roadkeep's constraints come with it. The screen before any import uses the stand
 library only, so numpy and Blender are never loaded to decide a write. Any failure
 inside the hook allows the edit. A shell command gets `ask`, not `deny`, because nobody
 parses it to see what it writes.
+
+### §PW160 A clip baked by name
+
+Found finishing PW124's census. A clip's own document is a plain table, so creating,
+reading, keying, retiming and writing one are operations, and so are the skeleton's plan
+and the reads of a rigged file. What turns a clip into something a game plays is not
+reachable by name. `clip.compile`, `clip.frames`, `sprites.bake`, `sprites.both`,
+`skeleton.fit`, `skeleton.weights` and `skeleton.write` each take a mesh and a fitted
+rig as objects in memory, `(rig, bound)` from `skeleton.fit`, that a JSON call cannot
+carry. So the census lists them internal, and baking a clip still needs a Python script.
+
+The shape of the fix is the one `port.run` took. One operation, `motion.bake`, takes the
+clip file, the mesh file and the body plan by name. It fits the skeleton, weights it,
+compiles the animation, bakes the sprite sheet at the project's `[sprites]` settings,
+and returns the paths written and `sprites.matched`'s verdict on the pair. It is of kind
+`bake`. The fit's own numbers (pull, influences, falloff) come from `[rig]`, as they do
+now.
+
+The test is a clip written by `clip.write` and a small mesh, baked by name with Blender
+present, and skipped where it is not, as the render tests are.
 
 ## Block L — What a run leaves as evidence
 

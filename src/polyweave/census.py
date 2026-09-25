@@ -72,6 +72,9 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.normalise": ("internal", "a mesh's maths, in memory, inside ingest"),
     "polyweave.compose": ("internal", "the Image objects compose.place returns"),
     "polyweave.texture": ("internal", "the scrub on pixels in memory, in the bake"),
+    "polyweave.clip": ("internal", "compiling needs a mesh and a rig; PW160"),
+    "polyweave.skeleton": ("internal", "fitting a mesh in memory; PW160"),
+    "polyweave.sprites": ("internal", "baking needs a mesh and a rig; PW160"),
     # -- internal: helpers an operation calls, never a caller's first call ----------
     "polyweave.cache": ("internal", "the render cache, reached through bake's cached"),
     "polyweave.census": ("internal", "this census's own walk"),
@@ -104,10 +107,6 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.geometry.voxel_colour": ("internal", "a voxel build's palette"),
     "polyweave.geometry.voxel_fit": ("internal", "a voxel build's fitting"),
     "polyweave.geometry.voxel_sheet": ("internal", "a voxel build's contact sheet"),
-    # -- pending: a caller's surface, not yet registered with describe ---------------
-    "polyweave.clip": ("pending", "motion as a named clip"),
-    "polyweave.skeleton": ("pending", "a skeleton fitted to a mesh"),
-    "polyweave.sprites": ("pending", "a clip baked to a sprite sheet"),
 }
 
 

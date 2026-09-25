@@ -31,16 +31,16 @@
 
 ## Block K — Reached without reading the source
 
-- 🛠 **PW124** (deps: —) **`describe` knows one operation, so search, accept, geometry and voxels are still learned by reading their source** — Register the pending modules with @operation, one module per commit, lowering test_census.PENDING each time. → §PW124
-- 📋 **PW125** (deps: PW124 🛠) **an agent in a consumer can ask what the machine can do, explain a code or start a job only by writing Python** — The command line has two verbs, `build` and `verify`, so a GDScript project writes a script to reach the rest, which is the port scripts' cost at its smallest. → §PW125
+- 📋 **PW125** (deps: PW124 ✅) **an agent in a consumer can ask what the machine can do, explain a code or start a job only by writing Python** — The command line has two verbs, `build` and `verify`, so a GDScript project writes a script to reach the rest, which is the port scripts' cost at its smallest. → §PW125
 - 📋 **PW126** (deps: PW125) **an agent's first call is guessed from prose, because no tool schema carries the plugin's names, ranges and choices** — A range declared on a parameter reaches the caller only as a refusal, where a served schema would have stopped the wrong call before it spawned anything. → §PW126
 - 📋 **PW127** (deps: PW125) **a remedy is a sentence, so nothing checks that the call it names exists or accepts those arguments** — Roadkeep found one of 118 remedy rows had ever been run and several named flags its own parser rejected, and remedies here are the same unchecked prose. → §PW127
 - 📋 **PW128** (deps: —) **a refused name says what was wrong but never which names would have worked** — An unknown measure, primitive, material slot or operation is where an agent guesses, and the near match exists only inside a sentence the config reader writes. → §PW128
-- 📋 **PW129** (deps: PW124 🛠) **nothing bounds what `describe`, `capabilities` or an error costs the turn that reads it** — The reads an agent makes every session have no ceiling, so each operation registered makes them longer and nothing measures by how much. → §PW129
+- 📋 **PW129** (deps: PW124 ✅) **nothing bounds what `describe`, `capabilities` or an error costs the turn that reads it** — The reads an agent makes every session have no ceiling, so each operation registered makes them longer and nothing measures by how much. → §PW129
 - 📋 **PW130** (deps: PW125) **every test calls the surface correctly, so a silently dropped argument or a wrong first call is never measured** — Shio's naive client found six silent drops in twelve calls that its benchmark, driving a correct script, could not see. → §PW130
 - 📋 **PW131** (deps: PW125) **starting work on an asset means opening its declaration, spec, record and last verdict one file at a time** — An asset's state is split across four files, so an agent opens each before it can say what is left, and no read answers that question whole. → §PW131
 - 📋 **PW132** (deps: —) **an agent in a consumer is never told the plugin exists, because it ships no manifest, skill or session notice** — Six of Cottony's tools import the plugin and not one of its agent documents names it, so each session rediscovers it from a script's imports. → §PW132
 - 📋 **PW133** (deps: PW125) **an agent may hand-edit a built mesh or voxel file, and nothing notices the output no longer follows its declaration** — The build stamp hashes inputs only and geometry outputs carry no record, so an edited output is reported cached and rebuilt only when an input moves. → §PW133
+- 📋 **PW160** (deps: —) **a clip is baked to an animation and a sheet only from Python, since every step takes a mesh and a rig in memory** — The census lists compile, frames, sprites.bake and skeleton.fit as internal, so motion is the one surface a GDScript project still needs a script for. → §PW160
 
 ## Block L — What a run leaves as evidence
 
@@ -126,12 +126,6 @@
 - **The owner has said whether sound belongs in the acceptance spec** Either a non-goal
   forbidding measures of audio is on the list, or a line exists that adds the first
   audio measure; both are checkable in `non-goal list` and the roadmap.
-
-## Done when — PW124
-
-- **No module is pending in the census** test_census.PENDING is 0 and
-  capabilities()["unregistered"] is empty: every public function a caller needs is an
-  @operation that describe returns.
 
 ## Non-goals
 

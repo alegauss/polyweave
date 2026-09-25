@@ -28,12 +28,13 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any
 
 import numpy as np
 
 from . import clip as C
 from .config import load
+from .describe import Param, operation
 from .errors import PolyweaveError
 from .files import write_atomic
 from .image import load as load_image
@@ -243,7 +244,13 @@ def both(
     }
 
 
-def matched(animation: Any, atlas: Any, *, root: str | Path = ".") -> dict:
+@operation("sprites.matched")
+def matched(
+    animation: Annotated[Any, Param("the compiled animation, or its record")],
+    atlas: Annotated[Any, Param("the sheet's atlas, as a path or its table")],
+    *,
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
+) -> dict:
     """Whether the two outputs came from the same clip, which is the whole claim.
 
     The record beside a compiled animation and the atlas beside a sheet each carry the

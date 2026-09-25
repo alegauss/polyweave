@@ -7,7 +7,7 @@ from polyweave.capabilities import capabilities
 
 #: How much surface is still unregistered. Registering a module lowers it, and this
 #: number is lowered with it: it may only fall, never rise.
-PENDING = 40
+PENDING = 0
 
 
 def test_every_public_function_is_classified():
@@ -226,6 +226,40 @@ def test_a_sheet_is_laid_out_by_name_and_says_where_it_landed(tmp_path):
     )
     assert (tmp_path / "sheet.png").is_file()
     assert made["size"][0] >= 16
+
+
+def test_a_clip_is_authored_by_name_and_round_trips_as_json(tmp_path):
+    import json
+
+    def call(operation, **args):
+        fn = describe._REGISTRY[operation].fn
+        return json.loads(json.dumps(fn(**describe.validate(operation, args))))
+
+    root = str(tmp_path)
+    made = call(
+        "clip.new",
+        name="settle",
+        duration=0.5,
+        channels={"spine": {"scale": [[0.0, [1, 1, 1]], [0.5, [1, 0.93, 1]]]}},
+    )
+    keyed = call(
+        "clip.set_key",
+        subject=made,
+        joint="spine",
+        prop="scale",
+        when=0.25,
+        value=[1, 0.96, 1],
+    )
+    slower = call("clip.retime", subject=keyed, duration=1.0)
+    where = call("clip.write", subject=slower, path="settle.clip.toml", root=root)
+    back = call("clip.read", path=where, root=root)
+    assert back["duration"] == 1.0
+    assert "spine" in back["channels"]
+
+
+def test_nothing_is_left_pending():
+    found = capabilities(probe=False)
+    assert found["unregistered"] == {}
 
 
 def test_a_fresh_read_of_the_operations_loads_them():

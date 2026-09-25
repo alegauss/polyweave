@@ -30,11 +30,12 @@ quality costs nothing but the refit and keeps every clip that names the same joi
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any
 
 import numpy as np
 
 from .config import load
+from .describe import Param, operation
 from .errors import PolyweaveError
 from .post.mesh import as_mesh
 
@@ -104,7 +105,10 @@ PLANS: dict[str, list[tuple[str, str, tuple]]] = {
 }
 
 
-def plan(named: str) -> list[tuple[str, str, tuple]]:
+@operation("skeleton.plan")
+def plan(
+    named: Annotated[str, Param("the body plan, such as plush")],
+) -> list[tuple[str, str, tuple]]:
     """One body plan, checked for being a skeleton at all."""
     if named not in PLANS:
         raise PolyweaveError(
@@ -444,7 +448,11 @@ def retarget(turns: dict, skeleton: dict) -> dict:
     return {name: tuple(float(v) for v in turn) for name, turn in turns.items()}
 
 
-def shared(one: str, other: str) -> list[str]:
+@operation("skeleton.shared")
+def shared(
+    one: Annotated[str, Param("one body plan")],
+    other: Annotated[str, Param("the other")],
+) -> list[str]:
     """Which joints two plans have in common, which is what can be retargeted."""
     here = {name for name, _, _ in plan(one)}
     there = {name for name, _, _ in plan(other)}
@@ -554,7 +562,10 @@ def write(subject: Any, skeleton: dict, bound: dict, out: str | Path) -> Path:
     return where
 
 
-def joints_in(path: str | Path) -> list[str]:
+@operation("skeleton.joints_in")
+def joints_in(
+    path: Annotated[str, Param("a rigged file")],
+) -> list[str]:
     """The bone names a written file carries, read back off the file itself."""
     from .render import blender
 
@@ -569,7 +580,12 @@ def joints_in(path: str | Path) -> list[str]:
     )
 
 
-def plays(path: str | Path, joint: str, turn: Any = (0.0, 0.0, 30.0)) -> dict:
+@operation("skeleton.plays")
+def plays(
+    path: Annotated[str, Param("a rigged file")],
+    joint: Annotated[str, Param("the joint turned")],
+    turn: Annotated[list, Param("the turn, [x, y, z] in degrees")] = (0.0, 0.0, 30.0),
+) -> dict:
     """Import what was written, turn one joint by name, and see if the mesh moved.
 
     The whole claim of this half: the joints and the weights exist as data and are

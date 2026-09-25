@@ -84,18 +84,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW57"],
   },
   {
-    id: "PW124",
-    block: "K",
-    symptom: "`describe` knows one operation, so search, accept, geometry and voxels are still learned by reading their source",
-    why: "Register the pending modules with @operation, one module per commit, lowering test_census.PENDING each time.",
-    deps: [],
-  },
-  {
     id: "PW125",
     block: "K",
     symptom: "an agent in a consumer can ask what the machine can do, explain a code or start a job only by writing Python",
     why: "The command line has two verbs, `build` and `verify`, so a GDScript project writes a script to reach the rest, which is the port scripts' cost at its smallest.",
-    deps: ["PW124"],
+    deps: [],
   },
   {
     id: "PW126",
@@ -123,7 +116,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "K",
     symptom: "nothing bounds what `describe`, `capabilities` or an error costs the turn that reads it",
     why: "The reads an agent makes every session have no ceiling, so each operation registered makes them longer and nothing measures by how much.",
-    deps: ["PW124"],
+    deps: [],
   },
   {
     id: "PW130",
@@ -152,6 +145,13 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "an agent may hand-edit a built mesh or voxel file, and nothing notices the output no longer follows its declaration",
     why: "The build stamp hashes inputs only and geometry outputs carry no record, so an edited output is reported cached and rebuilt only when an input moves.",
     deps: ["PW125"],
+  },
+  {
+    id: "PW160",
+    block: "K",
+    symptom: "a clip is baked to an animation and a sheet only from Python, since every step takes a mesh and a rig in memory",
+    why: "The census lists compile, frames, sprites.bake and skeleton.fit as internal, so motion is the one surface a GDScript project still needs a script for.",
+    deps: [],
   },
   {
     id: "PW134",
