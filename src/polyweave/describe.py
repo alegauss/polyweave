@@ -89,6 +89,7 @@ _REGISTRY: dict[str, Operation] = {}
 #: does not have, which is exactly why a job spawns rather than importing.
 MODULES: tuple[str, ...] = (
     "polyweave.render",
+    "polyweave.brief",
     "polyweave.accept",
     "polyweave.search",
     "polyweave.calibrate",

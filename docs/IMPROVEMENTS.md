@@ -348,24 +348,6 @@ again.
 
 ## Block K — Reached without reading the source
 
-### §PW131 An asset's brief in one read
-
-Roadkeep's `brief` starts a task in one call, and Shio's context pack replaced the reads
-a session opened with. The unit here is an asset, and its state is spread over the
-geometry declaration, the acceptance spec, the provenance record beside the artefact and
-the loop ledger.
-
-`polyweave brief <asset>` answers in one bounded payload: the declaration as one line
-per part; each predicate of the spec with its bound and where that bound came from,
-which PW106 now records; the last verdict and which predicates it failed; whether the
-artefact on disk still matches its record; the cache entries held; what the budget has
-left if the asset was bought; and, from the codes table, the doors for the failures it
-names. A `digest` over the whole answer lets a session that already holds it ask whether
-anything moved.
-
-It is a read over files that exist and writes nothing, so it can land before the rest of
-Block J, whose verdicts it will later report.
-
 ### §PW132 Installed as a plugin, and announced in one line
 
 Everything under `.claude/` here serves a session changing this repository: the roadkeep

@@ -24,9 +24,11 @@ from polyweave.capabilities import capabilities
 from polyweave.errors import PolyweaveError
 
 #: describe(): 74 operations measured 46,946. One more average operation is ~630.
-DESCRIBE = 47_400
-#: capabilities(probe=False), which carries describe() and the codes: 54,155.
-CAPABILITIES = 54_600
+#: Raised for asset.brief (§PW131), which took 435 and left 19: 75 measure 47,381.
+DESCRIBE = 47_800
+#: capabilities(probe=False), which carries describe() and the codes: 54,155, then
+#: 54,590 with asset.brief (§PW131).
+CAPABILITIES = 55_000
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

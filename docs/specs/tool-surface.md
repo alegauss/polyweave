@@ -194,6 +194,15 @@ both answers.
   something to act on. `validate` now checks every value against its declared type, not
   only a ranged one, which is what let `preview: "yes"` through and read it as true. It
   loads the registry first, so a fresh process no longer calls a real operation unknown.
+- **An asset starts from one read** (§PW131). `asset.brief --asset <name>` gathers what
+  was spread over four files and answers in one bounded payload. It gives the
+  declaration read back one line per part, and each predicate with its bound and that
+  bound's origin. It reports whether the artefact is present, still matches its record,
+  at which rung, and whether the cache holds it. It gives the last verdict and the
+  predicates that verdict failed, what the budget has left where the asset was bought,
+  and whether it waits on a person. A 16-character `digest` over the answer tells a
+  session already holding it whether anything moved. It reads and writes nothing, and an
+  asset nothing names is refused with the assets the ledger does know.
 
 ## 4. The surface describes itself
 
