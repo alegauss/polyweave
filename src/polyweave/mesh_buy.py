@@ -99,7 +99,7 @@ def buy(
         request.update(mode="preview", prompt=prompt)
     else:
         source = here / picture_path
-        _gated(source)
+        _gated(source, here)
         encoded = base64.b64encode(picture.sent_bytes(source)).decode("ascii")
         request.update(
             image_url=f"data:{picture._mime(source)};base64,{encoded}",
@@ -145,8 +145,14 @@ def buy(
     )
 
 
-def _gated(source: Path) -> None:
-    """Refuse a picture the gate never passed (§PW168, §PW183)."""
+def _gated(source: Path, here: Path) -> None:
+    """Refuse a picture the gate never passed and no person promoted (§PW168, §PW208).
+
+    The gate's bar is the project's, and a person who looks at a refused picture and
+    says it is right after all is the door the refused lane exists for. So a picture
+    passes here when the gate passed it, or when the gate saw exactly these bytes and a
+    person's verdict on the review page promoted it.
+    """
     from . import provenance
 
     if not source.is_file():
@@ -158,18 +164,32 @@ def _gated(source: Path) -> None:
     said = source.with_suffix(".gate.json")
     verdict = json.loads(said.read_text(encoding="utf-8")) if said.is_file() else None
     digest = provenance.sha256_of(source)[0]
-    if not verdict or not verdict.get("passed") or verdict.get("sha256") != digest:
-        raise PolyweaveError(
-            "fetch.picture-ungated",
-            f"{source.name} has not passed picture.gate"
-            + ("" if verdict else ", or was never put through it")
-            + (
-                ", or changed since it did" if verdict and verdict.get("passed") else ""
-            ),
-            "run picture.gate on it against the declared outline, and buy from the one "
-            "it chooses; a silhouette is settled on the picture before the mesh is "
-            "paid for",
-        )
+    seen = bool(verdict) and verdict.get("sha256") == digest
+    if seen and (verdict.get("passed") or _promoted(source, here)):
+        return
+    raise PolyweaveError(
+        "fetch.picture-ungated",
+        f"{source.name} has not passed picture.gate"
+        + ("" if verdict else ", or was never put through it")
+        + (", or changed since it was" if verdict and not seen else ""),
+        "run picture.gate on it against the declared outline and buy from the one it "
+        "chooses, or have a person promote it from the review page's refused lane; a "
+        "silhouette is settled on the picture before the mesh is paid for",
+    )
+
+
+def _promoted(source: Path, here: Path) -> bool:
+    """Whether a person accepted this refused picture from a gate's lane on the page."""
+    from . import verdict
+
+    for answer in verdict.answers(root=str(here))["answers"]:
+        if not str(answer.get("sitting", "")).startswith("gate:"):
+            continue
+        if answer.get("family") != source.stem:
+            continue
+        if any(m.get("person_accepted") for m in answer.get("members") or ()):
+            return True
+    return False
 
 
 def _reached(name: str, about: dict) -> tuple[str, str]:

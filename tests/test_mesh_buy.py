@@ -149,3 +149,27 @@ def test_json_is_a_code_on_refusal(monkeypatch):
         mesh_buy._json("POST", "https://api.meshy.ai/x", "k", {})
     assert caught.value.code == "fetch.over-budget"
     assert json.dumps({}) == "{}"
+
+
+def test_a_refused_picture_a_person_promoted_can_be_bought_from(tmp_path, meshy):
+    """§PW208: the gate's bar is the project's, and a person's promotion is its door."""
+    from polyweave import review, verdict
+
+    def drawn(name, box):
+        image = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
+        ImageDraw.Draw(image).ellipse(box, fill=(200, 60, 60, 255))
+        image.save(tmp_path / name)
+
+    drawn("outline.png", (14, 44, 114, 84))
+    drawn("dome.png", (44, 8, 84, 120))
+    ran = picture.gate(["dome.png"], "outline.png", root=tmp_path)
+    assert refused(out="m.glb", picture_path="dome.png", root=tmp_path).code == (
+        "fetch.picture-ungated"
+    )
+    review.answer(
+        tmp_path,
+        {"gate": ran["id"], "picture": "dome.png", "choice": "accept", "why": "right"},
+    )
+    assert verdict.answers(root=tmp_path)["answers"][-1]["family"] == "dome"
+    entry = mesh_buy.buy(out="m/dome.glb", picture_path="dome.png", root=tmp_path)
+    assert entry["reference"] == "dome.png"
