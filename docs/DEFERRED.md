@@ -37,5 +37,7 @@
 
 ## Block N — Pictures held to a canon
 
+- ⏸ **PW180** (deps: PW166 ✅) **no canon picture is ever sent as a style reference, so a family's look reaches the service only as words** — set aside (Waits on Ideogram: 4.0 takes no image input.): A reference picture holds line weight and proportion that no palette or style block states. → §PW180
+
 ## Block O — A person sees and answers
 

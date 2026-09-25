@@ -32,7 +32,6 @@
 
 ## Block N — Pictures held to a canon
 
-- 📋 **PW180** (deps: PW166 ✅) **no canon picture is ever sent as a style reference, so a family's look reaches the service only as words** — A reference picture holds line weight and proportion that no palette or style block states, and the canon already holds the approved ones. → §PW180
 - 📋 **PW181** (deps: PW170 ✅) **an approved picture cannot be reframed to another aspect ratio, so an icon and a banner of it are two separate pictures** — A reframe keeps everything the parent held and adds only a border, which is the easiest variation to hold to what it must not change. → §PW181
 
 ## Block O — A person sees and answers
