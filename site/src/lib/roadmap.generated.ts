@@ -38,6 +38,8 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "K", title: "Reached without reading the source", open: 0 },
   { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
+  { block: "N", title: "Pictures held to a canon", open: 10 },
+  { block: "O", title: "A person sees and answers", open: 6 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -62,12 +64,124 @@ export const generatedTasks: GeneratedTask[] = [
     why: "The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question.",
     deps: ["PW57"],
   },
+  {
+    id: "PW162",
+    block: "N",
+    symptom: "a project can name only one paid service, so a second one's key, schema and ceiling have nowhere to live",
+    why: "`[service]` and `[budget]` are Meshy's shape, credits and all, and an image service billing per picture in dollars would have to overwrite them.",
+    deps: [],
+  },
+  {
+    id: "PW163",
+    block: "N",
+    symptom: "no picture can be bought, so every drawing a mesh starts from still has to come from a person",
+    why: "A drawing is the input the mesh service reads best, and a transparent picture costs cents where the mesh it steers costs thirty credits.",
+    deps: ["PW162"],
+  },
+  {
+    id: "PW164",
+    block: "N",
+    symptom: "an image service reports no balance, so what a picture cost cannot be measured the way a mesh's is",
+    why: "The ledger proves a cost with two balance readings, and without them an image entry is either unmeasured or invented, and nothing says which.",
+    deps: ["PW163"],
+  },
+  {
+    id: "PW165",
+    block: "N",
+    symptom: "a picture cannot be made again from its record, because the service rewrites the prompt it was given",
+    why: "Ideogram 4.0 turns a text prompt into its own before drawing, so a record of only what was sent describes a picture nobody asked for.",
+    deps: ["PW163"],
+  },
+  {
+    id: "PW166",
+    block: "N",
+    symptom: "nothing says what a project's pictures should look like, so each prompt restates a house style by hand and drifts",
+    why: "Consistency asked of a generator in prose is luck, while a style declared once as approved pictures, palette and prompt skeleton is an input every call carries.",
+    deps: ["PW165"],
+  },
+  {
+    id: "PW167",
+    block: "N",
+    symptom: "a picture that drifts from the canon is found by a person looking, after it was already offered as a candidate",
+    why: "The agent's part is to refuse drift by number before a person spends attention, never to decide that a picture which passes looks right.",
+    deps: ["PW166"],
+  },
+  {
+    id: "PW168",
+    block: "N",
+    symptom: "a reference drawing reaches the mesh service unchecked, so a wrong silhouette is found only once the mesh is paid for",
+    why: "A picture costs cents and a mesh thirty credits, so the outline belongs settled on the picture before anything dearer is bought.",
+    deps: ["PW163", "PW167"],
+  },
+  {
+    id: "PW169",
+    block: "N",
+    symptom: "lettering drawn into a picture can be misspelt or lose its accents, and nothing reads the letters back",
+    why: "Text is the service's strength and the one defect no palette or silhouette measure sees, and a game in Portuguese loses its accents first.",
+    deps: ["PW165"],
+  },
+  {
+    id: "PW170",
+    block: "N",
+    symptom: "a variation of an approved picture can change what was approved, and nothing compares it to the one it came from",
+    why: "Refining through remix or edit is where proportions and palette quietly move, and the approved parent is what it should be measured against.",
+    deps: ["PW165", "PW167"],
+  },
+  {
+    id: "PW171",
+    block: "N",
+    symptom: "2D art from a picture service arrives at the size and margin it chose, not the project's grid",
+    why: "An icon or UI piece needs the project's pixel size, padding and a clean alpha edge, and that fix is mechanical, so it belongs on arrival.",
+    deps: ["PW163"],
+  },
+  {
+    id: "PW172",
+    block: "O",
+    symptom: "a person sees a render or picture only by opening files by hand, so a verdict rests on the agent's description",
+    why: "The look is the one step reserved to a person, and it is the slowest because nothing puts the picture in front of them.",
+    deps: [],
+  },
+  {
+    id: "PW173",
+    block: "O",
+    symptom: "an answer given on the page reaches the agent only when the person says so again in chat",
+    why: "A session that offered five families should resume on the first answer, from what was said, without re-reading the ledger to find out.",
+    deps: ["PW172"],
+  },
+  {
+    id: "PW174",
+    block: "O",
+    symptom: "a person can say what is wrong with a picture only in words, so where it is wrong is the agent's guess",
+    why: "An edit bounded by a guessed region redraws what the person liked, and a mark drawn over the picture is the region they meant.",
+    deps: ["PW173"],
+  },
+  {
+    id: "PW175",
+    block: "O",
+    symptom: "a person sees the pictures the agent kept and never the ones it refused, so a wrong refusal is invisible",
+    why: "The drift check makes the agent a filter nobody audits, and a bar set too tight costs good work in silence unless the refused are shown.",
+    deps: ["PW172", "PW167"],
+  },
+  {
+    id: "PW176",
+    block: "O",
+    symptom: "two versions of an asset are compared side by side, where a few ΔE of drift or a grown silhouette goes unseen",
+    why: "Eyes compare a difference well only when both are in one place, so a slider, an onion skin and a difference map show what side by side hides.",
+    deps: ["PW172"],
+  },
+  {
+    id: "PW177",
+    block: "O",
+    symptom: "the canon is a folder of files, so what a family is meant to look like is never seen whole",
+    why: "A canon that quietly became two styles is found only by opening every file, and only a person's click should ever change what it holds.",
+    deps: ["PW172", "PW166"],
+  },
 ];
 
 export const generatedNonGoals: GeneratedNonGoal[] = [
   {
     lead: "A graphical editor",
-    why: "The caller here is an agent in a terminal, so a surface that needs a person at a screen to operate is one the agent cannot use at all.",
+    why: "The caller here is an agent in a terminal, so a surface only a person can operate is one the agent cannot use. A local page where a person looks and answers is not an editor: it edits nothing, and its one write is the verdict call an agent would make.",
   },
   {
     lead: "Replacing Blender, Godot or the generative service",
@@ -92,4 +206,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW36", "PW53", "PW77", "PW78", "PW79", "PW80", "PW81", "PW82", "PW113"];
+export const generatedPaused: string[] = ["PW36", "PW53", "PW77", "PW78", "PW79", "PW80", "PW81", "PW82"];

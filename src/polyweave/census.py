@@ -57,6 +57,7 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.units": ("internal", "a rectangle's arithmetic, inside units.check"),
     "polyweave.measure": ("internal", "the arithmetic under measure.take and .same"),
     "polyweave.cost": ("internal", "the readers under cost.read and a cost predicate"),
+    "polyweave.sound": ("internal", "what sound.measure and a sound bound read"),
     "polyweave.cli": ("internal", "the command line's own parsing and printing"),
     "polyweave.geometry": ("internal", "a declaration's machinery; geometry.build"),
     "polyweave.geometry.build": ("internal", "the mesh a build writes"),

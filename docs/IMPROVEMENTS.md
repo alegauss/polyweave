@@ -266,26 +266,412 @@ unstated.
 
 ## Block J — A bar a person sets once
 
-### §PW113 Is the spec wider than the renderer?
-
-Nothing in the acceptance spec is 3D. A predicate is a measure over a region of pixels,
-and `accept.check` takes a PNG from anywhere. Cottony already writes the same kind of
-bar outside this plugin, three times: `check_vivid.py` holds the board's saturation at
-the 99th percentile, `loop_music.py` fails a loop whose seam stands out spectrally, and
-`make_assets.py` draws 2,406 lines of 2D sprites with no bar at all.
-
-§PW59 puts that 2D generator outside the denominator on purpose, because this plugin is
-geometry, surface and motion in three dimensions. That is a scope decision, and this
-line asks whether it still holds for the spec alone: the renderer stays 3D, but should a
-drawn sprite, a screenshot or a sound be held to a spec in the same format, searched
-where it has parameters and checked where it does not?
-
-Answering yes widens the measures (audio has none) and nothing else. Answering no is
-worth writing down as a non-goal, so the next agent that notices does not file this
-again.
-
 ## Block K — Reached without reading the source
 
 ## Block L — What a run leaves as evidence
 
 ## Block M — What a game needs beyond the look
+
+## Block N — Pictures held to a canon
+
+### §PW162 More than one paid service
+
+`[service]` and `[budget]` were written for one service, and it shows: one `base`, one
+`key_env`, one `schema`, and a ceiling counted in Meshy's credits. An image service
+bills per picture in dollars, and there is no place for its key or its ceiling that does
+not overwrite the mesh service's.
+
+**A service is a named table.** `[service.meshy]` and `[service.ideogram]` each carry
+`base`, `key_env` and `schema`, and each has its own `[budget.<name>]` with `amount`,
+`unit` and `expires`. A bare `[service]` still reads as the one service it always was,
+so no project that adopted the plugin has to change its file on the day this lands.
+
+**Ceilings never pool.** Credits and dollars are not one number, and a spend against one
+service is judged only against that service's ceiling. `purchase.allow` takes the
+service by name and refuses an unnamed one where more than one is declared — guessing
+which balance to draw on is the one mistake a ceiling exists to prevent.
+
+**The ledger entry names its service**, and `purchase.spent` and `remaining` answer per
+service. `capabilities` reports each key as present or absent by name, never by value.
+
+This is the prerequisite for everything else in the block, and it is useful on its own:
+the next service after this one costs a table, not a refactor.
+
+### §PW163 Buying a picture
+
+The plugin prefers a drawing to a photograph (PW21), and today every drawing comes from
+a person, because the agent cannot draw. Ideogram 4.0 generates an image, and its
+transparent endpoint delivers a PNG with a real alpha channel — exactly the form
+`reference.pick` recognises as a drawing. That makes the image service the cheap first
+step in front of the dear one.
+
+**The plugin speaks to the service itself**, which it has never done for meshes: until
+now a consumer's own client fetched and the plugin captured. The client is small —
+generate, generate transparent, and the poll for the async variants — and it goes
+through the same doors a mesh does:
+
+- the payload is validated against the learned `[service.ideogram] schema` before sending
+  (PW19), which matters here because 3.0 and 4.0 spell the prompt field differently;
+- `purchase.allow` is asked before the call, against that service's ceiling (PW18);
+- the picture is captured before anything else happens, because the service's links expire
+  and the order in PW17 is the only one that cannot leave a receipt without an asset.
+
+**`bought` gains `image`.** The record carries the model, the speed and the resolution
+the response reported, which may differ from the one asked for.
+
+**The service's own refusals are codes, not tracebacks**: a prompt refused as unsafe
+(422) and a rate limit (429) each name what to do next, and the client never holds more
+calls in flight than the account allows, which by default is ten.
+
+### §PW164 A price that says it was quoted
+
+The ledger's proof of what something cost is two readings of the balance, one either
+side of the spend (PW18). Ideogram publishes no balance endpoint, so an image entry
+would be either unmeasured or invented, and a ledger that cannot tell those two apart
+has stopped being evidence.
+
+**The price is declared, and says it was declared.** `[service.ideogram] prices` maps a
+model and speed to a price per output image — the service bills per picture returned, so
+a request for four is four prices. The entry carries `credits` from that table and
+`measured = false`, and every read that sums spend says how much of its total was quoted
+rather than read.
+
+**A quoted price is not trusted forever.** When a person supplies the service's own
+usage export, `purchase.reconcile` matches its rows to ledger entries by time and count
+and records the difference, the same `surprised` flag a measured entry carries. A table
+that has gone stale is found on the first reconcile rather than on the invoice.
+
+**The ceiling counts quoted spend in full.** Under-counting is the direction that lets a
+session pass a ceiling a person set, so where the table has no row for a model, the call
+is refused rather than priced at zero.
+
+This is a deliberate exception to the fetching contract, which is why it is its own
+line: the contract should say it, not a comment in the client.
+
+### §PW165 A picture its record can make again
+
+Ideogram 4.0 rewrites a text prompt before it draws — the response returns "a
+potentially modified prompt" — so a record holding only what was sent describes a
+picture nobody asked for. Regenerating from it gives a different picture, and refining
+it means refining a prompt the service never used.
+
+**The structured prompt is the default.** 4.0 accepts a `json_prompt` — a description, a
+background, an ordered list of elements, and a style block of aesthetics, medium,
+lighting and palette — in place of free text, and it is not rewritten. The plugin
+composes that object from the asset's declaration and the project's style, and the
+object is what goes in the record.
+
+**The record holds everything a second call needs**: the prompt sent, the prompt
+returned, the seed the response reported, the model, the speed, the resolution, and the
+digest of every reference image. Whether a given model *accepts* a seed back is a fact
+about the service, so it is learned by the schema probe rather than assumed.
+
+**An approved picture can be turned back into a prompt.** The describe endpoint converts
+an image to the same structured form, with element bounding boxes. A picture a person
+approved is described once, and that description is committed beside it as a file —
+which is what makes the next variation start from the approved picture's own terms
+rather than from a paraphrase of it.
+
+### §PW166 A style declared once, and a canon only a person grows
+
+A generator asked for consistency in prose gives consistency by luck. Two pictures of
+one character from one prompt differ in palette, line weight and proportion, and a
+refinement drifts further from the picture it refines. Consistency has to be an **input
+every call carries**, not an adjective in a prompt.
+
+**A project declares its style once**, in `[style]`, and never in the plugin — Cottony
+and Spinhole are two games with two looks, and a default that cannot be overridden is a
+defect:
+
+- `canon` — a directory of pictures a person approved, each with its described prompt
+  (§PW165);
+- `palette` — the colours a picture may use, as values, not names;
+- `skeleton` — the style block every structured prompt starts from: medium, lighting,
+  aesthetics, and what is always excluded;
+- `references` — which canon pictures are sent as style references, where the model takes
+  them, and one character reference per recurring character.
+
+**The canon grows only by a person's verdict.** A picture joins it through
+`verdict.judge`, and the canon's own record names the verdict that admitted it. An agent
+that could add its own output to the canon would make its drift the standard, which is
+the non-goal about an agent accepting its own look, written as a file permission.
+
+**Style is per asset family, not per project alone**: `[style.icons]` and
+`[style.characters]` may differ, and an asset names the family it belongs to, so a
+sprite sheet is never measured against the canon of a title screen.
+
+### §PW167 Drift, measured against the canon
+
+The agent's part in consistency is to **refuse drift by number before a person spends
+attention on it**, and never to decide that a picture which passes looks right. Today
+the only check is a person looking, after the picture was offered.
+
+**Drift, against the canon of the asset's family (§PW166):**
+
+- palette — each subject pixel's ΔE to the nearest declared colour, at the 95th percentile;
+- value and saturation — the 5th and 95th percentiles of the subject;
+- line weight — stroke width from a distance transform of the edges;
+- edge — alpha fringe width and halo colour;
+- light — the dominant shading direction;
+- silhouette — IoU against a declared outline, where there is one.
+
+**Percentiles, never means**: right on average and wrong in one hand is wrong.
+
+**The bar is measured from the canon itself.** The spread among approved pictures is the
+floor below which a difference means nothing, as a twin render sets the noise floor. A
+family with one canon picture has no spread, and says so rather than inventing one.
+
+**A refusal says which way** — palette ΔE 14 against a floor of 6, warmer; line weight
+twice the canon's — because that is what the next prompt is corrected from. What these
+measures cannot see, a face that became a different character, stays the person's
+verdict, and the report says it was not checked.
+
+### §PW168 The silhouette settled on the picture
+
+Cottony asked for a wide low cap and got a tall dome, and learned it after thirty
+credits (PW16). The shape check now runs before a mesh is accepted, but the drawing the
+mesh is made from is still whatever a person supplied, and a drawing is where the
+silhouette is decided, for cents rather than credits.
+
+**The chain, each step refusing before the next is paid for:**
+
+1. the geometry declaration gives the outline and the proportions;
+2. a structured prompt is composed from it and from the family's style (§PW165, §PW166),
+   and a transparent picture is generated;
+3. `reference.pick` confirms it is a drawing — real alpha, clear border — and
+   `reference.prepare` confirms the subject fills the frame and touches no edge;
+4. its outline is compared to the declared one by IoU, against `[tolerance] silhouette_iou`,
+   and its style against the canon (§PW167);
+5. only a picture that passed all of it is handed to the mesh service.
+
+**A picture that fails is a record, not a re-roll.** Its failure — centroid offset,
+which edge is too long, which measure drifted — is written against its prompt, so the
+next attempt is informed.
+
+**No taste enters the choice.** Where several pictures pass, the highest IoU goes
+forward, a rule and not an opinion. Where a person wants to choose, it is a verdict
+sheet. How many pictures an attempt may buy is bounded by the ceiling, never by the
+agent deciding one more is worth it.
+
+### §PW169 Reading the letters back
+
+Lettering is the thing this service does best, and it is the reason to use it for a
+title, a sign, a label on a crate. It is also the one place a picture can be wrong in a
+way no palette or silhouette measure sees: a letter missing, an accent dropped, a word
+spelled the way the model preferred. A game in Portuguese loses its accents first.
+
+**The text a picture was asked to carry is declared**, as an element of the structured
+prompt (§PW165) — which is already where 4.0 wants it — so there is something to read
+back against.
+
+**The letters are read back mechanically**, by an OCR engine found the way Blender and
+Godot are found: a binary on the machine, named in `[paths]`, reported by `capabilities`
+as present or absent. The comparison is exact after case and whitespace folding, and
+never after accent folding, because a dropped accent is precisely the defect.
+
+**An absent engine is a stated gap, not a pass.** Where no OCR engine is installed, a
+picture with declared text is reported as unchecked, by name, and a picture that failed
+is refused with the word it read and the word it was asked for side by side.
+
+This line is an idea rather than a plan because it adds a dependency no other line here
+needs, and it should wait until a real title or sign has actually come back misspelt.
+
+### §PW170 A variation measured against its parent
+
+Refinement is where consistency is lost. A character is approved, asked for holding a
+lantern, and comes back with longer legs and a warmer coat — and nothing compares the
+new picture to the one it came from, because nothing records that it came from one.
+
+**A variation has a parent.** Remix, edit-with-mask and reframe each take an approved
+picture and return a new one; the record carries the parent's digest, the operation, its
+strength (`image_weight` for a remix), and the mask where there was one. So a replaced
+parent names every variation made from it.
+
+**A variation is measured against its parent, and against the canon.** Against the canon
+with the drift measures (§PW167); against the parent with one more, which only a lineage
+makes possible: **outside the mask, nothing should have changed.** The unmasked region
+is compared pixel for pixel after alignment, and a change there beyond the noise floor
+is the remix redrawing what it was not asked to.
+
+**The mask comes from the request, not from a person drawing one.** Where the change is
+named by region — "the left hand", "the background" — the region is taken from the
+parent's described element boxes (§PW165), so an edit an agent asks for is an edit
+bounded where the approved picture already said that element was.
+
+What a variation *should* look like is still the person's verdict; what it must not have
+changed is a number.
+
+### §PW171 A picture put on the project's grid on arrival
+
+A picture service returns an image at a size it chose, with a margin it chose, centred
+where it chose. An icon, a UI piece or a flat sprite needs the project's pixel size, the
+project's padding and an alpha edge that sits cleanly on the game's own background.
+Fixing that by hand is the same kind of work as turning a mesh round until it faces
+forward, and it gets the same answer: it is mechanical, so it happens on arrival (PW20).
+
+**On ingest, once, recorded as one transform:**
+
+- trim to the alpha's bounding box, then fit to the family's declared cell — `[sprites]` and
+  `[units] pixels_per_unit` already say what a cell is;
+- pad by the declared margin, anchored where the family says: centre for an icon, the base
+  for anything that stands on the ground, the convention a mesh's origin already follows;
+- downscale with a filter chosen by the family, never by the picture — a pixel-art family
+  quantises to its palette with no smoothing, a painted one resamples;
+- check the fringe: a halo of the generator's background colour around the alpha is the
+  commonest defect a cut-out has, and it is measured and removed rather than noticed in the
+  engine.
+
+**The ingested file is what the engine loads**, and `compose.sheet` takes it like any
+other frame. The original stays on file with its digest, so a change to the family's
+cell size is one re-ingest and never one more purchase.
+
+## Block O — A person sees and answers
+
+### §PW172 One local page to look at
+
+A verdict is the one step the loop cannot automate, and today it is the slowest. The
+person sees a render or a picture only by opening files by hand, so in practice they see
+the agent's description of it — which is the agent's judgement arriving where the
+person's was asked for. `verdict.sheet` and `sitting` (PW109, PW110) made one picture
+per family; nothing puts it in front of anybody.
+
+**`polyweave review` serves one local page**, bound to 127.0.0.1 and nothing else, and
+prints its address. It opens in any browser, including the one inside the editor beside
+the conversation. No build, no packaging, no account: the page ships with the plugin as
+static files, and the server is the standard library's.
+
+**The page is a reader.** Everything it shows is already on disk — `loop.pending`, the
+sheets, the provenance records, the ledger — and it keeps no state of its own, so it can
+never disagree with the files. Closing it loses nothing; a second one open shows the
+same.
+
+**It has one write**: `verdict.judge` with the person's choice and sentence, the call an
+agent makes from a reply in chat. There is no second path into the ledger or the spec
+for a bug to live on.
+
+That is why this is not the graphical editor the non-goal excludes: it edits nothing,
+and the agent loses no door by it — every answer it records is one the agent could have
+carried.
+
+### §PW173 An answer the agent can wait on
+
+A person answering on the page (§PW172) has answered; the agent does not know it.
+Without a way back, the person switches to the chat to say "done", and the agent reads
+the files to find out what was said — a round trip the page existed to remove.
+
+**Every answer is an event on disk.** `verdict.judge` already writes the ledger; the
+page's call also appends one line to `[paths] work`/`answers.jsonl` — who answered which
+family, with what choice and sentence, at what time. An append-only file is the simplest
+thing to wait on, and nothing needs a socket.
+
+**`verdict.answers` is the read**: the answers since a given time, each with the
+members, the choice and the sentence, so the agent resumes from what was said without
+re-reading the ledger. An answer the agent has acted on is not marked or moved — the
+next read simply passes a later time — because a file the agent edits is a file two
+sessions can race on.
+
+**The agent can be woken, not polled.** The same file is what a Monitor or a background
+wait watches, so a session that offered five families can stop, and continue at the
+moment the first answer lands.
+
+**The page shows what the agent did with it.** An answer followed by a new candidate for
+the same family shows the two together, so the person sees their sentence acted on
+rather than trusting that it was.
+
+### §PW174 A mark says where
+
+"The left hand is too big" says what and not where. The agent then guesses the region,
+and an edit bounded by a guess is one that redraws what the person liked.
+
+**A person may mark where.** On the page, a rectangle or a loose outline drawn over the
+picture is kept with the sentence it belongs to. It is stored as a mask image beside the
+answer, at the picture's own pixel size, with the digest of the picture it was drawn on,
+so a mask can never be applied to a different picture than the one it was drawn over.
+
+**The mask is what an edit is bounded by.** A variation (§PW170) takes the region from
+the person's mask where one exists, and from the described element boxes only where none
+does — a person's mark outranks the agent's reading. The check that nothing outside the
+mask changed then runs on the region the person actually drew.
+
+**A mark is also a named predicate.** `judge` already takes `named`, the predicates a
+person blamed for a look. A region with a sentence is the same thing with a place
+attached, so a look verdict carries both and a later search can aim at the part that
+failed .
+
+For a mesh, the mark is drawn on the render, and the answer carries the camera it was
+drawn from, so the region can be traced back onto the surface rather than applied to
+pixels.
+
+### §PW175 The refused beside the kept
+
+The agent refuses drift before a person looks (§PW167), which is right — and makes the
+agent the one filter nobody checks. A picture wrongly refused is never seen, so a bar
+set too tight costs good work silently, and the person has no way to find out.
+
+**The page shows the refused beside the kept.** Each family has two lanes: the
+candidates offered, and the ones the agent set aside, each with the measure that refused
+it, the value, and the floor — palette ΔE 14 against 6, warmer. The refused lane is
+collapsed by default and never absent.
+
+**A person may overrule a refusal.** Promoting a refused picture is a verdict like any
+other, through `judge`, and it records that the bar was wrong for this one — the
+evidence a tolerance is loosened from, where today the only evidence is a person
+noticing.
+
+**Every picture carries its numbers.** Beside each candidate: the drift report, the
+silhouette IoU where there is one, what it cost, and what is left of that service's
+ceiling. A decision is made with the same facts the agent used, never with fewer.
+
+**What was not checked is shown as unchecked.** A measure a family cannot compute — no
+spread in a one-picture canon, no OCR engine — appears as a gap by name, so a clean
+report is never mistaken for a complete one.
+
+### §PW176 Comparing in one place
+
+Two versions of an asset side by side hide exactly what the drift measures find: a
+palette a few ΔE warmer, a line a pixel thicker, a silhouette that grew. Eyes compare a
+difference well only when the two are in the same place.
+
+**Pictures, four ways:**
+
+- side by side, at the size the game shows them and at full size;
+- a slider across one picture, the old on one side and the new on the other;
+- onion skin, one over the other at an opacity the person sets;
+- a difference map, computed by `measure.same` against the noise floor, so what lights up is
+  what is above noise and not every resampled pixel.
+
+**Meshes, turned.** A glTF is shown as a turntable at the project's own rig angles,
+never at a camera of the viewer's choosing — a mesh seen through a different camera is a
+mesh seen differently. The reference drawing's silhouette can be laid over the front
+view, which is the picture the shape check already scored, now visible.
+
+**The comparison is chosen by what is compared**: a variation against its parent
+(§PW170) opens as a slider with the mask outlined, a refused picture against the canon
+as a difference map. The person can switch.
+
+The viewer loads its 3D library from the plugin's own static files, never from a
+network, so the page works offline like everything else here.
+
+### §PW177 The canon on one board
+
+The canon (§PW166) is a folder of files and a table in the config. What a family is
+meant to look like is therefore never seen whole, and a canon that has quietly become
+two styles — the early pictures and the late ones — is found only by somebody opening
+every file.
+
+**The page has a board per family**: every canon picture, the palette as swatches, the
+prompt skeleton as text, and the spread the drift floor is measured from (§PW167), so a
+person sees what the canon looks like and how tolerant it made the agent.
+
+**A picture joins the canon by a click, and only by one.** "Add to canon" is a `judge`
+with its own choice, recorded with the person's sentence; the canon's record names that
+verdict. There is no other route in, so the rule that only a person grows the canon is a
+property of the page and not a promise.
+
+**Removing is the same.** A picture taken out of the canon is a verdict too, and the
+board shows what its removal did to the floor before the person confirms — a canon
+picture that was the outlier widening every tolerance is visible as exactly that.
+
+**Two canons, one page.** A project with several families shows them side by side, so
+the icons and the characters of one game can be seen to belong to it, which is the
+question Cottony and Spinhole will each ask of their own.

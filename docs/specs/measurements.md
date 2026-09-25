@@ -164,6 +164,25 @@ for is the same defect as a dropped argument, one layer up.
 over a rectangle answers about that rectangle, or a region would only ever report its own
 size.
 
+## Sound
+
+A sound is measured off its own samples, never a picture (§PW113), and the two seam
+measures are Cottony's own, from `tools/audio/loop_music.py`. Each is a ratio against
+the track itself, so one bar serves every track: a seam may sound like any ordinary
+moment of that music, and nothing more.
+
+- `seam_step`: the jump from the last sample to the first, over the track's
+  99th-percentile step between samples. Above one, the wrap clicks.
+- `seam_flux`: the largest spectral change across the wrap, over the track's
+  90th-percentile spectral change. Above one, the seam sounds like a cut.
+- `loudness` (RMS, dBFS), `peak` (dBFS) and `duration` (seconds).
+
+A 16-bit or 24-bit PCM WAV is read with the standard library, and anything else is
+decoded by ffmpeg or refused (`spec.unreadable-sound`), as is a clip too short to hold
+a seam. `sound.measure` returns all five. A pure tone is a poor fixture for the
+spectral ratio, since every moment of it is the same: the tests use noise made
+periodic by an inverse FFT, which is a loop by construction.
+
 ## Two digests: did the outline move, or only the look
 
 **A bake leaves two 16-character hashes** in its answer and in its record (§PW141):

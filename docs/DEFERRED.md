@@ -29,11 +29,13 @@
 
 ## Block J — A bar a person sets once
 
-- ⏸ **PW113** (deps: —) **the acceptance spec is only ever aimed at a 3D bake, though nothing in its format is 3D** — set aside (Waits on the owner's scope call.): Whether a spec should measure sound, such as a music loop's seam, is a scope call only the project's owner can make. → §PW113
-
 ## Block K — Reached without reading the source
 
 ## Block L — What a run leaves as evidence
 
 ## Block M — What a game needs beyond the look
+
+## Block N — Pictures held to a canon
+
+## Block O — A person sees and answers
 

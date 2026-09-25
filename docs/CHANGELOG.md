@@ -155,7 +155,7 @@
 - ✅ **PW110** **nothing lists which assets wait on a person's look, so each family waits its turn in series** — loop.pending lists every asset whose newest render no person has judged, and verdict.sitting lays all their sheets out for one look (design recorded in `docs/specs/adoption.md`).
 - ✅ **PW111** **no command checks committed artefacts against their specs, so a spec binds only while a search runs** — A spec may name its artefact, and `python -m polyweave verify` checks each one as committed, with no render, and exits non-zero on a failure (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW112** **a spec is checked against the bake and never against what the engine draws on screen** — A capture script names where it drew each asset, a spec's screen points at one, and verify checks it there and says when screen and bake disagree (design recorded in `docs/specs/acceptance-spec.md`).
-- ✅ **PW113 (pictures)** **the acceptance spec is only ever aimed at a 3D bake, though nothing in its format is 3D** — Any PNG is held to a spec, a drawn sprite as much as a bake, and the spec says so; nothing new was needed.
+- ✅ **PW113** **the acceptance spec is only ever aimed at a 3D bake, though nothing in its format is 3D** — The owner put sound in scope: a spec bounds a WAV's seam step and spectral change, loudness, peak and length, checked and verified like a picture (design recorded in `docs/specs/acceptance-spec.md`).
 
 ## Block K — Reached without reading the source
 
@@ -200,3 +200,8 @@
 - ✅ **PW142** **a voxel model is drawn with every filled cell, including the ones buried where no face of them can be seen** — The addon draws skin() alone on request, read off depths or neighbours, and exposed_by() names what a hit uncovers; the frame cost is unmeasured (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW143** **an acceptance spec bounds how an asset looks and never what it costs the game to draw** — A spec bounds triangles, materials, draw calls, texture bytes and cells, read off the .glb, voxel model or texture it names, so costly looks fail (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW144** **the rig a search found is kept nowhere, so each run searches it again and no other game can start from it** — A passing searched port keeps its rig beside the family file; the next port renders at it before searching, and another family can start from it (design recorded in `docs/specs/adoption.md`).
+
+## Block N — Pictures held to a canon
+
+## Block O — A person sees and answers
+

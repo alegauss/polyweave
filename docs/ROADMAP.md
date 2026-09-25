@@ -30,6 +30,28 @@
 
 ## Block M — What a game needs beyond the look
 
+## Block N — Pictures held to a canon
+
+- 📋 **PW162** (deps: —) **a project can name only one paid service, so a second one's key, schema and ceiling have nowhere to live** — `[service]` and `[budget]` are Meshy's shape, credits and all, and an image service billing per picture in dollars would have to overwrite them. → §PW162
+- 📋 **PW163** (deps: PW162) **no picture can be bought, so every drawing a mesh starts from still has to come from a person** — A drawing is the input the mesh service reads best, and a transparent picture costs cents where the mesh it steers costs thirty credits. → §PW163
+- 📋 **PW164** (deps: PW163) **an image service reports no balance, so what a picture cost cannot be measured the way a mesh's is** — The ledger proves a cost with two balance readings, and without them an image entry is either unmeasured or invented, and nothing says which. → §PW164
+- 📋 **PW165** (deps: PW163) **a picture cannot be made again from its record, because the service rewrites the prompt it was given** — Ideogram 4.0 turns a text prompt into its own before drawing, so a record of only what was sent describes a picture nobody asked for. → §PW165
+- 📋 **PW166** (deps: PW165) **nothing says what a project's pictures should look like, so each prompt restates a house style by hand and drifts** — Consistency asked of a generator in prose is luck, while a style declared once as approved pictures, palette and prompt skeleton is an input every call carries. → §PW166
+- 📋 **PW167** (deps: PW166) **a picture that drifts from the canon is found by a person looking, after it was already offered as a candidate** — The agent's part is to refuse drift by number before a person spends attention, never to decide that a picture which passes looks right. → §PW167
+- 📋 **PW168** (deps: PW163, PW167) **a reference drawing reaches the mesh service unchecked, so a wrong silhouette is found only once the mesh is paid for** — A picture costs cents and a mesh thirty credits, so the outline belongs settled on the picture before anything dearer is bought. → §PW168
+- 💭 **PW169** (deps: PW165) **lettering drawn into a picture can be misspelt or lose its accents, and nothing reads the letters back** — Text is the service's strength and the one defect no palette or silhouette measure sees, and a game in Portuguese loses its accents first. → §PW169
+- 📋 **PW170** (deps: PW165, PW167) **a variation of an approved picture can change what was approved, and nothing compares it to the one it came from** — Refining through remix or edit is where proportions and palette quietly move, and the approved parent is what it should be measured against. → §PW170
+- 📋 **PW171** (deps: PW163) **2D art from a picture service arrives at the size and margin it chose, not the project's grid** — An icon or UI piece needs the project's pixel size, padding and a clean alpha edge, and that fix is mechanical, so it belongs on arrival. → §PW171
+
+## Block O — A person sees and answers
+
+- 📋 **PW172** (deps: —) **a person sees a render or picture only by opening files by hand, so a verdict rests on the agent's description** — The look is the one step reserved to a person, and it is the slowest because nothing puts the picture in front of them. → §PW172
+- 📋 **PW173** (deps: PW172) **an answer given on the page reaches the agent only when the person says so again in chat** — A session that offered five families should resume on the first answer, from what was said, without re-reading the ledger to find out. → §PW173
+- 📋 **PW174** (deps: PW173) **a person can say what is wrong with a picture only in words, so where it is wrong is the agent's guess** — An edit bounded by a guessed region redraws what the person liked, and a mark drawn over the picture is the region they meant. → §PW174
+- 📋 **PW175** (deps: PW172, PW167) **a person sees the pictures the agent kept and never the ones it refused, so a wrong refusal is invisible** — The drift check makes the agent a filter nobody audits, and a bar set too tight costs good work in silence unless the refused are shown. → §PW175
+- 📋 **PW176** (deps: PW172) **two versions of an asset are compared side by side, where a few ΔE of drift or a grown silhouette goes unseen** — Eyes compare a difference well only when both are in one place, so a slider, an onion skin and a difference map show what side by side hides. → §PW176
+- 📋 **PW177** (deps: PW172, PW166) **the canon is a folder of files, so what a family is meant to look like is never seen whole** — A canon that quietly became two styles is found only by opening every file, and only a person's click should ever change what it holds. → §PW177
+
 ## Done when — PW36
 
 - **Every piece of Cottony's pipeline runs on the plugin, with no fork** The
@@ -93,16 +115,28 @@
   bake_model.py no longer renders the friends and the mascot and a person judged them,
   or a person decided they stay, and polyweave.loop.json says which.
 
-## Done when — PW113
+## Done when — Block N
 
-- **The owner has said whether sound belongs in the acceptance spec** Either a non-goal
-  forbidding measures of audio is on the list, or a line exists that adds the first
-  audio measure; both are checkable in `non-goal list` and the roadmap.
+- **Two games keep two canons with no style compiled in** Cottony and Spinhole each
+  declare `[style]` in their own polyweave.toml and generate against it, and a grep of
+  src/polyweave finds neither project's palette, skeleton or path.
+- **A mesh bought from a picture had its silhouette passed on the picture** For a real
+  Cottony asset, the ledger holds the picture's entry and its shape check before the
+  mesh's entry, and the mesh's provenance names that picture as its reference by digest.
+
+## Done when — Block O
+
+- **A real sitting is answered on the page and resumed without a chat message** For a
+  Cottony family, a person answers on the review page, the ledger holds that verdict
+  through judge alone, and the agent's next candidate follows from verdict.answers with
+  no chat message in between.
 
 ## Non-goals
 
-- **A graphical editor** The caller here is an agent in a terminal, so a surface that
-  needs a person at a screen to operate is one the agent cannot use at all.
+- **A graphical editor** The caller here is an agent in a terminal, so a surface only a
+  person can operate is one the agent cannot use. A local page where a person looks and
+  answers is not an editor: it edits nothing, and its one write is the verdict call an
+  agent would make.
 - **Replacing Blender, Godot or the generative service** Those three already do the
   work; what is missing is the loop around them, so this orchestrates and measures and
   never re-implements a renderer, an engine or a mesh generator.

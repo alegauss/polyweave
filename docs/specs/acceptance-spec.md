@@ -254,9 +254,24 @@ turn them through `search.search` with its own evaluator. The renderer stays 3D;
 does not have to. Cottony's `check_vivid.py`, a board held at its 99th-percentile
 saturation, is a spec with one predicate. It needs nothing new.
 
-Sound is outside this for now. The vocabulary has no measure of audio, and whether a
-music loop's seam belongs to the same kind of bar is a scope decision, not a missing
-predicate.
+**Sound is held to the same file** (§PW113), which the owner decided. A spec whose
+`artefact` is a `.wav` (or an `.ogg`, `.flac`, `.mp3` or `.opus` where ffmpeg is on
+PATH) bounds its sound measures, and `accept.check`, `verify` and a search read it as
+they read a picture:
+
+```toml
+asset    = "music_calm"
+artefact = "audio/music_calm.wav"
+
+[[predicate]]
+id      = "seam"
+measure = "seam_flux"
+max     = 1.0
+```
+
+A sound measure asks nothing of the ladder and reports no rung. `of` names the sound
+where the subject is something else, and a sound bound checked on a picture is
+refused (`spec.not-sound`). The measures are in measurements.md.
 
 ## What it costs to draw
 

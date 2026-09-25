@@ -22,7 +22,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Annotated, Any
 
-from . import cost
+from . import cost, sound
 from . import measure as M
 from .describe import Param, operation
 from .errors import PolyweaveError
@@ -91,7 +91,7 @@ class Spec:
         require and can never lower it.
         """
         # A cost is read off the file, so it asks nothing of the ladder (§PW143).
-        looks = [p.measure for p in self.predicates if not cost.is_cost(p.measure)]
+        looks = [p.measure for p in self.predicates if not _off_picture(p.measure)]
         return lowest_rung(looks, self.rung)
 
 
@@ -195,7 +195,7 @@ def _predicate(entry: dict, index: int) -> Predicate:
             "spec.no-measure",
             f"the predicate {name!r} names no measure",
             f"name one of {', '.join(sorted(M.COMPUTES))}, or a cost: "
-            f"{', '.join(cost.COSTS)}",
+            f"{', '.join(cost.COSTS)}, or a sound: {', '.join(sound.SOUNDS)}",
         )
     unknown = sorted(set(entry) - set(FIELDS) - set(ARGUMENTS))
     if unknown:
@@ -208,7 +208,7 @@ def _predicate(entry: dict, index: int) -> Predicate:
             allowed=(*FIELDS, *ARGUMENTS),
             at=f"predicate.{name}",
         )
-    if not cost.is_cost(str(entry["measure"])):
+    if not _off_picture(str(entry["measure"])):
         M.resolve(str(entry["measure"]))  # refuses a name the vocabulary does not carry
     if not any(b in entry for b in BOUNDS):
         raise PolyweaveError(
@@ -380,9 +380,13 @@ def check(
         )
 
     results = []
+    heard: dict = {}
     for p in spec.predicates:
         if cost.is_cost(p.measure):
             results.append(_costed(p, subject, root))
+            continue
+        if sound.is_sound(p.measure):
+            results.append(_sounded(p, subject, root, heard))
             continue
         arguments = dict(p.arguments)
         for key in ("against", "target"):
@@ -455,6 +459,43 @@ def checked(
     here = Path(root)
     picture = Path(subject) if Path(subject).is_absolute() else here / subject
     return check(read(spec, here), picture, rung=rung or None, root=here)
+
+
+def _off_picture(name: str) -> bool:
+    """A measure read off a file rather than pixels: a cost or a sound."""
+    return cost.is_cost(name) or sound.is_sound(name)
+
+
+def _sounded(p: Predicate, subject: Any, root: str | Path, heard: dict) -> dict:
+    """A sound predicate, read off the sound it names or the subject (§PW113)."""
+    where = Path(p.of) if p.of else subject
+    if not isinstance(where, str | Path) or not sound.is_audio(where):
+        raise PolyweaveError(
+            "spec.not-sound",
+            f"{p.id} bounds {p.measure}, and what it is checked on is not a sound",
+            'check the spec against an audio file, or add of = "<the .wav or .ogg>"',
+            example='of = "audio/music_calm.ogg"',
+        )
+    where = Path(where)
+    where = where if where.is_absolute() else Path(root) / where
+    if str(where) not in heard:
+        heard[str(where)] = sound.measure(where)
+    value = float(heard[str(where)][p.measure])
+    return {
+        "id": p.id,
+        "measure": p.measure,
+        "of": str(where),
+        "region": None,
+        "rung": None,
+        "value": value,
+        "min": p.minimum,
+        "max": p.maximum,
+        "weight": p.weight,
+        "passed": _passes(value, p),
+        "margin": margin(value, p.minimum, p.maximum),
+        "headroom": headroom(value, p.minimum, p.maximum),
+        **_bound(p, value),
+    }
 
 
 def _costed(p: Predicate, subject: Any, root: str | Path) -> dict:

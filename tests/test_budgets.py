@@ -40,8 +40,8 @@ ERROR = 1_400
 HELP_VERB = 4_000
 #: The top-level `--help`, naming every verb: 11,346. One more verb line is ~150.
 #: 11,792 once measure.digest is a verb (§PW141), 11,933 with cost.read (§PW143),
-#: 12,066 with motion.bake (§PW160).
-HELP_TOP = 12_200
+#: 12,066 with motion.bake (§PW160), 12,216 with sound.measure (§PW113).
+HELP_TOP = 12_350
 #: A search's answer over its default budget of 24 samples: 3,739.
 SEARCH = 4_000
 
