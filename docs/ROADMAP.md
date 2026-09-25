@@ -39,8 +39,7 @@
 
 ## Block O — A person sees and answers
 
-- 📋 **PW173** (deps: PW172 ✅) **an answer given on the page reaches the agent only when the person says so again in chat** — A session that offered five families should resume on the first answer, from what was said, without re-reading the ledger to find out. → §PW173
-- 📋 **PW174** (deps: PW173) **a person can say what is wrong with a picture only in words, so where it is wrong is the agent's guess** — An edit bounded by a guessed region redraws what the person liked, and a mark drawn over the picture is the region they meant. → §PW174
+- 📋 **PW174** (deps: PW173 ✅) **a person can say what is wrong with a picture only in words, so where it is wrong is the agent's guess** — An edit bounded by a guessed region redraws what the person liked, and a mark drawn over the picture is the region they meant. → §PW174
 - 📋 **PW175** (deps: PW172 ✅, PW167 ✅) **a person sees the pictures the agent kept and never the ones it refused, so a wrong refusal is invisible** — The drift check makes the agent a filter nobody audits, and a bar set too tight costs good work in silence unless the refused are shown. → §PW175
 - 📋 **PW176** (deps: PW172 ✅) **two versions of an asset are compared side by side, where a few ΔE of drift or a grown silhouette goes unseen** — Eyes compare a difference well only when both are in one place, so a slider, an onion skin and a difference map show what side by side hides. → §PW176
 - 📋 **PW177** (deps: PW172 ✅, PW166 ✅) **the canon is a folder of files, so what a family is meant to look like is never seen whole** — A canon that quietly became two styles is found only by opening every file, and only a person's click should ever change what it holds. → §PW177

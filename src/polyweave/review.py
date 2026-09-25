@@ -85,13 +85,19 @@ def answer(root, body: dict) -> dict:
             given=family,
             allowed=sorted(families),
         )
-    return verdict.judge(
+    said = verdict.judge(
         families[family]["members"],
         str(body.get("choice") or ""),
         str(body.get("why") or ""),
         root=str(config.root),
         named=list(body.get("named") or ()),
     )
+    # An event on disk, so the agent that offered the sitting resumes on it without
+    # the person saying so again in chat (§PW173).
+    said["answer"] = verdict.record_answer(
+        said, sitting=listed, family=family, root=config.root
+    )
+    return said
 
 
 def server(root=".", port: int = 0) -> ThreadingHTTPServer:
@@ -110,7 +116,11 @@ def server(root=".", port: int = 0) -> ThreadingHTTPServer:
                 return self._file(PAGE / "page.js")
             if asked.path == "/api/state":
                 return self._json(
-                    {"pending": loop.pending(str(here)), "sittings": sittings(here)}
+                    {
+                        "pending": loop.pending(str(here)),
+                        "sittings": sittings(here),
+                        "answers": verdict.answers(root=str(here))["answers"],
+                    }
                 )
             if asked.path == "/file":
                 wanted = (parse_qs(asked.query).get("path") or [""])[0]

@@ -144,3 +144,39 @@ def test_the_command_line_has_the_verb():
 
     stated = command_line().parse_args(["review", "--port", "8765"])
     assert stated.command == "review" and stated.port == 8765
+
+
+# -- an answer the agent can wait on (§PW173) ----------------------------------------
+
+
+def test_an_answer_on_the_page_is_an_event_on_disk(page):
+    base, where = page
+    post(base + "/api/judge", judged(choice="accept", why="that is the star"))
+    lines = (where / ".polyweave" / "answers.jsonl").read_text(encoding="utf-8")
+    one = json.loads(lines.splitlines()[-1])
+    assert one["family"] == "stars" and one["why"] == "that is the star"
+    assert one["members"][0]["person_accepted"] is True
+
+
+def test_the_agent_resumes_from_what_was_said_and_carries_it_into_its_run(page):
+    from polyweave import loop
+
+    base, where = page
+    first = verdict.answers(root=where)
+    assert first["answers"] == []
+    post(base + "/api/judge", judged())
+    run = loop.start("star_dim", "after", root=where)
+    found = verdict.answers(first["latest"], run=run, root=where)
+    assert [one["choice"] for one in found["answers"]] == ["number"]
+    carried = found["run"]["verdicts"][0]
+    assert carried["tool_passed"] is False and carried["person_accepted"] is True
+    assert carried["predicates"][0]["id"] == "no-hot-facet"
+    # a later read from `latest` hands back nothing already acted on
+    assert verdict.answers(found["latest"], root=where)["answers"] == []
+
+
+def test_the_page_is_given_the_answers_to_show_beside_the_family(page):
+    base, _ = page
+    post(base + "/api/judge", judged(choice="accept", why="yes"))
+    _, body, _ = get(base + "/api/state")
+    assert json.loads(body)["answers"][0]["why"] == "yes"

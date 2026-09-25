@@ -39,7 +39,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 4 },
-  { block: "O", title: "A person sees and answers", open: 5 },
+  { block: "O", title: "A person sees and answers", open: 4 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -93,18 +93,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW173",
-    block: "O",
-    symptom: "an answer given on the page reaches the agent only when the person says so again in chat",
-    why: "A session that offered five families should resume on the first answer, from what was said, without re-reading the ledger to find out.",
-    deps: [],
-  },
-  {
     id: "PW174",
     block: "O",
     symptom: "a person can say what is wrong with a picture only in words, so where it is wrong is the agent's guess",
     why: "An edit bounded by a guessed region redraws what the person liked, and a mark drawn over the picture is the region they meant.",
-    deps: ["PW173"],
+    deps: [],
   },
   {
     id: "PW175",

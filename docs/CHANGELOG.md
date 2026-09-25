@@ -217,3 +217,4 @@
 ## Block O — A person sees and answers
 
 - ✅ **PW172** **a person sees a render or picture only by opening files by hand, so a verdict rests on the agent's description** — polyweave review serves one page on 127.0.0.1 that shows every sitting's sheets from disk and has one write, verdict.judge (design recorded in `docs/specs/acceptance-spec.md`).
+- ✅ **PW173** **an answer given on the page reaches the agent only when the person says so again in chat** — Each page answer is a line in answers.jsonl, and verdict.answers hands back what was said since a time and carries it into the agent's open run (design recorded in `docs/specs/acceptance-spec.md`).

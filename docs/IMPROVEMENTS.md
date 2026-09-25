@@ -354,31 +354,6 @@ any of them.
 
 ## Block O — A person sees and answers
 
-### §PW173 An answer the agent can wait on
-
-A person answering on the page (PW172) has answered; the agent does not know it. Without
-a way back, the person switches to the chat to say "done", and the agent reads the files
-to find out what was said — a round trip the page existed to remove.
-
-**Every answer is an event on disk.** `verdict.judge` already writes the ledger; the
-page's call also appends one line to `[paths] work`/`answers.jsonl` — who answered which
-family, with what choice and sentence, at what time. An append-only file is the simplest
-thing to wait on, and nothing needs a socket.
-
-**`verdict.answers` is the read**: the answers since a given time, each with the
-members, the choice and the sentence, so the agent resumes from what was said without
-re-reading the ledger. An answer the agent has acted on is not marked or moved — the
-next read simply passes a later time — because a file the agent edits is a file two
-sessions can race on.
-
-**The agent can be woken, not polled.** The same file is what a Monitor or a background
-wait watches, so a session that offered five families can stop, and continue at the
-moment the first answer lands.
-
-**The page shows what the agent did with it.** An answer followed by a new candidate for
-the same family shows the two together, so the person sees their sentence acted on
-rather than trusting that it was.
-
 ### §PW174 A mark says where
 
 "The left hand is too big" says what and not where. The agent then guesses the region,

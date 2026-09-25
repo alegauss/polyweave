@@ -60,8 +60,9 @@ HELP_VERB = 4_000
 #: with picture.buy (§PW163), 12,712 with purchase.reconcile and picture.describe
 #: (§PW164, §PW165), 13,013 with style.read and style.drift (§PW166, §PW167), 13,327
 #: with picture.gate and picture.letters (§PW168, §PW169), 13,664 with picture.vary
-#: and picture.against_parent (§PW170).
-HELP_TOP = 13_900
+#: and picture.against_parent (§PW170), 13,968 with picture.fit, the review verb and
+#: verdict.answers (§PW171, §PW172, §PW173).
+HELP_TOP = 14_300
 #: A search's answer over its default budget of 24 samples: 3,739.
 SEARCH = 4_000
 

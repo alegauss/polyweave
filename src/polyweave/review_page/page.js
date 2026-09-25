@@ -13,7 +13,26 @@ async function state() {
   return answer.json();
 }
 
-function family(sitting, name, laid, choices) {
+// What was said of this family on the page, and what came of it since (§PW173): an
+// answer followed by a newer candidate for a member shows the two together.
+function history(sitting, name, laid, answers, assets) {
+  const said = answers.filter((one) => one.sitting === sitting && one.family === name);
+  const block = element("div", { class: "answer" });
+  for (const one of said) {
+    block.append(element("p", {}, "Answered " + one.choice + " at " + one.at + ": " + one.why));
+  }
+  if (said.length) {
+    for (const member of laid.members || []) {
+      const row = assets.find((asset) => asset.asset === member.name);
+      if (row && row.candidate && row.waiting) {
+        block.append(element("p", {}, member.name + " has a newer candidate since: " + row.candidate));
+      }
+    }
+  }
+  return block;
+}
+
+function family(sitting, name, laid, choices, answers, assets) {
   const box = element("article", { class: "family" }, element("h2", {}, name));
   box.append(element("img", {
     src: "/file?path=" + encodeURIComponent(laid.sheet),
@@ -57,8 +76,9 @@ function family(sitting, name, laid, choices) {
       ? "Recorded: " + body.choice + ". " + (body.ledger || "")
       : body.code + ": " + body.message + "\n" + (body.remedy || "");
     send.disabled = answer.ok;
+    if (answer.ok) form.reset();  // said once; the next read shows it under the family
   });
-  box.append(form);
+  box.append(history(sitting, name, laid, answers, assets), form);
   return box;
 }
 
@@ -70,7 +90,8 @@ async function draw() {
   for (const sitting of found.sittings.slice().reverse()) {
     sittings.append(element("h2", {}, "Sitting of " + sitting.at));
     for (const [name, laid] of Object.entries(sitting.families)) {
-      sittings.append(family(sitting.manifest, name, laid, sitting.choices));
+      sittings.append(family(
+        sitting.manifest, name, laid, sitting.choices, found.answers, found.pending.assets));
     }
   }
   const rows = document.querySelector("#pending tbody");
@@ -85,3 +106,10 @@ async function draw() {
 }
 
 draw();
+// The page reads the files again every few seconds, so an answer, or the agent's next
+// candidate, shows without a reload. It keeps nothing of its own between reads.
+// A redraw never runs over an answer being written: anything typed or chosen holds it.
+const writing = () =>
+  [...document.querySelectorAll("textarea")].some((box) => box.value.trim()) ||
+  document.querySelector("input[type=radio]:checked") !== null;
+setInterval(() => { if (!writing()) draw(); }, 5000);

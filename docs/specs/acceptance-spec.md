@@ -144,8 +144,18 @@ from the sitting's own manifest rather than from the page, and the person's choi
 sentence. A sitting or family the project never laid out is `loop.unknown-sitting`. The
 post must carry `X-Polyweave: 1`, a header a browser will not send across origins without a
 preflight this server never answers, so another site open in the same browser cannot post
-a verdict. The page records no loop run of its own. An answer given there reaches the
-spec and the canon, and the agent's run is PW173's.
+a verdict.
+
+**Every answer is an event on disk** (§PW173). The page's call appends one line to
+`[paths] work`/`answers.jsonl`: when, which sitting and family, the choice, the sentence, and
+each member's verdict with the predicates its check read. **`verdict.answers(since, run=)`
+is the read**: the answers after `since`, and `latest` to pass next time. Given the agent's
+open run, it carries each member's verdict into it as `judge` would have, so a session that
+offered five families resumes from what was said without the person repeating it in chat.
+Nothing is marked or moved, because a file two sessions both edit is one they race on. The
+same file is what a background wait watches instead of polling. The page reads again every
+five seconds unless an answer is being written, and shows each family's answers with any
+newer candidate for its members, so the person sees their sentence acted on.
 
 **A pass also says how comfortably** (§PW104). The margin is 1 anywhere inside a bound, so
 Cottony's stars passed with a facet at 0.4695 under a ceiling of 0.47 and the search called

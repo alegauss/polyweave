@@ -52,8 +52,9 @@ TOOL_BUDGET = 4500
 #: (§PW165), a quote held against the bill and an approved picture's own prompt.
 #: Raised to 49,400 at 48,759 for style.read (§PW166) and style.drift (§PW167), and
 #: to 50,600 at 50,015 for picture.gate (§PW168) and picture.letters (§PW169), and to
-#: 52,400 at 51,765 for picture.vary and picture.against_parent (§PW170).
-LIST_BUDGET = 52400
+#: 52,400 at 51,765 for picture.vary and picture.against_parent (§PW170), and to
+#: 53,300 at 52,889 for picture.fit (§PW171) and verdict.answers (§PW173).
+LIST_BUDGET = 53300
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

@@ -299,6 +299,19 @@ def judge(
                 "named": mine,
                 "rewritten": rewritten,
                 "canon": joined,
+                # What the check said, as `loop.judged` takes it, so an answer given
+                # where no run was open can still be carried into one (§PW173).
+                "check": {
+                    "predicates": [
+                        {
+                            "id": one["id"],
+                            "value": one.get("value"),
+                            "passed": bool(one.get("passed")),
+                            "bound": {"side": (one.get("bound") or {}).get("side")},
+                        }
+                        for one in found["predicates"]
+                    ]
+                },
             }
         )
     return {
@@ -310,6 +323,82 @@ def judge(
         "ledger": "recorded in the open run"
         if run is not None
         else "not recorded: no run was open; pass run= from loop.start",
+    }
+
+
+#: Where every answer given on the review page lands, one line each, appended and never
+#: rewritten, so it is the simplest thing an agent can wait on (§PW173).
+ANSWERS = "answers.jsonl"
+
+
+def record_answer(said: dict, *, sitting: str, family: str, root) -> dict:
+    """Append one answer from the page, for the agent that offered the sitting."""
+    import json
+    from datetime import UTC, datetime
+
+    from .config import load
+
+    line = {
+        "at": datetime.now(tz=UTC).isoformat(timespec="microseconds"),
+        "sitting": sitting,
+        "family": family,
+        "choice": said["choice"],
+        "why": said["why"],
+        "members": said["members"],
+    }
+    path = load(root).path("paths.work") / ANSWERS
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as appended:
+        appended.write(json.dumps(line, sort_keys=True) + "\n")
+    return line
+
+
+@operation("verdict.answers")
+def answers(
+    since: Annotated[
+        str, Param("the `latest` of the last read; everything if empty")
+    ] = (""),
+    *,
+    run: Annotated[dict, Param("the open loop run to carry each answer into")] = None,
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
+) -> dict:
+    """The answers a person gave on the review page since a time, to resume from.
+
+    Each carries the sitting, the family, the choice, the sentence and every member's
+    verdict, so the agent resumes from what was said without re-reading the ledger.
+    Given `run`, each member's verdict is also carried into it, as `judge` would have
+    with a run open. Nothing is marked or moved: the next read passes `latest` as
+    `since`, because a file two sessions both edit is a file they race on. The file is
+    `[paths] work/answers.jsonl`, which a background wait can watch instead of polling.
+    """
+    import json
+
+    from .config import load
+    from .files import read_text_retrying
+
+    path = load(root).path("paths.work") / ANSWERS
+    held = [
+        json.loads(line)
+        for line in (read_text_retrying(path) or "").splitlines()
+        if line.strip()
+    ]
+    fresh = [one for one in held if one["at"] > str(since)]
+    if run is not None:
+        for one in fresh:
+            for member in one["members"]:
+                loop.judged(
+                    run,
+                    tool_passed=member["tool_passed"],
+                    person_accepted=member["person_accepted"],
+                    why=f"{member['name']}: {one['why']}",
+                    check=member.get("check"),
+                    named=member.get("named") or (),
+                )
+    return {
+        "answers": fresh,
+        "latest": fresh[-1]["at"] if fresh else str(since),
+        "file": str(path),
+        "run": run,
     }
 
 
