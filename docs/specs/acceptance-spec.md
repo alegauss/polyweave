@@ -203,6 +203,19 @@ also bakes the front view, the one `shape.check` scores. It writes them and a
 compares the two newest turntables of one mesh frame by frame, in the same four ways, and
 lays `against`, the drawing that asked for the shape, over the front view.
 
+**Each family's canon is seen whole, on one board** (§PW177). `GET /api/canon` returns, per
+declared family, every canon picture with the verdict that admitted it, the palette, the
+skeleton, and each drift measure's floor. It also returns every floor as it would be
+without each picture, so a canon picture that is the outlier widening every tolerance
+shows as exactly that. The page loads the boards when asked, since measuring a canon is
+heavier than the rest of the page. **The canon changes only by a person's click.** "Add to
+canon" on a gate's candidate is the same verdict, `judge` accepting the look with the
+member carrying `canon`, and the canon's entry names it. "Take out of the canon" requires
+a sentence (`loop.no-reason` otherwise). It moves the picture into `withdrawn/` beside the
+canon, with the entry and the removing verdict in `withdrawn/canon.json`, so nothing
+drifts against it any more and the removal can still be argued with. A picture not in the
+canon is `style.not-in-canon`. Neither door is an operation an agent can call.
+
 **A pass also says how comfortably** (§PW104). The margin is 1 anywhere inside a bound, so
 Cottony's stars passed with a facet at 0.4695 under a ceiling of 0.47 and the search called
 that nothing left to gain. Each predicate now also carries its `headroom`: the distance to

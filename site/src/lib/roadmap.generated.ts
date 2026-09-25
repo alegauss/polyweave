@@ -39,7 +39,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 4 },
-  { block: "O", title: "A person sees and answers", open: 1 },
+  { block: "O", title: "A person sees and answers", open: 0 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -90,13 +90,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "N",
     symptom: "an approved picture cannot be reframed to another aspect ratio, so an icon and a banner of it are two separate pictures",
     why: "A reframe keeps everything the parent held and adds only a border, which is the easiest variation to hold to what it must not change.",
-    deps: [],
-  },
-  {
-    id: "PW177",
-    block: "O",
-    symptom: "the canon is a folder of files, so what a family is meant to look like is never seen whole",
-    why: "A canon that quietly became two styles is found only by opening every file, and only a person's click should ever change what it holds.",
     deps: [],
   },
 ];

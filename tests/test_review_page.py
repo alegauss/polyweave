@@ -419,3 +419,95 @@ def test_a_mesh_is_turned_at_the_rigs_own_camera_and_listed_for_the_page(page):
     assert turned[0]["asset"] == "m"
     assert [f["picture"] for f in turned[0]["frames"]][0] == "turns/m/turn_00.png"
     assert turned[0]["against"] == "review/stars.png"
+
+
+# -- the canon on one board (§PW177) -------------------------------------------------
+
+
+@pytest.fixture
+def canon(page):
+    from PIL import ImageDraw
+
+    base, where = page
+    (where / "polyweave.toml").write_text(
+        '[style]\ncanon = "canon"\npalette = ["#f2c14e"]\n', "utf-8"
+    )
+    (where / "canon").mkdir()
+    entries = []
+    for i, box in enumerate([(14, 44, 114, 84), (15, 44, 115, 84), (4, 4, 124, 124)]):
+        image = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
+        ImageDraw.Draw(image).ellipse(
+            box,
+            fill=(242, 193, 78, 255),
+            outline=(20, 20, 20, 255),
+            width=3 + 6 * (i == 2),
+        )
+        image.save(where / "canon" / f"c{i}.png")
+        entries.append(
+            {
+                "picture": f"c{i}.png",
+                "sha256": str(i),
+                "verdict": {"choice": "accept", "why": "yes", "when": "2026-09-25"},
+            }
+        )
+    (where / "canon" / "canon.json").write_text(json.dumps(entries), "utf-8")
+    return base, where
+
+
+def test_the_board_shows_the_canon_and_what_each_picture_does_to_the_floor(canon):
+    base, _ = canon
+    _, body, _ = get(base + "/api/canon")
+    board = json.loads(body)[0]
+    assert board["family"] == "default" and board["palette"] == ["#f2c14e"]
+    assert [p["path"] for p in board["pictures"]][0] == "canon/c0.png"
+    # the heavy-lined outlier widens the line-weight floor, and without it it narrows
+    assert board["without"]["c2.png"]["line_weight"] < board["floors"]["line_weight"]
+
+
+def test_a_picture_is_taken_out_of_the_canon_by_a_persons_sentence(canon):
+    from polyweave import style
+
+    base, where = canon
+    status, said = post(
+        base + "/api/judge", {"withdraw": "c2.png", "why": "an outlier"}
+    )
+    assert status == 200 and said["withdrawn"]["withdrawn"]["why"] == "an outlier"
+    assert not (where / "canon" / "c2.png").exists()
+    assert (where / "canon" / "withdrawn" / "c2.png").is_file()
+    _, declared = style_of(where)
+    assert [e["picture"] for e in style.admitted(declared)] == ["c0.png", "c1.png"]
+    status, said = post(base + "/api/judge", {"withdraw": "c1.png", "why": " "})
+    assert status == 400 and said["code"] == "loop.no-reason"
+
+
+def style_of(where):
+    from polyweave import config
+
+    return config.load(where).style()
+
+
+def test_a_kept_picture_joins_the_canon_by_a_click(canon):
+    from PIL import ImageDraw
+
+    from polyweave import picture, style
+
+    base, where = canon
+    for name in ("outline.png", "new.png"):
+        image = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
+        ImageDraw.Draw(image).ellipse((14, 44, 114, 84), fill=(242, 193, 78, 255))
+        image.save(where / name)
+    ran = picture.gate(["new.png"], "outline.png", root=where)
+    status, said = post(
+        base + "/api/judge",
+        {
+            "gate": ran["id"],
+            "picture": "new.png",
+            "choice": "accept",
+            "why": "this is the look",
+            "canon": "default",
+        },
+    )
+    assert status == 200
+    assert said["members"][0]["canon"]["verdict"]["why"] == "this is the look"
+    _, declared = style_of(where)
+    assert "new.png" in [e["picture"] for e in style.admitted(declared)]

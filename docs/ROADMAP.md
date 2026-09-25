@@ -39,8 +39,6 @@
 
 ## Block O — A person sees and answers
 
-- 📋 **PW177** (deps: PW172 ✅, PW166 ✅) **the canon is a folder of files, so what a family is meant to look like is never seen whole** — A canon that quietly became two styles is found only by opening every file, and only a person's click should ever change what it holds. → §PW177
-
 ## Done when — PW36
 
 - **Every piece of Cottony's pipeline runs on the plugin, with no fork** The

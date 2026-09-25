@@ -350,3 +350,116 @@ def _against(key: str, value: float, canon: list[float]) -> dict:
 def _gap(value: float, middle: float, circular: bool) -> float:
     gap = value - middle
     return (gap + 180.0) % 360.0 - 180.0 if circular else gap
+
+
+# -- the canon on one board (§PW177) ------------------------------------------------
+
+#: Where a picture taken out of a canon goes, beside it: kept, so a removal can be
+#: argued with, and out of what `admitted` reads, so no drift is measured against it.
+WITHDRAWN = "withdrawn"
+
+
+def _floors(features_of: list[dict]) -> dict[str, float | None]:
+    """Each measure's floor: how far the canon's pictures sit from their median."""
+    keys = sorted({k for one in features_of for k, v in one.items() if v is not None})
+    found: dict[str, float | None] = {}
+    for key in keys:
+        if key == "warmth":
+            continue
+        values = [one[key] for one in features_of if one.get(key) is not None]
+        if len(values) < 2:
+            found[key] = None
+            continue
+        middle = float(np.median(values))
+        circular = key == "light_degrees"
+        found[key] = round(max(abs(_gap(v, middle, circular)) for v in values), 4)
+    return found
+
+
+def board(family: str | None = None, root=".") -> dict:
+    """One family's canon as a person sees it: pictures, palette, skeleton, spread.
+
+    `without` gives every floor as it would be with each picture taken out, so an
+    outlier widening every tolerance shows as exactly that before anyone removes it.
+    """
+    from .image import load as load_image
+
+    config = load(root)
+    name, declared = config.style(family)
+    held = admitted(declared)
+    floor_alpha = config.tolerances().alpha_floor
+    palette = list(declared.get("palette") or [])
+    measured = [
+        features(
+            load_image(Path(declared["canon"]) / e["picture"]), palette, floor_alpha
+        )
+        for e in held
+    ]
+    here = config.root
+    return {
+        "family": name,
+        "canon": provenance.relative(Path(declared["canon"]), here)
+        if declared.get("canon")
+        else None,
+        "pictures": [
+            {
+                **e,
+                "path": provenance.relative(
+                    Path(declared["canon"]) / e["picture"], here
+                ),
+            }
+            for e in held
+        ],
+        "palette": palette,
+        "skeleton": declared.get("skeleton") or {},
+        "floors": _floors(measured),
+        "without": {
+            e["picture"]: _floors(measured[:i] + measured[i + 1 :])
+            for i, e in enumerate(held)
+        },
+    }
+
+
+def withdraw(
+    picture: str, *, family: str | None, why: str, when: str = "", root="."
+) -> dict:
+    """Take a picture out of its family's canon, as a person's verdict (§PW177).
+
+    Like `admit`, not an operation: the review page is the one caller, carrying a
+    person's click and sentence. The file moves to `withdrawn/` beside the canon, and
+    the entry with the verdict that took it out goes to `withdrawn/canon.json`.
+    """
+    if not str(why).strip():
+        raise PolyweaveError(
+            "loop.no-reason",
+            "a picture was taken out of the canon with no sentence",
+            "say why it no longer belongs; a canon changed without a reason is one "
+            "nobody can argue with",
+        )
+    config = load(root)
+    name, declared = config.style(family)
+    held = admitted(declared)
+    chosen = next((e for e in held if e["picture"] == picture), None)
+    if chosen is None:
+        raise PolyweaveError(
+            "style.not-in-canon",
+            f"{picture!r} is not in the {name} canon",
+            f"name one of {', '.join(e['picture'] for e in held) or 'its pictures'}",
+            given=picture,
+            allowed=[e["picture"] for e in held],
+        )
+    canon = Path(declared["canon"])
+    aside = canon / WITHDRAWN
+    aside.mkdir(parents=True, exist_ok=True)
+    shutil.move(str(canon / picture), str(aside / picture))
+    gone = json.loads(read_text_retrying(aside / LEDGER) or "[]")
+    entry = {
+        **chosen,
+        "withdrawn": {"why": why, "when": when or Date.today().isoformat()},
+    }
+    write_atomic(
+        aside / LEDGER, json.dumps([*gone, entry], indent=2, sort_keys=True) + "\n"
+    )
+    kept = [e for e in held if e["picture"] != picture]
+    write_atomic(canon / LEDGER, json.dumps(kept, indent=2, sort_keys=True) + "\n")
+    return entry

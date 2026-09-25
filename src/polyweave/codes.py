@@ -712,6 +712,12 @@ CODES: dict[str, Code] = {
         when="an empty or fully transparent frame given to style.drift",
         doors=("check the picture is the asset",),
     ),
+    "style.not-in-canon": Code(
+        means="the picture named is not in the family's canon",
+        when="a removal from the review page for a picture already withdrawn, or one "
+        "in another family's canon",
+        doors=("name a picture the board shows",),
+    ),
     "style.no-canon": Code(
         means="the family has no canon directory, so nothing can be admitted to it",
         when="a verdict naming a canon family whose [style] declares no canon",

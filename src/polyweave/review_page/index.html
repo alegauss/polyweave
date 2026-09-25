@@ -76,6 +76,12 @@
   .layers img + img { position: absolute; left: 0; top: 0; }
   .layers img.mask { opacity: 0.35; filter: invert(1); mix-blend-mode: multiply; }
   .compare input[type=range] { display: block; width: 320px; max-width: 100%; }
+  .swatches { display: flex; flex-wrap: wrap; gap: 6px; }
+  .swatch {
+    padding: 4px 8px; border-radius: 4px; border: 1px solid var(--line);
+    background: var(--chip); color: #fff; text-shadow: 0 0 2px #000; font-size: 12px;
+  }
+  pre { background: var(--ground); padding: 8px; border-radius: 6px; overflow-x: auto; }
   table { border-collapse: collapse; width: 100%; background: var(--panel); }
   td, th { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: left; }
 </style>
@@ -87,11 +93,15 @@
   <section id="sittings"></section>
   <section id="gates"></section>
   <section id="meshes"></section>
+  <h2>The canons</h2>
+  <button type="button" id="show-canons">Show every family's canon</button>
+  <section id="canons"></section>
   <h2>Where every asset stands</h2>
   <table id="pending"><thead><tr>
     <th>asset</th><th>waiting</th><th>newest candidate</th><th>last judged</th>
   </tr></thead><tbody></tbody></table>
 </main>
 <script src="/page.js"></script>
+<script>document.getElementById("show-canons").addEventListener("click", () => drawCanons());</script>
 </body>
 </html>

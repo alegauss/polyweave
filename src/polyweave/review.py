@@ -224,8 +224,24 @@ def answer(root, body: dict) -> dict:
     evidence a tolerance is loosened from (§PW175).
     """
     config = load(root)
+    if body.get("withdraw"):
+        from . import style
+
+        # Out of the canon by a person's click and sentence, and by nothing else.
+        return {
+            "withdrawn": style.withdraw(
+                str(body["withdraw"]),
+                family=body.get("canon") or None,
+                why=str(body.get("why") or ""),
+                root=config.root,
+            )
+        }
     if body.get("gate"):
         members, listed, family = _overruled(root, body)
+        if body.get("canon"):
+            # Into the canon the same way: a verdict accepting the look, whose record
+            # the canon's own entry names (§PW177).
+            members = [{**one, "canon": str(body["canon"])} for one in members]
         said = verdict.judge(
             members,
             str(body.get("choice") or ""),
@@ -388,6 +404,14 @@ def server(root=".", port: int = 0) -> ThreadingHTTPServer:
                         "turntables": turntables(here),
                     }
                 )
+            if asked.path == "/api/canon":
+                from . import style
+
+                try:
+                    families = load(here).styles() if load(here).states("style") else {}
+                    return self._json([style.board(name, here) for name in families])
+                except PolyweaveError as refused:
+                    return self._json(refused.as_dict(), HTTPStatus.BAD_REQUEST)
             if asked.path == "/api/compare":
                 query = parse_qs(asked.query)
                 old, new = (query.get(k, [""])[0] for k in ("old", "new"))
@@ -404,14 +428,17 @@ def server(root=".", port: int = 0) -> ThreadingHTTPServer:
             return self._json({"code": "not-found"}, HTTPStatus.NOT_FOUND)
 
         def do_POST(self):  # noqa: N802
+            # Read before answering, refusals included: a reply sent while the client
+            # is still writing its body gets the connection reset under it.
+            length = int(self.headers.get("Content-Length") or 0)
+            sent = self.rfile.read(length) if length else b""
             if (
                 urlparse(self.path).path != "/api/judge"
                 or self.headers.get(ASKED) != "1"
             ):
                 return self._json({"code": "refused"}, HTTPStatus.FORBIDDEN)
-            length = int(self.headers.get("Content-Length") or 0)
             try:
-                body = json.loads(self.rfile.read(length) or b"{}")
+                body = json.loads(sent or b"{}")
                 return self._json(answer(here, body))
             except PolyweaveError as refused:
                 return self._json(refused.as_dict(), HTTPStatus.BAD_REQUEST)

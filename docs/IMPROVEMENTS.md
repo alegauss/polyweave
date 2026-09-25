@@ -353,27 +353,3 @@ a `reframe` row of `prices`, and learn its fields by the schema probe before tru
 any of them.
 
 ## Block O — A person sees and answers
-
-### §PW177 The canon on one board
-
-The canon (PW166) is a folder of files and a table in the config. What a family is meant
-to look like is therefore never seen whole, and a canon that has quietly become two
-styles — the early pictures and the late ones — is found only by somebody opening every
-file.
-
-**The page has a board per family**: every canon picture, the palette as swatches, the
-prompt skeleton as text, and the spread the drift floor is measured from (PW167), so a
-person sees what the canon looks like and how tolerant it made the agent.
-
-**A picture joins the canon by a click, and only by one.** "Add to canon" is a `judge`
-with its own choice, recorded with the person's sentence; the canon's record names that
-verdict. There is no other route in, so the rule that only a person grows the canon is a
-property of the page and not a promise.
-
-**Removing is the same.** A picture taken out of the canon is a verdict too, and the
-board shows what its removal did to the floor before the person confirms — a canon
-picture that was the outlier widening every tolerance is visible as exactly that.
-
-**Two canons, one page.** A project with several families shows them side by side, so
-the icons and the characters of one game can be seen to belong to it, which is the
-question Cottony and Spinhole will each ask of their own.

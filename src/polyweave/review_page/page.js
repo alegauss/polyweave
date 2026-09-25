@@ -239,6 +239,21 @@ function candidate(run, one) {
   }
   card.append(facts);
   if (one.compare) card.append(compare(one.compare.old, one.picture, one.compare.mode, one.compare.mask));
+  const joining = element("form");
+  const reason = element("textarea", { placeholder: "Why it belongs in the canon.", "aria-label": "why" });
+  const join = element("button", { type: "submit" }, "Add to canon");
+  const joined = element("p", { class: "answer", "aria-live": "polite" });
+  joining.append(reason, join, joined);
+  joining.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!reason.value.trim()) { joined.textContent = "Write a sentence first."; return; }
+    join.disabled = true;
+    const { ok, body } = await post({ gate: run.id, picture: one.picture, choice: "accept",
+      why: reason.value, canon: run.family || "default" });
+    joined.textContent = ok ? "Added to the canon." : body.code + ": " + body.message;
+    if (ok) joining.reset();
+  });
+  card.append(joining);
   if (!one.passed) {
     const form = element("form");
     const why = element("textarea", {
@@ -314,6 +329,69 @@ function meshes(turntables) {
     section.append(box);
   }
   return section;
+}
+
+// The canon on one board per family (§PW177): what a family is meant to look like, seen
+// whole, with how tolerant it made the agent. Loaded when asked, since measuring every
+// canon picture is heavier than the rest of the page.
+const post = (body) => fetch("/api/judge", {
+  method: "POST",
+  headers: { "Content-Type": "application/json", "X-Polyweave": "1" },
+  body: JSON.stringify(body),
+}).then(async (answer) => ({ ok: answer.ok, body: await answer.json() }));
+
+function canonBoard(one) {
+  const box = element("article", { class: "family" }, element("h2", {}, one.family + " canon"));
+  const swatches = element("div", { class: "swatches" });
+  for (const colour of one.palette) {
+    const chip = element("span", { class: "swatch", title: colour }, colour);
+    chip.style.setProperty("--chip", colour);
+    swatches.append(chip);
+  }
+  box.append(swatches, element("pre", {}, JSON.stringify(one.skeleton, null, 2)));
+  const floors = element("p", { class: "says" }, "floors: " + Object.entries(one.floors)
+    .map(([k, v]) => k + " " + (v === null ? "none (fewer than two pictures)" : v)).join(", "));
+  box.append(floors);
+  const grid = element("div", { class: "canon" });
+  for (const picture of one.pictures) {
+    const card = element("div", { class: "candidate" });
+    card.append(element("img", { src: file(picture.path), alt: picture.picture }));
+    const facts = element("ul");
+    facts.append(element("li", {}, picture.picture + ": " + picture.verdict.choice + " on " +
+      picture.verdict.when + ", “" + picture.verdict.why + "”"));
+    const without = one.without[picture.picture] || {};
+    const narrower = Object.entries(without).filter(([k, v]) => v !== null && one.floors[k] !== null
+      && v < one.floors[k]).map(([k, v]) => k + " " + one.floors[k] + " → " + v);
+    facts.append(element("li", {}, narrower.length
+      ? "without it the floors narrow: " + narrower.join(", ")
+      : "without it no floor narrows"));
+    card.append(facts);
+    const form = element("form");
+    const why = element("textarea", { placeholder: "Why it no longer belongs.", "aria-label": "why" });
+    const send = element("button", { type: "submit" }, "Take out of the canon");
+    const said = element("p", { class: "answer", "aria-live": "polite" });
+    form.append(why, send, said);
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!why.value.trim()) { said.textContent = "Write a sentence first."; return; }
+      send.disabled = true;
+      const { ok, body } = await post({ canon: one.family, withdraw: picture.picture, why: why.value });
+      said.textContent = ok ? "Taken out." : body.code + ": " + body.message;
+    });
+    card.append(form);
+    grid.append(card);
+  }
+  box.append(grid);
+  return box;
+}
+
+async function drawCanons() {
+  const boards = document.getElementById("canons");
+  boards.replaceChildren("Measuring the canons.");
+  const answer = await fetch("/api/canon", { cache: "no-store" });
+  const found = await answer.json();
+  boards.replaceChildren(...(Array.isArray(found) ? found.map(canonBoard)
+    : [element("p", {}, found.code + ": " + found.message)]));
 }
 
 async function draw() {
