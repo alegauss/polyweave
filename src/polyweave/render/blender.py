@@ -315,6 +315,7 @@ def render_to(
     size: int | tuple[int, int],
     samples: int,
     seed: int,
+    denoise: bool = True,
 ) -> Path:
     """Render the scene to a PNG with alpha, and return where it landed.
 
@@ -328,7 +329,7 @@ def render_to(
     scene.render.engine = "CYCLES"
     scene.cycles.samples = int(samples)
     scene.cycles.seed = int(seed)
-    scene.cycles.use_denoising = True
+    scene.cycles.use_denoising = bool(denoise)
     scene.render.resolution_x = int(wide)
     scene.render.resolution_y = int(tall)
     scene.render.resolution_percentage = 100
@@ -337,6 +338,84 @@ def render_to(
     scene.render.filepath = str(out.resolve())
     bpy.ops.render.render(write_still=True)
     return out
+
+
+#: The flat colours a slot pass paints each material slot, as far apart as eight can be.
+SLOT_COLOURS = (
+    (1.0, 0.0, 0.0),
+    (0.0, 1.0, 0.0),
+    (0.0, 0.0, 1.0),
+    (1.0, 1.0, 0.0),
+    (1.0, 0.0, 1.0),
+    (0.0, 1.0, 1.0),
+    (1.0, 1.0, 1.0),
+    (0.5, 0.5, 0.5),
+)
+
+
+def slot_masks(
+    scene: Any, subject: Any, path: str | Path, *, size: tuple[int, int]
+) -> dict | None:
+    """Which pixels wear which material slot, off one flat pass at the rig (§PW161).
+
+    The picture keeps only the blended result, so a look digest's palette was one mean
+    colour and restyling a small slot could sit inside one quantisation step. Here every
+    slot is an emission of its own colour, lights and world off, one sample and no
+    denoising, and each subject pixel goes to the nearest of those colours. The rig and
+    the camera are untouched, so the masks line up with the picture pixel for pixel.
+    None where the subject wears fewer than two slots, since one colour is the mean.
+    """
+    import numpy as np
+
+    from ..image import load as load_image
+
+    bpy = require()
+    slots = [s for s in subject.material_slots if s.material is not None]
+    if len(slots) < 2 or len(slots) > len(SLOT_COLOURS):
+        return None
+    kept = [slot.material for slot in slots]
+    names = [one.name for one in kept]
+    lights = [o for o in scene.objects if o.type == "LIGHT" and not o.hide_render]
+    background = scene.world.node_tree.nodes.get("Background") if scene.world else None
+    strength = background.inputs["Strength"].default_value if background else None
+    exposure = scene.view_settings.exposure
+    flat = []
+    try:
+        for slot, colour in zip(slots, SLOT_COLOURS, strict=False):
+            paint = bpy.data.materials.new("polyweave-slot")
+            paint.use_nodes = True
+            nodes = paint.node_tree.nodes
+            nodes.clear()
+            glow = nodes.new("ShaderNodeEmission")
+            glow.inputs["Color"].default_value = (*colour, 1.0)
+            glow.inputs["Strength"].default_value = 1.0
+            done = nodes.new("ShaderNodeOutputMaterial")
+            paint.node_tree.links.new(glow.outputs["Emission"], done.inputs["Surface"])
+            slot.material = paint
+            flat.append(paint)
+        for light in lights:
+            light.hide_render = True
+        if background is not None:
+            background.inputs["Strength"].default_value = 0.0
+        scene.view_settings.exposure = 0.0
+        out = render_to(scene, path, size=size, samples=1, seed=0, denoise=False)
+    finally:
+        for slot, material in zip(slots, kept, strict=True):
+            slot.material = material
+        for light in lights:
+            light.hide_render = False
+        if background is not None:
+            background.inputs["Strength"].default_value = strength
+        scene.view_settings.exposure = exposure
+        for paint in flat:
+            bpy.data.materials.remove(paint)
+
+    rgba = load_image(out).rgba.astype(float) / 255.0
+    painted = np.asarray(SLOT_COLOURS[: len(slots)])
+    nearest = np.argmin(
+        ((rgba[..., None, :3] - painted[None, None]) ** 2).sum(axis=-1), axis=-1
+    )
+    return {name: nearest == index for index, name in enumerate(names)}
 
 
 def prepare(scene: Any) -> Any:

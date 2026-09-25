@@ -4,24 +4,6 @@
 
 ## Block B — Seeing the result cheaply
 
-### §PW161 A palette per material slot
-
-PW141 gave a bake a `look_digest` whose palette is the subject's mean Lab colour. The
-design asked for one colour per declared material slot, and a render has no way to say
-which pixels wear which slot: `apply_material` puts a slot on each polygon, and the
-picture keeps only the blended result.
-
-That matters for the assets this project makes. A piped cushion, a sweet with its
-wrapper and a badge with a rim are two materials each. Restyling the smaller one moves
-the mean by a fraction of what it moved the slot, so a change a person would see can sit
-inside one quantisation step and leave the look digest where it was.
-
-The fix is a second, cheap pass at the same rig: every slot rendered as a flat emission
-of its own index colour, no lights and one sample, giving a mask per slot at the size of
-the picture. The palette becomes the mean Lab over each mask, keyed by slot name, and
-the masks are not kept. The test restyles the small slot of a two-slot mesh and expects
-the look digest to move while the mean-colour version does not.
-
 ## Block C — The asset compiler
 
 ## Block D — Fetching from a paid service without surprise

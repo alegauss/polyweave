@@ -915,12 +915,20 @@ def _rung_of(subject: Any, root: str | Path) -> str | None:
 LOOK_PERCENTILES = (5, 50, 95)
 
 
-def figures(image: Image, *, alpha_floor: float, triangles: int | None = None) -> dict:
+def figures(
+    image: Image,
+    *,
+    alpha_floor: float,
+    triangles: int | None = None,
+    slots: dict | None = None,
+) -> dict:
     """What the two digests are over: the outline's figures, and the look's.
 
     Split where Shio's render digest splits, so "I restyled it" and "I broke the
     outline" are different answers. The box and the footprint anchor are fractions of
-    the frame, so two sizes of one render agree; the palette is the subject's mean Lab.
+    the frame, so two sizes of one render agree. The palette is the mean Lab over each
+    material slot where `slots` gives a mask per slot (§PW161), and the subject's mean
+    where it does not.
     """
     subject = image.subject(alpha_floor)
     box = _boxes(subject)
@@ -944,9 +952,19 @@ def figures(image: Image, *, alpha_floor: float, triangles: int | None = None) -
     at = zip(LOOK_PERCENTILES, luma, strict=True)
     look = {
         "luma": {f"p{p}": float(v) for p, v in at},
-        "palette": _region_colour(image, subject),
+        "palette": _palette(image, subject, slots),
     }
     return {"shape": shape, "look": look}
+
+
+def _palette(image: Image, subject: np.ndarray, slots: dict | None) -> Any:
+    """One Lab colour per slot that shows, or the subject's mean without masks."""
+    worn = {
+        name: _region_colour(image, subject & mask)
+        for name, mask in (slots or {}).items()
+        if (subject & mask).any()
+    }
+    return worn or _region_colour(image, subject)
 
 
 def _quantised(value: Any, step: float) -> Any:
@@ -969,7 +987,12 @@ def _hashed(value: Any) -> str:
 
 
 def digests(
-    image: Image, *, alpha_floor: float, noise: float, triangles: int | None = None
+    image: Image,
+    *,
+    alpha_floor: float,
+    noise: float,
+    triangles: int | None = None,
+    slots: dict | None = None,
 ) -> dict:
     """`shape_digest` and `look_digest`, with the figures and the step they are over.
 
@@ -978,7 +1001,7 @@ def digests(
     a hundred, so a render that moved only by sampler noise keeps both. A figure close
     to a step's edge can still cross it, which is what `figures` is returned for.
     """
-    found = figures(image, alpha_floor=alpha_floor, triangles=triangles)
+    found = figures(image, alpha_floor=alpha_floor, triangles=triangles, slots=slots)
     look = found["look"]
     return {
         "shape_digest": _hashed(_quantised(found["shape"], noise)),

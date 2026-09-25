@@ -26,7 +26,7 @@ export interface GeneratedNonGoal {
 
 export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 0 },
-  { block: "B", title: "Seeing the result cheaply", open: 1 },
+  { block: "B", title: "Seeing the result cheaply", open: 0 },
   { block: "C", title: "The asset compiler", open: 0 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
   { block: "E", title: "One world with the engine", open: 0 },
@@ -41,13 +41,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW161",
-    block: "B",
-    symptom: "a look digest's palette is one mean colour, so restyling the small slot of a two-material asset may not move it",
-    why: "The render keeps no mask per material slot, so a wrapper or rim recoloured moves the mean by less than one quantisation step.",
-    deps: [],
-  },
   {
     id: "PW57",
     block: "H",

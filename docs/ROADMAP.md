@@ -4,8 +4,6 @@
 
 ## Block B — Seeing the result cheaply
 
-- 📋 **PW161** (deps: —) **a look digest's palette is one mean colour, so restyling the small slot of a two-material asset may not move it** — The render keeps no mask per material slot, so a wrapper or rim recoloured moves the mean by less than one quantisation step. → §PW161
-
 ## Block C — The asset compiler
 
 ## Block D — Fetching from a paid service without surprise

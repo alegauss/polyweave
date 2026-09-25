@@ -111,3 +111,91 @@ def test_a_bake_returns_and_records_both_digests(tmp_path):
     assert record["digest"]["shape_digest"] == first["shape_digest"]
     assert again["cached"] is True
     assert again["look_digest"] == first["look_digest"]
+
+
+BADGE = """name   = "badge"
+output = "badge"
+
+[materials]
+body = {{ colour = "#E0C090" }}
+rim  = {{ colour = "{rim}" }}
+
+[[nodes]]
+id       = "face"
+op       = "plate"
+rect     = [0, 0, 4, 4]
+depth    = 1
+material = "body"
+
+[[nodes]]
+id       = "stud"
+op       = "plate"
+rect     = [1.5, 1.5, 1, 1]
+depth    = 0.3
+front    = 1
+material = "rim"
+
+[[nodes]]
+id     = "badge"
+op     = "union"
+inputs = ["face", "stud"]
+"""
+
+
+def test_restyling_a_small_slot_moves_its_own_palette_entry(tmp_path):
+    """§PW161: the mean of the whole subject barely moves when a small slot is
+    recoloured; the slot's own colour does."""
+    pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
+    from polyweave import cli, provenance, render
+    from polyweave import config as C
+
+    (tmp_path / C.FILENAME).write_text(
+        "[render]\npreview_size = 64\nfinal_size = 64\n"
+        "samples = { sphere = 4, preview = 8, final = 8 }\nseed = 11\n",
+        encoding="utf-8",
+    )
+
+    class Quiet:
+        def stage(self, *a, **k):
+            pass
+
+    def baked(rim, name):
+        (tmp_path / "badge.toml").write_text(BADGE.format(rim=rim), encoding="utf-8")
+        built = cli.build_one("badge.toml", root=tmp_path, out="mesh")
+        (mesh,) = [o for o in built["outputs"] if o.endswith(".glb")]
+        found = render.bake(
+            Quiet(),
+            out=name,
+            model=mesh,
+            rung="preview",
+            inline=False,
+            azimuth=0.0,
+            elevation=0.0,
+            root=tmp_path,
+        )
+        picture = measure.load(tmp_path / name)
+        record = provenance.read(name, root=str(tmp_path))
+        return found, picture, record
+
+    red, first, record = baked("#C03020", "a.png")
+    blue, second, _ = baked("#2040C0", "b.png")
+
+    # One colour per slot, and recorded, so a moved digest says which slot moved.
+    assert set(red["palette"]) == {"body", "rim"}
+    assert record["digest"]["palette"] == red["palette"]
+    body = [
+        abs(a - b)
+        for a, b in zip(red["palette"]["body"], blue["palette"]["body"], strict=True)
+    ]
+    rim = [
+        abs(a - b)
+        for a, b in zip(red["palette"]["rim"], blue["palette"]["rim"], strict=True)
+    ]
+    assert max(body) < 5.0 < max(rim)
+    assert red["look_digest"] != blue["look_digest"]
+    assert red["shape_digest"] == blue["shape_digest"]
+    # Without masks the palette is one colour for the whole subject.
+    assert isinstance(
+        measure.figures(first, alpha_floor=FLOOR)["look"]["palette"], list
+    )
+    del second

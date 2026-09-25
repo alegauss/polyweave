@@ -461,13 +461,21 @@ def bake(
 
     # Two short answers a later session compares without the pictures: did the outline
     # move, and did the look (§PW141). Quantised at this rung's noise floor.
+    # A palette per material slot, off one flat pass at the same rig (§PW161): the
+    # blended picture alone cannot say which pixels wear which slot.
+    masks = blender.slot_masks(
+        scene, subject, work / "slots" / f"{signature}.png", size=frame
+    )
     digested = measure.digests(
         measure.load(out_path),
         alpha_floor=floor_alpha,
         noise=tolerances.render_noise,
         triangles=blender.triangles(subject),
+        slots=masks,
     )
     digest = {k: digested[k] for k in ("shape_digest", "look_digest", "quantum")}
+    # The palette the look digest is over, so a moved digest says which slot moved.
+    digest["palette"] = digested["figures"]["look"]["palette"]
 
     elapsed = round(time.monotonic() - started, 3)
     record = provenance.build(
