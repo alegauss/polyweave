@@ -49,5 +49,7 @@
 
 ## Block R — Levels measured before a person plays them
 
+- ⏸ **PW201** (deps: —) **Nobody knows if a scripted bot's win rate tracks how hard a level feels to a person** — set aside (Awaits a person playing.): Every later line in this block tunes levels against a simulated player, so a person's verdict on that proxy decides whether the block proceeds or is retired. → §PW201
+
 ## Block S — Playing the game, not only rendering it
 

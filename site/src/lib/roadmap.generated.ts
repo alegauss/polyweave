@@ -42,7 +42,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "O", title: "A person sees and answers", open: 0 },
   { block: "P", title: "Music and sound a game can ship", open: 8 },
   { block: "Q", title: "Words held to the world", open: 1 },
-  { block: "R", title: "Levels measured before a person plays them", open: 6 },
+  { block: "R", title: "Levels measured before a person plays them", open: 5 },
   { block: "S", title: "Playing the game, not only rendering it", open: 7 },
 ];
 
@@ -143,13 +143,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "Q",
     symptom: "Starship's screen still shows names its world bible replaced",
     why: "The block is proven only when its first consumer's text, lines and character assets are held to a declared world through polyweave.",
-    deps: [],
-  },
-  {
-    id: "PW201",
-    block: "R",
-    symptom: "Nobody knows if a scripted bot's win rate tracks how hard a level feels to a person",
-    why: "Every later line in this block tunes levels against a simulated player, so a person's verdict on that proxy decides whether the block proceeds or is retired.",
     deps: [],
   },
   {
@@ -274,4 +267,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW36", "PW53", "PW77", "PW78", "PW79", "PW80", "PW81", "PW82", "PW180", "PW184"];
+export const generatedPaused: string[] = ["PW36", "PW53", "PW77", "PW78", "PW79", "PW80", "PW81", "PW82", "PW180", "PW184", "PW201"];
