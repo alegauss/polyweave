@@ -239,9 +239,17 @@ holds the variation to its family's canon. What the variation should show stays 
 person's verdict. There is no reframe yet: no reframe endpoint was documented when this
 shipped.
 
-The synchronous endpoints carry no task id, so the entry's `task_id` is the service name,
-the answer's `created` time and the seed. The asynchronous variants and their poll are not
-built yet.
+**The request goes to the asynchronous route** (§PW178): `/v1/ideogram-v4/async/generate`,
+or `.../async/generate-transparent`. The answer is a `generation_id` at once, so no
+connection is held while the picture is drawn. `GET /v1/generations/{id}` is asked every two
+seconds until its `status` is `completed` or `failed`, for at most five minutes, so a poll
+never answered ends rather than holding one of the account's ten slots. The id is the
+entry's `task_id`. `picture.buy` is a `fetch` job, so `--job` runs it in the background,
+reporting the poll as `building` and the download as `downloading`. Where the completed
+answer reports `usage_cost_usd_micros` and the ceiling is in USD, that is the charge: a
+measurement, `measured: true`, with the quote kept as `expected_credits`. A failed
+generation ledgers nothing. An answer that already carries its pictures, as a synchronous
+one does, is taken as it is, and is identified by its `created` time and seed.
 
 ## A picture is put on the project's grid on arrival
 

@@ -50,9 +50,10 @@ _inflight = threading.BoundedSemaphore(INFLIGHT)
 TIMEOUT = 120
 
 
-@operation("picture.buy")
+@operation("picture.buy", kind="fetch", injects=("report",))
 def buy(
-    out: Annotated[str, Param("where it is written, under the project")],
+    report=None,
+    out: Annotated[str, Param("where it is written, under the project")] = None,
     prompt: Annotated[
         str, Param("what it shows, as text the service may rewrite")
     ] = None,
@@ -95,6 +96,12 @@ def buy(
             f"pass one of {', '.join(MODELS)}",
             given=model,
             allowed=MODELS,
+        )
+    if not out:
+        raise PolyweaveError(
+            "fetch.missing-field",
+            "a picture was asked for with nowhere to write it",
+            "pass out, a path under the project",
         )
     _one_prompt(prompt, json_prompt, model)
     config = load(root)
@@ -141,10 +148,15 @@ def buy(
 
     purchase.allow(price, root=root, service=name)
 
-    endpoint = f"{base.rstrip('/')}/v1/{path}/generate"
+    # The asynchronous route (§PW178): the answer is a generation id at once, and the
+    # connection is not held while the picture is drawn. The id is the purchase's task
+    # id, which the synchronous answer never carried.
+    endpoint = f"{base.rstrip('/')}/v1/{path}/async/generate"
     if transparent:
         endpoint += "-transparent"
     answer = _answered(endpoint, key, payload)
+    if answer.get("generation_id") and not answer.get("data"):
+        answer = _polled(base, key, answer["generation_id"], report)
     drawn = (answer.get("data") or [{}])[0]
     link = drawn.get("url")
     if not link:
@@ -158,6 +170,10 @@ def buy(
             detail=json.dumps(answer)[:400],
         )
 
+    if report is not None:
+        report.stage(
+            "downloading", progress=0.9, note="taking delivery before the link expires"
+        )
     body = _download(link)
     # The service bills per picture returned, so an answer carrying more than was asked
     # for is charged as many prices, although only the first is kept.
@@ -165,10 +181,14 @@ def buy(
     entry = purchase.capture(
         body,
         out=out,
-        # The synchronous answer carries no id of its own, so the id is what it does
-        # carry: when it was made and the seed it was made with.
-        task_id=f"{name}:{answer.get('created')}:{drawn.get('seed')}",
+        # The generation id where there is one; an answer without one is identified by
+        # what it does carry, when it was made and the seed it was made with.
+        task_id=f"{name}:{answer.get('generation_id')}"
+        if answer.get("generation_id")
+        else f"{name}:{answer.get('created')}:{drawn.get('seed')}",
         credits=round(price * returned, 4),
+        # What the service says it charged, where it says: a reading, not the quote.
+        reported=_reported(answer, config.budget(service=name)["unit"]),
         outputs=returned,
         prompt=sent,
         bought="image",
@@ -553,6 +573,84 @@ def _mime(path) -> str:
     return {".png": "image/png", ".webp": "image/webp"}.get(
         path.suffix.lower(), "image/jpeg"
     )
+
+
+#: How long a generation may stay pending before the call gives up on it, and how
+#: often it is asked. A poll that is never answered ends here rather than holding a
+#: slot of the account's ten for ever.
+POLL_TIMEOUT = 300
+POLL_EVERY = 2.0
+
+
+def _polled(base: str, key: str, generation: str, report) -> dict:
+    """Ask after one generation until it is done, failed or out of time."""
+    import time
+
+    started = time.monotonic()
+    while True:
+        status, body = _get(f"{base.rstrip('/')}/v1/generations/{generation}", key)
+        if status != 200:
+            raise PolyweaveError(
+                "fetch.service-error",
+                f"asking after generation {generation} was answered {status}",
+                "read the detail; nothing was ledgered",
+                detail=body[:400].decode("utf-8", "replace"),
+            )
+        answer = json.loads(body)
+        state = answer.get("status")
+        if state == "completed":
+            return {
+                **answer,
+                "generation_id": answer.get("generation_id") or generation,
+            }
+        if state == "failed":
+            raise PolyweaveError(
+                "fetch.service-error",
+                f"generation {generation} failed: "
+                f"{answer.get('failure_reason') or 'no reason given'}",
+                "reword the prompt or ask again; nothing was ledgered",
+                detail=json.dumps(answer)[:400],
+            )
+        waited = time.monotonic() - started
+        if waited > POLL_TIMEOUT:
+            raise PolyweaveError(
+                "fetch.service-error",
+                f"generation {generation} was still {state} after {POLL_TIMEOUT}s",
+                f"ask after it later by its id, {generation}; nothing was ledgered",
+            )
+        if report is not None:
+            report.stage(
+                "building",
+                progress=min(0.8, waited / POLL_TIMEOUT),
+                note=f"generation {generation} is {state}",
+            )
+        time.sleep(POLL_EVERY)
+
+
+def _reported(answer: dict, unit: str) -> float | None:
+    """What the service reports a generation cost, in the ceiling's unit, if it does."""
+    micros = answer.get("usage_cost_usd_micros")
+    if micros is None or str(unit).upper() != "USD":
+        return None
+    return round(float(micros) / 1_000_000, 6)
+
+
+def _get(url: str, key: str) -> tuple[int, bytes]:
+    """GET one URL with the key, inside the account's allowance of calls in flight."""
+    request = urllib.request.Request(url, headers={"Api-Key": key})  # noqa: S310
+    with _inflight:
+        try:
+            with urllib.request.urlopen(request, timeout=TIMEOUT) as answer:  # noqa: S310
+                return answer.status, answer.read()
+        except urllib.error.HTTPError as refused:
+            return refused.code, refused.read()
+        except urllib.error.URLError as exc:
+            raise PolyweaveError(
+                "fetch.service-error",
+                f"the service could not be reached at {url}",
+                "check the base under [service] and the network",
+                detail=str(exc.reason),
+            ) from exc
 
 
 def _price(name: str, prices: dict, model: str, speed: str | None) -> float:

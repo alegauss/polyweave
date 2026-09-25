@@ -274,23 +274,6 @@ unstated.
 
 ## Block N — Pictures held to a canon
 
-### §PW178 Buying a picture asynchronously
-
-`picture.buy` sends the synchronous endpoints, so one call holds a connection open until
-the picture is drawn, and ten of them fill the account's default of ten in flight.
-Ideogram also takes the same request asynchronously: the answer is a generation id at
-once, and `GET /v1/generations/{generation_id}` returns the picture when it is ready.
-
-**Build the asynchronous variant as a job**, the way a long bake already is:
-`picture.buy` gains the job kind, the request is sent to the async route, the generation
-id is the entry's `task_id` (which is what the synchronous answer never carried), and
-the poll is the job's own stage. Capture still happens the moment the poll returns a
-link, because the link expires.
-
-What to check before building: the exact async route and the poll's answer shape, which
-the public reference names but did not spell out when PW163 shipped. A poll that is
-never answered must end on the job's timeout rather than hold a slot for ever.
-
 ### §PW179 A paid picture that never arrived
 
 `picture.buy` asks `purchase.allow`, the service draws and charges, and only then is the

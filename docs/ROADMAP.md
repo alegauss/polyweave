@@ -32,7 +32,6 @@
 
 ## Block N — Pictures held to a canon
 
-- 📋 **PW178** (deps: PW163 ✅) **a picture is bought only synchronously, so each call holds a connection open until it is drawn** — The service takes the same request asynchronously and answers with an id to poll, which is also the task id the synchronous answer lacks. → §PW178
 - 📋 **PW179** (deps: PW163 ✅, PW164 ✅) **a picture paid for whose download then fails is charged to no ceiling, so the next spend is judged too high** — The ledger is written only once the asset is on disk, and a picture service reports no balance to reveal the spend afterwards. → §PW179
 - 📋 **PW180** (deps: PW166 ✅) **no canon picture is ever sent as a style reference, so a family's look reaches the service only as words** — A reference picture holds line weight and proportion that no palette or style block states, and the canon already holds the approved ones. → §PW180
 - 📋 **PW181** (deps: PW170 ✅) **an approved picture cannot be reframed to another aspect ratio, so an icon and a banner of it are two separate pictures** — A reframe keeps everything the parent held and adds only a border, which is the easiest variation to hold to what it must not change. → §PW181

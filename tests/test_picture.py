@@ -105,7 +105,9 @@ def test_the_transparent_endpoint_is_the_default_and_the_prompt_field_is_the_mod
 ):
     buy(tmp_path)
     endpoint, key, payload = service.sent[0]
-    assert endpoint == "https://api.ideogram.ai/v1/ideogram-v4/generate-transparent"
+    assert (
+        endpoint == "https://api.ideogram.ai/v1/ideogram-v4/async/generate-transparent"
+    )
     assert key == "sk-picture"
     assert payload == {"text_prompt": "a plush booster"}
 
@@ -116,7 +118,7 @@ def test_the_transparent_endpoint_is_the_default_and_the_prompt_field_is_the_mod
     entry = buy(tmp_path, out="refs/b.png", model="3.0", transparent=False, seed=7)
     assert entry["credits"] == 0.06
     endpoint, _, payload = service.sent[1]
-    assert endpoint == "https://api.ideogram.ai/v1/ideogram-v3/generate"
+    assert endpoint == "https://api.ideogram.ai/v1/ideogram-v3/async/generate"
     assert payload == {"prompt": "a plush booster", "seed": 7}
 
 
@@ -340,3 +342,63 @@ def test_an_approved_picture_is_described_into_a_file_beside_it(tmp_path, servic
     assert service.files["image_file"][1] == PNG
     record = provenance.read("refs/booster.prompt.json", root=tmp_path)
     assert record["inputs"][0]["path"] == "refs/booster.png"
+
+
+# -- bought asynchronously (§PW178) --------------------------------------------------
+
+
+@pytest.fixture
+def polled(tmp_path, service, monkeypatch):
+    service.answer = {"generation_id": "g1"}
+    answers = []
+    monkeypatch.setattr(picture, "POLL_EVERY", 0)
+
+    def get(url, key):
+        answers.append(url)
+        one = replies.pop(0) if replies else {"status": "pending"}
+        return 200, json.dumps(one).encode()
+
+    replies: list = []
+    monkeypatch.setattr(picture, "_get", get)
+    return replies, answers
+
+
+def test_the_generation_id_is_the_task_id_and_the_poll_is_asked_until_done(
+    tmp_path, polled
+):
+    replies, asked = polled
+    replies.extend([{"status": "pending"}, {**ANSWER, "status": "completed"}])
+    entry = buy(tmp_path)
+    assert entry["task_id"] == "ideogram:g1"
+    assert asked == ["https://api.ideogram.ai/v1/generations/g1"] * 2
+
+
+def test_a_cost_the_service_reports_is_measured_not_quoted(tmp_path, polled):
+    replies, _ = polled
+    replies.append({**ANSWER, "status": "completed", "usage_cost_usd_micros": 90000})
+    entry = buy(tmp_path)
+    assert entry["credits"] == 0.09 and entry["measured"] is True
+    assert entry["expected_credits"] == 0.08 and entry["surprised"] is True
+
+
+def test_a_failed_generation_ledgers_nothing(tmp_path, polled):
+    replies, _ = polled
+    replies.append({"status": "failed", "failure_reason": "unsafe"})
+    error = refused(tmp_path)
+    assert error.code == "fetch.service-error" and "unsafe" in error.message
+    assert purchase.read(tmp_path) == []
+
+
+def test_a_poll_never_answered_ends_on_the_timeout(tmp_path, polled, monkeypatch):
+    monkeypatch.setattr(picture, "POLL_TIMEOUT", 0)
+    error = refused(tmp_path)
+    assert "still pending" in error.message and "g1" in error.remedy
+
+
+def test_buying_is_a_fetch_job():
+    from polyweave.describe import describe
+
+    found = next(one for one in describe() if one["operation"] == "picture.buy")
+    assert found["kind"] == "fetch" and found["asynchronous"] is True
+    # the harness supplies the report, so a caller never passes or sees it
+    assert "report" not in [one["name"] for one in found["parameters"]]

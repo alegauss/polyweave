@@ -110,7 +110,7 @@ def service(tmp_path, monkeypatch):
 
 
 def test_a_bought_picture_carries_its_familys_style(tmp_path, service):
-    picture.buy("p.png", json_prompt=STRUCTURED, family="characters", root=tmp_path)
+    picture.buy(out="p.png", json_prompt=STRUCTURED, family="characters", root=tmp_path)
     sent = json.loads(service[0]["json_prompt"])
     assert sent["style_description"]["medium"] == "flat vector"
     assert sent["style_description"]["color_palette"] == ["#f2c14e", "#3a2e39"]
@@ -118,7 +118,7 @@ def test_a_bought_picture_carries_its_familys_style(tmp_path, service):
 
 def test_a_text_prompt_has_nowhere_to_carry_a_style(tmp_path, service):
     error = refused(
-        picture.buy, "p.png", prompt="a booster", family="icons", root=tmp_path
+        picture.buy, out="p.png", prompt="a booster", family="icons", root=tmp_path
     )
     assert error.code == "style.needs-structure"
     assert service == []

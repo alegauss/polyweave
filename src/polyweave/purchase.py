@@ -157,6 +157,7 @@ def capture(
     service: str | None = None,
     details: dict | None = None,
     outputs: int = 1,
+    reported: float | None = None,
     root: str | Path = ".",
 ) -> dict:
     """Put a bought artefact somewhere it will outlive the service, and write it down.
@@ -188,10 +189,12 @@ def capture(
     # What it really cost is the difference between two readings of the balance, not
     # what the caller believed it would cost. That is also what makes a claim that some
     # call is free verifiable rather than merely asserted.
+    # Two balance readings, or the charge the service itself reports for the call
+    # (§PW178): either is a measurement, where a declared price is only a quote.
     measured = (
         round(float(balance_before) - float(balance_after), 4)
         if balance_before is not None and balance_after is not None
-        else None
+        else (round(float(reported), 6) if reported is not None else None)
     )
     charged = float(credits) if measured is None else measured
 
