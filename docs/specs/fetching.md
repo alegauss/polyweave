@@ -186,7 +186,10 @@ does:
 1. it is a drawing: a real alpha channel and a clear border (`reference.is_drawing`);
 2. its subject fills at least `[tolerance] subject_coverage` of the frame and touches no
    edge of it, because what runs off the frame is what the mesh service invents;
-3. its silhouette matches the declared one by IoU against `[tolerance] silhouette_iou`;
+3. its silhouette matches the declared one by IoU against `[tolerance] silhouette_iou`,
+   **both framed alike first** (§PW194): each is trimmed to its alpha, fitted with its
+   aspect kept into one 256-pixel square and cut hard at half alpha, because where a
+   service puts its subject and how large is not the shape;
 4. where the project declares a style, it does not drift from its family's canon
    (`style.drift`).
 

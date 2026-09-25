@@ -31,6 +31,8 @@ import urllib.request
 import uuid
 from typing import Annotated
 
+import numpy as np
+
 from . import __version__, provenance, purchase, schema, style
 from .config import load
 from .describe import Param, operation
@@ -371,6 +373,7 @@ def gate(
     coverage = config.tolerances().subject_coverage
     floor = config.tolerances().alpha_floor
     styled = style.in_force(config, family) is not None
+    framed_outline = _framed(here / outline, config)
     looked = []
     for candidate in candidates:
         path = here / candidate
@@ -385,7 +388,11 @@ def gate(
         edges = reference._touching(mask)
         if edges:
             failed.append(f"runs off the {', '.join(edges)} of the frame")
-        held = shape.check(str(path), against=outline, root=here)
+        # Shapes compared framed alike (§PW194): a service draws its subject where it
+        # likes in the frame, and a render fills its own, so raw IoU measured placement.
+        held = shape.check(
+            str(_framed(path, config)), against=str(framed_outline), root=here
+        )
         if not held["holds"]:
             failed.append(
                 f"{held['why']}; the centroid is {held['centroid_offset']}px out and "
@@ -605,6 +612,61 @@ def _read_letters(engine: str, path, language: str) -> str:
             detail=(done.stderr or "")[:400],
         )
     return done.stdout
+
+
+#: The square both silhouettes are framed into before the gate compares them, and the
+#: room left round the subject in it.
+FRAMED, FRAMED_MARGIN = 256, 8
+
+
+def _framed(path, config):
+    """A picture's subject trimmed to its alpha and fitted, aspect kept, in one square.
+
+    Where the subject sits and how much of the frame it fills are the service's choice
+    and the renderer's, not the shape's, and compared raw they swamped it: Starship's
+    Motes filled a twentieth of a 1024 frame against an outline filling a sixth of 256,
+    and scored 0.46 for the right shape (§PW194). Coverage and edges are still checked
+    on the picture as it is, because those are what the mesh service is sent.
+    """
+    import hashlib
+
+    from PIL import Image as PILImage
+
+    from .image import load as load_image
+
+    image = load_image(path)
+    mask = image.subject(config.tolerances().alpha_floor)
+    target = (
+        config.path("paths.work")
+        / "gate"
+        / (hashlib.sha256(image.rgba.tobytes()).hexdigest()[:16] + ".png")
+    )
+    if target.is_file():
+        return target
+    target.parent.mkdir(parents=True, exist_ok=True)
+    rows, columns = mask.nonzero()
+    if not len(rows):
+        PILImage.fromarray(image.rgba).save(target)
+        return target
+    box = (
+        int(columns.min()),
+        int(rows.min()),
+        int(columns.max()) + 1,
+        int(rows.max()) + 1,
+    )
+    subject = PILImage.fromarray(image.rgba).crop(box)
+    room = FRAMED - 2 * FRAMED_MARGIN
+    scale = room / max(subject.width, subject.height)
+    size = (max(1, round(subject.width * scale)), max(1, round(subject.height * scale)))
+    fitted = subject.resize(size, PILImage.Resampling.LANCZOS)
+    # A silhouette is inside or outside. Soft edges resampled at two different scales
+    # blur two copies of one shape apart, so alpha is cut at half once the size is set.
+    alpha = np.asarray(fitted.getchannel("A")) >= 128
+    fitted.putalpha(PILImage.fromarray((alpha * 255).astype(np.uint8)))
+    square = PILImage.new("RGBA", (FRAMED, FRAMED), (0, 0, 0, 0))
+    square.paste(fitted, ((FRAMED - size[0]) // 2, (FRAMED - size[1]) // 2))
+    square.save(target)
+    return target
 
 
 def _written_against(path, found: dict, here) -> None:

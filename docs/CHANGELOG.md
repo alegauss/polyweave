@@ -218,6 +218,7 @@
 - ✅ **PW181** **an approved picture cannot be reframed to another aspect ratio, so an icon and a banner of it are two separate pictures** — picture.vary reframes a picture into a new frame, and against_parent finds where the parent landed and refuses if it changed (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW183** **a mesh is bought by each consumer's own Meshy client, so the plugin never sees a mesh bought from a picture** — mesh.buy buys an untextured mesh from words or a gated picture, measured by two balance readings, and refuses a picture the gate never passed.
 - ✅ **PW193** **a paid picture's download is refused by Ideogram's image host, because the plugin sends Python's default agent** — Every request the plugin sends names it as polyweave, so Ideogram's image host hands over a paid picture instead of refusing the download.
+- ✅ **PW194** **the picture gate compares silhouettes where each service framed them, so placement and size swamp the shape** — The gate trims each silhouette to its alpha and fits it into one square before comparing, so a shape scores the same wherever and however large it was drawn.
 
 ## Block O — A person sees and answers
 

@@ -40,8 +40,9 @@ def test_a_picture_matching_the_outline_is_chosen(tmp_path):
 
 def test_of_several_that_pass_the_highest_iou_goes_forward(tmp_path):
     where = project(tmp_path)
-    drawn(where / "near.png", (15, 44, 115, 84))  # IoU 0.975
-    drawn(where / "nearer.png", (14, 44, 115, 84))  # IoU 0.988
+    # framed alike, a shift is nothing and a change of proportion is the difference
+    drawn(where / "near.png", (14, 44, 114, 85))  # a pixel taller: IoU about 0.976
+    drawn(where / "nearer.png", (20, 10, 120, 50))  # the same shape, elsewhere
     found = picture.gate(["near.png", "nearer.png"], "outline.png", root=where)
     assert found["chosen"] == "nearer.png"
     assert found["why"] == "the highest silhouette IoU of those that passed"
@@ -80,3 +81,13 @@ def test_a_picture_that_drifted_from_the_canon_does_not_pass(tmp_path):
     one = found["candidates"][0]
     assert one["passed"] is False
     assert any(f.startswith("palette_delta_e_p95 drifted") for f in one["failed"])
+
+
+def test_the_same_shape_anywhere_in_any_frame_passes(tmp_path):
+    """§PW194: framing is the service's choice, and the silhouette is the shape."""
+    where = project(tmp_path)
+    # four times the size, off-centre in a bigger frame
+    drawn(where / "big.png", (50, 150, 450, 310), size=512)
+    found = picture.gate(["big.png"], "outline.png", root=where)
+    assert found["chosen"] == "big.png"
+    assert found["candidates"][0]["silhouette_iou"] > 0.97
