@@ -1,0 +1,57 @@
+# The plugin's own gates, run where the pin is read (§PW136). Cottony installs this
+# repository at a commit hash, and until this job nothing but one desk ever tested one.
+#
+# The runner has neither Blender nor Godot, so the render and engine tests skip. The
+# gate's stamp says how many skipped for each, and the summary says outright that CI
+# proves the pure half: a green job that claims less than it proved is fine, one that
+# claims more is not.
+name: gates
+
+on: [push, pull_request]
+
+jobs:
+  python:
+    name: ruff and pytest, Python ${{ matrix.python }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The lowest the package supports (Blender 4.2's interpreter) and the newest.
+        python: ["3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: install
+        run: python -m pip install -e ".[dev]"
+      - name: ruff
+        run: python -m ruff check .
+      - name: pytest, through the gate
+        run: python tools/gate.py -q -p no:warnings
+      - name: what this run proved
+        if: always()
+        run: |
+          {
+            echo "### Gate, Python ${{ matrix.python }}"
+            echo
+            echo "CI has neither Blender nor Godot, so this proves the pure half;"
+            echo "the render and engine tests run on a desk that has them."
+            echo
+            echo '```json'
+            cat .polyweave/gate/stamp.json
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  plugin:
+    name: plugin manifests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: claude plugin validate, against a pinned CLI
+        run: |
+          npx --yes @anthropic-ai/claude-code@2.1.282 plugin validate .
+          npx --yes @anthropic-ai/claude-code@2.1.282 plugin validate .claude-plugin/plugin.json

@@ -35,7 +35,6 @@
 
 ## Block L — What a run leaves as evidence
 
-- 📋 **PW136** (deps: PW134 ✅) **no pytest or ruff runs anywhere but a desk, so a consumer pinned to a commit gets one nobody gated** — The workflows run only roadkeep's lint and the site, while Cottony's CI installs this repository at a pinned commit. → §PW136
 - 📋 **PW137** (deps: —) **the site's own test requires the page to say there is no implementation, after a hundred lines have shipped** — README and CLAUDE.md still say Block A has started, so the first thing a reader or an agent learns about the plugin is false, and a test defends it. → §PW137
 - 📋 **PW138** (deps: —) **the tool-surface spec names twelve error areas and the code declares nineteen, and nothing reads one against the other** — A name a spec spells that the code lacks, or the reverse, is found only by a reader who checks both, which is the drift the specs exist to prevent. → §PW138
 - 📋 **PW139** (deps: —) **two jobs started at once can both pass the capacity check, so `[render] max_parallel` is exceeded** — `start` lists the running jobs and then spawns with nothing held between the two, the shape of roadkeep's race that minted one id twice. → §PW139

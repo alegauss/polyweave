@@ -370,23 +370,6 @@ present, and skipped where it is not, as the render tests are.
 
 ## Block L — What a run leaves as evidence
 
-### §PW136 The gates run where the pin is read
-
-`.github/workflows` holds `roadkeep.yml` and `site.yml`. The suite and the linter run
-when someone types them, on a machine that has Blender and Godot, and nowhere else.
-Cottony's `requirements.txt` installs this repository at a commit hash, so its CI builds
-against code that no machine but this desk ever tested, while the editable install here
-means the pin is never exercised locally either.
-
-A workflow runs ruff and the suite on the lowest and highest Python the plugin supports.
-Without `bpy` or `$GODOT` the render path skips, so the job prints the stamp
-`tools/gate.py` writes, including how many tests skipped for each absent engine, and the
-summary says outright that CI proves the pure half. Whether a runner gets Blender is a
-later decision with its own cost; a green job that claims less than it proved is not.
-
-The same job runs `claude plugin validate` on the manifest in `.claude-plugin/`, as
-roadkeep's gate does against a pinned CLI.
-
 ### §PW137 A status is derived, never typed
 
 `prerender.test.mjs` fails unless the landing page states that there is no
