@@ -371,22 +371,6 @@ present, and skipped where it is not, as the render tests are.
 
 ## Block M — What a game needs beyond the look
 
-### §PW142 Draw the skin, keep the volume
-
-The Godot addon of PW102 reads `<name>.voxels.json` into packed arrays and offers
-`multimesh()`, which sets one instance per entry in `centres`. The file already carries
-`depth` per cell, 1 on the surface, because a hit chips cells in that order. A solid
-model eight cells across has 512 cells and 296 on its skin, so the helper draws about
-1.7 times what can be seen, and the ratio grows with the cube of the size.
-
-The helper can draw only the cells at depth 1 and expose the rest for the game's own
-shattering, which needs them. When a hit removes surface cells, the ones beneath are
-revealed by depth, which is the order the data already states.
-
-It is an idea and not a measured failure: no Cottony model has been profiled, and how
-the game draws stays the game's own code, as the addon says. What would promote it is
-one frame time measured with and without the buried cells on the target device.
-
 ### §PW143 A cost bar beside the look bar
 
 An acceptance spec is a set of predicates over measures, and every measure today reads

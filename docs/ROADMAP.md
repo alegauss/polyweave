@@ -37,7 +37,6 @@
 
 ## Block M — What a game needs beyond the look
 
-- 💭 **PW142** (deps: —) **a voxel model is drawn with every filled cell, including the ones buried where no face of them can be seen** — `multimesh()` instances every centre while the same file records each cell's depth, so a solid model pays for its whole volume and not its skin. → §PW142
 - 💭 **PW143** (deps: —) **an acceptance spec bounds how an asset looks and never what it costs the game to draw** — A search that passes every look predicate may triple the triangles, materials or texture memory, and nothing in the spec would refuse the rig that did it. → §PW143
 - 💭 **PW144** (deps: —) **the rig a search found is kept nowhere, so each run searches it again and no other game can start from it** — `search_stars.py` spends up to sixty renders finding the stars' rig again, and the half it holds fixed is constants in the script, where no other family can reuse it. → §PW144
 

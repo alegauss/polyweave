@@ -639,8 +639,14 @@ turns a `.voxels.json` into a voxel model resource: each cell's middle in the mo
 units, its palette slot, each slot's colour and whole material table (`glow` and the rest
 passed through, numbers arriving as Godot's floats), and the fracture plan's fragments,
 fragment column and depths where the build made them. `multimesh()` hands back one
-MultiMesh, a cube a cell in its palette colour, or a mesh the game gives. How the game
-draws, lights and shatters it stays the game's. The file carries `format` and the loader
+MultiMesh, a cube a cell in its palette colour, or a mesh the game gives. Given
+`skin()` it draws only the cells a camera can see (§PW142): a solid model eight cells
+across is 512 cells and 296 of skin. The skin is read off the depths where a fracture plan
+wrote them and off each cell's six neighbours where not; `buried()` is the rest, and
+`exposed_by(removed)` names the cells a hit uncovers, so a game adds them as it chips. With
+no `cells` every cell is drawn and instance i is cell i. How the game draws, lights and
+shatters it stays the game's; whether the buried cells cost a frame on the target device
+is unmeasured. The file carries `format` and the loader
 refuses any number but its own rather than half-read it.
 
 **A loader and not an import plugin.** Godot picks an importer by the last extension

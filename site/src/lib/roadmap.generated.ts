@@ -37,7 +37,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 1 },
   { block: "L", title: "What a run leaves as evidence", open: 0 },
-  { block: "M", title: "What a game needs beyond the look", open: 3 },
+  { block: "M", title: "What a game needs beyond the look", open: 2 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -88,13 +88,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "K",
     symptom: "a clip is baked to an animation and a sheet only from Python, since every step takes a mesh and a rig in memory",
     why: "The census lists compile, frames, sprites.bake and skeleton.fit as internal, so motion is the one surface a GDScript project still needs a script for.",
-    deps: [],
-  },
-  {
-    id: "PW142",
-    block: "M",
-    symptom: "a voxel model is drawn with every filled cell, including the ones buried where no face of them can be seen",
-    why: "`multimesh()` instances every centre while the same file records each cell's depth, so a solid model pays for its whole volume and not its skin.",
     deps: [],
   },
   {

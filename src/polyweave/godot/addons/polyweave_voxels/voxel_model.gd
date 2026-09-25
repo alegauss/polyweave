@@ -29,10 +29,82 @@ extends Resource
 @export var depth: PackedInt32Array = PackedInt32Array()
 
 
+## Where each cell sits in the grid, built on first use for `exposed_by`.
+var _at: Dictionary = {}
+
+
+## The cells a camera can see: depth 1, a face on the outside (§PW142). A solid model
+## eight cells across has 512 cells and 296 of them here, so drawing these alone draws
+## the skin and not the volume. Read off `depth` where the file carries it, which it does
+## when the declaration planned a fracture, and off the cells' neighbours where not.
+func skin() -> PackedInt32Array:
+	var found := PackedInt32Array()
+	for index in centres.size():
+		if _outside(index):
+			found.append(index)
+	return found
+
+
+## The cells nothing can see until a hit removes what covers them.
+func buried() -> PackedInt32Array:
+	var found := PackedInt32Array()
+	for index in centres.size():
+		if not _outside(index):
+			found.append(index)
+	return found
+
+
+func _outside(index: int) -> bool:
+	if not depth.is_empty():
+		return depth[index] <= 1
+	_index()
+	var here := _grid(centres[index])
+	for step in _FACES:
+		if not _at.has(here + step):
+			return true
+	return false
+
+
+const _FACES := [Vector3i.RIGHT, Vector3i.LEFT, Vector3i.UP, Vector3i.DOWN,
+		Vector3i.BACK, Vector3i.FORWARD]
+
+
+func _index() -> void:
+	if _at.is_empty():
+		for index in centres.size():
+			_at[_grid(centres[index])] = index
+
+
+## The cells a hit reveals: every cell sharing a face with one in `removed` that was
+## not removed itself. Drawing the skin and adding these as it is chipped keeps what is
+## drawn to what can be seen, in the order the depths already state.
+func exposed_by(removed: PackedInt32Array) -> PackedInt32Array:
+	_index()
+	var gone := {}
+	for index in removed:
+		gone[index] = true
+	var found := PackedInt32Array()
+	var seen := {}
+	for index in removed:
+		var here := _grid(centres[index])
+		for step in _FACES:
+			var next = _at.get(here + step, -1)
+			if next >= 0 and not gone.has(next) and not seen.has(next):
+				seen[next] = true
+				found.append(next)
+	return found
+
+
+func _grid(centre: Vector3) -> Vector3i:
+	var at := (centre - origin) / cell - Vector3.ONE * 0.5
+	return Vector3i(roundi(at.x), roundi(at.y), roundi(at.z))
+
+
 ## The cells as one MultiMesh, a cube each in its palette colour, ready to assign to a
 ## MultiMeshInstance3D. `mesh` is the shape drawn per cell; a cube one cell wide unless
-## the game gives its own.
-func multimesh(mesh: Mesh = null) -> MultiMesh:
+## the game gives its own. `cells` draws those indices only, `skin()` being the usual
+## choice; every cell when it is empty, and then instance i is cell i.
+func multimesh(mesh: Mesh = null, cells: PackedInt32Array = PackedInt32Array()) -> MultiMesh:
 	var drawn := MultiMesh.new()
 	drawn.transform_format = MultiMesh.TRANSFORM_3D
 	drawn.use_colors = true
@@ -44,8 +116,12 @@ func multimesh(mesh: Mesh = null) -> MultiMesh:
 		cube.material = paint
 		mesh = cube
 	drawn.mesh = mesh
-	drawn.instance_count = centres.size()
-	for index in centres.size():
-		drawn.set_instance_transform(index, Transform3D(Basis(), centres[index]))
-		drawn.set_instance_color(index, palette[wears[index]])
+	if cells.is_empty():
+		for index in centres.size():
+			cells.append(index)
+	drawn.instance_count = cells.size()
+	for slot in cells.size():
+		var index := cells[slot]
+		drawn.set_instance_transform(slot, Transform3D(Basis(), centres[index]))
+		drawn.set_instance_color(slot, palette[wears[index]])
 	return drawn

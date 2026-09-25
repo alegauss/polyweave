@@ -134,6 +134,74 @@ def test_the_engine_reads_every_cell_and_what_it_wears(tmp_path):
     assert said["first"] == "(" + ", ".join(f"{v:g}" for v in middle) + ")"
 
 
+SOLID = {
+    "name": "block",
+    "version": 1,
+    "params": {},
+    "materials": {"stone": {"colour": "#808080"}},
+    "nodes": [
+        {
+            "id": "block",
+            "op": "plate",
+            "rect": [0, 0, 4, 4],
+            "depth": 4,
+            "material": "stone",
+        },
+    ],
+    "output": "block",
+    "voxels": {"cell": 1.0},
+}
+
+SKIN = """extends SceneTree
+
+func _initialize() -> void:
+\tvar model = load("res://addons/polyweave_voxels/voxels.gd").load_model("res://%s")
+\tvar skin: PackedInt32Array = model.skin()
+\tvar drawn: MultiMesh = model.multimesh(null, skin)
+\tvar hit := PackedInt32Array([%d])
+\tprint("skin: %%d cells %%d skin %%d buried %%d drawn %%s exposed" %% [
+\t\tmodel.centres.size(), skin.size(), model.buried().size(), drawn.instance_count,
+\t\t",".join(Array(model.exposed_by(hit)).map(func(i): return str(i)))])
+\tquit()
+"""
+
+
+@pytest.mark.parametrize("fractured", [False, True], ids=["neighbours", "depth"])
+def test_the_skin_is_drawn_and_a_hit_says_what_it_reveals(tmp_path, fractured):
+    """§PW142: a solid model drawn whole pays for its volume; its skin is what shows.
+    Read off the depths where a fracture plan wrote them, off the neighbours where not.
+    """
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    game(tmp_path)
+    solid = json.loads(json.dumps(SOLID))
+    if fractured:
+        solid["voxels"]["fracture"] = {"size": [2, 4], "seed": 1}
+    written = V.write(solid, "block.glb", root=tmp_path, mesh=False, sheet=False)
+    made = written["model"]
+    assert ("depth" in made["cells"]) is fractured
+    at = list(zip(*(made["cells"][axis] for axis in "xyz"), strict=True))
+    # A cell in the middle of a face, and the buried one straight behind it.
+    face = next(i for i, c in enumerate(at) if c[0] == 0 and c[1:] == (1, 1))
+    behind = at.index((1, 1, 1))
+    (tmp_path / "skin.gd").write_text(
+        SKIN % (Path(written["voxels"]).name, face), encoding="utf-8"
+    )
+    found = engine.run(
+        tmp_path / "skin.gd",
+        expect=r"skin: (?P<cells>\d+) cells (?P<skin>\d+) skin (?P<buried>\d+) buried "
+        r"(?P<drawn>\d+) drawn (?P<exposed>\S*) exposed",
+        root=tmp_path,
+        headless=True,
+    )
+    said = found["found"]
+    assert found["ok"], found.get("why")
+    assert int(said["cells"]) == 64
+    assert int(said["skin"]) == int(said["drawn"]) == 56
+    assert int(said["buried"]) == 8
+    assert behind in [int(i) for i in said["exposed"].split(",")]
+
+
 def test_the_engine_refuses_a_format_it_does_not_read(tmp_path):
     game(tmp_path)
     written = V.write(SHIP, "ship.glb", root=tmp_path, mesh=False, sheet=False)

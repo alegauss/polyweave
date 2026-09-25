@@ -193,3 +193,4 @@
 
 ## Block M — What a game needs beyond the look
 
+- ✅ **PW142** **a voxel model is drawn with every filled cell, including the ones buried where no face of them can be seen** — The addon draws skin() alone on request, read off depths or neighbours, and exposed_by() names what a hit uncovers; the frame cost is unmeasured (design recorded in `docs/specs/geometry.md`).
