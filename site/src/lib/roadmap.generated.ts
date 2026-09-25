@@ -40,7 +40,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "M", title: "What a game needs beyond the look", open: 1 },
   { block: "N", title: "Pictures held to a canon", open: 1 },
   { block: "O", title: "A person sees and answers", open: 0 },
-  { block: "P", title: "Music and sound a game can ship", open: 9 },
+  { block: "P", title: "Music and sound a game can ship", open: 8 },
   { block: "Q", title: "Words held to the world", open: 5 },
   { block: "R", title: "Levels measured before a person plays them", open: 6 },
   { block: "S", title: "Playing the game, not only rendering it", open: 7 },
@@ -80,13 +80,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "N",
     symptom: "a variation is held to its parent pixel for pixel, which a service that redraws the whole picture can never meet",
     why: "Starship's reframed Mote kept the drawing visibly and still ran a pooled delta E of 15.5 at p95, so the check refuses what a person would keep.",
-    deps: [],
-  },
-  {
-    id: "PW184",
-    block: "P",
-    symptom: "Nobody knows if agent-composed, headlessly rendered music sounds good enough to ship in a game",
-    why: "Every later line in this block spends effort on that premise, so a person's listening verdict decides whether the block proceeds or is retired.",
     deps: [],
   },
   {
@@ -309,4 +302,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW36", "PW53", "PW77", "PW78", "PW79", "PW80", "PW81", "PW82", "PW180"];
+export const generatedPaused: string[] = ["PW36", "PW53", "PW77", "PW78", "PW79", "PW80", "PW81", "PW82", "PW180", "PW184"];

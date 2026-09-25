@@ -40,9 +40,8 @@
 
 ## Block P — Music and sound a game can ship
 
-- 📋 **PW184** (deps: —) **Nobody knows if agent-composed, headlessly rendered music sounds good enough to ship in a game** — Every later line in this block spends effort on that premise, so a person's listening verdict decides whether the block proceeds or is retired. → §PW184
-- 📋 **PW185** (deps: PW184) **No declaration says which music and sound effects a game needs or where they land** — Cottony keeps that list in its own scripts, so polyweave cannot say which audio is missing or out of bounds. → §PW185
-- 📋 **PW186** (deps: PW184) **An agent cannot write multi-track music as data that polyweave validates** — An agent composes well only when a validator answers its output, and no format here has tracks, drums or loop points. → §PW186
+- 📋 **PW185** (deps: PW184 ⏸) **No declaration says which music and sound effects a game needs or where they land** — Cottony keeps that list in its own scripts, so polyweave cannot say which audio is missing or out of bounds. → §PW185
+- 📋 **PW186** (deps: PW184 ⏸) **An agent cannot write multi-track music as data that polyweave validates** — An agent composes well only when a validator answers its output, and no format here has tracks, drums or loop points. → §PW186
 - 📋 **PW187** (deps: PW185, PW186) **A composed score cannot become a WAV or OGG file without a DAW open** — Nothing renders music headlessly, so the only route to game audio is a person in a DAW or a paid generator. → §PW187
 - 📋 **PW188** (deps: PW187) **One theme cannot play at several intensities that stay in step** — Game music changes with play, and layers rendered separately drift unless they share one length and grid. → §PW188
 - 📋 **PW189** (deps: PW185) **Retro sound effects are synthesised by each consumer's own script** — A second project would have to copy Cottony's generator, which the non-goal on one project's paths forbids. → §PW189
