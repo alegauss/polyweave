@@ -71,6 +71,7 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.verdict:record_answer": ("internal", "the page's answer, appended"),
     "polyweave.variation:person_marked": ("internal", "a person's mark, inside vary"),
     "polyweave.picture:gates": ("internal", "the gate's log, read by the review page"),
+    "polyweave.picture:sent_bytes": ("internal", "a picture as every upload sends it"),
     "polyweave.capture": ("internal", "the environment's parts, inside capture.run"),
     "polyweave.engine": ("internal", "run with its launch hook, behind engine.run"),
     "polyweave.offscreen": ("internal", "a route as an object; offscreen.routes"),
