@@ -402,3 +402,54 @@ def test_buying_is_a_fetch_job():
     assert found["kind"] == "fetch" and found["asynchronous"] is True
     # the harness supplies the report, so a caller never passes or sees it
     assert "report" not in [one["name"] for one in found["parameters"]]
+
+
+# -- a paid picture that never arrived (§PW179) --------------------------------------
+
+
+def lost(monkeypatch):
+    def fails(link):
+        raise PolyweaveError("fetch.nothing-arrived", "no", "retry", detail=link)
+
+    monkeypatch.setattr(picture, "_download", fails)
+
+
+def test_a_charge_whose_picture_never_arrived_is_owed_and_counted(
+    tmp_path, service, monkeypatch
+):
+    lost(monkeypatch)
+    error = refused(tmp_path)
+    assert error.code == "fetch.nothing-arrived" and "picture.collect" in error.remedy
+    assert purchase.read(tmp_path) == []  # the ledger names no asset that is not there
+    assert purchase.spent(tmp_path, "ideogram") == 0.08  # and the ceiling saw the spend
+    held = purchase.held(tmp_path)
+    assert [e["artefact"] for e in held["owed"]] == ["refs/booster.png"]
+
+
+def test_a_retry_that_fails_again_is_owed_once(tmp_path, service, monkeypatch):
+    lost(monkeypatch)
+    refused(tmp_path)
+    task = purchase.owed(tmp_path)[0]["task_id"]
+    with pytest.raises(PolyweaveError):
+        picture.collect(task, root=tmp_path)
+    assert len(purchase.owed(tmp_path)) == 1
+    assert purchase.spent(tmp_path, "ideogram") == 0.08
+
+
+def test_collecting_lands_the_picture_and_moves_the_charge_into_the_ledger(
+    tmp_path, service, monkeypatch
+):
+    lost(monkeypatch)
+    refused(tmp_path)
+    task = purchase.owed(tmp_path)[0]["task_id"]
+    monkeypatch.setattr(picture, "_download", lambda link: PNG)
+    entry = picture.collect(task, root=tmp_path)
+    assert (tmp_path / "refs" / "booster.png").read_bytes() == PNG
+    assert entry["task_id"] == task and purchase.owed(tmp_path) == []
+    assert purchase.spent(tmp_path, "ideogram") == 0.08  # counted once, not twice
+
+
+def test_collecting_what_nobody_owes_is_refused(tmp_path, service):
+    with pytest.raises(PolyweaveError) as caught:
+        picture.collect("ideogram:nothing", root=tmp_path)
+    assert caught.value.code == "fetch.no-task"

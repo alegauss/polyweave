@@ -251,6 +251,16 @@ measurement, `measured: true`, with the quote kept as `expected_credits`. A fail
 generation ledgers nothing. An answer that already carries its pictures, as a synchronous
 one does, is taken as it is, and is identified by its `created` time and seed.
 
+**A picture charged for and never delivered is owed** (§PW179). By the time its link is
+read, the service has charged, so a failed download meets two rules: the ledger never names
+an asset that is not there, and the ceiling never misses a charge. The charge goes to
+`<ledger>.owed.json` beside the ledger, committed with it, holding the task id, the service,
+the charge, the link and everything capture needs. `purchase.spent` and `remaining` count
+it, and `purchase.held` lists it under `owed`. `picture.collect(task_id)` reads the link
+again. Once the picture lands it is ledgered like any other and the charge leaves the owed
+list, so it is counted once. A retry that fails again replaces its own entry. A link that
+has expired leaves the charge owed for good, because the money went either way.
+
 ## A picture is put on the project's grid on arrival
 
 A picture service returns an image at a size, margin and position it chose, and an icon or

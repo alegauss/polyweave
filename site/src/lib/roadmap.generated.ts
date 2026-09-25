@@ -38,7 +38,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "K", title: "Reached without reading the source", open: 0 },
   { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
-  { block: "N", title: "Pictures held to a canon", open: 3 },
+  { block: "N", title: "Pictures held to a canon", open: 2 },
   { block: "O", title: "A person sees and answers", open: 0 },
 ];
 
@@ -63,13 +63,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent",
     why: "The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question.",
     deps: ["PW57"],
-  },
-  {
-    id: "PW179",
-    block: "N",
-    symptom: "a picture paid for whose download then fails is charged to no ceiling, so the next spend is judged too high",
-    why: "The ledger is written only once the asset is on disk, and a picture service reports no balance to reveal the spend afterwards.",
-    deps: [],
   },
   {
     id: "PW180",

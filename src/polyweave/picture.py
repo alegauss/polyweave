@@ -174,27 +174,25 @@ def buy(
         report.stage(
             "downloading", progress=0.9, note="taking delivery before the link expires"
         )
-    body = _download(link)
     # The service bills per picture returned, so an answer carrying more than was asked
     # for is charged as many prices, although only the first is kept.
     returned = max(1, len(answer.get("data") or ()))
-    entry = purchase.capture(
-        body,
-        out=out,
+    kept = {
+        "out": out,
         # The generation id where there is one; an answer without one is identified by
         # what it does carry, when it was made and the seed it was made with.
-        task_id=f"{name}:{answer.get('generation_id')}"
+        "task_id": f"{name}:{answer.get('generation_id')}"
         if answer.get("generation_id")
         else f"{name}:{answer.get('created')}:{drawn.get('seed')}",
-        credits=round(price * returned, 4),
+        "credits": round(price * returned, 4),
         # What the service says it charged, where it says: a reading, not the quote.
-        reported=_reported(answer, config.budget(service=name)["unit"]),
-        outputs=returned,
-        prompt=sent,
-        bought="image",
-        engine={"name": name, "model": model},
-        service=name,
-        details={
+        "reported": _reported(answer, config.budget(service=name)["unit"]),
+        "outputs": returned,
+        "prompt": sent,
+        "bought": "image",
+        "engine": {"name": name, "model": model},
+        "service": name,
+        "details": {
             "model": model,
             "transparent": bool(transparent),
             "rendering_speed": rendering_speed,
@@ -208,9 +206,72 @@ def buy(
             # what was sent, and it is the only account of the picture that is true.
             "returned_prompt": drawn.get("prompt"),
         },
-        root=root,
-    )
+    }
+    return _delivered(link, kept, root)
+
+
+def _delivered(link: str, kept: dict, root) -> dict:
+    """Take delivery and ledger it, or owe the charge where delivery fails (§PW179).
+
+    The service has charged by now. A download that fails leaves no asset, so nothing
+    may enter the ledger, and yet the ceiling must see the spend: the charge goes on the
+    owed list, which `spent` counts, with the link, for `picture.collect` to retry.
+    """
+    try:
+        body = _download(link)
+    except PolyweaveError as missed:
+        charged = kept["reported"] if kept["reported"] is not None else kept["credits"]
+        purchase.owe(
+            {
+                "task_id": kept["task_id"],
+                "service": kept["service"],
+                "credits": charged,
+                "expected_credits": kept["credits"],
+                "measured": kept["reported"] is not None,
+                "outputs": kept["outputs"],
+                "artefact": kept["out"],
+                "link": link,
+                "capture": kept,
+            },
+            root=root,
+        )
+        raise PolyweaveError(
+            "fetch.nothing-arrived",
+            "the picture was made and charged, and its link could not be read; the "
+            "charge is counted against the ceiling as owed",
+            f"call picture.collect with task_id {kept['task_id']!r} while the link "
+            "lasts; it lands the picture and moves the charge into the ledger",
+            detail=missed.detail,
+        ) from missed
+    entry = purchase.capture(body, **kept, root=root)
+    purchase.settle(kept["task_id"], root=root)
     return entry
+
+
+@operation("picture.collect")
+def collect(
+    task_id: Annotated[str, Param("the purchase's task id, as the refusal named it")],
+    *,
+    root: Annotated[str, Param("the project whose ledger this is")] = ".",
+) -> dict:
+    """Take delivery of a picture that was paid for and never arrived (§PW179).
+
+    Its charge is on the owed list, counted against the ceiling since the download
+    failed. This reads the link again; once the picture lands it is ledgered like any
+    other and the charge leaves the owed list. A link that has expired stays owed, and
+    the charge stays counted, because the money went either way.
+    """
+    held = {e["task_id"]: e for e in purchase.owed(root)}
+    if task_id not in held:
+        raise PolyweaveError(
+            "fetch.no-task",
+            f"nothing is owed for task {task_id!r}",
+            "name a task id purchase.held lists under owed",
+            given=task_id,
+            allowed=sorted(held),
+        )
+    owed_for = held[task_id]
+    return _delivered(owed_for["link"], owed_for["capture"], root)
 
 
 @operation("picture.describe")

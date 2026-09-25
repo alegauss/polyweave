@@ -44,6 +44,49 @@ from .files import read_text_retrying, write_atomic
 BOUGHT = ("mesh", "texture", "image", "description")
 
 
+def owing(root: str | Path = ".") -> Path:
+    """Where charges with no asset yet are kept, beside the ledger and committed too.
+
+    The ledger never names an asset that is not there, and a ceiling never misses a
+    charge, and a picture the service charged for whose download failed is where the two
+    rules meet (§PW179). It goes here, which the ceiling counts and the ledger does not.
+    """
+    ledger = where(root)
+    return ledger.with_name(ledger.stem + ".owed" + ledger.suffix)
+
+
+def owed(root: str | Path = ".") -> list[dict]:
+    """Every charge made for an asset that has not arrived, oldest first."""
+    text = read_text_retrying(owing(root))
+    return json.loads(text) if text else []
+
+
+def owe(charge: dict, *, root: str | Path = ".") -> dict:
+    """Record a charge for something that was paid for and never landed."""
+    entry = {
+        **charge,
+        "at": charge.get("at")
+        or datetime.now(tz=UTC).isoformat(timespec="seconds").replace("+00:00", "Z"),
+        "measured": bool(charge.get("measured", False)),
+    }
+    # Owed once however often its delivery fails: a retry replaces its own entry.
+    others = [e for e in owed(root) if e.get("task_id") != entry.get("task_id")]
+    write_atomic(
+        owing(root), json.dumps([*others, entry], indent=2, sort_keys=True) + "\n"
+    )
+    return entry
+
+
+def settle(task_id: str, *, root: str | Path = ".") -> dict | None:
+    """Take a charge off the owed list once its asset is in the ledger; its record."""
+    held = owed(root)
+    found = next((e for e in held if e.get("task_id") == task_id), None)
+    if found is not None:
+        rest = [e for e in held if e.get("task_id") != task_id]
+        write_atomic(owing(root), json.dumps(rest, indent=2, sort_keys=True) + "\n")
+    return found
+
+
 def where(root: str | Path = ".") -> Path:
     """The ledger's own file, which belongs to the project and is committed with it."""
     config = load(root)
@@ -85,7 +128,7 @@ def remaining(
         "spent": already,
         # How much of `spent` is a declared price rather than a reading (§PW164). It
         # counts in full: under-counting is what would let a session pass the ceiling.
-        "quoted": _charged(read(root), config, quoted=True)[0].get(
+        "quoted": _charged(read(root) + owed(root), config, quoted=True)[0].get(
             declared["service"], 0.0
         ),
         "left": max(0.0, left) if declared["spendable"] else 0.0,
@@ -556,7 +599,8 @@ def spent(
     """
     config = load(root)
     name = config.service(service)
-    by_service, unattributed = _charged(read(root), config)
+    # What is owed counts: a charge with no asset yet was still charged (§PW179).
+    by_service, unattributed = _charged(read(root) + owed(root), config)
     if unattributed:
         raise PolyweaveError(
             "fetch.ledger-unattributed",
@@ -633,7 +677,8 @@ def held(root: Annotated[str, Param("the project whose ledger this is")] = ".") 
     here = Path(root).resolve()
     entries = read(here)
     config = load(here)
-    by_service, unattributed = _charged(entries, config)
+    owes = owed(here)
+    by_service, unattributed = _charged(entries + owes, config)
     missing, changed, present = [], [], []
     for entry in entries:
         artefact = here / entry["artefact"]
@@ -658,6 +703,9 @@ def held(root: Annotated[str, Param("the project whose ledger this is")] = ".") 
         "missing": missing,
         "changed": changed,
         "lost_credits": round(sum(float(e.get("credits", 0.0)) for e in missing), 4),
+        # Paid for and never landed: counted against the ceiling, and collectable while
+        # its link lasts (`picture.collect`).
+        "owed": owes,
     }
 
 

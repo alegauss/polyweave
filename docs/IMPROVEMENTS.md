@@ -274,27 +274,6 @@ unstated.
 
 ## Block N — Pictures held to a canon
 
-### §PW179 A paid picture that never arrived
-
-`picture.buy` asks `purchase.allow`, the service draws and charges, and only then is the
-picture downloaded. If that download fails, the refusal says the picture was paid for
-and gives the link, but nothing is ledgered, because the ledger is written last so that
-it never names an asset that is not there. The spend is therefore invisible to `spent`
-and `remaining`, and the next call is judged against a ceiling that is too high.
-
-The same window exists for a mesh, but there the balance is read either side, so the
-next reading shows the money gone. A picture service reports no balance (PW164), so for
-pictures nothing ever shows it.
-
-**The two rules conflict, and neither may give way silently.** One way through is a
-second, separate list of charges with no asset: `purchase.capture` is never called, but
-the charge is written to a `pending` list that `spent` counts and `held` reports as
-lost, until a retry of the link lands the asset and moves the entry into the ledger.
-This keeps the ledger's rule (every entry has its file) and the ceiling's rule (every
-charge is counted). PW164 shipped `purchase.reconcile`, which already names such a
-charge after the fact: a usage row nothing matches lands in `unmatched_rows`. What is
-missing is counting it before the next spend, not finding it.
-
 ### §PW180 Canon pictures as style references
 
 PW166 declared a style as a palette and a skeleton, and a canon a person grows. Its
