@@ -29,6 +29,7 @@ import threading
 import urllib.error
 import urllib.request
 import uuid
+from pathlib import Path
 from typing import Annotated
 
 import numpy as np
@@ -317,7 +318,7 @@ def describe_picture(
         f"{base.rstrip('/')}/v1/ideogram-v4/describe",
         key,
         {"include_bbox": "true"},
-        files={"image_file": (source.name, source.read_bytes(), _mime(source))},
+        files={"image_file": (source.name, sent_bytes(source), _mime(source))},
     )
     described = answer.get("json_prompt")
     if not isinstance(described, dict):
@@ -695,6 +696,36 @@ def _one_prompt(prompt: str | None, json_prompt: dict | None, model: str) -> Non
             given="json_prompt",
             allowed=("prompt",),
         )
+
+
+def sent_bytes(path) -> bytes:
+    """A picture as it is sent to a service: the colour under full transparency cleared.
+
+    A generator's transparent PNG keeps whatever colour it drew under alpha zero, and a
+    service that ignores alpha (3.0's inpaint, remix and reframe) shows it. Starship's
+    edited Mote came back ringed in green noise that had been invisible, and every pixel
+    of it counted as changed (§PW195). Clearing it to black leaves the picture as a
+    viewer saw it, on the dark ground a service that drops alpha would give it anyway.
+    """
+    import io
+
+    from PIL import Image as PILImage
+
+    raw = Path(path).read_bytes()
+    try:
+        with PILImage.open(io.BytesIO(raw)) as opened:
+            if "A" not in opened.getbands():
+                return raw
+            rgba = np.asarray(opened.convert("RGBA")).copy()
+    except OSError:
+        return raw  # not a picture this can read; the service will say so
+    clear = rgba[..., 3] == 0
+    if not clear.any():
+        return raw
+    rgba[clear, :3] = 0
+    out = io.BytesIO()
+    PILImage.fromarray(rgba).save(out, format="PNG")
+    return out.getvalue()
 
 
 def _mime(path) -> str:

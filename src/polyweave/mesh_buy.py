@@ -100,7 +100,7 @@ def buy(
     else:
         source = here / picture_path
         _gated(source)
-        encoded = base64.b64encode(source.read_bytes()).decode("ascii")
+        encoded = base64.b64encode(picture.sent_bytes(source)).decode("ascii")
         request.update(
             image_url=f"data:{picture._mime(source)};base64,{encoded}",
             should_texture=False,

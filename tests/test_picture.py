@@ -482,3 +482,20 @@ def test_the_picture_is_fetched_with_a_named_agent(monkeypatch):
     assert seen["agent"].startswith("polyweave/")
     picture._get("https://api.ideogram.ai/v1/generations/g", "k")
     assert seen["agent"].startswith("polyweave/")
+
+
+def test_the_colour_under_full_transparency_is_cleared_before_sending(tmp_path):
+    """§PW195: a service that drops alpha showed the colour a generator left there."""
+    import io
+
+    import numpy as np
+    from PIL import Image
+
+    image = Image.new("RGBA", (8, 8), (0, 255, 0, 0))  # green under alpha zero
+    image.putpixel((4, 4), (200, 60, 60, 255))
+    image.save(tmp_path / "p.png")
+    sent = np.asarray(Image.open(io.BytesIO(picture.sent_bytes(tmp_path / "p.png"))))
+    assert tuple(sent[0, 0]) == (0, 0, 0, 0)
+    assert tuple(sent[4, 4]) == (200, 60, 60, 255)
+    (tmp_path / "opaque.jpg").write_bytes(b"not a picture")
+    assert picture.sent_bytes(tmp_path / "opaque.jpg") == b"not a picture"

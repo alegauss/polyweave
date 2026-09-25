@@ -115,7 +115,7 @@ def vary(
     base, key = picture._reached(name, about)
     price = picture._price(name, about.get("prices") or {}, change, rendering_speed)
 
-    files = {"image": (source.name, source.read_bytes(), picture._mime(source))}
+    files = {"image": (source.name, picture.sent_bytes(source), picture._mime(source))}
     payload: dict = (
         {"resolution": resolution} if change == "reframe" else {"prompt": prompt}
     )
