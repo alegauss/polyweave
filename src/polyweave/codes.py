@@ -407,6 +407,11 @@ CODES: dict[str, Code] = {
         when="a syntax error in polyweave.toml, or a file that cannot be opened",
         doors=("fix the syntax the detail points at",),
     ),
+    "config.exists": Code(
+        means="polyweave.toml already exists, and init does not overwrite it",
+        when="project.init with write in a project that has already been configured",
+        doors=("pass merge to add only the tables it lacks", "edit the file by hand"),
+    ),
     "config.unknown-table": Code(
         means="the config declares a table the plugin has no settings under",
         when="a misspelled table heading; it is refused rather than ignored, or a "

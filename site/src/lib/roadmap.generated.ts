@@ -44,7 +44,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "Q", title: "Words held to the world", open: 1 },
   { block: "R", title: "Levels measured before a person plays them", open: 5 },
   { block: "S", title: "Playing the game, not only rendering it", open: 6 },
-  { block: "T", title: "Adopting polyweave in a project", open: 3 },
+  { block: "T", title: "Adopting polyweave in a project", open: 2 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -210,18 +210,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW214", "PW215", "PW216"],
   },
   {
-    id: "PW218",
-    block: "T",
-    symptom: "A new project writes polyweave.toml by hand, key by key, against a spec it has to read first",
-    why: "`polyweave init` proposes the file from what the tree already holds, so a project is configured in one call and never by guessing a key.",
-    deps: [],
-  },
-  {
     id: "PW219",
     block: "T",
     symptom: "A configured project still hides polyweave from its agent: no server declared, no skill, no word in AGENTS.md",
     why: "`init --agent` declares the MCP server and writes a marked AGENTS.md section from the project's paths, so the next session calls polyweave directly.",
-    deps: ["PW218"],
+    deps: [],
   },
   {
     id: "PW220",

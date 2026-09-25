@@ -32,7 +32,7 @@ from typing import Any
 from .errors import PolyweaveError
 
 #: The verbs that are not operations: the first reads, the job handle's, and the server.
-VERBS = ("capabilities", "explain", "describe", "job", "serve", "notice")
+VERBS = ("capabilities", "explain", "describe", "job", "serve", "notice", "init")
 
 #: The most a session notice may cost, in characters: one line, read every session.
 NOTICE_BUDGET = 240
@@ -132,6 +132,13 @@ def add_operations(commands: Any) -> None:
     job.add_argument("--root", default=".")
     job.add_argument("--wait", action="store_true", help="for result: wait for it")
     job.add_argument("--json", action="store_true")
+    init = commands.add_parser(
+        "init", help="propose polyweave.toml from this tree (project.init)"
+    )
+    init.add_argument("--root", default=".")
+    init.add_argument("--write", action="store_true", help="write it, not only propose")
+    init.add_argument("--merge", action="store_true", help="add only missing tables")
+    init.add_argument("--json", action="store_true")
     commands.add_parser("serve", help="serve every operation as an MCP tool, on stdio")
     notice = commands.add_parser("notice", help="the one line a session starts with")
     notice.add_argument("--root", default=".")
@@ -153,6 +160,10 @@ def answer_for(stated: argparse.Namespace) -> Any:
         return D.describe(stated.operation)
     if stated.command == "job":
         return _job(stated)
+    if stated.command == "init":
+        from .project import init
+
+        return init(stated.root, write=stated.write, merge=stated.merge)
 
     registered = D._REGISTRY[stated.command]
     declared = {p["name"]: p for p in registered.parameters}
@@ -275,4 +286,3 @@ def run(stated: argparse.Namespace) -> int:
     else:
         print("\n".join(text_of(answer)))
     return 0
-

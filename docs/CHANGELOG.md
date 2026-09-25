@@ -250,3 +250,4 @@
 
 ## Block T — Adopting polyweave in a project
 
+- ✅ **PW218** **A new project writes polyweave.toml by hand, key by key, against a spec it has to read first** — python -m polyweave init proposes polyweave.toml from the tree, writes it only when asked, merges without overwriting, and never proposes a budget (design recorded in `docs/specs/project-config.md`).

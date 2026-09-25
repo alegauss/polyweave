@@ -718,31 +718,6 @@ reading the source, and it is filed as its own line.
 
 ## Block T — Adopting polyweave in a project
 
-### §PW218 polyweave init writes the project config from the tree
-
-Starship shows what adoption costs today. Its `polyweave.toml` was written by hand, one
-key at a time, and an agent in that tree had nothing telling it the file existed or what
-it bound. The spec in `docs/specs/project-config.md` is the only guide, and it has to be
-read before the first call. That is the round trip the tool surface exists to remove.
-
-`python -m polyweave init` (and the `project.init` operation behind it) reads the tree
-and proposes the file:
-
-- `[project] name` comes from the directory, or from `project.godot`'s `config/name`.
-- `[paths] godot` is `${GODOT}` when that variable is set. Blender comes from `engine.find`, never as a desk's absolute path.
-- `meshes`, `renders`, `specs` and `work` come from folders that already exist (`assets/models`, `*.accept.toml`), otherwise from the defaults.
-- `[capture]`, `[style]` and `[words]` are written only when there is something to point them at: a translation CSV, or a canon folder.
-
-By default it prints the proposal and writes nothing. `--write` writes it and refuses an
-existing file, naming `--merge`, which adds only missing tables and never changes a
-value a person wrote. The result validates against the same loader every call uses, so
-an unknown key cannot be written.
-
-**It never writes a `[budget]`.** A ceiling is a person's to set, so init names the
-table as missing and says who fills it (non-goal: spending on the agent's own
-judgement). A `[service]` is proposed only from a key variable that already exists,
-never from the absence of one.
-
 ### §PW219 init wires the project's agent to polyweave
 
 A valid `polyweave.toml` is not an adopted project. Starship had one and a committed

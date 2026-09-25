@@ -76,7 +76,8 @@ HELP_VERB = 4_000
 #: 14,416 with mesh.buy (§PW183).
 #: 14,722 with world.read and world.validate (§PW196).
 #: 15,116 with words.check and words.unlisted (§PW197).
-HELP_TOP = 15_400
+#: 15,488 with words.sheet, project.init and the init verb (§PW199, §PW218).
+HELP_TOP = 15_800
 #: A search's answer over its default budget of 24 samples: 3,739.
 SEARCH = 4_000
 

@@ -296,6 +296,31 @@ leaving them to the machine. A name in `declared` takes its value from a key of 
 name here, or from the call. Everywhere else, an unknown key is still a typo and is
 refused.
 
+## Starting the file
+
+A project is not configured by reading this spec first. `python -m polyweave init`, and
+`project.init` behind it, proposes the file from what the tree already holds:
+
+- `[project] name` from `project.godot`'s `config/name`, or the directory's name;
+- `[paths] godot` as `${GODOT}` where that variable is set, and never a binary's absolute
+  path, which belongs to one desk; Blender and Godot are otherwise found when called;
+- `[paths] meshes`, `renders` and `specs` from folders that exist (`assets/models`, the
+  folder of the first `*.accept.toml`), otherwise the defaults;
+- `[style] canon` only where a folder named `canon` exists, and `[words] table` only
+  where a CSV has a Godot `.import` file saying `importer="csv_translation"`;
+- a `[service]` only for `MESHY_API_KEY` or `IDEOGRAM_API_KEY` already set, one bare table
+  for one key and named tables for both.
+
+It answers with the proposal and writes nothing. `--write` writes it and refuses an
+existing file with `config.exists`; `--write --merge` adds only the tables that file
+lacks and changes no value a person wrote. The text is checked by the loader every call
+uses before it is written.
+
+**`[budget]` is never proposed.** The answer's `missing` names it, and says a person
+fills it: a ceiling set by the agent that spends against it is no ceiling.
+
+    python -m polyweave init --write
+
 ## Adding a key
 
 A new key here is the cheap answer to "Cottony needs X and no other project would". The
