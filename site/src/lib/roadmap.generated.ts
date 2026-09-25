@@ -36,7 +36,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 1 },
-  { block: "L", title: "What a run leaves as evidence", open: 7 },
+  { block: "L", title: "What a run leaves as evidence", open: 6 },
   { block: "M", title: "What a game needs beyond the look", open: 3 },
 ];
 
@@ -91,13 +91,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW134",
-    block: "L",
-    symptom: "a green suite with Blender and Godot absent reads the same as one that rendered, and leaves no record it ran",
-    why: "The render, engine and capture tests skip without `bpy` or `$GODOT`, and a backgrounded run is known only by whoever read the tail of its output.",
-    deps: [],
-  },
-  {
     id: "PW135",
     block: "L",
     symptom: "a test log written at the repository root is staged by the commit tool, because nothing ignores `*.log`",
@@ -109,7 +102,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "L",
     symptom: "no pytest or ruff runs anywhere but a desk, so a consumer pinned to a commit gets one nobody gated",
     why: "The workflows run only roadkeep's lint and the site, while Cottony's CI installs this repository at a pinned commit.",
-    deps: ["PW134"],
+    deps: [],
   },
   {
     id: "PW137",

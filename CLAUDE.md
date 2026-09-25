@@ -5,8 +5,9 @@ what an asset should be** and letting a machine search for the parameters that s
 on top of Blender, Godot and a generative mesh service.
 
 Block A has started. The plugin is Python under `src/polyweave`, its tests are in
-`tests/`, and the gates are `python -m pytest` and `python -m ruff check .` from the
-repository root. Everything else is still `docs/ROADMAP.md`.
+`tests/`, and the gates are `python tools/gate.py` (pytest, keeping its log in
+`.polyweave/gate/` and saying which engine's tests skipped) and `python -m ruff check .`
+from the repository root. Everything else is still `docs/ROADMAP.md`.
 
 Shipping a roadmap line rewrites `docs/ROADMAP.md`, and `site/src/lib/roadmap.generated.ts`
 is generated from it and committed. So a ship is followed by `npm run build && npm test`

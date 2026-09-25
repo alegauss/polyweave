@@ -370,24 +370,6 @@ present, and skipped where it is not, as the render tests are.
 
 ## Block L — What a run leaves as evidence
 
-### §PW134 One gate that keeps its log and stamps what ran
-
-`python -m pytest` with `-q` prints a count and a dot per test. On a machine without
-Blender the whole render path skips, and "passed" says nothing about whether a picture
-was drawn. Shio met the same thing with its database tests, which report zero seconds
-without Docker, so a green verify claimed a proof it never made.
-
-A small script runs the gate instead of the bare command. It does four things:
-
-- keeps the whole output in a fixed-name log, and copies a red one aside, because the next run, made to see whether it reproduces, truncates it
-- writes an untracked stamp with the commit, the exit code, and the counts passed, failed and skipped
-- counts the real-renderer tests that actually ran, so "Blender tests: 0 ran" is part of the result
-- holds a lock while it runs
-
-The lock is there because two overlapping runs share `.polyweave/`, and Shio measured
-what that costs: a false red of three errors against a tree that was green. The exit
-code always survives; a gate piped into `grep` reports `grep`'s.
-
 ### §PW135 A log is evidence, not source
 
 `.gitignore` covers the plugin's working state, the Python caches and the build output,
@@ -397,9 +379,9 @@ to a file it reads afterwards. Shio's root holds seventy-four such files, and th
 that ignores them was added only after one was committed with the fix it was taken for,
 because the commit tool stages the whole tree.
 
-The fix is one line, `/*.log`, plus the directory the gate stamps of §PW134 will use. It
-goes first because it is the cheapest item in this block, and every other item here
-writes a file of this kind.
+The fix is one line, `/*.log`, plus the directory `tools/gate.py` stamps into. It goes
+first because it is the cheapest item in this block, and every other item here writes a
+file of this kind.
 
 ### §PW136 The gates run where the pin is read
 
@@ -410,10 +392,10 @@ against code that no machine but this desk ever tested, while the editable insta
 means the pin is never exercised locally either.
 
 A workflow runs ruff and the suite on the lowest and highest Python the plugin supports.
-Without `bpy` or `$GODOT` the render path skips, so the job prints the gate stamp of
-§PW134, including how many real-renderer tests ran, and the summary says outright that
-CI proves the pure half. Whether a runner gets Blender is a later decision with its own
-cost; a green job that claims less than it proved is not.
+Without `bpy` or `$GODOT` the render path skips, so the job prints the stamp
+`tools/gate.py` writes, including how many tests skipped for each absent engine, and the
+summary says outright that CI proves the pure half. Whether a runner gets Blender is a
+later decision with its own cost; a green job that claims less than it proved is not.
 
 The same job runs `claude plugin validate` on the manifest in `.claude-plugin/`, as
 roadkeep's gate does against a pinned CLI.

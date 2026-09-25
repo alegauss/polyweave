@@ -182,5 +182,7 @@
 
 ## Block L — What a run leaves as evidence
 
+- ✅ **PW134** **a green suite with Blender and Godot absent reads the same as one that rendered, and leaves no record it ran** — tools/gate.py runs the suite under a lock, keeps its log and a red copy, and stamps the counts and how many tests skipped for each absent engine (design recorded in `tools/gate.py`).
+
 ## Block M — What a game needs beyond the look
 
