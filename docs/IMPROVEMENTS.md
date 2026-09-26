@@ -306,23 +306,6 @@ declared in its `polyweave.toml`, made by `music.render` and `sound.synth`, and 
 `*.accept.toml` bounds, and its own audio scripts are removed. Anything Cottony needs
 that a second game would not becomes configuration.
 
-### §PW221 Measuring a sound that does not loop
-
-`sound.measure` raises `spec.unreadable-sound` for any file shorter than eight analysis
-windows, because its seam measures need audio on both sides of the wrap. Every one-shot
-effect is that short: the PW184 spike's ten sfxr effects ran 0.10 to 0.29 s and all but
-one were refused, so an effect cannot be bounded at all today.
-
-A seam only means something for a loop. So `measure` keeps loudness, peak and duration
-for every file, and reports `seam_step` and `seam_flux` as absent when the file is
-shorter than the window rather than refusing it. A predicate in `*.accept.toml` that
-bounds a seam measure on such a file is refused with a remedy that names the length it
-needs, so the gap is loud where a bound asked for it and silent everywhere else.
-
-Tests: a 0.1 s effect measures loudness, peak and duration; the same file under a
-`seam_flux` bound is refused with that remedy; a loop measures exactly as before. The
-measurement vocabulary spec says which measures a one-shot has.
-
 ### §PW222 A seam judged against the track's own downbeats
 
 `seam_flux` divides the spectral change across the wrap by the track's 90th-percentile

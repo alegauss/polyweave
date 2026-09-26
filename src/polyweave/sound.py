@@ -144,16 +144,38 @@ def _db(value: float) -> float:
     return round(20.0 * float(np.log10(max(value, 1e-12))), 3)
 
 
+#: The shortest sound a seam can be read on: four analysis windows either side of the
+#: wrap. Anything shorter is a one-shot, measured without one (§PW221).
+SEAM_WINDOWS = 8
+
+
+def shortest_seam(rate: int = RATE) -> float:
+    """The length, in seconds, below which a sound has no seam to measure."""
+    return SEAM_WINDOWS * _SIZE / rate
+
+
 def measure(path: str | Path) -> dict:
-    """Every sound measure of one file, by name."""
+    """Every sound measure of one file, by name.
+
+    A file too short to hear a seam in (a one-shot effect, typically) has its level,
+    peak and length and no seam measures at all: a seam only means something for a
+    loop, and refusing the whole file would leave an effect with nothing to bound.
+    """
     samples, rate = read(path)
     mono = samples.mean(axis=1)
-    if len(mono) < 8 * _SIZE:
+    if not len(mono):
         raise PolyweaveError(
             "spec.unreadable-sound",
-            f"{Path(path).name} is {len(mono) / rate:.3f} s, too short for a seam",
-            f"give it at least {8 * _SIZE / rate:.2f} s",
+            f"{Path(path).name} holds no samples",
+            "check the file the game plays; it is empty",
         )
+    found = {
+        "loudness": _db(float(np.sqrt(np.mean(mono**2)))),
+        "peak": _db(float(np.abs(samples).max())),
+        "duration": round(len(mono) / rate, 4),
+    }
+    if len(mono) < SEAM_WINDOWS * _SIZE:
+        return found
     steps = np.abs(np.diff(mono))
     step = abs(mono[0] - mono[-1]) / max(float(np.percentile(steps, 99)), 1e-12)
     wrapped = np.concatenate([mono[-4 * _SIZE :], mono[: 4 * _SIZE]])
@@ -163,9 +185,7 @@ def measure(path: str | Path) -> dict:
     return {
         "seam_step": round(float(step), 4),
         "seam_flux": round(float(across[middle - 4 : middle + 4].max()) / ordinary, 4),
-        "loudness": _db(float(np.sqrt(np.mean(mono**2)))),
-        "peak": _db(float(np.abs(samples).max())),
-        "duration": round(len(mono) / rate, 4),
+        **found,
     }
 
 

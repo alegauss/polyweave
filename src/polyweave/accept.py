@@ -480,6 +480,16 @@ def _sounded(p: Predicate, subject: Any, root: str | Path, heard: dict) -> dict:
     where = where if where.is_absolute() else Path(root) / where
     if str(where) not in heard:
         heard[str(where)] = sound.measure(where)
+    if p.measure not in heard[str(where)]:
+        # Only a seam can be missing: a one-shot has none (§PW221).
+        raise PolyweaveError(
+            "spec.no-seam",
+            f"{p.id} bounds {p.measure}, and {where.name} is "
+            f"{heard[str(where)]['duration']:.3f} s, too short to have a seam",
+            f"bound a seam only on a loop of at least {sound.shortest_seam():.2f} s; "
+            f"an effect is bounded on loudness, peak and duration",
+            given=p.measure,
+        )
     value = float(heard[str(where)][p.measure])
     return {
         "id": p.id,

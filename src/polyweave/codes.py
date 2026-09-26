@@ -1651,9 +1651,15 @@ CODES: dict[str, Code] = {
         doors=("check it against the audio file, or name that file with `of`",),
     ),
     "spec.unreadable-sound": Code(
-        means="a sound file is missing, unreadable, or too short to hear a seam in",
-        when="an .ogg with no ffmpeg on PATH, a 12-bit WAV, or a half-second clip",
+        means="a sound file is missing, unreadable or empty",
+        when="an .ogg with no ffmpeg on PATH, a 12-bit WAV, or a file with no samples",
         doors=("give a 16-bit PCM WAV, or put ffmpeg on PATH",),
+    ),
+    "spec.no-seam": Code(
+        means="a seam is bounded on a sound too short to have one",
+        when="a seam_flux bound in a one-shot effect's spec, which only a loop has",
+        doors=("bound loudness, peak or duration instead",
+               "bound the seam on the loop it belongs to"),
     ),
     "spec.unbounded-measure": Code(
         means="the measure answers with something a bound cannot hold",

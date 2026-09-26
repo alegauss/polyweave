@@ -48,8 +48,8 @@ has nothing to draw, so a bound it misses is refused (`sound.no-draw`) with the 
 parameters that set a length.
 
 The answer gives each effect's `file`, `generator`, `seed`, `tries`, whether it was
-`declared`, and its `duration`, `peak` and `loudness`, measured here since a one-shot is
-shorter than `sound.measure`'s seam window.
+`declared`, and its `duration`, `peak` and `loudness`, the measures a one-shot has, which
+`sound.measure` and an effect's `*.accept.toml` read the same way.
 
 The port is held to the spike's ten effects, which a person listened to and passed: the
 same generators and seeds give the lengths the spike measured, to the millisecond.

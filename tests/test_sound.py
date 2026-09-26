@@ -149,10 +149,38 @@ def test_a_committed_loop_is_held_to_its_spec_by_verify(tmp_path):
     assert found["counts"]["passed"] == 1
 
 
-def test_a_clip_too_short_to_hear_a_seam_in_is_refused(tmp_path):
+def test_a_one_shot_is_measured_without_a_seam(tmp_path):
+    found = sound.measure(written(tmp_path / "short.wav", tone(0.1)))
+    assert set(found) == {"loudness", "peak", "duration"}
+    assert found["duration"] == pytest.approx(0.1, abs=0.001)
+    assert found["peak"] == pytest.approx(-6.02, abs=0.05)
+
+
+def test_a_file_with_no_samples_is_refused(tmp_path):
     with pytest.raises(PolyweaveError) as refused:
-        sound.measure(written(tmp_path / "short.wav", tone(0.1)))
+        sound.measure(written(tmp_path / "empty.wav", np.zeros(0)))
     assert refused.value.code == "spec.unreadable-sound"
+
+
+def test_a_seam_bound_on_a_one_shot_is_refused_with_the_length_it_needs(tmp_path):
+    written(tmp_path / "pop.wav", tone(0.1))
+    bar = spec(
+        tmp_path, '[[predicate]]\nid = "flux"\nmeasure = "seam_flux"\nmax = 1.0\n'
+    )
+    with pytest.raises(PolyweaveError) as refused:
+        accept.check(bar, tmp_path / "pop.wav", root=tmp_path)
+    assert refused.value.code == "spec.no-seam"
+    assert f"{sound.shortest_seam():.2f} s" in refused.value.remedy
+
+
+def test_a_one_shot_is_held_to_its_level_and_length(tmp_path):
+    written(tmp_path / "pop.wav", tone(0.1))
+    bar = spec(
+        tmp_path,
+        '[[predicate]]\nid = "short"\nmeasure = "duration"\nmax = 0.3\n'
+        '[[predicate]]\nid = "loud"\nmeasure = "peak"\nmax = -3.0\n',
+    )
+    assert accept.check(bar, tmp_path / "pop.wav", root=tmp_path)["passed"] is True
 
 
 def test_the_operation_measures_a_sound_by_path(tmp_path):

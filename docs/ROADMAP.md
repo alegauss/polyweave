@@ -36,7 +36,6 @@
 
 ## Block P — Music and sound a game can ship
 
-- 📋 **PW221** (deps: —) **sound.measure refuses every one-shot effect as too short for a seam** — A game's effects cannot be bounded on loudness, peak or duration while a seam, which only a loop has, is required of every file. → §PW221
 - 📋 **PW222** (deps: —) **seam_flux reads a loop that restarts on a crash cymbal as a cut** — The seam is compared with the track's ordinary frames, not its own downbeats, so a clean loop fails any bound of one. → §PW222
 - 📋 **PW223** (deps: PW189 ✅) **A chiptune score cannot play its percussion on an sfxr drum kit** — music.render plays Surge and General MIDI only, so the 8-bit kit the passed spike loop used has no instrument to name. → §PW223
 - 📋 **PW224** (deps: —) **A sound ffmpeg cannot decode escapes sound.read as a raw process error, not a refusal** — A corrupt OGG or MP3 makes every sound measure and bound fail with a traceback an agent cannot branch on, where a code would name the file. → §PW224

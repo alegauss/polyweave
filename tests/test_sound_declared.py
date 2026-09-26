@@ -82,12 +82,17 @@ def test_a_loop_carries_its_seam_and_an_effect_does_not(tmp_path):
 
 
 def test_a_file_that_cannot_be_measured_says_why_rather_than_failing_the_read(tmp_path):
+    import numpy as np
+
     root = project(tmp_path, COTTONY)
-    written(audio(tmp_path) / "pop_candy.wav", tone(0.1))
+    written(audio(tmp_path) / "pop_candy.wav", np.zeros(0))
+    written(audio(tmp_path) / "swap.wav", tone(0.1))
     found = sound.declared(family="effects", root=str(root))
-    cue = found["families"]["effects"]["cues"][0]
-    assert cue["exists"] is True
-    assert cue["unmeasured"]["code"] == "spec.unreadable-sound"
+    empty, swap = found["families"]["effects"]["cues"][:2]
+    assert empty["exists"] is True
+    assert empty["unmeasured"]["code"] == "spec.unreadable-sound"
+    # A one-shot effect measures, without a seam (§PW221).
+    assert swap["measured"]["duration"] == pytest.approx(0.1, abs=0.001)
 
 
 def test_a_bare_table_is_one_family_under_the_default_folder(tmp_path):

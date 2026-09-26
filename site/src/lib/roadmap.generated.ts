@@ -40,7 +40,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 0 },
   { block: "O", title: "A person sees and answers", open: 0 },
-  { block: "P", title: "Music and sound a game can ship", open: 4 },
+  { block: "P", title: "Music and sound a game can ship", open: 3 },
   { block: "Q", title: "Words held to the world", open: 1 },
   { block: "R", title: "Levels measured before a person plays them", open: 5 },
   { block: "S", title: "Playing the game, not only rendering it", open: 6 },
@@ -68,13 +68,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent",
     why: "The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question.",
     deps: ["PW57"],
-  },
-  {
-    id: "PW221",
-    block: "P",
-    symptom: "sound.measure refuses every one-shot effect as too short for a seam",
-    why: "A game's effects cannot be bounded on loudness, peak or duration while a seam, which only a loop has, is required of every file.",
-    deps: [],
   },
   {
     id: "PW222",

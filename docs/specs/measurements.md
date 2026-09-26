@@ -178,10 +178,17 @@ moment of that music, and nothing more.
 - `loudness` (RMS, dBFS), `peak` (dBFS) and `duration` (seconds).
 
 A 16-bit or 24-bit PCM WAV is read with the standard library, and anything else is
-decoded by ffmpeg or refused (`spec.unreadable-sound`), as is a clip too short to hold
-a seam. `sound.measure` returns all five. A pure tone is a poor fixture for the
+decoded by ffmpeg or refused (`spec.unreadable-sound`), as is a file with no samples.
+`sound.measure` returns all five for a loop. A pure tone is a poor fixture for the
 spectral ratio, since every moment of it is the same: the tests use noise made
 periodic by an inverse FFT, which is a loop by construction.
+
+**A one-shot has no seam** (§PW221). A sound shorter than eight analysis windows
+(0.37 s at 44.1 kHz) cannot have four either side of its wrap, and a seam only means
+something for a loop anyway. So it is measured for `loudness`, `peak` and `duration`
+and carries no seam measures, rather than being refused whole, which had left every
+effect with nothing to bound. A spec that bounds a seam on one is refused
+(`spec.no-seam`), naming the length a seam needs.
 
 ## Two digests: did the outline move, or only the look
 
