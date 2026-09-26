@@ -36,7 +36,7 @@ from typing import Annotated, Any
 
 import numpy as np
 
-from . import music, sound
+from . import licences, music, provenance, sound
 from .config import load
 from .describe import Param, operation
 from .errors import PolyweaveError
@@ -360,6 +360,12 @@ def render(
     report.stage("building", note="finding the engines this score plays through")
     found = engines(here, model)
     ext = model["extensions"][music.EXTENSION]
+    # Settled before anything plays: a library nobody declared a licence for is refused
+    # here rather than shipped with a credit missing (§PW191).
+    instruments = _instruments(config, ext["tracks"], found)
+    inputs = [provenance.source("score", where, here)]
+    if found.get("soundfont"):
+        inputs.append(provenance.source("soundfont", found["soundfont"], here))
     per_tick = _seconds_per_tick(model)
     end = max(s["endTick"] for s in model["sections"])
     total = end * per_tick + TAIL
@@ -394,8 +400,11 @@ def render(
 
     target = where.with_name(stem) if not out else config.path("paths.work", out)
     target.parent.mkdir(parents=True, exist_ok=True)
+    made = _written(target, final, found["ffmpeg"], loop, here)
+    _recorded(made, here, inputs, instruments, None)
     answer = {
-        **_written(target, final, found["ffmpeg"], loop, here),
+        **made,
+        "instruments": instruments,
         "parts": played_by,
         "loop": ({"start": round(loop["startTick"] * per_tick, 3),
                   "end": round(loop["endTick"] * per_tick, 3)} if loop else None),
@@ -414,7 +423,40 @@ def render(
                 _high_passed(part) * riding[:, None],
                 found["ffmpeg"], loop, here,
             )
+            playing = [i for i in instruments if set(i["used_by"]) & set(own)]
+            _recorded(answer["layers"][layer], here, inputs, playing, layer)
     return answer
+
+
+def _instruments(config, tracks: dict, found: dict) -> list[dict]:
+    """Every engine, library and patch this score plays through, with its licence."""
+    by: dict[str, list[str]] = {}
+    patched: dict[str, list[str]] = {}
+    for name, settings in tracks.items():
+        engine, _, arg = settings["instrument"].partition(":")
+        by.setdefault("surge" if engine == "surge" else "fluidsynth", []).append(name)
+        if engine == "surge":
+            patched.setdefault(arg, []).append(name)
+    out = [licences.engine("pedalboard", list(tracks))]
+    if "surge" in by:
+        out += [licences.engine("surge", by["surge"]), *licences.patches(patched)]
+    if "fluidsynth" in by:
+        out += [licences.engine("fluidsynth", by["fluidsynth"]),
+                licences.library(config, found["soundfont"], by["fluidsynth"])]
+    return out
+
+
+def _recorded(made: dict, here: Path, inputs: list[dict], instruments: list[dict],
+              layer: str | None) -> None:
+    """A provenance record beside each file made: what made it and what it owes."""
+    for key in ("wav", "ogg"):
+        if made.get(key):
+            provenance.write(provenance.build(
+                "sound", here / made[key], engine={"name": "music.render"},
+                inputs=inputs, params={"layer": layer} if layer else None,
+                measurements=made["measured"],
+                extra={"instruments": instruments}, root=here,
+            ), here)
 
 
 def _layers(tracks: dict) -> list[str]:

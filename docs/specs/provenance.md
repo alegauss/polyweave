@@ -34,10 +34,20 @@ JSON, written beside every artefact this plugin produces, named `<artefact>.prov
 }
 ```
 
-`kind` is `render`, `mesh`, `capture`, `fetch` or `picture`, the last a bought picture put
-on the project's grid (§PW171). A `fetch` carries the service fields §PW17 requires — task
-id, prompt or reference hash, credits consumed — in the same record rather than a second
-one.
+`kind` is `render`, `mesh`, `capture`, `fetch`, `picture` or `sound`; `picture` is a bought
+picture put on the project's grid (§PW171). A `fetch` carries the service fields §PW17
+requires — task id, prompt or reference hash, credits consumed — in the same record rather
+than a second one.
+
+A `sound` is audio `music.render` or `sound.synth` made (§PW191). It carries
+`instruments`: every engine, library and patch that played, each with its `role`,
+`licence`, the `credit` it requires (empty owes none), a `note` and the tracks it was
+`used_by`. The engines' licences are the plugin's to state and cover the software, not the
+audio. A library's are the project's, declared under `[licence."<file name>"]` in
+`polyweave.toml`, and a render through a library nobody declared is refused before anything
+plays (`music.licence-undeclared`). `provenance.credits` reads every `sound` record and
+answers what a game `owed`, each credit with the files it is owed for, and the `notes` a
+person should read, such as a library whose author cannot vouch for every sample.
 
 It costs nothing to write and it is the only thing that makes a difference explicable weeks
 later. It is also what lets a regression be bisected: a render that got worse is compared

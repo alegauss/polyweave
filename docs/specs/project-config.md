@@ -133,6 +133,11 @@ duration = 90.0                    # the target, in seconds; zero states none
 loudness = -18.0                   # the target, RMS dBFS; zero states none
 cues     = ["music_calm"]          # each lands at <folder>/<cue>.<format>
 
+[licence."GeneralUser-GS.sf2"]     # keyed by a library's file name; the project's to declare
+terms  = "GeneralUser GS License v2.0: any music use, commercial included"
+credit = ""                        # the credit it requires; empty owes none
+note   = "the author cannot vouch for the origin of every sample"
+
 [words]
 table    = "i18n/strings.csv"      # Godot's translation CSV, one column per locale
 speaker  = "_speaker"              # the column naming who speaks, as a world entity id
@@ -327,11 +332,12 @@ a capture must state explicitly, and a capture leaving one to chance is refused.
 the same script on two machines produced two different images because the game read its
 language from the machine and nothing said which language the picture was in.
 
-**`[capture]` is the one table a project may add its own keys to**, because the settings a
-picture depends on are per project and a project that cannot name its own is back to
-leaving them to the machine. A name in `declared` takes its value from a key of the same
-name here, or from the call. Everywhere else, an unknown key is still a typo and is
-refused.
+**`[capture]` and `[licence]` are the two tables a project may add its own keys to.** The
+settings a picture depends on are per project, and a project that cannot name its own is
+back to leaving them to the machine; a name in `declared` takes its value from a key of the
+same name here, or from the call. `[licence]` is keyed by the file names of the libraries a
+render plays through (§PW191), each with `terms`, and `credit`, `note` and `url` where they
+apply. Everywhere else, an unknown key is still a typo and is refused.
 
 ## Starting the file
 

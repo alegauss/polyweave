@@ -40,7 +40,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 0 },
   { block: "O", title: "A person sees and answers", open: 0 },
-  { block: "P", title: "Music and sound a game can ship", open: 6 },
+  { block: "P", title: "Music and sound a game can ship", open: 5 },
   { block: "Q", title: "Words held to the world", open: 1 },
   { block: "R", title: "Levels measured before a person plays them", open: 5 },
   { block: "S", title: "Playing the game, not only rendering it", open: 6 },
@@ -70,18 +70,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW57"],
   },
   {
-    id: "PW191",
-    block: "P",
-    symptom: "Rendered audio does not record which instruments made it or what their licences owe",
-    why: "Sample libraries carry licences from CC0 to credit-required, and a game cannot ship credits nobody recorded.",
-    deps: [],
-  },
-  {
     id: "PW192",
     block: "P",
     symptom: "Cottony still makes its audio outside polyweave",
     why: "The block is proven only when its first consumer's music and effects are declared, made and accepted here.",
-    deps: ["PW191"],
+    deps: [],
   },
   {
     id: "PW221",

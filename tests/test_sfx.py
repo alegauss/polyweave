@@ -54,6 +54,18 @@ def test_the_spikes_ten_effects_come_out_at_the_lengths_a_person_heard(tmp_path)
     assert found["match"]["file"] == "audio/match.wav"
 
 
+def test_each_effect_carries_a_record_of_what_made_it(tmp_path):
+    from polyweave import provenance
+
+    sfx.synth(effects(tmp_path, spike_body()), effect="bomb", root=str(tmp_path))
+    record = provenance.read(str(tmp_path / "audio" / "bomb.wav.prov.json"), tmp_path)
+    assert record["kind"] == "sound"
+    assert record["params"]["generator"] == "explosion"
+    assert record["instruments"][0]["licence"] == "MIT"
+    # An engine's licence is on its code, so a game owes nothing for sfxr's sounds.
+    assert provenance.credits(str(tmp_path)) == {"owed": [], "notes": []}
+
+
 def test_the_same_seed_gives_the_same_bytes(tmp_path):
     source = effects(tmp_path, '[effect.pop]\ngenerator = "pickup"\nseed = 7\n')
     sfx.synth(source, root=str(tmp_path))

@@ -30,7 +30,7 @@ from .describe import Param, operation
 from .errors import PolyweaveError
 
 #: What a record may describe. Closed, because a reader branches on it.
-KINDS = ("render", "mesh", "capture", "fetch", "picture")
+KINDS = ("render", "mesh", "capture", "fetch", "picture", "sound")
 
 SUFFIX = ".prov.json"
 
@@ -655,6 +655,36 @@ def _made_by(record: dict) -> str:
     kind = record.get("kind", "")
     script = record.get("script")
     return f"{kind} by {script}" if script else kind
+
+
+@operation("provenance.credits")
+def credits(root: Annotated[str, ROOT] = ".") -> dict:
+    """The credits a game owes for its sounds, and what else their licences say.
+
+    Read from every `sound` record's instruments (§PW191): `owed` lists each instrument
+    whose licence requires a credit, with the credit and the files it is owed for;
+    `notes` what a person should know of the rest, such as a library whose author
+    cannot vouch for every sample.
+    """
+    where = Path(root).resolve()
+    owed: dict[str, dict] = {}
+    notes: dict[str, dict] = {}
+    for record in _records(where):
+        if record.get("kind") != "sound":
+            continue
+        made = record["artefact"]["path"]
+        for one in record.get("instruments") or ():
+            if one.get("credit"):
+                entry = owed.setdefault(one["name"], {
+                    "name": one["name"], "licence": one.get("licence", ""),
+                    "credit": one["credit"], "files": []})
+                entry["files"].append(made)
+            elif one.get("note") and one.get("role") != "engine":
+                entry = notes.setdefault(one["name"], {
+                    "name": one["name"], "licence": one.get("licence", ""),
+                    "note": one["note"], "files": []})
+                entry["files"].append(made)
+    return {"owed": list(owed.values()), "notes": list(notes.values())}
 
 
 @operation("provenance.dependents")

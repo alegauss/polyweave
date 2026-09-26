@@ -244,6 +244,7 @@
 - ✅ **PW188** **One theme cannot play at several intensities that stay in step** — A score's tracks name layers, and music.render writes one file per layer at the mix's exact length, each riding the master's gain so they add back up to it (design recorded in `docs/specs/music.md`).
 - ✅ **PW189** **Retro sound effects are synthesised by each consumer's own script** — sound.synth makes retro effects with a seeded sfxr from a *.sfx.toml, at the declared cue's file, redrawing seeds until a duration bound holds (design recorded in `docs/specs/effects.md`).
 - ✅ **PW190** **Realistic sound effects have no bounded way to be bought from a service** — sound.buy buys an effect from ElevenLabs under its price row and ceiling, transcodes it to its declared cue's format and ledgers it first (design recorded in `docs/specs/effects.md`).
+- ✅ **PW191** **Rendered audio does not record which instruments made it or what their licences owe** — Every rendered or synthesised sound's record names its engines, libraries and patches with their licences; provenance.credits lists what a game owes (design recorded in `docs/specs/provenance.md`).
 
 ## Block Q — Words held to the world
 

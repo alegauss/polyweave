@@ -840,6 +840,11 @@ CODES: dict[str, Code] = {
         doors=("install the engine the message names",
                "set its [paths] entry to where it is"),
     ),
+    "music.licence-undeclared": Code(
+        means="the render plays through a library the project declared no licence for",
+        when="a SoundFont in [paths] soundfont with no [licence.\"<its file name>\"]",
+        doors=('declare [licence."<file>"] with its terms and any credit it requires',),
+    ),
     "music.unknown-parameter": Code(
         means="a patch sets a parameter Surge XT does not have",
         when="a misspelled name, or one that exists only under another oscillator type "

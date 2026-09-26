@@ -299,22 +299,6 @@ since a reference the service ignores is dropped without an error.
 
 ## Block P — Music and sound a game can ship
 
-### §PW191 Where a rendered sound's instruments came from
-
-A render uses sample libraries and presets whose licences differ: CC0, CC-BY needing
-credit, or terms that forbid redistribution. `music.render` and `sound.synth` write a
-provenance sidecar naming the score, the engine and each instrument with its licence,
-through `provenance` rather than the purchase ledger, since nothing was bought.
-
-A render that uses a library whose licence is undeclared is refused, and `provenance`
-can list the credits a game owes.
-
-The spike's stack sets the first entries. Surge XT is GPL-3.0 and FluidSynth LGPL-2.1,
-and neither licence reaches the audio they render. GeneralUser GS v2.0.3 allows any
-music use, commercial included, with no credit required, but its author cannot vouch for
-the origin of every sample. The sidecar carries that as a note rather than a clean bill.
-Surge patches written as parameter tables are the consumer's own and owe nothing.
-
 ### §PW192 Cottony's audio made through polyweave
 
 The block is proven when its first consumer uses it. Cottony's music and effects are

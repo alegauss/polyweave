@@ -109,9 +109,15 @@ def project(tmp_path, score: str, paths: str = "") -> str:
     return "music/cue.music.toml"
 
 
-def fluid_paths() -> str:
-    return (f"fluidsynth = {str(FLUIDSYNTH)!r}\nsoundfont = {SOUNDFONT!r}\n"
-            .replace("'", '"').replace("\\", "/"))
+def fluid_paths(credit: str = "") -> str:
+    paths = (f"fluidsynth = {str(FLUIDSYNTH)!r}\nsoundfont = {SOUNDFONT!r}\n"
+             .replace("'", '"').replace("\\", "/"))
+    return paths + (
+        f'\n[licence."{Path(SOUNDFONT).name}"]\n'
+        'terms = "GeneralUser GS License v2.0: any music use, commercial included"\n'
+        f'credit = "{credit}"\n'
+        'note = "the author cannot vouch for the origin of every sample"\n'
+    )
 
 
 def test_a_label_is_matched_to_the_nearest_number_in_its_own_unit():
@@ -184,6 +190,45 @@ def test_layers_are_files_of_one_length_that_add_up_to_the_whole(tmp_path):
     assert likeness > 0.99
     for layer in found["layers"].values():
         assert layer["measured"]["seam_step"] <= 1.0
+
+
+@pytest.mark.skipif(not PEDALBOARD, reason="audio engine absent: Pedalboard")
+def test_a_library_with_no_declared_licence_is_refused_before_anything_plays(tmp_path):
+    import sys
+
+    font = tmp_path / "Mystery.sf2"
+    font.write_bytes(b"sfbk")
+    engine = str(Path(sys.executable)).replace("\\", "/")
+    paths = f'fluidsynth = "{engine}"\nsoundfont = "{font.as_posix()}"\n'
+    with pytest.raises(PolyweaveError) as refused:
+        music_render.render(Reported(), project(tmp_path, GM, paths),
+                            root=str(tmp_path))
+    assert refused.value.code == "music.licence-undeclared"
+    assert 'licence."Mystery.sf2"' in refused.value.remedy
+    assert not (tmp_path / "music" / "cue.wav").exists()
+
+
+@needs_fluid
+def test_every_file_made_carries_its_instruments_and_what_they_owe(tmp_path):
+    from polyweave import provenance
+
+    score = GM.replace('instrument = "gm:73"', 'instrument = "gm:73"\nlayer = "tense"')
+    found = music_render.render(
+        Reported(), project(tmp_path, score, fluid_paths("Sounds: GeneralUser GS")),
+        root=str(tmp_path))
+    record = provenance.read(str(tmp_path / "music" / "cue.wav.prov.json"), tmp_path)
+    assert record["kind"] == "sound"
+    assert [i["path"] for i in record["inputs"]][0] == "music/cue.music.toml"
+    named = {i["name"]: i for i in record["instruments"]}
+    assert named["FluidSynth"]["licence"] == "LGPL-2.1"
+    assert named[Path(SOUNDFONT).name]["used_by"] == ["drums", "flute"]
+    tense = provenance.read(
+        str(tmp_path / found["layers"]["tense"]["wav"]) + ".prov.json", tmp_path)
+    assert {i["name"]: i for i in tense["instruments"]}[Path(SOUNDFONT).name][
+        "used_by"] == ["drums", "flute"]
+    owed = provenance.credits(str(tmp_path))["owed"]
+    assert owed[0]["credit"] == "Sounds: GeneralUser GS"
+    assert "music/cue.wav" in owed[0]["files"]
 
 
 @needs_fluid

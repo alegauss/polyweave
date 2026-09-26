@@ -34,7 +34,7 @@ from typing import Annotated, Any
 
 import numpy as np
 
-from . import sfxr
+from . import licences, provenance, sfxr
 from .config import load
 from .describe import Param, operation
 from .errors import PolyweaveError
@@ -200,15 +200,27 @@ def synth(
         audio, seed, tries = _made(name, table)
         target = declared.get(name, where.parent / f"{name}.wav")
         made[name] = _placed(target, audio, config.root)
+        measured = {
+            "duration": round(len(audio) / sfxr.RATE, 4),
+            "peak": _db(float(np.abs(audio).max()) if len(audio) else 0.0),
+            "loudness": _db(float(np.sqrt(np.mean(audio**2))) if len(audio) else 0.0),
+        }
         made[name].update({
             "generator": table.get("generator"),
             "seed": seed,
             "tries": tries,
             "declared": name in declared,
-            "duration": round(len(audio) / sfxr.RATE, 4),
-            "peak": _db(float(np.abs(audio).max()) if len(audio) else 0.0),
-            "loudness": _db(float(np.sqrt(np.mean(audio**2))) if len(audio) else 0.0),
+            **measured,
         })
+        # What made it and what it owes, beside it (§PW191).
+        provenance.write(provenance.build(
+            "sound", config.root / made[name]["file"], engine={"name": "sound.synth"},
+            inputs=[provenance.source("effects", where, config.root)],
+            params={"generator": table.get("generator"), "seed": seed},
+            measurements=measured,
+            extra={"instruments": [licences.engine("sfxr", [name])]},
+            root=config.root,
+        ), config.root)
     return {"source": where.relative_to(config.root).as_posix(), "effects": made}
 
 

@@ -40,7 +40,8 @@ _OPEN_TABLES = ("render.samples",)
 #: Tables a project may add keys to while keeping the ones declared here. `[capture]`
 #: is one because the settings a picture depends on are per project and short, and a
 #: project that cannot name its own has to leave them to the machine (§PW25).
-_FREE_TABLES = ("capture",)
+#: `[licence]` is keyed by the file names of the libraries a render plays (§PW191).
+_FREE_TABLES = ("capture", "licence")
 
 #: Only a binary may sit outside the tree. Everything else resolves under
 #: `project.root`, because a path elsewhere is state a colleague cannot reproduce.
@@ -233,6 +234,12 @@ DEFAULTS: dict[str, Any] = {
         # The cue names, each landing at <folder>/<name>.<format>.
         "cues": [],
     },
+    # What each instrument library a render plays through permits and owes (§PW191),
+    # keyed by the library's file name: `[licence."GeneralUser-GS.sf2"]` with `terms`,
+    # the `credit` it requires (empty owes none), a `note` and a `url`. The project's to
+    # declare, because the project chose the library; a render through an undeclared
+    # one is refused.
+    "licence": {},
     "words": {
         # The text a player reads, as the game reads it (§PW197): Godot's translation
         # CSV, one key per row and one column per locale. A column whose header starts
