@@ -154,13 +154,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW214", "PW215", "PW216"],
   },
   {
-    id: "PW227",
-    block: "T",
-    symptom: "a build stamp records its outputs as absolute paths, so it cannot be committed or shared between checkouts",
-    why: "It sits beside the declaration in the project's tree, and a machine path in it churns per checkout or has to be ignored by hand.",
-    deps: [],
-  },
-  {
     id: "PW228",
     block: "T",
     symptom: "an artefact built on Windows is written with CRLF, so its provenance fails once a checkout normalises line endings",
@@ -186,6 +179,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "T",
     symptom: "a misspelt key under a declaration's [voxels] builds without it and names nothing",
     why: "The unread-key check stops at the top level and the nodes, so acros, prts or mehs change the build and nothing says why.",
+    deps: [],
+  },
+  {
+    id: "PW232",
+    block: "T",
+    symptom: "a fit to a Meshy mesh scores the gaps in its surface as empty, so the fitted model shrinks to match them",
+    why: "A leaky mesh projects a silhouette full of holes, and on Spinhold's ship every size in the fit ended pinned at its minimum.",
     deps: [],
   },
 ];

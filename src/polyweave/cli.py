@@ -154,10 +154,9 @@ def build_one(
         key = stamp(made)
         if not force and mark.is_file():
             kept = json.loads(mark.read_text(encoding="utf-8"))
-            if kept.get("stamp") == key and all(
-                Path(one).is_file() for one in kept.get("outputs", ())
-            ):
-                return {**answer, "status": "cached", "outputs": kept["outputs"]}
+            outputs = [str(_under(one, here)) for one in kept.get("outputs", ())]
+            if kept.get("stamp") == key and all(Path(one).is_file() for one in outputs):
+                return {**answer, "status": "cached", "outputs": outputs}
 
         # The document and each of its variants (§PW103), one output apiece, named after
         # the member; a document with none is a family of one.
@@ -174,16 +173,37 @@ def build_one(
         # change instead of the file an agent was about to edit by hand (§PW133).
         stamped = {
             "stamp": key,
-            "source": where.relative_to(here).as_posix()
-            if where.is_relative_to(here)
-            else str(where),
-            "outputs": [str(Path(one).resolve()) for one in answer["outputs"]],
+            "source": _kept(where, here),
+            "outputs": [_kept(Path(one), here) for one in answer["outputs"]],
         }
-        mark.write_text(json.dumps(stamped, indent=1) + "\n", encoding="utf-8")
+        # One set of bytes on every machine (§PW227): paths relative to the root and a
+        # line ending that Windows' text mode does not turn into CRLF, so the stamp can
+        # be committed beside the declaration it describes.
+        mark.write_text(
+            json.dumps(stamped, indent=1) + "\n", encoding="utf-8", newline="\n"
+        )
     except PolyweaveError as refused:
         answer["status"] = "refused"
         answer["refusal"] = refused.as_dict()
     return answer
+
+
+def _kept(path: Path, here: Path) -> str:
+    """A path as a stamp keeps it: relative to the root where it is under it (§PW227).
+
+    A path outside the tree stays absolute, since nothing relative could name it.
+    """
+    resolved = path.resolve()
+    if resolved.is_relative_to(here):
+        return resolved.relative_to(here).as_posix()
+    return str(resolved)
+
+
+def _under(kept: str, here: Path) -> Path:
+    """A stamp's path read back: relative ones against the root, absolute as they are,
+    so a stamp written before §PW227 still resolves."""
+    path = Path(kept)
+    return path if path.is_absolute() else here / path
 
 
 def _wants_mesh(document: dict) -> bool:

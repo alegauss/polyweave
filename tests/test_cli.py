@@ -186,6 +186,35 @@ def test_a_mesh_declaration_ignores_no_mesh_since_the_mesh_is_all_it_makes(
     assert [Path(one).name for one in found["outputs"]] == ["box.glb"]
 
 
+def test_two_checkouts_write_the_same_stamp_bytes(tmp_path):
+    """§PW227: the stamp named every output by its absolute path on the building
+    machine, so it churned per checkout or had to be ignored by hand."""
+    stamps = []
+    for checkout in ("one", "two"):
+        root = tmp_path / checkout
+        (root / "art").mkdir(parents=True)
+        declared(root / "art", VOXEL.replace("cell = 1\n", "cell = 1\nmesh = false\n"))
+        cli.build_one("art/box.toml", root=str(root))
+        stamps.append((root / "art" / "box.build.json").read_bytes())
+    assert stamps[0] == stamps[1]
+    said = json.loads(stamps[0])
+    assert said["source"] == "art/box.toml"
+    assert said["outputs"] == ["art/box.voxels.json"]
+    assert b"\r\n" not in stamps[0]
+
+
+def test_a_stamp_written_with_absolute_paths_still_reads_as_cached(tmp_path):
+    source = declared(tmp_path)
+    cli.build_one(source, root=str(tmp_path))
+    mark = tmp_path / "box.build.json"
+    said = json.loads(mark.read_text("utf-8"))
+    said["outputs"] = [str((tmp_path / one).resolve()) for one in said["outputs"]]
+    mark.write_text(json.dumps(said), encoding="utf-8")
+    again = cli.build_one(source, root=str(tmp_path), force=False)
+    assert again["status"] == "cached"
+    assert all(Path(one).is_file() for one in again["outputs"])
+
+
 def test_all_reports_a_declaration_with_a_typo_and_fails(tmp_path, capsys):
     """§PW123: a declaration `read` refused used to drop out silently, exiting 0."""
     (tmp_path / "art").mkdir()

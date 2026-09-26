@@ -32,14 +32,21 @@ RECORD = ".prov.json"
 MARK = Path(".polyweave") / "session-start"
 
 
-def _stamped(target: Path) -> dict | None:
-    """The build stamp beside `target` that lists it as an output, if any."""
+def _stamped(target: Path, root: Path) -> dict | None:
+    """The build stamp beside `target` that lists it as an output, if any.
+
+    A stamp names its outputs relative to the project root (§PW227), and one written
+    before that names them absolute; both resolve here.
+    """
     for stamp in target.parent.glob(f"*{STAMP}"):
         try:
             said = json.loads(stamp.read_text(encoding="utf-8"))
         except (OSError, ValueError):
             continue
-        outputs = {str(Path(one).resolve()) for one in said.get("outputs", ())}
+        outputs = {
+            str((Path(one) if Path(one).is_absolute() else root / one).resolve())
+            for one in said.get("outputs", ())
+        }
         if str(target.resolve()) in outputs:
             return said
     return None
@@ -53,9 +60,9 @@ def _recorded(target: Path) -> dict | None:
         return None
 
 
-def why_derived(target: Path) -> str | None:
+def why_derived(target: Path, root: Path | None = None) -> str | None:
     """Why `target` must not be edited by hand, or None when it may be."""
-    stamp = _stamped(target)
+    stamp = _stamped(target, root or Path("."))
     if stamp is not None:
         source = stamp.get("source") or "its declaration"
         return (
@@ -96,7 +103,7 @@ def pre(event: dict) -> None:
             return
         target = Path(named)
         target = target if target.is_absolute() else root / target
-        reason = why_derived(target) if target.is_file() else None
+        reason = why_derived(target, root) if target.is_file() else None
         if reason:
             _decide("deny", reason)
     elif tool == "Bash":
@@ -107,7 +114,7 @@ def pre(event: dict) -> None:
         for word in words:
             target = Path(word) if Path(word).is_absolute() else root / word
             if len(word) < 260 and target.suffix and target.is_file():
-                reason = why_derived(target)
+                reason = why_derived(target, root)
                 if reason:
                     _decide("ask", f"this command names a derived file. {reason}")
                     return

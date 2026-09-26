@@ -413,7 +413,15 @@ faces. `--all` builds every declaration under a folder, passing over TOML that i
 shape, and skips one whose stamp — `<name>.build.json` — still matches its outputs. The
 stamp is the cache key of the provenance record the build writes beside every output
 (§PW140): the document, the values set, every file it names, `--preview` and the plugin's
-version, so a fixed builder rebuilds what the defect made and `unrecorded` finds nothing. Blender is needed only
+version, so a fixed builder rebuilds what the defect made and `unrecorded` finds nothing.
+
+**The stamp is committed beside its declaration** (§PW227). The edit guard reads it from
+a fresh clone to name the declaration an output came from, and a clone that finds it
+also skips what has not changed, so it belongs with the tree rather than in
+`.polyweave/`. It names the source and every output relative to the project root (a path
+outside the tree stays absolute) and ends its lines in `\n` on every platform, so two
+checkouts building one declaration write the same bytes. A stamp from before, with
+absolute paths, still reads. Blender is needed only
 where a node needs it: a voxel build writes its cubes' mesh when Blender is there and
 leaves it out when not. A declaration saved with a byte-order mark, as Windows PowerShell
 5.1 writes one, reads like any other.
