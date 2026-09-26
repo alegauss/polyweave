@@ -62,8 +62,9 @@ TOOL_BUDGET = 4500
 #: the two purchases (§PW198, §PW199), and to 59,000 at 58,413 for project.init and
 #: its agent flag (§PW218, §PW219), and to 59,700 at 59,081 for sound.declared
 #: (§PW185), the game's declared audio and which of it is missing, and to 60,600 at
-#: 60,003 for music.validate and music.to_midi (§PW186), a score and its MIDI.
-LIST_BUDGET = 60600
+#: 60,003 for music.validate and music.to_midi (§PW186), a score and its MIDI, and to
+#: 61,600 at 60,998 for music.render and sound.synth (§PW187, §PW189).
+LIST_BUDGET = 61600
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

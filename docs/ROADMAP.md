@@ -36,12 +36,12 @@
 
 ## Block P — Music and sound a game can ship
 
-- 📋 **PW189** (deps: PW185 ✅) **Retro sound effects are synthesised by each consumer's own script** — A second project would have to copy Cottony's generator, which the non-goal on one project's paths forbids. → §PW189
 - 📋 **PW190** (deps: PW185 ✅) **Realistic sound effects have no bounded way to be bought from a service** — A synthesiser does footsteps and glass badly, and a paid fetch without a ceiling is the surprise Block D exists to prevent. → §PW190
-- 📋 **PW191** (deps: PW187 ✅, PW189) **Rendered audio does not record which instruments made it or what their licences owe** — Sample libraries carry licences from CC0 to credit-required, and a game cannot ship credits nobody recorded. → §PW191
-- 📋 **PW192** (deps: PW188 ✅, PW189, PW190, PW191) **Cottony still makes its audio outside polyweave** — The block is proven only when its first consumer's music and effects are declared, made and accepted here. → §PW192
+- 📋 **PW191** (deps: PW187 ✅, PW189 ✅) **Rendered audio does not record which instruments made it or what their licences owe** — Sample libraries carry licences from CC0 to credit-required, and a game cannot ship credits nobody recorded. → §PW191
+- 📋 **PW192** (deps: PW188 ✅, PW189 ✅, PW190, PW191) **Cottony still makes its audio outside polyweave** — The block is proven only when its first consumer's music and effects are declared, made and accepted here. → §PW192
 - 📋 **PW221** (deps: —) **sound.measure refuses every one-shot effect as too short for a seam** — A game's effects cannot be bounded on loudness, peak or duration while a seam, which only a loop has, is required of every file. → §PW221
 - 📋 **PW222** (deps: —) **seam_flux reads a loop that restarts on a crash cymbal as a cut** — The seam is compared with the track's ordinary frames, not its own downbeats, so a clean loop fails any bound of one. → §PW222
+- 📋 **PW223** (deps: PW189 ✅) **A chiptune score cannot play its percussion on an sfxr drum kit** — music.render plays Surge and General MIDI only, so the 8-bit kit the passed spike loop used has no instrument to name. → §PW223
 
 ## Block Q — Words held to the world
 

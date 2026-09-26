@@ -70,13 +70,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW57"],
   },
   {
-    id: "PW189",
-    block: "P",
-    symptom: "Retro sound effects are synthesised by each consumer's own script",
-    why: "A second project would have to copy Cottony's generator, which the non-goal on one project's paths forbids.",
-    deps: [],
-  },
-  {
     id: "PW190",
     block: "P",
     symptom: "Realistic sound effects have no bounded way to be bought from a service",
@@ -88,14 +81,14 @@ export const generatedTasks: GeneratedTask[] = [
     block: "P",
     symptom: "Rendered audio does not record which instruments made it or what their licences owe",
     why: "Sample libraries carry licences from CC0 to credit-required, and a game cannot ship credits nobody recorded.",
-    deps: ["PW189"],
+    deps: [],
   },
   {
     id: "PW192",
     block: "P",
     symptom: "Cottony still makes its audio outside polyweave",
     why: "The block is proven only when its first consumer's music and effects are declared, made and accepted here.",
-    deps: ["PW189", "PW190", "PW191"],
+    deps: ["PW190", "PW191"],
   },
   {
     id: "PW221",
@@ -109,6 +102,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "P",
     symptom: "seam_flux reads a loop that restarts on a crash cymbal as a cut",
     why: "The seam is compared with the track's ordinary frames, not its own downbeats, so a clean loop fails any bound of one.",
+    deps: [],
+  },
+  {
+    id: "PW223",
+    block: "P",
+    symptom: "A chiptune score cannot play its percussion on an sfxr drum kit",
+    why: "music.render plays Surge and General MIDI only, so the 8-bit kit the passed spike loop used has no instrument to name.",
     deps: [],
   },
   {

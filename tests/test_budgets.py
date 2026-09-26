@@ -45,7 +45,8 @@ from polyweave.errors import PolyweaveError
 #: 66,720 with sound.declared (§PW185), the first operation of Block P.
 #: 67,704 with music.validate and music.to_midi (§PW186): a score an agent repairs
 #: against a validator needs both the check and the file a DAW opens.
-DESCRIBE = 68_300
+#: 68,806 with music.render and sound.synth (§PW187, §PW189), the two that make audio.
+DESCRIBE = 69_400
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -70,7 +71,8 @@ DESCRIBE = 68_300
 #: areas' thirteen codes (§PW185, §PW186).
 #: 77,800 with music.render, its two refusals and the three engine paths (§PW187),
 #: before the render's own figures below settle.
-CAPABILITIES = 78_400
+#: 78,417 with sound.synth and its four codes (§PW189).
+CAPABILITIES = 79_000
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

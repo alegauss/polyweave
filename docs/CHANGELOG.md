@@ -242,6 +242,7 @@
 - ✅ **PW186** **An agent cannot write multi-track music as data that polyweave validates** — A *.music.toml score in mini-notation compiles to a piano-shaped note model; music.validate names every problem with its line, and music.to_midi writes it (design recorded in `docs/specs/music.md`).
 - ✅ **PW187** **A composed score cannot become a WAV or OGG file without a DAW open** — music.render turns a valid score into a mastered WAV and OGG through Surge XT and FluidSynth, folding a loop's tail onto its start, with no DAW open (design recorded in `docs/specs/music.md`).
 - ✅ **PW188** **One theme cannot play at several intensities that stay in step** — A score's tracks name layers, and music.render writes one file per layer at the mix's exact length, each riding the master's gain so they add back up to it (design recorded in `docs/specs/music.md`).
+- ✅ **PW189** **Retro sound effects are synthesised by each consumer's own script** — sound.synth makes retro effects with a seeded sfxr from a *.sfx.toml, at the declared cue's file, redrawing seeds until a duration bound holds (design recorded in `docs/specs/effects.md`).
 
 ## Block Q — Words held to the world
 

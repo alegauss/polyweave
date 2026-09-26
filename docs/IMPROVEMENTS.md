@@ -299,23 +299,6 @@ since a reference the service ignores is dropped without an error.
 
 ## Block P — Music and sound a game can ship
 
-### §PW189 Retro effects from a seed
-
-Cottony synthesises its effects with its own `tools/audio/make_sfx.py`, which a second
-project would have to copy. `sound.synth` ports it the way `sound.measure` ported the
-seam measures from `loop_music.py`: an sfxr-style generator (oscillator, envelope, pitch
-slide, noise, filter) driven by a TOML table of parameters and a seed, so a person tunes
-an effect by editing a number, writing mono 16-bit WAV.
-
-The same seed gives the same bytes, so a verdict on an effect holds across runs.
-
-The spike ported sfxr's parameter set, its synth loop and its seven generators (pickup,
-laser, explosion, powerup, hit, jump, blip), seeded by the effect's name, and a person
-passed the ten first draws. Hand-set parameters also gave a four-hit drum kit, so the
-same synth serves a chiptune score's percussion. A first draw can miss its purpose: a
-powerup meant for a won level came out at 0.11 s. So a declared duration bound should be
-able to refuse a draw and move to the next seed, recording which one it kept.
-
 ### §PW190 Realistic effects bought under a budget
 
 Footsteps, glass or rain are not what a synthesiser does well. `sound.buy` fetches from
@@ -383,6 +366,25 @@ Before shipping, measure the three spike loops and one deliberately cut copy of 
 and keep the percentile that separates them. Changing what `seam_flux` means moves
 existing bounds, so the measurement vocabulary spec and any `*.accept.toml` in the tests
 move with it in the same commit.
+
+### §PW223 Chip percussion from an effects kit
+
+The chiptune loop a person passed in the PW184 spike played its percussion on a four-hit
+drum kit made by sfxr: a kick from a sine with a fast downward slide, a snare and two
+hats from noise with a short decay and a high-pass. `music.render` plays `surge:`, `gm:`
+and `drums:` instruments only, so a score in that style today has to take the General
+MIDI kit or Surge, and neither sounds like an 8-bit console.
+
+A `chip:<kit>` instrument closes it. The kit is an `*.sfx.toml` the score names, whose
+effects are keyed by General MIDI drum note (`bd`, `sd`, `hh`, `oh` and the rest of
+`music.DRUMS`), so a pattern written for `drums:` plays unchanged. The render makes each
+hit once with `sound.synth`'s code, then places it at every note of that pitch, scaled
+by velocity, as the spike's `chip_kit` did; a note whose pitch the kit lacks is a
+problem `music.validate` names before any render. The kit's stem then joins the mix like
+any other.
+
+Test it with the spike's four hand-set hits and its chiptune drum pattern: every onset
+lands on its tick, and a velocity of 64 is half the level of 127.
 
 ## Block Q — Words held to the world
 

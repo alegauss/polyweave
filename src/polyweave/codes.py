@@ -755,6 +755,28 @@ CODES: dict[str, Code] = {
         when="one cue name in two families that share a folder and a format",
         doors=("rename one cue", "give one family its own folder"),
     ),
+    "sound.no-source": Code(
+        means="the effects file is missing, not TOML, or holds no [effect.<name>]",
+        when="a path to no file, or a *.sfx.toml with a stray table",
+        doors=("name a *.sfx.toml under the project", "write [effect.<name>] tables"),
+    ),
+    "sound.bad-effect": Code(
+        means="an effect names a key, generator or value sfxr does not have",
+        when="generator = \"coin\" for pickup, base_freq = 2, or a misspelled key",
+        doors=("use the name the remedy offers", "keep a parameter within its range"),
+    ),
+    "sound.no-draw": Code(
+        means="no seed within the tries gave a length inside the effect's bounds",
+        when="a min_duration longer than the generator ever draws",
+        doors=("widen the bounds", "pin env_sustain and env_decay"),
+    ),
+    "sound.no-encoder": Code(
+        means="the effect's cue is declared in a format that needs ffmpeg, and there "
+        "is none",
+        when="an effect for a cue whose family declares ogg, on a machine without "
+        "ffmpeg",
+        doors=("put ffmpeg on PATH", "declare the family's format as wav"),
+    ),
     # -- music: a score as a source, compiled and checked ----------------------
     "music.unreadable": Code(
         means="the score is missing or is not TOML",
