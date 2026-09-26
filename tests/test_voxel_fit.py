@@ -64,6 +64,63 @@ def test_a_mesh_is_compared_in_every_view_asked_for(tmp_path):
     assert min(found["views"].values()) > 0.9
 
 
+def leaky(width: float = 6.0, height: float = 2.0, step: float = 0.25) -> dict:
+    """A flat 6 by 2 surface of small quads with a block of them missing inside the rim,
+    as a service's mesh can be: its outline is whole and its middle is a gap."""
+    columns, rows = int(width / step), int(height / step)
+    vertices = [(x * step, y * step, 0.0) for y in range(rows + 1)
+                for x in range(columns + 1)]
+    faces = []
+    for y in range(rows):
+        for x in range(columns):
+            inside = 2 <= x < columns - 2 and 2 <= y < rows - 2
+            if inside:
+                continue  # the gap
+            a = y * (columns + 1) + x
+            b, c, d = a + 1, a + columns + 1, a + columns + 2
+            faces += [(a, b, d), (a, d, c)]
+    # Only the vertices a face uses: `project` splats every vertex, so one left inside
+    # the gap would draw it in.
+    used = sorted({i for face in faces for i in face})
+    index = {old: new for new, old in enumerate(used)}
+    return {
+        "vertices": [vertices[i] for i in used],
+        "faces": [tuple(index[i] for i in face) for face in faces],
+    }
+
+
+def test_a_mesh_with_gaps_is_fitted_to_its_outline_not_its_holes(tmp_path):
+    """§PW232: the gaps scored as empty, and every size pinned at its minimum."""
+    found = F.fit(
+        plate(), leaky(), ranges={"w": {"min": 1.0, "max": 10.0}}, root=tmp_path
+    )
+    assert found["best"]["w"] == pytest.approx(6.0, abs=0.3)
+    assert found["views"]["front"] > 0.95
+    assert found["filled"]["front"] > 0.3  # a third of the outline was the gap
+
+
+def test_a_whole_mesh_needs_nothing_filled(tmp_path):
+    found = F.fit(
+        plate(), S.plate([0, 0, 6, 2], 1.0), ranges={"w": {"min": 1.0, "max": 10.0}},
+        root=tmp_path,
+    )
+    assert found["filled"]["front"] == 0.0
+
+
+def test_a_drawing_keeps_its_holes(tmp_path):
+    import numpy as np
+
+    ring = np.ones((9, 9), dtype=bool)
+    ring[3:6, 3:6] = False
+    assert F.filled(ring).all()  # a mesh's enclosed hole is filled
+    open_ring = ring.copy()
+    open_ring[4, 0:3] = False  # a gap to the border lets the outside in
+    assert not F.filled(open_ring)[4, 4]
+    found = F.fit(plate(), banner(tmp_path), ranges={"w": {"min": 1.0, "max": 10.0}},
+                  root=tmp_path)
+    assert found["filled"] == {}
+
+
 def test_a_sample_that_leaves_a_piece_floating_scores_nothing(tmp_path):
     document = {
         "name": "pair",

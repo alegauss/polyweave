@@ -607,6 +607,13 @@ fitted model with no hand edit and no script:
 
     python -m polyweave geometry.fit --source art/ship.toml --reference assets/ship.glb --views '["side", "top"]' --write true
 
+**A mesh reference is fitted to its outline** (§PW232). A mesh from a service is rarely
+closed, and a gap in its surface projects as a hole the voxel model would shrink to match.
+So a mesh's silhouette in each view is filled from its border inwards before the fit: what
+the outside cannot reach is inside. The answer's `filled` says, per view, what fraction of
+the reference that fill added, so a fit that leaned on it is visible. A drawing keeps its
+holes, since an opening drawn on purpose is part of the outline.
+
 **One cell for a project** (§PW229). A game whose actors break into their own cubes needs
 every actor on one cell, so the debris of a drone and of a boss are the same cubes. So
 `[voxels] cell` in `polyweave.toml` is the cell of a declaration stating neither `cell`

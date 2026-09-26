@@ -59,7 +59,6 @@
 
 ## Block T — Adopting polyweave in a project
 
-- 🛠 **PW232** (deps: —) **a fit to a Meshy mesh scores the gaps in its surface as empty, so the fitted model shrinks to match them** — A leaky mesh projects a silhouette full of holes, and on Spinhold's ship every size in the fit ended pinned at its minimum. → §PW232
 - 📋 **PW233** (deps: —) **a primitive has one size and no cone or frustum, so every disc and drum is a scaled, turned unit cylinder** — A cylinder is as tall as it is wide with its axis on z, and a cone is a hand-stepped stack of discs under a repeat. → §PW233
 - 📋 **PW234** (deps: —) **a voxel model over budget on cells no one sees is hollowed by a hand-sized cutter, by trial** — The budget counts buried cells, and the cutter that fixes it breaks through a wall when too big, so each saucer or sphere costs rebuilds. → §PW234
 - 📋 **PW235** (deps: —) **the Godot addon reads a voxel model but cannot draw one, so each game writes its own MultiMesh drawer** — Spinhold's VoxelLook, its per-cell colour and glow, shared mesh, centring, wash and fade are what any Godot game drawing polyweave voxels needs. → §PW235

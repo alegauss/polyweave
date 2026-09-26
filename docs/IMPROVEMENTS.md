@@ -609,25 +609,6 @@ reading the source, and it is filed as its own line.
 
 ## Block T — Adopting polyweave in a project
 
-### §PW232 Filled outlines for a fit
-
-Found adopting polyweave in Spinhold (starship RK40). Fitting a voxel declaration to the
-Meshy ship (`assets/models/ship.glb`) on the front and top views, the reference's
-silhouettes as `voxel_fit._references` projects them came back full of holes inside the
-outline: Meshy's surface has gaps, and a pixel no triangle covers is empty in the mask.
-The overlap then scores those gaps as "not the ship", so the fit shrinks the model to
-match them: every size parameter in the search ended pinned at its minimum (body, fin,
-tail plane, span) at an overlap of about 0.55, on two declarations of different shape.
-
-A silhouette for a proportion fit is an outline, and a hole inside it says nothing about
-proportion. Fill the reference's enclosed holes (a flood fill from the border, numpy
-alone, no scipy) before scoring, for a mesh reference; a drawing's alpha keeps its
-holes, since a drawn gap is meant. Say in the answer how much of the outline was filled,
-so a reference that is mostly holes is visible as that.
-
-Done when a fit to a mesh with interior gaps scores the filled outline, and the Meshy
-ship fit no longer pins its sizes to their minima.
-
 ### §PW233 Primitives with their own extents
 
 Found declaring Spinhold's actors (starship RK42). `primitive` takes one `size`, so a

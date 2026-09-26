@@ -62,8 +62,36 @@ def silhouettes(model: dict, *, grid: int = GRID) -> dict[str, np.ndarray]:
     }
 
 
+def filled(mask: np.ndarray) -> np.ndarray:
+    """A silhouette with its enclosed holes filled: everything the border cannot reach.
+
+    A flood fill from the border through the empty pixels, numpy alone: what it reaches
+    is outside, and every other pixel is the subject's.
+    """
+    empty = ~mask
+    outside = np.zeros_like(mask)
+    outside[0, :], outside[-1, :] = empty[0, :], empty[-1, :]
+    outside[:, 0], outside[:, -1] = empty[:, 0], empty[:, -1]
+    while True:
+        grown = outside.copy()
+        grown[1:, :] |= outside[:-1, :]
+        grown[:-1, :] |= outside[1:, :]
+        grown[:, 1:] |= outside[:, :-1]
+        grown[:, :-1] |= outside[:, 1:]
+        grown &= empty
+        if np.array_equal(grown, outside):
+            return ~outside
+        outside = grown
+
+
 def _references(reference: Any, views: tuple, grid: int, root: Path) -> dict:
-    """The reference's outline in each view the fit is scored on."""
+    """The reference's outline in each view the fit is scored on.
+
+    A mesh's outline has its enclosed holes filled (§PW232): a service's surface has
+    gaps, and a pixel no triangle covers inside the outline says nothing about
+    proportion, yet scored as empty it made the fit shrink the model to match the gaps.
+    A drawing keeps its holes, since a drawn gap is meant.
+    """
     from ..config import load
 
     if isinstance(reference, dict):
@@ -86,11 +114,32 @@ def _references(reference: Any, views: tuple, grid: int, root: Path) -> dict:
         mesh = read_mesh(where)
     points = np.asarray(mesh["vertices"], dtype=float)
     return {
-        view: project(
+        view: filled(project(
             {"vertices": _TURNED[view](points), "faces": mesh["faces"]}, grid=grid
-        )
+        ))
         for view in views
     }
+
+
+def _holes(reference: Any, views: tuple, grid: int, root: Path) -> dict[str, float]:
+    """How much of each view's filled outline was holes in the mesh as projected."""
+    if not isinstance(reference, dict):
+        where = Path(reference)
+        where = where if where.is_absolute() else root / where
+        if where.suffix.lower() in (".png", ".jpg", ".jpeg", ".webp"):
+            return {}
+        from ..normalise import read_mesh
+
+        reference = read_mesh(where)
+    points = np.asarray(reference["vertices"], dtype=float)
+    found = {}
+    for view in views:
+        raw = project(
+            {"vertices": _TURNED[view](points), "faces": reference["faces"]}, grid=grid
+        )
+        whole = filled(raw)
+        found[view] = round(float((whole & ~raw).sum()) / max(int(whole.sum()), 1), 4)
+    return found
 
 
 def _ranges(document: dict, ranges: dict | None) -> dict:
@@ -180,6 +229,9 @@ def fit(
         "stopped": found["stopped"],
         "model": made,
         "says": made["says"],
+        # How much of each outline the mesh left as holes, filled before scoring: a
+        # reference that is mostly holes shows as that rather than as a poor fit.
+        "filled": _holes(reference, views, grid, here),
     }
     if sheet:
         where = Path(sheet)
