@@ -609,29 +609,6 @@ reading the source, and it is filed as its own line.
 
 ## Block T — Adopting polyweave in a project
 
-### §PW228 Line endings that survive a checkout
-
-Found adopting polyweave in Spinhold (starship RK38). The text artefacts and records
-polyweave writes go through `Path.write_text` with no `newline=`: `geometry/voxels.py`
-(the `.voxels.json`), `provenance.py` (the `.prov.json`), `cli.py` (the build stamp),
-`files.py` and `calibrate.py`. On Windows that writes CRLF, and the provenance digest is
-taken over those CRLF bytes.
-
-A project with `* text=auto eol=lf`, as Spinhold has, stores the file as LF; the next
-checkout writes LF, and `verify` in `provenance.py` reports the artefact as changed
-though nothing changed it (recorded df9d16..., found be25d2..., 1551 bytes against
-1364). So an artefact built on Windows cannot be verified on any other checkout, and a
-clone on Linux fails every one.
-
-Write every text artefact and record with `newline="\n"` (or `write_bytes` of UTF-8), so
-the bytes and their digest are the same on every platform; `files.py`'s atomic writer is
-the one place most of them pass through. A record whose digest was taken over CRLF stays
-readable: `verify` in `provenance.py` can say so ("recorded over CRLF") rather than
-"changed", and a rebuild fixes it.
-
-Done when an artefact built on Windows verifies after a checkout that normalises line
-endings, and a check writes one and reads its bytes back with no `\r`.
-
 ### §PW229 One cell for a project
 
 Found adopting polyweave in Spinhold (starship RK39). A game whose actors break into

@@ -44,7 +44,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "Q", title: "Words held to the world", open: 1 },
   { block: "R", title: "Levels measured before a person plays them", open: 5 },
   { block: "S", title: "Playing the game, not only rendering it", open: 6 },
-  { block: "T", title: "Adopting polyweave in a project", open: 5 },
+  { block: "T", title: "Adopting polyweave in a project", open: 9 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -154,13 +154,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW214", "PW215", "PW216"],
   },
   {
-    id: "PW228",
-    block: "T",
-    symptom: "an artefact built on Windows is written with CRLF, so its provenance fails once a checkout normalises line endings",
-    why: "Its digest is taken over the CRLF bytes, and a project storing text as LF gets a different file back on every other checkout.",
-    deps: [],
-  },
-  {
     id: "PW229",
     block: "T",
     symptom: "a project's voxel declarations cannot share one cell size, so each repeats it and a drift is found by eye",
@@ -186,6 +179,41 @@ export const generatedTasks: GeneratedTask[] = [
     block: "T",
     symptom: "a fit to a Meshy mesh scores the gaps in its surface as empty, so the fitted model shrinks to match them",
     why: "A leaky mesh projects a silhouette full of holes, and on Spinhold's ship every size in the fit ended pinned at its minimum.",
+    deps: [],
+  },
+  {
+    id: "PW233",
+    block: "T",
+    symptom: "a primitive has one size and no cone or frustum, so every disc and drum is a scaled, turned unit cylinder",
+    why: "A cylinder is as tall as it is wide with its axis on z, and a cone is a hand-stepped stack of discs under a repeat.",
+    deps: [],
+  },
+  {
+    id: "PW234",
+    block: "T",
+    symptom: "a voxel model over budget on cells no one sees is hollowed by a hand-sized cutter, by trial",
+    why: "The budget counts buried cells, and the cutter that fixes it breaks through a wall when too big, so each saucer or sphere costs rebuilds.",
+    deps: [],
+  },
+  {
+    id: "PW235",
+    block: "T",
+    symptom: "the Godot addon reads a voxel model but cannot draw one, so each game writes its own MultiMesh drawer",
+    why: "Spinhold's VoxelLook, its per-cell colour and glow, shared mesh, centring, wash and fade are what any Godot game drawing polyweave voxels needs.",
+    deps: [],
+  },
+  {
+    id: "PW236",
+    block: "T",
+    symptom: "a voxel preview does not say which way its front view looks, so a face declared on +z is found by rebuilding",
+    why: "Three of Spinhold's actors faced the wrong way until a preview showed a helmet's back under front, as nothing states that -z is a model's front.",
+    deps: [],
+  },
+  {
+    id: "PW237",
+    block: "T",
+    symptom: "a voxel detail painted onto a body needs two carves and a helper node, as no op repaints cells without adding any",
+    why: "A painted band sticks out of the body it paints, so seams, ribs and frames are spelt as an intersection of carves nobody can read.",
     deps: [],
   },
 ];

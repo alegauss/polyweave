@@ -39,6 +39,13 @@ picture put on the project's grid (§PW171). A `fetch` carries the service field
 requires — task id, prompt or reference hash, credits consumed — in the same record rather
 than a second one.
 
+**Every text artefact and record is written with LF**, on every platform (§PW228). The
+digest is taken over the bytes, and Windows' text mode writes CRLF, so a record made there
+failed on any checkout that normalises line endings to LF although nothing had changed.
+`provenance.verify` still reads a record made before: where the checkout's bytes with CR
+put back before every LF match the digest, the entry is still `changed` but its `why`
+says it was recorded over CRLF, and a rebuild records it over LF.
+
 A `sound` is audio `music.render` or `sound.synth` made (§PW191). It carries
 `instruments`: every engine, library and patch that played, each with its `role`,
 `licence`, the `credit` it requires (empty owes none), a `note` and the tracks it was

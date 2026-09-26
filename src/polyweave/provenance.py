@@ -250,7 +250,11 @@ def write(record: dict, root: str | Path = ".") -> Path:
     where = Path(root).resolve()
     path = sidecar(record["artefact"]["path"], where)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n", "utf-8")
+    # LF on every platform, so a record committed from Windows is the same bytes on any
+    # other checkout (§PW228).
+    path.write_text(
+        json.dumps(record, indent=2, sort_keys=True) + "\n", "utf-8", newline="\n"
+    )
     return path
 
 
@@ -613,16 +617,21 @@ def verify(root: Annotated[str, ROOT] = ".") -> dict:
             missing.append({"record": relative(found, where), "artefact": claimed})
             continue
         digest, length = sha256_of(artefact)
-        if digest != record["artefact"].get("sha256"):
-            changed.append(
-                {
-                    "record": relative(found, where),
-                    "artefact": claimed,
-                    "recorded": record["artefact"].get("sha256"),
-                    "found": digest,
-                    "bytes": length,
-                }
-            )
+        recorded = record["artefact"].get("sha256")
+        if digest != recorded:
+            entry = {
+                "record": relative(found, where),
+                "artefact": claimed,
+                "recorded": recorded,
+                "found": digest,
+                "bytes": length,
+            }
+            if _over_crlf(artefact, recorded):
+                entry["why"] = (
+                    "recorded over CRLF: a checkout normalised the line endings and "
+                    "nothing else changed; build it again to record it over LF"
+                )
+            changed.append(entry)
             continue
         ok.append(claimed)
 
@@ -637,6 +646,25 @@ def verify(root: Annotated[str, ROOT] = ".") -> dict:
         "unreadable": unreadable,
         "unrecorded": nowhere,
     }
+
+
+#: The largest artefact read whole to ask whether only its line endings moved.
+_CRLF_LIMIT = 64 << 20
+
+
+def _over_crlf(artefact: Path, recorded: str | None) -> bool:
+    """Whether a record's digest was taken over this text with CRLF endings (§PW228).
+
+    Polyweave wrote text through Windows' text mode before it wrote LF everywhere, so a
+    record made there hashed CRLF bytes, and a checkout that normalises to LF hands back
+    a file that differs in nothing else. Said as such, rather than as a change.
+    """
+    if not recorded or artefact.stat().st_size > _CRLF_LIMIT:
+        return False
+    body = artefact.read_bytes()
+    if b"\r" in body or b"\n" not in body:
+        return False
+    return hashlib.sha256(body.replace(b"\n", b"\r\n")).hexdigest() == recorded
 
 
 def _records(where: Path):

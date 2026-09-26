@@ -342,11 +342,11 @@ def apply(
             ending = "\n" if lines[at].endswith("\n") else ""
             lines[at] = lead + _inline(bound) + ending
             written.append(f"{name}:{side}")
-    where.write_text("".join(lines), encoding="utf-8")
+    where.write_text("".join(lines), encoding="utf-8", newline="\n")
     try:
         accept.read(where)
     except PolyweaveError:
-        where.write_text(text, encoding="utf-8")
+        where.write_text(text, encoding="utf-8", newline="\n")
         raise
     return {"spec": str(where), "written": written, "kept": kept}
 

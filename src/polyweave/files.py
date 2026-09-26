@@ -26,6 +26,10 @@ def write_atomic(path: Path, text: str | bytes, attempts: int = 10) -> None:
 
     Bytes go the same way as text. A picture read while it is being rewritten is the
     same race as a record read while it is being rewritten, and half a PNG is worse.
+
+    Text is written with `\n` on every platform (§PW228): a record's digest is taken
+    over its bytes, and CRLF from Windows' text mode is a different file once a
+    checkout normalises it.
     """
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_name(f"{path.name}.{os.getpid()}.{secrets.token_hex(3)}.tmp")
@@ -33,7 +37,7 @@ def write_atomic(path: Path, text: str | bytes, attempts: int = 10) -> None:
         if isinstance(text, bytes):
             tmp.write_bytes(text)
         else:
-            tmp.write_text(text, encoding="utf-8")
+            tmp.write_text(text, encoding="utf-8", newline="\n")
         for attempt in range(attempts):
             try:
                 os.replace(tmp, path)

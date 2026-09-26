@@ -99,6 +99,7 @@ def _keep(where: Path, family: dict, values: dict, axes: dict) -> None:
         )
         + "\n",
         encoding="utf-8",
+        newline="\n",
     )
 
 

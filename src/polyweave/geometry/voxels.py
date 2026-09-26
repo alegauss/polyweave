@@ -784,7 +784,11 @@ def write(
         where = Path(root).resolve() / where
     cells = where.with_name(where.stem + SUFFIX)
     cells.parent.mkdir(parents=True, exist_ok=True)
-    cells.write_text(json.dumps(_plain(made), indent=1) + "\n", encoding="utf-8")
+    # LF on every platform, so the digest its record carries holds on any checkout
+    # (§PW228).
+    cells.write_text(
+        json.dumps(_plain(made), indent=1) + "\n", encoding="utf-8", newline="\n"
+    )
     answer = {"model": made, "says": made["says"], "voxels": str(cells)}
     if sheet:
         looked = voxel_sheet.sheet(made, voxel_sheet.beside(cells), **drawn)
