@@ -592,6 +592,19 @@ mesh   = false       # the cells alone, no .glb beside them; true, the default, 
 hollow = 1           # keep a skin this many cells thick and nothing under it
 ```
 
+**Two models compare cell by cell** (§PW240). `geometry.compare` takes two voxel models,
+each a `.voxels.json` a build wrote or a voxel declaration built on the spot, and answers
+whether they hold the same cells wearing the same materials (`same`), the cells only in
+the first and only in the second, and those wearing a different material, each named by
+where it sits in the model's units and by material name rather than palette slot. Cells
+are placed at their middles, so two grids holding the same cells at different indices
+compare as the same, and the grids' own difference (size, origin and the box each is
+centred on) is named under `grid` without counting against `same`: an empty row a drawing
+carried moves the box, not a cell. Cells of different sizes are not compared. A rewrite of
+a declaration, a variant or a fit holds `same` to prove what changed:
+
+    python -m polyweave geometry.compare --first art/ship.voxels.json --second art/ship.toml
+
 **A detail is painted onto a body, not added to it** (§PW237). A glowing seam round a
 sphere, ribs down a dome, seams between armour plates: each is the body's own cells in
 another material where a band or a plane crosses them. `op = "paint"` says so in one node:

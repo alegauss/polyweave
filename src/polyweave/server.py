@@ -65,8 +65,9 @@ TOOL_BUDGET = 4500
 #: 60,003 for music.validate and music.to_midi (§PW186), a score and its MIDI, and to
 #: 61,600 at 60,998 for music.render and sound.synth (§PW187, §PW189), and to 62,800
 #: at 62,199 for sound.buy (§PW190), a whole paid call, and to 64,500 at 63,873 for
-#: `mesh` on the geometry builds and geometry.fit (§PW226, §PW230).
-LIST_BUDGET = 64500
+#: `mesh` on the geometry builds and geometry.fit (§PW226, §PW230), and to 65,000 at
+#: 64,589 for capture.run's args and geometry.compare (§PW238, §PW240).
+LIST_BUDGET = 65000
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

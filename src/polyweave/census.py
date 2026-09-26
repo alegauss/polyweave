@@ -137,6 +137,7 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.geometry.custom": ("internal", "the way back to code, called by build"),
     "polyweave.geometry.voxel_colour": ("internal", "a voxel build's palette"),
     "polyweave.geometry.voxel_fit": ("internal", "a voxel build's fitting"),
+    "polyweave.geometry.voxel_compare": ("internal", "geometry.compare's two models"),
     "polyweave.geometry.voxel_sheet": ("internal", "a voxel build's contact sheet"),
 }
 

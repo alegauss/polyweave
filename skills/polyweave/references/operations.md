@@ -8,7 +8,7 @@ This page only groups them by what you are trying to do.
 | Adopt | `project.init` (`init`), `project.check` |
 | Know the machine | `capabilities` (verb), `engine.find`, `offscreen.routes`, `search.worth_parallel` |
 | Start on an asset | `asset.brief`, `loop.pending` |
-| Make a shape | `geometry.build`, `geometry.build_all`, `geometry.describe`, `geometry.variants`, `geometry.fit` (proportions to a reference) |
+| Make a shape | `geometry.build`, `geometry.build_all`, `geometry.describe`, `geometry.variants`, `geometry.fit` (proportions to a reference), `geometry.compare` (two voxel models, cell by cell) |
 | Render | `render.plan` (free), `render.bake` (costs a render) |
 | Measure | `measure.take`, `measure.same`, `measure.available`, `measure.digest` (did the outline move, or only the look) |
 | Judge against the bar | `accept.check`, `accept.verify`, `accept.check_screen`, `cost.read` (what it costs to draw), `sound.measure` (a loop's seam, level), `sound.declared` (the game's declared audio and what is missing) |

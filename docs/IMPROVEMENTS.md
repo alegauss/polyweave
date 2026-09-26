@@ -609,27 +609,6 @@ reading the source, and it is filed as its own line.
 
 ## Block T — Adopting polyweave in a project
 
-### §PW240 Comparing two voxel models
-
-Found in Spinhold (starship RK110). Its ship's voxel declaration was rewritten from a
-project generator's `cells` drawing into polyweave's own vocabulary, and the rewrite had
-to prove it built the same model: the same cells, each wearing the same material. No
-operation answers that. `measure.same` compares renders and `loop.compare` compares two
-ways of a loop, but nothing compares two `.voxels.json`, so the agent wrote a one-off
-script that loaded both, mapped each cell to a grid position from `origin` and `cell`,
-and set-diffed positions and materials. It found them identical, and that the grids
-differed only by an empty row the old drawing carried, which moves the box a model is
-centred on.
-
-Add `geometry.compare` (or `voxels.same`): two built models, or a declaration and a
-built model, answered as the cells only in one, the cells in both that wear different
-materials (by name, not palette index), and whether the grids' size and origin differ,
-with the box each is centred on. A refactor of a declaration, a variant and a fit all
-want it, and a check a project runs after a rewrite can hold it to "no cell changed".
-
-Done when Spinhold's old and new ship builds compare as the same cells and materials
-with the grid difference named, and no project script does it.
-
 ### §PW241 Asymmetry a declaration means
 
 Found in Spinhold (starship RK87). A colonist's poses are variants of one voxel

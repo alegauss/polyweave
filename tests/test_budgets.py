@@ -49,7 +49,9 @@ from polyweave.errors import PolyweaveError
 #: 70,228 with sound.buy (§PW190), a whole paid call, wider than the average.
 #: 70,842 with `mesh` on geometry.build and build_all (§PW226), the cells alone.
 #: 72,121 with geometry.fit (§PW230), the fit that took a script to run.
-DESCRIBE = 72_700
+#: 72,900 with capture.run's args and geometry.compare (§PW238, §PW240), a rewrite
+#: proved unchanged without a script.
+DESCRIBE = 73_300
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -77,8 +79,9 @@ DESCRIBE = 72_700
 #: 78,417 with sound.synth and its four codes (§PW189).
 #: 79,860 with sound.buy and sound.unknown-cue (§PW190), then 80,535 with the codes
 #: of PW221-PW225 and `mesh` on the two geometry builds (§PW226), then 81,814 with
-#: geometry.fit (§PW230).
-CAPABILITIES = 82_400
+#: geometry.fit (§PW230), then 82,593 with capture.run's args and geometry.compare
+#: (§PW238, §PW240).
+CAPABILITIES = 83_000
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
@@ -97,7 +100,8 @@ HELP_VERB = 4_000
 #: 15,488 with words.sheet, project.init and the init verb (§PW199, §PW218).
 #: 16,100 with sound.declared, music.validate and music.to_midi (§PW185, §PW186).
 #: 16,538 with music.render, sound.synth and sound.buy (§PW187, §PW189, §PW190).
-HELP_TOP = 16_900
+#: 17,001 with geometry.fit and geometry.compare (§PW230, §PW240).
+HELP_TOP = 17_300
 #: A search's answer over its default budget of 24 samples: 3,739.
 SEARCH = 4_000
 

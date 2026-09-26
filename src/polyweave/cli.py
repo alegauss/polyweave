@@ -403,6 +403,26 @@ def fit_one(
     return answer
 
 
+@operation("geometry.compare")
+def compare_two(
+    first: Annotated[
+        str, Param("a .voxels.json, or a voxel declaration to build, under the project")
+    ],
+    second: Annotated[str, Param("the other one, either kind")],
+    *,
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
+) -> dict:
+    """Two voxel models compared cell by cell, materials by name (§PW240).
+
+    Answers whether they hold the same cells wearing the same materials, the cells only
+    in one and those repainted, and how the grids differ. A rewrite of a declaration
+    holds `same` to prove it changed nothing.
+    """
+    from .geometry import voxel_compare
+
+    return voxel_compare.compared(first, second, root=root)
+
+
 def _write_params(where: Path, best: dict, here: Path) -> list[str]:
     """The best values put into the declaration's [params], the rest of it untouched.
 
