@@ -154,13 +154,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW214", "PW215", "PW216"],
   },
   {
-    id: "PW238",
-    block: "T",
-    symptom: "capture.run over MCP and the CLI takes no arguments for the script, so a capture that needs any falls back to Python",
-    why: "The library function takes args but the operation does not, so capturing a boss in play meant a one-off python -c, the project code polyweave replaces.",
-    deps: [],
-  },
-  {
     id: "PW240",
     block: "T",
     symptom: "no operation compares two voxel models cell by cell, so proving a declaration rewrite changed nothing takes a script",
@@ -172,6 +165,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "T",
     symptom: "a declaration cannot say its asymmetry is meant, so a one-armed pose fails the symmetry check the project applies to all",
     why: "near_symmetry is one project-wide number and a declaration's [voxels] refuses it, so a waving variant had to be dropped for a symmetric fake.",
+    deps: [],
+  },
+  {
+    id: "PW242",
+    block: "T",
+    symptom: "a capture of a moment in play misses its subject when spawns vary between runs",
+    why: "A fixed frame count is all a capture waits on, so Spinhold's boss was off screen or its ship dead by the frame asked for, twice.",
     deps: [],
   },
 ];

@@ -203,6 +203,18 @@ A value is written the same way on both sides: `1920x1080` rather than `[1920, 1
 since the script has to print it back and a line of JSON inside a log is a line nobody
 reads. The arguments go in a fixed order, so the command is reproducible.
 
+**A script takes its own arguments too** (§PW238). A capture of a moment in play names
+the moment: Spinhold's boss was `--boss --frames=420 --hold=fire_right`. `capture.run`
+takes them as `args`, a list of strings, and passes them after `--` and ahead of the
+environment's pairs, so the script reads both off `OS.get_cmdline_user_args()`:
+
+    python -m polyweave capture.run --script dev/site_shots.gd --expect "^SHOT (?P<shot>\S+) " --args '["--boss", "--frames=420"]'
+
+There is exactly one `--`: the library's `args` may already hold the engine's own and then
+a `--` before the script's, and nothing adds a second, which would reach the script as an
+argument spelled `--`. The declared `resolution` stays the environment's, overridden
+through `environment` like any other setting, since the script is what applies it.
+
 **The environment is recorded beside the picture**, in the capture's provenance record
 alongside the route it was drawn by and the script that drew it, so a screenshot that
 differs later is compared against what it was taken under rather than against a memory.

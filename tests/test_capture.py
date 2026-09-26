@@ -207,6 +207,35 @@ def test_the_environment_rides_on_the_command_as_arguments(tmp_path):
     assert found["environment"]["holds"] is True
 
 
+def test_the_operation_passes_the_scripts_own_arguments(tmp_path, monkeypatch):
+    """§PW238: a boss captured in play needs `--boss`, and the tool could not say it."""
+    script = project(tmp_path, '[capture]\ndeclared = ["locale"]\nlocale = "pt_BR"\n')
+    taken = taking("environment: locale=pt_BR\ncaptured: res://x.png 24 x 24\n")
+    monkeypatch.setattr(capture.offscreen, "capture", taken)
+    found = capture.taken(
+        str(script),
+        expect=SHOT,
+        root=str(tmp_path),
+        record=False,
+        args=["--boss", "--frames=420"],
+    )
+    assert found["args"] == ("--", "--boss", "--frames=420", "locale=pt_BR")
+    assert found["environment"]["holds"] is True
+
+
+def test_args_already_split_by_the_caller_get_no_second_separator(tmp_path):
+    script = project(tmp_path, '[capture]\ndeclared = ["locale"]\nlocale = "pt_BR"\n')
+    found = capture.run(
+        script,
+        expect=SHOT,
+        root=tmp_path,
+        args=("--resolution", "1920x1080", "--", "--out=a.png"),
+        take=taking("environment: locale=pt_BR\ncaptured: res://x.png 24 x 24\n"),
+    )
+    assert found["args"].count("--") == 1
+    assert found["args"][-2:] == ("--out=a.png", "locale=pt_BR")
+
+
 def test_a_capture_that_did_not_apply_it_comes_back_not_ok(tmp_path):
     script = project(tmp_path, '[capture]\ndeclared = ["locale"]\nlocale = "pt_BR"\n')
     found = capture.run(

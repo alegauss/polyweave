@@ -609,28 +609,6 @@ reading the source, and it is filed as its own line.
 
 ## Block T — Adopting polyweave in a project
 
-### §PW238 Script arguments for a capture
-
-Found in Spinhold (starship RK106). Capturing its new boss in play meant running
-`dev/site_shots.gd` with `--boss --frames=420 --hold=fire_right`. The `capture.run`
-operation, over MCP and the CLI, takes the script, the environment and the pattern to
-expect, but no arguments for the script, so a capture that needs any cannot be taken
-through the tool at all. The Python function `polyweave.capture.run` does take `args`,
-which is how `tools/site_assets.py` works, so the agent fell back to a one-off `python
--c` calling the library: exactly the project-side code polyweave exists to replace.
-
-Give the operation an `args` parameter (a list of strings passed after `--`, as the
-library already does), and a `resolution` override taken from the environment as today.
-`describe` should say that `args` are the script's own and go after the engine's.
-
-A capture of a moment in play also missed its subject twice: spawns vary between runs,
-so the boss was off screen or the ship was dead by the frame asked for. Worth a second
-step, not this one: a capture that retries until a named node is on screen
-(`--until-visible=<group>`), given a script that can report it.
-
-Done when `capture.run` over MCP takes `args` and Spinhold's boss is captured through it
-with no Python of the project's own.
-
 ### §PW240 Comparing two voxel models
 
 Found in Spinhold (starship RK110). Its ship's voxel declaration was rewritten from a
@@ -676,3 +654,26 @@ several models.
 
 Done when Spinhold's colonist declares a one-armed `wave` variant and builds with no
 finding, while its symmetric base still gets the check.
+
+### §PW242 A capture that waits for its subject
+
+Found capturing Spinhold's boss in play (starship RK106), and set aside when PW238 gave
+`capture.run` its `args`. A capture of a moment in play missed its subject twice: spawns
+vary between runs, so by the frame asked for the boss was off screen or the ship was
+dead. A fixed frame count is the only thing the capture can wait on today, and the
+script can know what the capture cannot.
+
+Let the script say when its subject is in view and let the run retry until it does. The
+script prints one `visible: <group>` line when a node of the group is on screen (a
+camera `is_position_in_frustum` test over the group's nodes), and `capture.run` takes
+`until_visible = "<group>"`: a run whose log carries no such line before its `captured:`
+line is not ok, with the reason, and is taken again up to `tries` times (default 3). The
+picture kept is the first run that saw the group. The environment check and the record
+are unchanged, and the record says which try it was.
+
+Keep it the script's job to decide what "on screen" means; the run only reads the line,
+as it reads `environment:`.
+
+Done when Spinhold's boss capture names `until_visible = "boss"` and lands on a frame
+with the boss in it without a hand retry, and a run whose script never prints the line
+comes back not ok with a reason naming the group.

@@ -212,7 +212,10 @@ def run(
     reported back, compared, and written down beside the picture.
     """
     asked = environment if environment is not None else wanted(root)
-    args = tuple(how.pop("args", ())) + ("--", *as_args(asked))
+    # One `--` only (§PW238): a caller whose args already hold the engine's and then the
+    # script's own has written it, and a second would reach the script as an argument.
+    given = tuple(how.pop("args", ()))
+    args = given + (() if "--" in given else ("--",)) + as_args(asked)
     found = (take or offscreen.capture)(
         script, expect=expect, root=root, args=args, **how
     )
@@ -360,7 +363,25 @@ def taken(
     strict: Annotated[
         bool, Param("refuse, as require does, rather than report a failed run")
     ] = False,
+    args: Annotated[
+        list,
+        Param(
+            "the script's own arguments, e.g. [\"--boss\", \"--frames=420\"]; they go "
+            "after the engine's and after --, beside the environment's"
+        ),
+    ] = (),
 ) -> dict:
-    """Take a picture in a stated environment, and check it was the stated one."""
-    how = {"expect": expect, "root": root, "environment": environment, "record": record}
+    """Take a picture in a stated environment, and check it was the stated one.
+
+    `args` are the script's (§PW238): a capture of a moment in play names it, and
+    without them the only route was a one-off Python call to the library. They reach
+    `OS.get_cmdline_user_args()` ahead of the environment's `name=value` pairs.
+    """
+    how = {
+        "expect": expect,
+        "root": root,
+        "environment": environment,
+        "record": record,
+        "args": ("--", *(str(one) for one in args or ())),
+    }
     return require(script, **how) if strict else run(script, **how)
