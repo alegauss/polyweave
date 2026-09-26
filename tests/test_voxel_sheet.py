@@ -122,6 +122,21 @@ def test_the_isometric_view_shades_its_sides_darker_than_its_top():
     assert (120, 120, 120) in seen  # the front, at 0.6
 
 
+def test_each_view_says_where_it_looks_from(tmp_path):
+    """§PW236: "front" alone let three actors be built facing +z."""
+    made = model(box("cube", 0, 0, 0))
+    answer = VS.sheet(made, tmp_path / "cube.voxels.png", pixels=4)
+    assert answer["looks"] == {
+        "front": "from -z",
+        "side": "from +x",
+        "top": "from +y",
+        "iso": "from +x +y -z",
+    }
+    # A one-cell model's views are narrower than their captions, and each column is
+    # as wide as its caption so no caption runs into the next.
+    assert answer["size"][0] > 4 * 4 + 5 * 12 + 60
+
+
 def test_a_write_puts_the_sheet_beside_the_cells(tmp_path):
     document = {
         "name": "ship",

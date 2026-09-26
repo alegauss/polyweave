@@ -258,7 +258,7 @@ def _member(
     """One member of a family built and written, and what it said."""
     from .geometry import review
 
-    said = review.describe(document, **given)
+    said = review.describe(document, root=here, **given)
     answer: dict = {
         "name": document["name"],
         "reads": said["reads"],

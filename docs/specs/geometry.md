@@ -591,6 +591,16 @@ mesh   = false       # the cells alone, no .glb beside them; true, the default, 
 hollow = 1           # keep a skin this many cells thick and nothing under it
 ```
 
+**A model faces -z** (§PW236), with y up and x to its right, which is §6's forward and
+Godot's. A face, visor or eye goes on the -z side, nearest the front view. The preview
+sheet says where each view looks from under its name ("front, from -z", "side, from +x",
+"top, from +y", "iso, from +x +y -z"), and the write's answer carries the same as
+`looks`. `geometry.describe` warns where a node whose id has the word `eye`, `eyes`,
+`face`, `visor`, `nose` or `front` in it sits on the +z side of the model, read off the
+bounds the voxel evaluator answers without a mesh, so the mistake is caught before a
+build rather than by a preview showing the back of a helmet under "front". A part a later
+transform turns round is warned about too, which is why it is a warning.
+
 **A model's inside can be left out** (§PW234). A game draws a model's skin, and a cell
 three deep is there only if the model breaks apart, yet the project's `budget` counts it.
 `hollow = <cells>` (a whole number, possibly an expression) keeps the cells within that

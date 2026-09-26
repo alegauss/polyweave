@@ -28,6 +28,43 @@ def read(found, node):
 # -- the structural read, which costs nothing ----------------------------------------
 
 
+def helmet(visor_front):
+    head = {"id": "head", "op": "primitive", "kind": "cube", "size": 2.0}
+    visor = {
+        "id": "visor",
+        "op": "plate",
+        "rect": [-0.5, 0, 1, 0.5],
+        "depth": 0.2,
+        "front": visor_front,
+    }
+    return {
+        "name": "helmet",
+        "version": 1,
+        "params": {},
+        "materials": {},
+        "nodes": [
+            head,
+            visor,
+            {"id": "helmet", "op": "union", "inputs": ["head", "visor"]},
+        ],
+        "output": "helmet",
+    }
+
+
+def test_a_visor_on_plus_z_is_warned_to_face_the_back():
+    """§PW236: a model faces -z, and a face on +z shows its back in the front view."""
+    said = review.describe(helmet(1.0))["warnings"]
+    assert any(
+        one.startswith("visor sits on the +z side") and "faces -z" in one
+        for one in said
+    )
+
+
+def test_a_visor_on_minus_z_is_not():
+    said = review.describe(helmet(-1.2))["warnings"]
+    assert not any("+z side" in one for one in said)
+
+
 def test_the_tray_reads_as_what_it_is(tmp_path):
     """A sentence somebody can disagree with, before anything is built."""
     found = review.describe(tray(tmp_path))

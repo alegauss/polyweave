@@ -609,24 +609,6 @@ reading the source, and it is filed as its own line.
 
 ## Block T — Adopting polyweave in a project
 
-### §PW236 Which way a voxel model faces
-
-Found declaring Spinhold's actors (starship RK42). The preview sheet a voxel build
-writes (`<name>.voxels.png`) labels its views front, side, top and iso but not which way
-each looks. Three actors got their face, visor and eye on +z, and only a rebuilt preview
-showing the back of the human's helmet under "front" told that the front view looks at
--z, which is also Godot's forward. The geometry spec says an outline's depth goes away
-from the viewer, but nothing says which way a voxel model faces.
-
-State it in three places: in the geometry spec, as the convention a voxel model's front
-is -z (y up, x right), in step with Godot's; on the sheet, as an axis under each view's
-label ("front, from -z"); and in `describe`, as a warning where a node named `eye`,
-`face`, `visor`, `nose` or `front` sits mostly on the +z side, which is cheap and
-catches the mistake before a render.
-
-Done when the sheet carries the axis per view, the spec states the facing, and a
-declaration with a face on +z gets the warning from `geometry.describe`.
-
 ### §PW237 A paint op for voxel details
 
 Found declaring Spinhold's actors (starship RK42). A painted detail on a body is the

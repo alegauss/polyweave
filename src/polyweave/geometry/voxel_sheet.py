@@ -40,6 +40,15 @@ _GRID = (0, 0, 0, 40)
 _MARGIN = 12
 _CAPTION = 16
 
+#: Where each view looks from, written under its name (§PW236): a face declared on +z
+#: showed its back under "front" and was found only by a rebuild.
+LOOKS = {
+    "front": "from -z",
+    "side": "from +x",
+    "top": "from +y",
+    "iso": "from +x +y -z",
+}
+
 #: How much light each side of an isometric cube keeps: top, right, front.
 _SHADE = (1.0, 0.78, 0.6)
 
@@ -224,21 +233,32 @@ def sheet(
         _labels(views["front"], model, filled, node, pixels)
     views["iso"] = _isometric(filled, slot, colours, pixels)
 
-    wide = sum(view.width for view in views.values()) + _MARGIN * (len(views) + 1)
+    font = ImageFont.load_default()
+    captions = {name: f"{name}, {LOOKS[name]}" for name in views}
+    measure = ImageDraw.Draw(Image.new("RGB", (1, 1)))
+    columns = {
+        name: max(view.width, int(np.ceil(measure.textlength(captions[name], font))))
+        for name, view in views.items()
+    }
+    wide = sum(columns.values()) + _MARGIN * (len(views) + 1)
     tall = max(view.height for view in views.values()) + _MARGIN * 2 + _CAPTION
     picture = Image.new("RGB", (wide, tall), _PAPER)
     draw = ImageDraw.Draw(picture)
-    font = ImageFont.load_default()
     left = _MARGIN
     for name, view in views.items():
-        draw.text((left, _MARGIN), name, fill=_INK, font=font)
+        draw.text((left, _MARGIN), captions[name], fill=_INK, font=font)
         picture.paste(view, (left, _MARGIN + _CAPTION), view)
-        left += view.width + _MARGIN
+        left += columns[name] + _MARGIN
 
     where = Path(out)
     where.parent.mkdir(parents=True, exist_ok=True)
     picture.save(where)
-    return {"sheet": str(where), "size": [wide, tall], "views": list(views)}
+    return {
+        "sheet": str(where),
+        "size": [wide, tall],
+        "views": list(views),
+        "looks": {name: LOOKS[name] for name in views},
+    }
 
 
 def beside(cells: Path) -> Path:

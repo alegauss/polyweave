@@ -167,11 +167,12 @@ def _article(word: str) -> str:
     return "an" if word[:1] in "aeiou18" else "a"
 
 
-def describe(document: dict, **given: Any) -> dict:
+def describe(document: dict, *, root: Any = ".", **given: Any) -> dict:
     """What this shape does, in words, without building any of it.
 
     The cheapest of the three checks and the one worth reading first: a sentence per
     node, in the order they build, saying what each one is and how many there are.
+    `root` is where an outline's image resolves, for the facing warning's bounds.
     """
     resolved = expand(document, **given)
     by_id = {node["id"]: node for node in resolved["nodes"]}
@@ -195,8 +196,60 @@ def describe(document: dict, **given: Any) -> dict:
         "params": resolved["params"],
         "nodes": lines,
         "reads": [f"{one['id']}: {one['says']}" for one in lines],
-        "warnings": warn(document, resolved),
+        "warnings": warn(document, resolved) + _facing_back(document, root, given),
     }
+
+
+#: Names a part on a model's front carries, read as words of a node's id.
+_FRONT_WORDS = {"eye", "eyes", "face", "visor", "nose", "front"}
+
+
+def _facing_back(document: dict, root: Any, given: dict) -> list[str]:
+    """A face, eye or visor declared on +z, the back of every model (§PW236).
+
+    §6 fixes -z as forward, so the front view looks from -z and a face on +z shows its
+    back there. Three of Spinhold's actors were built that way and found by a rebuilt
+    preview. Read off the node's own bounds and the output's, which the voxel evaluator
+    answers without a mesh for every op with a formula; a node whose bounds cannot be
+    had cheaply is not warned about. A part a later transform turns round is its own
+    frame's +z, which is why this warns rather than refuses.
+    """
+    import re
+
+    named = [
+        node["id"]
+        for node in document["nodes"]
+        if _FRONT_WORDS & set(re.split(r"[^a-z]+", node["id"].lower()))
+    ]
+    if not named:
+        return []
+    from pathlib import Path
+
+    from .voxels import _Model
+
+    # A warning never costs the readback: a document describe is asked about is often
+    # one that does not build yet, and the other warnings are what it needs then.
+    try:
+        model = _Model(document, Path(root).resolve(), given)
+        low, high = model.bounds(document["output"])
+    except Exception:
+        return []
+    middle, deep = (low[2] + high[2]) / 2.0, high[2] - low[2]
+    out = []
+    for one in named:
+        try:
+            near, far = model.bounds(one)
+        except Exception:
+            continue
+        centre = (near[2] + far[2]) / 2.0
+        if deep > 0 and centre > middle + deep * 0.1:
+            at, mid = _number(round(centre, 3)), _number(round(middle, 3))
+            out.append(
+                f"{one} sits on the +z side of the model (z {at} against a middle of "
+                f"{mid}), and a model faces -z, so the front view shows its back; move "
+                f"it to -z, unless a transform turns it round"
+            )
+    return out
 
 
 def warn(document: dict, resolved: dict | None = None) -> list[str]:
@@ -393,7 +446,7 @@ def described(
     """A declaration read back in words, with its warnings, and nothing built."""
     from . import read
 
-    return describe(read(source, root=root), **(given or {}))
+    return describe(read(source, root=root), root=root, **(given or {}))
 
 
 @operation("geometry.variants")
