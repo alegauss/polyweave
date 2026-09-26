@@ -304,8 +304,9 @@ A project is not configured by reading this spec first. `python -m polyweave ini
 - `[project] name` from `project.godot`'s `config/name`, or the directory's name;
 - `[paths] godot` as `${GODOT}` where that variable is set, and never a binary's absolute
   path, which belongs to one desk; Blender and Godot are otherwise found when called;
-- `[paths] meshes`, `renders` and `specs` from folders that exist (`assets/models`, the
-  folder of the first `*.accept.toml`), otherwise the defaults;
+- `[paths] meshes` and `renders` from folders that exist (`assets/models`), otherwise
+  the defaults, and `specs` only as the folder of the first `*.accept.toml`, since an
+  input stated and missing is what the check below reports;
 - `[style] canon` only where a folder named `canon` exists, and `[words] table` only
   where a CSV has a Godot `.import` file saying `importer="csv_translation"`;
 - a `[service]` only for `MESHY_API_KEY` or `IDEOGRAM_API_KEY` already set, one bare table
@@ -337,6 +338,29 @@ fills it: a ceiling set by the agent that spends against it is no ceiling.
   a renamed operation is a refusal (`op.unknown`) rather than stale advice.
 
     python -m polyweave init --write --agent
+
+**`--check` (and `project.check`) says what an adoption is missing**, writes nothing and
+repairs nothing. It answers `clean`, `errors`, `warnings` and `findings`, each in the
+refusal shape with a `severity`, and exits non-zero on any error, so a project can gate
+on it:
+
+| Code | Severity | What it finds |
+|---|---|---|
+| `adopt.not-adopted` | error | no `polyweave.toml` |
+| any `config.` code | error | a config that does not load, or a key nothing declares |
+| `adopt.path-missing` | error | a stated input path (`specs`, `references`) that is not there; outputs are made on first write |
+| `engine.not-found` | error | an engine that does not resolve through `engine.find`, where the project is a Godot one |
+| `adopt.no-server`, `adopt.server-twice` | error | a server declared by neither `.mcp.json` nor the plugin, or by both |
+| `adopt.no-agent-section` | error, or warning where AGENTS.md speaks of polyweave in text init did not write | no stamped section |
+| `adopt.stale-section` | warning for another version's stamp, error for a named operation the registry lacks | a section to rewrite |
+| `adopt.key-unset` | error | a service's `key_env` not set, checked by name and never read |
+| `adopt.budget-lapsed` | error once expired, warning where none is written | a service that can spend nothing |
+| `adopt.unrecorded` | error | produced files with no provenance record |
+
+What `init --write --agent` writes checks clean, and so does an adoption written by hand
+(Starship's, with the plugin enabled and its own AGENTS.md), with one warning.
+
+    python -m polyweave init --check
 
 ## Adding a key
 

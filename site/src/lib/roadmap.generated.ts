@@ -44,7 +44,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "Q", title: "Words held to the world", open: 1 },
   { block: "R", title: "Levels measured before a person plays them", open: 5 },
   { block: "S", title: "Playing the game, not only rendering it", open: 6 },
-  { block: "T", title: "Adopting polyweave in a project", open: 1 },
+  { block: "T", title: "Adopting polyweave in a project", open: 0 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -208,13 +208,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "Cottony's flow from title screen to a won level is checked by no test, so a broken menu ships unseen",
     why: "The block is proven only when its first consumer keeps its main flows as replayed tests in its own release script, beside a clean release check.",
     deps: ["PW214", "PW215", "PW216"],
-  },
-  {
-    id: "PW220",
-    block: "T",
-    symptom: "Nothing says an adopted project has drifted: an engine gone, a path missing, a stale agent section",
-    why: "`init --check` reports every gap between the tree and a working adoption, each with its remedy, and writes nothing, so a session starts from one read.",
-    deps: [],
   },
 ];
 

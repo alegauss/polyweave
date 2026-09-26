@@ -252,3 +252,4 @@
 
 - ✅ **PW218** **A new project writes polyweave.toml by hand, key by key, against a spec it has to read first** — python -m polyweave init proposes polyweave.toml from the tree, writes it only when asked, merges without overwriting, and never proposes a budget (design recorded in `docs/specs/project-config.md`).
 - ✅ **PW219** **A configured project still hides polyweave from its agent: no server declared, no skill, no word in AGENTS.md** — init --agent declares the server unless the plugin is on, and writes a stamped AGENTS.md section from the config that CLAUDE.md imports (design recorded in `docs/specs/project-config.md`).
+- ✅ **PW220** **Nothing says an adopted project has drifted: an engine gone, a path missing, a stale agent section** — init --check reports each adoption gap with its remedy and exits non-zero on an error; init's own output and a hand-written adoption check clean (design recorded in `docs/specs/project-config.md`).

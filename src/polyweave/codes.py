@@ -52,6 +52,7 @@ AREAS: dict[str, str] = {
     "style": "what a project's pictures look like, and the canon a person grows",
     "world": "a game's names, factions and characters, declared beside its prose",
     "words": "the text a player reads, held to the world it is set in",
+    "adopt": "a project's adoption: its config, its server and its agent's section",
 }
 
 CODES: dict[str, Code] = {
@@ -803,6 +804,54 @@ CODES: dict[str, Code] = {
         "the world holds the entity to",
         when="picture.buy with entity and a family the entity's style is not",
         doors=("leave family unset", "pass the entity's own family"),
+    ),
+    # -- adopt: an adoption, checked (§PW220) --------------------------------
+    "adopt.not-adopted": Code(
+        means="the project has no polyweave.toml",
+        when="project.check in a tree polyweave was never set up in",
+        doors=("run init --write --agent",),
+    ),
+    "adopt.path-missing": Code(
+        means="a path the project states in [paths] does not exist",
+        when="a folder moved or renamed after the config was written",
+        doors=("create it", "correct the path in polyweave.toml"),
+    ),
+    "adopt.no-server": Code(
+        means="no polyweave server is declared, so a session sees no tool",
+        when="a project configured but never wired to its agent",
+        doors=("run init --agent",),
+    ),
+    "adopt.server-twice": Code(
+        means="polyweave is served by the enabled plugin and by .mcp.json at once",
+        when="the plugin enabled after init --agent declared the server",
+        doors=("remove polyweave from .mcp.json",),
+    ),
+    "adopt.no-agent-section": Code(
+        means="AGENTS.md has no section init wrote, so none can be checked current",
+        when="a project never wired with init --agent, or one whose section was "
+        "written by hand",
+        doors=("run init --agent",),
+    ),
+    "adopt.stale-section": Code(
+        means="the AGENTS.md section was written by another version, or names an "
+        "operation this one lacks",
+        when="the plugin upgraded or an operation renamed since init --agent ran",
+        doors=("run init --agent to rewrite it",),
+    ),
+    "adopt.key-unset": Code(
+        means="a service's key variable is not set in this environment",
+        when="a desk that never set the key, or a shell that does not inherit it",
+        doors=("set the variable the service's key_env names",),
+    ),
+    "adopt.budget-lapsed": Code(
+        means="a service can spend nothing: its budget is absent, empty or expired",
+        when="a ceiling past its expiry date, or one a person has not written yet",
+        doors=("a person sets the budget in polyweave.toml",),
+    ),
+    "adopt.unrecorded": Code(
+        means="produced files carry no provenance record",
+        when="an artefact made outside polyweave, or a record deleted",
+        doors=("produce it again through polyweave", "list it under handmade"),
     ),
     # -- words: the text a player reads ---------------------------------------
     "words.no-table": Code(

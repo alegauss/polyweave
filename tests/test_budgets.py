@@ -62,7 +62,8 @@ DESCRIBE = 66_500
 #: 72,851 with words.check, words.unlisted and the words area's codes (§PW197).
 #: 74,101 with words.sheet, entity= and their two codes (§PW198, §PW199).
 #: 74,761 with project.init, its agent flag and config.exists (§PW218, §PW219).
-CAPABILITIES = 75_300
+#: 75,899 with project.check and the adopt area's nine codes (§PW220).
+CAPABILITIES = 76_500
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

@@ -5,7 +5,7 @@ This page only groups them by what you are trying to do.
 
 | Task | Operations |
 |---|---|
-| Configure a project | `project.init` (verb `init`) |
+| Adopt | `project.init` (`init`), `project.check` |
 | Know the machine | `capabilities` (verb), `engine.find`, `offscreen.routes`, `search.worth_parallel` |
 | Start on an asset | `asset.brief`, `loop.pending` |
 | Make a shape | `geometry.build`, `geometry.build_all`, `geometry.describe`, `geometry.variants` |

@@ -139,6 +139,7 @@ def add_operations(commands: Any) -> None:
     init.add_argument("--write", action="store_true", help="write it, not only propose")
     init.add_argument("--merge", action="store_true", help="add only missing tables")
     init.add_argument("--agent", action="store_true", help="wire the agent: AGENTS.md")
+    init.add_argument("--check", action="store_true", help="report gaps, write nothing")
     init.add_argument("--json", action="store_true")
     commands.add_parser("serve", help="serve every operation as an MCP tool, on stdio")
     notice = commands.add_parser("notice", help="the one line a session starts with")
@@ -162,8 +163,10 @@ def answer_for(stated: argparse.Namespace) -> Any:
     if stated.command == "job":
         return _job(stated)
     if stated.command == "init":
-        from .project import init
+        from .project import check, init
 
+        if stated.check:
+            return check(stated.root)
         return init(
             stated.root, write=stated.write, merge=stated.merge, agent=stated.agent
         )
@@ -288,4 +291,7 @@ def run(stated: argparse.Namespace) -> int:
         print(json.dumps(as_data(answer), indent=1))
     else:
         print("\n".join(text_of(answer)))
+    # An adoption check is a gate a project can put in its own (§PW220).
+    if stated.command in ("init", "project.check") and answer.get("clean") is False:
+        return 1
     return 0

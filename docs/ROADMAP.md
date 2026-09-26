@@ -68,8 +68,6 @@
 
 ## Block T — Adopting polyweave in a project
 
-- 📋 **PW220** (deps: PW219 ✅) **Nothing says an adopted project has drifted: an engine gone, a path missing, a stale agent section** — `init --check` reports every gap between the tree and a working adoption, each with its remedy, and writes nothing, so a session starts from one read. → §PW220
-
 ## Done when — PW36
 
 - **Every piece of Cottony's pipeline runs on the plugin, with no fork** The

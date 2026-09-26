@@ -180,3 +180,103 @@ def test_the_section_names_only_operations_the_registry_has(tree, monkeypatch):
     with pytest.raises(PolyweaveError) as refused:
         project.init(str(tree), agent=True)
     assert refused.value.code == "op.unknown"
+
+
+# -- what an adoption is missing (§PW220) --------------------------------------------
+
+
+def _godot(tree, monkeypatch):
+    """An engine binary that exists, as $GODOT names one on a desk."""
+    binary = tree.parent / "godot.exe"
+    binary.write_bytes(b"")
+    monkeypatch.setenv("GODOT", str(binary))
+
+
+def _codes(found):
+    return sorted((f["code"], f["severity"]) for f in found["findings"])
+
+
+def test_what_init_writes_checks_clean(tree, monkeypatch):
+    _godot(tree, monkeypatch)
+    project.init(str(tree), write=True, agent=True)
+    found = project.check(str(tree))
+    assert found["clean"] is True, found["findings"]
+    assert found["findings"] == []
+
+
+def test_a_hand_written_adoption_like_starship_s_checks_clean_with_a_warning(
+    tree, monkeypatch
+):
+    _godot(tree, monkeypatch)
+    monkeypatch.setenv("MESHY_API_KEY", "msy")
+    (tree / C.FILENAME).write_text(
+        '[paths]\nspecs = "docs/art"\nmeshes = "assets/models"\n\n'
+        '[service]\nbase = "https://api.meshy.ai"\nkey_env = "MESHY_API_KEY"\n\n'
+        '[budget]\ncredits = 30\nexpires = "2099-12-31"\n',
+        encoding="utf-8",
+    )
+    (tree / ".claude").mkdir()
+    (tree / ".claude" / "settings.json").write_text(
+        json.dumps({"enabledPlugins": {"polyweave@alegauss": True}}), "utf-8"
+    )
+    (tree / "AGENTS.md").write_text(
+        "# Spinhold\n\nThe game's parts go through polyweave.\n", "utf-8"
+    )
+    found = project.check(str(tree))
+    assert found["clean"] is True
+    assert _codes(found) == [("adopt.no-agent-section", "warning")]
+
+
+def test_every_drift_is_reported_with_its_remedy(tree, monkeypatch):
+    _godot(tree, monkeypatch)
+    project.init(str(tree), write=True, agent=True)
+    (tree / "docs" / "art" / "mote.accept.toml").unlink()
+    (tree / "docs" / "art").rmdir()
+    agents = tree / "AGENTS.md"
+    agents.write_text(
+        agents.read_text("utf-8")
+        .replace(f"polyweave {__version__}", "polyweave 0.0.1")
+        .replace("`asset.brief`", "`asset.briefing`"),
+        "utf-8",
+    )
+    (tree / C.FILENAME).write_text(
+        (tree / C.FILENAME).read_text("utf-8")
+        + '\n[service]\nbase = "https://x"\nkey_env = "POLYWEAVE_TEST_UNSET"\n\n'
+        '[budget]\ncredits = 5\nexpires = "2001-01-01"\n',
+        "utf-8",
+    )
+    found = project.check(str(tree))
+    assert found["clean"] is False
+    assert _codes(found) == [
+        ("adopt.budget-lapsed", "error"),
+        ("adopt.key-unset", "error"),
+        ("adopt.path-missing", "error"),
+        ("adopt.stale-section", "error"),
+        ("adopt.stale-section", "warning"),
+    ]
+    assert all(f["remedy"] for f in found["findings"])
+
+
+def test_a_server_declared_twice_or_not_at_all_is_an_error(tree, monkeypatch):
+    _godot(tree, monkeypatch)
+    project.init(str(tree), write=True, agent=True)
+    (tree / ".claude").mkdir(exist_ok=True)
+    (tree / ".claude" / "settings.json").write_text(
+        json.dumps({"enabledPlugins": {"polyweave@alegauss": True}}), "utf-8"
+    )
+    assert ("adopt.server-twice", "error") in _codes(project.check(str(tree)))
+    (tree / ".claude" / "settings.json").write_text("{}", "utf-8")
+    (tree / ".mcp.json").write_text("{}", "utf-8")
+    assert ("adopt.no-server", "error") in _codes(project.check(str(tree)))
+
+
+def test_a_tree_never_adopted_is_told_how(tree):
+    assert _codes(project.check(str(tree))) == [("adopt.not-adopted", "error")]
+
+
+def test_init_check_exits_non_zero_on_an_error(tree, capsys):
+    from polyweave.commands import run
+
+    stated = command_line().parse_args(["init", "--root", str(tree), "--check"])
+    assert run(stated) == 1
+    assert (tree / C.FILENAME).exists() is False

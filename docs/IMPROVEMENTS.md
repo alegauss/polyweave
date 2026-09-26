@@ -717,30 +717,3 @@ source counts as a failure of the tools, under the block on reaching things with
 reading the source, and it is filed as its own line.
 
 ## Block T — Adopting polyweave in a project
-
-### §PW220 init --check says what an adoption is missing
-
-Adoption decays quietly. A desk loses its `GODOT` variable, a folder named in `[paths]`
-is moved, the plugin gains an operation the `AGENTS.md` section never names, or a budget
-expires. Each of these is found today by the first call that fails, halfway through a
-task.
-
-`init --check` (and `project.check`) reads everything the two lines before it write, and
-reports a list. Each entry carries a `code` and a `remedy` in the refusal shape the
-surface already uses:
-
-- the config loads and every key is known;
-- every input in `[paths]` exists, and every engine resolves through `engine.find`;
-- the server is declared once, by `.mcp.json` or the plugin but not both;
-- the `AGENTS.md` section exists, carries the running version, and names no operation the registry lacks;
-- each `[service]` key variable is set (checked by name, never read), and each `[budget]` is current;
-- no produced file lacks its provenance record.
-
-It exits non-zero on any error, so a project can put it in its own gate. It never
-repairs. The remedy names the `init` flag that would, and a person or agent runs that.
-
-**It is also the evidence for the block.** It runs against copies of starship and
-Cottony in the test suite. Starship's hand-written adoption (`1ad2094`) must check
-clean, and so must what `init --write --agent` produces from starship with
-`polyweave.toml` and `AGENTS.md` removed. Any difference between the two is a defect in
-the lines before this one.

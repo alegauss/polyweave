@@ -130,10 +130,11 @@ def proposed(here: Path) -> dict[str, dict]:
     for key, candidates in FOLDERS.items():
         found = next((c for c in candidates if (here / c).is_dir()), None)
         paths[key] = found or DEFAULTS["paths"][key]
+    # An input, so stated only where one exists: a folder named here and missing is
+    # what project.check reports.
     specs = _first(here, "*.accept.toml")
-    paths["specs"] = (
-        _relative(specs.parent, here) if specs else DEFAULTS["paths"]["specs"]
-    )
+    if specs:
+        paths["specs"] = _relative(specs.parent, here)
     tables["paths"] = paths
     canon = next(
         (d for d in _walk(here, "canon") if d.is_dir()),
@@ -391,3 +392,215 @@ def agent_section(config) -> str:
             f"approved lines; {_op('words.check')} holds the text to it."
         )
     return "\n".join([*lines, END]) + "\n"
+
+
+# -- what an adoption is missing (§PW220) --------------------------------------------
+
+#: What a finding is: an error fails the check, a warning is said and passes.
+SEVERITIES = ("error", "warning")
+
+
+@operation("project.check")
+def check(root: Annotated[str, Param("the adopted project")] = ".") -> dict:
+    """Every gap between this tree and a working adoption, each with its remedy.
+
+    It reads what `init` writes and repairs nothing: each finding names the call that
+    would. `clean` is false while any error is left, and `init --check` exits non-zero
+    then, so a project can put it in its own gate.
+    """
+    import json
+
+    from .config import load
+
+    here = Path(root).expanduser().resolve()
+    found: list[dict] = []
+
+    def said(error: PolyweaveError, severity: str = "error") -> None:
+        found.append({**error.as_dict(), "severity": severity})
+
+    try:
+        config = load(here)
+    except PolyweaveError as refused:
+        said(refused)
+        return _checked(found)
+    if config.source is None:
+        said(
+            PolyweaveError(
+                "adopt.not-adopted",
+                f"{here} has no {FILENAME}",
+                "run python -m polyweave init --write --agent",
+            )
+        )
+        return _checked(found)
+    _paths(config, said)
+    settings = json.loads(
+        read_text_retrying(here / ".claude" / "settings.json") or "{}"
+    )
+    plugin = any(
+        on and name.split("@")[0] == "polyweave"
+        for name, on in (settings.get("enabledPlugins") or {}).items()
+    )
+    mcp = json.loads(read_text_retrying(here / ".mcp.json") or "{}")
+    declared = "polyweave" in (mcp.get("mcpServers") or {})
+    if plugin and declared:
+        said(
+            PolyweaveError(
+                "adopt.server-twice",
+                "polyweave is both an enabled plugin and a server in .mcp.json, so "
+                "every tool is offered twice",
+                "remove polyweave from .mcp.json; the plugin already serves it",
+            )
+        )
+    elif not plugin and not declared:
+        said(
+            PolyweaveError(
+                "adopt.no-server",
+                "no polyweave server is declared, so a session here sees no tool",
+                "run python -m polyweave init --agent",
+            )
+        )
+    _section(here, said)
+    _money(config, said)
+    from .provenance import unrecorded
+
+    missing = unrecorded(root=str(here))
+    if missing:
+        said(
+            PolyweaveError(
+                "adopt.unrecorded",
+                f"{len(missing)} produced file(s) carry no provenance record, the "
+                f"first {missing[0]['artefact']}",
+                "produce them again through polyweave, or list the hand-made ones "
+                "under [provenance] handmade",
+            )
+        )
+    return _checked(found)
+
+
+def _checked(found: list[dict]) -> dict:
+    errors = sum(1 for f in found if f["severity"] == "error")
+    return {
+        "clean": errors == 0,
+        "errors": errors,
+        "warnings": len(found) - errors,
+        "findings": found,
+    }
+
+
+def _paths(config, said) -> None:
+    """Every input path the project states is there, and the engine resolves.
+
+    Meshes and renders are outputs, made on the first write, so their absence is not a
+    gap; the specs and references a call reads are.
+    """
+    for key in ("references", "specs"):
+        if not config.declared(f"paths.{key}"):
+            continue
+        where = config.path(f"paths.{key}")
+        if not where.exists():
+            said(
+                PolyweaveError(
+                    "adopt.path-missing",
+                    f"[paths] {key} is {_relative(where, config.root)}, and nothing "
+                    "is there",
+                    f"create it, or correct [paths] {key} in {FILENAME}",
+                )
+            )
+    if config.declared("paths.godot") or (config.root / "project.godot").is_file():
+        from .engine import find
+
+        try:
+            find(root=str(config.root))
+        except PolyweaveError as refused:
+            said(refused)
+
+
+def _section(here: Path, said) -> None:
+    """The AGENTS.md section is there, current, and names only real operations."""
+    from . import __version__
+    from .describe import operations
+
+    text = read_text_retrying(here / "AGENTS.md") or ""
+    start, end = text.find(BEGIN), text.find(END)
+    if start == -1 or end < start:
+        if "polyweave" in text:
+            said(
+                PolyweaveError(
+                    "adopt.no-agent-section",
+                    "AGENTS.md speaks of polyweave in text init did not write, so no "
+                    "check can say it is current",
+                    "leave it, or run python -m polyweave init --agent to add the "
+                    "stamped section beside it",
+                ),
+                "warning",
+            )
+            return
+        said(
+            PolyweaveError(
+                "adopt.no-agent-section",
+                "AGENTS.md has no polyweave section, so an agent here is told nothing "
+                "of it",
+                "run python -m polyweave init --agent",
+            )
+        )
+        return
+    section = text[start:end]
+    stamped = re.search(r"written by polyweave (\S+)", section)
+    if not stamped or stamped.group(1) != __version__:
+        said(
+            PolyweaveError(
+                "adopt.stale-section",
+                "the AGENTS.md section was written by polyweave "
+                f"{stamped.group(1) if stamped else 'of no stated version'}, and "
+                f"{__version__} is running",
+                "run python -m polyweave init --agent to rewrite it",
+            ),
+            "warning",
+        )
+    known = set(operations())
+    spaces = {name.split(".")[0] for name in known}
+    named = {
+        n
+        for n in re.findall(r"`([a-z_]+\.[a-z_]+)`", section)
+        if n.split(".")[0] in spaces
+    }
+    for gone in sorted(named - known):
+        said(
+            PolyweaveError(
+                "adopt.stale-section",
+                f"the AGENTS.md section names {gone}, which this polyweave lacks",
+                "run python -m polyweave init --agent to rewrite it",
+                given=gone,
+                allowed=sorted(known),
+            )
+        )
+
+
+def _money(config, said) -> None:
+    """Each service's key variable is set, by name, and its budget is current."""
+    if not config.states("service"):
+        return
+    for name, about in sorted(config.services().items()):
+        variable = str(about.get("key_env") or "")
+        if variable and variable not in os.environ:
+            said(
+                PolyweaveError(
+                    "adopt.key-unset",
+                    f"the {name} service's key is read from {variable}, which is not "
+                    "set here",
+                    f"set {variable} in this environment; its value is never read by "
+                    "this check",
+                )
+            )
+        ceiling = config.budget(service=name)
+        if not ceiling["spendable"]:
+            expired = ceiling["why"].startswith("the budget expired")
+            said(
+                PolyweaveError(
+                    "adopt.budget-lapsed",
+                    f"{name} can spend nothing: {ceiling['why']}",
+                    f"a person sets {ceiling['table']} in {FILENAME}; the agent never "
+                    "does",
+                ),
+                "error" if expired else "warning",
+            )
