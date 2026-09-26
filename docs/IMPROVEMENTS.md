@@ -608,3 +608,42 @@ source counts as a failure of the tools, under the block on reaching things with
 reading the source, and it is filed as its own line.
 
 ## Block T — Adopting polyweave in a project
+
+### §PW226 Cells without the mesh
+
+Found adopting polyweave in Spinhold (starship RK38). A declaration with `[voxels]`
+builds `<name>.voxels.json`, which the game reads through the polyweave_voxels addon,
+and also a `<name>.glb` with its own `.prov.json`. A Godot project imports any `.glb` in
+its tree, so the unused mesh costs an import, an `.import` file and a decision about
+committing it; Spinhold ignores it by hand (`dev/voxels/*.glb` in `.gitignore`) and
+keeps Godot out of the folder with a `.gdignore`.
+
+The mesh has real uses (`review`, a preview, a game that draws triangles), so it stays
+available rather than going: `[voxels]` takes `mesh = false` (or `geometry.build` a
+`--no-mesh`), and a build with it writes the cells alone, its provenance and stamp
+naming one output. What `render.plan` or a sheet needs that only the mesh gave is
+answered from the cells or says it needs the mesh.
+
+Done when a voxel declaration with `mesh = false` builds to one `.voxels.json` and
+nothing else, and one without it builds as today.
+
+### §PW227 A stamp with paths the project can keep
+
+Found adopting polyweave in Spinhold (starship RK38). `build` writes `<name>.build.json`
+beside the declaration (or in `--out`), and `cli.build` records the source relative to
+the root but every output as `str(Path(one).resolve())`, an absolute path on the machine
+that built it. The stamp sits in the project's tree next to what is committed, so a
+project either commits a file that names `D:\Git\...` and churns per checkout, or
+ignores it by hand (Spinhold's `.gitignore` now lists `dev/voxels/*.build.json`).
+
+The cache check (`Path(one).is_file()`) and the edit guard (PW133) both work from paths
+relative to the root just as well: write the outputs as `relative_to(here).as_posix()`
+where they are under it, as the source already is, and resolve them against the root
+when read. A stamp from before stays readable, since an absolute path still resolves.
+
+Then say in `docs/specs/geometry.md` whether the stamp is meant to be committed (the
+guard reading it from a fresh clone suggests so) or kept in `.polyweave/` with the other
+caches.
+
+Done when a build on one machine and a build on another write the same stamp bytes for
+the same declaration.
