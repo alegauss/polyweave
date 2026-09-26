@@ -306,25 +306,6 @@ declared in its `polyweave.toml`, made by `music.render` and `sound.synth`, and 
 `*.accept.toml` bounds, and its own audio scripts are removed. Anything Cottony needs
 that a second game would not becomes configuration.
 
-### §PW222 A seam judged against the track's own downbeats
-
-`seam_flux` divides the spectral change across the wrap by the track's 90th-percentile
-frame flux, and reads above one as a cut. A downbeat with a crash cymbal is among the
-largest changes in any track, so a loop that restarts on one fails, although it sounds
-like every other section change. In the PW184 spike the synthwave loop's seam read 3.07
-and its own three section downbeats 3.00, 2.99 and 3.08; the chiptune's seam read 1.31
-beside downbeats of 1.33. A person heard nothing wrong at either seam.
-
-The comparison should be with the track's own onsets rather than all its frames: the
-seam's flux over a high percentile of the flux peaks (local maxima), so a seam that
-looks like the track's strong downbeats reads near one and only a change larger than any
-onset the track makes reads as a cut.
-
-Before shipping, measure the three spike loops and one deliberately cut copy of each,
-and keep the percentile that separates them. Changing what `seam_flux` means moves
-existing bounds, so the measurement vocabulary spec and any `*.accept.toml` in the tests
-move with it in the same commit.
-
 ### §PW223 Chip percussion from an effects kit
 
 The chiptune loop a person passed in the PW184 spike played its percussion on a four-hit
@@ -359,6 +340,24 @@ Run ffmpeg without `check`, and on a non-zero exit or empty output raise
 Then drop the guard in `sound_buy._measured`. Test with a `.ogg` holding plain text:
 `measure` refuses with the code, and `sound.declared` reports that cue as unmeasured
 while the others still measure.
+
+### §PW225 A seam held to the loop's grid
+
+Both seam measures compare the wrap with the track's own moments, which catches a click
+and a cut in a sparse mix but not a cut in a dense one. Measured on the PW184 loops,
+each stopped 0.37 s early so the wrap jumps into the wrong beat: the chiptune and
+synthwave read 0.57 and 0.90 on `seam_flux` and 0.86 and 0.89 on `seam_step`, all
+passing a bound of one, because a mix that busy changes as much on every beat.
+
+What a cut breaks is the grid: a loop's length is a whole number of bars, and a cut
+one's is not. A loop `music.render` made already knows its grid, since its record
+carries the tempo, the meter and the loop's ticks, so a `seam_grid` measure can be read
+straight from that: the loop's length over the nearest whole bar, where zero is on the
+grid. For a loop polyweave did not make, the tempo comes from the track's own onset
+autocorrelation, and the answer says it was estimated.
+
+Test with the spike loops and their cut copies: every whole loop reads zero, every cut
+one does not, and a bound on `seam_grid` in an `*.accept.toml` refuses the cut.
 
 ## Block Q — Words held to the world
 

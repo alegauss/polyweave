@@ -173,8 +173,24 @@ moment of that music, and nothing more.
 
 - `seam_step`: the jump from the last sample to the first, over the track's
   99th-percentile step between samples. Above one, the wrap clicks.
-- `seam_flux`: the largest spectral change across the wrap, over the track's
-  90th-percentile spectral change. Above one, the seam sounds like a cut.
+- `seam_flux`: the largest spectral change across the wrap, over the 98th percentile of
+  the track's own onsets (the local peaks of its spectral change). Above one, the seam
+  changes more than the track's strong downbeats do, and sounds like a cut.
+
+**The seam is compared with the track's onsets, not its ordinary frames** (§PW222). A
+downbeat with a crash cymbal is among the largest changes in any track, so against the
+90th percentile of every frame a loop that restarts on one failed although it sounds like
+every other section change: the PW184 synthwave loop, which a person heard as seamless,
+read 3.07, and a rendered drum loop opening on a crash 2.23. Against the onsets they read
+0.91 and 0.83; every loop the spike made reads below one, and a cut or a fade to silence
+still reads far above it (4.4 and 8.3 on the suite's fixtures, 4.2 on a cut orchestral
+loop). The percentile was kept because it separated those, and 95 did not.
+
+**What neither seam measure hears**: a cut in the middle of a bar of a dense mix. Stopped
+0.37 s early, the chiptune and synthwave loops read 0.57 and 0.90 here and 0.86 and 0.89 on
+`seam_step`, because in a mix that busy a jump into the wrong beat changes no more than a
+downbeat does. The 90th-percentile measure missed them too: it read the chiptune's clean
+seam and its cut one alike. Catching it takes the loop's grid, which is §PW225's.
 - `loudness` (RMS, dBFS), `peak` (dBFS) and `duration` (seconds).
 
 A 16-bit or 24-bit PCM WAV is read with the standard library, and anything else is

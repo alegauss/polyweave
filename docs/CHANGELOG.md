@@ -246,6 +246,7 @@
 - ✅ **PW190** **Realistic sound effects have no bounded way to be bought from a service** — sound.buy buys an effect from ElevenLabs under its price row and ceiling, transcodes it to its declared cue's format and ledgers it first (design recorded in `docs/specs/effects.md`).
 - ✅ **PW191** **Rendered audio does not record which instruments made it or what their licences owe** — Every rendered or synthesised sound's record names its engines, libraries and patches with their licences; provenance.credits lists what a game owes (design recorded in `docs/specs/provenance.md`).
 - ✅ **PW221** **sound.measure refuses every one-shot effect as too short for a seam** — A one-shot measures its loudness, peak and duration with no seam, so an effect can be bounded; a seam bound on one is refused with the length needed (design recorded in `docs/specs/measurements.md`).
+- ✅ **PW222** **seam_flux reads a loop that restarts on a crash cymbal as a cut** — seam_flux weighs the wrap against the track's own strong onsets, so a clean loop opening on a crash reads below one; cuts still read above (design recorded in `docs/specs/measurements.md`).
 
 ## Block Q — Words held to the world
 

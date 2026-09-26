@@ -70,13 +70,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW57"],
   },
   {
-    id: "PW222",
-    block: "P",
-    symptom: "seam_flux reads a loop that restarts on a crash cymbal as a cut",
-    why: "The seam is compared with the track's ordinary frames, not its own downbeats, so a clean loop fails any bound of one.",
-    deps: [],
-  },
-  {
     id: "PW223",
     block: "P",
     symptom: "A chiptune score cannot play its percussion on an sfxr drum kit",
@@ -88,6 +81,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "P",
     symptom: "A sound ffmpeg cannot decode escapes sound.read as a raw process error, not a refusal",
     why: "A corrupt OGG or MP3 makes every sound measure and bound fail with a traceback an agent cannot branch on, where a code would name the file.",
+    deps: [],
+  },
+  {
+    id: "PW225",
+    block: "P",
+    symptom: "A loop cut mid-bar in a dense mix passes both seam measures",
+    why: "In a busy mix a jump into the wrong beat changes no more than a downbeat does, so only the loop's grid can tell a cut from a clean wrap.",
     deps: [],
   },
   {

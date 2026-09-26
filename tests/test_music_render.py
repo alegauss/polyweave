@@ -238,6 +238,41 @@ def test_one_layer_writes_no_layer_files(tmp_path):
     assert "layers" not in found
 
 
+CRASHING = """\
+[music]
+title = "Drive"
+bpm = 110
+form = ["A", "B"]
+
+[section.A]
+bars = 2
+
+[section.B]
+bars = 2
+
+[pattern]
+beat = "<[BAR, cr] [BAR]>"
+
+[[track]]
+name = "drums"
+instrument = "drums:25"
+drums = true
+groove = 1.0
+play = { A = "beat", B = "beat" }
+""".replace("BAR", "bd ~ ~ ~ sd ~ ~ ~ bd ~ bd ~ sd ~ ~ ~, hh*16")
+
+
+@needs_fluid
+def test_a_rendered_loop_that_restarts_on_a_crash_has_a_clean_seam(tmp_path):
+    # §PW222: each section opens on a crash, the first bar of the loop included, so
+    # the wrap is the same downbeat the loop plays again halfway through. Against the
+    # 90th percentile of every frame this seam read 2.23; against the onsets, 0.83.
+    found = music_render.render(Reported(), project(tmp_path, CRASHING, fluid_paths()),
+                                root=str(tmp_path))
+    assert found["measured"]["seam_flux"] <= 1.0
+    assert found["measured"]["seam_step"] <= 1.0
+
+
 @needs_fluid
 def test_a_stinger_keeps_its_tail_and_has_no_seam(tmp_path):
     score = GM.replace('form = ["A"]', 'form = ["A"]\nloop = false')

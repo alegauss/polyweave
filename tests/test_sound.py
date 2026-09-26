@@ -96,6 +96,33 @@ def test_a_loop_cut_short_changes_across_the_wrap(tmp_path):
     assert sound.measure(cut_short(tmp_path))["seam_flux"] > 1.0
 
 
+def crashes(samples: int = 2 * RATE) -> np.ndarray:
+    """The seamless texture played like music: a kick on every beat and a crash on
+    each section's downbeat, the first included, so the loop restarts on one as the
+    synthwave loop in the PW184 spike did."""
+    body = texture(samples)
+    rng = np.random.default_rng(5)
+    decay = np.exp(-np.arange(RATE // 5) / 1500.0)
+    crash = rng.standard_normal(RATE // 5) * decay
+    kick = np.sin(2 * np.pi * 60 * np.arange(RATE // 5) / RATE) * decay
+    for start in range(0, samples, RATE // 8):  # a beat every eighth of a second
+        body[start : start + len(kick)] += 0.6 * kick[: samples - start]
+    for start in range(0, samples, RATE // 2):  # a section every half second
+        body[start : start + len(crash)] += 0.6 * crash[: samples - start]
+    return body / np.abs(body).max() * 0.8
+
+
+def test_a_loop_that_restarts_on_a_crash_reads_close_to_its_other_downbeats(tmp_path):
+    # §PW222: against the 90th percentile of every frame this seam read 13.8, though it
+    # is the same downbeat the loop plays three more times. Against the track's own
+    # strong onsets it reads 1.10: the seam falls on a frame boundary and the crashes
+    # inside fall between two, which is as close as a synthetic loop with nothing else
+    # strong in it gets. A rendered drum loop reads below one (test_music_render).
+    found = sound.measure(written(tmp_path / "crash.wav", crashes()))
+    assert found["seam_flux"] < 1.25
+    assert found["seam_step"] <= 1.0
+
+
 def test_a_tone_cut_mid_period_clicks(tmp_path):
     whole = written(tmp_path / "whole.wav", tone(2.0))
     cut = written(tmp_path / "cut.wav", tone(2.0)[:-25])

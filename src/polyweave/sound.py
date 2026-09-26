@@ -8,8 +8,9 @@ measure is here, as two numbers a predicate bounds, with three plainer ones besi
 - `seam_step`: the jump from the last sample to the first, over the track's own
   99th-percentile step between samples. Above one, the wrap clicks louder than any
   ordinary moment of the music.
-- `seam_flux`: the largest spectral change across the wrap, over the track's own
-  90th-percentile change. Above one, the seam sounds like a cut rather than a note.
+- `seam_flux`: the largest spectral change across the wrap, over the 98th percentile of
+  the track's own onsets (the peaks of its spectral change). Above one, the seam
+  changes more than the track's strong downbeats do, and sounds like a cut (§PW222).
 - `loudness`: RMS level in dBFS; `peak`: the largest sample in dBFS; `duration`:
   seconds.
 
@@ -36,7 +37,7 @@ from .errors import PolyweaveError
 #: Every sound measure a predicate may bound, and what it says.
 SOUNDS: dict[str, str] = {
     "seam_step": "the loop's wrap step over the track's 99th-percentile sample step",
-    "seam_flux": "the spectral change across the wrap over the track's 90th percentile",
+    "seam_flux": "the spectral change across the wrap over the track's strong onsets",
     "loudness": "RMS level, in dBFS",
     "peak": "the largest sample, in dBFS",
     "duration": "length, in seconds",
@@ -140,6 +141,24 @@ def _flux(mono: np.ndarray) -> np.ndarray:
     return np.maximum(np.diff(frames, axis=0), 0.0).sum(axis=1)
 
 
+#: Which of a track's onsets its seam is compared with: the 98th percentile of the
+#: peaks of its spectral change, so a seam as strong as the track's own downbeats reads
+#: below one (§PW222). Measured on the PW184 loops a person heard as seamless, against a
+#: cut copy of each: the synthwave's seam restarts on a crash and read 3.07 against the
+#: 90th percentile of all frames, and 0.91 here. Every loop read below one and the
+#: suite's cut and faded fixtures still read 4.4 and 8.3.
+ONSET_PERCENTILE = 98
+
+
+def _onset_level(flux: np.ndarray) -> float:
+    """How strong the track's own strong onsets are: a high percentile of flux peaks."""
+    inner = flux[1:-1]
+    peaks = inner[(inner >= flux[:-2]) & (inner >= flux[2:])]
+    if not len(peaks):
+        return float(np.percentile(flux, 90)) if len(flux) else 0.0
+    return float(np.percentile(peaks, ONSET_PERCENTILE))
+
+
 def _db(value: float) -> float:
     return round(20.0 * float(np.log10(max(value, 1e-12))), 3)
 
@@ -181,7 +200,7 @@ def measure(path: str | Path) -> dict:
     wrapped = np.concatenate([mono[-4 * _SIZE :], mono[: 4 * _SIZE]])
     across = _flux(wrapped)
     middle = len(across) // 2
-    ordinary = max(float(np.percentile(_flux(mono), 90)), 1e-12)
+    ordinary = max(_onset_level(_flux(mono)), 1e-12)
     return {
         "seam_step": round(float(step), 4),
         "seam_flux": round(float(across[middle - 4 : middle + 4].max()) / ordinary, 4),
