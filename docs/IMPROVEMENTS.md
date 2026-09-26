@@ -688,3 +688,22 @@ project's, since that is the drift the setting exists to stop.
 
 Done when two declarations with no cell of their own build on the project's cell, and
 one stating its own is built on that and reported.
+
+### §PW230 A fit a project can call
+
+Found adopting polyweave in Spinhold (starship RK40). PW98 delivered the fit of a voxel
+model's proportions to a drawing or a mesh as `geometry.voxel_fit.fit(document,
+reference, ranges=…, views=…)`, and the census lists that module as internal: `describe`
+names no operation for it, the MCP server has no tool and the command line no verb. So
+the one step a project takes to set a model's proportions from its Meshy reference is
+the one that needs a Python script of its own, which is what PW101 removed for `build`.
+
+`geometry.fit` as an operation: `source` (the declaration), `reference` (a drawing or a
+mesh under the project), `views` (front, side, top), `budget`, `points`, and `sheet` for
+the contact sheet. Its answer is `fit`'s own (best parameters, overlap per view, the
+model's reading), and with `write` the best parameters go back into the declaration's
+`[params]`, so the next `build` is the fitted model without a hand edit. On the command
+line as `python -m polyweave fit <declaration> --reference <mesh> --views side,top`.
+
+Done when a project fits a declaration to its Meshy mesh from the command line and the
+MCP server with no script of its own.
