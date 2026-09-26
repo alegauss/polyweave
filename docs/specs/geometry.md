@@ -728,6 +728,17 @@ shatters it stays the game's; whether the buried cells cost a frame on the targe
 is unmeasured. The file carries `format` and the loader
 refuses any number but its own rather than half-read it.
 
+**The addon draws a model too** (§PW235). `VoxelDraw` is a MultiMeshInstance3D a game
+places with a `source` and no script of its own: it draws the skin, one cube a cell, each
+cell's palette colour and its material's `glow` (the node's `glow` where none is stated)
+in the instance's custom data. Every node drawing one file with the same choices shares
+one MultiMesh, so twenty actors are one buffer, and the model is `centred` on its box by
+default whatever corner its grid was anchored on. A node's own look goes through instance
+uniforms, never the shared mesh: `wash(color, amount)` lays a colour over every cell and
+`fade(amount)` dissolves it, dithered so it stays in the opaque pass. `voxel.gdshader` is
+the look unless `shader` names a game's own reading the same inputs, and `forget()` drops
+the files read so a rebuilt model is read again.
+
 **A loader and not an import plugin.** Godot picks an importer by the last extension
 alone, so one claiming `json` would take every JSON file in a project — Cottony's route
 table and every provenance record among them.

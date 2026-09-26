@@ -54,6 +54,7 @@ def install(
         "installed": str(target),
         "files": sorted(
             str(one.relative_to(root)).replace("\\", "/")
-            for one in target.rglob("*.gd")
+            for one in target.rglob("*")
+            if one.suffix in (".gd", ".gdshader")
         ),
     }

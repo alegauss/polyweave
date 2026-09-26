@@ -84,6 +84,8 @@ def game(tmp_path):
 def test_the_addon_installs_into_a_project(tmp_path):
     found = game(tmp_path)
     assert found["files"] == [
+        "addons/polyweave_voxels/voxel.gdshader",
+        "addons/polyweave_voxels/voxel_draw.gd",
         "addons/polyweave_voxels/voxel_model.gd",
         "addons/polyweave_voxels/voxels.gd",
     ]
@@ -200,6 +202,73 @@ def test_the_skin_is_drawn_and_a_hit_says_what_it_reveals(tmp_path, fractured):
     assert int(said["skin"]) == int(said["drawn"]) == 56
     assert int(said["buried"]) == 8
     assert behind in [int(i) for i in said["exposed"].split(",")]
+
+
+DRAW = """extends SceneTree
+
+func _initialize() -> void:
+\tvar Draw = load("res://addons/polyweave_voxels/voxel_draw.gd")
+\tvar one = Draw.new()
+\tvar two = Draw.new()
+\tvar placed = Draw.new()
+\tplaced.centred = false
+\tfor node in [one, two, placed]:
+\t\tnode.source = "res://%s"
+\t\troot.add_child(node)
+\tawait process_frame
+\t# A headless run's renderer keeps no instance buffer to read back, so what each
+\t# instance is given is read off the functions that give it.
+\tvar drawn: MultiMesh = one.multimesh
+\tvar middle: Vector3 = Draw.centre_of(one.model)
+\tvar glass := int(Draw.tint_of(one.model, 0).a)
+\tone.wash(Color.GOLD, 0.5)
+\tone.fade(2.0)
+\tvar paint: ShaderMaterial = drawn.mesh.material
+\tprint("draw: %%d drawn %%d skin shared %%s apart %%s middle %%s glow %%d washed %%s \
+fade %%s other %%s shader %%s" %% [
+\t\tdrawn.instance_count, one.model.skin().size(), str(two.multimesh == drawn),
+\t\tstr(placed.multimesh != drawn), str(middle).replace(" ", ""), glass,
+\t\tstr(one.get_instance_shader_parameter("wash").a),
+\t\tstr(one.get_instance_shader_parameter("fade")),
+\t\tstr(two.get_instance_shader_parameter("wash")),
+\t\tstr(paint.shader.resource_path.get_file())])
+\tquit()
+"""
+
+
+def test_a_model_is_drawn_with_no_script_of_the_games_own(tmp_path):
+    """§PW235: the addon's node draws the skin, shared, centred and washed per node."""
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    game(tmp_path)
+    solid = json.loads(json.dumps(SOLID))
+    solid["materials"]["stone"]["glow"] = 2
+    written = V.write(solid, "block.glb", root=tmp_path, mesh=False, sheet=False)
+    (tmp_path / "draw.gd").write_text(
+        DRAW % Path(written["voxels"]).name, encoding="utf-8"
+    )
+    found = engine.run(
+        tmp_path / "draw.gd",
+        expect=r"draw: (?P<drawn>\d+) drawn (?P<skin>\d+) skin shared (?P<shared>\S+) "
+        r"apart (?P<apart>\S+) middle (?P<middle>\S+) glow (?P<glow>\d+) washed "
+        r"(?P<washed>\S+) fade (?P<fade>\S+) other (?P<other>.*?) "
+        r"shader (?P<shader>\S+)",
+        errors=engine.ERRORS.pattern + "|SHADER ERROR",
+        root=tmp_path,
+        headless=True,
+    )
+    said = found["found"]
+    assert found["ok"], found.get("why")
+    assert int(said["drawn"]) == int(said["skin"]) == 56
+    assert said["shared"] == "true"
+    assert said["apart"] == "true"
+    # The block runs 0 to 4 on each side, so its box is centred on (2, 2, 2).
+    assert said["middle"] == "(2.0,2.0,2.0)"
+    assert int(said["glow"]) == 2
+    assert float(said["washed"]) == 0.5
+    assert float(said["fade"]) == 1.0
+    assert said["other"] in ("<null>", "null", "")
+    assert said["shader"] == "voxel.gdshader"
 
 
 def test_the_engine_refuses_a_format_it_does_not_read(tmp_path):

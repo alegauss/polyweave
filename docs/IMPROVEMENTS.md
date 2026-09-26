@@ -609,30 +609,6 @@ reading the source, and it is filed as its own line.
 
 ## Block T — Adopting polyweave in a project
 
-### §PW235 A voxel drawer in the Godot addon
-
-Found adopting polyweave in Spinhold (starship RK40, RK42). The `polyweave_voxels` addon
-reads a model (`voxels.gd`, `voxel_model.gd`: palette, materials, centres, skin), but
-drawing it is left to each game. Spinhold wrote `VoxelLook` for that: a
-MultiMeshInstance3D that draws the skin cells as cubes, puts each cell's palette colour
-and its material's `glow` in the instance custom data, shares one MultiMesh per file so
-twenty actors are one buffer, and centres the model on its box. Then a shader reading
-the custom data, and an instance uniform to wash every cell toward one colour per node
-(an elite's gold, an armed mine's red, a dimmed ship) and a fade, since the MultiMesh is
-shared and a material override would reach every copy.
-
-None of that is Spinhold's own idea of a look: it is what any game drawing polyweave
-voxels in Godot needs, and every game would write it again with the same pitfalls (a
-grid anchored on a corner drawn off-centre; a per-node tint put in the shared mesh).
-
-Ship it in the addon: a `VoxelDraw` node (`source`, `centred`), the shared-mesh cache,
-`wash(color, amount)` and `fade(amount)`, and a default shader with the colour, glow,
-wash and fade inputs a game's own shader can replace. `godot.install` installs it with
-the rest.
-
-Done when Spinhold's `voxel_look.gd` is a small subclass or a use of the addon's node,
-and a fresh project draws a built model with no script of its own.
-
 ### §PW236 Which way a voxel model faces
 
 Found declaring Spinhold's actors (starship RK42). The preview sheet a voxel build
