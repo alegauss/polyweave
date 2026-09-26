@@ -43,6 +43,8 @@
 
 ## Block P — Music and sound a game can ship
 
+- ⏸ **PW192** (deps: PW188 ✅, PW189 ✅, PW190 ✅, PW191 ✅) **Cottony still makes its audio outside polyweave** — set aside (a person hearing Cottony's replacement audio first): The block is proven only when its first consumer's music and effects are declared, made and accepted here. → §PW192
+
 ## Block Q — Words held to the world
 
 ## Block R — Levels measured before a person plays them

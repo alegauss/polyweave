@@ -40,7 +40,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 0 },
   { block: "O", title: "A person sees and answers", open: 0 },
-  { block: "P", title: "Music and sound a game can ship", open: 5 },
+  { block: "P", title: "Music and sound a game can ship", open: 4 },
   { block: "Q", title: "Words held to the world", open: 1 },
   { block: "R", title: "Levels measured before a person plays them", open: 5 },
   { block: "S", title: "Playing the game, not only rendering it", open: 6 },
@@ -68,13 +68,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent",
     why: "The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question.",
     deps: ["PW57"],
-  },
-  {
-    id: "PW192",
-    block: "P",
-    symptom: "Cottony still makes its audio outside polyweave",
-    why: "The block is proven only when its first consumer's music and effects are declared, made and accepted here.",
-    deps: [],
   },
   {
     id: "PW221",
@@ -226,4 +219,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW36", "PW53", "PW77", "PW78", "PW79", "PW80", "PW81", "PW82", "PW180", "PW201", "PW211"];
+export const generatedPaused: string[] = ["PW36", "PW53", "PW77", "PW78", "PW79", "PW80", "PW81", "PW82", "PW180", "PW192", "PW201", "PW211"];
