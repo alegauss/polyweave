@@ -37,7 +37,7 @@ def test_the_counts_say_which_engine_each_skip_was_for(gate, tmp_path):
     report.write_text(REPORT, encoding="utf-8")
     found = gate.counts(report)
     assert (found["passed"], found["failed"], found["skipped"]) == (1, 1, 4)
-    assert found["skipped_for"] == {"Blender": 2, "Godot": 1}
+    assert found["skipped_for"] == {"Blender": 2, "Godot": 1, "Audio": 0}
 
 
 def test_the_summary_says_an_absent_engine_plainly(gate):
@@ -47,8 +47,8 @@ def test_the_summary_says_an_absent_engine_plainly(gate):
         "passed": 10,
         "failed": 0,
         "skipped": 41,
-        "present": {"Blender": False, "Godot": True},
-        "skipped_for": {"Blender": 41, "Godot": 0},
+        "present": {"Blender": False, "Godot": True, "Audio": True},
+        "skipped_for": {"Blender": 41, "Godot": 0, "Audio": 0},
         "log": "x.log",
     }
     said = gate.summary(stamp)

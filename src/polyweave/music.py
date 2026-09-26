@@ -62,19 +62,31 @@ REQUIRED = object()
 _MUSIC = {
     "title": (str, REQUIRED), "bpm": (float, REQUIRED), "meter": (list, [4, 4]),
     "key": (str, ""), "form": (list, REQUIRED), "loop": (bool, True),
-    "loop_from": (str, ""),
+    "loop_from": (str, ""), "room": (float, 0.55),
 }
+#: A send left unstated is off, which no level in decibels says.
+OFF = None
 _TRACK = {
     "name": (str, REQUIRED), "instrument": (str, REQUIRED), "layer": (str, "base"),
     "drums": (bool, False), "velocity": (float, 96), "groove": (float, 0.0),
     "wobble": (float, 0.0), "gate": (float, 0.9), "play": (dict, REQUIRED),
+    "gain": (float, 0.0), "pan": (float, 0.0), "reverb": (float, OFF),
+    "delay": (float, OFF),
 }
 #: The ranges a number must fall in, inclusive.
 _RANGES = {
     "bpm": (20, 400), "velocity": (1, 127), "groove": (0, 1), "wobble": (0, 64),
-    "gate": (0.05, 4),
+    "gate": (0.05, 4), "room": (0, 1), "gain": (-60, 24), "pan": (-1, 1),
+    "reverb": (-60, 12), "delay": (-60, 12),
 }
-_TABLES = ("music", "section", "pattern", "track")
+_TABLES = ("music", "section", "pattern", "track", "patch")
+
+#: What of a track the model carries for the render, beyond its notes.
+_CARRIED = ("instrument", "layer", "drums", "gain", "pan", "reverb", "delay")
+
+#: What an instrument may be: a Surge patch the score declares, a General MIDI program
+#: or a General MIDI drum kit, each played by the engine that owns it.
+_INSTRUMENT = re.compile(r"(surge):([a-z][a-z0-9_-]*)|(gm|drums):(\d{1,3})")
 
 
 class _Problems:
@@ -368,10 +380,69 @@ def compile_source(text: str, name: str = "score") -> tuple[dict | None, list[di
     if not tracks:
         problems.add("music.missing", None, "the score has no [[track]]",
                      "add a [[track]] with a name, an instrument and what it plays")
+    patches = _patches(problems, raw.get("patch", {}))
+    for n, track in enumerate(tracks):
+        _instrument(problems, track, patches, problems.header("track", n))
     if problems.found:
         return None, problems.found
     model = _model(problems, music, sections, patterns, tracks, meter, name)
+    model["extensions"][EXTENSION]["patches"] = patches
     return (None if problems.found else model), problems.found
+
+
+def _patches(problems: _Problems, stated: Any) -> dict[str, dict]:
+    """Each `[patch.<name>]`: Surge's own parameter names, as the plug-in spells them.
+
+    Which names exist is Surge's to say and changes with the oscillator type, so a name
+    is checked when the render sets it; here a value only has to be a value.
+    """
+    found = {}
+    for name, table in (stated if isinstance(stated, dict) else {}).items():
+        line = problems.header(f"patch.{name}")
+        if not isinstance(table, dict):
+            problems.add("music.bad-value", line, f"patch {name} is {table!r}",
+                         f"write it as [patch.{name}] with Surge parameters under it")
+            continue
+        wrong = [k for k, v in table.items() if not isinstance(v, str | int | float)]
+        if wrong:
+            problems.add("music.bad-value", problems.line(wrong[0], line or 0) or line,
+                         f"patch {name} sets {wrong[0]} to what is not a value",
+                         "write a number, a word Surge shows, or true or false")
+        found[name] = table
+    return found
+
+
+def _instrument(problems: _Problems, track: dict, patches: dict,
+                line: int | None) -> None:
+    stated = track.get("instrument")
+    if stated is None:
+        return
+    at = problems.line("instrument", (line or 1) - 1) or line
+    match = _INSTRUMENT.fullmatch(stated)
+    if not match:
+        problems.add(
+            "music.unknown-instrument", at,
+            f"track {track['name']} plays {stated!r}, which no engine plays",
+            "write surge:<patch>, gm:<program 0-127> or drums:<kit 0-127>",
+        )
+        return
+    if match.group(1) and match.group(2) not in patches:
+        near = difflib.get_close_matches(match.group(2), patches, n=1)
+        problems.add(
+            "music.unknown-instrument", at,
+            f"track {track['name']} plays Surge patch {match.group(2)!r}, which the "
+            f"score does not declare",
+            f"did you mean surge:{near[0]}?" if near
+            else f"declare [patch.{match.group(2)}] with its Surge parameters",
+        )
+    elif match.group(3) and int(match.group(4)) > 127:
+        problems.add("music.unknown-instrument", at,
+                     f"{stated} is past the last program, 127",
+                     "name a program or kit from 0 to 127")
+    elif match.group(3) == "drums" and not track["drums"]:
+        problems.add("music.unknown-instrument", at,
+                     f"track {track['name']} plays a drum kit and is not a drum track",
+                     "set drums = true on the track")
 
 
 def _meter(problems: _Problems, music: dict) -> tuple[int, int]:
@@ -497,11 +568,9 @@ def _model(problems: _Problems, music: dict, sections: dict, patterns: dict,
         "sections": spans,
         "extensions": {EXTENSION: {
             "bpm": music["bpm"],
+            "room": music["room"],
             "loop": {"startTick": head, "endTick": tick} if music["loop"] else None,
-            "tracks": {
-                t["name"]: {k: t[k] for k in ("instrument", "layer", "drums")}
-                for t in tracks
-            },
+            "tracks": {t["name"]: {k: t[k] for k in _CARRIED} for t in tracks},
         }},
     }
 
@@ -645,12 +714,13 @@ def _chunk(events: list[tuple[int, bytes]]) -> bytes:
     return b"MTrk" + len(body).to_bytes(4, "big") + body
 
 
-def midi_bytes(model: dict) -> bytes:
+def midi_bytes(model: dict, until: int | None = None) -> bytes:
     """A Standard MIDI File, format 1: a conductor track, then one track per part.
 
     A drum part plays on channel 10, and an instrument written `gm:<program>` sets its
     program; any other instrument is the renderer's business and plays as channel
-    default in a DAW.
+    default in a DAW. `until` puts a silent controller at that tick, because a player
+    stops at the last event and a release or a reverb would be cut there.
     """
     timing = model["timing"]
     signature = timing["timeSignatures"][0]
@@ -677,6 +747,9 @@ def midi_bytes(model: dict) -> bytes:
                 events.append((note["start"], bytes([0x90 | channel, note["pitch"],
                                                      note["velocity"]])))
                 events.append((end, bytes([0x80 | channel, note["pitch"], 0])))
+        if until is not None:
+            # Controller 110 is undefined in General MIDI, so it changes nothing heard.
+            events.append((until, bytes([0xB0 | channel, 110, 0])))
         chunks.append(_chunk(events))
     header = b"MThd" + (6).to_bytes(4, "big") + (1).to_bytes(2, "big")
     header += len(chunks).to_bytes(2, "big")

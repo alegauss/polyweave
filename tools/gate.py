@@ -37,6 +37,9 @@ HERE = ROOT / ".polyweave" / "gate"
 ENGINES = {
     "Blender": ("bpy", "blender", "renderer"),
     "Godot": ("godot",),
+    # Pedalboard, FluidSynth with a SoundFont, and Surge XT: what a score renders
+    # through (§PW187). The tests find them by FLUIDSYNTH and SOUNDFONT.
+    "Audio": ("audio engine",),
 }
 
 
@@ -106,6 +109,9 @@ def present() -> dict[str, bool]:
     return {
         "Blender": importlib.util.find_spec("bpy") is not None,
         "Godot": bool(os.environ.get("GODOT") or shutil.which("godot")),
+        "Audio": importlib.util.find_spec("pedalboard") is not None
+        and bool(os.environ.get("FLUIDSYNTH") or shutil.which("fluidsynth"))
+        and Path(os.environ.get("SOUNDFONT", "")).is_file(),
     }
 
 

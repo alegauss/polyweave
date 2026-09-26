@@ -33,6 +33,10 @@ lead_b = "c5 _ _ ~"
 bass = "<[c2 c3]*4 [g2 g3]*4>"
 beat = "[bd ~ sd ~, hh*8]"
 
+[patch.chip_lead]
+a_osc_1_shape = -100.0
+a_osc_1_width_1 = 25.0
+
 [[track]]
 name = "lead"
 instrument = "surge:chip_lead"
@@ -76,8 +80,11 @@ def test_a_score_compiles_to_a_piano_shaped_model():
     assert set(first) == {"pitch", "start", "duration", "velocity", "part"}
     ext = model["extensions"][music.EXTENSION]
     assert ext["loop"] == {"startTick": 0, "endTick": 5760}
-    assert ext["tracks"]["drums"] == {"instrument": "drums:25", "layer": "base",
-                                      "drums": True}
+    assert ext["tracks"]["drums"] == {
+        "instrument": "drums:25", "layer": "base", "drums": True,
+        "gain": 0.0, "pan": 0.0, "reverb": None, "delay": None,
+    }
+    assert ext["patches"]["chip_lead"]["a_osc_1_width_1"] == 25.0
 
 
 def test_the_lead_plays_one_bar_per_alternative_with_its_weights():
@@ -176,6 +183,11 @@ def test_a_misspelled_pattern_is_answered_with_the_nearest_name():
         (('lead_b = "c5 _ _ ~"', 'lead_b = "[c5, c5]"'), "music.overlap"),
         (("[pattern]", "[patterns]"), "music.unknown-key"),
         (("bpm = 120\n", "bpm = 120\nbpm = 90\n"), "music.unreadable"),
+        (('instrument = "gm:38"', 'instrument = "piano"'), "music.unknown-instrument"),
+        (('instrument = "gm:38"', 'instrument = "gm:300"'), "music.unknown-instrument"),
+        (('"gm:38"', '"drums:0"'), "music.unknown-instrument"),
+        (("surge:chip_lead", "surge:chip_led"), "music.unknown-instrument"),
+        (('"gm:38"', '"gm:38"\npan = 2.0'), "music.bad-value"),
     ],
 )
 def test_a_score_that_cannot_play_is_refused_with_a_code(change, code):

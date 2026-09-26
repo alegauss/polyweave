@@ -68,7 +68,9 @@ DESCRIBE = 68_300
 #: 75,899 with project.check and the adopt area's nine codes (§PW220).
 #: 77,165 with sound.declared, music.validate, music.to_midi and the sound and music
 #: areas' thirteen codes (§PW185, §PW186).
-CAPABILITIES = 77_700
+#: 77,800 with music.render, its two refusals and the three engine paths (§PW187),
+#: before the render's own figures below settle.
+CAPABILITIES = 78_400
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

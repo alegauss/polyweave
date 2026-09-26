@@ -44,7 +44,15 @@ _FREE_TABLES = ("capture",)
 
 #: Only a binary may sit outside the tree. Everything else resolves under
 #: `project.root`, because a path elsewhere is state a colleague cannot reproduce.
-_BINARIES = ("paths.blender", "paths.godot", "paths.tesseract")
+#: A render's engines and instrument libraries are installed per machine, like Blender.
+_BINARIES = (
+    "paths.blender",
+    "paths.godot",
+    "paths.tesseract",
+    "paths.fluidsynth",
+    "paths.soundfont",
+    "paths.surge",
+)
 
 #: Settings that name a file inside the tree although they do not live under `[paths]`.
 _INSIDE = ("service.schema",)
@@ -94,6 +102,12 @@ DEFAULTS: dict[str, Any] = {
         # Where a game's audio lands (§PW185). One folder by default, because Cottony
         # keeps its music and its effects side by side; a family may name its own.
         "audio": "assets/audio",
+        # What a score renders through (§PW187). Engines and instrument libraries are
+        # configuration and never bundled: FluidSynth plays a General MIDI SoundFont,
+        # and Surge XT is a VST3, found in the usual plug-in folders where it is empty.
+        "fluidsynth": "fluidsynth",
+        "soundfont": "",
+        "surge": "",
     },
     "render": {
         "rungs": ["sphere", "preview", "final"],

@@ -22,6 +22,9 @@ dev = ["pytest>=8", "ruff>=0.6"]
 # refuses without it, so importing polyweave never costs a renderer. The module route is
 # what a worker uses; a blender binary named in `[paths]` is the other one.
 blender = ["bpy>=4.2"]
+# Rendering a score (§PW187) loads Surge XT and runs the mix through Pedalboard. Optional
+# like Blender: music.render refuses by name without it, and nothing else imports it.
+audio = ["pedalboard>=0.9"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/polyweave"]

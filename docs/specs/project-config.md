@@ -41,6 +41,9 @@ work       = ".polyweave"
 purchases  = "polyweave.purchases.json"
 loop       = "polyweave.loop.json"      # what one asset cost, made each way
 audio      = "docs/design/audio"        # where a game's declared sounds land
+fluidsynth = "fluidsynth"               # plays a score's General MIDI parts
+soundfont  = "${SOUNDFONT}"             # the General MIDI library it plays; never bundled
+surge      = ""                         # Surge XT's .vst3; empty finds the usual install
 
 [render]
 rungs        = ["sphere", "preview", "final"]
@@ -195,7 +198,9 @@ a number nobody can argue with.
 config file carrying an API key is a config file that gets committed.
 
 **Only a binary path may be absolute.** Everything else resolves under `[project] root`,
-because a path pointing outside the tree is state a colleague cannot reproduce.
+because a path pointing outside the tree is state a colleague cannot reproduce. A render's
+engines and instrument libraries (`fluidsynth`, `soundfont`, `surge`) count as binaries:
+they are installed per machine, and a 30 MB SoundFont does not belong in a game's tree.
 
 **Nothing is written outside the tree.** `[paths] work` is the only writable location the
 plugin chooses for itself, and it belongs in `.gitignore`.

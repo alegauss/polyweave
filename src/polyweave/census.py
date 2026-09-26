@@ -59,6 +59,7 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.cost": ("internal", "the readers under cost.read and a cost predicate"),
     "polyweave.sound": ("internal", "what sound.measure and a sound bound read"),
     "polyweave.music": ("internal", "the notation and compiler music.validate calls"),
+    "polyweave.music_render": ("internal", "the engines and the mix music.render runs"),
     "polyweave.cli": ("internal", "the command line's own parsing and printing"),
     "polyweave.geometry": ("internal", "a declaration's machinery; geometry.build"),
     "polyweave.geometry.build": ("internal", "the mesh a build writes"),

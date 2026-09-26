@@ -799,6 +799,26 @@ CODES: dict[str, Code] = {
         "bd in a lead's pattern",
         doors=("fix the step at the character named", "set drums = true on the track"),
     ),
+    "music.unknown-instrument": Code(
+        means="a track names an instrument no engine plays, or a patch never declared",
+        when="piano instead of gm:0, surge:lead with no [patch.lead], or a drum kit "
+        "on a track that is not drums",
+        doors=("write surge:<patch>, gm:<program> or drums:<kit>",
+               "declare [patch.<name>]"),
+    ),
+    "music.no-engine": Code(
+        means="an engine or library the score renders through is not here",
+        when="Pedalboard not installed, no FluidSynth on PATH, [paths] soundfont "
+        "unset, or Surge XT not in its usual plug-in folder",
+        doors=("install the engine the message names",
+               "set its [paths] entry to where it is"),
+    ),
+    "music.unknown-parameter": Code(
+        means="a patch sets a parameter Surge XT does not have",
+        when="a misspelled name, or one that exists only under another oscillator type "
+        "than the patch set first",
+        doors=("use the name the remedy offers", "set the _type it depends on first"),
+    ),
     "music.out-of-range": Code(
         means="a note falls outside MIDI's 0 to 127",
         when="a pattern written an octave or two too high or low",

@@ -299,28 +299,6 @@ since a reference the service ignores is dropped without an error.
 
 ## Block P — Music and sound a game can ship
 
-### §PW187 Rendering a score without a DAW open
-
-`music.render` turns a validated score into WAV and OGG headlessly, orchestrating
-engines that already exist rather than writing a synthesiser, as the non-goal on
-replacing tools requires. The spike settled them: Surge XT as a VST3 driven through
-Pedalboard for synthesised parts, and FluidSynth's command line with a General MIDI
-SoundFont for sampled ones. Neither sfizz nor DawDreamer was needed.
-
-What decides how professional the result sounds is the instruments and the mix more than
-the notes, so the render applies one fixed, declared chain. The one a person passed
-levels every stem to one RMS, adds reverb and dotted-eighth delay sends, compresses at
-2.5:1 and limits to -18 dBFS RMS under a -1 dBFS peak. The master runs over the loop as
-a loop, so its seam sees its own tail, and a loop's reverb tail is wrapped into its
-start. Instrument libraries are configuration and are never bundled.
-
-Three facts about Surge shape the code. A load takes 25 to 77 seconds, so one instance
-serves a whole render. It is reset by restoring each parameter's raw value, because
-restoring its saved state silences it. Its parameter names change with the oscillator
-type and its times are discrete labels, so a patch is a table of named values matched to
-the nearest label. JUCE's limiter lifts its threshold to 0 dBFS, so the ceiling is a
-gain after it.
-
 ### §PW188 One theme at several intensities
 
 Game music changes with play: calm, tense, combat. A score can declare layers that share
