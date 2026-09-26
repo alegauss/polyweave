@@ -311,12 +311,8 @@ lands under a new `paths.audio` default. Acceptance bounds stay in `*.accept.tom
 which already reads `sound.*` measures; the declaration only says what exists and where.
 Nothing about Cottony is compiled in, per the non-goal on one project's paths.
 
-The kind decides which measures apply, and the spike found two that misread today.
-`sound.measure` refuses any file shorter than its seam window, which every one-shot
-effect is, so an effect needs loudness, peak and duration without a seam. And
-`seam_flux`, taken over the track's 90th percentile, flags a loop that restarts on a
-crash cymbal: the synthwave loop's seam read 3.07 while its own section downbeats read
-3.00 to 3.09. A music bound should compare the seam with the track's own downbeats.
+The kind decides which measures apply: a loop has a seam and an effect does not. The
+spike found both sides misread today, which §PW221 and §PW222 fix.
 
 ### §PW186 Music as an editable source an agent writes and polyweave checks
 
@@ -421,6 +417,42 @@ The block is proven when its first consumer uses it. Cottony's music and effects
 declared in its `polyweave.toml`, made by `music.render` and `sound.synth`, and held to
 `*.accept.toml` bounds, and its own audio scripts are removed. Anything Cottony needs
 that a second game would not becomes configuration.
+
+### §PW221 Measuring a sound that does not loop
+
+`sound.measure` raises `spec.unreadable-sound` for any file shorter than eight analysis
+windows, because its seam measures need audio on both sides of the wrap. Every one-shot
+effect is that short: the PW184 spike's ten sfxr effects ran 0.10 to 0.29 s and all but
+one were refused, so an effect cannot be bounded at all today.
+
+A seam only means something for a loop. So `measure` keeps loudness, peak and duration
+for every file, and reports `seam_step` and `seam_flux` as absent when the file is
+shorter than the window rather than refusing it. A predicate in `*.accept.toml` that
+bounds a seam measure on such a file is refused with a remedy that names the length it
+needs, so the gap is loud where a bound asked for it and silent everywhere else.
+
+Tests: a 0.1 s effect measures loudness, peak and duration; the same file under a
+`seam_flux` bound is refused with that remedy; a loop measures exactly as before. The
+measurement vocabulary spec says which measures a one-shot has.
+
+### §PW222 A seam judged against the track's own downbeats
+
+`seam_flux` divides the spectral change across the wrap by the track's 90th-percentile
+frame flux, and reads above one as a cut. A downbeat with a crash cymbal is among the
+largest changes in any track, so a loop that restarts on one fails, although it sounds
+like every other section change. In the PW184 spike the synthwave loop's seam read 3.07
+and its own three section downbeats 3.00, 2.99 and 3.08; the chiptune's seam read 1.31
+beside downbeats of 1.33. A person heard nothing wrong at either seam.
+
+The comparison should be with the track's own onsets rather than all its frames: the
+seam's flux over a high percentile of the flux peaks (local maxima), so a seam that
+looks like the track's strong downbeats reads near one and only a change larger than any
+onset the track makes reads as a cut.
+
+Before shipping, measure the three spike loops and one deliberately cut copy of each,
+and keep the percentile that separates them. Changing what `seam_flux` means moves
+existing bounds, so the measurement vocabulary spec and any `*.accept.toml` in the tests
+move with it in the same commit.
 
 ## Block Q — Words held to the world
 
