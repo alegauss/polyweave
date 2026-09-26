@@ -38,7 +38,7 @@
 
 ## Block Q — Words held to the world
 
-- 📋 **PW200** (deps: PW197 ✅, PW198 ✅, PW199 ✅, Starship RK88) **Starship's screen still shows names its world bible replaced** — The block is proven only when its first consumer's text, lines and character assets are held to a declared world through polyweave. → §PW200
+- 📋 **PW200** (deps: PW197 ✅, PW198 ✅, PW199 ✅, Starship RK73, Starship RK89) **Starship's screen still shows names its world bible replaced** — The block is proven only when its first consumer's text, lines and character assets are held to a declared world through polyweave. → §PW200
 
 ## Block R — Levels measured before a person plays them
 
