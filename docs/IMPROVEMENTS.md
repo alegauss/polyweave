@@ -670,3 +670,21 @@ and a rebuild fixes it.
 
 Done when an artefact built on Windows verifies after a checkout that normalises line
 endings, and a check writes one and reads its bytes back with no `\r`.
+
+### §PW229 One cell for a project
+
+Found adopting polyweave in Spinhold (starship RK39). A game whose actors break into
+their own cubes needs every actor built on one cell size, so the debris of a drone and
+of a boss are the same cubes and the ring reads as one world. The project's `[voxels]`
+table carries `budget`, `thread`, `extent` and `near_symmetry`, but the cell is only a
+document's own `[voxels] cell` or `across`: each declaration repeats the number, and one
+that drifts is found by eye.
+
+`[voxels] cell` in `polyweave.toml` as the project's default: a document stating neither
+`cell` nor `across` takes it, a document's own still wins as `extent`'s does, and
+`voxelize(cell=…)` still overrides both. The build's reading says which it used ("cell
+0.25, the project's"), and the review warns where a document's own cell differs from the
+project's, since that is the drift the setting exists to stop.
+
+Done when two declarations with no cell of their own build on the project's cell, and
+one stating its own is built on that and reported.
