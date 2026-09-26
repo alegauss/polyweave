@@ -364,7 +364,11 @@ def project(subject: Any, *, grid: int = GRID) -> np.ndarray:
             per = np.maximum(1, (per * (CEILING / int(per.sum()))).astype(np.int64))
         which = np.repeat(np.arange(len(faced)), per)
         within = np.arange(int(per.sum())) - np.repeat(np.cumsum(per) - per, per)
-        weights = _SAMPLES[within % len(_SAMPLES)]
+        # Spread over the whole set rather than its head (PW239): the set runs from
+        # one corner outwards, so a small triangle's first few samples all sat near
+        # that corner and a mesh of small ones projected as a speckle of dots.
+        spread = (within * len(_SAMPLES)) // np.repeat(per, per)
+        weights = _SAMPLES[np.minimum(spread, len(_SAMPLES) - 1)]
         _splat(
             mask,
             weights[:, 0:1] * a[which]

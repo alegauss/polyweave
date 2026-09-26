@@ -286,6 +286,32 @@ def test_two_different_outlines_barely_overlap():
     assert normalise.overlap(upright, laid) < 0.3
 
 
+def tessellated(columns, rows, width=6.0, height=2.0):
+    across, up = width / columns, height / rows
+    vertices = [
+        (x * across, y * up, 0.0) for y in range(rows + 1) for x in range(columns + 1)
+    ]
+    faces = []
+    for y in range(rows):
+        for x in range(columns):
+            a = y * (columns + 1) + x
+            above = a + columns + 1
+            faces += [(a, a + 1, above + 1), (a, above + 1, above)]
+    return {"vertices": vertices, "faces": faces}
+
+
+@pytest.mark.parametrize("columns, rows", [(2, 1), (4, 2), (24, 8)])
+def test_a_surface_draws_the_same_however_finely_it_is_cut(columns, rows):
+    """A service's mesh is thousands of small triangles; each must be drawn whole."""
+    whole = int(normalise.project(tessellated(1, 1), grid=128).sum())
+    cut = int(normalise.project(tessellated(columns, rows), grid=128).sum())
+    assert cut > whole * 0.45
+    assert np.array_equal(
+        normalise.project(tessellated(columns, rows), grid=128).any(axis=0),
+        normalise.project(tessellated(1, 1), grid=128).any(axis=0),
+    )
+
+
 def test_a_projection_is_the_same_every_time():
     subject = normalise.normalise(cube(1.0, 2.5, 0.7))
     assert np.array_equal(normalise.project(subject), normalise.project(subject))

@@ -44,7 +44,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "Q", title: "Words held to the world", open: 1 },
   { block: "R", title: "Levels measured before a person plays them", open: 5 },
   { block: "S", title: "Playing the game, not only rendering it", open: 6 },
-  { block: "T", title: "Adopting polyweave in a project", open: 7 },
+  { block: "T", title: "Adopting polyweave in a project", open: 8 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -200,6 +200,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "T",
     symptom: "capture.run over MCP and the CLI takes no arguments for the script, so a capture that needs any falls back to Python",
     why: "The library function takes args but the operation does not, so capturing a boss in play meant a one-off python -c, the project code polyweave replaces.",
+    deps: [],
+  },
+  {
+    id: "PW240",
+    block: "T",
+    symptom: "no operation compares two voxel models cell by cell, so proving a declaration rewrite changed nothing takes a script",
+    why: "Rewriting a declaration, a variant or a fit all want to know which cells and materials moved, and the one-off diff Spinhold wrote is what polyweave should answer.",
     deps: [],
   },
 ];

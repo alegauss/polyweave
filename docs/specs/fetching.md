@@ -333,7 +333,10 @@ drawing's, by intersection over union, the same measure a shape check is held to
 **The outline is rasterised rather than rendered.** Deciding which of twenty-four ways
 round a mesh goes is not worth twenty-four pictures, and the outline is arithmetic: project
 the vertices along §6's azimuth zero, splat each face over a coarse grid at a fixed
-low-discrepancy set of barycentric samples, and close the result. Fixed rather than random,
+low-discrepancy set of barycentric samples, and close the result. A face gets samples in
+proportion to its area, taken evenly across the whole set rather than from its head: the
+set runs outwards from one corner, so a small face sampled from the head was drawn as a dot
+at that corner, and a service's mesh of thousands of small faces as a speckle. Fixed rather than random,
 because an orientation that turns on a seed is not an answer. Both the candidate and the
 drawing are fitted to their own bounding box, so what is compared is proportion and outline
 and never how either one was framed.
