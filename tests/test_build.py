@@ -396,6 +396,7 @@ def test_the_tray_faces_the_camera_that_renders_it():
     and the seats cut in from the face's near side. Copied across unturned, the depths
     rendered the tray's back, which a silhouette check could not see.
     """
+    solving()
     found = B.build(G.read("tray.toml", root=COTTONY), root=COTTONY)
 
     def nearest(name):

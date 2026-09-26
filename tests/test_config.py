@@ -129,9 +129,11 @@ def test_a_relative_path_resolves_under_the_project_root(tmp_path):
     assert found.path("paths.renders") == (tmp_path / "docs" / "art").resolve()
 
 
-def test_an_absolute_path_is_refused_where_only_a_binary_may_be(tmp_path):
+@pytest.mark.parametrize("elsewhere", ["C:/elsewhere", "/elsewhere"])
+def test_an_absolute_path_is_refused_where_only_a_binary_may_be(tmp_path, elsewhere):
+    """Either desk's absolute: `C:/…` read on Linux is not a folder named `C:` here."""
     with pytest.raises(PolyweaveError) as caught:
-        C.load(project(tmp_path, '[paths]\nrenders = "C:/elsewhere"\n')).path(
+        C.load(project(tmp_path, f'[paths]\nrenders = "{elsewhere}"\n')).path(
             "paths.renders"
         )
     assert caught.value.code == "config.path-outside"

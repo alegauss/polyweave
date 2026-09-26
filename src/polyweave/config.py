@@ -22,7 +22,7 @@ import re
 import tomllib
 from dataclasses import dataclass, fields
 from datetime import date
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Any
 
 from .errors import PolyweaveError
@@ -375,7 +375,11 @@ class Config:
         candidate = Path(str(raw)).expanduser()
         if address in _BINARIES:
             return candidate
-        if candidate.is_absolute():
+        # Absolute on either kind of desk: the file is shared, and `C:/art` read on
+        # Linux would otherwise be a folder named `C:` inside the project.
+        if candidate.is_absolute() or any(
+            kind(str(raw)).is_absolute() for kind in (PurePosixPath, PureWindowsPath)
+        ):
             raise PolyweaveError(
                 "config.path-outside",
                 f"{address} is {candidate}, which is not inside {self.root}",
