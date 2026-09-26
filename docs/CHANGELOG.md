@@ -239,6 +239,7 @@
 
 - ✅ **PW184** **Nobody knows if agent-composed, headlessly rendered music sounds good enough to ship in a game** — A person judged three agent-written loops and ten seeded effects, rendered headlessly through Surge XT and FluidSynth, to sound professional, so Block P proceeds.
 - ✅ **PW185** **No declaration says which music and sound effects a game needs or where they land** — A game declares its audio as [sound.<family>] cues, and sound.declared says where each lands, what it measures and which files are missing (design recorded in `docs/specs/project-config.md`).
+- ✅ **PW186** **An agent cannot write multi-track music as data that polyweave validates** — A *.music.toml score in mini-notation compiles to a piano-shaped note model; music.validate names every problem with its line, and music.to_midi writes it (design recorded in `docs/specs/music.md`).
 
 ## Block Q — Words held to the world
 

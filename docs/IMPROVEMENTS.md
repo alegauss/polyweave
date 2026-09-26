@@ -299,29 +299,6 @@ since a reference the service ignores is dropped without an error.
 
 ## Block P — Music and sound a game can ship
 
-### §PW186 Music as an editable source an agent writes and polyweave checks
-
-An agent composes well only when its output is structured and a validator answers it,
-which is the loop piano's score format proved. But a piece is also something a person
-reopens and changes, so the file that is edited and the model that is checked are two
-layers.
-
-The source is a `*.music.toml` in the consumer's repository, beside its `*.accept.toml`,
-laid out like a tracker: tracks naming an instrument and a layer, short named patterns
-written in a compact text notation with one line per bar or phrase, and an arrangement
-that chains patterns into sections, with tempo, meter, key and the loop span. Changing a
-riff is one line, the arrangement follows, and a diff reads as music.
-
-The note model, absolute ticks per note in the shape of piano's JSON, is derived from
-that source and never edited. `music.validate` compiles the source into it and reports
-errors against the source's own line, with remedies in the house style; `music.to_midi`
-writes a standard MIDI file from it, so any DAW can open the result. Piano's JSON can be
-read as input, but polyweave does not depend on piano's runtime. The spike chose
-Strudel's mini-notation, one cycle per bar, with `@` weights, `<>` alternation, `[a, b]`
-stacks and named drums. ABC matched it note for note, but ran two to three times longer
-on drums and arpeggios, and its bar-long accidentals made one missed sharp two wrong
-notes.
-
 ### §PW187 Rendering a score without a DAW open
 
 `music.render` turns a validated score into WAV and OGG headlessly, orchestrating

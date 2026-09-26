@@ -43,7 +43,9 @@ from polyweave.errors import PolyweaveError
 #: 65,349 with words.sheet and entity= on picture.buy and mesh.buy (§PW198, §PW199).
 #: 65,992 with project.init and its agent flag (§PW218, §PW219).
 #: 66,720 with sound.declared (§PW185), the first operation of Block P.
-DESCRIBE = 67_300
+#: 67,704 with music.validate and music.to_midi (§PW186): a score an agent repairs
+#: against a validator needs both the check and the file a DAW opens.
+DESCRIBE = 68_300
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -64,7 +66,9 @@ DESCRIBE = 67_300
 #: 74,101 with words.sheet, entity= and their two codes (§PW198, §PW199).
 #: 74,761 with project.init, its agent flag and config.exists (§PW218, §PW219).
 #: 75,899 with project.check and the adopt area's nine codes (§PW220).
-CAPABILITIES = 76_500
+#: 77,165 with sound.declared, music.validate, music.to_midi and the sound and music
+#: areas' thirteen codes (§PW185, §PW186).
+CAPABILITIES = 77_700
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
@@ -81,7 +85,8 @@ HELP_VERB = 4_000
 #: 14,722 with world.read and world.validate (§PW196).
 #: 15,116 with words.check and words.unlisted (§PW197).
 #: 15,488 with words.sheet, project.init and the init verb (§PW199, §PW218).
-HELP_TOP = 15_800
+#: 16,100 with sound.declared, music.validate and music.to_midi (§PW185, §PW186).
+HELP_TOP = 16_400
 #: A search's answer over its default budget of 24 samples: 3,739.
 SEARCH = 4_000
 

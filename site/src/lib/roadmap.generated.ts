@@ -40,7 +40,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 0 },
   { block: "O", title: "A person sees and answers", open: 0 },
-  { block: "P", title: "Music and sound a game can ship", open: 9 },
+  { block: "P", title: "Music and sound a game can ship", open: 8 },
   { block: "Q", title: "Words held to the world", open: 1 },
   { block: "R", title: "Levels measured before a person plays them", open: 5 },
   { block: "S", title: "Playing the game, not only rendering it", open: 6 },
@@ -70,18 +70,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW57"],
   },
   {
-    id: "PW186",
-    block: "P",
-    symptom: "An agent cannot write multi-track music as data that polyweave validates",
-    why: "An agent composes well only when a validator answers its output, and no format here has tracks, drums or loop points.",
-    deps: [],
-  },
-  {
     id: "PW187",
     block: "P",
     symptom: "A composed score cannot become a WAV or OGG file without a DAW open",
     why: "Nothing renders music headlessly, so the only route to game audio is a person in a DAW or a paid generator.",
-    deps: ["PW186"],
+    deps: [],
   },
   {
     id: "PW188",

@@ -54,6 +54,7 @@ AREAS: dict[str, str] = {
     "words": "the text a player reads, held to the world it is set in",
     "adopt": "a project's adoption: its config, its server and its agent's section",
     "sound": "the audio a game declares it needs, and where each file lands",
+    "music": "a score written as a source, compiled to notes and checked",
 }
 
 CODES: dict[str, Code] = {
@@ -753,6 +754,60 @@ CODES: dict[str, Code] = {
         means="two cues land on one file, so making one would overwrite the other",
         when="one cue name in two families that share a folder and a format",
         doors=("rename one cue", "give one family its own folder"),
+    ),
+    # -- music: a score as a source, compiled and checked ----------------------
+    "music.unreadable": Code(
+        means="the score is missing or is not TOML",
+        when="a path to no file, or a source with a syntax error on the line named",
+        doors=("name a *.music.toml under the project", "fix the syntax on that line"),
+    ),
+    "music.invalid": Code(
+        means="the score has problems, so it compiles to nothing a render may play",
+        when="music.to_midi on a source music.validate would not pass",
+        doors=("call music.validate and fix every problem it names",),
+    ),
+    "music.unknown-key": Code(
+        means="a table or key the score format does not have",
+        when="a misspelled key such as tempo for bpm, or a stray table",
+        doors=("use the key the remedy names",),
+    ),
+    "music.missing": Code(
+        means="a key the score must state is absent",
+        when="a score with no title, bpm or form, or a track with no instrument",
+        doors=("write the key the problem names",),
+    ),
+    "music.bad-value": Code(
+        means="a value of the wrong type or outside its range",
+        when="bpm as a string, a meter of [4, 3], a velocity of 200, a track name "
+        "used twice",
+        doors=("write the value the remedy describes",),
+    ),
+    "music.unknown-section": Code(
+        means="the form, loop_from or a track's play names a section never declared",
+        when="form = [\"A\", \"B\"] with only [section.A], or a typo in play",
+        doors=("declare [section.<name>] with its bars", "name a declared section"),
+    ),
+    "music.unknown-pattern": Code(
+        means="a track plays a pattern [pattern] does not hold",
+        when="play = { A = \"lead_a\" } with no lead_a under [pattern]",
+        doors=("add the pattern", "name one [pattern] holds"),
+    ),
+    "music.bad-pattern": Code(
+        means="a pattern does not parse as mini-notation, or plays drums on a pitched "
+        "track",
+        when="an unclosed bracket, a note with no octave such as c instead of c4, or "
+        "bd in a lead's pattern",
+        doors=("fix the step at the character named", "set drums = true on the track"),
+    ),
+    "music.out-of-range": Code(
+        means="a note falls outside MIDI's 0 to 127",
+        when="a pattern written an octave or two too high or low",
+        doors=("move the note into range",),
+    ),
+    "music.overlap": Code(
+        means="one track strikes the same pitch twice at one tick",
+        when="a stack such as [c4, c4], which MIDI cannot hold as two notes",
+        doors=("remove the duplicate from the stack",),
     ),
     # -- world: a game's names, factions and characters -----------------------
     "world.none": Code(

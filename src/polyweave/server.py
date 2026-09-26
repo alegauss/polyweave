@@ -61,8 +61,9 @@ TOOL_BUDGET = 4500
 #: words.unlisted (§PW197), and to 58,400 at 57,832 for words.sheet and entity= on
 #: the two purchases (§PW198, §PW199), and to 59,000 at 58,413 for project.init and
 #: its agent flag (§PW218, §PW219), and to 59,700 at 59,081 for sound.declared
-#: (§PW185), the game's declared audio and which of it is missing.
-LIST_BUDGET = 59700
+#: (§PW185), the game's declared audio and which of it is missing, and to 60,600 at
+#: 60,003 for music.validate and music.to_midi (§PW186), a score and its MIDI.
+LIST_BUDGET = 60600
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

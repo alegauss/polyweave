@@ -18,7 +18,8 @@ SKILL_BUDGET = 3_400
 #: table row per task, and Block Q is a task no row covered.
 #: 3,200 at 3,162 with sound.declared (§PW185), Block P's first read, which joins the
 #: judging row beside sound.measure rather than opening a row of its own.
-REFERENCE_BUDGET = 3_200
+#: 3,300 at 3,239 with a Music row (§PW186): a score is a task no row covered.
+REFERENCE_BUDGET = 3_300
 
 
 def test_the_manifest_and_the_marketplace_name_the_plugin():
