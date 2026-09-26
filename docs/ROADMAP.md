@@ -59,7 +59,6 @@
 
 ## Block T — Adopting polyweave in a project
 
-- 📋 **PW230** (deps: —) **fitting a voxel model to its reference has no operation, so a project writes a script to run it** — The fit PW98 delivered is only a library function, so the step that sets a model's proportions is the one that needs a script. → §PW230
 - 📋 **PW231** (deps: —) **a misspelt key under a declaration's [voxels] builds without it and names nothing** — The unread-key check stops at the top level and the nodes, so acros, prts or mehs change the build and nothing says why. → §PW231
 - 📋 **PW232** (deps: —) **a fit to a Meshy mesh scores the gaps in its surface as empty, so the fitted model shrinks to match them** — A leaky mesh projects a silhouette full of holes, and on Spinhold's ship every size in the fit ended pinned at its minimum. → §PW232
 - 📋 **PW233** (deps: —) **a primitive has one size and no cone or frustum, so every disc and drum is a scaled, turned unit cylinder** — A cylinder is as tall as it is wide with its axis on z, and a cone is a hand-stepped stack of discs under a repeat. → §PW233

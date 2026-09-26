@@ -154,13 +154,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW214", "PW215", "PW216"],
   },
   {
-    id: "PW230",
-    block: "T",
-    symptom: "fitting a voxel model to its reference has no operation, so a project writes a script to run it",
-    why: "The fit PW98 delivered is only a library function, so the step that sets a model's proportions is the one that needs a script.",
-    deps: [],
-  },
-  {
     id: "PW231",
     block: "T",
     symptom: "a misspelt key under a declaration's [voxels] builds without it and names nothing",
@@ -207,6 +200,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "T",
     symptom: "a voxel detail painted onto a body needs two carves and a helper node, as no op repaints cells without adding any",
     why: "A painted band sticks out of the body it paints, so seams, ribs and frames are spelt as an intersection of carves nobody can read.",
+    deps: [],
+  },
+  {
+    id: "PW238",
+    block: "T",
+    symptom: "capture.run over MCP and the CLI takes no arguments for the script, so a capture that needs any falls back to Python",
+    why: "The library function takes args but the operation does not, so capturing a boss in play meant a one-off python -c, the project code polyweave replaces.",
     deps: [],
   },
 ];

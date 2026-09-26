@@ -592,6 +592,17 @@ its mesh whatever the call says, since the mesh is all it makes.
 Either value may be an expression over `[params]`, and `voxelize(document, cell=…)` or
 `across=…` overrides the table for one call. Neither or both is `geom.bad-voxels`.
 
+**A fit is an operation** (§PW230). `geometry.fit` fits a voxel declaration's `[search]`
+parameters to a drawing or a mesh under the project, on the `views` asked for (a drawing
+is the front view only), with the search's `budget` and `points`, and writes the best
+model's contact sheet to `sheet` where one is named. It answers the best values, the
+overlap per view and the model's reading. With `write`, the best values go into the
+declaration's `[params]`: each line keeps its comment and the file its own line endings,
+and a declaration that no longer reads afterwards is restored. So the next build is the
+fitted model with no hand edit and no script:
+
+    python -m polyweave geometry.fit --source art/ship.toml --reference assets/ship.glb --views '["side", "top"]' --write true
+
 **One cell for a project** (§PW229). A game whose actors break into their own cubes needs
 every actor on one cell, so the debris of a drone and of a boss are the same cubes. So
 `[voxels] cell` in `polyweave.toml` is the cell of a declaration stating neither `cell`

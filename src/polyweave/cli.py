@@ -362,6 +362,90 @@ def build_all(
     ]
 
 
+@operation("geometry.fit")
+def fit_one(
+    source: Annotated[str, Param("the voxel declaration, as a path under the project")],
+    reference: Annotated[
+        str, Param("a drawing or a mesh under the project to fit its proportions to")
+    ],
+    *,
+    views: Annotated[
+        list, Param("the views scored, of front, side and top; a drawing is front only")
+    ] = None,
+    budget: Annotated[int, Param("how many samples the search may build", lo=1)] = 400,
+    points: Annotated[int, Param("the grid points per parameter", lo=2)] = 7,
+    sheet: Annotated[str, Param("where the best model's contact sheet goes")] = None,
+    write: Annotated[
+        bool, Param("put the best values into the declaration's [params]")
+    ] = False,
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
+) -> dict:
+    """Fit a voxel declaration's [search] parameters to a drawing or a mesh (§PW230).
+
+    Answers the best values, the overlap per view and the model's reading; `write` puts
+    the best values into the declaration, so the next build is the fitted model.
+    """
+    from . import geometry as G
+    from .geometry import voxel_fit
+
+    here = Path(root).resolve()
+    where = Path(source)
+    where = where if where.is_absolute() else here / where
+    document = G.read(where, root=here)
+    found = voxel_fit.fit(
+        document, reference, views=tuple(views or ("front",)), root=here,
+        budget=budget, points=points, sheet=sheet,
+    )
+    answer = {k: v for k, v in found.items() if k != "model"}
+    answer.update(document=_kept(where, here), reference=reference, written=[])
+    if write:
+        answer["written"] = _write_params(where, found["best"], here)
+    return answer
+
+
+def _write_params(where: Path, best: dict, here: Path) -> list[str]:
+    """The best values put into the declaration's [params], the rest of it untouched.
+
+    Each fitted line keeps its comment and the file keeps its own line endings; the
+    declaration is read again afterwards, and restored if it no longer reads.
+    """
+    import re
+
+    from . import geometry as G
+
+    original = where.read_bytes()
+    lines = original.decode("utf-8-sig").splitlines(keepends=True)
+    start = next((n for n, line in enumerate(lines)
+                  if re.match(r"\s*\[params\]\s*(#.*)?$", line.rstrip("\r\n"))), None)
+    if start is None:
+        raise PolyweaveError(
+            "geom.bad-fit",
+            f"{where.name} keeps its parameters somewhere other than a [params] table",
+            "write them as a [params] table, one per line, and fit again",
+        )
+    end = next((n for n in range(start + 1, len(lines))
+                if re.match(r"\s*\[", lines[n])), len(lines))
+    written = []
+    for name, value in best.items():
+        pattern = re.compile(
+            rf"^(\s*{re.escape(name)}\s*=\s*)([^#\r\n]*?)(\s*(#.*)?)(\r?\n?)$"
+        )
+        for n in range(start + 1, end):
+            match = pattern.match(lines[n])
+            if match:
+                lead, _, tail, _, ending = match.groups()
+                lines[n] = f"{lead}{float(value):.6g}{tail}{ending}"
+                written.append(name)
+                break
+    where.write_bytes("".join(lines).encode("utf-8"))
+    try:
+        G.read(where, root=here)
+    except PolyweaveError:
+        where.write_bytes(original)
+        raise
+    return written
+
+
 def _printed(answer: dict) -> list[str]:
     lines = [f"{answer['status']:<8} {answer['document']}"]
     if answer["status"] == "refused":
