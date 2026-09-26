@@ -59,8 +59,9 @@
 
 ## Block T — Adopting polyweave in a project
 
-- 📋 **PW226** (deps: —) **a voxel build always writes a .glb too, which a Godot project imports and never uses** — A game drawing the .voxels.json pays an import and a commit decision for a mesh it never loads, with no way to ask for the cells alone. → §PW226
+- 🛠 **PW226** (deps: —) **a voxel build always writes a .glb too, which a Godot project imports and never uses** — A game drawing the .voxels.json pays an import and a commit decision for a mesh it never loads, with no way to ask for the cells alone. → §PW226
 - 📋 **PW227** (deps: —) **a build stamp records its outputs as absolute paths, so it cannot be committed or shared between checkouts** — It sits beside the declaration in the project's tree, and a machine path in it churns per checkout or has to be ignored by hand. → §PW227
+- 📋 **PW228** (deps: —) **an artefact built on Windows is written with CRLF, so its provenance fails once a checkout normalises line endings** — Its digest is taken over the CRLF bytes, and a project storing text as LF gets a different file back on every other checkout. → §PW228
 
 ## Done when — PW36
 
