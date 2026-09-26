@@ -64,6 +64,11 @@
 - 📋 **PW230** (deps: —) **fitting a voxel model to its reference has no operation, so a project writes a script to run it** — The fit PW98 delivered is only a library function, so the step that sets a model's proportions is the one that needs a script. → §PW230
 - 📋 **PW231** (deps: —) **a misspelt key under a declaration's [voxels] builds without it and names nothing** — The unread-key check stops at the top level and the nodes, so acros, prts or mehs change the build and nothing says why. → §PW231
 - 📋 **PW232** (deps: —) **a fit to a Meshy mesh scores the gaps in its surface as empty, so the fitted model shrinks to match them** — A leaky mesh projects a silhouette full of holes, and on Spinhold's ship every size in the fit ended pinned at its minimum. → §PW232
+- 📋 **PW233** (deps: —) **a primitive has one size and no cone or frustum, so every disc and drum is a scaled, turned unit cylinder** — A cylinder is as tall as it is wide with its axis on z, and a cone is a hand-stepped stack of discs under a repeat. → §PW233
+- 📋 **PW234** (deps: —) **a voxel model over budget on cells no one sees is hollowed by a hand-sized cutter, by trial** — The budget counts buried cells, and the cutter that fixes it breaks through a wall when too big, so each saucer or sphere costs rebuilds. → §PW234
+- 📋 **PW235** (deps: —) **the Godot addon reads a voxel model but cannot draw one, so each game writes its own MultiMesh drawer** — Spinhold's VoxelLook, its per-cell colour and glow, shared mesh, centring, wash and fade are what any Godot game drawing polyweave voxels needs. → §PW235
+- 📋 **PW236** (deps: —) **a voxel preview does not say which way its front view looks, so a face declared on +z is found by rebuilding** — Three of Spinhold's actors faced the wrong way until a preview showed a helmet's back under front, as nothing states that -z is a model's front. → §PW236
+- 📋 **PW237** (deps: —) **a voxel detail painted onto a body needs two carves and a helper node, as no op repaints cells without adding any** — A painted band sticks out of the body it paints, so seams, ribs and frames are spelt as an intersection of carves nobody can read. → §PW237
 
 ## Done when — PW36
 

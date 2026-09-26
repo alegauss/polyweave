@@ -705,3 +705,114 @@ so a reference that is mostly holes is visible as that.
 
 Done when a fit to a mesh with interior gaps scores the filled outline, and the Meshy
 ship fit no longer pins its sizes to their minima.
+
+### §PW233 Primitives with their own extents
+
+Found declaring Spinhold's actors (starship RK42). `primitive` takes one `size`, so a
+cylinder is as tall as it is wide, and there is no cone, frustum or torus. Every disc,
+drum, barrel and plinth was a unit cylinder under a `transform` that scaled it (width,
+width, height) and turned it a quarter about x to stand it up, since its axis is z. The
+mine layer's lower hull, a shallow cone, is seven one-cell discs under a `repeat` whose
+widths step by hand, and it only came out without broken joins by luck of the step.
+
+Let `primitive` take `size` as a triple as well as a number (x, y, z extents), an `axis`
+for the kinds that have one (cylinder, cone, frustum; default z, as now), and add the
+kinds `cone` (a `size` and an apex), `frustum` (`bottom` and `top` diameters over a
+height) and `torus` (`major`, `minor`). Each has an exact inside-test in the voxel
+evaluator, as the sphere and the cylinder do, and a mesh on the triangle path.
+
+Done when the turret's plinth is `primitive kind=cylinder size=[1.2, 0.15, 1.2] axis=y`
+with no transform, the mine layer's hull is one `frustum`, and both builds keep their
+look (cell counts within a few cells of the stacked versions).
+
+### §PW234 A shell for voxel models
+
+Found declaring Spinhold's actors (starship RK42). The `budget` check counts every cell
+of a model, but a solid's inside is never drawn: the game draws the skin, and a cell
+three deep is only there if the model breaks apart. The boss part's plated sphere (6319
+cells) and the mine layer's saucer (10514) failed the 6000 budget on buried cells.
+
+Getting under it meant hollowing each by hand: a carve against an inner sphere or
+ellipsoid, sized by trial. Too big a cutter broke through a wall and the build found
+threads there; too small left it over budget. Three rebuilds for the saucer alone, and
+the right size changes whenever the outside does.
+
+Two things, either of which ends the trial:
+
+- a `shell` op (`of`, `thickness` in cells): the input's cells within `thickness` of its
+  surface, keeping their materials. Exact on the grid, as a distance to the nearest
+  empty cell by repeated erosion, numpy alone.
+- `[voxels] hollow = <cells>` for the whole model, applied after the build and before
+  the checks, so a declaration never draws its inside at all.
+
+And let the budget finding say how many of the cells are buried, so a model over budget
+on its inside is told to hollow rather than to shrink.
+
+Done when the boss part and the mine layer build under budget with `shell` (or `hollow`)
+and no hand-sized cutter, with no thread or floating finding, and a budget finding names
+the buried share.
+
+### §PW235 A voxel drawer in the Godot addon
+
+Found adopting polyweave in Spinhold (starship RK40, RK42). The `polyweave_voxels` addon
+reads a model (`voxels.gd`, `voxel_model.gd`: palette, materials, centres, skin), but
+drawing it is left to each game. Spinhold wrote `VoxelLook` for that: a
+MultiMeshInstance3D that draws the skin cells as cubes, puts each cell's palette colour
+and its material's `glow` in the instance custom data, shares one MultiMesh per file so
+twenty actors are one buffer, and centres the model on its box. Then a shader reading
+the custom data, and an instance uniform to wash every cell toward one colour per node
+(an elite's gold, an armed mine's red, a dimmed ship) and a fade, since the MultiMesh is
+shared and a material override would reach every copy.
+
+None of that is Spinhold's own idea of a look: it is what any game drawing polyweave
+voxels in Godot needs, and every game would write it again with the same pitfalls (a
+grid anchored on a corner drawn off-centre; a per-node tint put in the shared mesh).
+
+Ship it in the addon: a `VoxelDraw` node (`source`, `centred`), the shared-mesh cache,
+`wash(color, amount)` and `fade(amount)`, and a default shader with the colour, glow,
+wash and fade inputs a game's own shader can replace. `godot.install` installs it with
+the rest.
+
+Done when Spinhold's `voxel_look.gd` is a small subclass or a use of the addon's node,
+and a fresh project draws a built model with no script of its own.
+
+### §PW236 Which way a voxel model faces
+
+Found declaring Spinhold's actors (starship RK42). The preview sheet a voxel build
+writes (`<name>.voxels.png`) labels its views front, side, top and iso but not which way
+each looks. Three actors got their face, visor and eye on +z, and only a rebuilt preview
+showing the back of the human's helmet under "front" told that the front view looks at
+-z, which is also Godot's forward. The geometry spec says an outline's depth goes away
+from the viewer, but nothing says which way a voxel model faces.
+
+State it in three places: in the geometry spec, as the convention a voxel model's front
+is -z (y up, x right), in step with Godot's; on the sheet, as an axis under each view's
+label ("front, from -z"); and in `describe`, as a warning where a node named `eye`,
+`face`, `visor`, `nose` or `front` sits mostly on the +z side, which is cheap and
+catches the mistake before a render.
+
+Done when the sheet carries the axis per view, the spec states the facing, and a
+declaration with a face on +z gets the warning from `geometry.describe`.
+
+### §PW237 A paint op for voxel details
+
+Found declaring Spinhold's actors (starship RK42). A painted detail on a body is the
+commonest thing a voxel declaration draws: a glowing seam round a mine's equator, ribs
+down a turret's dome, seams between a boss's armour plates, a dome's frame. Each wants
+the body's own cells repainted where a band or a plane crosses them, and no cell added.
+
+There is no op for it. A node with a material paints only where it adds cells, so a band
+written as a slab sticks out of the sphere. The only spelling is an intersection built
+from two carves, `carve(body, carve(body, band))`, with a helper node for the inner one:
+three nodes per detail, and the mine layer alone needed it twice. It reads as a trick
+and a reader has to work out what it means.
+
+Add `op = "paint"`: `on` names the body, `where` names the node (or a list of them)
+whose cells it repaints, `material` what they wear. The cells are exactly the body's;
+the material applies where `where` covers them: in the voxel evaluator, the body's
+`_Found` painted on the mask of `where`. On the triangle path, refuse it with a remedy
+until wanted.
+
+Done when the mine's band, the turret's ribs and the boss part's seams are each one
+`paint` node, the build is unchanged cell for cell, and `describe` reads it back as
+"body painted <material> where <node>".
