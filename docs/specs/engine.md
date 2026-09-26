@@ -215,6 +215,16 @@ a `--` before the script's, and nothing adds a second, which would reach the scr
 argument spelled `--`. The declared `resolution` stays the environment's, overridden
 through `environment` like any other setting, since the script is what applies it.
 
+**A capture can wait for its subject** (§PW242). Spawns vary between runs, so a moment in
+play asked for by frame count caught Spinhold's boss off screen, or its ship already dead.
+The script knows what the run cannot: it prints `visible: <group>` once a node of the group
+is in the camera's view (its own test, `is_position_in_frustum` over the group's nodes),
+and `capture.run` with `until_visible = "<group>"` takes the run again, up to `tries`
+(default 3), until that line comes ahead of the one naming the picture. A line after the
+picture does not count. The first try that saw the group is the picture kept; the answer
+and the capture's record say which try it was. No try seeing it comes back not ok with a
+reason naming the group, and `require` refuses it as `capture.not-visible`.
+
 **The environment is recorded beside the picture**, in the capture's provenance record
 alongside the route it was drawn by and the script that drew it, so a screenshot that
 differs later is compared against what it was taken under rather than against a memory.

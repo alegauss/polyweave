@@ -216,11 +216,31 @@ def run(
     # script's own has written it, and a second would reach the script as an argument.
     given = tuple(how.pop("args", ()))
     args = given + (() if "--" in given else ("--",)) + as_args(asked)
-    found = (take or offscreen.capture)(
-        script, expect=expect, root=root, args=args, **how
-    )
+    until = str(how.pop("until_visible", "") or "")
+    tries = max(1, int(how.pop("tries", 3)))
+    # Taken again until the script says its subject was on screen (§PW242): a moment in
+    # play spawns differently each run, and a fixed frame count cannot wait on that.
+    attempt = 0
+    while True:
+        attempt += 1
+        found = (take or offscreen.capture)(
+            script, expect=expect, root=root, args=args, **how
+        )
+        log = Path(found["log"]).read_text(encoding="utf-8", errors="replace")
+        if not until or not found["ok"] or saw(log, until, expect) or attempt >= tries:
+            break
+    if until:
+        found = {**found, "tries": attempt, "until_visible": until}
+        if found["ok"] and not saw(log, until, expect):
+            found = {
+                **found,
+                "ok": False,
+                "verdict": "not-visible",
+                "why": f"in {attempt} tr{'y' if attempt == 1 else 'ies'} the script "
+                f"never said {until} was on screen before the picture: no "
+                f"`visible: {until}` line ahead of the one naming it",
+            }
 
-    log = Path(found["log"]).read_text(encoding="utf-8", errors="replace")
     against = compare(asked, applied(log))
     answer = {
         **found,
@@ -245,6 +265,20 @@ def run(
         answer["records"] = [str(path) for path, _ in made]
         answer["reproduced"] = again([verdict for _, verdict in made])
     return answer
+
+
+def saw(log: str, group: str, expect: str | re.Pattern) -> bool:
+    """Whether the script said `group` was on screen before it named its picture.
+
+    The script decides what on screen means, a camera test over the group's nodes, and
+    prints `visible: <group>`; the run only reads the line, as it reads `environment:`.
+    """
+    named = re.compile(expect, re.MULTILINE) if isinstance(expect, str) else expect
+    picture = named.search(log or "")
+    before = (log or "")[: picture.start()] if picture else log or ""
+    return any(
+        line.strip() == f"visible: {group}" for line in before.splitlines()
+    )
 
 
 def again(verdicts: list[dict]) -> dict:
@@ -288,6 +322,7 @@ def _record(
             "script": found["script"],
             "frames": found.get("frames"),
             **({"regions": found["regions"]} if found.get("regions") else {}),
+            **({"tries": found["tries"]} if found.get("tries") else {}),
         },
         root=root,
     )
@@ -331,6 +366,14 @@ def require(script: str | Path, **how: Any) -> dict:
             f"taking each value from the run's own arguments rather than from a "
             f"constant; the log is at {found['log']}",
         )
+    if not found["ok"] and found.get("verdict") == "not-visible":
+        raise PolyweaveError(
+            "capture.not-visible",
+            f"{Path(found['script']).name} did not catch its subject: "
+            f"{found['why']}",
+            f"print `visible: {found['until_visible']}` once a node of that group is "
+            f"in the camera's view, or raise tries; the log is at {found['log']}",
+        )
     if not found["ok"]:
         raise PolyweaveError(
             engine.REFUSALS[found["verdict"]],
@@ -370,12 +413,23 @@ def taken(
             "after the engine's and after --, beside the environment's"
         ),
     ] = (),
+    until_visible: Annotated[
+        str,
+        Param(
+            "a group the script reports with a `visible: <group>` line; the run is "
+            "taken again until it does"
+        ),
+    ] = "",
+    tries: Annotated[
+        int, Param("how many runs until_visible may take", lo=1, hi=20)
+    ] = 3,
 ) -> dict:
     """Take a picture in a stated environment, and check it was the stated one.
 
     `args` are the script's (§PW238): a capture of a moment in play names it, and
     without them the only route was a one-off Python call to the library. They reach
     `OS.get_cmdline_user_args()` ahead of the environment's `name=value` pairs.
+    `until_visible` retries a run whose subject was off screen (§PW242).
     """
     how = {
         "expect": expect,
@@ -383,5 +437,7 @@ def taken(
         "environment": environment,
         "record": record,
         "args": ("--", *(str(one) for one in args or ())),
+        "until_visible": until_visible,
+        "tries": tries,
     }
     return require(script, **how) if strict else run(script, **how)

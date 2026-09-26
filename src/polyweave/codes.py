@@ -1470,6 +1470,15 @@ CODES: dict[str, Code] = {
             "commit the new picture, which re-anchors what the next run is compared to",
         ),
     ),
+    "capture.not-visible": Code(
+        means="no try saw the capture's subject on screen before the picture was taken",
+        when="a moment in play whose spawns vary between runs, or a script that never "
+        "prints the `visible: <group>` line it was asked to wait for",
+        doors=(
+            "print `visible: <group>` once a node of the group is in the camera's view",
+            "raise `tries`, or capture a frame the subject is always in",
+        ),
+    ),
     # -- units: the scale an asset is baked at --------------------------------
     "units.undeclared": Code(
         means="nothing says what scale this asset is baked at",

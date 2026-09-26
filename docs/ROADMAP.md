@@ -59,8 +59,6 @@
 
 ## Block T — Adopting polyweave in a project
 
-- 📋 **PW242** (deps: —) **a capture of a moment in play misses its subject when spawns vary between runs** — A fixed frame count is all a capture waits on, so Spinhold's boss was off screen or its ship dead by the frame asked for, twice. → §PW242
-
 ## Done when — PW36
 
 - **Every piece of Cottony's pipeline runs on the plugin, with no fork** The

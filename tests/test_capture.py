@@ -223,6 +223,67 @@ def test_the_operation_passes_the_scripts_own_arguments(tmp_path, monkeypatch):
     assert found["environment"]["holds"] is True
 
 
+def taking_each(*outputs):
+    """A capture whose log is the next of `outputs` each time it runs."""
+    left = list(outputs)
+    calls = []
+
+    def take(script, **how):
+        calls.append(1)
+        return taking(left.pop(0) if len(left) > 1 else left[0])(script, **how)
+
+    take.calls = calls
+    return take
+
+
+MISSED = "environment: locale=pt_BR\ncaptured: res://x.png 24 x 24\n"
+CAUGHT = "environment: locale=pt_BR\nvisible: boss\ncaptured: res://x.png 24 x 24\n"
+
+
+def test_a_run_that_missed_its_subject_is_taken_again(tmp_path):
+    """§PW242: spawns vary, so the boss was off screen by the frame asked for."""
+    script = project(tmp_path, '[capture]\ndeclared = ["locale"]\nlocale = "pt_BR"\n')
+    take = taking_each(MISSED, CAUGHT)
+    found = capture.run(
+        script, expect=SHOT, root=tmp_path, take=take, until_visible="boss",
+        record=False,
+    )
+    assert found["ok"] is True
+    assert found["tries"] == 2
+    assert len(take.calls) == 2
+
+
+def test_a_subject_never_seen_comes_back_not_ok_naming_it(tmp_path):
+    script = project(tmp_path, '[capture]\ndeclared = ["locale"]\nlocale = "pt_BR"\n')
+    take = taking_each(MISSED)
+    found = capture.run(
+        script, expect=SHOT, root=tmp_path, take=take, until_visible="boss", tries=2,
+        record=False,
+    )
+    assert found["ok"] is False
+    assert found["tries"] == 2
+    assert "visible: boss" in found["why"]
+    with pytest.raises(PolyweaveError) as refused:
+        capture.require(
+            script, expect=SHOT, root=tmp_path, take=taking_each(MISSED),
+            until_visible="boss", record=False,
+        )
+    assert refused.value.code == "capture.not-visible"
+
+
+def test_a_visible_line_after_the_picture_does_not_count():
+    late = "captured: res://x.png 24 x 24\nvisible: boss\n"
+    assert not capture.saw(late, "boss", SHOT)
+    assert capture.saw(CAUGHT, "boss", SHOT)
+
+
+def test_without_until_visible_one_run_is_all(tmp_path):
+    script = project(tmp_path, '[capture]\ndeclared = ["locale"]\nlocale = "pt_BR"\n')
+    take = taking_each(MISSED)
+    capture.run(script, expect=SHOT, root=tmp_path, take=take, record=False)
+    assert len(take.calls) == 1
+
+
 def test_args_already_split_by_the_caller_get_no_second_separator(tmp_path):
     script = project(tmp_path, '[capture]\ndeclared = ["locale"]\nlocale = "pt_BR"\n')
     found = capture.run(
