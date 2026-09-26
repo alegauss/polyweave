@@ -66,6 +66,7 @@
 - 📋 **PW237** (deps: —) **a voxel detail painted onto a body needs two carves and a helper node, as no op repaints cells without adding any** — A painted band sticks out of the body it paints, so seams, ribs and frames are spelt as an intersection of carves nobody can read. → §PW237
 - 📋 **PW238** (deps: —) **capture.run over MCP and the CLI takes no arguments for the script, so a capture that needs any falls back to Python** — The library function takes args but the operation does not, so capturing a boss in play meant a one-off python -c, the project code polyweave replaces. → §PW238
 - 📋 **PW240** (deps: —) **no operation compares two voxel models cell by cell, so proving a declaration rewrite changed nothing takes a script** — Rewriting a declaration, a variant or a fit all want to know which cells and materials moved, and the one-off diff Spinhold wrote is what polyweave should answer. → §PW240
+- 📋 **PW241** (deps: —) **a declaration cannot say its asymmetry is meant, so a one-armed pose fails the symmetry check the project applies to all** — near_symmetry is one project-wide number and a declaration's [voxels] refuses it, so a waving variant had to be dropped for a symmetric fake. → §PW241
 
 ## Done when — PW36
 
