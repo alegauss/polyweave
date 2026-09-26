@@ -587,6 +587,14 @@ class Config:
             found[family] = sound
         return found
 
+    def cue_files(self) -> dict[str, Path]:
+        """Every declared cue by name, at the file it lands on, across all families."""
+        return {
+            cue: Path(sound["folder"]) / f"{cue}.{sound['format']}"
+            for sound in self.sounds().values()
+            for cue in sound["cues"]
+        }
+
     def sound(self, family: str | None = None) -> tuple[str, dict]:
         """One family's declared audio, resolved as a style is: never guessed."""
         declared = self.sounds()

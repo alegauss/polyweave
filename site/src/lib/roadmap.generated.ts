@@ -70,13 +70,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW57"],
   },
   {
-    id: "PW190",
-    block: "P",
-    symptom: "Realistic sound effects have no bounded way to be bought from a service",
-    why: "A synthesiser does footsteps and glass badly, and a paid fetch without a ceiling is the surprise Block D exists to prevent.",
-    deps: [],
-  },
-  {
     id: "PW191",
     block: "P",
     symptom: "Rendered audio does not record which instruments made it or what their licences owe",
@@ -88,7 +81,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "P",
     symptom: "Cottony still makes its audio outside polyweave",
     why: "The block is proven only when its first consumer's music and effects are declared, made and accepted here.",
-    deps: ["PW190", "PW191"],
+    deps: ["PW191"],
   },
   {
     id: "PW221",
@@ -109,6 +102,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "P",
     symptom: "A chiptune score cannot play its percussion on an sfxr drum kit",
     why: "music.render plays Surge and General MIDI only, so the 8-bit kit the passed spike loop used has no instrument to name.",
+    deps: [],
+  },
+  {
+    id: "PW224",
+    block: "P",
+    symptom: "A sound ffmpeg cannot decode escapes sound.read as a raw process error, not a refusal",
+    why: "A corrupt OGG or MP3 makes every sound measure and bound fail with a traceback an agent cannot branch on, where a code would name the file.",
     deps: [],
   },
   {

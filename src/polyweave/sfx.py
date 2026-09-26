@@ -156,15 +156,6 @@ def _write(where: Path, audio: np.ndarray) -> None:
         held.writeframes(pcm.tobytes())
 
 
-def _declared(root: str) -> dict[str, Path]:
-    """Every cue a project declares, by name, at the file it lands on."""
-    found = {}
-    for sound in load(root).sounds().values():
-        for cue in sound["cues"]:
-            found[cue] = Path(sound["folder"]) / f"{cue}.{sound['format']}"
-    return found
-
-
 @operation("sound.synth")
 def synth(
     source: Annotated[str, Param("the *.sfx.toml, relative to the project")],
@@ -203,7 +194,7 @@ def synth(
         )
     chosen = {effect: tables[effect]} if effect else tables
     checked = {name: _checked(name, table) for name, table in chosen.items()}
-    declared = _declared(root)
+    declared = config.cue_files()
     made = {}
     for name, table in checked.items():
         audio, seed, tries = _made(name, table)

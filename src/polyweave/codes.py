@@ -755,6 +755,11 @@ CODES: dict[str, Code] = {
         when="one cue name in two families that share a folder and a format",
         doors=("rename one cue", "give one family its own folder"),
     ),
+    "sound.unknown-cue": Code(
+        means="no [sound] family declares a cue of that name",
+        when="a sound bought for a cue that was never added to a family's cues",
+        doors=("add the cue to a family", "pass out, a path, instead"),
+    ),
     "sound.no-source": Code(
         means="the effects file is missing, not TOML, or holds no [effect.<name>]",
         when="a path to no file, or a *.sfx.toml with a stray table",

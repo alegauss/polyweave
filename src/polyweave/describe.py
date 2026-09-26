@@ -105,6 +105,7 @@ MODULES: tuple[str, ...] = (
     "polyweave.music",
     "polyweave.music_render",
     "polyweave.sfx",
+    "polyweave.sound_buy",
     "polyweave.cli",
     "polyweave.geometry.review",
     "polyweave.purchase",

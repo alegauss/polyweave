@@ -53,3 +53,37 @@ shorter than `sound.measure`'s seam window.
 
 The port is held to the spike's ten effects, which a person listened to and passed: the
 same generators and seeds give the lengths the spike measured, to the millisecond.
+
+## Bought effects
+
+Footsteps, glass or rain are not what a synthesiser does well. `sound.buy` (a `fetch` job)
+buys one from ElevenLabs' sound generation, through the doors `picture.buy` and
+`mesh.buy` go through, in this order and with nothing sent until all of them pass:
+
+1. the effect lands at a `cue` a `[sound]` family declares (`sound.unknown-cue` for one it
+   does not), or at an `out` path with a sound's suffix;
+2. the price is the service's `prices` row for the `model`
+   (`eleven_text_to_sound_v2` by default), never the caller's figure, and a model with
+   no row is refused (`fetch.unpriced`);
+3. a cue in a format other than MP3 needs ffmpeg to transcode what the service answers,
+   and is refused before spending where there is none (`sound.no-encoder`);
+4. `purchase.allow` is asked against the service's own ceiling. **No budget means no
+   spend**, and the ceiling is a person's, written into `[budget.<name>]`.
+
+```toml
+[service.elevenlabs]
+base    = "https://api.elevenlabs.io"
+key_env = "ELEVENLABS_API_KEY"
+prices  = { "eleven_text_to_sound_v2" = 0.05 }   # per sound, in the ceiling's unit
+
+[budget.elevenlabs]
+amount  = 5.0
+unit    = "USD"
+expires = "2026-12-31"
+```
+
+The request is the words, the model, `influence` (0 to 1, how closely it follows them),
+`seconds` (0.5 to 30, or the service's choice) and `loop` for a sound that repeats, such as
+rain. The answer is transcoded to the cue's format where it is not MP3, then captured
+before anything else: written, hashed and ledgered as a `sound`, with the service's
+request id as its task. The answer is the ledger entry, the `file` and what it measures.

@@ -299,15 +299,6 @@ since a reference the service ignores is dropped without an error.
 
 ## Block P — Music and sound a game can ship
 
-### §PW190 Realistic effects bought under a budget
-
-Footsteps, glass or rain are not what a synthesiser does well. `sound.buy` fetches from
-a paid effects service such as ElevenLabs, following the pattern `mesh.buy` and
-`picture.buy` set: config names the service and its prices, `purchase.allow` checks the
-ceiling, and `purchase.capture` writes, hashes and ledgers the file.
-
-No budget means no spend, and the decision to spend stays with a person.
-
 ### §PW191 Where a rendered sound's instruments came from
 
 A render uses sample libraries and presets whose licences differ: CC0, CC-BY needing
@@ -385,6 +376,22 @@ any other.
 
 Test it with the spike's four hand-set hits and its chiptune drum pattern: every onset
 lands on its tick, and a velocity of 64 is half the level of 127.
+
+### §PW224 An undecodable sound refused with a code
+
+`sound.read` decodes anything but a WAV by running ffmpeg with `check=True`, so a file
+ffmpeg cannot decode (a truncated OGG, an MP3 a service answered with an error page, a
+text file given the wrong suffix) raises `subprocess.CalledProcessError` out of
+`sound.measure`, `sound.declared` and every `*.accept.toml` sound bound. An agent gets a
+traceback with an exit status instead of a code it can branch on, and `sound.declared`
+fails the whole read on one bad cue rather than saying which. `sound.buy` guards against
+it for now, which is a second place holding what `read` should.
+
+Run ffmpeg without `check`, and on a non-zero exit or empty output raise
+`spec.unreadable-sound` naming the file, with ffmpeg's first stderr line as `detail`.
+Then drop the guard in `sound_buy._measured`. Test with a `.ogg` holding plain text:
+`measure` refuses with the code, and `sound.declared` reports that cue as unmeasured
+while the others still measure.
 
 ## Block Q — Words held to the world
 
