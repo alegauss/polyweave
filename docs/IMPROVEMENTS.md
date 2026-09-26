@@ -609,24 +609,6 @@ reading the source, and it is filed as its own line.
 
 ## Block T — Adopting polyweave in a project
 
-### §PW231 Voxel settings refused when nothing reads them
-
-PW146 made a declaration refuse a key nothing reads, at the top level, on every node and
-in every repeat range, because a misspelt field built the shape without it and said
-nothing. `[voxels]` was left out: `_refuse_unread` in `geometry/__init__.py` never looks
-inside it. So `acros = 16` is a declaration with neither `cell` nor `across` and fails
-for the wrong reason, `prts = 2` checks against one part, and since PW226 `mehs = false`
-builds the `.glb` anyway, all without naming the misspelling.
-
-The keys the code reads are `cell`, `across`, `parts`, `extent`, `fracture` and `mesh`
-(`voxels.py`, `fracture.py`, `_wants_mesh` in `cli.py`). Declare them once as
-`VOXELS_FIELDS` beside `DOCUMENT_FIELDS` and refuse anything else under `[voxels]` with
-`geom.unknown-field`, naming the nearest and pointing at `voxels.<key>`, the same way a
-node's stray field is refused. `fracture` keeps its own table and is not opened here.
-
-Test: `acros = 16` is refused naming `across`, `mehs = false` naming `mesh`, and every
-declaration the suite already builds still builds.
-
 ### §PW232 Filled outlines for a fit
 
 Found adopting polyweave in Spinhold (starship RK40). Fitting a voxel declaration to the

@@ -591,6 +591,10 @@ its mesh whatever the call says, since the mesh is all it makes.
 
 Either value may be an expression over `[params]`, and `voxelize(document, cell=…)` or
 `across=…` overrides the table for one call. Neither or both is `geom.bad-voxels`.
+`[voxels]` takes `cell`, `across`, `parts`, `extent`, `fracture` and `mesh`, and any other
+key is refused as `geom.unknown-field` at `voxels.<key>` with the nearest named, as a
+node's stray field is (§PW231): `acros = 16` used to fail for having no cell, and
+`mehs = false` to write the mesh anyway.
 
 **A fit is an operation** (§PW230). `geometry.fit` fits a voxel declaration's `[search]`
 parameters to a drawing or a mesh under the project, on the `views` asked for (a drawing

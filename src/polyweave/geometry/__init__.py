@@ -170,6 +170,10 @@ DOCUMENT_FIELDS = (
 #: What one `repeat` range may say.
 REPEAT_FIELDS = ("var", "from", "to", "step")
 
+#: What a declaration's `[voxels]` may say (§PW231). `fracture` is its own table and is
+#: read where it is used.
+VOXELS_FIELDS = ("cell", "across", "parts", "extent", "fracture", "mesh")
+
 
 def _refuse_unread(stated: dict, nodes: list[dict], named: str) -> None:
     """Refuse a key nothing reads, where it is written, naming the nearest real one.
@@ -192,6 +196,12 @@ def _refuse_unread(stated: dict, nodes: list[dict], named: str) -> None:
     for key in stated:
         if key not in DOCUMENT_FIELDS:
             refuse(key, DOCUMENT_FIELDS, key, "a declaration")
+    # A misspelt voxel setting changed the build and named nothing: `acros` failed for
+    # the wrong reason and `mehs = false` wrote the mesh anyway (§PW231).
+    voxels = stated.get("voxels")
+    for key in voxels if isinstance(voxels, dict) else ():
+        if key not in VOXELS_FIELDS:
+            refuse(key, VOXELS_FIELDS, f"voxels.{key}", "[voxels]")
     for node in nodes:
         op = node["op"]
         if op not in FIELDS:

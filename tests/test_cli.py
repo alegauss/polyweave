@@ -244,6 +244,20 @@ def test_a_declaration_with_neither_and_no_project_cell_is_still_refused(tmp_pat
     assert found["refusal"]["code"] == "geom.bad-voxels"
 
 
+@pytest.mark.parametrize(
+    ("typo", "meant"), [("acros = 16", "across"), ("mehs = false", "mesh")]
+)
+def test_a_misspelt_voxel_setting_is_refused_naming_the_real_one(tmp_path, typo, meant):
+    """§PW231: the unread-key check stopped at the top level and the nodes."""
+    body = VOXEL.replace("cell = 1\n", f"cell = 1\n{typo}\n")
+    found = cli.build_one(declared(tmp_path, body), root=str(tmp_path))
+    assert found["status"] == "refused"
+    refusal = found["refusal"]
+    assert refusal["code"] == "geom.unknown-field"
+    assert refusal["at"] == f"voxels.{typo.split(' ')[0]}"
+    assert meant in refusal["allowed"]
+
+
 def test_all_reports_a_declaration_with_a_typo_and_fails(tmp_path, capsys):
     """§PW123: a declaration `read` refused used to drop out silently, exiting 0."""
     (tmp_path / "art").mkdir()
