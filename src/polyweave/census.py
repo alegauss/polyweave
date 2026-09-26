@@ -96,6 +96,8 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.words:approved": ("internal", "a speaker's canon, in world.read"),
     "polyweave.words:judged": ("internal", "verdict.judge is the one caller"),
     "polyweave.project:proposed": ("internal", "the tables, inside project.init"),
+    "polyweave.project:wire": ("internal", "project.init's agent half"),
+    "polyweave.project:agent_section": ("internal", "the AGENTS.md section, drawn"),
     # -- internal: helpers an operation calls, never a caller's first call ----------
     "polyweave.cache": ("internal", "the render cache, reached through bake's cached"),
     "polyweave.census": ("internal", "this census's own walk"),

@@ -251,3 +251,4 @@
 ## Block T — Adopting polyweave in a project
 
 - ✅ **PW218** **A new project writes polyweave.toml by hand, key by key, against a spec it has to read first** — python -m polyweave init proposes polyweave.toml from the tree, writes it only when asked, merges without overwriting, and never proposes a budget (design recorded in `docs/specs/project-config.md`).
+- ✅ **PW219** **A configured project still hides polyweave from its agent: no server declared, no skill, no word in AGENTS.md** — init --agent declares the server unless the plugin is on, and writes a stamped AGENTS.md section from the config that CLAUDE.md imports (design recorded in `docs/specs/project-config.md`).

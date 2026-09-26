@@ -321,6 +321,23 @@ fills it: a ceiling set by the agent that spends against it is no ceiling.
 
     python -m polyweave init --write
 
+**`--agent` wires the project's agent to it**, each step idempotent:
+
+- the server goes into `.mcp.json` (`python -m polyweave serve`) and, where the project
+  lists them, into `enabledMcpjsonServers` in `.claude/settings.json`, every other server
+  and key kept. Where `enabledPlugins` already enables polyweave, nothing is declared,
+  because two servers would give every tool twice;
+- `AGENTS.md` gets the project's section between `<!-- polyweave:begin -->` and
+  `<!-- polyweave:end -->`, stamped with the version that wrote it: where specs, renders,
+  meshes, ledgers, canons, the string table and the world live, which budget a person
+  sets, and the rules (brief first, a look is a person's, a refusal is the answer). Text
+  outside the markers is never touched, and a `CLAUDE.md` that does not import
+  `AGENTS.md` gets `@AGENTS.md`;
+- every operation the section names is checked against the registry as it is written, so
+  a renamed operation is a refusal (`op.unknown`) rather than stale advice.
+
+    python -m polyweave init --write --agent
+
 ## Adding a key
 
 A new key here is the cheap answer to "Cottony needs X and no other project would". The

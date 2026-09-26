@@ -60,11 +60,13 @@ def init(
     root: Annotated[str, Param("the project whose tree is read")] = ".",
     write: Annotated[bool, Param("write it, not only propose it")] = False,
     merge: Annotated[bool, Param("add only the tables a file lacks")] = False,
+    agent: Annotated[bool, Param("wire the agent: server, AGENTS.md")] = False,
 ) -> dict:
     """Propose polyweave.toml from what the project's tree already holds.
 
     Nothing is written unless `write` is true, a file that exists is refused unless
     `merge` is, and a `[budget]` is never proposed: it is named as missing instead.
+    With `agent`, the server is declared and AGENTS.md gets a marked section (§PW219).
     """
     here = Path(root).expanduser().resolve()
     tables = proposed(here)
@@ -103,7 +105,7 @@ def init(
         write_atomic(target, combined)
         wrote = True
     missing = [] if "budget" in held else [dict(MISSING_BUDGET)]
-    return {
+    answer = {
         "file": FILENAME,
         "proposed": text,
         "tables": sorted(tables),
@@ -112,6 +114,11 @@ def init(
         "missing": missing,
         "says": "written" if wrote else "proposed only; pass write to write it",
     }
+    if agent:
+        from .config import load
+
+        answer["agent"] = wire(here, load(here))
+    return answer
 
 
 def proposed(here: Path) -> dict[str, dict]:
@@ -209,3 +216,178 @@ def _value(value) -> str:
         return str(value)
     escaped = str(value).replace("\\", "\\\\").replace('"', '\\"')
     return f'"{escaped}"'
+
+
+# -- the project's agent, wired to polyweave (§PW219) --------------------------------
+
+#: What an agent section is written between. Text outside them is never touched.
+BEGIN = "<!-- polyweave:begin -->"
+END = "<!-- polyweave:end -->"
+
+#: The line inside the section that says which version wrote it, for `init --check`.
+STAMP = "<!-- written by polyweave {version} (init --agent); rewritten by it -->"
+
+#: How the server is started, as `.mcp.json` declares it.
+SERVER = {"command": "python", "args": ["-m", "polyweave", "serve"]}
+
+
+def wire(here: Path, config) -> dict:
+    """Declare the server, and write the project's section of AGENTS.md.
+
+    Each step is idempotent: a second run changes nothing, and says so.
+    """
+    import json
+
+    changed: list[str] = []
+    settings_path = here / ".claude" / "settings.json"
+    settings = json.loads(read_text_retrying(settings_path) or "{}")
+    enabled = {
+        name
+        for name, on in (settings.get("enabledPlugins") or {}).items()
+        if on and name.split("@")[0] == "polyweave"
+    }
+    if enabled:
+        server = (
+            f"not declared: the plugin {sorted(enabled)[0]} is enabled for this "
+            "project, and a second server would give every tool twice"
+        )
+    else:
+        mcp_path = here / ".mcp.json"
+        mcp = json.loads(read_text_retrying(mcp_path) or "{}")
+        servers = mcp.setdefault("mcpServers", {})
+        server = "already declared in .mcp.json"
+        if "polyweave" not in servers:
+            servers["polyweave"] = dict(SERVER)
+            write_atomic(mcp_path, json.dumps(mcp, indent=2) + "\n")
+            changed.append(".mcp.json")
+            server = "declared in .mcp.json"
+        listed = settings.get("enabledMcpjsonServers")
+        if isinstance(listed, list) and "polyweave" not in listed:
+            settings["enabledMcpjsonServers"] = [*listed, "polyweave"]
+            settings_path.parent.mkdir(parents=True, exist_ok=True)
+            write_atomic(settings_path, json.dumps(settings, indent=2) + "\n")
+            changed.append(".claude/settings.json")
+    agents = here / "AGENTS.md"
+    before = read_text_retrying(agents)
+    section = agent_section(config)
+    after = _placed(before, section, config)
+    if after != before:
+        write_atomic(agents, after)
+        changed.append("AGENTS.md")
+    claude = here / "CLAUDE.md"
+    said = read_text_retrying(claude)
+    if said is None or "@AGENTS.md" not in said:
+        write_atomic(claude, (said.rstrip() + "\n\n" if said else "") + "@AGENTS.md\n")
+        changed.append("CLAUDE.md")
+    return {"server": server, "changed": changed}
+
+
+def _placed(before: str | None, section: str, config) -> str:
+    """AGENTS.md with the section between its markers, and nothing else changed."""
+    if before is None:
+        return f"# {config.get('project.name')}\n\n{section}"
+    start, end = before.find(BEGIN), before.find(END)
+    if start != -1 and end > start:
+        return before[:start] + section.rstrip("\n") + before[end + len(END) :]
+    return before.rstrip("\n") + "\n\n" + section
+
+
+def _op(name: str) -> str:
+    """An operation's name as the registry has it, or a refusal to write it."""
+    from .describe import operations
+
+    if name not in operations():
+        raise PolyweaveError(
+            "op.unknown",
+            f"the agent section names {name!r}, which the registry lacks",
+            "rename it in polyweave/project.py to the operation that replaced it",
+            given=name,
+            allowed=operations(),
+        )
+    return f"`{name}`"
+
+
+def agent_section(config) -> str:
+    """The project's polyweave section, drawn from its config and the registry."""
+    from . import __version__
+
+    here = config.root
+
+    def at(address: str) -> str:
+        return f"`{_relative(config.path(address), here)}`"
+
+    rows = [
+        ("Acceptance specs", at("paths.specs")),
+        ("The looks a person is shown", at("paths.renders")),
+        ("Models the game loads", at("paths.meshes")),
+        ("Prepared references", at("paths.references")),
+        ("The purchase ledger", at("paths.purchases")),
+        ("What each asset cost, each way", at("paths.loop")),
+        ("Work area (caches, sittings' answers)", at("paths.work")),
+    ]
+    if config.states("style"):
+        for family, style in sorted(config.styles().items()):
+            if style.get("canon"):
+                rows.append(
+                    (
+                        f"The {family} canon, grown only by a verdict",
+                        f"`{_relative(Path(style['canon']), here)}`",
+                    )
+                )
+    if config.get("words.table"):
+        rows.append(("The text a player reads", at("words.table")))
+    if config.get("words.canon"):
+        rows.append(("A person's verdicts on lines", at("words.canon")))
+    worlds = _walk(here, "*.world.toml")
+    if worlds:
+        rows.append(("The world's names and rules", f"`{_relative(worlds[0], here)}`"))
+    services = sorted(config.services()) if config.states("service") else []
+    budgets = (
+        ", ".join(f"`[budget.{n}]`" for n in services)
+        if len(services) > 1
+        else "`[budget]`"
+    )
+    lines = [
+        BEGIN,
+        STAMP.format(version=__version__),
+        "",
+        "## The game's parts go through polyweave",
+        "",
+        "polyweave makes and checks this game's parts. Declare what each must "
+        "satisfy, and",
+        "a search or a person's verdict settles it. Do not tune a look by eye.",
+        "",
+        "`python -m polyweave describe` lists every operation with its parameters, "
+        "and it",
+        "is the authority; `python -m polyweave explain <code>` says what a refusal "
+        "means.",
+        "",
+        "### Where this project keeps things",
+        "",
+        "`polyweave.toml` binds all of it. Read it rather than guessing a path.",
+        "",
+        "| What | Where |",
+        "|---|---|",
+        *[f"| {what} | {where} |" for what, where in rows],
+        "",
+        "### Rules that save a call",
+        "",
+        f"- **Start with {_op('asset.brief')}.** One read gives the declaration, its "
+        "bounds and where each came from, and the last verdict.",
+        f"- **A look is a person's to accept.** Show it with {_op('verdict.sitting')} "
+        f"and `python -m polyweave review`, and carry their words with "
+        f"{_op('verdict.judge')}. Never loosen a bound a person set.",
+        f"- **Nothing spends money on your judgement.** {_op('picture.buy')} and "
+        f"{_op('mesh.buy')} draw on {budgets} in `polyweave.toml`, which a person "
+        f"sets; check {_op('purchase.remaining')} first and never raise one yourself.",
+        "- **A refusal is the answer.** It carries `code` and `remedy`, and where a "
+        "name was wrong, `allowed` and `did_you_mean`.",
+        f"- **Keep provenance.** Every produced file has a `.prov.json` beside it; "
+        f"{_op('provenance.verify')} says what drifted.",
+    ]
+    if worlds:
+        lines.append(
+            f"- **The world is declared.** {_op('world.read')} gives an entity and its "
+            f"approved lines; {_op('words.check')} holds the text to it."
+        )
+    return "\n".join([*lines, END]) + "\n"

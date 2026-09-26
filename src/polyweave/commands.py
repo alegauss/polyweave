@@ -138,6 +138,7 @@ def add_operations(commands: Any) -> None:
     init.add_argument("--root", default=".")
     init.add_argument("--write", action="store_true", help="write it, not only propose")
     init.add_argument("--merge", action="store_true", help="add only missing tables")
+    init.add_argument("--agent", action="store_true", help="wire the agent: AGENTS.md")
     init.add_argument("--json", action="store_true")
     commands.add_parser("serve", help="serve every operation as an MCP tool, on stdio")
     notice = commands.add_parser("notice", help="the one line a session starts with")
@@ -163,7 +164,9 @@ def answer_for(stated: argparse.Namespace) -> Any:
     if stated.command == "init":
         from .project import init
 
-        return init(stated.root, write=stated.write, merge=stated.merge)
+        return init(
+            stated.root, write=stated.write, merge=stated.merge, agent=stated.agent
+        )
 
     registered = D._REGISTRY[stated.command]
     declared = {p["name"]: p for p in registered.parameters}

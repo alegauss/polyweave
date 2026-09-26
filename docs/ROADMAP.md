@@ -68,8 +68,7 @@
 
 ## Block T — Adopting polyweave in a project
 
-- 📋 **PW219** (deps: PW218 ✅) **A configured project still hides polyweave from its agent: no server declared, no skill, no word in AGENTS.md** — `init --agent` declares the MCP server and writes a marked AGENTS.md section from the project's paths, so the next session calls polyweave directly. → §PW219
-- 📋 **PW220** (deps: PW219) **Nothing says an adopted project has drifted: an engine gone, a path missing, a stale agent section** — `init --check` reports every gap between the tree and a working adoption, each with its remedy, and writes nothing, so a session starts from one read. → §PW220
+- 📋 **PW220** (deps: PW219 ✅) **Nothing says an adopted project has drifted: an engine gone, a path missing, a stale agent section** — `init --check` reports every gap between the tree and a working adoption, each with its remedy, and writes nothing, so a session starts from one read. → §PW220
 
 ## Done when — PW36
 

@@ -41,7 +41,8 @@ from polyweave.errors import PolyweaveError
 #: 63,323 with world.read and world.validate (§PW196), the first of Block Q.
 #: 64,142 with words.check and words.unlisted (§PW197).
 #: 65,349 with words.sheet and entity= on picture.buy and mesh.buy (§PW198, §PW199).
-DESCRIBE = 65_900
+#: 65,992 with project.init and its agent flag (§PW218, §PW219).
+DESCRIBE = 66_500
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -60,7 +61,8 @@ DESCRIBE = 65_900
 #: 71,792 with world.read, world.validate and the world area's codes (§PW196).
 #: 72,851 with words.check, words.unlisted and the words area's codes (§PW197).
 #: 74,101 with words.sheet, entity= and their two codes (§PW198, §PW199).
-CAPABILITIES = 74_700
+#: 74,761 with project.init, its agent flag and config.exists (§PW218, §PW219).
+CAPABILITIES = 75_300
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

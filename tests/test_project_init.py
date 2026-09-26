@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
+import json
 import tomllib
 
 import pytest
 
+from polyweave import __version__, project
 from polyweave import config as C
-from polyweave import project
 from polyweave.cli import command_line
 from polyweave.commands import answer_for
 from polyweave.errors import PolyweaveError
@@ -101,3 +102,81 @@ def test_init_is_a_verb_on_the_command_line(tree):
     stated = command_line().parse_args(["init", "--root", str(tree), "--write"])
     assert answer_for(stated)["wrote"] is True
     assert (tree / C.FILENAME).is_file()
+
+
+# -- the project's agent, wired to polyweave (§PW219) --------------------------------
+
+
+def test_agent_declares_the_server_and_writes_a_marked_section(tree):
+    (tree / ".mcp.json").write_text(
+        json.dumps({"mcpServers": {"roadkeep": {"command": "rk"}}}), "utf-8"
+    )
+    (tree / ".claude").mkdir()
+    (tree / ".claude" / "settings.json").write_text(
+        json.dumps({"enabledMcpjsonServers": ["roadkeep"], "model": "x"}), "utf-8"
+    )
+    found = project.init(str(tree), write=True, agent=True)["agent"]
+    assert found["changed"] == [
+        ".mcp.json",
+        ".claude/settings.json",
+        "AGENTS.md",
+        "CLAUDE.md",
+    ]
+    mcp = json.loads((tree / ".mcp.json").read_text("utf-8"))
+    assert mcp["mcpServers"]["roadkeep"] == {"command": "rk"}
+    assert mcp["mcpServers"]["polyweave"]["args"] == ["-m", "polyweave", "serve"]
+    settings = json.loads((tree / ".claude" / "settings.json").read_text("utf-8"))
+    assert settings == {
+        "enabledMcpjsonServers": ["roadkeep", "polyweave"],
+        "model": "x",
+    }
+    agents = (tree / "AGENTS.md").read_text("utf-8")
+    assert agents.startswith("# Starship\n")
+    assert project.BEGIN in agents and project.END in agents
+    assert f"polyweave {__version__}" in agents
+    assert "`docs/art`" in agents and "`docs/design/canon`" in agents
+    assert (tree / "CLAUDE.md").read_text("utf-8") == "@AGENTS.md\n"
+
+
+def test_a_second_run_changes_nothing(tree):
+    project.init(str(tree), write=True, agent=True)
+    again = project.init(str(tree), merge=True, write=True, agent=True)["agent"]
+    assert again["changed"] == []
+    assert again["server"] == "already declared in .mcp.json"
+
+
+def test_only_the_text_between_the_markers_is_replaced(tree):
+    (tree / "AGENTS.md").write_text(
+        f"# Mine\n\nKeep this.\n\n{project.BEGIN}\nold\n{project.END}\n\nAnd this.\n",
+        "utf-8",
+    )
+    (tree / "CLAUDE.md").write_text("Rules.\n\n@AGENTS.md\n", "utf-8")
+    found = project.init(str(tree), agent=True)["agent"]
+    agents = (tree / "AGENTS.md").read_text("utf-8")
+    assert agents.startswith("# Mine\n\nKeep this.\n\n" + project.BEGIN)
+    assert agents.endswith(project.END + "\n\nAnd this.\n")
+    assert "\nold\n" not in agents
+    assert "CLAUDE.md" not in found["changed"]
+
+
+def test_an_enabled_plugin_is_not_declared_a_second_time(tree):
+    (tree / ".claude").mkdir()
+    (tree / ".claude" / "settings.json").write_text(
+        json.dumps({"enabledPlugins": {"polyweave@alegauss": True}}), "utf-8"
+    )
+    found = project.init(str(tree), agent=True)["agent"]
+    assert found["server"].startswith("not declared: the plugin")
+    assert not (tree / ".mcp.json").exists()
+
+
+def test_the_section_names_only_operations_the_registry_has(tree, monkeypatch):
+    from polyweave import describe
+
+    monkeypatch.setattr(
+        describe,
+        "operations",
+        lambda: ["asset.brief"],  # everything else renamed
+    )
+    with pytest.raises(PolyweaveError) as refused:
+        project.init(str(tree), agent=True)
+    assert refused.value.code == "op.unknown"

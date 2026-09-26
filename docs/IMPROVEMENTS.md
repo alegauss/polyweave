@@ -718,23 +718,6 @@ reading the source, and it is filed as its own line.
 
 ## Block T — Adopting polyweave in a project
 
-### §PW219 init wires the project's agent to polyweave
-
-A valid `polyweave.toml` is not an adopted project. Starship had one and a committed
-ledger, and a session in that tree still saw no polyweave tool, because `.mcp.json`
-declared only roadkeep. There was no `AGENTS.md` or `CLAUDE.md`, and the skill ships
-only with the plugin, which the project had not enabled. The fix was hand-written on
-2026-09-25 (starship `1ad2094`). This line makes that fix a call.
-
-`init --agent` does three things, each idempotent:
-
-- **It declares the server.** It adds `polyweave` to `.mcp.json` (`python -m polyweave serve`) and to `enabledMcpjsonServers` in `.claude/settings.json`, leaving every other server and key as it found them. Where the plugin is already enabled for the project, it says so and declares nothing, because two servers would give every tool twice.
-- **It writes the project's section into `AGENTS.md`,** between `<!-- polyweave:begin -->` and `<!-- polyweave:end -->`. The section is drawn from the config: where the specs, renders, canons and ledger live, which budgets exist and that a person set them, and the rules the skill states (brief first, a look is a person's, a refusal is the answer). A `CLAUDE.md` that does not import `AGENTS.md` gets the import line. Text outside the markers is never touched.
-- **It stamps the section with the version** that wrote it, so the check in the next line can say it is stale.
-
-The section names operations from the registry, never from prose, so a renamed operation
-cannot survive in it.
-
 ### §PW220 init --check says what an adoption is missing
 
 Adoption decays quietly. A desk loses its `GODOT` variable, a folder named in `[paths]`
