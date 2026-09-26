@@ -231,6 +231,10 @@ def check_voxels(
     findings, measured = _pieces(filled, parts)
     threaded, longest = _threads(filled, thread)
     mirrored, share = _symmetry(filled, near_symmetry)
+    # A family's build prints several models, so the finding names which (§PW241).
+    for one in mirrored:
+        if model.get("name"):
+            one["says"] = f"{model['name']}: {one['says']}"
     findings += threaded + mirrored
 
     if budget and model["count"] > int(budget):

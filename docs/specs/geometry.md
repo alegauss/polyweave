@@ -646,7 +646,8 @@ its mesh whatever the call says, since the mesh is all it makes.
 
 Either value may be an expression over `[params]`, and `voxelize(document, cell=…)` or
 `across=…` overrides the table for one call. Neither or both is `geom.bad-voxels`.
-`[voxels]` takes `cell`, `across`, `parts`, `extent`, `fracture`, `mesh` and `hollow`, and any other
+`[voxels]` takes `cell`, `across`, `parts`, `extent`, `fracture`, `mesh`, `hollow`,
+`near_symmetry` and `asymmetric`, and any other
 key is refused as `geom.unknown-field` at `voxels.<key>` with the nearest named, as a
 node's stray field is (§PW231): `acros = 16` used to fail for having no cell, and
 `mehs = false` to write the mesh anyway.
@@ -726,6 +727,16 @@ fix is a local edit rather than a hunt:
 **Findings are reported, not refused**, because a loose antenna may be the design; the only
 refusal is a model with no cells (`post.voxels-empty`). The limits are a game's, so the
 project config holds them and nothing in the check defaults them.
+
+**A model may say its asymmetry is meant** (§PW241). A raised arm, a one-sided barrel or a
+cockpit off the middle is nearly symmetric on purpose, and a project that fails its build
+on any finding could not ship it. So a declaration's `[voxels]` takes its own
+`near_symmetry`, overriding the project's for that model, or `asymmetric = true`, which
+turns the symmetry check off for it. A variant may say the same under
+`[variants.<name>.voxels]` (those two keys and no others), so a family's symmetric base is
+still checked while its waving member is not. The symmetry finding names its model
+(`colonist_wave: 3 cells of a model 97% symmetric ...`), since a family's build prints
+several.
 
 **How a model breaks is planned at build time** (§PW99), so a game spawns one piece per
 fragment rather than one per cell and does no geometry on the kill frame:

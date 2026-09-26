@@ -609,31 +609,6 @@ reading the source, and it is filed as its own line.
 
 ## Block T — Adopting polyweave in a project
 
-### §PW241 Asymmetry a declaration means
-
-Found in Spinhold (starship RK87). A colonist's poses are variants of one voxel
-declaration, and a waving pose raises one arm: 97% symmetric in x, so the `symmetry`
-check flagged it as a broken symmetry, and a project that fails its build on any finding
-could not ship it. The project's `[voxels] near_symmetry` is one number for every model,
-and a declaration's own `[voxels]` refuses the key (`geom.unknown-field`, the fields are
-across, cell, extent, fracture, mesh and parts), so the only way out was to drop the
-pose and fake a wave by alternating two symmetric ones.
-
-A deliberate asymmetry is common: a raised arm, a turret's one-sided barrel, a ship's
-cockpit off the middle. Let a declaration say so:
-
-- `[voxels] near_symmetry` accepted per declaration, overriding the project's;
-- and per variant, `[variants.<name>.voxels] near_symmetry`, since a family's base can be
-  symmetric while one member is not;
-- or `asymmetric = true`, which reads better than a threshold where the intent is "this
-  one is meant to be one-sided".
-
-The finding should also say which variant it came from, since a build of a family prints
-several models.
-
-Done when Spinhold's colonist declares a one-armed `wave` variant and builds with no
-finding, while its symmetric base still gets the check.
-
 ### §PW242 A capture that waits for its subject
 
 Found capturing Spinhold's boss in play (starship RK106), and set aside when PW238 gave

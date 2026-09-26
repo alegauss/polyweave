@@ -172,7 +172,21 @@ REPEAT_FIELDS = ("var", "from", "to", "step")
 
 #: What a declaration's `[voxels]` may say (§PW231). `fracture` is its own table and is
 #: read where it is used.
-VOXELS_FIELDS = ("cell", "across", "parts", "extent", "fracture", "mesh", "hollow")
+VOXELS_FIELDS = (
+    "cell",
+    "across",
+    "parts",
+    "extent",
+    "fracture",
+    "mesh",
+    "hollow",
+    "near_symmetry",
+    "asymmetric",
+)
+
+#: What a variant's own `[variants.<name>.voxels]` may say (§PW241): whether a member is
+#: meant to be one-sided, where the family's base is symmetric.
+VARIANT_VOXELS_FIELDS = ("near_symmetry", "asymmetric")
 
 
 def _refuse_unread(stated: dict, nodes: list[dict], named: str) -> None:
@@ -248,6 +262,19 @@ def variant(document: dict, name: str) -> dict:
             allowed=variants(document),
         )
     painted = dict(table.pop("materials", None) or {})
+    shaped = dict(table.pop("voxels", None) or {})
+    for key in shaped:
+        if key not in VARIANT_VOXELS_FIELDS:
+            raise PolyweaveError(
+                "geom.unknown-field",
+                f"variant {name!r} of {document['name']} sets voxels.{key}, and a "
+                f"variant's [voxels] says only whether it is meant to be one-sided",
+                f"name one of {', '.join(VARIANT_VOXELS_FIELDS)}, or set it in the "
+                f"document's own [voxels]",
+                given=key,
+                allowed=VARIANT_VOXELS_FIELDS,
+                at=f"variants.{name}.voxels.{key}",
+            )
     unknown = sorted(set(table) - set(document["params"]))
     unknown += sorted(
         f"materials.{one}" for one in set(painted) - set(document["materials"])
@@ -274,6 +301,8 @@ def variant(document: dict, name: str) -> dict:
         "params": {**document["params"], **table},
         "materials": materials,
     }
+    if shaped:
+        member["voxels"] = {**(document.get("voxels") or {}), **shaped}
     return member
 
 

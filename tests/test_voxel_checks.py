@@ -152,6 +152,51 @@ def test_a_model_nearly_symmetric_names_the_cells_without_a_partner():
     assert checks["findings"][0]["cells"] == [[0, 0, 0]]
 
 
+WAVE = ["##########", "##########", "#########."]
+
+
+def test_the_symmetry_finding_names_its_model():
+    """§PW241: a family's build prints several models, so the finding says which."""
+    checks = found(drawn(*[WAVE]))
+    assert checks["findings"][0]["says"].startswith("ship: ")
+
+
+@pytest.mark.parametrize(
+    "voxels", [{"near_symmetry": 0.99}, {"asymmetric": True}], ids=["bar", "meant"]
+)
+def test_a_declaration_may_say_its_asymmetry_is_meant(voxels):
+    checks = found(drawn(WAVE, voxels={"cell": 1.0, **voxels}))
+    assert "symmetry" not in kinds(checks)
+
+
+def test_asymmetric_is_true_or_false():
+    with pytest.raises(PolyweaveError) as refused:
+        found(drawn(WAVE, voxels={"cell": 1.0, "asymmetric": "yes"}))
+    assert refused.value.code == "geom.bad-voxels"
+
+
+def test_one_variant_may_be_one_sided_while_its_base_is_checked():
+    from polyweave import geometry as G
+
+    document = drawn(WAVE)
+    document["variants"] = {"wave": {"voxels": {"asymmetric": True}}}
+    base = found(document)
+    member = found(G.variant(document, "wave"))
+    assert "symmetry" in kinds(base)
+    assert "symmetry" not in kinds(member)
+
+
+def test_a_variant_may_not_change_the_rest_of_voxels():
+    from polyweave import geometry as G
+
+    document = drawn(WAVE)
+    document["variants"] = {"big": {"voxels": {"cell": 2.0}}}
+    with pytest.raises(PolyweaveError) as refused:
+        G.variant(document, "big")
+    assert refused.value.code == "geom.unknown-field"
+    assert refused.value.at == "variants.big.voxels.cell"
+
+
 def test_a_model_far_from_symmetric_is_not_nagged_about_it():
     checks = found(drawn(["#...", "##..", "###.", "####"]))
     assert "symmetry" not in kinds(checks)

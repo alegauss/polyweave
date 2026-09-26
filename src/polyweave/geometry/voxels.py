@@ -747,8 +747,10 @@ def _hollowed(
 def _checked(made: dict, document: dict, params: dict, root: str | Path) -> dict:
     """What the cells are checked for (§PW97), with the project's own limits.
 
-    `parts` and `extent` are the model's and come from its `[voxels]`; the budget, the
-    thread length and the symmetry bar are the game's and come from the project config.
+    `parts` and `extent` are the model's and come from its `[voxels]`; the budget and
+    the thread length are the game's and come from the project config. The symmetry bar
+    is the game's too, unless the model says its asymmetry is meant (§PW241): its own
+    `near_symmetry`, or `asymmetric = true`, which switches that one check off for it.
     """
     from .. import post
     from ..config import load
@@ -756,6 +758,19 @@ def _checked(made: dict, document: dict, params: dict, root: str | Path) -> dict
     settings = load(root)
     table = document.get("voxels") or {}
     extent = table.get("extent") or settings.get("voxels.extent")
+    near = settings.get("voxels.near_symmetry")
+    if table.get("near_symmetry") is not None:
+        near = evaluate(table["near_symmetry"], params, where="voxels.near_symmetry")
+    meant = table.get("asymmetric", False)
+    if not isinstance(meant, bool):
+        raise PolyweaveError(
+            "geom.bad-voxels",
+            f"{document['name']}: voxels.asymmetric is {meant!r}, not true or false",
+            "write asymmetric = true for a model meant to be one-sided, or leave it "
+            "out",
+        )
+    if meant:
+        near = _NEVER
     return post.check(
         "voxels",
         made,
@@ -763,8 +778,13 @@ def _checked(made: dict, document: dict, params: dict, root: str | Path) -> dict
         thread=int(settings.get("voxels.thread")),
         budget=int(settings.get("voxels.budget")),
         extent=[evaluate(v, params, where="voxels.extent") for v in extent or ()],
-        near_symmetry=float(settings.get("voxels.near_symmetry")),
+        near_symmetry=float(near),
     )
+
+
+#: A symmetry bar no share reaches: a model meant to be one-sided is never "nearly"
+#: symmetric.
+_NEVER = 2.0
 
 
 def says(model: dict) -> str:

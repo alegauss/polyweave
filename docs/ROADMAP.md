@@ -59,7 +59,6 @@
 
 ## Block T — Adopting polyweave in a project
 
-- 📋 **PW241** (deps: —) **a declaration cannot say its asymmetry is meant, so a one-armed pose fails the symmetry check the project applies to all** — near_symmetry is one project-wide number and a declaration's [voxels] refuses it, so a waving variant had to be dropped for a symmetric fake. → §PW241
 - 📋 **PW242** (deps: —) **a capture of a moment in play misses its subject when spawns vary between runs** — A fixed frame count is all a capture waits on, so Spinhold's boss was off screen or its ship dead by the frame asked for, twice. → §PW242
 
 ## Done when — PW36
