@@ -112,6 +112,108 @@ def test_a_frustum_holds_its_own_volume():
     assert made["size"] == [40, 40, 12]
 
 
+BODY = {"id": "body", "op": "primitive", "kind": "sphere", "size": 12.0}
+BAND = {"id": "band", "op": "plate", "rect": [-8, -1, 16, 2], "depth": 16, "front": -8}
+SEAM = {"glow": {"colour": "#FF2020"}}
+
+
+def test_a_paint_repaints_the_body_and_adds_no_cell():
+    """§PW237: a band round a sphere, without the slab sticking out of it."""
+    paint = {
+        "id": "seam",
+        "op": "paint",
+        "on": "body",
+        "where": "band",
+        "material": "glow",
+    }
+    made = V.voxelize(shape(BODY, BAND, paint, voxels={"cell": 1.0}, materials=SEAM))
+    bare = V.voxelize(shape(BODY, voxels={"cell": 1.0}))
+    assert cells_of(made) == cells_of(bare)
+    names = [entry["name"] for entry in made["palette"]]
+    worn = [names[slot] for slot in made["cells"]["palette"]]
+    glowing = {c for c, w in zip(cells_of_list(made), worn, strict=True) if w == "glow"}
+    assert glowing and all(abs(y - 5.5) <= 1 for _, y, _ in glowing)
+    assert len(glowing) < made["count"] / 3
+
+
+def cells_of_list(model):
+    found = model["cells"]
+    return list(zip(found["x"], found["y"], found["z"], strict=True))
+
+
+def test_a_paint_is_the_two_carves_it_replaces_cell_for_cell():
+    outside = {"id": "outside", "op": "carve", "into": "body", "cutter": "band"}
+    within = {
+        "id": "within",
+        "op": "carve",
+        "into": "body",
+        "cutter": "outside",
+        "material": "glow",
+    }
+    trick = {"id": "seamed", "op": "union", "inputs": ["body", "within"]}
+    paint = {
+        "id": "seamed",
+        "op": "paint",
+        "on": "body",
+        "where": ["band"],
+        "material": "glow",
+    }
+    was = V.voxelize(
+        shape(BODY, BAND, outside, within, trick, voxels={"cell": 1.0}, materials=SEAM)
+    )
+    now = V.voxelize(shape(BODY, BAND, paint, voxels={"cell": 1.0}, materials=SEAM))
+
+    def worn(model):
+        names = [entry["name"] for entry in model["palette"]]
+        return dict(
+            zip(
+                cells_of_list(model),
+                (names[slot] for slot in model["cells"]["palette"]),
+                strict=True,
+            )
+        )
+
+    assert worn(now) == worn(was)
+
+
+def test_a_paint_that_does_not_say_where_is_refused():
+    paint = {"id": "seam", "op": "paint", "on": "body", "material": "glow"}
+    with pytest.raises(PolyweaveError) as refused:
+        V.voxelize(shape(BODY, paint, voxels={"cell": 1.0}, materials=SEAM))
+    assert refused.value.code == "geom.bad-solid"
+
+
+def test_a_paint_reads_back_as_what_it_does():
+    from polyweave.geometry import review
+
+    paint = {
+        "id": "seam",
+        "op": "paint",
+        "on": "body",
+        "where": "band",
+        "material": "glow",
+    }
+    found = review.describe(shape(BODY, BAND, paint, materials=SEAM))
+    said = next(one["says"] for one in found["nodes"] if one["id"] == "seam")
+    assert said == "body painted glow where band"
+
+
+def test_a_paint_is_refused_on_triangles(tmp_path):
+    from polyweave.geometry import build as B
+
+    paint = {
+        "id": "seam",
+        "op": "paint",
+        "on": "body",
+        "where": "band",
+        "material": "glow",
+    }
+    with pytest.raises(PolyweaveError) as refused:
+        B.write(shape(BODY, BAND, paint, materials=SEAM), "seam.glb", root=tmp_path)
+    assert refused.value.code == "geom.bad-voxels"
+    assert "[voxels]" in refused.value.remedy
+
+
 def test_a_torus_leaves_its_middle_empty():
     ring = {"id": "ring", "op": "primitive", "kind": "torus", "major": 6.0,
             "minor": 2.0, "axis": "x"}

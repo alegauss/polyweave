@@ -50,7 +50,7 @@ __all__ = [
 ]
 
 #: Fields on a node that name other nodes rather than carrying a value.
-REFERS = ("into", "cutter", "of", "inputs", "operands", "on")
+REFERS = ("into", "cutter", "of", "inputs", "operands", "on", "where")
 
 #: Fields that are the node's own bookkeeping and never an expression to evaluate.
 #: A `cells` node's rows are text a person drew (§PW95), and a row reading `a` must not

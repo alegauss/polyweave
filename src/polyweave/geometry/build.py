@@ -211,6 +211,13 @@ def _mesh(node, instance, built, root):
     return S.mesh(found["vertices"], found["faces"])
 
 
+def _paint(node, instance, built, root):
+    # The body's own triangles: a repaint adds no shape, and only cells take it
+    # (§PW237). A traced op in a voxel document builds the whole document through here,
+    # so this passes the body on rather than refusing; `write` refuses a triangle build.
+    return built[node["on"]]
+
+
 def _mirror(node, instance, built, root):
     return S.mirror(
         built[refers_to(node)[0]],
@@ -237,6 +244,7 @@ BUILDS: dict[str, Callable] = {
     "cells": _cells,
     "mirror": _mirror,
     "mesh": _mesh,
+    "paint": _paint,
 }
 
 #: What every node may say, whatever its op: its name, what it builds, what it wears,
@@ -284,6 +292,7 @@ FIELDS: dict[str, tuple[str, ...] | None] = {
     "cells": ("layers", "legend", "cell", "axis"),
     "mirror": (*_TAKES, "axis", "plane"),
     "mesh": ("path", "colours"),
+    "paint": ("on", "where"),
 }
 
 #: The ops that consume `at` themselves, so the placement below leaves them alone.
@@ -381,6 +390,16 @@ def write(
 
         return cells(document, out, root=root, **given)
 
+    painting = [node["id"] for node in document["nodes"] if node["op"] == "paint"]
+    if painting:
+        raise PolyweaveError(
+            "geom.bad-voxels",
+            f"{painting[0]} repaints cells, and {document['name']} is built as "
+            f"triangles, which have no cells to repaint",
+            "give the declaration a [voxels] table, or put the material on the node "
+            "whose faces it is meant for",
+            at=f"nodes.{painting[0]}.op",
+        )
     made = build(document, root=root, manifold=manifold, **given)
     where = Path(out)
     if not where.is_absolute():

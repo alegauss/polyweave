@@ -130,6 +130,14 @@ def _says(node: dict, instance: dict, materials: dict | None = None) -> str:
         plane = _number(instance.get("plane", 0))
         what = f"{takes[0] if takes else 'nothing'} mirrored across {letter} = {plane}"
         rest = _fields(instance, (*skip, "plane"))
+    elif op == "paint":
+        # Said whole, material included, because the material is what it adds (§PW237).
+        where = node.get("where")
+        covers = " and ".join(where) if isinstance(where, list) else str(where)
+        return (
+            f"{node.get('on', 'nothing')} painted {node.get('material') or 'nothing'} "
+            f"where {covers}"
+        )
     else:
         what = f"a {op}"
 

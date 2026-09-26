@@ -184,6 +184,7 @@ counts y upward — an outline that came back mirrored is a sprite extruded back
 | `mirror` | An existing node and its reflection across the plane `axis = plane`, joined |
 | `mesh` | A mesh file under the project (`path`, a `.glb` or `.blend`), in the project's axes |
 | `cells` | Cells drawn by hand as text — see "Cells instead of triangles" |
+| `paint` | The cells of `on`, repainted in its `material` where `where` (a node or a list) covers them; cells only |
 | `custom` | A project function — see below |
 
 **Primitives** (§PW233). `size` is one number or an `[x, y, z]` triple, the box the shape
@@ -590,6 +591,17 @@ across = 16          # cells along the longest side; or `cell = 0.5`, a size, ne
 mesh   = false       # the cells alone, no .glb beside them; true, the default, writes both
 hollow = 1           # keep a skin this many cells thick and nothing under it
 ```
+
+**A detail is painted onto a body, not added to it** (§PW237). A glowing seam round a
+sphere, ribs down a dome, seams between armour plates: each is the body's own cells in
+another material where a band or a plane crosses them. `op = "paint"` says so in one node:
+`on` names the body, `where` the node or nodes whose cells take the paint, `material`
+what they wear. The cells are exactly the body's, and the material lands only where
+`where` covers them, which is what `carve(body, carve(body, band))` joined back onto the
+body used to spell in three nodes. `describe` reads it back as "body painted glow where
+band". Triangles have no cells to repaint, so a declaration with no `[voxels]` is refused
+at the write (`geom.bad-voxels`) with that remedy; inside a voxel build a traced op's
+mesh passes the body through.
 
 **A model faces -z** (§PW236), with y up and x to its right, which is §6's forward and
 Godot's. A face, visor or eye goes on the -z side, nearest the front view. The preview

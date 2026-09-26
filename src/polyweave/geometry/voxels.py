@@ -92,6 +92,15 @@ class _Found:
             np.where(self.inside, material, self.wears),
         )
 
+    def repainted(self, where: np.ndarray, rank: int, material: str) -> _Found:
+        """The same cells, `material` and `rank` taking over where `where` is set."""
+        return _Found(
+            self.inside,
+            np.where(where, rank + _PAINTED, self.key),
+            np.where(where, rank, self.owner),
+            np.where(where, material, self.wears),
+        )
+
     def only(self, kept: np.ndarray) -> _Found:
         return _Found(
             kept,
@@ -179,6 +188,8 @@ class _Model:
             return self.bounds(node["into"])
         if op == "bevel":
             return self.bounds(refers_to(node)[0])
+        if op == "paint":
+            return self.bounds(node["on"])
         if op == "cells":
             size = self.size_of(node, instance)
             return np.zeros(3), np.asarray(lattice(node)["size"], dtype=float) * size
@@ -203,7 +214,8 @@ class _Model:
                 here = points - np.asarray(S._triple(instance["at"]))
             part = self._op_inside(node, instance, here)
             found = part if found is None else _merge(found, part)
-        if node.get("material"):
+        # A paint's material is its point, and it lands only where it covers (§PW237).
+        if node.get("material") and node["op"] != "paint":
             found = found.painted(self.rank[one], node["material"])
         return found
 
@@ -234,6 +246,23 @@ class _Model:
             return into.only(into.inside & ~cut)
         if op == "bevel":
             return self.inside(refers_to(node)[0], points)
+        if op == "paint":
+            # The body's cells, every one and no more, repainted where `where` covers
+            # them: a band round a sphere without a slab sticking out of it (§PW237).
+            if not node.get("on") or not _named_list(node.get("where")):
+                raise PolyweaveError(
+                    "geom.bad-solid",
+                    f"{node['id']} paints and does not say "
+                    + ("on what" if not node.get("on") else "where"),
+                    "give it `on`, the body whose cells it repaints, and `where`, the "
+                    "node or list of nodes whose cells take its material",
+                    at=f"nodes.{node['id']}",
+                )
+            body = self.inside(node["on"], points)
+            cover = np.zeros(len(points), dtype=bool)
+            for one in _named_list(node.get("where")):
+                cover |= self.inside(one, points).inside
+            return body.repainted(body.inside & cover, rank, node.get("material") or "")
         if op == "cells":
             return self._drawn(node, instance, points)
         if op == "mesh" and not node.get("material"):
@@ -352,6 +381,13 @@ class _Model:
 
 def _primitive(instance: dict, points: np.ndarray) -> np.ndarray:
     return S.shape_inside(S.shape(instance), points, _EPS)
+
+
+def _named_list(stated: Any) -> list[str]:
+    """One node's id or a list of them, as a list."""
+    if isinstance(stated, str):
+        return [stated]
+    return [one for one in stated or () if isinstance(one, str)]
 
 
 def _mirrored(node: dict, instance: dict) -> tuple[int, float]:

@@ -609,29 +609,6 @@ reading the source, and it is filed as its own line.
 
 ## Block T — Adopting polyweave in a project
 
-### §PW237 A paint op for voxel details
-
-Found declaring Spinhold's actors (starship RK42). A painted detail on a body is the
-commonest thing a voxel declaration draws: a glowing seam round a mine's equator, ribs
-down a turret's dome, seams between a boss's armour plates, a dome's frame. Each wants
-the body's own cells repainted where a band or a plane crosses them, and no cell added.
-
-There is no op for it. A node with a material paints only where it adds cells, so a band
-written as a slab sticks out of the sphere. The only spelling is an intersection built
-from two carves, `carve(body, carve(body, band))`, with a helper node for the inner one:
-three nodes per detail, and the mine layer alone needed it twice. It reads as a trick
-and a reader has to work out what it means.
-
-Add `op = "paint"`: `on` names the body, `where` names the node (or a list of them)
-whose cells it repaints, `material` what they wear. The cells are exactly the body's;
-the material applies where `where` covers them: in the voxel evaluator, the body's
-`_Found` painted on the mask of `where`. On the triangle path, refuse it with a remedy
-until wanted.
-
-Done when the mine's band, the turret's ribs and the boss part's seams are each one
-`paint` node, the build is unchanged cell for cell, and `describe` reads it back as
-"body painted <material> where <node>".
-
 ### §PW238 Script arguments for a capture
 
 Found in Spinhold (starship RK106). Capturing its new boss in play meant running
