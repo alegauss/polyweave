@@ -79,14 +79,15 @@ _RANGES = {
     "gate": (0.05, 4), "room": (0, 1), "gain": (-60, 24), "pan": (-1, 1),
     "reverb": (-60, 12), "delay": (-60, 12),
 }
-_TABLES = ("music", "section", "pattern", "track", "patch")
+_TABLES = ("music", "section", "pattern", "track", "patch", "kit")
 
 #: What of a track the model carries for the render, beyond its notes.
 _CARRIED = ("instrument", "layer", "drums", "gain", "pan", "reverb", "delay")
 
 #: What an instrument may be: a Surge patch the score declares, a General MIDI program
-#: or a General MIDI drum kit, each played by the engine that owns it.
-_INSTRUMENT = re.compile(r"(surge):([a-z][a-z0-9_-]*)|(gm|drums):(\d{1,3})")
+#: or drum kit, or a chip kit of sfxr hits the score declares, each played by the
+#: engine that owns it.
+_INSTRUMENT = re.compile(r"(surge|chip):([a-z][a-z0-9_-]*)|(gm|drums):(\d{1,3})")
 
 
 class _Problems:
@@ -381,12 +382,14 @@ def compile_source(text: str, name: str = "score") -> tuple[dict | None, list[di
         problems.add("music.missing", None, "the score has no [[track]]",
                      "add a [[track]] with a name, an instrument and what it plays")
     patches = _patches(problems, raw.get("patch", {}))
+    kits = _kits(problems, raw.get("kit", {}))
     for n, track in enumerate(tracks):
-        _instrument(problems, track, patches, problems.header("track", n))
+        _instrument(problems, track, patches, kits, problems.header("track", n))
     if problems.found:
         return None, problems.found
     model = _model(problems, music, sections, patterns, tracks, meter, name)
     model["extensions"][EXTENSION]["patches"] = patches
+    model["extensions"][EXTENSION]["kits"] = kits
     return (None if problems.found else model), problems.found
 
 
@@ -412,7 +415,69 @@ def _patches(problems: _Problems, stated: Any) -> dict[str, dict]:
     return found
 
 
-def _instrument(problems: _Problems, track: dict, patches: dict,
+def _kits(problems: _Problems, stated: Any) -> dict[str, dict]:
+    """Each `[kit.<name>]`: the `*.sfx.toml` of hits a chip track plays (§PW223).
+
+    Whether the file is there and holds a hit for every drum a track plays is read
+    against the project, by `kit_problems`; here a kit only has to name a file.
+    """
+    found = {}
+    for name, table in (stated if isinstance(stated, dict) else {}).items():
+        line = problems.header(f"kit.{name}")
+        effects = table.get("effects") if isinstance(table, dict) else None
+        if not isinstance(effects, str) or not effects.endswith(".sfx.toml"):
+            problems.add(
+                "music.bad-value", line, f"kit {name} names no *.sfx.toml",
+                f'write effects = "audio/{name}.sfx.toml" under [kit.{name}]',
+            )
+            continue
+        extra = sorted(set(table) - {"effects"})
+        if extra:
+            problems.add("music.unknown-key", line,
+                         f"kit {name} has {', '.join(extra)}",
+                         "a kit takes effects only")
+        found[name] = {"effects": effects}
+    return found
+
+
+def kit_problems(model: dict, root: Path) -> list[dict]:
+    """What a chip kit lacks, read against the project: its file, or a hit it is played.
+
+    Every problem is reported against the file the score names, since the fix is there.
+    """
+    from .sfx import kit as made
+
+    ext = model["extensions"][EXTENSION]
+    found = []
+    names = {v: k for k, v in DRUMS.items()}
+    for kit_name, kit in ext.get("kits", {}).items():
+        players = [t for t, s in ext["tracks"].items()
+                   if s["instrument"] == f"chip:{kit_name}"]
+        if not players:
+            continue
+        where = root / kit["effects"]
+        try:
+            hits = made(where) if where.is_file() else None
+        except PolyweaveError as refused:
+            hits, why = None, refused.message
+        else:
+            why = f"there is no file at {kit['effects']}"
+        if hits is None:
+            found.append({"code": "music.bad-kit", "line": None,
+                          "message": f"kit {kit_name}: {why}",
+                          "remedy": "write the kit's hits with sound.synth's format"})
+            continue
+        wanted = {names.get(n["pitch"], str(n["pitch"]))
+                  for n in model["notes"] if n["part"] in players}
+        for missing in sorted(wanted - set(hits)):
+            found.append({"code": "music.bad-kit", "line": None,
+                          "message": f"kit {kit_name} has no {missing}, which "
+                                     f"{', '.join(players)} plays",
+                          "remedy": f"add [effect.{missing}] to {kit['effects']}"})
+    return found
+
+
+def _instrument(problems: _Problems, track: dict, patches: dict, kits: dict,
                 line: int | None) -> None:
     stated = track.get("instrument")
     if stated is None:
@@ -423,10 +488,23 @@ def _instrument(problems: _Problems, track: dict, patches: dict,
         problems.add(
             "music.unknown-instrument", at,
             f"track {track['name']} plays {stated!r}, which no engine plays",
-            "write surge:<patch>, gm:<program 0-127> or drums:<kit 0-127>",
+            "write surge:<patch>, gm:<program 0-127>, drums:<kit 0-127> or "
+            "chip:<kit>",
         )
         return
-    if match.group(1) and match.group(2) not in patches:
+    if match.group(1) == "chip":
+        if match.group(2) not in kits:
+            problems.add(
+                "music.unknown-instrument", at,
+                f"track {track['name']} plays chip kit {match.group(2)!r}, which the "
+                f"score does not declare",
+                f'declare [kit.{match.group(2)}] with effects = "<its *.sfx.toml>"',
+            )
+        elif not track["drums"]:
+            problems.add("music.unknown-instrument", at,
+                         f"track {track['name']} plays a chip kit and is not drums",
+                         "set drums = true on the track")
+    elif match.group(1) and match.group(2) not in patches:
         near = difflib.get_close_matches(match.group(2), patches, n=1)
         problems.add(
             "music.unknown-instrument", at,
@@ -808,6 +886,9 @@ def validate(
     """
     base, where = _score(source, root)
     model, problems = compile_source(where.read_text(encoding="utf-8"), where.stem)
+    if model is not None:
+        problems = kit_problems(model, base)
+        model = None if problems else model
     answer: dict = {
         "source": where.relative_to(base).as_posix(),
         "valid": not problems,

@@ -840,6 +840,12 @@ CODES: dict[str, Code] = {
         doors=("install the engine the message names",
                "set its [paths] entry to where it is"),
     ),
+    "music.bad-kit": Code(
+        means="a chip kit's file is missing or unreadable, or lacks a hit it is played",
+        when="[kit.chip] naming a file that is not there, or a pattern playing oh "
+        "where the kit has only bd, sd and hh",
+        doors=("write the kit's *.sfx.toml", "add the missing [effect.<drum>]"),
+    ),
     "music.licence-undeclared": Code(
         means="the render plays through a library the project declared no licence for",
         when="a SoundFont in [paths] soundfont with no [licence.\"<its file name>\"]",

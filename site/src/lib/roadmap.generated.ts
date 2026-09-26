@@ -40,7 +40,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 0 },
   { block: "O", title: "A person sees and answers", open: 0 },
-  { block: "P", title: "Music and sound a game can ship", open: 3 },
+  { block: "P", title: "Music and sound a game can ship", open: 2 },
   { block: "Q", title: "Words held to the world", open: 1 },
   { block: "R", title: "Levels measured before a person plays them", open: 5 },
   { block: "S", title: "Playing the game, not only rendering it", open: 6 },
@@ -68,13 +68,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent",
     why: "The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question.",
     deps: ["PW57"],
-  },
-  {
-    id: "PW223",
-    block: "P",
-    symptom: "A chiptune score cannot play its percussion on an sfxr drum kit",
-    why: "music.render plays Surge and General MIDI only, so the 8-bit kit the passed spike loop used has no instrument to name.",
-    deps: [],
   },
   {
     id: "PW224",

@@ -306,25 +306,6 @@ declared in its `polyweave.toml`, made by `music.render` and `sound.synth`, and 
 `*.accept.toml` bounds, and its own audio scripts are removed. Anything Cottony needs
 that a second game would not becomes configuration.
 
-### §PW223 Chip percussion from an effects kit
-
-The chiptune loop a person passed in the PW184 spike played its percussion on a four-hit
-drum kit made by sfxr: a kick from a sine with a fast downward slide, a snare and two
-hats from noise with a short decay and a high-pass. `music.render` plays `surge:`, `gm:`
-and `drums:` instruments only, so a score in that style today has to take the General
-MIDI kit or Surge, and neither sounds like an 8-bit console.
-
-A `chip:<kit>` instrument closes it. The kit is an `*.sfx.toml` the score names, whose
-effects are keyed by General MIDI drum note (`bd`, `sd`, `hh`, `oh` and the rest of
-`music.DRUMS`), so a pattern written for `drums:` plays unchanged. The render makes each
-hit once with `sound.synth`'s code, then places it at every note of that pitch, scaled
-by velocity, as the spike's `chip_kit` did; a note whose pitch the kit lacks is a
-problem `music.validate` names before any render. The kit's stem then joins the mix like
-any other.
-
-Test it with the spike's four hand-set hits and its chiptune drum pattern: every onset
-lands on its tick, and a velocity of 64 is half the level of 127.
-
 ### §PW224 An undecodable sound refused with a code
 
 `sound.read` decodes anything but a WAV by running ffmpeg with `check=True`, so a file

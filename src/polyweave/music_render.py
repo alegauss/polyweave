@@ -36,7 +36,7 @@ from typing import Annotated, Any
 
 import numpy as np
 
-from . import licences, music, provenance, sound
+from . import licences, music, provenance, sfx, sound
 from .config import load
 from .describe import Param, operation
 from .errors import PolyweaveError
@@ -350,6 +350,9 @@ def render(
         )
     text = where.read_text(encoding="utf-8")
     model, problems = music.compile_source(text, where.stem)
+    if model is not None:
+        problems = music.kit_problems(model, here)
+        model = None if problems else model
     if model is None:
         raise PolyweaveError(
             "music.invalid",
@@ -374,21 +377,11 @@ def render(
     work.mkdir(parents=True, exist_ok=True)
 
     report.stage("rendering", note="rendering each part")
-    stems, played_by = {}, {}
+    stems, played_by, hits = {}, {}, {}
     for index, part in enumerate(model["parts"]):
-        settings = ext["tracks"][part["id"]]
-        notes = [n for n in model["notes"] if n["part"] == part["id"]]
-        engine, _, name = settings["instrument"].partition(":")
+        engine = ext["tracks"][part["id"]]["instrument"].partition(":")[0]
         report.progress(index / len(model["parts"]), note=f"{part['id']} on {engine}")
-        if engine == "surge":
-            binary = found["surge"]
-            if binary not in _SURGES:
-                report.note("loading Surge XT, which takes about a minute")
-                _SURGES[binary] = _Surge(binary)
-            _SURGES[binary].patch(name, ext["patches"][name])
-            audio = _SURGES[binary].render(notes, per_tick, total)
-        else:
-            audio = _fluid(part, notes, settings, model, total, found, work)
+        audio = _part(report, part, model, found, hits, here, work, total)
         stems[part["id"]] = _fit(audio, int(round(total * RATE)))
         played_by[part["id"]] = engine
 
@@ -428,22 +421,47 @@ def render(
     return answer
 
 
+#: Which engine plays each instrument scheme, as the licences name them.
+_PLAYED_BY = {
+    "surge": "surge", "chip": "sfxr", "gm": "fluidsynth", "drums": "fluidsynth",
+}
+
+
 def _instruments(config, tracks: dict, found: dict) -> list[dict]:
     """Every engine, library and patch this score plays through, with its licence."""
     by: dict[str, list[str]] = {}
     patched: dict[str, list[str]] = {}
     for name, settings in tracks.items():
         engine, _, arg = settings["instrument"].partition(":")
-        by.setdefault("surge" if engine == "surge" else "fluidsynth", []).append(name)
+        by.setdefault(_PLAYED_BY[engine], []).append(name)
         if engine == "surge":
             patched.setdefault(arg, []).append(name)
     out = [licences.engine("pedalboard", list(tracks))]
     if "surge" in by:
         out += [licences.engine("surge", by["surge"]), *licences.patches(patched)]
+    if "sfxr" in by:
+        out.append(licences.engine("sfxr", by["sfxr"]))
     if "fluidsynth" in by:
         out += [licences.engine("fluidsynth", by["fluidsynth"]),
                 licences.library(config, found["soundfont"], by["fluidsynth"])]
     return out
+
+
+def chip_stem(notes: list[dict], hits: dict[str, np.ndarray], seconds_per_tick: float,
+              total: float) -> np.ndarray:
+    """A chip kit's stem: each note's hit placed on its tick, scaled by its velocity.
+
+    A hit rings its own length whatever the note's, as a drum does.
+    """
+    out = np.zeros(int(round(total * RATE)))
+    names = {v: k for k, v in music.DRUMS.items()}
+    for note in notes:
+        drum = names.get(note["pitch"], str(note["pitch"]))
+        hit = hits[drum] * (note["velocity"] / 127)
+        at = int(round(note["start"] * seconds_per_tick * RATE))
+        end = min(len(out), at + len(hit))
+        out[at:end] += hit[: end - at]
+    return np.stack([out, out], axis=1)
 
 
 def _recorded(made: dict, here: Path, inputs: list[dict], instruments: list[dict],
@@ -457,6 +475,28 @@ def _recorded(made: dict, here: Path, inputs: list[dict], instruments: list[dict
                 measurements=made["measured"],
                 extra={"instruments": instruments}, root=here,
             ), here)
+
+
+def _part(report, part: dict, model: dict, found: dict, hits: dict, here: Path,
+          work: Path, total: float) -> np.ndarray:
+    """One part rendered by the engine its instrument names."""
+    ext = model["extensions"][music.EXTENSION]
+    settings = ext["tracks"][part["id"]]
+    notes = [n for n in model["notes"] if n["part"] == part["id"]]
+    engine, _, name = settings["instrument"].partition(":")
+    per_tick = _seconds_per_tick(model)
+    if engine == "surge":
+        binary = found["surge"]
+        if binary not in _SURGES:
+            report.note("loading Surge XT, which takes about a minute")
+            _SURGES[binary] = _Surge(binary)
+        _SURGES[binary].patch(name, ext["patches"][name])
+        return _SURGES[binary].render(notes, per_tick, total)
+    if engine == "chip":
+        if name not in hits:
+            hits[name] = sfx.kit(here / ext["kits"][name]["effects"])
+        return chip_stem(notes, hits[name], per_tick, total)
+    return _fluid(part, notes, settings, model, total, found, work)
 
 
 def _layers(tracks: dict) -> list[str]:

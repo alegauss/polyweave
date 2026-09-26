@@ -36,9 +36,12 @@ a_osc_1_width_1  = 25.0      # a 25% pulse
 a_amp_eg_release = 40.0      # a number; the render picks Surge's nearest label, "40.0 ms"
 a_play_mode      = "Mono"
 
+[kit.chip]                   # a chip kit: sfxr hits named after drums, in sound.synth's format
+effects = "audio/chip.sfx.toml"   # relative to the project; [effect.bd], [effect.sd] and so on
+
 [[track]]
 name       = "lead"          # a lower-case id, once per score
-instrument = "surge:chip_lead"   # surge:<patch>, gm:<program 0-127> or drums:<kit 0-127>
+instrument = "surge:chip_lead"   # surge:<patch>, gm:<0-127>, drums:<0-127> or chip:<kit>
 layer      = "base"          # which intensity it belongs to
 drums      = false           # true puts it on the drum channel and allows drum names
 velocity   = 96              # 1 to 127
@@ -127,6 +130,12 @@ loops made this way good enough to ship:
   state silences it. On Windows the binary inside the bundle is the one loaded.
 - **`gm:` and `drums:` parts** play through FluidSynth's command line from the
   SoundFont `[paths] soundfont` names, with FluidSynth's own reverb and chorus off.
+- **`chip:` parts** play the score's `[kit.<name>]`: each hit is made once from its
+  `*.sfx.toml`, exactly as `sound.synth` makes it, then placed on every note of its
+  drum, scaled by velocity and left to ring its own length (§PW223). A pattern written
+  for `drums:` plays on it unchanged, and it needs neither FluidSynth nor a SoundFont.
+  `music.validate` opens the kit and names a missing file or a drum a track plays that
+  the kit has no hit for (`music.bad-kit`), so a render never finds out halfway.
 - A missing engine is refused by name before any part renders (`music.no-engine`).
 
 **One fixed chain**, because the instruments and the mix decide how professional it sounds

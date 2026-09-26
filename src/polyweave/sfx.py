@@ -147,6 +147,30 @@ def _made(name: str, table: dict) -> tuple[np.ndarray, int, int]:
     )
 
 
+def kit(path: Path) -> dict[str, np.ndarray]:
+    """Every effect of a `*.sfx.toml` made once, by name: a chip kit's hits (§PW223).
+
+    Made exactly as `sound.synth` makes them, so a hit heard alone and a hit heard in a
+    score are the same sound.
+    """
+    try:
+        effects = tomllib.loads(path.read_text(encoding="utf-8"))
+    except (OSError, tomllib.TOMLDecodeError) as exc:
+        raise PolyweaveError(
+            "sound.no-source",
+            f"the kit at {path.name} cannot be read",
+            "name a *.sfx.toml of [effect.<drum>] tables",
+            detail=str(exc),
+        ) from exc
+    tables = effects.get("effect")
+    if not isinstance(tables, dict) or not tables:
+        raise PolyweaveError("sound.no-source", f"{path.name} holds no [effect.<name>]",
+                             "write each hit as [effect.bd], [effect.sd] and so on")
+    return {
+        name: _made(name, _checked(name, table))[0] for name, table in tables.items()
+    }
+
+
 def _write(where: Path, audio: np.ndarray) -> None:
     pcm = np.clip(np.round(audio * 32767.0), -32768, 32767).astype("<i2")
     with wave.open(str(where), "wb") as held:
