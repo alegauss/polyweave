@@ -609,33 +609,6 @@ reading the source, and it is filed as its own line.
 
 ## Block T — Adopting polyweave in a project
 
-### §PW234 A shell for voxel models
-
-Found declaring Spinhold's actors (starship RK42). The `budget` check counts every cell
-of a model, but a solid's inside is never drawn: the game draws the skin, and a cell
-three deep is only there if the model breaks apart. The boss part's plated sphere (6319
-cells) and the mine layer's saucer (10514) failed the 6000 budget on buried cells.
-
-Getting under it meant hollowing each by hand: a carve against an inner sphere or
-ellipsoid, sized by trial. Too big a cutter broke through a wall and the build found
-threads there; too small left it over budget. Three rebuilds for the saucer alone, and
-the right size changes whenever the outside does.
-
-Two things, either of which ends the trial:
-
-- a `shell` op (`of`, `thickness` in cells): the input's cells within `thickness` of its
-  surface, keeping their materials. Exact on the grid, as a distance to the nearest
-  empty cell by repeated erosion, numpy alone.
-- `[voxels] hollow = <cells>` for the whole model, applied after the build and before
-  the checks, so a declaration never draws its inside at all.
-
-And let the budget finding say how many of the cells are buried, so a model over budget
-on its inside is told to hollow rather than to shrink.
-
-Done when the boss part and the mine layer build under budget with `shell` (or `hollow`)
-and no hand-sized cutter, with no thread or floating finding, and a budget finding names
-the buried share.
-
 ### §PW235 A voxel drawer in the Godot addon
 
 Found adopting polyweave in Spinhold (starship RK40, RK42). The `polyweave_voxels` addon

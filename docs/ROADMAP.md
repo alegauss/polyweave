@@ -59,7 +59,6 @@
 
 ## Block T — Adopting polyweave in a project
 
-- 📋 **PW234** (deps: —) **a voxel model over budget on cells no one sees is hollowed by a hand-sized cutter, by trial** — The budget counts buried cells, and the cutter that fixes it breaks through a wall when too big, so each saucer or sphere costs rebuilds. → §PW234
 - 📋 **PW235** (deps: —) **the Godot addon reads a voxel model but cannot draw one, so each game writes its own MultiMesh drawer** — Spinhold's VoxelLook, its per-cell colour and glow, shared mesh, centring, wash and fade are what any Godot game drawing polyweave voxels needs. → §PW235
 - 📋 **PW236** (deps: —) **a voxel preview does not say which way its front view looks, so a face declared on +z is found by rebuilding** — Three of Spinhold's actors faced the wrong way until a preview showed a helmet's back under front, as nothing states that -z is a model's front. → §PW236
 - 📋 **PW237** (deps: —) **a voxel detail painted onto a body needs two carves and a helper node, as no op repaints cells without adding any** — A painted band sticks out of the body it paints, so seams, ribs and frames are spelt as an intersection of carves nobody can read. → §PW237

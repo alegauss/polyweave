@@ -90,6 +90,53 @@ def test_a_model_over_the_budget_is_reported():
     assert "8 cells, over the 6" in checks["findings"][0]["says"]
 
 
+def ball(**voxels):
+    return {
+        "name": "saucer",
+        "version": 1,
+        "params": {"skin": 2},
+        "materials": {},
+        "nodes": [{"id": "ball", "op": "primitive", "kind": "sphere", "size": 20.0}],
+        "output": "ball",
+        "voxels": {"cell": 1.0, **voxels},
+    }
+
+
+def test_a_budget_finding_says_how_many_cells_are_buried():
+    """§PW234: a model over on its inside is told to hollow, not to shrink."""
+    checks = found(ball(), budget=3000)
+    over = checks["findings"][0]
+    assert over["check"] == "budget"
+    assert over["buried"] > over["count"] / 2
+    assert "[voxels] hollow = 1" in over["says"]
+
+
+def test_a_hollowed_model_keeps_its_skin_and_nothing_under_it():
+    whole = V.voxelize(ball())
+    hollow = V.voxelize(ball(hollow=1))
+    assert hollow["size"] == whole["size"]
+    assert hollow["count"] < whole["count"] / 2
+    assert found(ball(hollow=1), budget=3000)["findings"] == []
+    cells = set(
+        zip(*(hollow["cells"][a] for a in "xyz"), strict=True)
+    )
+    assert (10, 10, 10) not in cells
+    assert (10, 10, 0) in cells
+
+
+def test_a_thicker_skin_is_an_expression_over_the_parameters():
+    one = V.voxelize(ball(hollow=1))["count"]
+    two = V.voxelize(ball(hollow="skin"))["count"]
+    assert one < two < V.voxelize(ball())["count"]
+
+
+@pytest.mark.parametrize("depth", [-1, 1.5])
+def test_a_skin_that_is_not_whole_cells_is_refused(depth):
+    with pytest.raises(PolyweaveError) as refused:
+        V.voxelize(ball(hollow=depth))
+    assert refused.value.code == "geom.bad-voxels"
+
+
 def test_a_model_off_its_extent_says_by_how_much():
     checks = found(drawn(["####", "####"]), extent=[8, 2, 1])
     assert kinds(checks) == ["extent"]

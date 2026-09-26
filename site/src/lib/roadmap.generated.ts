@@ -44,7 +44,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "Q", title: "Words held to the world", open: 1 },
   { block: "R", title: "Levels measured before a person plays them", open: 5 },
   { block: "S", title: "Playing the game, not only rendering it", open: 6 },
-  { block: "T", title: "Adopting polyweave in a project", open: 7 },
+  { block: "T", title: "Adopting polyweave in a project", open: 6 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -152,13 +152,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "Cottony's flow from title screen to a won level is checked by no test, so a broken menu ships unseen",
     why: "The block is proven only when its first consumer keeps its main flows as replayed tests in its own release script, beside a clean release check.",
     deps: ["PW214", "PW215", "PW216"],
-  },
-  {
-    id: "PW234",
-    block: "T",
-    symptom: "a voxel model over budget on cells no one sees is hollowed by a hand-sized cutter, by trial",
-    why: "The budget counts buried cells, and the cutter that fixes it breaks through a wall when too big, so each saucer or sphere costs rebuilds.",
-    deps: [],
   },
   {
     id: "PW235",

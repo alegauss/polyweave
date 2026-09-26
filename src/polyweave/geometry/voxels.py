@@ -634,11 +634,12 @@ def voxelize(
         np.meshgrid(*(np.arange(n) for n in counts), indexing="ij"), axis=-1
     ).reshape(-1, 3)
     found = model.inside(output, origin + (index + 0.5) * size)
-    filled = index[found.inside]
-    owners = found.owner[found.inside]
+    inside = _hollowed(document, model.resolved["params"], found.inside, counts)
+    filled = index[inside]
+    owners = found.owner[inside]
 
     names = [node["id"] for node in document["nodes"]]
-    wears = [str(one) for one in found.wears[found.inside].tolist()]
+    wears = [str(one) for one in found.wears[inside].tolist()]
     materials = {**model.found_materials, **model.resolved["materials"]}
     palette_names = [one for one in materials if one in set(wears)]
     palette_names += sorted({one for one in wears if one not in palette_names})
@@ -679,6 +680,32 @@ def voxelize(
 
         made["fracture"] = plan(made, stated)
     return made
+
+
+def _hollowed(
+    document: dict, params: dict, inside: np.ndarray, counts: np.ndarray
+) -> np.ndarray:
+    """The cells within `[voxels] hollow` of the surface, and none deeper (§PW234).
+
+    A game draws a model's skin, and a cell three deep is there only if the model breaks
+    apart, yet the budget counts it. Taken out on the grid after the build and before
+    the checks, so no cutter is sized by trial and none breaks through a wall.
+    """
+    stated = (document.get("voxels") or {}).get("hollow")
+    if stated in (None, "", 0):
+        return inside
+    depth = evaluate(stated, params, where="voxels.hollow")
+    if depth < 1 or depth != int(depth):
+        raise PolyweaveError(
+            "geom.bad-voxels",
+            f"{document['name']}: voxels.hollow is {depth:g}, and a skin is a whole "
+            f"number of cells",
+            "give it the skin's thickness in cells, 1 or more, or leave it out",
+        )
+    from ..post.voxels import eroded
+
+    grid = inside.reshape(tuple(int(n) for n in counts))
+    return (grid & ~eroded(grid, int(depth))).reshape(-1)
 
 
 def _checked(made: dict, document: dict, params: dict, root: str | Path) -> dict:

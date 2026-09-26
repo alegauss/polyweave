@@ -172,7 +172,7 @@ REPEAT_FIELDS = ("var", "from", "to", "step")
 
 #: What a declaration's `[voxels]` may say (§PW231). `fracture` is its own table and is
 #: read where it is used.
-VOXELS_FIELDS = ("cell", "across", "parts", "extent", "fracture", "mesh")
+VOXELS_FIELDS = ("cell", "across", "parts", "extent", "fracture", "mesh", "hollow")
 
 
 def _refuse_unread(stated: dict, nodes: list[dict], named: str) -> None:

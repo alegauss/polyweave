@@ -588,7 +588,17 @@ neither.
 [voxels]
 across = 16          # cells along the longest side; or `cell = 0.5`, a size, never both
 mesh   = false       # the cells alone, no .glb beside them; true, the default, writes both
+hollow = 1           # keep a skin this many cells thick and nothing under it
 ```
+
+**A model's inside can be left out** (§PW234). A game draws a model's skin, and a cell
+three deep is there only if the model breaks apart, yet the project's `budget` counts it.
+`hollow = <cells>` (a whole number, possibly an expression) keeps the cells within that
+many of the surface and drops the rest, on the grid after the build and before the checks.
+Depth is counted over all 26 neighbours, so the skin stays joined by faces and no
+`diagonal` or `floating` finding comes from the cavity. A budget finding says how many of
+the model's cells are buried and what `hollow = 1` would leave, so a model over on its
+inside is told to hollow rather than to shrink, and no inner cutter is sized by trial.
 
 **The mesh is there to be asked for** (§PW226). A game that draws the `.voxels.json`
 (through the polyweave_voxels addon) never loads the `.glb`, yet a Godot project imports
@@ -601,7 +611,7 @@ its mesh whatever the call says, since the mesh is all it makes.
 
 Either value may be an expression over `[params]`, and `voxelize(document, cell=…)` or
 `across=…` overrides the table for one call. Neither or both is `geom.bad-voxels`.
-`[voxels]` takes `cell`, `across`, `parts`, `extent`, `fracture` and `mesh`, and any other
+`[voxels]` takes `cell`, `across`, `parts`, `extent`, `fracture`, `mesh` and `hollow`, and any other
 key is refused as `geom.unknown-field` at `voxels.<key>` with the nearest named, as a
 node's stray field is (§PW231): `acros = 16` used to fail for having no cell, and
 `mehs = false` to write the mesh anyway.

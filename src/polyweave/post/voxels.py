@@ -81,6 +81,22 @@ def components(filled: np.ndarray, steps: list) -> np.ndarray:
     return np.where(filled, labels, -1)
 
 
+def eroded(filled: np.ndarray, times: int) -> np.ndarray:
+    """The cells more than `times` deep: each pass keeps a cell only where all 26
+    around it are filled, and outside the grid is empty (§PW234).
+
+    Twenty-six rather than six, so the skin left around what this takes out stays
+    joined by faces and never by an edge a diagonal finding would name.
+    """
+    inner = filled
+    for _ in range(max(0, int(times))):
+        kept = inner.copy()
+        for step in _AROUND:
+            kept &= _shifted(inner, step, False)
+        inner = kept
+    return inner
+
+
 def _named(cells: np.ndarray) -> list[list[int]]:
     return [[int(v) for v in one] for one in cells[:NAMED]]
 
@@ -218,13 +234,23 @@ def check_voxels(
     findings += threaded + mirrored
 
     if budget and model["count"] > int(budget):
+        # How many of them no one sees, so a model over on its inside is told to hollow
+        # rather than to shrink (§PW234).
+        buried = int(eroded(filled, 1).sum())
+        advice = (
+            f"; {buried} of them are buried under the skin, and `[voxels] hollow = 1` "
+            f"keeps the look in {int(model['count']) - buried}"
+            if buried
+            else ""
+        )
         findings.append(
             {
                 "check": "budget",
                 "says": f"{model['count']} cells, over the {int(budget)} this project "
-                f"can afford",
+                f"can afford{advice}",
                 "cells": [],
                 "count": int(model["count"]),
+                "buried": buried,
             }
         )
     size = [n * float(model["cell"]) for n in model["size"]]
