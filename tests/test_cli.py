@@ -63,7 +63,7 @@ def test_a_preview_writes_the_contact_sheet(tmp_path, capsys):
 
 
 def test_a_refusal_prints_its_code_and_exits_non_zero(tmp_path, capsys):
-    broken = VOXEL.replace('kind = "cube"', 'kind = "cone"')
+    broken = VOXEL.replace('kind = "cube"', 'kind = "pyramid"')
     status, printed = run(tmp_path, declared(tmp_path, broken), capsys=capsys)
     assert status == 1
     assert "geom.unknown-shape" in printed.out

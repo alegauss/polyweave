@@ -609,25 +609,6 @@ reading the source, and it is filed as its own line.
 
 ## Block T — Adopting polyweave in a project
 
-### §PW233 Primitives with their own extents
-
-Found declaring Spinhold's actors (starship RK42). `primitive` takes one `size`, so a
-cylinder is as tall as it is wide, and there is no cone, frustum or torus. Every disc,
-drum, barrel and plinth was a unit cylinder under a `transform` that scaled it (width,
-width, height) and turned it a quarter about x to stand it up, since its axis is z. The
-mine layer's lower hull, a shallow cone, is seven one-cell discs under a `repeat` whose
-widths step by hand, and it only came out without broken joins by luck of the step.
-
-Let `primitive` take `size` as a triple as well as a number (x, y, z extents), an `axis`
-for the kinds that have one (cylinder, cone, frustum; default z, as now), and add the
-kinds `cone` (a `size` and an apex), `frustum` (`bottom` and `top` diameters over a
-height) and `torus` (`major`, `minor`). Each has an exact inside-test in the voxel
-evaluator, as the sphere and the cylinder do, and a mesh on the triangle path.
-
-Done when the turret's plinth is `primitive kind=cylinder size=[1.2, 0.15, 1.2] axis=y`
-with no transform, the mine layer's hull is one `frustum`, and both builds keep their
-look (cell counts within a few cells of the stacked versions).
-
 ### §PW234 A shell for voxel models
 
 Found declaring Spinhold's actors (starship RK42). The `budget` check counts every cell

@@ -264,8 +264,51 @@ def test_a_primitive_is_the_size_it_was_asked_for():
 
 def test_a_primitive_nothing_has_is_refused():
     with pytest.raises(PolyweaveError) as caught:
-        S.primitive("torus")
+        S.primitive("pyramid")
     assert caught.value.code == "geom.unknown-shape"
+
+
+@pytest.mark.parametrize(
+    "kind, stated",
+    [
+        ("cone", {"size": 2.0}),
+        ("frustum", {"bottom": 2.0, "top": 1.0, "height": 1.0}),
+        ("torus", {"major": 2.0, "minor": 0.5}),
+    ],
+)
+def test_the_round_solids_build_a_mesh(kind, stated):
+    found = check_mesh(S.primitive(kind, **stated))
+    assert found["faces"] >= 16
+
+
+def test_a_drum_stood_on_y_is_its_own_extents():
+    """§PW233: a drum without a transform scaling and turning a unit cylinder."""
+    low, high = check_mesh(
+        S.primitive("cylinder", [1.2, 0.15, 1.2], axis="y")
+    )["bounds"]
+    assert np.subtract(high, low).tolist() == pytest.approx([1.2, 0.15, 1.2], rel=0.01)
+
+
+def test_a_frustum_is_as_wide_as_its_bottom_and_as_tall_as_its_height():
+    found = S.primitive("frustum", bottom=3.0, top=1.0, height=2.0, axis="x")
+    low, high = check_mesh(found)["bounds"]
+    assert np.subtract(high, low).tolist() == pytest.approx([2.0, 3.0, 3.0], rel=0.01)
+
+
+def test_a_torus_lies_across_its_axis():
+    low, high = check_mesh(S.primitive("torus", major=2.0, minor=0.5))["bounds"]
+    assert np.subtract(high, low).tolist() == pytest.approx([5.0, 5.0, 1.0], rel=0.01)
+
+
+@pytest.mark.parametrize(
+    "stated",
+    [{"kind": "frustum", "bottom": 1.0}, {"kind": "torus"}, {"size": [1, 2]},
+     {"kind": "cylinder", "axis": "w"}],
+)
+def test_a_primitive_missing_what_it_needs_is_refused(stated):
+    with pytest.raises(PolyweaveError) as caught:
+        S.primitive(**stated)
+    assert caught.value.code == "geom.bad-solid"
 
 
 # -- putting them together -------------------------------------------------------------

@@ -154,13 +154,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW214", "PW215", "PW216"],
   },
   {
-    id: "PW233",
-    block: "T",
-    symptom: "a primitive has one size and no cone or frustum, so every disc and drum is a scaled, turned unit cylinder",
-    why: "A cylinder is as tall as it is wide with its axis on z, and a cone is a hand-stepped stack of discs under a repeat.",
-    deps: [],
-  },
-  {
     id: "PW234",
     block: "T",
     symptom: "a voxel model over budget on cells no one sees is hollowed by a hand-sized cutter, by trial",
@@ -200,6 +193,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "T",
     symptom: "no operation compares two voxel models cell by cell, so proving a declaration rewrite changed nothing takes a script",
     why: "Rewriting a declaration, a variant or a fit all want to know which cells and materials moved, and the one-off diff Spinhold wrote is what polyweave should answer.",
+    deps: [],
+  },
+  {
+    id: "PW241",
+    block: "T",
+    symptom: "a declaration cannot say its asymmetry is meant, so a one-armed pose fails the symmetry check the project applies to all",
+    why: "near_symmetry is one project-wide number and a declaration's [voxels] refuses it, so a waving variant had to be dropped for a symmetric fake.",
     deps: [],
   },
 ];

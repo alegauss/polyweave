@@ -289,17 +289,138 @@ def _edge(stated: Any, steps: int) -> np.ndarray:
     return O._ring(stated)
 
 
-def primitive(kind: str = "cube", size: float = 1.0, *, steps: int = STEPS) -> dict:
-    """The cheap shapes the preview rung needs, and nothing more."""
-    half = float(size) / 2.0
+#: Every primitive a declaration may name.
+KINDS = ("cube", "plane", "cylinder", "sphere", "cone", "frustum", "torus")
+
+#: For an `axis`, which world axes a shape's across, across and along run on. Each is
+#: a cyclic turn of x, y, z, so a mesh built on z and moved onto x or y keeps its faces
+#: pointing out.
+_ALONG = {0: (1, 2, 0), 1: (2, 0, 1), 2: (0, 1, 2)}
+
+
+def shape(stated: dict) -> dict:
+    """A primitive's fields read into one description, refused where they do not fit.
+
+    **Its own extents** (§PW233). `size` is a number or an `[x, y, z]` triple, the box
+    the shape fills, and `axis` (x, y or z, default z) is the one a cylinder, cone,
+    frustum, torus or plane is stood on. So a drum stood on y is `size = [1.2, 0.15,
+    1.2]` with `axis = "y"` rather than a unit cylinder scaled and turned a quarter. A
+    `frustum` is `bottom` and `top` diameters over a `height`; a `cone` is a frustum
+    whose top is its apex; a `torus` is a `major` and a `minor` radius. The mesh and
+    the voxel inside-test both read what this returns, so they cannot disagree.
+    """
+    kind = str(stated.get("kind", "cube"))
+    if kind not in KINDS:
+        raise PolyweaveError(
+            "geom.unknown-shape",
+            f"there is no primitive called {kind!r}",
+            f"name one of {', '.join(KINDS)}",
+            given=kind,
+            allowed=KINDS,
+        )
+    said = stated.get("axis", "z")
+    along = AXES.get(str(said).lower()) if isinstance(said, str) else None
+    if along is None:
+        raise PolyweaveError(
+            "geom.bad-solid",
+            f"a {kind} stood on {said!r} names no axis",
+            "write axis as x, y or z",
+        )
+    order = _ALONG[along]
+    if kind == "frustum":
+        needs = [one for one in ("bottom", "top", "height") if one not in stated]
+        if needs:
+            raise PolyweaveError(
+                "geom.bad-solid",
+                f"a frustum needs {', '.join(needs)}",
+                "give it `bottom` and `top` diameters and a `height`",
+            )
+        low, high = float(stated["bottom"]) / 2.0, float(stated["top"]) / 2.0
+        return {
+            "kind": kind,
+            "order": order,
+            "radii": ((low, low), (high, high)),
+            "height": float(stated["height"]),
+        }
+    if kind == "torus":
+        if "major" not in stated or "minor" not in stated:
+            raise PolyweaveError(
+                "geom.bad-solid",
+                "a torus needs `major` and `minor`",
+                "give it the ring's radius as `major` and the tube's as `minor`",
+            )
+        major, minor = float(stated["major"]), float(stated["minor"])
+        return {"kind": kind, "order": order, "major": major, "minor": minor}
+    size = stated.get("size", 1.0)
+    if not np.isscalar(size) and len(size) != 3:
+        raise PolyweaveError(
+            "geom.bad-solid",
+            f"a {kind}'s size {size!r} is neither a number nor an [x, y, z]",
+            "give size as one number, or as three extents along x, y and z",
+        )
+    extents = _triple(size)
+    across = extents[order[0]] / 2.0, extents[order[1]] / 2.0
+    tip = (0.0, 0.0) if kind == "cone" else across
+    return {
+        "kind": kind,
+        "order": order,
+        "extents": extents,
+        "radii": (across, tip),
+        "height": extents[order[2]],
+    }
+
+
+def shape_box(found: dict) -> tuple[np.ndarray, np.ndarray]:
+    """The box a primitive fills, centred on its own origin."""
+    kind, order = found["kind"], found["order"]
+    if kind == "torus":
+        out = found["major"] + found["minor"]
+        canonical = (out, out, found["minor"])
+    elif kind in ("frustum", "cone", "cylinder"):
+        (bu, bv), (tu, tv) = found["radii"]
+        canonical = (max(bu, tu), max(bv, tv), found["height"] / 2.0)
+    else:
+        half = np.asarray(found["extents"]) / 2.0
+        if kind == "plane":
+            half[order[2]] = 0.0
+        return -half, half
+    half = np.zeros(3)
+    half[list(order)] = canonical
+    return -half, half
+
+
+def shape_inside(found: dict, points: np.ndarray, slack: float = 0.0) -> np.ndarray:
+    """Which points are inside a primitive, by its own formula and no mesh."""
+    kind = found["kind"]
+    if kind == "plane":
+        return np.zeros(len(points), dtype=bool)
     if kind == "cube":
+        half = np.asarray(found["extents"]) / 2.0 + slack
+        return np.all(np.abs(points) <= half, axis=1)
+    if kind == "sphere":
+        half = np.asarray(found["extents"]) / 2.0 + slack
+        return np.sum((points / half) ** 2, axis=1) <= 1.0
+    u, v, w = (points[:, i] for i in found["order"])
+    if kind == "torus":
+        ring = np.hypot(u, v) - found["major"]
+        return ring**2 + w**2 <= (found["minor"] + slack) ** 2
+    height = found["height"]
+    (bu, bv), (tu, tv) = found["radii"]
+    t = np.clip((w + height / 2.0) / height, 0.0, 1.0) if height else 0.0 * w
+    ru, rv = bu + (tu - bu) * t + slack, bv + (tv - bv) * t + slack
+    return ((u / ru) ** 2 + (v / rv) ** 2 <= 1.0) & (np.abs(w) <= height / 2.0 + slack)
+
+
+def primitive(
+    kind: str = "cube", size: Any = 1.0, *, steps: int = STEPS, **stated: Any
+) -> dict:
+    """The primitives a declaration names: a box, a sheet and the round solids."""
+    found = shape({"kind": kind, "size": size, **stated})
+    order = found["order"]
+    if kind == "cube":
+        hx, hy, hz = (v / 2.0 for v in found["extents"])
         corners = np.array(
-            [
-                [x, y, z]
-                for x in (-half, half)
-                for y in (-half, half)
-                for z in (-half, half)
-            ]
+            [[x, y, z] for x in (-hx, hx) for y in (-hy, hy) for z in (-hz, hz)]
         )
         return mesh(
             corners,
@@ -312,19 +433,72 @@ def primitive(kind: str = "cube", size: float = 1.0, *, steps: int = STEPS) -> d
                 (1, 5, 7, 3),
             ],
         )
-    if kind == "plane":
-        return prism(O.rounded_square(float(size)), 0.0)
-    if kind == "cylinder":
-        return prism(O.circle(half, steps=steps), float(size), front=-half)
     if kind == "sphere":
-        return _sphere(half, steps)
-    raise PolyweaveError(
-        "geom.unknown-shape",
-        f"there is no primitive called {kind!r}",
-        "name one of cube, plane, cylinder, sphere",
-        given=kind,
-        allowed=("cube", "plane", "cylinder", "sphere"),
-    )
+        made = _sphere(1.0, steps)
+        made["vertices"] = made["vertices"] * (np.asarray(found["extents"]) / 2.0)
+        return made
+    if kind == "plane":
+        across = [found["extents"][order[0]], found["extents"][order[1]]]
+        made = prism(O.rounded_square(across), 0.0)
+    elif kind == "torus":
+        made = _torus(found["major"], found["minor"], steps)
+    else:
+        made = _tapered(found["radii"], found["height"], steps)
+    back = np.empty(3, dtype=int)
+    back[list(order)] = [0, 1, 2]
+    made["vertices"] = made["vertices"][:, back]
+    return made
+
+
+def _ellipse(radii: tuple[float, float], steps: int) -> np.ndarray:
+    ring = O.circle(radii[0], steps=steps)
+    if radii[1] != radii[0]:
+        ring[:, 1] = ring[:, 1] * (radii[1] / radii[0] if radii[0] else 0.0)
+    return ring
+
+
+def _tapered(radii: tuple, height: float, steps: int) -> dict:
+    """A cylinder, frustum or cone on z, from its bottom ring to its top."""
+    bottom, top = radii
+    if top == bottom:
+        return prism(_ellipse(bottom, steps), height, front=-height / 2.0)
+    ring = _ellipse(bottom, steps)
+    count = len(ring)
+    near = np.column_stack([ring, np.full(count, -height / 2.0)])
+    if top == (0.0, 0.0):
+        apex = count
+        sides = [(i, (i + 1) % count, apex) for i in range(count)]
+        points = np.vstack([near, [[0.0, 0.0, height / 2.0]]])
+        return mesh(points, sides + [_fan(count)[0][::-1]])
+    far = np.column_stack([_ellipse(top, steps), np.full(count, height / 2.0)])
+    sides = [
+        (i, (i + 1) % count, count + (i + 1) % count, count + i) for i in range(count)
+    ]
+    return mesh(np.vstack([near, far]), sides + _caps(ring, count, count))
+
+
+def _torus(major: float, minor: float, steps: int) -> dict:
+    """A ring round z: `major` to the tube's centre, `minor` across the tube."""
+    tube = max(3, int(steps) // 2)
+    points, faces = [], []
+    for i in range(steps):
+        around = 2 * math.pi * i / steps
+        for j in range(tube):
+            turn = 2 * math.pi * j / tube
+            reach = major + minor * math.cos(turn)
+            points.append(
+                [
+                    reach * math.cos(around),
+                    reach * math.sin(around),
+                    minor * math.sin(turn),
+                ]
+            )
+    for i in range(steps):
+        for j in range(tube):
+            a, b = i * tube, ((i + 1) % steps) * tube
+            k = (j + 1) % tube
+            faces.append((a + j, b + j, b + k, a + k))
+    return mesh(points, faces)
 
 
 def _sphere(radius: float, steps: int) -> dict:

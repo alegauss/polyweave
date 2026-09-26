@@ -171,7 +171,7 @@ counts y upward — an outline that came back mirrored is a sprite extruded back
 
 | `op` | What it is |
 |---|---|
-| `primitive` | `sphere`, `cube`, `cylinder`, `plane` — the cheap shapes the preview rung needs |
+| `primitive` | `cube`, `plane`, `sphere`, `cylinder`, `cone`, `frustum`, `torus`, centred on the origin — see "Primitives" |
 | `prism` | An outline extruded along the depth axis |
 | `plate` | A rounded plate: a rectangle with a corner radius and a depth |
 | `crowned` | A plate with a domed face |
@@ -185,6 +185,16 @@ counts y upward — an outline that came back mirrored is a sprite extruded back
 | `mesh` | A mesh file under the project (`path`, a `.glb` or `.blend`), in the project's axes |
 | `cells` | Cells drawn by hand as text — see "Cells instead of triangles" |
 | `custom` | A project function — see below |
+
+**Primitives** (§PW233). `size` is one number or an `[x, y, z]` triple, the box the shape
+fills, so a cube is a box and a sphere an ellipsoid. `axis` (`x`, `y` or `z`, default
+`z`) is what a `cylinder`, `cone`, `frustum`, `torus` or `plane` stands on: a drum on y
+is `kind = "cylinder"`, `size = [1.2, 0.15, 1.2]`, `axis = "y"`, with no transform
+scaling and turning a unit one. A `cone` is `size` with its apex at the top of its axis.
+A `frustum` takes `bottom` and `top` diameters and a `height` rather than a `size`, and a
+`torus` a `major` radius to the tube's centre and a `minor` one across the tube. The mesh
+and the voxel evaluator read the same description, and on the grid each is answered by
+its own formula, so a stepped stack of discs under a `repeat` is one `frustum`.
 
 `inflate` is the operation that gives a drawn panel its volume while keeping the drawn
 silhouette to the pixel. `prism` over an `image` outline is the other half of the same idea:

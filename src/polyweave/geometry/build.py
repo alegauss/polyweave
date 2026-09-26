@@ -61,10 +61,13 @@ def _rest(instance: dict, *skip: str) -> dict:
 
 
 def _primitive(node, instance, built, root):
+    shaped = ("bottom", "top", "height", "major", "minor")
     return S.primitive(
         str(instance.get("kind", "cube")),
-        float(instance.get("size", 1.0)),
+        instance.get("size", 1.0),
         **_rest(instance, "front", "profile", "resolution", "crown"),
+        **{k: v for k, v in instance.items() if k in shaped},
+        axis=node.get("axis", "z"),
     )
 
 
@@ -247,7 +250,17 @@ _TAKES = ("inputs", "operands", "of", "on")
 #: so a key no builder reads is refused where it is written rather than dropped
 #: (§PW146). `custom` is open: its fields are the function's own arguments.
 FIELDS: dict[str, tuple[str, ...] | None] = {
-    "primitive": ("kind", "size", "steps"),
+    "primitive": (
+        "kind",
+        "size",
+        "steps",
+        "axis",
+        "bottom",
+        "top",
+        "height",
+        "major",
+        "minor",
+    ),
     "prism": ("outline", "depth", "front"),
     "plate": ("rect", "depth", "corner", "front"),
     "crowned": ("outline", "depth", "crown", "front", "steps"),

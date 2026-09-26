@@ -74,6 +74,53 @@ def test_a_sphere_holds_about_its_own_volume():
     assert made["count"] == pytest.approx(4 / 3 * math.pi * 10**3, rel=0.05)
 
 
+def test_a_drum_stood_on_y_fills_what_the_turned_unit_cylinder_did():
+    """§PW233: the plinth once was a unit cylinder scaled and turned a quarter."""
+    unit = {"id": "unit", "op": "primitive", "kind": "cylinder", "size": 1.0}
+    turned = {
+        "id": "plinth",
+        "op": "transform",
+        "of": "unit",
+        "scale": [12, 12, 1.5],
+        "rotate": [90, 0, 0],
+    }
+    drum = {
+        "id": "plinth",
+        "op": "primitive",
+        "kind": "cylinder",
+        "size": [12, 1.5, 12],
+        "axis": "y",
+    }
+    before = V.voxelize(shape(unit, turned, voxels={"cell": 1.0}))
+    after = V.voxelize(shape(drum, voxels={"cell": 1.0}))
+    assert after["size"] == before["size"]
+    assert abs(after["count"] - before["count"]) <= 4
+
+
+def test_a_frustum_holds_its_own_volume():
+    hull = {
+        "id": "hull",
+        "op": "primitive",
+        "kind": "frustum",
+        "bottom": 20.0,
+        "top": 8.0,
+        "height": 6.0,
+    }
+    made = V.voxelize(shape(hull, voxels={"cell": 0.5}))
+    volume = math.pi * 6.0 / 3 * (10**2 + 10 * 4 + 4**2)
+    assert made["count"] * 0.5**3 == pytest.approx(volume, rel=0.05)
+    assert made["size"] == [40, 40, 12]
+
+
+def test_a_torus_leaves_its_middle_empty():
+    ring = {"id": "ring", "op": "primitive", "kind": "torus", "major": 6.0,
+            "minor": 2.0, "axis": "x"}
+    made = V.voxelize(shape(ring, voxels={"cell": 1.0}))
+    assert made["size"] == [4, 16, 16]
+    assert made["count"] == pytest.approx(2 * math.pi**2 * 6 * 2**2, rel=0.08)
+    assert (2, 8, 8) not in cells_of(made)
+
+
 @pytest.mark.parametrize(
     "voxels",
     [{}, {"cell": 1.0, "across": 4}, {"cell": 0}, {"across": -2}],

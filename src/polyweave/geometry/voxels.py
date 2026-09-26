@@ -150,9 +150,7 @@ class _Model:
     def _op_bounds(self, node: dict, instance: dict) -> tuple[np.ndarray, np.ndarray]:
         op = node["op"]
         if op == "primitive":
-            half = float(instance.get("size", 1.0)) / 2.0
-            depth = 0.0 if instance.get("kind", "cube") == "plane" else half
-            return np.array([-half, -half, -depth]), np.array([half, half, depth])
+            return S.shape_box(S.shape({**instance, "axis": node.get("axis", "z")}))
         if op in ("prism", "plate"):
             ring, near, far = self._slab(op, instance)
             return (
@@ -212,7 +210,9 @@ class _Model:
     def _op_inside(self, node: dict, instance: dict, points: np.ndarray) -> _Found:
         op, rank = node["op"], self.rank[node["id"]]
         if op == "primitive":
-            return _Found.of(_primitive(instance, points), rank)
+            return _Found.of(
+                _primitive({**instance, "axis": node.get("axis", "z")}, points), rank
+            )
         if op in ("prism", "plate"):
             ring, near, far = self._slab(op, instance)
             depth = (points[:, 2] >= near - _EPS) & (points[:, 2] <= far + _EPS)
@@ -351,25 +351,7 @@ class _Model:
 
 
 def _primitive(instance: dict, points: np.ndarray) -> np.ndarray:
-    kind = str(instance.get("kind", "cube"))
-    half = float(instance.get("size", 1.0)) / 2.0 + _EPS
-    if kind == "cube":
-        return np.all(np.abs(points) <= half, axis=1)
-    if kind == "sphere":
-        return np.linalg.norm(points, axis=1) <= half
-    if kind == "cylinder":
-        return (np.linalg.norm(points[:, :2], axis=1) <= half) & (
-            np.abs(points[:, 2]) <= half
-        )
-    if kind == "plane":
-        return np.zeros(len(points), dtype=bool)
-    raise PolyweaveError(
-        "geom.unknown-shape",
-        f"there is no primitive called {kind!r}",
-        "name one of cube, plane, cylinder, sphere",
-        given=kind,
-        allowed=("cube", "plane", "cylinder", "sphere"),
-    )
+    return S.shape_inside(S.shape(instance), points, _EPS)
 
 
 def _mirrored(node: dict, instance: dict) -> tuple[int, float]:
