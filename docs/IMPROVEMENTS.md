@@ -299,30 +299,6 @@ since a reference the service ignores is dropped without an error.
 
 ## Block P — Music and sound a game can ship
 
-### §PW184 Whether agent-composed music is good enough to ship
-
-The block rests on one premise: that an agent writing music as data, rendered headlessly
-through existing open-source engines, sounds good enough for a casual game. Nothing has
-tested it, and every later line spends effort on it.
-
-The spike runs outside the package, in a throwaway directory. The agent composes three
-loops of one to two minutes (chiptune, synthwave and a small orchestral cue) as
-multi-track scores with drums, each written in two candidate notations for the patterns,
-such as ABC and Strudel's mini-notation, so the one the agent gets wrong least and a
-person finds easiest to change is chosen. A script renders each through Surge XT and
-sfizz or FluidSynth, driven from DawDreamer or Pedalboard, with one fixed mix and master
-chain. Ten retro sound effects come from a seeded sfxr-style synthesiser. Each file is
-measured with `sound.measure` for seam, loudness and peak.
-
-The verdict is a person's: they listen beside a track from a paid generator such as Suno
-and say whether the result is good enough for Cottony. An agent does not judge its own
-sound, for the reason the non-goal on looks gives.
-
-If the answer is yes, the findings (which engine, which instrument libraries, which
-licences) are written into the designs below and the block proceeds. If it is no, every
-open line in this block is retired with the spike's outcome as the reason, and paid
-generation becomes the path instead.
-
 ### §PW185 Declaring what a game needs to hear
 
 A game's audio is a list the consumer owns: music per level or state, and a sound per
@@ -335,6 +311,13 @@ lands under a new `paths.audio` default. Acceptance bounds stay in `*.accept.tom
 which already reads `sound.*` measures; the declaration only says what exists and where.
 Nothing about Cottony is compiled in, per the non-goal on one project's paths.
 
+The kind decides which measures apply, and the spike found two that misread today.
+`sound.measure` refuses any file shorter than its seam window, which every one-shot
+effect is, so an effect needs loudness, peak and duration without a seam. And
+`seam_flux`, taken over the track's 90th percentile, flags a loop that restarts on a
+crash cymbal: the synthwave loop's seam read 3.07 while its own section downbeats read
+3.00 to 3.09. A music bound should compare the seam with the track's own downbeats.
+
 ### §PW186 Music as an editable source an agent writes and polyweave checks
 
 An agent composes well only when its output is structured and a validator answers it,
@@ -346,28 +329,39 @@ The source is a `*.music.toml` in the consumer's repository, beside its `*.accep
 laid out like a tracker: tracks naming an instrument and a layer, short named patterns
 written in a compact text notation with one line per bar or phrase, and an arrangement
 that chains patterns into sections, with tempo, meter, key and the loop span. Changing a
-riff is one line, the arrangement follows, and a diff reads as music. An agent asked to
-darken the bridge edits one pattern rather than rewriting the piece.
+riff is one line, the arrangement follows, and a diff reads as music.
 
 The note model, absolute ticks per note in the shape of piano's JSON, is derived from
 that source and never edited. `music.validate` compiles the source into it and reports
 errors against the source's own line, with remedies in the house style; `music.to_midi`
 writes a standard MIDI file from it, so any DAW can open the result. Piano's JSON can be
-read as input, but polyweave does not depend on piano's runtime. Which notation fills
-the patterns is what the spike settles.
+read as input, but polyweave does not depend on piano's runtime. The spike chose
+Strudel's mini-notation, one cycle per bar, with `@` weights, `<>` alternation, `[a, b]`
+stacks and named drums. ABC matched it note for note, but ran two to three times longer
+on drums and arpeggios, and its bar-long accidentals made one missed sharp two wrong
+notes.
 
 ### §PW187 Rendering a score without a DAW open
 
 `music.render` turns a validated score into WAV and OGG headlessly, orchestrating
 engines that already exist rather than writing a synthesiser, as the non-goal on
-replacing tools requires. Which engines (Surge XT, sfizz, FluidSynth, through DawDreamer
-or Pedalboard) is what the spike settles.
+replacing tools requires. The spike settled them: Surge XT as a VST3 driven through
+Pedalboard for synthesised parts, and FluidSynth's command line with a General MIDI
+SoundFont for sampled ones. Neither sfizz nor DawDreamer was needed.
 
 What decides how professional the result sounds is the instruments and the mix more than
-the notes, so the render applies one fixed, declared chain: per-track levels, bus
-compression, and a limiter to the declared loudness. A loop's reverb tail is wrapped
-into its start, so the seam `sound.measure` checks is clean. Instrument libraries are
-configuration and are never bundled.
+the notes, so the render applies one fixed, declared chain. The one a person passed
+levels every stem to one RMS, adds reverb and dotted-eighth delay sends, compresses at
+2.5:1 and limits to -18 dBFS RMS under a -1 dBFS peak. The master runs over the loop as
+a loop, so its seam sees its own tail, and a loop's reverb tail is wrapped into its
+start. Instrument libraries are configuration and are never bundled.
+
+Three facts about Surge shape the code. A load takes 25 to 77 seconds, so one instance
+serves a whole render. It is reset by restoring each parameter's raw value, because
+restoring its saved state silences it. Its parameter names change with the oscillator
+type and its times are discrete labels, so a patch is a table of named values matched to
+the nearest label. JUCE's limiter lifts its threshold to 0 dBFS, so the ceiling is a
+gain after it.
 
 ### §PW188 One theme at several intensities
 
@@ -389,6 +383,13 @@ an effect by editing a number, writing mono 16-bit WAV.
 
 The same seed gives the same bytes, so a verdict on an effect holds across runs.
 
+The spike ported sfxr's parameter set, its synth loop and its seven generators (pickup,
+laser, explosion, powerup, hit, jump, blip), seeded by the effect's name, and a person
+passed the ten first draws. Hand-set parameters also gave a four-hit drum kit, so the
+same synth serves a chiptune score's percussion. A first draw can miss its purpose: a
+powerup meant for a won level came out at 0.11 s. So a declared duration bound should be
+able to refuse a draw and move to the next seed, recording which one it kept.
+
 ### §PW190 Realistic effects bought under a budget
 
 Footsteps, glass or rain are not what a synthesiser does well. `sound.buy` fetches from
@@ -407,6 +408,12 @@ through `provenance` rather than the purchase ledger, since nothing was bought.
 
 A render that uses a library whose licence is undeclared is refused, and `provenance`
 can list the credits a game owes.
+
+The spike's stack sets the first entries. Surge XT is GPL-3.0 and FluidSynth LGPL-2.1,
+and neither licence reaches the audio they render. GeneralUser GS v2.0.3 allows any
+music use, commercial included, with no credit required, but its author cannot vouch for
+the origin of every sample. The sidecar carries that as a note rather than a clean bill.
+Surge patches written as parameter tables are the consumer's own and owe nothing.
 
 ### §PW192 Cottony's audio made through polyweave
 

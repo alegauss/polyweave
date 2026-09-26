@@ -74,14 +74,14 @@ export const generatedTasks: GeneratedTask[] = [
     block: "P",
     symptom: "No declaration says which music and sound effects a game needs or where they land",
     why: "Cottony keeps that list in its own scripts, so polyweave cannot say which audio is missing or out of bounds.",
-    deps: ["PW184"],
+    deps: [],
   },
   {
     id: "PW186",
     block: "P",
     symptom: "An agent cannot write multi-track music as data that polyweave validates",
     why: "An agent composes well only when a validator answers its output, and no format here has tracks, drums or loop points.",
-    deps: ["PW184"],
+    deps: [],
   },
   {
     id: "PW187",
@@ -247,4 +247,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW36", "PW53", "PW77", "PW78", "PW79", "PW80", "PW81", "PW82", "PW180", "PW184", "PW201", "PW211"];
+export const generatedPaused: string[] = ["PW36", "PW53", "PW77", "PW78", "PW79", "PW80", "PW81", "PW82", "PW180", "PW201", "PW211"];

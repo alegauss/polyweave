@@ -237,6 +237,8 @@
 
 ## Block P — Music and sound a game can ship
 
+- ✅ **PW184** **Nobody knows if agent-composed, headlessly rendered music sounds good enough to ship in a game** — A person judged three agent-written loops and ten seeded effects, rendered headlessly through Surge XT and FluidSynth, to sound professional, so Block P proceeds.
+
 ## Block Q — Words held to the world
 
 - ✅ **PW196** **No declaration says which names, factions and characters a game's world holds** — A *.world.toml declares a game's entities; world.validate reports duplicate names, unknown factions and style families on their lines (design recorded in `docs/specs/world.md`).

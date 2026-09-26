@@ -43,8 +43,6 @@
 
 ## Block P — Music and sound a game can ship
 
-- ⏸ **PW184** (deps: —) **Nobody knows if agent-composed, headlessly rendered music sounds good enough to ship in a game** — set aside (Awaits a person's listening.): Every later line in this block spends effort on that premise, so a person's listening verdict decides whether the block proceeds or is retired. → §PW184
-
 ## Block Q — Words held to the world
 
 ## Block R — Levels measured before a person plays them
