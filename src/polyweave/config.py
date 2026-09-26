@@ -263,6 +263,10 @@ DEFAULTS: dict[str, Any] = {
         "thread": 3,
         # [x, y, z] in the declaration's units; a document's own [voxels] extent wins.
         "extent": [],
+        # One cell for every voxel declaration in the project (§PW229), so the debris of
+        # a drone and of a boss are the same cubes. A document giving neither `cell` nor
+        # `across` takes it; its own wins, reported where it differs. Zero is none.
+        "cell": 0.0,
         # A model at least this symmetric in x and short of whole is reported, because
         # that is what two halves drifting apart looks like.
         "near_symmetry": 0.9,
@@ -865,7 +869,14 @@ def _check_value(address: str, key: str, value: Any, source: Path) -> None:
             allowed=_CHOICES[key],
             at=address,
         )
-    elif key == "cell" and value and (
+    elif address == "voxels.cell" and value < 0:
+        raise PolyweaveError(
+            "config.bad-type",
+            f"{address} is {value!r} in {source.name}, and a cell has a size",
+            "write the cell's size above zero, or 0 for no project-wide cell",
+            at=address,
+        )
+    elif key == "cell" and address.startswith("style") and value and (
         len(value) != 2 or not all(isinstance(v, int) and v > 0 for v in value)
     ):
         raise PolyweaveError(

@@ -533,6 +533,26 @@ def lattice(node: dict) -> dict:
     return {"size": size, "filled": filled, "wears": wears}
 
 
+def with_project_cell(document: dict, root: str | Path) -> tuple[dict, str, float]:
+    """The document with the project's cell where it states none of its own (§PW229).
+
+    A game whose actors break into their own cubes needs one cell across every actor,
+    so `[voxels] cell` in the project config is the default for a document giving
+    neither `cell` nor `across`; a document's own still wins, as `extent`'s does.
+    Answers the document to build, where its cell came from, and the project's cell.
+    """
+    from ..config import load
+
+    project = float(load(root).get("voxels.cell") or 0.0)
+    table = document.get("voxels") or {}
+    if any(table.get(one) not in (None, "") for one in ("cell", "across")):
+        return document, "document", project
+    if project <= 0 or not document.get("voxels"):
+        return document, "document", project
+    filled = {**document, "voxels": {**table, "cell": project}}
+    return filled, "project", project
+
+
 def stated_cell(document: dict, params: dict) -> float | None:
     """The cell size `[voxels]` gives outright, or None where it gives only `across`."""
     stated = (document.get("voxels") or {}).get("cell")
@@ -610,8 +630,12 @@ def voxelize(
     symmetric, and a cell is filled where its centre is inside. A document with a
     `cells` node is the exception: its grid sits on whole cells from the origin, so a
     drawn cell is a cell of the model and not split between two. `cell` or `across`
-    override the document's own `[voxels]` for this call.
+    override the document's own `[voxels]` for this call, and a document stating
+    neither takes the project's `[voxels] cell` (§PW229).
     """
+    document, cell_from, project_cell = with_project_cell(document, root)
+    if cell or across:
+        cell_from = "call"
     model = _Model(document, Path(root).resolve(), given, cell=cell)
     output = document["output"]
     low, high = model.bounds(output)
@@ -660,6 +684,10 @@ def voxelize(
             "node": owners.tolist(),
         },
         "count": len(filled),
+        # Where the cell came from, and the project's, so a build can say which it used
+        # and a document drifting from the project's is reported (§PW229).
+        "cell_from": cell_from,
+        "project_cell": project_cell,
     }
     made["says"] = says(made)
     made["checks"] = _checked(made, document, model.resolved["params"], root)
@@ -786,8 +814,11 @@ def write(
     cells.parent.mkdir(parents=True, exist_ok=True)
     # LF on every platform, so the digest its record carries holds on any checkout
     # (§PW228).
+    # Where the cell came from is the build's to say, not the game's to read, so the
+    # file a game loads is the same bytes whichever table set the cell (§PW229).
+    kept = {k: v for k, v in made.items() if k not in ("cell_from", "project_cell")}
     cells.write_text(
-        json.dumps(_plain(made), indent=1) + "\n", encoding="utf-8", newline="\n"
+        json.dumps(_plain(kept), indent=1) + "\n", encoding="utf-8", newline="\n"
     )
     answer = {"model": made, "says": made["says"], "voxels": str(cells)}
     if sheet:

@@ -223,6 +223,23 @@ def _wants_mesh(document: dict) -> bool:
     return stated or not document.get("voxels")
 
 
+def _cell_said(model: dict, warnings: list[str]) -> list[str]:
+    """Which cell a voxel build used, and a warning where it drifts from the project's.
+
+    The project's `[voxels] cell` exists so every actor is built on one cell (§PW229),
+    so a document stating its own that differs is the drift to report.
+    """
+    cell, project = model["cell"], model.get("project_cell") or 0.0
+    if model.get("cell_from") == "project":
+        return [f"cell {cell:g}, the project's"]
+    if project and abs(cell - project) > 1e-9:
+        warnings.append(
+            f"cell {cell:g} is this declaration's own, and the project's is "
+            f"{project:g}: its cubes will not match the other actors'"
+        )
+    return []
+
+
 def _unwanted(where: Path) -> None:
     """A mesh an earlier build wrote and this one was asked not to, taken back out.
 
@@ -258,6 +275,7 @@ def _member(
             **given,
         )
         answer["says"] = written["says"]
+        answer["reads"] += _cell_said(written["model"], answer["warnings"])
         answer["findings"] = [
             f"{one['check']}: {one['says']}"
             for one in written["model"]["checks"]["findings"]

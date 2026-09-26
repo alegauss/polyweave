@@ -592,6 +592,15 @@ its mesh whatever the call says, since the mesh is all it makes.
 Either value may be an expression over `[params]`, and `voxelize(document, cell=…)` or
 `across=…` overrides the table for one call. Neither or both is `geom.bad-voxels`.
 
+**One cell for a project** (§PW229). A game whose actors break into their own cubes needs
+every actor on one cell, so the debris of a drone and of a boss are the same cubes. So
+`[voxels] cell` in `polyweave.toml` is the cell of a declaration stating neither `cell`
+nor `across`. A declaration's own still wins, as with `extent`, and a call's `cell=`
+overrides both. The build's reading says so ("cell 0.25, the project's"). A declaration
+whose own cell differs from the project's is built on its own, with a warning that its
+cubes will not match the other actors'. The `.voxels.json` a game loads is the same bytes
+whichever table set the cell.
+
 **Evaluated on the grid.** The grid is centred on what the output covers and a cell is
 filled where its centre is inside. `primitive`, `prism` and `plate` answer that by their own
 formula, `transform` by moving the sample points backwards, `union` and `carve` as set

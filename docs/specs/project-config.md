@@ -149,6 +149,7 @@ budget        = 4000           # the most cells a model may have; zero is no cei
 thread        = 3              # the longest run one cell thick before it is reported
 extent        = []             # [x, y, z] a model should span; a document's own wins
 near_symmetry = 0.9            # this symmetric in x and short of whole is reported
+cell          = 0.25           # every declaration's cell unless it states its own; 0 is none
 ```
 
 ## A tolerance has one home

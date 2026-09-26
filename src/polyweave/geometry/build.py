@@ -293,9 +293,10 @@ def build(
     expensive place, so the report comes back with the mesh and not on request.
     """
     from .review import report
-    from .voxels import stated_cell
+    from .voxels import stated_cell, with_project_cell
 
     here = Path(root).resolve()
+    document, _, _ = with_project_cell(document, here)
     resolved = expand(document, **given)
     stated = {node["id"]: node for node in document["nodes"]}
     instanced = {node["id"]: node for node in resolved["nodes"]}

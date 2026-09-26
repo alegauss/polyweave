@@ -215,6 +215,35 @@ def test_a_stamp_written_with_absolute_paths_still_reads_as_cached(tmp_path):
     assert all(Path(one).is_file() for one in again["outputs"])
 
 
+def test_declarations_with_no_cell_build_on_the_projects(tmp_path):
+    """§PW229: a game's actors break into their own cubes, so they share one cell."""
+    (tmp_path / "polyweave.toml").write_text("[voxels]\ncell = 0.5\n", encoding="utf-8")
+    bare = VOXEL.replace("cell = 1\n", "mesh = false\n")
+    for name in ("drone.toml", "boss.toml"):
+        declared(tmp_path, bare.replace('"box"', f'"{name[:-5]}"'), name)
+        found = cli.build_one(name, root=str(tmp_path))
+        assert found["status"] == "built"
+        assert "cell 0.5, the project's" in found["reads"]
+        cells = json.loads((tmp_path / f"{name[:-5]}.voxels.json").read_text("utf-8"))
+        assert cells["cell"] == 0.5
+        assert "cell_from" not in cells
+
+
+def test_a_declarations_own_cell_wins_and_its_drift_is_reported(tmp_path):
+    (tmp_path / "polyweave.toml").write_text("[voxels]\ncell = 0.5\n", encoding="utf-8")
+    own = VOXEL.replace("cell = 1\n", "cell = 1\nmesh = false\n")
+    found = cli.build_one(declared(tmp_path, own), root=str(tmp_path))
+    assert found["says"].startswith("a voxel model 4 by 4 by 4")
+    assert any("the project's is 0.5" in one for one in found["warnings"])
+
+
+def test_a_declaration_with_neither_and_no_project_cell_is_still_refused(tmp_path):
+    bare = VOXEL.replace("cell = 1\n", "mesh = false\n")
+    found = cli.build_one(declared(tmp_path, bare), root=str(tmp_path))
+    assert found["status"] == "refused"
+    assert found["refusal"]["code"] == "geom.bad-voxels"
+
+
 def test_all_reports_a_declaration_with_a_typo_and_fails(tmp_path, capsys):
     """§PW123: a declaration `read` refused used to drop out silently, exiting 0."""
     (tmp_path / "art").mkdir()
