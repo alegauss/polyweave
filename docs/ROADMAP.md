@@ -36,7 +36,6 @@
 
 ## Block P — Music and sound a game can ship
 
-- 📋 **PW224** (deps: —) **A sound ffmpeg cannot decode escapes sound.read as a raw process error, not a refusal** — A corrupt OGG or MP3 makes every sound measure and bound fail with a traceback an agent cannot branch on, where a code would name the file. → §PW224
 - 📋 **PW225** (deps: —) **A loop cut mid-bar in a dense mix passes both seam measures** — In a busy mix a jump into the wrong beat changes no more than a downbeat does, so only the loop's grid can tell a cut from a clean wrap. → §PW225
 
 ## Block Q — Words held to the world

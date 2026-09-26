@@ -306,22 +306,6 @@ declared in its `polyweave.toml`, made by `music.render` and `sound.synth`, and 
 `*.accept.toml` bounds, and its own audio scripts are removed. Anything Cottony needs
 that a second game would not becomes configuration.
 
-### §PW224 An undecodable sound refused with a code
-
-`sound.read` decodes anything but a WAV by running ffmpeg with `check=True`, so a file
-ffmpeg cannot decode (a truncated OGG, an MP3 a service answered with an error page, a
-text file given the wrong suffix) raises `subprocess.CalledProcessError` out of
-`sound.measure`, `sound.declared` and every `*.accept.toml` sound bound. An agent gets a
-traceback with an exit status instead of a code it can branch on, and `sound.declared`
-fails the whole read on one bad cue rather than saying which. `sound.buy` guards against
-it for now, which is a second place holding what `read` should.
-
-Run ffmpeg without `check`, and on a non-zero exit or empty output raise
-`spec.unreadable-sound` naming the file, with ffmpeg's first stderr line as `detail`.
-Then drop the guard in `sound_buy._measured`. Test with a `.ogg` holding plain text:
-`measure` refuses with the code, and `sound.declared` reports that cue as unmeasured
-while the others still measure.
-
 ### §PW225 A seam held to the loop's grid
 
 Both seam measures compare the wrap with the track's own moments, which catches a click

@@ -40,7 +40,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 0 },
   { block: "O", title: "A person sees and answers", open: 0 },
-  { block: "P", title: "Music and sound a game can ship", open: 2 },
+  { block: "P", title: "Music and sound a game can ship", open: 1 },
   { block: "Q", title: "Words held to the world", open: 1 },
   { block: "R", title: "Levels measured before a person plays them", open: 5 },
   { block: "S", title: "Playing the game, not only rendering it", open: 6 },
@@ -68,13 +68,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent",
     why: "The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question.",
     deps: ["PW57"],
-  },
-  {
-    id: "PW224",
-    block: "P",
-    symptom: "A sound ffmpeg cannot decode escapes sound.read as a raw process error, not a refusal",
-    why: "A corrupt OGG or MP3 makes every sound measure and bound fail with a traceback an agent cannot branch on, where a code would name the file.",
-    deps: [],
   },
   {
     id: "PW225",

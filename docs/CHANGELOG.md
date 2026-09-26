@@ -248,6 +248,7 @@
 - ✅ **PW221** **sound.measure refuses every one-shot effect as too short for a seam** — A one-shot measures its loudness, peak and duration with no seam, so an effect can be bounded; a seam bound on one is refused with the length needed (design recorded in `docs/specs/measurements.md`).
 - ✅ **PW222** **seam_flux reads a loop that restarts on a crash cymbal as a cut** — seam_flux weighs the wrap against the track's own strong onsets, so a clean loop opening on a crash reads below one; cuts still read above (design recorded in `docs/specs/measurements.md`).
 - ✅ **PW223** **A chiptune score cannot play its percussion on an sfxr drum kit** — A score plays drums on a chip:<kit> of sfxr hits, each placed on its tick by velocity, with a kit lacking a hit named before any render (design recorded in `docs/specs/music.md`).
+- ✅ **PW224** **A sound ffmpeg cannot decode escapes sound.read as a raw process error, not a refusal** — A sound ffmpeg cannot decode is refused with spec.unreadable-sound naming the file, and sound.declared names that one cue while the others still measure.
 
 ## Block Q — Words held to the world
 

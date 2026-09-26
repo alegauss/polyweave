@@ -77,12 +77,24 @@ def read(path: str | Path) -> tuple[np.ndarray, int]:
             f"{where.name} needs ffmpeg to decode, and there is none on PATH",
             "put ffmpeg on PATH, or check the WAV the track was made from",
         )
-    raw = subprocess.run(
+    decoded = subprocess.run(
         ["ffmpeg", "-v", "error", "-i", str(where), "-f", "s16le", "-ac", "2"]
         + ["-ar", str(RATE), "-"],
-        check=True,
+        check=False,
         capture_output=True,
-    ).stdout
+    )
+    if decoded.returncode or not decoded.stdout:
+        # A file ffmpeg cannot decode is refused with a code, never let out as the
+        # process's own error: an agent branches on the code (§PW224).
+        said = decoded.stderr.decode("utf-8", "replace").strip().splitlines()
+        raise PolyweaveError(
+            "spec.unreadable-sound",
+            f"ffmpeg could not decode {where.name} as sound",
+            "check the file is the audio it is named as; a truncated download or a "
+            "service's error page saved with an audio suffix reads like this",
+            detail=said[0] if said else f"ffmpeg exited {decoded.returncode}",
+        )
+    raw = decoded.stdout
     return np.frombuffer(raw, np.int16).reshape(-1, 2).astype(
         np.float64
     ) / 32768.0, RATE

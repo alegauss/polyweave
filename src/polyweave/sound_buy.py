@@ -222,6 +222,3 @@ def _measured(target: Path) -> dict:
         return sound.measure(target)
     except PolyweaveError as refused:
         return {"unmeasured": refused.message}
-    except subprocess.CalledProcessError:
-        # sound.read lets ffmpeg's own failure out on audio it cannot decode (PW224).
-        return {"unmeasured": f"ffmpeg could not decode {target.name}"}

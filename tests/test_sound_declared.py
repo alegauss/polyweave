@@ -8,6 +8,8 @@ music and effects side by side in one folder.
 
 from __future__ import annotations
 
+import shutil
+
 import pytest
 
 from polyweave import config, sound
@@ -93,6 +95,18 @@ def test_a_file_that_cannot_be_measured_says_why_rather_than_failing_the_read(tm
     assert empty["unmeasured"]["code"] == "spec.unreadable-sound"
     # A one-shot effect measures, without a seam (§PW221).
     assert swap["measured"]["duration"] == pytest.approx(0.1, abs=0.001)
+
+
+@pytest.mark.skipif(not shutil.which("ffmpeg"), reason="no ffmpeg to decode with")
+def test_one_undecodable_cue_is_named_while_the_others_still_measure(tmp_path):
+    # §PW224: one bad file used to fail the whole read with ffmpeg's process error.
+    root = project(tmp_path, COTTONY)
+    folder = audio(tmp_path)
+    (folder / "music_calm.ogg").write_text("not audio", encoding="utf-8")
+    written(folder / "swap.wav", tone(1.0))
+    families = sound.declared(root=str(root))["families"]
+    assert families["music"]["cues"][0]["unmeasured"]["code"] == "spec.unreadable-sound"
+    assert families["effects"]["cues"][1]["measured"]["duration"] == pytest.approx(1.0)
 
 
 def test_a_bare_table_is_one_family_under_the_default_folder(tmp_path):

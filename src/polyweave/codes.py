@@ -1657,8 +1657,9 @@ CODES: dict[str, Code] = {
         doors=("check it against the audio file, or name that file with `of`",),
     ),
     "spec.unreadable-sound": Code(
-        means="a sound file is missing, unreadable or empty",
-        when="an .ogg with no ffmpeg on PATH, a 12-bit WAV, or a file with no samples",
+        means="a sound file is missing, unreadable, undecodable or empty",
+        when="an .ogg with no ffmpeg on PATH, a 12-bit WAV, a service's error page "
+        "saved as .mp3, or a file with no samples",
         doors=("give a 16-bit PCM WAV, or put ffmpeg on PATH",),
     ),
     "spec.no-seam": Code(

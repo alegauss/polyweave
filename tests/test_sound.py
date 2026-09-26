@@ -8,6 +8,7 @@ in the test, so the verdicts are known before anything is measured.
 
 from __future__ import annotations
 
+import shutil
 import wave
 from pathlib import Path
 
@@ -181,6 +182,18 @@ def test_a_one_shot_is_measured_without_a_seam(tmp_path):
     assert set(found) == {"loudness", "peak", "duration"}
     assert found["duration"] == pytest.approx(0.1, abs=0.001)
     assert found["peak"] == pytest.approx(-6.02, abs=0.05)
+
+
+@pytest.mark.skipif(not shutil.which("ffmpeg"), reason="no ffmpeg to decode with")
+def test_a_file_ffmpeg_cannot_decode_is_refused_with_a_code(tmp_path):
+    # §PW224: this used to leave sound.read as subprocess.CalledProcessError.
+    bogus = tmp_path / "theme.ogg"
+    bogus.write_text("<html>502 Bad Gateway</html>", encoding="utf-8")
+    with pytest.raises(PolyweaveError) as refused:
+        sound.measure(bogus)
+    assert refused.value.code == "spec.unreadable-sound"
+    assert "theme.ogg" in refused.value.message
+    assert refused.value.detail
 
 
 def test_a_file_with_no_samples_is_refused(tmp_path):
