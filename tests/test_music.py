@@ -188,6 +188,7 @@ def test_a_misspelled_pattern_is_answered_with_the_nearest_name():
         (('"gm:38"', '"drums:0"'), "music.unknown-instrument"),
         (("surge:chip_lead", "surge:chip_led"), "music.unknown-instrument"),
         (('"gm:38"', '"gm:38"\npan = 2.0'), "music.bad-value"),
+        (('"gm:38"', '"gm:38"\nlayer = "Big Drop"'), "music.bad-value"),
     ],
 )
 def test_a_score_that_cannot_play_is_refused_with_a_code(change, code):

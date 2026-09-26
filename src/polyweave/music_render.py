@@ -336,8 +336,9 @@ def render(
     """Render a valid score to WAV and OGG through Surge XT and FluidSynth.
 
     Every part is rendered, then levelled, panned, sent and mastered through one fixed
-    chain; a looping score's tail is folded onto its loop. The answer carries what
-    sound.measure says of the result.
+    chain; a looping score's tail is folded onto its loop. A score with several layers
+    also writes one file per layer, <out>.<layer>, all one length, which add up to the
+    whole. The answer carries what sound.measure says of each file.
     """
     config = load(root)
     here, where = config.root, config.path("paths.work", source)
@@ -387,27 +388,100 @@ def render(
 
     report.progress(1.0, note="mixing and mastering")
     spb = per_tick * model["timing"]["ticksPerQuarter"]
-    summed = mix(stems, ext["tracks"], ext["room"], spb)
     loop = ext["loop"]
-    if loop:
-        head = int(round(loop["startTick"] * per_tick * RATE))
-        tail_at = int(round(loop["endTick"] * per_tick * RATE))
-        body, ring = summed[:tail_at].copy(), summed[tail_at:]
-        span = min(len(ring), tail_at - head)
-        body[head: head + span] += ring[:span]
-        final = master(body, cyclic=head == 0)
-    else:
-        final = master(summed, cyclic=False)
+    body, cyclic = _folded(mix(stems, ext["tracks"], ext["room"], spb), loop, per_tick)
+    final = master(body, cyclic=cyclic)
 
     target = where.with_name(stem) if not out else config.path("paths.work", out)
     target.parent.mkdir(parents=True, exist_ok=True)
-    wav = target.with_suffix(".wav")
-    _write_wav(wav, final)
+    answer = {
+        **_written(target, final, found["ffmpeg"], loop, here),
+        "parts": played_by,
+        "loop": ({"start": round(loop["startTick"] * per_tick, 3),
+                  "end": round(loop["endTick"] * per_tick, 3)} if loop else None),
+    }
+    layers = _layers(ext["tracks"])
+    if len(layers) > 1:
+        # Each layer rides the gain the master applied to the whole, moment by moment,
+        # so the layers add back up to what the game hears with every layer in.
+        riding = _gain_curve(body, final)
+        answer["layers"] = {}
+        for layer in layers:
+            own = {k: v for k, v in stems.items() if ext["tracks"][k]["layer"] == layer}
+            part, _ = _folded(mix(own, ext["tracks"], ext["room"], spb), loop, per_tick)
+            answer["layers"][layer] = _written(
+                target.with_name(f"{target.name}.{layer}"),
+                _high_passed(part) * riding[:, None],
+                found["ffmpeg"], loop, here,
+            )
+    return answer
+
+
+def _layers(tracks: dict) -> list[str]:
+    """The score's layers in the order its tracks first name them, `base` first."""
+    named = list(dict.fromkeys(t["layer"] for t in tracks.values()))
+    return sorted(named, key=lambda layer: layer != "base")
+
+
+def _high_passed(audio: np.ndarray) -> np.ndarray:
+    """The master's own 30 Hz high-pass, the one linear stage of its chain."""
+    from pedalboard import HighpassFilter, Pedalboard
+
+    passed = Pedalboard([HighpassFilter(30)])(audio.T.astype(np.float32), RATE)
+    return passed.T.astype(np.float64)
+
+
+def _gain_curve(before: np.ndarray, after: np.ndarray) -> np.ndarray:
+    """The gain the master applied, per sample, from 10 ms windows of the whole.
+
+    The compressor and the limiter are one gain that moves over time, so it is read off
+    what went in and what came out and put on each layer; a window that was silent going
+    in takes the typical gain rather than a ratio of two nothings.
+    """
+    passed = _high_passed(before)
+    width = int(0.01 * RATE)
+    count = len(passed) // width
+    if count == 0:
+        return np.ones(len(after))
+
+    def level(audio: np.ndarray) -> np.ndarray:
+        framed = audio[: count * width].reshape(count, width, 2)
+        return np.sqrt((framed**2).mean(axis=(1, 2)))
+
+    went, came = level(passed), level(after)
+    heard = went > 1e-5
+    typical = float(np.median(came[heard] / went[heard])) if heard.any() else 1.0
+    ratio = np.where(heard, came / np.maximum(went, 1e-12), typical)
+    centres = (np.arange(count) + 0.5) * width
+    return np.interp(np.arange(len(after)), centres, ratio)
+
+
+def _folded(summed: np.ndarray, loop: dict | None,
+            per_tick: float) -> tuple[np.ndarray, bool]:
+    """A loop's body with its tail folded onto its start, and whether it is a cycle.
+
+    A stinger keeps its tail as it is.
+    """
+    if not loop:
+        return summed, False
+    head = int(round(loop["startTick"] * per_tick * RATE))
+    tail_at = int(round(loop["endTick"] * per_tick * RATE))
+    body, ring = summed[:tail_at].copy(), summed[tail_at:]
+    span = min(len(ring), tail_at - head)
+    body[head: head + span] += ring[:span]
+    return body, head == 0
+
+
+def _written(target: Path, audio: np.ndarray, ffmpeg: str | None, loop: dict | None,
+             here: Path) -> dict:
+    """One file written as WAV, encoded as OGG where ffmpeg is, and measured."""
+    wav = target.with_name(f"{target.name}.wav")
+    _write_wav(wav, audio)
     ogg = None
-    if found["ffmpeg"]:
-        ogg = target.with_suffix(".ogg")
-        subprocess.run([found["ffmpeg"], "-v", "error", "-y", "-i", str(wav),
-                        "-c:a", "libvorbis", "-q:a", "6", str(ogg)],
+    if ffmpeg:
+        ogg = target.with_name(f"{target.name}.ogg")
+        subprocess.run([ffmpeg, "-v", "error", "-y", "-i", str(wav), "-c:a",
+                        "libvorbis", "-q:a", "6", str(ogg)],
                        check=True, capture_output=True)
     measured = sound.measure(wav)
     if not loop:
@@ -416,8 +490,5 @@ def render(
         "wav": wav.relative_to(here).as_posix(),
         "ogg": ogg.relative_to(here).as_posix() if ogg else None,
         "why_no_ogg": None if ogg else "no ffmpeg on PATH to encode it",
-        "parts": played_by,
-        "loop": ({"start": round(loop["startTick"] * per_tick, 3),
-                  "end": round(loop["endTick"] * per_tick, 3)} if loop else None),
         "measured": measured,
     }

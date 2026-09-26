@@ -241,6 +241,7 @@
 - ✅ **PW185** **No declaration says which music and sound effects a game needs or where they land** — A game declares its audio as [sound.<family>] cues, and sound.declared says where each lands, what it measures and which files are missing (design recorded in `docs/specs/project-config.md`).
 - ✅ **PW186** **An agent cannot write multi-track music as data that polyweave validates** — A *.music.toml score in mini-notation compiles to a piano-shaped note model; music.validate names every problem with its line, and music.to_midi writes it (design recorded in `docs/specs/music.md`).
 - ✅ **PW187** **A composed score cannot become a WAV or OGG file without a DAW open** — music.render turns a valid score into a mastered WAV and OGG through Surge XT and FluidSynth, folding a loop's tail onto its start, with no DAW open (design recorded in `docs/specs/music.md`).
+- ✅ **PW188** **One theme cannot play at several intensities that stay in step** — A score's tracks name layers, and music.render writes one file per layer at the mix's exact length, each riding the master's gain so they add back up to it (design recorded in `docs/specs/music.md`).
 
 ## Block Q — Words held to the world
 

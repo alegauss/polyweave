@@ -40,7 +40,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 0 },
   { block: "O", title: "A person sees and answers", open: 0 },
-  { block: "P", title: "Music and sound a game can ship", open: 7 },
+  { block: "P", title: "Music and sound a game can ship", open: 6 },
   { block: "Q", title: "Words held to the world", open: 1 },
   { block: "R", title: "Levels measured before a person plays them", open: 5 },
   { block: "S", title: "Playing the game, not only rendering it", open: 6 },
@@ -70,13 +70,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW57"],
   },
   {
-    id: "PW188",
-    block: "P",
-    symptom: "One theme cannot play at several intensities that stay in step",
-    why: "Game music changes with play, and layers rendered separately drift unless they share one length and grid.",
-    deps: [],
-  },
-  {
     id: "PW189",
     block: "P",
     symptom: "Retro sound effects are synthesised by each consumer's own script",
@@ -102,7 +95,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "P",
     symptom: "Cottony still makes its audio outside polyweave",
     why: "The block is proven only when its first consumer's music and effects are declared, made and accepted here.",
-    deps: ["PW188", "PW189", "PW190", "PW191"],
+    deps: ["PW189", "PW190", "PW191"],
   },
   {
     id: "PW221",

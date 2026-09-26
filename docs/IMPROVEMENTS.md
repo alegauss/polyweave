@@ -299,16 +299,6 @@ since a reference the service ignores is dropped without an error.
 
 ## Block P — Music and sound a game can ship
 
-### §PW188 One theme at several intensities
-
-Game music changes with play: calm, tense, combat. A score can declare layers that share
-one length and grid, and `music.render` writes one stem per layer, so the game fades
-layers in and out and they never drift.
-
-Each stem is measured like any other file, and the acceptance spec can bound their
-summed loudness. The Godot side stays the consumer's; polyweave only guarantees that the
-stems line up.
-
 ### §PW189 Retro effects from a seed
 
 Cottony synthesises its effects with its own `tools/audio/make_sfx.py`, which a second

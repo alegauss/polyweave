@@ -547,6 +547,14 @@ def _model(problems: _Problems, music: dict, sections: dict, patterns: dict,
                 "name each track once, in lower case, such as lead or drums",
             )
             continue
+        if not _NAME.fullmatch(track["layer"]):
+            problems.add(
+                "music.bad-value", problems.line("layer", (line or 1) - 1) or line,
+                f"track {track['name']} has layer {track['layer']!r}, and a layer "
+                f"names a file",
+                "name the layer in lower case, such as base, tense or combat",
+            )
+            continue
         parts.append({"id": track["name"], "name": track["name"],
                       "role": "bass" if "bass" in track["name"] else "other"})
         notes += _track_notes(problems, track, form, sections, patterns, per_bar,

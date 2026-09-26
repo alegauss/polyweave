@@ -166,6 +166,34 @@ def test_a_general_midi_score_renders_to_a_mastered_seamless_loop(tmp_path):
 
 
 @needs_fluid
+def test_layers_are_files_of_one_length_that_add_up_to_the_whole(tmp_path):
+    import numpy as np
+
+    score = GM.replace('instrument = "gm:73"', 'instrument = "gm:73"\nlayer = "tense"')
+    found = music_render.render(Reported(), project(tmp_path, score, fluid_paths()),
+                                root=str(tmp_path))
+    assert list(found["layers"]) == ["base", "tense"]
+    assert found["layers"]["tense"]["wav"] == "music/cue.tense.wav"
+    whole, _ = sound.read(tmp_path / found["wav"])
+    parts = [sound.read(tmp_path / one["wav"])[0] for one in found["layers"].values()]
+    assert {len(p) for p in parts} == {len(whole)}
+    summed = sum(parts)
+    likeness = np.corrcoef(summed.mean(axis=1), whole.mean(axis=1))[0, 1]
+    # Each layer rides the master's gain: 0.997 measured, against 0.906 for one static
+    # gain, whose layers drifted from the mix wherever the compressor moved.
+    assert likeness > 0.99
+    for layer in found["layers"].values():
+        assert layer["measured"]["seam_step"] <= 1.0
+
+
+@needs_fluid
+def test_one_layer_writes_no_layer_files(tmp_path):
+    found = music_render.render(Reported(), project(tmp_path, GM, fluid_paths()),
+                                root=str(tmp_path))
+    assert "layers" not in found
+
+
+@needs_fluid
 def test_a_stinger_keeps_its_tail_and_has_no_seam(tmp_path):
     score = GM.replace('form = ["A"]', 'form = ["A"]\nloop = false')
     found = music_render.render(Reported(), project(tmp_path, score, fluid_paths()),

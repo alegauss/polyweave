@@ -141,3 +141,19 @@ starts the piece, the master runs over it as a cycle, so the compressor at the s
 heard the end. A stinger (`loop = false`) keeps its tail and has no seam. The answer
 carries what `sound.measure` says of the WAV, without the seam for a stinger, and each
 part's engine.
+
+## Layers
+
+Game music changes with play, so one theme can be written at several intensities: each
+track names a `layer` (a lower-case id, `base` by default), and a score with more than one
+also writes `<out>.<layer>.wav` and `.ogg` per layer, beside the whole mix. **Every layer
+file has the render's exact length and grid**, so a game fading layers in and out never
+hears them drift; which layer plays when is the game's.
+
+A layer is its tracks mixed with their own sends and folded like the whole, then passed
+through the master's 30 Hz high-pass and **the gain the master applied to the whole,
+moment by moment** (read off 10 ms windows of what went in and what came out). So the
+layers add back up to the mix the game hears with every layer in: on the test score they
+correlate with it at 0.997, where one static gain for every layer reached 0.906 and drifted
+wherever the compressor moved. The whole mix is the file an acceptance spec bounds for the
+layers' summed loudness; each layer file is measured in the answer like any other.
