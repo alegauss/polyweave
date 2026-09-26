@@ -44,7 +44,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "Q", title: "Words held to the world", open: 1 },
   { block: "R", title: "Levels measured before a person plays them", open: 5 },
   { block: "S", title: "Playing the game, not only rendering it", open: 6 },
-  { block: "T", title: "Adopting polyweave in a project", open: 0 },
+  { block: "T", title: "Adopting polyweave in a project", open: 5 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -152,6 +152,41 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "Cottony's flow from title screen to a won level is checked by no test, so a broken menu ships unseen",
     why: "The block is proven only when its first consumer keeps its main flows as replayed tests in its own release script, beside a clean release check.",
     deps: ["PW214", "PW215", "PW216"],
+  },
+  {
+    id: "PW227",
+    block: "T",
+    symptom: "a build stamp records its outputs as absolute paths, so it cannot be committed or shared between checkouts",
+    why: "It sits beside the declaration in the project's tree, and a machine path in it churns per checkout or has to be ignored by hand.",
+    deps: [],
+  },
+  {
+    id: "PW228",
+    block: "T",
+    symptom: "an artefact built on Windows is written with CRLF, so its provenance fails once a checkout normalises line endings",
+    why: "Its digest is taken over the CRLF bytes, and a project storing text as LF gets a different file back on every other checkout.",
+    deps: [],
+  },
+  {
+    id: "PW229",
+    block: "T",
+    symptom: "a project's voxel declarations cannot share one cell size, so each repeats it and a drift is found by eye",
+    why: "A game breaking its actors into their own cubes needs one cell across every actor, and the project config offers budget and extent but no cell.",
+    deps: [],
+  },
+  {
+    id: "PW230",
+    block: "T",
+    symptom: "fitting a voxel model to its reference has no operation, so a project writes a script to run it",
+    why: "The fit PW98 delivered is only a library function, so the step that sets a model's proportions is the one that needs a script.",
+    deps: [],
+  },
+  {
+    id: "PW231",
+    block: "T",
+    symptom: "a misspelt key under a declaration's [voxels] builds without it and names nothing",
+    why: "The unread-key check stops at the top level and the nodes, so acros, prts or mehs change the build and nothing says why.",
+    deps: [],
   },
 ];
 

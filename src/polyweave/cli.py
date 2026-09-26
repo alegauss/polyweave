@@ -74,7 +74,8 @@ def _named_files(value: Any, root: Path, found: set) -> None:
 
 
 def made_from(
-    source: Path, document: dict, given: dict, preview: bool, root: Path
+    source: Path, document: dict, given: dict, preview: bool, root: Path,
+    mesh: bool = True,
 ) -> dict:
     """What a build's outputs are made from, as a provenance record not yet written.
 
@@ -91,10 +92,11 @@ def made_from(
     inputs = [provenance.source("declaration", source, root)] + [
         provenance.source("named", where, root) for where in sorted(named)
     ]
-    return {
-        "inputs": inputs,
-        "params": {"made_by": "geometry.build", "given": given, "preview": preview},
-    }
+    params = {"made_by": "geometry.build", "given": given, "preview": preview}
+    if not mesh:
+        # Only when asked, so every stamp written before §PW226 still matches.
+        params["mesh"] = False
+    return {"inputs": inputs, "params": params}
 
 
 def stamp(made: dict) -> str:
@@ -118,6 +120,10 @@ def _has_blender() -> bool:
     return importlib.util.find_spec("bpy") is not None
 
 
+#: What `mesh` says on the two build operations (§PW226).
+_MESH = Param("write the .glb beside a voxel build's cells; false for the cells alone")
+
+
 @operation("geometry.build")
 def build_one(
     source: Annotated[str, Param("the declaration, as a path under the project")],
@@ -127,6 +133,7 @@ def build_one(
     given: Annotated[dict, Param("values set for the declaration's params")] = None,
     preview: Annotated[bool, Param("also write a cheap look: a silhouette")] = False,
     force: Annotated[bool, Param("build even where the stamp still matches")] = True,
+    mesh: Annotated[bool, _MESH] = True,
 ) -> dict:
     """Build one declaration and say what came out; a refusal is an answer too."""
     from . import geometry as G
@@ -142,7 +149,8 @@ def build_one(
         folder = folder if folder.is_absolute() else here / folder
         folder.mkdir(parents=True, exist_ok=True)
         mark = folder / f"{document['name']}{STAMP}"
-        made = made_from(where, document, given, preview, here)
+        mesh = mesh and _wants_mesh(document)
+        made = made_from(where, document, given, preview, here, mesh)
         key = stamp(made)
         if not force and mark.is_file():
             kept = json.loads(mark.read_text(encoding="utf-8"))
@@ -156,7 +164,7 @@ def build_one(
         members = [document] + [
             G.variant(document, one) for one in G.variants(document)
         ]
-        built = [_member(one, folder, here, given, preview) for one in members]
+        built = [_member(one, folder, here, given, preview, mesh) for one in members]
         answer.update({k: v for k, v in built[0].items() if k != "name"})
         if len(built) > 1:
             answer["members"] = built
@@ -178,8 +186,37 @@ def build_one(
     return answer
 
 
+def _wants_mesh(document: dict) -> bool:
+    """Whether a voxel declaration asks for its cubes as a mesh as well (§PW226).
+
+    A Godot project that draws the `.voxels.json` imports any `.glb` in its tree and
+    never loads it, so `[voxels] mesh = false` writes the cells alone. A document with
+    no cells always writes its mesh, since the mesh is all it makes.
+    """
+    stated = (document.get("voxels") or {}).get("mesh", True)
+    if not isinstance(stated, bool):
+        raise PolyweaveError(
+            "geom.bad-voxels",
+            f"{document['name']}: voxels.mesh is {stated!r}",
+            "write mesh = false for the cells alone, or leave it out for both",
+        )
+    return stated or not document.get("voxels")
+
+
+def _unwanted(where: Path) -> None:
+    """A mesh an earlier build wrote and this one was asked not to, taken back out.
+
+    Only one polyweave recorded, so a hand-made `.glb` of the same name is left alone.
+    """
+    record = where.with_name(where.name + ".prov.json")
+    if where.is_file() and record.is_file():
+        where.unlink()
+        record.unlink()
+
+
 def _member(
-    document: dict, folder: Path, here: Path, given: dict, preview: bool
+    document: dict, folder: Path, here: Path, given: dict, preview: bool,
+    wanted: bool = True,
 ) -> dict:
     """One member of a family built and written, and what it said."""
     from .geometry import review
@@ -194,8 +231,11 @@ def _member(
     if document.get("voxels"):
         from .geometry import voxels
 
+        if not wanted:
+            _unwanted(mesh)
         written = voxels.write(
-            document, mesh, root=here, mesh=_has_blender(), sheet=preview, **given
+            document, mesh, root=here, mesh=wanted and _has_blender(), sheet=preview,
+            **given,
         )
         answer["says"] = written["says"]
         answer["findings"] = [
@@ -261,6 +301,7 @@ def build_all(
     root: Annotated[str, Param("the project the paths resolve against")] = ".",
     given: Annotated[dict, Param("values set for every declaration's params")] = None,
     preview: Annotated[bool, Param("also write a cheap look for each")] = False,
+    mesh: Annotated[bool, _MESH] = True,
 ) -> list[dict]:
     """Every declaration under a folder, skipping the ones whose stamp still matches.
 
@@ -275,7 +316,8 @@ def build_all(
     under = under if under.is_absolute() else here / under
     return [
         build_one(
-            source, out=out, root=root, given=given, preview=preview, force=False
+            source, out=out, root=root, given=given, preview=preview, force=False,
+            mesh=mesh,
         )
         for source in sorted(under.rglob("*.toml"))
         if is_declaration(source)
@@ -366,6 +408,7 @@ def main(argv: list[str] | None = None) -> int:
         "root": stated.root,
         "given": given,
         "preview": stated.preview,
+        "mesh": not stated.no_mesh,
     }
     # Blender's exporter logs its progress to stdout, and stdout is where the answer
     # goes, so a `--json` answer came out with export chatter in front of it. The work
@@ -406,6 +449,9 @@ def command_line() -> argparse.ArgumentParser:
         "--set", action="append", default=[], help="name=value, repeatable"
     )
     build.add_argument("--preview", action="store_true", help="also write a cheap look")
+    build.add_argument(
+        "--no-mesh", action="store_true", help="a voxel build's cells alone, no .glb"
+    )
     build.add_argument("--json", action="store_true", help="print the answer as data")
     verify = commands.add_parser(
         "verify", help="check every committed artefact against its acceptance spec"

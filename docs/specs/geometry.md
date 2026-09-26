@@ -569,7 +569,17 @@ neither.
 ```toml
 [voxels]
 across = 16          # cells along the longest side; or `cell = 0.5`, a size, never both
+mesh   = false       # the cells alone, no .glb beside them; true, the default, writes both
 ```
+
+**The mesh is there to be asked for** (§PW226). A game that draws the `.voxels.json`
+(through the polyweave_voxels addon) never loads the `.glb`, yet a Godot project imports
+any `.glb` in its tree. So `mesh = false`, or `geometry.build`'s `mesh=false` and the
+command line's `--no-mesh`, writes the cells alone, and the provenance record and the
+build stamp name that one output. A build asked for the cells alone takes back a `.glb`
+an earlier build recorded, and leaves a hand-made one of the same name alone. The choice
+is part of the stamp, so switching it rebuilds. A declaration with no `[voxels]` writes
+its mesh whatever the call says, since the mesh is all it makes.
 
 Either value may be an expression over `[params]`, and `voxelize(document, cell=…)` or
 `across=…` overrides the table for one call. Neither or both is `geom.bad-voxels`.

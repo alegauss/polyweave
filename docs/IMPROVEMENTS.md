@@ -609,32 +609,15 @@ reading the source, and it is filed as its own line.
 
 ## Block T — Adopting polyweave in a project
 
-### §PW226 Cells without the mesh
-
-Found adopting polyweave in Spinhold (starship RK38). A declaration with `[voxels]`
-builds `<name>.voxels.json`, which the game reads through the polyweave_voxels addon,
-and also a `<name>.glb` with its own `.prov.json`. A Godot project imports any `.glb` in
-its tree, so the unused mesh costs an import, an `.import` file and a decision about
-committing it; Spinhold ignores it by hand (`dev/voxels/*.glb` in `.gitignore`) and
-keeps Godot out of the folder with a `.gdignore`.
-
-The mesh has real uses (`review`, a preview, a game that draws triangles), so it stays
-available rather than going: `[voxels]` takes `mesh = false` (or `geometry.build` a
-`--no-mesh`), and a build with it writes the cells alone, its provenance and stamp
-naming one output. What `render.plan` or a sheet needs that only the mesh gave is
-answered from the cells or says it needs the mesh.
-
-Done when a voxel declaration with `mesh = false` builds to one `.voxels.json` and
-nothing else, and one without it builds as today.
-
 ### §PW227 A stamp with paths the project can keep
 
 Found adopting polyweave in Spinhold (starship RK38). `build` writes `<name>.build.json`
-beside the declaration (or in `--out`), and `cli.build` records the source relative to
-the root but every output as `str(Path(one).resolve())`, an absolute path on the machine
-that built it. The stamp sits in the project's tree next to what is committed, so a
-project either commits a file that names `D:\Git\...` and churns per checkout, or
-ignores it by hand (Spinhold's `.gitignore` now lists `dev/voxels/*.build.json`).
+beside the declaration (or in `--out`), and `build_one` in `cli.py` records the source
+relative to the root but every output as `str(Path(one).resolve())`, an absolute path on
+the machine that built it. The stamp sits in the project's tree next to what is
+committed, so a project either commits a file that names `D:\Git\...` and churns per
+checkout, or ignores it by hand (Spinhold's `.gitignore` now lists
+`dev/voxels/*.build.json`).
 
 The cache check (`Path(one).is_file()`) and the edit guard (PW133) both work from paths
 relative to the root just as well: write the outputs as `relative_to(here).as_posix()`
@@ -657,16 +640,16 @@ polyweave writes go through `Path.write_text` with no `newline=`: `geometry/voxe
 taken over those CRLF bytes.
 
 A project with `* text=auto eol=lf`, as Spinhold has, stores the file as LF; the next
-checkout writes LF, and `provenance.verify` reports the artefact as changed though
-nothing changed it (recorded df9d16..., found be25d2..., 1551 bytes against 1364). So an
-artefact built on Windows cannot be verified on any other checkout, and a clone on Linux
-fails every one.
+checkout writes LF, and `verify` in `provenance.py` reports the artefact as changed
+though nothing changed it (recorded df9d16..., found be25d2..., 1551 bytes against
+1364). So an artefact built on Windows cannot be verified on any other checkout, and a
+clone on Linux fails every one.
 
 Write every text artefact and record with `newline="\n"` (or `write_bytes` of UTF-8), so
 the bytes and their digest are the same on every platform; `files.py`'s atomic writer is
 the one place most of them pass through. A record whose digest was taken over CRLF stays
-readable: `provenance.verify` can say so ("recorded over CRLF") rather than "changed",
-and a rebuild fixes it.
+readable: `verify` in `provenance.py` can say so ("recorded over CRLF") rather than
+"changed", and a rebuild fixes it.
 
 Done when an artefact built on Windows verifies after a checkout that normalises line
 endings, and a check writes one and reads its bytes back with no `\r`.
@@ -707,3 +690,21 @@ line as `python -m polyweave fit <declaration> --reference <mesh> --views side,t
 
 Done when a project fits a declaration to its Meshy mesh from the command line and the
 MCP server with no script of its own.
+
+### §PW231 Voxel settings refused when nothing reads them
+
+PW146 made a declaration refuse a key nothing reads, at the top level, on every node and
+in every repeat range, because a misspelt field built the shape without it and said
+nothing. `[voxels]` was left out: `_refuse_unread` in `geometry/__init__.py` never looks
+inside it. So `acros = 16` is a declaration with neither `cell` nor `across` and fails
+for the wrong reason, `prts = 2` checks against one part, and since PW226 `mehs = false`
+builds the `.glb` anyway, all without naming the misspelling.
+
+The keys the code reads are `cell`, `across`, `parts`, `extent`, `fracture` and `mesh`
+(`voxels.py`, `fracture.py`, `_wants_mesh` in `cli.py`). Declare them once as
+`VOXELS_FIELDS` beside `DOCUMENT_FIELDS` and refuse anything else under `[voxels]` with
+`geom.unknown-field`, naming the nearest and pointing at `voxels.<key>`, the same way a
+node's stray field is refused. `fracture` keeps its own table and is not opened here.
+
+Test: `acros = 16` is refused naming `across`, `mehs = false` naming `mesh`, and every
+declaration the suite already builds still builds.

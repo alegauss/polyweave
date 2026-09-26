@@ -136,6 +136,56 @@ def test_every_output_carries_the_record_the_stamp_is_the_key_of(tmp_path, capsy
     assert provenance.unrecorded(str(tmp_path)) == []
 
 
+def test_a_voxel_declaration_can_ask_for_its_cells_alone(tmp_path, capsys):
+    """§PW226: a Godot project drawing the cells imports any .glb and never uses it."""
+    alone = VOXEL.replace("cell = 1\n", "cell = 1\nmesh = false\n")
+    status, printed = run(tmp_path, declared(tmp_path, alone), "--json", capsys=capsys)
+    built = json.loads(printed.out)
+    assert status == 0
+    assert [Path(one).name for one in built["outputs"]] == ["box.voxels.json"]
+    assert not (tmp_path / "box.glb").exists()
+
+
+def test_no_mesh_on_the_call_writes_the_cells_alone_and_takes_back_an_old_mesh(
+    tmp_path, capsys
+):
+    source = declared(tmp_path)
+    first = cli.build_one(source, root=str(tmp_path))
+    if not any(one.endswith(".glb") for one in first["outputs"]):
+        pytest.skip("renderer absent: the mesh needs Blender to write")
+    again = cli.build_one(source, root=str(tmp_path), mesh=False)
+    assert [Path(one).name for one in again["outputs"]] == ["box.voxels.json"]
+    assert not (tmp_path / "box.glb").exists()
+    assert not (tmp_path / "box.glb.prov.json").exists()
+    stamped = json.loads((tmp_path / "box.build.json").read_text("utf-8"))
+    assert [Path(one).name for one in stamped["outputs"]] == ["box.voxels.json"]
+
+
+def test_the_cells_alone_and_both_are_two_stamps(tmp_path, capsys):
+    (tmp_path / "art").mkdir()
+    declared(tmp_path / "art")
+    run(tmp_path, "--all", "art", "--json", capsys=capsys)
+    _, printed = run(tmp_path, "--all", "art", "--no-mesh", "--json", capsys=capsys)
+    assert [one["status"] for one in json.loads(printed.out)] == ["built"]
+
+
+def test_a_mesh_setting_that_is_not_a_yes_or_no_is_refused(tmp_path, capsys):
+    odd = VOXEL.replace("cell = 1\n", 'cell = 1\nmesh = "no"\n')
+    status, printed = run(tmp_path, declared(tmp_path, odd), capsys=capsys)
+    assert status == 1
+    assert "geom.bad-voxels" in printed.out
+
+
+def test_a_mesh_declaration_ignores_no_mesh_since_the_mesh_is_all_it_makes(
+    tmp_path, capsys
+):
+    body = VOXEL.replace("[voxels]\ncell = 1\n", "")
+    found = cli.build_one(declared(tmp_path, body), root=str(tmp_path), mesh=False)
+    if found["status"] == "refused":
+        pytest.skip("renderer absent: a mesh declaration needs Blender to write")
+    assert [Path(one).name for one in found["outputs"]] == ["box.glb"]
+
+
 def test_all_reports_a_declaration_with_a_typo_and_fails(tmp_path, capsys):
     """§PW123: a declaration `read` refused used to drop out silently, exiting 0."""
     (tmp_path / "art").mkdir()

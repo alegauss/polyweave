@@ -47,7 +47,8 @@ from polyweave.errors import PolyweaveError
 #: against a validator needs both the check and the file a DAW opens.
 #: 68,806 with music.render and sound.synth (§PW187, §PW189), the two that make audio.
 #: 70,228 with sound.buy (§PW190), a whole paid call, wider than the average.
-DESCRIBE = 70_800
+#: 70,842 with `mesh` on geometry.build and build_all (§PW226), the cells alone.
+DESCRIBE = 71_400
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -73,8 +74,9 @@ DESCRIBE = 70_800
 #: 77,800 with music.render, its two refusals and the three engine paths (§PW187),
 #: before the render's own figures below settle.
 #: 78,417 with sound.synth and its four codes (§PW189).
-#: 79,860 with sound.buy and sound.unknown-cue (§PW190).
-CAPABILITIES = 80_400
+#: 79,860 with sound.buy and sound.unknown-cue (§PW190), then 80,535 with the codes
+#: of PW221-PW225 and `mesh` on the two geometry builds (§PW226).
+CAPABILITIES = 81_100
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
