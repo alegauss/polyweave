@@ -36,8 +36,6 @@
 
 ## Block P — Music and sound a game can ship
 
-- 📋 **PW225** (deps: —) **A loop cut mid-bar in a dense mix passes both seam measures** — In a busy mix a jump into the wrong beat changes no more than a downbeat does, so only the loop's grid can tell a cut from a clean wrap. → §PW225
-
 ## Block Q — Words held to the world
 
 - 📋 **PW200** (deps: PW197 ✅, PW198 ✅, PW199 ✅, Starship RK88) **Starship's screen still shows names its world bible replaced** — The block is proven only when its first consumer's text, lines and character assets are held to a declared world through polyweave. → §PW200

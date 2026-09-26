@@ -249,6 +249,7 @@
 - ✅ **PW222** **seam_flux reads a loop that restarts on a crash cymbal as a cut** — seam_flux weighs the wrap against the track's own strong onsets, so a clean loop opening on a crash reads below one; cuts still read above (design recorded in `docs/specs/measurements.md`).
 - ✅ **PW223** **A chiptune score cannot play its percussion on an sfxr drum kit** — A score plays drums on a chip:<kit> of sfxr hits, each placed on its tick by velocity, with a kit lacking a hit named before any render (design recorded in `docs/specs/music.md`).
 - ✅ **PW224** **A sound ffmpeg cannot decode escapes sound.read as a raw process error, not a refusal** — A sound ffmpeg cannot decode is refused with spec.unreadable-sound naming the file, and sound.declared names that one cue while the others still measure.
+- ✅ **PW225** **A loop cut mid-bar in a dense mix passes both seam measures** — seam_grid holds a loop's length to whole bars from its record, or to beats off its onsets: a dense-mix cut reads 0.19 to 0.38, a whole loop 0.001 (design recorded in `docs/specs/measurements.md`).
 
 ## Block Q — Words held to the world
 

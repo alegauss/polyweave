@@ -124,6 +124,56 @@ def test_a_loop_that_restarts_on_a_crash_reads_close_to_its_other_downbeats(tmp_
     assert found["seam_step"] <= 1.0
 
 
+def beats(bars: int = 8, bpm: float = 120.0, cut: float = 0.0) -> np.ndarray:
+    """A dense loop on a grid: a kick and a snare on every beat and a hat between,
+    `bars` bars of four at `bpm`, less `cut` seconds off the end."""
+    beat = 60.0 / bpm
+    samples = int(round(bars * 4 * beat * RATE))
+    body = texture(samples) * 0.3
+    rng = np.random.default_rng(7)
+    decay = np.exp(-np.arange(RATE // 8) / 800.0)
+    kick = np.sin(2 * np.pi * 55 * np.arange(RATE // 8) / RATE) * decay
+    hat = rng.standard_normal(RATE // 8) * decay * 0.4
+    for n in range(bars * 8):
+        at = int(round(n * beat / 2 * RATE))
+        hit = kick if n % 2 == 0 else hat
+        end = min(samples, at + len(hit))
+        body[at:end] += hit[: end - at]
+    body = body / np.abs(body).max() * 0.8
+    return body[: samples - int(round(cut * RATE))] if cut else body
+
+
+def test_a_loop_on_its_grid_reads_zero_and_one_cut_off_it_does_not(tmp_path):
+    # §PW225: the cut the two other seam measures cannot hear in a dense mix.
+    whole = sound.measure(written(tmp_path / "whole.wav", beats()))
+    cut = sound.measure(written(tmp_path / "cut.wav", beats(cut=0.37)))
+    assert whole["grid"] == cut["grid"] == "estimated"
+    assert whole["seam_grid"] < 0.02
+    assert cut["seam_grid"] > 0.2
+
+
+def test_a_loop_polyweave_rendered_is_held_to_the_bar_its_record_names(tmp_path):
+    import json
+
+    body = written(tmp_path / "loop.wav", texture())  # no pulse to estimate a beat from
+    assert "seam_grid" not in sound.measure(body)
+    (tmp_path / "loop.wav.prov.json").write_text(
+        json.dumps({"params": {"bar_seconds": 0.5}}), encoding="utf-8")
+    found = sound.measure(body)
+    assert found["grid"] == "record"
+    assert found["seam_grid"] == 0.0  # two seconds is four bars of half a second
+
+
+def test_a_grid_bound_on_a_loop_with_no_pulse_is_refused_with_the_reason(tmp_path):
+    bar = spec(
+        tmp_path, '[[predicate]]\nid = "grid"\nmeasure = "seam_grid"\nmax = 0.02\n'
+    )
+    with pytest.raises(PolyweaveError) as refused:
+        accept.check(bar, seamless(tmp_path), root=tmp_path)
+    assert refused.value.code == "spec.no-seam"
+    assert "pulse" in refused.value.message
+
+
 def test_a_tone_cut_mid_period_clicks(tmp_path):
     whole = written(tmp_path / "whole.wav", tone(2.0))
     cut = written(tmp_path / "cut.wav", tone(2.0)[:-25])

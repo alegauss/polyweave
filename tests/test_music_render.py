@@ -274,6 +274,17 @@ def test_a_rendered_loop_that_restarts_on_a_crash_has_a_clean_seam(tmp_path):
 
 
 @needs_fluid
+def test_a_rendered_loop_is_held_to_the_bar_its_record_names(tmp_path):
+    # §PW225: measured again after the render, a loop's grid comes from its record,
+    # which names the bar it was written on, and a whole number of bars reads zero.
+    found = music_render.render(Reported(), project(tmp_path, CRASHING, fluid_paths()),
+                                root=str(tmp_path))
+    again = sound.measure(tmp_path / found["wav"])
+    assert again["grid"] == "record"
+    assert again["seam_grid"] == pytest.approx(0.0, abs=1e-3)
+
+
+@needs_fluid
 def test_a_stinger_keeps_its_tail_and_has_no_seam(tmp_path):
     score = GM.replace('form = ["A"]', 'form = ["A"]\nloop = false')
     found = music_render.render(Reported(), project(tmp_path, score, fluid_paths()),

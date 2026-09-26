@@ -11,6 +11,10 @@ measure is here, as two numbers a predicate bounds, with three plainer ones besi
 - `seam_flux`: the largest spectral change across the wrap, over the 98th percentile of
   the track's own onsets (the peaks of its spectral change). Above one, the seam
   changes more than the track's strong downbeats do, and sounds like a cut (§PW222).
+- `seam_grid`: how far the loop's length is from a whole number of bars (from a
+  polyweave render's record) or beats (estimated from the track's own onsets), 0 to
+  0.5. Above a few hundredths, the loop was cut off its grid, which is the cut in a
+  dense mix the other two cannot hear (§PW225). `grid` says where the grid came from.
 - `loudness`: RMS level in dBFS; `peak`: the largest sample in dBFS; `duration`:
   seconds.
 
@@ -38,6 +42,7 @@ from .errors import PolyweaveError
 SOUNDS: dict[str, str] = {
     "seam_step": "the loop's wrap step over the track's 99th-percentile sample step",
     "seam_flux": "the spectral change across the wrap over the track's strong onsets",
+    "seam_grid": "the loop's length off a whole number of bars or beats, 0 to 0.5",
     "loudness": "RMS level, in dBFS",
     "peak": "the largest sample, in dBFS",
     "duration": "length, in seconds",
@@ -210,18 +215,88 @@ def measure(path: str | Path) -> dict:
     steps = np.abs(np.diff(mono))
     step = abs(mono[0] - mono[-1]) / max(float(np.percentile(steps, 99)), 1e-12)
     wrapped = np.concatenate([mono[-4 * _SIZE :], mono[: 4 * _SIZE]])
+    flux = _flux(mono)
     across = _flux(wrapped)
     middle = len(across) // 2
-    ordinary = max(_onset_level(_flux(mono)), 1e-12)
-    return {
+    ordinary = max(_onset_level(flux), 1e-12)
+    seams = {
         "seam_step": round(float(step), 4),
         "seam_flux": round(float(across[middle - 4 : middle + 4].max()) / ordinary, 4),
-        **found,
     }
+    off, grid = _off_grid(len(mono) / rate, flux, rate, Path(path))
+    if off is not None:
+        seams["seam_grid"] = round(off, 4)
+    return {**seams, **found, "grid": grid}
 
 
 #: The measures that mean something only for a sound that plays again from its start.
-SEAM = ("seam_step", "seam_flux")
+SEAM = ("seam_step", "seam_flux", "seam_grid")
+
+#: How clearly a track must keep a pulse before its beat is estimated from it: the
+#: autocorrelation's peak over its median. The PW184 chiptune and synthwave loops kept
+#: theirs at 199 and 104, and the waltz's soft pizzicato at 1, which is no pulse at all.
+CLEAR_PULSE = 10.0
+
+
+def _off_grid(seconds: float, flux: np.ndarray, rate: int,
+              where: Path) -> tuple[float | None, str]:
+    """How far a loop's length is from a whole number of bars or beats (§PW225).
+
+    What a cut in a dense mix breaks is the grid: a loop is a whole number of bars and
+    a cut one is not. A loop polyweave rendered says its bar in its record; any other
+    has its beat estimated from its own onsets, and one without a clear pulse has no
+    grid to be held to, which the answer says rather than guessing.
+    """
+    bar = _recorded_bar(where)
+    if bar:
+        unit, grid = bar, "record"
+    else:
+        unit = _beat(flux, rate)
+        grid = "estimated" if unit else "none"
+    if not unit:
+        return None, grid
+    count = seconds / unit
+    return abs(count - round(count)), grid
+
+
+def _recorded_bar(where: Path) -> float | None:
+    """The bar a polyweave render recorded beside the file, in seconds."""
+    import json
+
+    sidecar = where.with_name(where.name + ".prov.json")
+    try:
+        record = json.loads(sidecar.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    bar = (record.get("params") or {}).get("bar_seconds")
+    return float(bar) if isinstance(bar, int | float) and bar > 0 else None
+
+
+def _beat(flux: np.ndarray, rate: int) -> float | None:
+    """The track's beat in seconds, from its onsets, or None where it keeps no pulse.
+
+    The autocorrelation of the onset envelope has no phase, so a flux peak that sits a
+    fixed fraction of a frame late biases nothing, and its peaks at every multiple of
+    the beat pin the period across the whole track: a comb locked to the track's start
+    read the spike loops' clean lengths 0.08 beats off, this one 0.001.
+    """
+    fps = rate / _HOP
+    envelope = np.concatenate([[0.0], flux]) - flux.mean()
+    n = len(envelope)
+    lags = np.arange(int(fps * 60 / 180), int(fps * 60 / 70) + 1)
+    if n <= lags[-1] * 4:
+        return None
+    spectrum = np.fft.rfft(envelope, 2 * n)
+    auto = np.fft.irfft(spectrum * np.conj(spectrum))[:n] / np.arange(n, 0, -1)
+    rough = lags[int(np.argmax(auto[lags]))] / fps
+    periods = np.linspace(rough * 0.97, rough * 1.03, 6001)
+    count = int(0.75 * n / (periods.max() * fps))
+    multiples = np.arange(1, count + 1)[None, :] * periods[:, None] * fps
+    scores = np.interp(multiples, np.arange(n), auto).mean(axis=1)
+    best = int(np.argmax(scores))
+    spread = float(np.median(scores))
+    clarity = (scores[best] - spread) / (abs(spread) + 1e-12)
+    return float(periods[best]) if clarity >= CLEAR_PULSE else None
 
 
 @operation("sound.declared")

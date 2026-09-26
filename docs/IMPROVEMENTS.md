@@ -306,24 +306,6 @@ declared in its `polyweave.toml`, made by `music.render` and `sound.synth`, and 
 `*.accept.toml` bounds, and its own audio scripts are removed. Anything Cottony needs
 that a second game would not becomes configuration.
 
-### §PW225 A seam held to the loop's grid
-
-Both seam measures compare the wrap with the track's own moments, which catches a click
-and a cut in a sparse mix but not a cut in a dense one. Measured on the PW184 loops,
-each stopped 0.37 s early so the wrap jumps into the wrong beat: the chiptune and
-synthwave read 0.57 and 0.90 on `seam_flux` and 0.86 and 0.89 on `seam_step`, all
-passing a bound of one, because a mix that busy changes as much on every beat.
-
-What a cut breaks is the grid: a loop's length is a whole number of bars, and a cut
-one's is not. A loop `music.render` made already knows its grid, since its record
-carries the tempo, the meter and the loop's ticks, so a `seam_grid` measure can be read
-straight from that: the loop's length over the nearest whole bar, where zero is on the
-grid. For a loop polyweave did not make, the tempo comes from the track's own onset
-autocorrelation, and the answer says it was estimated.
-
-Test with the spike loops and their cut copies: every whole loop reads zero, every cut
-one does not, and a bound on `seam_grid` in an `*.accept.toml` refuses the cut.
-
 ## Block Q — Words held to the world
 
 ### §PW200 Starship held to its own world

@@ -186,11 +186,27 @@ read 3.07, and a rendered drum loop opening on a crash 2.23. Against the onsets 
 still reads far above it (4.4 and 8.3 on the suite's fixtures, 4.2 on a cut orchestral
 loop). The percentile was kept because it separated those, and 95 did not.
 
-**What neither seam measure hears**: a cut in the middle of a bar of a dense mix. Stopped
+**What neither of those hears**: a cut in the middle of a bar of a dense mix. Stopped
 0.37 s early, the chiptune and synthwave loops read 0.57 and 0.90 here and 0.86 and 0.89 on
 `seam_step`, because in a mix that busy a jump into the wrong beat changes no more than a
 downbeat does. The 90th-percentile measure missed them too: it read the chiptune's clean
-seam and its cut one alike. Catching it takes the loop's grid, which is §PW225's.
+seam and its cut one alike.
+
+- `seam_grid` catches it (§PW225): how far the loop's length is from a whole number of
+  bars or beats, from 0 on the grid to 0.5. A loop is a whole number of bars and a cut
+  one is not. On those two loops it reads 0.0014 and 0.0013 whole and 0.19 and 0.38 cut,
+  so a bound of a few hundredths holds.
+
+**Where the grid comes from**, which the answer's `grid` says. A loop `music.render` made
+has `bar_seconds` in its record, so it is held to the bar it was written on (`record`).
+Any other has its beat estimated from its own onsets (`estimated`): the autocorrelation of
+the onset envelope finds it roughly, then a comb over every multiple of it across the
+track pins it. The autocorrelation has no phase, so a flux peak that sits a fixed fraction
+of a frame late biases nothing. A comb locked to the track's start read the spike loops'
+clean lengths 0.08 beats off, and this one 0.001. A track whose pulse is not clear (the
+autocorrelation's peak under ten times its median; the waltz's soft pizzicato read 1, the
+chiptune 199) has no grid (`none`) and no `seam_grid`, rather than a guessed one, and a
+spec that bounds it there is refused (`spec.no-seam`) saying so.
 - `loudness` (RMS, dBFS), `peak` (dBFS) and `duration` (seconds).
 
 A 16-bit or 24-bit PCM WAV is read with the standard library, and anything else is

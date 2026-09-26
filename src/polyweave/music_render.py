@@ -391,10 +391,12 @@ def render(
     body, cyclic = _folded(mix(stems, ext["tracks"], ext["room"], spb), loop, per_tick)
     final = master(body, cyclic=cyclic)
 
+    signature = model["timing"]["timeSignatures"][0]
+    bar = signature["numerator"] * 4 / signature["denominator"] * spb
     target = where.with_name(stem) if not out else config.path("paths.work", out)
     target.parent.mkdir(parents=True, exist_ok=True)
     made = _written(target, final, found["ffmpeg"], loop, here)
-    _recorded(made, here, inputs, instruments, None)
+    _recorded(made, here, inputs, instruments, None, bar)
     answer = {
         **made,
         "instruments": instruments,
@@ -417,7 +419,7 @@ def render(
                 found["ffmpeg"], loop, here,
             )
             playing = [i for i in instruments if set(i["used_by"]) & set(own)]
-            _recorded(answer["layers"][layer], here, inputs, playing, layer)
+            _recorded(answer["layers"][layer], here, inputs, playing, layer, bar)
     return answer
 
 
@@ -465,14 +467,18 @@ def chip_stem(notes: list[dict], hits: dict[str, np.ndarray], seconds_per_tick: 
 
 
 def _recorded(made: dict, here: Path, inputs: list[dict], instruments: list[dict],
-              layer: str | None) -> None:
-    """A provenance record beside each file made: what made it and what it owes."""
+              layer: str | None, bar: float) -> None:
+    """A provenance record beside each file made: what made it and what it owes.
+
+    The bar goes in too, so a later `seam_grid` holds the loop to the grid it was
+    written on rather than to one estimated from its sound (§PW225).
+    """
+    params = {"bar_seconds": round(bar, 9), **({"layer": layer} if layer else {})}
     for key in ("wav", "ogg"):
         if made.get(key):
             provenance.write(provenance.build(
                 "sound", here / made[key], engine={"name": "music.render"},
-                inputs=inputs, params={"layer": layer} if layer else None,
-                measurements=made["measured"],
+                inputs=inputs, params=params, measurements=made["measured"],
                 extra={"instruments": instruments}, root=here,
             ), here)
 
