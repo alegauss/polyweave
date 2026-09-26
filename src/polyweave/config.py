@@ -52,7 +52,7 @@ _INSIDE = ("service.schema",)
 #: Tables that hold either one paid service or several named ones (§PW162). A bare
 #: `[service]` is the one service it always was; `[service.meshy]` beside
 #: `[service.ideogram]` is two, each with its own `[budget.<name>]`.
-_NAMED_TABLES = ("service", "budget", "style")
+_NAMED_TABLES = ("service", "budget", "style", "sound")
 
 #: What a bare `[style]` is called: a project with one look has one family (§PW166).
 DEFAULT_FAMILY = "default"
@@ -91,6 +91,9 @@ DEFAULTS: dict[str, Any] = {
         # What one asset cost, made each way. Committed with the tree, because a
         # baseline that can be rewritten is not a baseline (§PW35).
         "loop": "polyweave.loop.json",
+        # Where a game's audio lands (§PW185). One folder by default, because Cottony
+        # keeps its music and its effects side by side; a family may name its own.
+        "audio": "assets/audio",
     },
     "render": {
         "rungs": ["sphere", "preview", "final"],
@@ -197,6 +200,24 @@ DEFAULTS: dict[str, Any] = {
         "margin": 0,
         "anchor": "centre",
         "filter": "smooth",
+    },
+    "sound": {
+        # What a game needs to hear, declared by the game (§PW185): each family is a
+        # list of cues sharing a kind, a format and a folder, so polyweave can say which
+        # file is missing without reading the consumer's scripts. A bare [sound] is one
+        # family, `default`, as a bare [style] is.
+        # `loop` has a seam; a `stinger` plays once over the music; an `effect` is a
+        # one-shot. The kind decides which measures mean anything for its files.
+        "kind": "effect",
+        "format": "wav",
+        # Under [paths] audio; empty is that folder itself.
+        "folder": "",
+        # What the cue is made to: seconds and RMS dBFS, where zero states none. Bounds
+        # a file is held to stay in its *.accept.toml; these are the targets.
+        "duration": 0.0,
+        "loudness": 0.0,
+        # The cue names, each landing at <folder>/<name>.<format>.
+        "cues": [],
     },
     "words": {
         # The text a player reads, as the game reads it (§PW197): Godot's translation
@@ -511,6 +532,69 @@ class Config:
             )
         return family, declared[family]
 
+    # -- the audio --------------------------------------------------------------
+
+    def sounds(self) -> dict[str, dict]:
+        """Every sound family the project declares, by name, with its folder resolved.
+
+        A bare `[sound]` is one family, `default`, and a project that writes neither
+        declares no audio at all, which is an empty answer rather than a default cue.
+        Two cues landing on one file are refused, since making one would overwrite the
+        other.
+        """
+        stated_table = self._declared.get("sound", {})
+        named = _named(stated_table)
+        stated = named or ({DEFAULT_FAMILY: stated_table} if stated_table else {})
+        found, owners = {}, {}
+        for family, own in stated.items():
+            sound = {**DEFAULTS["sound"], **own}
+            address = f"sound.{family}.folder" if named else "sound.folder"
+            # Joined before resolving, so an absolute folder or one that climbs out is
+            # refused by `path` like any other path setting.
+            folder = self.path(
+                address, Path(str(self.get("paths.audio"))) / str(sound["folder"])
+            )
+            sound["folder"] = str(folder)
+            for cue in sound["cues"]:
+                file = folder / f"{cue}.{sound['format']}"
+                if file in owners:
+                    raise PolyweaveError(
+                        "sound.cue-twice",
+                        f"{cue} in {family} and {owners[file]} both land on "
+                        f"{file.relative_to(self.root).as_posix()}",
+                        "rename one of them, or give one family its own folder",
+                        at=f"sound.{family}.cues",
+                    )
+                owners[file] = f"{cue} in {family}"
+            found[family] = sound
+        return found
+
+    def sound(self, family: str | None = None) -> tuple[str, dict]:
+        """One family's declared audio, resolved as a style is: never guessed."""
+        declared = self.sounds()
+        if family is None:
+            if len(declared) == 1:
+                return next(iter(declared.items()))
+            raise PolyweaveError(
+                "sound.family-unnamed",
+                f"the project declares {len(declared)} sound families and the call "
+                f"named none",
+                f"pass the family: one of {', '.join(sorted(declared)) or '(none)'}",
+                allowed=sorted(declared),
+            )
+        if family not in declared:
+            near = difflib.get_close_matches(family, declared, n=1)
+            raise PolyweaveError(
+                "sound.unknown-family",
+                f"{family!r} is not a sound family this project declares",
+                f"did you mean {near[0]!r}?"
+                if near
+                else f"declare [sound.{family}] with its cues",
+                given=family,
+                allowed=sorted(declared),
+            )
+        return family, declared[family]
+
     # -- the one read that is a decision ---------------------------------------
 
     def budget(self, today: date | None = None, service: str | None = None) -> dict:
@@ -647,9 +731,11 @@ def _check_named(table: str, values: dict, source: Path) -> None:
             f"move them under the [{table}.<name>] they belong to",
             at=table,
         )
-    allowed = {"service": DEFAULTS["service"], "style": DEFAULTS["style"]}.get(
-        table, _NAMED_BUDGET
-    )
+    allowed = {
+        "service": DEFAULTS["service"],
+        "style": DEFAULTS["style"],
+        "sound": DEFAULTS["sound"],
+    }.get(table, _NAMED_BUDGET)
     for name, stated in values.items():
         for key, value in stated.items():
             if key not in allowed:
@@ -718,10 +804,18 @@ def _check_key(table: str, key: str, value: Any, source: Path) -> None:
 
 
 #: Settings whose value is one of a few words.
-_CHOICES = {"anchor": ("centre", "base"), "filter": ("smooth", "pixel")}
+_CHOICES = {
+    "anchor": ("centre", "base"),
+    "filter": ("smooth", "pixel"),
+    "kind": ("loop", "stinger", "effect"),
+    "format": ("wav", "ogg", "flac", "mp3", "opus"),
+}
 
 #: A colour as a palette states it.
 _HEX = re.compile(r"#[0-9a-fA-F]{6}")
+
+#: A cue's name, which is also its file's stem, so it carries no folder of its own.
+_CUE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]*")
 
 
 def _check_value(address: str, key: str, value: Any, source: Path) -> None:
@@ -747,6 +841,16 @@ def _check_value(address: str, key: str, value: Any, source: Path) -> None:
             "write it as [width, height] in pixels, or [] to leave the size alone",
             at=address,
         )
+    elif key == "cues":
+        wrong = [c for c in value if not isinstance(c, str) or not _CUE.fullmatch(c)]
+        if wrong:
+            raise PolyweaveError(
+                "config.bad-type",
+                f"{address} holds {wrong[0]!r} in {source.name}, and a cue is a bare "
+                f"name that becomes its file's stem",
+                "write the name alone, such as music_calm; a folder goes in `folder`",
+                at=address,
+            )
     elif key == "palette":
         wrong = [c for c in value if not isinstance(c, str) or not _HEX.fullmatch(c)]
         if wrong:

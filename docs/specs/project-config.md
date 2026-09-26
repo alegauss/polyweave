@@ -40,6 +40,7 @@ specs      = "docs/design/accept"
 work       = ".polyweave"
 purchases  = "polyweave.purchases.json"
 loop       = "polyweave.loop.json"      # what one asset cost, made each way
+audio      = "docs/design/audio"        # where a game's declared sounds land
 
 [render]
 rungs        = ["sphere", "preview", "final"]
@@ -120,6 +121,14 @@ cell     = [64, 64]                # the grid a picture is put on when it arrive
 margin   = 2
 anchor   = "centre"                # or "base", for what stands on the ground
 filter   = "smooth"                # or "pixel": never smoothed, quantised to the palette
+
+[sound]                            # or [sound.<family>], one table per family
+kind     = "loop"                  # loop, stinger or effect
+format   = "ogg"                   # wav, ogg, flac, mp3 or opus
+folder   = ""                      # under [paths] audio; empty is that folder
+duration = 90.0                    # the target, in seconds; zero states none
+loudness = -18.0                   # the target, RMS dBFS; zero states none
+cues     = ["music_calm"]          # each lands at <folder>/<cue>.<format>
 
 [words]
 table    = "i18n/strings.csv"      # Godot's translation CSV, one column per locale
@@ -284,6 +293,29 @@ pictures has no spread, so its report is `judged: false` and says so, rather tha
 floor. A refusal says which way each measure went (warmer, thicker lines, light turned 40
 degrees), because the next prompt is corrected from that. `not_checked` names what a number
 cannot see, such as whether it is still the same character, and that stays the person's.
+
+## What a game needs to hear
+
+A game's audio is a list the game owns: music per level or state, and a sound per event
+(§PW185). It is declared in `[sound]`, shaped like `[style]`: a bare table is one family,
+`default`, and `[sound.<family>]` tables are as many as the project writes. Each family is
+a list of `cues` sharing a `kind`, a `format` and a `folder` under `[paths] audio`, so a
+cue lands at `<folder>/<cue>.<format>`. One folder is the default because Cottony keeps
+its music and its effects side by side.
+
+- `kind` decides which measures mean anything: a `loop` has a seam, and a `stinger` or
+  an `effect` plays once and has none;
+- `duration` and `loudness` are what the cue is made to. **Bounds stay in the file's
+  `*.accept.toml`**, which already reads the `sound.*` measures: the declaration says
+  what exists and where, and the spec says what passes;
+- a cue is a bare name, refused with a folder in it, and two cues landing on one file
+  are refused (`sound.cue-twice`), since making one would overwrite the other.
+
+`sound.declared` answers every family, or the one named, with each cue's file, whether it
+is there and what it measures (without a seam unless the kind is `loop`), and `missing`
+lists the declared files that are absent. A file that cannot be measured says why in its
+own entry rather than failing the read. Nothing about Cottony is compiled in: a project
+that declares no `[sound]` needs no audio.
 
 **`[capture] declared` is the list that matters.** Every name in it is an environment setting
 a capture must state explicitly, and a capture leaving one to chance is refused. §PW25 is why:

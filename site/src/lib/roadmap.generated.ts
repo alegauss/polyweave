@@ -40,7 +40,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 0 },
   { block: "O", title: "A person sees and answers", open: 0 },
-  { block: "P", title: "Music and sound a game can ship", open: 10 },
+  { block: "P", title: "Music and sound a game can ship", open: 9 },
   { block: "Q", title: "Words held to the world", open: 1 },
   { block: "R", title: "Levels measured before a person plays them", open: 5 },
   { block: "S", title: "Playing the game, not only rendering it", open: 6 },
@@ -70,13 +70,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW57"],
   },
   {
-    id: "PW185",
-    block: "P",
-    symptom: "No declaration says which music and sound effects a game needs or where they land",
-    why: "Cottony keeps that list in its own scripts, so polyweave cannot say which audio is missing or out of bounds.",
-    deps: [],
-  },
-  {
     id: "PW186",
     block: "P",
     symptom: "An agent cannot write multi-track music as data that polyweave validates",
@@ -88,7 +81,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "P",
     symptom: "A composed score cannot become a WAV or OGG file without a DAW open",
     why: "Nothing renders music headlessly, so the only route to game audio is a person in a DAW or a paid generator.",
-    deps: ["PW185", "PW186"],
+    deps: ["PW186"],
   },
   {
     id: "PW188",
@@ -102,14 +95,14 @@ export const generatedTasks: GeneratedTask[] = [
     block: "P",
     symptom: "Retro sound effects are synthesised by each consumer's own script",
     why: "A second project would have to copy Cottony's generator, which the non-goal on one project's paths forbids.",
-    deps: ["PW185"],
+    deps: [],
   },
   {
     id: "PW190",
     block: "P",
     symptom: "Realistic sound effects have no bounded way to be bought from a service",
     why: "A synthesiser does footsteps and glass badly, and a paid fetch without a ceiling is the surprise Block D exists to prevent.",
-    deps: ["PW185"],
+    deps: [],
   },
   {
     id: "PW191",

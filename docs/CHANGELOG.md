@@ -238,6 +238,7 @@
 ## Block P — Music and sound a game can ship
 
 - ✅ **PW184** **Nobody knows if agent-composed, headlessly rendered music sounds good enough to ship in a game** — A person judged three agent-written loops and ten seeded effects, rendered headlessly through Surge XT and FluidSynth, to sound professional, so Block P proceeds.
+- ✅ **PW185** **No declaration says which music and sound effects a game needs or where they land** — A game declares its audio as [sound.<family>] cues, and sound.declared says where each lands, what it measures and which files are missing (design recorded in `docs/specs/project-config.md`).
 
 ## Block Q — Words held to the world
 

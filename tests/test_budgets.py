@@ -42,7 +42,8 @@ from polyweave.errors import PolyweaveError
 #: 64,142 with words.check and words.unlisted (§PW197).
 #: 65,349 with words.sheet and entity= on picture.buy and mesh.buy (§PW198, §PW199).
 #: 65,992 with project.init and its agent flag (§PW218, §PW219).
-DESCRIBE = 66_500
+#: 66,720 with sound.declared (§PW185), the first operation of Block P.
+DESCRIBE = 67_300
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with

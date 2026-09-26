@@ -29,6 +29,7 @@ from typing import Annotated
 
 import numpy as np
 
+from .config import load
 from .describe import Param, operation
 from .errors import PolyweaveError
 
@@ -166,6 +167,60 @@ def measure(path: str | Path) -> dict:
         "peak": _db(float(np.abs(samples).max())),
         "duration": round(len(mono) / rate, 4),
     }
+
+
+#: The measures that mean something only for a sound that plays again from its start.
+SEAM = ("seam_step", "seam_flux")
+
+
+@operation("sound.declared")
+def declared(
+    family: Annotated[str, Param("one sound family; left out, every one")] = None,
+    root: Annotated[str, Param("the project whose [sound] is read")] = ".",
+) -> dict:
+    """The audio a game declares: each cue's file, measured, and what is missing.
+
+    A present file is measured as `sound.measure` would, without its seam unless the
+    family's kind is `loop`; one that cannot be measured says why instead. Whether a
+    measure is in bounds stays with the file's *.accept.toml.
+    """
+    config = load(root)
+    if family:
+        name, one = config.sound(family)
+        families = {name: one}
+    else:
+        families = config.sounds()
+    answer, missing = {}, []
+    for name, sound in families.items():
+        folder = Path(sound["folder"])
+        cues = [
+            _cue(cue, folder / f"{cue}.{sound['format']}", sound["kind"], config.root)
+            for cue in sound["cues"]
+        ]
+        missing += [c["file"] for c in cues if not c["exists"]]
+        answer[name] = {
+            **{k: sound[k] for k in ("kind", "format", "duration", "loudness")},
+            "folder": folder.relative_to(config.root).as_posix(),
+            "cues": cues,
+        }
+    return {"families": answer, "missing": missing}
+
+
+def _cue(cue: str, file: Path, kind: str, root: Path) -> dict:
+    """One declared cue: where it lands, whether it is there, and what it measures."""
+    entry: dict = {"cue": cue, "file": file.relative_to(root).as_posix()}
+    entry["exists"] = file.is_file()
+    if not entry["exists"]:
+        return entry
+    try:
+        found = measure(file)
+    except PolyweaveError as refused:
+        entry["unmeasured"] = {"code": refused.code, "why": refused.message}
+        return entry
+    if kind != "loop":
+        found = {k: v for k, v in found.items() if k not in SEAM}
+    entry["measured"] = found
+    return entry
 
 
 @operation("sound.measure")

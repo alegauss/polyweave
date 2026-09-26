@@ -53,6 +53,7 @@ AREAS: dict[str, str] = {
     "world": "a game's names, factions and characters, declared beside its prose",
     "words": "the text a player reads, held to the world it is set in",
     "adopt": "a project's adoption: its config, its server and its agent's section",
+    "sound": "the audio a game declares it needs, and where each file lands",
 }
 
 CODES: dict[str, Code] = {
@@ -736,6 +737,22 @@ CODES: dict[str, Code] = {
         means="the family has no canon directory, so nothing can be admitted to it",
         when="a verdict naming a canon family whose [style] declares no canon",
         doors=("set canon under the family's [style]",),
+    ),
+    # -- sound: the audio a game declares it needs -----------------------------
+    "sound.family-unnamed": Code(
+        means="the project declares several sound families and the call named none",
+        when="a read of the declared audio with [sound.<family>] tables and no family",
+        doors=("pass the family", "leave family out to read every one"),
+    ),
+    "sound.unknown-family": Code(
+        means="no sound family of that name is declared",
+        when="a misspelled family, or one whose [sound.<family>] was never written",
+        doors=("name a declared family", "declare [sound.<family>]"),
+    ),
+    "sound.cue-twice": Code(
+        means="two cues land on one file, so making one would overwrite the other",
+        when="one cue name in two families that share a folder and a format",
+        doors=("rename one cue", "give one family its own folder"),
     ),
     # -- world: a game's names, factions and characters -----------------------
     "world.none": Code(

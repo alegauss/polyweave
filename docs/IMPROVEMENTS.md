@@ -299,21 +299,6 @@ since a reference the service ignores is dropped without an error.
 
 ## Block P — Music and sound a game can ship
 
-### §PW185 Declaring what a game needs to hear
-
-A game's audio is a list the consumer owns: music per level or state, and a sound per
-event. Today that list lives in Cottony's scripts, so polyweave cannot say which files
-are missing or out of bounds.
-
-A `[sound.<family>]` table, shaped like `[style.<family>]`, names each cue with its kind
-(music loop, stinger, effect), its target duration and loudness, and where the file
-lands under a new `paths.audio` default. Acceptance bounds stay in `*.accept.toml`,
-which already reads `sound.*` measures; the declaration only says what exists and where.
-Nothing about Cottony is compiled in, per the non-goal on one project's paths.
-
-The kind decides which measures apply: a loop has a seam and an effect does not. The
-spike found both sides misread today, which §PW221 and §PW222 fix.
-
 ### §PW186 Music as an editable source an agent writes and polyweave checks
 
 An agent composes well only when its output is structured and a validator answers it,
