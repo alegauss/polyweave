@@ -38,7 +38,6 @@
 
 ## Block Q — Words held to the world
 
-- 📋 **PW200** (deps: PW197 ✅, PW198 ✅, PW199 ✅, Starship RK73, Starship RK89) **Starship's screen still shows names its world bible replaced** — The block is proven only when its first consumer's text, lines and character assets are held to a declared world through polyweave. → §PW200
 - 📋 **PW243** (deps: —) **words.check glues the lines of a cell with a real line break, reading two words as one unknown name** — A table with a real newline in a quoted cell, which Godot's importer accepts, fails the check with names that are not in it. → §PW243
 - 📋 **PW244** (deps: —) **words.check reads the pronoun I's contractions mid-sentence as unknown names, failing ordinary English dialogue** — Every project with English dialogue has to list I'll and I've as ordinary words to pass, which the check should know already. → §PW244
 
@@ -139,6 +138,15 @@
   Cottony family, a person answers on the review page, the ledger holds that verdict
   through judge alone, and the agent's next candidate follows from verdict.answers with
   no chat message in between.
+
+## Done when — PW200
+
+- **Starship's crew lines are judged into a lines canon** A person reads the crew lines
+  through words.sheet and records verdicts; words.check against Starship then reports
+  the approved lines as the canon rather than 453 unjudged rows.
+- **A Lattice or Foreman picture is bought with entity=** The next enemy or Foreman
+  picture Starship buys goes through picture.buy with entity=, and its provenance
+  sidecar names the entity from starship.world.toml.
 
 ## Non-goals
 

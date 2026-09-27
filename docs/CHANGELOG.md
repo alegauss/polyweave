@@ -257,6 +257,7 @@
 - ✅ **PW197** **Text a player reads is never checked against the world's names and rules** — words.check holds Godot's translation CSV to the world per locale; words.unlisted counts scene literals outside it (design recorded in `docs/specs/world.md`).
 - ✅ **PW198** **A character's picture or mesh is bought from a description retyped by hand** — picture.buy and mesh.buy take entity=, compose the prompt from its look, and record it so only its own changes read as outdated (design recorded in `docs/specs/world.md`).
 - ✅ **PW199** **Whether a line keeps the world's tone has nowhere to be answered but a chat** — words.sheet puts unjudged lines on the review page beside the world's tone; verdict.judge keeps each in a lines canon world.read returns (design recorded in `docs/specs/world.md`).
+- ✅ **PW200 (text half)** **Starship's screen still shows names its world bible replaced** — Starship declares its world in starship.world.toml, factions tied to their styles, and every string passes words.check with none left in scripts.
 
 ## Block R — Levels measured before a person plays them
 

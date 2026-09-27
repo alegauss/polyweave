@@ -41,7 +41,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "N", title: "Pictures held to a canon", open: 0 },
   { block: "O", title: "A person sees and answers", open: 0 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
-  { block: "Q", title: "Words held to the world", open: 1 },
+  { block: "Q", title: "Words held to the world", open: 2 },
   { block: "R", title: "Levels measured before a person plays them", open: 5 },
   { block: "S", title: "Playing the game, not only rendering it", open: 6 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
@@ -70,10 +70,17 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW57"],
   },
   {
-    id: "PW200",
+    id: "PW243",
     block: "Q",
-    symptom: "Starship's screen still shows names its world bible replaced",
-    why: "The block is proven only when its first consumer's text, lines and character assets are held to a declared world through polyweave.",
+    symptom: "words.check glues the lines of a cell with a real line break, reading two words as one unknown name",
+    why: "A table with a real newline in a quoted cell, which Godot's importer accepts, fails the check with names that are not in it.",
+    deps: [],
+  },
+  {
+    id: "PW244",
+    block: "Q",
+    symptom: "words.check reads the pronoun I's contractions mid-sentence as unknown names, failing ordinary English dialogue",
+    why: "Every project with English dialogue has to list I'll and I've as ordinary words to pass, which the check should know already.",
     deps: [],
   },
   {
@@ -191,4 +198,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW36", "PW53", "PW77", "PW78", "PW79", "PW80", "PW81", "PW82", "PW180", "PW192", "PW201", "PW211"];
+export const generatedPaused: string[] = ["PW36", "PW53", "PW77", "PW78", "PW79", "PW80", "PW81", "PW82", "PW180", "PW192", "PW200", "PW201", "PW211"];

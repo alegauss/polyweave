@@ -47,6 +47,8 @@
 
 ## Block Q — Words held to the world
 
+- ⏸ **PW200** (deps: PW197 ✅, PW198 ✅, PW199 ✅) **Starship's screen still shows names its world bible replaced** — set aside (Waits on a person's verdicts and a paid buy.): A person judges the crew lines into a lines canon, and the next Lattice or Foreman picture is bought with entity=. → §PW200
+
 ## Block R — Levels measured before a person plays them
 
 - ⏸ **PW201** (deps: —) **Nobody knows if a scripted bot's win rate tracks how hard a level feels to a person** — set aside (Awaits a person playing.): Every later line in this block tunes levels against a simulated player, so a person's verdict on that proxy decides whether the block proceeds or is retired. → §PW201
