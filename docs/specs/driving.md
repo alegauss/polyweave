@@ -64,6 +64,13 @@ seconds of wall clock between calls, and ten replays with none, all agreed: ever
 ended on frame 732 with the same values. At `--fixed-fps` the physics ticks once a frame,
 and a game drawing from its own seeded generators repeats as long as its seed does.
 
+**A driven game has a user folder of its own** (§PW217). Godot puts `user://` under the
+platform's per-user data folder, so a game driven there would read the person's own save
+— which level they reached, which settings they chose — and write over it. `game.open`
+and `game.replay` launch it with `APPDATA` and `XDG_DATA_HOME` pointed at an empty folder
+under `.polyweave/driving/`, so every session and every replay starts from a fresh save
+and never touches the person's.
+
 A frame only passes inside `step` and `wait`, so the same commands give the same game:
 PW211 drove Cottony from its splash to a won level ten times and every run ended on the
 same frame and the same board. Randomness the game draws from its own generator is the
@@ -95,6 +102,7 @@ them; the driver quits on `close`, or after `--idle=N` seconds with no request.
 | `call` | `path`, `method`, optional `args` | Calls a method the game exposes for setup, and returns its value. An awaited coroutine is not waited on; a caller that needs it done follows with `wait` |
 | `shot` | `out` | Saves the viewport as a PNG at that path and returns it with its size. A headless run draws nothing, so a shot there is refused (`driver.no-picture`) rather than saved blank |
 | `expect` | `path`, `property`, `equals` | Whether the property holds the value now, no frame passing: `{held, value}` |
+| `set` | `path`, `property`, `value` | Sets a property for setup, a nested one written `rng:seed` (Godot's `set_indexed`), and answers `{was, now}`; an int stays an int though JSON sends a float. How a flow seeds a generator the game made itself, which `--seed` does not reach (§PW217) |
 | `close` | — | Answers, then quits |
 
 Values cross as JSON: a `Vector2` is `[x, y]`, a `Color` `[r, g, b, a]`, a node its path,

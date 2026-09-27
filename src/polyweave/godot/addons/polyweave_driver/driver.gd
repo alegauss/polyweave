@@ -290,6 +290,8 @@ func _command(asked: Dictionary) -> Dictionary:
 			return _shot(asked)
 		"expect":
 			return _expect(asked)
+		"set":
+			return _set_property(asked)
 		"close":
 			return {"quit": true}
 	return _refused(
@@ -475,6 +477,25 @@ func _expect(asked: Dictionary) -> Dictionary:
 		return _refused("driver.bad-command", "%s has no property %s" % [nodes[0].get_path(), named])
 	var held := _met({"asked": asked, "fired": false})
 	return {"result": {"held": held, "value": _plain(nodes[0].get(named))}}
+
+
+## Set a property for setup, a nested one written as `rng:seed`: how a flow seeds a
+## generator the game made itself, which --seed does not reach (§PW217).
+func _set_property(asked: Dictionary) -> Dictionary:
+	var nodes := _found(asked)
+	if nodes.is_empty():
+		return _refused("driver.no-node", "nothing answers %s" % _named(asked))
+	var named := str(asked.get("property", ""))
+	var head := named.get_slice(":", 0)
+	if named == "" or not (head in nodes[0]):
+		return _refused("driver.bad-command", "%s has no property %s" % [nodes[0].get_path(), head])
+	var before = nodes[0].get_indexed(NodePath(named))
+	var value = asked.get("value")
+	# JSON gives every number as a float; an int property keeps being an int.
+	if typeof(before) == TYPE_INT and typeof(value) == TYPE_FLOAT:
+		value = int(value)
+	nodes[0].set_indexed(NodePath(named), value)
+	return {"result": {"was": _plain(before), "now": _plain(nodes[0].get_indexed(NodePath(named)))}}
 
 
 func _call(asked: Dictionary) -> Dictionary:

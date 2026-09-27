@@ -77,6 +77,22 @@ def _driver_for(here: Path) -> tuple[str, Path]:
     return carried.resolve().as_posix(), carried
 
 
+def _own_user(where: Path) -> dict:
+    """An environment giving a driven game a fresh `user://` of its own (§PW217).
+
+    Godot puts user:// under the platform's per-user data folder, APPDATA on Windows and
+    XDG_DATA_HOME on Linux, so a session or a replay pointed at an empty folder starts
+    from a fresh save and never reads or writes the person's own. A flow then replays
+    the same whatever the person has played since.
+    """
+    import shutil
+
+    if where.exists():
+        shutil.rmtree(where)
+    where.mkdir(parents=True)
+    return {"APPDATA": str(where), "XDG_DATA_HOME": str(where)}
+
+
 def _folder(root: str | Path) -> Path:
     return load(root).root / ".polyweave" / "driving"
 
@@ -159,8 +175,14 @@ def opened(
             if sys.platform == "win32"
             else {"start_new_session": True}
         )
+        own = _own_user(folder / f"{session}.user")
         process = subprocess.Popen(
-            command, cwd=here, stdout=out, stderr=subprocess.STDOUT, **extra
+            command,
+            cwd=here,
+            stdout=out,
+            stderr=subprocess.STDOUT,
+            env={**os.environ, **own},
+            **extra,
         )
     started = time.monotonic()
     found = None
@@ -411,6 +433,27 @@ def called(
     return send(session, "call", root=root, path=path, method=method, args=list(args))
 
 
+@operation("game.set")
+def set_value(
+    session: Annotated[str, _SESSION],
+    *,
+    path: Annotated[str, Param("the node the property is on")],
+    prop: Annotated[str, Param("the property; a nested one as rng:seed")],
+    value: Annotated[str, Param("the value to set, as JSON")],
+    root: Annotated[str, _ROOT] = ".",
+) -> dict:
+    """Set a property for setup, such as the seed of a generator the game made itself.
+
+    The driver's seed covers the global random functions only; a game drawing from its
+    own RandomNumberGenerator repeats only once a flow seeds that too (§PW217).
+    """
+    try:
+        wanted = json.loads(value)
+    except json.JSONDecodeError:
+        wanted = value  # a bare word is the string it spells
+    return send(session, "set", root=root, path=path, property=prop, value=wanted)
+
+
 @operation("game.shot")
 def shot(
     session: Annotated[str, _SESSION],
@@ -572,6 +615,7 @@ def replayed(
         headless=True,
         frames=max(int(load(here).get("engine.frames")), budget + 600),
         args=("--", f"--flow={where.as_posix()}"),
+        env=_own_user(_folder(here) / "replay.user"),
     )
     said = found.get("found") or {}
     passed = found["ok"] and said.get("verdict") == "passed"

@@ -123,7 +123,9 @@ def _errors(output: str, pattern: re.Pattern) -> list[dict]:
     return out
 
 
-def _launch(command: list[str], *, cwd: Path, timeout: float) -> tuple[str, int]:
+def _launch(
+    command: list[str], *, cwd: Path, timeout: float, env: dict | None = None
+) -> tuple[str, int]:
     """Start the engine and wait for it, leaving a trail first.
 
     `Popen` rather than `subprocess.run` for one reason: the pid has to be written down
@@ -134,6 +136,7 @@ def _launch(command: list[str], *, cwd: Path, timeout: float) -> tuple[str, int]
     with subprocess.Popen(
         command,
         cwd=cwd,
+        env={**os.environ, **env} if env else None,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         text=True,
@@ -168,6 +171,7 @@ def run(
     through: tuple[str, ...] = (),
     binary: str = "",
     launch: Any = None,
+    env: dict | None = None,
 ) -> dict:
     """Run one scene script and say what happened, in one structure.
 
@@ -179,7 +183,8 @@ def run(
     `through` is a command the engine is launched inside, for a run that needs
     something standing up around it — a display server, most of all. `binary` names the
     engine where the caller has already resolved it, or where the project being run is
-    not the project whose settings named it.
+    not the project whose settings named it. `env` is laid over the process's own
+    environment, which is how a driven game gets a user folder of its own (§PW217).
 
     Nothing here raises on a failed run. The verdict is the answer.
     """
@@ -214,7 +219,9 @@ def run(
     started = time.monotonic()
     timed_out = False
     try:
-        output, code = (launch or _launch)(command, cwd=where, timeout=clock)
+        output, code = (launch or _launch)(
+            command, cwd=where, timeout=clock, **({"env": env} if env else {})
+        )
     except subprocess.TimeoutExpired as exc:
         output = _text(exc.stdout) + _text(exc.stderr)
         code, timed_out = None, True

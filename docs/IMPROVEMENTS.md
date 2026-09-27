@@ -585,6 +585,24 @@ family with references should refuse a structured call rather than drop them.
 Check first whether 4.0 has gained a reference field, and learn it by the schema probe,
 since a reference the service ignores is dropped without an error.
 
+### §PW266 Canon candidates on the page, gated or not
+
+Found in Starship (2026-09-27, RK93). The project's canons were to be grown on the
+review page. The page offered only the six Mote drawings, because a picture reaches a
+canon there only through a gate run's lane (`review.answer` with `gate` and `canon`).
+The studies the project adopted for its brand and holders families (RK91) were never
+gated: they are key art and a wordmark, with no outline to hold a silhouette to. So two
+of the three families could not be started from the page at all. The owner's picks were
+carried with `verdict.judge` members carrying `canon`, a shape learned from
+`style.admit`'s source.
+
+The page should list, for each declared `[style.<family>]`, the pictures a project
+points at as candidates, such as a `candidates` glob under the family. Each should have
+the same admit-with-a-sentence control the gate lanes have. The board should say that a
+family with fewer than two pictures judges nothing yet.
+
+Done when Starship's brand family can be started from the page with its two studies.
+
 ## Block O — A person sees and answers
 
 ### §PW256 A sitting for sounds

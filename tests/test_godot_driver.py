@@ -235,6 +235,79 @@ def test_a_held_action_stays_pressed_until_released(tmp_path):
         session.close()
 
 
+SEEDED = """extends Node2D
+
+var rng := RandomNumberGenerator.new()
+var drawn := 0
+
+func draw() -> int:
+\tdrawn = rng.randi_range(0, 1000000)
+\treturn drawn
+"""
+
+
+def test_a_set_seeds_a_generator_the_game_made_itself(tmp_path):
+    """§PW217: --seed covers the global functions, and a game's own generator not."""
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    root = game(tmp_path)
+    (root / "main.gd").write_text(SEEDED, encoding="utf-8")
+    drawn = []
+    for _ in range(2):
+        session = driving.opened(str(root))["session"]
+        try:
+            was = driving.set_value(
+                session, path=".", prop="rng:seed", value="42", root=str(root)
+            )
+            assert was["result"]["now"] == 42
+            drawn.append(
+                driving.called(session, path=".", method="draw", root=str(root))[
+                    "result"
+                ]
+            )
+        finally:
+            driving.closed(session, root=str(root))
+    assert drawn[0] == drawn[1]
+    session = driving.opened(str(root))["session"]
+    try:
+        with pytest.raises(PolyweaveError) as refused:
+            driving.set_value(
+                session, path=".", prop="nothing", value="1", root=str(root)
+            )
+        assert refused.value.code == "driver.bad-command"
+    finally:
+        driving.closed(session, root=str(root))
+
+
+SAVING = """extends Node2D
+
+var opened := 0
+
+func _ready() -> void:
+\tvar was := FileAccess.get_file_as_string("user://count.txt")
+\topened = int(was) + 1 if was != "" else 1
+\tvar out := FileAccess.open("user://count.txt", FileAccess.WRITE)
+\tout.store_string(str(opened))
+"""
+
+
+def test_every_session_starts_from_a_fresh_user_folder(tmp_path):
+    """§PW217: a driven game never reads or writes the person's own save."""
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    root = game(tmp_path)
+    (root / "main.gd").write_text(SAVING, encoding="utf-8")
+    for _ in range(2):
+        session = driving.opened(str(root))["session"]
+        try:
+            said = driving.queried(
+                session, path=".", properties=["opened"], root=str(root)
+            )
+            assert said["result"][0]["properties"]["opened"] == 1
+        finally:
+            driving.closed(session, root=str(root))
+
+
 def test_a_wait_spends_frames_until_its_condition_holds(driven):
     at = ticks(driven)
     met = driven.ask("wait", path=".", property="ticks", equals=at + 12, frames=60)

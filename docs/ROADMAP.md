@@ -52,6 +52,8 @@
 
 ## Block N — Pictures held to a canon
 
+- 📋 **PW266** (deps: —) **the review page admits a picture to a canon only from a gate lane, so a family never gated cannot start** — Key art and wordmarks have no outline to gate, and they are what a brand canon is made of. → §PW266
+
 ## Block O — A person sees and answers
 
 - 📋 **PW256** (deps: —) **a sitting shows pictures only, so a person cannot hear a new sound beside the old one and give a verdict** — Every swap of a game's sounds needs a person's ear, and today the verdicts are asked for in chat and never recorded. → §PW256
@@ -77,7 +79,7 @@
 
 ## Block S — Playing the game, not only rendering it
 
-- 📋 **PW217** (deps: PW214 ✅, PW215 ✅, PW216 ✅) **Cottony's flow from title screen to a won level is checked by no test, so a broken menu ships unseen** — The block is proven only when its first consumer keeps its main flows as replayed tests in its own release script, beside a clean release check. → §PW217
+- ⏳ **PW217** (deps: PW214 ✅, PW215 ✅, PW216 ✅) **Cottony's flow from title screen to a won level is checked by no test, so a broken menu ships unseen** — An agent that never read Cottony's code keeps three flows through the tools, in Cottony's tests and release script, with a clean release check. → §PW217
 - 📋 **PW250** (deps: —) **finding a seed where a game shows a moment means flying it by hand, one seed at a time** — A trailer shot, a repro or a balance case each needs such a run, and a sweep over arguments with a log pattern answers it in one call. → §PW250
 
 ## Block T — Adopting polyweave in a project
@@ -169,6 +171,15 @@
 - **A Lattice or Foreman picture is bought with entity=** The next enemy or Foreman
   picture Starship buys goes through picture.buy with entity=, and its provenance
   sidecar names the entity from starship.world.toml.
+
+## Done when — PW217
+
+- **Three Cottony flows kept by an agent that never read its code** A fresh agent given
+  only the game.* tools wins level 1, loses a later level and changes a setting that
+  persists, keeps each with game.keep, and the calls each took are recorded.
+- **Cottony's release runs its flows and a clean release check** The flows sit in
+  Cottony's tests, its release script runs game.replay on each and game.release_check on
+  its export, and all pass.
 
 ## Non-goals
 

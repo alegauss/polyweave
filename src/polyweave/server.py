@@ -70,7 +70,8 @@ TOOL_BUDGET = 4500
 #: at 70,138 for the eight game.* operations that drive a held game (§PW213).
 #: 71,900 at 71,401 for game.keep and game.replay (§PW214).
 #: 72,500 at 71,928 for game.release_check (§PW215).
-LIST_BUDGET = 72500
+#: 73,200 at 72,797 for game.set and input's hold and release (§PW216, §PW217).
+LIST_BUDGET = 73200
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {
