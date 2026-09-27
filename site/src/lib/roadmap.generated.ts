@@ -29,7 +29,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "B", title: "Seeing the result cheaply", open: 0 },
   { block: "C", title: "The asset compiler", open: 0 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 1 },
-  { block: "E", title: "One world with the engine", open: 3 },
+  { block: "E", title: "One world with the engine", open: 2 },
   { block: "F", title: "Motion", open: 1 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
   { block: "H", title: "Proof on a real game", open: 4 },
@@ -53,13 +53,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "D",
     symptom: "mesh.buy asks which paid service to use even when only one of the declared services sells meshes",
     why: "Every purchase starts with a refusal the project's own schema could have answered.",
-    deps: [],
-  },
-  {
-    id: "PW251",
-    block: "E",
-    symptom: "capture.run kills every script at frame 6000, and no parameter raises it",
-    why: "A capture of a late moment in a run is cut before it prints its line, and the answer blames the script.",
     deps: [],
   },
   {

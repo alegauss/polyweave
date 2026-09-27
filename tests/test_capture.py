@@ -375,6 +375,26 @@ def test_a_script_that_reported_no_environment_is_named_so(tmp_path):
     assert "locale was never applied" in found["why"]
 
 
+def test_the_operation_passes_a_frame_budget_to_the_run(tmp_path, monkeypatch):
+    """§PW251: Starship's Mason breaks at tick 6713, past the 6000 every run got."""
+    script = project(tmp_path, '[capture]\ndeclared = ["locale"]\nlocale = "pt_BR"\n')
+    given = {}
+
+    def take(script, **how):
+        given.update(how)
+        return taking("environment: locale=pt_BR\ncaptured: res://x.png 24 x 24\n")(
+            script, **how
+        )
+
+    monkeypatch.setattr(capture.offscreen, "capture", take)
+    capture.taken(
+        str(script), expect=SHOT, root=str(tmp_path), record=False, frames=16000,
+        timeout=900,
+    )
+    assert given["frames"] == 16000
+    assert given["timeout"] == 900.0
+
+
 def test_args_already_split_by_the_caller_get_no_second_separator(tmp_path):
     script = project(tmp_path, '[capture]\ndeclared = ["locale"]\nlocale = "pt_BR"\n')
     found = capture.run(

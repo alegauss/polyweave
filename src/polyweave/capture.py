@@ -665,13 +665,22 @@ def taken(
     tries: Annotated[
         int, Param("how many runs until_visible may take", lo=1, hi=20)
     ] = 3,
+    frames: Annotated[
+        int,
+        Param("the frame budget; [engine] frames if unset", lo=1, hi=10_000_000),
+    ] = None,
+    timeout: Annotated[
+        float, Param("the wall clock; [engine] timeout if unset", lo=1, unit="s")
+    ] = None,
 ) -> dict:
     """Take a picture in a stated environment, and check it was the stated one.
 
     `args` are the script's (§PW238): a capture of a moment in play names it, and
     without them the only route was a one-off Python call to the library. They reach
     `OS.get_cmdline_user_args()` ahead of the environment's `name=value` pairs.
-    `until_visible` retries a run whose subject was off screen (§PW242).
+    `until_visible` retries a run whose subject was off screen (§PW242). `frames` and
+    `timeout` size a run that flies to a late moment, which the project's budget would
+    end before it printed its line (§PW251).
     """
     how = {
         "expect": expect,
@@ -681,5 +690,7 @@ def taken(
         "args": ("--", *(str(one) for one in args or ())),
         "until_visible": until_visible,
         "tries": tries,
+        **({"frames": int(frames)} if frames else {}),
+        **({"timeout": float(timeout)} if timeout else {}),
     }
     return require(script, **how) if strict else run(script, **how)

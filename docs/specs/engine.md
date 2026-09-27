@@ -215,6 +215,14 @@ picture had the environment hold. Where every picture is one size, that size is 
 `applied` says; a picture at another size than the one asked fails the environment as
 `capture.differs`, whatever the script printed.
 
+**The frame budget is the caller's to size** (§PW251). `capture.run` takes `frames` and
+`timeout`, over `[engine] frames` and `timeout`, so a script flying to a late moment
+(Starship's Mason breaks at tick 6713) is not ended by the project's 6000. The budget ends a
+run in silence, since Godot prints nothing at `--quit-after` and exits 0, so where a run
+printed no line its `why` names the budget: that it ended the run, where the script's own
+`frames: N` reached it, and that it may have, and how to raise it, where the script said
+nothing.
+
 **A moment is found by sweeping, not by flying seed after seed** (§PW250). A trailer
 shot, a repro or a balance case needs a run where something happens, and which seed and
 policy give one is found only by playing. `engine.sweep` runs one scene script, headless,

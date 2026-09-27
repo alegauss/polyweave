@@ -69,6 +69,28 @@ def test_a_clean_run_is_the_printed_line_and_not_the_exit_code(tmp_path):
     assert found["found"] == {"ran": "12", "failed": "0"}
 
 
+def test_a_run_the_budget_ended_says_so(tmp_path):
+    """§PW251: the budget ends a run in silence, and the answer blamed the script."""
+    script = project(tmp_path)
+    found = engine.run(
+        script,
+        expect=SUMMARY,
+        root=tmp_path,
+        frames=6000,
+        launch=says("frames: 6000\n"),
+    )
+    assert found["bounded"] is True
+    assert "frame budget of 6000 ended the run" in found["why"]
+    assert "larger frames" in found["why"]
+
+
+def test_a_silent_run_names_the_budget_it_may_have_hit(tmp_path):
+    script = project(tmp_path)
+    found = engine.run(script, expect=SUMMARY, root=tmp_path, launch=says(""))
+    assert found["verdict"] == "no-signal"
+    assert "frame budget of 6000 may have ended it" in found["why"]
+
+
 def test_a_script_error_is_a_failure_however_it_exited(tmp_path):
     """And zero after a script error is the other way round."""
     script = project(tmp_path)

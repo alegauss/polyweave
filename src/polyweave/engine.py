@@ -306,11 +306,22 @@ def _verdict(**about: Any) -> dict:
             f"{first['at'] or 'no line the engine named'}: {first['text']}",
         }
     if found is None:
-        return {
-            **result,
-            "verdict": "no-signal",
-            "why": "the script never printed the line that says it worked",
-        }
+        # The budget ends a run in silence (Godot prints nothing at --quit-after and
+        # exits 0), so it is named whenever it could be why (§PW251): certainly where
+        # the script's own frame count reached it, possibly where it said nothing.
+        budget = about["budget"]
+        if result["bounded"]:
+            why = (
+                f"the frame budget of {budget} ended the run before the script printed "
+                "its line; pass a larger frames"
+            )
+        else:
+            why = (
+                "the script never printed the line that says it worked; if its moment "
+                f"comes late, the frame budget of {budget} may have ended it first, "
+                "and a larger frames lets it run on"
+            )
+        return {**result, "verdict": "no-signal", "why": why}
     if missing:
         return {
             **result,

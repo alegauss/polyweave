@@ -21,24 +21,6 @@ Done when `mesh.buy --picture_path ...` in Starship picks Meshy on its own.
 
 ## Block E — One world with the engine
 
-### §PW251 A frame budget the caller sets
-
-Found in Starship's RK81 (2026-09-27). `capture.run` starts the engine with
-`--quit-after 6000` and answers `frame_budget: 6000, bounded: false`, and no parameter
-of the operation (`describe` lists script, expect, root, environment, record, strict,
-args, until_visible, tries) moves it. A scene script that has to fly a run to a late
-moment before its picture (Starship's Mason breaking at tick 6713, the Kiln at 15236) is
-killed at frame 6000, before it prints its `expect` line, and the answer would blame the
-script.
-
-The budget should be a parameter with a stated range, sized by the caller (a shot's last
-tick plus a margin), and `bounded` should say whether the run ended by the budget rather
-than by itself, with a `why` naming the budget when it did. `describe` then lists it
-beside the rest.
-
-Done when a capture past frame 6000 runs to its own end with the budget passed, and one
-cut by the budget says so in `why`.
-
 ### §PW260 capture.run records the picture its line names
 
 Found in Starship (2026-09-27, RK132). `capture.run` writes a picture's `.prov.json`

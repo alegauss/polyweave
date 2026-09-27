@@ -64,6 +64,7 @@
 - ✅ **PW119** **nothing answers which captures and renders depend on a file, so a changed sprite means re-taking all of them** — provenance.dependents names every capture and render made from a file, and outdated fails while one depends on a file that has changed since (design recorded in `docs/specs/provenance.md`).
 - ✅ **PW245** **a capture asked at 1920x1080 comes back at the project's window override, since each script applies the size** — capture.run puts the declared size on the engine's command line, which beats a window override, and checks the saved picture's own size (design recorded in `docs/specs/engine.md`).
 - ✅ **PW249** **a game can be captured as one still, never as the frames of a run between two ticks** — capture.movie keeps every frame between two marks a script prints, via Movie Maker, with the audio and one record naming ticks and dropped frames (design recorded in `docs/specs/engine.md`).
+- ✅ **PW251** **capture.run kills every script at frame 6000, and no parameter raises it** — capture.run takes frames and timeout, so a late moment runs to its end, and a silent run's why names the budget that may have cut it (design recorded in `docs/specs/engine.md`).
 
 ## Block F — Motion
 
