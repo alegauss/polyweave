@@ -91,18 +91,24 @@ def _nearest(filled: np.ndarray, slot: np.ndarray, axis: int, reverse: bool):
 
 
 def _orthographic(filled: np.ndarray, slot: np.ndarray) -> dict[str, np.ndarray]:
-    """Front, side and top, each as rows top to bottom and columns left to right."""
-    # Front: along +Z from the -Z side, so x runs right and y runs up.
+    """Front, side and top, each as rows top to bottom and columns left to right.
+
+    Each is what a camera standing where the label says sees (§PW253): a camera at -z
+    looking toward +z has +x on its left, so the front view does too. Drawn with x
+    running right it was the model mirrored, and Starship's first asymmetric badge was
+    corrected the wrong way from it.
+    """
+    # Front: along +Z from the -Z side, so +x runs left and y runs up.
     front = _nearest(filled, slot, 2, reverse=False)  # [x, y]
     # Side: in from +X, so -z runs right and y runs up.
     side = _nearest(filled, slot, 0, reverse=True)  # [y, z]
-    # Top: down from +Y, x running right and the front (-z) at the bottom, where a
-    # drawing puts the edge nearest the front view.
+    # Top: down from +Y with the front (-z) at the bottom, where a drawing puts the edge
+    # nearest the front view; a camera held so has +x on its left, as the front does.
     top = _nearest(filled, slot, 1, reverse=True)  # [x, z]
     return {
-        "front": np.flipud(front.T),
+        "front": np.fliplr(np.flipud(front.T)),
         "side": np.flipud(np.fliplr(side)),
-        "top": np.flipud(top.T),
+        "top": np.fliplr(np.flipud(top.T)),
     }
 
 
@@ -182,7 +188,9 @@ def _isometric(filled: np.ndarray, slot: np.ndarray, colours: np.ndarray, pixels
         for shade, quad in faces:
             fill = tuple(int(round(v * _SHADE[shade])) for v in colour) + (255,)
             draw.polygon([place(at(*one)) for one in quad], fill=fill)
-    return picture
+    # As a camera at +x, +y, -z sees it, +x and +z to its left (§PW253): drawn the
+    # other way it was the model mirrored, as the front view was.
+    return picture.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
 
 
 def _labels(picture: Image.Image, model: dict, filled, node, pixels: int) -> None:

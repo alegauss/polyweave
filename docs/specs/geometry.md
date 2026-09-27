@@ -625,7 +625,13 @@ mesh passes the body through.
 Godot's. A face, visor or eye goes on the -z side, nearest the front view. The preview
 sheet says where each view looks from under its name ("front, from -z", "side, from +x",
 "top, from +y", "iso, from +x +y -z"), and the write's answer carries the same as
-`looks`. `geometry.describe` warns where a node whose id has the word `eye`, `eyes`,
+`looks`. **Each view is what a camera standing there sees** (§PW253): at -z looking toward
++z, +x is on the camera's left, so the front view has +x on the left (a Godot camera so
+placed shows a cube at +x on the left of its picture); the side view, from +x, has -z on
+the right; the top view, from +y with the front at the bottom, has +x on the left; and the
+iso view, from +x +y -z, has +x and +z to the left. Drawn with x running right, the front
+was the model mirrored, and Starship's first asymmetric badge was corrected the wrong way
+from it. `geometry.describe` warns where a node whose id has the word `eye`, `eyes`,
 `face`, `visor`, `nose` or `front` in it sits on the +z side of the model, read off the
 bounds the voxel evaluator answers without a mesh, so the mistake is caught before a
 build rather than by a preview showing the back of a helmet under "front". A part a later

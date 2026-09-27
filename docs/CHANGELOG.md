@@ -147,6 +147,7 @@
 - ✅ **PW122** **a voxel model's cubes mesh is refused when a material carries a game key or its colours came from a texture** — A voxel model's cubes mesh wears its palette with only the keys the shader has, so game keys ride in the cells alone and found colours are materials.
 - ✅ **PW103** **a family of models that differ in a few numbers is one document copied per member** — A document declares [variants] overriding parameters and material keys, and a build writes every member under its own name, read back side by side (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW252** **a paint whose marks cover none of its body's cells builds clean, and the detail is silently missing** — A voxel build names each paint member that covers none of its body's cells, and each declared material no cell wears, as findings (design recorded in `docs/specs/geometry.md`).
+- ✅ **PW253** **a voxel preview's front view puts +x where a camera at -z sees -x, so an asymmetric model reads mirrored** — The voxel sheet draws each view as a camera there sees it, +x on the left from -z as a Godot camera shows it, so asymmetry reads true (design recorded in `docs/specs/geometry.md`).
 
 ## Block J — A bar a person sets once
 

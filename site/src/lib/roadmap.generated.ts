@@ -33,7 +33,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "F", title: "Motion", open: 1 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
   { block: "H", title: "Proof on a real game", open: 4 },
-  { block: "I", title: "Voxel models from a declaration", open: 3 },
+  { block: "I", title: "Voxel models from a declaration", open: 2 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
   { block: "L", title: "What a run leaves as evidence", open: 1 },
@@ -103,13 +103,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "what a change costs a frame is found only by stashing, re-importing and timing both sides by hand",
     why: "A design that must hold the frame rate needs that number, and a recorded table goes stale the day other work lands.",
     deps: ["PW56"],
-  },
-  {
-    id: "PW253",
-    block: "I",
-    symptom: "a voxel preview's front view puts +x where a camera at -z sees -x, so an asymmetric model reads mirrored",
-    why: "The first asymmetric declaration was corrected the wrong way from the preview, and only a capture in the engine showed it.",
-    deps: [],
   },
   {
     id: "PW262",

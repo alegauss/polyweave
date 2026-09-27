@@ -56,12 +56,28 @@ def test_the_front_view_shows_the_outline_the_right_way_up():
     }
     front = views(model(ell))["front"]
     assert front.shape == (3, 3)
-    # Row 0 is the top of the picture, so the L's long foot is the last row.
+    # Row 0 is the top of the picture, so the L's long foot is the last row; and a
+    # camera at -z has +x on its left, so the stem at x = 0 is on the right (§PW253).
     assert (front >= 0).tolist() == [
-        [True, False, False],
-        [True, False, False],
+        [False, False, True],
+        [False, False, True],
         [True, True, True],
     ]
+
+
+def test_a_cell_at_plus_x_is_where_a_camera_at_each_view_sees_it():
+    """§PW253: the preview drew the front mirrored against a camera at -z."""
+    paint = {"left": {"colour": BLUE}, "right": {"colour": RED}}
+    plus = box("plus_x", 2, 0, 0, colour="right")
+    minus = box("minus_x", 0, 0, 0, colour="left")
+    both = {"id": "both", "op": "union", "inputs": ["plus_x", "minus_x"]}
+    made = model(plus, minus, both, materials=paint)
+    names = [entry["name"] for entry in made["palette"]]
+    seen = views(made)
+    # front, from -z, and top, from +y with the front at the bottom: +x on the left.
+    assert names[seen["front"][0, 0]] == "right"
+    assert names[seen["front"][0, -1]] == "left"
+    assert names[seen["top"][0, 0]] == "right"
 
 
 def test_the_nearest_cell_is_the_one_seen():

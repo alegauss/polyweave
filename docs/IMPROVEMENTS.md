@@ -354,29 +354,6 @@ Done when RK131's 0.7 ms is one call against HEAD, and the answer says how sure 
 
 ## Block I — Voxel models from a declaration
 
-### §PW253 A front view that is the camera's
-
-Found in Starship's RK86 (2026-09-27), building `art/voxels/viglet_v.toml`, an
-asymmetric badge whose warm side was declared at +x. The build's preview
-(`viglet_v.voxels.png`), view "front, from -z", drew that side on the right. In the game
-the model is turned to face its camera, which is the same as a camera standing at -z
-looking toward +z, and there +x is on the left, which is where the capture showed it. So
-the preview's front view is the model mirrored left to right against a real camera at
--z.
-
-The cost: a symmetric actor never shows it, so the first asymmetric declaration (a
-badge, a lettered sign, a face with one scar) is fixed by hand in the wrong direction or
-flipped after a capture. Here the declaration's warm side had to move to -x after the
-capture disagreed with the preview.
-
-Either draw the front view as a camera at -z sees it, or label it with what it is (e.g.
-"front, from -z, mirrored"), and say in the spec which way +x reads in each view. A test
-builds a model with one marked cell at +x and checks which side of each view it lands
-on.
-
-Done when the viglet_v preview and a Godot capture of it facing its camera agree on
-which side the warm side is.
-
 ### §PW262 A thin region that straddles a cell boundary is a finding
 
 Found in Starship (2026-09-27, RK132 and RK133), three times in one day. A thin shape
