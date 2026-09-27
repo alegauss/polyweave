@@ -816,24 +816,6 @@ the first twenty make.
 
 ## Block S — Playing the game, not only rendering it
 
-### §PW215 A release export checked for the driver
-
-The driver is loaded only under a feature tag, and the addon is excluded from export
-presets. Either can fail without anything noticing: a preset added later without the
-exclusion, an autoload that loads without checking the tag, or a `call` target left in
-game code with no guard. The loopback binding and the token limit who can reach the
-driver while it runs. They do nothing about a driver that ships.
-
-`game.release_check` takes an exported pack, or runs the project's release preset in the
-scratch folder, and lists the files in the pack. It fails if any driver file is present
-or if the project's autoloads name the driver without the feature check. The driver is
-GDScript (PW211), so there is no test assembly to look for, only the addon's own files.
-
-The check is a gate, not advice: `require` closes with one code per finding, in the same
-way the engine runner's gate does, so a project can put it in its own release script. It
-reads a pack and spends nothing, and it never edits a preset. The finding names the
-preset and the line to change, and the person who owns the release makes that change.
-
 ### §PW216 Starship driven frame by frame
 
 A match-3 board changes only when the player moves, so a driver that pauses between

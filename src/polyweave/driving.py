@@ -579,6 +579,168 @@ def replayed(
     }
 
 
+#: Where the driver's files sit in a project, as an export filter and a pack spell them.
+ADDON = "addons/polyweave_driver/"
+
+
+def _presets(text: str) -> list[dict]:
+    """Each `[preset.N]` table of export_presets.cfg: its keys, and their lines."""
+    presets: list[dict] = []
+    current: dict | None = None
+    for number, line in enumerate(text.splitlines(), start=1):
+        header = re.fullmatch(r"\s*\[preset\.(\d+)\]\s*", line)
+        if header:
+            current = {"index": int(header[1]), "line": number, "keys": {}}
+            presets.append(current)
+            continue
+        if line.strip().startswith("["):
+            current = None
+            continue
+        pair = re.fullmatch(r"\s*([\w/.]+)\s*=\s*(.*?)\s*", line)
+        if current is not None and pair:
+            current["keys"][pair[1]] = (pair[2].strip('"'), number)
+    return presets
+
+
+def _patterns(value: str) -> list[str]:
+    return [one.strip() for one in value.split(",") if one.strip()]
+
+
+def _matches(patterns: list[str], path: str) -> bool:
+    import fnmatch
+
+    return any(
+        fnmatch.fnmatch(path, one) or fnmatch.fnmatch("res://" + path, one)
+        for one in patterns
+    )
+
+
+@operation("game.release_check")
+def release_checked(
+    root: Annotated[str, _ROOT] = ".",
+    *,
+    pack: Annotated[
+        str, Param("an exported .pck to look inside, if there is one")
+    ] = "",
+    strict: Annotated[bool, Param("refuse on the first finding, as a gate")] = False,
+) -> dict:
+    """Whether the driver could ship to a player: presets, autoloads, a pack (§PW215).
+
+    A listener that runs any method it is asked to is a way into a game, so its
+    absence from a release is checked rather than assumed. It reads and spends nothing,
+    and never edits a preset: each finding names the preset and the line to change.
+    """
+    here = load(root).root
+    driver = DRIVER.removeprefix("res://")
+    findings: list[dict] = []
+    presets_file = here / "export_presets.cfg"
+    if presets_file.is_file():
+        for preset in _presets(presets_file.read_text(encoding="utf-8")):
+            keys = preset["keys"]
+            name = keys.get("name", (f"preset.{preset['index']}", preset["line"]))[0]
+            mode = keys.get("export_filter", ("all_resources", preset["line"]))[0]
+            excluded = _matches(
+                _patterns(keys.get("exclude_filter", ("", 0))[0]), driver
+            )
+            included = _matches(
+                _patterns(keys.get("include_filter", ("", 0))[0]), driver
+            )
+            ships = (mode == "all_resources" and not excluded) or (
+                mode != "all_resources" and included and not excluded
+            )
+            if ships:
+                line = keys.get("exclude_filter", (None, preset["line"]))[1]
+                findings.append(
+                    {
+                        "code": "game.driver-exported",
+                        "preset": name,
+                        "at": f"export_presets.cfg:{line}",
+                        "why": f"the {name} preset exports {driver}",
+                        "fix": f'add "{ADDON}*" to its exclude_filter',
+                    }
+                )
+    project = here / "project.godot"
+    if project.is_file():
+        section = ""
+        for number, line in enumerate(
+            project.read_text(encoding="utf-8").splitlines(), start=1
+        ):
+            if line.strip().startswith("["):
+                section = line.strip()
+            elif section == "[autoload]" and "polyweave_driver" in line:
+                findings.append(
+                    {
+                        "code": "game.driver-autoloaded",
+                        "preset": "",
+                        "at": f"project.godot:{number}",
+                        "why": "an autoload loads the driver in every run, a "
+                        "release too",
+                        "fix": "remove that autoload; the driver is launched with "
+                        "--script",
+                    }
+                )
+    read_pack = False
+    if pack:
+        where = Path(pack)
+        where = where if where.is_absolute() else here / where
+        if not where.is_file():
+            raise PolyweaveError(
+                "game.no-pack",
+                f"there is no exported pack at {where}",
+                "export the release first, or leave pack out to check the presets",
+            )
+        data = where.read_bytes()
+        read_pack = True
+        # A pack header is GDPC, then format, major, minor, patch and flags (format 2
+        # on), each 32 bits; flag 1 is an encrypted directory, which no search can read.
+        encrypted = (
+            data[:4] == b"GDPC"
+            and len(data) >= 24
+            and int.from_bytes(data[4:8], "little") >= 2
+            and int.from_bytes(data[20:24], "little") & 1
+        )
+        if encrypted:
+            findings.append(
+                {
+                    "code": "game.pack-unread",
+                    "preset": "",
+                    "at": str(where),
+                    "why": f"{where.name}'s directory is encrypted, so whether it "
+                    "holds "
+                    "the driver cannot be read",
+                    "fix": "check the preset instead, or export a pack without "
+                    "directory encryption to check it",
+                }
+            )
+        elif ADDON.encode("utf-8") in data:
+            findings.append(
+                {
+                    "code": "game.driver-in-pack",
+                    "preset": "",
+                    "at": str(where),
+                    "why": f"{where.name} holds files under {ADDON}",
+                    "fix": f'exclude "{ADDON}*" from the preset that made it, and '
+                    "export "
+                    "again",
+                }
+            )
+    if strict and findings:
+        first = findings[0]
+        raise PolyweaveError(
+            first["code"],
+            f"{first['why']} ({first['at']})",
+            first["fix"],
+            detail="\n".join(f"{one['at']}: {one['why']}" for one in findings[1:])
+            or None,
+        )
+    return {
+        "ok": not findings,
+        "findings": findings,
+        "presets": presets_file.is_file(),
+        "pack": read_pack,
+    }
+
+
 @operation("game.close")
 def closed(
     session: Annotated[str, _SESSION],

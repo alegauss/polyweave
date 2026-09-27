@@ -43,7 +43,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "P", title: "Music and sound a game can ship", open: 2 },
   { block: "Q", title: "Words held to the world", open: 1 },
   { block: "R", title: "Levels measured before a person plays them", open: 5 },
-  { block: "S", title: "Playing the game, not only rendering it", open: 4 },
+  { block: "S", title: "Playing the game, not only rendering it", open: 3 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
 ];
 
@@ -224,13 +224,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW204", "PW205"],
   },
   {
-    id: "PW215",
-    block: "S",
-    symptom: "Nothing stops the driver addon from shipping inside a release export",
-    why: "A listener that runs any method it is asked to is a way into the game, so its absence from a player's build has to be checked, not assumed.",
-    deps: [],
-  },
-  {
     id: "PW216",
     block: "S",
     symptom: "A real-time game has never been driven frame by frame, so the driver is proven on a turn-based board only",
@@ -242,7 +235,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "S",
     symptom: "Cottony's flow from title screen to a won level is checked by no test, so a broken menu ships unseen",
     why: "The block is proven only when its first consumer keeps its main flows as replayed tests in its own release script, beside a clean release check.",
-    deps: ["PW215", "PW216"],
+    deps: ["PW216"],
   },
   {
     id: "PW250",

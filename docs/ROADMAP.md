@@ -73,9 +73,8 @@
 
 ## Block S — Playing the game, not only rendering it
 
-- 📋 **PW215** (deps: PW212 ✅) **Nothing stops the driver addon from shipping inside a release export** — A listener that runs any method it is asked to is a way into the game, so its absence from a player's build has to be checked, not assumed. → §PW215
 - 📋 **PW216** (deps: PW214 ✅) **A real-time game has never been driven frame by frame, so the driver is proven on a turn-based board only** — Cottony waits for the player and Starship does not, so pausing the tree between calls is only shown to hold once a shooter's physics and spawns replay the same. → §PW216
-- 📋 **PW217** (deps: PW214 ✅, PW215, PW216) **Cottony's flow from title screen to a won level is checked by no test, so a broken menu ships unseen** — The block is proven only when its first consumer keeps its main flows as replayed tests in its own release script, beside a clean release check. → §PW217
+- 📋 **PW217** (deps: PW214 ✅, PW215 ✅, PW216) **Cottony's flow from title screen to a won level is checked by no test, so a broken menu ships unseen** — The block is proven only when its first consumer keeps its main flows as replayed tests in its own release script, beside a clean release check. → §PW217
 - 📋 **PW250** (deps: —) **finding a seed where a game shows a moment means flying it by hand, one seed at a time** — A trailer shot, a repro or a balance case each needs such a run, and a sweep over arguments with a log pattern answers it in one call. → §PW250
 
 ## Block T — Adopting polyweave in a project

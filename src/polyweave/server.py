@@ -69,7 +69,8 @@ TOOL_BUDGET = 4500
 #: 64,589 for capture.run's args and geometry.compare (§PW238, §PW240), and to 70,500
 #: at 70,138 for the eight game.* operations that drive a held game (§PW213).
 #: 71,900 at 71,401 for game.keep and game.replay (§PW214).
-LIST_BUDGET = 71900
+#: 72,500 at 71,928 for game.release_check (§PW215).
+LIST_BUDGET = 72500
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

@@ -127,6 +127,24 @@ an agent forgot never outlives the conversation; a call to it after that is `gam
     python -m polyweave game.input --session g1a2b3c4d --click UI/Play
     python -m polyweave game.wait --session g1a2b3c4d --path . --prop level --equals 1 --frames 120
 
+## A release checked for the driver
+
+A listener that runs any method it is asked to is a way into a game, so its absence from
+a player's build is checked, not assumed (§PW215). `game.release_check` reads and spends
+nothing and never edits a preset; each finding names where it is and what to change:
+
+| Code | What it finds |
+|---|---|
+| `game.driver-exported` | a preset in `export_presets.cfg` that would ship `addons/polyweave_driver/`: `all_resources` with no `exclude_filter` covering it, or an `include_filter` pulling it in |
+| `game.driver-autoloaded` | an autoload in `project.godot` naming the driver, which would load it in every run |
+| `game.driver-in-pack` | an exported `.pck`, given as `pack`, holding the addon's paths |
+| `game.pack-unread` | a pack whose directory is encrypted, so it cannot be looked into — named, not passed |
+
+With `strict` it is a gate: the first finding is refused under its own code, the rest in
+the detail, so a project puts it in its own release script. The fix is always the same
+one line, `"addons/polyweave_driver/*"` in the preset's `exclude_filter`, and the person
+who owns the release makes it.
+
 ## A flow kept as a test
 
 A session is exploring; a flow is the part of it worth running again, with no agent

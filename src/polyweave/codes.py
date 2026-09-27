@@ -1129,6 +1129,33 @@ CODES: dict[str, Code] = {
         "in an older format",
         doors=("keep the flow with game.keep",),
     ),
+    "game.driver-exported": Code(
+        means="an export preset would put the driver into a release",
+        when="a preset exporting all resources with no exclusion for the addon, or one "
+        "whose include filter pulls it in",
+        doors=('add "addons/polyweave_driver/*" to the preset\'s exclude_filter',),
+    ),
+    "game.driver-autoloaded": Code(
+        means="an autoload loads the driver in every run of the game",
+        when="the driver registered as an autoload by hand, when it is meant to be "
+        "launched with --script",
+        doors=("remove the autoload from project.godot",),
+    ),
+    "game.driver-in-pack": Code(
+        means="an exported pack holds the driver's files",
+        when="a pack exported before the preset excluded the addon",
+        doors=("exclude the addon from the preset and export again",),
+    ),
+    "game.pack-unread": Code(
+        means="the pack's directory is encrypted, so the check cannot see inside it",
+        when="a release exported with directory encryption on",
+        doors=("rely on the preset check", "export without directory encryption"),
+    ),
+    "game.no-pack": Code(
+        means="there is no exported pack at the path given",
+        when="a release not yet exported, or a path relative to somewhere else",
+        doors=("export first", "check the presets alone by leaving pack out"),
+    ),
     "game.refused": Code(
         means="the driver refused a command without naming why",
         when="a driver older than this plugin",

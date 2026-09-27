@@ -53,7 +53,8 @@ from polyweave.errors import PolyweaveError
 #: proved unchanged without a script.
 #: 79,034 with the eight game.* operations (§PW213), a held game's whole surface.
 #: 80,425 with game.keep and game.replay (§PW214), a session kept as a test.
-DESCRIBE = 80_900
+#: 80,996 with game.release_check (§PW215).
+DESCRIBE = 81_600
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -85,7 +86,8 @@ DESCRIBE = 80_900
 #: (§PW238, §PW240), then 89,098 with the game.* operations and the game and driver
 #: codes (§PW213).
 #: 90,505 with game.keep, game.replay and game.no-flow (§PW214).
-CAPABILITIES = 91_000
+#: 91,185 with game.release_check and its four codes (§PW215).
+CAPABILITIES = 92_000
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
