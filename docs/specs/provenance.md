@@ -56,6 +56,17 @@ plays (`music.licence-undeclared`). `provenance.credits` reads every `sound` rec
 answers what a game `owed`, each credit with the files it is owed for, and the `notes` a
 person should read, such as a library whose author cannot vouch for every sample.
 
+**What a build ships that a generator made is one read** (§PW248). Steam's content survey
+asks whether a game ships generated content, and the honest answer is the lineage of every
+shipped file. `provenance.generated` takes the paths a build ships, files or folders of
+them (every recorded artefact where none are given), and walks each one's record through
+its inputs, depth first, to a `fetch` record: a purchase from a service. It answers
+`generated`, each such file with the `chain` from it back to the purchase, the `service`,
+what was `bought` and whether it was bought as it ships (`direct`); `authored`, the files
+whose lineage reaches no purchase, ending at inputs a person made; and `unrecorded`, the
+files with no record at all, which no one can vouch for either way. A lineage that loops
+ends where it closes.
+
 It costs nothing to write and it is the only thing that makes a difference explicable weeks
 later. It is also what lets a regression be bisected: a render that got worse is compared
 against the record of the last one that was right, and the fields that differ are the suspect

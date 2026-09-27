@@ -18,7 +18,7 @@ This page only groups them by what you are trying to do.
 | Carry a person's verdict | `verdict.sheet`, `verdict.sitting`, `verdict.judge`; `python -m polyweave review` puts a sitting in front of the person, `verdict.answers` resumes from what they said there |
 | Keep the ledger | `loop.start`, `loop.spent`, `loop.judged`, `loop.finish`, `loop.compare` |
 | Read the ledger | `loop.runs`, `loop.assets`, `loop.changes`, `loop.bounds` |
-| Provenance | `provenance.read`, `provenance.verify`, `provenance.dependents`, `provenance.outdated`, `provenance.unrecorded`, `provenance.credits` |
+| Provenance | `provenance.read`, `provenance.verify`, `provenance.dependents`, `provenance.outdated`, `provenance.unrecorded`, `provenance.credits`, `provenance.generated` |
 | The game side | `capture.run`, `capture.declared`, `engine.run`, `godot.install` |
 | Drive a game | `game.open`, `game.query`, `game.input`, `game.step`, `game.wait`, `game.call`, `game.set`, `game.shot`, `game.close`, `game.keep`, `game.replay`, `game.release_check` |
 | Scale against the engine | `units.check`, `units.engine_scale`, `units.read_number` |

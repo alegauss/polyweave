@@ -36,7 +36,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "I", title: "Voxel models from a declaration", open: 4 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
-  { block: "L", title: "What a run leaves as evidence", open: 2 },
+  { block: "L", title: "What a run leaves as evidence", open: 1 },
   { block: "M", title: "What a game needs beyond the look", open: 2 },
   { block: "N", title: "Pictures held to a canon", open: 1 },
   { block: "O", title: "A person sees and answers", open: 3 },
@@ -144,13 +144,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "I",
     symptom: "geometry.fit scores at the reference's own aspect, so a declaration held to another box is squeezed to its range edges",
     why: "A game's hitbox fixes a model's box, and a fit that cannot tell shape from box returns a worse model as the best.",
-    deps: [],
-  },
-  {
-    id: "PW248",
-    block: "L",
-    symptom: "a project cannot ask which files it ships were made by a generator, directly or through their inputs",
-    why: "Steam's content survey needs that answer, and each project now walks the provenance records by hand to give it.",
     deps: [],
   },
   {

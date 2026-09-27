@@ -197,6 +197,7 @@
 - ✅ **PW138** **the tool-surface spec names twelve error areas and the code declares nineteen, and nothing reads one against the other** — Six readers hold the specs and skill to the code's areas, names, measures, config, key and commands; the drift they found is fixed (design recorded in `tests/test_spec_names.py`).
 - ✅ **PW139** **two jobs started at once can both pass the capacity check, so `[render] max_parallel` is exceeded** — An O_EXCL start lock spans the count and the record, so two starts at a bound of one give one refusal; a job not yet spawned is no longer reaped (design recorded in `docs/specs/tool-surface.md`).
 - ✅ **PW140** **a build is reported cached after the plugin that built it changed, because its stamp hashes the inputs alone** — A build records each output's provenance and its stamp is that record's key, so a new plugin version or --preview rebuilds (design recorded in `docs/specs/geometry.md`).
+- ✅ **PW248** **a project cannot ask which files it ships were made by a generator, directly or through their inputs** — provenance.generated names every shipped file whose lineage reaches a purchase, with its chain and service, beside the authored and unrecorded ones (design recorded in `docs/specs/provenance.md`).
 
 ## Block M — What a game needs beyond the look
 

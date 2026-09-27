@@ -43,7 +43,6 @@
 
 ## Block L — What a run leaves as evidence
 
-- 📋 **PW248** (deps: —) **a project cannot ask which files it ships were made by a generator, directly or through their inputs** — Steam's content survey needs that answer, and each project now walks the provenance records by hand to give it. → §PW248
 - 📋 **PW269** (deps: —) **compose.place writes its picture with no record, so a composed capsule cannot say which pictures it came from** — A changed key art cannot find the store capsules it left stale. → §PW269
 
 ## Block M — What a game needs beyond the look

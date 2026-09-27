@@ -488,32 +488,6 @@ parameters off their range edges.
 
 ## Block L — What a run leaves as evidence
 
-### §PW248 What a build ships that a generator made
-
-Found in Starship's RK78 (2026-09-27), the task that takes the generated art out of the
-shipped game. Steam's content survey asks whether a game ships generated content, and
-the honest answer needs to know, for every file the build ships, whether a generator
-made it (Meshy, Ideogram, any `mesh.buy`, `picture.buy` or `sound.buy`), directly or
-through its inputs. polyweave has every piece: each artefact's `.prov.json` names its
-inputs, and the purchase ledger names what was bought. It has no read that joins them.
-`provenance_credits` answers for sounds' licences only, and `provenance_dependents` goes
-from an input forward, one file at a time.
-
-So the project walked it by hand: it read the records to see that
-`assets/voxels/drone.voxels.json` has one input, `art/voxels/drone.toml`, while
-`assets/models/drone.glb` descends from `tools/art/meshy/drone.stripped.glb`, and it
-wrote its own check (`check_authored_art` in `dev/check.gd`) that walks Godot's
-dependencies and refuses a path under `assets/models/`, `tools/` or `art/`. That check
-knows directories and not lineage.
-
-polyweave should answer a new `provenance_generated` operation: given the paths a build
-ships (or a project's export filter), the ones whose lineage reaches a purchase or a
-generator, each with the chain and the service, and the ones with no record at all. With
-it, the survey's answer and the project's gate are one call.
-
-Done when Starship's check asks polyweave instead of listing directories, and a planted
-Meshy mesh is named with its chain.
-
 ### §PW269 compose.place records what it composed
 
 Found in Starship (2026-09-27, RK74). Eight store capsules were composed with

@@ -715,6 +715,82 @@ def credits(root: Annotated[str, ROOT] = ".") -> dict:
     return {"owed": list(owed.values()), "notes": list(notes.values())}
 
 
+def _lineage(path: str, where: Path, seen: set[str]) -> tuple[list[str], dict] | None:
+    """The chain from `path` back to a purchase, and that purchase's record, if any.
+
+    Walked through each record's inputs, depth first, so the first chain found is the
+    one named; an input with no record is where a lineage ends, a file a person made.
+    """
+    if path in seen:
+        return None
+    seen.add(path)
+    try:
+        record = read(path, where)
+    except PolyweaveError:
+        return None
+    if record.get("kind") == "fetch":
+        return [path], record
+    for one in record.get("inputs") or ():
+        if one.get("path"):
+            found = _lineage(one["path"], where, seen)
+            if found:
+                return [path, *found[0]], found[1]
+    return None
+
+
+@operation("provenance.generated")
+def generated(
+    paths: Annotated[
+        list, Param("the files a build ships, or folders of them, under the project")
+    ] = (),
+    root: Annotated[str, ROOT] = ".",
+) -> dict:
+    """Which files a build ships a paid generator made, and through what (§PW248).
+
+    Steam's content survey asks whether a game ships generated content, and the honest
+    answer needs every shipped file's lineage: bought from a service directly, or made
+    from something that was, through the records' inputs. `generated` lists each such
+    file with the chain back to the purchase, the service and what was bought;
+    `authored` the files whose lineage reaches no purchase; `unrecorded` the files with
+    no record at all, which no one can vouch for either way. Without paths, every
+    recorded artefact under the project is read.
+    """
+    where = Path(root).resolve()
+    files: list[str] = []
+    for one in paths or ():
+        target = Path(one)
+        target = target if target.is_absolute() else where / target
+        found = sorted(target.rglob("*")) if target.is_dir() else [target]
+        for file in found:
+            if file.is_file() and not file.name.endswith((SUFFIX, ".import", ".uid")):
+                files.append(relative(file, where))
+    if not paths:
+        files = [record["artefact"]["path"] for record in _records(where)]
+    made: list[dict] = []
+    authored: list[str] = []
+    unrecorded: list[str] = []
+    for path in dict.fromkeys(files):
+        if not sidecar(path, where).is_file():
+            unrecorded.append(path)
+            continue
+        found = _lineage(path, where, set())
+        if found is None:
+            authored.append(path)
+            continue
+        chain, bought = found
+        made.append(
+            {
+                "path": path,
+                "chain": chain,
+                "service": bought.get("service")
+                or (bought.get("engine") or {}).get("name", ""),
+                "bought": bought.get("bought", ""),
+                "direct": len(chain) == 1,
+            }
+        )
+    return {"generated": made, "authored": authored, "unrecorded": unrecorded}
+
+
 @operation("provenance.dependents")
 def dependents(
     path: Annotated[str, Param("the input file, under the project")],
