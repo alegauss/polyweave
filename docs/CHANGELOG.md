@@ -265,6 +265,8 @@
 
 ## Block S — Playing the game, not only rendering it
 
+- ✅ **PW211** **Nobody knows if an agent can drive a Godot game from its menu to a won level and get the same result twice** — A GDScript harness drove Cottony from its splash to a won level 1 by input alone, and ten runs agreed to the frame and the board.
+
 ## Block T — Adopting polyweave in a project
 
 - ✅ **PW218** **A new project writes polyweave.toml by hand, key by key, against a spec it has to read first** — python -m polyweave init proposes polyweave.toml from the tree, writes it only when asked, merges without overwriting, and never proposes a budget (design recorded in `docs/specs/project-config.md`).

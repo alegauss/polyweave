@@ -460,50 +460,26 @@ the first twenty make.
 
 ## Block S — Playing the game, not only rendering it
 
-### §PW211 Whether a GDScript driver can carry an agent through a game
-
-polyweave runs the engine one shot at a time: a script, a frame budget, a line in the
-log. Nothing holds a game open while an agent decides what to press next, so a flow
-through menus, a level and a win is tested by no one.
-
-GodotTestDriver is set aside: it is C# and needs the Godot .NET build, while Cottony and
-Starship are GDScript on the standard 4.7 build, and a game should not change its engine
-build to be tested. What a driver needs is in the engine's own API, so the driver is
-GDScript, a polyweave addon beside `polyweave_voxels`. Input goes through
-`Input.parse_input_event`, a click through `Viewport.push_input` at a Control's centre,
-nodes are reached by path, group or class, and waits count `process_frame`, never
-seconds. `SceneTree.paused` holds the game between steps. gdUnit4's SceneRunner, also
-GDScript, is the reference and not a dependency: it installs a whole test framework for
-a dozen calls.
-
-The spike runs in Cottony and spends nothing: a GDScript harness goes from the title
-screen to a won first level by frame counts, the tree paused between steps, ten times,
-and the final states are compared.
-
-The findings are whether ten runs out of ten agree, and what pausing misses: a node that
-processes always, a `SceneTreeTimer`, a tween or a wall-clock read keeps moving while
-the driver holds. Each is named as the game's to change or the driver's to handle.
-
 ### §PW212 A driver inside the game, stepped by the agent
 
 An agent's turn takes seconds and the game runs at sixty frames a second. A game left
 running between two calls has moved on by the time the second arrives, and no sequence
-of calls can be replayed. So the driver holds the tree paused and advances only when
-told to, by a count of frames at the fixed rate the engine runner already sets. The seed
-of every random source is set at start. The same calls then give the same game.
+of calls can be replayed. So the driver holds the game and advances only when told to,
+by a count of frames at the engine runner's fixed rate, with every random source seeded
+at start. It holds by blocking the main loop on its socket, not by pausing the tree:
+PW211 found a paused tree still emits `process_frame`, so Cottony's falls ended a frame
+early per move while held.
 
-The driver is an addon and autoload that the project installs. It is loaded only under a
-`polyweave_driver` feature tag, listens on loopback with a token printed at start, and
-dispatches to the GDScript driver PW211 proved, so its commands stay the same if that
-driver's inside changes. The commands are `query`, which returns a node's properties by
-path, group or class, and `input`, which sends an action, a key, or a click on a node's
-centre. The others are `step`, which advances by a number of frames, `wait`, which waits
-for a signal, a node or a value within a frame budget, `call`, which runs a method the
-game exposes for setup, and `shot`.
+The driver is a GDScript addon and autoload the project installs. It loads only under a
+`polyweave_driver` feature tag and listens on loopback with a token printed at start.
+The commands are `query`, a node's properties by path, group or class; `input`, an
+action, a key, or a click on a node's centre, sent through `Viewport.push_input`;
+`step`, a number of frames; `wait`, for a signal, a node or a value within a frame
+budget; `call`, a method the game exposes for setup; and `shot`.
 
-Waits count frames and never seconds, which removes the wall-clock waits PW211 found.
-The contract goes in `docs/specs/driving.md` before code, as the capture environment's
-did, because the addon, the tools and the recorded test all read it.
+Waits count frames and never seconds. The contract goes in `docs/specs/driving.md`
+before code, as the capture environment's did, because the addon, the tools and the
+recorded test all read it.
 
 ### §PW213 Game session tools an agent calls
 
