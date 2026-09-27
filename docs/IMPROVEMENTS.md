@@ -21,34 +21,6 @@ Done when `mesh.buy --picture_path ...` in Starship picks Meshy on its own.
 
 ## Block E — One world with the engine
 
-### §PW245 The engine takes the declared size
-
-Found in Starship's RK68 (the codex), 2026-09-27. `capture.run` with the default
-`[capture] resolution = [1920, 1080]` ran `.polyweave/drivers/codex_pages.gd`, which
-sets `root.size` from the `resolution=1920x1080` argument, and the answer said `applied:
-1280x720`. Starship's `project.godot` sets `window/size/window_width_override=1280` and
-`window_height_override=720`, and the window override wins over `root.size`, so every
-picture came back at 1280x720. `dev/shot.gd`, the project's older capture script,
-applies neither setting at all.
-
-PW25 made the environment declared and checked, but applying it is still each scene
-script's own code, and each script has to know how its project's window settings
-interact. polyweave knows the resolution before the engine starts: it should put it on
-the engine's own command line (`--resolution WxH`, and the window size overrides as
-project settings where the engine needs them), so the picture is taken at the declared
-size whatever the script does, and a script only has to report what applied.
-
-A data point from the same task: a script that also calls DisplayServer.window_set_size
-before setting root.size got 1920x1080 applied and the environment held, so the
-engine-side fix is that call or the flag.
-
-Worse (RK131): dev/site_shots.gd sets root.size and prints it, so capture.run answered
-holds true at 1920x1080 for a picture that is 1280x720. The environment check believes
-the script's own line; it should read the size of the picture it names.
-
-Done when a capture of a project with a smaller window override comes back at the
-declared resolution, with no change to the scene script.
-
 ### §PW249 A capture that keeps every frame of a shot
 
 Found in Starship's RK81 (2026-09-27): the trailer and short clips need frame-perfect
@@ -134,6 +106,25 @@ size and the window override won, here the OS did.
 Done when that capture answers `holds: false` naming the measured size.
 
 ## Block F — Motion
+
+### §PW272 Contrast of a target against its surround
+
+Found in Starship (2026-09-27, RK142). The owner could not tell the ship's shots from
+the hostile ones against a lit city. The fix had to be proven by how well each shot
+stands out from what lies right behind it, and polyweave cannot measure that.
+`measure.take` gives statistics of one region, so the project called it twice per shot,
+once for the shot and once for a box beside it. It worked out a luminance ratio by hand
+in a script, over positions the game printed.
+
+A `measure.contrast` should take a picture and a list of targets, each a point or a box.
+It should give each target's contrast against the ring around it: the WCAG-style
+luminance ratio, and the colour distance in ΔE. It should report the minimum and the
+median, so a spec can bound the worst shot (`contrast_min >= 3`). It should also take
+the target list from a driver's printed line, so the capture that placed the shots can
+name them.
+
+Done when Starship's shots spec holds `contrast_min` on its recorded combat frame
+without a project script.
 
 ## Block G — Geometry as a declaration
 

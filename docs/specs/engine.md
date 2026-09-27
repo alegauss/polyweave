@@ -203,6 +203,18 @@ A value is written the same way on both sides: `1920x1080` rather than `[1920, 1
 since the script has to print it back and a line of JSON inside a log is a line nobody
 reads. The arguments go in a fixed order, so the command is reproducible.
 
+**The declared size is the engine's, and the picture says what it got** (§PW245). A
+project's `window_width_override` and `window_height_override` beat a script that sets
+`root.size`, so Starship's codex, asked at 1920x1080, came back at 1280x720. So
+`capture.run` puts the declared `resolution` on the engine's own command line,
+`--resolution 1920x1080` ahead of the `--`, which wins over the override (a probe on 4.7.1:
+1280x720 without the flag, 1920x1080 with it), and a caller that sized the engine itself
+keeps its own. And the check reads the size of the pictures the run named rather than
+trusting the script's line: a script that printed `resolution=1920x1080` over a 1280x720
+picture had the environment hold. Where every picture is one size, that size is what
+`applied` says; a picture at another size than the one asked fails the environment as
+`capture.differs`, whatever the script printed.
+
 **A script takes its own arguments too** (§PW238). A capture of a moment in play names
 the moment: Spinhold's boss was `--boss --frames=420 --hold=fire_right`. `capture.run`
 takes them as `args`, a list of strings, and passes them after `--` and ahead of the

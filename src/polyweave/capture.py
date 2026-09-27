@@ -214,7 +214,7 @@ def run(
     asked = environment if environment is not None else wanted(root)
     # One `--` only (§PW238): a caller whose args already hold the engine's and then the
     # script's own has written it, and a second would reach the script as an argument.
-    given = tuple(how.pop("args", ()))
+    given = _sized(tuple(how.pop("args", ())), asked)
     args = given + (() if "--" in given else ("--",)) + as_args(asked)
     until = str(how.pop("until_visible", "") or "")
     tries = max(1, int(how.pop("tries", 3)))
@@ -241,7 +241,9 @@ def run(
                 f"`visible: {until}` line ahead of the one naming it",
             }
 
-    against = compare(asked, applied(log))
+    # The picture is the authority on its size, not the script's line (§PW245): a script
+    # that set root.size and printed it said 1920x1080 over a 1280x720 picture.
+    against = compare(asked, {**applied(log), **_measured(asked, found["artefacts"])})
     answer = {
         **found,
         "environment": against,
@@ -265,6 +267,48 @@ def run(
         answer["records"] = [str(path) for path, _ in made]
         answer["reproduced"] = again([verdict for _, verdict in made])
     return answer
+
+
+def _size_of(value: Any) -> str:
+    """A declared resolution as the engine's flag spells it, or "" where it is none."""
+    text = as_text(value) if not isinstance(value, str) else value
+    found = re.fullmatch(r"\s*(\d+)\s*x\s*(\d+)\s*", str(text))
+    return f"{found[1]}x{found[2]}" if found else ""
+
+
+def _sized(given: tuple[str, ...], asked: dict) -> tuple[str, ...]:
+    """The engine's own args with the declared size on them (§PW245).
+
+    A project's window override beats a script setting root.size, so Starship's codex
+    came back at 1280x720 asked 1920x1080; `--resolution` on the engine's command line
+    beats the override, and then the script only has to report what applied. A caller
+    that put a size of its own on the engine's args keeps it.
+    """
+    size = _size_of(asked.get("resolution", ""))
+    cut = given.index("--") if "--" in given else len(given)
+    engine_args = given[:cut]
+    if not size or "--resolution" in engine_args:
+        return given
+    return (*engine_args, "--resolution", size, *given[cut:])
+
+
+def _measured(asked: dict, artefacts: list) -> dict:
+    """The size the pictures came out at, where a size was asked and they agree."""
+    if "resolution" not in asked:
+        return {}
+    from PIL import Image
+
+    sizes = set()
+    for one in artefacts:
+        where = Path(one)
+        if where.suffix.lower() not in (".png", ".jpg", ".jpeg", ".webp"):
+            continue
+        try:
+            with Image.open(where) as picture:
+                sizes.add(f"{picture.width}x{picture.height}")
+        except OSError:
+            continue
+    return {"resolution": sizes.pop()} if len(sizes) == 1 else {}
 
 
 def saw(log: str, group: str, expect: str | re.Pattern) -> bool:

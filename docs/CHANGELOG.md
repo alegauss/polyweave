@@ -62,6 +62,7 @@
 - ✅ **PW47** **a bake renders square at the rung's size, so a declared world rectangle can be refused but never met** — A declared rectangle now decides both axes and gets an orthographic camera, and the key needed no new field because the declaration already rides in params (design recorded in `docs/specs/engine.md`).
 - ✅ **PW118** **a capture that changes blames an undeclared setting when what moved was a file the game loaded** — A capture hashes its script and every resource the game loaded, so a changed sprite names itself instead of an undeclared setting taking the blame (design recorded in `docs/specs/engine.md`).
 - ✅ **PW119** **nothing answers which captures and renders depend on a file, so a changed sprite means re-taking all of them** — provenance.dependents names every capture and render made from a file, and outdated fails while one depends on a file that has changed since (design recorded in `docs/specs/provenance.md`).
+- ✅ **PW245** **a capture asked at 1920x1080 comes back at the project's window override, since each script applies the size** — capture.run puts the declared size on the engine's command line, which beats a window override, and checks the saved picture's own size (design recorded in `docs/specs/engine.md`).
 
 ## Block F — Motion
 

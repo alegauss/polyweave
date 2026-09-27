@@ -284,6 +284,66 @@ def test_without_until_visible_one_run_is_all(tmp_path):
     assert len(take.calls) == 1
 
 
+SIZED = '[capture]\ndeclared = ["resolution"]\nresolution = [1920, 1080]\n'
+
+
+def picture(where, width, height):
+    from PIL import Image
+
+    Image.new("RGB", (width, height)).save(where)
+    return where
+
+
+def test_the_declared_size_goes_on_the_engines_command_line(tmp_path):
+    """§PW245: a window override beats root.size; --resolution beats the override."""
+    script = project(tmp_path, SIZED)
+    shot = picture(tmp_path / "shot.png", 1920, 1080)
+    found = capture.run(
+        script,
+        expect=SHOT,
+        root=tmp_path,
+        record=False,
+        args=("--", "--boss"),
+        take=taking("captured: res://shot.png 1920 x 1080\n", artefacts=[shot]),
+    )
+    assert found["args"][:3] == ("--resolution", "1920x1080", "--")
+    assert found["environment"]["holds"] is True, found["environment"]["why"]
+
+
+def test_a_caller_that_sized_the_engine_itself_keeps_its_size(tmp_path):
+    script = project(tmp_path, SIZED)
+    found = capture.run(
+        script,
+        expect=SHOT,
+        root=tmp_path,
+        record=False,
+        args=("--resolution", "640x360", "--"),
+        take=taking("environment: resolution=1920x1080\ncaptured: res://x.png 1 x 1\n"),
+    )
+    assert found["args"].count("--resolution") == 1
+    assert found["args"][1] == "640x360"
+
+
+def test_a_picture_at_another_size_fails_whatever_the_script_said(tmp_path):
+    """Starship's RK131: the script printed 1920x1080 over a 1280x720 picture."""
+    script = project(tmp_path, SIZED)
+    shot = picture(tmp_path / "shot.png", 1280, 720)
+    found = capture.run(
+        script,
+        expect=SHOT,
+        root=tmp_path,
+        record=False,
+        take=taking(
+            "environment: resolution=1920x1080\ncaptured: res://shot.png 1280 x 720\n",
+            artefacts=[shot],
+        ),
+    )
+    assert found["ok"] is False
+    assert found["environment"]["differing"] == [
+        {"setting": "resolution", "asked": "1920x1080", "applied": "1280x720"}
+    ]
+
+
 def test_args_already_split_by_the_caller_get_no_second_separator(tmp_path):
     script = project(tmp_path, '[capture]\ndeclared = ["locale"]\nlocale = "pt_BR"\n')
     found = capture.run(
