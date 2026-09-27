@@ -100,11 +100,13 @@ func _process(_delta: float) -> bool:
 			waiting["spent"] += 1
 			var met := _met(waiting)
 			if not met and waiting["spent"] < waiting["budget"]:
+				_deliver()
 				return false
 			_answer(pending, {"met": met, "frames": waiting["spent"]})
 			waiting = {}
 			pending = {}
 		elif running > 0:
+			_deliver()
 			return false
 		else:
 			_answer(pending, {"frames": pending.get("frames", 1)})
@@ -117,10 +119,23 @@ var sized := false
 var queued: Array = []
 
 
+## Deliver what is due on the frame about to run, and bring the rest a frame nearer.
+## An action or a key goes through Input, which is what a game polling
+## Input.is_action_pressed reads; a click goes to the viewport, where hovering is.
 func _deliver() -> void:
-	for event in queued:
-		root.push_input(event, true)
-	queued = []
+	var later := []
+	for item in queued:
+		if item["after"] > 0:
+			item["after"] -= 1
+			later.append(item)
+		elif item["via"] == "input":
+			Input.parse_input_event(item["event"])
+			# Buffered input waits for the next frame's flush; applied now, it lands on
+			# the frame about to run, as a viewport event does.
+			Input.flush_buffered_events()
+		else:
+			root.push_input(item["event"], true)
+	queued = later
 
 
 ## A headless window is 64 by 64 whatever the project says, and a pointer outside it
@@ -333,22 +348,31 @@ func _query(asked: Dictionary) -> Dictionary:
 func _input(asked: Dictionary) -> Dictionary:
 	var events := []
 	var landed = null
+	# A tap presses on one frame and releases on the next, so a game polling
+	# is_action_just_pressed sees it pressed; `hold` sends only the press and `release`
+	# only the release, for a game that polls is_action_pressed across frames (§PW216).
+	var halves := [[true, 0], [false, 1]]
+	if asked.get("hold", false):
+		halves = [[true, 0]]
+	elif asked.get("release", false):
+		halves = [[false, 0]]
 	if asked.has("action"):
-		for pressed in [true, false]:
+		for half in halves:
 			var event := InputEventAction.new()
 			event.action = StringName(str(asked["action"]))
-			event.pressed = pressed
-			events.append(event)
+			event.pressed = half[0]
+			event.strength = 1.0 if half[0] else 0.0
+			events.append({"event": event, "via": "input", "after": half[1]})
 	elif asked.has("key"):
 		var code := OS.find_keycode_from_string(str(asked["key"]))
 		if code == KEY_NONE:
 			return _refused("driver.bad-command", "there is no key called %s" % asked["key"])
-		for pressed in [true, false]:
+		for half in halves:
 			var event := InputEventKey.new()
 			event.keycode = code
 			event.physical_keycode = code
-			event.pressed = pressed
-			events.append(event)
+			event.pressed = half[0]
+			events.append({"event": event, "via": "input", "after": half[1]})
 	elif asked.has("click"):
 		var click: Dictionary = asked["click"] if asked["click"] is Dictionary else {}
 		var at: Vector2
@@ -372,14 +396,14 @@ func _input(asked: Dictionary) -> Dictionary:
 		var moved := InputEventMouseMotion.new()
 		moved.position = at
 		moved.global_position = at
-		events.append(moved)
+		events.append({"event": moved, "via": "viewport", "after": 0})
 		for pressed in [true, false]:
 			var event := InputEventMouseButton.new()
 			event.button_index = MOUSE_BUTTON_LEFT
 			event.pressed = pressed
 			event.position = at
 			event.global_position = at
-			events.append(event)
+			events.append({"event": event, "via": "viewport", "after": 0})
 	else:
 		return _refused("driver.bad-command", "input takes an action, a key or a click")
 	# Delivered when the next frame passes, not now: a signal the input causes then fires

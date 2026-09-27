@@ -1097,11 +1097,6 @@ CODES: dict[str, Code] = {
     ),
     # -- engine: running a scene script and reading its verdict ---------------
     # -- game: a game held open between an agent's calls ----------------------
-    "game.no-driver": Code(
-        means="the project has no polyweave_driver addon to hold the game with",
-        when="a game opened before its driver was installed",
-        doors=("install it with godot.install and addon polyweave_driver",),
-    ),
     "game.not-listening": Code(
         means="the game never said where its driver listens",
         when="a main scene that fails to load, or a game that quits before its first "

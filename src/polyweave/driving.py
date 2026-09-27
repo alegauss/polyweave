@@ -61,6 +61,22 @@ _SESSION = Param("the session game.open answered")
 _ROOT = Param("the project the game belongs to")
 
 
+def _driver_for(here: Path) -> tuple[str, Path]:
+    """The driver a game is launched with, as the engine is told it, and its file.
+
+    The project's own copy where it installed one, so a pinned version is the one that
+    runs; otherwise the one polyweave carries, run from outside the project, so
+    driving a game needs nothing written into its tree (§PW216).
+    """
+    installed = here / DRIVER.removeprefix("res://")
+    if installed.is_file():
+        return DRIVER, installed
+    from .godot import ADDONS
+
+    carried = ADDONS["polyweave_driver"] / installed.name
+    return carried.resolve().as_posix(), carried
+
+
 def _folder(root: str | Path) -> Path:
     return load(root).root / ".polyweave" / "driving"
 
@@ -109,19 +125,14 @@ def opened(
 ) -> dict:
     """Launch the game held at its first frame, and answer the session to drive it with.
 
-    The project needs the driver installed (`godot.install` with addon
-    polyweave_driver). The game runs until game.close, or `[driving] idle` seconds with
-    no call.
+    The project need install nothing: where it has no polyweave_driver addon, the
+    driver polyweave carries is run from outside it (§PW216). The game runs until
+    game.close, or `[driving] idle` seconds with no call.
     """
     settings = load(root)
     here = settings.root
-    if not (here / DRIVER.removeprefix("res://")).is_file():
-        raise PolyweaveError(
-            "game.no-driver",
-            f"{here} has no polyweave_driver addon, so nothing can drive it",
-            "install it with godot.install and addon polyweave_driver, then open again",
-        )
-    args = ["--path", str(here), "--fixed-fps", str(settings.get("engine.fixed_fps"))]
+    script, _ = _driver_for(here)
+    args =["--path", str(here), "--fixed-fps", str(settings.get("engine.fixed_fps"))]
     through: tuple[str, ...] = ()
     after = [f"--idle={int(settings.get('driving.idle'))}"]
     if display:
@@ -140,7 +151,7 @@ def opened(
     folder.mkdir(parents=True, exist_ok=True)
     session = "g" + secrets.token_hex(4)
     log = folder / f"{session}.log"
-    command = [*through, engine.find(here), *args, "--script", DRIVER, "--", *after]
+    command = [*through, engine.find(here), *args, "--script", script, "--", *after]
     with log.open("w", encoding="utf-8") as out:
         # Its own process group, so it outlives a command line that opened it.
         extra: dict[str, Any] = (
@@ -319,13 +330,16 @@ def inputted(
     key: Annotated[str, Param("a key by name, e.g. Space")] = "",
     click: Annotated[str, Param("a node's path to click at the centre of")] = "",
     at: Annotated[list, Param("a point in the viewport to click, [x, y]")] = (),
+    hold: Annotated[bool, Param("press the action or key and keep it held")] = False,
+    release: Annotated[bool, Param("release an action or key held before")] = False,
     root: Annotated[str, _ROOT] = ".",
 ) -> dict:
     """Press an action or a key, or click a node or a point; it lands next frame."""
+    halves = {k: True for k, v in (("hold", hold), ("release", release)) if v}
     if action:
-        return send(session, "input", root=root, action=action)
+        return send(session, "input", root=root, action=action, **halves)
     if key:
-        return send(session, "input", root=root, key=key)
+        return send(session, "input", root=root, key=key, **halves)
     if click:
         return send(session, "input", root=root, click={"path": click})
     if at:
@@ -435,8 +449,8 @@ def _engine_version(log: str) -> str:
 def _driver_hash(root: Path) -> str:
     import hashlib
 
-    where = root / DRIVER.removeprefix("res://")
-    return hashlib.sha256(where.read_bytes()).hexdigest() if where.is_file() else ""
+    _, where = _driver_for(root)
+    return hashlib.sha256(where.read_bytes()).hexdigest()
 
 
 @operation("game.keep")
@@ -552,7 +566,7 @@ def replayed(
         if one["cmd"] in ("step", "wait")
     )
     found = engine.run(
-        DRIVER.removeprefix("res://"),
+        _driver_for(here)[1],
         expect=FLOWED,
         root=here,
         headless=True,

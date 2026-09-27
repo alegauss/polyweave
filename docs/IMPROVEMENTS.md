@@ -8,6 +8,17 @@
 
 ## Block D — Fetching from a paid service without surprise
 
+### §PW264 A purchase picks the service that sells the thing
+
+Found in Starship (2026-09-27, RK97). The project declares two paid services: Meshy,
+which sells meshes, and Ideogram, which sells pictures. `mesh.buy` without `--service`
+refused with `fetch.service-unnamed`, although only one of the two can sell a mesh. A
+service's schema already says what it sells. `mesh.buy` should pick the one service that
+sells meshes, and `picture.buy` the one that sells pictures, and ask only when two
+could.
+
+Done when `mesh.buy --picture_path ...` in Starship picks Meshy on its own.
+
 ## Block E — One world with the engine
 
 ### §PW245 The engine takes the declared size
@@ -442,6 +453,26 @@ written against them rather than inferred from a preview.
 
 Done when rebuilding the citadel with its first mullion positions reports that finding.
 
+### §PW263 A fit that knows the box from the shape
+
+Found in Starship (2026-09-27, RK97). The Mote's voxel declaration was fitted to the
+mesh Meshy made from its drawing. The mesh, normalised to height 1, is 1.97 wide. The
+game holds the Mote to a 1.5 x 1.05 hitbox, so the declaration's ranges keep it inside
+that box. `geometry.fit` scores silhouettes at the reference's own aspect. The only way
+it can raise the overlap is to make every part smaller, so the best values landed on the
+edge of every range (core, spike, outer_h and inner_w at their minimum). The fitted
+model was worse: its seams slid onto the orb's caps and its shields thinned to lines.
+The answer gave no hint that the aspect was the cause, only a score of 0.65.
+
+When the reference's aspect in a view differs from what the ranges can reach, the answer
+should say so ("the reference is 1.97:1 in front and the declaration can reach 1.43:1 at
+most"). It should offer to score after normalising each view's box, so the fit compares
+shape and proportion inside the box rather than the box itself. A best value on the edge
+of its range should be named as bound by the range, not reported as the fit.
+
+Done when the Mote's fit reports the aspect gap and, scored inside the box, moves its
+parameters off their range edges.
+
 ## Block J — A bar a person sets once
 
 ## Block K — Reached without reading the source
@@ -594,6 +625,22 @@ back to an MCP caller as a refusal and not end the server.
 
 Done when the call above answers a refusal naming member 0, and the server still answers
 the next call.
+
+### §PW265 Promoting a refused picture from any surface
+
+Found in Starship (2026-09-27, RK97). The owner promoted a refused Mote drawing in
+conversation ("use the original mote-3"). `mesh.buy` accepts a promotion only as a
+verdict recorded against a gate run's lane, and the one write that records it is
+`review.answer`, which only the review page's HTTP handler calls. No operation on the
+CLI or the MCP surface takes a gate id, a picture and a person's words. The agent had to
+call the Python function directly and learn the body's keys from the source.
+
+A `verdict.promote --gate <id> --picture <path> --why <words>` (or `verdict.judge`
+taking a gate lane) should make the same write. Its refusals should list the gate runs
+and pictures it knows, as `_overruled` already does internally.
+
+Done when the Mote's promotion can be recorded with one CLI call and `mesh.buy` then
+accepts the picture.
 
 ## Block P — Music and sound a game can ship
 
@@ -815,25 +862,6 @@ where they leave the set spec's bounds says whether the endless tail keeps the p
 the first twenty make.
 
 ## Block S — Playing the game, not only rendering it
-
-### §PW216 Starship driven frame by frame
-
-A match-3 board changes only when the player moves, so a driver that pauses between
-calls can hardly fail on it. A shooter is the harder case. Enemies spawn on a timer,
-bullets move under physics, and a frame counted twice or a timer driven by the wall
-clock is enough to make two runs of one flow differ.
-
-The proof is a Starship flow kept by `game.keep`. It starts the first phase, holds fire
-and a direction for a set number of frames, and expects the score, the player's health
-and the number of live enemies at three frames along the way. Replayed ten times, it has
-to give the same values ten times.
-
-When it does not, the finding names the frame where the runs diverged and the node whose
-value differed. The fix belongs in the game or in the driver's contract, and the finding
-says which. A timer on `Time.get_ticks_msec` is the game's to change. A `SceneTreeTimer`
-that keeps running while the tree is paused is the driver's to handle. What the flow
-checks is the game's own rules, not whether the phase is fun or fair, since those remain
-a person's verdict and Block R's measure.
 
 ### §PW217 Cottony's flows kept and replayed
 

@@ -9,13 +9,16 @@ contract, which is why it is written before them.
 
 ## What it is, and how it starts
 
-The driver is `addons/polyweave_driver/driver.gd`, installed by `godot.install(project,
-addon="polyweave_driver")`. It is a `SceneTree` script, not an autoload: the engine runner
-launches it with `--script res://addons/polyweave_driver/driver.gd`, and it loads the
-project's own main scene (`application/run/main_scene`) under the root itself. So a
-project installs a folder and edits nothing — no autoload, no feature tag in
-`project.godot` — and a normal launch of the game never loads the driver at all. The
-project's autoloads still load, as they do for any `--script` run.
+The driver is `addons/polyweave_driver/driver.gd`. It is a `SceneTree` script, not an
+autoload: the engine runner launches it with `--script`, and it loads the project's own
+main scene (`application/run/main_scene`) under the root itself. **A project need install
+nothing** (§PW216): the engine runs a script from outside the project, so where a game
+has no `addons/polyweave_driver/`, the copy polyweave carries is launched by its own path,
+and driving the game writes nothing into its tree beyond `.polyweave/`. A project that
+wants its own pinned copy installs it with `godot.install(project,
+addon="polyweave_driver")`, and that copy is the one that runs. Either way no autoload
+and no feature tag is involved, and a normal launch of the game never loads the driver.
+The project's autoloads still load, as they do for any `--script` run.
 
 User arguments after `--`:
 
@@ -53,6 +56,14 @@ takes a click and never fires. On its first frame the driver gives the root the 
 none is declared), and a click beyond them is refused as `driver.off-screen` rather than
 sent into nothing.
 
+**A real-time game holds too** (§PW216). Starship, a shooter whose enemies spawn on
+timers and whose ship moves under `_physics_process`, was driven into its first phase
+with fire and a direction held for 720 frames, and kept as a flow of 24 steps expecting
+its score, its ship's lives and shields and its wave at three points. The session, with
+seconds of wall clock between calls, and ten replays with none, all agreed: every replay
+ended on frame 732 with the same values. At `--fixed-fps` the physics ticks once a frame,
+and a game drawing from its own seeded generators repeats as long as its seed does.
+
 A frame only passes inside `step` and `wait`, so the same commands give the same game:
 PW211 drove Cottony from its splash to a won level ten times and every run ended on the
 same frame and the same board. Randomness the game draws from its own generator is the
@@ -78,7 +89,7 @@ them; the driver quits on `close`, or after `--idle=N` seconds with no request.
 | `cmd` | Fields | What it does, and what `result` is |
 |---|---|---|
 | `query` | `path`, or `group`, or `class`; optional `properties` | The nodes found, each `{path, class, properties}`. A path is absolute from `/root` or relative to the main scene. Without `properties`: `name`, `visible`, `position`, `text` and `disabled` where the node has them |
-| `input` | `action`; or `key`; or `click` with `path` or `at` | Queues a press then a release, delivered through `Viewport.push_input` when the next frame passes — so a signal the input causes fires inside the `step` or `wait` that follows, where a wait armed for it sees it. A click moves the pointer there first, since a Button fires only while hovered. `click` at a node aims at its centre on screen (a Control's rect, a Node2D's position, through its canvas transform); `at` is a point in the viewport. `result` says where a click lands |
+| `input` | `action` or `key`, with `hold` or `release`; or `click` with `path` or `at` | Queued, and delivered when the next frames pass — so a signal the input causes fires inside the `step` or `wait` that follows, where a wait armed for it sees it. An action or a key goes through `Input.parse_input_event`, which is what a game polling `Input.is_action_pressed` reads; a tap presses on one frame and releases on the next, so `is_action_just_pressed` sees it once; `hold` sends only the press, kept down across frames until a `release` (§PW216). A click goes through `Viewport.push_input`, moving the pointer there first, since a Button fires only while hovered; `click` at a node aims at its centre on screen (a Control's rect, a Node2D's position, through its canvas transform), and `at` is a point in the viewport. `result` says where a click lands |
 | `step` | `frames` (default 1) | Lets that many frames pass, then holds |
 | `wait` | `frames` budget, and one of `signal` + `path`, `node` (a path or group that must exist), or `path` + `property` + `equals` | Lets frames pass until the condition holds or the budget is spent; `result` is `{met, frames}`. An unmet wait is `ok` with `met: false` — the budget ran out, which is an answer and not an error |
 | `call` | `path`, `method`, optional `args` | Calls a method the game exposes for setup, and returns its value. An awaited coroutine is not waited on; a caller that needs it done follows with `wait` |

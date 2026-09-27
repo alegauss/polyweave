@@ -89,7 +89,15 @@ def find(
 
 
 def _as_res(path: Path, root: Path) -> str:
-    return "res://" + path.relative_to(root).as_posix()
+    """A script as the engine is told it: res:// inside the project, its own path out.
+
+    A script outside the project runs too, which is how the driver polyweave carries
+    drives a game that installed nothing (§PW216).
+    """
+    try:
+        return "res://" + path.resolve().relative_to(root.resolve()).as_posix()
+    except ValueError:
+        return path.resolve().as_posix()
 
 
 def _under(named: str, root: Path) -> Path:

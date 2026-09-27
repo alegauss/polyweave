@@ -8,6 +8,8 @@
 
 ## Block D — Fetching from a paid service without surprise
 
+- 📋 **PW264** (deps: —) **mesh.buy asks which paid service to use even when only one of the declared services sells meshes** — Every purchase starts with a refusal the project's own schema could have answered. → §PW264
+
 ## Block E — One world with the engine
 
 - 📋 **PW245** (deps: PW25 ✅) **a capture asked at 1920x1080 comes back at the project's window override, since each script applies the size** — PW25 declared the environment, but a picture taken at the wrong size still fails every measurement held to it. → §PW245
@@ -31,6 +33,7 @@
 - 📋 **PW252** (deps: —) **a paint whose marks cover none of its body's cells builds clean, and the detail is silently missing** — A face lost its smile and blush with findings empty, and only a count of materials hinted at it. → §PW252
 - 📋 **PW253** (deps: —) **a voxel preview's front view puts +x where a camera at -z sees -x, so an asymmetric model reads mirrored** — The first asymmetric declaration was corrected the wrong way from the preview, and only a capture in the engine showed it. → §PW253
 - 📋 **PW262** (deps: —) **a one-cell paint region centred on a cell boundary silently takes both cells, so a row of mullions paints a whole face** — Every fine detail on a voxel face is a thin region, and today the fault is found only by counting cells in a preview. → §PW262
+- 📋 **PW263** (deps: —) **geometry.fit scores at the reference's own aspect, so a declaration held to another box is squeezed to its range edges** — A game's hitbox fixes a model's box, and a fit that cannot tell shape from box returns a worse model as the best. → §PW263
 
 ## Block J — A bar a person sets once
 
@@ -53,6 +56,7 @@
 
 - 📋 **PW256** (deps: —) **a sitting shows pictures only, so a person cannot hear a new sound beside the old one and give a verdict** — Every swap of a game's sounds needs a person's ear, and today the verdicts are asked for in chat and never recorded. → §PW256
 - 📋 **PW261** (deps: —) **a sitting given bare picture paths as members raises and takes the MCP server down instead of refusing** — One malformed call loses every polyweave tool for the rest of the turn, and the caller learns the member shape only from the source. → §PW261
+- 📋 **PW265** (deps: —) **a refused picture can be promoted only from the review page, so a verdict given in chat has no operation to carry it** — A person often answers in the chat, and the agent then calls private functions it read from the source. → §PW265
 
 ## Block P — Music and sound a game can ship
 
@@ -73,8 +77,7 @@
 
 ## Block S — Playing the game, not only rendering it
 
-- 📋 **PW216** (deps: PW214 ✅) **A real-time game has never been driven frame by frame, so the driver is proven on a turn-based board only** — Cottony waits for the player and Starship does not, so pausing the tree between calls is only shown to hold once a shooter's physics and spawns replay the same. → §PW216
-- 📋 **PW217** (deps: PW214 ✅, PW215 ✅, PW216) **Cottony's flow from title screen to a won level is checked by no test, so a broken menu ships unseen** — The block is proven only when its first consumer keeps its main flows as replayed tests in its own release script, beside a clean release check. → §PW217
+- 📋 **PW217** (deps: PW214 ✅, PW215 ✅, PW216 ✅) **Cottony's flow from title screen to a won level is checked by no test, so a broken menu ships unseen** — The block is proven only when its first consumer keeps its main flows as replayed tests in its own release script, beside a clean release check. → §PW217
 - 📋 **PW250** (deps: —) **finding a seed where a game shows a moment means flying it by hand, one seed at a time** — A trailer shot, a repro or a balance case each needs such a run, and a sweep over arguments with a log pattern answers it in one call. → §PW250
 
 ## Block T — Adopting polyweave in a project

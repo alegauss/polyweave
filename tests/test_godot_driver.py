@@ -188,8 +188,10 @@ def test_a_click_on_a_button_presses_it_and_an_action_reaches_the_game(driven):
     driven.ask("step")
     assert presses() == 1
     # The click left the button focused, so accept presses it too, besides the game's.
+    # A tap presses on one frame and releases on the next, and a Button fires on the
+    # release, so both frames have to pass.
     driven.ask("input", action="ui_accept")
-    driven.ask("step")
+    driven.ask("step", frames=2)
     assert presses() == 12
 
 
@@ -198,6 +200,39 @@ def test_a_click_outside_the_window_is_refused_rather_than_lost(driven):
     refused = driven.ask("input", click={"at": [900, 500]})
     assert refused["error"] == "driver.off-screen"
     assert "640 by 360" in refused["message"]
+
+
+HELD = """extends Node2D
+
+var held_frames := 0
+var taps := 0
+
+func _process(_delta: float) -> void:
+\tif Input.is_action_pressed("ui_right"):
+\t\theld_frames += 1
+\tif Input.is_action_just_pressed("ui_left"):
+\t\ttaps += 1
+"""
+
+
+def test_a_held_action_stays_pressed_until_released(tmp_path):
+    """§PW216: a shooter polls held state, and a tap is seen as just pressed once."""
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    root = game(tmp_path)
+    (root / "main.gd").write_text(HELD, encoding="utf-8")
+    session = Driven(root)
+    try:
+        session.ask("input", action="ui_right", hold=True)
+        session.ask("step", frames=10)
+        session.ask("input", action="ui_right", release=True)
+        session.ask("step", frames=5)
+        session.ask("input", action="ui_left")
+        session.ask("step", frames=3)
+        said = session.ask("query", path=".", properties=["held_frames", "taps"])
+        assert said["result"][0]["properties"] == {"held_frames": 10, "taps": 1}
+    finally:
+        session.close()
 
 
 def test_a_wait_spends_frames_until_its_condition_holds(driven):
@@ -384,11 +419,33 @@ def test_a_query_step_is_all_an_expectation_can_be_made_of(tmp_path):
         driving.closed(session, root=root)
 
 
-def test_a_project_without_the_driver_is_refused_before_anything_launches(tmp_path):
-    (tmp_path / "project.godot").write_text("config_version=5\n", encoding="utf-8")
-    with pytest.raises(PolyweaveError) as refused:
-        driving.opened(str(tmp_path))
-    assert refused.value.code == "game.no-driver"
+def test_a_project_that_installed_nothing_is_driven_by_the_carried_driver(tmp_path):
+    """§PW216: driving a game writes nothing into its tree."""
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    root = game(tmp_path)
+    import shutil
+
+    shutil.rmtree(root / "addons")
+    session = driving.opened(str(root))["session"]
+    try:
+        driving.inputted(session, click="UI/Press", root=str(root))
+        driving.stepped(session, root=str(root))
+        seen = driving.queried(
+            session, path=".", properties=["presses"], root=str(root)
+        )
+        driving.kept(
+            session,
+            out=".polyweave/flows/press.flow.json",
+            proves="one press, with nothing installed",
+            expect=[seen["step"]],
+            root=str(root),
+        )
+    finally:
+        driving.closed(session, root=str(root))
+    assert not (root / "addons").exists()
+    replayed = driving.replayed(".polyweave/flows/press.flow.json", root=str(root))
+    assert replayed["ok"] is True, replayed["why"]
 
 
 def test_the_same_commands_give_the_same_game(tmp_path):
