@@ -16,6 +16,7 @@
 - 📋 **PW249** (deps: —) **a game can be captured as one still, never as the frames of a run between two ticks** — A trailer is cut from frame-perfect sequences, and each project now grabs, names and records every frame by hand. → §PW249
 - 📋 **PW251** (deps: —) **capture.run kills every script at frame 6000, and no parameter raises it** — A capture of a late moment in a run is cut before it prints its line, and the answer blames the script. → §PW251
 - 📋 **PW260** (deps: —) **a capture run through the tool never writes its picture's record, since no caller can pass engine.run's produces** — A project's review pictures land without provenance, and accept.verify then cannot tell a stale look from a fresh one. → §PW260
+- 📋 **PW267** (deps: PW245) **capture.run trusts the size a script says it applied, so a window the OS shrank records a picture of the wrong size** — A key art asked at 3840x2160 came back 3840x2119 and was recorded as holding its environment. → §PW267
 
 ## Block F — Motion
 
@@ -45,10 +46,12 @@
 ## Block L — What a run leaves as evidence
 
 - 📋 **PW248** (deps: —) **a project cannot ask which files it ships were made by a generator, directly or through their inputs** — Steam's content survey needs that answer, and each project now walks the provenance records by hand to give it. → §PW248
+- 📋 **PW269** (deps: —) **compose.place writes its picture with no record, so a composed capsule cannot say which pictures it came from** — A changed key art cannot find the store capsules it left stale. → §PW269
 
 ## Block M — What a game needs beyond the look
 
 - 📋 **PW259** (deps: —) **a visual effect such as a trail or a burst of particles cannot be declared, built or accepted** — A game's effects are as visible as its models, and today each project writes them as its own data and tunes them by eye. → §PW259
+- 📋 **PW268** (deps: —) **a store's capsule set cannot be cut from one key art, so each project crops and places its logo by hand** — Every Steam page needs about ten shapes of one picture, most with a logo that must still read at thumbnail size. → §PW268
 
 ## Block N — Pictures held to a canon
 
@@ -79,8 +82,9 @@
 
 ## Block S — Playing the game, not only rendering it
 
-- ⏳ **PW217** (deps: PW214 ✅, PW215 ✅, PW216 ✅) **Cottony's flow from title screen to a won level is checked by no test, so a broken menu ships unseen** — An agent that never read Cottony's code keeps three flows through the tools, in Cottony's tests and release script, with a clean release check. → §PW217
 - 📋 **PW250** (deps: —) **finding a seed where a game shows a moment means flying it by hand, one seed at a time** — A trailer shot, a repro or a balance case each needs such a run, and a sweep over arguments with a log pattern answers it in one call. → §PW250
+- 📋 **PW270** (deps: —) **a kept flow names nodes by Godot's generated names, so any node added before them breaks it** — Cottony names few of its nodes, so its flows click and expect at @Node2D@14-style paths that a reordering of its tree renumbers. → §PW270
+- 📋 **PW271** (deps: —) **a flow that needs many moves costs thousands of calls, so losing a later Cottony level was never kept** — Each command-line call is a process of its own and a fresh save unlocks only level 1, so after two hours and ten sessions the explorer gave up. → §PW271
 
 ## Block T — Adopting polyweave in a project
 
@@ -171,15 +175,6 @@
 - **A Lattice or Foreman picture is bought with entity=** The next enemy or Foreman
   picture Starship buys goes through picture.buy with entity=, and its provenance
   sidecar names the entity from starship.world.toml.
-
-## Done when — PW217
-
-- **Three Cottony flows kept by an agent that never read its code** A fresh agent given
-  only the game.* tools wins level 1, loses a later level and changes a setting that
-  persists, keeps each with game.keep, and the calls each took are recorded.
-- **Cottony's release runs its flows and a clean release check** The flows sit in
-  Cottony's tests, its release script runs game.replay on each and game.release_check on
-  its export, and all pass.
 
 ## Non-goals
 

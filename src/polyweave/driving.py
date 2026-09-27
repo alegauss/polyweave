@@ -692,7 +692,10 @@ def release_checked(
     driver = DRIVER.removeprefix("res://")
     findings: list[dict] = []
     presets_file = here / "export_presets.cfg"
-    if presets_file.is_file():
+    # A project that installed no driver has none a preset could ship: the one
+    # polyweave carries runs from outside it (§PW216), so only an installed copy needs
+    # the exclusion. Cottony's release check found the preset flagged for nothing.
+    if presets_file.is_file() and (here / ADDON).is_dir():
         for preset in _presets(presets_file.read_text(encoding="utf-8")):
             keys = preset["keys"]
             name = keys.get("name", (f"preset.{preset['index']}", preset["line"]))[0]

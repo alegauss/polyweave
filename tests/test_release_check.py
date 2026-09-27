@@ -32,7 +32,20 @@ def project(tmp_path, mode="all_resources", include="", exclude="", autoload="")
     (tmp_path / "export_presets.cfg").write_text(
         PRESET.format(mode=mode, include=include, exclude=exclude), encoding="utf-8"
     )
+    (tmp_path / "addons" / "polyweave_driver").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "addons" / "polyweave_driver" / "driver.gd").write_text(
+        "extends SceneTree\n", encoding="utf-8"
+    )
     return str(tmp_path)
+
+
+def test_a_project_that_installed_no_driver_has_none_to_exclude(tmp_path):
+    """Found adopting it in Cottony, which drives with the carried copy (§PW216)."""
+    root = project(tmp_path)
+    import shutil
+
+    shutil.rmtree(tmp_path / "addons")
+    assert driving.release_checked(root)["ok"] is True
 
 
 def codes(found):

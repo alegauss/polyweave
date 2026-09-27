@@ -115,6 +115,24 @@ should say that nothing will be recorded rather than answer an empty `records`.
 Done when Starship's citadel capture, with that pattern, writes
 `art/renders/citadel.png.prov.json` in the same call.
 
+### §PW267 The resolution a capture holds, measured on the picture
+
+Found in Starship (2026-09-27, RK85). The key art was captured with `environment =
+{"resolution": "3840x2160"}` on a 3840x2160 display. The window cannot be taller than
+the desktop's work area, so the OS shrank it, and the picture on disk is 3840x2119. The
+stage script printed `environment: ... resolution=3840x2160`, the size it had asked the
+window for, and `capture.run` compared that line with what it asked. It answered `holds:
+true` and recorded a picture of the wrong size.
+
+The resolution a capture holds should be measured on the artefact itself: its pixel size
+against the one asked. The script's own line is a claim. Where they differ, the answer
+should say so (`the picture is 3840x2119, asked 3840x2160`) with the likely cause (a
+window larger than the desktop's work area) and the routes that could render it (an
+offscreen viewport of that size). This is PW245's other half: there the script applied a
+size and the window override won, here the OS did.
+
+Done when that capture answers `holds: false` naming the measured size.
+
 ## Block F — Motion
 
 ## Block G — Geometry as a declaration
@@ -539,6 +557,21 @@ it, the survey's answer and the project's gate are one call.
 Done when Starship's check asks polyweave instead of listing directories, and a planted
 Meshy mesh is named with its chain.
 
+### §PW269 compose.place records what it composed
+
+Found in Starship (2026-09-27, RK74). Eight store capsules were composed with
+`compose.place`, the wordmark placed on a crop of the key art. Every file it wrote
+landed with no `.prov.json` beside it. So `provenance_unrecorded` lists them. Nothing
+says which key art and which logo they came from, so a changed key art cannot find the
+capsules it left stale (`provenance_dependents`).
+
+`compose.place` should write a record like any other producing operation. Its inputs
+would be the asset and the scene it was placed into, with their hashes. Its params would
+be `at`, `width` and `anchor`.
+
+Done when the Starship capsules, composed again, each carry a record naming
+art/brand/key-art.png and the wordmark.
+
 ## Block M — What a game needs beyond the look
 
 ### §PW259 Visual effects as declarations
@@ -561,6 +594,36 @@ it reaches, its brightness, its particle count against a budget).
 
 Done when Starship's seven trails are seven declarations built and accepted through
 polyweave, and the game reads what was built instead of its own data.
+
+### §PW268 A store's capsules from one key art
+
+Found in Starship (2026-09-27, RK74). A Steam page asks for one key art in about ten
+shapes:
+
+- header, small, main and vertical capsules;
+- library capsule, header, hero and logo;
+- page background, community icon.
+
+Each has its own size and aspect, and most carry the game's logo. polyweave has
+`compose.place`, which puts a picture into another, and `picture.fit`, which fits a
+sprite to a family's grid. Neither crops a key art to a size around its subject, and
+nothing knows a store's list of sizes or checks that a logo still reads at the small
+capsule's 462 by 174. So the project wrote a crop script of its own in the work area.
+
+A `store.capsules` operation should take a key art, a logo with alpha, and a store
+(`steam`, with its sizes declared as data, not code). It should write each capsule:
+
+- cover-cropped around a focus point the caller gives;
+- the logo placed by a rule per shape, and left off where the store forbids text (the
+  library hero);
+- each with its provenance.
+
+It should refuse a key art smaller than the largest size rather than upscale it quietly.
+It should also measure the logo's legibility at each size (its smallest stroke in
+pixels) and fail a capsule where the name would not read.
+
+Done when Starship's capsule set is written by one call from art/brand/key-art.png and
+the wordmark.
 
 ## Block N — Pictures held to a canon
 
@@ -881,26 +944,6 @@ the first twenty make.
 
 ## Block S — Playing the game, not only rendering it
 
-### §PW217 Cottony's flows kept and replayed
-
-Cottony's tests check the match rules headlessly and its screens by capture. Neither
-presses a button. A menu whose signal was disconnected by a scene edit, a level-select
-button that opens the wrong level, and a win screen that never appears would all pass
-every current check.
-
-The proof is that an agent, given only the session tools and no reading of Cottony's
-scenes, drives three flows and keeps them. The first goes from the title to a won first
-level. The second opens a later level from level select and loses it. The third goes
-through settings and back with a changed value that persists. The flows sit in Cottony's
-tests, `game.replay` runs them in its release script, and `game.release_check` passes on
-its export.
-
-The count is part of the evidence. It is how many calls each flow took to find and how
-many tokens a session spent, recorded in the ledger entry, so the cost of exploring is a
-measured number that later work can reduce. A flow that needed the agent to read the
-source counts as a failure of the tools, under the block on reaching things without
-reading the source, and it is filed as its own line.
-
 ### §PW250 A sweep of a script over arguments
 
 Found in Starship's RK81 (2026-09-27), choosing trailer shots. A shot needs a run where
@@ -925,5 +968,46 @@ flown again for the same build.
 
 Done when finding Starship's evolution shot is one call over a seed list, and it returns
 SWEEPING with its tick.
+
+### §PW270 Nodes addressed by what they are
+
+Found keeping Cottony's flows (PW217). Cottony builds its screens in code and names few
+of its nodes, so the paths an agent queries are Godot's generated names:
+`/root/Main/@Node2D@14/@Node2D@35` is the board, `@Node2D@1133/@Node2D@1126/@Label@1129`
+the result card's heading. A kept flow expects and clicks at those paths. They hold
+while the game builds its tree in the same order, and any change that adds a node before
+them renumbers every one after, so a flow breaks on an edit that changed nothing it
+proves.
+
+Let a node be addressed by what it is rather than where the counter left it: by class
+and a property that picks it out, such as `{"class": "Label", "text": "NÍVEL
+CONCLUÍDO"}` or `{"class": "Board"}` (a script's class_name), answered as the path it
+resolves to now. `game.keep` writes that selector into the flow in place of a generated
+path wherever it finds one unique, and `game.replay` resolves it again each run, so the
+flow survives a reordering. A path with no generated name in it is kept as it is.
+
+Done when Cottony's two flows are kept again with selectors, still replay to the same
+frames, and a test that inserts a node ahead of the board replays unchanged.
+
+### §PW271 Long flows in few calls
+
+Found keeping Cottony's flows (PW217). An agent driving through the command line pays a
+fresh Python process per call, about 0.3 s, and a match-3 level is a loop of query the
+board, tap two cells, wait until it settles: thirty-three moves took two hundred calls
+to keep and thousands to find. The explorer wrote its own loop script to cope, and its
+third flow, losing a level later than the first, never finished: a fresh save unlocks
+only level 1, so reaching a later one meant winning the ones before it, and after two
+hours and ten sessions it had not.
+
+Two gaps, each worth closing:
+- a game's own setup should be reachable from a flow: `game.call` can already run a
+  method the game exposes, and a flow that starts at level 5 with `call start_level 5`
+  proves the level without replaying four wins, which is a game-side change the finding
+  should name when no such method exists;
+- the session tools should take a short script of commands in one call, answering each,
+  so a loop of query, input and wait costs one process and not three hundred.
+
+Done when the lose-a-later-level flow is kept for Cottony in under a hundred calls, and
+replays to the same frame every time.
 
 ## Block T — Adopting polyweave in a project
