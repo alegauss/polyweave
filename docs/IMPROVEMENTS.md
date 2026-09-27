@@ -345,6 +345,22 @@ lines, and add a test with a multi-line quoted cell.
 Done when a quoted cell holding a real line break checks as the same lines as the
 escaped form, with no glued words.
 
+### §PW244 The pronoun I is never a name
+
+Found in Spinhold (starship RK89). Its crew lines, held to the world by `words.check`,
+say "Kill something, I'll top you up" and "Hold still, I've got you". The check read
+`I'll` and `I've` as capitalised words mid-sentence, so as names the world does not
+show, and failed the table. The pronoun "I" is always capitalised in English, and so are
+its contractions (`I'm`, `I'll`, `I've`, `I'd`), wherever they fall in a sentence; they
+are never names. Spinhold listed them under `[words] ordinary` to pass, which every
+English project writing dialogue would have to do.
+
+Treat "I" and its contractions as ordinary in English locales, as the check already does
+for a word at a sentence's start, and add a test with a line holding each.
+
+Done when a line with "I'll", "I've", "I'm" and "I'd" mid-sentence passes with nothing
+in `[words] ordinary`.
+
 ## Block R — Levels measured before a person plays them
 
 ### §PW201 Whether a bot's win rate says how hard a level feels
