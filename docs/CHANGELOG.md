@@ -185,6 +185,7 @@
 - ✅ **PW132** **an agent in a consumer is never told the plugin exists, because it ships no manifest, skill or session notice** — The repo is a Claude Code plugin and marketplace: an MCP server, a driving skill, and a one-line SessionStart notice, held to size by a test (design recorded in `docs/specs/adoption.md`).
 - ✅ **PW133** **an agent may hand-edit a built mesh or voxel file, and nothing notices the output no longer follows its declaration** — The plugin's guard denies a hand edit to a built or recorded file, naming the declaration, and a Stop hook catches one that slipped by (design recorded in `docs/specs/adoption.md`).
 - ✅ **PW160** **a clip is baked to an animation and a sheet only from Python, since every step takes a mesh and a rig in memory** — motion.bake takes the clip, mesh and plan by name, fits, weights, compiles and bakes, and answers with the paths and whether both outputs match (design recorded in `docs/specs/motion.md`).
+- ✅ **PW246** **capture.run answers ok false with verdict ok and an empty why when only the environment differed** — A capture whose environment did not hold now names the cause in verdict and why at the top, and lists the pictures its expect lines named (design recorded in `docs/specs/engine.md`).
 
 ## Block L — What a run leaves as evidence
 

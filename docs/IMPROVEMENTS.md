@@ -486,24 +486,6 @@ parameters off their range edges.
 
 ## Block K — Reached without reading the source
 
-### §PW246 One field says why a capture failed
-
-Found in Starship's RK68 (the codex), 2026-09-27, over the MCP tool `capture_run`. A run
-that took all five pictures and exited 0 answered `"ok": false`, `"verdict": "ok"`,
-`"why": ""`, `"found": {}` and `"artefacts": []`. The reason, that the resolution was
-applied at 1280x720 and not the 1920x1080 asked, was only in `environment.why`, and it
-took reading `capture.py` (the `against["holds"]` branch) to learn that this alone had
-turned `ok` false.
-
-An answer should read in one field: where `ok` is false, the top-level `why` says why
-(copying `environment.why` when the environment is the cause), and `verdict` names the
-cause (e.g. `environment-differs`) rather than `ok`. The pictures the script did write
-should be listed under `artefacts` either way, found from the `expect` lines, so the
-caller does not go back to the log for the paths it printed.
-
-Done when the same run answers with a non-empty `why`, a verdict that is not `ok`, and
-the five paths.
-
 ### §PW247 A list the shell cannot mangle
 
 Found in Starship's RK68, 2026-09-27. From PowerShell, `python -m polyweave capture.run

@@ -215,6 +215,14 @@ picture had the environment hold. Where every picture is one size, that size is 
 `applied` says; a picture at another size than the one asked fails the environment as
 `capture.differs`, whatever the script printed.
 
+**A failed environment is said at the top of the answer** (§PW246). Where the pictures
+were taken and the environment did not hold, `ok` is false, `verdict` names the cause
+(`environment-not-reported`, `environment-not-applied` or `environment-differs`, the
+three `require` refuses with) and `why` says what differed, so a caller reads one field
+and not `environment.why`. `artefacts` lists the pictures the lines matching `expect`
+name, where the caller named no `produces` group, so the paths a script printed come back
+either way.
+
 **A script takes its own arguments too** (§PW238). A capture of a moment in play names
 the moment: Spinhold's boss was `--boss --frames=420 --hold=fire_right`. `capture.run`
 takes them as `args`, a list of strings, and passes them after `--` and ahead of the

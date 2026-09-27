@@ -41,7 +41,6 @@
 
 ## Block K — Reached without reading the source
 
-- 📋 **PW246** (deps: —) **capture.run answers ok false with verdict ok and an empty why when only the environment differed** — The reason sits in a nested field, so a caller reads the tool's source to learn why a run that took its pictures failed. → §PW246
 - 📋 **PW247** (deps: —) **a list parameter passed from PowerShell never arrives as JSON, so the CLI refuses it** — The CLI is the documented second way in, and the refusal's remedy is the quoting the shell just broke. → §PW247
 
 ## Block L — What a run leaves as evidence

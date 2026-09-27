@@ -241,6 +241,10 @@ def run(
                 f"`visible: {until}` line ahead of the one naming it",
             }
 
+    # The pictures the run named, where the caller did not say which group holds them
+    # (§PW246): the MCP answer came back with no artefacts for five written pictures.
+    if not found.get("artefacts"):
+        found = {**found, "artefacts": pictures(log, expect, root)}
     # The picture is the authority on its size, not the script's line (§PW245): a script
     # that set root.size and printed it said 1920x1080 over a 1280x720 picture.
     against = compare(asked, {**applied(log), **_measured(asked, found["artefacts"])})
@@ -250,7 +254,17 @@ def run(
         "regions": regions(log),
         "loaded": loaded(log),
     }
-    if not found["ok"] or not against["holds"]:
+    if found["ok"] and not against["holds"]:
+        # The run worked and the environment did not hold, and that is said at the top,
+        # where a caller reads first, not only inside `environment` (§PW246).
+        return {
+            **answer,
+            "ok": False,
+            "verdict": "environment-" + _environment_cause(against),
+            "why": "the pictures were taken, but not in the environment asked: "
+            + (against["why"] or "the script printed no `environment:` line"),
+        }
+    if not found["ok"]:
         return {**answer, "ok": False}
     if record:
         read = inputs(found["script"], answer["loaded"], root)
@@ -267,6 +281,37 @@ def run(
         answer["records"] = [str(path) for path, _ in made]
         answer["reproduced"] = again([verdict for _, verdict in made])
     return answer
+
+
+#: A picture a script names on a line, as a project path or its own.
+_PICTURE = re.compile(r"(?:res://|user://)?[^\s'\"]+\.(?:png|jpe?g|webp)\b", re.I)
+
+
+def pictures(log: str, expect: str | re.Pattern, root: str | Path) -> list[str]:
+    """Every picture the lines matching `expect` name, as paths that exist."""
+    named = re.compile(expect, re.MULTILINE) if isinstance(expect, str) else expect
+    here = load(root).root
+    found: list[str] = []
+    for match in named.finditer(log or ""):
+        line_end = log.find("\n", match.start())
+        line = log[match.start() : line_end if line_end >= 0 else len(log)]
+        for spelled in _PICTURE.findall(line):
+            if spelled.startswith("user://"):
+                continue  # the engine's own folder: not a path this side can read
+            where = Path(spelled.removeprefix("res://"))
+            where = where if where.is_absolute() else here / where
+            if where.is_file() and str(where) not in found:
+                found.append(str(where))
+    return found
+
+
+def _environment_cause(against: dict) -> str:
+    """Which way the environment failed, as require names it."""
+    if not against["applied"]:
+        return "not-reported"
+    if against["missing"]:
+        return "not-applied"
+    return "differs"
 
 
 def _size_of(value: Any) -> str:

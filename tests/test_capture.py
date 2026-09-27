@@ -344,6 +344,37 @@ def test_a_picture_at_another_size_fails_whatever_the_script_said(tmp_path):
     ]
 
 
+def test_an_environment_that_did_not_hold_is_said_at_the_top(tmp_path):
+    """§PW246: ok false read verdict ok and an empty why; the cause was nested."""
+    script = project(tmp_path, SIZED)
+    shots = [picture(tmp_path / f"page{n}.png", 1280, 720) for n in range(2)]
+    log = "".join(f"captured: res://page{n}.png 1280 x 720\n" for n in range(2))
+    found = capture.run(
+        script,
+        expect=SHOT,
+        root=tmp_path,
+        record=False,
+        take=taking("environment: resolution=1920x1080\n" + log),
+    )
+    assert found["ok"] is False
+    assert found["verdict"] == "environment-differs"
+    assert "resolution was asked at 1920x1080 and applied at 1280x720" in found["why"]
+    assert found["artefacts"] == [str(one) for one in shots]
+
+
+def test_a_script_that_reported_no_environment_is_named_so(tmp_path):
+    script = project(tmp_path, '[capture]\ndeclared = ["locale"]\nlocale = "pt_BR"\n')
+    found = capture.run(
+        script,
+        expect=SHOT,
+        root=tmp_path,
+        record=False,
+        take=taking("captured: res://x.png 24 x 24\n"),
+    )
+    assert found["verdict"] == "environment-not-reported"
+    assert "locale was never applied" in found["why"]
+
+
 def test_args_already_split_by_the_caller_get_no_second_separator(tmp_path):
     script = project(tmp_path, '[capture]\ndeclared = ["locale"]\nlocale = "pt_BR"\n')
     found = capture.run(
