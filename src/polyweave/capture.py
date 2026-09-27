@@ -38,6 +38,7 @@ which.
 
 from __future__ import annotations
 
+import json
 import re
 from pathlib import Path
 from typing import Annotated, Any
@@ -480,6 +481,158 @@ def require(script: str | Path, **how: Any) -> dict:
             "against; [capture] reproducible is what asked for this to be a refusal",
         )
     return found
+
+
+#: The marks a movie script prints around the frames it wants kept (§PW249).
+MARKS = re.compile(r"^movie: (?P<mark>from|to) (?P<frame>\d+)\b", re.MULTILINE)
+
+
+@operation("capture.movie", kind="capture")
+def movie(
+    script: Annotated[str, Param("the scene script that flies the shot")],
+    *,
+    out: Annotated[str, Param("the folder the frames go to, under the project")],
+    root: Annotated[str, Param("the project the engine runs")] = ".",
+    environment: Annotated[
+        dict, Param("the settings to take it in; [capture] where unset")
+    ] = None,
+    args: Annotated[list, Param("the script's own arguments")] = (),
+    record: Annotated[bool, Param("write the sequence's record")] = True,
+) -> dict:
+    """Every frame between two marks the script prints, at the engine's fixed rate.
+
+    The script flies the shot and prints `movie: from <frame>` and `movie: to <frame>`
+    with `Engine.get_process_frames()`; Godot's Movie Maker (`--write-movie`) writes
+    every frame of the run, and the frames between the marks, both kept, are numbered
+    from 0001 into `out` with the audio beside them. One record, `sequence.json`, says
+    the environment, rate, count and each frame's tick and hash, and names any frame
+    missing between the marks. Needs a display: a headless run draws nothing (§PW249).
+    """
+    import shutil
+    import tempfile
+
+    here = load(root).root
+    asked = environment if environment is not None else wanted(here)
+    target = Path(out)
+    target = target if target.is_absolute() else here / target
+    raw = Path(tempfile.mkdtemp(prefix="polyweave-movie-"))
+    try:
+        user = ("--", *(str(one) for one in args or ())) + as_args(asked)
+        engine_args = _sized(("--write-movie", str(raw / "frame.png")), asked)
+        found = offscreen.capture(
+            script,
+            expect=re.compile(r"^movie: to \d+", re.MULTILINE),
+            root=here,
+            args=(*engine_args, *user),
+        )
+        log = Path(found["log"]).read_text(encoding="utf-8", errors="replace")
+        marks = {m["mark"]: int(m["frame"]) for m in MARKS.finditer(log)}
+        answer = {
+            "ok": False,
+            "script": found.get("script"),
+            "route": found.get("route"),
+            "log": found["log"],
+            "marks": marks,
+        }
+        unmarked = "from" not in marks or "to" not in marks
+        if unmarked and found.get("verdict") in ("ok", "no-signal"):
+            return {
+                **answer,
+                "verdict": "no-marks",
+                "why": "the script printed no `movie: from <frame>` and `movie: to "
+                "<frame>`, so there is no shot to keep",
+            }
+        if not found["ok"] or unmarked:
+            return {**answer, "verdict": found.get("verdict"), "why": found.get("why")}
+        if marks["to"] < marks["from"]:
+            return {
+                **answer,
+                "verdict": "bad-marks",
+                "why": f"the shot ends at frame {marks['to']}, before it starts at "
+                f"{marks['from']}",
+            }
+        written = {
+            int(one.stem.removeprefix("frame")): one
+            for one in raw.glob("frame*.png")
+            if one.stem.removeprefix("frame").isdigit()
+        }
+        wanted_frames = range(marks["from"], marks["to"] + 1)
+        dropped = [tick for tick in wanted_frames if tick not in written]
+        if target.exists():
+            shutil.rmtree(target)
+        target.mkdir(parents=True)
+        frames = []
+        for number, tick in enumerate(t for t in wanted_frames if t in written):
+            kept = target / f"{number + 1:04d}.png"
+            shutil.move(str(written[tick]), kept)
+            digest, _ = provenance.sha256_of(kept)
+            frames.append({"file": kept.name, "tick": tick, "sha256": digest})
+        audio = raw / "frame.wav"
+        if audio.is_file():
+            shutil.move(str(audio), target / "audio.wav")
+        against = compare(
+            asked,
+            {
+                **applied(log),
+                **_measured(asked, [str(target / f["file"]) for f in frames[:1]]),
+            },
+        )
+        sequence = {
+            "format": 1,
+            "script": answer["script"],
+            "fps": int(load(here).get("engine.fixed_fps")),
+            "marks": marks,
+            "count": len(frames),
+            "dropped": dropped,
+            "audio": (target / "audio.wav").is_file(),
+            "environment": against,
+            "frames": frames,
+        }
+        manifest = target / "sequence.json"
+        with manifest.open("w", encoding="utf-8", newline="\n") as file:
+            file.write(json.dumps(sequence, indent=2) + "\n")
+        holds = against["holds"] and not dropped
+        answer.update(
+            ok=holds,
+            verdict="ok"
+            if holds
+            else (
+                "dropped" if dropped else "environment-" + _environment_cause(against)
+            ),
+            why=""
+            if holds
+            else (
+                f"{len(dropped)} frames between the marks were not written: "
+                f"{dropped[:8]}"
+                if dropped
+                else "the frames were taken, but not in the environment asked: "
+                + (against["why"] or "the script printed no `environment:` line")
+            ),
+            out=str(target),
+            count=len(frames),
+            dropped=dropped,
+            environment=against,
+            sequence=str(manifest),
+        )
+        if record and holds:
+            read = inputs(answer["script"], loaded(log), here)
+            answer["record"] = str(
+                provenance.write(
+                    provenance.build(
+                        "capture",
+                        manifest,
+                        engine={"route": found.get("route", "")},
+                        inputs=read["inputs"],
+                        params=dict(asked),
+                        extra={"script": answer["script"], "frames": len(frames)},
+                        root=here,
+                    ),
+                    root=here,
+                )
+            )
+        return answer
+    finally:
+        shutil.rmtree(raw, ignore_errors=True)
 
 
 @operation("capture.run", kind="capture")

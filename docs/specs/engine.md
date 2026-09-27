@@ -215,6 +215,19 @@ picture had the environment hold. Where every picture is one size, that size is 
 `applied` says; a picture at another size than the one asked fails the environment as
 `capture.differs`, whatever the script printed.
 
+**A shot is every frame between two marks** (§PW249). A trailer is cut from sequences, not
+stills: every frame of a deterministic run between two moments, at a fixed rate.
+`capture.movie` runs a scene script through the offscreen route with Godot's Movie Maker
+(`--write-movie`), which writes one PNG per frame, `frame00000000.png` being process frame
+0, and the audio as a WAV. The script flies the shot and prints `movie: from <frame>` and
+`movie: to <frame>` with `Engine.get_process_frames()`; the frames between, both kept, are
+numbered `0001.png` onward into `out`, the audio beside them as `audio.wav`, and the rest
+thrown away. `sequence.json` says the script, the rate, the marks, the count, each frame's
+tick and hash, the environment (the declared size on the engine's line, as for a still,
+and read back off the first frame) and any frame `dropped` between the marks, and it is
+recorded like any capture, so `provenance.outdated` names a shot a changed model made
+stale. A run with no marks is `no-marks`, a dropped frame `dropped`: the shot is not ok.
+
 **A failed environment is said at the top of the answer** (§PW246). Where the pictures
 were taken and the environment did not hold, `ok` is false, `verdict` names the cause
 (`environment-not-reported`, `environment-not-applied` or `environment-differs`, the

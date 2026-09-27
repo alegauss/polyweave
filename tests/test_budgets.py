@@ -56,7 +56,8 @@ from polyweave.errors import PolyweaveError
 #: 80,996 with game.release_check (§PW215).
 #: 81,995 with game.set and input's hold and release (§PW216, §PW217).
 #: 82,466 with provenance.generated (§PW248), the lineage a content survey asks for.
-DESCRIBE = 83_000
+#: 83,367 with capture.movie (§PW249), a shot kept frame by frame.
+DESCRIBE = 83_900
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -91,7 +92,8 @@ DESCRIBE = 83_000
 #: 91,185 with game.release_check and its four codes (§PW215).
 #: 92,166 with game.set and input's hold and release (§PW216, §PW217).
 #: 92,637 with provenance.generated (§PW248).
-CAPABILITIES = 93_200
+#: 93,538 with capture.movie (§PW249).
+CAPABILITIES = 94_100
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

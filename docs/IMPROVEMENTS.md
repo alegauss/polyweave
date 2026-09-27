@@ -21,31 +21,6 @@ Done when `mesh.buy --picture_path ...` in Starship picks Meshy on its own.
 
 ## Block E — One world with the engine
 
-### §PW249 A capture that keeps every frame of a shot
-
-Found in Starship's RK81 (2026-09-27): the trailer and short clips need frame-perfect
-footage of the game, every frame between two ticks of a deterministic run (a replay, or
-a seed and a scripted pilot), at 4K and 60 a second, with the HUD on or off, a camera
-path, slow motion still recorded at full rate, and the music track started on the shot's
-first frame so the edit can lay it back.
-
-`capture.run` takes one still: it runs a scene script, reads one `expect` line and
-checks the environment. Nothing takes a sequence. So the project writes
-`dev/capture.gd`, which saves a PNG from the viewport on every rendered frame between
-`from` and `to`, and names its shots in `dev/trailer_shots.json`. It has to keep the
-frame count, the tick each frame is at, the resolution (PW245 again) and the record of
-what was flown, all by hand.
-
-polyweave should own `capture.movie`: run a scene script under the engine's fixed frame
-rate (Godot's Movie Maker, `--write-movie`, or its own frame grab), keep the frames
-between two marks the script prints, and write one record for the sequence with the
-environment, frame rate, count, each frame's tick and the inputs. It should say when a
-frame was dropped or the run ended early. Re-taking a shot after an art change is then
-one call, and `provenance_outdated` names the shots a changed model made stale.
-
-Done when Starship's shots are taken by `capture.movie` and `dev/capture.gd` only flies
-the run and prints the marks.
-
 ### §PW251 A frame budget the caller sets
 
 Found in Starship's RK81 (2026-09-27). `capture.run` starts the engine with

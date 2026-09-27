@@ -12,7 +12,6 @@
 
 ## Block E — One world with the engine
 
-- 📋 **PW249** (deps: —) **a game can be captured as one still, never as the frames of a run between two ticks** — A trailer is cut from frame-perfect sequences, and each project now grabs, names and records every frame by hand. → §PW249
 - 📋 **PW251** (deps: —) **capture.run kills every script at frame 6000, and no parameter raises it** — A capture of a late moment in a run is cut before it prints its line, and the answer blames the script. → §PW251
 - 📋 **PW260** (deps: —) **a capture run through the tool never writes its picture's record, since no caller can pass engine.run's produces** — A project's review pictures land without provenance, and accept.verify then cannot tell a stale look from a fresh one. → §PW260
 - 📋 **PW267** (deps: PW245 ✅) **capture.run trusts the size a script says it applied, so a window the OS shrank records a picture of the wrong size** — A key art asked at 3840x2160 came back 3840x2119 and was recorded as holding its environment. → §PW267
