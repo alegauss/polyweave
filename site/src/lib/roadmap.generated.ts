@@ -43,7 +43,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "P", title: "Music and sound a game can ship", open: 0 },
   { block: "Q", title: "Words held to the world", open: 0 },
   { block: "R", title: "Levels measured before a person plays them", open: 5 },
-  { block: "S", title: "Playing the game, not only rendering it", open: 6 },
+  { block: "S", title: "Playing the game, not only rendering it", open: 7 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
 ];
 
@@ -108,7 +108,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW212",
     block: "S",
     symptom: "A running game cannot be held between two tool calls, so each question an agent asks it costs a fresh launch",
-    why: "GodotTestDriver lives inside the game with no socket, so the game needs a listener an agent's calls can reach, paused between them.",
+    why: "The GDScript driver lives inside the game with no socket, so the game needs a listener an agent's calls can reach, paused between them.",
     deps: ["PW211"],
   },
   {
@@ -128,7 +128,7 @@ export const generatedTasks: GeneratedTask[] = [
   {
     id: "PW215",
     block: "S",
-    symptom: "Nothing stops the driver, or the .NET runtime it brought, from shipping inside a release export",
+    symptom: "Nothing stops the driver addon from shipping inside a release export",
     why: "A listener that runs any method it is asked to is a way into the game, so its absence from a player's build has to be checked, not assumed.",
     deps: ["PW212"],
   },
@@ -145,6 +145,13 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "Cottony's flow from title screen to a won level is checked by no test, so a broken menu ships unseen",
     why: "The block is proven only when its first consumer keeps its main flows as replayed tests in its own release script, beside a clean release check.",
     deps: ["PW214", "PW215", "PW216"],
+  },
+  {
+    id: "PW211",
+    block: "S",
+    symptom: "Nobody knows if an agent can drive a Godot game from its menu to a won level and get the same result twice",
+    why: "Every later line in this block rests on a driver, and it is GDScript on the engine's own API so no game needs the Godot .NET build.",
+    deps: [],
   },
 ];
 
@@ -184,4 +191,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW36", "PW53", "PW77", "PW78", "PW79", "PW80", "PW81", "PW82", "PW180", "PW192", "PW200", "PW201", "PW211"];
+export const generatedPaused: string[] = ["PW36", "PW53", "PW77", "PW78", "PW79", "PW80", "PW81", "PW82", "PW180", "PW192", "PW200", "PW201"];

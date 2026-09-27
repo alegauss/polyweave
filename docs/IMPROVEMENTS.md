@@ -460,29 +460,29 @@ the first twenty make.
 
 ## Block S — Playing the game, not only rendering it
 
-### §PW211 Whether GodotTestDriver can carry an agent through a game
+### §PW211 Whether a GDScript driver can carry an agent through a game
 
 polyweave runs the engine one shot at a time: a script, a frame budget, a line in the
 log. Nothing holds a game open while an agent decides what to press next, so a flow
 through menus, a level and a win is tested by no one.
 
-GodotTestDriver is the first candidate because it already has the parts a driver needs.
-Drivers target nodes through a producer lambda, input goes through
-`Input.ParseInputEvent`, and waits can count frames. The spike measures its three costs.
-It is C# and needs the Godot .NET build, while Cottony and Starship are GDScript on the
-standard 4.7 build. It runs only inside the game, with no socket. Its waits in seconds
-use the wall clock, not game time.
+GodotTestDriver is set aside: it is C# and needs the Godot .NET build, while Cottony and
+Starship are GDScript on the standard 4.7 build, and a game should not change its engine
+build to be tested. What a driver needs is in the engine's own API, so the driver is
+GDScript, a polyweave addon beside `polyweave_voxels`. Input goes through
+`Input.parse_input_event`, a click through `Viewport.push_input` at a Control's centre,
+nodes are reached by path, group or class, and waits count `process_frame`, never
+seconds. `SceneTree.paused` holds the game between steps. gdUnit4's SceneRunner, also
+GDScript, is the reference and not a dependency: it installs a whole test framework for
+a dozen calls.
 
-The spike runs in Cottony, outside the package, and spends nothing. It adds the .NET
-build and GodotTestDriver, and a C# harness goes from the title screen to a won first
-level. It reads GDScript properties with `Get` and calls GDScript methods with `Call`.
-It advances by frame counts only, with the tree paused between steps. The sequence runs
-ten times and the final states are compared.
+The spike runs in Cottony and spends nothing: a GDScript harness goes from the title
+screen to a won first level by frame counts, the tree paused between steps, ten times,
+and the final states are compared.
 
-The findings are what adding .NET took and whether it changed the export, whether
-driving GDScript nodes works, and whether ten runs out of ten agree. If not, the
-fallback is gdUnit4's SceneRunner, which is GDScript, tried against the same flow. The
-later lines take whichever passes.
+The findings are whether ten runs out of ten agree, and what pausing misses: a node that
+processes always, a `SceneTreeTimer`, a tween or a wall-clock read keeps moving while
+the driver holds. Each is named as the game's to change or the driver's to handle.
 
 ### §PW212 A driver inside the game, stepped by the agent
 
@@ -494,12 +494,12 @@ of every random source is set at start. The same calls then give the same game.
 
 The driver is an addon and autoload that the project installs. It is loaded only under a
 `polyweave_driver` feature tag, listens on loopback with a token printed at start, and
-dispatches to whatever PW211 chose, so its commands stay the same if the library
-changes. The commands are `query`, which returns a node's properties by path, group or
-class, and `input`, which sends an action, a key, or a click on a node's centre. The
-others are `step`, which advances by a number of frames, `wait`, which waits for a
-signal, a node or a value within a frame budget, `call`, which runs a method the game
-exposes for setup, and `shot`.
+dispatches to the GDScript driver PW211 proved, so its commands stay the same if that
+driver's inside changes. The commands are `query`, which returns a node's properties by
+path, group or class, and `input`, which sends an action, a key, or a click on a node's
+centre. The others are `step`, which advances by a number of frames, `wait`, which waits
+for a signal, a node or a value within a frame budget, `call`, which runs a method the
+game exposes for setup, and `shot`.
 
 Waits count frames and never seconds, which removes the wall-clock waits PW211 found.
 The contract goes in `docs/specs/driving.md` before code, as the capture environment's
@@ -559,9 +559,8 @@ driver while it runs. They do nothing about a driver that ships.
 
 `game.release_check` takes an exported pack, or runs the project's release preset in the
 scratch folder, and lists the files in the pack. It fails if any driver file is present
-or if the project's autoloads name the driver without the feature check. If PW211 chose
-GodotTestDriver, it also fails when the GodotTestDriver or GoDotTest assemblies are
-present, because a library meant for tests only has no place in a player's build.
+or if the project's autoloads name the driver without the feature check. The driver is
+GDScript (PW211), so there is no test assembly to look for, only the addon's own files.
 
 The check is a gate, not advice: `require` closes with one code per finding, in the same
 way the engine runner's gate does, so a project can put it in its own release script. It
