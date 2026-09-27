@@ -101,6 +101,57 @@ def test_a_value_that_is_not_its_type_is_refused():
     assert "3" in refused.value.remedy
 
 
+LIST = {"name": "args", "type": "list"}
+
+
+def test_a_list_flag_given_once_per_item_is_the_list():
+    """§PW247: PowerShell 5.1 strips JSON's inner quotes; a repeated flag has none."""
+    assert commands.parsed(["--scene=res://a.tscn", "--frames=45", "3"], LIST) == [
+        "--scene=res://a.tscn",
+        "--frames=45",
+        3,
+    ]
+
+
+def test_a_list_flag_may_name_a_json_file(tmp_path):
+    where = tmp_path / "args.json"
+    where.write_text('["--boss", "--frames=420"]', encoding="utf-8")
+    assert commands.parsed([f"@{where}"], LIST) == ["--boss", "--frames=420"]
+
+
+def test_one_plain_value_is_a_list_of_one():
+    assert commands.parsed(["--boss"], LIST) == ["--boss"]
+
+
+def test_a_list_the_shell_mangled_is_refused_naming_the_forms_that_survive():
+    with pytest.raises(PolyweaveError) as refused:
+        commands.parsed(["[--scene=x, --frames=45]"], LIST)
+    assert refused.value.code == "op.bad-type"
+    assert "once per item" in refused.value.remedy
+    assert "@args.json" in refused.value.remedy
+
+
+def test_a_repeated_flag_reaches_the_operation_through_the_parser():
+    """What argparse hands over when the shell passes --args=… twice."""
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    commands.add_operations(parser.add_subparsers(dest="command"))
+    stated = parser.parse_args(
+        [
+            "capture.run",
+            "--script",
+            "x.gd",
+            "--expect",
+            "SHOT",
+            "--args=--boss",
+            "--args=--frames=420",
+        ]
+    )
+    assert commands.parsed(stated.args, LIST) == ["--boss", "--frames=420"]
+    assert commands.parsed(stated.script, {"name": "script", "type": "str"}) == "x.gd"
+
+
 def test_the_first_reads_are_verbs(capsys):
     status, printed = run(["explain", "spec.no-screen", "--json"], capsys)
     assert status == 0

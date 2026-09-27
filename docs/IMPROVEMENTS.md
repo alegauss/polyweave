@@ -486,22 +486,6 @@ parameters off their range edges.
 
 ## Block K — Reached without reading the source
 
-### §PW247 A list the shell cannot mangle
-
-Found in Starship's RK68, 2026-09-27. From PowerShell, `python -m polyweave capture.run
---script dev/shot.gd --expect SHOT --args '["--scene=...", "--frames=45"]'` was refused
-with `op.bad-type: --args is a list, and '[--scene=..., --frames=45]' does not read as
-one`: Windows PowerShell 5.1 strips the inner double quotes when it hands a
-single-quoted argument to a native program, so the JSON never arrives. The remedy, "pass
-it as JSON", is the thing that failed. The MCP tool took the same list at once, but
-AGENTS.md names the CLI as the second way in, and a shell is where a session often is.
-
-The CLI should take a list in a form no shell mangles: the flag repeated (`--args
---scene=... --args --frames=45`), or a file (`--args @path.json`), with the refusal
-naming both. `describe` should state the forms a list accepts.
-
-Done when that call works from PowerShell 5.1 and from bash with no JSON quoting.
-
 ## Block L — What a run leaves as evidence
 
 ### §PW248 What a build ships that a generator made

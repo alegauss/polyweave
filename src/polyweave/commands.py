@@ -27,6 +27,7 @@ import argparse
 import contextlib
 import json
 import sys
+from pathlib import Path
 from typing import Any
 
 from .errors import PolyweaveError
@@ -63,6 +64,10 @@ def parsed(text: str, declared: dict) -> Any:
     text where it does not, which is how a path and a table are both accepted there.
     """
     kind = declared["type"]
+    if kind == "list":
+        return _listed(text, declared)
+    if isinstance(text, list):
+        text = text[-1]  # a flag given twice that takes one value: the last one wins
     if kind == "str":
         return text
     try:
@@ -75,6 +80,61 @@ def parsed(text: str, declared: dict) -> Any:
             f"--{declared['name']} is a {kind}, and {text!r} does not read as one",
             f"pass it as JSON, such as {_example(kind)}",
         ) from None
+
+
+#: How a list flag may be written where a shell eats JSON's quotes (§PW247).
+LIST_FORMS = (
+    "the flag once per item (--args=--scene=x --args=--frames=45), "
+    "a JSON file (--args @args.json), or a JSON list where the shell keeps its quotes"
+)
+
+
+def _item(text: str) -> Any:
+    """One item of a repeated list flag: a number or bool as JSON reads it, or text."""
+    try:
+        value = json.loads(text)
+    except json.JSONDecodeError:
+        return text
+    return value if not isinstance(value, list | dict) else text
+
+
+def _listed(given: Any, declared: dict) -> list:
+    """A list flag's value, in whichever form a shell let through (§PW247).
+
+    Windows PowerShell 5.1 strips the inner double quotes from a single-quoted argument
+    it hands a native program, so `--args '["a", "b"]'` arrives as `[a, b]` and never as
+    JSON. So the flag may be given once per item, or name a JSON file with `@`, and a
+    single value that is neither JSON nor a file is a list of that one item. A value
+    that opens a bracket and does not read is the mangled list, and is refused naming
+    the forms that survive a shell, rather than taken as one strange item.
+    """
+    values = given if isinstance(given, list) else [given]
+    if len(values) > 1:
+        return [_item(one) for one in values]
+    text = values[0]
+    if text.startswith("@"):
+        where = Path(text[1:])
+        try:
+            read = json.loads(where.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as failed:
+            raise PolyweaveError(
+                "op.bad-type",
+                f"--{declared['name']} names {where}, which is no JSON file: {failed}",
+                f"write the list there as JSON, or pass it as {LIST_FORMS}",
+            ) from None
+        return read if isinstance(read, list) else [read]
+    try:
+        read = json.loads(text)
+    except json.JSONDecodeError:
+        if text.lstrip().startswith("["):
+            raise PolyweaveError(
+                "op.bad-type",
+                f"--{declared['name']} is a list, and {text!r} does not read as one; "
+                "a shell may have eaten its quotes",
+                f"pass it as {LIST_FORMS}",
+            ) from None
+        return [text]
+    return read if isinstance(read, list) else [read]
 
 
 def _example(kind: str) -> str:
@@ -100,11 +160,15 @@ def add_operations(commands: Any) -> None:
                 about += f" ({p['unit']})"
             if p.get("choices"):
                 about += f"; one of {', '.join(map(str, p['choices']))}"
+            listed = p["type"] == "list"
+            if listed:
+                about += "; or once per item, or @file"
             sub.add_argument(
                 f"--{p['name']}",
                 dest=p["name"],
                 required=p["required"],
                 default=argparse.SUPPRESS,
+                action="append" if listed else "store",
                 metavar=p["type"].upper(),
                 help=about,
             )

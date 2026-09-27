@@ -186,6 +186,7 @@
 - ✅ **PW133** **an agent may hand-edit a built mesh or voxel file, and nothing notices the output no longer follows its declaration** — The plugin's guard denies a hand edit to a built or recorded file, naming the declaration, and a Stop hook catches one that slipped by (design recorded in `docs/specs/adoption.md`).
 - ✅ **PW160** **a clip is baked to an animation and a sheet only from Python, since every step takes a mesh and a rig in memory** — motion.bake takes the clip, mesh and plan by name, fits, weights, compiles and bakes, and answers with the paths and whether both outputs match (design recorded in `docs/specs/motion.md`).
 - ✅ **PW246** **capture.run answers ok false with verdict ok and an empty why when only the environment differed** — A capture whose environment did not hold now names the cause in verdict and why at the top, and lists the pictures its expect lines named (design recorded in `docs/specs/engine.md`).
+- ✅ **PW247** **a list parameter passed from PowerShell never arrives as JSON, so the CLI refuses it** — A list flag may be given once per item or as @file.json, so it survives PowerShell 5.1, and a mangled list is refused naming both forms (design recorded in `docs/specs/tool-surface.md`).
 
 ## Block L — What a run leaves as evidence
 

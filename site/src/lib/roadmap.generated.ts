@@ -35,7 +35,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "H", title: "Proof on a real game", open: 4 },
   { block: "I", title: "Voxel models from a declaration", open: 4 },
   { block: "J", title: "A bar a person sets once", open: 0 },
-  { block: "K", title: "Reached without reading the source", open: 1 },
+  { block: "K", title: "Reached without reading the source", open: 0 },
   { block: "L", title: "What a run leaves as evidence", open: 2 },
   { block: "M", title: "What a game needs beyond the look", open: 2 },
   { block: "N", title: "Pictures held to a canon", open: 1 },
@@ -144,13 +144,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "I",
     symptom: "geometry.fit scores at the reference's own aspect, so a declaration held to another box is squeezed to its range edges",
     why: "A game's hitbox fixes a model's box, and a fit that cannot tell shape from box returns a worse model as the best.",
-    deps: [],
-  },
-  {
-    id: "PW247",
-    block: "K",
-    symptom: "a list parameter passed from PowerShell never arrives as JSON, so the CLI refuses it",
-    why: "The CLI is the documented second way in, and the refusal's remedy is the quoting the shell just broke.",
     deps: [],
   },
   {

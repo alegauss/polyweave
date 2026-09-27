@@ -284,7 +284,13 @@ both answers.
   with one `--<param>` flag per declared parameter and the sentence, unit and choices as
   its help. A flag's value is read by its declared type: a number, flag, list or table as
   JSON, a string as the text given, and `any` as JSON where it reads as JSON and text
-  where it does not. An asynchronous operation takes `--job`, which starts it through the
+  where it does not. **A list survives any shell** (§PW247): Windows PowerShell 5.1
+  strips the inner quotes of a single-quoted argument it hands a native program, so a
+  JSON list never arrives, and a list flag may also be given once per item
+  (`--args=--boss --args=--frames=420`, the `=` because an item may start with `--`) or
+  name a JSON file (`--args @args.json`); a single value that reads as neither JSON nor a
+  file is a list of that one item, and one that opens a bracket and does not read is the
+  mangled list, refused naming those forms. An asynchronous operation takes `--job`, which starts it through the
   job store and prints the handle, and `job list|poll|result|cancel <handle>` answers for
   it. `capabilities`, `explain [code]` and `describe [op]` are verbs beside them. **One
   answer, two renderings**: `--json` prints the operation's data, and the text is that

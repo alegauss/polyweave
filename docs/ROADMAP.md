@@ -41,8 +41,6 @@
 
 ## Block K — Reached without reading the source
 
-- 📋 **PW247** (deps: —) **a list parameter passed from PowerShell never arrives as JSON, so the CLI refuses it** — The CLI is the documented second way in, and the refusal's remedy is the quoting the shell just broke. → §PW247
-
 ## Block L — What a run leaves as evidence
 
 - 📋 **PW248** (deps: —) **a project cannot ask which files it ships were made by a generator, directly or through their inputs** — Steam's content survey needs that answer, and each project now walks the provenance records by hand to give it. → §PW248
