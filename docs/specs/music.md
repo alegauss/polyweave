@@ -120,7 +120,7 @@ names somewhere else in the project.
 
 ## Rendering
 
-`music.render` is a job (`bake`) that turns a valid score into WAV and OGG headlessly,
+`music.render` is a job (`bake`) that turns a valid score into WAV or OGG headlessly,
 through engines that already exist. The PW184 spike chose them, and a person judged three
 loops made this way good enough to ship:
 
@@ -151,11 +151,19 @@ heard the end. A stinger (`loop = false`) keeps its tail and has no seam. The an
 carries what `sound.measure` says of the WAV, without the seam for a stinger, and each
 part's engine.
 
+**Only the formats the game loads are written** (§PW255). `formats` names them, `wav`,
+`ogg` or both; unset, a render landing at a cue a `[sound]` family declares takes that
+family's `format`, and any other writes both, the OGG left out with `why_no_ogg` where
+there is no ffmpeg. An OGG that was asked for is refused without ffmpeg
+(`sound.no-encoder`) rather than dropped, and anything else is `music.bad-format`. The WAV
+is still what is measured, so an OGG alone leaves none behind. Each file written gets its
+record and the answer names them in `formats`.
+
 ## Layers
 
 Game music changes with play, so one theme can be written at several intensities: each
 track names a `layer` (a lower-case id, `base` by default), and a score with more than one
-also writes `<out>.<layer>.wav` and `.ogg` per layer, beside the whole mix. **Every layer
+also writes `<out>.<layer>` per layer, in the same formats, beside the whole mix. **Every layer
 file has the render's exact length and grid**, so a game fading layers in and out never
 hears them drift; which layer plays when is the game's.
 

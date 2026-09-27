@@ -332,13 +332,18 @@ def render(
         str, Param("where to write, without a suffix; beside the score if unset")
     ] = None,
     root: Annotated[str, Param("the project the score belongs to")] = ".",
+    formats: Annotated[
+        list, Param("the formats the game loads, wav and/or ogg; its cue's if unset")
+    ] = None,
 ) -> dict:
-    """Render a valid score to WAV and OGG through Surge XT and FluidSynth.
+    """Render a valid score to the formats a game loads through Surge XT and FluidSynth.
 
     Every part is rendered, then levelled, panned, sent and mastered through one fixed
     chain; a looping score's tail is folded onto its loop. A score with several layers
     also writes one file per layer, <out>.<layer>, all one length, which add up to the
-    whole. The answer carries what sound.measure says of each file.
+    whole. Only the formats asked for are written: those named, else the format of the
+    declared cue the output lands at, else WAV and OGG. The answer carries what
+    sound.measure says of each file.
     """
     config = load(root)
     here, where = config.root, config.path("paths.work", source)
@@ -375,6 +380,8 @@ def render(
     stem = where.name.removesuffix(".toml").removesuffix(".music")
     work = config.path("paths.work") / "music" / stem
     work.mkdir(parents=True, exist_ok=True)
+    target = where.with_name(stem) if not out else config.path("paths.work", out)
+    wanted = _formats(formats, config, target, found["ffmpeg"])
 
     report.stage("rendering", note="rendering each part")
     stems, played_by, hits = {}, {}, {}
@@ -393,9 +400,8 @@ def render(
 
     signature = model["timing"]["timeSignatures"][0]
     bar = signature["numerator"] * 4 / signature["denominator"] * spb
-    target = where.with_name(stem) if not out else config.path("paths.work", out)
     target.parent.mkdir(parents=True, exist_ok=True)
-    made = _written(target, final, found["ffmpeg"], loop, here)
+    made = _written(target, final, found["ffmpeg"], loop, here, wanted)
     _recorded(made, here, inputs, instruments, None, bar)
     answer = {
         **made,
@@ -416,7 +422,7 @@ def render(
             answer["layers"][layer] = _written(
                 target.with_name(f"{target.name}.{layer}"),
                 _high_passed(part) * riding[:, None],
-                found["ffmpeg"], loop, here,
+                found["ffmpeg"], loop, here, wanted,
             )
             playing = [i for i in instruments if set(i["used_by"]) & set(own)]
             _recorded(answer["layers"][layer], here, inputs, playing, layer, bar)
@@ -560,23 +566,68 @@ def _folded(summed: np.ndarray, loop: dict | None,
     return body, head == 0
 
 
+#: The formats a render writes, and what it writes when nothing says which (§PW255).
+FORMATS = ("wav", "ogg")
+
+
+def _formats(asked: list | None, config, target: Path, ffmpeg: str | None) -> dict:
+    """The formats to write: those asked, else the declared cue's, else both.
+
+    Said rather than defaulted is held to: an OGG a game loads is refused without ffmpeg
+    instead of silently left out.
+    """
+    stated = list(asked) if asked is not None else None
+    if stated is None:
+        for file in config.cue_files().values():
+            if file.with_suffix("") == target and file.suffix[1:] in FORMATS:
+                stated = [file.suffix[1:]]
+    if stated is not None:
+        wrong = [f for f in stated if f not in FORMATS]
+        if wrong or not stated:
+            raise PolyweaveError(
+                "music.bad-format",
+                f"a render writes wav or ogg, and was asked for "
+                f"{', '.join(map(str, wrong)) or 'nothing'}",
+                "pass formats as wav, ogg or both",
+                allowed=list(FORMATS),
+            )
+        if "ogg" in stated and not ffmpeg:
+            raise PolyweaveError(
+                "sound.no-encoder",
+                "the game loads OGG and there is no ffmpeg on PATH to encode it",
+                "put ffmpeg on PATH, or render formats=['wav']",
+            )
+    return {"formats": [f for f in FORMATS if f in (stated or FORMATS)]}
+
+
 def _written(target: Path, audio: np.ndarray, ffmpeg: str | None, loop: dict | None,
-             here: Path) -> dict:
-    """One file written as WAV, encoded as OGG where ffmpeg is, and measured."""
-    wav = target.with_name(f"{target.name}.wav")
+             here: Path, wanted: dict) -> dict:
+    """One file written in each format wanted and measured.
+
+    The WAV is always rendered, since it is what is measured and encoded; where the game
+    does not load it, it is removed once the OGG is made.
+    """
+    formats = wanted["formats"]
+    keep_wav = "wav" in formats
+    wav = target.with_name(f"{target.name}.wav" if keep_wav
+                           else f"{target.name}.render.wav")
     _write_wav(wav, audio)
     ogg = None
-    if ffmpeg:
+    if ffmpeg and "ogg" in formats:
         ogg = target.with_name(f"{target.name}.ogg")
         subprocess.run([ffmpeg, "-v", "error", "-y", "-i", str(wav), "-c:a",
                         "libvorbis", "-q:a", "6", str(ogg)],
                        check=True, capture_output=True)
     measured = sound.measure(wav)
+    if not keep_wav:
+        wav.unlink()
     if not loop:
         measured = {k: v for k, v in measured.items() if k not in sound.SEAM}
     return {
-        "wav": wav.relative_to(here).as_posix(),
+        "wav": wav.relative_to(here).as_posix() if keep_wav else None,
         "ogg": ogg.relative_to(here).as_posix() if ogg else None,
-        "why_no_ogg": None if ogg else "no ffmpeg on PATH to encode it",
+        "why_no_ogg": ("no ffmpeg on PATH to encode it"
+                       if "ogg" in formats and not ogg else None),
+        "formats": ["wav"] * keep_wav + ["ogg"] * bool(ogg),
         "measured": measured,
     }

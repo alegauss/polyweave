@@ -58,8 +58,6 @@
 
 ## Block P — Music and sound a game can ship
 
-- 📋 **PW255** (deps: —) **music.render always writes both WAV and OGG, so a game that loads one ships the other or deletes it by hand** — The unused copy is imported and exported, and removing it leaves the render's records half gone. → §PW255
-
 ## Block Q — Words held to the world
 
 - 📋 **PW257** (deps: —) **words.check reads the plural of a declared name as a name the world does not show** — Every enemy and colonist is written in the plural somewhere, so a project hides it as an ordinary word or keeps a standing finding. → §PW257

@@ -259,6 +259,7 @@
 - ✅ **PW224** **A sound ffmpeg cannot decode escapes sound.read as a raw process error, not a refusal** — A sound ffmpeg cannot decode is refused with spec.unreadable-sound naming the file, and sound.declared names that one cue while the others still measure.
 - ✅ **PW225** **A loop cut mid-bar in a dense mix passes both seam measures** — seam_grid holds a loop's length to whole bars from its record, or to beats off its onsets: a dense-mix cut reads 0.19 to 0.38, a whole loop 0.001 (design recorded in `docs/specs/measurements.md`).
 - ✅ **PW254** **a synthesised effect is normalised to a peak alone, so a replacement lands 10 dB louder than the sound it replaces** — An effect may declare its loudness or match the sound it replaces and lands within 0.5 dB of it, peak a ceiling said when it binds (design recorded in `docs/specs/effects.md`).
+- ✅ **PW255** **music.render always writes both WAV and OGG, so a game that loads one ships the other or deletes it by hand** — music.render writes only the formats a game loads: those named, else its declared cue's format, else both; an OGG asked for without ffmpeg is refused, not dropped.
 
 ## Block Q — Words held to the world
 

@@ -40,7 +40,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "M", title: "What a game needs beyond the look", open: 2 },
   { block: "N", title: "Pictures held to a canon", open: 1 },
   { block: "O", title: "A person sees and answers", open: 3 },
-  { block: "P", title: "Music and sound a game can ship", open: 1 },
+  { block: "P", title: "Music and sound a game can ship", open: 0 },
   { block: "Q", title: "Words held to the world", open: 1 },
   { block: "R", title: "Levels measured before a person plays them", open: 5 },
   { block: "S", title: "Playing the game, not only rendering it", open: 2 },
@@ -165,13 +165,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "O",
     symptom: "a refused picture can be promoted only from the review page, so a verdict given in chat has no operation to carry it",
     why: "A person often answers in the chat, and the agent then calls private functions it read from the source.",
-    deps: [],
-  },
-  {
-    id: "PW255",
-    block: "P",
-    symptom: "music.render always writes both WAV and OGG, so a game that loads one ships the other or deletes it by hand",
-    why: "The unused copy is imported and exported, and removing it leaves the render's records half gone.",
     deps: [],
   },
   {

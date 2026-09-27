@@ -577,21 +577,6 @@ declared in its `polyweave.toml`, made by `music.render` and `sound.synth`, and 
 `*.accept.toml` bounds, and its own audio scripts are removed. Anything Cottony needs
 that a second game would not becomes configuration.
 
-### §PW255 A render in the format the game loads
-
-Found in Starship's RK115 (2026-09-27), rendering the phase music into
-`game/audio/music/phase_<n>`. `music.render` writes both `.wav` and `.ogg`, each with a
-`.prov.json`, and takes no parameter to choose. Starship loads the WAV (its import loops
-it and compresses it for export); an OGG beside it is a second copy Godot imports and
-the build ships unless someone deletes it, and deleting it by hand leaves the render's
-pair of records half gone, which `provenance_verify` then has to be told about.
-
-`[sound.music]`, or the render call, should say which formats the game loads (`format =
-"wav"`, as `[sound.effects]` already does for effects), and the render writes those
-alone, with a record for each. The answer names what it wrote.
-
-Done when Starship's three phases render to WAV alone and `provenance_verify` is clean.
-
 ## Block Q — Words held to the world
 
 ### §PW200 Starship held to its own world

@@ -8,6 +8,7 @@ General MIDI kit plays on it unchanged. The kit here is the spike's own four hit
 from __future__ import annotations
 
 import importlib.util
+import shutil
 
 import numpy as np
 import pytest
@@ -76,8 +77,8 @@ play = { A = "beat" }
 """
 
 
-def project(tmp_path, score: str = SCORE, kit: str = KIT) -> str:
-    (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
+def project(tmp_path, score: str = SCORE, kit: str = KIT, config: str = "") -> str:
+    (tmp_path / "polyweave.toml").write_text(config, encoding="utf-8")
     (tmp_path / "audio").mkdir(exist_ok=True)
     (tmp_path / "audio" / "chip.sfx.toml").write_text(kit, encoding="utf-8")
     (tmp_path / "music").mkdir(exist_ok=True)
@@ -153,6 +154,57 @@ def test_a_chip_score_renders_with_no_soundfont_and_records_sfxr(tmp_path):
     named = [i["name"] for i in found["instruments"]]
     assert "sfxr (DrPetter), ported" in named
     assert provenance.read(str(tmp_path / "music" / "cue.wav.prov.json"), tmp_path)
+
+
+class Quiet:
+    def stage(self, *a, **k):
+        pass
+
+    def progress(self, *a, **k):
+        pass
+
+    def note(self, *a, **k):
+        pass
+
+
+@pytest.mark.skipif(not PEDALBOARD, reason="audio engine absent: Pedalboard")
+def test_a_render_writes_only_the_formats_the_game_loads(tmp_path):
+    """§PW255: Starship loads WAV, and every render left an OGG to delete by hand."""
+    found = music_render.render(Quiet(), project(tmp_path), root=str(tmp_path),
+                                formats=["wav"])
+    assert found["formats"] == ["wav"] and found["ogg"] is None
+    assert found["why_no_ogg"] is None
+    assert not (tmp_path / "music" / "cue.ogg").exists()
+    assert not (tmp_path / "music" / "cue.ogg.prov.json").exists()
+    assert (tmp_path / "music" / "cue.wav.prov.json").is_file()
+
+
+@pytest.mark.skipif(not PEDALBOARD, reason="audio engine absent: Pedalboard")
+def test_a_render_at_a_declared_cue_takes_the_cues_format(tmp_path):
+    config = '[paths]\naudio = "music"\n[sound.music]\nformat = "wav"\ncues = ["cue"]\n'
+    found = music_render.render(Quiet(), project(tmp_path, config=config),
+                                root=str(tmp_path))
+    assert found["formats"] == ["wav"]
+    assert not (tmp_path / "music" / "cue.ogg").exists()
+
+
+@pytest.mark.skipif(not shutil.which("ffmpeg") or not PEDALBOARD,
+                    reason="no ffmpeg to encode with, or no Pedalboard")
+def test_an_ogg_alone_leaves_no_wav_behind(tmp_path):
+    found = music_render.render(Quiet(), project(tmp_path), root=str(tmp_path),
+                                formats=["ogg"])
+    assert found["formats"] == ["ogg"] and found["wav"] is None
+    assert found["measured"]["loudness"] < 0
+    assert sorted(p.name for p in (tmp_path / "music").glob("cue.*")) == [
+        "cue.music.toml", "cue.ogg", "cue.ogg.prov.json"]
+
+
+@pytest.mark.parametrize("formats", [["mp3"], []])
+def test_a_format_a_render_does_not_write_is_refused(tmp_path, formats):
+    with pytest.raises(PolyweaveError) as refused:
+        music_render.render(Quiet(), project(tmp_path), root=str(tmp_path),
+                            formats=formats)
+    assert refused.value.code == "music.bad-format"
 
 
 def test_a_render_is_refused_before_anything_plays_when_the_kit_lacks_a_hit(tmp_path):

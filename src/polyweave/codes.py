@@ -795,6 +795,11 @@ CODES: dict[str, Code] = {
         when="music.to_midi on a source music.validate would not pass",
         doors=("call music.validate and fix every problem it names",),
     ),
+    "music.bad-format": Code(
+        means="a render asked for a format it does not write",
+        when="formats naming mp3 or flac, or an empty list",
+        doors=("ask for wav, ogg or both",),
+    ),
     "music.unknown-key": Code(
         means="a table or key the score format does not have",
         when="a misspelled key such as tempo for bpm, or a stray table",
