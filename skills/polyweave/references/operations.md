@@ -19,7 +19,7 @@ This page only groups them by what you are trying to do.
 | Keep the ledger | `loop.start`, `loop.spent`, `loop.judged`, `loop.finish`, `loop.compare` |
 | Read the ledger | `loop.runs`, `loop.assets`, `loop.changes`, `loop.bounds` |
 | Provenance | `provenance.read`, `provenance.verify`, `provenance.dependents`, `provenance.outdated`, `provenance.unrecorded`, `provenance.credits`, `provenance.generated` |
-| The game side | `capture.run`, `capture.movie` (every frame of a shot), `capture.declared`, `engine.run`, `godot.install` |
+| The game side | `capture.run`, `capture.movie` (a shot), `capture.declared`, `engine.run`, `engine.sweep`, `godot.install` |
 | Drive a game | `game.open`, `game.query`, `game.input`, `game.step`, `game.wait`, `game.call`, `game.set`, `game.shot`, `game.close`, `game.keep`, `game.replay`, `game.release_check` |
 | Scale against the engine | `units.check`, `units.engine_scale`, `units.read_number` |
 | World | `world.read`, `world.validate`, `words.check`, `words.unlisted`, `words.sheet` |

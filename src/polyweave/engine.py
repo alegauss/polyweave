@@ -346,6 +346,164 @@ def require(script: str | Path, **how: Any) -> dict:
     )
 
 
+def _build(root: Path) -> str:
+    """What the project is built from now, as git names it, or "" outside a repository.
+
+    The commit and the hash of what is uncommitted: a sweep flown on the same build
+    answers the same, and any edit, committed or not, is another build.
+    """
+    import hashlib
+
+    try:
+        head = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=root, capture_output=True, text=True,
+            check=True,
+        ).stdout.strip()
+        # polyweave's own work folder is left out: the sweep's record and its logs land
+        # there, and a build must not change because it was swept.
+        work = load(root).path("paths.work")
+        leave = (
+            [f":(exclude){work.relative_to(root).as_posix()}"]
+            if work.is_relative_to(root)
+            else []
+        )
+        dirty = subprocess.run(
+            ["git", "status", "--porcelain", "--", ".", *leave],
+            cwd=root, capture_output=True, text=True, check=True,
+        ).stdout
+    except (OSError, subprocess.CalledProcessError):
+        return ""
+    return head + ":" + hashlib.sha256(dirty.encode("utf-8")).hexdigest()[:16]
+
+
+@operation("engine.sweep")
+def sweep(
+    script: Annotated[str, Param("the scene script, as a path under the project")],
+    *,
+    grid: Annotated[
+        dict, Param('each argument\'s values, as {"seed": [1, 2], "policy": ["a"]}')
+    ],
+    pattern: Annotated[str, Param("the log line a run must show to be a hit")],
+    root: Annotated[str, Param("the project the engine runs")] = ".",
+    args: Annotated[list, Param("user arguments every run is given as well")] = (),
+    first: Annotated[int, Param("stop after this many hits; 0 runs all", lo=0)] = 0,
+    lanes: Annotated[int, Param("how many runs at once", lo=1, hi=16)] = 4,
+    frames: Annotated[int, Param("each run's frame budget; the project's")] = None,
+    again: Annotated[bool, Param("fly it again though this build was swept")] = False,
+) -> dict:
+    """Run one script over every combination of arguments, and keep the runs that show
+    a pattern (§PW250).
+
+    Each run gets `--<name>=<value>` for its combination after `--`, headless. A hit
+    is a run whose output has a line matching `pattern`; the answer lists each hit's
+    arguments and its matching lines, and every run's verdict. The sweep is recorded
+    under `.polyweave/sweeps/`, keyed by the script, the grid, the pattern and the
+    build, so the same sweep of the same build answers from the record.
+    """
+    import hashlib
+    import itertools
+    import json
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
+    settings = load(root)
+    here = settings.root
+    path = Path(script)
+    path = path if path.is_absolute() else here / path
+    if not path.is_file():
+        raise PolyweaveError(
+            "engine.no-script",
+            f"there is no scene script at {path}",
+            "write the path relative to the project root",
+        )
+    names = sorted(grid)
+    if not names or any(not isinstance(grid[n], list) or not grid[n] for n in names):
+        raise PolyweaveError(
+            "engine.bad-grid",
+            "a sweep needs each argument's values as a non-empty list",
+            'give grid as {"seed": [1, 2, 3]}, one list per argument',
+        )
+    wanted = re.compile(pattern, re.MULTILINE)
+    combos = [dict(zip(names, one, strict=True)) for one in itertools.product(
+        *(grid[n] for n in names))]
+    build = _build(here)
+    key = hashlib.sha256(
+        json.dumps(
+            {
+                "script": hashlib.sha256(path.read_bytes()).hexdigest(),
+                "grid": {n: grid[n] for n in names},
+                "pattern": pattern,
+                "args": list(args),
+                "build": build,
+            },
+            sort_keys=True,
+        ).encode("utf-8")
+    ).hexdigest()[:16]
+    kept = here / ".polyweave" / "sweeps" / f"{key}.json"
+    if build and kept.is_file() and not again:
+        return {**json.loads(kept.read_text(encoding="utf-8")), "cached": True}
+
+    def one_run(combo: dict) -> dict:
+        printed: dict[str, str] = {}
+
+        def launch(command, *, cwd, timeout, **extra):
+            output, code = _launch(command, cwd=cwd, timeout=timeout, **extra)
+            printed["output"] = output
+            return output, code
+
+        found = run(
+            path,
+            expect=wanted,
+            root=here,
+            frames=frames,
+            headless=True,
+            args=("--", *map(str, args), *(f"--{n}={v}" for n, v in combo.items())),
+            launch=launch,
+        )
+        lines = [m.group(0) for m in wanted.finditer(printed.get("output", ""))]
+        return {
+            "args": combo,
+            "hit": bool(lines),
+            "lines": lines,
+            "verdict": "ok" if lines else found["verdict"],
+            "why": "" if lines else found.get("why", ""),
+            "seconds": found.get("seconds"),
+        }
+
+    runs: list[dict] = []
+    hits = 0
+    with ThreadPoolExecutor(max_workers=int(lanes)) as pool:
+        pending = {pool.submit(one_run, combo): combo for combo in combos}
+        for done in as_completed(pending):
+            result = done.result()
+            runs.append(result)
+            hits += result["hit"]
+            if first and hits >= first:
+                for other in pending:
+                    other.cancel()
+                break
+    order = {json.dumps(c, sort_keys=True): i for i, c in enumerate(combos)}
+    runs.sort(key=lambda r: order[json.dumps(r["args"], sort_keys=True)])
+    answer = {
+        "script": (
+            path.relative_to(here).as_posix()
+            if path.is_relative_to(here)
+            else str(path)
+        ),
+        "pattern": pattern,
+        "build": build,
+        "combinations": len(combos),
+        "flown": len(runs),
+        "hits": [{"args": r["args"], "lines": r["lines"]} for r in runs if r["hit"]],
+        "runs": runs,
+        "cached": False,
+    }
+    if build:
+        kept.parent.mkdir(parents=True, exist_ok=True)
+        with kept.open("w", encoding="utf-8", newline="\n") as file:
+            file.write(json.dumps(answer, indent=2) + "\n")
+    return answer
+
+
 @operation("engine.run")
 def ran(
     script: Annotated[str, Param("the scene script, as a path under the project")],

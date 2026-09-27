@@ -850,31 +850,6 @@ the first twenty make.
 
 ## Block S — Playing the game, not only rendering it
 
-### §PW250 A sweep of a script over arguments
-
-Found in Starship's RK81 (2026-09-27), choosing trailer shots. A shot needs a run where
-the moment happens: a pulse across a full wave, an evolution taken, a Foreman breaking.
-Which seed and pilot policy give one is found only by flying the game. The project's
-scene script prints `EVENT tick=N <what>` lines in a scan mode, and the agent ran it by
-hand, seed after seed and policy after policy (seven headless runs of about a minute
-each), reading each log for the event. Two runs with the evolution recipe dealt showed
-it was never taken, because the pilot's pick list did not name it; the next change to
-the list changed the whole run.
-
-This is a sweep: a scene script, a grid of arguments (seeds, policies), and a pattern
-the log must show. `search.sweep` searches a rig's values against a spec, and
-`capture.run` runs one script once, so neither fits.
-
-polyweave should run a scene script over an argument grid, in parallel where the machine
-allows (`search.worth_parallel` already says when), collect every line matching a
-pattern with the arguments that produced it, and stop at the first `n` hits if asked.
-The answer lists, for each hit, the arguments and the lines (`EVENT tick=7469 evolution
-Ring Gunner` under seed SWEEPING, policy list:...), and records the sweep so it is not
-flown again for the same build.
-
-Done when finding Starship's evolution shot is one call over a seed list, and it returns
-SWEEPING with its tick.
-
 ### §PW270 Nodes addressed by what they are
 
 Found keeping Cottony's flows (PW217). Cottony builds its screens in code and names few

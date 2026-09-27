@@ -215,6 +215,18 @@ picture had the environment hold. Where every picture is one size, that size is 
 `applied` says; a picture at another size than the one asked fails the environment as
 `capture.differs`, whatever the script printed.
 
+**A moment is found by sweeping, not by flying seed after seed** (§PW250). A trailer
+shot, a repro or a balance case needs a run where something happens, and which seed and
+policy give one is found only by playing. `engine.sweep` runs one scene script, headless,
+over every combination of a `grid` of arguments (each run given `--<name>=<value>` after
+`--`, besides `args`), `lanes` at a time, and keeps the runs whose output has a line
+matching `pattern`: `hits` lists each one's arguments and matching lines, `runs` every
+combination's verdict, and `first` stops once that many have hit. Each run reads its own
+output, not the shared log file. The sweep is recorded under `.polyweave/sweeps/`, keyed by
+the script's hash, the grid, the pattern, the arguments and the build (the git commit and
+a hash of what is uncommitted, polyweave's own work folder left out), so the same sweep of
+the same build answers from the record with `cached` true, and `again` flies it anyway.
+
 **A shot is every frame between two marks** (§PW249). A trailer is cut from sequences, not
 stills: every frame of a deterministic run between two moments, at a fixed rate.
 `capture.movie` runs a scene script through the offscreen route with Godot's Movie Maker

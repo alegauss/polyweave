@@ -78,7 +78,6 @@
 
 ## Block S — Playing the game, not only rendering it
 
-- 📋 **PW250** (deps: —) **finding a seed where a game shows a moment means flying it by hand, one seed at a time** — A trailer shot, a repro or a balance case each needs such a run, and a sweep over arguments with a log pattern answers it in one call. → §PW250
 - 📋 **PW270** (deps: —) **a kept flow names nodes by Godot's generated names, so any node added before them breaks it** — Cottony names few of its nodes, so its flows click and expect at @Node2D@14-style paths that a reordering of its tree renumbers. → §PW270
 - 📋 **PW271** (deps: —) **a flow that needs many moves costs thousands of calls, so losing a later Cottony level was never kept** — Each command-line call is a process of its own and a fresh save unlocks only level 1, so after two hours and ten sessions the explorer gave up. → §PW271
 

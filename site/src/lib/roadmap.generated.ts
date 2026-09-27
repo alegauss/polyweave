@@ -43,7 +43,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "P", title: "Music and sound a game can ship", open: 2 },
   { block: "Q", title: "Words held to the world", open: 1 },
   { block: "R", title: "Levels measured before a person plays them", open: 5 },
-  { block: "S", title: "Playing the game, not only rendering it", open: 3 },
+  { block: "S", title: "Playing the game, not only rendering it", open: 2 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
 ];
 
@@ -243,13 +243,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "Cottony's levels are still tuned by a curve nobody measured",
     why: "The block is proven only when its first consumer's shipped levels are declared, compiled, probed and accepted here, and make_levels.py has nothing left to do.",
     deps: ["PW204", "PW205"],
-  },
-  {
-    id: "PW250",
-    block: "S",
-    symptom: "finding a seed where a game shows a moment means flying it by hand, one seed at a time",
-    why: "A trailer shot, a repro or a balance case each needs such a run, and a sweep over arguments with a log pattern answers it in one call.",
-    deps: [],
   },
   {
     id: "PW270",

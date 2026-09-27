@@ -73,7 +73,8 @@ TOOL_BUDGET = 4500
 #: 73,200 at 72,797 for game.set and input's hold and release (§PW216, §PW217).
 #: 73,800 at 73,240 for provenance.generated (§PW248).
 #: 74,600 at 74,018 for capture.movie (§PW249).
-LIST_BUDGET = 74600
+#: 75,800 at 75,219 for engine.sweep (§PW250).
+LIST_BUDGET = 75800
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

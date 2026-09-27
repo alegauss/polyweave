@@ -1202,6 +1202,11 @@ CODES: dict[str, Code] = {
         when="a typo in the addon's name",
         doors=("name one the refusal lists",),
     ),
+    "engine.bad-grid": Code(
+        means="a sweep's grid gives an argument no values, or values not as a list",
+        when="a grid of scalars, or an empty one",
+        doors=('give grid as {"seed": [1, 2, 3]}, one list per argument',),
+    ),
     "engine.no-script": Code(
         means="the scene script named does not exist",
         when="a path relative to somewhere other than the project root",
