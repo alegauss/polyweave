@@ -326,6 +326,25 @@ The measure is the census Block H uses: which of Starship's text and character a
 are declared, checked and judged through polyweave, and which still sit in scripts. A
 string left in GDScript is a line this adoption has not reached, and the count says so.
 
+### §PW243 Real line breaks in the string table
+
+Found in Spinhold (starship RK73). Its string table (`game/text/strings.csv`, Godot's
+translation CSV) first held some lines with a real line break inside a quoted cell, as
+Godot's importer accepts. `words.check` read those cells with the break removed and the
+two lines glued together without a space, so "right stick / J L" followed by "DASH  RB"
+was checked as the word `LDASH`, "REPLAY OVER" and "FIRE" as `OVERFIRE`, and both were
+reported as unknown names; `words.too-long` also measured the glued line as one.
+
+The spec says a line is split "at a newline or Godot's escaped \n", so a real newline
+should split the cell as the escaped one does. The project moved to the escaped form,
+which works, but a table another tool writes with real newlines will still misread.
+
+Split a cell at a real line break exactly as at `\n` before reading words and measuring
+lines, and add a test with a multi-line quoted cell.
+
+Done when a quoted cell holding a real line break checks as the same lines as the
+escaped form, with no glued words.
+
 ## Block R — Levels measured before a person plays them
 
 ### §PW201 Whether a bot's win rate says how hard a level feels
