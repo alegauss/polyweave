@@ -176,6 +176,38 @@ def test_a_paint_is_the_two_carves_it_replaces_cell_for_cell():
     assert worn(now) == worn(was)
 
 
+def test_a_paint_whose_mark_sits_between_cell_centres_is_named():
+    """§PW252: the Viglet V's blush sat between cell centres, and built clean."""
+    # Cell centres sit at .5 steps on this grid, so 0.6 to 1.4 holds none of them.
+    between = {"id": "blush_marks", "op": "plate", "rect": [-3, 0.6, 2, 0.8],
+               "depth": 12, "front": -6}
+    paint = {"id": "face", "op": "paint", "on": "body",
+             "where": ["band", "blush_marks"], "material": "glow"}
+    made = V.voxelize(
+        shape(BODY, BAND, between, paint, voxels={"cell": 1.0}, materials=SEAM)
+    )
+    named = [f for f in made["checks"]["findings"] if f["check"] == "paint"]
+    assert [(f["node"], f["member"]) for f in named] == [("face", "blush_marks")]
+    assert "sits between them" in named[0]["says"]
+
+
+def test_a_paint_that_paints_its_cells_says_nothing():
+    paint = {"id": "seam", "op": "paint", "on": "body", "where": "band",
+             "material": "glow"}
+    made = V.voxelize(shape(BODY, BAND, paint, voxels={"cell": 1.0}, materials=SEAM))
+    assert [f for f in made["checks"]["findings"] if f["check"] == "paint"] == []
+
+
+def test_a_material_no_cell_wears_is_named():
+    made = V.voxelize(
+        shape(BODY, voxels={"cell": 1.0}, materials={"glow": {}, "blush": {}})
+    )
+    unworn = sorted(
+        f["material"] for f in made["checks"]["findings"] if f["check"] == "material"
+    )
+    assert unworn == ["blush", "glow"]
+
+
 def test_a_paint_that_does_not_say_where_is_refused():
     paint = {"id": "seam", "op": "paint", "on": "body", "material": "glow"}
     with pytest.raises(PolyweaveError) as refused:

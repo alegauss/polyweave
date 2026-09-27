@@ -146,6 +146,7 @@
 - ✅ **PW102** **a Godot project reading a voxel model must write its own loader and MultiMesh setup** — A polyweave_voxels addon installs into a Godot project and reads a voxel model into a resource with a ready MultiMesh, checked in Godot 4.7 (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW122** **a voxel model's cubes mesh is refused when a material carries a game key or its colours came from a texture** — A voxel model's cubes mesh wears its palette with only the keys the shader has, so game keys ride in the cells alone and found colours are materials.
 - ✅ **PW103** **a family of models that differ in a few numbers is one document copied per member** — A document declares [variants] overriding parameters and material keys, and a build writes every member under its own name, read back side by side (design recorded in `docs/specs/geometry.md`).
+- ✅ **PW252** **a paint whose marks cover none of its body's cells builds clean, and the detail is silently missing** — A voxel build names each paint member that covers none of its body's cells, and each declared material no cell wears, as findings (design recorded in `docs/specs/geometry.md`).
 
 ## Block J — A bar a person sets once
 

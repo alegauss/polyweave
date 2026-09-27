@@ -30,7 +30,6 @@
 
 ## Block I — Voxel models from a declaration
 
-- 📋 **PW252** (deps: —) **a paint whose marks cover none of its body's cells builds clean, and the detail is silently missing** — A face lost its smile and blush with findings empty, and only a count of materials hinted at it. → §PW252
 - 📋 **PW253** (deps: —) **a voxel preview's front view puts +x where a camera at -z sees -x, so an asymmetric model reads mirrored** — The first asymmetric declaration was corrected the wrong way from the preview, and only a capture in the engine showed it. → §PW253
 - 📋 **PW262** (deps: —) **a one-cell paint region centred on a cell boundary silently takes both cells, so a row of mullions paints a whole face** — Every fine detail on a voxel face is a thin region, and today the fault is found only by counting cells in a preview. → §PW262
 - 📋 **PW263** (deps: —) **geometry.fit scores at the reference's own aspect, so a declaration held to another box is squeezed to its range edges** — A game's hitbox fixes a model's box, and a fit that cannot tell shape from box returns a worse model as the best. → §PW263

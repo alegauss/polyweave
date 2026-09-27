@@ -613,7 +613,12 @@ what they wear. The cells are exactly the body's, and the material lands only wh
 `where` covers them, which is what `carve(body, carve(body, band))` joined back onto the
 body used to spell in three nodes. `describe` reads it back as "body painted glow where
 band". Triangles have no cells to repaint, so a declaration with no `[voxels]` is refused
-at the write (`geom.bad-voxels`) with that remedy; inside a voxel build a traced op's
+at the write (`geom.bad-voxels`) with that remedy. **A paint that paints nothing is a
+finding** (§PW252): a member of `where` covering none of `on`'s cells, most often a mark
+one cell high placed between cell centres, is named (`check: paint`, with the node, the
+member, whether it takes any centre of the grid at all, and how far the body's nearest
+cell sits from its middle), and so is a material the declaration names and no cell wears
+(`check: material`), which used to show only as one fewer in the reading's count; inside a voxel build a traced op's
 mesh passes the body through.
 
 **A model faces -z** (§PW236), with y up and x to its right, which is §6's forward and

@@ -354,26 +354,6 @@ Done when RK131's 0.7 ms is one call against HEAD, and the answer says how sure 
 
 ## Block I — Voxel models from a declaration
 
-### §PW252 A paint that paints nothing is a finding
-
-Found in Starship's RK86 (2026-09-27), declaring the Viglet V
-(`art/voxels/viglet_v.toml`) at cell 0.05. Two `paint` nodes, `face: eyed painted blush
-where blush_marks` and the smile half of `eyed: arm painted eye where eye_marks and
-smile_marks`, took no cell: their marks were cubes 0.05 high, one cell, placed between
-cell centres, so no centre fell inside them. The build said `status: built`, `findings:
-[]`, and `says` counted "7 materials" where the document declares 8. The only trace was
-that count; the face came out with eyes and no smile or blush, found by looking at the
-preview.
-
-A `paint` whose `where` covers none of `on`'s cells, or only part of what it lists (one
-member of a list covering nothing), is a mistake every time. The build should report it
-as a finding naming the node and the member, with the nearest cells of `on` and how far
-the mark sits from them. The same holds for a declared material no cell wears, which
-should be named rather than left to a count.
-
-Done when the first viglet_v draft reports `blush_marks` and `smile_marks` as painting
-nothing, and `blush` as a material no cell wears.
-
 ### §PW253 A front view that is the camera's
 
 Found in Starship's RK86 (2026-09-27), building `art/voxels/viglet_v.toml`, an

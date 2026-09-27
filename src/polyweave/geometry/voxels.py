@@ -710,6 +710,11 @@ def voxelize(
     }
     made["says"] = says(made)
     made["checks"] = _checked(made, document, model.resolved["params"], root)
+    # A paint that paints nothing, and a material nothing wears, built clean and were
+    # found only by looking at the preview (§PW252).
+    centres = origin + (index + 0.5) * size
+    made["checks"]["findings"] += _unpainted(model, document, centres, size)
+    made["checks"]["findings"] += _unworn(document, palette_names)
     stated = (document.get("voxels") or {}).get("fracture")
     if stated:
         from .fracture import plan
@@ -742,6 +747,64 @@ def _hollowed(
 
     grid = inside.reshape(tuple(int(n) for n in counts))
     return (grid & ~eroded(grid, int(depth))).reshape(-1)
+
+
+def _unpainted(model: _Model, document: dict, centres: np.ndarray, size: float) -> list:
+    """Each `paint` member that covers none of its body's cells (§PW252).
+
+    A mark one cell high placed between cell centres takes no centre, so it paints
+    nothing and nothing says so. Named with how far it sits from the body's nearest
+    cell, and whether it took any centre of the grid at all, which is the usual cause.
+    """
+    found = []
+    for node in document["nodes"]:
+        if node["op"] != "paint" or not node.get("on"):
+            continue
+        body = model.inside(node["on"], centres).inside
+        for member in _named_list(node.get("where")):
+            if member not in model.stated:
+                continue
+            mark = model.inside(member, centres).inside
+            if (mark & body).any():
+                continue
+            low, high = model.bounds(member)
+            middle = (np.asarray(low) + np.asarray(high)) / 2.0
+            cells = centres[body]
+            apart = np.linalg.norm(cells - middle, axis=1)
+            gap = float(np.min(apart)) if len(cells) else 0.0
+            cause = (
+                "it takes no cell centre of the grid at all, so it sits between them"
+                if not mark.any()
+                else f"its cells miss {node['on']}'s"
+            )
+            found.append(
+                {
+                    "check": "paint",
+                    "says": f"{node['id']} paints nothing where {member}: {cause}; "
+                    f"{node['on']}'s nearest cell is {gap:.3g} from its middle, "
+                    f"{gap / size:.1f} cells",
+                    "cells": [],
+                    "count": 0,
+                    "node": node["id"],
+                    "member": member,
+                }
+            )
+    return found
+
+
+def _unworn(document: dict, worn: list[str]) -> list:
+    """Each material the declaration names that no cell ended up wearing (§PW252)."""
+    return [
+        {
+            "check": "material",
+            "says": f"no cell wears {name}, which the declaration names",
+            "cells": [],
+            "count": 0,
+            "material": name,
+        }
+        for name in document.get("materials") or {}
+        if name not in worn
+    ]
 
 
 def _checked(made: dict, document: dict, params: dict, root: str | Path) -> dict:
