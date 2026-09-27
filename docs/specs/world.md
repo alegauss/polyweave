@@ -104,6 +104,13 @@ A column whose header starts with an underscore is one Godot skips; `[words] spe
 
 A `{placeholder}`, a `%s` and a BBCode tag are not read as words.
 
+**A cell's line break is a line break however it is written** (§PW243). Godot's importer
+takes a quoted cell holding a real line break as well as one holding the escaped `\n`, so
+the table is read as one stream and a real break, `\n` or `\r\n`, splits the cell exactly
+as the escaped one does, both for the words and for the length of each line. Read line by
+line, the halves were glued: "REPLAY OVER" over "FIRE" came back as the unknown name
+`OVERFIRE`.
+
 `words.check` also returns `unjudged`: the keys whose current text no person has given a
 verdict on. They do not fail the check, because whether a line obeys the world's rules is
 mechanical and whether it sounds like the world is a person's call.

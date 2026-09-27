@@ -41,7 +41,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "N", title: "Pictures held to a canon", open: 0 },
   { block: "O", title: "A person sees and answers", open: 0 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
-  { block: "Q", title: "Words held to the world", open: 2 },
+  { block: "Q", title: "Words held to the world", open: 1 },
   { block: "R", title: "Levels measured before a person plays them", open: 5 },
   { block: "S", title: "Playing the game, not only rendering it", open: 6 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
@@ -68,13 +68,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent",
     why: "The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question.",
     deps: ["PW57"],
-  },
-  {
-    id: "PW243",
-    block: "Q",
-    symptom: "words.check glues the lines of a cell with a real line break, reading two words as one unknown name",
-    why: "A table with a real newline in a quoted cell, which Godot's importer accepts, fails the check with names that are not in it.",
-    deps: [],
   },
   {
     id: "PW244",

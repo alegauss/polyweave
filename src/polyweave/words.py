@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import csv
 import hashlib
+import io
 import json
 import re
 import textwrap
@@ -70,7 +71,7 @@ def _plain(text: str) -> str:
 
 def _lines(text: str) -> list[str]:
     """The lines a player reads: a newline, or Godot's escaped one, breaks a line."""
-    return _plain(text).replace("\\n", "\n").split("\n")
+    return _plain(text).replace("\\n", "\n").replace("\r\n", "\n").split("\n")
 
 
 def _capitalised(text: str) -> list[str]:
@@ -105,7 +106,10 @@ def table(root: str | Path = ".") -> tuple[Path, list[str], list[dict]]:
             f"[words] table is {where}, and there is no file there",
             "write the translation CSV there, or correct [words] table",
         )
-    reader = csv.reader(text.lstrip("\ufeff").splitlines())
+    # Read as one stream, not line by line (§PW243): a quoted cell may hold a real
+    # line break, as Godot's importer accepts, and lines handed over one at a time
+    # lost it and glued the two halves into a word nobody wrote.
+    reader = csv.reader(io.StringIO(text.lstrip("\ufeff"), newline=""))
     header = next(reader, None)
     if not header or len(header) < 2:
         raise PolyweaveError(

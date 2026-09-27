@@ -89,6 +89,24 @@ def test_an_escaped_newline_breaks_a_line_before_it_is_measured(tmp_path):
     assert _found(tmp_path) == []
 
 
+@pytest.mark.parametrize("gap", ["\n", "\r\n"], ids=["lf", "crlf"])
+def test_a_real_line_break_in_a_quoted_cell_splits_it_as_the_escaped_one(
+    tmp_path, gap
+):
+    """§PW243: "REPLAY OVER" then "FIRE" was read as the unknown name OVERFIRE."""
+    _project(
+        tmp_path,
+        [
+            f'END,"REPLAY OVER{gap}FIRE",Curta.,',
+            f'LONG,"Twenty characters{gap}and twenty more here",Curta.,',
+        ],
+        ordinary=["REPLAY", "OVER", "FIRE"],
+    )
+    checked = words.check(root=str(tmp_path))
+    assert checked["findings"] == []
+    assert checked["rows"] == 2
+
+
 def test_a_silent_speaker_and_an_unknown_one_are_both_reported(tmp_path):
     _project(tmp_path, ["BEEP,Beep.,Bip.,drone", "HI,Hello.,Oi.,bob"])
     assert _found(tmp_path) == [

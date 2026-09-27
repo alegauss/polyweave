@@ -38,7 +38,6 @@
 
 ## Block Q — Words held to the world
 
-- 📋 **PW243** (deps: —) **words.check glues the lines of a cell with a real line break, reading two words as one unknown name** — A table with a real newline in a quoted cell, which Godot's importer accepts, fails the check with names that are not in it. → §PW243
 - 📋 **PW244** (deps: —) **words.check reads the pronoun I's contractions mid-sentence as unknown names, failing ordinary English dialogue** — Every project with English dialogue has to list I'll and I've as ordinary words to pass, which the check should know already. → §PW244
 
 ## Block R — Levels measured before a person plays them
