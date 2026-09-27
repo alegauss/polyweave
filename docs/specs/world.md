@@ -102,7 +102,11 @@ A column whose header starts with an underscore is one Godot skips; `[words] spe
 | `words.unknown-speaker` | `speaker` | a row whose speaker is no entity |
 | `words.hidden-name` | `unshown` | any word of an unshown entity's name that no shown name shares |
 
-A `{placeholder}`, a `%s` and a BBCode tag are not read as words.
+A `{placeholder}`, a `%s` and a BBCode tag are not read as words. In an English locale
+(`en`, `en_GB`, `en-US` and the like) the pronoun's contractions `I'm`, `I'll`, `I've`
+and `I'd` are never names (§PW244): English capitalises them wherever they
+fall, so "Hold still, I've got you" passes with nothing in `[words] ordinary`. Another
+locale still reads them, since there they are no pronoun.
 
 **A cell's line break is a line break however it is written** (§PW243). Godot's importer
 takes a quoted cell holding a real line break as well as one holding the escaped `\n`, so

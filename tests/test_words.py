@@ -107,6 +107,26 @@ def test_a_real_line_break_in_a_quoted_cell_splits_it_as_the_escaped_one(
     assert checked["rows"] == 2
 
 
+def test_the_pronoun_i_and_its_contractions_are_never_names_in_english(tmp_path):
+    """§PW244: "Hold still, I've got you" failed as though I've were a name."""
+    _project(
+        tmp_path,
+        [
+            "A,\"Kill one, I'll top you up\",Curta.,",
+            "B,\"Hold still, I've got you\",Curta.,",
+            "C,\"Wait, I'm here and I'd stay\",Curta.,",
+            "D,SO I'LL HOLD,Curta.,",
+        ],
+        ordinary=["SO", "HOLD"],
+    )
+    assert _found(tmp_path) == []
+
+
+def test_another_locale_still_reads_a_capital_i_word(tmp_path):
+    _project(tmp_path, ["A,Fine.,\"Olha, I'll aqui\","])
+    assert _found(tmp_path) == [("words.unknown-name", "A", "pt_BR", "names")]
+
+
 def test_a_silent_speaker_and_an_unknown_one_are_both_reported(tmp_path):
     _project(tmp_path, ["BEEP,Beep.,Bip.,drone", "HI,Hello.,Oi.,bob"])
     assert _found(tmp_path) == [

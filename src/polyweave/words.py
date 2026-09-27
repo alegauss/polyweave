@@ -57,6 +57,9 @@ _WORD = re.compile(r"[^\W\d_][\w'’-]*")
 #: What is not read as text: a `{placeholder}`, a `%s` and a `[b]` BBCode tag.
 _MARKUP = re.compile(r"\{[^}]*\}|%[a-z]|\[/?[a-z_]+(?:=[^\]]*)?\]", re.I)
 
+#: The English pronoun's contractions, capitalised mid-sentence and never a name.
+_PRONOUN_I = re.compile(r"I['’](?:m|ll|ve|d)", re.I)
+
 #: What ends a sentence, so the word after it may be capitalised without being a name.
 _ENDS = ".!?:…"
 
@@ -250,7 +253,12 @@ def _held(text, row, locale, found, shown, hidden, codes, ordinary, longest) -> 
                 "unshown",
             )
     kept = set().union(*hidden.values()) | set(codes) | shown | ordinary
+    english = re.match(r"en(?:[_-]|$)", locale, re.I) is not None
     for word in dict.fromkeys(_capitalised(plain)):
+        # English writes "I" capitalised wherever it falls, and its contractions with
+        # it (§PW244); they are never names, and no project should have to list them.
+        if english and _PRONOUN_I.fullmatch(word):
+            continue
         if word.casefold() not in kept:
             found(
                 PolyweaveError(

@@ -259,6 +259,7 @@
 - ✅ **PW199** **Whether a line keeps the world's tone has nowhere to be answered but a chat** — words.sheet puts unjudged lines on the review page beside the world's tone; verdict.judge keeps each in a lines canon world.read returns (design recorded in `docs/specs/world.md`).
 - ✅ **PW200 (text half)** **Starship's screen still shows names its world bible replaced** — Starship declares its world in starship.world.toml, factions tied to their styles, and every string passes words.check with none left in scripts.
 - ✅ **PW243** **words.check glues the lines of a cell with a real line break, reading two words as one unknown name** — words.check reads the table as one stream, so a real line break in a quoted cell splits it exactly as the escaped \n does (design recorded in `docs/specs/world.md`).
+- ✅ **PW244** **words.check reads the pronoun I's contractions mid-sentence as unknown names, failing ordinary English dialogue** — In an English locale words.check reads I'm, I'll, I've and I'd as ordinary words, so dialogue passes with nothing listed in [words] ordinary (design recorded in `docs/specs/world.md`).
 
 ## Block R — Levels measured before a person plays them
 

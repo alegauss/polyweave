@@ -38,8 +38,6 @@
 
 ## Block Q — Words held to the world
 
-- 📋 **PW244** (deps: —) **words.check reads the pronoun I's contractions mid-sentence as unknown names, failing ordinary English dialogue** — Every project with English dialogue has to list I'll and I've as ordinary words to pass, which the check should know already. → §PW244
-
 ## Block R — Levels measured before a person plays them
 
 - 📋 **PW202** (deps: PW201 ⏸) **A game's own headless play of a level has no way to report what it measured** — Only the game can play its own rules, so polyweave needs a contract for what the game's probe prints, not a simulator of its own. → §PW202
