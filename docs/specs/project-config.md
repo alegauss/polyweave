@@ -77,6 +77,9 @@ fixed_fps = 60
 frames    = 6000               # the frame budget a scene script is bounded by
 timeout   = 180                # and the wall clock, for a run that never reaches a frame
 
+[driving]
+idle = 600                     # seconds a driven game waits for a call before it quits
+
 [service]
 base    = "https://api.meshy.ai"
 key_env = "MESHY_API_KEY"      # the NAME of the variable, never the value

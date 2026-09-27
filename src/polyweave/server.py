@@ -66,8 +66,9 @@ TOOL_BUDGET = 4500
 #: 61,600 at 60,998 for music.render and sound.synth (§PW187, §PW189), and to 62,800
 #: at 62,199 for sound.buy (§PW190), a whole paid call, and to 64,500 at 63,873 for
 #: `mesh` on the geometry builds and geometry.fit (§PW226, §PW230), and to 65,000 at
-#: 64,589 for capture.run's args and geometry.compare (§PW238, §PW240).
-LIST_BUDGET = 65000
+#: 64,589 for capture.run's args and geometry.compare (§PW238, §PW240), and to 70,500
+#: at 70,138 for the eight game.* operations that drive a held game (§PW213).
+LIST_BUDGET = 70500
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

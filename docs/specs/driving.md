@@ -24,6 +24,8 @@ User arguments after `--`:
 | `--port=N` | the loopback port to listen on; `0`, the default, lets the system choose |
 | `--seed=N` | `seed(N)` before the main scene loads, so the global random functions repeat |
 | `--scene=res://…` | load this scene instead of the main one |
+| `--idle=N` | quit after N seconds with no request; `0`, the default, waits for ever |
+| `offscreen`, `minimized` | the offscreen route's wish for a real window: moved off the desktop, or minimised |
 
 It prints one line once it listens, and nothing is sent before it:
 
@@ -64,8 +66,9 @@ One TCP connection, one JSON object per line each way. A request carries the tok
     {"id": 1, "ok": true, "frame": 0, "result": {…}}
 
 A refused command answers `"ok": false` with `"error"` (a code) and `"message"`, and the
-game is still held. A request whose token is wrong is answered with `driver.bad-token` and
-the connection closed. The driver quits when its connection closes, or on `close`.
+game is still held. A request whose token is wrong is answered with `driver.bad-token`
+and the driver quits. A connection may close and another open, the game held between
+them; the driver quits on `close`, or after `--idle=N` seconds with no request.
 
 `frame` in every answer is the number of frames the driver has let pass since start.
 
@@ -95,6 +98,32 @@ rather than answered as null.
 | `driver.no-method` | a `call` to a method the node does not have |
 | `driver.no-picture` | a `shot` in a run that renders nothing |
 | `driver.off-screen` | a click outside the viewport, where nothing can be hovered |
+
+## The session tools
+
+An agent reaches the driver through the `game.*` operations (§PW213), over MCP or from a
+terminal, where every call is a process of its own. So a session is a file,
+`.polyweave/driving/<session>.json`, naming the game's process, port and token, and each
+call connects, sends one command and reads one answer; the driver keeps the game held
+between connections.
+
+- `game.open` launches the project headless (or through the offscreen route with
+  `display`, so `game.shot` has pixels), waits for the driver's line, and answers the
+  `session`.
+- `game.query`, `game.input`, `game.step`, `game.wait`, `game.call` and `game.shot` each
+  forward one command. `game.query` takes one of `path`, `group` and `of_class`;
+  `game.wait` takes `prop` and `equals` (a JSON value), a `signal`, or a `node`.
+- `game.close` ends the game and says whether it ended.
+
+Every answer carries `frame` and `errors`: the lines the engine printed since the last
+call that match the runner's error pattern, so a script error mid-flow is reported by the
+call that caused it. A driver refusal is raised under its own `driver.*` code. The game
+quits by itself after `[driving] idle` seconds with no call (600 by default), so a session
+an agent forgot never outlives the conversation; a call to it after that is `game.gone`.
+
+    python -m polyweave game.open --root . --seed 7
+    python -m polyweave game.input --session g1a2b3c4d --click UI/Play
+    python -m polyweave game.wait --session g1a2b3c4d --path . --prop level --equals 1 --frames 120
 
 A number arrives as JSON gives it, a float, so `wait … equals` compares numbers as
 numbers: a node's int 42 equals the 42 a caller sent.

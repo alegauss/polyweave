@@ -21,7 +21,8 @@ SKILL_BUDGET = 3_400
 #: 3,300 at 3,239 with a Music row (§PW186): a score is a task no row covered.
 #: 3,400 at 3,318 once the row holds a game's effects too (§PW189, §PW190).
 #: 3,450 once the shape row names geometry.compare too (§PW240).
-REFERENCE_BUDGET = 3_450
+#: 3,600 at 3,563 with a row for driving a game (§PW213).
+REFERENCE_BUDGET = 3_600
 
 
 def test_the_manifest_and_the_marketplace_name_the_plugin():

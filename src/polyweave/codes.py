@@ -45,6 +45,8 @@ AREAS: dict[str, str] = {
     "engine": "running a scene script and reading its verdict",
     "units": "the scale an asset is baked at, against the one the engine draws it at",
     "capture": "the environment a picture of the running game is taken in",
+    "game": "a game held open between an agent's calls",
+    "driver": "the driver inside a held game, answering one command",
     "rig": "fitting a skeleton to a mesh, and moving a pose between skeletons",
     "clip": "motion over time, as something with a name and a duration",
     "texture": "the pixels a service painted, and what has to come back out of them",
@@ -1094,6 +1096,69 @@ CODES: dict[str, Code] = {
         ),
     ),
     # -- engine: running a scene script and reading its verdict ---------------
+    # -- game: a game held open between an agent's calls ----------------------
+    "game.no-driver": Code(
+        means="the project has no polyweave_driver addon to hold the game with",
+        when="a game opened before its driver was installed",
+        doors=("install it with godot.install and addon polyweave_driver",),
+    ),
+    "game.not-listening": Code(
+        means="the game never said where its driver listens",
+        when="a main scene that fails to load, or a game that quits before its first "
+        "frame",
+        doors=("read the log the refusal names",),
+    ),
+    "game.no-session": Code(
+        means="no open session has that name in this project",
+        when="a session closed, one that idled out, or one from another project",
+        doors=("open the game again",),
+    ),
+    "game.gone": Code(
+        means="the game behind the session stopped answering",
+        when="a crash, a script that quit, or [driving] idle seconds with no call",
+        doors=("read the log", "open the game again"),
+    ),
+    "game.bad-target": Code(
+        means="the call did not say what to act on, or said it two ways",
+        when="a query with no path, group or class, or an input with none of its kinds",
+        doors=("give exactly one of the targets the operation lists",),
+    ),
+    "game.refused": Code(
+        means="the driver refused a command without naming why",
+        when="a driver older than this plugin",
+        doors=("install the driver again with godot.install",),
+    ),
+    # -- driver: the driver inside a held game --------------------------------
+    "driver.bad-token": Code(
+        means="the token does not match the one the driver printed",
+        when="a session file from an earlier run of the game",
+        doors=("open the game again",),
+    ),
+    "driver.bad-command": Code(
+        means="a command the driver does not know, or one missing a field",
+        when="a caller written against another version of docs/specs/driving.md",
+        doors=("read the commands in docs/specs/driving.md",),
+    ),
+    "driver.no-node": Code(
+        means="the path, group or class finds nothing in the running game",
+        when="a node not yet created, or a path relative to the wrong node",
+        doors=("query a parent to see what is there", "wait for the node first"),
+    ),
+    "driver.no-method": Code(
+        means="the node has no method of that name",
+        when="a setup method the game does not expose",
+        doors=("call a method the node declares",),
+    ),
+    "driver.no-picture": Code(
+        means="the game draws nothing, so there is no picture to save",
+        when="a shot in a session opened headless",
+        doors=("open the game with display",),
+    ),
+    "driver.off-screen": Code(
+        means="the click lands outside the viewport, where nothing is hovered",
+        when="a point past the declared window size, or a node scrolled off screen",
+        doors=("click inside the viewport", "set display/window/size in project.godot"),
+    ),
     "engine.not-found": Code(
         means="no engine binary could be found to run the script with",
         when="neither [paths] godot, nor $GODOT, nor PATH names one",

@@ -10,6 +10,10 @@
 
 ## Block E — One world with the engine
 
+- 📋 **PW245** (deps: PW25 ✅) **a capture asked at 1920x1080 comes back at the project's window override, since each script applies the size** — PW25 declared the environment, but a picture taken at the wrong size still fails every measurement held to it. → §PW245
+- 📋 **PW249** (deps: —) **a game can be captured as one still, never as the frames of a run between two ticks** — A trailer is cut from frame-perfect sequences, and each project now grabs, names and records every frame by hand. → §PW249
+- 📋 **PW251** (deps: —) **capture.run kills every script at frame 6000, and no parameter raises it** — A capture of a late moment in a run is cut before it prints its line, and the answer blames the script. → §PW251
+
 ## Block F — Motion
 
 ## Block G — Geometry as a declaration
@@ -19,24 +23,42 @@
 - 📋 **PW57** (deps: PW53 ⏸) **every Cottony look gate restates its own floor, so no asset has a bar a search can aim at** — Five check scripts measure after the render is spent, which is a verdict and never a target, and a threshold moved in one of them is invisible to the rest. → §PW57
 - 📋 **PW59** (deps: PW53 ⏸, PW54 ✅, PW55 ✅, PW56 ⏳, PW57, PW58 ✅) **nothing says how much of Cottony still does its own version of what the plugin does** — Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion. → §PW59
 - ⏳ **PW56** (deps: PW57) **twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent** — The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question. → §PW56
+- 📋 **PW258** (deps: PW56 ⏳) **what a change costs a frame is found only by stashing, re-importing and timing both sides by hand** — A design that must hold the frame rate needs that number, and a recorded table goes stale the day other work lands. → §PW258
 
 ## Block I — Voxel models from a declaration
+
+- 📋 **PW252** (deps: —) **a paint whose marks cover none of its body's cells builds clean, and the detail is silently missing** — A face lost its smile and blush with findings empty, and only a count of materials hinted at it. → §PW252
+- 📋 **PW253** (deps: —) **a voxel preview's front view puts +x where a camera at -z sees -x, so an asymmetric model reads mirrored** — The first asymmetric declaration was corrected the wrong way from the preview, and only a capture in the engine showed it. → §PW253
 
 ## Block J — A bar a person sets once
 
 ## Block K — Reached without reading the source
 
+- 📋 **PW246** (deps: —) **capture.run answers ok false with verdict ok and an empty why when only the environment differed** — The reason sits in a nested field, so a caller reads the tool's source to learn why a run that took its pictures failed. → §PW246
+- 📋 **PW247** (deps: —) **a list parameter passed from PowerShell never arrives as JSON, so the CLI refuses it** — The CLI is the documented second way in, and the refusal's remedy is the quoting the shell just broke. → §PW247
+
 ## Block L — What a run leaves as evidence
 
+- 📋 **PW248** (deps: —) **a project cannot ask which files it ships were made by a generator, directly or through their inputs** — Steam's content survey needs that answer, and each project now walks the provenance records by hand to give it. → §PW248
+
 ## Block M — What a game needs beyond the look
+
+- 📋 **PW259** (deps: —) **a visual effect such as a trail or a burst of particles cannot be declared, built or accepted** — A game's effects are as visible as its models, and today each project writes them as its own data and tunes them by eye. → §PW259
 
 ## Block N — Pictures held to a canon
 
 ## Block O — A person sees and answers
 
+- 📋 **PW256** (deps: —) **a sitting shows pictures only, so a person cannot hear a new sound beside the old one and give a verdict** — Every swap of a game's sounds needs a person's ear, and today the verdicts are asked for in chat and never recorded. → §PW256
+
 ## Block P — Music and sound a game can ship
 
+- 📋 **PW254** (deps: —) **a synthesised effect is normalised to a peak alone, so a replacement lands 10 dB louder than the sound it replaces** — A game's mix assumes each effect's loudness, and matching it now means measuring, subtracting and synthesising again by hand. → §PW254
+- 📋 **PW255** (deps: —) **music.render always writes both WAV and OGG, so a game that loads one ships the other or deletes it by hand** — The unused copy is imported and exported, and removing it leaves the render's records half gone. → §PW255
+
 ## Block Q — Words held to the world
+
+- 📋 **PW257** (deps: —) **words.check reads the plural of a declared name as a name the world does not show** — Every enemy and colonist is written in the plural somewhere, so a project hides it as an ordinary word or keeps a standing finding. → §PW257
 
 ## Block R — Levels measured before a person plays them
 
@@ -48,11 +70,11 @@
 
 ## Block S — Playing the game, not only rendering it
 
-- 📋 **PW213** (deps: PW212 ✅) **An agent has no tool that opens a game, acts in it and reads it back within one session** — The driver answers on a socket, and an agent in a terminal reaches polyweave through its tools, so the session needs a door on that surface. → §PW213
-- 📋 **PW214** (deps: PW213) **A flow an agent found by driving the game is lost when the session closes, so nothing replays it** — A test that needs an agent in the loop costs tokens and judgement on every run, so what a session proved has to become a file the runner replays alone. → §PW214
+- 📋 **PW214** (deps: PW213 ✅) **A flow an agent found by driving the game is lost when the session closes, so nothing replays it** — A test that needs an agent in the loop costs tokens and judgement on every run, so what a session proved has to become a file the runner replays alone. → §PW214
 - 📋 **PW215** (deps: PW212 ✅) **Nothing stops the driver addon from shipping inside a release export** — A listener that runs any method it is asked to is a way into the game, so its absence from a player's build has to be checked, not assumed. → §PW215
 - 📋 **PW216** (deps: PW214) **A real-time game has never been driven frame by frame, so the driver is proven on a turn-based board only** — Cottony waits for the player and Starship does not, so pausing the tree between calls is only shown to hold once a shooter's physics and spawns replay the same. → §PW216
 - 📋 **PW217** (deps: PW214, PW215, PW216) **Cottony's flow from title screen to a won level is checked by no test, so a broken menu ships unseen** — The block is proven only when its first consumer keeps its main flows as replayed tests in its own release script, beside a clean release check. → §PW217
+- 📋 **PW250** (deps: —) **finding a seed where a game shows a moment means flying it by hand, one seed at a time** — A trailer shot, a repro or a balance case each needs such a run, and a sweep over arguments with a log pattern answers it in one call. → §PW250
 
 ## Block T — Adopting polyweave in a project
 

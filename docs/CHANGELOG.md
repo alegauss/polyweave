@@ -267,6 +267,7 @@
 
 - ✅ **PW211** **Nobody knows if an agent can drive a Godot game from its menu to a won level and get the same result twice** — A GDScript harness drove Cottony from its splash to a won level 1 by input alone, and ten runs agreed to the frame and the board.
 - ✅ **PW212** **A running game cannot be held between two tool calls, so each question an agent asks it costs a fresh launch** — A polyweave_driver addon holds a game by blocking its main loop and answers query, input, step, wait, call and shot over loopback JSON (design recorded in `docs/specs/driving.md`).
+- ✅ **PW213** **An agent has no tool that opens a game, acts in it and reads it back within one session** — game.open, query, input, step, wait, call, shot and close drive a held game over MCP or the CLI, each answer naming the errors it printed (design recorded in `docs/specs/driving.md`).
 
 ## Block T — Adopting polyweave in a project
 

@@ -10,6 +10,77 @@
 
 ## Block E — One world with the engine
 
+### §PW245 The engine takes the declared size
+
+Found in Starship's RK68 (the codex), 2026-09-27. `capture.run` with the default
+`[capture] resolution = [1920, 1080]` ran `.polyweave/drivers/codex_pages.gd`, which
+sets `root.size` from the `resolution=1920x1080` argument, and the answer said `applied:
+1280x720`. Starship's `project.godot` sets `window/size/window_width_override=1280` and
+`window_height_override=720`, and the window override wins over `root.size`, so every
+picture came back at 1280x720. `dev/shot.gd`, the project's older capture script,
+applies neither setting at all.
+
+PW25 made the environment declared and checked, but applying it is still each scene
+script's own code, and each script has to know how its project's window settings
+interact. polyweave knows the resolution before the engine starts: it should put it on
+the engine's own command line (`--resolution WxH`, and the window size overrides as
+project settings where the engine needs them), so the picture is taken at the declared
+size whatever the script does, and a script only has to report what applied.
+
+A data point from the same task: a script that also calls DisplayServer.window_set_size
+before setting root.size got 1920x1080 applied and the environment held, so the
+engine-side fix is that call or the flag.
+
+Worse (RK131): dev/site_shots.gd sets root.size and prints it, so capture.run answered
+holds true at 1920x1080 for a picture that is 1280x720. The environment check believes
+the script's own line; it should read the size of the picture it names.
+
+Done when a capture of a project with a smaller window override comes back at the
+declared resolution, with no change to the scene script.
+
+### §PW249 A capture that keeps every frame of a shot
+
+Found in Starship's RK81 (2026-09-27): the trailer and short clips need frame-perfect
+footage of the game, every frame between two ticks of a deterministic run (a replay, or
+a seed and a scripted pilot), at 4K and 60 a second, with the HUD on or off, a camera
+path, slow motion still recorded at full rate, and the music track started on the shot's
+first frame so the edit can lay it back.
+
+`capture.run` takes one still: it runs a scene script, reads one `expect` line and
+checks the environment. Nothing takes a sequence. So the project writes
+`dev/capture.gd`, which saves a PNG from the viewport on every rendered frame between
+`from` and `to`, and names its shots in `dev/trailer_shots.json`. It has to keep the
+frame count, the tick each frame is at, the resolution (PW245 again) and the record of
+what was flown, all by hand.
+
+polyweave should own `capture.movie`: run a scene script under the engine's fixed frame
+rate (Godot's Movie Maker, `--write-movie`, or its own frame grab), keep the frames
+between two marks the script prints, and write one record for the sequence with the
+environment, frame rate, count, each frame's tick and the inputs. It should say when a
+frame was dropped or the run ended early. Re-taking a shot after an art change is then
+one call, and `provenance_outdated` names the shots a changed model made stale.
+
+Done when Starship's shots are taken by `capture.movie` and `dev/capture.gd` only flies
+the run and prints the marks.
+
+### §PW251 A frame budget the caller sets
+
+Found in Starship's RK81 (2026-09-27). `capture.run` starts the engine with
+`--quit-after 6000` and answers `frame_budget: 6000, bounded: false`, and no parameter
+of the operation (`describe` lists script, expect, root, environment, record, strict,
+args, until_visible, tries) moves it. A scene script that has to fly a run to a late
+moment before its picture (Starship's Mason breaking at tick 6713, the Kiln at 15236) is
+killed at frame 6000, before it prints its `expect` line, and the answer would blame the
+script.
+
+The budget should be a parameter with a stated range, sized by the caller (a shot's last
+tick plus a margin), and `bounded` should say whether the run ended by the budget rather
+than by itself, with a `why` naming the budget when it did. `describe` then lists it
+beside the rest.
+
+Done when a capture past frame 6000 runs to its own end with the budget passed, and one
+cut by the budget says so in `why`.
+
 ## Block F — Motion
 
 ## Block G — Geometry as a declaration
@@ -262,15 +333,158 @@ this is where that is recorded honestly: what still runs by hand, and why the ri
 instead of disappearing. An outcome worth having, stated, beats the same outcome
 unstated.
 
+### §PW258 A change's frame cost, before and after
+
+Found in Starship's RK131 (2026-09-27), adding a sky shader, haze and searchlights
+behind the city. The design says the change must hold the frame rate, so its cost had to
+be known. The project's `dev/perf.gd` times one heavy wave per preset, and the table it
+had recorded (`Graphics.MEASURED`, 2.03 ms at High) was a day stale: other work had
+since raised the same wave to 4.23 ms. So the only honest number was a comparison, and
+it was made by hand: `git stash --include-untracked`, re-import, run perf, `git stash
+pop`, re-import, run perf again, then four more runs for the table.
+
+polyweave should answer "what does this change cost a frame": run a project's timing
+script on the working tree and on a named revision (in a worktree, never stashing the
+user's files), on the same machine and settings, several times each, and report both,
+the difference with its spread, and the machine and driver it was taken on. It should
+record the result beside the script's own record, so a stale table like MEASURED is
+named as stale. PW56 is about how those scripts are started; this is what they are for.
+
+Done when RK131's 0.7 ms is one call against HEAD, and the answer says how sure it is.
+
 ## Block I — Voxel models from a declaration
+
+### §PW252 A paint that paints nothing is a finding
+
+Found in Starship's RK86 (2026-09-27), declaring the Viglet V
+(`art/voxels/viglet_v.toml`) at cell 0.05. Two `paint` nodes, `face: eyed painted blush
+where blush_marks` and the smile half of `eyed: arm painted eye where eye_marks and
+smile_marks`, took no cell: their marks were cubes 0.05 high, one cell, placed between
+cell centres, so no centre fell inside them. The build said `status: built`, `findings:
+[]`, and `says` counted "7 materials" where the document declares 8. The only trace was
+that count; the face came out with eyes and no smile or blush, found by looking at the
+preview.
+
+A `paint` whose `where` covers none of `on`'s cells, or only part of what it lists (one
+member of a list covering nothing), is a mistake every time. The build should report it
+as a finding naming the node and the member, with the nearest cells of `on` and how far
+the mark sits from them. The same holds for a declared material no cell wears, which
+should be named rather than left to a count.
+
+Done when the first viglet_v draft reports `blush_marks` and `smile_marks` as painting
+nothing, and `blush` as a material no cell wears.
+
+### §PW253 A front view that is the camera's
+
+Found in Starship's RK86 (2026-09-27), building `art/voxels/viglet_v.toml`, an
+asymmetric badge whose warm side was declared at +x. The build's preview
+(`viglet_v.voxels.png`), view "front, from -z", drew that side on the right. In the game
+the model is turned to face its camera, which is the same as a camera standing at -z
+looking toward +z, and there +x is on the left, which is where the capture showed it. So
+the preview's front view is the model mirrored left to right against a real camera at
+-z.
+
+The cost: a symmetric actor never shows it, so the first asymmetric declaration (a
+badge, a lettered sign, a face with one scar) is fixed by hand in the wrong direction or
+flipped after a capture. Here the declaration's warm side had to move to -x after the
+capture disagreed with the preview.
+
+Either draw the front view as a camera at -z sees it, or label it with what it is (e.g.
+"front, from -z, mirrored"), and say in the spec which way +x reads in each view. A test
+builds a model with one marked cell at +x and checks which side of each view it lands
+on.
+
+Done when the viglet_v preview and a Godot capture of it facing its camera agree on
+which side the warm side is.
 
 ## Block J — A bar a person sets once
 
 ## Block K — Reached without reading the source
 
+### §PW246 One field says why a capture failed
+
+Found in Starship's RK68 (the codex), 2026-09-27, over the MCP tool `capture_run`. A run
+that took all five pictures and exited 0 answered `"ok": false`, `"verdict": "ok"`,
+`"why": ""`, `"found": {}` and `"artefacts": []`. The reason, that the resolution was
+applied at 1280x720 and not the 1920x1080 asked, was only in `environment.why`, and it
+took reading `capture.py` (the `against["holds"]` branch) to learn that this alone had
+turned `ok` false.
+
+An answer should read in one field: where `ok` is false, the top-level `why` says why
+(copying `environment.why` when the environment is the cause), and `verdict` names the
+cause (e.g. `environment-differs`) rather than `ok`. The pictures the script did write
+should be listed under `artefacts` either way, found from the `expect` lines, so the
+caller does not go back to the log for the paths it printed.
+
+Done when the same run answers with a non-empty `why`, a verdict that is not `ok`, and
+the five paths.
+
+### §PW247 A list the shell cannot mangle
+
+Found in Starship's RK68, 2026-09-27. From PowerShell, `python -m polyweave capture.run
+--script dev/shot.gd --expect SHOT --args '["--scene=...", "--frames=45"]'` was refused
+with `op.bad-type: --args is a list, and '[--scene=..., --frames=45]' does not read as
+one`: Windows PowerShell 5.1 strips the inner double quotes when it hands a
+single-quoted argument to a native program, so the JSON never arrives. The remedy, "pass
+it as JSON", is the thing that failed. The MCP tool took the same list at once, but
+AGENTS.md names the CLI as the second way in, and a shell is where a session often is.
+
+The CLI should take a list in a form no shell mangles: the flag repeated (`--args
+--scene=... --args --frames=45`), or a file (`--args @path.json`), with the refusal
+naming both. `describe` should state the forms a list accepts.
+
+Done when that call works from PowerShell 5.1 and from bash with no JSON quoting.
+
 ## Block L — What a run leaves as evidence
 
+### §PW248 What a build ships that a generator made
+
+Found in Starship's RK78 (2026-09-27), the task that takes the generated art out of the
+shipped game. Steam's content survey asks whether a game ships generated content, and
+the honest answer needs to know, for every file the build ships, whether a generator
+made it (Meshy, Ideogram, any `mesh.buy`, `picture.buy` or `sound.buy`), directly or
+through its inputs. polyweave has every piece: each artefact's `.prov.json` names its
+inputs, and the purchase ledger names what was bought. It has no read that joins them.
+`provenance_credits` answers for sounds' licences only, and `provenance_dependents` goes
+from an input forward, one file at a time.
+
+So the project walked it by hand: it read the records to see that
+`assets/voxels/drone.voxels.json` has one input, `art/voxels/drone.toml`, while
+`assets/models/drone.glb` descends from `tools/art/meshy/drone.stripped.glb`, and it
+wrote its own check (`check_authored_art` in `dev/check.gd`) that walks Godot's
+dependencies and refuses a path under `assets/models/`, `tools/` or `art/`. That check
+knows directories and not lineage.
+
+polyweave should answer a new `provenance_generated` operation: given the paths a build
+ships (or a project's export filter), the ones whose lineage reaches a purchase or a
+generator, each with the chain and the service, and the ones with no record at all. With
+it, the survey's answer and the project's gate are one call.
+
+Done when Starship's check asks polyweave instead of listing directories, and a planted
+Meshy mesh is named with its chain.
+
 ## Block M — What a game needs beyond the look
+
+### §PW259 Visual effects as declarations
+
+Found in Starship's RK136 (2026-09-27): cosmetic trails, the ribbon of light and the
+particles a ship leaves behind it, one look per crew family (sparks, a heat shimmer,
+rings, a sunlit band, little lights) and one for the Holders. Starship's rule is that
+every visible part is declared and built through polyweave and a person accepts its
+look. polyweave declares geometry, voxels, pictures, sounds and music, but a visual
+effect has no declaration: its `effects` are sfxr sounds. So the trails are written as
+game data (a Resource per trail: colours, width, life, particle counts and shapes) and
+tuned by looking at captures, which is the tuning by eye the project's rules forbid.
+
+polyweave should take a declaration of a particle or ribbon effect (emission, life,
+colour over life as a gradient, size over life, shape, blend, a budget of particles) and
+build it into what the engine plays (for Godot, a GPUParticles3D or a ribbon mesh and
+its material, with a record), render it over a few frames on a neutral background as a
+look a person can judge, and hold it to an acceptance spec (how long it lives, how far
+it reaches, its brightness, its particle count against a budget).
+
+Done when Starship's seven trails are seven declarations built and accepted through
+polyweave, and the game reads what was built instead of its own data.
 
 ## Block N — Pictures held to a canon
 
@@ -297,6 +511,26 @@ since a reference the service ignores is dropped without an error.
 
 ## Block O — A person sees and answers
 
+### §PW256 A sitting for sounds
+
+Found in Starship's RK115 (2026-09-27). Its design says a person listens before the old
+sounds go, a verdict per effect, since a synth swap changes how every hit feels. Twelve
+effects and three phase tracks were remade through `sound.synth` and `music.render`, and
+the old ones kept aside in `.polyweave/audio_before/`. Nothing in polyweave can put them
+in front of a person: `verdict.sheet` and `verdict.sitting` lay out pictures, `review`
+serves them, and `verdict.judge` carries words about a look. So the verdicts are asked
+for in a chat message listing file paths, and whatever the person answers is not
+recorded beside the sounds.
+
+A sitting should take sounds as members: each with its new file, the old one it
+replaces, and what `sound.measure` says of both (loudness, peak, length, the seam for a
+loop), played side by side on the review page with the same keep, change or reject
+answer a picture gets, and `verdict.judge` recording it against the sound's record. A
+loop plays looped, so its seam is heard.
+
+Done when Starship's fifteen sounds are one sitting and a person's answers land in their
+records.
+
 ## Block P — Music and sound a game can ship
 
 ### §PW192 Cottony's audio made through polyweave
@@ -305,6 +539,42 @@ The block is proven when its first consumer uses it. Cottony's music and effects
 declared in its `polyweave.toml`, made by `music.render` and `sound.synth`, and held to
 `*.accept.toml` bounds, and its own audio scripts are removed. Anything Cottony needs
 that a second game would not becomes configuration.
+
+### §PW254 An effect made to a loudness
+
+Found in Starship's RK115 (2026-09-27), moving eight effects from a project script to
+`sound.synth`. The game's mix is a table of weights that assumes each effect's loudness,
+so a replacement has to land where the old one was. `sound.synth` normalises an effect
+to `peak` and nothing else, and sfxr's explosions are dense: at the old peaks the new
+kill measured -5.6 dBFS RMS against the old -18.6, the death -5.3 against -16.3, the
+evolution -8.0 against -20.0. A swap like that jumps every hit in the mix.
+
+The workaround was arithmetic by hand, per effect: measure the old sound with
+`sound.measure`, synthesise, measure the new one, and move `peak` down by the
+difference, then synthesise again, since loudness scales with the gain.
+
+An effect should be able to say `loudness = -18.6` (RMS dBFS, as `sound.measure` reports
+it), or `match = "<path of the sound it replaces>"`, and be normalised to it, with
+`peak` then a ceiling that is reported when it binds. The answer states both the
+loudness aimed at and the loudness reached.
+
+Done when Starship's effects declare their loudness instead of a hand-worked peak, and a
+re-synthesis lands each within 0.5 dB of it.
+
+### §PW255 A render in the format the game loads
+
+Found in Starship's RK115 (2026-09-27), rendering the phase music into
+`game/audio/music/phase_<n>`. `music.render` writes both `.wav` and `.ogg`, each with a
+`.prov.json`, and takes no parameter to choose. Starship loads the WAV (its import loops
+it and compresses it for export); an OGG beside it is a second copy Godot imports and
+the build ships unless someone deletes it, and deleting it by hand leaves the render's
+pair of records half gone, which `provenance_verify` then has to be told about.
+
+`[sound.music]`, or the render call, should say which formats the game loads (`format =
+"wav"`, as `[sound.effects]` already does for effects), and the render writes those
+alone, with a record for each. The answer names what it wrote.
+
+Done when Starship's three phases render to WAV alone and `provenance_verify` is clean.
 
 ## Block Q — Words held to the world
 
@@ -325,6 +595,28 @@ Adoption is done when four things are true:
 The measure is the census Block H uses: which of Starship's text and character assets
 are declared, checked and judged through polyweave, and which still sit in scripts. A
 string left in GDScript is a line this adoption has not reached, and the count says so.
+
+### §PW257 A name's plural is the name
+
+Found in Starship's RK122 (2026-09-27). A wave announcement in the world's words,
+`WAVE_GLEANERS,GLEANERS INCOMING - FREE THE HOLDERS`, drew `WAVE_GLEANERS (en) names
+'GLEANERS', which is no name the world shows`, though `docs/design/starship.world.toml`
+declares `[entity.gleaner] name = "Gleaner"`. The check matches a capitalised word to a
+declared name exactly, so the plural of a name the world declares reads as a new name.
+Every entity is spoken of in the plural somewhere (Motes, Lancers, Holders, Foremen), so
+a project either writes its interface in the singular, lists each plural as `ordinary`
+(which then hides a real misspelling of it), or lives with a standing finding.
+
+The check should take a declared name's English plural as the name (Gleaner, Gleaners;
+Foreman, Foremen), with an entity able to state an irregular one (`plural = "Foremen"`),
+and a finding for a word that is only near a name ("Gleeners") should say which name it
+is near.
+
+Starship's RK130 then moved its goals into the table and drew eight more such findings
+in one go: Motes, Lancers, Divers, Gleaners, Sowers, Spurs and Foremen (twice).
+
+Done when Starship's string table passes with GLEANERS in it and no `ordinary` entry for
+it.
 
 ## Block R — Levels measured before a person plays them
 
@@ -460,27 +752,6 @@ the first twenty make.
 
 ## Block S — Playing the game, not only rendering it
 
-### §PW213 Game session tools an agent calls
-
-`game.open` launches the project through the existing engine runner with the driver's
-feature tag and a display where a `shot` is wanted, since `--headless` renders nothing.
-It waits for the token line and returns a session id. `game.query`, `game.input`,
-`game.step`, `game.wait`, `game.call` and `game.shot` each forward one command of the
-PW212 contract, and `game.close` ends the process and says why it ended.
-
-Each answer carries the frame the game is on and any error the engine printed since the
-last call, read with the same error pattern the runner uses. A script error in the
-middle of a flow is then reported by the step that caused it, not found later in a log.
-A session the agent forgot is closed after `[driving] idle` seconds, so no Godot process
-outlives the conversation.
-
-A `game.query` answer is structured and costs few tokens, and a `game.shot` answer is an
-image and costs many. So a shot returns a path and the image's dimensions, and the agent
-chooses to read it, as `capture_run` already does. A shot answers questions about where
-things are and what is on the screen. Whether the screen looks right is still a person's
-verdict and goes to the verdict page, under the non-goal on an agent judging its own
-look.
-
 ### §PW214 A driven flow kept as a test that replays without an agent
 
 Playwright's recorder turns a session somebody clicked through into a script that runs
@@ -560,5 +831,30 @@ many tokens a session spent, recorded in the ledger entry, so the cost of explor
 measured number that later work can reduce. A flow that needed the agent to read the
 source counts as a failure of the tools, under the block on reaching things without
 reading the source, and it is filed as its own line.
+
+### §PW250 A sweep of a script over arguments
+
+Found in Starship's RK81 (2026-09-27), choosing trailer shots. A shot needs a run where
+the moment happens: a pulse across a full wave, an evolution taken, a Foreman breaking.
+Which seed and pilot policy give one is found only by flying the game. The project's
+scene script prints `EVENT tick=N <what>` lines in a scan mode, and the agent ran it by
+hand, seed after seed and policy after policy (seven headless runs of about a minute
+each), reading each log for the event. Two runs with the evolution recipe dealt showed
+it was never taken, because the pilot's pick list did not name it; the next change to
+the list changed the whole run.
+
+This is a sweep: a scene script, a grid of arguments (seeds, policies), and a pattern
+the log must show. `search.sweep` searches a rig's values against a spec, and
+`capture.run` runs one script once, so neither fits.
+
+polyweave should run a scene script over an argument grid, in parallel where the machine
+allows (`search.worth_parallel` already says when), collect every line matching a
+pattern with the arguments that produced it, and stop at the first `n` hits if asked.
+The answer lists, for each hit, the arguments and the lines (`EVENT tick=7469 evolution
+Ring Gunner` under seed SWEEPING, policy list:...), and records the sweep so it is not
+flown again for the same build.
+
+Done when finding Starship's evolution shot is one call over a seed list, and it returns
+SWEEPING with its tick.
 
 ## Block T — Adopting polyweave in a project

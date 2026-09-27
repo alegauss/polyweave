@@ -19,6 +19,8 @@ var token := ""
 var buffer := PackedByteArray()
 var main: Node
 
+## Seconds with no request before the driver quits; 0 waits for ever.
+var idle := 0
 ## Frames let pass since start; every answer carries it.
 var frame := 0
 ## Frames still to pass before holding again, for a `step` or a `wait` in progress.
@@ -39,6 +41,13 @@ func _initialize() -> void:
 			seed(int(arg.get_slice("=", 1)))
 		elif arg.begins_with("--scene="):
 			scene_path = arg.get_slice("=", 1)
+		elif arg.begins_with("--idle="):
+			idle = int(arg.get_slice("=", 1))
+		elif arg == "offscreen":
+			# The offscreen route's wish (offscreen.py): a real window, off the desktop.
+			DisplayServer.window_set_position(Vector2i(-20000, -20000))
+		elif arg == "minimized":
+			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_MINIMIZED)
 	var bound := server.listen(port, "127.0.0.1")
 	if bound != OK:
 		push_error("polyweave_driver: could not listen on port %d (%s)" % [port, bound])
@@ -140,8 +149,18 @@ func _hold() -> bool:
 
 
 func _next_request():
+	# A caller may connect once per command (a command line is a process a call), so a
+	# connection closing leaves the game held for the next one. Only `close`, or no
+	# request for `--idle` seconds, ends the run, so a forgotten session never outlives
+	# the conversation that opened it.
+	var since := Time.get_ticks_msec()
 	while true:
-		if peer == null:
+		if idle > 0 and Time.get_ticks_msec() - since > idle * 1000:
+			print("polyweave_driver: idle for %d s, quitting" % idle)
+			return null
+		if peer == null or peer.get_status() != StreamPeerTCP.STATUS_CONNECTED:
+			peer = null
+			buffer = PackedByteArray()
 			if server.is_connection_available():
 				peer = server.take_connection()
 			else:
@@ -149,7 +168,7 @@ func _next_request():
 				continue
 		peer.poll()
 		if peer.get_status() != StreamPeerTCP.STATUS_CONNECTED:
-			return null
+			continue
 		var available := peer.get_available_bytes()
 		if available > 0:
 			var got: Array = peer.get_data(available)

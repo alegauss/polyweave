@@ -162,6 +162,11 @@ DEFAULTS: dict[str, Any] = {
         "frames": 6000,
         "timeout": 180,
     },
+    "driving": {
+        # Seconds a driven game waits for its next call before it quits, so a session an
+        # agent forgot never outlives the conversation that opened it (§PW213).
+        "idle": 600,
+    },
     "service": {
         "base": "",  # naming no service is how a project that buys nothing says so
         "key_env": "",

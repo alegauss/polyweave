@@ -12,11 +12,13 @@ import os
 import re
 import socket
 import subprocess
+import time
 from pathlib import Path
 
 import pytest
 
-from polyweave import engine, godot
+from polyweave import driving, engine, godot
+from polyweave.errors import PolyweaveError
 
 #: A game with one button that counts its presses, a counter that moves every frame, and
 #: a timer's worth of state: enough to see input, frames and holding at work.
@@ -237,6 +239,90 @@ def test_a_wrong_token_is_refused_and_the_driver_quits(tmp_path):
     assert answer["error"] == "driver.bad-token"
     assert session.process.wait(timeout=30) == 1
     session.socket.close()
+
+
+def test_a_session_is_opened_driven_and_closed_through_the_operations(tmp_path):
+    """§PW213: every call a connection of its own, the game held between them."""
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    root = str(game(tmp_path))
+    opened = driving.opened(root, seed=7)
+    session = opened["session"]
+    try:
+        assert opened["frame"] == 0
+        found = driving.queried(session, path="UI/Press", root=root)
+        assert found["result"][0]["properties"]["text"] == "PRESS"
+        assert driving.inputted(session, click="UI/Press", root=root)["result"] == {
+            "at": [200, 140]
+        }
+        stepped = driving.stepped(session, frames=2, root=root)
+        assert stepped["frame"] == 2
+        met = driving.waited(session, path=".", prop="presses", equals="1", root=root)
+        assert met["result"] == {"met": True, "frames": 0}
+        assert (
+            driving.called(session, path=".", method="setup", args=[5], root=root)[
+                "result"
+            ]
+            == 5
+        )
+        with pytest.raises(PolyweaveError) as refused:
+            driving.queried(session, path="Nowhere", root=root)
+        assert refused.value.code == "driver.no-node"
+        with pytest.raises(PolyweaveError) as headless:
+            driving.shot(session, out="shots/x.png", root=root)
+        assert headless.value.code == "driver.no-picture"
+    finally:
+        ended = driving.closed(session, root=root)
+    assert ended["closed"] is True
+    with pytest.raises(PolyweaveError) as gone:
+        driving.queried(session, path=".", root=root)
+    assert gone.value.code == "game.no-session"
+
+
+def test_an_error_the_game_prints_is_reported_by_the_call_that_caused_it(tmp_path):
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    root = game(tmp_path)
+    (root / "main.gd").write_text(
+        MAIN
+        + '\nfunc broken() -> void:\n\tpush_error("SCRIPT ERROR: the vault jammed")\n',
+        encoding="utf-8",
+    )
+    session = driving.opened(str(root))["session"]
+    try:
+        quiet = driving.stepped(session, root=str(root))
+        assert quiet["errors"] == []
+        loud = driving.called(session, path=".", method="broken", root=str(root))
+        assert any("the vault jammed" in line for line in loud["errors"])
+        assert driving.stepped(session, root=str(root))["errors"] == []
+    finally:
+        driving.closed(session, root=str(root))
+
+
+def test_a_session_nobody_calls_ends_on_its_own(tmp_path):
+    """A session an agent forgot never outlives the conversation (§PW213)."""
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    root = game(tmp_path)
+    (root / "polyweave.toml").write_text("[driving]\nidle = 2\n", encoding="utf-8")
+    session = driving.opened(str(root))["session"]
+    record = json.loads(
+        (root / ".polyweave" / "driving" / f"{session}.json").read_text()
+    )
+    deadline = time.monotonic() + 30
+    while driving._alive(record["pid"]) and time.monotonic() < deadline:
+        time.sleep(0.5)
+    assert not driving._alive(record["pid"])
+    with pytest.raises(PolyweaveError) as gone:
+        driving.stepped(session, root=str(root))
+    assert gone.value.code == "game.gone"
+
+
+def test_a_project_without_the_driver_is_refused_before_anything_launches(tmp_path):
+    (tmp_path / "project.godot").write_text("config_version=5\n", encoding="utf-8")
+    with pytest.raises(PolyweaveError) as refused:
+        driving.opened(str(tmp_path))
+    assert refused.value.code == "game.no-driver"
 
 
 def test_the_same_commands_give_the_same_game(tmp_path):
