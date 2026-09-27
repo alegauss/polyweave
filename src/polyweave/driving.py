@@ -176,9 +176,15 @@ def opened(
         "log": str(log),
         "read": found.end(),
         "display": bool(display),
+        "seed": int(seed or 0),
+        "scene": scene,
+        # Every command that answered, in order, for game.keep (§PW214).
+        "journal": [],
     }
     (folder / f"{session}.json").write_text(json.dumps(record), encoding="utf-8")
-    first = send(session, "query", root=here, path="/root", properties=["name"])
+    first = send(
+        session, "query", root=here, journal=False, path="/root", properties=["name"]
+    )
     return {
         "session": session,
         "frame": first["frame"],
@@ -187,8 +193,19 @@ def opened(
     }
 
 
-def send(session: str, cmd: str, *, root: str | Path = ".", **fields: Any) -> dict:
-    """One command to a held game, and its answer with what the engine printed since."""
+def send(
+    session: str,
+    cmd: str,
+    *,
+    root: str | Path = ".",
+    journal: bool = True,
+    **fields: Any,
+) -> dict:
+    """One command to a held game, and its answer with what the engine printed since.
+
+    An answered command is journalled, and the answer's `step` is its place in the
+    journal, which is how game.keep is told what to drop and what to hold a flow to.
+    """
     record = _session(session, root)
     request = {"token": record["token"], "id": 1, "cmd": cmd, **fields}
     try:
@@ -222,10 +239,21 @@ def send(session: str, cmd: str, *, root: str | Path = ".", **fields: Any) -> di
             "correct the command, as the message says; the game is still held",
             detail=printed["text"] or None,
         )
+    step = None
+    if journal and cmd != "close":
+        kept = {"cmd": cmd, **fields}
+        if cmd in ("query", "wait"):
+            kept["answered"] = answer.get("result")
+        record.setdefault("journal", []).append(kept)
+        step = len(record["journal"]) - 1
+        (_folder(root) / f"{session}.json").write_text(
+            json.dumps(record), encoding="utf-8"
+        )
     return {
         "frame": answer.get("frame"),
         "result": answer.get("result"),
         "errors": printed["errors"],
+        "step": step,
     }
 
 
@@ -387,6 +415,168 @@ def shot(
         where = load(root).root / where
     where.parent.mkdir(parents=True, exist_ok=True)
     return send(session, "shot", root=root, out=str(where))
+
+
+#: What a flow file is written as, and the one version of it the driver reads.
+FLOW_FORMAT = 1
+
+#: The line a replayed flow ends on.
+FLOWED = re.compile(
+    r"polyweave_flow: (?P<verdict>passed|failed) (?:steps=(?P<steps>\d+) )?"
+    r"(?:step=(?P<step>\d+) )?frame=(?P<frame>\d+)(?: why=(?P<why>.*))?"
+)
+
+
+def _engine_version(log: str) -> str:
+    found = re.search(r"Godot Engine v(\S+)", log)
+    return found[1] if found else ""
+
+
+def _driver_hash(root: Path) -> str:
+    import hashlib
+
+    where = root / DRIVER.removeprefix("res://")
+    return hashlib.sha256(where.read_bytes()).hexdigest() if where.is_file() else ""
+
+
+@operation("game.keep")
+def kept(
+    session: Annotated[str, _SESSION],
+    *,
+    out: Annotated[str, Param("the flow file to write, under the project's tests")],
+    proves: Annotated[str, Param("what the flow proves, in a sentence")],
+    expect: Annotated[
+        list, Param("the steps of queries whose values the flow must see again")
+    ] = (),
+    drop: Annotated[list, Param("the steps that were wrong turns, left out")] = (),
+    root: Annotated[str, _ROOT] = ".",
+) -> dict:
+    """Write what the session did as a flow that replays without an agent (§PW214).
+
+    Each answer's `step` numbers the journal. Inputs, steps, calls and waits are kept in
+    order; a query is kept only where `expect` names it, as the values it answered; a
+    shot is left out, since a replay draws nothing. Nothing is kept on its own, because
+    a session includes wrong turns.
+    """
+    record = _session(session, root)
+    journal = record.get("journal") or []
+    wanted, dropped = {int(i) for i in expect}, {int(i) for i in drop}
+    wrong = sorted(
+        i for i in wanted if i >= len(journal) or journal[i]["cmd"] != "query"
+    )
+    if wrong:
+        raise PolyweaveError(
+            "game.bad-target",
+            f"step {wrong[0]} is no query this session answered, so there is "
+            "nothing to expect from it",
+            "name in expect the step of a game.query, as its answer numbered it",
+            given=wrong[0],
+        )
+    steps: list[dict] = []
+    for index, entry in enumerate(journal):
+        if index in dropped:
+            continue
+        cmd = entry["cmd"]
+        fields = {k: v for k, v in entry.items() if k != "answered"}
+        if cmd == "query":
+            if index in wanted:
+                for node in entry.get("answered") or ():
+                    for name, value in node["properties"].items():
+                        steps.append(
+                            {
+                                "cmd": "expect",
+                                "path": node["path"],
+                                "property": name,
+                                "equals": value,
+                            }
+                        )
+        elif cmd == "wait":
+            answered = entry.get("answered") or {}
+            steps.append({**fields, "must": bool(answered.get("met", True))})
+        elif cmd != "shot":
+            steps.append(fields)
+    here = load(root).root
+    where = Path(out)
+    where = where if where.is_absolute() else here / where
+    log = Path(record["log"])
+    flow = {
+        "format": FLOW_FORMAT,
+        "proves": proves,
+        "seed": record.get("seed", 0),
+        "scene": record.get("scene", ""),
+        "engine": _engine_version(
+            log.read_text(encoding="utf-8", errors="replace") if log.is_file() else ""
+        ),
+        "driver": _driver_hash(here),
+        "steps": steps,
+    }
+    where.parent.mkdir(parents=True, exist_ok=True)
+    with where.open("w", encoding="utf-8", newline="\n") as written:
+        written.write(json.dumps(flow, indent=2) + "\n")
+    return {
+        "flow": str(where),
+        "steps": len(steps),
+        "expectations": sum(1 for one in steps if one["cmd"] == "expect"),
+        "proves": proves,
+    }
+
+
+@operation("game.replay")
+def replayed(
+    flow: Annotated[str, Param("the flow file game.keep wrote")],
+    *,
+    root: Annotated[str, _ROOT] = ".",
+) -> dict:
+    """Run a kept flow in one launch, no agent: every expectation held or the first that
+    broke, with the frame it broke on (§PW214)."""
+    here = load(root).root
+    where = Path(flow)
+    where = where if where.is_absolute() else here / where
+    if not where.is_file():
+        raise PolyweaveError(
+            "game.no-flow",
+            f"there is no flow at {where}",
+            "write one with game.keep, and name it relative to the project",
+        )
+    stated = json.loads(where.read_text(encoding="utf-8"))
+    if stated.get("format") != FLOW_FORMAT:
+        raise PolyweaveError(
+            "game.no-flow",
+            f"{where.name} is flow format {stated.get('format')!r}, and this reads "
+            f"{FLOW_FORMAT}",
+            "keep the flow again with game.keep",
+        )
+    budget = sum(
+        int(one.get("frames", 1))
+        for one in stated["steps"]
+        if one["cmd"] in ("step", "wait")
+    )
+    found = engine.run(
+        DRIVER.removeprefix("res://"),
+        expect=FLOWED,
+        root=here,
+        headless=True,
+        frames=max(int(load(here).get("engine.frames")), budget + 600),
+        args=("--", f"--flow={where.as_posix()}"),
+    )
+    said = found.get("found") or {}
+    passed = found["ok"] and said.get("verdict") == "passed"
+    log = Path(found["log"]).read_text(encoding="utf-8", errors="replace")
+    moved = {}
+    if stated.get("engine") and _engine_version(log) not in ("", stated["engine"]):
+        moved["engine"] = [stated["engine"], _engine_version(log)]
+    if stated.get("driver") and _driver_hash(here) != stated["driver"]:
+        moved["driver"] = "the driver changed since this flow was kept"
+    return {
+        "ok": passed,
+        "proves": stated.get("proves", ""),
+        "steps": len(stated["steps"]),
+        "frame": int(said["frame"]) if said.get("frame") else None,
+        "failed_step": int(said["step"]) if said.get("step") else None,
+        "why": said.get("why") or ("" if passed else found.get("why", "")),
+        "differs": moved,
+        "log": found["log"],
+    }
 
 
 @operation("game.close")

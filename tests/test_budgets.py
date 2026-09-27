@@ -52,7 +52,8 @@ from polyweave.errors import PolyweaveError
 #: 72,900 with capture.run's args and geometry.compare (§PW238, §PW240), a rewrite
 #: proved unchanged without a script.
 #: 79,034 with the eight game.* operations (§PW213), a held game's whole surface.
-DESCRIBE = 79_500
+#: 80,425 with game.keep and game.replay (§PW214), a session kept as a test.
+DESCRIBE = 80_900
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -83,7 +84,8 @@ DESCRIBE = 79_500
 #: geometry.fit (§PW230), then 82,593 with capture.run's args and geometry.compare
 #: (§PW238, §PW240), then 89,098 with the game.* operations and the game and driver
 #: codes (§PW213).
-CAPABILITIES = 89_500
+#: 90,505 with game.keep, game.replay and game.no-flow (§PW214).
+CAPABILITIES = 91_000
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
@@ -104,7 +106,8 @@ HELP_VERB = 4_000
 #: 16,538 with music.render, sound.synth and sound.buy (§PW187, §PW189, §PW190).
 #: 17,001 with geometry.fit and geometry.compare (§PW230, §PW240).
 #: 18,073 with the eight game.* operations (§PW213).
-HELP_TOP = 18_400
+#: 18,433 with game.keep and game.replay (§PW214).
+HELP_TOP = 18_700
 #: A search's answer over its default budget of 24 samples: 3,739.
 SEARCH = 4_000
 

@@ -19,6 +19,13 @@ var token := ""
 var buffer := PackedByteArray()
 var main: Node
 
+## A kept flow being replayed: its steps, and which one is next (§PW214).
+var flow_path := ""
+var flow: Array = []
+var flow_at := 0
+## The step whose answer is awaited, so the answer can be held to what the flow expects.
+var flow_step: Dictionary = {}
+var failed := false
 ## Seconds with no request before the driver quits; 0 waits for ever.
 var idle := 0
 ## Frames let pass since start; every answer carries it.
@@ -43,12 +50,27 @@ func _initialize() -> void:
 			scene_path = arg.get_slice("=", 1)
 		elif arg.begins_with("--idle="):
 			idle = int(arg.get_slice("=", 1))
+		elif arg.begins_with("--flow="):
+			flow_path = arg.get_slice("=", 1)
 		elif arg == "offscreen":
 			# The offscreen route's wish (offscreen.py): a real window, off the desktop.
 			DisplayServer.window_set_position(Vector2i(-20000, -20000))
 		elif arg == "minimized":
 			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_MINIMIZED)
-	var bound := server.listen(port, "127.0.0.1")
+	if flow_path != "":
+		# A kept flow replays inside the game, with no socket (§PW214).
+		var text := FileAccess.get_file_as_string(flow_path)
+		var parsed = JSON.parse_string(text) if text != "" else null
+		if not (parsed is Dictionary) or not (parsed.get("steps") is Array):
+			push_error("polyweave_driver: there is no flow to replay at %s" % flow_path)
+			quit(1)
+			return
+		flow = parsed["steps"]
+		if parsed.get("seed"):
+			seed(int(parsed["seed"]))
+		if str(parsed.get("scene", "")) != "":
+			scene_path = str(parsed["scene"])
+	var bound := server.listen(port, "127.0.0.1") if flow_path == "" else OK
 	if bound != OK:
 		push_error("polyweave_driver: could not listen on port %d (%s)" % [port, bound])
 		quit(1)
@@ -62,7 +84,8 @@ func _initialize() -> void:
 			return
 		main = packed.instantiate()
 		root.add_child(main)
-	print("polyweave_driver: port=%d token=%s" % [server.get_local_port(), token])
+	if flow_path == "":
+		print("polyweave_driver: port=%d token=%s" % [server.get_local_port(), token])
 
 
 func _process(_delta: float) -> bool:
@@ -118,7 +141,7 @@ func _hold() -> bool:
 	while true:
 		var request = _next_request()
 		if request == null:
-			quit()
+			quit(1 if failed else 0)
 			return true
 		if not (request is Dictionary):
 			continue
@@ -149,6 +172,18 @@ func _hold() -> bool:
 
 
 func _next_request():
+	if flow_path != "":
+		if failed:
+			return null
+		if flow_at >= flow.size():
+			print("polyweave_flow: passed steps=%d frame=%d" % [flow.size(), frame])
+			return null
+		flow_step = flow[flow_at]
+		flow_at += 1
+		var request: Dictionary = flow_step.duplicate()
+		request["token"] = token
+		request["id"] = flow_at
+		return request
 	# A caller may connect once per command (a command line is a process a call), so a
 	# connection closing leaves the game held for the next one. Only `close`, or no
 	# request for `--idle` seconds, ends the run, so a forgotten session never outlives
@@ -186,7 +221,30 @@ func _next_request():
 
 
 func _send(answer: Dictionary) -> void:
+	if flow_path != "":
+		_judge(answer)
+		return
 	peer.put_data((JSON.stringify(answer) + "\n").to_utf8_buffer())
+
+
+## A replayed step's answer, held to what the flow kept it for: a refusal, a wait that
+## must be met and was not, or an expectation that did not hold ends the run.
+func _judge(answer: Dictionary) -> void:
+	var why := ""
+	var result = answer.get("result")
+	if not answer.get("ok", false):
+		why = "%s: %s" % [answer.get("error"), answer.get("message")]
+	elif flow_step.get("cmd") == "wait" and flow_step.get("must", true) and result is Dictionary \
+			and not result.get("met", false):
+		why = "the wait was not met in %s frames" % result.get("frames")
+	elif flow_step.get("cmd") == "expect" and result is Dictionary and not result.get("held", false):
+		why = "%s.%s was %s, not %s" % [flow_step.get("path"), flow_step.get("property"),
+			JSON.stringify(result.get("value")), JSON.stringify(flow_step.get("equals"))]
+	if why != "":
+		print("polyweave_flow: failed step=%d frame=%d why=%s" % [flow_at, frame, why])
+		flow = []
+		flow_at = 0
+		failed = true
 
 
 func _answer(request: Dictionary, result) -> void:
@@ -215,6 +273,8 @@ func _command(asked: Dictionary) -> Dictionary:
 			return _call(asked)
 		"shot":
 			return _shot(asked)
+		"expect":
+			return _expect(asked)
 		"close":
 			return {"quit": true}
 	return _refused(
@@ -378,6 +438,19 @@ func _met(condition: Dictionary) -> bool:
 	if typeof(value) in [TYPE_INT, TYPE_FLOAT] and typeof(wanted) in [TYPE_INT, TYPE_FLOAT]:
 		return is_equal_approx(float(value), float(wanted))
 	return JSON.stringify(value) == JSON.stringify(wanted)
+
+
+## Whether a node's property holds a value now, no frame passing: what a kept query
+## becomes in a flow (§PW214).
+func _expect(asked: Dictionary) -> Dictionary:
+	var nodes := _found(asked)
+	if nodes.is_empty():
+		return _refused("driver.no-node", "nothing answers %s" % _named(asked))
+	var named := str(asked.get("property", ""))
+	if not (named in nodes[0]):
+		return _refused("driver.bad-command", "%s has no property %s" % [nodes[0].get_path(), named])
+	var held := _met({"asked": asked, "fired": false})
+	return {"result": {"held": held, "value": _plain(nodes[0].get(named))}}
 
 
 func _call(asked: Dictionary) -> Dictionary:

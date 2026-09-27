@@ -25,6 +25,7 @@ User arguments after `--`:
 | `--seed=N` | `seed(N)` before the main scene loads, so the global random functions repeat |
 | `--scene=res://…` | load this scene instead of the main one |
 | `--idle=N` | quit after N seconds with no request; `0`, the default, waits for ever |
+| `--flow=<path>` | replay a kept flow instead of listening; see "A flow kept as a test" |
 | `offscreen`, `minimized` | the offscreen route's wish for a real window: moved off the desktop, or minimised |
 
 It prints one line once it listens, and nothing is sent before it:
@@ -82,6 +83,7 @@ them; the driver quits on `close`, or after `--idle=N` seconds with no request.
 | `wait` | `frames` budget, and one of `signal` + `path`, `node` (a path or group that must exist), or `path` + `property` + `equals` | Lets frames pass until the condition holds or the budget is spent; `result` is `{met, frames}`. An unmet wait is `ok` with `met: false` — the budget ran out, which is an answer and not an error |
 | `call` | `path`, `method`, optional `args` | Calls a method the game exposes for setup, and returns its value. An awaited coroutine is not waited on; a caller that needs it done follows with `wait` |
 | `shot` | `out` | Saves the viewport as a PNG at that path and returns it with its size. A headless run draws nothing, so a shot there is refused (`driver.no-picture`) rather than saved blank |
+| `expect` | `path`, `property`, `equals` | Whether the property holds the value now, no frame passing: `{held, value}` |
 | `close` | — | Answers, then quits |
 
 Values cross as JSON: a `Vector2` is `[x, y]`, a `Color` `[r, g, b, a]`, a node its path,
@@ -124,6 +126,36 @@ an agent forgot never outlives the conversation; a call to it after that is `gam
     python -m polyweave game.open --root . --seed 7
     python -m polyweave game.input --session g1a2b3c4d --click UI/Play
     python -m polyweave game.wait --session g1a2b3c4d --path . --prop level --equals 1 --frames 120
+
+## A flow kept as a test
+
+A session is exploring; a flow is the part of it worth running again, with no agent
+(§PW214). Every answered command is journalled in the session, and each answer's `step`
+is its place in that journal. `game.keep` writes the journal as a flow file — JSON, since
+the driver reads it inside the game — and nothing goes in on its own, because a session
+includes wrong turns:
+
+- inputs, steps and calls are kept in order, and those named in `drop` left out;
+- a query is kept only where `expect` names its step, as one `expect` per property it
+  answered: that node's property must hold that value again at that point;
+- a wait is kept as a wait that must be met, where it was met in the session;
+- a shot is left out, since a replay draws nothing.
+
+```json
+{"format": 1, "proves": "a click on PRESS counts one press", "seed": 3, "scene": "",
+ "engine": "4.7.stable.official", "driver": "<sha256 of driver.gd>",
+ "steps": [{"cmd": "input", "click": {"path": "UI/Press"}}, {"cmd": "step", "frames": 3},
+           {"cmd": "expect", "path": "/root/Main", "property": "presses", "equals": 1}]}
+```
+
+`game.replay` runs a flow in one launch through the engine runner, the driver reading it
+with `--flow=<path>` rather than a socket, as fast as the engine goes. It ends on one line,
+`polyweave_flow: passed steps=N frame=F`, or `polyweave_flow: failed step=S frame=F
+why=…` at the first refusal, unmet wait or expectation that did not hold. Its answer
+carries `ok`, the failed step, the frame and the reason, and `differs` where the engine
+version or the driver changed since the flow was kept — reported, not failed, since a
+different engine is a reason to look and not a verdict. `expect` is a command of its own
+too, answering `{held, value}` with no frame passing.
 
 A number arrives as JSON gives it, a float, so `wait … equals` compares numbers as
 numbers: a node's int 42 equals the 42 a caller sent.

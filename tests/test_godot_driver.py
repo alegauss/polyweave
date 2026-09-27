@@ -318,6 +318,72 @@ def test_a_session_nobody_calls_ends_on_its_own(tmp_path):
     assert gone.value.code == "game.gone"
 
 
+def test_a_session_kept_as_a_flow_replays_with_no_agent(tmp_path):
+    """§PW214: what a session proved becomes a file the runner replays alone."""
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    root = str(game(tmp_path))
+    session = driving.opened(root, seed=3)["session"]
+    try:
+        driving.stepped(session, root=root)
+        # A wrong turn, left out of the flow.
+        wrong = driving.called(session, path=".", method="setup", args=[100], root=root)
+        driving.called(session, path=".", method="setup", args=[0], root=root)
+        driving.inputted(session, click="UI/Press", root=root)
+        driving.stepped(session, frames=3, root=root)
+        seen = driving.queried(session, path=".", properties=["presses"], root=root)
+        assert seen["result"][0]["properties"]["presses"] == 1
+        kept = driving.kept(
+            session,
+            out="tests/flows/press.flow.json",
+            proves="a click on PRESS counts one press",
+            expect=[seen["step"]],
+            drop=[wrong["step"]],
+            root=root,
+        )
+    finally:
+        driving.closed(session, root=root)
+    assert kept["expectations"] == 1
+    flow = json.loads(Path(kept["flow"]).read_text(encoding="utf-8"))
+    assert [one["cmd"] for one in flow["steps"]] == [
+        "step",
+        "call",
+        "input",
+        "step",
+        "expect",
+    ]
+    assert flow["seed"] == 3
+    assert flow["engine"]
+
+    passed = driving.replayed("tests/flows/press.flow.json", root=root)
+    assert passed["ok"] is True, passed["why"]
+    assert passed["frame"] == 4
+    assert passed["differs"] == {}
+
+    flow["steps"][-1]["equals"] = 7
+    Path(kept["flow"]).write_text(json.dumps(flow), encoding="utf-8")
+    broke = driving.replayed("tests/flows/press.flow.json", root=root)
+    assert broke["ok"] is False
+    assert broke["failed_step"] == 5
+    assert "presses was 1, not 7" in broke["why"]
+
+
+def test_a_query_step_is_all_an_expectation_can_be_made_of(tmp_path):
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    root = str(game(tmp_path))
+    session = driving.opened(root)["session"]
+    try:
+        step = driving.stepped(session, root=root)["step"]
+        with pytest.raises(PolyweaveError) as refused:
+            driving.kept(
+                session, out="x.flow.json", proves="x", expect=[step], root=root
+            )
+        assert refused.value.code == "game.bad-target"
+    finally:
+        driving.closed(session, root=root)
+
+
 def test_a_project_without_the_driver_is_refused_before_anything_launches(tmp_path):
     (tmp_path / "project.godot").write_text("config_version=5\n", encoding="utf-8")
     with pytest.raises(PolyweaveError) as refused:

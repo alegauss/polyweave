@@ -81,6 +81,29 @@ beside the rest.
 Done when a capture past frame 6000 runs to its own end with the budget passed, and one
 cut by the budget says so in `why`.
 
+### §PW260 capture.run records the picture its line names
+
+Found in Starship (2026-09-27, RK132). `capture.run` writes a picture's `.prov.json`
+only for the paths `engine.run` lists in `artefacts`, and `engine.run` fills that list
+only from the named groups its `produces` argument names. `offscreen.capture` passes the
+caller's `how` straight through. But neither the MCP tool `capture_run` nor the CLI
+`capture.run` takes a `produces`, so every capture a project runs through the tool comes
+back with `artefacts: []` and `records: []`. That happens even when its `expect` names
+the picture in an `artefact` group.
+
+This happened with the pattern `captured: (?P<artefact>\S+) (?P<width>\d+) x
+(?P<height>\d+)`, the one `offscreen.CAPTURED` uses. The run was ok, and `found` held
+`artefact: art/renders/citadel.png`. Nothing was recorded, and the review picture has no
+provenance.
+
+`capture.run` should read an `artefact` group in `expect` as the picture, as
+`offscreen`'s own probe does, without being asked. It could also take a `produces` list
+for scripts that name several pictures. Where `expect` has no such group, the answer
+should say that nothing will be recorded rather than answer an empty `records`.
+
+Done when Starship's citadel capture, with that pattern, writes
+`art/renders/citadel.png.prov.json` in the same call.
+
 ## Block F — Motion
 
 ## Block G — Geometry as a declaration
@@ -397,6 +420,28 @@ on.
 Done when the viglet_v preview and a Godot capture of it facing its camera agree on
 which side the warm side is.
 
+### §PW262 A thin region that straddles a cell boundary is a finding
+
+Found in Starship (2026-09-27, RK132 and RK133), three times in one day. A thin shape
+used as a `paint` or `where` region, one cell wide, centred on a point the grid puts on
+a boundary between two cells, takes both cells. On an even-count axis the grid's cell
+centres sit at odd multiples of half a cell, so a mullion declared at x = 0 with width =
+cell covers two columns. A row of them spaced one cell apart covers every column. The
+build reports no finding, and the fix is found by counting cells in the preview.
+
+- The citadel's mullions at ±1.5 and ±3 swallowed the low and high tiers' faces whole.
+- The skybridge, 10 cells long with posts every 0.8, came out all trim.
+- The ribbed shaft's 8-cell ledge shifted the grid under 7-cell walls, and its ribs covered
+  the slots.
+
+A shape whose extent on an axis is one cell or less, but covers two cells there, should
+get a finding naming the node and the axis ("`mullions_x` is 0.4 wide on x and covers 2
+cells: its faces fall on cell boundaries; move it by 0.2 or make the model odd-sized on
+x"). The answer could also carry each axis's cell centres, so a declaration can be
+written against them rather than inferred from a preview.
+
+Done when rebuilding the citadel with its first mullion positions reports that finding.
+
 ## Block J — A bar a person sets once
 
 ## Block K — Reached without reading the source
@@ -530,6 +575,25 @@ loop plays looped, so its seam is heard.
 
 Done when Starship's fifteen sounds are one sitting and a person's answers land in their
 records.
+
+### §PW261 A malformed member is refused, never raised
+
+Found in Starship (2026-09-27, RK132). `verdict.sitting` was given a family as a list of
+picture paths, which is what "each family's name to its members, as for a sheet" reads
+as to a caller that has not read `MEMBERS`. `_checked` calls `member.get("spec")` on a
+string and raises AttributeError. Through the CLI that is a traceback. Through the MCP
+server the whole server went down ("Connection closed"), and every other polyweave tool
+was lost for the rest of the turn.
+
+Each member should be validated before any picture is opened. A member that is not a
+table, or lacks `name` or `new`, should be refused with a code (`verdict.bad-member`), a
+remedy quoting `MEMBERS`, and the index of the member at fault. A bare path could also
+be read as `{"name": <stem>, "new": <path>}`, a picture shown without a spec, since that
+is the commonest first guess. Separately, an exception inside any operation should come
+back to an MCP caller as a refusal and not end the server.
+
+Done when the call above answers a refusal naming member 0, and the server still answers
+the next call.
 
 ## Block P — Music and sound a game can ship
 
@@ -751,29 +815,6 @@ where they leave the set spec's bounds says whether the endless tail keeps the p
 the first twenty make.
 
 ## Block S — Playing the game, not only rendering it
-
-### §PW214 A driven flow kept as a test that replays without an agent
-
-Playwright's recorder turns a session somebody clicked through into a script that runs
-without them. This is the same step for a game, and it is what turns exploring into
-testing.
-
-`game.keep` writes the session's commands so far to a flow file under the project's
-tests. Each input and step becomes a line, and each `query` or `wait` the agent chose to
-keep becomes an expectation: a node, a property and the value it held. The agent names
-what the flow proves and removes the steps it took by mistake. Nothing is kept
-automatically, because a session includes wrong turns.
-
-`game.replay` runs a flow in one launch through the engine runner. The driver reads the
-file inside the game instead of over a socket, so a flow runs as fast as the engine and
-a continuous-integration job needs no agent. The verdict follows the runner's rules:
-every expectation held, no error was printed, and the frame budget was not hit. A
-failure names the first expectation that broke, the frame it broke on, and a shot of
-that frame.
-
-The flow format is declared in `docs/specs/driving.md` beside the commands, so a flow is
-a declaration like a geometry or a capture, and it is recorded with its engine version
-and driver hash. A later run on a different engine reports that difference.
 
 ### §PW215 A release export checked for the driver
 

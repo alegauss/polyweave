@@ -68,7 +68,8 @@ TOOL_BUDGET = 4500
 #: `mesh` on the geometry builds and geometry.fit (§PW226, §PW230), and to 65,000 at
 #: 64,589 for capture.run's args and geometry.compare (§PW238, §PW240), and to 70,500
 #: at 70,138 for the eight game.* operations that drive a held game (§PW213).
-LIST_BUDGET = 70500
+#: 71,900 at 71,401 for game.keep and game.replay (§PW214).
+LIST_BUDGET = 71900
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

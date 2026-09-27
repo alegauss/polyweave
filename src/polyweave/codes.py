@@ -1123,6 +1123,12 @@ CODES: dict[str, Code] = {
         when="a query with no path, group or class, or an input with none of its kinds",
         doors=("give exactly one of the targets the operation lists",),
     ),
+    "game.no-flow": Code(
+        means="there is no flow this driver can replay at that path",
+        when="a flow not yet kept, a path relative to somewhere else, or a flow kept "
+        "in an older format",
+        doors=("keep the flow with game.keep",),
+    ),
     "game.refused": Code(
         means="the driver refused a command without naming why",
         when="a driver older than this plugin",
