@@ -16,7 +16,10 @@ from ..errors import PolyweaveError
 __all__ = ["ADDONS", "install"]
 
 #: The addons this package carries, by the folder name they take under `addons/`.
-ADDONS = {"polyweave_voxels": Path(__file__).parent / "addons" / "polyweave_voxels"}
+ADDONS = {
+    name: Path(__file__).parent / "addons" / name
+    for name in ("polyweave_voxels", "polyweave_driver")
+}
 
 
 @operation("godot.install")

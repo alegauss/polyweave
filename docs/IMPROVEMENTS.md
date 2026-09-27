@@ -460,27 +460,6 @@ the first twenty make.
 
 ## Block S — Playing the game, not only rendering it
 
-### §PW212 A driver inside the game, stepped by the agent
-
-An agent's turn takes seconds and the game runs at sixty frames a second. A game left
-running between two calls has moved on by the time the second arrives, and no sequence
-of calls can be replayed. So the driver holds the game and advances only when told to,
-by a count of frames at the engine runner's fixed rate, with every random source seeded
-at start. It holds by blocking the main loop on its socket, not by pausing the tree:
-PW211 found a paused tree still emits `process_frame`, so Cottony's falls ended a frame
-early per move while held.
-
-The driver is a GDScript addon and autoload the project installs. It loads only under a
-`polyweave_driver` feature tag and listens on loopback with a token printed at start.
-The commands are `query`, a node's properties by path, group or class; `input`, an
-action, a key, or a click on a node's centre, sent through `Viewport.push_input`;
-`step`, a number of frames; `wait`, for a signal, a node or a value within a frame
-budget; `call`, a method the game exposes for setup; and `shot`.
-
-Waits count frames and never seconds. The contract goes in `docs/specs/driving.md`
-before code, as the capture environment's did, because the addon, the tools and the
-recorded test all read it.
-
 ### §PW213 Game session tools an agent calls
 
 `game.open` launches the project through the existing engine runner with the driver's
