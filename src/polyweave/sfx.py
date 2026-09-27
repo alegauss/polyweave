@@ -41,7 +41,7 @@ from .errors import PolyweaveError
 
 #: What an effect's table may hold besides sfxr's own parameters.
 _OWN = {"generator": str, "seed": int, "min_duration": float, "max_duration": float,
-        "peak": float}
+        "peak": float, "loudness": float, "match": str}
 
 #: How many seeds a bound may try before the effect is refused.
 TRIES = 64
@@ -102,6 +102,43 @@ def _check_key(name: str, key: str, value: Any) -> None:
         raise _bad(name, f"sets {key} to {value!r}", f"write {key} as a whole number")
     elif _OWN[key] is float and not _number(value):
         raise _bad(name, f"sets {key} to {value!r}", f"write {key} as a number")
+    elif _OWN[key] is str and not isinstance(value, str):
+        raise _bad(name, f"sets {key} to {value!r}", f"write {key} as a path")
+
+
+def _levelled(
+    name: str, audio: np.ndarray, table: dict, root: Path
+) -> tuple[np.ndarray, dict]:
+    """The effect moved to the loudness it declares, under its peak (§PW254).
+
+    Normalised to a peak alone, sfxr's dense explosions came out 10 dB louder in RMS
+    than the sounds they replaced, and every hit in the mix jumped. So an effect may
+    declare `loudness` (RMS dBFS, as sound.measure reports it) or `match` the sound it
+    replaces, and `peak` is then a ceiling, said when it binds.
+    """
+    if "loudness" in table and "match" in table:
+        raise _bad(name, "declares both loudness and match",
+                   "keep one: loudness in dBFS, or match naming the sound it replaces")
+    if ("loudness" not in table and "match" not in table) or not len(audio):
+        return audio, {}
+    aimed = table.get("loudness")
+    if "match" in table:
+        from .sound import measure
+
+        replaced = Path(table["match"])
+        replaced = replaced if replaced.is_absolute() else root / replaced
+        if not replaced.is_file():
+            raise _bad(name, f"matches {table['match']}, which is not there",
+                       "name the sound it replaces, relative to the project")
+        aimed = float(measure(replaced)["loudness"])
+    now = _db(float(np.sqrt(np.mean(audio**2))))
+    audio = audio * 10 ** ((float(aimed) - now) / 20.0)
+    ceiling = float(table.get("peak", PEAK))
+    peak = _db(float(np.abs(audio).max()))
+    bound = peak > ceiling
+    if bound:
+        audio = audio * 10 ** ((ceiling - peak) / 20.0)
+    return audio, {"aimed": round(float(aimed), 2), "ceiling_bound": bound}
 
 
 def _params(table: dict, seed: int) -> sfxr.Params:
@@ -222,6 +259,7 @@ def synth(
     made = {}
     for name, table in checked.items():
         audio, seed, tries = _made(name, table)
+        audio, levelled = _levelled(name, audio, table, config.root)
         target = declared.get(name, where.parent / f"{name}.wav")
         made[name] = _placed(target, audio, config.root)
         measured = {
@@ -235,6 +273,7 @@ def synth(
             "tries": tries,
             "declared": name in declared,
             **measured,
+            **levelled,
         })
         # What made it and what it owes, beside it (§PW191).
         provenance.write(provenance.build(

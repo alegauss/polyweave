@@ -141,6 +141,49 @@ def test_an_effect_that_cannot_be_made_is_refused_with_a_code(tmp_path, body, co
     assert refused.value.code == code
 
 
+def test_an_effect_lands_at_the_loudness_it_declares(tmp_path):
+    """§PW254: at a peak alone, Starship's kill came out 13 dB louder than the old."""
+    source = effects(
+        tmp_path, '[effect.kill]\ngenerator = "explosion"\nloudness = -18.6\n'
+    )
+    made = sfx.synth(source, root=str(tmp_path))["effects"]["kill"]
+    assert made["aimed"] == -18.6
+    assert abs(made["loudness"] - -18.6) <= 0.5
+    assert made["ceiling_bound"] is False
+
+
+def test_an_effect_matches_the_sound_it_replaces(tmp_path):
+    source = effects(
+        tmp_path,
+        '[effect.old]\ngenerator = "explosion"\nloudness = -20.0\n\n'
+        '[effect.new]\ngenerator = "explosion"\nseed = 99\nmatch = "audio/old.wav"\n',
+    )
+    sfx.synth(source, effect="old", root=str(tmp_path))
+    made = sfx.synth(source, effect="new", root=str(tmp_path))["effects"]["new"]
+    assert abs(made["aimed"] - -20.0) <= 0.1
+    assert abs(made["loudness"] - made["aimed"]) <= 0.5
+
+
+def test_the_peak_is_a_ceiling_said_when_it_binds(tmp_path):
+    source = effects(
+        tmp_path, '[effect.loud]\ngenerator = "blip"\nloudness = -1.0\npeak = -6.0\n'
+    )
+    made = sfx.synth(source, root=str(tmp_path))["effects"]["loud"]
+    assert made["ceiling_bound"] is True
+    assert made["peak"] <= -6.0 + 0.01
+    assert made["loudness"] < -1.0
+
+
+def test_loudness_and_match_together_are_refused(tmp_path):
+    source = effects(
+        tmp_path,
+        '[effect.both]\ngenerator = "blip"\nloudness = -10.0\nmatch = "x.wav"\n',
+    )
+    with pytest.raises(PolyweaveError) as refused:
+        sfx.synth(source, root=str(tmp_path))
+    assert refused.value.code == "sound.bad-effect"
+
+
 def test_a_misspelled_key_is_answered_with_its_nearest(tmp_path):
     body = '[effect.a]\ngenerator = "pickup"\nbase_frq = 0.3\n'
     with pytest.raises(PolyweaveError) as refused:

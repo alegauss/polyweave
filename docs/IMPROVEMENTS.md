@@ -577,27 +577,6 @@ declared in its `polyweave.toml`, made by `music.render` and `sound.synth`, and 
 `*.accept.toml` bounds, and its own audio scripts are removed. Anything Cottony needs
 that a second game would not becomes configuration.
 
-### §PW254 An effect made to a loudness
-
-Found in Starship's RK115 (2026-09-27), moving eight effects from a project script to
-`sound.synth`. The game's mix is a table of weights that assumes each effect's loudness,
-so a replacement has to land where the old one was. `sound.synth` normalises an effect
-to `peak` and nothing else, and sfxr's explosions are dense: at the old peaks the new
-kill measured -5.6 dBFS RMS against the old -18.6, the death -5.3 against -16.3, the
-evolution -8.0 against -20.0. A swap like that jumps every hit in the mix.
-
-The workaround was arithmetic by hand, per effect: measure the old sound with
-`sound.measure`, synthesise, measure the new one, and move `peak` down by the
-difference, then synthesise again, since loudness scales with the gain.
-
-An effect should be able to say `loudness = -18.6` (RMS dBFS, as `sound.measure` reports
-it), or `match = "<path of the sound it replaces>"`, and be normalised to it, with
-`peak` then a ceiling that is reported when it binds. The answer states both the
-loudness aimed at and the loudness reached.
-
-Done when Starship's effects declare their loudness instead of a hand-worked peak, and a
-re-synthesis lands each within 0.5 dB of it.
-
 ### §PW255 A render in the format the game loads
 
 Found in Starship's RK115 (2026-09-27), rendering the phase music into

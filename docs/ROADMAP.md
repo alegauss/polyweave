@@ -58,7 +58,6 @@
 
 ## Block P — Music and sound a game can ship
 
-- 📋 **PW254** (deps: —) **a synthesised effect is normalised to a peak alone, so a replacement lands 10 dB louder than the sound it replaces** — A game's mix assumes each effect's loudness, and matching it now means measuring, subtracting and synthesising again by hand. → §PW254
 - 📋 **PW255** (deps: —) **music.render always writes both WAV and OGG, so a game that loads one ships the other or deletes it by hand** — The unused copy is imported and exported, and removing it leaves the render's records half gone. → §PW255
 
 ## Block Q — Words held to the world

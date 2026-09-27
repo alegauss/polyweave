@@ -16,7 +16,8 @@ generator    = "pickup"    # pickup, laser, explosion, powerup, hit, jump or bli
 seed         = 12          # the effect's name's CRC32 when left out
 min_duration = 0.15        # bounds in seconds; a draw outside moves to the next seed
 max_duration = 0.6
-peak         = -3.0        # the dBFS the effect is normalised to
+peak         = -3.0        # the dBFS the effect is normalised to; a ceiling beside loudness
+loudness     = -18.6       # or match = "audio/old_kill.wav": the RMS dBFS it lands at
 base_freq    = 0.45        # any sfxr parameter pins the draw's value
 
 [effect.kick]              # no generator: every parameter set by hand
@@ -50,6 +51,14 @@ parameters that set a length.
 The answer gives each effect's `file`, `generator`, `seed`, `tries`, whether it was
 `declared`, and its `duration`, `peak` and `loudness`, the measures a one-shot has, which
 `sound.measure` and an effect's `*.accept.toml` read the same way.
+
+**An effect may be made to a loudness** (§PW254). A game's mix is weighted on each
+effect's loudness, and normalised to a peak alone sfxr's dense explosions came out about
+10 dB louder in RMS than the sounds they replaced. So an effect may declare `loudness`,
+RMS dBFS as `sound.measure` reports it, or `match` the sound it replaces, whose loudness is
+measured; the effect is levelled to it, and `peak` is then a ceiling. The answer adds
+`aimed`, the loudness asked for, and `ceiling_bound`, true where the peak held it quieter.
+Declaring both is `sound.bad-effect`.
 
 The port is held to the spike's ten effects, which a person listened to and passed: the
 same generators and seeds give the lengths the spike measured, to the millisecond.
