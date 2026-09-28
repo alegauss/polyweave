@@ -34,6 +34,8 @@
 
 ## Block O — A person sees and answers
 
+- 📋 **PW294** (deps: —) **the review server keeps the polyweave it started with, so a spec using a measure added since is refused on Accept** — Starship's owner got spec.unknown-measure for silhouette_aspect, and only a restart the page never asked for mended it. → §PW294
+
 ## Block P — Music and sound a game can ship
 
 ## Block Q — Words held to the world
