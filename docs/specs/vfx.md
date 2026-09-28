@@ -35,6 +35,8 @@ colour_over_life = ["#ffd24aff", "#ff4a1a00"]   # #rrggbb or #rrggbbaa, evenly
 blend            = "add"         # add or mix
 trail            = 0.3           # ribbon only: seconds of path each ribbon keeps
 facing           = [0, 1, 0]     # path_ribbon only: the way its width lies
+step             = 0.0166667     # path_ribbon only: seconds between its points
+gap              = 0.3           # path_ribbon only: or metres, whichever comes first
 ```
 
 A key it does not have is refused with its nearest name, and so is a value outside what
@@ -59,8 +61,11 @@ Each is recorded (`vfx`, [provenance.md](provenance.md)).
 
 A `path_ribbon` is the ribbon a moving emitter leaves, the tender's own trail (§PW281),
 and is not particles at all: a `Node3D` the game puts where the engine is, carrying a
-script inside the scene. Each frame it keeps the point its parent carried it to, drops
-those older than `lifetime` and holds `amount` at most. It draws them in the world as one
+script inside the scene. It keeps a point where its parent carried it each `step`
+seconds, or sooner once the emitter has moved `gap` metres, as Starship's own trail did,
+so it is as long at 600 frames a second as at 60 (§PW286). It drops points older than
+`lifetime` and holds `amount` at most, and an `amount` under `lifetime / step` is
+refused at build, since that ceiling would cut the ribbon short. It draws them in the world as one
 triangle strip `size` wide across `facing`, each point's colour and width read off
 `colour_over_life` and `size_over_life` at its age. So it narrows and fades behind the
 emitter and stays where the emitter was, and the game still holds no code of its own.

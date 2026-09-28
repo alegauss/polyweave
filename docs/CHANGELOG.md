@@ -226,6 +226,7 @@
 - ✅ **PW268** **a store's capsule set cannot be cut from one key art, so each project crops and places its logo by hand** — store.capsules cuts a store's whole set from one key art and a logo, shapes as data, refusing any upscale and failing a capsule whose logo won't read (design recorded in `docs/specs/store.md`).
 - ✅ **PW275** **store.capsules reads only a raster logo, so a wordmark kept as SVG has to be exported by hand at a guessed size** — store.capsules draws an SVG logo through Godot at each capsule's size and measures its stroke there; Starship's clear wordmark cut nine capsules.
 - ✅ **PW285** **vfx.build has no lifetime randomness, so a built burst dies on one frame where the accepted one frays** — An effect declares randomness, 0 to 1, written to the particles node as Starship's trails set it, so a port keeps their uneven start (design superseded: it spreads emission, not lifetime).
+- ✅ **PW286** **a path ribbon adds a point every frame, so it is cut short at high frame rates, where its cost is timed** — A path ribbon adds a point each step seconds or gap metres, so it trails 7.2 m at both 60 and 600 fps, and an amount under lifetime/step is refused (design recorded in `docs/specs/vfx.md`).
 
 ## Block N — Pictures held to a canon
 

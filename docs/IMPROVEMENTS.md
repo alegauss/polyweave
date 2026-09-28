@@ -312,24 +312,6 @@ so a path ribbon and a GPUParticles3D can share a root.
 
 Done when Starship's seven trails are seven effects, each one scene and one sheet.
 
-### §PW286 A path ribbon paced by time
-
-Found adopting Starship's trails (PW259, 2026-09-28). A path ribbon's script appends a
-point every frame and keeps `amount` at most. So how long the ribbon is depends on the
-frame rate. At 60 fps a 0.6 s ribbon holds 36 points, but dev/perf.gd runs uncapped, at
-several hundred frames a second, where the same ribbon needs hundreds of points. Past
-`amount` it is cut short, and it looks shorter exactly where its cost is measured. The
-port sets amount = 256 as a guard, which is a guess.
-
-Starship's own trail.gd adds a point every 16 ms, or once the engine has moved 0.3 m
-since the last point. Its point count is then bounded by `lifetime / step`, whatever the
-frame rate. The path ribbon should do the same: `step` (seconds, default 1/60) and `gap`
-(metres, default 0.3) on the effect, and `amount` a ceiling that `lifetime / step` must
-fit under, refused at build time where it does not.
-
-Done when a path ribbon is the same length at 60 and at 600 fps, with a test that steps
-it at both.
-
 ## Block N — Pictures held to a canon
 
 ### §PW180 Canon pictures as style references

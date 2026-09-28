@@ -81,6 +81,8 @@ KEYS: dict[str, tuple[type | tuple, Any]] = {
     "extents": (list, [0.0, 0.0, 0.0]),
     "shape": (str, "square"),
     "facing": (list, [0.0, 1.0, 0.0]),
+    "step": (float, 1 / 60),
+    "gap": (float, 0.3),
 }
 
 #: Every effect measure a predicate may bound, and what it says.
@@ -246,6 +248,19 @@ def checked(name: str, table: Any, root: Path | None = None) -> dict:
                    "metres, such as [0.1, 1.0, 0.1]")
     own["shape"] = _shape(name, own["shape"], root)
     own["facing"] = _vector(name, "facing", own["facing"], 3)
+    for key in ("step", "gap"):
+        if not _number(own[key]) or own[key] <= 0:
+            raise _bad(name, f"sets {key} to {own[key]!r}",
+                       f"write {key} as a number above 0: a path ribbon adds a point "
+                       "each step seconds, or each gap metres the emitter moves")
+        own[key] = float(own[key])
+    # Paced by time, a ribbon holds lifetime / step points whatever the frame rate
+    # (§PW286); a ceiling under that would cut it short, so it is refused here.
+    needs = math.ceil(float(own["lifetime"]) / own["step"]) + 1
+    if own["kind"] == "path_ribbon" and own["amount"] < needs:
+        raise _bad(name, f"holds {own['amount']} points, and a {own['lifetime']:g} s "
+                   f"ribbon at a step of {own['step']:g} s needs {needs}",
+                   f"raise amount to {needs} or more, or lengthen step")
     if not any(own["facing"]):
         raise _bad(name, "faces [0, 0, 0], so a path ribbon has no width",
                    "write facing as the direction its width lies along, such as "
@@ -336,8 +351,11 @@ _FOLLOWS = """extends Node3D
 @export var life := 1.0
 @export var most := 64
 @export var facing := Vector3.UP
+@export var step := 1.0 / 60.0
+@export var gap := 0.3
 
 var points: Array = []
+var since := 0.0
 var strip := ImmediateMesh.new()
 var drawn := MeshInstance3D.new()
 var offset := Vector3.ZERO
@@ -358,7 +376,15 @@ func _process(delta: float) -> void:
 \t\tpoint[1] += delta
 \twhile not points.is_empty() and points[0][1] > life:
 \t\tpoints.pop_front()
-\tpoints.append([here, 0.0])
+\tsince += delta
+\t# Paced by time and by distance, never by frame, so the ribbon is as long at 600
+\t# frames a second as at 60.
+\tvar moved: bool = not points.is_empty() and (
+\t\t(points.back()[0] as Vector3).distance_to(here) > gap)
+\t# A hair under step, so a step of 1/60 at 60 frames a second takes every frame.
+\tif points.is_empty() or since >= step - 0.0001 or moved:
+\t\tpoints.append([here, 0.0])
+\t\tsince = 0.0
 \twhile points.size() > most:
 \t\tpoints.pop_front()
 \tstrip.clear_surfaces()
@@ -395,6 +421,7 @@ def _path_ribbon(name: str, effect: dict, colours: str, sizes: str) -> str:
         'look = SubResource("look")\n'
         f"width = {effect['size']:.6g}\nlife = {effect['lifetime']:.6g}\n"
         f"most = {effect['amount']}\nfacing = Vector3({_floats(effect['facing'])})\n"
+        f"step = {effect['step']:.9g}\ngap = {effect['gap']:.6g}\n"
     )
 
 

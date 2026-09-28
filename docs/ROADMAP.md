@@ -31,7 +31,6 @@
 ## Block M — What a game needs beyond the look
 
 - 📋 **PW284** (deps: —) **a trail's ribbon and its particles are two vfx effects, so the game places two scenes and a person judges two halves** — Starship's seven accepted trails are each one look, and a verdict on half of one is a verdict on nothing the game plays. → §PW284
-- 📋 **PW286** (deps: —) **a path ribbon adds a point every frame, so it is cut short at high frame rates, where its cost is timed** — Starship's perf runs uncapped, and a ribbon whose length depends on the frame rate looks shortest exactly where it is measured. → §PW286
 
 ## Block N — Pictures held to a canon
 

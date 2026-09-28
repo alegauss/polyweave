@@ -37,7 +37,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
   { block: "L", title: "What a run leaves as evidence", open: 0 },
-  { block: "M", title: "What a game needs beyond the look", open: 2 },
+  { block: "M", title: "What a game needs beyond the look", open: 1 },
   { block: "N", title: "Pictures held to a canon", open: 0 },
   { block: "O", title: "A person sees and answers", open: 0 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
@@ -74,13 +74,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "M",
     symptom: "a trail's ribbon and its particles are two vfx effects, so the game places two scenes and a person judges two halves",
     why: "Starship's seven accepted trails are each one look, and a verdict on half of one is a verdict on nothing the game plays.",
-    deps: [],
-  },
-  {
-    id: "PW286",
-    block: "M",
-    symptom: "a path ribbon adds a point every frame, so it is cut short at high frame rates, where its cost is timed",
-    why: "Starship's perf runs uncapped, and a ribbon whose length depends on the frame rate looks shortest exactly where it is measured.",
     deps: [],
   },
   {

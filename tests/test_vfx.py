@@ -210,6 +210,17 @@ def test_a_path_ribbon_is_a_scene_that_draws_the_path_its_parent_flew(tmp_path):
     assert made["wake"]["reach"] == pytest.approx(0.3)
 
 
+def test_a_path_ribbon_too_small_for_its_life_is_refused(tmp_path):
+    """§PW286: paced every 1/60 s, a 1.2 s ribbon holds 73 points."""
+    source = effects(tmp_path, WAKE.replace("amount = 90", "amount = 40"))
+    with pytest.raises(PolyweaveError) as refused:
+        vfx.build(source, root=str(tmp_path))
+    assert "needs 73" in refused.value.message
+    vfx.build(effects(tmp_path, WAKE + "step = 0.05\n"), root=str(tmp_path))
+    built = (tmp_path / "vfx" / "wake.tscn").read_text("utf-8")
+    assert "step = 0.05" in built and "gap = 0.3" in built
+
+
 def test_a_path_ribbon_with_no_width_to_face_is_refused(tmp_path):
     with pytest.raises(PolyweaveError) as refused:
         vfx.build(effects(tmp_path, WAKE + "facing = [0, 0, 0]\n"), root=str(tmp_path))
@@ -386,6 +397,43 @@ def test_a_path_ribbon_draws_a_strip_along_where_its_parent_went(tmp_path):
     # It lies behind the path flown, 0.1 a frame, and is at most its width across.
     assert long == pytest.approx(1.8, abs=0.2)
     assert 0.3 < wide <= 0.6
+
+
+PACED = """extends SceneTree
+
+var engine := Node3D.new()
+var clock := 0.0
+
+func _initialize() -> void:
+\troot.add_child(engine)
+\tengine.add_child(load("res://vfx/wake.tscn").instantiate())
+
+func _process(delta: float) -> bool:
+\tclock += delta
+\tengine.position = Vector3(clock * 6.0, 0, 0)
+\tif clock < 2.0:
+\t\treturn false
+\tvar strip: ImmediateMesh = engine.get_child(0).strip
+\tprint("vfx: long=%.2f" % strip.get_aabb().size.x)
+\treturn true
+"""
+
+
+@pytest.mark.parametrize("fps", [60, 600])
+def test_a_path_ribbon_is_as_long_at_600_frames_a_second_as_at_60(tmp_path, fps):
+    """§PW286: at 6 m/s and a 1.2 s life it trails 7.2 m, whatever the frame rate."""
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    vfx.build(effects(tmp_path, WAKE), root=str(tmp_path))
+    (tmp_path / "project.godot").write_text(
+        'config_version=5\n\n[application]\nconfig/name="vfx"\n', encoding="utf-8")
+    (tmp_path / "paced.gd").write_text(PACED, encoding="utf-8")
+    ran = engine.run("paced.gd", expect=r"^vfx: long", root=tmp_path, headless=True,
+                     fixed_fps=fps, frames=5000)
+    assert ran["ok"] is True, ran
+    said = Path(ran["log"]).read_text("utf-8")
+    long = float(re.search(r"long=([\d.]+)", said).group(1))
+    assert long == pytest.approx(7.2, abs=0.25)
 
 
 def test_a_path_ribbon_is_watched_moving_as_a_sitting(tmp_path):
