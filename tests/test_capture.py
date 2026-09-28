@@ -322,7 +322,60 @@ def test_a_window_the_os_shrank_is_refused_on_the_pictures_own_size(tmp_path):
     assert found["ok"] is False
     assert found["environment"]["holds"] is False
     assert "the picture is 1920x1041, asked 1920x1080" in found["why"]
-    assert "work area" in found["why"]
+    assert "work area" in found["shrunk_first"]
+    # Taken again borderless, and shrunk still, which is a virtual display's to answer.
+    assert found["borderless"] is True
+    assert "even with the window borderless" in found["why"]
+
+
+def taking_shrunk_then(tmp_path, first, then):
+    """A capture whose picture is `first` in size, then `then` on every later run,
+    noting whether the run had a borderless override beside the project."""
+    calls = []
+
+    def take(script, *, expect, root, args, **how):
+        width, height = first if not calls else then
+        calls.append((Path(root) / "override.cfg").is_file()
+                     and "borderless=true" in (Path(root) / "override.cfg").read_text())
+        shot = picture(Path(root) / "shot.png", width, height)
+        return taking("environment: resolution=1920x1080\n"
+                      "captured: res://shot.png 1920 x 1080\n",
+                      artefacts=[shot])(script, expect=expect, root=root, args=args)
+
+    take.calls = calls
+    return take
+
+
+def test_a_shrunk_picture_is_taken_again_borderless_at_the_size_asked(tmp_path):
+    """§PW280: a 4K key art on a 4K screen came back 3840x2119 and could not be had."""
+    script = project(tmp_path, SIZED)
+    take = taking_shrunk_then(tmp_path, (1920, 1041), (1920, 1080))
+    found = capture.run(script, expect=SHOT, root=tmp_path, record=False, take=take)
+    assert found["ok"] is True, found["why"]
+    assert found["environment"]["holds"] is True
+    assert found["borderless"] is True
+    assert take.calls == [False, True]
+    assert not (tmp_path / "override.cfg").exists()
+
+
+def test_a_size_shrunk_once_starts_borderless_the_next_time(tmp_path):
+    script = project(tmp_path, SIZED)
+    capture.run(script, expect=SHOT, root=tmp_path, record=False,
+                take=taking_shrunk_then(tmp_path, (1920, 1041), (1920, 1080)))
+    take = taking_shrunk_then(tmp_path, (1920, 1080), (1920, 1080))
+    found = capture.run(script, expect=SHOT, root=tmp_path, record=False, take=take)
+    assert found["ok"] is True
+    assert take.calls == [True]
+
+
+def test_a_project_override_is_never_replaced_to_go_borderless(tmp_path):
+    script = project(tmp_path, SIZED)
+    (tmp_path / "override.cfg").write_text("[display]\n", encoding="utf-8")
+    take = taking_shrunk_then(tmp_path, (1920, 1041), (1920, 1080))
+    found = capture.run(script, expect=SHOT, root=tmp_path, record=False, take=take)
+    assert found["ok"] is False
+    assert "override.cfg of its own" in found["why"]
+    assert (tmp_path / "override.cfg").read_text(encoding="utf-8") == "[display]\n"
 
 
 def test_pictures_of_two_sizes_cannot_hold_one(tmp_path):
@@ -658,6 +711,50 @@ def test_and_taking_it_in_another_one_is_a_different_record(tmp_path):
         environment={"locale": "en_GB"},
     )
     assert found["environment"]["applied"]["locale"] == "en_GB"
+
+
+WIDE = """extends SceneTree
+
+var frames := 0
+
+func _initialize() -> void:
+\tvar size := Vector2i.ZERO
+\tfor arg in OS.get_cmdline_user_args():
+\t\tif arg == "offscreen":
+\t\t\tDisplayServer.window_set_position(Vector2i(-32000, -32000))
+\t\telif arg.begins_with("resolution="):
+\t\t\tvar bits := arg.trim_prefix("resolution=").split("x")
+\t\t\tsize = Vector2i(int(bits[0]), int(bits[1]))
+\tDisplayServer.window_set_size(size)
+\troot.size = size
+\tprint("environment: resolution=%dx%d" % [root.size.x, root.size.y])
+
+func _process(_delta: float) -> bool:
+\tframes += 1
+\tif frames < 4:
+\t\treturn false
+\tvar image := root.get_texture().get_image()
+\timage.save_png("res://shot.png")
+\tprint("captured: res://shot.png %d x %d" % [image.get_width(), image.get_height()])
+\treturn true
+"""
+
+
+def test_a_real_capture_wider_than_any_desktop_comes_back_at_its_size(tmp_path):
+    """§PW280: the OS shrinks a decorated window to the work area, not a borderless."""
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    script = project(
+        tmp_path,
+        f'[paths]\ngodot = "{Path(os.environ["GODOT"]).as_posix()}"\n\n'
+        '[capture]\ndeclared = ["resolution"]\nresolution = [8000, 120]\n',
+        script=WIDE,
+    )
+    found = capture.run(script, expect=SHOT, produces=("artefact",), root=tmp_path,
+                        record=False)
+    assert found["ok"] is True, found["why"]
+    assert found["environment"]["applied"]["resolution"] == "8000x120"
+    assert not (tmp_path / "override.cfg").exists()
 
 
 # -- and keeping a picture that reproduces (§PW75) ------------------------------------

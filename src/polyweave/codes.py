@@ -1847,9 +1847,10 @@ CODES: dict[str, Code] = {
         doors=("check it against the audio file, or name that file with `of`",),
     ),
     "capture.override-held": Code(
-        means="a movie is sized by writing an override.cfg, and the project has one",
-        when="capture.movie asked a resolution in a project with an override.cfg of "
-        "its own",
+        means="a movie or an outsized picture writes an override.cfg, and the project "
+        "has one",
+        when="capture.movie asked a resolution, or capture.run one past the desktop, "
+        "in a project with an override.cfg of its own",
         doors=("set its window overrides to the size for the run",
                "ask no resolution, and take the project's window size"),
     ),

@@ -10,7 +10,7 @@
 
 ## Block E — One world with the engine
 
-- 📋 **PW280** (deps: PW267 ✅) **no capture can take a picture larger than the desktop, so a 4K key art on a 4K screen always comes back shrunk** — A store's library hero needs 3840 wide, and PW267's remedy names a viewport route polyweave does not have. → §PW280
+- 📋 **PW283** (deps: PW280 ✅) **capture.movie asked a size past the desktop likely records every frame at the work area's size** — A trailer shot at the display's own size would come back shrunk, and PW280 fixed only the still. → §PW283
 
 ## Block F — Motion
 

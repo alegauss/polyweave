@@ -49,10 +49,10 @@ export const generatedBlocks: GeneratedBlock[] = [
 
 export const generatedTasks: GeneratedTask[] = [
   {
-    id: "PW280",
+    id: "PW283",
     block: "E",
-    symptom: "no capture can take a picture larger than the desktop, so a 4K key art on a 4K screen always comes back shrunk",
-    why: "A store's library hero needs 3840 wide, and PW267's remedy names a viewport route polyweave does not have.",
+    symptom: "capture.movie asked a size past the desktop likely records every frame at the work area's size",
+    why: "A trailer shot at the display's own size would come back shrunk, and PW280 fixed only the still.",
     deps: [],
   },
   {

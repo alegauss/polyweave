@@ -10,24 +10,24 @@
 
 ## Block E — One world with the engine
 
-### §PW280 A capture larger than the desktop
+### §PW283 A movie larger than the desktop
 
-Found validating PW267 in Starship (2026-09-28). Steam's library hero needs a 3840-wide
-key art, and `store.capsules` rightly refuses to upscale one. The key art was asked of
-`capture.run` at 3840x2160 on a 3840x2160 display. PW267 now answers `holds: false`: the
-OS shrank the window to the work area, 3840x2119. Its remedy says to render into an
-offscreen viewport of that size, but no route in `offscreen.routes` does, and PW273's
-window overrides are what the OS shrinks. So a picture larger than the desktop can only
-be had by each project writing a SubViewport into its own stage script.
+Found shipping PW280 (2026-09-28). A still larger than the desktop is now taken with the
+window borderless, because the OS shrinks a decorated window to the work area: 3840x2160
+asked came back 3840x2119 on a 3840x2160 display, and 5000x3000 came back 3844x2119.
+`capture.movie` sizes its run through its own `override.cfg` (PW273), holding the window
+overrides and not `window/size/borderless`, so a trailer shot asked at the display's own
+size is likely recorded shrunk, frame after frame. This is not yet measured.
 
-`capture.run` should take a size a window cannot hold. It would render the scene into a
-SubViewport of that size, the world and the camera the script sets up, and save that
-viewport's texture. It would record the size measured on the picture, as PW267 does. It
-should be an offscreen route of its own (`viewport`), probed like the others, and chosen
-when the asked size exceeds the desktop's work area.
+First measure it. Run `capture.movie` at 3840x2160 on a 3840x2160 display, or at
+8000x120 anywhere, and read the first frame's size in `sequence.json`. If it is short,
+add `window/size/borderless=true` to the override `_movie_sized` writes. A movie writes
+that file on every run, so there is no second take to spend, and no size to remember. If
+the frames already come back at the size asked, retire this line and cite what was
+measured.
 
-Done when Starship's key art captures at 3840x2160 on a 3840x2160 display and
-`store.capsules` cuts the library hero from it.
+Done when a movie asked past the desktop records frames at the size asked, with a
+real-engine test beside the still's.
 
 ## Block F — Motion
 

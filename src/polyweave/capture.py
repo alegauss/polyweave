@@ -212,8 +212,43 @@ def run(
     Everything about which route draws is `offscreen`'s problem; everything about
     whether the run worked is `engine`'s. What this adds is the environment: passed in,
     reported back, compared, and written down beside the picture.
+
+    A picture the OS shrank to the desktop's work area is taken once more with the
+    window borderless, which the OS leaves at the size asked (§PW280), and the size is
+    kept so the next run at it goes borderless from the start.
     """
     asked = environment if environment is not None else wanted(root)
+    size = _size_of(asked.get("resolution", ""))
+    known = bool(size) and size in _beyond(root)
+    once = {"expect": expect, "root": root, "environment": asked, "record": record,
+            "take": take}
+    answer = _once(script, borderless=known, **once, **dict(how))
+    if not size or known or not answer.get("shrunk"):
+        return answer
+    try:
+        again = _once(script, borderless=True, **once, **dict(how))
+    except PolyweaveError as held:
+        if held.code != "capture.override-held":
+            raise
+        return {**answer, "why": f"{answer['why']}; {held.message}: {held.remedy}"}
+    if not again.get("shrunk"):
+        _remember(root, size)
+    return {**again, "borderless": True, "shrunk_first": answer["shrunk"]}
+
+
+def _once(
+    script: str | Path,
+    *,
+    expect: str | re.Pattern,
+    root: str | Path,
+    environment: dict,
+    record: bool,
+    take: Any,
+    borderless: bool,
+    **how: Any,
+) -> dict:
+    """One take of `run`, with the window borderless where it has to be."""
+    asked = environment
     # One `--` only (§PW238): a caller whose args already hold the engine's and then the
     # script's own has written it, and a second would reach the script as an argument.
     given = _sized(tuple(how.pop("args", ())), asked)
@@ -225,9 +260,10 @@ def run(
     attempt = 0
     while True:
         attempt += 1
-        found = (take or offscreen.capture)(
-            script, expect=expect, root=root, args=args, **how
-        )
+        with _borderless(load(root).root, borderless):
+            found = (take or offscreen.capture)(
+                script, expect=expect, root=root, args=args, **how
+            )
         log = Path(found["log"]).read_text(encoding="utf-8", errors="replace")
         if not until or not found["ok"] or saw(log, until, expect) or attempt >= tries:
             break
@@ -251,7 +287,7 @@ def run(
     # that set root.size and printed it said 1920x1080 over a 1280x720 picture.
     claimed, measured = applied(log), _measured(asked, found["artefacts"])
     against = compare(asked, {**claimed, **measured})
-    shrunk = _shrunk(asked, claimed, measured)
+    shrunk = _shrunk(asked, claimed, measured, borderless)
     if shrunk:
         against = {**against, "why": "; ".join(filter(None, (against["why"], shrunk)))}
     answer = {
@@ -259,6 +295,7 @@ def run(
         "environment": against,
         "regions": regions(log),
         "loaded": loaded(log),
+        **({"shrunk": shrunk} if shrunk else {}),
     }
     if found["ok"] and not against["holds"]:
         # The run worked and the environment did not hold, and that is said at the top,
@@ -374,7 +411,9 @@ def _measured(asked: dict, artefacts: list) -> dict:
     return {"resolution": sizes.pop()} if sizes else {}
 
 
-def _shrunk(asked: dict, claimed: dict, measured: dict) -> str:
+def _shrunk(
+    asked: dict, claimed: dict, measured: dict, borderless: bool = False
+) -> str:
     """Why a picture's size differs from what the script said it applied (§PW267).
 
     The script reports the size it asked the window for; the OS may still shrink a
@@ -383,11 +422,65 @@ def _shrunk(asked: dict, claimed: dict, measured: dict) -> str:
     wanted, said, got = (one.get("resolution") for one in (asked, claimed, measured))
     if not wanted or not got or got == _size_of(wanted) or said is None:
         return ""
+    if borderless:
+        return (
+            f"the picture is {got}, asked {_size_of(wanted)}, even with the window "
+            f"borderless: on a virtual display, give it a screen at least that size"
+        )
     return (
         f"the picture is {got}, asked {_size_of(wanted)}, though the script said it "
-        f"applied {said}: a window larger than the desktop's work area is shrunk by "
-        f"the OS, so render into an offscreen viewport of that size instead"
+        f"applied {said}: the OS shrank a window larger than the desktop's work area"
     )
+
+
+#: Where the sizes this machine's desktop shrinks are kept, under the work folder.
+BEYOND = "capture/beyond.json"
+
+
+def _beyond(root: str | Path) -> list[str]:
+    """The sizes a window was shrunk from here before, so they start borderless."""
+    try:
+        kept = json.loads((load(root).path("paths.work") / BEYOND).read_text("utf-8"))
+    except (OSError, ValueError):
+        return []
+    return [str(one) for one in kept.get("sizes", [])] if isinstance(kept, dict) else []
+
+
+def _remember(root: str | Path, size: str) -> None:
+    from .files import write_atomic
+
+    sizes = sorted({*_beyond(root), size})
+    write_atomic(load(root).path("paths.work") / BEYOND,
+                 json.dumps({"sizes": sizes}, indent=2) + "\n")
+
+
+@contextlib.contextmanager
+def _borderless(here: Path, wanted: bool):
+    """The window borderless for one run, which the OS does not shrink (§PW280).
+
+    A decorated window larger than the desktop's work area comes back at the work
+    area's size, 3840x2119 asked 3840x2160; a borderless one is left at the size
+    asked, even past the screen, and draws the same pixels through the same stretch.
+    Godot has no flag for it, so it is `override.cfg` for the run, as a movie's size
+    is, and a project with one of its own is refused rather than having it replaced.
+    """
+    if not wanted:
+        yield
+        return
+    target = here / OVERRIDE
+    if target.exists():
+        raise PolyweaveError(
+            "capture.override-held",
+            f"the project has an {OVERRIDE} of its own, and a picture larger than the "
+            "desktop is taken borderless by writing one",
+            "set display window/size/borderless=true in it for the run",
+        )
+    target.write_text("[display]\n\nwindow/size/borderless=true\n",
+                      encoding="utf-8", newline="\n")
+    try:
+        yield
+    finally:
+        target.unlink(missing_ok=True)
 
 
 def saw(log: str, group: str, expect: str | re.Pattern) -> bool:

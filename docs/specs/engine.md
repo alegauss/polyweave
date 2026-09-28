@@ -217,8 +217,21 @@ picture had the environment hold. Where every picture is one size, that size is 
 (§PW267): `applied` names them all, where it had fallen back to the script's own line. And
 where the script said it applied the size asked and the picture disagrees, `why` names the
 picture's size, the size asked and the likely cause: a window larger than the desktop's
-work area is shrunk by the OS (a key art asked at 3840x2160 came back 3840x2119), which
-an offscreen viewport of that size renders instead.
+work area is shrunk by the OS (a key art asked at 3840x2160 came back 3840x2119).
+
+**A picture larger than the desktop is taken borderless** (§PW280). The OS shrinks a
+decorated window to the work area and leaves a borderless one at the size asked, even past
+the screen (8000x120 and 5000x3000 on a 3840x2160 display, measured on 4.7.1), and it
+draws the same pixels through the project's own stretch. A viewport stretch was measured
+and set aside: it renders at `content_scale_size / scale`, so it cannot keep both the
+size and a `canvas_items` game's own scale. So a capture whose picture came back smaller
+than its `resolution` is taken once more with `override.cfg` holding
+`window/size/borderless=true` for the run, and answers `borderless: true` and
+`shrunk_first`, the first take's reason. The size is kept under the work folder
+(`capture/beyond.json`), so the next run at it goes borderless from the start. A project
+with an `override.cfg` of its own keeps it: the first answer comes back with that reason
+added. A picture still short borderless is a virtual display smaller than the size, and
+`why` says to give it a larger screen.
 
 **The frame budget is the caller's to size** (§PW251). `capture.run` takes `frames` and
 `timeout`, over `[engine] frames` and `timeout`, so a script flying to a late moment
