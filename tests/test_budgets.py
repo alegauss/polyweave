@@ -62,7 +62,8 @@ from polyweave.errors import PolyweaveError
 #: 86,492 with vfx.build (§PW259), an effect built from its declaration.
 #: 87,415 with geometry.fit's boxed (§PW263), shape scored inside its box.
 #: 88,254 with verdict.promote (§PW265), a promotion carried from conversation.
-DESCRIBE = 88_800
+#: 89,346 with store.capsules (§PW268), a store's set from one key art.
+DESCRIBE = 90_000
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -103,7 +104,8 @@ DESCRIBE = 88_800
 #: 96,817 with vfx.build and its two codes (§PW259).
 #: 97,618 with vfx.preview and vfx.unwatched (§PW259).
 #: 98,728 with verdict.promote, op.crashed and verdict.bad-member (§PW261, §PW265).
-CAPABILITIES = 99_300
+#: 100,006 with store.capsules and its five codes (§PW268).
+CAPABILITIES = 100_700
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
@@ -129,7 +131,8 @@ HELP_VERB = 4_000
 #: 18,944 with provenance.generated (§PW248).
 #: 19,263 with capture.movie and engine.sweep (§PW249, §PW250).
 #: 19,569 with vfx.build (§PW259).
-HELP_TOP = 19_900
+#: 20,028 with store.capsules (§PW268).
+HELP_TOP = 20_400
 #: A search's answer over its default budget of 24 samples: 3,739.
 SEARCH = 4_000
 

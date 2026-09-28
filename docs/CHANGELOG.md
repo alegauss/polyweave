@@ -215,6 +215,7 @@
 - ✅ **PW144** **the rig a search found is kept nowhere, so each run searches it again and no other game can start from it** — A passing searched port keeps its rig beside the family file; the next port renders at it before searching, and another family can start from it (design recorded in `docs/specs/adoption.md`).
 - ✅ **PW207** **Every public description still calls polyweave a tool for 3D assets** — The manifests, skill trigger, README, docstring, llms.txt and site describe a game's parts, claiming only what shipped and naming levels as next.
 - ✅ **PW259 (declaration, build, watching and spec)** **a visual effect such as a trail or a burst of particles cannot be declared, built or accepted** — vfx.build turns a *.vfx.toml into Godot particle and ribbon scenes, vfx.preview lays their frames out as a sitting, and accept.check bounds reach and budget.
+- ✅ **PW268** **a store's capsule set cannot be cut from one key art, so each project crops and places its logo by hand** — store.capsules cuts a store's whole set from one key art and a logo, shapes as data, refusing any upscale and failing a capsule whose logo won't read (design recorded in `docs/specs/store.md`).
 
 ## Block N — Pictures held to a canon
 

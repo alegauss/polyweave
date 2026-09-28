@@ -79,7 +79,8 @@ TOOL_BUDGET = 4500
 #: 77,500 at 76,728 for vfx.build (§PW259).
 #: 78,000 at 77,543 for geometry.fit's boxed (§PW263).
 #: 78,800 at 78,277 for verdict.promote (§PW265).
-LIST_BUDGET = 78800
+#: 79,800 at 79,224 for store.capsules (§PW268).
+LIST_BUDGET = 79800
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

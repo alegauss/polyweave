@@ -59,6 +59,7 @@ AREAS: dict[str, str] = {
     "sound": "the audio a game declares it needs, and where each file lands",
     "music": "a score written as a source, compiled to notes and checked",
     "vfx": "a particle or ribbon effect declared as data and built for the engine",
+    "store": "a store's capsule set, cut from one key art and a logo",
 }
 
 CODES: dict[str, Code] = {
@@ -809,6 +810,34 @@ CODES: dict[str, Code] = {
         means="the score has problems, so it compiles to nothing a render may play",
         when="music.to_midi on a source music.validate would not pass",
         doors=("call music.validate and fix every problem it names",),
+    ),
+    # -- store: a store's capsules from one key art -------------------------------
+    "store.unknown": Code(
+        means="no store by that name, and no store file at that path",
+        when="a misspelled store, or a project's store file that is not there",
+        doors=("name a store this plugin knows", "pass a store file's path"),
+    ),
+    "store.bad-shape": Code(
+        means="a store file's shape has no size in pixels or an unknown logo rule",
+        when="a size that is not two whole numbers, or a logo other than centre, "
+        "lower, only or none",
+        doors=("write the shape as the remedy says",),
+    ),
+    "store.bad-focus": Code(
+        means="the focus is not a point inside the key art",
+        when="a focus that is not two fractions from 0 to 1",
+        doors=("pass focus as [x, y], fractions of the key art",),
+    ),
+    "store.no-picture": Code(
+        means="the key art or the logo is not there",
+        when="a path to no file",
+        doors=("name the picture as a path under the project",),
+    ),
+    "store.too-small": Code(
+        means="the key art or logo is smaller than a shape needs, and nothing upscales",
+        when="a key art narrower than a store's widest capsule, or a logo drawn larger "
+        "than it is",
+        doors=("give a larger key art or logo",),
     ),
     # -- verdict: the members a verdict is laid out from --------------------------
     "verdict.bad-member": Code(

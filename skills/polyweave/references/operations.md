@@ -13,7 +13,7 @@ This page only groups them by what you are trying to do.
 | Measure | `measure.take`, `measure.same`, `measure.available`, `measure.digest` (did the outline move, or only the look) |
 | Judge against the bar | `accept.check`, `accept.verify`, `accept.check_screen`, `cost.read` (what it costs to draw), `sound.measure` (a loop's seam, level), `sound.declared` (the game's declared audio and what is missing) |
 | Search for numbers | `search.sweep`, `port.run` (a whole family), `trace.read` |
-| See it where it is seen | `compose.place`, `compose.sheet` |
+| See it where it is seen | `compose.place`, `compose.sheet`, `store.capsules` (a store's set) |
 | Size a bound from noise | `calibrate.run`, then `calibrate.apply` |
 | Carry a person's verdict | `verdict.sheet`, `verdict.sitting`, `verdict.judge`, `verdict.promote`, `sound.sitting`; `python -m polyweave review` shows a person a sitting, `verdict.answers` resumes from what they said there |
 | Keep the ledger | `loop.start`, `loop.spent`, `loop.judged`, `loop.finish`, `loop.compare` |

@@ -39,7 +39,7 @@
 
 ## Block M — What a game needs beyond the look
 
-- 📋 **PW268** (deps: —) **a store's capsule set cannot be cut from one key art, so each project crops and places its logo by hand** — Every Steam page needs about ten shapes of one picture, most with a logo that must still read at thumbnail size. → §PW268
+- 📋 **PW275** (deps: —) **store.capsules reads only a raster logo, so a wordmark kept as SVG has to be exported by hand at a guessed size** — Brand marks are kept as vectors, and a stroke measured on a scaled-down export is the export's, not the capsule's. → §PW275
 
 ## Block N — Pictures held to a canon
 

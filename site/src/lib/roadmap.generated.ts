@@ -105,10 +105,10 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW268",
+    id: "PW275",
     block: "M",
-    symptom: "a store's capsule set cannot be cut from one key art, so each project crops and places its logo by hand",
-    why: "Every Steam page needs about ten shapes of one picture, most with a logo that must still read at thumbnail size.",
+    symptom: "store.capsules reads only a raster logo, so a wordmark kept as SVG has to be exported by hand at a guessed size",
+    why: "Brand marks are kept as vectors, and a stroke measured on a scaled-down export is the export's, not the capsule's.",
     deps: [],
   },
   {

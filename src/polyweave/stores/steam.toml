@@ -1,0 +1,61 @@
+# Steam's store and library graphics, as its graphical asset rules publish them.
+# Each shape is cut from one key art; `logo` says how the game's logo goes on it:
+#   centre  the logo across the middle, `logo_width` of the shape's width
+#   lower   the same, its middle at `logo_at` of the height
+#   only    the logo alone on a transparent canvas, fitted inside the shape
+#   none    no logo: the store asks for none there, or the shape is art alone
+# A project declares a store of its own as a file of this shape and passes its path.
+
+name = "steam"
+# The thinnest stroke of the logo, in pixels, below which a name does not read.
+min_stroke = 2.0
+
+[shape.header_capsule]
+size = [920, 430]
+logo = "centre"
+logo_width = 0.6
+
+[shape.small_capsule]
+size = [462, 174]
+logo = "centre"
+logo_width = 0.8
+
+[shape.main_capsule]
+size = [1232, 706]
+logo = "lower"
+logo_width = 0.5
+logo_at = 0.72
+
+[shape.vertical_capsule]
+size = [748, 896]
+logo = "lower"
+logo_width = 0.8
+logo_at = 0.78
+
+[shape.page_background]
+size = [1438, 810]
+logo = "none"
+
+[shape.library_capsule]
+size = [600, 900]
+logo = "lower"
+logo_width = 0.85
+logo_at = 0.8
+
+[shape.library_header]
+size = [920, 430]
+logo = "centre"
+logo_width = 0.6
+
+[shape.library_hero]
+# Steam draws the library logo over the hero, and asks the hero to carry no text.
+size = [3840, 1240]
+logo = "none"
+
+[shape.library_logo]
+size = [1280, 720]
+logo = "only"
+
+[shape.community_icon]
+size = [184, 184]
+logo = "none"

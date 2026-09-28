@@ -24,7 +24,8 @@ SKILL_BUDGET = 3_400
 #: 3,600 at 3,563 with a row for driving a game (§PW213).
 #: 3,700 at 3,613 once the row names keep, replay and release_check (§PW214, §PW215).
 #: 3,800 at 3,716 once the verdict row names sound.sitting (§PW256).
-REFERENCE_BUDGET = 3_800
+#: 3,900 at 3,832 once the compose row names store.capsules (§PW268).
+REFERENCE_BUDGET = 3_900
 
 
 def test_the_manifest_and_the_marketplace_name_the_plugin():

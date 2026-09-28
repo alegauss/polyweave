@@ -387,35 +387,28 @@ reaches, its brightness, its particle count against a budget).
 Done when Starship's seven trails are seven declarations built and accepted through
 polyweave, and the game reads what was built instead of its own data.
 
-### §PW268 A store's capsules from one key art
+### §PW275 A vector logo drawn at each capsule's size
 
-Found in Starship (2026-09-27, RK74). A Steam page asks for one key art in about ten
-shapes:
+Found shipping PW268 (2026-09-28). Starship keeps its wordmark as SVG only
+(`art/brand/spinhold-wordmark.svg`, a light and a clear variant beside it), and
+`store.capsules` opens the logo with Pillow, which reads no SVG. So the one call the
+line promised needs a raster exported by hand first, at a size that has to be guessed:
+large enough that no shape upscales it, which for Steam's library logo is 1280 wide.
 
-- header, small, main and vertical capsules;
-- library capsule, header, hero and logo;
-- page background, community icon.
+A vector logo should be rendered at the size each shape draws it, which is also the
+honest input to the stroke measure: a raster scaled down from one export measures the
+export's strokes, a vector drawn at 462 by 174 measures the capsule's. Rendering an SVG
+needs a rasteriser the plugin does not carry. Blender imports SVG and is already an
+engine here, and Godot rasterises SVG natively through ThorVG
+(`Image.load_svg_from_string` with a scale), which a headless run can do in milliseconds
+and which the project already has. The Godot route keeps the dependency list as it is.
 
-Each has its own size and aspect, and most carry the game's logo. polyweave has
-`compose.place`, which puts a picture into another, and `picture.fit`, which fits a
-sprite to a family's grid. Neither crops a key art to a size around its subject, and
-nothing knows a store's list of sizes or checks that a logo still reads at the small
-capsule's 462 by 174. So the project wrote a crop script of its own in the work area.
+So: a logo whose suffix is `.svg` is rendered once per shape by a short headless Godot
+run at the scale the shape's rule asks, and the refusal for a small logo no longer
+applies to it, since a vector has no size to be too small at.
 
-A `store.capsules` operation should take a key art, a logo with alpha, and a store
-(`steam`, with its sizes declared as data, not code). It should write each capsule:
-
-- cover-cropped around a focus point the caller gives;
-- the logo placed by a rule per shape, and left off where the store forbids text (the
-  library hero);
-- each with its provenance.
-
-It should refuse a key art smaller than the largest size rather than upscale it quietly.
-It should also measure the logo's legibility at each size (its smallest stroke in
-pixels) and fail a capsule where the name would not read.
-
-Done when Starship's capsule set is written by one call from art/brand/key-art.png and
-the wordmark.
+Done when `store.capsules` takes `art/brand/spinhold-wordmark.svg` directly and each
+capsule's stroke is measured on the logo drawn at its own size.
 
 ## Block N — Pictures held to a canon
 

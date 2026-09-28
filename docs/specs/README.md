@@ -31,6 +31,7 @@ needed.
 | [world.md](world.md) | A game's names, factions and characters declared beside its prose, and the text a player reads held to them | PW196–PW200 |
 | [music.md](music.md) | A score written as a source in mini-notation, the note model it compiles to, and MIDI | PW186–PW188 |
 | [effects.md](effects.md) | Retro effects as sfxr parameters and a seed, and realistic ones bought under a ceiling, each at the cue a game declares | PW189, PW190 |
+| [store.md](store.md) | A store's capsule set cut from one key art and a logo, with the store's shapes as data | PW268 |
 | [vfx.md](vfx.md) | A particle or ribbon effect declared as data and built into the scene the engine plays, with what it measures | PW259 |
 | [driving.md](driving.md) | A running game held still between an agent's calls, and the commands that move and read it | PW211–PW217 |
 | [adoption.md](adoption.md) | What one asset cost to make each way, so the claim can be falsified | PW35 |
