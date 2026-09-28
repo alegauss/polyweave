@@ -220,6 +220,36 @@ def _overruled(root, body: dict) -> tuple[list[dict], str, str]:
     return [member], f"gate:{run['id']}", name
 
 
+def _admitted(root, body: dict) -> tuple[list[dict], str, str]:
+    """A candidate admitted to a canon by a person, never gated (§PW266).
+
+    Only a picture the family's own `candidates` lists: the page can admit what the
+    project pointed at, and not any file a request names.
+    """
+    from . import style
+
+    config = load(root)
+    name, declared = config.style(body.get("canon") or None)
+    offered = {
+        one["path"]: one
+        for one in style.candidates(declared, style.admitted(declared), config.root)
+    }
+    chosen = str(body.get("admit") or "")
+    if chosen not in offered:
+        raise PolyweaveError(
+            "style.not-a-candidate",
+            f"{chosen!r} is not a candidate of the {name} canon",
+            f"admit one of {', '.join(sorted(offered))}"
+            if offered
+            else f"point [style.{name}] candidates at the pictures a person may admit",
+            given=chosen,
+            allowed=sorted(offered),
+        )
+    stem = Path(chosen).stem
+    member = {"name": stem, "new": chosen, "passed": True, "canon": name}
+    return [member], f"canon:{name}", stem
+
+
 def turntables(root) -> list[dict]:
     """Every turntable laid out in this project, newest last (§PW176)."""
     from .shape import TURNTABLES
@@ -254,6 +284,15 @@ def answer(root, body: dict) -> dict:
                 root=config.root,
             )
         }
+    if body.get("admit"):
+        members, listed, family = _admitted(root, body)
+        said = verdict.judge(
+            members, "accept", str(body.get("why") or ""), root=str(config.root)
+        )
+        said["answer"] = verdict.record_answer(
+            said, sitting=listed, family=family, root=config.root
+        )
+        return said
     if body.get("gate"):
         members, listed, family = _overruled(root, body)
         if body.get("canon"):

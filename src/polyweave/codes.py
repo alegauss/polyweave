@@ -744,6 +744,13 @@ CODES: dict[str, Code] = {
         "in another family's canon",
         doors=("name a picture the board shows",),
     ),
+    "style.not-a-candidate": Code(
+        means="the picture is not one the family's candidates point at",
+        when="an admission from the review page of a file no [style] candidates glob "
+        "matches, or one the canon already holds",
+        doors=("admit a candidate the board lists",
+               "point [style.<family>] candidates at the pictures a person may admit"),
+    ),
     "style.no-canon": Code(
         means="the family has no canon directory, so nothing can be admitted to it",
         when="a verdict naming a canon family whose [style] declares no canon",

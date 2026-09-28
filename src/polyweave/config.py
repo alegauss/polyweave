@@ -206,6 +206,10 @@ DEFAULTS: dict[str, Any] = {
         # its own, so a sprite sheet is never held to a title screen's canon.
         # The directory of pictures a person approved; only a verdict adds to it.
         "canon": "",
+        # Globs under the project of pictures a person may admit to the canon from the
+        # review page without a gate run (§PW266): key art and wordmarks have no
+        # outline to gate, and they are what a brand's canon starts from.
+        "candidates": [],
         # The colours a picture may use, as #rrggbb values rather than names.
         "palette": [],
         # The style block every structured prompt starts from, as the service spells

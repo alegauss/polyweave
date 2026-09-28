@@ -44,8 +44,6 @@
 
 ## Block N — Pictures held to a canon
 
-- 📋 **PW266** (deps: —) **the review page admits a picture to a canon only from a gate lane, so a family never gated cannot start** — Key art and wordmarks have no outline to gate, and they are what a brand canon is made of. → §PW266
-
 ## Block O — A person sees and answers
 
 ## Block P — Music and sound a game can ship

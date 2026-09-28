@@ -511,3 +511,37 @@ def test_a_kept_picture_joins_the_canon_by_a_click(canon):
     assert said["members"][0]["canon"]["verdict"]["why"] == "this is the look"
     _, declared = style_of(where)
     assert "new.png" in [e["picture"] for e in style.admitted(declared)]
+
+
+def test_a_family_never_gated_starts_from_its_candidates(page):
+    """§PW266: Starship's brand studies had no outline to gate, and no door in."""
+    from polyweave import style
+
+    base, where = page
+    (where / "polyweave.toml").write_text(
+        '[style.brand]\ncanon = "canon/brand"\ncandidates = ["studies/brand-*.png"]\n',
+        "utf-8",
+    )
+    (where / "studies").mkdir()
+    for name, grey in (("brand-a.png", 90), ("brand-b.png", 160), ("other.png", 30)):
+        flat = Image.new("RGBA", (32, 32), (grey, grey, grey, 255))
+        flat.save(where / "studies" / name)
+    _, body, _ = get(base + "/api/canon")
+    board = json.loads(body)[0]
+    assert [c["path"] for c in board["candidates"]] == [
+        "studies/brand-a.png", "studies/brand-b.png"]
+    assert board["judges"] is False and "judges nothing" in board["says"]
+    status, said = post(base + "/api/judge", {
+        "canon": "brand", "admit": "studies/brand-a.png", "why": "the wordmark"})
+    assert status == 200
+    assert said["members"][0]["canon"]["verdict"]["why"] == "the wordmark"
+    from polyweave import config
+
+    _, declared = config.load(where).style("brand")
+    assert [e["from"] for e in style.admitted(declared)] == ["studies/brand-a.png"]
+    _, body, _ = get(base + "/api/canon")
+    assert [c["path"] for c in json.loads(body)[0]["candidates"]] == [
+        "studies/brand-b.png"]
+    status, said = post(base + "/api/judge", {
+        "canon": "brand", "admit": "studies/other.png", "why": "x"})
+    assert status == 400 and said["code"] == "style.not-a-candidate"

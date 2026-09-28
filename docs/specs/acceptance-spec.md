@@ -231,6 +231,15 @@ canon, with the entry and the removing verdict in `withdrawn/canon.json`, so not
 drifts against it any more and the removal can still be argued with. A picture not in the
 canon is `style.not-in-canon`. Neither door is an operation an agent can call.
 
+**A family never gated starts from its candidates** (§PW266). Key art and a wordmark have
+no outline to gate, so `[style.<family>] candidates`, globs under the project, points at
+the pictures a person may admit. Each board lists those the canon does not hold yet, each
+with the same "Add to canon" and a sentence: the page posts `admit` and `canon`, and only a
+listed candidate is admitted (`style.not-a-candidate` otherwise), through `judge` like any
+other admission, its answer kept as sitting `canon:<family>`. A board holding fewer than
+two pictures says it judges nothing yet (`judges` false, and `says`), since a spread needs
+two.
+
 **A pass also says how comfortably** (§PW104). The margin is 1 anywhere inside a bound, so
 Cottony's stars passed with a facet at 0.4695 under a ceiling of 0.47 and the search called
 that nothing left to gain. Each predicate now also carries its `headroom`: the distance to

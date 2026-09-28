@@ -404,6 +404,34 @@ function canonBoard(one) {
     grid.append(card);
   }
   box.append(grid);
+  if (one.says) box.append(element("p", { class: "says" }, one.says));
+  // Pictures the project pointed at that no gate ever saw (§PW266): key art and a
+  // wordmark have no outline to gate, and a brand canon starts from them.
+  if ((one.candidates || []).length) {
+    box.append(element("h3", {}, "Candidates"));
+    const offered = element("div", { class: "canon" });
+    for (const candidate of one.candidates) {
+      const card = element("div", { class: "candidate" });
+      card.append(element("img", { src: file(candidate.path), alt: candidate.path }),
+        element("p", {}, candidate.path));
+      const form = element("form");
+      const why = element("textarea", { placeholder: "Why it belongs in the canon.", "aria-label": "why" });
+      const send = element("button", { type: "submit" }, "Add to canon");
+      const said = element("p", { class: "answer", "aria-live": "polite" });
+      form.append(why, send, said);
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (!why.value.trim()) { said.textContent = "Write a sentence first."; return; }
+        send.disabled = true;
+        const { ok, body } = await post({ canon: one.family, admit: candidate.path, why: why.value });
+        said.textContent = ok ? "Added to the canon." : body.code + ": " + body.message;
+        send.disabled = ok;
+      });
+      card.append(form);
+      offered.append(card);
+    }
+    box.append(offered);
+  }
   return box;
 }
 

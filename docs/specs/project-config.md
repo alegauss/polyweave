@@ -121,6 +121,7 @@ outlines = "tools/art/outlines.py"   # where named shape generators come from
 
 [style]
 canon    = "docs/design/canon"     # pictures a person approved; only a verdict adds one
+candidates = ["art/studies/*.png"] # what a person may admit from the page, ungated
 palette  = ["#f2c14e", "#3a2e39"]  # as values, never names
 skeleton = { medium = "flat vector", lighting = "soft" }   # every structured prompt's start
 cell     = [64, 64]                # the grid a picture is put on when it arrives

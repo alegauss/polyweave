@@ -38,7 +38,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "K", title: "Reached without reading the source", open: 0 },
   { block: "L", title: "What a run leaves as evidence", open: 1 },
   { block: "M", title: "What a game needs beyond the look", open: 1 },
-  { block: "N", title: "Pictures held to a canon", open: 1 },
+  { block: "N", title: "Pictures held to a canon", open: 0 },
   { block: "O", title: "A person sees and answers", open: 0 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
   { block: "Q", title: "Words held to the world", open: 0 },
@@ -116,13 +116,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "M",
     symptom: "a store's capsule set cannot be cut from one key art, so each project crops and places its logo by hand",
     why: "Every Steam page needs about ten shapes of one picture, most with a logo that must still read at thumbnail size.",
-    deps: [],
-  },
-  {
-    id: "PW266",
-    block: "N",
-    symptom: "the review page admits a picture to a canon only from a gate lane, so a family never gated cannot start",
-    why: "Key art and wordmarks have no outline to gate, and they are what a brand canon is made of.",
     deps: [],
   },
   {

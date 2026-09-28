@@ -417,7 +417,34 @@ def board(family: str | None = None, root=".") -> dict:
             e["picture"]: _floors(measured[:i] + measured[i + 1 :])
             for i, e in enumerate(held)
         },
+        "candidates": candidates(declared, held, here),
+        # A spread needs two pictures, so a family with fewer holds no picture to it.
+        "judges": len(held) >= 2,
+        "says": ""
+        if len(held) >= 2
+        else f"the {name} canon holds {len(held)} picture"
+        f"{'' if len(held) == 1 else 's'}, and judges nothing until it holds two",
     }
+
+
+def candidates(declared: dict, held: list[dict], here: Path) -> list[dict]:
+    """The pictures `candidates` points at that the canon does not hold yet (§PW266)."""
+    kept = {e["sha256"] for e in held}
+    found, seen = [], set()
+    for pattern in declared.get("candidates") or []:
+        for path in sorted(here.glob(str(pattern))):
+            if not path.is_file() or path.suffix.lower() not in PICTURES:
+                continue
+            digest = provenance.sha256_of(path)[0]
+            if digest in kept or digest in seen:
+                continue
+            seen.add(digest)
+            found.append({"path": provenance.relative(path, here), "sha256": digest})
+    return found
+
+
+#: What a candidate may be: a picture the canon's measures can read.
+PICTURES = (".png", ".jpg", ".jpeg", ".webp")
 
 
 def withdraw(
