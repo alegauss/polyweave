@@ -5,7 +5,8 @@ which is the tuning by eye every other part of a game here has left behind. An e
 declared in a `*.vfx.toml` instead, and `vfx.build` writes it as a Godot scene:
 
     [effect.spark_trail]
-    kind = "particles"            # or ribbon: a trail through each particle's path
+    kind = "particles"            # ribbon: a trail through each particle's path, or
+                                  # path_ribbon: one through the path the emitter flew
     amount = 64                   # the particles alive at once: the effect's budget
     lifetime = 0.8                # seconds
     speed = [2.0, 3.0]            # metres a second, least and most
@@ -24,6 +25,13 @@ declared in a `*.vfx.toml` instead, and `vfx.build` writes it as a Godot scene:
 `shape` other than a square is a texture on each quad: a soft dot, a ring or a flake
 drawn from a gradient, as Starship's accepted trails draw them, or a picture of the
 project's own.
+
+A `path_ribbon` is a ribbon of light behind a moving emitter, as a ship's engine leaves
+(§PW281): a Node3D the game puts where the engine is, whose own script keeps the points
+its parent carried it through, `amount` of them at most, each living `lifetime`, and
+draws a strip `size` wide across `facing`, coloured and narrowed by its age along
+`colour_over_life` and `size_over_life`. The script is inside the scene, so the game
+still holds no code of its own.
 
 The scene is a GPUParticles3D with its process material, its curves and its draw pass,
 all in the one file, so the game instances it and holds no numbers of its own. What it
@@ -70,6 +78,7 @@ KEYS: dict[str, tuple[type | tuple, Any]] = {
     "angular_velocity": (list, [0.0, 0.0]),
     "extents": (list, [0.0, 0.0, 0.0]),
     "shape": (str, "square"),
+    "facing": (list, [0.0, 1.0, 0.0]),
 }
 
 #: Every effect measure a predicate may bound, and what it says.
@@ -106,7 +115,7 @@ def measures_of(path: Path, root: Path) -> dict:
     return record.get("measurements") or {}
 
 
-KINDS = ("particles", "ribbon")
+KINDS = ("particles", "ribbon", "path_ribbon")
 EMISSIONS = ("point", "sphere", "box")
 
 #: A particle's shape, as the gradient its texture is drawn from: stops of white at each
@@ -232,6 +241,11 @@ def checked(name: str, table: Any, root: Path | None = None) -> dict:
                    "write extents as the box's three half-sizes, none below 0, in "
                    "metres, such as [0.1, 1.0, 0.1]")
     own["shape"] = _shape(name, own["shape"], root)
+    own["facing"] = _vector(name, "facing", own["facing"], 3)
+    if not any(own["facing"]):
+        raise _bad(name, "faces [0, 0, 0], so a path ribbon has no width",
+                   "write facing as the direction its width lies along, such as "
+                   "[0, 1, 0]")
     sizes = own["size_over_life"]
     if not isinstance(sizes, list) or len(sizes) < 2 or not all(
             _number(v) and v >= 0 for v in sizes):
@@ -261,6 +275,9 @@ def measured(effect: dict) -> dict:
              math.sqrt(sum(e * e for e in effect["extents"]))
              if effect["emission"] == "box" else 0.0)
     reach = travel + 0.5 * pull * life * life + start
+    if effect["kind"] == "path_ribbon":
+        # It stays where the emitter was: its reach is the half-width it spreads.
+        reach = effect["size"] / 2
     brightness = max(
         (0.2126 * r + 0.7152 * g + 0.0722 * b) * a
         for r, g, b, a in effect["colour_over_life"]
@@ -303,6 +320,79 @@ def _shaped(effect: dict) -> tuple[str, str, str]:
     return "", own, 'albedo_texture = SubResource("shape")\n'
 
 
+#: A path ribbon's own script, inside the scene: it keeps the points its parent passed,
+#: newest last, and rebuilds the strip from them each frame, in the world.
+_FOLLOWS = """extends Node3D
+
+@export var colours: Gradient
+@export var sizes: Curve
+@export var look: Material
+@export var width := 0.2
+@export var life := 1.0
+@export var most := 64
+@export var facing := Vector3.UP
+
+var points: Array = []
+var strip := ImmediateMesh.new()
+var drawn := MeshInstance3D.new()
+var offset := Vector3.ZERO
+
+func _ready() -> void:
+\toffset = position
+\ttop_level = true
+\tglobal_transform = Transform3D.IDENTITY
+\tdrawn.mesh = strip
+\tdrawn.material_override = look
+\tdrawn.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+\tadd_child(drawn)
+
+func _process(delta: float) -> void:
+\tvar parent := get_parent() as Node3D
+\tvar here: Vector3 = parent.global_transform * offset if parent else offset
+\tfor point in points:
+\t\tpoint[1] += delta
+\twhile not points.is_empty() and points[0][1] > life:
+\t\tpoints.pop_front()
+\tpoints.append([here, 0.0])
+\twhile points.size() > most:
+\t\tpoints.pop_front()
+\tstrip.clear_surfaces()
+\tif points.size() < 2:
+\t\treturn
+\tvar across := facing.normalized()
+\tstrip.surface_begin(Mesh.PRIMITIVE_TRIANGLE_STRIP)
+\tfor point in points:
+\t\tvar aged: float = clampf(point[1] / life, 0.0, 1.0)
+\t\tvar half: float = width * 0.5 * sizes.sample(aged)
+\t\tvar shade: Color = colours.sample(aged)
+\t\tstrip.surface_set_color(shade)
+\t\tstrip.surface_add_vertex(point[0] + across * half)
+\t\tstrip.surface_set_color(shade)
+\t\tstrip.surface_add_vertex(point[0] - across * half)
+\tstrip.surface_end()
+"""
+
+
+def _path_ribbon(name: str, effect: dict, colours: str, sizes: str) -> str:
+    """A path ribbon's scene: its gradient, its curve, its look and its script."""
+    source = _FOLLOWS.replace("\\", "\\\\").replace('"', '\\"')
+    return (
+        '[gd_scene load_steps=5 format=3]\n\n'
+        + colours + sizes +
+        '[sub_resource type="StandardMaterial3D" id="look"]\n'
+        f"transparency = 1\nblend_mode = {1 if effect['blend'] == 'add' else 0}\n"
+        "shading_mode = 0\nvertex_color_use_as_albedo = true\ncull_mode = 2\n\n"
+        '[sub_resource type="GDScript" id="follows"]\n'
+        f'script/source = "{source}"\n\n'
+        f'[node name="{name}" type="Node3D"]\n'
+        'script = SubResource("follows")\n'
+        'colours = SubResource("colours")\nsizes = SubResource("sizes")\n'
+        'look = SubResource("look")\n'
+        f"width = {effect['size']:.6g}\nlife = {effect['lifetime']:.6g}\n"
+        f"most = {effect['amount']}\nfacing = Vector3({_floats(effect['facing'])})\n"
+    )
+
+
 def scene(name: str, effect: dict) -> str:
     """The effect as a Godot 4 scene: the particles node and all it draws with."""
     stops = effect["colour_over_life"]
@@ -313,6 +403,17 @@ def scene(name: str, effect: dict) -> str:
         f"Vector2({i / (len(sizes) - 1):.6g}, {v:.6g}), 0.0, 0.0, 0, 0"
         for i, v in enumerate(sizes)
     )
+    colours = (
+        '[sub_resource type="Gradient" id="colours"]\n'
+        f"offsets = PackedFloat32Array({_floats(offsets)})\n"
+        f"colors = PackedColorArray({_floats(c for s in stops for c in s)})\n\n"
+    )
+    curve = (
+        '[sub_resource type="Curve" id="sizes"]\n'
+        f"max_value = {top:.6g}\n_data = [{points}]\npoint_count = {len(sizes)}\n\n"
+    )
+    if effect["kind"] == "path_ribbon":
+        return _path_ribbon(name, effect, colours, curve)
     ribbon = effect["kind"] == "ribbon"
     draw = (
         f'[sub_resource type="RibbonTrailMesh" id="draw"]\n'
@@ -325,14 +426,10 @@ def scene(name: str, effect: dict) -> str:
     steps = 8 + bool(picture) + 2 * bool(shaped)
     return (
         f'[gd_scene load_steps={steps} format=3]\n\n'
-        + picture + shaped +
-        '[sub_resource type="Gradient" id="colours"]\n'
-        f"offsets = PackedFloat32Array({_floats(offsets)})\n"
-        f"colors = PackedColorArray({_floats(c for s in stops for c in s)})\n\n"
+        + picture + shaped + colours +
         '[sub_resource type="GradientTexture1D" id="ramp"]\n'
         'gradient = SubResource("colours")\n\n'
-        '[sub_resource type="Curve" id="sizes"]\n'
-        f"max_value = {top:.6g}\n_data = [{points}]\npoint_count = {len(sizes)}\n\n"
+        + curve +
         '[sub_resource type="CurveTexture" id="scale"]\n'
         'curve = SubResource("sizes")\n\n'
         '[sub_resource type="ParticleProcessMaterial" id="process"]\n'
@@ -452,6 +549,8 @@ FRAME = (320, 180)
 
 _WATCH = """extends SceneTree
 
+var mover := Node3D.new()
+
 func _initialize() -> void:
 \tvar world := Node3D.new()
 \tvar backdrop := WorldEnvironment.new()
@@ -464,11 +563,16 @@ func _initialize() -> void:
 \t\tBasis.looking_at(Vector3(%(centre)s) - Vector3(%(eye)s), Vector3(%(up)s)),
 \t\tVector3(%(eye)s))
 \tworld.add_child(camera)
-\tworld.add_child(load("%(scene)s").instantiate())
+\tmover.position = Vector3(%(centre)s)
+\tworld.add_child(mover)
+\tmover.add_child(load("%(scene)s").instantiate())
 \troot.add_child.call_deferred(world)
 
 func _process(_delta: float) -> bool:
 \tvar frame := Engine.get_process_frames()
+\tvar turn := TAU * frame / %(turn)s
+\tmover.position = Vector3(%(centre)s) + %(round)s * (
+\t\tcos(turn) * Vector3(%(along)s) + sin(turn) * Vector3(%(across)s))
 \tif frame == %(start)d:
 \t\tprint("environment: resolution=%%dx%%d" %% [root.size.x, root.size.y])
 \tif frame == %(start)d:
@@ -479,9 +583,11 @@ func _process(_delta: float) -> bool:
 """
 
 
-def _framing(effect: dict) -> dict:
-    """Where the camera stands to see the whole of an effect's reach from its side."""
-    reach = max(measured(effect)["reach"], 0.5)
+def _framing(effect: dict, fps: int = 60) -> dict:
+    """Where the camera stands to see the whole of an effect's reach from its side, and
+    the circle the emitter is carried round in its view: a trail reads only in motion
+    (§PW281), and a one-shot burst is watched standing still."""
+    reach = max(measured(effect)["reach"], 0.5, effect["size"] * 6)
     d = effect["direction"]
     norm = math.sqrt(sum(v * v for v in d)) or 1.0
     d = [v / norm for v in d]
@@ -492,7 +598,16 @@ def _framing(effect: dict) -> dict:
             d[0] * up[1] - d[1] * up[0]]
     size = math.sqrt(sum(v * v for v in side)) or 1.0
     eye = [c + s / size * reach * 0.9 for c, s in zip(centre, side, strict=True)]
-    return {"centre": _floats(centre), "eye": _floats(eye), "up": _floats(up)}
+    # The view's other axis: the circle lies across the camera, in its frame.
+    across = [side[1] * d[2] - side[2] * d[1], side[2] * d[0] - side[0] * d[2],
+              side[0] * d[1] - side[1] * d[0]]
+    wide = math.sqrt(sum(v * v for v in across)) or 1.0
+    still = effect["one_shot"]
+    return {"centre": _floats(centre), "eye": _floats(eye), "up": _floats(up),
+            "along": _floats(d), "across": _floats(v / wide for v in across),
+            "round": f"{0.0 if still else reach * 0.4:.6g}",
+            # Once round in two lives, so the trail behind it curves and fades.
+            "turn": f"{max(1.0, 2 * effect['lifetime'] * fps):.6g}"}
 
 
 @operation("vfx.preview", kind="capture")
@@ -507,7 +622,8 @@ def preview(
     """Watch each effect over its life on a neutral grey, as a sitting for a person.
 
     Each effect is built, then played in the engine from its side, with the camera
-    framing its reach, for one and a half lifetimes; the frames are kept by
+    framing its reach and the emitter carried round a circle in view unless it is a
+    one-shot burst, for one and a half lifetimes; the frames are kept by
     capture.movie and `stills` of them, evenly spaced, are laid out on one sheet with
     their times and what the effect measures. The sheets are a sitting on the review
     page, one family an effect; the answer lands through verdict.judge.
@@ -531,7 +647,7 @@ def preview(
         script.parent.mkdir(parents=True, exist_ok=True)
         script.write_text(_WATCH % {
             "grey": _floats(NEUTRAL), "scene": "res://" + made["file"],
-            "start": start, "stop": start + span, **_framing(own),
+            "start": start, "stop": start + span, **_framing(own, fps),
         }, encoding="utf-8", newline="\n")
         shot = capture.movie(
             provenance.relative(script, here), out=str(work / name / "frames"),

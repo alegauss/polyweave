@@ -260,7 +260,7 @@
 - ✅ **PW256** **a sitting shows pictures only, so a person cannot hear a new sound beside the old one and give a verdict** — sound.sitting plays each sound beside the one it replaces on the review page, a loop looped; verdict.judge keeps the answer in its record (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW261** **a sitting given bare picture paths as members raises and takes the MCP server down instead of refusing** — A sitting reads a bare path as a picture and refuses any other bad member by index (verdict.bad-member); an operation that raises comes back to MCP as op.crashed.
 - ✅ **PW265** **a refused picture can be promoted only from the review page, so a verdict given in chat has no operation to carry it** — verdict.promote carries a promotion given in conversation as the refused lane's own write, from the CLI or MCP, and mesh.buy then models from the picture.
-- ✅ **PW281 (the five particle keys)** **vfx.build cannot declare damping, spin, box emission, particle shape or a path ribbon, so no accepted trail builds** — vfx.build declares damping, angle and spin, box emission with extents, and a dot, ring, flake or picture shape, with reach braked by damping.
+- ✅ **PW281** **vfx.build cannot declare damping, spin, box emission, particle shape or a path ribbon, so no accepted trail builds** — vfx.build declares the five trail keys and a path_ribbon drawn behind the emitter by a script in the scene; vfx.preview watches trails move (design recorded in `docs/specs/vfx.md`).
 
 ## Block P — Music and sound a game can ship
 

@@ -8,6 +8,7 @@ the game cannot play.
 from __future__ import annotations
 
 import os
+import re
 from pathlib import Path
 
 import pytest
@@ -174,6 +175,43 @@ def test_a_trail_key_that_means_nothing_is_refused(tmp_path, extra):
     assert refused.value.code == "vfx.bad-effect"
 
 
+WAKE = """\
+[effect.wake]
+kind = "path_ribbon"
+amount = 90
+lifetime = 1.2
+size = 0.6
+size_over_life = [1.0, 0.0]
+colour_over_life = ["#9fe8ffff", "#2a6cff00"]
+"""
+
+
+def test_a_path_ribbon_is_a_scene_that_draws_the_path_its_parent_flew(tmp_path):
+    """§PW281: the tender's ribbon narrows as it ages and had no kind at all."""
+    made = vfx.build(effects(tmp_path, WAKE), root=str(tmp_path))["effects"]
+    built = (tmp_path / "vfx" / "wake.tscn").read_text("utf-8")
+    assert '[node name="wake" type="Node3D"]' in built
+    assert '[sub_resource type="GDScript" id="follows"]' in built
+    for line in ("width = 0.6", "life = 1.2", "most = 90", "facing = Vector3(0, 1, 0)"):
+        assert line in built, line
+    assert "GPUParticles3D" not in built
+    assert made["wake"]["kind"] == "path_ribbon"
+    assert made["wake"]["reach"] == pytest.approx(0.3)
+
+
+def test_a_path_ribbon_with_no_width_to_face_is_refused(tmp_path):
+    with pytest.raises(PolyweaveError) as refused:
+        vfx.build(effects(tmp_path, WAKE + "facing = [0, 0, 0]\n"), root=str(tmp_path))
+    assert refused.value.code == "vfx.bad-effect"
+
+
+def test_a_burst_is_watched_standing_still_and_a_trail_moving():
+    burst = vfx.checked("b", {"amount": 8, "lifetime": 0.5, "one_shot": True})
+    trail = vfx.checked("t", {"amount": 8, "lifetime": 0.5})
+    assert vfx._framing(burst)["round"] == "0"
+    assert float(vfx._framing(trail)["round"]) > 0
+
+
 def test_an_acceptance_spec_bounds_what_a_built_effect_measures(tmp_path):
     from polyweave import accept
 
@@ -295,3 +333,68 @@ def test_the_engine_loads_an_accepted_trail_s_keys(tmp_path):
     assert "vfx: confetti damping=6.0..10.0 spin=240.0 emits=0" in said, said
     assert "shape=GradientTexture2D" in said
     assert "vfx: band damping=2.0..2.0 spin=0.0 emits=3 box=(0.1, 1.0, 0.1)" in said
+
+
+FLIES = """extends SceneTree
+
+var engine := Node3D.new()
+var frames := 0
+
+func _initialize() -> void:
+\troot.add_child(engine)
+\tengine.add_child(load("res://vfx/wake.tscn").instantiate())
+
+func _process(_delta: float) -> bool:
+\tframes += 1
+\tengine.position = Vector3(frames * 0.1, 0, 0)
+\tif frames < 20:
+\t\treturn false
+\tvar wake: Node3D = engine.get_child(0)
+\tvar strip: ImmediateMesh = wake.strip
+\tvar box := strip.get_aabb()
+\tprint("vfx: points=%d surfaces=%d long=%.1f wide=%.2f" % [wake.points.size(),
+\t\tstrip.get_surface_count(), box.size.x, box.size.y])
+\treturn true
+"""
+
+
+def test_a_path_ribbon_draws_a_strip_along_where_its_parent_went(tmp_path):
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    vfx.build(effects(tmp_path, WAKE), root=str(tmp_path))
+    (tmp_path / "project.godot").write_text(
+        'config_version=5\n\n[application]\nconfig/name="vfx"\n', encoding="utf-8")
+    (tmp_path / "flies.gd").write_text(FLIES, encoding="utf-8")
+    ran = engine.run("flies.gd", expect=r"^vfx: points", root=tmp_path, headless=True)
+    assert ran["ok"] is True, ran
+    said = Path(ran["log"]).read_text("utf-8")
+    found = re.search(r"points=(\d+) surfaces=(\d+) long=([\d.]+) wide=([\d.]+)", said)
+    assert found, said
+    points, surfaces, long, wide = (float(v) for v in found.groups())
+    assert points >= 19 and surfaces == 1
+    # It lies behind the path flown, 0.1 a frame, and is at most its width across.
+    assert long == pytest.approx(1.8, abs=0.2)
+    assert 0.3 < wide <= 0.6
+
+
+def test_a_path_ribbon_is_watched_moving_as_a_sitting(tmp_path):
+    from polyweave import offscreen
+
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    try:
+        offscreen.route_for(tmp_path)
+    except PolyweaveError:
+        pytest.skip("no route draws real pixels here")
+    source = effects(tmp_path, WAKE)
+    (tmp_path / "project.godot").write_text(
+        'config_version=5\n\n[application]\nconfig/name="vfx"\n', encoding="utf-8")
+    vfx.preview(source, out="review/fx", stills=4, root=str(tmp_path))
+    import numpy as np
+    from PIL import Image
+
+    with Image.open(tmp_path / "review" / "fx" / "wake.png") as sheet:
+        # The last still: the ribbon has been drawn behind a moving emitter.
+        last = np.asarray(sheet.convert("RGB"))[
+            8:8 + vfx.FRAME[1], 8 + 3 * (vfx.FRAME[0] + 8):8 + 4 * vfx.FRAME[0] + 24]
+        assert last[..., 2].max() > 120

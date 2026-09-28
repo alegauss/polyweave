@@ -356,30 +356,6 @@ since a reference the service ignores is dropped without an error.
 
 ## Block O — A person sees and answers
 
-### §PW281 Effects that can declare a trail
-
-Found taking up PW259 in Starship (2026-09-28, RK136). The owner accepted seven trails,
-drawn today by game code (game/actors/trail.gd), and PW259 was filed so they could be
-declared and built instead. Probing `vfx.build` with the sparks trail as it stands, it
-refused every key the accepted looks rely on (`vfx.bad-effect`):
-
-- `damping`: sparks brake at 6 to 10 and stay by the engine; without it they reach 3.6;
-- `angle` and `angular_velocity`: the Holders' confetti spins;
-- a box emission with extents: the sun band throws from a tall strip;
-- a particle's `shape`, a soft dot, a ring or a flake: built today, each is a square;
-- a ribbon that follows the path the engine flew: `ribbon` is a particle trail, so the
-  tender's own ribbon, narrowing as it ages, has no kind.
-
-`[effect.*]` should take those five, `damping`, `angle`, `angular_velocity`, `emission =
-"box"` with `extents`, and `shape` (`dot`, `ring`, `flake`, or a picture path). It
-should also have a `path_ribbon` kind: a mesh rebuilt from the points an emitter's node
-passed, with `width`, `life` and `colour_over_life`. The built scene then needs no
-script of the game's own. `vfx.preview` should show a moving emitter, since a trail is
-only read in motion.
-
-Done when Starship's seven trails build from art/vfx/trails.vfx.toml and the game draws
-the built scenes with no particle or ribbon code of its own.
-
 ## Block P — Music and sound a game can ship
 
 ### §PW192 Cottony's audio made through polyweave
