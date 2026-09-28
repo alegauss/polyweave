@@ -38,8 +38,6 @@
 
 ## Block Q — Words held to the world
 
-- 🛠 **PW200** (deps: PW197 ✅, PW198 ✅, PW199 ✅) **Starship's screen still shows names its world bible replaced** — A person judges the crew lines into a lines canon, and the next Lattice or Foreman picture is bought with entity=. → §PW200
-
 ## Block R — Levels measured before a person plays them
 
 - 📋 **PW202** (deps: PW201 ⏸) **A game's own headless play of a level has no way to report what it measured** — Only the game can play its own rules, so polyweave needs a contract for what the game's probe prints, not a simulator of its own. → §PW202
@@ -130,15 +128,6 @@
   Cottony family, a person answers on the review page, the ledger holds that verdict
   through judge alone, and the agent's next candidate follows from verdict.answers with
   no chat message in between.
-
-## Done when — PW200
-
-- **Starship's crew lines are judged into a lines canon** A person reads the crew lines
-  through words.sheet and records verdicts; words.check against Starship then reports
-  the approved lines as the canon rather than 453 unjudged rows.
-- **A Lattice or Foreman picture is bought with entity=** The next enemy or Foreman
-  picture Starship buys goes through picture.buy with entity=, and its provenance
-  sidecar names the entity from starship.world.toml.
 
 ## Non-goals
 

@@ -308,24 +308,6 @@ that a second game would not becomes configuration.
 
 ## Block Q — Words held to the world
 
-### §PW200 Starship held to its own world
-
-Starship is the consumer with a world to hold to. Its bible names the Spinhold, the
-Holders, the Lattice and its three Foremen, and the crew, and none of those names reach
-the screen yet. The draft is still open under RK88 with four questions unanswered, which
-is why this line waits on it: formalising a world whose answers may still change costs a
-second pass over every entity.
-
-Adoption is done when four things are true:
-- `world.md` stays the prose, and a `starship.world.toml` beside it declares every name in its glossary, with the three factions tied to `[style.brand]`, `[style.holders]` and `[style.lattice]`.
-- RK73's rename moves every player-facing string into the translation table, `words.unlisted` counts zero, and `words.check` passes.
-- The crew lines RK89 adds pass through `words.sheet`, and the ones a person approves form the lines canon.
-- The next Lattice enemy or Foreman picture is bought with `entity=`, and its sidecar names the entity.
-
-The measure is the census Block H uses: which of Starship's text and character assets
-are declared, checked and judged through polyweave, and which still sit in scripts. A
-string left in GDScript is a line this adoption has not reached, and the count says so.
-
 ## Block R — Levels measured before a person plays them
 
 ### §PW201 Whether a bot's win rate says how hard a level feels
