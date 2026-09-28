@@ -500,22 +500,4 @@ the first twenty make.
 
 ## Block S — Playing the game, not only rendering it
 
-### §PW278 Numbers inside a structure compared as numbers
-
-Found writing PW277's test (2026-09-28). A game held its counters in a Dictionary,
-`presses = {"Title": 0, "Menu": 1}`. A query answered it as `{"Menu": 1, "Title": 0}`,
-`game.keep` wrote that as an expectation, and the replay failed on the flow's own value:
-`presses was {"Menu":1,"Title":0}, not {"Menu":1.0,"Title":0.0}`. The driver's `_met`
-compares a number with a number as floats, which is why a scalar int holds against
-JSON's float, but anything else it compares as JSON text, and inside a Dictionary or an
-Array the int prints as `1` and the float the flow was read back as prints as `1.0`.
-
-So any expectation on a structure holding a number fails every replay, however right the
-game is, and the fault reads as the game's. The comparison should descend: a Dictionary
-equal key for key, an Array item for item, a number to a number as floats, and only then
-JSON text for what is left. `expect` and a `wait` on a property both go through it.
-
-Done when a flow expecting `{"Menu": 1, "Title": 0}` replays as passed, and one
-expecting `{"Menu": 2}` still fails naming the value it saw.
-
 ## Block T — Adopting polyweave in a project

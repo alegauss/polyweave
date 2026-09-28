@@ -101,7 +101,7 @@ them; the driver quits on `close`, or after `--idle=N` seconds with no request.
 | `wait` | `frames` budget, and one of `signal` + `path`, `node` (a path or group that must exist), or `path` + `property` + `equals` | Lets frames pass until the condition holds or the budget is spent; `result` is `{met, frames}`. An unmet wait is `ok` with `met: false` — the budget ran out, which is an answer and not an error |
 | `call` | `path`, `method`, optional `args` | Calls a method the game exposes for setup, and returns its value. An awaited coroutine is not waited on; a caller that needs it done follows with `wait` |
 | `shot` | `out` | Saves the viewport as a PNG at that path and returns it with its size. A headless run draws nothing, so a shot there is refused (`driver.no-picture`) rather than saved blank |
-| `expect` | `path`, `property`, `equals` | Whether the property holds the value now, no frame passing: `{held, value}` |
+| `expect` | `path`, `property`, `equals` | Whether the property holds the value now, no frame passing: `{held, value}`. Numbers are compared as numbers wherever they sit, in a Dictionary or an Array too, since JSON gives every number back as a float (§PW278); the same holds for a `wait` on a property |
 | `set` | `path`, `property`, `value` | Sets a property for setup, a nested one written `rng:seed` (Godot's `set_indexed`), and answers `{was, now}`; an int stays an int though JSON sends a float. How a flow seeds a generator the game made itself, which `--seed` does not reach (§PW217) |
 | `selector` | `path`, or any target | The selector that picks this one node out now, `{select}`, or `select: null` where none does |
 | `close` | — | Answers, then quits |

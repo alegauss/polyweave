@@ -595,6 +595,40 @@ def test_an_unnamed_button_is_picked_out_under_the_screen_it_sits_in(tmp_path):
     assert driving.replayed("tests/flows/menu.flow.json", root=root)["ok"] is True
 
 
+#: A game counting in a Dictionary, which a query answers and a flow expects whole.
+COUNTED = MAIN.replace("var presses := 0", "var presses := 0\nvar tally := {}").replace(
+    "\tpresses += 1\n\tcounted.emit(presses)",
+    '\tpresses += 1\n\ttally = {"Menu": presses, "Title": 0, "seen": [presses, 2]}'
+    "\n\tcounted.emit(presses)",
+)
+
+
+def test_an_expectation_on_a_dictionary_of_numbers_holds_as_numbers(tmp_path):
+    """§PW278: {"Menu": 1} was compared with {"Menu": 1.0} as text, and failed."""
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    root = str(game(tmp_path))
+    (tmp_path / "main.gd").write_text(COUNTED, encoding="utf-8")
+    session = driving.opened(root, seed=1)["session"]
+    try:
+        driving.stepped(session, root=root)
+        driving.inputted(session, click="UI/Press", root=root)
+        driving.stepped(session, frames=3, root=root)
+        seen = driving.queried(session, path=".", properties=["tally"], root=root)
+        assert seen["result"][0]["properties"]["tally"]["Menu"] == 1
+        kept = driving.kept(session, out="tests/flows/tally.flow.json",
+                            proves="a press counts in the tally", root=root,
+                            expect=[seen["step"]])
+    finally:
+        driving.closed(session, root=root)
+    assert driving.replayed("tests/flows/tally.flow.json", root=root)["ok"] is True
+    flow = json.loads(Path(kept["flow"]).read_text(encoding="utf-8"))
+    flow["steps"][-1]["equals"]["Menu"] = 2
+    Path(kept["flow"]).write_text(json.dumps(flow), encoding="utf-8")
+    broke = driving.replayed("tests/flows/tally.flow.json", root=root)
+    assert broke["ok"] is False and '"Menu":1' in broke["why"]
+
+
 def test_a_flow_kept_before_selectors_is_rekeyed_in_one_call(tmp_path):
     """§PW276: Cottony's older flows still reach their nodes by generated names."""
     if not os.environ.get("GODOT"):

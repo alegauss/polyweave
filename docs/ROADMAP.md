@@ -49,8 +49,6 @@
 
 ## Block S — Playing the game, not only rendering it
 
-- 📋 **PW278** (deps: —) **a kept expectation on a dictionary or array of numbers fails every replay, since 1 is compared to 1.0 as text** — The driver reads a flow's numbers back as floats and compares a structure as JSON text, so a right game reads as broken. → §PW278
-
 ## Block T — Adopting polyweave in a project
 
 ## Done when — PW36

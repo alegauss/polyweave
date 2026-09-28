@@ -551,11 +551,29 @@ func _met(condition: Dictionary) -> bool:
 	var nodes := _found(asked)
 	if nodes.is_empty() or not (str(asked["property"]) in nodes[0]):
 		return false
-	var value = _plain(nodes[0].get(str(asked["property"])))
-	var wanted = asked.get("equals")
-	# JSON gives every number as a float, and a node's int is still the same number.
+	return _same(_plain(nodes[0].get(str(asked["property"]))), asked.get("equals"))
+
+
+## Whether a value is the one a flow expects: numbers as numbers wherever they sit.
+## JSON gives every number as a float, and a node's int is still the same number, in a
+## Dictionary or an Array too, which JSON text alone compared as 1 against 1.0 (§PW278).
+func _same(value, wanted) -> bool:
 	if typeof(value) in [TYPE_INT, TYPE_FLOAT] and typeof(wanted) in [TYPE_INT, TYPE_FLOAT]:
 		return is_equal_approx(float(value), float(wanted))
+	if value is Dictionary and wanted is Dictionary:
+		if value.size() != wanted.size():
+			return false
+		for key in value:
+			if not wanted.has(str(key)) or not _same(value[key], wanted[str(key)]):
+				return false
+		return true
+	if value is Array and wanted is Array:
+		if value.size() != wanted.size():
+			return false
+		for index in value.size():
+			if not _same(value[index], wanted[index]):
+				return false
+		return true
 	return JSON.stringify(value) == JSON.stringify(wanted)
 
 
