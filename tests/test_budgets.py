@@ -61,7 +61,8 @@ from polyweave.errors import PolyweaveError
 #: 85,806 with music.render's formats (§PW255) and sound.sitting (§PW256).
 #: 86,492 with vfx.build (§PW259), an effect built from its declaration.
 #: 87,415 with geometry.fit's boxed (§PW263), shape scored inside its box.
-DESCRIBE = 88_000
+#: 88,254 with verdict.promote (§PW265), a promotion carried from conversation.
+DESCRIBE = 88_800
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -101,7 +102,8 @@ DESCRIBE = 88_000
 #: 96,016 with music.render's formats, sound.sitting and music.bad-format.
 #: 96,817 with vfx.build and its two codes (§PW259).
 #: 97,618 with vfx.preview and vfx.unwatched (§PW259).
-CAPABILITIES = 98_400
+#: 98,728 with verdict.promote, op.crashed and verdict.bad-member (§PW261, §PW265).
+CAPABILITIES = 99_300
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

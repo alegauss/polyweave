@@ -419,6 +419,33 @@ def judge(
     }
 
 
+@operation("verdict.promote")
+def promote(
+    gate: Annotated[str, Param("the gate run the picture was refused in, by its id")],
+    picture: Annotated[str, Param("the refused picture, as the gate run lists it")],
+    why: Annotated[str, Param("the person's own sentence, as they said it")],
+    *,
+    canon: Annotated[
+        str, Param("a style family it joins too, if the person said so")
+    ] = None,
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
+) -> dict:
+    """A refused picture a person accepted after all, from wherever they said it.
+
+    The same write the review page's refused lane makes (§PW175), for a verdict given
+    in conversation (§PW265): a `judge` whose record says the tool refused what the
+    person accepted, appended to the answers, which is what `mesh.buy` reads before it
+    models from the picture. A gate or picture the project has no record of is refused
+    with the ones it has.
+    """
+    from . import review
+
+    body = {"gate": gate, "picture": picture, "choice": "accept", "why": why}
+    if canon:
+        body["canon"] = canon
+    return review.answer(root, body)
+
+
 #: Where every answer given on the review page lands, one line each, appended and never
 #: rewritten, so it is the simplest thing an agent can wait on (§PW173).
 ANSWERS = "answers.jsonl"

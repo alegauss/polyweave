@@ -478,22 +478,6 @@ Done when Starship's brand family can be started from the page with its two stud
 
 ## Block O — A person sees and answers
 
-### §PW265 Promoting a refused picture from any surface
-
-Found in Starship (2026-09-27, RK97). The owner promoted a refused Mote drawing in
-conversation ("use the original mote-3"). `mesh.buy` accepts a promotion only as a
-verdict recorded against a gate run's lane, and the one write that records it is
-`review.answer`, which only the review page's HTTP handler calls. No operation on the
-CLI or the MCP surface takes a gate id, a picture and a person's words. The agent had to
-call the Python function directly and learn the body's keys from the source.
-
-A `verdict.promote --gate <id> --picture <path> --why <words>` (or `verdict.judge`
-taking a gate lane) should make the same write. Its refusals should list the gate runs
-and pictures it knows, as `_overruled` already does internally.
-
-Done when the Mote's promotion can be recorded with one CLI call and `mesh.buy` then
-accepts the picture.
-
 ## Block P — Music and sound a game can ship
 
 ### §PW192 Cottony's audio made through polyweave

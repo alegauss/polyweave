@@ -173,3 +173,25 @@ def test_a_refused_picture_a_person_promoted_can_be_bought_from(tmp_path, meshy)
     assert verdict.answers(root=tmp_path)["answers"][-1]["family"] == "dome"
     entry = mesh_buy.buy(out="m/dome.glb", picture_path="dome.png", root=tmp_path)
     assert entry["reference"] == "dome.png"
+
+
+def test_a_promotion_given_in_chat_is_one_call_and_opens_the_buy(tmp_path, meshy):
+    """§PW265: "use the original mote-3" had no operation to carry it."""
+    from polyweave import verdict
+    from polyweave.errors import PolyweaveError
+
+    image = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
+    ImageDraw.Draw(image).ellipse((14, 44, 114, 84), fill=(200, 60, 60, 255))
+    image.save(tmp_path / "outline.png")
+    image = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
+    ImageDraw.Draw(image).ellipse((44, 8, 84, 120), fill=(200, 60, 60, 255))
+    image.save(tmp_path / "mote.png")
+    ran = picture.gate(["mote.png"], "outline.png", root=tmp_path)
+    with pytest.raises(PolyweaveError) as unknown:
+        verdict.promote("gate-nope", "mote.png", "the original", root=str(tmp_path))
+    assert ran["id"] in unknown.value.remedy
+    said = verdict.promote(ran["id"], "mote.png", "the original", root=str(tmp_path))
+    assert said["members"][0]["person_accepted"] is True
+    assert said["members"][0]["tool_passed"] is False
+    entry = mesh_buy.buy(out="m/mote.glb", picture_path="mote.png", root=tmp_path)
+    assert entry["reference"] == "mote.png"

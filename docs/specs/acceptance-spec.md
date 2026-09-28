@@ -190,7 +190,9 @@ engine, a canon too small to have a floor), and what it cost from which service.
 lays each run out in two lanes: the kept, and the refused, collapsed and never absent, with
 what is left of each service's ceiling read at the time of looking. **A person may promote
 a refused picture.** That is the same one write, `verdict.judge`, with the picture taken
-from the gate's own log. A member with no acceptance spec carries the gate's refusal as the
+from the gate's own log. A person who says so in conversation is carried by
+`verdict.promote(gate, picture, why, canon=)` (§PW265), the same write from the CLI or MCP;
+a gate run or picture the project has no record of is refused naming the ones it has. A member with no acceptance spec carries the gate's refusal as the
 tool's verdict, so the answer records the tool refusing what the person accepted, which is
 the evidence a tolerance is loosened from. `number` is refused for such a member, since it
 has no bound to move.

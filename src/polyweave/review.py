@@ -197,12 +197,21 @@ def _overruled(root, body: dict) -> tuple[list[dict], str, str]:
     ran = {one["id"]: one for one in picture.gates(root)}
     run = ran.get(str(body.get("gate") or ""))
     held = {one["picture"]: one for one in (run or {}).get("candidates", ())}
+    if run is None:
+        # The runs themselves, where the gate is the unknown one (§PW265).
+        raise PolyweaveError(
+            "loop.unknown-sitting",
+            f"there is no gate run {body.get('gate')!r} in this project",
+            f"name one of the gate runs: {', '.join(sorted(ran)) or 'there are none'}",
+            given=str(body.get("gate")),
+            allowed=sorted(ran),
+        )
     chosen = held.get(str(body.get("picture") or ""))
     if chosen is None:
         raise PolyweaveError(
             "loop.unknown-sitting",
-            "the page named a gate run or a picture this project has no record of",
-            "overrule a picture the page lists under a gate",
+            f"gate run {run['id']} has no picture {body.get('picture')!r}",
+            f"name one of its pictures: {', '.join(sorted(held))}",
             given=str(body.get("picture")),
             allowed=sorted(held),
         )

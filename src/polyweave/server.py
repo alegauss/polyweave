@@ -78,7 +78,8 @@ TOOL_BUDGET = 4500
 #: 76,700 at 76,130 for music.render's formats and sound.sitting (§PW255, §PW256).
 #: 77,500 at 76,728 for vfx.build (§PW259).
 #: 78,000 at 77,543 for geometry.fit's boxed (§PW263).
-LIST_BUDGET = 78000
+#: 78,800 at 78,277 for verdict.promote (§PW265).
+LIST_BUDGET = 78800
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {
