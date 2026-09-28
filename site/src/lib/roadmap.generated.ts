@@ -37,7 +37,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
   { block: "L", title: "What a run leaves as evidence", open: 0 },
-  { block: "M", title: "What a game needs beyond the look", open: 1 },
+  { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 0 },
   { block: "O", title: "A person sees and answers", open: 0 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
@@ -75,13 +75,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "what a change costs a frame is found only by stashing, re-importing and timing both sides by hand",
     why: "A design that must hold the frame rate needs that number, and a recorded table goes stale the day other work lands.",
     deps: ["PW56"],
-  },
-  {
-    id: "PW275",
-    block: "M",
-    symptom: "store.capsules reads only a raster logo, so a wordmark kept as SVG has to be exported by hand at a guessed size",
-    why: "Brand marks are kept as vectors, and a stroke measured on a scaled-down export is the export's, not the capsule's.",
-    deps: [],
   },
   {
     id: "PW202",

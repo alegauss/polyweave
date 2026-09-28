@@ -113,6 +113,44 @@ def test_what_cannot_be_cut_is_refused_with_a_code(project, call, code):
     assert refused.value.code == code
 
 
+#: A wordmark kept as a vector, as Starship keeps its own: bars 20 units thick.
+SVG = """<svg xmlns="http://www.w3.org/2000/svg" width="400" height="100"
+ viewBox="0 0 400 100">
+ <rect x="10" y="10" width="20" height="80" fill="#f0f0f0"/>
+ <rect x="70" y="10" width="20" height="80" fill="#f0f0f0"/>
+ <rect x="130" y="10" width="20" height="80" fill="#f0f0f0"/>
+ <rect x="190" y="10" width="200" height="20" fill="#f0f0f0"/>
+</svg>
+"""
+
+
+def test_a_vector_logo_is_drawn_at_each_capsules_own_size(project):
+    """§PW275: Starship's wordmark is SVG only, and had to be exported by hand."""
+    import os
+
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    (project / "art" / "wordmark.svg").write_text(SVG, encoding="utf-8")
+    made = store.capsules("art/key-art.png", "art/wordmark.svg", out="store/steam",
+                          root=str(project))
+    assert made["ok"] is True, made["says"]
+    # The library logo draws it 1280 wide, over three times its own 400: no refusal,
+    # since a vector has no size to be too small at, and the bars scale with it.
+    assert made["capsules"]["library_logo"]["stroke"] >= 3 * 20 * 0.9
+    small = made["capsules"]["small_capsule"]
+    assert small["stroke"] == pytest.approx(20 * 462 * 0.8 / 400, rel=0.25)
+
+
+def test_a_logo_that_is_a_plate_is_said_to_measure_the_plate(project):
+    """Starship's first wordmark carries an opaque plate, and its alpha is all box."""
+    plate = Image.new("RGBA", (1600, 400), (20, 20, 30, 255))
+    plate.save(project / "art" / "plate.png")
+    made = store.capsules("art/key-art.png", "art/plate.png", out="store/steam",
+                          root=str(project))
+    assert made["logo_plate"] is True
+    assert "plate" in made["why_plate"]
+
+
 def test_a_project_declares_a_store_of_its_own(project):
     (project / "mine.toml").write_text(
         'name = "mine"\n[shape.banner]\nsize = [800, 200]\nlogo = "centre"\n',

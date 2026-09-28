@@ -66,7 +66,7 @@ def _store(store: str, root: Path) -> dict:
     return declared
 
 
-def _opened(path: Path, role: str):
+def _opened(path: Path, role: str, root: Path | None = None):
     from PIL import Image
 
     if not path.is_file():
@@ -75,8 +75,83 @@ def _opened(path: Path, role: str):
             f"there is no {role} at {path.name}",
             f"name the {role} as a path under the project",
         )
+    if path.suffix.lower() == ".svg":
+        return _drawn_svg(path, {"native": 1.0}, root or path.parent)["native"]
     with Image.open(path) as picture:
         return picture.convert("RGBA")
+
+
+_SVG = """extends SceneTree
+
+func _initialize() -> void:
+\tvar text := FileAccess.get_file_as_string("%(svg)s")
+\tif OS.get_cmdline_user_args().is_empty():
+\t\tprint("svg: nothing asked")
+\t\tquit(1)
+\t\treturn
+\tfor pair in OS.get_cmdline_user_args():
+\t\tvar image := Image.new()
+\t\tvar failed := image.load_svg_from_string(text, float(pair.get_slice("=", 0)))
+\t\tif failed != OK:
+\t\t\tprint("svg: failed %%d" %% failed)
+\t\t\tquit(1)
+\t\t\treturn
+\t\timage.save_png(pair.get_slice("=", 1))
+\tprint("svg: drawn")
+\tquit()
+"""
+
+
+def _drawn_svg(svg: Path, scales: dict[str, float], root: Path) -> dict:
+    """A vector logo drawn at each scale asked, by the engine's own SVG rasteriser.
+
+    Godot draws SVG through ThorVG, which a headless run does in milliseconds, so a
+    vector logo is drawn at the size each capsule shows it and its strokes measured
+    there, where a raster scaled down from one export measures the export (§PW275).
+    """
+    import tempfile
+
+    from PIL import Image
+
+    from . import engine
+
+    try:
+        binary = engine.find(root)
+    except PolyweaveError as missing:
+        raise PolyweaveError(
+            "store.no-rasteriser",
+            f"{svg.name} is a vector, and drawing one needs the engine, which is not "
+            "found",
+            "set $GODOT or [paths] godot, or give the logo as a PNG with alpha",
+            detail=missing.message,
+        ) from missing
+    with tempfile.TemporaryDirectory(prefix="polyweave-svg-") as held:
+        work = Path(held)
+        (work / "polyweave.toml").write_text("", encoding="utf-8")
+        (work / "project.godot").write_text(
+            'config_version=5\n\n[application]\nconfig/name="svg"\n', encoding="utf-8"
+        )
+        (work / "draw.gd").write_text(
+            _SVG % {"svg": svg.resolve().as_posix()}, encoding="utf-8"
+        )
+        outs = {name: work / f"{index}.png" for index, name in enumerate(scales)}
+        ran = engine.run(
+            work / "draw.gd", expect=r"^svg: drawn", root=work, headless=True,
+            binary=binary,
+            args=("--", *(f"{scales[n]:.6f}={outs[n].as_posix()}" for n in scales)),
+        )
+        if not ran["ok"]:
+            raise PolyweaveError(
+                "store.no-rasteriser",
+                f"the engine could not draw {svg.name}: {ran.get('why')}",
+                "check the SVG opens in a browser, or give the logo as a PNG",
+                detail=ran.get("log"),
+            )
+        drawn = {}
+        for name, out in outs.items():
+            with Image.open(out) as picture:
+                drawn[name] = picture.convert("RGBA")
+        return drawn
 
 
 def _logo_size(shape: dict, logo) -> tuple[int, int] | None:
@@ -161,8 +236,15 @@ def capsules(
     declared = _chosen(_store(store, here), shapes, store)
     _focused(focus)
     art_path, logo_path = here / key_art, here / logo
-    art, mark = _opened(art_path, "key art"), _opened(logo_path, "logo")
-    _large_enough(declared, art, mark)
+    art, mark = _opened(art_path, "key art"), _opened(logo_path, "logo", here)
+    vector = logo_path.suffix.lower() == ".svg"
+    _large_enough(declared, art, None if vector else mark)
+    # A vector logo is drawn again at each capsule's own size, in one engine run, and
+    # its stroke measured there (§PW275).
+    sized = {name: _logo_size(shape, mark) for name, shape in declared["shape"].items()}
+    redrawn = _drawn_svg(
+        logo_path, {n: s[0] / mark.width for n, s in sized.items() if s}, here
+    ) if vector and any(sized.values()) else {}
     folder = config.path("paths.work", out)
     folder.mkdir(parents=True, exist_ok=True)
     floor = float(declared.get("min_stroke", 2.0))
@@ -174,14 +256,16 @@ def capsules(
         rule = shape.get("logo", "none")
         canvas = (Image.new("RGBA", size, (0, 0, 0, 0)) if rule == "only"
                   else _covered(art, size, tuple(focus)))
-        drawn, stroke = _logo_size(shape, mark), None
+        drawn, stroke = sized[name], None
         if drawn:
-            placed = mark.resize(drawn, Image.Resampling.LANCZOS)
+            source = redrawn.get(name, mark)
+            placed = source.resize(drawn, Image.Resampling.LANCZOS)
             middle = float(shape.get("logo_at", 0.5)) if rule == "lower" else 0.5
             top = round(middle * size[1] - drawn[1] / 2)
             at = ((size[0] - drawn[0]) // 2, min(max(top, 0), size[1] - drawn[1]))
             canvas.alpha_composite(placed, at)
-            stroke = thinnest(mark, drawn[0] / mark.width)
+            stroke = (thinnest(placed, 1.0) if name in redrawn
+                      else thinnest(mark, drawn[0] / mark.width))
         legible = stroke is None or stroke >= floor
         target = folder / f"{name}.png"
         canvas.save(target)
@@ -196,11 +280,19 @@ def capsules(
                       "logo": rule, "stroke": stroke, "legible": legible}
         if not legible:
             failed.append(name)
+    # A logo whose alpha fills its box is a plate with the letters on it, and a stroke
+    # read off the alpha is the plate's: said, since the number would pass every time.
+    opaque = np.asarray(mark)[..., 3] > 127
+    plate = bool(opaque.any()) and float(opaque.mean()) > 0.9
     return {
         "store": declared.get("name", store),
         "capsules": made,
         "failed": failed,
         "ok": not failed,
+        "logo_plate": plate,
+        **({"why_plate": "the logo's alpha fills its box, so each stroke measured is "
+            "the plate's and not its letters'; give the logo with alpha only where "
+            "the letters are"} if plate else {}),
         "min_stroke": floor,
         "says": f"{len(made)} capsules written"
         + (f"; the logo would not read on {', '.join(failed)}: its thinnest stroke "
@@ -236,14 +328,17 @@ def _focused(focus) -> None:
 
 
 def _large_enough(declared: dict, art, mark) -> None:
-    """Refuse before anything is written where a shape would need an upscale."""
+    """Refuse before anything is written where a shape would need an upscale.
+
+    `mark` is None for a vector logo, which has no size to be too small at.
+    """
     small, cuttable = [], []
     for name, shape in declared["shape"].items():
         width, height = shape["size"]
         before = len(small)
         if shape.get("logo") != "only" and (art.width < width or art.height < height):
             small.append(f"{name} needs {width}x{height} of key art")
-        drawn = _logo_size(shape, mark)
+        drawn = _logo_size(shape, mark) if mark is not None else None
         if drawn and (drawn[0] > mark.width or drawn[1] > mark.height):
             small.append(f"{name} draws the logo at {drawn[0]}x{drawn[1]}")
         if len(small) == before:
@@ -251,8 +346,9 @@ def _large_enough(declared: dict, art, mark) -> None:
     if small:
         raise PolyweaveError(
             "store.too-small",
-            f"the key art is {art.width}x{art.height} and the logo "
-            f"{mark.width}x{mark.height}, and {'; '.join(small)}",
+            f"the key art is {art.width}x{art.height}"
+            + (f" and the logo {mark.width}x{mark.height}" if mark is not None else "")
+            + f", and {'; '.join(small)}",
             "give a larger key art or logo, or cut the other shapes now with shapes=; "
             "nothing is upscaled, since a capsule blown up from a smaller picture is "
             "soft",

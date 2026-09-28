@@ -31,8 +31,6 @@
 
 ## Block M — What a game needs beyond the look
 
-- 📋 **PW275** (deps: —) **store.capsules reads only a raster logo, so a wordmark kept as SVG has to be exported by hand at a guessed size** — Brand marks are kept as vectors, and a stroke measured on a scaled-down export is the export's, not the capsule's. → §PW275
-
 ## Block N — Pictures held to a canon
 
 ## Block O — A person sees and answers

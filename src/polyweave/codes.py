@@ -833,6 +833,11 @@ CODES: dict[str, Code] = {
         when="a path to no file",
         doors=("name the picture as a path under the project",),
     ),
+    "store.no-rasteriser": Code(
+        means="a vector logo needs the engine to draw it, which is missing or failed",
+        when="an .svg logo with no Godot binary, or an SVG the engine cannot read",
+        doors=("set $GODOT or [paths] godot", "give the logo as a PNG with alpha"),
+    ),
     "store.too-small": Code(
         means="the key art or logo is smaller than a shape needs, and nothing upscales",
         when="a key art narrower than a store's widest capsule, or a logo drawn larger "

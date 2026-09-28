@@ -312,29 +312,6 @@ reaches, its brightness, its particle count against a budget).
 Done when Starship's seven trails are seven declarations built and accepted through
 polyweave, and the game reads what was built instead of its own data.
 
-### §PW275 A vector logo drawn at each capsule's size
-
-Found shipping PW268 (2026-09-28). Starship keeps its wordmark as SVG only
-(`art/brand/spinhold-wordmark.svg`, a light and a clear variant beside it), and
-`store.capsules` opens the logo with Pillow, which reads no SVG. So the one call the
-line promised needs a raster exported by hand first, at a size that has to be guessed:
-large enough that no shape upscales it, which for Steam's library logo is 1280 wide.
-
-A vector logo should be rendered at the size each shape draws it, which is also the
-honest input to the stroke measure: a raster scaled down from one export measures the
-export's strokes, a vector drawn at 462 by 174 measures the capsule's. Rendering an SVG
-needs a rasteriser the plugin does not carry. Blender imports SVG and is already an
-engine here, and Godot rasterises SVG natively through ThorVG
-(`Image.load_svg_from_string` with a scale), which a headless run can do in milliseconds
-and which the project already has. The Godot route keeps the dependency list as it is.
-
-So: a logo whose suffix is `.svg` is rendered once per shape by a short headless Godot
-run at the scale the shape's rule asks, and the refusal for a small logo no longer
-applies to it, since a vector has no size to be too small at.
-
-Done when `store.capsules` takes `art/brand/spinhold-wordmark.svg` directly and each
-capsule's stroke is measured on the logo drawn at its own size.
-
 ## Block N — Pictures held to a canon
 
 ### §PW180 Canon pictures as style references

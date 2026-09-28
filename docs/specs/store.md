@@ -49,4 +49,14 @@ at the scale each shape draws it: over its opaque pixels, the 10th percentile of
 shorter of each one's horizontal and vertical run. A capsule where that falls under the
 store's `min_stroke` is written, since a person should see it, and named in `failed`; the
 answer is `ok` only when none is. Each capsule's answer gives its `file`, `size`, `logo`
-rule, `stroke` and whether it is `legible`.
+rule, `stroke` and whether it is `legible`. A logo whose alpha fills its box is a plate
+with the letters on it, and a stroke read off its alpha is the plate's: the answer says
+so in `logo_plate` and `why_plate`, since the number would pass every time.
+
+**A vector logo is drawn at each capsule's size** (§PW275). A logo given as `.svg` is
+rasterised by the engine's own SVG renderer, ThorVG, in one short headless run: once at
+its own size to learn its shape, then once per capsule at the scale that capsule draws
+it, so its stroke is measured on the letters as the capsule shows them rather than on a
+scaled-down export. A vector has no size to be too small at, so the logo half of
+`store.too-small` does not apply to it. Without the engine it is `store.no-rasteriser`,
+and a PNG with alpha is the other way in.
