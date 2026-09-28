@@ -51,13 +51,33 @@ white gradient as the trails drew theirs: `dot` a soft radial dot, `ring` a radi
 names the project's own picture instead, refused where no file is there. `damping` is
 never below 0, and a box needs at least one extent above 0.
 
+An effect can be made of parts (§PW284). A Starship trail is one look the owner
+accepted, the ribbon the engine leaves and the particles it throws, so it is declared as
+one effect whose every value is a sub-table, each a part checked as an effect of its own
+(`sparks.particles` in a refusal):
+
+```toml
+[effect.sparks.ribbon]
+kind = "path_ribbon"
+# ...
+[effect.sparks.particles]
+amount = 27
+# ...
+```
+
+A table mixing keys of its own with parts is refused.
+
 ## Building
 
 `vfx.build(source, effect=, out=)` builds every effect in the file, or the one named, as
 `<name>.tscn` beside the source or in `out`. The scene is a `GPUParticles3D` whose process
 material, colour ramp, size curve, material and draw pass are all in the one file: a
 billboarded quad for particles, a `RibbonTrailMesh` with particle trails for a ribbon.
-Each is recorded (`vfx`, [provenance.md](provenance.md)).
+Each is recorded (`vfx`, [provenance.md](provenance.md)). An effect made of parts is one
+scene: a `Node3D` named for it, each part a child named for the part, every part's
+resources renamed `<part>_<id>` so two looks never collide. It measures as one: `alive`
+and `rate` summed, `lifetime`, `reach` and `brightness` the largest any part has. The
+answer names each part's kind under `parts`.
 
 A `path_ribbon` is the ribbon a moving emitter leaves, the tender's own trail (§PW281),
 and is not particles at all: a `Node3D` the game puts where the engine is, carrying a
@@ -89,7 +109,8 @@ stills=6)` builds each effect and plays it in the game's own project for one and
 lifetimes against a neutral grey (`NEUTRAL`, 0.18), from across its direction with the
 camera framing its reach. The emitter is carried round a circle in the camera's plane,
 once in two lifetimes, since a trail reads only in motion; a `one_shot` burst is watched
-standing still. The run goes through `capture.movie`, so it needs a display or the offscreen
+standing still. A whole made of parts is watched on one sheet, framed by its
+farthest-reaching part. The run goes through `capture.movie`, so it needs a display or the offscreen
 route (`vfx.unwatched` where there is neither), asked at 320x180 (see engine.md). `stills`
 frames, evenly spaced, are laid out on one sheet with their times and what it measures, and the sheets
 are a sitting on the review page, one family an effect, with the choices `accept` and

@@ -34,6 +34,14 @@ draws a strip `size` wide across `facing`, coloured and narrowed by its age alon
 `colour_over_life` and `size_over_life`. The script is inside the scene, so the game
 still holds no code of its own.
 
+An effect can be made of parts, one look the game places once (§PW284): a trail is the
+ribbon the engine leaves and the particles it throws, each a sub-table,
+
+    [effect.sparks.ribbon]        # kind = "path_ribbon", ...
+    [effect.sparks.particles]     # amount, lifetime, ...
+
+built as the children of one Node3D in one scene, measured together and watched as one.
+
 The scene is a GPUParticles3D with its process material, its curves and its draw pass,
 all in the one file, so the game instances it and holds no numbers of its own. What it
 measures is worked out from the declaration, since a particle's reach and a budget are
@@ -282,6 +290,40 @@ def checked(name: str, table: Any, root: Path | None = None) -> dict:
     return own
 
 
+def declared(name: str, table: Any, root: Path | None = None) -> dict:
+    """One effect, or one made of parts: a table whose every value is a table (§PW284).
+
+    Each part is checked as an effect of its own, named `<effect>.<part>`, so a
+    refusal says which part it came from.
+    """
+    if isinstance(table, dict) and table and all(
+            isinstance(v, dict) for v in table.values()):
+        return {"kind": "parts",
+                "parts": {part: checked(f"{name}.{part}", sub, root)
+                          for part, sub in table.items()}}
+    if isinstance(table, dict) and any(isinstance(v, dict) for v in table.values()):
+        tables = sorted(k for k, v in table.items() if isinstance(v, dict))
+        raise _bad(name, f"mixes keys of its own with parts ({', '.join(tables)})",
+                   f"write every key inside a part, as [effect.{name}.<part>], or "
+                   "make it one effect with no sub-tables")
+    return checked(name, table, root)
+
+
+def measured_whole(effect: dict) -> dict:
+    """What an effect measures, a whole made of parts included: the budget is every
+    part's, and the reach, life and brightness the largest any part has."""
+    if effect["kind"] != "parts":
+        return measured(effect)
+    each = [measured(part) for part in effect["parts"].values()]
+    return {
+        "lifetime": max(m["lifetime"] for m in each),
+        "reach": max(m["reach"] for m in each),
+        "alive": sum(m["alive"] for m in each),
+        "rate": round(sum(m["rate"] for m in each), 4),
+        "brightness": max(m["brightness"] for m in each),
+    }
+
+
 def measured(effect: dict) -> dict:
     """What an effect measures, from its declaration alone."""
     life = effect["lifetime"]
@@ -497,6 +539,41 @@ def scene(name: str, effect: dict) -> str:
     )
 
 
+#: Where one section of a scene begins, so a part's scene can be taken apart.
+_SECTION = re.compile(r"(?m)^(?=\[(?:gd_scene|ext_resource|sub_resource|node)\b)")
+
+
+def _composed(name: str, parts: dict) -> str:
+    """One scene holding every part under a Node3D, each part's resources renamed for
+    it so two parts' `look` never collide."""
+    external, internal, nodes = [], [], []
+    for part, effect in parts.items():
+        text = scene(part, effect)
+        text = re.sub(r'id="([^"]+)"', rf'id="{part}_\1"', text)
+        text = re.sub(r'(Sub|Ext)Resource\("([^"]+)"\)', rf'\1Resource("{part}_\2")',
+                      text)
+        for block in _SECTION.split(text):
+            block = block.rstrip("\n") + "\n\n"
+            if block.startswith("[ext_resource"):
+                external.append(block)
+            elif block.startswith("[sub_resource"):
+                internal.append(block)
+            elif block.startswith("[node"):
+                nodes.append(re.sub(r"^\[node (.*?)\]", r'[node \1 parent="."]', block,
+                                    count=1))
+    steps = len(external) + len(internal) + 1
+    return (f"[gd_scene load_steps={steps} format=3]\n\n" + "".join(external)
+            + "".join(internal) + f'[node name="{name}" type="Node3D"]\n\n'
+            + "".join(nodes)).rstrip("\n") + "\n"
+
+
+def scene_whole(name: str, effect: dict) -> str:
+    """The scene an effect builds to, whether it is one effect or made of parts."""
+    if effect["kind"] == "parts":
+        return _composed(name, effect["parts"])
+    return scene(name, effect)
+
+
 def _source(source: str, config) -> tuple[Path, dict]:
     where = config.path("paths.work", source)
     if not where.is_file():
@@ -528,9 +605,9 @@ def build(
 ) -> dict:
     """Build declared particle and ribbon effects into Godot scenes, each recorded.
 
-    Each lands as <name>.tscn, a GPUParticles3D the game instances as it is, and the
-    answer says what each measures from its declaration: lifetime, reach, alive, rate
-    and brightness.
+    Each lands as <name>.tscn the game instances as it is; an effect made of parts is
+    one scene with each part under a Node3D. The answer says what each measures from
+    its declaration: lifetime, reach, alive, rate and brightness.
     """
     config = load(root)
     where, tables = _source(source, config)
@@ -543,15 +620,15 @@ def build(
             given=effect, allowed=sorted(tables),
         )
     chosen = {effect: tables[effect]} if effect else tables
-    effects = {name: checked(name, table, config.root)
+    effects = {name: declared(name, table, config.root)
                for name, table in chosen.items()}
     folder = config.path("paths.work", out) if out else where.parent
     folder.mkdir(parents=True, exist_ok=True)
     made = {}
     for name, own in effects.items():
         target = folder / f"{name}.tscn"
-        target.write_text(scene(name, own), encoding="utf-8", newline="\n")
-        numbers = measured(own)
+        target.write_text(scene_whole(name, own), encoding="utf-8", newline="\n")
+        numbers = measured_whole(own)
         provenance.write(provenance.build(
             "vfx", target, engine={"name": "vfx.build"},
             inputs=[provenance.source("effects", where, config.root)],
@@ -561,6 +638,8 @@ def build(
         made[name] = {
             "file": provenance.relative(target, config.root),
             "kind": own["kind"],
+            **({"parts": {part: one["kind"] for part, one in own["parts"].items()}}
+               if own["kind"] == "parts" else {}),
             **numbers,
         }
     return {"source": provenance.relative(where, config.root), "effects": made}
@@ -614,6 +693,19 @@ func _process(_delta: float) -> bool:
 \t\tprint("movie: to %%d" %% frame)
 \treturn frame >= %(stop)d + 3
 """
+
+
+def _watched_as(effect: dict) -> dict:
+    """The one effect a whole is framed as: its farthest-reaching part, living as long
+    as the longest, still only where every part is a one-shot burst."""
+    if effect["kind"] != "parts":
+        return effect
+    parts = list(effect["parts"].values())
+    widest = max(parts, key=lambda one: measured(one)["reach"])
+    return {**widest,
+            "lifetime": max(one["lifetime"] for one in parts),
+            "size": max(one["size"] for one in parts),
+            "one_shot": all(one["one_shot"] for one in parts)}
 
 
 def _framing(effect: dict, fps: int = 60) -> dict:
@@ -674,7 +766,7 @@ def preview(
     work = config.path("paths.work") / "vfx"
     families, sheets, watched = {}, {}, {}
     for name, made in built.items():
-        own = checked(name, tables[name], here)
+        own = _watched_as(declared(name, tables[name], here))
         start, span = 2, max(2, round(own["lifetime"] * 1.5 * fps))
         script = work / f"{name}.watch.gd"
         script.parent.mkdir(parents=True, exist_ok=True)

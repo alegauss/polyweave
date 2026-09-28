@@ -210,6 +210,65 @@ def test_a_path_ribbon_is_a_scene_that_draws_the_path_its_parent_flew(tmp_path):
     assert made["wake"]["reach"] == pytest.approx(0.3)
 
 
+TRAIL = """\
+[effect.sparks.ribbon]
+kind = "path_ribbon"
+amount = 64
+lifetime = 0.35
+size = 0.25
+colour_over_life = ["#ffd980ff", "#ff4d1a00"]
+
+[effect.sparks.particles]
+amount = 27
+lifetime = 0.45
+direction = [0, 1, 0]
+spread = 180.0
+speed = [3.0, 8.0]
+damping = [6.0, 10.0]
+size = 0.09
+shape = "dot"
+colour_over_life = ["#ff9933ff", "#4df2ff00"]
+"""
+
+
+def test_a_trail_is_one_effect_of_two_parts_in_one_scene(tmp_path):
+    """§PW284: Starship's trail is a ribbon and its particles, accepted as one look."""
+    made = vfx.build(effects(tmp_path, TRAIL), root=str(tmp_path))["effects"]
+    assert list(made) == ["sparks"]
+    assert made["sparks"]["kind"] == "parts"
+    parts = made["sparks"]["parts"]
+    assert parts == {"ribbon": "path_ribbon", "particles": "particles"}
+    built = (tmp_path / "vfx" / "sparks.tscn").read_text("utf-8")
+    assert '[node name="sparks" type="Node3D"]' in built
+    assert '[node name="ribbon" type="Node3D" parent="."]' in built
+    assert '[node name="particles" type="GPUParticles3D" parent="."]' in built
+    # Each part keeps its own look, renamed so the two never collide.
+    assert 'id="ribbon_look"' in built and 'id="particles_look"' in built
+    assert 'look = SubResource("ribbon_look")' in built
+
+
+def test_a_whole_measures_every_part(tmp_path):
+    made = vfx.build(effects(tmp_path, TRAIL), root=str(tmp_path))["effects"]["sparks"]
+    assert made["alive"] == 64 + 27
+    assert made["lifetime"] == pytest.approx(0.45)
+    assert made["reach"] == pytest.approx(8.0 * 0.45 - 0.5 * 6.0 * 0.45**2, abs=1e-3)
+
+
+def test_an_effect_that_mixes_keys_and_parts_is_refused(tmp_path):
+    body = "[effect.a]\namount = 4\n\n[effect.a.ribbon]\nkind = \"path_ribbon\"\n"
+    with pytest.raises(PolyweaveError) as refused:
+        vfx.build(effects(tmp_path, body), root=str(tmp_path))
+    assert "mixes keys" in refused.value.message
+
+
+def test_a_part_s_refusal_names_its_part(tmp_path):
+    with pytest.raises(PolyweaveError) as refused:
+        vfx.build(effects(tmp_path, TRAIL.replace("damping = [6.0, 10.0]",
+                                                  "damping = -1")),
+                  root=str(tmp_path))
+    assert "sparks.particles" in refused.value.message
+
+
 def test_a_path_ribbon_too_small_for_its_life_is_refused(tmp_path):
     """§PW286: paced every 1/60 s, a 1.2 s ribbon holds 73 points."""
     source = effects(tmp_path, WAKE.replace("amount = 90", "amount = 40"))
@@ -397,6 +456,45 @@ def test_a_path_ribbon_draws_a_strip_along_where_its_parent_went(tmp_path):
     # It lies behind the path flown, 0.1 a frame, and is at most its width across.
     assert long == pytest.approx(1.8, abs=0.2)
     assert 0.3 < wide <= 0.6
+
+
+WHOLE = """extends SceneTree
+
+var engine := Node3D.new()
+var clock := 0.0
+
+func _initialize() -> void:
+\troot.add_child(engine)
+\tengine.add_child(load("res://vfx/sparks.tscn").instantiate())
+
+func _process(delta: float) -> bool:
+\tclock += delta
+\tengine.position = Vector3(clock * 6.0, 0, 0)
+\tif clock < 0.5:
+\t\treturn false
+\tvar whole: Node3D = engine.get_child(0)
+\tvar ribbon := whole.get_node("ribbon")
+\tvar bits: GPUParticles3D = whole.get_node("particles")
+\tprint("vfx: parts=%d points=%d amount=%d emitting=%s" % [whole.get_child_count(),
+\t\tribbon.points.size(), bits.amount, bits.emitting])
+\treturn true
+"""
+
+
+def test_the_engine_plays_a_whole_made_of_parts(tmp_path):
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    vfx.build(effects(tmp_path, TRAIL), root=str(tmp_path))
+    (tmp_path / "project.godot").write_text(
+        'config_version=5\n\n[application]\nconfig/name="vfx"\n', encoding="utf-8")
+    (tmp_path / "whole.gd").write_text(WHOLE, encoding="utf-8")
+    ran = engine.run("whole.gd", expect=r"^vfx: parts", root=tmp_path, headless=True)
+    assert ran["ok"] is True, ran
+    said = Path(ran["log"]).read_text("utf-8")
+    found = re.search(r"parts=(\d+) points=(\d+) amount=(\d+) emitting=(\w+)", said)
+    assert found, said
+    assert found.group(1) == "2" and int(found.group(2)) > 10
+    assert found.group(3) == "27" and found.group(4) == "true"
 
 
 PACED = """extends SceneTree
