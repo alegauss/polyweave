@@ -60,7 +60,8 @@ from polyweave.errors import PolyweaveError
 #: 84,737 with engine.sweep (§PW250), a script flown over a grid of arguments.
 #: 85,806 with music.render's formats (§PW255) and sound.sitting (§PW256).
 #: 86,492 with vfx.build (§PW259), an effect built from its declaration.
-DESCRIBE = 87_400
+#: 87,415 with geometry.fit's boxed (§PW263), shape scored inside its box.
+DESCRIBE = 88_000
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with

@@ -687,6 +687,16 @@ the outside cannot reach is inside. The answer's `filled` says, per view, what f
 the reference that fill added, so a fit that leaned on it is visible. A drawing keeps its
 holes, since an opening drawn on purpose is part of the outline.
 
+**A fit says when the box, not the shape, decided it** (§PW263). Silhouettes are compared
+at their own proportions, so a declaration a game's hitbox holds narrower than its
+reference can raise the overlap only by shrinking, and its best values land on their
+range edges. The answer's `aspect` gives each view's reference aspect beside the range of
+aspects the samples reached, and `aspect_gaps` names a reference outside it ("the
+reference is 1.97:1 in front and the declaration reached 1.43:1 at most"); `bound` names
+each best value on an edge of its range, and `why_bound` joins the two when both hold.
+`boxed=true` scores each silhouette stretched to its own box instead, so the fit compares
+where the parts sit and how thick they are inside the box, and never the box.
+
 **One cell for a project** (§PW229). A game whose actors break into their own cubes needs
 every actor on one cell, so the debris of a drone and of a boss are the same cubes. So
 `[voxels] cell` in `polyweave.toml` is the cell of a declaration stating neither `cell`

@@ -33,7 +33,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "F", title: "Motion", open: 1 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
   { block: "H", title: "Proof on a real game", open: 4 },
-  { block: "I", title: "Voxel models from a declaration", open: 2 },
+  { block: "I", title: "Voxel models from a declaration", open: 1 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
   { block: "L", title: "What a run leaves as evidence", open: 1 },
@@ -103,13 +103,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "what a change costs a frame is found only by stashing, re-importing and timing both sides by hand",
     why: "A design that must hold the frame rate needs that number, and a recorded table goes stale the day other work lands.",
     deps: ["PW56"],
-  },
-  {
-    id: "PW263",
-    block: "I",
-    symptom: "geometry.fit scores at the reference's own aspect, so a declaration held to another box is squeezed to its range edges",
-    why: "A game's hitbox fixes a model's box, and a fit that cannot tell shape from box returns a worse model as the best.",
-    deps: [],
   },
   {
     id: "PW274",

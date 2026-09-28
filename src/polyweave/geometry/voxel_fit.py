@@ -142,6 +142,72 @@ def _holes(reference: Any, views: tuple, grid: int, root: Path) -> dict[str, flo
     return found
 
 
+def _aspect(mask: np.ndarray) -> float | None:
+    """A silhouette's width over its height, off what it covers; None where empty."""
+    rows = np.flatnonzero(mask.any(axis=1))
+    columns = np.flatnonzero(mask.any(axis=0))
+    if not rows.size or not columns.size:
+        return None
+    return (columns[-1] - columns[0] + 1) / (rows[-1] - rows[0] + 1)
+
+
+def _boxed(mask: np.ndarray, grid: int) -> np.ndarray:
+    """A silhouette stretched to fill the grid both ways: its shape inside its box.
+
+    Scored this way a fit compares where the parts sit and how thick they are within
+    the box, and not the box itself, which a game's hitbox may fix (§PW263).
+    """
+    rows = np.flatnonzero(mask.any(axis=1))
+    columns = np.flatnonzero(mask.any(axis=0))
+    if not rows.size or not columns.size:
+        return np.zeros((grid, grid), dtype=bool)
+    box = mask[rows[0] : rows[-1] + 1, columns[0] : columns[-1] + 1]
+    inner = grid - 2
+    down = ((np.arange(inner) + 0.5) * box.shape[0] / inner).astype(int)
+    across = ((np.arange(inner) + 0.5) * box.shape[1] / inner).astype(int)
+    out = np.zeros((grid, grid), dtype=bool)
+    out[1 : 1 + inner, 1 : 1 + inner] = box[down][:, across]
+    return out
+
+
+#: How far, as a share, a reference's aspect may sit outside what the declaration
+#: reached before the gap is named: one grid pixel's worth of rounding and a little.
+_ASPECT_SLACK = 0.03
+
+
+def _aspects(wanted: dict, reached: dict) -> tuple[dict, list[str]]:
+    """Each view's reference aspect beside what the samples reached, and the gaps."""
+    said, gaps = {}, []
+    for view, mask in wanted.items():
+        target, seen = _aspect(mask), [a for a in reached.get(view, ()) if a]
+        if target is None or not seen:
+            continue
+        low, high = min(seen), max(seen)
+        said[view] = {"reference": round(target, 3),
+                      "reached": [round(low, 3), round(high, 3)]}
+        if target > high * (1 + _ASPECT_SLACK):
+            gaps.append(f"the reference is {target:.2f}:1 in {view} and the "
+                        f"declaration reached {high:.2f}:1 at most")
+        elif target < low * (1 - _ASPECT_SLACK):
+            gaps.append(f"the reference is {target:.2f}:1 in {view} and the "
+                        f"declaration reached {low:.2f}:1 at least")
+    return said, gaps
+
+
+def _on_edges(best: dict, permitted: dict) -> list[str]:
+    """The best values that sit on an edge of their range: bound by it, not fitted."""
+    edged = []
+    for name, value in best.items():
+        bounds = permitted.get(name) or {}
+        low, high = bounds.get("min"), bounds.get("max")
+        if low is None or high is None:
+            continue
+        span = abs(float(high) - float(low)) or 1.0
+        if min(abs(value - float(low)), abs(value - float(high))) <= 1e-6 * span:
+            edged.append(name)
+    return edged
+
+
 def _ranges(document: dict, ranges: dict | None) -> dict:
     """What the fit may move: the call's ranges, or the document's own `[search]`."""
     found = dict(ranges or document.get("search") or {})
@@ -167,12 +233,20 @@ def fit(
     points: int = 7,
     grid: int = GRID,
     sheet: str | Path | None = None,
+    boxed: bool = False,
 ) -> dict:
     """Search a voxel model's declared parameters for the best overlap with a reference.
 
     `reference` is a drawing's path, a mesh's path or a mesh; `views` are the ones the
     score is the mean over. The answer is the best parameters, the score per view, the
     model they build and, with `sheet`, its contact sheet written there.
+
+    The answer also says each view's aspect, the reference's beside the range the
+    samples reached, and names a gap between them in `aspect_gaps`: a model a game's
+    box holds narrower than its reference can only raise the overlap by shrinking, and
+    its best values land on their range edges, which `bound` names (§PW263). `boxed`
+    scores each silhouette stretched to its box instead, so shape is compared and the
+    box is not.
     """
     from .. import search as S
     from . import voxel_sheet, voxels
@@ -186,8 +260,10 @@ def fit(
             f"name some of {', '.join(VIEWS)}",
         )
     here = Path(root).resolve()
-    wanted = _references(reference, views, grid, here)
+    kept = _references(reference, views, grid, here)
+    wanted = {v: _boxed(m, grid) for v, m in kept.items()} if boxed else kept
     permitted = _ranges(document, ranges)
+    reached: dict[str, list] = {view: [] for view in views}
 
     def judge(values: dict) -> dict:
         try:
@@ -200,6 +276,10 @@ def fit(
                 "why": refused.message,
             }
         seen = silhouettes(made, grid=grid)
+        for view in views:
+            reached[view].append(_aspect(seen[view]))
+        if boxed:
+            seen = {view: _boxed(mask, grid) for view, mask in seen.items()}
         per_view = {view: overlap(seen[view], wanted[view]) for view in views}
         broken = [
             one["check"]
@@ -232,7 +312,16 @@ def fit(
         # How much of each outline the mesh left as holes, filled before scoring: a
         # reference that is mostly holes shows as that rather than as a poor fit.
         "filled": _holes(reference, views, grid, here),
+        "boxed": bool(boxed),
     }
+    answer["aspect"], answer["aspect_gaps"] = _aspects(kept, reached)
+    answer["bound"] = _on_edges(found["best"], permitted)
+    if answer["bound"] and answer["aspect_gaps"] and not boxed:
+        answer["why_bound"] = (
+            f"{', '.join(answer['bound'])} sit on the edge of their ranges, and "
+            f"{answer['aspect_gaps'][0]}: the fit shrank the model to meet the box; "
+            "fit again with boxed=true to compare shape inside the box"
+        )
     if sheet:
         where = Path(sheet)
         if not where.is_absolute():

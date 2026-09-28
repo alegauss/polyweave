@@ -378,12 +378,16 @@ def fit_one(
     write: Annotated[
         bool, Param("put the best values into the declaration's [params]")
     ] = False,
+    boxed: Annotated[
+        bool, Param("score shape inside each view's box, not the box itself")
+    ] = False,
     root: Annotated[str, Param("the project the paths resolve against")] = ".",
 ) -> dict:
     """Fit a voxel declaration's [search] parameters to a drawing or a mesh (§PW230).
 
     Answers the best values, the overlap per view and the model's reading; `write` puts
-    the best values into the declaration, so the next build is the fitted model.
+    the best values into the declaration, so the next build is the fitted model. Each
+    view's aspect gap and the values bound by their ranges are named (§PW263).
     """
     from . import geometry as G
     from .geometry import voxel_fit
@@ -394,7 +398,7 @@ def fit_one(
     document = G.read(where, root=here)
     found = voxel_fit.fit(
         document, reference, views=tuple(views or ("front",)), root=here,
-        budget=budget, points=points, sheet=sheet,
+        budget=budget, points=points, sheet=sheet, boxed=boxed,
     )
     answer = {k: v for k, v in found.items() if k != "model"}
     answer.update(document=_kept(where, here), reference=reference, written=[])

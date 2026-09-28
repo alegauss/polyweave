@@ -50,6 +50,33 @@ def test_a_drawing_three_wide_fits_a_plate_three_wide(tmp_path):
     assert found["views"]["front"] > 0.95
 
 
+def test_a_box_the_ranges_cannot_reach_is_named_with_the_values_it_bound(tmp_path):
+    """§PW263: the Mote's hitbox held it to 1.43:1 against a 1.97:1 mesh, and every
+    value landed on a range edge with nothing saying why."""
+    found = F.fit(plate(), banner(tmp_path), ranges={"w": {"min": 1.0, "max": 4.0}},
+                  root=tmp_path)
+    assert found["best"]["w"] == pytest.approx(4.0)
+    assert found["bound"] == ["w"]
+    assert found["aspect"]["front"]["reference"] == pytest.approx(3.0, abs=0.05)
+    assert found["aspect"]["front"]["reached"][1] == pytest.approx(2.0, abs=0.05)
+    assert "the reference is 3.00:1 in front" in found["aspect_gaps"][0]
+    assert "boxed=true" in found["why_bound"]
+
+
+def test_scored_inside_its_box_a_rectangle_matches_a_rectangle(tmp_path):
+    found = F.fit(plate(), banner(tmp_path), ranges={"w": {"min": 1.0, "max": 4.0}},
+                  root=tmp_path, boxed=True)
+    assert found["boxed"] is True
+    assert found["views"]["front"] > 0.95
+    assert "why_bound" not in found
+
+
+def test_a_fit_inside_its_ranges_names_nothing_bound(tmp_path):
+    found = F.fit(plate(), banner(tmp_path), ranges={"w": {"min": 1.0, "max": 10.0}},
+                  root=tmp_path)
+    assert found["bound"] == [] and found["aspect_gaps"] == []
+
+
 def test_a_mesh_is_compared_in_every_view_asked_for(tmp_path):
     target = S.plate([0, 0, 6, 2], 3.0)
     found = F.fit(

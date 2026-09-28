@@ -353,26 +353,6 @@ Done when RK131's 0.7 ms is one call against HEAD, and the answer says how sure 
 
 ## Block I — Voxel models from a declaration
 
-### §PW263 A fit that knows the box from the shape
-
-Found in Starship (2026-09-27, RK97). The Mote's voxel declaration was fitted to the
-mesh Meshy made from its drawing. The mesh, normalised to height 1, is 1.97 wide. The
-game holds the Mote to a 1.5 x 1.05 hitbox, so the declaration's ranges keep it inside
-that box. `geometry.fit` scores silhouettes at the reference's own aspect. The only way
-it can raise the overlap is to make every part smaller, so the best values landed on the
-edge of every range (core, spike, outer_h and inner_w at their minimum). The fitted
-model was worse: its seams slid onto the orb's caps and its shields thinned to lines.
-The answer gave no hint that the aspect was the cause, only a score of 0.65.
-
-When the reference's aspect in a view differs from what the ranges can reach, the answer
-should say so ("the reference is 1.97:1 in front and the declaration can reach 1.43:1 at
-most"). It should offer to score after normalising each view's box, so the fit compares
-shape and proportion inside the box rather than the box itself. A best value on the edge
-of its range should be named as bound by the range, not reported as the fit.
-
-Done when the Mote's fit reports the aspect gap and, scored inside the box, moves its
-parameters off their range edges.
-
 ### §PW274 Every op takes a point on its face the same way
 
 Found writing PW262's test (2026-09-28). On a grid of 1.0 with cell centres at x.5, a

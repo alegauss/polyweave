@@ -30,7 +30,6 @@
 
 ## Block I — Voxel models from a declaration
 
-- 📋 **PW263** (deps: —) **geometry.fit scores at the reference's own aspect, so a declaration held to another box is squeezed to its range edges** — A game's hitbox fixes a model's box, and a fit that cannot tell shape from box returns a worse model as the best. → §PW263
 - 📋 **PW274** (deps: —) **a cube and a plate over the same box fill different cells where a face falls on a cell centre** — One box declared as two ops gives two models, so a region straddles or not by which op drew it. → §PW274
 
 ## Block J — A bar a person sets once
