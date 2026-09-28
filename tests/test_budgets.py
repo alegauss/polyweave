@@ -66,7 +66,8 @@ from polyweave.errors import PolyweaveError
 #: 90,321 with game.batch (§PW271), many commands in one call.
 #: 91,173 with measure.contrast (§PW272), a shot against its surround.
 #: 91,755 with measure.contrast's default radius (§PW279).
-DESCRIBE = 92_300
+#: 93,293 with engine.cost (§PW258), a change's frame cost on two builds.
+DESCRIBE = 93_800
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -111,7 +112,8 @@ DESCRIBE = 92_300
 #: 100,981 with game.batch (§PW271).
 #: 101,902 with measure.contrast and spec.no-targets (§PW272).
 #: 102,578 with measure.contrast's radius and spec.ring-inside-target (§PW279).
-CAPABILITIES = 103_000
+#: 104,185 with engine.cost and its three codes (§PW258).
+CAPABILITIES = 104_700
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

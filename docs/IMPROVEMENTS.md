@@ -262,25 +262,6 @@ this is where that is recorded honestly: what still runs by hand, and why the ri
 instead of disappearing. An outcome worth having, stated, beats the same outcome
 unstated.
 
-### §PW258 A change's frame cost, before and after
-
-Found in Starship's RK131 (2026-09-27), adding a sky shader, haze and searchlights
-behind the city. The design says the change must hold the frame rate, so its cost had to
-be known. The project's `dev/perf.gd` times one heavy wave per preset, and the table it
-had recorded (`Graphics.MEASURED`, 2.03 ms at High) was a day stale: other work had
-since raised the same wave to 4.23 ms. So the only honest number was a comparison, and
-it was made by hand: `git stash --include-untracked`, re-import, run perf, `git stash
-pop`, re-import, run perf again, then four more runs for the table.
-
-polyweave should answer "what does this change cost a frame": run a project's timing
-script on the working tree and on a named revision (in a worktree, never stashing the
-user's files), on the same machine and settings, several times each, and report both,
-the difference with its spread, and the machine and driver it was taken on. It should
-record the result beside the script's own record, so a stale table like MEASURED is
-named as stale. PW56 is about how those scripts are started; this is what they are for.
-
-Done when RK131's 0.7 ms is one call against HEAD, and the answer says how sure it is.
-
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once

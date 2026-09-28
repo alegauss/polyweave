@@ -82,7 +82,8 @@ TOOL_BUDGET = 4500
 #: 79,800 at 79,224 for store.capsules (§PW268).
 #: 80,700 at 80,104 for game.batch (§PW271).
 #: 81,400 at 80,835 for measure.contrast (§PW272).
-LIST_BUDGET = 81400
+#: 83,200 at 82,674 for engine.cost (§PW258).
+LIST_BUDGET = 83200
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

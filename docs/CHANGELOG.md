@@ -139,6 +139,7 @@
 - ✅ **PW116** **a ledger side that never measured the hand work still yields a conclusive verdict** — A run names what it never measured, and compare lists it and calls a side with untimed seconds inconclusive instead of not reduced (design recorded in `docs/specs/adoption.md`).
 - ✅ **PW117** **every symptom in the backlog was measured on one game, so the config boundary is tested by a single adopter** — A web-page adopter needed no new key but found two Cottony shapes compiled in: all three rungs assumed, and scales read only from GDScript (design recorded in `docs/specs/adoption.md`).
 - ✅ **PW120** **every family port is a hand-written script repeating the same build, search, check, bake and record steps** — A family file states members, axes and bake targets, and port.port runs the build, family search, final bake and ledger record from it (design recorded in `docs/specs/adoption.md`).
+- ✅ **PW258** **what a change costs a frame is found only by stashing, re-importing and timing both sides by hand** — engine.cost times a script on the tree and a revision's worktree, alternating, with each measure's difference, interval and sure; RK131 read +1.11 ms GPU (design recorded in `docs/specs/engine.md`).
 
 ## Block I — Voxel models from a declaration
 

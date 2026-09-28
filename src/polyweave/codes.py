@@ -1290,6 +1290,21 @@ CODES: dict[str, Code] = {
         when="a grid of scalars, or an empty one",
         doors=('give grid as {"seed": [1, 2, 3]}, one list per argument',),
     ),
+    "engine.cost-no-revision": Code(
+        means="a frame cost names a revision git cannot find, or runs outside git",
+        when="engine.cost with against or on naming no commit",
+        doors=("name a commit, branch or tag the repository has",),
+    ),
+    "engine.cost-import": Code(
+        means="a revision's worktree did not import cleanly before it was timed",
+        when="engine.cost against a revision whose resources the editor cannot load",
+        doors=("open that revision in the editor once", "name another revision"),
+    ),
+    "engine.cost-same": Code(
+        means="a frame cost was asked to compare a build with itself",
+        when="engine.cost with on and against naming the same thing",
+        doors=("leave on unset for the working tree, and name against",),
+    ),
     "engine.no-script": Code(
         means="the scene script named does not exist",
         when="a path relative to somewhere other than the project root",

@@ -253,6 +253,29 @@ the script's hash, the grid, the pattern, the arguments and the build (the git c
 a hash of what is uncommitted, polyweave's own work folder left out), so the same sweep of
 the same build answers from the record with `cached` true, and `again` flies it anyway.
 
+**What a change costs a frame is one call** (§PW258). A design that must hold the frame
+rate needs its change's cost, and a timing table recorded a day earlier is about a build
+that no longer exists: Starship's `Graphics.MEASURED` said 2.03 ms where the same wave
+now took 4.23. `engine.cost(script, expect=, against="HEAD", on="", runs=5)` times one
+script on two builds of the project. `on` unset is the working tree; a revision is
+checked out once as a `git worktree` under the work folder (`cost/trees/<commit>`) and
+kept, never by stashing the user's files, and imported (`--import`) before its first
+run. The working tree is imported every call, since that is cheap when nothing moved.
+
+Each side runs its own copy of the script, as a stash would have, since a script leans
+on the game it times; a revision without it borrows the working tree's and says so. The
+runs alternate, one side then the other and the other first next time, on the wall clock
+(no `--fixed-fps`), through the offscreen route, or headless for a CPU-only script. Every
+`name=number` on the `expect` line is a measure. Each answers both sides' mean, spread
+and values, the `difference` and its `interval` of two standard errors, `percent`, and
+`sure` where the interval leaves out zero. The answer names the machine and the device
+the engine printed, and is recorded at `cost/<script>-<key>.json`. The next call answers
+that record as `previous`, `stale` where either build has moved since.
+
+Measured on RK131, the sky, haze and searchlights against the commit before: frame time
+16.66 ms on both, held by the driver's vsync, and the GPU's render 2.07 to 3.18 ms, +1.11
+in [0.34, 1.88], sure, where the hand comparison had said 0.7.
+
 **A shot is every frame between two marks** (§PW249). A trailer is cut from sequences, not
 stills: every frame of a deterministic run between two moments, at a fixed rate.
 `capture.movie` runs a scene script through the offscreen route with Godot's Movie Maker

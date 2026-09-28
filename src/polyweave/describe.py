@@ -118,6 +118,7 @@ MODULES: tuple[str, ...] = (
     "polyweave.variation",
     "polyweave.fitting",
     "polyweave.engine",
+    "polyweave.frame_cost",
     "polyweave.capture",
     "polyweave.offscreen",
     "polyweave.godot",

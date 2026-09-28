@@ -212,7 +212,10 @@ def run(
     command = [*through, binary or find(root)]
     if headless:
         command.append("--headless")
-    command += ["--path", str(where), "--fixed-fps", str(fps)]
+    command += ["--path", str(where)]
+    # Zero leaves the engine on the wall clock, which a timing run needs (§PW258).
+    if fps > 0:
+        command += ["--fixed-fps", str(fps)]
     command += ["--quit-after", str(budget), "--script", _as_res(path, where)]
     command += list(args)
 
