@@ -35,6 +35,8 @@
 
 ## Block M — What a game needs beyond the look
 
+- ⏸ **PW259** (deps: —) **a visual effect such as a trail or a burst of particles cannot be declared, built or accepted** — set aside (Waits on Starship adopting its trails.): Starship's seven trails still have to be built and accepted through it. → §PW259
+
 ## Block N — Pictures held to a canon
 
 - ⏸ **PW180** (deps: PW166 ✅) **no canon picture is ever sent as a style reference, so a family's look reaches the service only as words** — set aside (Waits on Ideogram: 4.0 takes no image input.): A reference picture holds line weight and proportion that no palette or style block states. → §PW180

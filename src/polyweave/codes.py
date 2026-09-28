@@ -809,6 +809,11 @@ CODES: dict[str, Code] = {
         "other than particles or ribbon",
         doors=("write the value the remedy describes",),
     ),
+    "vfx.unwatched": Code(
+        means="the engine could not play the effect where its frames could be kept",
+        when="no display and no offscreen route, or a run that failed; the log says",
+        doors=("run it where a display is", "read the log the detail names"),
+    ),
     "music.bad-format": Code(
         means="a render asked for a format it does not write",
         when="formats naming mp3 or flac, or an empty list",
@@ -1781,6 +1786,11 @@ CODES: dict[str, Code] = {
         means="a sound predicate was checked on something that is not a sound",
         when="a seam_step bound in a spec checked against a picture",
         doors=("check it against the audio file, or name that file with `of`",),
+    ),
+    "spec.not-effect": Code(
+        means="an effect predicate was checked on something vfx.build did not make",
+        when="a reach bound checked against a picture, or a scene with no vfx record",
+        doors=("check it against the .tscn vfx.build wrote, or name it with `of`",),
     ),
     "spec.unreadable-sound": Code(
         means="a sound file is missing, unreadable, undecodable or empty",

@@ -222,6 +222,20 @@ and carries no seam measures, rather than being refused whole, which had left ev
 effect with nothing to bound. A spec that bounds a seam on one is refused
 (`spec.no-seam`), naming the length a seam needs.
 
+## A visual effect
+
+An effect `vfx.build` made is measured off its declaration, which its record keeps
+(§PW259; [vfx.md](vfx.md)): a predicate on one is read off the record beside the `.tscn`
+it is checked against, or the one `of` names, and refused (`spec.not-effect`) on anything
+else.
+
+- `lifetime` (seconds), `alive` (the particles alive at once, its budget) and `rate`
+  (started a second).
+- `reach`: the furthest a particle travels in its life, in metres: the top speed over the
+  life, the fall gravity adds, and the emission radius.
+- `brightness`: the brightest stop of its colour over life, Rec. 709 luminance times
+  alpha, 0 to 1.
+
 ## Two digests: did the outline move, or only the look
 
 **A bake leaves two 16-character hashes** in its answer and in its record (§PW141):

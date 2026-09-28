@@ -103,6 +103,68 @@ def test_a_misspelled_key_is_answered_with_its_nearest(tmp_path):
     assert "'speed'" in refused.value.remedy
 
 
+def test_an_acceptance_spec_bounds_what_a_built_effect_measures(tmp_path):
+    from polyweave import accept
+
+    vfx.build(effects(tmp_path), root=str(tmp_path))
+    where = tmp_path / "vfx" / "sparks.accept.toml"
+    where.write_text(
+        'asset = "sparks"\n'
+        '[[predicate]]\nid = "budget"\nmeasure = "alive"\nmax = 48\n'
+        '[[predicate]]\nid = "reach"\nmeasure = "reach"\nmin = 2.0\nmax = 4.0\n',
+        encoding="utf-8",
+    )
+    found = accept.checked("vfx/sparks.accept.toml", "vfx/sparks.tscn",
+                           root=str(tmp_path))
+    assert found["failed"] == ["budget"]
+    values = {r["id"]: r["value"] for r in found["predicates"]}
+    assert values["budget"] == 64
+    assert values["reach"] == pytest.approx(3.04)
+
+
+def test_an_effect_bound_on_something_vfx_build_did_not_make_is_refused(tmp_path):
+    from polyweave import accept
+
+    effects(tmp_path)
+    (tmp_path / "plain.tscn").write_text("[gd_scene format=3]\n", encoding="utf-8")
+    where = tmp_path / "plain.accept.toml"
+    where.write_text('asset = "plain"\n[[predicate]]\nid = "r"\nmeasure = "reach"\n'
+                     "max = 4.0\n", encoding="utf-8")
+    with pytest.raises(PolyweaveError) as refused:
+        accept.checked("plain.accept.toml", "plain.tscn", root=str(tmp_path))
+    assert refused.value.code == "spec.not-effect"
+
+
+def test_an_effect_is_watched_over_its_life_as_a_sitting(tmp_path):
+    import json
+
+    from polyweave import offscreen
+
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    try:
+        offscreen.route_for(tmp_path)
+    except PolyweaveError:
+        pytest.skip("no route draws real pixels here")
+    source = effects(tmp_path)
+    (tmp_path / "project.godot").write_text(
+        'config_version=5\n\n[application]\nconfig/name="vfx"\n', encoding="utf-8")
+    laid = vfx.preview(source, out="review/fx", effect="sparks", stills=4,
+                       root=str(tmp_path))
+    assert laid["effects"]["sparks"]["frames"] > 60
+    manifest = json.loads((tmp_path / laid["sitting"]).read_text("utf-8"))
+    assert manifest["choices"] == vfx.VFX_CHOICES
+    from PIL import Image
+
+    with Image.open(tmp_path / "review" / "fx" / "sparks.png") as sheet:
+        assert sheet.width == 8 + 4 * (vfx.FRAME[0] + 8)
+        # Something lit the grey: the sparks are drawn, not only the backdrop.
+        import numpy as np
+
+        drawn = np.asarray(sheet.convert("RGB"))[8:8 + vfx.FRAME[1], 8:]
+        assert drawn.max() > 120
+
+
 LOADS = """extends SceneTree
 
 func _initialize() -> void:

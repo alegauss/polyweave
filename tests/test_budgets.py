@@ -99,7 +99,8 @@ DESCRIBE = 87_400
 #: 94,927 with engine.sweep and engine.bad-grid (§PW250).
 #: 96,016 with music.render's formats, sound.sitting and music.bad-format.
 #: 96,817 with vfx.build and its two codes (§PW259).
-CAPABILITIES = 97_600
+#: 97,618 with vfx.preview and vfx.unwatched (§PW259).
+CAPABILITIES = 98_400
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

@@ -58,6 +58,40 @@ KEYS: dict[str, tuple[type | tuple, Any]] = {
     "trail": (float, 0.3),
 }
 
+#: Every effect measure a predicate may bound, and what it says.
+EFFECTS: dict[str, str] = {
+    "lifetime": "seconds a particle lives",
+    "reach": "the furthest a particle travels in its life, in metres",
+    "alive": "the particles alive at once, the effect's budget",
+    "rate": "the particles started a second",
+    "brightness": "the brightest stop of its colour over life, luminance times alpha",
+}
+
+
+def is_effect(name: str) -> bool:
+    return name in EFFECTS
+
+
+def measures_of(path: Path, root: Path) -> dict:
+    """What a built effect measures, as its record says: the scene is not re-read."""
+    try:
+        record = provenance.read(str(path), root=str(root))
+    except PolyweaveError as missing:
+        raise PolyweaveError(
+            "spec.not-effect",
+            f"{path.name} has no record of an effect vfx.build made",
+            "check the spec against a .tscn vfx.build wrote, or add of = \"<it>\"",
+            detail=missing.message,
+        ) from missing
+    if record.get("kind") != "vfx":
+        raise PolyweaveError(
+            "spec.not-effect",
+            f"{path.name} is a {record.get('kind')} record, not an effect's",
+            "check the spec against a .tscn vfx.build wrote",
+        )
+    return record.get("measurements") or {}
+
+
 KINDS = ("particles", "ribbon")
 EMISSIONS = ("point", "sphere")
 BLENDS = ("add", "mix")
@@ -290,3 +324,152 @@ def build(
             **numbers,
         }
     return {"source": provenance.relative(where, config.root), "effects": made}
+
+
+# -- a look a person can judge ---------------------------------------------------------
+
+#: What a person can say of an effect watched over its life.
+VFX_CHOICES = {
+    "accept": "it looks right: the game plays what was built",
+    "look": "it does not: say why, and the declaration goes back",
+}
+
+#: The grey an effect is watched against, neither of the light it adds nor of a scene.
+NEUTRAL = (0.18, 0.18, 0.18)
+
+#: The size each still is shown at on the sheet, a 16:9 window's shape.
+FRAME = (320, 180)
+
+_WATCH = """extends SceneTree
+
+func _initialize() -> void:
+\tvar world := Node3D.new()
+\tvar backdrop := WorldEnvironment.new()
+\tbackdrop.environment = Environment.new()
+\tbackdrop.environment.background_mode = Environment.BG_COLOR
+\tbackdrop.environment.background_color = Color(%(grey)s)
+\tworld.add_child(backdrop)
+\tvar camera := Camera3D.new()
+\tcamera.transform = Transform3D(
+\t\tBasis.looking_at(Vector3(%(centre)s) - Vector3(%(eye)s), Vector3(%(up)s)),
+\t\tVector3(%(eye)s))
+\tworld.add_child(camera)
+\tworld.add_child(load("%(scene)s").instantiate())
+\troot.add_child.call_deferred(world)
+
+func _process(_delta: float) -> bool:
+\tvar frame := Engine.get_process_frames()
+\tif frame == %(start)d:
+\t\tprint("environment: resolution=%%dx%%d" %% [root.size.x, root.size.y])
+\tif frame == %(start)d:
+\t\tprint("movie: from %%d" %% frame)
+\tif frame == %(stop)d:
+\t\tprint("movie: to %%d" %% frame)
+\treturn frame >= %(stop)d + 3
+"""
+
+
+def _framing(effect: dict) -> dict:
+    """Where the camera stands to see the whole of an effect's reach from its side."""
+    reach = max(measured(effect)["reach"], 0.5)
+    d = effect["direction"]
+    norm = math.sqrt(sum(v * v for v in d)) or 1.0
+    d = [v / norm for v in d]
+    centre = [v * reach / 2 for v in d]
+    # From across the direction, upright where the effect is not itself vertical.
+    up = [0.0, 1.0, 0.0] if abs(d[1]) < 0.9 else [0.0, 0.0, 1.0]
+    side = [d[1] * up[2] - d[2] * up[1], d[2] * up[0] - d[0] * up[2],
+            d[0] * up[1] - d[1] * up[0]]
+    size = math.sqrt(sum(v * v for v in side)) or 1.0
+    eye = [c + s / size * reach * 0.9 for c, s in zip(centre, side, strict=True)]
+    return {"centre": _floats(centre), "eye": _floats(eye), "up": _floats(up)}
+
+
+@operation("vfx.preview", kind="capture")
+def preview(
+    source: Annotated[str, Param("the *.vfx.toml, relative to the project")],
+    *,
+    out: Annotated[str, Param("the folder the sitting is laid out in")],
+    effect: Annotated[str, Param("one effect; left out, every one")] = None,
+    stills: Annotated[int, Param("frames on each sheet", lo=2, hi=12)] = 6,
+    root: Annotated[str, Param("the project the effects belong to")] = ".",
+) -> dict:
+    """Watch each effect over its life on a neutral grey, as a sitting for a person.
+
+    Each effect is built, then played in the engine from its side, with the camera
+    framing its reach, for one and a half lifetimes; the frames are kept by
+    capture.movie and `stills` of them, evenly spaced, are laid out on one sheet with
+    their times and what the effect measures. The sheets are a sitting on the review
+    page, one family an effect; the answer lands through verdict.judge.
+    """
+    from PIL import Image, ImageDraw
+
+    from . import capture, verdict
+
+    config = load(root)
+    here = config.root
+    built = build(source, effect=effect, root=root)["effects"]
+    _, tables = _source(source, config)
+    fps = int(config.get("engine.fixed_fps"))
+    folder = config.path("paths.work", out)
+    work = config.path("paths.work") / "vfx"
+    families, sheets, watched = {}, {}, {}
+    for name, made in built.items():
+        own = checked(name, tables[name])
+        start, span = 2, max(2, round(own["lifetime"] * 1.5 * fps))
+        script = work / f"{name}.watch.gd"
+        script.parent.mkdir(parents=True, exist_ok=True)
+        script.write_text(_WATCH % {
+            "grey": _floats(NEUTRAL), "scene": "res://" + made["file"],
+            "start": start, "stop": start + span, **_framing(own),
+        }, encoding="utf-8", newline="\n")
+        shot = capture.movie(
+            provenance.relative(script, here), out=str(work / name / "frames"),
+            # No size is asked: Movie Maker records at the project's window size
+            # whatever --resolution says, and the stills are scaled to FRAME.
+            root=str(here), environment={},
+        )
+        if not shot["ok"]:
+            raise PolyweaveError(
+                "vfx.unwatched",
+                f"effect {name} could not be watched: {shot.get('why')}",
+                "run it where a display is, or through the offscreen route; the log "
+                "is named in the detail",
+                detail=shot.get("log"),
+            )
+        frames = sorted(Path(shot["out"]).glob("*.png"))
+        picked = [frames[round(i * (len(frames) - 1) / (stills - 1))]
+                  for i in range(stills)]
+        gap, line = 8, 16
+        sheet = Image.new("RGBA", (gap + stills * (FRAME[0] + gap),
+                                   FRAME[1] + 2 * gap + 3 * line), (40, 40, 40, 255))
+        draw = ImageDraw.Draw(sheet)
+        for i, frame in enumerate(picked):
+            with Image.open(frame) as still:
+                sheet.alpha_composite(still.convert("RGBA").resize(FRAME),
+                                      (gap + i * (FRAME[0] + gap), gap))
+            at = (frames.index(frame)) / fps
+            draw.text((gap + i * (FRAME[0] + gap), FRAME[1] + gap + 2),
+                      f"t = {at:.2f} s", fill=(235, 235, 235, 255))
+        said = ", ".join(f"{k} {made[k]:g}" for k in
+                         ("lifetime", "reach", "alive", "rate", "brightness"))
+        draw.text((gap, FRAME[1] + gap + line + 4), f"{name}: {said}",
+                  fill=(255, 210, 90, 255))
+        drawn = folder / f"{name}.png"
+        drawn.parent.mkdir(parents=True, exist_ok=True)
+        sheet.save(drawn)
+        member = {"name": name, "new": provenance.relative(drawn, here),
+                  "effect": made["file"], "passed": True, "measured": said}
+        families[name] = [member]
+        sheets[name] = {"sheet": str(drawn),
+                        "members": [{"name": name, "passed": True, "failed": []}]}
+        watched[name] = {"sheet": member["new"], "frames": len(frames),
+                         "scene": made["file"]}
+    verdict._manifest(folder, families, sheets, here, choices=VFX_CHOICES)
+    return {
+        "sitting": provenance.relative(folder / verdict.MANIFEST, here),
+        "effects": watched,
+        "choices": dict(VFX_CHOICES),
+        "says": f"{len(watched)} effect{'' if len(watched) == 1 else 's'} for a person "
+        "to watch on the review page; verdict.answers resumes from what they said",
+    }

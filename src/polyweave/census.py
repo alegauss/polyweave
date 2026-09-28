@@ -65,6 +65,8 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.vfx:checked": ("internal", "an effect's table, with defaults"),
     "polyweave.vfx:measured": ("internal", "an effect's measures from its declaration"),
     "polyweave.vfx:scene": ("internal", "an effect as the Godot scene build writes"),
+    "polyweave.vfx:is_effect": ("internal", "whether a spec's measure is an effect's"),
+    "polyweave.vfx:measures_of": ("internal", "a built effect's measures, for accept"),
     "polyweave.licences": ("internal", "the instruments a sound's record names"),
     "polyweave.cli": ("internal", "the command line's own parsing and printing"),
     "polyweave.geometry": ("internal", "a declaration's machinery; geometry.build"),

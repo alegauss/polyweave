@@ -22,7 +22,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Annotated, Any
 
-from . import cost, sound
+from . import cost, sound, vfx
 from . import measure as M
 from .describe import Param, operation
 from .errors import PolyweaveError
@@ -195,7 +195,8 @@ def _predicate(entry: dict, index: int) -> Predicate:
             "spec.no-measure",
             f"the predicate {name!r} names no measure",
             f"name one of {', '.join(sorted(M.COMPUTES))}, or a cost: "
-            f"{', '.join(cost.COSTS)}, or a sound: {', '.join(sound.SOUNDS)}",
+            f"{', '.join(cost.COSTS)}, or a sound: {', '.join(sound.SOUNDS)}, or an "
+            f"effect: {', '.join(vfx.EFFECTS)}",
         )
     unknown = sorted(set(entry) - set(FIELDS) - set(ARGUMENTS))
     if unknown:
@@ -388,6 +389,9 @@ def check(
         if sound.is_sound(p.measure):
             results.append(_sounded(p, subject, root, heard))
             continue
+        if vfx.is_effect(p.measure):
+            results.append(_effected(p, subject, root))
+            continue
         arguments = dict(p.arguments)
         for key in ("against", "target"):
             if key == "against" and isinstance(arguments.get(key), str):
@@ -462,8 +466,30 @@ def checked(
 
 
 def _off_picture(name: str) -> bool:
-    """A measure read off a file rather than pixels: a cost or a sound."""
-    return cost.is_cost(name) or sound.is_sound(name)
+    """A measure read off a file rather than pixels: a cost, a sound or an effect."""
+    return cost.is_cost(name) or sound.is_sound(name) or vfx.is_effect(name)
+
+
+def _effected(p: Predicate, subject: Any, root: str | Path) -> dict:
+    """An effect predicate, read off the record of the scene vfx.build made (§PW259)."""
+    where = Path(p.of) if p.of else Path(subject)
+    where = where if where.is_absolute() else Path(root) / where
+    value = float(vfx.measures_of(where, Path(root))[p.measure])
+    return {
+        "id": p.id,
+        "measure": p.measure,
+        "of": str(where),
+        "region": None,
+        "rung": None,
+        "value": value,
+        "min": p.minimum,
+        "max": p.maximum,
+        "weight": p.weight,
+        "passed": _passes(value, p),
+        "margin": margin(value, p.minimum, p.maximum),
+        "headroom": headroom(value, p.minimum, p.maximum),
+        **_bound(p, value),
+    }
 
 
 def _sounded(p: Predicate, subject: Any, root: str | Path, heard: dict) -> dict:

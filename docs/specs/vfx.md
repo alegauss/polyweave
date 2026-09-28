@@ -52,5 +52,33 @@ declaration since each is arithmetic:
 | `rate` | how many start a second |
 | `brightness` | the brightest stop of its gradient, as luminance times alpha |
 
-Whether its look is right is a person's call. Showing it to them over a few frames, and
-holding these measures to an acceptance spec, are still open on PW259.
+## Watching
+
+Whether its look is right is a person's call. `vfx.preview(source, out=, effect=,
+stills=6)` builds each effect and plays it in the game's own project for one and a half
+lifetimes against a neutral grey (`NEUTRAL`, 0.18), from across its direction with the
+camera framing its reach, through `capture.movie`, so it needs a display or the offscreen
+route (`vfx.unwatched` where there is neither). `stills` frames, evenly spaced, are laid
+out on one sheet at 320x180 with their times and what the effect measures, and the sheets
+are a sitting on the review page, one family an effect, with the choices `accept` and
+`look`. The answer lands through `verdict.judge`.
+
+## Held to a spec
+
+An `*.accept.toml` bounds an effect's measures as it bounds a sound's, checked with
+`accept.check` against the `.tscn` (see [measurements.md](measurements.md)):
+
+```toml
+asset = "spark_trail"
+
+[[predicate]]
+id = "budget"
+measure = "alive"
+max = 48
+
+[[predicate]]
+id = "reach"
+measure = "reach"
+min = 2.0
+max = 4.0
+```

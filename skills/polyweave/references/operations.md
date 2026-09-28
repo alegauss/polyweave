@@ -15,7 +15,7 @@ This page only groups them by what you are trying to do.
 | Search for numbers | `search.sweep`, `port.run` (a whole family), `trace.read` |
 | See it where it is seen | `compose.place`, `compose.sheet` |
 | Size a bound from noise | `calibrate.run`, then `calibrate.apply` |
-| Carry a person's verdict | `verdict.sheet`, `verdict.sitting`, `verdict.judge`, `sound.sitting` (heard); `python -m polyweave review` puts a sitting in front of the person, `verdict.answers` resumes from what they said there |
+| Carry a person's verdict | `verdict.sheet`, `verdict.sitting`, `verdict.judge`, `sound.sitting`; `python -m polyweave review` puts a sitting in front of the person, `verdict.answers` resumes from what they said there |
 | Keep the ledger | `loop.start`, `loop.spent`, `loop.judged`, `loop.finish`, `loop.compare` |
 | Read the ledger | `loop.runs`, `loop.assets`, `loop.changes`, `loop.bounds` |
 | Provenance | `provenance.read`, `provenance.verify`, `provenance.dependents`, `provenance.outdated`, `provenance.unrecorded`, `provenance.credits`, `provenance.generated` |
@@ -24,7 +24,7 @@ This page only groups them by what you are trying to do.
 | Scale against the engine | `units.check`, `units.engine_scale`, `units.read_number` |
 | World | `world.read`, `world.validate`, `words.check`, `words.unlisted`, `words.sheet` |
 | Music | `music.validate` (every problem, with its line), `music.to_midi`, `music.render`, `sound.synth` (effects from a seed), `sound.buy` (a paid one) |
-| Visual effects | `vfx.build` (particles or a ribbon, as a scene) |
+| Visual effects | `vfx.build` (particles or a ribbon), `vfx.preview` (a sitting) |
 | A project's look | `style.read`, `style.drift` (before a person looks; only `verdict.judge` grows a canon) |
 | Buy a drawing | `picture.buy`, `picture.gate` (before the mesh is bought), `picture.letters`, `picture.describe`, `picture.vary`, `picture.against_parent`, `picture.fit` (onto the family's grid), `picture.collect` |
 | Before buying a mesh | `reference.pick`, `reference.prepare`, `shape.check`, `shape.silhouette`, `shape.turntable` |

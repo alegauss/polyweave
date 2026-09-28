@@ -29,7 +29,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "B", title: "Seeing the result cheaply", open: 0 },
   { block: "C", title: "The asset compiler", open: 0 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 1 },
-  { block: "E", title: "One world with the engine", open: 2 },
+  { block: "E", title: "One world with the engine", open: 3 },
   { block: "F", title: "Motion", open: 1 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
   { block: "H", title: "Proof on a real game", open: 4 },
@@ -37,7 +37,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
   { block: "L", title: "What a run leaves as evidence", open: 1 },
-  { block: "M", title: "What a game needs beyond the look", open: 2 },
+  { block: "M", title: "What a game needs beyond the look", open: 1 },
   { block: "N", title: "Pictures held to a canon", open: 1 },
   { block: "O", title: "A person sees and answers", open: 2 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
@@ -67,6 +67,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "E",
     symptom: "capture.run trusts the size a script says it applied, so a window the OS shrank records a picture of the wrong size",
     why: "A key art asked at 3840x2160 came back 3840x2119 and was recorded as holding its environment.",
+    deps: [],
+  },
+  {
+    id: "PW273",
+    block: "E",
+    symptom: "capture.movie asked at a size records at the project's window size, and is refused after as though the script erred",
+    why: "Movie Maker ignores --resolution, so every shot of a game whose window differs from the size asked fails after the whole run.",
     deps: [],
   },
   {
@@ -123,13 +130,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "L",
     symptom: "compose.place writes its picture with no record, so a composed capsule cannot say which pictures it came from",
     why: "A changed key art cannot find the store capsules it left stale.",
-    deps: [],
-  },
-  {
-    id: "PW259",
-    block: "M",
-    symptom: "a visual effect such as a trail or a burst of particles cannot be declared, built or accepted",
-    why: "Each built effect still needs rendering over a few frames for a person's verdict, its measures bound in an acceptance spec, and Starship's seven trails built through it.",
     deps: [],
   },
   {
@@ -247,4 +247,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW36", "PW53", "PW77", "PW78", "PW79", "PW80", "PW81", "PW82", "PW180", "PW192", "PW200", "PW201"];
+export const generatedPaused: string[] = ["PW36", "PW53", "PW77", "PW78", "PW79", "PW80", "PW81", "PW82", "PW259", "PW180", "PW192", "PW200", "PW201"];

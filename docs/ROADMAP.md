@@ -14,6 +14,7 @@
 
 - 📋 **PW260** (deps: —) **a capture run through the tool never writes its picture's record, since no caller can pass engine.run's produces** — A project's review pictures land without provenance, and accept.verify then cannot tell a stale look from a fresh one. → §PW260
 - 📋 **PW267** (deps: PW245 ✅) **capture.run trusts the size a script says it applied, so a window the OS shrank records a picture of the wrong size** — A key art asked at 3840x2160 came back 3840x2119 and was recorded as holding its environment. → §PW267
+- 📋 **PW273** (deps: —) **capture.movie asked at a size records at the project's window size, and is refused after as though the script erred** — Movie Maker ignores --resolution, so every shot of a game whose window differs from the size asked fails after the whole run. → §PW273
 
 ## Block F — Motion
 
@@ -43,7 +44,6 @@
 
 ## Block M — What a game needs beyond the look
 
-- ⏳ **PW259** (deps: —) **a visual effect such as a trail or a burst of particles cannot be declared, built or accepted** — Each built effect still needs rendering over a few frames for a person's verdict, its measures bound in an acceptance spec, and Starship's seven trails built through it. → §PW259
 - 📋 **PW268** (deps: —) **a store's capsule set cannot be cut from one key art, so each project crops and places its logo by hand** — Every Steam page needs about ten shapes of one picture, most with a logo that must still read at thumbnail size. → §PW268
 
 ## Block N — Pictures held to a canon
@@ -164,9 +164,6 @@
 
 ## Done when — PW259
 
-- **A built effect is shown to a person and held to a spec** Each built effect renders
-  over a few frames on a neutral background into a sitting a person answers, and an
-  acceptance spec bounds its lifetime, reach, alive and brightness.
 - **Starship's seven trails are built through vfx.build** Starship's seven trails are
   seven declarations built and accepted through polyweave, and the game instances the
   scenes built instead of reading its own trail Resources.
