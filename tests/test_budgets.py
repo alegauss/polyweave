@@ -63,7 +63,8 @@ from polyweave.errors import PolyweaveError
 #: 87,415 with geometry.fit's boxed (§PW263), shape scored inside its box.
 #: 88,254 with verdict.promote (§PW265), a promotion carried from conversation.
 #: 89,346 with store.capsules (§PW268), a store's set from one key art.
-DESCRIBE = 90_000
+#: 90,321 with game.batch (§PW271), many commands in one call.
+DESCRIBE = 91_000
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -105,7 +106,8 @@ DESCRIBE = 90_000
 #: 97,618 with vfx.preview and vfx.unwatched (§PW259).
 #: 98,728 with verdict.promote, op.crashed and verdict.bad-member (§PW261, §PW265).
 #: 100,006 with store.capsules and its five codes (§PW268).
-CAPABILITIES = 100_700
+#: 100,981 with game.batch (§PW271).
+CAPABILITIES = 101_600
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

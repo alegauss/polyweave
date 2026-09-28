@@ -583,27 +583,6 @@ the first twenty make.
 
 ## Block S — Playing the game, not only rendering it
 
-### §PW271 Long flows in few calls
-
-Found keeping Cottony's flows (PW217). An agent driving through the command line pays a
-fresh Python process per call, about 0.3 s, and a match-3 level is a loop of query the
-board, tap two cells, wait until it settles: thirty-three moves took two hundred calls
-to keep and thousands to find. The explorer wrote its own loop script to cope, and its
-third flow, losing a level later than the first, never finished: a fresh save unlocks
-only level 1, so reaching a later one meant winning the ones before it, and after two
-hours and ten sessions it had not.
-
-Two gaps, each worth closing:
-- a game's own setup should be reachable from a flow: `game.call` can already run a
-  method the game exposes, and a flow that starts at level 5 with `call start_level 5`
-  proves the level without replaying four wins, which is a game-side change the finding
-  should name when no such method exists;
-- the session tools should take a short script of commands in one call, answering each,
-  so a loop of query, input and wait costs one process and not three hundred.
-
-Done when the lose-a-later-level flow is kept for Cottony in under a hundred calls, and
-replays to the same frame every time.
-
 ### §PW276 Re-keying a kept flow
 
 Found shipping PW270 (2026-09-28). `game.keep` now writes a selector in place of each

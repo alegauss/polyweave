@@ -43,7 +43,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "P", title: "Music and sound a game can ship", open: 0 },
   { block: "Q", title: "Words held to the world", open: 0 },
   { block: "R", title: "Levels measured before a person plays them", open: 5 },
-  { block: "S", title: "Playing the game, not only rendering it", open: 2 },
+  { block: "S", title: "Playing the game, not only rendering it", open: 1 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
 ];
 
@@ -138,13 +138,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "Cottony's levels are still tuned by a curve nobody measured",
     why: "The block is proven only when its first consumer's shipped levels are declared, compiled, probed and accepted here, and make_levels.py has nothing left to do.",
     deps: ["PW204", "PW205"],
-  },
-  {
-    id: "PW271",
-    block: "S",
-    symptom: "a flow that needs many moves costs thousands of calls, so losing a later Cottony level was never kept",
-    why: "Each command-line call is a process of its own and a fresh save unlocks only level 1, so after two hours and ten sessions the explorer gave up.",
-    deps: [],
   },
   {
     id: "PW276",

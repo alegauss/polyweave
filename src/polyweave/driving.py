@@ -513,6 +513,64 @@ def shot(
     return send(session, "shot", root=root, out=str(where))
 
 
+#: The commands a batch may send: the session's own, each journalled as its tool's is.
+BATCHED = ("query", "input", "step", "wait", "call", "set", "expect", "shot")
+
+
+@operation("game.batch")
+def batched(
+    session: Annotated[str, _SESSION],
+    commands: Annotated[
+        list,
+        Param("the commands in order, each as the driver takes it: "
+              '{"cmd": "input", "click": {"path": "UI/Play"}}'),
+    ],
+    *,
+    keep_going: Annotated[bool, Param("carry on past a refused command")] = False,
+    root: Annotated[str, _ROOT] = ".",
+) -> dict:
+    """Send several commands to a held game in one call, answering each (§PW271).
+
+    A loop of query, input and wait from the command line paid a process per call, and a
+    level of thirty moves cost hundreds. Each command is journalled with its `step`, as
+    its own tool's would be, so game.keep keeps a batch like any other calls. The first
+    refusal stops the batch and is answered in its place, unless `keep_going`.
+    """
+    if not isinstance(commands, list | tuple) or not commands:
+        raise PolyweaveError(
+            "game.bad-target",
+            "a batch needs a list of commands",
+            f'pass commands, each {{"cmd": <one of {", ".join(BATCHED)}>, ...}}',
+        )
+    answers, stopped = [], None
+    for index, one in enumerate(commands):
+        cmd = one.get("cmd") if isinstance(one, dict) else None
+        if cmd not in BATCHED:
+            raise PolyweaveError(
+                "game.bad-target",
+                f"command {index} is {one!r}, not one a batch sends",
+                f"make each a table with cmd, one of {', '.join(BATCHED)}",
+                given=str(cmd),
+                allowed=list(BATCHED),
+            )
+        fields = {k: v for k, v in one.items() if k != "cmd"}
+        try:
+            answers.append({"index": index, **send(session, cmd, root=root, **fields)})
+        except PolyweaveError as refused:
+            answers.append({"index": index, "refused": refused.as_dict()})
+            if not keep_going:
+                stopped = index
+                break
+    return {
+        "answers": answers,
+        "sent": len(answers),
+        "stopped": stopped,
+        "frame": next(
+            (a.get("frame") for a in reversed(answers) if "frame" in a), None
+        ),
+    }
+
+
 #: What a flow file is written as, and the one version of it the driver reads.
 FLOW_FORMAT = 1
 

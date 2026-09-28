@@ -143,6 +143,16 @@ between connections.
 - `game.query`, `game.input`, `game.step`, `game.wait`, `game.call` and `game.shot` each
   forward one command. `game.query` takes one of `path`, `group` and `of_class`;
   `game.wait` takes `prop` and `equals` (a JSON value), a `signal`, or a `node`.
+- `game.batch` sends a list of commands in one call, each as the driver takes it
+  (`{"cmd": "input", "click": {"path": "UI/Play"}}`), answering each with its `step`
+  (§PW271). From a terminal every call is a process, and a match-3 level's loop of
+  query, tap and wait cost hundreds of them; a batch costs one. Each command is
+  journalled as its own tool's would be, so `game.keep` keeps it the same way. The first
+  refusal stops the batch and is answered in its place (`stopped` is its index), unless
+  `keep_going`. A flow that starts deep in a game reaches it with a `call` to a method
+  the game exposes for setup, such as starting a level, rather than winning the ones
+  before it; where a game has none, `driver.no-method` says so, and adding one is the
+  game's change.
 - `game.close` ends the game and says whether it ended.
 
 Every answer carries `frame` and `errors`: the lines the engine printed since the last

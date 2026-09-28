@@ -537,6 +537,39 @@ def test_a_flow_kept_at_generated_names_survives_a_node_added_ahead(tmp_path):
     assert driving.replayed("tests/flows/go.flow.json", root=root)["ok"] is False
 
 
+def test_a_batch_of_commands_is_one_call_and_is_kept_like_any_other(tmp_path):
+    """§PW271: a level of thirty moves cost hundreds of processes from the terminal."""
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    root = str(game(tmp_path))
+    session = driving.opened(root, seed=2)["session"]
+    try:
+        said = driving.batched(session, [
+            {"cmd": "step"},
+            *[{"cmd": "input", "click": {"path": "UI/Press"}}, {"cmd": "step",
+              "frames": 2}] * 3,
+            {"cmd": "query", "path": ".", "properties": ["presses"]},
+            {"cmd": "call", "path": ".", "method": "nope"},
+            {"cmd": "step"},
+        ], root=root)
+        assert said["stopped"] == 8 and said["sent"] == 9
+        assert said["answers"][7]["result"][0]["properties"]["presses"] == 3
+        assert said["answers"][8]["refused"]["code"] == "driver.no-method"
+        kept = driving.kept(session, out="tests/flows/three.flow.json",
+                            proves="three clicks count three",
+                            expect=[said["answers"][7]["step"]], root=root)
+    finally:
+        driving.closed(session, root=root)
+    assert kept["expectations"] == 1
+    assert driving.replayed("tests/flows/three.flow.json", root=root)["ok"] is True
+
+
+def test_a_batch_command_that_is_not_one_is_refused_before_any_is_sent(tmp_path):
+    with pytest.raises(PolyweaveError) as refused:
+        driving.batched("nobody", [{"cmd": "launch"}], root=str(tmp_path))
+    assert refused.value.code == "game.bad-target"
+
+
 def test_a_query_step_is_all_an_expectation_can_be_made_of(tmp_path):
     if not os.environ.get("GODOT"):
         pytest.skip("no $GODOT on this machine")

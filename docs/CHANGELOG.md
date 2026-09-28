@@ -297,6 +297,7 @@
 - ✅ **PW217** **Cottony's flow from title screen to a won level is checked by no test, so a broken menu ships unseen** — Cottony's export check replays two flows a blind agent kept, a won first level and a setting that sticks, beside a clean release check (design recorded in `docs/specs/driving.md`).
 - ✅ **PW250** **finding a seed where a game shows a moment means flying it by hand, one seed at a time** — engine.sweep runs one script over a grid of arguments in parallel and returns the runs whose log shows a pattern, recorded per build (design recorded in `docs/specs/engine.md`).
 - ✅ **PW270** **a kept flow names nodes by Godot's generated names, so any node added before them breaks it** — The driver takes a selector wherever it takes a path, and game.keep writes one for each generated path, so a flow survives a node added ahead of it.
+- ✅ **PW271** **a flow that needs many moves costs thousands of calls, so losing a later Cottony level was never kept** — game.batch sends many commands in one call, so Cottony's lose-a-later-level flow was kept in seven calls with start_level, and replays to one frame.
 
 ## Block T — Adopting polyweave in a project
 
