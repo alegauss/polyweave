@@ -4,6 +4,8 @@
 
 ## Block B — Seeing the result cheaply
 
+- 🛠 **PW292** (deps: —) **no measure says how tall a silhouette is for its width, so a spec cannot hold an enemy tall enough to hit** — Starship's owner made tall enemies a premise, and four flat Lancers passed every check polyweave had. → §PW292
+
 ## Block C — The asset compiler
 
 ## Block D — Fetching from a paid service without surprise

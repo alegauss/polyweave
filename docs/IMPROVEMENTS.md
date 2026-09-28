@@ -4,6 +4,24 @@
 
 ## Block B — Seeing the result cheaply
 
+### §PW292 How tall a silhouette stands
+
+Found on 2026-09-28. Starship's owner set a premise: every enemy must stand tall, since
+a thin one is hard to shoot. polyweave could not hold it. Its silhouette measures
+compare two shapes (IoU, centroid, bounding box against a reference), and none says how
+tall a shape is for its width. So four Lancer candidates came back at 0.29 to 0.50 of
+their width, and nothing but a person's eye would have refused them. The game's own
+gunship render stands at 0.46, and the Mote the owner approved at 0.63.
+
+A measure `silhouette_aspect` should answer the height of the subject's bounding box
+over its width. The subject is what alpha holds above the floor, within the region. Like
+the other silhouette measures, it answers at `preview`, since it is the shape and not
+the samples. A spec then bounds it (`min = 0.6`) on every picture or render of an enemy,
+and a candidate below it is refused before a person sees it.
+
+Done when Starship's enemy spec holds `silhouette_aspect >= 0.6`, refuses the four flat
+Lancers and passes the Mote.
+
 ## Block C — The asset compiler
 
 ## Block D — Fetching from a paid service without surprise

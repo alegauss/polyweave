@@ -46,6 +46,7 @@ ANSWERS_AT = {
     "silhouette_iou": "preview",
     "silhouette_centroid_offset": "preview",
     "silhouette_bbox_delta": "preview",
+    "silhouette_aspect": "preview",
     "alpha_coverage": "preview",
     "distance": "final",
     "changed_fraction": "final",

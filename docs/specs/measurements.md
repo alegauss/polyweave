@@ -62,6 +62,7 @@ a statistic over nothing is not a statistic.
 | `silhouette_iou` | 0–1 | Intersection over union of the alpha mask against a reference |
 | `silhouette_centroid_offset` | px | Distance between the two mask centroids |
 | `silhouette_bbox_delta` | px | Largest per-edge difference between the two bounding boxes |
+| `silhouette_aspect` | 0– | The subject's bounding box, its height over its width |
 
 The reference is an image path. Both masks are normalised to the same dimensions before
 comparison, so a render and a drawing of different sizes still compare.
@@ -74,6 +75,11 @@ scored close to one. A region that is named bounds both masks alike.
 
 `silhouette_iou` is the measure that would have caught the tall dome returned for a wide low
 cap, before the credits were spent (§PW16).
+
+`silhouette_aspect` is one shape, not two, so it takes the subject like every other
+measure and needs no reference (§PW292). It says how tall a shape stands for its width:
+Starship holds every enemy to `min = 0.6`, since a thin one is hard to shoot, where four
+Lancer candidates stood at 0.29 to 0.50 and the Mote the owner approved at 0.63.
 
 ## Colour at a place
 

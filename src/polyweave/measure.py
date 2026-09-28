@@ -578,6 +578,22 @@ def _silhouette_bbox_delta(
     return float(max(abs(a - b) for a, b in zip(here, there, strict=True)))
 
 
+@_computes("silhouette_aspect")
+def _silhouette_aspect(
+    image: Image, mask: np.ndarray, *, alpha_floor: float, **_
+) -> float:
+    """How tall the subject stands for its width: its bounding box's height over width.
+
+    One shape, not two, so it takes the subject like the rest (§PW292). Starship's
+    owner holds every enemy to 0.6 at least, since a thin one is hard to shoot.
+    """
+    box = _boxes(image.subject(alpha_floor) & mask)
+    if box is None:
+        return 0.0
+    left, top, right, bottom = box
+    return round(float((bottom - top + 1) / max(1, right - left + 1)), 4)
+
+
 def statistics(values: np.ndarray) -> dict[str, float]:
     """The five a distribution is reported as, per `measurements.md`."""
     p1, p50, p99 = np.percentile(values, [1, 50, 99])
