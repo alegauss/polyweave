@@ -35,8 +35,6 @@
 
 ## Block L — What a run leaves as evidence
 
-- 📋 **PW269** (deps: —) **compose.place writes its picture with no record, so a composed capsule cannot say which pictures it came from** — A changed key art cannot find the store capsules it left stale. → §PW269
-
 ## Block M — What a game needs beyond the look
 
 - 📋 **PW275** (deps: —) **store.capsules reads only a raster logo, so a wordmark kept as SVG has to be exported by hand at a guessed size** — Brand marks are kept as vectors, and a stroke measured on a scaled-down export is the export's, not the capsule's. → §PW275

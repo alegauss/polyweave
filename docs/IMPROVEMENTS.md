@@ -349,21 +349,6 @@ same cells, and a test holds each op to the rule.
 
 ## Block L — What a run leaves as evidence
 
-### §PW269 compose.place records what it composed
-
-Found in Starship (2026-09-27, RK74). Eight store capsules were composed with
-`compose.place`, the wordmark placed on a crop of the key art. Every file it wrote
-landed with no `.prov.json` beside it. So `provenance_unrecorded` lists them. Nothing
-says which key art and which logo they came from, so a changed key art cannot find the
-capsules it left stale (`provenance_dependents`).
-
-`compose.place` should write a record like any other producing operation. Its inputs
-would be the asset and the scene it was placed into, with their hashes. Its params would
-be `at`, `width` and `anchor`.
-
-Done when the Starship capsules, composed again, each carry a record naming
-art/brand/key-art.png and the wordmark.
-
 ## Block M — What a game needs beyond the look
 
 ### §PW259 Visual effects as declarations

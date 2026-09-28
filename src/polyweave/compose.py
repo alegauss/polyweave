@@ -155,6 +155,28 @@ def _landed(made: Image, out: str) -> dict:
     return {"out": str(made.path or out), "size": [made.width, made.height]}
 
 
+def _under(root, path: str) -> str:
+    """A path as the call gave it, under the project where it is not absolute."""
+    given = Path(path)
+    return str(given if given.is_absolute() else Path(root) / given)
+
+
+def _recorded(answer: dict, inputs: list[tuple[str, str]], params: dict, root) -> dict:
+    """The composed picture's record beside it, naming what it was made of (§PW269).
+
+    Without one, a changed key art could not find the capsules composed from it.
+    """
+    from . import provenance
+
+    here = Path(root).resolve()
+    record = provenance.build(
+        "picture", answer["out"], engine={"name": "compose"},
+        inputs=[provenance.source(role, path, here) for role, path in inputs],
+        params=params, root=here,
+    )
+    return {**answer, "record": str(provenance.write(record, here))}
+
+
 @operation("compose.place")
 def placed(
     asset: Annotated[str, Param("the asset's picture, by path")],
@@ -166,10 +188,15 @@ def placed(
     anchor: Annotated[
         str, Param("what `at` names", choices=ANCHORS)
     ] = "footprint",
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
 ) -> dict:
-    """An asset put where it will actually be seen, and written to a file."""
-    made = place(asset, into, at=tuple(at), width=width, anchor=anchor, out=out)
-    return _landed(made, out)
+    """An asset put where it will actually be seen, written with its record."""
+    asset, into, target = (_under(root, one) for one in (asset, into, out))
+    made = place(asset, into, at=tuple(at), width=width, anchor=anchor, out=target)
+    return _recorded(
+        _landed(made, target), [("asset", asset), ("into", into)],
+        {"at": [int(v) for v in at], "width": width, "anchor": anchor}, root,
+    )
 
 
 @operation("compose.sheet")
@@ -179,6 +206,13 @@ def sheeted(
     out: Annotated[str, Param("where the sheet is written")],
     columns: Annotated[int, Param("how many across; square if unset")] = None,
     cell: Annotated[int, Param("each tile's cell", lo=8, unit="px")] = 256,
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
 ) -> dict:
-    """Several pictures laid out on one sheet, in order, and written to a file."""
-    return _landed(sheet(tiles, columns=columns, cell=cell, out=out), out)
+    """Several pictures laid out on one sheet, in order, written with its record."""
+    tiles = [_under(root, one) for one in tiles]
+    target = _under(root, out)
+    made = sheet(tiles, columns=columns, cell=cell, out=target)
+    return _recorded(
+        _landed(made, target), [(f"tile {i}", one) for i, one in enumerate(tiles)],
+        {"columns": columns, "cell": cell}, root,
+    )

@@ -140,6 +140,35 @@ def test_an_asset_placed_off_the_capture_is_refused(tmp_path):
     assert caught.value.code == "compose.outside"
 
 
+def test_a_placed_picture_carries_a_record_of_what_it_was_made_from(tmp_path):
+    """§PW269: Starship's capsules had no record, so nothing found them stale."""
+    from polyweave import provenance
+
+    (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
+    asset(tmp_path, "logo.png")
+    capture(tmp_path, "key-art.png")
+    made = compose.placed("logo.png", "key-art.png", out="capsules/header.png",
+                          at=[64, 60], root=str(tmp_path))
+    record = provenance.read("capsules/header.png", root=str(tmp_path))
+    assert [(i["role"], i["path"]) for i in record["inputs"]] == [
+        ("asset", "logo.png"), ("into", "key-art.png")]
+    assert record["params"] == {"at": [64, 60], "width": None, "anchor": "footprint"}
+    assert made["record"].endswith("header.png.prov.json")
+    assert provenance.dependents("key-art.png", root=str(tmp_path))
+
+
+def test_a_sheet_carries_a_record_of_its_tiles(tmp_path):
+    from polyweave import provenance
+
+    (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
+    for i in range(3):
+        asset(tmp_path, f"{i}.png")
+    compose.sheeted(["0.png", "1.png", "2.png"], out="sheet.png", cell=32,
+                    root=str(tmp_path))
+    record = provenance.read("sheet.png", root=str(tmp_path))
+    assert [i["path"] for i in record["inputs"]] == ["0.png", "1.png", "2.png"]
+
+
 def test_an_anchor_that_does_not_exist_is_refused(tmp_path):
     with pytest.raises(PolyweaveError) as caught:
         compose.place(

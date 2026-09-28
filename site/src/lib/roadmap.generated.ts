@@ -36,7 +36,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "I", title: "Voxel models from a declaration", open: 1 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
-  { block: "L", title: "What a run leaves as evidence", open: 1 },
+  { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 1 },
   { block: "N", title: "Pictures held to a canon", open: 0 },
   { block: "O", title: "A person sees and answers", open: 0 },
@@ -95,13 +95,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "I",
     symptom: "a cube and a plate over the same box fill different cells where a face falls on a cell centre",
     why: "One box declared as two ops gives two models, so a region straddles or not by which op drew it.",
-    deps: [],
-  },
-  {
-    id: "PW269",
-    block: "L",
-    symptom: "compose.place writes its picture with no record, so a composed capsule cannot say which pictures it came from",
-    why: "A changed key art cannot find the store capsules it left stale.",
     deps: [],
   },
   {

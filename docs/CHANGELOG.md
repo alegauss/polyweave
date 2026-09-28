@@ -207,6 +207,7 @@
 - ✅ **PW139** **two jobs started at once can both pass the capacity check, so `[render] max_parallel` is exceeded** — An O_EXCL start lock spans the count and the record, so two starts at a bound of one give one refusal; a job not yet spawned is no longer reaped (design recorded in `docs/specs/tool-surface.md`).
 - ✅ **PW140** **a build is reported cached after the plugin that built it changed, because its stamp hashes the inputs alone** — A build records each output's provenance and its stamp is that record's key, so a new plugin version or --preview rebuilds (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW248** **a project cannot ask which files it ships were made by a generator, directly or through their inputs** — provenance.generated names every shipped file whose lineage reaches a purchase, with its chain and service, beside the authored and unrecorded ones (design recorded in `docs/specs/provenance.md`).
+- ✅ **PW269** **compose.place writes its picture with no record, so a composed capsule cannot say which pictures it came from** — compose.place and compose.sheet write a record naming the pictures they were made from, so provenance_dependents on a key art finds what was composed from it.
 
 ## Block M — What a game needs beyond the look
 
