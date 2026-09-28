@@ -619,7 +619,13 @@ one cell high placed between cell centres, is named (`check: paint`, with the no
 member, whether it takes any centre of the grid at all, and how far the body's nearest
 cell sits from its middle), and so is a material the declaration names and no cell wears
 (`check: material`), which used to show only as one fewer in the reading's count; inside a voxel build a traced op's
-mesh passes the body through.
+mesh passes the body through. **A thin region that straddles a boundary is a finding too**
+(§PW262): a piece of a `where` member, each part of a union and each instance on its own,
+at most one and a half cells across on an axis and taking more cells there than its width
+holds is named (`check: paint`, with the node, the member, the `axis` and the cells it
+covers), since its faces fall on cell centres and a row of one-cell mullions a cell
+apart then paints a whole face. The remedy is the half-cell move, or an odd cell count on
+that axis.
 
 **A model faces -z** (§PW236), with y up and x to its right, which is §6's forward and
 Godot's. A face, visor or eye goes on the -z side, nearest the front view. The preview

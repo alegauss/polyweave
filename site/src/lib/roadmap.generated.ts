@@ -105,17 +105,17 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW56"],
   },
   {
-    id: "PW262",
-    block: "I",
-    symptom: "a one-cell paint region centred on a cell boundary silently takes both cells, so a row of mullions paints a whole face",
-    why: "Every fine detail on a voxel face is a thin region, and today the fault is found only by counting cells in a preview.",
-    deps: [],
-  },
-  {
     id: "PW263",
     block: "I",
     symptom: "geometry.fit scores at the reference's own aspect, so a declaration held to another box is squeezed to its range edges",
     why: "A game's hitbox fixes a model's box, and a fit that cannot tell shape from box returns a worse model as the best.",
+    deps: [],
+  },
+  {
+    id: "PW274",
+    block: "I",
+    symptom: "a cube and a plate over the same box fill different cells where a face falls on a cell centre",
+    why: "One box declared as two ops gives two models, so a region straddles or not by which op drew it.",
     deps: [],
   },
   {

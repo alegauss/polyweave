@@ -714,6 +714,7 @@ def voxelize(
     # found only by looking at the preview (§PW252).
     centres = origin + (index + 0.5) * size
     made["checks"]["findings"] += _unpainted(model, document, centres, size)
+    made["checks"]["findings"] += _straddled(model, document, centres, size)
     made["checks"]["findings"] += _unworn(document, palette_names)
     stated = (document.get("voxels") or {}).get("fracture")
     if stated:
@@ -790,6 +791,75 @@ def _unpainted(model: _Model, document: dict, centres: np.ndarray, size: float) 
                 }
             )
     return found
+
+
+def _pieces(model: _Model, one: str) -> list[tuple[np.ndarray, np.ndarray]]:
+    """Each separate box a region is made of: a union's parts, each instance's own."""
+    node = model.stated[one]
+    if node["op"] == "union":
+        return [box for part in refers_to(node) for box in _pieces(model, part)]
+    boxes = []
+    for instance in model.instanced[one]["instances"]:
+        low, high = model._op_bounds(node, instance)
+        if node["op"] != "transform" and instance.get("at") is not None:
+            shift = np.asarray(S._triple(instance["at"]))
+            low, high = low + shift, high + shift
+        boxes.append((np.asarray(low, dtype=float), np.asarray(high, dtype=float)))
+    return boxes
+
+
+#: How thin a piece of a paint region is, in cells, before where its faces fall matters.
+_THIN = 1.5
+
+
+def _straddled(model: _Model, document: dict, centres: np.ndarray, size: float) -> list:
+    """Each thin paint region that takes more cells across than its width (§PW262).
+
+    A piece one cell wide whose faces fall on the grid's cell centres takes the two
+    cells either side, so a row of mullions a cell apart paints a whole face. Named
+    with the node, the axis and the move that puts it on one cell.
+    """
+    found = []
+    for node in document["nodes"]:
+        if node["op"] != "paint" or not node.get("on"):
+            continue
+        body = model.inside(node["on"], centres).inside
+        for member in _named_list(node.get("where")):
+            if member not in model.stated:
+                continue
+            taken = centres[model.inside(member, centres).inside & body]
+            for low, high in _pieces(model, member):
+                within = np.all((taken >= low - _EPS) & (taken <= high + _EPS), axis=1)
+                for axis, name in enumerate("xyz"):
+                    wide = float(high[axis] - low[axis])
+                    if wide > _THIN * size + _EPS:
+                        continue
+                    across = len(np.unique(np.round(taken[within, axis] / size, 6)))
+                    fits = max(1, round(wide / size))
+                    if across <= fits:
+                        continue
+                    found.append({
+                        "check": "paint",
+                        "says": f"{member} is {wide:.3g} wide on {name} and covers "
+                        f"{across} cells: its faces fall on cell centres; move it by "
+                        f"{size / 2:.3g} on {name}, or make the model's cell count on "
+                        f"{name} odd",
+                        "cells": [], "count": across,
+                        "node": node["id"], "member": member, "axis": name,
+                    })
+                    break
+    return _once(found)
+
+
+def _once(found: list) -> list:
+    """One finding per member and axis, however many of its pieces straddle."""
+    seen, kept = set(), []
+    for one in found:
+        key = (one["node"], one["member"], one["axis"])
+        if key not in seen:
+            seen.add(key)
+            kept.append(one)
+    return kept
 
 
 def _unworn(document: dict, worn: list[str]) -> list:

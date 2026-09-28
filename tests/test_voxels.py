@@ -191,6 +191,36 @@ def test_a_paint_whose_mark_sits_between_cell_centres_is_named():
     assert "sits between them" in named[0]["says"]
 
 
+def mullions(*middles):
+    """Upright mullions one cell wide on x, one per middle, painted on the body."""
+    pieces = [
+        {"id": f"m{i}", "op": "primitive", "kind": "cube", "size": [1.0, 12.0, 16.0],
+         "at": [x, 0, 0]}
+        for i, x in enumerate(middles)
+    ]
+    row = {"id": "mullions_x", "op": "union", "inputs": [p["id"] for p in pieces]}
+    paint = {"id": "trim", "op": "paint", "on": "body", "where": "mullions_x",
+             "material": "glow"}
+    return V.voxelize(
+        shape(BODY, *pieces, row, paint, voxels={"cell": 1.0}, materials=SEAM)
+    )
+
+
+def test_a_one_cell_region_whose_faces_fall_on_cell_centres_is_named():
+    """§PW262: the citadel's mullions, centred on cell boundaries, took both cells."""
+    made = mullions(0.0, 3.0)
+    named = [f for f in made["checks"]["findings"] if f.get("axis")]
+    assert [(f["node"], f["member"], f["axis"]) for f in named] == [
+        ("trim", "mullions_x", "x")]
+    assert "is 1 wide on x and covers 2 cells" in named[0]["says"]
+    assert "move it by 0.5 on x" in named[0]["says"]
+
+
+def test_a_one_cell_region_on_one_cell_says_nothing():
+    made = mullions(0.5, 3.5)
+    assert [f for f in made["checks"]["findings"] if f.get("axis")] == []
+
+
 def test_a_paint_that_paints_its_cells_says_nothing():
     paint = {"id": "seam", "op": "paint", "on": "body", "where": "band",
              "material": "glow"}

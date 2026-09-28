@@ -353,28 +353,6 @@ Done when RK131's 0.7 ms is one call against HEAD, and the answer says how sure 
 
 ## Block I — Voxel models from a declaration
 
-### §PW262 A thin region that straddles a cell boundary is a finding
-
-Found in Starship (2026-09-27, RK132 and RK133), three times in one day. A thin shape
-used as a `paint` or `where` region, one cell wide, centred on a point the grid puts on
-a boundary between two cells, takes both cells. On an even-count axis the grid's cell
-centres sit at odd multiples of half a cell, so a mullion declared at x = 0 with width =
-cell covers two columns. A row of them spaced one cell apart covers every column. The
-build reports no finding, and the fix is found by counting cells in the preview.
-
-- The citadel's mullions at ±1.5 and ±3 swallowed the low and high tiers' faces whole.
-- The skybridge, 10 cells long with posts every 0.8, came out all trim.
-- The ribbed shaft's 8-cell ledge shifted the grid under 7-cell walls, and its ribs covered
-  the slots.
-
-A shape whose extent on an axis is one cell or less, but covers two cells there, should
-get a finding naming the node and the axis ("`mullions_x` is 0.4 wide on x and covers 2
-cells: its faces fall on cell boundaries; move it by 0.2 or make the model odd-sized on
-x"). The answer could also carry each axis's cell centres, so a declaration can be
-written against them rather than inferred from a preview.
-
-Done when rebuilding the citadel with its first mullion positions reports that finding.
-
 ### §PW263 A fit that knows the box from the shape
 
 Found in Starship (2026-09-27, RK97). The Mote's voxel declaration was fitted to the
@@ -394,6 +372,25 @@ of its range should be named as bound by the range, not reported as the fit.
 
 Done when the Mote's fit reports the aspect gap and, scored inside the box, moves its
 parameters off their range edges.
+
+### §PW274 Every op takes a point on its face the same way
+
+Found writing PW262's test (2026-09-28). On a grid of 1.0 with cell centres at x.5, a
+cube one cell wide on x with its faces at -0.5 and 0.5 takes both columns, since a
+primitive's inside test takes a point on its face. A plate with the same box, `rect`
+from -0.5 wide 1, takes only the column at -0.5: its ring is tested with a polygon test
+that takes the left edge and not the right. So one box declared as two ops fills
+different cells, and whether a region straddles depends on which op drew it.
+
+Either the ops should agree on a point lying on a face, in or out, or a voxel build
+should never sample a centre that falls on one. The first is the smaller change: one
+rule, stated in the geometry spec, applied by the primitive, prism, plate and cells
+tests alike, likely a half-open interval on every axis so a face shared by two touching
+shapes gives its cell to exactly one of them. PW262's finding then reads the same for
+every op.
+
+Done when a cube and a plate over the same box, with faces on cell centres, fill the
+same cells, and a test holds each op to the rule.
 
 ## Block J — A bar a person sets once
 
