@@ -83,6 +83,16 @@ def test_the_page_holds_still_while_a_person_answers():
     assert "draw();" not in script[recorded:recorded + 120]
 
 
+def test_an_older_sitting_is_read_through_the_catalog():
+    """§PW293: sittings laid out before PW287 kept their choices as English strings."""
+    script = (Path(review.PAGE) / "page.js").read_text(encoding="utf-8")
+    assert "kinds = catalog.kinds" in script
+    assert "((kinds[kind] || {}).choices || {})[word]" in script
+    # Every choice key an older sitting carries is one the catalog can answer for.
+    for kind in ("look", "effect", "line", "sound"):
+        assert {"accept", "look"} <= set(review_text.kind(kind, "pt-BR")["choices"])
+
+
 def test_no_sentence_a_person_reads_is_kept_in_the_page_s_code():
     """The page takes every word from the catalog, so its script names only keys."""
     script = (Path(review.PAGE) / "page.js").read_text(encoding="utf-8")

@@ -5,13 +5,17 @@
 "use strict";
 
 let words = {};
+// Each kind of sitting's words, which read an older sitting too (§PW293).
+let kinds = {};
 const t = (key, fields = {}) =>
   (words[key] || key).replace(/\{(\w+)\}/g, (_, name) => (name in fields ? fields[name] : ""));
 
 async function speak(language) {
   if (words.__language === language) return;
   const answer = await fetch("/locales/" + encodeURIComponent(language) + ".json");
-  words = { ...(await answer.json()).page, __language: language };
+  const catalog = await answer.json();
+  words = { ...catalog.page, __language: language };
+  kinds = catalog.kinds || {};
   document.documentElement.lang = language;
   for (const [id, key] of Object.entries({
     heading: "heading", "advanced-title": "advanced", "canons-title": "canons_title",
@@ -119,8 +123,13 @@ function listen(member) {
 }
 
 // A choice from a sitting written before choices said what they lead to (§PW287).
-const asChoice = (word, choice) =>
-  typeof choice === "string" ? { label: word, means: choice, then: "" } : choice;
+const asChoice = (word, choice, kind = "look") => {
+  if (typeof choice !== "string") return choice;
+  // A sitting laid out before choices said what they lead to keeps them as English
+  // strings; the catalog knows them by their key (§PW293).
+  const known = ((kinds[kind] || {}).choices || {})[word];
+  return known || { label: word, means: choice, then: "" };
+};
 
 function legend(entries) {
   const list = element("dl", { class: "legend" });
@@ -202,7 +211,7 @@ function card(sitting, name, laid, answers, assets) {
   const failed = (laid.said || []).some((member) => (member.failed || []).length);
   for (const [word, raw] of Object.entries(choices)) {
     if (word === "number" && !failed) continue;
-    const choice = asChoice(word, raw);
+    const choice = asChoice(word, raw, sitting.kind);
     const button = element("button", {
       type: "button", class: "option " + (["accept", "look"].includes(word) ? word : "other"),
       "aria-pressed": "false",
@@ -255,7 +264,7 @@ function card(sitting, name, laid, answers, assets) {
 
   if (last) {
     // Answered: say so plainly, and keep the form one click away for a second thought.
-    const choice = asChoice(last.choice, choices[last.choice] || last.choice);
+    const choice = asChoice(last.choice, choices[last.choice] || last.choice, sitting.kind);
     const done = element("div", { class: "answered" },
       element("p", {}, t("answered", { choice: choice.label, at: when(last.at) })),
       element("p", {}, element("q", {}, last.why || t("no_comment"))));
@@ -309,15 +318,17 @@ function card(sitting, name, laid, answers, assets) {
 function sittingView(sitting, found) {
   const section = element("section");
   const intro = element("div", { class: "intro" });
-  intro.append(element("h2", {}, sitting.title || t("heading")),
+  const kind = kinds[sitting.kind || "look"] || {};
+  intro.append(element("h2", {}, sitting.title || kind.title || t("heading")),
     element("p", { class: "when" }, t("laid_out", { at: when(sitting.at) })));
-  if (sitting.about) intro.append(element("p", {}, sitting.about));
+  const about = sitting.about || kind.about;
+  if (about) intro.append(element("p", {}, about));
   const how = element("div", { class: "how" });
   const failed = Object.values(sitting.families).some((laid) =>
     (laid.said || []).some((member) => (member.failed || []).length));
   for (const [word, raw] of Object.entries(sitting.choices || {})) {
     if (word === "number" && !failed) continue;
-    const choice = asChoice(word, raw);
+    const choice = asChoice(word, raw, sitting.kind);
     how.append(element("div", {}, element("strong", {}, choice.label),
       element("span", {}, choice.means + (choice.then ? " " + choice.then : ""))));
   }
