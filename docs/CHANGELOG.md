@@ -302,6 +302,7 @@
 - ✅ **PW250** **finding a seed where a game shows a moment means flying it by hand, one seed at a time** — engine.sweep runs one script over a grid of arguments in parallel and returns the runs whose log shows a pattern, recorded per build (design recorded in `docs/specs/engine.md`).
 - ✅ **PW270** **a kept flow names nodes by Godot's generated names, so any node added before them breaks it** — The driver takes a selector wherever it takes a path, and game.keep writes one for each generated path, so a flow survives a node added ahead of it.
 - ✅ **PW271** **a flow that needs many moves costs thousands of calls, so losing a later Cottony level was never kept** — game.batch sends many commands in one call, so Cottony's lose-a-later-level flow was kept in seven calls with start_level, and replays to one frame.
+- ✅ **PW276** **a flow kept before selectors still clicks at generated paths, and re-keeping it means driving every step again** — game.rekey puts selectors in an older flow by sending it through a held session; Cottony's two flows were re-keyed and replay to the same frames.
 
 ## Block T — Adopting polyweave in a project
 

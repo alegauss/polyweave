@@ -1202,6 +1202,11 @@ CODES: dict[str, Code] = {
         "in an older format",
         doors=("keep the flow with game.keep",),
     ),
+    "game.flow-broke": Code(
+        means="a flow being re-keyed broke on a step, so nothing was written",
+        when="game.rekey on a flow the game no longer follows",
+        doors=("replay it with game.replay and mend it first",),
+    ),
     "game.driver-exported": Code(
         means="an export preset would put the driver into a release",
         when="a preset exporting all resources with no exclusion for the addon, or one "

@@ -200,6 +200,15 @@ includes wrong turns:
   it when the command ran, while the node was there, so the flow survives a node added
   ahead of it; one no selector picked out stays a path and is named in `fragile`.
 
+**A flow kept before that is re-keyed in one call** (§PW276). `game.rekey(flow)` sends
+the flow step by step through a held session at its own seed and scene, as a replay
+would, and before each step asks the driver for a selector for every generated path the
+step uses, while the node is there. It writes the flow back with those selectors in
+place, and answers how many it `rekeyed`, the `selectors` and the paths left `fragile`,
+which the game cures by naming the node or giving its script a `class_name`. A step
+that fails mid-way is `game.flow-broke`, and nothing is written. Cottony's two older
+flows were re-keyed this way and replay to the same frames as before.
+
 ```json
 {"format": 1, "proves": "a click on PRESS counts one press", "seed": 3, "scene": "",
  "engine": "4.7.stable.official", "driver": "<sha256 of driver.gd>",

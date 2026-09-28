@@ -537,6 +537,38 @@ def test_a_flow_kept_at_generated_names_survives_a_node_added_ahead(tmp_path):
     assert driving.replayed("tests/flows/go.flow.json", root=root)["ok"] is False
 
 
+def test_a_flow_kept_before_selectors_is_rekeyed_in_one_call(tmp_path):
+    """§PW276: Cottony's older flows still reach their nodes by generated names."""
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    root = str(game(tmp_path))
+    (tmp_path / "main.gd").write_text(UNNAMED, encoding="utf-8")
+    session = driving.opened(root, seed=1)["session"]
+    try:
+        driving.stepped(session, root=root)
+        button = driving.queried(session, of_class="Button", root=root)["result"][0]
+        label = driving.queried(session, of_class="Label", root=root)["result"][0]
+    finally:
+        driving.closed(session, root=root)
+    older = {"format": 1, "proves": "a click on GO says so", "seed": 1, "scene": "",
+             "engine": "", "driver": "", "steps": [
+                 {"cmd": "step", "frames": 1},
+                 {"cmd": "input", "click": {"path": button["path"]}},
+                 {"cmd": "step", "frames": 3},
+                 {"cmd": "expect", "path": label["path"], "property": "text",
+                  "equals": "PRESSED 1"},
+             ]}
+    where = tmp_path / "tests" / "flows" / "old.flow.json"
+    where.parent.mkdir(parents=True)
+    where.write_text(json.dumps(older), encoding="utf-8")
+    said = driving.rekeyed("tests/flows/old.flow.json", root=root)
+    assert said["rekeyed"] == 2 and said["fragile"] == []
+    flow = json.loads(where.read_text(encoding="utf-8"))
+    assert flow["steps"][1]["click"] == {"select": {"class": "Button"}}
+    (tmp_path / "extra.txt").write_text("renumber", encoding="utf-8")
+    assert driving.replayed("tests/flows/old.flow.json", root=root)["ok"] is True
+
+
 def test_a_batch_of_commands_is_one_call_and_is_kept_like_any_other(tmp_path):
     """§PW271: a level of thirty moves cost hundreds of processes from the terminal."""
     if not os.environ.get("GODOT"):

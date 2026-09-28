@@ -49,7 +49,7 @@
 
 ## Block S — Playing the game, not only rendering it
 
-- 📋 **PW276** (deps: —) **a flow kept before selectors still clicks at generated paths, and re-keeping it means driving every step again** — Cottony's two flows hold 237 steps at @Node2D-style paths that any node added ahead of them breaks. → §PW276
+- 📋 **PW277** (deps: —) **a selector cannot pick out an unnamed node by its place under a named one, so buttons inside a screen stay fragile** — Re-keying Cottony left nine paths at generated names, each an unnamed node inside a screen a selector already finds. → §PW277
 
 ## Block T — Adopting polyweave in a project
 

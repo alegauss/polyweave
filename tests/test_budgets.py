@@ -136,7 +136,8 @@ HELP_VERB = 4_000
 #: 19,263 with capture.movie and engine.sweep (§PW249, §PW250).
 #: 19,569 with vfx.build (§PW259).
 #: 20,028 with store.capsules (§PW268).
-HELP_TOP = 20_400
+#: 20,485 with game.batch, measure.contrast and game.rekey (§PW271, §PW272, §PW276).
+HELP_TOP = 21_000
 #: A search's answer over its default budget of 24 samples: 3,739.
 SEARCH = 4_000
 

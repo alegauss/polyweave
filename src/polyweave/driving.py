@@ -689,6 +689,83 @@ def kept(
     }
 
 
+def _step_paths(step: dict) -> list[str]:
+    """The generated paths one kept step reaches its node by."""
+    click = step.get("click")
+    found = [step.get("path"), click.get("path") if isinstance(click, dict) else None]
+    return [one for one in found if _generated(one)]
+
+
+@operation("game.rekey")
+def rekeyed(
+    flow: Annotated[str, Param("the flow file to re-key, as game.keep wrote it")],
+    *,
+    root: Annotated[str, _ROOT] = ".",
+) -> dict:
+    """Put a selector in place of each generated path an older flow reaches by (§PW276).
+
+    The flow is sent step by step through a held session at its own seed and scene, as
+    a replay would, and before each step the driver is asked what picks out every
+    generated path it uses, while the node is there. The flow is written back with
+    those selectors; a path none could pick out stays and is named in `fragile`, and
+    naming the node in the game or giving its script a class_name is what cures it.
+    """
+    here = load(root).root
+    where = Path(flow)
+    where = where if where.is_absolute() else here / where
+    if not where.is_file():
+        raise PolyweaveError(
+            "game.no-flow",
+            f"there is no flow at {where}",
+            "name a .flow.json game.keep wrote, under the project",
+        )
+    kept = json.loads(where.read_text(encoding="utf-8"))
+    session = opened(root, scene=kept.get("scene", ""), seed=int(kept.get("seed", 0)))
+    selectors: dict[str, dict] = {}
+    broke = None
+    try:
+        for index, step in enumerate(kept.get("steps") or []):
+            for path in _step_paths(step):
+                if path in selectors:
+                    continue
+                try:
+                    said = send(session["session"], "selector", root=root,
+                                journal=False, path=path)
+                except PolyweaveError:
+                    continue
+                chosen = (said.get("result") or {}).get("select")
+                if chosen:
+                    selectors[path] = chosen
+            fields = {k: v for k, v in step.items() if k != "cmd"}
+            try:
+                send(session["session"], step["cmd"], root=root, journal=False,
+                     **fields)
+            except PolyweaveError as refused:
+                broke = {"step": index, "code": refused.code, "why": refused.message}
+                break
+    finally:
+        closed(session["session"], root=root)
+    if broke is not None:
+        raise PolyweaveError(
+            "game.flow-broke",
+            f"the flow broke at step {broke['step']} while being re-keyed: "
+            f"{broke['why']}",
+            "replay it with game.replay and mend it first; nothing was written",
+            detail=broke["code"],
+        )
+    steps = [_selected(step, selectors) for step in kept.get("steps") or []]
+    fragile = sorted({one for step in steps for one in _step_paths(step)})
+    kept["steps"] = steps
+    with where.open("w", encoding="utf-8", newline="\n") as written:
+        written.write(json.dumps(kept, indent=2) + "\n")
+    return {
+        "flow": str(where),
+        "rekeyed": len(selectors),
+        "selectors": selectors,
+        "fragile": fragile,
+    }
+
+
 @operation("game.replay")
 def replayed(
     flow: Annotated[str, Param("the flow file game.keep wrote")],

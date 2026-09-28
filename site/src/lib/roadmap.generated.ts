@@ -112,10 +112,10 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW204", "PW205"],
   },
   {
-    id: "PW276",
+    id: "PW277",
     block: "S",
-    symptom: "a flow kept before selectors still clicks at generated paths, and re-keeping it means driving every step again",
-    why: "Cottony's two flows hold 237 steps at @Node2D-style paths that any node added ahead of them breaks.",
+    symptom: "a selector cannot pick out an unnamed node by its place under a named one, so buttons inside a screen stay fragile",
+    why: "Re-keying Cottony left nine paths at generated names, each an unnamed node inside a screen a selector already finds.",
     deps: [],
   },
 ];

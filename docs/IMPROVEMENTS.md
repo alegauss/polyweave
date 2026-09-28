@@ -500,26 +500,28 @@ the first twenty make.
 
 ## Block S — Playing the game, not only rendering it
 
-### §PW276 Re-keying a kept flow
+### §PW277 A node picked out under the screen it sits in
 
-Found shipping PW270 (2026-09-28). `game.keep` now writes a selector in place of each
-generated path it can pick out (`{"class": "Button"}`, or with a name or text added),
-asked of the driver while the node exists. A flow kept before that still holds its
-generated paths, and Cottony's two do: `win_level_one` clicks, sets, calls and waits at
-`/root/Main/@Node2D@14/@Node2D@35` more than seventy times, and `settings_persist`
-expects at `.../reduced_motion/@Label@467`. Keeping them again by hand means driving the
-game through all 237 steps a second time.
+Found re-keying Cottony's flows (PW276, 2026-09-28). `game.rekey` put selectors on the
+board, the map, the title and the settings toggles, and left nine paths across the two
+flows fragile: the title's play button (`@Node2D@155/@TextureButton@163`), the level
+card's play button, the map's level stop, and the reduced-motion toggle's label. Each is
+an unnamed node with no text of its own, so the class alone matches several and no
+property narrows it.
 
-A flow can be re-keyed by replaying it through a held session instead:
-`game.rekey(flow)` opens the flow's scene at its seed, sends each step as the replay
-would, asks the driver for a selector for every generated path just before the step uses
-it, and writes the flow back with the selectors in place, answering which paths none
-could pick out. A bare `Node2D` with no script class and no name is one no selector
-finds; the answer names those, and naming the node in the game (`name = "Board"`) or
-giving its script a `class_name` is the remedy, since only the game can say what the
-node is.
+Each of them sits inside a node a selector does pick out: the play button is the one
+TextureButton under `{"class": "Title"}`, the stop the first stop under `{"class":
+"Map"}`. A selector should be able to say that: `{"under": {"class": "Title"}, "class":
+"TextureButton"}`, matched among the ancestor's descendants only, and, where several
+siblings share a class, their order among them (`"nth": 0`). The driver's `selector`
+would try the nearest ancestor that has a selector of its own before giving up, so a
+flow reaches a node by where it sits in a screen the game names, and survives nodes
+added elsewhere.
 
-Done when Cottony's two flows are re-keyed in one call each, still replay to the same
-frames, and name what stayed fragile.
+Naming the node in the game stays the better cure, and the answer should keep saying so;
+this is for the many projects that build screens in code and name nothing.
+
+Done when re-keying Cottony's two flows leaves none of those nine paths fragile, and
+both still replay to the same frames.
 
 ## Block T — Adopting polyweave in a project
