@@ -24,6 +24,11 @@ faction = "crew"          # the id of an entity whose kind is faction
 style = "portrait"        # the [style.<family>] of polyweave.toml its pictures are held to
 first = "act 1"           # where in the run it first appears
 
+[entity.foreman]
+name = "Foreman"
+plural = "Foremen"        # only where English does not make it by rule
+kind = "enemy"
+
 [rules]
 longest_line = 80         # the longest line a player reads, in characters
 silent = ["drone"]        # entities that never speak
@@ -32,8 +37,8 @@ unshown = ["nemesis"]     # entities whose name is never shown
 
 - An entity is `[entity.<id>]`. The id is how everything else refers to it, and is unique
   because TOML refuses a table written twice.
-- `name` and `kind` are required. `code`, `faction`, `style` and `first` are optional and
-  are text.
+- `name` and `kind` are required. `code`, `plural`, `faction`, `style` and `first` are
+  optional and are text.
 - `[entity.<id>.look]` is optional: a `description` and two lists of texts, `shows` (the
   traits that must appear) and `never` (the ones that must not). It is what a picture or
   a mesh of the entity is bought from.
@@ -107,6 +112,13 @@ A `{placeholder}`, a `%s` and a BBCode tag are not read as words. In an English 
 and `I'd` are never names (§PW244): English capitalises them wherever they
 fall, so "Hold still, I've got you" passes with nothing in `[words] ordinary`. Another
 locale still reads them, since there they are no pronoun.
+
+**A name's plural is the name** (§PW257). Every entity is spoken of in the plural
+somewhere, so each word of a name counts in its English plural too: `-s`, `-es` after s,
+x, z, ch and sh, `-ies` after a consonant's y, and both `-s` and `-men` for `-man`
+(Gleaners, Flies, Foremen). An entity whose plural is none of these states it as `plural`,
+which then replaces the rule. The same holds for an unshown name. A word that is no name
+but near one says which it is near, since that is most often the name misspelled.
 
 **A cell's line break is a line break however it is written** (§PW243). Godot's importer
 takes a quoted cell holding a real line break as well as one holding the escaped `\n`, so

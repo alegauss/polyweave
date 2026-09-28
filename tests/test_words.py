@@ -33,13 +33,13 @@ unshown = ["pilot"]
 """
 
 
-def _project(tmp_path, rows, ordinary=()):
+def _project(tmp_path, rows, ordinary=(), world=WORLD):
     listed = ", ".join(f'"{w}"' for w in ordinary)
     (tmp_path / "polyweave.toml").write_text(
         f'[words]\ntable = "i18n/strings.csv"\nordinary = [{listed}]\n',
         encoding="utf-8",
     )
-    (tmp_path / "game.world.toml").write_text(WORLD, encoding="utf-8")
+    (tmp_path / "game.world.toml").write_text(world, encoding="utf-8")
     (tmp_path / "i18n").mkdir()
     (tmp_path / "i18n" / "strings.csv").write_text(
         "keys,en,pt_BR,_speaker\n" + "".join(r + "\n" for r in rows),
@@ -72,6 +72,59 @@ def test_text_that_keeps_to_the_world_passes_in_every_locale(tmp_path):
 def test_an_old_name_on_screen_is_reported_with_its_key_and_locale(tmp_path):
     _project(tmp_path, ["HUD,Beware the Syndicate,Cuidado com The Lattice,"])
     assert _found(tmp_path) == [("words.unknown-name", "HUD", "en", "names")]
+
+
+PLURALS = WORLD + """
+[entity.gleaner]
+name = "Gleaner"
+kind = "enemy"
+
+[entity.foreman]
+name = "Foreman"
+kind = "enemy"
+
+[entity.ox]
+name = "Ox"
+plural = "Oxen"
+kind = "enemy"
+
+[entity.fly]
+name = "Fly"
+kind = "enemy"
+"""
+
+
+def test_a_declared_names_plural_is_the_name(tmp_path):
+    """§PW257: GLEANERS INCOMING drew a finding though Gleaner is declared."""
+    _project(
+        tmp_path,
+        [
+            "WAVE,GLEANERS INCOMING,Curta.,",
+            "BOSS,Beware the Foremen and Flies,Curta.,",
+            "HERD,Two Oxen and one Ox,Curta.,",
+            "MANY,Drones everywhere,Curta.,",
+        ],
+        ordinary=["INCOMING"],
+        world=PLURALS,
+    )
+    assert _found(tmp_path) == []
+
+
+def test_a_stated_plural_replaces_the_rule(tmp_path):
+    _project(tmp_path, ["HERD,Two Oxes,Curta.,"], world=PLURALS)
+    assert _found(tmp_path) == [("words.unknown-name", "HERD", "en", "names")]
+
+
+def test_a_word_near_a_name_says_which_name_it_is_near(tmp_path):
+    _project(tmp_path, ["WAVE,The Gleeners come,Curta.,"], world=PLURALS)
+    finding = words.check(root=str(tmp_path))["findings"][0]
+    assert finding["code"] == "words.unknown-name"
+    assert "near 'gleaners'" in finding["message"]
+
+
+def test_an_unshown_names_plural_is_hidden_too(tmp_path):
+    _project(tmp_path, ["HUD,Two Vales,Curta.,"])
+    assert _found(tmp_path) == [("words.hidden-name", "HUD", "en", "unshown")]
 
 
 def test_a_code_name_on_screen_is_reported_and_not_twice(tmp_path):

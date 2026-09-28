@@ -577,28 +577,6 @@ The measure is the census Block H uses: which of Starship's text and character a
 are declared, checked and judged through polyweave, and which still sit in scripts. A
 string left in GDScript is a line this adoption has not reached, and the count says so.
 
-### §PW257 A name's plural is the name
-
-Found in Starship's RK122 (2026-09-27). A wave announcement in the world's words,
-`WAVE_GLEANERS,GLEANERS INCOMING - FREE THE HOLDERS`, drew `WAVE_GLEANERS (en) names
-'GLEANERS', which is no name the world shows`, though `docs/design/starship.world.toml`
-declares `[entity.gleaner] name = "Gleaner"`. The check matches a capitalised word to a
-declared name exactly, so the plural of a name the world declares reads as a new name.
-Every entity is spoken of in the plural somewhere (Motes, Lancers, Holders, Foremen), so
-a project either writes its interface in the singular, lists each plural as `ordinary`
-(which then hides a real misspelling of it), or lives with a standing finding.
-
-The check should take a declared name's English plural as the name (Gleaner, Gleaners;
-Foreman, Foremen), with an entity able to state an irregular one (`plural = "Foremen"`),
-and a finding for a word that is only near a name ("Gleeners") should say which name it
-is near.
-
-Starship's RK130 then moved its goals into the table and drew eight more such findings
-in one go: Motes, Lancers, Divers, Gleaners, Sowers, Spurs and Foremen (twice).
-
-Done when Starship's string table passes with GLEANERS in it and no `ordinary` entry for
-it.
-
 ## Block R — Levels measured before a person plays them
 
 ### §PW201 Whether a bot's win rate says how hard a level feels

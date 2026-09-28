@@ -59,8 +59,6 @@
 
 ## Block Q — Words held to the world
 
-- 📋 **PW257** (deps: —) **words.check reads the plural of a declared name as a name the world does not show** — Every enemy and colonist is written in the plural somewhere, so a project hides it as an ordinary word or keeps a standing finding. → §PW257
-
 ## Block R — Levels measured before a person plays them
 
 - 📋 **PW202** (deps: PW201 ⏸) **A game's own headless play of a level has no way to report what it measured** — Only the game can play its own rules, so polyweave needs a contract for what the game's probe prints, not a simulator of its own. → §PW202

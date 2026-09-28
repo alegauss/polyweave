@@ -32,6 +32,7 @@ as examples.
 from __future__ import annotations
 
 import csv
+import difflib
 import hashlib
 import io
 import json
@@ -66,6 +67,34 @@ _ENDS = ".!?:…"
 
 def _words(text: str) -> list[str]:
     return [re.sub(r"['’]s$", "", w) for w in _WORD.findall(text)]
+
+
+def _plurals(word: str) -> list[str]:
+    """A word's English plurals by rule: Gleaner, Gleaners; Foreman, Foremen.
+
+    A word ending in -man takes both -men and -mans, since Foremen and Humans are both
+    English and passing one more word costs a check nothing.
+    """
+    lower = word.casefold()
+    if lower.endswith(("s", "x", "z", "ch", "sh")):
+        return [word + "es"]
+    if lower.endswith("y") and lower[-2:-1] not in "aeiou":
+        return [word[:-1] + "ies"]
+    return [word + "s", *([word[:-2] + "en"] if lower.endswith("man") else [])]
+
+
+def _spoken(entity: dict) -> set[str]:
+    """Every word an entity is shown by: its name's, and the same in the plural.
+
+    A name is spoken of in the plural as often as not (Motes, Lancers, Foremen), and a
+    check that read the plural as a new name made every project list it as ordinary,
+    which then hid a real misspelling of it (§PW257). An entity states an irregular
+    plural as `plural`.
+    """
+    words = _words(entity["name"])
+    stated = entity.get("plural")
+    plurals = _words(stated) if stated else [p for w in words for p in _plurals(w)]
+    return {w.casefold() for w in [*words, *plurals]}
 
 
 def _plain(text: str) -> str:
@@ -143,15 +172,10 @@ def check(
     unshown = set(rules.get("unshown") or [])
     silent = set(rules.get("silent") or [])
     shown = {
-        w.casefold()
-        for i, e in entities.items()
-        if i not in unshown
-        for w in _words(e["name"])
+        w for i, e in entities.items() if i not in unshown for w in _spoken(e)
     }
     hidden = {
-        i: {w.casefold() for w in _words(entities[i]["name"])} - shown
-        for i in unshown
-        if i in entities
+        i: _spoken(entities[i]) - shown for i in unshown if i in entities
     }
     codes = {
         e["code"].casefold(): i
@@ -260,11 +284,13 @@ def _held(text, row, locale, found, shown, hidden, codes, ordinary, longest) -> 
         if english and _PRONOUN_I.fullmatch(word):
             continue
         if word.casefold() not in kept:
+            # A word only near a name is most often that name misspelled (§PW257).
+            near = difflib.get_close_matches(word.casefold(), sorted(shown), 1, 0.8)
             found(
                 PolyweaveError(
                     "words.unknown-name",
                     f"{row['key']} ({locale}) names {word!r}, which is no name the "
-                    "world shows",
+                    "world shows" + (f"; it is near {near[0]!r}" if near else ""),
                     f"use the world's name for it; if {word} is not a name, add it to "
                     "[words] ordinary; if it is a new one, declare it in the world",
                     given=word,

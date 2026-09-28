@@ -57,6 +57,8 @@ KINDS = ("place", "faction", "character", "enemy", "item")
 ENTITY_KEYS = {
     "code": False,
     "name": True,
+    # The name's plural where English does not make it by rule (§PW257).
+    "plural": False,
     "kind": True,
     "faction": False,
     "style": False,
