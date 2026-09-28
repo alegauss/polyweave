@@ -114,6 +114,7 @@ angle = [0, 360]
 angular_velocity = [-240, 240]
 shape = "flake"
 blend = "mix"
+randomness = 0.3
 
 [effect.band]
 amount = 12
@@ -123,6 +124,16 @@ extents = [0.1, 1.0, 0.1]
 damping = 2
 shape = "ring"
 """
+
+
+def test_particles_start_unevenly_where_randomness_says(tmp_path):
+    """§PW285: every accepted Starship trail sets randomness 0.3 on its particles."""
+    vfx.build(effects(tmp_path, "[effect.a]\namount = 27\nlifetime = 0.45\n"
+                                "randomness = 0.3\n"), root=str(tmp_path))
+    assert "randomness = 0.3" in (tmp_path / "vfx" / "a.tscn").read_text("utf-8")
+    with pytest.raises(PolyweaveError):
+        vfx.build(effects(tmp_path, "[effect.a]\namount = 4\nlifetime = 1.0\n"
+                                    "randomness = 1.5\n"), root=str(tmp_path))
 
 
 def test_the_keys_an_accepted_trail_relies_on_are_built(tmp_path):
@@ -310,10 +321,10 @@ func _initialize() -> void:
 \t\tvar node: GPUParticles3D = load("res://vfx/%s.tscn" % name).instantiate()
 \t\tvar process: ParticleProcessMaterial = node.process_material
 \t\tvar look: StandardMaterial3D = node.draw_pass_1.material
-\t\tprint("vfx: %s damping=%s..%s spin=%s emits=%d box=%s shape=%s" % [name,
-\t\t\tprocess.damping_min, process.damping_max, process.angular_velocity_max,
+\t\tprint("vfx: %s damping=%s..%s spin=%s emits=%d box=%s shape=%s random=%s" % [
+\t\t\tname, process.damping_min, process.damping_max, process.angular_velocity_max,
 \t\t\tprocess.emission_shape, process.emission_box_extents,
-\t\t\tlook.albedo_texture.get_class()])
+\t\t\tlook.albedo_texture.get_class(), node.randomness])
 \t\tnode.free()
 \tprint("vfx: loaded")
 \tquit()
@@ -331,7 +342,7 @@ def test_the_engine_loads_an_accepted_trail_s_keys(tmp_path):
     assert ran["ok"] is True, ran
     said = Path(ran["log"]).read_text("utf-8")
     assert "vfx: confetti damping=6.0..10.0 spin=240.0 emits=0" in said, said
-    assert "shape=GradientTexture2D" in said
+    assert "shape=GradientTexture2D random=0.3" in said
     assert "vfx: band damping=2.0..2.0 spin=0.0 emits=3 box=(0.1, 1.0, 0.1)" in said
 
 

@@ -20,6 +20,7 @@ declared in a `*.vfx.toml` instead, and `vfx.build` writes it as a Godot scene:
     angle = [0, 360]              # a particle's turn at birth, in degrees
     angular_velocity = [-240, 240]  # its spin, degrees a second
     shape = "dot"                 # square, dot, ring, flake, or a picture's path
+    randomness = 0.3              # how unevenly they start, 0 to 1 (§PW285)
 
 `emission` is a point, a sphere of `radius` or a box of half-`extents` (§PW281), and a
 `shape` other than a square is a texture on each quad: a soft dot, a ring or a flake
@@ -61,6 +62,7 @@ KEYS: dict[str, tuple[type | tuple, Any]] = {
     "amount": (int, None),
     "lifetime": (float, None),
     "explosiveness": (float, 0.0),
+    "randomness": (float, 0.0),
     "one_shot": (bool, False),
     "emission": (str, "point"),
     "radius": (float, 0.0),
@@ -216,14 +218,16 @@ def checked(name: str, table: Any, root: Path | None = None) -> dict:
             or own["amount"] < 1:
         raise _bad(name, f"sets amount to {own['amount']!r}",
                    "write amount as a whole number of particles, at least 1")
-    for key in ("lifetime", "explosiveness", "radius", "spread", "size", "trail"):
+    for key in ("lifetime", "explosiveness", "randomness", "radius", "spread", "size",
+                "trail"):
         if not _number(own[key]) or own[key] < 0:
             raise _bad(name, f"sets {key} to {own[key]!r}",
                        f"write {key} as a number no less than 0")
-    if own["lifetime"] <= 0 or own["explosiveness"] > 1 or own["spread"] > 180:
-        raise _bad(name, "has a lifetime of 0, an explosiveness past 1 or a spread "
-                   "past 180", "a life is longer than nothing, explosiveness runs "
-                   "0 to 1 and spread 0 to 180 degrees")
+    if (own["lifetime"] <= 0 or own["explosiveness"] > 1 or own["randomness"] > 1
+            or own["spread"] > 180):
+        raise _bad(name, "has a lifetime of 0, an explosiveness or randomness past 1, "
+                   "or a spread past 180", "a life is longer than nothing, "
+                   "explosiveness and randomness run 0 to 1, spread 0 to 180 degrees")
     if not isinstance(own["one_shot"], bool):
         raise _bad(name, f"sets one_shot to {own['one_shot']!r}",
                    "write one_shot as true or false")
@@ -257,7 +261,8 @@ def checked(name: str, table: Any, root: Path | None = None) -> dict:
         raise _bad(name, f"sets colour_over_life to {stops!r}",
                    "write at least two colours, evenly across the life")
     own["colour_over_life"] = [_colour(name, stop) for stop in stops]
-    for key in ("lifetime", "explosiveness", "radius", "spread", "size", "trail"):
+    for key in ("lifetime", "explosiveness", "randomness", "radius", "spread", "size",
+                "trail"):
         own[key] = float(own[key])
     return own
 
@@ -457,6 +462,7 @@ def scene(name: str, effect: dict) -> str:
         f"amount = {effect['amount']}\nlifetime = {effect['lifetime']:.6g}\n"
         f"one_shot = {'true' if effect['one_shot'] else 'false'}\n"
         f"explosiveness = {effect['explosiveness']:.6g}\n"
+        f"randomness = {effect['randomness']:.6g}\n"
         + (f"trail_enabled = true\ntrail_lifetime = {effect['trail']:.6g}\n"
            if ribbon else "")
         + 'process_material = SubResource("process")\n'

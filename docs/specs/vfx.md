@@ -16,6 +16,7 @@ kind             = "particles"   # particles; ribbon, a trail through each parti
 amount           = 64            # the particles alive at once; required
 lifetime         = 0.8           # seconds; required
 explosiveness    = 0.0           # 0 streams them, 1 starts them all at once
+randomness       = 0.0           # how unevenly they start, 0 to 1
 one_shot         = false         # a burst that plays once
 emission         = "point"       # point, sphere of `radius`, or box of `extents`
 radius           = 0.0
