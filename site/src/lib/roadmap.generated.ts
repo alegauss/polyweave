@@ -129,7 +129,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW259",
     block: "M",
     symptom: "a visual effect such as a trail or a burst of particles cannot be declared, built or accepted",
-    why: "A game's effects are as visible as its models, and today each project writes them as its own data and tunes them by eye.",
+    why: "Each built effect still needs rendering over a few frames for a person's verdict, its measures bound in an acceptance spec, and Starship's seven trails built through it.",
     deps: [],
   },
   {

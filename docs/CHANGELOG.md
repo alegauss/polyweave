@@ -209,6 +209,7 @@
 - ✅ **PW143** **an acceptance spec bounds how an asset looks and never what it costs the game to draw** — A spec bounds triangles, materials, draw calls, texture bytes and cells, read off the .glb, voxel model or texture it names, so costly looks fail (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW144** **the rig a search found is kept nowhere, so each run searches it again and no other game can start from it** — A passing searched port keeps its rig beside the family file; the next port renders at it before searching, and another family can start from it (design recorded in `docs/specs/adoption.md`).
 - ✅ **PW207** **Every public description still calls polyweave a tool for 3D assets** — The manifests, skill trigger, README, docstring, llms.txt and site describe a game's parts, claiming only what shipped and naming levels as next.
+- ✅ **PW259 (declaration and scene build)** **a visual effect such as a trail or a burst of particles cannot be declared, built or accepted** — vfx.build turns a *.vfx.toml of particle and ribbon effects into Godot GPUParticles3D scenes, recorded, with reach, life and budget worked out.
 
 ## Block N — Pictures held to a canon
 

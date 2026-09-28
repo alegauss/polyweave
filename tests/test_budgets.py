@@ -59,7 +59,8 @@ from polyweave.errors import PolyweaveError
 #: 83,367 with capture.movie (§PW249), a shot kept frame by frame.
 #: 84,737 with engine.sweep (§PW250), a script flown over a grid of arguments.
 #: 85,806 with music.render's formats (§PW255) and sound.sitting (§PW256).
-DESCRIBE = 86_400
+#: 86,492 with vfx.build (§PW259), an effect built from its declaration.
+DESCRIBE = 87_400
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -97,7 +98,8 @@ DESCRIBE = 86_400
 #: 93,538 with capture.movie (§PW249).
 #: 94,927 with engine.sweep and engine.bad-grid (§PW250).
 #: 96,016 with music.render's formats, sound.sitting and music.bad-format.
-CAPABILITIES = 96_600
+#: 96,817 with vfx.build and its two codes (§PW259).
+CAPABILITIES = 97_600
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
@@ -122,7 +124,8 @@ HELP_VERB = 4_000
 #: 18,745 with game.set (§PW217).
 #: 18,944 with provenance.generated (§PW248).
 #: 19,263 with capture.movie and engine.sweep (§PW249, §PW250).
-HELP_TOP = 19_500
+#: 19,569 with vfx.build (§PW259).
+HELP_TOP = 19_900
 #: A search's answer over its default budget of 24 samples: 3,739.
 SEARCH = 4_000
 

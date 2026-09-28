@@ -34,8 +34,9 @@ JSON, written beside every artefact this plugin produces, named `<artefact>.prov
 }
 ```
 
-`kind` is `render`, `mesh`, `capture`, `fetch`, `picture` or `sound`; `picture` is a bought
-picture put on the project's grid (§PW171). A `fetch` carries the service fields §PW17
+`kind` is `render`, `mesh`, `capture`, `fetch`, `picture`, `sound` or `vfx`; `picture` is a
+bought picture put on the project's grid (§PW171), and `vfx` a scene `vfx.build` wrote from
+an effect's declaration (§PW259). A `fetch` carries the service fields §PW17
 requires — task id, prompt or reference hash, credits consumed — in the same record rather
 than a second one.
 

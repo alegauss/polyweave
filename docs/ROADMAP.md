@@ -43,7 +43,7 @@
 
 ## Block M — What a game needs beyond the look
 
-- 📋 **PW259** (deps: —) **a visual effect such as a trail or a burst of particles cannot be declared, built or accepted** — A game's effects are as visible as its models, and today each project writes them as its own data and tunes them by eye. → §PW259
+- ⏳ **PW259** (deps: —) **a visual effect such as a trail or a burst of particles cannot be declared, built or accepted** — Each built effect still needs rendering over a few frames for a person's verdict, its measures bound in an acceptance spec, and Starship's seven trails built through it. → §PW259
 - 📋 **PW268** (deps: —) **a store's capsule set cannot be cut from one key art, so each project crops and places its logo by hand** — Every Steam page needs about ten shapes of one picture, most with a logo that must still read at thumbnail size. → §PW268
 
 ## Block N — Pictures held to a canon
@@ -161,6 +161,15 @@
 - **A Lattice or Foreman picture is bought with entity=** The next enemy or Foreman
   picture Starship buys goes through picture.buy with entity=, and its provenance
   sidecar names the entity from starship.world.toml.
+
+## Done when — PW259
+
+- **A built effect is shown to a person and held to a spec** Each built effect renders
+  over a few frames on a neutral background into a sitting a person answers, and an
+  acceptance spec bounds its lifetime, reach, alive and brightness.
+- **Starship's seven trails are built through vfx.build** Starship's seven trails are
+  seven declarations built and accepted through polyweave, and the game instances the
+  scenes built instead of reading its own trail Resources.
 
 ## Non-goals
 

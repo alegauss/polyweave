@@ -57,6 +57,7 @@ AREAS: dict[str, str] = {
     "adopt": "a project's adoption: its config, its server and its agent's section",
     "sound": "the audio a game declares it needs, and where each file lands",
     "music": "a score written as a source, compiled to notes and checked",
+    "vfx": "a particle or ribbon effect declared as data and built for the engine",
 }
 
 CODES: dict[str, Code] = {
@@ -794,6 +795,19 @@ CODES: dict[str, Code] = {
         means="the score has problems, so it compiles to nothing a render may play",
         when="music.to_midi on a source music.validate would not pass",
         doors=("call music.validate and fix every problem it names",),
+    ),
+    # -- vfx: an effect declared as data and built for the engine -----------------
+    "vfx.no-source": Code(
+        means="there is no effects file, or it holds no [effect.<name>] tables",
+        when="a path to no file, a file that is not TOML, or one of stray tables",
+        doors=("name a *.vfx.toml under the project",
+               "write each effect as [effect.<name>] with its amount and lifetime"),
+    ),
+    "vfx.bad-effect": Code(
+        means="an effect's key or value means nothing, or the named one is not there",
+        when="a misspelled key, an amount of 0, a colour not written #rrggbb, a kind "
+        "other than particles or ribbon",
+        doors=("write the value the remedy describes",),
     ),
     "music.bad-format": Code(
         means="a render asked for a format it does not write",

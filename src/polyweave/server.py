@@ -75,7 +75,8 @@ TOOL_BUDGET = 4500
 #: 74,600 at 74,018 for capture.movie (§PW249).
 #: 75,800 at 75,219 for engine.sweep (§PW250).
 #: 76,700 at 76,130 for music.render's formats and sound.sitting (§PW255, §PW256).
-LIST_BUDGET = 76700
+#: 77,500 at 76,728 for vfx.build (§PW259).
+LIST_BUDGET = 77500
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

@@ -432,10 +432,10 @@ tuned by looking at captures, which is the tuning by eye the project's rules for
 
 polyweave should take a declaration of a particle or ribbon effect (emission, life,
 colour over life as a gradient, size over life, shape, blend, a budget of particles) and
-build it into what the engine plays (for Godot, a GPUParticles3D or a ribbon mesh and
-its material, with a record), render it over a few frames on a neutral background as a
-look a person can judge, and hold it to an acceptance spec (how long it lives, how far
-it reaches, its brightness, its particle count against a budget).
+build it into what the engine plays, which `vfx.build` now does
+([vfx.md](specs/vfx.md)), render it over a few frames on a neutral background as a look
+a person can judge, and hold it to an acceptance spec (how long it lives, how far it
+reaches, its brightness, its particle count against a budget).
 
 Done when Starship's seven trails are seven declarations built and accepted through
 polyweave, and the game reads what was built instead of its own data.
