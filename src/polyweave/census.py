@@ -62,6 +62,7 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.music_render": ("internal", "the engines and the mix music.render runs"),
     "polyweave.sfxr": ("internal", "sfxr's synth and generators, for sound.synth"),
     "polyweave.sfx:kit": ("internal", "a chip kit's hits, made for music.render"),
+    "polyweave.verdict:members_of": ("internal", "a sheet's members, checked first"),
     "polyweave.vfx:checked": ("internal", "an effect's table, with defaults"),
     "polyweave.vfx:measured": ("internal", "an effect's measures from its declaration"),
     "polyweave.vfx:scene": ("internal", "an effect as the Godot scene build writes"),

@@ -55,6 +55,28 @@ def test_the_sheet_lays_the_family_out_and_says_what_failed(tmp_path):
     assert set(found["choices"]) == {"accept", "look", "number"}
 
 
+def test_a_bare_path_is_read_as_the_picture_it_names(tmp_path):
+    """§PW261: a family of paths is the commonest first guess at a member."""
+    member(tmp_path, "citadel", DARK, old=False)
+    found = verdict.sheet(["renders/citadel.png"], out="review/c.png", root=tmp_path)
+    assert found["members"] == [{"name": "citadel", "passed": True, "failed": []}]
+
+
+@pytest.mark.parametrize(
+    ("members", "said"),
+    [
+        ([7], "member 0 is a int"),
+        ([{"new": "renders/x.png"}], "member 0 has no name"),
+        (["renders/x.png", {"name": "y"}], "member 1 has no new"),
+    ],
+)
+def test_a_member_that_is_not_one_is_refused_with_its_index(tmp_path, members, said):
+    with pytest.raises(PolyweaveError) as refused:
+        verdict.sitting({"f": members}, out="review", root=tmp_path)
+    assert refused.value.code == "verdict.bad-member"
+    assert said in refused.value.message
+
+
 def test_the_number_is_wrong_moves_the_bound_to_what_a_person_accepted(tmp_path):
     family = [member(tmp_path, "star_dim", BRIGHT), member(tmp_path, "star_gold", DARK)]
     run = loop.start("stars", "after", root=tmp_path)

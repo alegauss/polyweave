@@ -75,6 +75,35 @@ def test_a_refused_call_is_an_error_result_naming_its_code():
     )
 
 
+def test_an_operation_that_raises_is_refused_and_the_server_answers_on(
+    tmp_path, monkeypatch
+):
+    """§PW261: one raise inside a tool closed the connection, and every tool with it."""
+    from dataclasses import replace
+
+    def broken(*_, **__):
+        raise AttributeError("'str' object has no attribute 'get'")
+
+    held = describe._REGISTRY["verdict.answers"]
+    monkeypatch.setitem(describe._REGISTRY, "verdict.answers", replace(held, fn=broken))
+    found = server.call("verdict_answers", {"root": str(tmp_path)})
+    assert found["isError"] is True
+    refused = found["structuredContent"]["refused"]
+    assert refused["code"] == "op.crashed"
+    assert "AttributeError" in refused["message"]
+    assert "test_server.py" in refused["detail"]
+    assert server.call("no_such", {})["isError"] is True
+
+
+def test_a_sitting_of_bare_paths_is_refused_by_member_not_raised(tmp_path):
+    (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
+    found = server.call("verdict_sitting", {
+        "families": {"citadel": [7]}, "out": "review", "root": str(tmp_path)})
+    refused = found["structuredContent"]["refused"]
+    assert refused["code"] == "verdict.bad-member"
+    assert "member 0" in refused["message"]
+
+
 def test_the_protocol_answers_initialize_list_and_ping_and_not_a_notification():
     lines = [
         {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}},

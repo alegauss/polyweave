@@ -512,25 +512,6 @@ Done when Starship's brand family can be started from the page with its two stud
 
 ## Block O — A person sees and answers
 
-### §PW261 A malformed member is refused, never raised
-
-Found in Starship (2026-09-27, RK132). `verdict.sitting` was given a family as a list of
-picture paths, which is what "each family's name to its members, as for a sheet" reads
-as to a caller that has not read `MEMBERS`. `_checked` calls `member.get("spec")` on a
-string and raises AttributeError. Through the CLI that is a traceback. Through the MCP
-server the whole server went down ("Connection closed"), and every other polyweave tool
-was lost for the rest of the turn.
-
-Each member should be validated before any picture is opened. A member that is not a
-table, or lacks `name` or `new`, should be refused with a code (`verdict.bad-member`), a
-remedy quoting `MEMBERS`, and the index of the member at fault. A bare path could also
-be read as `{"name": <stem>, "new": <path>}`, a picture shown without a spec, since that
-is the commonest first guess. Separately, an exception inside any operation should come
-back to an MCP caller as a refusal and not end the server.
-
-Done when the call above answers a refusal naming member 0, and the server still answers
-the next call.
-
 ### §PW265 Promoting a refused picture from any surface
 
 Found in Starship (2026-09-27, RK97). The owner promoted a refused Mote drawing in

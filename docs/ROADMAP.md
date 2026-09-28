@@ -51,7 +51,6 @@
 
 ## Block O — A person sees and answers
 
-- 📋 **PW261** (deps: —) **a sitting given bare picture paths as members raises and takes the MCP server down instead of refusing** — One malformed call loses every polyweave tool for the rest of the turn, and the caller learns the member shape only from the source. → §PW261
 - 📋 **PW265** (deps: —) **a refused picture can be promoted only from the review page, so a verdict given in chat has no operation to carry it** — A person often answers in the chat, and the agent then calls private functions it read from the source. → §PW265
 
 ## Block P — Music and sound a game can ship

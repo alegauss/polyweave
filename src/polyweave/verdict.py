@@ -19,7 +19,7 @@ from __future__ import annotations
 
 from datetime import date as Date
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any
 
 from . import accept, calibrate, loop, style
 from .describe import Param, operation
@@ -64,6 +64,43 @@ MEMBERS = (
 )
 
 
+def members_of(members: Any) -> list[dict]:
+    """Every member as a table, checked before any picture is opened (§PW261).
+
+    A bare path is the commonest first guess at a member, and it is read as the
+    picture it names, shown with no spec. Anything else that is not a table with a
+    `name`, and a `new` unless it is a line of text, is refused with its index.
+    """
+    if not isinstance(members, list | tuple):
+        raise PolyweaveError(
+            "verdict.bad-member",
+            f"members is a {type(members).__name__}, and it is a list",
+            f"pass a list; {MEMBERS}",
+        )
+    found = []
+    for index, member in enumerate(members):
+        if isinstance(member, str) and member.strip():
+            # Nothing checked it, so nothing failed it: the ear or the eye alone judges.
+            found.append({"name": Path(member).stem, "new": member, "passed": True})
+            continue
+        if not isinstance(member, dict):
+            said = f"is a {type(member).__name__}"
+        else:
+            # A line of text laid out by words.sheet has no picture to be new.
+            needed = ("name",) if member.get("line") else ("name", "new")
+            lacking = [key for key in needed if not member.get(key)]
+            said = f"has no {' or '.join(lacking)}" if lacking else ""
+        if said:
+            raise PolyweaveError(
+                "verdict.bad-member",
+                f"member {index} {said}",
+                f"write each member as a table or a picture's path; {MEMBERS}",
+                at=f"members[{index}]",
+            )
+        found.append(member)
+    return found
+
+
 @operation("verdict.sheet")
 def sheet(
     members: Annotated[list, Param(MEMBERS)],
@@ -81,6 +118,7 @@ def sheet(
     """
     from PIL import Image, ImageDraw
 
+    members = members_of(members)
     here = Path(root).resolve()
     rows, said = [], []
     for member in members:
@@ -153,6 +191,14 @@ def sitting(
     their members, and this lays each out as `<out>/<family>.png`. The answers come
     back as one `judge` call per family.
     """
+    if not isinstance(families, dict):
+        raise PolyweaveError(
+            "verdict.bad-member",
+            f"families is a {type(families).__name__}, and it maps a name to members",
+            f'pass {{"<family>": [<member>, ...]}}; {MEMBERS}',
+        )
+    # Every family checked before any sheet is drawn, so a bad one is refused whole.
+    families = {name: members_of(one) for name, one in families.items()}
     folder = Path(out)
     sheets = {
         name: sheet(members, out=folder / f"{name}.png", root=root)
@@ -237,6 +283,7 @@ def judge(
     `words.sheet`, is a line of text, and its verdict goes into the lines canon. One
     carrying `sound`, laid out by `sound.sitting`, has its verdict kept in its record.
     """
+    members = members_of(members)
     if choice not in CHOICES:
         raise PolyweaveError(
             "loop.unknown-choice",

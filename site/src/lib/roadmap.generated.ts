@@ -39,7 +39,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "L", title: "What a run leaves as evidence", open: 1 },
   { block: "M", title: "What a game needs beyond the look", open: 1 },
   { block: "N", title: "Pictures held to a canon", open: 1 },
-  { block: "O", title: "A person sees and answers", open: 2 },
+  { block: "O", title: "A person sees and answers", open: 1 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
   { block: "Q", title: "Words held to the world", open: 0 },
   { block: "R", title: "Levels measured before a person plays them", open: 5 },
@@ -137,13 +137,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "N",
     symptom: "the review page admits a picture to a canon only from a gate lane, so a family never gated cannot start",
     why: "Key art and wordmarks have no outline to gate, and they are what a brand canon is made of.",
-    deps: [],
-  },
-  {
-    id: "PW261",
-    block: "O",
-    symptom: "a sitting given bare picture paths as members raises and takes the MCP server down instead of refusing",
-    why: "One malformed call loses every polyweave tool for the rest of the turn, and the caller learns the member shape only from the source.",
     deps: [],
   },
   {

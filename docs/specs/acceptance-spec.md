@@ -115,7 +115,10 @@ noise happened to favour.
 
 **A person's verdict is one sheet and one call** (§PW109). `verdict.sheet(members, out=)`
 puts a whole family on one PNG. A member is `name`, `spec`, `new`, and optionally `old`,
-`capture` with a crop `box`, and `shown`, the size the game draws it. Each member gets a
+`capture` with a crop `box`, and `shown`, the size the game draws it. A bare path is read
+as the picture it names, with no spec (§PW261); anything else that is not a table with a
+`name` and a `new` is refused before a picture opens (`verdict.bad-member`), naming the
+member's index, in a sheet, a sitting or a verdict alike. Each member gets a
 row: old, new and the capture at the size shown, with every failed predicate in words
 under it, including where its bound came from. The answer carries the same words and the
 three choices, so an agent can ask the question without opening the picture.

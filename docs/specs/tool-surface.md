@@ -143,7 +143,7 @@ both answers.
 - `code` is a stable kebab-case string, namespaced by area (`render.`, `mesh.`, `fetch.`,
   `post.`, `config.`, `job.`, `geom.`, `spec.`, `op.`, `prov.`, `compose.`, `search.`,
   `engine.`, `units.`, `capture.`, `rig.`, `clip.`, `texture.`, `loop.`, `style.`,
-  `world.`, `words.`, `adopt.`, `sound.`, `music.`, `game.`, `driver.`, `vfx.`). It is part of the contract and does not change once published. `codes.AREAS` is the list, and
+  `world.`, `words.`, `adopt.`, `sound.`, `music.`, `game.`, `driver.`, `vfx.`, `verdict.`). It is part of the contract and does not change once published. `codes.AREAS` is the list, and
   `tests/test_spec_names.py` holds this one to it (§PW138).
 - `remedy` is the call that closes it with arguments filled in wherever they are derivable.
   Where the choice is a judgement the tool cannot make, it names both doors and what
@@ -304,7 +304,9 @@ both answers.
   (`accept_check`). Its schema carries each parameter's sentence and unit, `minimum` and
   `maximum` from its range, `enum` from its choices, `required` where it has no default,
   and `additionalProperties: false`. A call answers with the data `--json` prints, and a
-  refusal is an error result carrying the code. Anything the work prints goes to stderr,
+  refusal is an error result carrying the code. So is anything else an operation raises,
+  as `op.crashed` with where it raised in `detail` (§PW261): it is a defect, and the server
+  answers the next call. Anything the work prints goes to stderr,
   since stdout is the protocol. A tool whose work needs Blender is listed only where
   `bpy` imports or a binary is on `PATH`. Two budgets hold from the first day,
   `TOOL_BUDGET` for one tool and `LIST_BUDGET` for the list, set from what was measured

@@ -51,6 +51,7 @@ AREAS: dict[str, str] = {
     "clip": "motion over time, as something with a name and a duration",
     "texture": "the pixels a service painted, and what has to come back out of them",
     "loop": "what one asset cost to make, each way",
+    "verdict": "the members a person's verdict is laid out from and carried to",
     "style": "what a project's pictures look like, and the canon a person grows",
     "world": "a game's names, factions and characters, declared beside its prose",
     "words": "the text a player reads, held to the world it is set in",
@@ -356,6 +357,12 @@ CODES: dict[str, Code] = {
         means="no operation is registered under that name",
         when="a describe or a validate names an operation that does not exist",
         doors=("describe with no argument to list them",),
+    ),
+    "op.crashed": Code(
+        means="an operation raised where it should have refused: a defect in polyweave",
+        when="a call the operation did not check reached code that assumed its shape",
+        doors=("read the detail for where it raised, and file it",
+               "the server still answers every other call"),
     ),
     "op.duplicate": Code(
         means="two operations were registered under one name",
@@ -795,6 +802,12 @@ CODES: dict[str, Code] = {
         means="the score has problems, so it compiles to nothing a render may play",
         when="music.to_midi on a source music.validate would not pass",
         doors=("call music.validate and fix every problem it names",),
+    ),
+    # -- verdict: the members a verdict is laid out from --------------------------
+    "verdict.bad-member": Code(
+        means="a member of a sheet, a sitting or a verdict is not one",
+        when="a member that is a number or a list, or a table with no name or no new",
+        doors=("write each member as a table, or as the picture's path",),
     ),
     # -- vfx: an effect declared as data and built for the engine -----------------
     "vfx.no-source": Code(
