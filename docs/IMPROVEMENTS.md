@@ -375,20 +375,24 @@ seeds, ranks a game's levels by difficulty the way a person playing them would. 
 does, a level's difficulty becomes a number a search can aim at. If it does not, every
 later line tunes against noise.
 
-The spike runs in Cottony, where it is cheapest. The match rules already run headlessly,
-and `match3_test.gd` has a `find_move` that agrees with a brute-force rescan. A
-throwaway GDScript bot plays each of the 20 shipped levels over 200 seeds, first
-greedily and then with a one-move lookahead. It reports each level's win rate and the
-moves left at a win, at the median and the tenth percentile. It spends nothing, and it
-lives outside the package.
+The spike ran in Cottony on 2026-09-28. A throwaway bot, gitignored at Cottony's
+.polyweave/spike/bot.gd, played the 20 shipped levels over 200 seeds each, first taking
+the hint's swap and then greedily. Both won 95 to 100% of deals on every level. Their
+moves left fell from 25 and 30 at level 1 to 12 and 18 at level 20, in the same order.
+The owner, playing, felt no difference.
 
-The verdict is a person's. They play a sample of eight levels, spread across the bot's
-ranking, and say whether the order matches what they felt and where it does not. An
-agent does not judge the proxy it built, for the reason the non-goal on looks gives.
+So the bot and the person agree that nothing here is hard. That cannot answer the
+premise, since a set with no spread tests no ranking. It also suggests that moves left
+is not what a player feels, and a chance of losing is. Cottony filed RK150 to give its
+curve a loss within reach.
+
+Once RK150 lands, rerun the bot. The owner then plays eight levels spread across its
+ranking, and says whether the order matches what they felt and where it does not. An
+agent does not judge the proxy it built.
 
 If yes, the findings go into the designs below: which bot, how many seeds, and which
 percentile carries the feel. If no, the open lines are retired with the spike as the
-reason, and levels stay hand-tuned.
+reason.
 
 ### §PW202 A level probe the game runs and polyweave reads
 
