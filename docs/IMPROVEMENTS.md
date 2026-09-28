@@ -293,25 +293,6 @@ reaches, its brightness, its particle count against a budget).
 Done when Starship's seven trails are seven declarations built and accepted through
 polyweave, and the game reads what was built instead of its own data.
 
-### §PW284 An effect made of parts
-
-Found adopting Starship's seven trails through vfx.build (PW259, 2026-09-28). A trail
-the owner accepted is one look made of two things: the ribbon the engine leaves and the
-particles it throws. vfx.build writes one scene per effect, so art/vfx/trails.vfx.toml
-declares `sparks_ribbon` and `sparks_particles` apart. The game has to instance and
-place both, and vfx.preview lays out one sheet for each. So the person judges two halves
-of a look they accepted whole, and the verdict lands on neither the look nor the thing
-the game plays.
-
-An effect should be able to hold parts: `[effect.sparks]` with `parts = ["ribbon",
-"particles"]` naming sub-tables, or `[effect.sparks.ribbon]` and
-`[effect.sparks.particles]`, each built as a child of one root Node3D in one .tscn. Its
-measures are the parts' (`alive` summed, `reach` the largest, `brightness` the
-brightest), and its preview is one sheet of the whole moving. A part keeps its own kind,
-so a path ribbon and a GPUParticles3D can share a root.
-
-Done when Starship's seven trails are seven effects, each one scene and one sheet.
-
 ## Block N — Pictures held to a canon
 
 ### §PW180 Canon pictures as style references

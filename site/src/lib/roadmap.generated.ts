@@ -37,7 +37,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
   { block: "L", title: "What a run leaves as evidence", open: 0 },
-  { block: "M", title: "What a game needs beyond the look", open: 1 },
+  { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 0 },
   { block: "O", title: "A person sees and answers", open: 0 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
@@ -68,13 +68,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent",
     why: "The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question.",
     deps: ["PW57"],
-  },
-  {
-    id: "PW284",
-    block: "M",
-    symptom: "a trail's ribbon and its particles are two vfx effects, so the game places two scenes and a person judges two halves",
-    why: "Starship's seven accepted trails are each one look, and a verdict on half of one is a verdict on nothing the game plays.",
-    deps: [],
   },
   {
     id: "PW202",
