@@ -130,6 +130,9 @@ function legend(entries) {
   return list;
 }
 
+// A card's id, one per family of one sitting: two sittings may name the same family.
+const cardId = (manifest, name) => "family-" + manifest + "#" + name;
+
 // One family as a card: what it is, the picture, and the decision (§PW287).
 function card(sitting, name, laid, answers, assets) {
   const choices = sitting.choices || {};
@@ -138,7 +141,8 @@ function card(sitting, name, laid, answers, assets) {
   const status = !last ? ["wait", t("status_wait")]
     : last.choice === "accept" ? ["yes", t("status_accept")]
       : last.choice === "look" ? ["no", t("status_look")] : ["yes", t("status_other")];
-  const box = element("article", { class: "card" + (last ? " done" : ""), id: "family-" + name });
+  const box = element("article", { class: "card" + (last ? " done" : ""),
+    id: cardId(sitting.manifest, name) });
   box.append(element("header", {}, element("h3", {}, name),
     element("span", { class: "badge " + status[0] }, status[1])));
   if (laid.about) box.append(element("p", { class: "about" }, laid.about));
@@ -207,7 +211,7 @@ function card(sitting, name, laid, answers, assets) {
     const body = await answer.json();
     if (answer.ok) {
       message.textContent = t("recorded");
-      draw();
+      redrawCard(sitting.manifest, name);
     } else {
       send.disabled = false;
       message.classList.add("bad");
@@ -509,8 +513,41 @@ async function drawCanons() {
     : [element("p", {}, found.code + ": " + found.message)]));
 }
 
+// What was last drawn, so a read that found nothing new changes nothing on the page: a
+// redraw replaces every button, and one landing between a person's clicks lost the
+// click (§PW289).
+let drawn = "";
+const seen = (found) => JSON.stringify([found.language, found.sittings, found.answers,
+  found.pending, found.gates, found.turntables]);
+
+function progressOf(found) {
+  const current = found.sittings[found.sittings.length - 1];
+  const progress = document.getElementById("progress");
+  if (!current) { progress.hidden = true; return; }
+  const total = Object.keys(current.families).length;
+  const done = answered(current, found.answers);
+  progress.hidden = false;
+  document.getElementById("bar").style.width = (total ? (100 * done) / total : 0) + "%";
+  document.getElementById("counted").textContent = t("progress", { done, total });
+}
+
+// After an answer, only the card answered is drawn again, in its place; the rest of the
+// page, and whatever the person is already doing further down it, is left alone.
+async function redrawCard(manifest, name) {
+  const found = await state();
+  drawn = seen(found);
+  const sitting = found.sittings.find((one) => one.manifest === manifest);
+  const old = document.getElementById(cardId(manifest, name));
+  if (sitting && old && sitting.families[name]) {
+    old.replaceWith(card(sitting, name, sitting.families[name], found.answers, found.pending.assets));
+  }
+  progressOf(found);
+}
+
 async function draw() {
   const found = await state();
+  if (seen(found) === drawn) return;
+  drawn = seen(found);
   await speak(found.language || "en");
   document.getElementById("project").textContent = found.project || "";
   const sittings = document.getElementById("sittings");
@@ -518,19 +555,13 @@ async function draw() {
   const newest = found.sittings.slice().reverse();
   sittings.replaceChildren();
   older.replaceChildren();
-  const progress = document.getElementById("progress");
+  progressOf(found);
   if (!newest.length) {
     sittings.append(element("p", { class: "empty" }, t("empty")));
-    progress.hidden = true;
   } else {
     // The newest sitting in full; the earlier ones folded under it.
     const current = newest[0];
     sittings.append(sittingView(current, found));
-    const total = Object.keys(current.families).length;
-    const done = answered(current, found.answers);
-    progress.hidden = false;
-    document.getElementById("bar").style.width = (total ? (100 * done) / total : 0) + "%";
-    document.getElementById("counted").textContent = t("progress", { done, total });
     if (newest.length > 1) {
       const fold = element("details", { class: "older" }, element("summary", {}, t("older", { n: newest.length - 1 })));
       for (const earlier of newest.slice(1)) fold.append(sittingView(earlier, found));

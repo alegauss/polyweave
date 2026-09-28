@@ -72,6 +72,17 @@ def test_the_page_reads_its_own_words_from_the_catalog(tmp_path):
         served.shutdown()
 
 
+def test_the_page_holds_still_while_a_person_answers():
+    """§PW289: a whole redraw between two clicks replaced the button pressed."""
+    script = (Path(review.PAGE) / "page.js").read_text(encoding="utf-8")
+    # A read that found nothing new draws nothing.
+    assert "if (seen(found) === drawn) return;" in script
+    # An answer redraws its own card, never the page.
+    recorded = script.index('message.textContent = t("recorded");')
+    assert "redrawCard(sitting.manifest, name);" in script[recorded:recorded + 120]
+    assert "draw();" not in script[recorded:recorded + 120]
+
+
 def test_no_sentence_a_person_reads_is_kept_in_the_page_s_code():
     """The page takes every word from the catalog, so its script names only keys."""
     script = (Path(review.PAGE) / "page.js").read_text(encoding="utf-8")

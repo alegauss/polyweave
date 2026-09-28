@@ -268,6 +268,7 @@
 - ✅ **PW281** **vfx.build cannot declare damping, spin, box emission, particle shape or a path ribbon, so no accepted trail builds** — vfx.build declares the five trail keys and a path_ribbon drawn behind the emitter by a script in the scene; vfx.preview watches trails move (design recorded in `docs/specs/vfx.md`).
 - ✅ **PW287** **a review sitting shows sheets and choices with no summary, no consequence and only in English** — A sitting says what is judged and what each choice leads to, in the project's language from per-language catalogs, on a page made for the reviewer (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW288** **an accept with no comment is refused as loop.no-reason, though the review page calls the comment optional** — An accept with no comment on the review page is recorded as accepted with no comment, in the project's language; a redo still needs the person's words.
+- ✅ **PW289** **the review page redraws itself whole after each answer and every few seconds, so a click between two is lost** — The review page redraws only when what it read changed, and an answer redraws its own card alone, so a person answers card after card with one click each.
 
 ## Block P — Music and sound a game can ship
 
