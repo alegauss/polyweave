@@ -93,7 +93,10 @@
     "tone": "O tom do mundo",
     "examples": "Falas já aprovadas de {who}",
     "breaks": "Regras que ela quebra",
-    "sheet": "Ver a folha técnica"
+    "sheet": "Ver a folha técnica",
+    "how": "Como decidir",
+    "sitting_count": "{total} itens, {done} revisados",
+    "sitting_count_one": "{total} item, {done} revisado"
   },
   "kinds": {
     "look": {

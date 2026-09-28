@@ -272,6 +272,7 @@
 - ✅ **PW288** **an accept with no comment is refused as loop.no-reason, though the review page calls the comment optional** — An accept with no comment on the review page is recorded as accepted with no comment, in the project's language; a redo still needs the person's words.
 - ✅ **PW289** **the review page redraws itself whole after each answer and every few seconds, so a click between two is lost** — The review page redraws only when what it read changed, and an answer redraws its own card alone, so a person answers card after card with one click each.
 - ✅ **PW293** **a sitting laid out before PW287 reads in English on the page, with no summary, and looks broken to its owner** — The review page reads a sitting laid out before PW287 through the catalog: its choices by key, its title and summary from its kind, in the project's language.
+- ✅ **PW295** **a sitting's summary draws its choices as boxes that look pressable, and nothing parts one sitting from the next** — A sitting's summary lists its choices as a plain legend under How to decide, and each sitting is its own section, parted by a rule, with its count of items and answers.
 
 ## Block P — Music and sound a game can ship
 

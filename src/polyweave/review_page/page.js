@@ -316,23 +316,29 @@ function card(sitting, name, laid, answers, assets) {
 
 // A sitting: its title and what it is for, how to decide, then one card per family.
 function sittingView(sitting, found) {
-  const section = element("section");
+  // Each sitting is a section of its own, parted from the next, its count under its
+  // title so a person knows which cards they are in and how far along (§PW295).
+  const section = element("section", { class: "sitting" });
   const intro = element("div", { class: "intro" });
   const kind = kinds[sitting.kind || "look"] || {};
+  const total = Object.keys(sitting.families).length;
   intro.append(element("h2", {}, sitting.title || kind.title || t("heading")),
-    element("p", { class: "when" }, t("laid_out", { at: when(sitting.at) })));
+    element("p", { class: "when" }, t(total === 1 ? "sitting_count_one" : "sitting_count", {
+      total, done: answered(sitting, found.answers) }) + " · " +
+      t("laid_out", { at: when(sitting.at) })));
   const about = sitting.about || kind.about;
   if (about) intro.append(element("p", {}, about));
-  const how = element("div", { class: "how" });
+  // What each choice means, as a legend and never as something to press (§PW295).
+  const how = element("ul", { class: "how" });
   const failed = Object.values(sitting.families).some((laid) =>
     (laid.said || []).some((member) => (member.failed || []).length));
   for (const [word, raw] of Object.entries(sitting.choices || {})) {
     if (word === "number" && !failed) continue;
     const choice = asChoice(word, raw, sitting.kind);
-    how.append(element("div", {}, element("strong", {}, choice.label),
-      element("span", {}, choice.means + (choice.then ? " " + choice.then : ""))));
+    how.append(element("li", {}, element("strong", {}, choice.label + ": "),
+      choice.means + (choice.then ? " " + choice.then : "")));
   }
-  intro.append(how);
+  intro.append(element("p", { class: "how-title" }, t("how")), how);
   if ((sitting.tone || []).length) {
     intro.append(element("details", { class: "more", open: "" }, element("summary", {}, t("tone")),
       element("ul", { class: "examples" }, ...sitting.tone.map((rule) => element("li", {}, rule)))));

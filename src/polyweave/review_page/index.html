@@ -63,10 +63,16 @@
   .intro h2 { font-size: 20px; margin: 0 0 6px; }
   .intro p { margin: 0 0 12px; max-width: 70ch; white-space: pre-wrap; }
   .intro .when { color: var(--quiet); font-size: 13px; margin: 0 0 12px; }
-  .how { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-  .how div { border-radius: 10px; padding: 10px 12px; background: var(--soft); }
-  .how strong { display: block; }
-  .how span { color: var(--quiet); font-size: 14px; }
+  .how-title { margin: 4px 0 4px; font-size: 13px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .04em; color: var(--quiet); }
+  .how { list-style: none; margin: 0; padding: 0; }
+  .how li { padding: 3px 0 3px 14px; position: relative; color: var(--quiet); font-size: 14px;
+    cursor: default; }
+  .how li::before { content: ""; position: absolute; left: 0; top: 11px; width: 5px; height: 5px;
+    border-radius: 50%; background: var(--quiet); }
+  .how strong { color: var(--ink); font-weight: 600; }
+  section.sitting + section.sitting { margin-top: 44px; padding-top: 28px;
+    border-top: 2px solid var(--line); }
   details.more { margin-top: 12px; }
   details.more summary { cursor: pointer; color: var(--accent); font-size: 14px; }
   dl.legend { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; margin: 10px 0 0; font-size: 14px; }

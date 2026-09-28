@@ -93,7 +93,10 @@
     "tone": "The world's tone",
     "examples": "Lines already approved for {who}",
     "breaks": "Rules it breaks",
-    "sheet": "See the tool's sheet"
+    "sheet": "See the tool's sheet",
+    "how": "How to decide",
+    "sitting_count": "{total} items, {done} reviewed",
+    "sitting_count_one": "{total} item, {done} reviewed"
   },
   "kinds": {
     "look": {

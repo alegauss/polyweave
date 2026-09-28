@@ -93,6 +93,17 @@ def test_an_older_sitting_is_read_through_the_catalog():
         assert {"accept", "look"} <= set(review_text.kind(kind, "pt-BR")["choices"])
 
 
+def test_a_summary_reads_as_a_legend_and_each_sitting_stands_apart():
+    """§PW295: the summary's choices looked like buttons, and sittings ran together."""
+    script = (Path(review.PAGE) / "page.js").read_text(encoding="utf-8")
+    page = (Path(review.PAGE) / "index.html").read_text(encoding="utf-8")
+    assert 'element("ul", { class: "how" })' in script
+    assert 'element("section", { class: "sitting" })' in script
+    assert "section.sitting + section.sitting" in page
+    legend = page[page.index(".how li {"):page.index("}", page.index(".how li {"))]
+    assert "cursor: default" in legend and "background" not in legend
+
+
 def test_no_sentence_a_person_reads_is_kept_in_the_page_s_code():
     """The page takes every word from the catalog, so its script names only keys."""
     script = (Path(review.PAGE) / "page.js").read_text(encoding="utf-8")
