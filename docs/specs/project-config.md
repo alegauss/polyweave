@@ -256,7 +256,10 @@ against its own service's ceiling, in that ceiling's unit. A named service with 
 `remaining`, `spent`, `schema.read` and `schema.validate` take `service`. Naming none is
 refused with `fetch.service-unnamed` when several are declared, and a name nothing declares
 with `fetch.unknown-service`. Guessing which balance to draw on is the one mistake a ceiling
-exists to prevent.
+exists to prevent. **A buy is not a guess where the project priced it** (§PW264):
+`mesh.buy`, `picture.buy`, `picture.describe` and `sound.buy` naming no service take the
+one whose `prices` has a row for the model they buy (a speed's row such as `4.0:TURBO`
+counts for `4.0`), and are refused only where none or several do, the refusal naming them.
 
 **Declaring one two ways is refused** (`config.services-mixed`): bare `[service]` keys beside
 named tables, a bare `[budget]` beside named services, or a `[budget.<name>]` for no declared

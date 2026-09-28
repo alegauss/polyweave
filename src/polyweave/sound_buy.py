@@ -75,7 +75,7 @@ def buy(
     config = load(root)
     here = config.root
     target = _target(config, cue, out)
-    name = config.service(service)
+    name = config.service(service, model=model)
     about = config.services()[name]
     base, key = picture._reached(name, about)
     price = picture._price(name, about.get("prices") or {}, model, None)

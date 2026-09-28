@@ -482,23 +482,35 @@ class Config:
             for name, stated in named.items()
         }
 
-    def service(self, name: str | None = None) -> str:
+    def service(self, name: str | None = None, *, model: str | None = None) -> str:
         """The one service a call means, resolved and never guessed.
 
-        Naming none is right only where the project declares one. With several, the
-        call is refused: which balance to draw on is the one choice a ceiling exists
-        to take away from whoever is spending.
+        Naming none is right where the project declares one, or where exactly one of
+        several has a `prices` row for the `model` the call buys (§PW264): the project
+        has then said which service sells it. Otherwise the call is refused: which
+        balance to draw on is the one choice a ceiling exists to take away from whoever
+        is spending.
         """
         declared = self.services()
         if name is None:
             if len(declared) == 1:
                 return next(iter(declared))
+            selling = sorted(
+                one for one, about in declared.items()
+                if model is not None and _sells(about, model)
+            )
+            if len(selling) == 1:
+                return selling[0]
+            priced = ""
+            if model is not None:
+                priced = (f"; {' and '.join(selling)} all price {model!r}" if selling
+                          else f"; none prices {model!r}")
             raise PolyweaveError(
                 "fetch.service-unnamed",
                 f"the project declares {len(declared)} paid services and the call "
-                f"named none of them",
-                f"pass the service: one of {', '.join(sorted(declared))}",
-                allowed=sorted(declared),
+                f"named none of them{priced}",
+                f"pass the service: one of {', '.join(selling or sorted(declared))}",
+                allowed=selling or sorted(declared),
             )
         if name not in declared:
             near = difflib.get_close_matches(name, declared, n=1)
@@ -751,6 +763,14 @@ def _check(declared: dict, source: Path) -> None:
 
 #: Settings of one service whose value is itself a table, so not a named service.
 _TABLE_SETTINGS = ("prices", "skeleton")
+
+
+def _sells(about: dict, model: str) -> bool:
+    """Whether a service's `prices` has a row for a model, a speed of it included."""
+    return any(
+        str(row) == model or str(row).split(":", 1)[0] == model
+        for row in (about.get("prices") or {})
+    )
 
 
 def _named(values: dict) -> dict[str, dict]:

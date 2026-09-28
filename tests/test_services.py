@@ -133,6 +133,33 @@ def test_naming_no_service_where_there_are_several_is_refused(tmp_path):
     assert refused(purchase.spent, where).code == "fetch.service-unnamed"
 
 
+PRICED = (
+    '[service.meshy]\nkey_env = "POLYWEAVE_TEST_MESHY"\n'
+    'prices = { "meshy-6-lite" = 5, "meshy-6" = 20 }\n\n'
+    '[service.ideogram]\nkey_env = "POLYWEAVE_TEST_IDEOGRAM"\n'
+    'prices = { "4.0:TURBO" = 0.03, "describe" = 0.06 }\n\n'
+    '[service.tripo]\nkey_env = "POLYWEAVE_TEST_TRIPO"\n'
+    'prices = { "meshy-6" = 18 }\n'
+)
+
+
+def test_the_one_service_that_prices_the_model_is_the_one_meant(tmp_path):
+    """§PW264: Starship prices meshy-6-lite at Meshy alone, and mesh.buy still asked."""
+    config = C.load(project(tmp_path, PRICED))
+    assert config.service(model="meshy-6-lite") == "meshy"
+    # a speed of a model is a row for it
+    assert config.service(model="4.0") == "ideogram"
+    assert config.service(model="describe") == "ideogram"
+
+
+def test_two_services_pricing_the_model_are_still_asked_about(tmp_path):
+    config = C.load(project(tmp_path, PRICED))
+    error = refused(config.service, model="meshy-6")
+    assert error.code == "fetch.service-unnamed"
+    assert error.as_dict()["allowed"] == ["meshy", "tripo"]
+    assert "none prices 'flux'" in refused(config.service, model="flux").message
+
+
 def test_a_service_nobody_declared_is_refused_with_the_near_one(tmp_path):
     error = refused(
         purchase.allow, 1, root=project(tmp_path, TWO), today=TODAY, service="meshi"

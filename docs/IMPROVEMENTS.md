@@ -8,17 +8,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-### §PW264 A purchase picks the service that sells the thing
-
-Found in Starship (2026-09-27, RK97). The project declares two paid services: Meshy,
-which sells meshes, and Ideogram, which sells pictures. `mesh.buy` without `--service`
-refused with `fetch.service-unnamed`, although only one of the two can sell a mesh. A
-service's schema already says what it sells. `mesh.buy` should pick the one service that
-sells meshes, and `picture.buy` the one that sells pictures, and ask only when two
-could.
-
-Done when `mesh.buy --picture_path ...` in Starship picks Meshy on its own.
-
 ## Block E — One world with the engine
 
 ### §PW267 The resolution a capture holds, measured on the picture

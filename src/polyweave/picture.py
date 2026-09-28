@@ -139,7 +139,7 @@ def buy(
                 "skeleton and its palette is the family's",
             )
         json_prompt = style.compose(json_prompt, held_to[1])
-    name = config.service(service)
+    name = config.service(service, model=model)
     about = config.services()[name]
     base, key = _reached(name, about)
     price = _price(name, about.get("prices") or {}, model, rendering_speed)
@@ -365,7 +365,7 @@ def describe_picture(
     """
     config = load(root)
     here = config.root
-    name = config.service(service)
+    name = config.service(service, model="describe")
     about = config.services()[name]
     base, key = _reached(name, about)
     source = here / picture

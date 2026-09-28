@@ -8,8 +8,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-- 📋 **PW264** (deps: —) **mesh.buy asks which paid service to use even when only one of the declared services sells meshes** — Every purchase starts with a refusal the project's own schema could have answered. → §PW264
-
 ## Block E — One world with the engine
 
 - 📋 **PW267** (deps: PW245 ✅) **capture.run trusts the size a script says it applied, so a window the OS shrank records a picture of the wrong size** — A key art asked at 3840x2160 came back 3840x2119 and was recorded as holding its environment. → §PW267

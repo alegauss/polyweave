@@ -52,6 +52,7 @@
 - ✅ **PW21** **a reference photograph brings whatever stood behind the subject back as geometry** — A reference photograph is cut, flattened and checked before a fetch carries it, and the prepared picture is what the record names (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW46** **a normalised mesh sits beside the paid one with nothing recording what it derives from** — A normalised mesh carries a record naming its parent by hash and holding the transform, so the chain from credits spent to mesh in scene is followable (design recorded in `docs/specs/provenance.md`).
 - ✅ **PW49** **a fetched mesh arrives with shading painted into its texture, and nothing can take the marks back out** — A texture's painted marks are found against a measured bar and lifted, opt-in and at the final rung, where the repair is 2.5x the floor not invisible (design recorded in `docs/specs/fetching.md`).
+- ✅ **PW264** **mesh.buy asks which paid service to use even when only one of the declared services sells meshes** — A buy naming no service takes the one whose prices row carries its model, so mesh.buy in Starship reaches Meshy; it asks only when none or several do.
 
 ## Block E — One world with the engine
 
