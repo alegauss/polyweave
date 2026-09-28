@@ -138,12 +138,6 @@
   picture Starship buys goes through picture.buy with entity=, and its provenance
   sidecar names the entity from starship.world.toml.
 
-## Done when — PW259
-
-- **Starship's seven trails are built through vfx.build** Starship's seven trails are
-  seven declarations built and accepted through polyweave, and the game instances the
-  scenes built instead of reading its own trail Resources.
-
 ## Non-goals
 
 - **A graphical editor** The caller here is an agent in a terminal, so a surface only a

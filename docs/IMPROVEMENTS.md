@@ -272,27 +272,6 @@ unstated.
 
 ## Block M — What a game needs beyond the look
 
-### §PW259 Visual effects as declarations
-
-Found in Starship's RK136 (2026-09-27): cosmetic trails, the ribbon of light and the
-particles a ship leaves behind it, one look per crew family (sparks, a heat shimmer,
-rings, a sunlit band, little lights) and one for the Holders. Starship's rule is that
-every visible part is declared and built through polyweave and a person accepts its
-look. polyweave declares geometry, voxels, pictures, sounds and music, but a visual
-effect has no declaration: its `effects` are sfxr sounds. So the trails are written as
-game data (a Resource per trail: colours, width, life, particle counts and shapes) and
-tuned by looking at captures, which is the tuning by eye the project's rules forbid.
-
-polyweave should take a declaration of a particle or ribbon effect (emission, life,
-colour over life as a gradient, size over life, shape, blend, a budget of particles) and
-build it into what the engine plays, which `vfx.build` now does
-([vfx.md](specs/vfx.md)), render it over a few frames on a neutral background as a look
-a person can judge, and hold it to an acceptance spec (how long it lives, how far it
-reaches, its brightness, its particle count against a budget).
-
-Done when Starship's seven trails are seven declarations built and accepted through
-polyweave, and the game reads what was built instead of its own data.
-
 ## Block N — Pictures held to a canon
 
 ### §PW180 Canon pictures as style references
