@@ -129,10 +129,13 @@ def _hsl(rgb: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
 def _contrast(key: str):
     """A contrast measure over the predicate's `targets`, not its region (§PW272)."""
 
-    def compute(image: Image, _mask: np.ndarray, *, targets: Any = None, **_: Any):
-        from .contrast import contrasts
+    def compute(image: Image, _mask: np.ndarray, *, targets: Any = None,
+                ring: Any = None, radius: Any = None, **_: Any):
+        from .contrast import RADIUS, RING, contrasts
 
-        return contrasts(image, targets)[key]
+        # A spec gives the measure's own ring and default radius (§PW279).
+        return contrasts(image, targets, ring=RING if ring is None else int(ring),
+                         radius=RADIUS if radius is None else float(radius))[key]
 
     compute.__doc__ = f"{key} over the targets, each against the ring around it"
     return compute

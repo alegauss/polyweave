@@ -29,7 +29,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "B", title: "Seeing the result cheaply", open: 0 },
   { block: "C", title: "The asset compiler", open: 0 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
-  { block: "E", title: "One world with the engine", open: 0 },
+  { block: "E", title: "One world with the engine", open: 1 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
   { block: "H", title: "Proof on a real game", open: 4 },
@@ -39,7 +39,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 0 },
-  { block: "O", title: "A person sees and answers", open: 0 },
+  { block: "O", title: "A person sees and answers", open: 1 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
   { block: "Q", title: "Words held to the world", open: 0 },
   { block: "R", title: "Levels measured before a person plays them", open: 5 },
@@ -48,6 +48,13 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
+  {
+    id: "PW280",
+    block: "E",
+    symptom: "no capture can take a picture larger than the desktop, so a 4K key art on a 4K screen always comes back shrunk",
+    why: "A store's library hero needs 3840 wide, and PW267's remedy names a viewport route polyweave does not have.",
+    deps: [],
+  },
   {
     id: "PW57",
     block: "H",
@@ -75,6 +82,13 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "what a change costs a frame is found only by stashing, re-importing and timing both sides by hand",
     why: "A design that must hold the frame rate needs that number, and a recorded table goes stale the day other work lands.",
     deps: ["PW56"],
+  },
+  {
+    id: "PW281",
+    block: "O",
+    symptom: "vfx.build cannot declare damping, spin, box emission, particle shape or a path ribbon, so no accepted trail builds",
+    why: "Starship's seven trails were accepted with all five, and a build without them would draw a different look.",
+    deps: [],
   },
   {
     id: "PW202",

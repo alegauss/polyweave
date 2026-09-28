@@ -1860,6 +1860,11 @@ CODES: dict[str, Code] = {
         doors=("pass targets, each a point or a box",
                "name the log whose target lines place them"),
     ),
+    "spec.ring-inside-target": Code(
+        means="a target's ring reads as the target, so it is larger than its radius",
+        when="a contrast radius smaller than the shot, which would read near 1.0",
+        doors=("widen the radius", "give the target as a box that covers it"),
+    ),
     "spec.not-effect": Code(
         means="an effect predicate was checked on something vfx.build did not make",
         when="a reach bound checked against a picture, or a scene with no vfx record",

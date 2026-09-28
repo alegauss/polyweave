@@ -77,6 +77,7 @@
 - ✅ **PW28** **an animation lives in a binary track, so a curve cannot be reviewed or edited as text** — A clip is authored as TOML with one key per line, so a timing change is one line in a diff, and the glTF export is a compile step keyed on that text (design recorded in `docs/specs/motion.md`).
 - ✅ **PW29** **a 2D screen needs frames and a 3D scene needs a clip, so the motion is authored twice** — One clip produces the engine's animation and a trimmed sprite sheet with its atlas, both carrying the digest that says they are the same motion (design recorded in `docs/specs/motion.md`).
 - ✅ **PW272** **no measure says how well a target stands out from what lies behind it, so a shot's legibility is scripted by hand** — measure.contrast gives each target's WCAG ratio and CIEDE2000 distance against its ring, and a spec bounds contrast_min over targets a log names.
+- ✅ **PW279** **a spec cannot give contrast_min its ring or a target's radius, so a shot measured from a spec reads 1.0 in silence** — A contrast predicate takes ring, radius and a JSON or log targets file; a ring inside its shot is refused, not read as 1.0 (design recorded in `docs/specs/measurements.md`).
 
 ## Block G — Geometry as a declaration
 

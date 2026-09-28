@@ -229,7 +229,8 @@ effect with nothing to bound. A spec that bounds a seam on one is refused
 
 Whether a shot reads over what lies behind it is one number a spec can hold (§PW272).
 Each target is a point with a radius (3 px by default) or a box, and its surround the
-ring around it, 6 px wide. `measure.contrast(picture, targets=, log=, ring=)` answers each
+ring around it, 6 px wide. `measure.contrast(picture, targets=, log=, ring=, radius=)`
+answers each
 target's `ratio`, the WCAG luminance ratio (lighter + 0.05) / (darker + 0.05) of the
 target's 90th-percentile luminance, since a shot reads by its brightest part, against the
 ring's median, and its `delta_e`, the CIEDE2000 distance between the median colour of the
@@ -239,10 +240,17 @@ target's brighter half and the ring's. Over all targets:
   the worst shot (`contrast_min`, min 3) and not an average that hides it;
 - `delta_e_min`: the smallest colour distance, for a target that differs in hue alone.
 
-A predicate passes them `targets`: a list, or the path of a log whose lines say
-`target: <x> <y> [radius]` or `target: box <l> <t> <r> <b>`, so the capture that placed
-the shots names them. They are measured on the picture drawn, so the ladder answers them
-at `final`. No target, or one off the picture, is `spec.no-targets`.
+A predicate passes them `targets`: a list, or the path of a file, either a JSON list of
+targets (or `{"targets": [...]}`) or a log whose lines say `target: <x> <y> [radius]` or
+`target: box <l> <t> <r> <b>`, so the capture that placed the shots names them. It takes
+the measure's `ring` too, and `radius`, the default for a point that names none. They
+are measured on the picture drawn, so the ladder answers them at `final`. No target, or
+one off the picture, is `spec.no-targets`.
+
+A radius smaller than the shot puts the ring on the shot, and the ratio would read 1.0
+as if the shot were invisible (§PW279). Where the ring reads within 1.25 of the target's
+core and the band one ring further out differs from both by 1.5 or more, the measure
+refuses with `spec.ring-inside-target`, naming the target, rather than answer.
 
 ## A visual effect
 

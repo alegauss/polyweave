@@ -31,28 +31,6 @@ Done when Starship's key art captures at 3840x2160 on a 3840x2160 display and
 
 ## Block F — Motion
 
-### §PW279 Contrast held by a spec
-
-Found validating PW272 in Starship (2026-09-28). The CLI worked: `measure.contrast
---targets @orbs.json --ring 24` with 20 px targets put RK142's worst shot at 5.73,
-against 1.52 before. The PW272 done-when, a spec holding `contrast_min`, could not be
-met, for three reasons:
-
-- a predicate refuses `ring` (`spec.unknown-field`), though the measure takes it;
-- a predicate's `targets` given as a path is read only as a `target: x y` log. A JSON
-  list of `{at, radius}` in a file gives `spec.no-targets`, and the log has no radius;
-- with the log's default radius, both the new and the old frame measured
-  `contrast_min: 1.0` and failed with no warning. The target was smaller than the
-  shot, so the surround fell inside it and the measure compared the shot with itself.
-
-A predicate should take the measure's own parameters (`ring`, a default `radius`), and a
-`targets` file in either form, JSON or log. The log should allow `target: x y r`. A
-contrast whose surround is mostly the same colour as the target should say so (`the ring
-around target 3 lies inside it: widen radius`) rather than report 1.0.
-
-Done when art/accept/shots.accept.toml holds `contrast_min >= 4.5` on
-art/renders/shots.png and fails on the pre-RK142 frame.
-
 ## Block G — Geometry as a declaration
 
 ## Block H — Proof on a real game

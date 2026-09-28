@@ -14,8 +14,6 @@
 
 ## Block F — Motion
 
-- 📋 **PW279** (deps: PW272 ✅) **a spec cannot give contrast_min its ring or a target's radius, so a shot measured from a spec reads 1.0 in silence** — PW272 was filed so a spec holds a shot's legibility, and today only the CLI can measure it right. → §PW279
-
 ## Block G — Geometry as a declaration
 
 ## Block H — Proof on a real game

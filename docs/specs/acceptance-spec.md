@@ -59,9 +59,10 @@ Anything needing more than a bound is a measure that does not exist yet, and the
 response is to add the measure rather than to widen this grammar. A predicate with neither
 bound is refused: nothing could fail it.
 
-**`target`, `against`, `display` and `delta` are arguments to the measure**, not
-comparisons — the colour `delta_e` is measured to, the reference a silhouette is compared
-with, the size `luma_bands` counts at. Every other key is refused where it is written, so a
+**`target`, `against`, `display`, `delta`, `targets`, `ring` and `radius` are arguments
+to the measure**, not comparisons — the colour `delta_e` is measured to, the reference a
+silhouette is compared with, the size `luma_bands` counts at, the shots a contrast is
+taken at with their surround's width and default radius. Every other key is refused where it is written, so a
 misspelled field is never a claim that reads as checked while it is not.
 
 **A measure whose answer is not a number cannot be bounded.** `region_colour` is a colour and

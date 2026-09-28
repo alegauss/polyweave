@@ -36,7 +36,7 @@ BOUNDS = ("min", "max")
 FIELDS = ("id", "measure", "region", "weight", "of", *BOUNDS)
 
 #: Arguments a predicate may pass through to the measure it names.
-ARGUMENTS = ("target", "against", "display", "delta", "targets")
+ARGUMENTS = ("target", "against", "display", "delta", "targets", "ring", "radius")
 
 
 @dataclass(frozen=True)
