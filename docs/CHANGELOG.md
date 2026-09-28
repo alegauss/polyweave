@@ -65,6 +65,7 @@
 - ✅ **PW245** **a capture asked at 1920x1080 comes back at the project's window override, since each script applies the size** — capture.run puts the declared size on the engine's command line, which beats a window override, and checks the saved picture's own size (design recorded in `docs/specs/engine.md`).
 - ✅ **PW249** **a game can be captured as one still, never as the frames of a run between two ticks** — capture.movie keeps every frame between two marks a script prints, via Movie Maker, with the audio and one record naming ticks and dropped frames (design recorded in `docs/specs/engine.md`).
 - ✅ **PW251** **capture.run kills every script at frame 6000, and no parameter raises it** — capture.run takes frames and timeout, so a late moment runs to its end, and a silent run's why names the budget that may have cut it (design recorded in `docs/specs/engine.md`).
+- ✅ **PW260** **a capture run through the tool never writes its picture's record, since no caller can pass engine.run's produces** — capture.run records every picture its expect lines name, as Starship's citadel now is, and says why_unrecorded when a run names none (design superseded: PW246 had already fixed it).
 
 ## Block F — Motion
 

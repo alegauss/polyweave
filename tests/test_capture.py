@@ -310,6 +310,32 @@ def test_the_declared_size_goes_on_the_engines_command_line(tmp_path):
     assert found["environment"]["holds"] is True, found["environment"]["why"]
 
 
+def test_the_picture_the_expect_line_names_is_recorded_unasked(tmp_path):
+    """§PW260: Starship's citadel capture, a project path on its line, came back with
+    no record for want of a produces nobody could pass."""
+    script = project(tmp_path, '[capture]\ndeclared = ["locale"]\nlocale = "pt_BR"\n')
+    (tmp_path / "art" / "renders").mkdir(parents=True)
+    picture(tmp_path / "art" / "renders" / "citadel.png", 24, 24)
+    found = capture.run(
+        script, expect=SHOT, root=tmp_path,
+        take=taking("environment: locale=pt_BR\n"
+                    "captured: art/renders/citadel.png 24 x 24\n"),
+    )
+    assert found["ok"] is True
+    assert (tmp_path / "art" / "renders" / "citadel.png.prov.json").is_file()
+    assert "why_unrecorded" not in found
+
+
+def test_a_capture_that_names_no_picture_says_nothing_was_recorded(tmp_path):
+    script = project(tmp_path)
+    found = capture.run(
+        script, expect=r"^done", root=tmp_path, environment={},
+        take=taking("done\n"),
+    )
+    assert found["records"] == []
+    assert "nothing was recorded" in found["why_unrecorded"]
+
+
 def test_a_caller_that_sized_the_engine_itself_keeps_its_size(tmp_path):
     script = project(tmp_path, SIZED)
     found = capture.run(

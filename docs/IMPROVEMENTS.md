@@ -21,29 +21,6 @@ Done when `mesh.buy --picture_path ...` in Starship picks Meshy on its own.
 
 ## Block E — One world with the engine
 
-### §PW260 capture.run records the picture its line names
-
-Found in Starship (2026-09-27, RK132). `capture.run` writes a picture's `.prov.json`
-only for the paths `engine.run` lists in `artefacts`, and `engine.run` fills that list
-only from the named groups its `produces` argument names. `offscreen.capture` passes the
-caller's `how` straight through. But neither the MCP tool `capture_run` nor the CLI
-`capture.run` takes a `produces`, so every capture a project runs through the tool comes
-back with `artefacts: []` and `records: []`. That happens even when its `expect` names
-the picture in an `artefact` group.
-
-This happened with the pattern `captured: (?P<artefact>\S+) (?P<width>\d+) x
-(?P<height>\d+)`, the one `offscreen.CAPTURED` uses. The run was ok, and `found` held
-`artefact: art/renders/citadel.png`. Nothing was recorded, and the review picture has no
-provenance.
-
-`capture.run` should read an `artefact` group in `expect` as the picture, as
-`offscreen`'s own probe does, without being asked. It could also take a `produces` list
-for scripts that name several pictures. Where `expect` has no such group, the answer
-should say that nothing will be recorded rather than answer an empty `records`.
-
-Done when Starship's citadel capture, with that pattern, writes
-`art/renders/citadel.png.prov.json` in the same call.
-
 ### §PW267 The resolution a capture holds, measured on the picture
 
 Found in Starship (2026-09-27, RK85). The key art was captured with `environment =

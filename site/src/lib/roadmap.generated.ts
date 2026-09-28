@@ -29,7 +29,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "B", title: "Seeing the result cheaply", open: 0 },
   { block: "C", title: "The asset compiler", open: 0 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 1 },
-  { block: "E", title: "One world with the engine", open: 3 },
+  { block: "E", title: "One world with the engine", open: 2 },
   { block: "F", title: "Motion", open: 1 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
   { block: "H", title: "Proof on a real game", open: 4 },
@@ -53,13 +53,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "D",
     symptom: "mesh.buy asks which paid service to use even when only one of the declared services sells meshes",
     why: "Every purchase starts with a refusal the project's own schema could have answered.",
-    deps: [],
-  },
-  {
-    id: "PW260",
-    block: "E",
-    symptom: "a capture run through the tool never writes its picture's record, since no caller can pass engine.run's produces",
-    why: "A project's review pictures land without provenance, and accept.verify then cannot tell a stale look from a fresh one.",
     deps: [],
   },
   {

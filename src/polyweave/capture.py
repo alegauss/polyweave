@@ -281,6 +281,14 @@ def run(
         ]
         answer["records"] = [str(path) for path, _ in made]
         answer["reproduced"] = again([verdict for _, verdict in made])
+        if not made:
+            # Said, not left as an empty list (§PW260): an empty `records` read as a
+            # capture recorded, and the review picture it named had no provenance.
+            answer["why_unrecorded"] = (
+                "no line matching expect named a picture that exists under the "
+                "project, so nothing was recorded; print the picture's path on the "
+                "expect line, as `captured: res://<path>.png <w> x <h>`"
+            )
     return answer
 
 

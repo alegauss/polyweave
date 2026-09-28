@@ -254,7 +254,9 @@ were taken and the environment did not hold, `ok` is false, `verdict` names the 
 three `require` refuses with) and `why` says what differed, so a caller reads one field
 and not `environment.why`. `artefacts` lists the pictures the lines matching `expect`
 name, where the caller named no `produces` group, so the paths a script printed come back
-either way.
+either way, and each is recorded (§PW260): a project path or `res://` on the line is
+enough, and nothing has to be passed for it. A run whose lines name no picture that
+exists says so in `why_unrecorded` rather than answering an empty `records` alone.
 
 **A script takes its own arguments too** (§PW238). A capture of a moment in play names
 the moment: Spinhold's boss was `--boss --frames=420 --hold=fire_right`. `capture.run`

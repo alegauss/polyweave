@@ -12,7 +12,6 @@
 
 ## Block E — One world with the engine
 
-- 📋 **PW260** (deps: —) **a capture run through the tool never writes its picture's record, since no caller can pass engine.run's produces** — A project's review pictures land without provenance, and accept.verify then cannot tell a stale look from a fresh one. → §PW260
 - 📋 **PW267** (deps: PW245 ✅) **capture.run trusts the size a script says it applied, so a window the OS shrank records a picture of the wrong size** — A key art asked at 3840x2160 came back 3840x2119 and was recorded as holding its environment. → §PW267
 - 📋 **PW273** (deps: —) **capture.movie asked at a size records at the project's window size, and is refused after as though the script erred** — Movie Maker ignores --resolution, so every shot of a game whose window differs from the size asked fails after the whole run. → §PW273
 
