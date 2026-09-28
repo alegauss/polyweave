@@ -114,6 +114,15 @@ of it; what a node is holds. `selector` finds one: the class alone where it is u
 then `name`, `text`, `title`, `tooltip_text` and `placeholder_text` added in that order
 until it is.
 
+**An unnamed node is found under the screen it sits in** (§PW277). A selector may hold
+`under`, a selector of its own, and then matches only inside the nodes that finds, and
+`nth`, its place in tree order among those that match. Where nothing about the node picks
+it out, `selector` walks up to the nearest ancestor a selector finds and answers the node
+under it (`{"under": {"class": "Title"}, "class": "TextureButton"}`), by its order there
+only where its like stand side by side. Naming the node in the game stays the better
+cure; this is for games that build their screens in code. Re-keyed this way, no path in
+Cottony's two flows is a generated one.
+
 Values cross as JSON: a `Vector2` is `[x, y]`, a `Color` `[r, g, b, a]`, a node its path,
 and any other object its class name. A property a node lacks is left out of its answer
 rather than answered as null.

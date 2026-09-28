@@ -537,6 +537,64 @@ def test_a_flow_kept_at_generated_names_survives_a_node_added_ahead(tmp_path):
     assert driving.replayed("tests/flows/go.flow.json", root=root)["ok"] is False
 
 
+#: Two screens the game names, each holding an unnamed button of the same text: no
+#: class or property tells the buttons apart, only the screen each sits in.
+SCREENS = """extends Node2D
+
+var title := 0
+var menu := 0
+
+func _ready() -> void:
+\tif FileAccess.file_exists("res://extra.txt"):
+\t\tadd_child(Node2D.new())
+\tfor screen_name in ["Title", "Menu"]:
+\t\tvar screen := Node2D.new()
+\t\tscreen.name = screen_name
+\t\tadd_child(screen)
+\t\tvar button := Button.new()
+\t\tbutton.text = "GO"
+\t\tbutton.position = Vector2(100 if screen_name == "Title" else 400, 100)
+\t\tbutton.size = Vector2(120, 60)
+\t\tbutton.pressed.connect(_pressed.bind(screen_name))
+\t\tscreen.add_child(button)
+
+func _pressed(screen_name: String) -> void:
+\tif screen_name == "Menu":
+\t\tmenu += 1
+\telse:
+\t\ttitle += 1
+"""
+
+
+def test_an_unnamed_button_is_picked_out_under_the_screen_it_sits_in(tmp_path):
+    """§PW277: Cottony's play buttons stayed fragile, each alone under a screen."""
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    root = str(game(tmp_path))
+    (tmp_path / "main.gd").write_text(SCREENS, encoding="utf-8")
+    session = driving.opened(root, seed=1)["session"]
+    try:
+        driving.stepped(session, root=root)
+        found = driving.queried(session, of_class="Button", root=root)["result"]
+        menu = next(one for one in found if "/Menu/" in one["path"])
+        driving.inputted(session, click=menu["path"], root=root)
+        driving.stepped(session, frames=3, root=root)
+        seen = driving.queried(session, path=".", properties=["title", "menu"],
+                               root=root)
+        assert seen["result"][0]["properties"] == {"title": 0, "menu": 1}
+        kept = driving.kept(session, out="tests/flows/menu.flow.json",
+                            proves="the menu's GO counts the menu", root=root,
+                            expect=[seen["step"]])
+    finally:
+        driving.closed(session, root=root)
+    assert kept["fragile"] == []
+    flow = json.loads(Path(kept["flow"]).read_text(encoding="utf-8"))
+    clicked = next(one for one in flow["steps"] if one["cmd"] == "input")
+    assert clicked["click"]["select"]["under"] == {"class": "Node2D", "name": "Menu"}
+    (tmp_path / "extra.txt").write_text("renumber", encoding="utf-8")
+    assert driving.replayed("tests/flows/menu.flow.json", root=root)["ok"] is True
+
+
 def test_a_flow_kept_before_selectors_is_rekeyed_in_one_call(tmp_path):
     """§PW276: Cottony's older flows still reach their nodes by generated names."""
     if not os.environ.get("GODOT"):

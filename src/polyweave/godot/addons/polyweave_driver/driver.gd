@@ -330,12 +330,20 @@ func _found(asked: Dictionary) -> Array:
 ## @Node2D@14, is renumbered by any node added before it; what a node is holds.
 func _selected(select: Dictionary) -> Array:
 	var out := []
-	_collect(root, str(select.get("class", "Node")), out)
+	var named := str(select.get("class", "Node"))
+	# `under` looks only inside the nodes another selector finds, not at them (§PW277):
+	# an unnamed button is the one TextureButton under the screen the game does name.
+	if select.get("under") is Dictionary:
+		for above: Node in _selected(select["under"]):
+			for child in above.get_children():
+				_collect(child, named, out)
+	else:
+		_collect(root, named, out)
 	var kept := []
 	for node: Node in out:
 		var holds := true
 		for key in select:
-			if str(key) == "class":
+			if str(key) in ["class", "under", "nth"]:
 				continue
 			if not (str(key) in node) or JSON.stringify(_plain(node.get(str(key)))) \
 					!= JSON.stringify(select[key]):
@@ -343,6 +351,10 @@ func _selected(select: Dictionary) -> Array:
 				break
 		if holds:
 			kept.append(node)
+	# `nth` is the node's place among those that match, in tree order.
+	if select.has("nth"):
+		var at := int(select["nth"])
+		return [kept[at]] if at >= 0 and at < kept.size() else []
 	return kept
 
 
@@ -356,13 +368,40 @@ func _selector_of(asked: Dictionary) -> Dictionary:
 	if nodes.size() != 1:
 		return _refused("driver.no-node", "nothing answers %s" % _named(asked))
 	var node: Node = nodes[0]
+	var own = _own_selector(node, {})
+	if own != null:
+		return {"result": {"select": own}}
+	# Under the nearest ancestor a selector of its own picks out, then by its place
+	# among its like there where nothing else tells them apart (§PW277).
+	var above := node.get_parent()
+	while above != null and above != root:
+		var anchor = _own_selector(above, {})
+		if anchor != null:
+			var scoped = _own_selector(node, {"under": anchor})
+			if scoped != null:
+				return {"result": {"select": scoped}}
+			var select := {"under": anchor, "class": _class_of(node)}
+			var like := _selected(select)
+			select["nth"] = like.find(node)
+			if select["nth"] >= 0 and _selected(select) == [node]:
+				return {"result": {"select": select}}
+		above = above.get_parent()
+	return {"result": {"select": null}}
+
+
+func _class_of(node: Node) -> String:
 	var script: Script = node.get_script()
-	var named := node.get_class()
 	if script != null and script.get_global_name() != "":
-		named = script.get_global_name()
-	var select := {"class": named}
-	if _selected(select).size() == 1:
-		return {"result": {"select": select}}
+		return script.get_global_name()
+	return node.get_class()
+
+
+## A selector of class and properties, within `scope`, that finds this node alone.
+func _own_selector(node: Node, scope: Dictionary):
+	var select := scope.duplicate()
+	select["class"] = _class_of(node)
+	if _selected(select) == [node]:
+		return select
 	for key in SELECTING:
 		if not (key in node):
 			continue
@@ -370,9 +409,9 @@ func _selector_of(asked: Dictionary) -> Dictionary:
 		if not (value is String) or value == "" or value.begins_with("@"):
 			continue
 		select[key] = value
-		if _selected(select).size() == 1:
-			return {"result": {"select": select}}
-	return {"result": {"select": null}}
+		if _selected(select) == [node]:
+			return select
+	return null
 
 
 func _collect(node: Node, named: String, out: Array) -> void:

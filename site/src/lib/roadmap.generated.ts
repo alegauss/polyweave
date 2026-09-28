@@ -112,10 +112,10 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW204", "PW205"],
   },
   {
-    id: "PW277",
+    id: "PW278",
     block: "S",
-    symptom: "a selector cannot pick out an unnamed node by its place under a named one, so buttons inside a screen stay fragile",
-    why: "Re-keying Cottony left nine paths at generated names, each an unnamed node inside a screen a selector already finds.",
+    symptom: "a kept expectation on a dictionary or array of numbers fails every replay, since 1 is compared to 1.0 as text",
+    why: "The driver reads a flow's numbers back as floats and compares a structure as JSON text, so a right game reads as broken.",
     deps: [],
   },
 ];

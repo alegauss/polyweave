@@ -500,28 +500,22 @@ the first twenty make.
 
 ## Block S — Playing the game, not only rendering it
 
-### §PW277 A node picked out under the screen it sits in
+### §PW278 Numbers inside a structure compared as numbers
 
-Found re-keying Cottony's flows (PW276, 2026-09-28). `game.rekey` put selectors on the
-board, the map, the title and the settings toggles, and left nine paths across the two
-flows fragile: the title's play button (`@Node2D@155/@TextureButton@163`), the level
-card's play button, the map's level stop, and the reduced-motion toggle's label. Each is
-an unnamed node with no text of its own, so the class alone matches several and no
-property narrows it.
+Found writing PW277's test (2026-09-28). A game held its counters in a Dictionary,
+`presses = {"Title": 0, "Menu": 1}`. A query answered it as `{"Menu": 1, "Title": 0}`,
+`game.keep` wrote that as an expectation, and the replay failed on the flow's own value:
+`presses was {"Menu":1,"Title":0}, not {"Menu":1.0,"Title":0.0}`. The driver's `_met`
+compares a number with a number as floats, which is why a scalar int holds against
+JSON's float, but anything else it compares as JSON text, and inside a Dictionary or an
+Array the int prints as `1` and the float the flow was read back as prints as `1.0`.
 
-Each of them sits inside a node a selector does pick out: the play button is the one
-TextureButton under `{"class": "Title"}`, the stop the first stop under `{"class":
-"Map"}`. A selector should be able to say that: `{"under": {"class": "Title"}, "class":
-"TextureButton"}`, matched among the ancestor's descendants only, and, where several
-siblings share a class, their order among them (`"nth": 0`). The driver's `selector`
-would try the nearest ancestor that has a selector of its own before giving up, so a
-flow reaches a node by where it sits in a screen the game names, and survives nodes
-added elsewhere.
+So any expectation on a structure holding a number fails every replay, however right the
+game is, and the fault reads as the game's. The comparison should descend: a Dictionary
+equal key for key, an Array item for item, a number to a number as floats, and only then
+JSON text for what is left. `expect` and a `wait` on a property both go through it.
 
-Naming the node in the game stays the better cure, and the answer should keep saying so;
-this is for the many projects that build screens in code and name nothing.
-
-Done when re-keying Cottony's two flows leaves none of those nine paths fragile, and
-both still replay to the same frames.
+Done when a flow expecting `{"Menu": 1, "Title": 0}` replays as passed, and one
+expecting `{"Menu": 2}` still fails naming the value it saw.
 
 ## Block T — Adopting polyweave in a project

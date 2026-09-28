@@ -303,6 +303,7 @@
 - ✅ **PW270** **a kept flow names nodes by Godot's generated names, so any node added before them breaks it** — The driver takes a selector wherever it takes a path, and game.keep writes one for each generated path, so a flow survives a node added ahead of it.
 - ✅ **PW271** **a flow that needs many moves costs thousands of calls, so losing a later Cottony level was never kept** — game.batch sends many commands in one call, so Cottony's lose-a-later-level flow was kept in seven calls with start_level, and replays to one frame.
 - ✅ **PW276** **a flow kept before selectors still clicks at generated paths, and re-keeping it means driving every step again** — game.rekey puts selectors in an older flow by sending it through a held session; Cottony's two flows were re-keyed and replay to the same frames.
+- ✅ **PW277** **a selector cannot pick out an unnamed node by its place under a named one, so buttons inside a screen stay fragile** — A selector may name the ancestor it looks under and the node's order there, so re-keying Cottony left no generated path in either flow.
 
 ## Block T — Adopting polyweave in a project
 
