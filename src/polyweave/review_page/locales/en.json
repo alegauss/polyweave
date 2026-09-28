@@ -88,7 +88,12 @@
     "withdrawn": "Taken out.",
     "candidates": "Candidates",
     "frames": "See it frame by frame",
-    "accepted_silent": "Accepted on the review page, with no comment."
+    "accepted_silent": "Accepted on the review page, with no comment.",
+    "says": "{who} says:",
+    "tone": "The world's tone",
+    "examples": "Lines already approved for {who}",
+    "breaks": "Rules it breaks",
+    "sheet": "See the tool's sheet"
   },
   "kinds": {
     "look": {

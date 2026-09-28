@@ -300,6 +300,7 @@
 - ✅ **PW243** **words.check glues the lines of a cell with a real line break, reading two words as one unknown name** — words.check reads the table as one stream, so a real line break in a quoted cell splits it exactly as the escaped \n does (design recorded in `docs/specs/world.md`).
 - ✅ **PW244** **words.check reads the pronoun I's contractions mid-sentence as unknown names, failing ordinary English dialogue** — In an English locale words.check reads I'm, I'll, I've and I'd as ordinary words, so dialogue passes with nothing listed in [words] ordinary (design recorded in `docs/specs/world.md`).
 - ✅ **PW257** **words.check reads the plural of a declared name as a name the world does not show** — words.check takes a declared name's English plural as the name (Gleaners, Foremen), an entity may state an irregular plural, and a near miss names the name it is near.
+- ✅ **PW291** **words.sheet lays out every row of the string table, so a person judges the tone of interface labels nobody speaks** — words.sheet lays out only spoken lines, with an about, and the page shows each as large text by its speaker; Starship's sitting holds its 174 crew lines.
 
 ## Block R — Levels measured before a person plays them
 

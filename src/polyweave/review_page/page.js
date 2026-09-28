@@ -133,6 +133,45 @@ function legend(entries) {
 // A card's id, one per family of one sitting: two sittings may name the same family.
 const cardId = (manifest, name) => "family-" + manifest + "#" + name;
 
+// What a card shows, the first of these a family has (§PW287, §PW291): a line as words,
+// large, with who says it; films playing side by side; the pictures themselves, the
+// old beside the new; else the sheet the tool drew. A sheet behind the first three is
+// one click away.
+function visual(laid, name) {
+  const members = laid.members || [];
+  const spoken = members.filter((member) => member.text);
+  const films = members.flatMap((member) => member.films || []);
+  const shown = members.filter((member) => member.new && !member.sound);
+  const figure = (label, path) => element("figure", {}, element("figcaption", {}, label),
+    element("img", { src: file(path), alt: label }));
+  if (spoken.length) {
+    return spoken.map((member) => {
+      const who = member.who || member.speaker || "";
+      const quote = element("div", { class: "line" },
+        element("p", { class: "who" }, t("says", { who })),
+        ...Object.entries(member.text).map(([locale, text]) =>
+          element("blockquote", { lang: locale }, text)),
+        element("p", { class: "key" }, member.line));
+      if ((member.examples || []).length) {
+        quote.append(element("p", { class: "facts" }, t("examples", { who })),
+          element("ul", { class: "examples" }, ...member.examples.map((one) => element("li", {}, one))));
+      }
+      return quote;
+    });
+  }
+  if (films.length) {
+    return [element("div", { class: "films" }, ...films.map((film) => figure(film.label, film.path))),
+      element("details", { class: "frames" }, element("summary", {}, t("frames")), zoomable(laid.sheet, name))];
+  }
+  if (shown.length) {
+    return [element("div", { class: "films" }, ...shown.flatMap((member) => member.old
+      ? [figure(t("before"), member.old), figure(t("after"), member.new)]
+      : [figure(member.name, member.new)])),
+      element("details", { class: "frames" }, element("summary", {}, t("sheet")), zoomable(laid.sheet, name))];
+  }
+  return [zoomable(laid.sheet, name)];
+}
+
 // One family as a card: what it is, the picture, and the decision (§PW287).
 function card(sitting, name, laid, answers, assets) {
   const choices = sitting.choices || {};
@@ -143,21 +182,13 @@ function card(sitting, name, laid, answers, assets) {
       : last.choice === "look" ? ["no", t("status_look")] : ["yes", t("status_other")];
   const box = element("article", { class: "card" + (last ? " done" : ""),
     id: cardId(sitting.manifest, name) });
-  box.append(element("header", {}, element("h3", {}, name),
+  // A line is named by who says it, its key shown small under it; anything else by name.
+  const speaking = (laid.members || []).find((member) => member.text);
+  const title = speaking ? (speaking.who || speaking.speaker || name) : name;
+  box.append(element("header", {}, element("h3", {}, title),
     element("span", { class: "badge " + status[0] }, status[1])));
   if (laid.about) box.append(element("p", { class: "about" }, laid.about));
-  // Films play side by side where the sitting has them, each named in large type; the
-  // frame-by-frame sheet stays one click away (§PW287).
-  const films = (laid.members || []).flatMap((member) => member.films || []);
-  if (films.length) {
-    box.append(element("div", { class: "films" }, ...films.map((film) =>
-      element("figure", {}, element("figcaption", {}, film.label),
-        element("img", { src: file(film.path), alt: film.label })))));
-    box.append(element("details", { class: "frames" }, element("summary", {}, t("frames")),
-      zoomable(laid.sheet, name)));
-  } else {
-    box.append(zoomable(laid.sheet, name));
-  }
+  box.append(...visual(laid, name));
 
   const decide = element("div", { class: "decide" });
   const form = element("form");
@@ -168,7 +199,9 @@ function card(sitting, name, laid, answers, assets) {
   const noteLabel = element("label", { for: "why-" + name });
   const why = element("textarea", { id: "why-" + name, name: "why" });
   note.append(noteLabel, why);
+  const failed = (laid.said || []).some((member) => (member.failed || []).length);
   for (const [word, raw] of Object.entries(choices)) {
+    if (word === "number" && !failed) continue;
     const choice = asChoice(word, raw);
     const button = element("button", {
       type: "button", class: "option " + (["accept", "look"].includes(word) ? word : "other"),
@@ -243,7 +276,8 @@ function card(sitting, name, laid, answers, assets) {
 
   // What a person may want and should never have to wade through: marks and numbers.
   const tools = element("div", { class: "tools" });
-  const drawable = (laid.members || []).filter((member) => !member.sound);
+  // Marks are drawn on a picture, so a sound or a line has none to draw on.
+  const drawable = (laid.members || []).filter((member) => !member.sound && !member.text);
   for (const member of laid.members || []) if (member.sound) form.insertBefore(listen(member), form.firstChild);
   if (drawable.length) {
     const marking = element("details", {}, element("summary", {}, t("mark")));
@@ -279,12 +313,19 @@ function sittingView(sitting, found) {
     element("p", { class: "when" }, t("laid_out", { at: when(sitting.at) })));
   if (sitting.about) intro.append(element("p", {}, sitting.about));
   const how = element("div", { class: "how" });
+  const failed = Object.values(sitting.families).some((laid) =>
+    (laid.said || []).some((member) => (member.failed || []).length));
   for (const [word, raw] of Object.entries(sitting.choices || {})) {
+    if (word === "number" && !failed) continue;
     const choice = asChoice(word, raw);
     how.append(element("div", {}, element("strong", {}, choice.label),
       element("span", {}, choice.means + (choice.then ? " " + choice.then : ""))));
   }
   intro.append(how);
+  if ((sitting.tone || []).length) {
+    intro.append(element("details", { class: "more", open: "" }, element("summary", {}, t("tone")),
+      element("ul", { class: "examples" }, ...sitting.tone.map((rule) => element("li", {}, rule)))));
+  }
   if (sitting.legend) {
     intro.append(element("details", { class: "more" }, element("summary", {}, t("legend")),
       legend(sitting.legend)));
@@ -520,12 +561,14 @@ let drawn = "";
 const seen = (found) => JSON.stringify([found.language, found.sittings, found.answers,
   found.pending, found.gates, found.turntables]);
 
+// Progress over every sitting still open, so two sittings read as one amount of work.
 function progressOf(found) {
-  const current = found.sittings[found.sittings.length - 1];
+  const open = found.sittings.filter((one) =>
+    answered(one, found.answers) < Object.keys(one.families).length);
   const progress = document.getElementById("progress");
-  if (!current) { progress.hidden = true; return; }
-  const total = Object.keys(current.families).length;
-  const done = answered(current, found.answers);
+  if (!open.length) { progress.hidden = true; return; }
+  const total = open.reduce((sum, one) => sum + Object.keys(one.families).length, 0);
+  const done = open.reduce((sum, one) => sum + answered(one, found.answers), 0);
   progress.hidden = false;
   document.getElementById("bar").style.width = (total ? (100 * done) / total : 0) + "%";
   document.getElementById("counted").textContent = t("progress", { done, total });
@@ -556,17 +599,16 @@ async function draw() {
   sittings.replaceChildren();
   older.replaceChildren();
   progressOf(found);
-  if (!newest.length) {
-    sittings.append(element("p", { class: "empty" }, t("empty")));
-  } else {
-    // The newest sitting in full; the earlier ones folded under it.
-    const current = newest[0];
-    sittings.append(sittingView(current, found));
-    if (newest.length > 1) {
-      const fold = element("details", { class: "older" }, element("summary", {}, t("older", { n: newest.length - 1 })));
-      for (const earlier of newest.slice(1)) fold.append(sittingView(earlier, found));
-      older.append(fold);
-    }
+  // Every sitting with something still to answer is in full, newest first; the ones a
+  // person has finished fold under them (§PW291).
+  const open = newest.filter((one) => answered(one, found.answers) < Object.keys(one.families).length);
+  const done = newest.filter((one) => !open.includes(one));
+  if (!open.length) sittings.append(element("p", { class: "empty" }, t("empty")));
+  for (const one of open) sittings.append(sittingView(one, found));
+  if (done.length) {
+    const fold = element("details", { class: "older" }, element("summary", {}, t("older", { n: done.length })));
+    for (const earlier of done) fold.append(sittingView(earlier, found));
+    older.append(fold);
   }
   document.getElementById("meshes").replaceChildren(meshes(found.turntables || []));
   const gates = document.getElementById("gates");

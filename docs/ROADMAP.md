@@ -38,6 +38,9 @@
 
 ## Block Q — Words held to the world
 
+- 🛠 **PW200** (deps: PW197 ✅, PW198 ✅, PW199 ✅) **Starship's screen still shows names its world bible replaced** — A person judges the crew lines into a lines canon, and the next Lattice or Foreman picture is bought with entity=. → §PW200
+- 📋 **PW290** (deps: —) **a picture bought from a world entity on 4.0 is refused with 400, its json_prompt lacking compositional_deconstruction** — Starship's Lancer could not be bought through entity=, the route PW198 built and PW200 needs. → §PW290
+
 ## Block R — Levels measured before a person plays them
 
 - 📋 **PW202** (deps: PW201 ⏸) **A game's own headless play of a level has no way to report what it measured** — Only the game can play its own rules, so polyweave needs a contract for what the game's probe prints, not a simulator of its own. → §PW202

@@ -39,7 +39,10 @@ def _checked(member: dict, root: Path) -> tuple[accept.Spec | None, Path | None,
     if not member.get("spec"):
         # A picture the gate refused has no acceptance spec: what the tool said of it
         # is the gate's verdict, which the member carries (§PW175).
-        return None, None, {"passed": bool(member.get("passed")), "predicates": []}
+        # A picture with no spec was measured against nothing, so nothing failed it:
+        # only a gate's own refusal, which the member says, fails it (§PW291).
+        said = {"passed": bool(member.get("passed", True)), "predicates": []}
+        return None, None, said
     spec_path = Path(member["spec"])
     spec_path = spec_path if spec_path.is_absolute() else root / spec_path
     spec = accept.read(spec_path)
@@ -220,7 +223,7 @@ MANIFEST = "sitting.json"
 
 def _manifest(
     folder: Path, families: dict, sheets: dict, root, kind: str = "look",
-    about: str = "", abouts: dict | None = None,
+    about: str = "", abouts: dict | None = None, tone: list | None = None,
 ) -> None:
     """The sitting as data, and its place in the project's index of sittings.
 
@@ -244,6 +247,7 @@ def _manifest(
     manifest = {
         "at": datetime.now(tz=UTC).isoformat(timespec="seconds"),
         **review_text.told(kind, review_text.language(here), about),
+        **({"tone": list(tone)} if tone else {}),
         "families": {
             name: {
                 "members": list(members),

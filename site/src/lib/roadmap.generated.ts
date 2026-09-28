@@ -41,7 +41,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "N", title: "Pictures held to a canon", open: 0 },
   { block: "O", title: "A person sees and answers", open: 0 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
-  { block: "Q", title: "Words held to the world", open: 0 },
+  { block: "Q", title: "Words held to the world", open: 2 },
   { block: "R", title: "Levels measured before a person plays them", open: 5 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
@@ -68,6 +68,20 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent",
     why: "The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question.",
     deps: ["PW57"],
+  },
+  {
+    id: "PW200",
+    block: "Q",
+    symptom: "Starship's screen still shows names its world bible replaced",
+    why: "A person judges the crew lines into a lines canon, and the next Lattice or Foreman picture is bought with entity=.",
+    deps: [],
+  },
+  {
+    id: "PW290",
+    block: "Q",
+    symptom: "a picture bought from a world entity on 4.0 is refused with 400, its json_prompt lacking compositional_deconstruction",
+    why: "Starship's Lancer could not be bought through entity=, the route PW198 built and PW200 needs.",
+    deps: [],
   },
   {
     id: "PW202",
@@ -142,4 +156,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW36", "PW53", "PW77", "PW78", "PW79", "PW80", "PW81", "PW82", "PW180", "PW192", "PW200", "PW201"];
+export const generatedPaused: string[] = ["PW36", "PW53", "PW77", "PW78", "PW79", "PW80", "PW81", "PW82", "PW180", "PW192", "PW201"];

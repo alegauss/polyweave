@@ -439,10 +439,16 @@ def sheet(
     examples: Annotated[
         int, Param("approved lines shown beside each, per speaker", lo=0, hi=12)
     ] = 3,
+    spoken: Annotated[bool, Param("only lines someone says; false, every row")] = True,
+    about: Annotated[str, Param("what the person should know, under the summary")] = "",
     world: Annotated[str, _WORLD] = None,
     root: Annotated[str, _ROOT] = ".",
 ) -> dict:
-    """Put every line no verdict covers on the review page, one family a line.
+    """Put every spoken line no verdict covers on the review page, one family a line.
+
+    A line is spoken where its speaker column names someone; the interface's own text
+    has no tone to judge and words.check holds it, so it is laid out only with
+    `spoken=false` (§PW291).
 
     Each sheet shows the line in every locale, its speaker, the world's tone and the
     speaker's approved lines, and any rule `words.check` says it breaks. Lines are laid
@@ -467,7 +473,8 @@ def sheet(
     judged_ = verdicts(root)
     column = config.get("words.speaker")
     pending = sorted(
-        (r for r in rows if (r["key"], _digest(r, locales)) not in judged_),
+        (r for r in rows if (r["key"], _digest(r, locales)) not in judged_
+         and (not spoken or (r["cells"].get(column) or "").strip())),
         key=lambda r: ((r["cells"].get(column) or "").strip(), r["row"]),
     )
     folder = config.root / out
@@ -487,6 +494,9 @@ def sheet(
         drawn = folder / f"{name}.png"
         shown = approved(speaker, root)[-examples:] if speaker and examples else []
         who = (entities.get(speaker) or {}).get("name") if speaker else None
+        # Carried as words too, so the page shows the line itself (§PW291).
+        member["who"] = who or speaker
+        member["examples"] = [next(iter(one["text"].values()), "") for one in shown]
         _draw(drawn, member, who, rules.get("tone") or [], shown, broken)
         families[name] = [member]
         sheets[name] = {
@@ -500,7 +510,8 @@ def sheet(
             ],
         }
     if families:
-        verdict._manifest(folder, families, sheets, root, kind="line")
+        verdict._manifest(folder, families, sheets, root, kind="line", about=about,
+                          tone=list(rules.get("tone") or []))
     return {
         "sitting": provenance.relative(folder / verdict.MANIFEST, config.root)
         if families

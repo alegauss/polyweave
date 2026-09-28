@@ -88,7 +88,12 @@
     "withdrawn": "Tirada do cânone.",
     "candidates": "Candidatas",
     "frames": "Ver quadro a quadro",
-    "accepted_silent": "Aceito na página de revisão, sem comentário."
+    "accepted_silent": "Aceito na página de revisão, sem comentário.",
+    "says": "{who} diz:",
+    "tone": "O tom do mundo",
+    "examples": "Falas já aprovadas de {who}",
+    "breaks": "Regras que ela quebra",
+    "sheet": "Ver a folha técnica"
   },
   "kinds": {
     "look": {

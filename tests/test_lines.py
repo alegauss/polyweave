@@ -67,6 +67,17 @@ def test_unjudged_lines_are_laid_out_one_family_each_by_speaker(tmp_path):
     }
 
 
+def test_only_lines_someone_speaks_are_laid_out_unless_asked(tmp_path):
+    """§PW291: Starship's 174 crew lines came out as 579 cards, most of them its HUD."""
+    _project(tmp_path, rows=[*ROWS, "HUD_LIVES,LIVES %d,VIDAS %d,"])
+    laid = words.sheet("review/lines", root=str(tmp_path), about="Crew lines.")
+    assert laid["families"] == ["ada.HI", "ada.RALLY", "bo.YAWN"]
+    manifest = json.loads((tmp_path / laid["sitting"]).read_text("utf-8"))
+    assert manifest["about"].endswith("Crew lines.")
+    every = words.sheet("review/every", spoken=False, root=str(tmp_path))
+    assert "unspoken.HUD_LIVES" in every["families"]
+
+
 def test_a_person_s_verdicts_grow_the_canon_and_leave_the_sitting(tmp_path):
     _project(tmp_path)
     sitting = words.sheet("review/lines", root=str(tmp_path))["sitting"]
