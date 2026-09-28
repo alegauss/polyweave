@@ -146,6 +146,22 @@ def test_the_command_line_has_the_verb():
     assert stated.command == "review" and stated.port == 8765
 
 
+def test_an_accept_with_no_comment_is_recorded_as_just_that(page):
+    """§PW288: the page called the comment optional, and judge refused an empty one."""
+    base, where = page
+    status, said = post(base + "/api/judge", judged(choice="accept", why=""))
+    assert status == 200, said
+    lines = (where / ".polyweave" / "answers.jsonl").read_text(encoding="utf-8")
+    assert json.loads(lines.splitlines()[-1])["why"] == (
+        "Accepted on the review page, with no comment.")
+
+
+def test_a_redo_still_needs_the_person_s_words(page):
+    base, _ = page
+    status, said = post(base + "/api/judge", judged(choice="look", why="  "))
+    assert status == 400 and said["code"] == "loop.no-reason"
+
+
 # -- an answer the agent can wait on (§PW173) ----------------------------------------
 
 

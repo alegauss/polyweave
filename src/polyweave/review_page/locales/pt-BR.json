@@ -87,7 +87,8 @@
     "withdraw": "Tirar do cânone",
     "withdrawn": "Tirada do cânone.",
     "candidates": "Candidatas",
-    "frames": "Ver quadro a quadro"
+    "frames": "Ver quadro a quadro",
+    "accepted_silent": "Aceito na página de revisão, sem comentário."
   },
   "kinds": {
     "look": {

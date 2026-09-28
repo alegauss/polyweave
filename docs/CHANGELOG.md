@@ -267,6 +267,7 @@
 - ✅ **PW265** **a refused picture can be promoted only from the review page, so a verdict given in chat has no operation to carry it** — verdict.promote carries a promotion given in conversation as the refused lane's own write, from the CLI or MCP, and mesh.buy then models from the picture.
 - ✅ **PW281** **vfx.build cannot declare damping, spin, box emission, particle shape or a path ribbon, so no accepted trail builds** — vfx.build declares the five trail keys and a path_ribbon drawn behind the emitter by a script in the scene; vfx.preview watches trails move (design recorded in `docs/specs/vfx.md`).
 - ✅ **PW287** **a review sitting shows sheets and choices with no summary, no consequence and only in English** — A sitting says what is judged and what each choice leads to, in the project's language from per-language catalogs, on a page made for the reviewer (design recorded in `docs/specs/acceptance-spec.md`).
+- ✅ **PW288** **an accept with no comment is refused as loop.no-reason, though the review page calls the comment optional** — An accept with no comment on the review page is recorded as accepted with no comment, in the project's language; a redo still needs the person's words.
 
 ## Block P — Music and sound a game can ship
 

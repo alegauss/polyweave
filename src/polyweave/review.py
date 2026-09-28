@@ -333,10 +333,20 @@ def answer(root, body: dict) -> dict:
     # Checked before the verdict, so a mark that cannot be kept never leaves a verdict
     # recorded without the place it was about.
     shapes = _shapes(members, body.get("marks") or [])
+    choice = str(body.get("choice") or "")
+    why = str(body.get("why") or "").strip()
+    if choice == "accept" and not why:
+        # A person who clicked accept and wrote nothing said exactly that, and the
+        # ledger says so in their language; judge still refuses an empty sentence from
+        # anyone else, and a redo still needs the person's words (§PW288).
+        from . import review_text
+
+        why = review_text.catalog(review_text.language(config.root))["page"][
+            "accepted_silent"]
     said = verdict.judge(
         members,
-        str(body.get("choice") or ""),
-        str(body.get("why") or ""),
+        choice,
+        why,
         root=str(config.root),
         named=list(body.get("named") or ()),
     )

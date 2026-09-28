@@ -87,7 +87,8 @@
     "withdraw": "Take out of the canon",
     "withdrawn": "Taken out.",
     "candidates": "Candidates",
-    "frames": "See it frame by frame"
+    "frames": "See it frame by frame",
+    "accepted_silent": "Accepted on the review page, with no comment."
   },
   "kinds": {
     "look": {

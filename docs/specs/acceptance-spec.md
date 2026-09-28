@@ -156,7 +156,9 @@ page is laid out for the person deciding: the newest sitting's summary and how t
 then one card per family with the picture (or the films, looping side by side), the
 choices as buttons that say what each leads to, and progress across the sitting. Marks
 and the technical details fold under each card, older sittings and the gates, turntables,
-canons and asset table under one fold. A redo asks for a sentence; an accept may add none.
+canons and asset table under one fold. A redo asks for a sentence; an accept may add none, and the page then records the
+catalog's `accepted_silent` in the project's language, which is what happened, since
+`verdict.judge` still refuses an empty sentence from every caller (§PW288).
 
 **Sounds are heard, not looked at** (§PW256). `sound.sitting(members, out=)` lays out each
 sound as its own family, so a verdict is given per sound: a member names its `new` file and
