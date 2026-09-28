@@ -10,28 +10,6 @@
 
 ## Block E — One world with the engine
 
-### §PW273 A movie at the size asked
-
-Found building `vfx.preview` (PW259, 2026-09-27). `capture.movie` passes `--resolution`
-before `--`, as `_sized` does for a still (PW245), and a script that sets `root.size`
-reports the size asked. But Godot's Movie Maker records at the project's window size
-whatever either says: Godot 4.7.1 printed `recording movie in 1152×648` for a run asked
-at 320x240, the frames came out 1152x648, and `_measured` read that off the first frame,
-so the run was refused as `environment-resolution` although the script's `environment:`
-line said 320x240. The movie test passes only because its project's viewport is already
-the size it asks.
-
-A movie should come out at the size asked. Movie Maker takes its size from
-`display/window/size/viewport_width` and `viewport_height`, which can be overridden on
-the command line only through a project override file; so either the run writes an
-`override.cfg` of its own beside a copy of the settings (never the game's own files), or
-the frames are refused before the run with a remedy naming the project setting, rather
-than after it with a verdict that looks like the script's fault. `vfx.preview` asks no
-size for now and scales its stills.
-
-Done when `capture.movie` asked at 320x240 of a project whose window is 1152x648 keeps
-320x240 frames, or says before running why it cannot.
-
 ## Block F — Motion
 
 ## Block G — Geometry as a declaration

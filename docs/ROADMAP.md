@@ -10,8 +10,6 @@
 
 ## Block E — One world with the engine
 
-- 📋 **PW273** (deps: —) **capture.movie asked at a size records at the project's window size, and is refused after as though the script erred** — Movie Maker ignores --resolution, so every shot of a game whose window differs from the size asked fails after the whole run. → §PW273
-
 ## Block F — Motion
 
 ## Block G — Geometry as a declaration

@@ -425,9 +425,9 @@ def preview(
         }, encoding="utf-8", newline="\n")
         shot = capture.movie(
             provenance.relative(script, here), out=str(work / name / "frames"),
-            # No size is asked: Movie Maker records at the project's window size
-            # whatever --resolution says, and the stills are scaled to FRAME.
-            root=str(here), environment={},
+            # Asked at the size the sheet draws, which capture.movie sizes Movie Maker
+            # to for the run (§PW273).
+            root=str(here), environment={"resolution": f"{FRAME[0]}x{FRAME[1]}"},
         )
         if not shot["ok"]:
             raise PolyweaveError(

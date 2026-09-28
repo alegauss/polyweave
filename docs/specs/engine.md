@@ -253,6 +253,15 @@ and read back off the first frame) and any frame `dropped` between the marks, an
 recorded like any capture, so `provenance.outdated` names a shot a changed model made
 stale. A run with no marks is `no-marks`, a dropped frame `dropped`: the shot is not ok.
 
+**A movie is recorded at the size asked** (§PW273). Movie Maker fixes its size from the
+project's settings before any script runs, so `--resolution` and a script's `root.size`
+reach it too late: a run asked at 320x240 of a 1152x648 project recorded 1152x648. So a
+movie asked a `resolution` writes `override.cfg` beside `project.godot` for the length of
+the run, holding `window/size/window_width_override` and `window_height_override` at that
+size, which Godot reads over the project's own settings and which keep the game's design
+size, and removes it after. A project with an `override.cfg` of its own is refused before
+anything runs (`capture.override-held`), since replacing it would lose what it holds.
+
 **A failed environment is said at the top of the answer** (§PW246). Where the pictures
 were taken and the environment did not hold, `ok` is false, `verdict` names the cause
 (`environment-not-reported`, `environment-not-applied` or `environment-differs`, the

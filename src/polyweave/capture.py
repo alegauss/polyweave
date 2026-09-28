@@ -38,6 +38,7 @@ which.
 
 from __future__ import annotations
 
+import contextlib
 import json
 import re
 from pathlib import Path
@@ -519,6 +520,48 @@ def require(script: str | Path, **how: Any) -> dict:
 MARKS = re.compile(r"^movie: (?P<mark>from|to) (?P<frame>\d+)\b", re.MULTILINE)
 
 
+#: The file Godot reads over project.godot, in the project's own folder.
+OVERRIDE = "override.cfg"
+
+
+@contextlib.contextmanager
+def _movie_sized(here: Path, asked: dict):
+    """The window overrides a movie is recorded at, for the length of one run (§PW273).
+
+    Movie Maker takes its size from the project's settings before any script runs, so
+    `--resolution` and a script setting root.size reach it too late: a run asked at
+    320x240 of a 1152x648 project recorded 1152x648. Godot reads `override.cfg` beside
+    project.godot over it, and its window overrides keep the game's own design size, so
+    the layout is the game's and only its scale is asked. The file is written for the
+    run and removed after it, and a project with an `override.cfg` of its own is refused
+    before anything runs rather than having it replaced.
+    """
+    size = _size_of(asked.get("resolution", ""))
+    if not size:
+        yield
+        return
+    target = here / OVERRIDE
+    if target.exists():
+        raise PolyweaveError(
+            "capture.override-held",
+            f"the project has an {OVERRIDE} of its own, and a movie is sized by "
+            "writing one",
+            f"set window/size/window_width_override and window_height_override to "
+            f"{size.replace('x', ' and ')} in it for the run, or ask no resolution",
+        )
+    width, height = size.split("x")
+    target.write_text(
+        "[display]\n\n"
+        f"window/size/window_width_override={width}\n"
+        f"window/size/window_height_override={height}\n",
+        encoding="utf-8", newline="\n",
+    )
+    try:
+        yield
+    finally:
+        target.unlink(missing_ok=True)
+
+
 @operation("capture.movie", kind="capture")
 def movie(
     script: Annotated[str, Param("the scene script that flies the shot")],
@@ -551,12 +594,13 @@ def movie(
     try:
         user = ("--", *(str(one) for one in args or ())) + as_args(asked)
         engine_args = _sized(("--write-movie", str(raw / "frame.png")), asked)
-        found = offscreen.capture(
-            script,
-            expect=re.compile(r"^movie: to \d+", re.MULTILINE),
-            root=here,
-            args=(*engine_args, *user),
-        )
+        with _movie_sized(here, asked):
+            found = offscreen.capture(
+                script,
+                expect=re.compile(r"^movie: to \d+", re.MULTILINE),
+                root=here,
+                args=(*engine_args, *user),
+            )
         log = Path(found["log"]).read_text(encoding="utf-8", errors="replace")
         marks = {m["mark"]: int(m["frame"]) for m in MARKS.finditer(log)}
         answer = {

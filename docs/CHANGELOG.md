@@ -68,6 +68,7 @@
 - ✅ **PW251** **capture.run kills every script at frame 6000, and no parameter raises it** — capture.run takes frames and timeout, so a late moment runs to its end, and a silent run's why names the budget that may have cut it (design recorded in `docs/specs/engine.md`).
 - ✅ **PW260** **a capture run through the tool never writes its picture's record, since no caller can pass engine.run's produces** — capture.run records every picture its expect lines name, as Starship's citadel now is, and says why_unrecorded when a run names none (design superseded: PW246 had already fixed it).
 - ✅ **PW267** **capture.run trusts the size a script says it applied, so a window the OS shrank records a picture of the wrong size** — A capture holds the size its pictures have, several sizes hold none, and a picture the OS shrank is refused naming its size and the cause.
+- ✅ **PW273** **capture.movie asked at a size records at the project's window size, and is refused after as though the script erred** — capture.movie sizes Movie Maker with a run-long override.cfg of window overrides, so a movie asked at 320x240 keeps 320x240 frames.
 
 ## Block F — Motion
 

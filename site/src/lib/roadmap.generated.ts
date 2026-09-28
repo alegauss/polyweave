@@ -29,7 +29,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "B", title: "Seeing the result cheaply", open: 0 },
   { block: "C", title: "The asset compiler", open: 0 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
-  { block: "E", title: "One world with the engine", open: 1 },
+  { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
   { block: "H", title: "Proof on a real game", open: 4 },
@@ -48,13 +48,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW273",
-    block: "E",
-    symptom: "capture.movie asked at a size records at the project's window size, and is refused after as though the script erred",
-    why: "Movie Maker ignores --resolution, so every shot of a game whose window differs from the size asked fails after the whole run.",
-    deps: [],
-  },
   {
     id: "PW57",
     block: "H",

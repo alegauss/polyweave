@@ -1836,6 +1836,13 @@ CODES: dict[str, Code] = {
         when="a seam_step bound in a spec checked against a picture",
         doors=("check it against the audio file, or name that file with `of`",),
     ),
+    "capture.override-held": Code(
+        means="a movie is sized by writing an override.cfg, and the project has one",
+        when="capture.movie asked a resolution in a project with an override.cfg of "
+        "its own",
+        doors=("set its window overrides to the size for the run",
+               "ask no resolution, and take the project's window size"),
+    ),
     "spec.no-targets": Code(
         means="a contrast measure has no target to measure, or one outside the picture",
         when="a contrast bound with no targets, a log with no `target:` line, or a "

@@ -59,6 +59,32 @@ def project(tmp_path: Path, start: int = 5, stop: int = 12) -> Path:
     return tmp_path
 
 
+def test_a_movie_comes_out_at_the_size_asked_whatever_the_project_window(tmp_path):
+    """§PW273: asked 320x240, a 1152x648 project's Movie Maker recorded 1152x648."""
+    root = project(tmp_path)
+    # The project's own window, Godot's default, and not the size asked.
+    (root / "project.godot").write_text(
+        'config_version=5\n\n[application]\nconfig/name="shot"\n', encoding="utf-8")
+    found = capture.movie("shot.gd", out="shots/sized", root=str(root),
+                          environment={"resolution": "320x240"})
+    assert found["ok"] is True, found["why"]
+    from PIL import Image
+
+    with Image.open(root / "shots" / "sized" / "0001.png") as first:
+        assert first.size == (320, 240)
+    assert not (root / "override.cfg").exists(), "the run's override is removed after"
+
+
+def test_a_project_with_its_own_override_is_refused_before_it_runs(tmp_path):
+    (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
+    (tmp_path / "override.cfg").write_text("[display]\n", encoding="utf-8")
+    with pytest.raises(PolyweaveError) as refused:
+        capture.movie("shot.gd", out="shots/x", root=str(tmp_path),
+                      environment={"resolution": "320x240"})
+    assert refused.value.code == "capture.override-held"
+    assert (tmp_path / "override.cfg").read_text(encoding="utf-8") == "[display]\n"
+
+
 def test_every_frame_between_the_marks_is_kept_and_recorded(tmp_path):
     root = project(tmp_path)
     found = capture.movie(
