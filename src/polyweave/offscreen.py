@@ -32,6 +32,7 @@ does.
 
 from __future__ import annotations
 
+import contextlib
 import json
 import shutil
 import time
@@ -149,6 +150,64 @@ func _process(_delta: float) -> bool:
 CAPTURED = r"captured: (?P<artefact>\S+) (?P<width>\d+) x (?P<height>\d+)"
 
 
+#: The first line of an override.cfg polyweave writes for one run, so the next writer
+#: knows it for polyweave's own and merges into it rather than refusing it (§PW296).
+OURS = "; written by polyweave for one run, and removed after it\n"
+
+#: What keeps the engine's window out of sight from its first frame: minimised, and
+#: never taking the focus. Godot clamps a starting position onto a screen, so a window
+#: moved away by the script is drawn first; a minimised one never is, and still draws
+#: its root viewport whole at any `--resolution` (measured on 4.7.1).
+QUIET = ("window/size/mode=1", "window/size/no_focus=true")
+
+#: Godot draws nothing while every window is minimised, so `frame_post_draw` never
+#: fires and a movie repeats one frame. This autoload draws each frame in its place.
+DRAWS = Path(__file__).parent / "godot" / "quiet_draw.gd"
+
+
+def _quieted(before: str) -> str:
+    """An override.cfg with the window keys under [display] and the drawing autoload."""
+    keys = [line for line in QUIET if line.split("=")[0] not in before]
+    head = "[display]\n"
+    text = before if head in before else before.rstrip("\n") + "\n\n" + head + "\n"
+    at = text.index(head) + len(head)
+    at += 1 if text[at:at + 1] == "\n" else 0
+    text = text[:at] + "".join(key + "\n" for key in keys) + text[at:]
+    return (text.rstrip("\n") + "\n\n[autoload]\n\n"
+            + f'polyweave_quiet_draw="*{DRAWS.as_posix()}"\n')
+
+
+@contextlib.contextmanager
+def quiet(here: Path, wanted: bool = True):
+    """The engine's window minimised and unfocused for one run, where it can be.
+
+    With the autoload that draws each frame while it is minimised. Merged into an
+    override.cfg polyweave wrote for this run (a movie's size, a borderless still) and
+    put back after; a project's own override.cfg is never
+    touched, and the run shows its window as before. Yields whether it is quiet.
+    """
+    target = here / "override.cfg"
+    if not wanted:
+        yield False
+        return
+    if target.exists():
+        before = target.read_text(encoding="utf-8")
+        if not before.startswith(OURS):
+            yield False
+            return
+        target.write_text(_quieted(before), encoding="utf-8", newline="\n")
+        try:
+            yield True
+        finally:
+            target.write_text(before, encoding="utf-8", newline="\n")
+        return
+    target.write_text(_quieted(OURS), encoding="utf-8", newline="\n")
+    try:
+        yield True
+    finally:
+        target.unlink(missing_ok=True)
+
+
 def _bench(root: Path) -> Path:
     """The throwaway project the probe runs in, written fresh each time."""
     where = root / "offscreen"
@@ -211,18 +270,8 @@ def probe(route: Route, *, root: str | Path = ".", timeout: float = 90.0) -> dic
 
     started = time.monotonic()
     try:
-        found = engine.run(
-            bench / "probe.gd",
-            expect=CAPTURED,
-            root=bench,
-            produces=("artefact",),
-            timeout=timeout,
-            args=args,
-            through=route.through,
-            # The engine the project named, running the probe's own project: what is
-            # being probed is the machine, and it has to be the same binary.
-            binary=engine.find(root),
-        )
+        with quiet(bench, bool(settings.get("engine.quiet")) and not route.through):
+            found = _probed(route, bench, args, timeout, root)
     except PolyweaveError as refused:
         return {
             "route": route.name,
@@ -242,6 +291,22 @@ def probe(route: Route, *, root: str | Path = ".", timeout: float = 90.0) -> dic
         "seconds": found["seconds"],
         "log": found["log"],
     }
+
+
+def _probed(route: Route, bench: Path, args: tuple, timeout: float, root) -> dict:
+    """The probe's one run, through the route asked."""
+    return engine.run(
+        bench / "probe.gd",
+        expect=CAPTURED,
+        root=bench,
+        produces=("artefact",),
+        timeout=timeout,
+        args=args,
+        through=route.through,
+        # The engine the project named, running the probe's own project: what is
+        # being probed is the machine, and it has to be the same binary.
+        binary=engine.find(root),
+    )
 
 
 def _kept(root: str | Path) -> Path:
@@ -301,12 +366,16 @@ def route_for(root: str | Path = ".", *, named: str = "") -> Route:
     )
 
 
-def capture(script: str | Path, *, route: str = "", **how: Any) -> dict:
+def capture(
+    script: str | Path, *, route: str = "", quiet_window: bool | None = None, **how: Any
+) -> dict:
     """Run a capture script by whichever route draws here, and say which one it was.
 
     The caller names a scene script and the line it prints. Which of the routes gets the
     engine drawing is this function's problem, and the result records the answer so a
-    picture can be traced back to how it was taken.
+    picture can be traced back to how it was taken. The window starts minimised and
+    unfocused where it can (§PW296), unless `[engine] quiet` or `quiet_window` says
+    otherwise; the answer says whether it did.
     """
     root = how.get("root", ".")
     taken = route_for(root, named=route)
@@ -315,7 +384,13 @@ def capture(script: str | Path, *, route: str = "", **how: Any) -> dict:
         # One `--` only: everything past the first is a user argument, so a second
         # separator arrives at the script as an argument spelled "--".
         args += (taken.window,) if "--" in args else ("--", taken.window)
-    found = engine.run(
-        script, args=tuple(taken.args) + args, through=taken.through, **how
-    )
-    return {**found, "route": taken.name, "about": taken.about}
+    settings = load(root)
+    wanted = (bool(settings.get("engine.quiet")) if quiet_window is None
+              else bool(quiet_window))
+    # A virtual display has no desktop to keep a window off, and headless has no window.
+    hidden = wanted and bool(taken.window) and not taken.through
+    with quiet(settings.root, hidden) as hid:
+        found = engine.run(
+            script, args=tuple(taken.args) + args, through=taken.through, **how
+        )
+    return {**found, "route": taken.name, "about": taken.about, "quiet": hid}

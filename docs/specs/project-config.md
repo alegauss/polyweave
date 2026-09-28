@@ -80,6 +80,7 @@ language = "en"                # the review page and its sittings: en or pt-BR, 
 fixed_fps = 60
 frames    = 6000               # the frame budget a scene script is bounded by
 timeout   = 180                # and the wall clock, for a run that never reaches a frame
+quiet     = true               # a capture's window starts minimised, out of sight
 
 [driving]
 idle = 600                     # seconds a driven game waits for a call before it quits

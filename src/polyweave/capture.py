@@ -475,7 +475,7 @@ def _borderless(here: Path, wanted: bool):
             "desktop is taken borderless by writing one",
             "set display window/size/borderless=true in it for the run",
         )
-    target.write_text("[display]\n\nwindow/size/borderless=true\n",
+    target.write_text(offscreen.OURS + "[display]\n\nwindow/size/borderless=true\n",
                       encoding="utf-8", newline="\n")
     try:
         yield
@@ -644,7 +644,7 @@ def _movie_sized(here: Path, asked: dict):
         )
     width, height = size.split("x")
     target.write_text(
-        "[display]\n\n"
+        offscreen.OURS + "[display]\n\n"
         f"window/size/window_width_override={width}\n"
         f"window/size/window_height_override={height}\n",
         encoding="utf-8", newline="\n",

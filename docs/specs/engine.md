@@ -101,6 +101,26 @@ after `--`; a capture script that honours it puts its window out of the way, and
 ignores it still captures, with a window visible while it does. Nothing here reaches into
 the running engine from outside to move it.
 
+**A window that is never seen at all** (§PW296). A window moved by the script has already
+been drawn on the desktop once and has taken the focus, so a gate run flashed dozens of
+them. Godot clamps `--position` and `window/size/initial_position` onto a screen, so
+neither starts a window out of sight. What does is `window/size/mode = 1` (minimised) with
+`window/size/no_focus = true` in the run's `override.cfg`: the window starts minimised and
+unfocused, and it still honours `--resolution` whole, 3840x2160 included (4.7.1).
+
+While every window is minimised, though, Godot draws nothing. `frame_post_draw` never
+fires, so a script that awaits it hangs, and a movie repeats its last frame. So the same
+override adds an autoload, `godot/quiet_draw.gd`, which calls `RenderingServer.force_draw`
+each frame while minimised, after every other node has processed. Scripts then run as they
+would with the window shown.
+
+Those keys are merged into the override polyweave writes for a movie's size or a borderless
+still. Such an override starts with the `OURS` marker, so it is known as polyweave's own.
+A project's own `override.cfg` is never touched: its window shows as before, and the
+answer says `quiet: false`. `[engine] quiet = false` shows the window for a person who
+wants to watch. `engine.cost` always times with the window shown, since a minimised window
+may present its frames differently from the one a player sees.
+
 ## Units are a contract, not a coincidence
 
 Cottony's board tray renders at one unit per pixel because somebody set the render

@@ -141,7 +141,10 @@ def _once(side: dict, headless: bool, how: dict) -> dict:
 
     if headless:
         return engine.run(side["script"], headless=True, root=side["root"], **how)
-    return offscreen.capture(side["script"], root=side["root"], **how)
+    # Timed with its window shown, since a minimised window may present frames
+    # differently from the one a player looks at (§PW296).
+    return offscreen.capture(side["script"], root=side["root"], quiet_window=False,
+                             **how)
 
 
 def _timed(sides: list[dict], runs: int, headless: bool, how: dict):

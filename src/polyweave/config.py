@@ -165,6 +165,8 @@ DEFAULTS: dict[str, Any] = {
         "fixed_fps": 60,
         "frames": 6000,
         "timeout": 180,
+        # A capture's window starts minimised and unfocused, out of sight (§PW296).
+        "quiet": True,
     },
     "driving": {
         # Seconds a driven game waits for its next call before it quits, so a session an
