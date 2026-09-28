@@ -1836,6 +1836,13 @@ CODES: dict[str, Code] = {
         when="a seam_step bound in a spec checked against a picture",
         doors=("check it against the audio file, or name that file with `of`",),
     ),
+    "spec.no-targets": Code(
+        means="a contrast measure has no target to measure, or one outside the picture",
+        when="a contrast bound with no targets, a log with no `target:` line, or a "
+        "target off the picture's edge",
+        doors=("pass targets, each a point or a box",
+               "name the log whose target lines place them"),
+    ),
     "spec.not-effect": Code(
         means="an effect predicate was checked on something vfx.build did not make",
         when="a reach bound checked against a picture, or a scene with no vfx record",

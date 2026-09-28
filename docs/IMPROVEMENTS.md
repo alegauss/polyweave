@@ -34,25 +34,6 @@ Done when `capture.movie` asked at 320x240 of a project whose window is 1152x648
 
 ## Block F — Motion
 
-### §PW272 Contrast of a target against its surround
-
-Found in Starship (2026-09-27, RK142). The owner could not tell the ship's shots from
-the hostile ones against a lit city. The fix had to be proven by how well each shot
-stands out from what lies right behind it, and polyweave cannot measure that.
-`measure.take` gives statistics of one region, so the project called it twice per shot,
-once for the shot and once for a box beside it. It worked out a luminance ratio by hand
-in a script, over positions the game printed.
-
-A `measure.contrast` should take a picture and a list of targets, each a point or a box.
-It should give each target's contrast against the ring around it: the WCAG-style
-luminance ratio, and the colour distance in ΔE. It should report the minimum and the
-median, so a spec can bound the worst shot (`contrast_min >= 3`). It should also take
-the target list from a driver's printed line, so the capture that placed the shots can
-name them.
-
-Done when Starship's shots spec holds `contrast_min` on its recorded combat frame
-without a project script.
-
 ## Block G — Geometry as a declaration
 
 ## Block H — Proof on a real game

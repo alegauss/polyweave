@@ -126,6 +126,22 @@ def _hsl(rgb: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     return (hue / 6.0) % 1.0, np.clip(saturation, 0.0, 1.0), lightness
 
 
+def _contrast(key: str):
+    """A contrast measure over the predicate's `targets`, not its region (§PW272)."""
+
+    def compute(image: Image, _mask: np.ndarray, *, targets: Any = None, **_: Any):
+        from .contrast import contrasts
+
+        return contrasts(image, targets)[key]
+
+    compute.__doc__ = f"{key} over the targets, each against the ring around it"
+    return compute
+
+
+for _key in ("contrast_min", "contrast_median", "delta_e_min"):
+    _computes(_key)(_contrast(_key))
+
+
 @_distributes("saturation")
 def _saturation(image: Image, mask: np.ndarray, **_: Any) -> np.ndarray:
     """HSL saturation over the region, which is how colourful a pixel reads."""

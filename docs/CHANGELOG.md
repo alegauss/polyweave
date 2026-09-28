@@ -75,6 +75,7 @@
 - ✅ **PW27** **motion is expressed as a second static render, so nothing longer than two frames exists** — A clip has a name, a duration and channels over time, each frame renders as a still, and one measurement runs across all of them rather than at rest (design recorded in `docs/specs/motion.md`).
 - ✅ **PW28** **an animation lives in a binary track, so a curve cannot be reviewed or edited as text** — A clip is authored as TOML with one key per line, so a timing change is one line in a diff, and the glTF export is a compile step keyed on that text (design recorded in `docs/specs/motion.md`).
 - ✅ **PW29** **a 2D screen needs frames and a 3D scene needs a clip, so the motion is authored twice** — One clip produces the engine's animation and a trimmed sprite sheet with its atlas, both carrying the digest that says they are the same motion (design recorded in `docs/specs/motion.md`).
+- ✅ **PW272** **no measure says how well a target stands out from what lies behind it, so a shot's legibility is scripted by hand** — measure.contrast gives each target's WCAG ratio and CIEDE2000 distance against its ring, and a spec bounds contrast_min over targets a log names.
 
 ## Block G — Geometry as a declaration
 

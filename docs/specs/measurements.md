@@ -82,6 +82,9 @@ cap, before the credits were spent (§PW16).
 | `region_colour` | Lab | Mean CIELAB colour over the region |
 | `delta_e` | 0–100 | CIEDE2000 distance from `region_colour` to a target |
 | `pixel_delta_e_{p1,p50,p99,mean,std}` | 0–100 | CIEDE2000 distance from each pixel to a target |
+| `contrast_min` | 1–21 | The worst target's luminance ratio against the ring around it |
+| `contrast_median` | 1–21 | The median target's luminance ratio against its ring |
+| `delta_e_min` | 0–100 | The smallest CIEDE2000 distance of a target from its ring |
 
 Perceptual, because the question being asked is always "does this read as the right colour",
 and RGB distance answers a different question. A `delta_e` under 2 is a difference a person
@@ -221,6 +224,25 @@ something for a loop anyway. So it is measured for `loudness`, `peak` and `durat
 and carries no seam measures, rather than being refused whole, which had left every
 effect with nothing to bound. A spec that bounds a seam on one is refused
 (`spec.no-seam`), naming the length a seam needs.
+
+## A target against its surround
+
+Whether a shot reads over what lies behind it is one number a spec can hold (§PW272).
+Each target is a point with a radius (3 px by default) or a box, and its surround the
+ring around it, 6 px wide. `measure.contrast(picture, targets=, log=, ring=)` answers each
+target's `ratio`, the WCAG luminance ratio (lighter + 0.05) / (darker + 0.05) of the
+target's 90th-percentile luminance, since a shot reads by its brightest part, against the
+ring's median, and its `delta_e`, the CIEDE2000 distance between the median colour of the
+target's brighter half and the ring's. Over all targets:
+
+- `contrast_min` and `contrast_median`: the worst ratio and the median, so a spec bounds
+  the worst shot (`contrast_min`, min 3) and not an average that hides it;
+- `delta_e_min`: the smallest colour distance, for a target that differs in hue alone.
+
+A predicate passes them `targets`: a list, or the path of a log whose lines say
+`target: <x> <y> [radius]` or `target: box <l> <t> <r> <b>`, so the capture that placed
+the shots names them. They are measured on the picture drawn, so the ladder answers them
+at `final`. No target, or one off the picture, is `spec.no-targets`.
 
 ## A visual effect
 

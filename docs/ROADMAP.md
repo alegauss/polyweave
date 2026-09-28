@@ -14,8 +14,6 @@
 
 ## Block F — Motion
 
-- 📋 **PW272** (deps: —) **no measure says how well a target stands out from what lies behind it, so a shot's legibility is scripted by hand** — A shooter lives or dies on whether a hostile shot reads over a lit background, and that is a number a spec should hold. → §PW272
-
 ## Block G — Geometry as a declaration
 
 ## Block H — Proof on a real game
