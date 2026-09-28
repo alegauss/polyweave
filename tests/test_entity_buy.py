@@ -62,6 +62,31 @@ def test_a_picture_of_an_entity_is_composed_from_the_world(tmp_path, world):
     assert [i["role"] for i in record["inputs"]] == ["world"]
 
 
+def test_the_world_composes_the_elements_4_0_requires(tmp_path, world):
+    """§PW290: 4.0 refused Starship's Lancer, its json_prompt having no elements."""
+    _bought(tmp_path, entity="mason")
+    sent = json.loads(world.sent[0][2]["json_prompt"])
+    assert sent["compositional_deconstruction"] == {
+        "background": "transparent, nothing behind it",
+        "elements": [{"type": "obj", "desc": "a trowel"},
+                     {"type": "obj", "desc": "chalk on the hands"}],
+    }
+
+
+def test_an_entity_with_no_look_is_still_one_object(tmp_path, world):
+    _bought(tmp_path, entity="ada", out="refs/ada.png", family="portrait")
+    sent = json.loads(world.sent[0][2]["json_prompt"])
+    assert sent["compositional_deconstruction"]["elements"] == [
+        {"type": "obj", "desc": "Captain Ada"}]
+
+
+def test_a_call_s_own_elements_are_kept(tmp_path, world):
+    own = {"compositional_deconstruction": {"background": "a wall", "elements": []}}
+    _bought(tmp_path, entity="mason", json_prompt=own)
+    sent = json.loads(world.sent[0][2]["json_prompt"])
+    assert sent["compositional_deconstruction"]["background"] == "a wall"
+
+
 def test_a_family_other_than_the_entity_s_own_is_refused(tmp_path, world):
     with pytest.raises(PolyweaveError) as refused:
         _bought(tmp_path, entity="mason", family="scenery")

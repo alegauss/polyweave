@@ -39,7 +39,6 @@
 ## Block Q — Words held to the world
 
 - 🛠 **PW200** (deps: PW197 ✅, PW198 ✅, PW199 ✅) **Starship's screen still shows names its world bible replaced** — A person judges the crew lines into a lines canon, and the next Lattice or Foreman picture is bought with entity=. → §PW200
-- 📋 **PW290** (deps: —) **a picture bought from a world entity on 4.0 is refused with 400, its json_prompt lacking compositional_deconstruction** — Starship's Lancer could not be bought through entity=, the route PW198 built and PW200 needs. → §PW290
 
 ## Block R — Levels measured before a person plays them
 

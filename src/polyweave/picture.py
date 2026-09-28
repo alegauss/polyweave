@@ -271,6 +271,16 @@ def from_world(
         base["high_level_description"] = described(
             found, base.get("high_level_description") or prompt
         )
+        # 4.0 refuses a json_prompt without it (§PW290), so the world's look composes
+        # one where the call brought none: an object for each thing it shows.
+        if "compositional_deconstruction" not in base:
+            look = found.get("look") or {}
+            shows = [str(one) for one in look.get("shows") or ()] or [found["name"]]
+            base["compositional_deconstruction"] = {
+                "background": str(look.get("background")
+                                  or "transparent, nothing behind it"),
+                "elements": [{"type": "obj", "desc": one} for one in shows],
+            }
         json_prompt, prompt = base, None
     else:
         prompt = described(found, prompt)

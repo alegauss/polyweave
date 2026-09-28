@@ -326,25 +326,6 @@ The measure is the census Block H uses: which of Starship's text and character a
 are declared, checked and judged through polyweave, and which still sit in scripts. A
 string left in GDScript is a line this adoption has not reached, and the count says so.
 
-### §PW290 A world's picture in the shape 4.0 takes
-
-Found buying Starship's Lancer for PW200 (2026-09-28). `picture.buy(entity="lancer",
-model="4.0")` composes the structured prompt from the world, but it fills only
-`high_level_description`. Ideogram 4.0 refused all four calls with 400:
-"'compositional_deconstruction' is a required property - 'json_prompt'". Nothing was
-charged. The Mote pictures had passed only because their json_prompt was written by
-hand, so a purchase drawn from the world, the route PW198 built, had never been sent in
-a form 4.0 takes.
-
-Where the call gives no `compositional_deconstruction`, `from_world` should compose it
-from the entity's look. The background is the look's `background` where it declares one,
-and "transparent, nothing behind it" otherwise. The elements are one object for each of
-the look's `shows`, or the entity's name where the look shows nothing. A call that
-brings its own keeps it.
-
-Done when an entity purchase on 4.0 sends a json_prompt the service accepts, with a test
-on the composed prompt, and Starship's Lancer is bought through it.
-
 ## Block R — Levels measured before a person plays them
 
 ### §PW201 Whether a bot's win rate says how hard a level feels
