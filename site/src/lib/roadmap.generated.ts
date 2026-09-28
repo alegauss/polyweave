@@ -26,7 +26,7 @@ export interface GeneratedNonGoal {
 
 export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 0 },
-  { block: "B", title: "Seeing the result cheaply", open: 1 },
+  { block: "B", title: "Seeing the result cheaply", open: 0 },
   { block: "C", title: "The asset compiler", open: 0 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
   { block: "E", title: "One world with the engine", open: 0 },
@@ -48,13 +48,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW292",
-    block: "B",
-    symptom: "no measure says how tall a silhouette is for its width, so a spec cannot hold an enemy tall enough to hit",
-    why: "Starship's owner made tall enemies a premise, and four flat Lancers passed every check polyweave had.",
-    deps: [],
-  },
   {
     id: "PW57",
     block: "H",
