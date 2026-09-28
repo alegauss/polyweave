@@ -29,7 +29,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "B", title: "Seeing the result cheaply", open: 0 },
   { block: "C", title: "The asset compiler", open: 0 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
-  { block: "E", title: "One world with the engine", open: 2 },
+  { block: "E", title: "One world with the engine", open: 1 },
   { block: "F", title: "Motion", open: 1 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
   { block: "H", title: "Proof on a real game", open: 4 },
@@ -48,13 +48,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW267",
-    block: "E",
-    symptom: "capture.run trusts the size a script says it applied, so a window the OS shrank records a picture of the wrong size",
-    why: "A key art asked at 3840x2160 came back 3840x2119 and was recorded as holding its environment.",
-    deps: [],
-  },
   {
     id: "PW273",
     block: "E",

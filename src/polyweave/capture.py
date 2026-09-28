@@ -248,7 +248,11 @@ def run(
         found = {**found, "artefacts": pictures(log, expect, root)}
     # The picture is the authority on its size, not the script's line (§PW245): a script
     # that set root.size and printed it said 1920x1080 over a 1280x720 picture.
-    against = compare(asked, {**applied(log), **_measured(asked, found["artefacts"])})
+    claimed, measured = applied(log), _measured(asked, found["artefacts"])
+    against = compare(asked, {**claimed, **measured})
+    shrunk = _shrunk(asked, claimed, measured)
+    if shrunk:
+        against = {**against, "why": "; ".join(filter(None, (against["why"], shrunk)))}
     answer = {
         **found,
         "environment": against,
@@ -362,7 +366,27 @@ def _measured(asked: dict, artefacts: list) -> dict:
                 sizes.add(f"{picture.width}x{picture.height}")
         except OSError:
             continue
-    return {"resolution": sizes.pop()} if len(sizes) == 1 else {}
+    if len(sizes) > 1:
+        # Pictures of several sizes cannot all hold one: said, never left to the
+        # script's own line (§PW267).
+        return {"resolution": " and ".join(sorted(sizes))}
+    return {"resolution": sizes.pop()} if sizes else {}
+
+
+def _shrunk(asked: dict, claimed: dict, measured: dict) -> str:
+    """Why a picture's size differs from what the script said it applied (§PW267).
+
+    The script reports the size it asked the window for; the OS may still shrink a
+    window larger than the desktop's work area, and only the picture shows it.
+    """
+    wanted, said, got = (one.get("resolution") for one in (asked, claimed, measured))
+    if not wanted or not got or got == _size_of(wanted) or said is None:
+        return ""
+    return (
+        f"the picture is {got}, asked {_size_of(wanted)}, though the script said it "
+        f"applied {said}: a window larger than the desktop's work area is shrunk by "
+        f"the OS, so render into an offscreen viewport of that size instead"
+    )
 
 
 def saw(log: str, group: str, expect: str | re.Pattern) -> bool:

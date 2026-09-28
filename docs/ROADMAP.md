@@ -10,7 +10,6 @@
 
 ## Block E — One world with the engine
 
-- 📋 **PW267** (deps: PW245 ✅) **capture.run trusts the size a script says it applied, so a window the OS shrank records a picture of the wrong size** — A key art asked at 3840x2160 came back 3840x2119 and was recorded as holding its environment. → §PW267
 - 📋 **PW273** (deps: —) **capture.movie asked at a size records at the project's window size, and is refused after as though the script erred** — Movie Maker ignores --resolution, so every shot of a game whose window differs from the size asked fails after the whole run. → §PW273
 
 ## Block F — Motion

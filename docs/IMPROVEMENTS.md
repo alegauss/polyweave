@@ -10,24 +10,6 @@
 
 ## Block E — One world with the engine
 
-### §PW267 The resolution a capture holds, measured on the picture
-
-Found in Starship (2026-09-27, RK85). The key art was captured with `environment =
-{"resolution": "3840x2160"}` on a 3840x2160 display. The window cannot be taller than
-the desktop's work area, so the OS shrank it, and the picture on disk is 3840x2119. The
-stage script printed `environment: ... resolution=3840x2160`, the size it had asked the
-window for, and `capture.run` compared that line with what it asked. It answered `holds:
-true` and recorded a picture of the wrong size.
-
-The resolution a capture holds should be measured on the artefact itself: its pixel size
-against the one asked. The script's own line is a claim. Where they differ, the answer
-should say so (`the picture is 3840x2119, asked 3840x2160`) with the likely cause (a
-window larger than the desktop's work area) and the routes that could render it (an
-offscreen viewport of that size). This is PW245's other half: there the script applied a
-size and the window override won, here the OS did.
-
-Done when that capture answers `holds: false` naming the measured size.
-
 ### §PW273 A movie at the size asked
 
 Found building `vfx.preview` (PW259, 2026-09-27). `capture.movie` passes `--resolution`

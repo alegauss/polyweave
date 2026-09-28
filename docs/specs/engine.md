@@ -213,7 +213,12 @@ keeps its own. And the check reads the size of the pictures the run named rather
 trusting the script's line: a script that printed `resolution=1920x1080` over a 1280x720
 picture had the environment hold. Where every picture is one size, that size is what
 `applied` says; a picture at another size than the one asked fails the environment as
-`capture.differs`, whatever the script printed.
+`capture.differs`, whatever the script printed. **Pictures of several sizes hold none**
+(§PW267): `applied` names them all, where it had fallen back to the script's own line. And
+where the script said it applied the size asked and the picture disagrees, `why` names the
+picture's size, the size asked and the likely cause: a window larger than the desktop's
+work area is shrunk by the OS (a key art asked at 3840x2160 came back 3840x2119), which
+an offscreen viewport of that size renders instead.
 
 **The frame budget is the caller's to size** (§PW251). `capture.run` takes `frames` and
 `timeout`, over `[engine] frames` and `timeout`, so a script flying to a late moment

@@ -310,6 +310,33 @@ def test_the_declared_size_goes_on_the_engines_command_line(tmp_path):
     assert found["environment"]["holds"] is True, found["environment"]["why"]
 
 
+def test_a_window_the_os_shrank_is_refused_on_the_pictures_own_size(tmp_path):
+    """§PW267: asked 3840x2160, the script said so, and the picture was 3840x2119."""
+    script = project(tmp_path, SIZED)
+    shot = picture(tmp_path / "shot.png", 1920, 1041)
+    found = capture.run(
+        script, expect=SHOT, root=tmp_path, record=False,
+        take=taking("environment: resolution=1920x1080\n"
+                    "captured: res://shot.png 1920 x 1080\n", artefacts=[shot]),
+    )
+    assert found["ok"] is False
+    assert found["environment"]["holds"] is False
+    assert "the picture is 1920x1041, asked 1920x1080" in found["why"]
+    assert "work area" in found["why"]
+
+
+def test_pictures_of_two_sizes_cannot_hold_one(tmp_path):
+    script = project(tmp_path, SIZED)
+    one = picture(tmp_path / "a.png", 1920, 1080)
+    two = picture(tmp_path / "b.png", 1280, 720)
+    found = capture.run(
+        script, expect=SHOT, root=tmp_path, record=False,
+        take=taking("environment: resolution=1920x1080\n", artefacts=[one, two]),
+    )
+    assert found["environment"]["holds"] is False
+    assert "1280x720 and 1920x1080" in found["why"]
+
+
 def test_the_picture_the_expect_line_names_is_recorded_unasked(tmp_path):
     """§PW260: Starship's citadel capture, a project path on its line, came back with
     no record for want of a produces nobody could pass."""
