@@ -87,7 +87,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW281",
     block: "O",
     symptom: "vfx.build cannot declare damping, spin, box emission, particle shape or a path ribbon, so no accepted trail builds",
-    why: "Starship's seven trails were accepted with all five, and a build without them would draw a different look.",
+    why: "A path_ribbon kind that follows the emitter's own path, and a moving emitter in vfx.preview, are still to build.",
     deps: [],
   },
   {

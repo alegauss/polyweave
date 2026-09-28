@@ -16,12 +16,17 @@ amount           = 64            # the particles alive at once; required
 lifetime         = 0.8           # seconds; required
 explosiveness    = 0.0           # 0 streams them, 1 starts them all at once
 one_shot         = false         # a burst that plays once
-emission         = "point"       # point, or sphere of `radius` metres
+emission         = "point"       # point, sphere of `radius`, or box of `extents`
 radius           = 0.0
+extents          = [0, 0, 0]     # box only: its three half-sizes, in metres
 direction        = [0, 0, 1]
 spread           = 15.0          # degrees, 0 to 180
 speed            = [2.0, 3.0]    # metres a second, least and most
 gravity          = [0, 0, 0]
+damping          = [0, 0]        # speed lost a second, a number or least and most
+angle            = [0, 0]        # a particle's turn at birth, degrees
+angular_velocity = [0, 0]        # its spin, degrees a second
+shape            = "square"      # square, dot, ring, flake, or a picture's path
 size             = 0.2           # a quad's side, or a ribbon's width, in metres
 size_over_life   = [1.0, 0.0]    # scales, evenly across the life
 colour_over_life = ["#ffd24aff", "#ff4a1a00"]   # #rrggbb or #rrggbbaa, evenly
@@ -32,6 +37,14 @@ trail            = 0.3           # ribbon only: seconds of path each ribbon keep
 A key it does not have is refused with its nearest name, and so is a value outside what
 the comment says (`vfx.bad-effect`); a missing file, one that is not TOML or one with no
 `[effect.<name>]` is `vfx.no-source`.
+
+The five keys after `gravity` are what Starship's accepted trails drew with (§PW281): its
+sparks brake at 6 to 10 and stay by the engine, its confetti spins, its sun band throws
+from a tall box. A `shape` other than `square` is a texture on each quad, drawn from a
+white gradient as the trails drew theirs: `dot` a soft radial dot, `ring` a radial ring,
+`flake` a strip that is opaque for 70% of its width. A path ending in a picture's suffix
+names the project's own picture instead, refused where no file is there. `damping` is
+never below 0, and a box needs at least one extent above 0.
 
 ## Building
 
@@ -47,7 +60,7 @@ declaration since each is arithmetic:
 | Measure | What it is |
 |---|---|
 | `lifetime` | seconds a particle lives |
-| `reach` | the furthest one can travel: the top speed over its life, the fall gravity adds, and the emission radius |
+| `reach` | the furthest one can travel: the top speed over its life, braked by the least damping until it stops, the fall gravity adds, and the emission radius or the box's far corner |
 | `alive` | the particles alive at once, the effect's budget |
 | `rate` | how many start a second |
 | `brightness` | the brightest stop of its gradient, as luminance times alpha |

@@ -15,6 +15,15 @@ declared in a `*.vfx.toml` instead, and `vfx.build` writes it as a Godot scene:
     size_over_life = [1.0, 0.0]   # evenly across the life
     colour_over_life = ["#ffd24aff", "#ff4a1a00"]
     blend = "add"                 # or mix
+    damping = [6.0, 10.0]         # metres a second lost each second, or one number
+    angle = [0, 360]              # a particle's turn at birth, in degrees
+    angular_velocity = [-240, 240]  # its spin, degrees a second
+    shape = "dot"                 # square, dot, ring, flake, or a picture's path
+
+`emission` is a point, a sphere of `radius` or a box of half-`extents` (§PW281), and a
+`shape` other than a square is a texture on each quad: a soft dot, a ring or a flake
+drawn from a gradient, as Starship's accepted trails draw them, or a picture of the
+project's own.
 
 The scene is a GPUParticles3D with its process material, its curves and its draw pass,
 all in the one file, so the game instances it and holds no numbers of its own. What it
@@ -56,6 +65,11 @@ KEYS: dict[str, tuple[type | tuple, Any]] = {
     "colour_over_life": (list, ["#ffffffff", "#ffffff00"]),
     "blend": (str, "add"),
     "trail": (float, 0.3),
+    "damping": (list, [0.0, 0.0]),
+    "angle": (list, [0.0, 0.0]),
+    "angular_velocity": (list, [0.0, 0.0]),
+    "extents": (list, [0.0, 0.0, 0.0]),
+    "shape": (str, "square"),
 }
 
 #: Every effect measure a predicate may bound, and what it says.
@@ -93,7 +107,18 @@ def measures_of(path: Path, root: Path) -> dict:
 
 
 KINDS = ("particles", "ribbon")
-EMISSIONS = ("point", "sphere")
+EMISSIONS = ("point", "sphere", "box")
+
+#: A particle's shape, as the gradient its texture is drawn from: stops of white at each
+#: alpha, and whether it fills out from the middle. A square draws no texture at all.
+SHAPES: dict[str, tuple[tuple[tuple[float, float], ...], bool]] = {
+    "dot": (((0.0, 1.0), (0.25, 0.6), (1.0, 0.0)), True),
+    "ring": (((0.0, 0.0), (0.62, 0.0), (0.78, 1.0), (0.9, 0.3), (1.0, 0.0)), True),
+    "flake": (((0.0, 1.0), (0.7, 1.0), (0.75, 0.0)), False),
+}
+
+#: A shape that names a picture instead, by its file's suffix.
+PICTURES = (".png", ".webp", ".jpg", ".jpeg", ".svg")
 BLENDS = ("add", "mix")
 
 #: A colour as a gradient stop takes it: #rrggbb, or #rrggbbaa.
@@ -117,6 +142,36 @@ def _vector(name: str, key: str, value: Any, length: int) -> list[float]:
     return [float(v) for v in value]
 
 
+def _range(name: str, key: str, value: Any, *, least: float | None = 0.0) -> list:
+    """One number, or the least and the most, as the two a range is written with."""
+    pair = [value, value] if _number(value) else value
+    if (not isinstance(pair, list) or len(pair) != 2
+            or not all(_number(v) for v in pair)
+            or (least is not None and min(pair) < least)):
+        floor = "" if least is None else f", none below {least:g}"
+        raise _bad(name, f"sets {key} to {value!r}",
+                   f"write {key} as a number or as [least, most]{floor}")
+    return sorted(float(v) for v in pair)
+
+
+def _shape(name: str, value: Any, root: Path | None) -> str:
+    if not isinstance(value, str) or not value:
+        raise _bad(name, f"sets shape to {value!r}",
+                   f"name one of square, {', '.join(SHAPES)}, or a picture's path")
+    if value == "square" or value in SHAPES:
+        return value
+    if Path(value).suffix.lower() not in PICTURES:
+        raise _bad(name, f"has shape {value!r}",
+                   f"name one of square, {', '.join(SHAPES)}, or a picture "
+                   f"({', '.join(PICTURES)}) under the project",
+                   given=value, allowed=["square", *SHAPES])
+    picture = value.removeprefix("res://")
+    if root is not None and not (root / picture).is_file():
+        raise _bad(name, f"has shape {value!r}, and there is no picture there",
+                   "name a picture relative to the project root")
+    return picture
+
+
 def _colour(name: str, value: Any) -> tuple[float, float, float, float]:
     found = _COLOUR.fullmatch(value) if isinstance(value, str) else None
     if not found:
@@ -126,9 +181,9 @@ def _colour(name: str, value: Any) -> tuple[float, float, float, float]:
     return (*(int(rgb[i:i + 2], 16) / 255 for i in (0, 2, 4)), int(alpha, 16) / 255)
 
 
-def checked(name: str, table: Any) -> dict:
+def checked(name: str, table: Any, root: Path | None = None) -> dict:
     """One effect's table with its defaults, every key and value refused unless it
-    means something."""
+    means something. A picture a shape names is looked for under `root`."""
     if not isinstance(table, dict):
         raise _bad(name, "is not a table", f"write it as [effect.{name}]")
     for key in table:
@@ -166,6 +221,17 @@ def checked(name: str, table: Any) -> dict:
     own["direction"] = _vector(name, "direction", own["direction"], 3)
     own["gravity"] = _vector(name, "gravity", own["gravity"], 3)
     own["speed"] = sorted(_vector(name, "speed", own["speed"], 2))
+    own["damping"] = _range(name, "damping", own["damping"])
+    own["angle"] = _range(name, "angle", own["angle"], least=None)
+    own["angular_velocity"] = _range(name, "angular_velocity",
+                                     own["angular_velocity"], least=None)
+    own["extents"] = _vector(name, "extents", own["extents"], 3)
+    if own["emission"] == "box" and (min(own["extents"]) < 0
+                                     or not any(own["extents"])):
+        raise _bad(name, f"emits from a box of extents {own['extents']!r}",
+                   "write extents as the box's three half-sizes, none below 0, in "
+                   "metres, such as [0.1, 1.0, 0.1]")
+    own["shape"] = _shape(name, own["shape"], root)
     sizes = own["size_over_life"]
     if not isinstance(sizes, list) or len(sizes) < 2 or not all(
             _number(v) and v >= 0 for v in sizes):
@@ -186,7 +252,15 @@ def measured(effect: dict) -> dict:
     """What an effect measures, from its declaration alone."""
     life = effect["lifetime"]
     pull = math.sqrt(sum(g * g for g in effect["gravity"]))
-    reach = effect["speed"][1] * life + 0.5 * pull * life * life + effect["radius"]
+    fastest, brake = effect["speed"][1], effect["damping"][0]
+    # Damping takes speed off at a rate, so the fastest, least braked particle stops
+    # once it has spent its speed, or runs its whole life first (§PW281).
+    moving = min(life, fastest / brake) if brake > 0 else life
+    travel = fastest * moving - 0.5 * brake * moving * moving
+    start = (effect["radius"] if effect["emission"] == "sphere" else
+             math.sqrt(sum(e * e for e in effect["extents"]))
+             if effect["emission"] == "box" else 0.0)
+    reach = travel + 0.5 * pull * life * life + start
     brightness = max(
         (0.2126 * r + 0.7152 * g + 0.0722 * b) * a
         for r, g, b, a in effect["colour_over_life"]
@@ -202,6 +276,31 @@ def measured(effect: dict) -> dict:
 
 def _floats(values) -> str:
     return ", ".join(f"{v:.6g}" for v in values)
+
+
+#: The emission shapes as ParticleProcessMaterial numbers them.
+_EMITS = {"point": 0, "sphere": 1, "box": 3}
+
+
+def _shaped(effect: dict) -> tuple[str, str, str]:
+    """The external picture, the texture's own resources and the material's line."""
+    shape = effect["shape"]
+    if shape == "square":
+        return "", "", ""
+    if shape not in SHAPES:
+        external = f'[ext_resource type="Texture2D" path="res://{shape}" id="picture"]'
+        return f"{external}\n\n", "", 'albedo_texture = ExtResource("picture")\n'
+    stops, radial = SHAPES[shape]
+    whites = [c for _, alpha in stops for c in (1.0, 1.0, 1.0, alpha)]
+    fill = ("fill = 1\nfill_from = Vector2(0.5, 0.5)\nfill_to = Vector2(1, 0.5)\n"
+            if radial else "")
+    own = ('[sub_resource type="Gradient" id="outline"]\n'
+           f"offsets = PackedFloat32Array({_floats(o for o, _ in stops)})\n"
+           f"colors = PackedColorArray({_floats(whites)})\n\n"
+           '[sub_resource type="GradientTexture2D" id="shape"]\n'
+           'gradient = SubResource("outline")\nwidth = 64\nheight = 64\n'
+           f"{fill}\n")
+    return "", own, 'albedo_texture = SubResource("shape")\n'
 
 
 def scene(name: str, effect: dict) -> str:
@@ -222,8 +321,11 @@ def scene(name: str, effect: dict) -> str:
         f'[sub_resource type="QuadMesh" id="draw"]\nmaterial = SubResource("look")\n'
         f'size = Vector2({effect["size"]:.6g}, {effect["size"]:.6g})\n'
     )
+    picture, shaped, textured = _shaped(effect)
+    steps = 8 + bool(picture) + 2 * bool(shaped)
     return (
-        '[gd_scene load_steps=8 format=3]\n\n'
+        f'[gd_scene load_steps={steps} format=3]\n\n'
+        + picture + shaped +
         '[sub_resource type="Gradient" id="colours"]\n'
         f"offsets = PackedFloat32Array({_floats(offsets)})\n"
         f"colors = PackedColorArray({_floats(c for s in stops for c in s)})\n\n"
@@ -234,17 +336,24 @@ def scene(name: str, effect: dict) -> str:
         '[sub_resource type="CurveTexture" id="scale"]\n'
         'curve = SubResource("sizes")\n\n'
         '[sub_resource type="ParticleProcessMaterial" id="process"]\n'
-        f"emission_shape = {1 if effect['emission'] == 'sphere' else 0}\n"
+        f"emission_shape = {_EMITS[effect['emission']]}\n"
         f"emission_sphere_radius = {effect['radius']:.6g}\n"
+        f"emission_box_extents = Vector3({_floats(effect['extents'])})\n"
         f"direction = Vector3({_floats(effect['direction'])})\n"
         f"spread = {effect['spread']:.6g}\n"
         f"initial_velocity_min = {effect['speed'][0]:.6g}\n"
         f"initial_velocity_max = {effect['speed'][1]:.6g}\n"
         f"gravity = Vector3({_floats(effect['gravity'])})\n"
+        f"damping_min = {effect['damping'][0]:.6g}\n"
+        f"damping_max = {effect['damping'][1]:.6g}\n"
+        f"angle_min = {effect['angle'][0]:.6g}\n"
+        f"angle_max = {effect['angle'][1]:.6g}\n"
+        f"angular_velocity_min = {effect['angular_velocity'][0]:.6g}\n"
+        f"angular_velocity_max = {effect['angular_velocity'][1]:.6g}\n"
         'scale_curve = SubResource("scale")\ncolor_ramp = SubResource("ramp")\n\n'
         '[sub_resource type="StandardMaterial3D" id="look"]\n'
         f"transparency = 1\nblend_mode = {1 if effect['blend'] == 'add' else 0}\n"
-        "shading_mode = 0\nvertex_color_use_as_albedo = true\n"
+        "shading_mode = 0\nvertex_color_use_as_albedo = true\n" + textured
         + ("use_particle_trails = true\n" if ribbon else "billboard_mode = 3\n")
         + "\n" + draw + "\n"
         f'[node name="{name}" type="GPUParticles3D"]\n'
@@ -304,7 +413,8 @@ def build(
             given=effect, allowed=sorted(tables),
         )
     chosen = {effect: tables[effect]} if effect else tables
-    effects = {name: checked(name, table) for name, table in chosen.items()}
+    effects = {name: checked(name, table, config.root)
+               for name, table in chosen.items()}
     folder = config.path("paths.work", out) if out else where.parent
     folder.mkdir(parents=True, exist_ok=True)
     made = {}
@@ -415,7 +525,7 @@ def preview(
     work = config.path("paths.work") / "vfx"
     families, sheets, watched = {}, {}, {}
     for name, made in built.items():
-        own = checked(name, tables[name])
+        own = checked(name, tables[name], here)
         start, span = 2, max(2, round(own["lifetime"] * 1.5 * fps))
         script = work / f"{name}.watch.gd"
         script.parent.mkdir(parents=True, exist_ok=True)

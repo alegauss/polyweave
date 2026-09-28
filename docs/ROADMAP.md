@@ -37,7 +37,7 @@
 
 ## Block O — A person sees and answers
 
-- 📋 **PW281** (deps: PW259 ✅) **vfx.build cannot declare damping, spin, box emission, particle shape or a path ribbon, so no accepted trail builds** — Starship's seven trails were accepted with all five, and a build without them would draw a different look. → §PW281
+- ⏳ **PW281** (deps: PW259 ✅) **vfx.build cannot declare damping, spin, box emission, particle shape or a path ribbon, so no accepted trail builds** — A path_ribbon kind that follows the emitter's own path, and a moving emitter in vfx.preview, are still to build. → §PW281
 
 ## Block P — Music and sound a game can ship
 
@@ -148,6 +148,15 @@
 - **Starship's seven trails are built through vfx.build** Starship's seven trails are
   seven declarations built and accepted through polyweave, and the game instances the
   scenes built instead of reading its own trail Resources.
+
+## Done when — PW281
+
+- **A path_ribbon effect builds a ribbon along the path its emitter flew** vfx.build
+  writes a path_ribbon kind with width, life and colour_over_life that the engine loads
+  and draws narrowing as it ages, with no script of the game's own.
+- **vfx.preview shows a trail from a moving emitter** The preview's sheet shows the
+  emitter moving across the frame, since a trail only reads in motion, checked on a real
+  engine run.
 
 ## Non-goals
 

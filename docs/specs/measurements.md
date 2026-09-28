@@ -262,7 +262,8 @@ else.
 - `lifetime` (seconds), `alive` (the particles alive at once, its budget) and `rate`
   (started a second).
 - `reach`: the furthest a particle travels in its life, in metres: the top speed over the
-  life, the fall gravity adds, and the emission radius.
+  life, braked by the least damping until it stops, the fall gravity adds, and the
+  emission radius or the box's far corner.
 - `brightness`: the brightest stop of its colour over life, Rec. 709 luminance times
   alpha, 0 to 1.
 
