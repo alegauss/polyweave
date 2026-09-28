@@ -277,6 +277,11 @@ def send(
         kept = {"cmd": cmd, **fields}
         if cmd in ("query", "wait"):
             kept["answered"] = answer.get("result")
+        # Asked now, while the nodes are there: no frame has passed since the command.
+        selectors = _selectors(session, root, cmd, fields, answer.get("result"))
+        if selectors:
+            kept["selectors"] = selectors
+        record = _session(session, root)  # the selector reads moved its log offset
         record.setdefault("journal", []).append(kept)
         step = len(record["journal"]) - 1
         (_folder(root) / f"{session}.json").write_text(
@@ -288,6 +293,40 @@ def send(
         "errors": printed["errors"],
         "step": step,
     }
+
+
+def _generated(path: Any) -> bool:
+    """Whether a node path holds a name Godot generated, which reordering renumbers."""
+    return isinstance(path, str) and "@" in path
+
+
+def _selectors(session: str, root, cmd: str, fields: dict, result: Any) -> dict:
+    """A selector for each generated path a command used or answered (§PW270)."""
+    paths = [fields.get("path"), (fields.get("click") or {}).get("path")
+             if isinstance(fields.get("click"), dict) else None]
+    if cmd == "query" and isinstance(result, list):
+        paths += [one.get("path") for one in result if isinstance(one, dict)]
+    found = {}
+    for path in dict.fromkeys(p for p in paths if _generated(p)):
+        try:
+            said = send(session, "selector", root=root, journal=False, path=path)
+        except PolyweaveError:
+            continue
+        chosen = (said.get("result") or {}).get("select")
+        if chosen:
+            found[path] = chosen
+    return found
+
+
+def _selected(fields: dict, selectors: dict) -> dict:
+    """A kept step with each generated path it used put as the selector found for it."""
+    out = dict(fields)
+    if out.get("path") in selectors:
+        out["select"] = selectors[out.pop("path")]
+    click = out.get("click")
+    if isinstance(click, dict) and click.get("path") in selectors:
+        out["click"] = {"select": selectors[click["path"]]}
+    return out
 
 
 def _printed(record: dict, root: str | Path) -> dict:
@@ -534,19 +573,24 @@ def kept(
         if index in dropped:
             continue
         cmd = entry["cmd"]
-        fields = {k: v for k, v in entry.items() if k != "answered"}
+        selectors = entry.get("selectors") or {}
+        fields = _selected(
+            {k: v for k, v in entry.items() if k not in ("answered", "selectors")},
+            selectors,
+        )
         if cmd == "query":
             if index in wanted:
                 for node in entry.get("answered") or ():
                     for name, value in node["properties"].items():
-                        steps.append(
+                        steps.append(_selected(
                             {
                                 "cmd": "expect",
                                 "path": node["path"],
                                 "property": name,
                                 "equals": value,
-                            }
-                        )
+                            },
+                            selectors,
+                        ))
         elif cmd == "wait":
             answered = entry.get("answered") or {}
             steps.append({**fields, "must": bool(answered.get("met", True))})
@@ -570,11 +614,20 @@ def kept(
     where.parent.mkdir(parents=True, exist_ok=True)
     with where.open("w", encoding="utf-8", newline="\n") as written:
         written.write(json.dumps(flow, indent=2) + "\n")
+    # A generated path no selector picked out stays, and is said, since a node added
+    # ahead of it breaks the flow (§PW270).
+    fragile = sorted({
+        one for step in steps
+        for one in (step.get("path"), (step.get("click") or {}).get("path")
+                    if isinstance(step.get("click"), dict) else None)
+        if _generated(one)
+    })
     return {
         "flow": str(where),
         "steps": len(steps),
         "expectations": sum(1 for one in steps if one["cmd"] == "expect"),
         "proves": proves,
+        "fragile": fragile,
     }
 
 

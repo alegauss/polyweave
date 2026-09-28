@@ -103,7 +103,16 @@ them; the driver quits on `close`, or after `--idle=N` seconds with no request.
 | `shot` | `out` | Saves the viewport as a PNG at that path and returns it with its size. A headless run draws nothing, so a shot there is refused (`driver.no-picture`) rather than saved blank |
 | `expect` | `path`, `property`, `equals` | Whether the property holds the value now, no frame passing: `{held, value}` |
 | `set` | `path`, `property`, `value` | Sets a property for setup, a nested one written `rng:seed` (Godot's `set_indexed`), and answers `{was, now}`; an int stays an int though JSON sends a float. How a flow seeds a generator the game made itself, which `--seed` does not reach (§PW217) |
+| `selector` | `path`, or any target | The selector that picks this one node out now, `{select}`, or `select: null` where none does |
 | `close` | — | Answers, then quits |
+
+**A node may be named by what it is** (§PW270). Wherever a command takes `path` it also
+takes `select`, as `click` does inside it: `{"class": <engine class or script
+class_name>, <property>: <value>, ...}`, every node of the class whose properties hold
+those values. A generated name such as `@Node2D@14` is renumbered by any node added ahead
+of it; what a node is holds. `selector` finds one: the class alone where it is unique,
+then `name`, `text`, `title`, `tooltip_text` and `placeholder_text` added in that order
+until it is.
 
 Values cross as JSON: a `Vector2` is `[x, y]`, a `Color` `[r, g, b, a]`, a node its path,
 and any other object its class name. A property a node lacks is left out of its answer
@@ -176,7 +185,10 @@ includes wrong turns:
 - a query is kept only where `expect` names its step, as one `expect` per property it
   answered: that node's property must hold that value again at that point;
 - a wait is kept as a wait that must be met, where it was met in the session;
-- a shot is left out, since a replay draws nothing.
+- a shot is left out, since a replay draws nothing;
+- a generated path, one holding an `@`, is written as the selector the driver found for
+  it when the command ran, while the node was there, so the flow survives a node added
+  ahead of it; one no selector picked out stays a path and is named in `fragile`.
 
 ```json
 {"format": 1, "proves": "a click on PRESS counts one press", "seed": 3, "scene": "",

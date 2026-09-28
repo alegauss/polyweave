@@ -253,7 +253,7 @@ func _judge(answer: Dictionary) -> void:
 			and not result.get("met", false):
 		why = "the wait was not met in %s frames" % result.get("frames")
 	elif flow_step.get("cmd") == "expect" and result is Dictionary and not result.get("held", false):
-		why = "%s.%s was %s, not %s" % [flow_step.get("path"), flow_step.get("property"),
+		why = "%s.%s was %s, not %s" % [_named(flow_step), flow_step.get("property"),
 			JSON.stringify(result.get("value")), JSON.stringify(flow_step.get("equals"))]
 	if why != "":
 		print("polyweave_flow: failed step=%d frame=%d why=%s" % [flow_at, frame, why])
@@ -292,6 +292,8 @@ func _command(asked: Dictionary) -> Dictionary:
 			return _expect(asked)
 		"set":
 			return _set_property(asked)
+		"selector":
+			return _selector_of(asked)
 		"close":
 			return {"quit": true}
 	return _refused(
@@ -306,6 +308,8 @@ func _refused(code: String, message: String) -> Dictionary:
 
 
 func _found(asked: Dictionary) -> Array:
+	if asked.has("select") and asked["select"] is Dictionary:
+		return _selected(asked["select"])
 	if asked.has("path"):
 		var path := str(asked["path"])
 		var node: Node = root.get_node_or_null(path) if path.begins_with("/") else (
@@ -319,6 +323,56 @@ func _found(asked: Dictionary) -> Array:
 		_collect(root, str(asked["class"]), out)
 		return out
 	return []
+
+
+## The nodes a selector picks out: its class, engine or script, and every other key a
+## property the node holds at that value (§PW270). A path Godot generated, such as
+## @Node2D@14, is renumbered by any node added before it; what a node is holds.
+func _selected(select: Dictionary) -> Array:
+	var out := []
+	_collect(root, str(select.get("class", "Node")), out)
+	var kept := []
+	for node: Node in out:
+		var holds := true
+		for key in select:
+			if str(key) == "class":
+				continue
+			if not (str(key) in node) or JSON.stringify(_plain(node.get(str(key)))) \
+					!= JSON.stringify(select[key]):
+				holds = false
+				break
+		if holds:
+			kept.append(node)
+	return kept
+
+
+#: The properties a selector may pick a node out by, in the order they are tried.
+const SELECTING := ["name", "text", "title", "tooltip_text", "placeholder_text"]
+
+
+## The selector that picks this one node out now, or null where none does.
+func _selector_of(asked: Dictionary) -> Dictionary:
+	var nodes := _found(asked)
+	if nodes.size() != 1:
+		return _refused("driver.no-node", "nothing answers %s" % _named(asked))
+	var node: Node = nodes[0]
+	var script: Script = node.get_script()
+	var named := node.get_class()
+	if script != null and script.get_global_name() != "":
+		named = script.get_global_name()
+	var select := {"class": named}
+	if _selected(select).size() == 1:
+		return {"result": {"select": select}}
+	for key in SELECTING:
+		if not (key in node):
+			continue
+		var value = _plain(node.get(key))
+		if not (value is String) or value == "" or value.begins_with("@"):
+			continue
+		select[key] = value
+		if _selected(select).size() == 1:
+			return {"result": {"select": select}}
+	return {"result": {"select": null}}
 
 
 func _collect(node: Node, named: String, out: Array) -> void:
@@ -521,7 +575,7 @@ func _shot(asked: Dictionary) -> Dictionary:
 
 
 func _named(asked: Dictionary) -> String:
-	for key in ["path", "group", "class"]:
+	for key in ["select", "path", "group", "class"]:
 		if asked.has(key):
 			return "%s %s" % [key, asked[key]]
 	return "no path, group or class"

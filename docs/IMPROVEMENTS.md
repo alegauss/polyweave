@@ -583,26 +583,6 @@ the first twenty make.
 
 ## Block S — Playing the game, not only rendering it
 
-### §PW270 Nodes addressed by what they are
-
-Found keeping Cottony's flows (PW217). Cottony builds its screens in code and names few
-of its nodes, so the paths an agent queries are Godot's generated names:
-`/root/Main/@Node2D@14/@Node2D@35` is the board, `@Node2D@1133/@Node2D@1126/@Label@1129`
-the result card's heading. A kept flow expects and clicks at those paths. They hold
-while the game builds its tree in the same order, and any change that adds a node before
-them renumbers every one after, so a flow breaks on an edit that changed nothing it
-proves.
-
-Let a node be addressed by what it is rather than where the counter left it: by class
-and a property that picks it out, such as `{"class": "Label", "text": "NÍVEL
-CONCLUÍDO"}` or `{"class": "Board"}` (a script's class_name), answered as the path it
-resolves to now. `game.keep` writes that selector into the flow in place of a generated
-path wherever it finds one unique, and `game.replay` resolves it again each run, so the
-flow survives a reordering. A path with no generated name in it is kept as it is.
-
-Done when Cottony's two flows are kept again with selectors, still replay to the same
-frames, and a test that inserts a node ahead of the board replays unchanged.
-
 ### §PW271 Long flows in few calls
 
 Found keeping Cottony's flows (PW217). An agent driving through the command line pays a
@@ -623,5 +603,27 @@ Two gaps, each worth closing:
 
 Done when the lose-a-later-level flow is kept for Cottony in under a hundred calls, and
 replays to the same frame every time.
+
+### §PW276 Re-keying a kept flow
+
+Found shipping PW270 (2026-09-28). `game.keep` now writes a selector in place of each
+generated path it can pick out (`{"class": "Button"}`, or with a name or text added),
+asked of the driver while the node exists. A flow kept before that still holds its
+generated paths, and Cottony's two do: `win_level_one` clicks, sets, calls and waits at
+`/root/Main/@Node2D@14/@Node2D@35` more than seventy times, and `settings_persist`
+expects at `.../reduced_motion/@Label@467`. Keeping them again by hand means driving the
+game through all 237 steps a second time.
+
+A flow can be re-keyed by replaying it through a held session instead:
+`game.rekey(flow)` opens the flow's scene at its seed, sends each step as the replay
+would, asks the driver for a selector for every generated path just before the step uses
+it, and writes the flow back with the selectors in place, answering which paths none
+could pick out. A bare `Node2D` with no script class and no name is one no selector
+finds; the answer names those, and naming the node in the game (`name = "Board"`) or
+giving its script a `class_name` is the remedy, since only the game can say what the
+node is.
+
+Done when Cottony's two flows are re-keyed in one call each, still replay to the same
+frames, and name what stayed fragile.
 
 ## Block T — Adopting polyweave in a project

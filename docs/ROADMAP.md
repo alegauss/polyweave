@@ -57,8 +57,8 @@
 
 ## Block S — Playing the game, not only rendering it
 
-- 📋 **PW270** (deps: —) **a kept flow names nodes by Godot's generated names, so any node added before them breaks it** — Cottony names few of its nodes, so its flows click and expect at @Node2D@14-style paths that a reordering of its tree renumbers. → §PW270
 - 📋 **PW271** (deps: —) **a flow that needs many moves costs thousands of calls, so losing a later Cottony level was never kept** — Each command-line call is a process of its own and a fresh save unlocks only level 1, so after two hours and ten sessions the explorer gave up. → §PW271
+- 📋 **PW276** (deps: —) **a flow kept before selectors still clicks at generated paths, and re-keeping it means driving every step again** — Cottony's two flows hold 237 steps at @Node2D-style paths that any node added ahead of them breaks. → §PW276
 
 ## Block T — Adopting polyweave in a project
 

@@ -476,6 +476,67 @@ def test_a_session_kept_as_a_flow_replays_with_no_agent(tmp_path):
     assert "presses was 1, not 7" in broke["why"]
 
 
+#: A game that names none of its nodes, as Cottony builds its screens, and adds one more
+#: ahead of them where `res://extra.txt` exists: what renumbers every generated name.
+UNNAMED = """extends Node2D
+
+var presses := 0
+var label: Label
+
+func _ready() -> void:
+\tif FileAccess.file_exists("res://extra.txt"):
+\t\tadd_child(Node2D.new())
+\tvar button := Button.new()
+\tbutton.text = "GO"
+\tbutton.position = Vector2(100, 100)
+\tbutton.size = Vector2(200, 80)
+\tbutton.pressed.connect(_on_pressed)
+\tadd_child(button)
+\tlabel = Label.new()
+\tlabel.text = "READY"
+\tadd_child(label)
+
+func _on_pressed() -> void:
+\tpresses += 1
+\tlabel.text = "PRESSED %d" % presses
+"""
+
+
+def test_a_flow_kept_at_generated_names_survives_a_node_added_ahead(tmp_path):
+    """§PW270: Cottony's flows clicked at @Node2D@14-style paths, which renumber."""
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    root = str(game(tmp_path))
+    (tmp_path / "main.gd").write_text(UNNAMED, encoding="utf-8")
+    session = driving.opened(root, seed=1)["session"]
+    try:
+        driving.stepped(session, root=root)
+        button = driving.queried(session, of_class="Button", root=root)["result"][0]
+        assert "@" in button["path"], "an unnamed node's path is a generated one"
+        driving.inputted(session, click=button["path"], root=root)
+        driving.stepped(session, frames=3, root=root)
+        seen = driving.queried(session, of_class="Label", properties=["text"],
+                               root=root)
+        assert seen["result"][0]["properties"]["text"] == "PRESSED 1"
+        kept = driving.kept(session, out="tests/flows/go.flow.json",
+                            proves="a click on GO says so", expect=[seen["step"]],
+                            root=root)
+    finally:
+        driving.closed(session, root=root)
+    assert kept["fragile"] == []
+    flow = json.loads(Path(kept["flow"]).read_text(encoding="utf-8"))
+    clicked = next(one for one in flow["steps"] if one["cmd"] == "input")
+    assert clicked["click"] == {"select": {"class": "Button"}}
+    assert flow["steps"][-1]["select"] == {"class": "Label"}
+    (tmp_path / "extra.txt").write_text("renumber", encoding="utf-8")
+    again = driving.replayed("tests/flows/go.flow.json", root=root)
+    assert again["ok"] is True, again["why"]
+    # The same flow at the generated path breaks, which is what the selector saved.
+    clicked["click"] = {"path": button["path"]}
+    Path(kept["flow"]).write_text(json.dumps(flow), encoding="utf-8")
+    assert driving.replayed("tests/flows/go.flow.json", root=root)["ok"] is False
+
+
 def test_a_query_step_is_all_an_expectation_can_be_made_of(tmp_path):
     if not os.environ.get("GODOT"):
         pytest.skip("no $GODOT on this machine")

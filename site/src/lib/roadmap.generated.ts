@@ -140,17 +140,17 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW204", "PW205"],
   },
   {
-    id: "PW270",
-    block: "S",
-    symptom: "a kept flow names nodes by Godot's generated names, so any node added before them breaks it",
-    why: "Cottony names few of its nodes, so its flows click and expect at @Node2D@14-style paths that a reordering of its tree renumbers.",
-    deps: [],
-  },
-  {
     id: "PW271",
     block: "S",
     symptom: "a flow that needs many moves costs thousands of calls, so losing a later Cottony level was never kept",
     why: "Each command-line call is a process of its own and a fresh save unlocks only level 1, so after two hours and ten sessions the explorer gave up.",
+    deps: [],
+  },
+  {
+    id: "PW276",
+    block: "S",
+    symptom: "a flow kept before selectors still clicks at generated paths, and re-keeping it means driving every step again",
+    why: "Cottony's two flows hold 237 steps at @Node2D-style paths that any node added ahead of them breaks.",
     deps: [],
   },
 ];
