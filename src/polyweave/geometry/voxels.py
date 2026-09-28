@@ -230,7 +230,11 @@ class _Model:
             depth = (points[:, 2] >= near - _EPS) & (points[:, 2] <= far + _EPS)
             within = np.zeros(len(points), dtype=bool)
             if depth.any():
-                within[depth] = S._inside(ring, points[depth, :2])
+                # A point on the ring's edge is inside, as one on a primitive's face
+                # is: the crossing number alone took a left edge and not a right one,
+                # so one box as a plate and as a cube filled different cells (§PW274).
+                flat = points[depth, :2]
+                within[depth] = S._inside(ring, flat) | (S._to_edge(ring, flat) <= _EPS)
             return _Found.of(within, rank)
         if op == "transform":
             return self.inside(refers_to(node)[0], _backward(points, instance))

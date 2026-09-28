@@ -33,7 +33,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
   { block: "H", title: "Proof on a real game", open: 4 },
-  { block: "I", title: "Voxel models from a declaration", open: 1 },
+  { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
   { block: "L", title: "What a run leaves as evidence", open: 0 },
@@ -75,13 +75,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "what a change costs a frame is found only by stashing, re-importing and timing both sides by hand",
     why: "A design that must hold the frame rate needs that number, and a recorded table goes stale the day other work lands.",
     deps: ["PW56"],
-  },
-  {
-    id: "PW274",
-    block: "I",
-    symptom: "a cube and a plate over the same box fill different cells where a face falls on a cell centre",
-    why: "One box declared as two ops gives two models, so a region straddles or not by which op drew it.",
-    deps: [],
   },
   {
     id: "PW275",

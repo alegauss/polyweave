@@ -216,6 +216,25 @@ def test_a_one_cell_region_whose_faces_fall_on_cell_centres_is_named():
     assert "move it by 0.5 on x" in named[0]["says"]
 
 
+def filled_columns(node):
+    """The columns a shape fills on the sphere's grid, whose centres sit at x.5."""
+    both = {"id": "both", "op": "union", "inputs": ["body", node["id"]]}
+    made = V.voxelize(shape(BODY, node, both, voxels={"cell": 1.0}, output="both"))
+    mine = made["nodes"].index(node["id"])
+    return sorted({x for x, owner in zip(made["cells"]["x"], made["cells"]["node"],
+                                         strict=True) if owner == mine})
+
+
+def test_a_plate_and_a_cube_over_one_box_fill_the_same_cells():
+    """§PW274: faces on cell centres, a plate took one column and a cube two."""
+    cube = {"id": "c", "op": "primitive", "kind": "cube", "size": [1.0, 4.0, 4.0],
+            "at": [0, 0, -8]}
+    plate = {"id": "p", "op": "plate", "rect": [-0.5, -2, 1, 4], "depth": 4,
+             "front": -10}
+    assert filled_columns(cube) == filled_columns(plate)
+    assert len(filled_columns(plate)) == 2
+
+
 def test_a_one_cell_region_on_one_cell_says_nothing():
     made = mullions(0.5, 3.5)
     assert [f for f in made["checks"]["findings"] if f.get("axis")] == []

@@ -627,6 +627,13 @@ covers), since its faces fall on cell centres and a row of one-cell mullions a c
 apart then paints a whole face. The remedy is the half-cell move, or an odd cell count on
 that axis.
 
+**A centre on a face is inside, for every op** (§PW274). A primitive always took a point
+on its face; a plate's or prism's ring was tested by crossing number, which takes a left
+edge and not a right one, so one box as a cube and as a plate filled different cells. The
+ring's edge now counts as inside within the same tolerance a primitive's face has, so a
+box fills the same cells whichever op draws it. Rebuilt under it, none of Starship's 72
+voxel models changed a cell.
+
 **A model faces -z** (§PW236), with y up and x to its right, which is §6's forward and
 Godot's. A face, visor or eye goes on the -z side, nearest the front view. The preview
 sheet says where each view looks from under its name ("front, from -z", "side, from +x",

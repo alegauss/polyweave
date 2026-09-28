@@ -155,6 +155,7 @@
 - ✅ **PW253** **a voxel preview's front view puts +x where a camera at -z sees -x, so an asymmetric model reads mirrored** — The voxel sheet draws each view as a camera there sees it, +x on the left from -z as a Godot camera shows it, so asymmetry reads true (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW262** **a one-cell paint region centred on a cell boundary silently takes both cells, so a row of mullions paints a whole face** — A voxel build names each thin paint region that takes more cells across than its width, with the node, the axis and the half-cell move.
 - ✅ **PW263** **geometry.fit scores at the reference's own aspect, so a declaration held to another box is squeezed to its range edges** — geometry.fit names each view's aspect gap and the best values bound by their ranges, and boxed=true scores shape inside each view's box.
+- ✅ **PW274** **a cube and a plate over the same box fill different cells where a face falls on a cell centre** — A plate or prism takes a centre on its edge as a primitive takes one on its face, so one box fills the same cells whichever op draws it (design superseded: closed, not half-open).
 
 ## Block J — A bar a person sets once
 

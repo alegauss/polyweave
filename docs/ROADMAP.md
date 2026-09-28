@@ -23,8 +23,6 @@
 
 ## Block I — Voxel models from a declaration
 
-- 📋 **PW274** (deps: —) **a cube and a plate over the same box fill different cells where a face falls on a cell centre** — One box declared as two ops gives two models, so a region straddles or not by which op drew it. → §PW274
-
 ## Block J — A bar a person sets once
 
 ## Block K — Reached without reading the source

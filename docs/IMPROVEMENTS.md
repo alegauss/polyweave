@@ -283,25 +283,6 @@ Done when RK131's 0.7 ms is one call against HEAD, and the answer says how sure 
 
 ## Block I — Voxel models from a declaration
 
-### §PW274 Every op takes a point on its face the same way
-
-Found writing PW262's test (2026-09-28). On a grid of 1.0 with cell centres at x.5, a
-cube one cell wide on x with its faces at -0.5 and 0.5 takes both columns, since a
-primitive's inside test takes a point on its face. A plate with the same box, `rect`
-from -0.5 wide 1, takes only the column at -0.5: its ring is tested with a polygon test
-that takes the left edge and not the right. So one box declared as two ops fills
-different cells, and whether a region straddles depends on which op drew it.
-
-Either the ops should agree on a point lying on a face, in or out, or a voxel build
-should never sample a centre that falls on one. The first is the smaller change: one
-rule, stated in the geometry spec, applied by the primitive, prism, plate and cells
-tests alike, likely a half-open interval on every axis so a face shared by two touching
-shapes gives its cell to exactly one of them. PW262's finding then reads the same for
-every op.
-
-Done when a cube and a plate over the same box, with faces on cell centres, fill the
-same cells, and a test holds each op to the rule.
-
 ## Block J — A bar a person sets once
 
 ## Block K — Reached without reading the source
