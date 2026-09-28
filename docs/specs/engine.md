@@ -274,6 +274,9 @@ the run, holding `window/size/window_width_override` and `window_height_override
 size, which Godot reads over the project's own settings and which keep the game's design
 size, and removes it after. A project with an `override.cfg` of its own is refused before
 anything runs (`capture.override-held`), since replacing it would lose what it holds.
+Unlike a still, a movie is not shrunk to the desktop's work area: asked at 8000x120 on
+4.7.1, its frames came out 8000x120 through the window overrides alone (§PW283), so it
+needs no borderless window.
 
 **A failed environment is said at the top of the answer** (§PW246). Where the pictures
 were taken and the environment did not hold, `ok` is false, `verdict` names the cause

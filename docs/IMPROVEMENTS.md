@@ -10,25 +10,6 @@
 
 ## Block E — One world with the engine
 
-### §PW283 A movie larger than the desktop
-
-Found shipping PW280 (2026-09-28). A still larger than the desktop is now taken with the
-window borderless, because the OS shrinks a decorated window to the work area: 3840x2160
-asked came back 3840x2119 on a 3840x2160 display, and 5000x3000 came back 3844x2119.
-`capture.movie` sizes its run through its own `override.cfg` (PW273), holding the window
-overrides and not `window/size/borderless`, so a trailer shot asked at the display's own
-size is likely recorded shrunk, frame after frame. This is not yet measured.
-
-First measure it. Run `capture.movie` at 3840x2160 on a 3840x2160 display, or at
-8000x120 anywhere, and read the first frame's size in `sequence.json`. If it is short,
-add `window/size/borderless=true` to the override `_movie_sized` writes. A movie writes
-that file on every run, so there is no second take to spend, and no size to remember. If
-the frames already come back at the size asked, retire this line and cite what was
-measured.
-
-Done when a movie asked past the desktop records frames at the size asked, with a
-real-engine test beside the still's.
-
 ## Block F — Motion
 
 ## Block G — Geometry as a declaration

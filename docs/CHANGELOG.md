@@ -70,6 +70,7 @@
 - ✅ **PW267** **capture.run trusts the size a script says it applied, so a window the OS shrank records a picture of the wrong size** — A capture holds the size its pictures have, several sizes hold none, and a picture the OS shrank is refused naming its size and the cause.
 - ✅ **PW273** **capture.movie asked at a size records at the project's window size, and is refused after as though the script erred** — capture.movie sizes Movie Maker with a run-long override.cfg of window overrides, so a movie asked at 320x240 keeps 320x240 frames.
 - ✅ **PW280** **no capture can take a picture larger than the desktop, so a 4K key art on a 4K screen always comes back shrunk** — capture.run retakes a shrunk picture with the window borderless, which holds sizes past the desktop, and keeps the size for later runs (design recorded in `docs/specs/engine.md`).
+- 🗑 **PW283** **capture.movie asked a size past the desktop likely records every frame at the work area's size** — abandoned: Measured on Godot 4.7.1, a movie asked at 8000x120 records 8000x120 frames through its window overrides alone, so it is not shrunk.
 
 ## Block F — Motion
 

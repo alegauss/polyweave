@@ -29,7 +29,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "B", title: "Seeing the result cheaply", open: 0 },
   { block: "C", title: "The asset compiler", open: 0 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
-  { block: "E", title: "One world with the engine", open: 1 },
+  { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
   { block: "H", title: "Proof on a real game", open: 4 },
@@ -48,13 +48,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW283",
-    block: "E",
-    symptom: "capture.movie asked a size past the desktop likely records every frame at the work area's size",
-    why: "A trailer shot at the display's own size would come back shrunk, and PW280 fixed only the still.",
-    deps: [],
-  },
   {
     id: "PW57",
     block: "H",

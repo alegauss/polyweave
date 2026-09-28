@@ -10,8 +10,6 @@
 
 ## Block E — One world with the engine
 
-- 📋 **PW283** (deps: PW280 ✅) **capture.movie asked a size past the desktop likely records every frame at the work area's size** — A trailer shot at the display's own size would come back shrunk, and PW280 fixed only the still. → §PW283
-
 ## Block F — Motion
 
 ## Block G — Geometry as a declaration

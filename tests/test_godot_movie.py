@@ -75,6 +75,19 @@ def test_a_movie_comes_out_at_the_size_asked_whatever_the_project_window(tmp_pat
     assert not (root / "override.cfg").exists(), "the run's override is removed after"
 
 
+def test_a_movie_wider_than_any_desktop_comes_out_at_the_size_asked(tmp_path):
+    """§PW283: the OS shrinks a decorated window to the work area, frame after frame."""
+    root = project(tmp_path)
+    found = capture.movie("shot.gd", out="shots/wide", root=str(root),
+                          environment={"resolution": "8000x120"})
+    assert found["ok"] is True, found["why"]
+    from PIL import Image
+
+    with Image.open(root / "shots" / "wide" / "0001.png") as first:
+        assert first.size == (8000, 120)
+    assert not (root / "override.cfg").exists()
+
+
 def test_a_project_with_its_own_override_is_refused_before_it_runs(tmp_path):
     (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
     (tmp_path / "override.cfg").write_text("[display]\n", encoding="utf-8")
