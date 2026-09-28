@@ -365,6 +365,9 @@ def render(
             f"{problems[0]['line']}: {problems[0]['message']}",
             f"call music.validate on {source} and fix what it names",
         )
+    if formats is not None:
+        # Wrong wherever it runs, so named before the engines are looked for (§PW282).
+        _writable(list(formats))
     report.stage("building", note="finding the engines this score plays through")
     found = engines(here, model)
     ext = model["extensions"][music.EXTENSION]
@@ -570,6 +573,19 @@ def _folded(summed: np.ndarray, loop: dict | None,
 FORMATS = ("wav", "ogg")
 
 
+def _writable(stated: list) -> None:
+    """Refuse a format no render writes, on any machine (§PW282)."""
+    wrong = [f for f in stated if f not in FORMATS]
+    if wrong or not stated:
+        raise PolyweaveError(
+            "music.bad-format",
+            f"a render writes wav or ogg, and was asked for "
+            f"{', '.join(map(str, wrong)) or 'nothing'}",
+            "pass formats as wav, ogg or both",
+            allowed=list(FORMATS),
+        )
+
+
 def _formats(asked: list | None, config, target: Path, ffmpeg: str | None) -> dict:
     """The formats to write: those asked, else the declared cue's, else both.
 
@@ -582,15 +598,7 @@ def _formats(asked: list | None, config, target: Path, ffmpeg: str | None) -> di
             if file.with_suffix("") == target and file.suffix[1:] in FORMATS:
                 stated = [file.suffix[1:]]
     if stated is not None:
-        wrong = [f for f in stated if f not in FORMATS]
-        if wrong or not stated:
-            raise PolyweaveError(
-                "music.bad-format",
-                f"a render writes wav or ogg, and was asked for "
-                f"{', '.join(map(str, wrong)) or 'nothing'}",
-                "pass formats as wav, ogg or both",
-                allowed=list(FORMATS),
-            )
+        _writable(stated)
         if "ogg" in stated and not ffmpeg:
             raise PolyweaveError(
                 "sound.no-encoder",
