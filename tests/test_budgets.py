@@ -58,7 +58,8 @@ from polyweave.errors import PolyweaveError
 #: 82,466 with provenance.generated (§PW248), the lineage a content survey asks for.
 #: 83,367 with capture.movie (§PW249), a shot kept frame by frame.
 #: 84,737 with engine.sweep (§PW250), a script flown over a grid of arguments.
-DESCRIBE = 85_300
+#: 85,806 with music.render's formats (§PW255) and sound.sitting (§PW256).
+DESCRIBE = 86_400
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -95,7 +96,8 @@ DESCRIBE = 85_300
 #: 92,637 with provenance.generated (§PW248).
 #: 93,538 with capture.movie (§PW249).
 #: 94,927 with engine.sweep and engine.bad-grid (§PW250).
-CAPABILITIES = 95_500
+#: 96,016 with music.render's formats, sound.sitting and music.bad-format.
+CAPABILITIES = 96_600
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

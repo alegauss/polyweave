@@ -137,7 +137,17 @@ serves one page from static files shipped with the plugin, on the standard libra
 **bound to 127.0.0.1 and nothing else**, and prints its address. The page is a reader: it
 shows `loop.pending`, every listed sitting's sheets and failed predicates, and nothing it
 does not read from disk, so it keeps no state and cannot disagree with the files. A file
-is served only from inside the project, and only as a picture or a record.
+is served only from inside the project, and only as a picture, a sound or a record.
+
+**Sounds are heard, not looked at** (§PW256). `sound.sitting(members, out=)` lays out each
+sound as its own family, so a verdict is given per sound: a member names its `new` file and
+optionally the `old` one it replaces, `loop`, and a `spec`. The page plays the two side by
+side, a loop looped so its seam is heard, under a sheet of their waveforms and what
+`sound.measure` says of both (the seam only for a loop, which a `[sound]` family of kind
+`loop` declares or the member says). The choices are `accept` and `look`, and
+`verdict.judge` appends the verdict to the new sound's record under `verdicts`, with the
+digest of what was heard and the sound it was heard against; a sound with no record says
+so, the verdict still in the ledger. A missing file is `sound.no-source`.
 
 **It has one write**, `POST /api/judge`, which calls `verdict.judge` with the members taken
 from the sitting's own manifest rather than from the page, and the person's choice and

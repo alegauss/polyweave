@@ -83,6 +83,27 @@ function marker(member, marks) {
   return holder;
 }
 
+// A sound beside the one it replaces (§PW256): each plays on its own player, a loop
+// looped so its seam is heard, with what sound.measure says of it.
+function listen(member) {
+  const holder = element("div", { class: "listen" });
+  for (const key of ["old", "new"]) {
+    if (!member[key]) continue;
+    const player = element("audio", {
+      controls: "", preload: "auto", src: "/file?path=" + encodeURIComponent(member[key]),
+      "aria-label": key + ": " + member[key],
+    });
+    if (member.loop) player.setAttribute("loop", "");
+    const measured = (member.measured || {})[key] || {};
+    const said = Object.entries(measured)
+      .filter(([, value]) => typeof value === "number")
+      .map(([name, value]) => name + " " + value).join(", ");
+    holder.append(element("p", {}, element("strong", {}, key + ": "), member[key]),
+      player, element("p", { class: "measured" }, said));
+  }
+  return holder;
+}
+
 function family(sitting, name, laid, choices, answers, assets) {
   const box = element("article", { class: "family" }, element("h2", {}, name));
   box.append(element("img", {
@@ -100,6 +121,7 @@ function family(sitting, name, laid, choices, answers, assets) {
   const form = element("form");
   const marks = [];
   for (const member of laid.members || []) {
+    if (member.sound) { form.append(listen(member)); continue; }
     if (member.old) form.append(compare(member.old, member.new, "slider", null));
     form.append(marker(member, marks));
   }

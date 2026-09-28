@@ -74,7 +74,8 @@ TOOL_BUDGET = 4500
 #: 73,800 at 73,240 for provenance.generated (§PW248).
 #: 74,600 at 74,018 for capture.movie (§PW249).
 #: 75,800 at 75,219 for engine.sweep (§PW250).
-LIST_BUDGET = 75800
+#: 76,700 at 76,130 for music.render's formats and sound.sitting (§PW255, §PW256).
+LIST_BUDGET = 76700
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

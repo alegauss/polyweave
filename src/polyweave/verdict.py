@@ -234,7 +234,8 @@ def judge(
     A member carrying `canon` names a style family, and on a verdict that accepts the
     look its `new` picture joins that family's canon, with this verdict on its record
     (§PW166). This is the only door into a canon. A member carrying `line`, laid out by
-    `words.sheet`, is a line of text, and its verdict goes into the lines canon.
+    `words.sheet`, is a line of text, and its verdict goes into the lines canon. One
+    carrying `sound`, laid out by `sound.sitting`, has its verdict kept in its record.
     """
     if choice not in CHOICES:
         raise PolyweaveError(
@@ -329,6 +330,11 @@ def judge(
                 when=stamp,
                 root=here,
             )
+        heard = None
+        if member.get("sound"):
+            # A sound laid out by sound.sitting: the verdict is kept in its own record,
+            # against the bytes that were heard (§PW256).
+            heard = _heard(member, choice=choice, why=why, when=stamp, root=here)
         answers.append(
             {
                 "name": member["name"],
@@ -338,6 +344,7 @@ def judge(
                 "rewritten": rewritten,
                 "canon": joined,
                 **({"line": kept_line} if kept_line else {}),
+                **({"heard": heard} if member.get("sound") else {}),
                 # What the check said, as `loop.judged` takes it, so an answer given
                 # where no run was open can still be carried into one (§PW173).
                 "check": {
@@ -446,6 +453,33 @@ def answers(
         "file": str(path),
         "run": run,
     }
+
+
+def _heard(member: dict, *, choice: str, why: str, when: str, root: Path) -> dict:
+    """A person's verdict on a sound, appended to the new sound's record.
+
+    Kept with the digest of what was heard, so a verdict on a sound made again since is
+    read as one on the old bytes. A sound with no record says so rather than failing
+    the verdict the ledger already holds.
+    """
+    from . import provenance
+
+    new = root / member["new"]
+    entry = {
+        "choice": choice,
+        "why": why,
+        "when": when,
+        "sha256": provenance.sha256_of(new)[0],
+        "against": member.get("old"),
+    }
+    try:
+        record = provenance.read(str(new), root=root)
+    except PolyweaveError:
+        return {**entry, "record": None,
+                "why_unrecorded": f"{member['new']} has no record to keep it in"}
+    record["verdicts"] = [*(record.get("verdicts") or []), entry]
+    written = provenance.write(record, root)
+    return {**entry, "record": provenance.relative(written, root)}
 
 
 def _moved(found: dict, why: str, stamp: str) -> dict:

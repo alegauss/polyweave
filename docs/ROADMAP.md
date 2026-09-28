@@ -52,7 +52,6 @@
 
 ## Block O — A person sees and answers
 
-- 📋 **PW256** (deps: —) **a sitting shows pictures only, so a person cannot hear a new sound beside the old one and give a verdict** — Every swap of a game's sounds needs a person's ear, and today the verdicts are asked for in chat and never recorded. → §PW256
 - 📋 **PW261** (deps: —) **a sitting given bare picture paths as members raises and takes the MCP server down instead of refusing** — One malformed call loses every polyweave tool for the rest of the turn, and the caller learns the member shape only from the source. → §PW261
 - 📋 **PW265** (deps: —) **a refused picture can be promoted only from the review page, so a verdict given in chat has no operation to carry it** — A person often answers in the chat, and the agent then calls private functions it read from the source. → §PW265
 

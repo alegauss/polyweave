@@ -349,6 +349,134 @@ def _cue(cue: str, file: Path, kind: str, root: Path) -> dict:
     return entry
 
 
+#: What a person can say of a sound heard beside the one it replaces (§PW256).
+SOUND_CHOICES = {
+    "accept": "it sounds right: the new one replaces the old",
+    "look": "it does not: say why, and it goes back to be made again",
+}
+
+LISTENED = (
+    "each member: name and new, and optionally old (the sound it replaces), loop, "
+    "and spec, its *.accept.toml"
+)
+
+
+@operation("sound.sitting")
+def sitting(
+    members: Annotated[list, Param(LISTENED)],
+    *,
+    out: Annotated[str, Param("the folder the sitting is laid out in")],
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
+) -> dict:
+    """Put sounds on the review page, each new one beside the one it replaces.
+
+    Each sound is its own family, so a person gives a verdict per sound: the page plays
+    the old and the new side by side, a loop looped so its seam is heard, with what
+    sound.measure says of both drawn on its sheet. The answer lands through
+    verdict.judge, which keeps it in the new sound's record; verdict.answers resumes
+    from it. A loop is a member whose cue a `[sound]` family of kind loop declares, or
+    one that says `loop`.
+    """
+    from . import verdict
+    from .provenance import relative
+
+    config = load(root)
+    here = config.root
+    looped = {
+        (Path(sound["folder"]) / f"{cue}.{sound['format']}").resolve()
+        for sound in config.sounds().values()
+        if sound["kind"] == "loop"
+        for cue in sound["cues"]
+    }
+    folder = config.path("paths.work", out)
+    families, sheets = {}, {}
+    for member in members:
+        heard = {"name": str(member["name"]), "sound": True}
+        for key in ("new", "old", "spec"):
+            if member.get(key):
+                heard[key] = relative(config.path("paths.work", member[key]), here)
+        if "new" not in heard:
+            raise PolyweaveError(
+                "sound.no-source",
+                f"{heard['name']} names no new sound to hear",
+                "give each member new, the file the game will play",
+            )
+        loop = bool(member.get("loop")) or (here / heard["new"]).resolve() in looped
+        heard["loop"] = loop
+        heard["measured"] = {
+            key: _heard(here / heard[key], loop)
+            for key in ("old", "new")
+            if key in heard
+        }
+        # Held to its spec where it has one; otherwise nothing but the ear judges it.
+        spec = verdict._checked(heard, here)[2] if heard.get("spec") else None
+        passed = bool(spec["passed"]) if spec else True
+        heard["passed"] = passed
+        drawn = folder / f"{heard['name']}.png"
+        _drawn(drawn, heard, here)
+        families[heard["name"]] = [heard]
+        sheets[heard["name"]] = {
+            "sheet": str(drawn),
+            "members": [{"name": heard["name"], "passed": passed,
+                         "failed": [verdict._said(r) for r in spec["predicates"]
+                                    if not r["passed"]] if spec else []}],
+        }
+    if families:
+        verdict._manifest(folder, families, sheets, here, choices=SOUND_CHOICES)
+    return {
+        "sitting": relative(folder / verdict.MANIFEST, here) if families else None,
+        "sounds": list(families),
+        "measured": {name: m[0]["measured"] for name, m in families.items()},
+        "choices": dict(SOUND_CHOICES),
+        "says": f"{len(families)} sound{'' if len(families) == 1 else 's'} for a "
+        "person to hear on the review page; verdict.answers resumes from what they "
+        "said",
+    }
+
+
+def _heard(path: Path, loop: bool) -> dict:
+    """What a sound measures, its seam only where it loops."""
+    if not path.is_file():
+        raise PolyweaveError(
+            "sound.no-source",
+            f"there is no sound at {path.name} to hear",
+            "name files under the project, as the game loads them",
+        )
+    found = measure(path)
+    return found if loop else {k: v for k, v in found.items() if k not in SEAM}
+
+
+def _drawn(where: Path, member: dict, here: Path) -> None:
+    """One sound's sheet: each version's waveform, with what it measures under it."""
+    from PIL import Image, ImageDraw
+
+    width, tall, gap, line = 640, 80, 8, 16
+    rows = [key for key in ("old", "new") if key in member]
+    height = gap + len(rows) * (tall + 3 * line + gap) + 2 * line + gap
+    canvas = Image.new("RGBA", (width + 2 * gap, height), (40, 40, 40, 255))
+    draw = ImageDraw.Draw(canvas)
+    y = gap
+    for key in rows:
+        samples, _ = read(here / member[key])
+        mono = samples.mean(axis=1)
+        columns = np.array_split(np.abs(mono), width) if len(mono) >= width else [mono]
+        middle = y + tall // 2
+        for x, column in enumerate(columns):
+            reach = float(np.max(np.abs(column))) if len(column) else 0.0
+            draw.line([(gap + x, middle - reach * tall / 2),
+                       (gap + x, middle + reach * tall / 2)], fill=(120, 190, 255, 255))
+        y += tall
+        said = ", ".join(f"{k} {v:g}" for k, v in member["measured"][key].items()
+                         if isinstance(v, int | float))
+        draw.text((gap, y), f"{key}: {member[key]}", fill=(235, 235, 235, 255))
+        draw.text((gap, y + line), said, fill=(235, 235, 235, 255))
+        y += 3 * line + gap
+    looped = "played looped, so its seam is heard" if member["loop"] else "played once"
+    draw.text((gap, y), f"{member['name']}: {looped}", fill=(255, 210, 90, 255))
+    where.parent.mkdir(parents=True, exist_ok=True)
+    canvas.save(where)
+
+
 @operation("sound.measure")
 def measured(
     subject: Annotated[str, Param("the sound, as a path under the project")],

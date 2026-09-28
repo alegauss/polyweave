@@ -513,26 +513,6 @@ Done when Starship's brand family can be started from the page with its two stud
 
 ## Block O — A person sees and answers
 
-### §PW256 A sitting for sounds
-
-Found in Starship's RK115 (2026-09-27). Its design says a person listens before the old
-sounds go, a verdict per effect, since a synth swap changes how every hit feels. Twelve
-effects and three phase tracks were remade through `sound.synth` and `music.render`, and
-the old ones kept aside in `.polyweave/audio_before/`. Nothing in polyweave can put them
-in front of a person: `verdict.sheet` and `verdict.sitting` lay out pictures, `review`
-serves them, and `verdict.judge` carries words about a look. So the verdicts are asked
-for in a chat message listing file paths, and whatever the person answers is not
-recorded beside the sounds.
-
-A sitting should take sounds as members: each with its new file, the old one it
-replaces, and what `sound.measure` says of both (loudness, peak, length, the seam for a
-loop), played side by side on the review page with the same keep, change or reject
-answer a picture gets, and `verdict.judge` recording it against the sound's record. A
-loop plays looped, so its seam is heard.
-
-Done when Starship's fifteen sounds are one sitting and a person's answers land in their
-records.
-
 ### §PW261 A malformed member is refused, never raised
 
 Found in Starship (2026-09-27, RK132). `verdict.sitting` was given a family as a list of

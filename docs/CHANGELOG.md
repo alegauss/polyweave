@@ -242,6 +242,7 @@
 - ✅ **PW176** **two versions of an asset are compared side by side, where a few ΔE of drift or a grown silhouette goes unseen** — A mesh compares as a turntable baked at the rig's own camera, frame by frame, with the drawing laid over its front view (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW177** **the canon is a folder of files, so what a family is meant to look like is never seen whole** — Each family's canon is one board with its palette, skeleton and floors, each picture's effect on them, and joins and removals only by a click (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW182** **a verdict sheet is sized to its member rows, so the choice lines under them are cut off at the edge** — A verdict sheet measures every line with the font that draws it, choices included, so none is cut off on a sheet of narrow pictures.
+- ✅ **PW256** **a sitting shows pictures only, so a person cannot hear a new sound beside the old one and give a verdict** — sound.sitting plays each sound beside the one it replaces on the review page, a loop looped; verdict.judge keeps the answer in its record (design recorded in `docs/specs/acceptance-spec.md`).
 
 ## Block P — Music and sound a game can ship
 
