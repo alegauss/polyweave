@@ -10,7 +10,48 @@
 
 ## Block E — One world with the engine
 
+### §PW280 A capture larger than the desktop
+
+Found validating PW267 in Starship (2026-09-28). Steam's library hero needs a 3840-wide
+key art, and `store.capsules` rightly refuses to upscale one. The key art was asked of
+`capture.run` at 3840x2160 on a 3840x2160 display. PW267 now answers `holds: false`: the
+OS shrank the window to the work area, 3840x2119. Its remedy says to render into an
+offscreen viewport of that size, but no route in `offscreen.routes` does, and PW273's
+window overrides are what the OS shrinks. So a picture larger than the desktop can only
+be had by each project writing a SubViewport into its own stage script.
+
+`capture.run` should take a size a window cannot hold. It would render the scene into a
+SubViewport of that size, the world and the camera the script sets up, and save that
+viewport's texture. It would record the size measured on the picture, as PW267 does. It
+should be an offscreen route of its own (`viewport`), probed like the others, and chosen
+when the asked size exceeds the desktop's work area.
+
+Done when Starship's key art captures at 3840x2160 on a 3840x2160 display and
+`store.capsules` cuts the library hero from it.
+
 ## Block F — Motion
+
+### §PW279 Contrast held by a spec
+
+Found validating PW272 in Starship (2026-09-28). The CLI worked: `measure.contrast
+--targets @orbs.json --ring 24` with 20 px targets put RK142's worst shot at 5.73,
+against 1.52 before. The PW272 done-when, a spec holding `contrast_min`, could not be
+met, for three reasons:
+
+- a predicate refuses `ring` (`spec.unknown-field`), though the measure takes it;
+- a predicate's `targets` given as a path is read only as a `target: x y` log. A JSON
+  list of `{at, radius}` in a file gives `spec.no-targets`, and the log has no radius;
+- with the log's default radius, both the new and the old frame measured
+  `contrast_min: 1.0` and failed with no warning. The target was smaller than the
+  shot, so the surround fell inside it and the measure compared the shot with itself.
+
+A predicate should take the measure's own parameters (`ring`, a default `radius`), and a
+`targets` file in either form, JSON or log. The log should allow `target: x y r`. A
+contrast whose surround is mostly the same colour as the target should say so (`the ring
+around target 3 lies inside it: widen radius`) rather than report 1.0.
+
+Done when art/accept/shots.accept.toml holds `contrast_min >= 4.5` on
+art/renders/shots.png and fails on the pre-RK142 frame.
 
 ## Block G — Geometry as a declaration
 
@@ -336,6 +377,30 @@ Check first whether 4.0 has gained a reference field, and learn it by the schema
 since a reference the service ignores is dropped without an error.
 
 ## Block O — A person sees and answers
+
+### §PW281 Effects that can declare a trail
+
+Found taking up PW259 in Starship (2026-09-28, RK136). The owner accepted seven trails,
+drawn today by game code (game/actors/trail.gd), and PW259 was filed so they could be
+declared and built instead. Probing `vfx.build` with the sparks trail as it stands, it
+refused every key the accepted looks rely on (`vfx.bad-effect`):
+
+- `damping`: sparks brake at 6 to 10 and stay by the engine; without it they reach 3.6;
+- `angle` and `angular_velocity`: the Holders' confetti spins;
+- a box emission with extents: the sun band throws from a tall strip;
+- a particle's `shape`, a soft dot, a ring or a flake: built today, each is a square;
+- a ribbon that follows the path the engine flew: `ribbon` is a particle trail, so the
+  tender's own ribbon, narrowing as it ages, has no kind.
+
+`[effect.*]` should take those five, `damping`, `angle`, `angular_velocity`, `emission =
+"box"` with `extents`, and `shape` (`dot`, `ring`, `flake`, or a picture path). It
+should also have a `path_ribbon` kind: a mesh rebuilt from the points an emitter's node
+passed, with `width`, `life` and `colour_over_life`. The built scene then needs no
+script of the game's own. `vfx.preview` should show a moving emitter, since a trail is
+only read in motion.
+
+Done when Starship's seven trails build from art/vfx/trails.vfx.toml and the game draws
+the built scenes with no particle or ribbon code of its own.
 
 ## Block P — Music and sound a game can ship
 

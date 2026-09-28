@@ -10,7 +10,11 @@
 
 ## Block E — One world with the engine
 
+- 📋 **PW280** (deps: PW267 ✅) **no capture can take a picture larger than the desktop, so a 4K key art on a 4K screen always comes back shrunk** — A store's library hero needs 3840 wide, and PW267's remedy names a viewport route polyweave does not have. → §PW280
+
 ## Block F — Motion
+
+- 📋 **PW279** (deps: PW272 ✅) **a spec cannot give contrast_min its ring or a target's radius, so a shot measured from a spec reads 1.0 in silence** — PW272 was filed so a spec holds a shot's legibility, and today only the CLI can measure it right. → §PW279
 
 ## Block G — Geometry as a declaration
 
@@ -34,6 +38,8 @@
 ## Block N — Pictures held to a canon
 
 ## Block O — A person sees and answers
+
+- 📋 **PW281** (deps: PW259 ✅) **vfx.build cannot declare damping, spin, box emission, particle shape or a path ribbon, so no accepted trail builds** — Starship's seven trails were accepted with all five, and a build without them would draw a different look. → §PW281
 
 ## Block P — Music and sound a game can ship
 
