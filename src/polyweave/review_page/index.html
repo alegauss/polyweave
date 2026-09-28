@@ -6,101 +6,201 @@
 <title>polyweave review</title>
 <style>
   :root {
-    --ground: #f6f5f2; --panel: #ffffff; --ink: #1f1d1a; --quiet: #6b665e;
-    --line: #dedad3; --accent: #3a5bd9; --fail: #b3261e; --pass: #1e7a3a;
+    --ground: #f4f3ef; --panel: #ffffff; --ink: #1c1b19; --quiet: #67625a;
+    --line: #e2ded6; --soft: #efece6; --accent: #3450c9; --accent-ink: #ffffff;
+    --yes: #1f7a3e; --yes-soft: #e4f3e9; --no: #b3401e; --no-soft: #fbe9e3;
+    --wait: #8a6a12; --wait-soft: #f8f0d9; --shadow: 0 1px 2px rgb(0 0 0 / 6%),
+      0 4px 16px rgb(0 0 0 / 6%);
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --ground: #17171a; --panel: #212126; --ink: #ecebe8; --quiet: #a09c95;
-      --line: #34343b; --accent: #8aa2ff; --fail: #ff8a80; --pass: #7fd99a;
+      --ground: #141416; --panel: #1f1f23; --ink: #eceae6; --quiet: #a39e96;
+      --line: #33333a; --soft: #29292f; --accent: #8ea4ff; --accent-ink: #10131f;
+      --yes: #7fd99a; --yes-soft: #1c3325; --no: #ff9f84; --no-soft: #3a2320;
+      --wait: #f0cf6a; --wait-soft: #37301b; --shadow: none;
     }
   }
   * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  .films { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); padding: 0 20px; }
+  .films figure { margin: 0; background: #3a3a3a; border-radius: 10px; padding: 8px; }
+  .films figcaption { color: #f1ede6; font-weight: 600; font-size: 15px; padding: 2px 4px 8px; }
+  .films img { display: block; width: 100%; height: auto; border-radius: 6px; }
+  .frames { padding: 10px 20px 0; }
+  .frames summary { cursor: pointer; color: var(--accent); font-size: 14px; }
+  .frames .picture { margin: 8px 0 0; border-radius: 8px; }
   body {
-    margin: 0; padding: 16px; background: var(--ground); color: var(--ink);
-    font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+    margin: 0; background: var(--ground); color: var(--ink);
+    font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   }
-  main { max-width: 1100px; margin: 0 auto; }
-  h1 { font-size: 20px; margin: 0 0 4px; }
-  h2 { font-size: 16px; margin: 24px 0 8px; }
-  .says { color: var(--quiet); margin: 0 0 16px; }
-  .family {
-    background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
-    padding: 16px; margin: 0 0 16px;
+  main { max-width: 1040px; margin: 0 auto; padding: 24px 16px 64px; }
+  header.top {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    flex-wrap: wrap; margin-bottom: 20px;
   }
-  .family img {
-    display: block; max-width: 100%; height: auto; border-radius: 4px;
-    image-rendering: pixelated; background: #808080;
+  header.top h1 { font-size: 22px; margin: 0; letter-spacing: -0.01em; }
+  header.top .project { color: var(--quiet); font-size: 14px; }
+  .progress {
+    display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--quiet);
   }
-  .member { margin: 8px 0 0; }
-  .fails { color: var(--fail); } .passes { color: var(--pass); }
-  .choices { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 8px; }
-  .choices label {
-    border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; cursor: pointer;
+  .bar { width: 160px; height: 8px; border-radius: 99px; background: var(--line); }
+  .bar > span {
+    display: block; height: 100%; border-radius: 99px; background: var(--yes);
+    transition: width .3s ease;
   }
-  .choices input { margin-right: 6px; }
+  .intro {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+    padding: 20px 22px; box-shadow: var(--shadow); margin-bottom: 20px;
+  }
+  .intro h2 { font-size: 20px; margin: 0 0 6px; }
+  .intro p { margin: 0 0 12px; max-width: 70ch; white-space: pre-wrap; }
+  .intro .when { color: var(--quiet); font-size: 13px; margin: 0 0 12px; }
+  .how { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  .how div { border-radius: 10px; padding: 10px 12px; background: var(--soft); }
+  .how strong { display: block; }
+  .how span { color: var(--quiet); font-size: 14px; }
+  details.more { margin-top: 12px; }
+  details.more summary { cursor: pointer; color: var(--accent); font-size: 14px; }
+  dl.legend { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; margin: 10px 0 0; font-size: 14px; }
+  dl.legend dt { font-weight: 600; font-family: ui-monospace, monospace; }
+  dl.legend dd { margin: 0; color: var(--quiet); }
+  .card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+    box-shadow: var(--shadow); margin: 0 0 18px; overflow: hidden;
+  }
+  .card.done { opacity: .92; }
+  .card header {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 16px 20px 8px;
+  }
+  .card h3 { margin: 0; font-size: 18px; text-transform: capitalize; }
+  .badge { font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 99px; white-space: nowrap; }
+  .badge.wait { color: var(--wait); background: var(--wait-soft); }
+  .badge.yes { color: var(--yes); background: var(--yes-soft); }
+  .badge.no { color: var(--no); background: var(--no-soft); }
+  .card .about { padding: 0 20px 12px; margin: 0; color: var(--quiet); max-width: 80ch; }
+  .picture { display: block; background: #3a3a3a; padding: 8px; cursor: zoom-in; }
+  .picture img { display: block; width: 100%; height: auto; border-radius: 6px; }
+  .picture figcaption { color: #d8d4cc; font-size: 13px; padding: 6px 4px 0; }
+  .decide { padding: 16px 20px 20px; }
+  .decide .question { font-weight: 600; margin: 0 0 10px; }
+  .options { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .option {
+    display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left;
+    padding: 12px 14px; border-radius: 10px; border: 2px solid var(--line);
+    background: var(--panel); color: var(--ink); font: inherit; cursor: pointer;
+  }
+  .option:hover { border-color: var(--quiet); }
+  .option:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .option b { font-size: 16px; }
+  .option small { color: var(--quiet); font-size: 13px; line-height: 1.4; }
+  .option[aria-pressed="true"].accept { border-color: var(--yes); background: var(--yes-soft); }
+  .option[aria-pressed="true"].look { border-color: var(--no); background: var(--no-soft); }
+  .option[aria-pressed="true"].other { border-color: var(--accent); background: var(--soft); }
+  .note { margin-top: 12px; display: none; }
+  .note.open { display: block; }
+  .note label { display: block; font-weight: 600; margin-bottom: 6px; }
   textarea {
-    width: 100%; min-height: 56px; font: inherit; color: var(--ink);
-    background: var(--ground); border: 1px solid var(--line); border-radius: 6px;
-    padding: 8px;
+    width: 100%; min-height: 80px; font: inherit; color: var(--ink);
+    background: var(--ground); border: 1px solid var(--line); border-radius: 8px; padding: 10px;
   }
-  button {
-    font: inherit; margin-top: 8px; padding: 8px 14px; border-radius: 6px; border: 0;
-    background: var(--accent); color: #fff; cursor: pointer;
+  textarea:focus-visible { outline: 3px solid var(--accent); outline-offset: 1px; }
+  .actions { display: flex; align-items: center; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
+  button.primary {
+    font: inherit; font-weight: 600; padding: 10px 18px; border-radius: 8px; border: 0;
+    background: var(--accent); color: var(--accent-ink); cursor: pointer;
   }
-  button:disabled { opacity: 0.5; cursor: default; }
-  .answer { margin-top: 8px; color: var(--quiet); white-space: pre-wrap; }
+  button.primary:disabled { opacity: .5; cursor: default; }
+  button.link {
+    font: inherit; background: none; border: 0; padding: 0; color: var(--accent); cursor: pointer;
+    text-decoration: underline;
+  }
+  .message { color: var(--quiet); font-size: 14px; white-space: pre-wrap; }
+  .message.bad { color: var(--no); }
+  .answered { padding: 14px 20px 18px; border-top: 1px solid var(--line); }
+  .answered p { margin: 0 0 6px; }
+  .answered q { color: var(--quiet); }
+  .tools { padding: 0 20px 16px; }
+  .tools details { border-top: 1px solid var(--line); padding: 10px 0 0; margin-top: 10px; }
+  .tools summary { cursor: pointer; color: var(--accent); font-size: 14px; }
+  .tools .facts { font-size: 14px; color: var(--quiet); }
   .mark { display: inline-block; margin: 8px 12px 0 0; vertical-align: top; }
   .mark .frame { position: relative; display: inline-block; }
-  .mark img { max-width: 320px; image-rendering: pixelated; }
-  .mark canvas {
-    position: absolute; left: 0; top: 0; cursor: crosshair; touch-action: none;
+  .mark img { max-width: 100%; }
+  .mark canvas { position: absolute; left: 0; top: 0; cursor: crosshair; touch-action: none; }
+  .mark button { font: inherit; font-size: 13px; margin-top: 6px; }
+  .fails { color: var(--no); } .passes { color: var(--yes); }
+  .listen p { margin: 8px 0 4px; }
+  .listen audio { width: 100%; }
+  .listen .measured { color: var(--quiet); font-size: 13px; }
+  section.older > summary, details.advanced > summary {
+    cursor: pointer; font-weight: 600; margin: 28px 0 12px; color: var(--quiet);
   }
-  .mark p { margin: 0 0 4px; color: var(--quiet); }
+  details.advanced h2 { font-size: 16px; margin: 20px 0 8px; }
+  .family {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 14px; margin: 0 0 14px;
+  }
+  .family img { display: block; max-width: 100%; height: auto; border-radius: 4px; background: #808080; }
   .lane { margin: 12px 0 0; }
   .lane h3, .lane summary { font-size: 14px; margin: 0 0 8px; cursor: pointer; }
-  .candidate {
-    display: grid; grid-template-columns: minmax(0, 160px) 1fr; gap: 12px;
-    border-top: 1px solid var(--line); padding: 8px 0;
-  }
+  .candidate { display: grid; grid-template-columns: minmax(0, 160px) 1fr; gap: 12px; border-top: 1px solid var(--line); padding: 8px 0; }
   .candidate img { max-width: 160px; }
   .candidate ul { margin: 0; padding-left: 18px; }
   .candidate form { grid-column: 1 / -1; }
   .compare { grid-column: 1 / -1; margin: 8px 0; }
   .tabs { display: flex; gap: 4px; margin-bottom: 6px; }
-  .tabs button { margin: 0; padding: 4px 10px; background: var(--line); color: var(--ink); }
-  .tabs button[aria-selected="true"] { background: var(--accent); color: #fff; }
+  .tabs button { font: inherit; font-size: 13px; padding: 4px 10px; border-radius: 6px; border: 0; background: var(--line); color: var(--ink); cursor: pointer; }
+  .tabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); }
   .side { display: flex; gap: 8px; flex-wrap: wrap; }
   .side img, .layers img, .stage > div > img { max-width: 320px; }
   .layers { position: relative; display: inline-block; }
   .layers img + img { position: absolute; left: 0; top: 0; }
-  .layers img.mask { opacity: 0.35; filter: invert(1); mix-blend-mode: multiply; }
+  .layers img.mask { opacity: .35; filter: invert(1); mix-blend-mode: multiply; }
   .compare input[type=range] { display: block; width: 320px; max-width: 100%; }
   .swatches { display: flex; flex-wrap: wrap; gap: 6px; }
-  .swatch {
-    padding: 4px 8px; border-radius: 4px; border: 1px solid var(--line);
-    background: var(--chip); color: #fff; text-shadow: 0 0 2px #000; font-size: 12px;
-  }
+  .swatch { padding: 4px 8px; border-radius: 4px; border: 1px solid var(--line); background: var(--chip); color: #fff; text-shadow: 0 0 2px #000; font-size: 12px; }
+  .says { color: var(--quiet); }
   pre { background: var(--ground); padding: 8px; border-radius: 6px; overflow-x: auto; }
-  table { border-collapse: collapse; width: 100%; background: var(--panel); }
+  table { border-collapse: collapse; width: 100%; background: var(--panel); font-size: 14px; }
   td, th { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: left; }
+  .empty { text-align: center; color: var(--quiet); padding: 40px 16px; }
+  dialog.zoom { border: 0; padding: 0; background: transparent; max-width: 96vw; }
+  dialog.zoom::backdrop { background: rgb(0 0 0 / 80%); }
+  dialog.zoom img { display: block; max-width: 96vw; max-height: 90vh; }
+  dialog.zoom button { position: fixed; top: 12px; right: 16px; font: inherit; font-size: 15px; padding: 6px 12px; border-radius: 8px; border: 0; cursor: pointer; }
+  button.secondary { font: inherit; font-size: 14px; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; }
 </style>
 </head>
 <body>
 <main>
-  <h1>polyweave review</h1>
-  <p class="says" id="says">Reading what is on disk.</p>
-  <section id="sittings"></section>
-  <section id="gates"></section>
-  <section id="meshes"></section>
-  <h2>The canons</h2>
-  <button type="button" id="show-canons">Show every family's canon</button>
-  <section id="canons"></section>
-  <h2>Where every asset stands</h2>
-  <table id="pending"><thead><tr>
-    <th>asset</th><th>waiting</th><th>newest candidate</th><th>last judged</th>
-  </tr></thead><tbody></tbody></table>
+  <header class="top">
+    <div>
+      <h1 id="heading">polyweave review</h1>
+      <div class="project" id="project"></div>
+    </div>
+    <div class="progress" id="progress" hidden>
+      <div class="bar"><span id="bar" style="width:0"></span></div>
+      <span id="counted"></span>
+    </div>
+  </header>
+  <section id="sittings"><p class="empty" id="says">…</p></section>
+  <section id="older"></section>
+  <details class="advanced" id="advanced">
+    <summary id="advanced-title">Advanced</summary>
+    <section id="gates"></section>
+    <section id="meshes"></section>
+    <h2 id="canons-title">The canons</h2>
+    <button type="button" class="secondary" id="show-canons">Show every family's canon</button>
+    <section id="canons"></section>
+    <h2 id="pending-title">Where every asset stands</h2>
+    <table id="pending"><thead><tr>
+      <th id="th-asset">asset</th><th id="th-waiting">waiting</th>
+      <th id="th-candidate">newest candidate</th><th id="th-judged">last judged</th>
+    </tr></thead><tbody></tbody></table>
+  </details>
 </main>
+<dialog class="zoom" id="zoom"><button type="button" id="zoom-close">×</button><img alt=""></dialog>
 <script src="/page.js"></script>
 <script>document.getElementById("show-canons").addEventListener("click", () => drawCanons());</script>
 </body>

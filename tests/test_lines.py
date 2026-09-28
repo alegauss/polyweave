@@ -55,7 +55,10 @@ def test_unjudged_lines_are_laid_out_one_family_each_by_speaker(tmp_path):
     assert laid["lines"] == 3
     assert laid["families"] == ["ada.HI", "ada.RALLY", "bo.YAWN"]
     manifest = json.loads((tmp_path / laid["sitting"]).read_text("utf-8"))
-    assert manifest["choices"] == words.LINE_CHOICES
+    assert set(manifest["choices"]) == set(words.LINE_CHOICES)
+    # Each choice says what it is and what it leads to (§PW287).
+    assert all({"label", "means", "then"} <= set(one)
+               for one in manifest["choices"].values())
     assert (tmp_path / "review" / "lines" / "ada.HI.png").is_file()
     member = manifest["families"]["bo.YAWN"]["members"][0]
     assert member["text"] == {

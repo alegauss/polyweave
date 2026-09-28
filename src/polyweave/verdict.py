@@ -184,6 +184,7 @@ def sitting(
     *,
     out: Annotated[str, Param("the folder every family's sheet is written into")],
     root: Annotated[str, Param("the project the paths resolve against")] = ".",
+    about: Annotated[str, Param("what the person should know, under the summary")] = "",
 ) -> dict:
     """Every pending family's sheet in one folder, so a person looks once (§PW110).
 
@@ -204,7 +205,7 @@ def sitting(
         name: sheet(members, out=folder / f"{name}.png", root=root)
         for name, members in families.items()
     }
-    _manifest(folder, families, sheets, root)
+    _manifest(folder, families, sheets, root, about=about)
     return {
         "sheets": sheets,
         "says": f"{len(sheets)} famil{'y' if len(sheets) == 1 else 'ies'} to look at "
@@ -218,16 +219,20 @@ MANIFEST = "sitting.json"
 
 
 def _manifest(
-    folder: Path, families: dict, sheets: dict, root, choices: dict | None = None
+    folder: Path, families: dict, sheets: dict, root, kind: str = "look",
+    about: str = "", abouts: dict | None = None,
 ) -> None:
     """The sitting as data, and its place in the project's index of sittings.
 
-    `choices` are the words the page offers, where a sitting's are not a picture's: a
-    sitting of lines offers accept and look, in words about a line (§PW199).
+    `kind` is what is judged, a look, a line, an effect or a sound, and says the words
+    the page offers (§PW199): each choice with what it means and what it leads to, and
+    a summary of the sitting, in the project's `[review] language` (§PW287). `about` is
+    what only the caller knows, added under the summary; `abouts` one family's.
     """
     import json
     from datetime import UTC, datetime
 
+    from . import review_text
     from .config import load
     from .files import read_text_retrying, write_atomic
     from .provenance import relative
@@ -235,17 +240,19 @@ def _manifest(
     config = load(root)
     here = config.root
     where = folder if folder.is_absolute() else here / folder
+    abouts = abouts or {}
     manifest = {
         "at": datetime.now(tz=UTC).isoformat(timespec="seconds"),
+        **review_text.told(kind, review_text.language(here), about),
         "families": {
             name: {
                 "members": list(members),
                 "sheet": relative(Path(sheets[name]["sheet"]), here),
                 "said": sheets[name]["members"],
+                **({"about": abouts[name]} if abouts.get(name) else {}),
             }
             for name, members in families.items()
         },
-        "choices": dict(choices or CHOICES),
     }
     write_atomic(where / MANIFEST, json.dumps(manifest, indent=2) + "\n")
     index = config.path("paths.work") / "sittings.json"

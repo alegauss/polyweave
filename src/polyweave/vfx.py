@@ -735,6 +735,95 @@ def _framing(effect: dict, fps: int = 60) -> dict:
             "turn": f"{max(1.0, 2 * effect['lifetime'] * fps):.6g}"}
 
 
+def _filmed(name: str, scene: str, own: dict, fps: int, work: Path, here: Path) -> list:
+    """One scene played under the watch camera, as the frames Movie Maker kept."""
+    from . import capture
+
+    start, span = 2, max(2, round(own["lifetime"] * 1.5 * fps))
+    script = work / f"{name}.watch.gd"
+    script.parent.mkdir(parents=True, exist_ok=True)
+    script.write_text(_WATCH % {
+        "grey": _floats(NEUTRAL), "scene": scene,
+        "start": start, "stop": start + span, **_framing(own, fps),
+    }, encoding="utf-8", newline="\n")
+    shot = capture.movie(
+        provenance.relative(script, here), out=str(work / name / "frames"),
+        # Asked at the size the sheet draws, which capture.movie sizes Movie Maker
+        # to for the run (§PW273).
+        root=str(here), environment={"resolution": f"{FRAME[0]}x{FRAME[1]}"},
+    )
+    if not shot["ok"]:
+        raise PolyweaveError(
+            "vfx.unwatched",
+            f"effect {name} could not be watched: {shot.get('why')}",
+            "run it where a display is, or through the offscreen route; the log "
+            "is named in the detail",
+            detail=shot.get("log"),
+        )
+    return sorted(Path(shot["out"]).glob("*.png"))
+
+
+#: Faces that carry accents, tried in order: a sheet's words are in the project's
+#: language (§PW287), and Pillow's own face draws "Construído" with a box for the í.
+FACES = ("DejaVuSans.ttf", "segoeui.ttf", "arial.ttf", "Arial.ttf", "Helvetica.ttc")
+
+
+def _face(size: int = 14):
+    """A face that draws the project's language, or Pillow's own where none is found."""
+    from PIL import ImageFont
+
+    for name in FACES:
+        try:
+            return ImageFont.truetype(name, size)
+        except OSError:
+            continue
+    return ImageFont.load_default()
+
+
+def _animated(filmed: list, fps: int, target: Path) -> Path:
+    """A film as one looping picture, since a trail is judged moving (§PW287)."""
+    from PIL import Image
+
+    frames = []
+    for frame in filmed:
+        with Image.open(frame) as still:
+            frames.append(still.convert("RGB").resize(FRAME))
+    target.parent.mkdir(parents=True, exist_ok=True)
+    frames[0].save(target, save_all=True, append_images=frames[1:], loop=0,
+                   duration=max(1, round(1000 / fps)), quality=80)
+    return target
+
+
+def _sheet(rows: list[tuple[str, list]], stills: int, fps: int, footer: str):
+    """The stills of each row side by side, a row a film, each row named above it."""
+    from PIL import Image, ImageDraw
+
+    gap, line = 8, 24
+    face = _face()
+    height = len(rows) * (line + FRAME[1] + gap) + gap + 2 * line
+    sheet = Image.new("RGBA", (gap + stills * (FRAME[0] + gap), height),
+                      (40, 40, 40, 255))
+    draw = ImageDraw.Draw(sheet)
+    top = gap
+    frames = rows[0][1]
+    for label, filmed in rows:
+        draw.text((gap, top + 2), label, fill=(255, 210, 90, 255), font=face)
+        top += line
+        picked = [filmed[round(i * (len(filmed) - 1) / (stills - 1))]
+                  for i in range(stills)]
+        for i, frame in enumerate(picked):
+            with Image.open(frame) as still:
+                sheet.alpha_composite(still.convert("RGBA").resize(FRAME),
+                                      (gap + i * (FRAME[0] + gap), top))
+        top += FRAME[1] + gap
+    for i in range(stills):
+        at = round(i * (len(frames) - 1) / (stills - 1)) / fps
+        draw.text((gap + i * (FRAME[0] + gap), top + 2), f"t = {at:.2f} s",
+                  fill=(235, 235, 235, 255), font=face)
+    draw.text((gap, top + line + 2), footer, fill=(200, 200, 200, 255), font=face)
+    return sheet
+
+
 @operation("vfx.preview", kind="capture")
 def preview(
     source: Annotated[str, Param("the *.vfx.toml, relative to the project")],
@@ -742,20 +831,23 @@ def preview(
     out: Annotated[str, Param("the folder the sitting is laid out in")],
     effect: Annotated[str, Param("one effect; left out, every one")] = None,
     stills: Annotated[int, Param("frames on each sheet", lo=2, hi=12)] = 6,
+    against: Annotated[
+        dict, Param("each effect's scene as the game draws it now, filmed above it")
+    ] = None,
+    about: Annotated[str, Param("what the person should know, under the summary")] = "",
     root: Annotated[str, Param("the project the effects belong to")] = ".",
 ) -> dict:
     """Watch each effect over its life on a neutral grey, as a sitting for a person.
 
     Each effect is built, then played in the engine from its side, with the camera
     framing its reach and the emitter carried round a circle in view unless it is a
-    one-shot burst, for one and a half lifetimes; the frames are kept by
-    capture.movie and `stills` of them, evenly spaced, are laid out on one sheet with
-    their times and what the effect measures. The sheets are a sitting on the review
-    page, one family an effect; the answer lands through verdict.judge.
+    one-shot burst, for one and a half lifetimes; `stills` frames, evenly spaced, are
+    laid out on one sheet. `against` names, per effect, the scene that draws it in the
+    game today: it is filmed the same way and laid above, so a person sees the two in
+    one look (§PW287). The sheets are a sitting on the review page in the project's
+    language, one family an effect; the answer lands through verdict.judge.
     """
-    from PIL import Image, ImageDraw
-
-    from . import capture, verdict
+    from . import review_text, verdict
 
     config = load(root)
     here = config.root
@@ -764,59 +856,53 @@ def preview(
     fps = int(config.get("engine.fixed_fps"))
     folder = config.path("paths.work", out)
     work = config.path("paths.work") / "vfx"
-    families, sheets, watched = {}, {}, {}
+    speaks = review_text.language(here)
+    words = review_text.kind("effect", speaks)
+    against = dict(against or {})
+    unknown = sorted(set(against) - set(built))
+    if unknown:
+        raise PolyweaveError(
+            "vfx.bad-effect", f"against names {', '.join(unknown)}, which is not built",
+            f"key against by the effects built: {', '.join(built)}",
+            given=unknown[0], allowed=sorted(built),
+        )
+    families, sheets, watched, abouts = {}, {}, {}, {}
     for name, made in built.items():
         own = _watched_as(declared(name, tables[name], here))
-        start, span = 2, max(2, round(own["lifetime"] * 1.5 * fps))
-        script = work / f"{name}.watch.gd"
-        script.parent.mkdir(parents=True, exist_ok=True)
-        script.write_text(_WATCH % {
-            "grey": _floats(NEUTRAL), "scene": "res://" + made["file"],
-            "start": start, "stop": start + span, **_framing(own, fps),
-        }, encoding="utf-8", newline="\n")
-        shot = capture.movie(
-            provenance.relative(script, here), out=str(work / name / "frames"),
-            # Asked at the size the sheet draws, which capture.movie sizes Movie Maker
-            # to for the run (§PW273).
-            root=str(here), environment={"resolution": f"{FRAME[0]}x{FRAME[1]}"},
-        )
-        if not shot["ok"]:
-            raise PolyweaveError(
-                "vfx.unwatched",
-                f"effect {name} could not be watched: {shot.get('why')}",
-                "run it where a display is, or through the offscreen route; the log "
-                "is named in the detail",
-                detail=shot.get("log"),
-            )
-        frames = sorted(Path(shot["out"]).glob("*.png"))
-        picked = [frames[round(i * (len(frames) - 1) / (stills - 1))]
-                  for i in range(stills)]
-        gap, line = 8, 16
-        sheet = Image.new("RGBA", (gap + stills * (FRAME[0] + gap),
-                                   FRAME[1] + 2 * gap + 3 * line), (40, 40, 40, 255))
-        draw = ImageDraw.Draw(sheet)
-        for i, frame in enumerate(picked):
-            with Image.open(frame) as still:
-                sheet.alpha_composite(still.convert("RGBA").resize(FRAME),
-                                      (gap + i * (FRAME[0] + gap), gap))
-            at = (frames.index(frame)) / fps
-            draw.text((gap + i * (FRAME[0] + gap), FRAME[1] + gap + 2),
-                      f"t = {at:.2f} s", fill=(235, 235, 235, 255))
+        rows = []
+        if name in against:
+            scene = str(against[name]).removeprefix("res://")
+            if not (here / scene).is_file():
+                raise PolyweaveError(
+                    "vfx.bad-effect", f"against names {scene} for {name}, which is not "
+                    "there", "name the scene the game draws the effect with now")
+            rows.append((words["rows"][0], _filmed(
+                f"{name}.today", "res://" + scene, own, fps, work, here)))
+        filmed = _filmed(name, "res://" + made["file"], own, fps, work, here)
+        rows.append((words["rows"][1], filmed))
         said = ", ".join(f"{k} {made[k]:g}" for k in
                          ("lifetime", "reach", "alive", "rate", "brightness"))
-        draw.text((gap, FRAME[1] + gap + line + 4), f"{name}: {said}",
-                  fill=(255, 210, 90, 255))
         drawn = folder / f"{name}.png"
         drawn.parent.mkdir(parents=True, exist_ok=True)
-        sheet.save(drawn)
+        _sheet(rows, stills, fps, f"{name}: {said}").save(drawn)
+        # Each film looping as well, labelled, so the page plays today beside built.
+        films = [{"label": label, "path": provenance.relative(_animated(
+                     one, fps, folder / f"{name}.{index}.webp"), here)}
+                 for index, (label, one) in enumerate(rows)]
         member = {"name": name, "new": provenance.relative(drawn, here),
-                  "effect": made["file"], "passed": True, "measured": said}
+                  "effect": made["file"], "passed": True, "measured": said,
+                  "films": films}
         families[name] = [member]
         sheets[name] = {"sheet": str(drawn),
                         "members": [{"name": name, "passed": True, "failed": []}]}
-        watched[name] = {"sheet": member["new"], "frames": len(frames),
-                         "scene": made["file"]}
-    verdict._manifest(folder, families, sheets, here, choices=VFX_CHOICES)
+        parts = list(made.get("parts") or {})
+        made_of = words["parts"].format(parts=", ".join(parts)) if parts else ""
+        abouts[name] = (words["family"].format(name=name) + made_of
+                        + (words["against"] if name in against else ""))
+        watched[name] = {"sheet": member["new"], "frames": len(filmed),
+                         "scene": made["file"], "against": name in against}
+    verdict._manifest(folder, families, sheets, here, kind="effect", about=about,
+                      abouts=abouts)
     return {
         "sitting": provenance.relative(folder / verdict.MANIFEST, here),
         "effects": watched,

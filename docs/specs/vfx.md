@@ -110,7 +110,12 @@ lifetimes against a neutral grey (`NEUTRAL`, 0.18), from across its direction wi
 camera framing its reach. The emitter is carried round a circle in the camera's plane,
 once in two lifetimes, since a trail reads only in motion; a `one_shot` burst is watched
 standing still. A whole made of parts is watched on one sheet, framed by its
-farthest-reaching part. The run goes through `capture.movie`, so it needs a display or the offscreen
+farthest-reaching part. `against` names, per effect, the scene that draws it in the game
+today: it is filmed the same way and shown beside the built one, so the person sees the
+two at once instead of remembering one (§PW287). Each film is also kept as a looping
+WebP the page plays side by side, labelled in the project's language, with the sheet of
+stills one click away; the sitting's words come from the review catalogs. The run goes
+through `capture.movie`, so it needs a display or the offscreen
 route (`vfx.unwatched` where there is neither), asked at 320x180 (see engine.md). `stills`
 frames, evenly spaced, are laid out on one sheet with their times and what it measures, and the sheets
 are a sitting on the review page, one family an effect, with the choices `accept` and

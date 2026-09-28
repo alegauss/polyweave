@@ -451,9 +451,22 @@ def server(root=".", port: int = 0) -> ThreadingHTTPServer:
                 return self._file(PAGE / "index.html")
             if asked.path == "/page.js":
                 return self._file(PAGE / "page.js")
+            if asked.path.startswith("/locales/"):
+                # A catalog by its language, and only one the plugin ships (§PW287).
+                from . import review_text
+
+                speaks = asked.path.removeprefix("/locales/").removesuffix(".json")
+                if speaks in review_text.languages():
+                    return self._file(review_text.LOCALES / f"{speaks}.json")
+                return self._json({"code": "not-found"}, HTTPStatus.NOT_FOUND)
             if asked.path == "/api/state":
+                from . import review_text
+
                 return self._json(
                     {
+                        # The page's own words follow the project's (§PW287).
+                        "language": review_text.language(here),
+                        "project": load(here).get("project.name"),
                         "pending": loop.pending(str(here)),
                         "sittings": sittings(here),
                         "answers": verdict.answers(root=str(here))["answers"],

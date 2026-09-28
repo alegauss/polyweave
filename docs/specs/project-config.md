@@ -72,6 +72,10 @@ max_bytes = 8_000_000_000
 # the path and against the bare name, so `*.png` excuses an extension everywhere
 handmade = ["docs/design/art/brand/*"]
 
+[review]
+language = "en"                # the review page and its sittings: en or pt-BR, one
+                               # catalog each in review_page/locales/
+
 [engine]
 fixed_fps = 60
 frames    = 6000               # the frame budget a scene script is bounded by

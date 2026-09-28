@@ -422,7 +422,7 @@ def sitting(
                                     if not r["passed"]] if spec else []}],
         }
     if families:
-        verdict._manifest(folder, families, sheets, here, choices=SOUND_CHOICES)
+        verdict._manifest(folder, families, sheets, here, kind="sound")
     return {
         "sitting": relative(folder / verdict.MANIFEST, here) if families else None,
         "sounds": list(families),

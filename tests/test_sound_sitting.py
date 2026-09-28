@@ -48,7 +48,10 @@ def test_each_sound_is_laid_out_beside_the_one_it_replaces(tmp_path):
     assert set(laid["measured"]["bomb"]) == {"old", "new"}
     assert "seam_step" not in laid["measured"]["bomb"]["new"]
     manifest = json.loads((tmp_path / laid["sitting"]).read_text("utf-8"))
-    assert manifest["choices"] == sound.SOUND_CHOICES
+    assert set(manifest["choices"]) == set(sound.SOUND_CHOICES)
+    # Each choice says what it is and what it leads to (§PW287).
+    assert all({"label", "means", "then"} <= set(one)
+               for one in manifest["choices"].values())
     member = manifest["families"]["bomb"]["members"][0]
     assert member["sound"] is True and member["loop"] is False
     assert member["old"] == "before/bomb.wav"

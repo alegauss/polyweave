@@ -1,0 +1,177 @@
+{
+  "name": "Português (Brasil)",
+  "page": {
+    "heading": "Revisão",
+    "reading": "Lendo o que está no disco…",
+    "empty": "Nada está esperando a sua revisão.",
+    "progress": "{done} de {total} revisados",
+    "laid_out": "Montada em {at}",
+    "question": "Qual é a sua decisão?",
+    "note_accept": "Comentário (opcional)",
+    "note_look": "O que está diferente? (obrigatório)",
+    "placeholder_accept": "Algo que queira acrescentar.",
+    "placeholder_look": "Descreva o que você vê que não está certo.",
+    "placeholder_other": "Diga por quê, com as suas palavras.",
+    "record": "Registrar minha decisão",
+    "recording": "Registrando…",
+    "need_choice": "Escolha uma das opções primeiro.",
+    "need_note": "Escreva o que está diferente antes de registrar.",
+    "recorded": "Registrado.",
+    "no_comment": "(sem comentário)",
+    "status_wait": "Esperando você",
+    "status_accept": "Aceito",
+    "status_look": "Pedido para refazer",
+    "status_other": "Respondido",
+    "answered": "Você escolheu “{choice}” em {at}.",
+    "answer_again": "Responder de novo",
+    "newer_candidate": "{name} tem uma versão mais nova desde então: {candidate}",
+    "legend": "O que significam os números",
+    "zoom": "Clique na imagem para ver em tamanho real",
+    "close": "Fechar",
+    "mark": "Marcar onde está errado (opcional)",
+    "mark_help": "Arraste sobre a imagem para desenhar uma caixa em volta do problema.",
+    "mark_alt": "{name}, para marcar onde está errado",
+    "clear_marks": "Limpar marcas",
+    "details": "Detalhes técnicos",
+    "passes": "passa",
+    "fails": "falha",
+    "measured": "Medido",
+    "older": "Sessões anteriores ({n})",
+    "advanced": "Avançado: portões, giros, cânones e todos os itens",
+    "canons_title": "Os cânones",
+    "show_canons": "Mostrar o cânone de cada família",
+    "measuring_canons": "Medindo os cânones…",
+    "pending_title": "Onde cada item está",
+    "th_asset": "item",
+    "th_waiting": "esperando",
+    "th_candidate": "versão mais nova",
+    "th_judged": "último julgamento",
+    "yes": "sim",
+    "no": "não",
+    "before": "antes",
+    "after": "depois",
+    "mode_side": "lado a lado",
+    "mode_slider": "cortina",
+    "mode_onion": "sobreposição",
+    "mode_difference": "diferença",
+    "measuring_difference": "Medindo a diferença…",
+    "no_map": "Não foi possível fazer o mapa.",
+    "difference_says": "{changed} de {patches} trechos acima do limiar de {tolerance} ({from})",
+    "gate_of": "Portão de {at}",
+    "chosen": "escolhido: {chosen} — {why}",
+    "none": "nenhum",
+    "kept": "Mantidos ({n})",
+    "refused": "Recusados ({n})",
+    "unchecked": "não verificado: {gap}",
+    "cost": "custo {credits} em {service}",
+    "left": ", restam {left} {unit}",
+    "why_canon": "Por que ela pertence ao cânone.",
+    "add_to_canon": "Adicionar ao cânone",
+    "added": "Adicionada ao cânone.",
+    "why_promote": "Por que esta está certa, afinal.",
+    "promote": "Promover: o limite estava errado para esta",
+    "promoted": "Registrado: promovida.",
+    "write_first": "Escreva uma frase primeiro.",
+    "turned": "{asset}, girado",
+    "which_frame": "qual quadro em volta do eixo vertical",
+    "azimuth": "azimute {azimuth}°, elevação {elevation}°",
+    "turned_against": " — {before} contra {newest}",
+    "one_turntable": " — só um giro até agora",
+    "front_against": "A vista frontal contra o desenho",
+    "canon_of": "Cânone de {family}",
+    "floors": "limiares: {floors}",
+    "floor_none": "nenhum (menos de duas imagens)",
+    "narrow": "sem ela os limiares estreitam: {which}",
+    "no_narrow": "sem ela nenhum limiar estreita",
+    "why_withdraw": "Por que ela não pertence mais.",
+    "withdraw": "Tirar do cânone",
+    "withdrawn": "Tirada do cânone.",
+    "candidates": "Candidatas",
+    "frames": "Ver quadro a quadro"
+  },
+  "kinds": {
+    "look": {
+      "title": "Imagens para aprovar",
+      "about": "Cada cartão é uma família de imagens: a nova ao lado da antiga, quando existe, no tamanho em que o jogo a desenha. Embaixo está o que a especificação de aceitação mediu.",
+      "choices": {
+        "accept": {
+          "label": "Aceitar",
+          "means": "O visual está certo e a especificação concorda.",
+          "then": "As imagens são mantidas e a sua decisão fica registrada."
+        },
+        "look": {
+          "label": "Refazer",
+          "means": "O visual está errado.",
+          "then": "As imagens voltam para ser feitas de novo; os limites da especificação continuam os mesmos."
+        },
+        "number": {
+          "label": "Ajustar o limite",
+          "means": "O visual está certo, mas um limite que o reprovou está errado.",
+          "then": "Esse limite passa a ser o valor medido, registrado como decisão sua."
+        }
+      }
+    },
+    "effect": {
+      "title": "Efeitos visuais para aprovar",
+      "about": "Cada cartão mostra um efeito visual em movimento, filmado sobre um cinza neutro. O emissor gira em círculo para que o rastro apareça como apareceria atrás de uma nave. Decida se o visual está certo para o jogo.",
+      "legend": {
+        "lifetime": "segundos que cada partícula vive",
+        "reach": "até onde uma partícula chega, em metros",
+        "alive": "partículas ou pontos da fita ao mesmo tempo: o orçamento",
+        "rate": "partículas que nascem por segundo",
+        "brightness": "a cor mais brilhante, de 0 a 1"
+      },
+      "rows": [
+        "Hoje no jogo",
+        "Construído pelo polyweave"
+      ],
+      "family": "O efeito “{name}”",
+      "parts": ", feito de: {parts}",
+      "against": ". À esquerda, como ele aparece hoje no jogo; à direita, o que foi construído a partir da declaração. Os dois devem ficar iguais.",
+      "choices": {
+        "accept": {
+          "label": "Aceitar",
+          "means": "O efeito está com o visual certo.",
+          "then": "O jogo passa a usar exatamente o efeito construído, e a sua decisão fica registrada."
+        },
+        "look": {
+          "label": "Refazer",
+          "means": "O efeito não está com o visual certo.",
+          "then": "Escreva o que está diferente; a declaração volta para ser ajustada e o efeito volta numa nova sessão."
+        }
+      }
+    },
+    "line": {
+      "title": "Falas para aprovar",
+      "about": "Cada cartão é uma fala do mundo do jogo em cada idioma, com o que a verificação de palavras encontrou nela.",
+      "choices": {
+        "accept": {
+          "label": "Aceitar",
+          "means": "A fala soa como o mundo do jogo.",
+          "then": "Ela entra no cânone de falas, que serve de referência para as próximas."
+        },
+        "look": {
+          "label": "Rejeitar",
+          "means": "Ela não soa como o mundo do jogo.",
+          "then": "Escreva por quê; ela fica fora do cânone."
+        }
+      }
+    },
+    "sound": {
+      "title": "Sons para aprovar",
+      "about": "Cada cartão toca o som novo ao lado do antigo, quando existe; um som em loop toca repetido para que a emenda seja ouvida. Embaixo está o que foi medido.",
+      "choices": {
+        "accept": {
+          "label": "Aceitar",
+          "means": "O som está certo.",
+          "then": "O som novo substitui o antigo no jogo."
+        },
+        "look": {
+          "label": "Refazer",
+          "means": "O som não está certo.",
+          "then": "Escreva por quê; o som volta para ser feito de novo."
+        }
+      }
+    }
+  }
+}

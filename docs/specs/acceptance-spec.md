@@ -143,6 +143,21 @@ shows `loop.pending`, every listed sitting's sheets and failed predicates, and n
 does not read from disk, so it keeps no state and cannot disagree with the files. A file
 is served only from inside the project, and only as a picture, a sound or a record.
 
+**A sitting explains itself, in the project's language** (§PW287). Starship's owner opened
+a sitting and could not tell what they were voting on. So each kind of sitting (a look, a
+line, an effect, a sound) writes into `sitting.json` a `title`, an `about` (what is judged
+and how to read the card), and each choice as `label`, `means` and `then`, what happens if
+it is chosen; an effect adds a `legend` of its numbers. The laying-out call may add its
+own `about` under the summary, and one per family. The words come from one catalog per
+language, `review_page/locales/<language>.json`, chosen by `[review] language` (`en`,
+`pt-BR`; any other is `config.bad-language`); the page reads its own words from the same
+catalog, so no sentence a person reads is kept in code, and a language is a file. The
+page is laid out for the person deciding: the newest sitting's summary and how to decide,
+then one card per family with the picture (or the films, looping side by side), the
+choices as buttons that say what each leads to, and progress across the sitting. Marks
+and the technical details fold under each card, older sittings and the gates, turntables,
+canons and asset table under one fold. A redo asks for a sentence; an accept may add none.
+
 **Sounds are heard, not looked at** (§PW256). `sound.sitting(members, out=)` lays out each
 sound as its own family, so a verdict is given per sound: a member names its `new` file and
 optionally the `old` one it replaces, `loop`, and a `spec`. The page plays the two side by

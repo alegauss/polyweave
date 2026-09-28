@@ -1,11 +1,37 @@
-// The page reads what is on disk and has one write, verdict.judge (§PW172).
+// The page reads what is on disk and has one write, verdict.judge (§PW172). It is laid
+// out for the person deciding, not for the tool (§PW287): each family is a card with
+// the picture, what it is, and the choices as buttons that say what each one leads to.
+// Every word the person reads comes from review_page/locales/<language>.json.
 "use strict";
+
+let words = {};
+const t = (key, fields = {}) =>
+  (words[key] || key).replace(/\{(\w+)\}/g, (_, name) => (name in fields ? fields[name] : ""));
+
+async function speak(language) {
+  if (words.__language === language) return;
+  const answer = await fetch("/locales/" + encodeURIComponent(language) + ".json");
+  words = { ...(await answer.json()).page, __language: language };
+  document.documentElement.lang = language;
+  for (const [id, key] of Object.entries({
+    heading: "heading", "advanced-title": "advanced", "canons-title": "canons_title",
+    "show-canons": "show_canons", "pending-title": "pending_title", "th-asset": "th_asset",
+    "th-waiting": "th_waiting", "th-candidate": "th_candidate", "th-judged": "th_judged",
+  })) document.getElementById(id).textContent = t(key);
+  document.title = t("heading") + " · polyweave";
+  document.getElementById("zoom-close").setAttribute("aria-label", t("close"));
+}
 
 const element = (tag, attributes = {}, ...children) => {
   const made = document.createElement(tag);
   for (const [key, value] of Object.entries(attributes)) made.setAttribute(key, value);
-  for (const child of children) made.append(child);
+  for (const child of children) if (child !== null && child !== undefined) made.append(child);
   return made;
+};
+const file = (path) => "/file?path=" + encodeURIComponent(path);
+const when = (at) => {
+  const date = new Date(at);
+  return isNaN(date) ? at : date.toLocaleString(words.__language, { dateStyle: "medium", timeStyle: "short" });
 };
 
 async function state() {
@@ -13,23 +39,17 @@ async function state() {
   return answer.json();
 }
 
-// What was said of this family on the page, and what came of it since (§PW173): an
-// answer followed by a newer candidate for a member shows the two together.
-function history(sitting, name, laid, answers, assets) {
-  const said = answers.filter((one) => one.sitting === sitting && one.family === name);
-  const block = element("div", { class: "answer" });
-  for (const one of said) {
-    block.append(element("p", {}, "Answered " + one.choice + " at " + one.at + ": " + one.why));
-  }
-  if (said.length) {
-    for (const member of laid.members || []) {
-      const row = assets.find((asset) => asset.asset === member.name);
-      if (row && row.candidate && row.waiting) {
-        block.append(element("p", {}, member.name + " has a newer candidate since: " + row.candidate));
-      }
-    }
-  }
-  return block;
+// A picture shown whole on a click, since a sheet of six stills is small in a card.
+function zoomable(path, alt) {
+  const figure = element("figure", { class: "picture", title: t("zoom") },
+    element("img", { src: file(path), alt }), element("figcaption", {}, t("zoom")));
+  figure.addEventListener("click", () => {
+    const dialog = document.getElementById("zoom");
+    dialog.querySelector("img").src = file(path);
+    dialog.querySelector("img").alt = alt;
+    dialog.showModal();
+  });
+  return figure;
 }
 
 // Where it is wrong, drawn over the member's own picture (§PW174). A drag draws a box,
@@ -39,14 +59,11 @@ function marker(member, marks) {
   const shapes = [];
   marks.push({ member: member.name, shapes });
   const holder = element("div", { class: "mark" });
-  const picture = element("img", {
-    src: "/file?path=" + encodeURIComponent(member.new),
-    alt: member.name + ", to mark where it is wrong",
-  });
-  const canvas = element("canvas", { "aria-label": "drag to mark where " + member.name + " is wrong" });
-  const clear = element("button", { type: "button" }, "Clear marks");
-  const frame = element("div", { class: "frame" }, picture, canvas);
-  holder.append(element("p", {}, "Mark " + member.name + " (optional)"), frame, clear);
+  const picture = element("img", { src: file(member.new), alt: t("mark_alt", { name: member.name }) });
+  const canvas = element("canvas", { "aria-label": t("mark_alt", { name: member.name }) });
+  const clear = element("button", { type: "button", class: "secondary" }, t("clear_marks"));
+  holder.append(element("p", { class: "facts" }, t("mark_help")),
+    element("div", { class: "frame" }, picture, canvas), clear);
   const scale = () => picture.naturalWidth / picture.clientWidth;
   const paint = (extra) => {
     canvas.width = picture.clientWidth;
@@ -67,9 +84,7 @@ function marker(member, marks) {
     return [(event.clientX - frame.left) * k, (event.clientY - frame.top) * k];
   };
   canvas.addEventListener("pointerdown", (event) => { start = at(event); });
-  canvas.addEventListener("pointermove", (event) => {
-    if (start) paint([...start, ...at(event)]);
-  });
+  canvas.addEventListener("pointermove", (event) => { if (start) paint([...start, ...at(event)]); });
   canvas.addEventListener("pointerup", (event) => {
     if (!start) return;
     const end = at(event);
@@ -90,137 +105,237 @@ function listen(member) {
   for (const key of ["old", "new"]) {
     if (!member[key]) continue;
     const player = element("audio", {
-      controls: "", preload: "auto", src: "/file?path=" + encodeURIComponent(member[key]),
-      "aria-label": key + ": " + member[key],
+      controls: "", preload: "auto", src: file(member[key]), "aria-label": t(key === "old" ? "before" : "after"),
     });
     if (member.loop) player.setAttribute("loop", "");
     const measured = (member.measured || {})[key] || {};
     const said = Object.entries(measured)
       .filter(([, value]) => typeof value === "number")
       .map(([name, value]) => name + " " + value).join(", ");
-    holder.append(element("p", {}, element("strong", {}, key + ": "), member[key]),
+    holder.append(element("p", {}, element("strong", {}, t(key === "old" ? "before" : "after"))),
       player, element("p", { class: "measured" }, said));
   }
   return holder;
 }
 
-function family(sitting, name, laid, choices, answers, assets) {
-  const box = element("article", { class: "family" }, element("h2", {}, name));
-  box.append(element("img", {
-    src: "/file?path=" + encodeURIComponent(laid.sheet),
-    alt: "the " + name + " family laid out to be judged",
-  }));
-  for (const member of laid.said || []) {
-    const line = element("p", { class: "member" });
-    line.append(element("strong", {}, member.name + ": "));
-    line.append(element("span", { class: member.passed ? "passes" : "fails" },
-      member.passed ? "passes" : "fails"));
-    for (const failed of member.failed || []) line.append(element("br"), failed);
-    box.append(line);
+// A choice from a sitting written before choices said what they lead to (§PW287).
+const asChoice = (word, choice) =>
+  typeof choice === "string" ? { label: word, means: choice, then: "" } : choice;
+
+function legend(entries) {
+  const list = element("dl", { class: "legend" });
+  for (const [name, meaning] of Object.entries(entries)) {
+    list.append(element("dt", {}, name), element("dd", {}, meaning));
   }
+  return list;
+}
+
+// One family as a card: what it is, the picture, and the decision (§PW287).
+function card(sitting, name, laid, answers, assets) {
+  const choices = sitting.choices || {};
+  const said = answers.filter((one) => one.sitting === sitting.manifest && one.family === name);
+  const last = said[said.length - 1];
+  const status = !last ? ["wait", t("status_wait")]
+    : last.choice === "accept" ? ["yes", t("status_accept")]
+      : last.choice === "look" ? ["no", t("status_look")] : ["yes", t("status_other")];
+  const box = element("article", { class: "card" + (last ? " done" : ""), id: "family-" + name });
+  box.append(element("header", {}, element("h3", {}, name),
+    element("span", { class: "badge " + status[0] }, status[1])));
+  if (laid.about) box.append(element("p", { class: "about" }, laid.about));
+  // Films play side by side where the sitting has them, each named in large type; the
+  // frame-by-frame sheet stays one click away (§PW287).
+  const films = (laid.members || []).flatMap((member) => member.films || []);
+  if (films.length) {
+    box.append(element("div", { class: "films" }, ...films.map((film) =>
+      element("figure", {}, element("figcaption", {}, film.label),
+        element("img", { src: file(film.path), alt: film.label })))));
+    box.append(element("details", { class: "frames" }, element("summary", {}, t("frames")),
+      zoomable(laid.sheet, name)));
+  } else {
+    box.append(zoomable(laid.sheet, name));
+  }
+
+  const decide = element("div", { class: "decide" });
   const form = element("form");
   const marks = [];
-  for (const member of laid.members || []) {
-    if (member.sound) { form.append(listen(member)); continue; }
-    if (member.old) form.append(compare(member.old, member.new, "slider", null));
-    form.append(marker(member, marks));
+  let picked = null;
+  const options = element("div", { class: "options", role: "group", "aria-label": t("question") });
+  const note = element("div", { class: "note" });
+  const noteLabel = element("label", { for: "why-" + name });
+  const why = element("textarea", { id: "why-" + name, name: "why" });
+  note.append(noteLabel, why);
+  for (const [word, raw] of Object.entries(choices)) {
+    const choice = asChoice(word, raw);
+    const button = element("button", {
+      type: "button", class: "option " + (["accept", "look"].includes(word) ? word : "other"),
+      "aria-pressed": "false",
+    }, element("b", {}, choice.label), element("small", {}, choice.means),
+    choice.then ? element("small", {}, "→ " + choice.then) : null);
+    button.addEventListener("click", () => {
+      picked = word;
+      for (const other of options.children) other.setAttribute("aria-pressed", String(other === button));
+      note.classList.add("open");
+      noteLabel.textContent = word === "accept" ? t("note_accept") : t("note_look");
+      why.placeholder = word === "accept" ? t("placeholder_accept")
+        : word === "look" ? t("placeholder_look") : t("placeholder_other");
+      if (word !== "accept") why.focus();
+    });
+    options.append(button);
   }
-  const options = element("div", { class: "choices", role: "radiogroup" });
-  for (const [word, meaning] of Object.entries(choices)) {
-    const input = element("input", { type: "radio", name: "choice", value: word });
-    options.append(element("label", { title: meaning }, input, word + ": " + meaning));
-  }
-  const why = element("textarea", {
-    name: "why", placeholder: "Your own sentence: what you saw.", "aria-label": "why",
-  });
-  const send = element("button", { type: "submit" }, "Record this verdict");
-  const said = element("p", { class: "answer", "aria-live": "polite" });
-  form.append(options, why, send, said);
+  const send = element("button", { type: "submit", class: "primary" }, t("record"));
+  const message = element("span", { class: "message", "aria-live": "polite" });
+  form.append(element("p", { class: "question" }, t("question")), options, note,
+    element("div", { class: "actions" }, send, message));
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
-    const choice = new FormData(form).get("choice");
-    if (!choice || !why.value.trim()) {
-      said.textContent = "Pick one choice and write a sentence first.";
-      return;
+    message.classList.remove("bad");
+    if (!picked) { message.textContent = t("need_choice"); message.classList.add("bad"); return; }
+    // A redo needs to say what is wrong; an accept may say nothing more.
+    if (picked !== "accept" && !why.value.trim()) {
+      message.textContent = t("need_note"); message.classList.add("bad"); why.focus(); return;
     }
     send.disabled = true;
+    message.textContent = t("recording");
     const answer = await fetch("/api/judge", {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-Polyweave": "1" },
       body: JSON.stringify({
-        sitting, family: name, choice, why: why.value,
+        sitting: sitting.manifest, family: name, choice: picked, why: why.value.trim(),
         marks: marks.filter((mark) => mark.shapes.length),
       }),
     });
     const body = await answer.json();
-    said.textContent = answer.ok
-      ? "Recorded: " + body.choice + ". " + (body.ledger || "")
-      : body.code + ": " + body.message + "\n" + (body.remedy || "");
-    send.disabled = answer.ok;
-    if (answer.ok) {  // said once; the next read shows it under the family
-      form.reset();
-      for (const mark of marks) mark.shapes.length = 0;
+    if (answer.ok) {
+      message.textContent = t("recorded");
+      draw();
+    } else {
+      send.disabled = false;
+      message.classList.add("bad");
+      message.textContent = body.code + ": " + body.message + "\n" + (body.remedy || "");
     }
   });
-  box.append(history(sitting, name, laid, answers, assets), form);
+  decide.append(form);
+
+  if (last) {
+    // Answered: say so plainly, and keep the form one click away for a second thought.
+    const choice = asChoice(last.choice, choices[last.choice] || last.choice);
+    const done = element("div", { class: "answered" },
+      element("p", {}, t("answered", { choice: choice.label, at: when(last.at) })),
+      element("p", {}, element("q", {}, last.why || t("no_comment"))));
+    for (const member of laid.members || []) {
+      const row = assets.find((asset) => asset.asset === member.name);
+      if (row && row.candidate && row.waiting) {
+        done.append(element("p", { class: "facts" },
+          t("newer_candidate", { name: member.name, candidate: row.candidate })));
+      }
+    }
+    const again = element("button", { type: "button", class: "link" }, t("answer_again"));
+    decide.hidden = true;
+    again.addEventListener("click", () => { decide.hidden = false; again.remove(); });
+    done.append(again);
+    box.append(done);
+  }
+  box.append(decide);
+
+  // What a person may want and should never have to wade through: marks and numbers.
+  const tools = element("div", { class: "tools" });
+  const drawable = (laid.members || []).filter((member) => !member.sound);
+  for (const member of laid.members || []) if (member.sound) form.insertBefore(listen(member), form.firstChild);
+  if (drawable.length) {
+    const marking = element("details", {}, element("summary", {}, t("mark")));
+    for (const member of drawable) {
+      if (member.old) marking.append(compare(member.old, member.new, "slider", null));
+      marking.append(marker(member, marks));
+    }
+    tools.append(marking);
+  }
+  const facts = element("details", {}, element("summary", {}, t("details")));
+  for (const member of laid.said || []) {
+    const line = element("p", { class: "facts" }, element("strong", {}, member.name + ": "),
+      element("span", { class: member.passed ? "passes" : "fails" }, member.passed ? t("passes") : t("fails")));
+    for (const failed of member.failed || []) line.append(element("br"), failed);
+    facts.append(line);
+  }
+  for (const member of laid.members || []) {
+    if (typeof member.measured === "string") {
+      facts.append(element("p", { class: "facts" }, t("measured") + ": " + member.measured));
+    }
+  }
+  if (sitting.legend) facts.append(legend(sitting.legend));
+  tools.append(facts);
+  box.append(tools);
   return box;
 }
+
+// A sitting: its title and what it is for, how to decide, then one card per family.
+function sittingView(sitting, found) {
+  const section = element("section");
+  const intro = element("div", { class: "intro" });
+  intro.append(element("h2", {}, sitting.title || t("heading")),
+    element("p", { class: "when" }, t("laid_out", { at: when(sitting.at) })));
+  if (sitting.about) intro.append(element("p", {}, sitting.about));
+  const how = element("div", { class: "how" });
+  for (const [word, raw] of Object.entries(sitting.choices || {})) {
+    const choice = asChoice(word, raw);
+    how.append(element("div", {}, element("strong", {}, choice.label),
+      element("span", {}, choice.means + (choice.then ? " " + choice.then : ""))));
+  }
+  intro.append(how);
+  if (sitting.legend) {
+    intro.append(element("details", { class: "more" }, element("summary", {}, t("legend")),
+      legend(sitting.legend)));
+  }
+  section.append(intro);
+  for (const [name, laid] of Object.entries(sitting.families)) {
+    section.append(card(sitting, name, laid, found.answers, found.pending.assets));
+  }
+  return section;
+}
+
+const answered = (sitting, answers) => Object.keys(sitting.families)
+  .filter((name) => answers.some((one) => one.sitting === sitting.manifest && one.family === name)).length;
 
 // Two versions in one place (§PW176): side by side, a slider across one picture, an
 // onion skin at an opacity the person sets, and a difference map lit only above the
 // noise floor. It opens in the mode that suits what is compared; the person can switch.
-const file = (path) => "/file?path=" + encodeURIComponent(path);
-
 function compare(oldPath, newPath, mode, maskPath) {
   const box = element("div", { class: "compare" });
   const tabs = element("div", { class: "tabs", role: "tablist" });
   const stage = element("div", { class: "stage" });
+  const layered = (setter, label) => {
+    const frame = element("div", { class: "layers" });
+    const top = element("img", { src: file(newPath), alt: t("after") });
+    frame.append(element("img", { src: file(oldPath), alt: t("before") }), top);
+    if (maskPath && setter === "clip") {
+      frame.append(element("img", { src: file(maskPath), alt: "", class: "mask" }));
+    }
+    const range = element("input", { type: "range", min: "0", max: "100", value: "50", "aria-label": label });
+    const set = () => {
+      if (setter === "clip") top.style.clipPath = "inset(0 " + (100 - range.value) + "% 0 0)";
+      else top.style.opacity = range.value / 100;
+    };
+    range.addEventListener("input", set);
+    set();
+    return element("div", {}, frame, range);
+  };
   const modes = {
-    side: () => {
-      const both = element("div", { class: "side" });
-      both.append(element("img", { src: file(oldPath), alt: "before: " + oldPath }),
-        element("img", { src: file(newPath), alt: "after: " + newPath }));
-      return both;
-    },
-    slider: () => {
-      const frame = element("div", { class: "layers" });
-      const top = element("img", { src: file(newPath), alt: "after, over before" });
-      frame.append(element("img", { src: file(oldPath), alt: "before" }), top);
-      if (maskPath) {
-        frame.append(element("img", { src: file(maskPath), alt: "the edit's mask", class: "mask" }));
-      }
-      const range = element("input", { type: "range", min: "0", max: "100", value: "50",
-        "aria-label": "how much of the new picture shows" });
-      const set = () => { top.style.clipPath = "inset(0 " + (100 - range.value) + "% 0 0)"; };
-      range.addEventListener("input", set);
-      set();
-      const holder = element("div");
-      holder.append(frame, range);
-      return holder;
-    },
-    onion: () => {
-      const frame = element("div", { class: "layers" });
-      const top = element("img", { src: file(newPath), alt: "after, over before" });
-      frame.append(element("img", { src: file(oldPath), alt: "before" }), top);
-      const range = element("input", { type: "range", min: "0", max: "100", value: "50",
-        "aria-label": "the new picture's opacity" });
-      const set = () => { top.style.opacity = range.value / 100; };
-      range.addEventListener("input", set);
-      set();
-      const holder = element("div");
-      holder.append(frame, range);
-      return holder;
-    },
+    side: () => element("div", { class: "side" },
+      element("img", { src: file(oldPath), alt: t("before") }),
+      element("img", { src: file(newPath), alt: t("after") })),
+    slider: () => layered("clip", t("mode_slider")),
+    onion: () => layered("opacity", t("mode_onion")),
     difference: () => {
-      const holder = element("div", {}, "Measuring the difference.");
+      const holder = element("div", {}, t("measuring_difference"));
       fetch("/api/compare?old=" + encodeURIComponent(oldPath) + "&new=" + encodeURIComponent(newPath))
         .then((answer) => answer.json())
         .then((found) => {
           holder.replaceChildren();
-          if (!found.map) { holder.textContent = found.message || "No map could be made."; return; }
-          holder.append(element("img", { src: file(found.map), alt: "where the two differ above noise" }),
-            element("p", { class: "says" }, found.changed_patches + " of " + found.patches +
-              " patches past a floor of " + found.tolerance + " (" + (found.tolerance_from || "") + ")"));
+          if (!found.map) { holder.textContent = found.message || t("no_map"); return; }
+          holder.append(element("img", { src: file(found.map), alt: t("mode_difference") }),
+            element("p", { class: "says" }, t("difference_says", {
+              changed: found.changed_patches, patches: found.patches,
+              tolerance: found.tolerance, from: found.tolerance_from || "",
+            })));
         });
       return holder;
     },
@@ -230,7 +345,7 @@ function compare(oldPath, newPath, mode, maskPath) {
     stage.replaceChildren(modes[name]());
   };
   for (const name of Object.keys(modes)) {
-    const tab = element("button", { type: "button", role: "tab" }, name);
+    const tab = element("button", { type: "button", role: "tab" }, t("mode_" + name));
     tab.dataset.mode = name;
     tab.addEventListener("click", () => show(name));
     tabs.append(tab);
@@ -240,130 +355,109 @@ function compare(oldPath, newPath, mode, maskPath) {
   return box;
 }
 
-// The refused beside the kept (§PW175): each gate run's candidates in two lanes, every
-// one with the numbers it was judged on, and a refused one can be promoted by a person.
-function candidate(run, one) {
-  const card = element("div", { class: "candidate" });
-  card.append(element("img", {
-    src: "/file?path=" + encodeURIComponent(one.picture), alt: one.picture,
-  }));
-  const facts = element("ul");
-  facts.append(element("li", {}, one.picture + ": silhouette IoU " + one.silhouette_iou));
-  for (const failed of one.failed) facts.append(element("li", { class: "fails" }, failed));
-  for (const [measure, number] of Object.entries(one.drift || {})) {
-    facts.append(element("li", {}, measure + " " + number.value + " against " +
-      number.canon + " ± " + number.floor + (number.which_way ? ", " + number.which_way : "")));
-  }
-  for (const gap of one.unchecked || []) facts.append(element("li", {}, "unchecked: " + gap));
-  if (one.bought) {
-    const left = one.ceiling ? ", " + one.ceiling.left + " " + one.ceiling.unit + " left" : "";
-    facts.append(element("li", {}, "cost " + one.bought.credits + " on " + one.bought.service + left));
-  }
-  card.append(facts);
-  if (one.compare) card.append(compare(one.compare.old, one.picture, one.compare.mode, one.compare.mask));
-  const joining = element("form");
-  const reason = element("textarea", { placeholder: "Why it belongs in the canon.", "aria-label": "why" });
-  const join = element("button", { type: "submit" }, "Add to canon");
-  const joined = element("p", { class: "answer", "aria-live": "polite" });
-  joining.append(reason, join, joined);
-  joining.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    if (!reason.value.trim()) { joined.textContent = "Write a sentence first."; return; }
-    join.disabled = true;
-    const { ok, body } = await post({ gate: run.id, picture: one.picture, choice: "accept",
-      why: reason.value, canon: run.family || "default" });
-    joined.textContent = ok ? "Added to the canon." : body.code + ": " + body.message;
-    if (ok) joining.reset();
-  });
-  card.append(joining);
-  if (!one.passed) {
-    const form = element("form");
-    const why = element("textarea", {
-      placeholder: "Why this one is right after all.", "aria-label": "why",
-    });
-    const send = element("button", { type: "submit" }, "Promote: the bar was wrong for this one");
-    const said = element("p", { class: "answer", "aria-live": "polite" });
-    form.append(why, send, said);
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      if (!why.value.trim()) { said.textContent = "Write a sentence first."; return; }
-      send.disabled = true;
-      const answer = await fetch("/api/judge", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Polyweave": "1" },
-        body: JSON.stringify({ gate: run.id, picture: one.picture, choice: "accept", why: why.value }),
-      });
-      const body = await answer.json();
-      said.textContent = answer.ok ? "Recorded: promoted." : body.code + ": " + body.message;
-      if (answer.ok) form.reset();
-    });
-    card.append(form);
-  }
-  return card;
-}
-
-function gateRun(run) {
-  const box = element("article", { class: "family" });
-  box.append(element("h2", {}, "Gate of " + run.at + (run.family ? " (" + run.family + ")" : "")));
-  box.append(element("p", { class: "says" }, "chosen: " + (run.chosen || "none") + " — " + run.why));
-  const kept = run.candidates.filter((one) => one.passed);
-  const refused = run.candidates.filter((one) => !one.passed);
-  const keptLane = element("div", { class: "lane" }, element("h3", {}, "Kept (" + kept.length + ")"));
-  for (const one of kept) keptLane.append(candidate(run, one));
-  const refusedLane = element("details", { class: "lane" },
-    element("summary", {}, "Refused (" + refused.length + ")"));
-  for (const one of refused) refusedLane.append(candidate(run, one));
-  box.append(keptLane, refusedLane);
-  return box;
-}
-
-// A mesh turned at the rig's own camera, never a viewer's (§PW176): the two newest
-// turntables of one mesh, frame by frame, each pair in the four ways, and the drawing
-// that asked for the shape laid over the front view.
-function meshes(turntables) {
-  const byAsset = {};
-  for (const one of turntables) (byAsset[one.asset] = byAsset[one.asset] || []).push(one);
-  const section = element("section");
-  for (const [asset, turned] of Object.entries(byAsset)) {
-    const box = element("article", { class: "family" }, element("h2", {}, asset + ", turned"));
-    const newest = turned[turned.length - 1];
-    const before = turned.length > 1 ? turned[turned.length - 2] : null;
-    const pick = element("input", { type: "range", min: "0", max: String(newest.frames.length - 1),
-      value: "0", "aria-label": "which frame round the up axis" });
-    const said = element("p", { class: "says" });
-    const stage = element("div");
-    const show = () => {
-      const at = Number(pick.value);
-      const frame = newest.frames[at];
-      said.textContent = "azimuth " + frame.azimuth + "°, elevation " + newest.elevation + "°" +
-        (before ? " — " + before.at + " against " + newest.at : " — only one turntable so far");
-      stage.replaceChildren(before && before.frames[at]
-        ? compare(before.frames[at].picture, frame.picture, "slider", null)
-        : element("img", { src: file(frame.picture), alt: asset + " at " + frame.azimuth + "°" }));
-    };
-    pick.addEventListener("input", show);
-    show();
-    box.append(pick, said, stage);
-    if (newest.against) {
-      box.append(element("h3", {}, "The front view against the drawing"),
-        compare(newest.against, newest.front, "onion", null));
-    }
-    section.append(box);
-  }
-  return section;
-}
-
-// The canon on one board per family (§PW177): what a family is meant to look like, seen
-// whole, with how tolerant it made the agent. Loaded when asked, since measuring every
-// canon picture is heavier than the rest of the page.
 const post = (body) => fetch("/api/judge", {
   method: "POST",
   headers: { "Content-Type": "application/json", "X-Polyweave": "1" },
   body: JSON.stringify(body),
 }).then(async (answer) => ({ ok: answer.ok, body: await answer.json() }));
 
+// A form of one sentence and one button, as the canon and the gates use.
+function sentence(placeholder, label, done, send) {
+  const form = element("form");
+  const why = element("textarea", { placeholder, "aria-label": placeholder });
+  const button = element("button", { type: "submit", class: "primary" }, label);
+  const said = element("p", { class: "message", "aria-live": "polite" });
+  form.append(why, element("div", { class: "actions" }, button), said);
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!why.value.trim()) { said.textContent = t("write_first"); return; }
+    button.disabled = true;
+    const { ok, body } = await send(why.value);
+    said.textContent = ok ? done : body.code + ": " + body.message;
+    button.disabled = ok;
+    if (ok) form.reset();
+  });
+  return form;
+}
+
+// The refused beside the kept (§PW175): each gate run's candidates in two lanes, every
+// one with the numbers it was judged on, and a refused one can be promoted by a person.
+function candidate(run, one) {
+  const item = element("div", { class: "candidate" });
+  item.append(element("img", { src: file(one.picture), alt: one.picture }));
+  const facts = element("ul");
+  facts.append(element("li", {}, one.picture + ": silhouette IoU " + one.silhouette_iou));
+  for (const failed of one.failed) facts.append(element("li", { class: "fails" }, failed));
+  for (const [measure, number] of Object.entries(one.drift || {})) {
+    facts.append(element("li", {}, measure + " " + number.value + " / " + number.canon +
+      " ± " + number.floor + (number.which_way ? ", " + number.which_way : "")));
+  }
+  for (const gap of one.unchecked || []) facts.append(element("li", {}, t("unchecked", { gap })));
+  if (one.bought) {
+    const left = one.ceiling ? t("left", { left: one.ceiling.left, unit: one.ceiling.unit }) : "";
+    facts.append(element("li", {}, t("cost", { credits: one.bought.credits, service: one.bought.service }) + left));
+  }
+  item.append(facts);
+  if (one.compare) item.append(compare(one.compare.old, one.picture, one.compare.mode, one.compare.mask));
+  item.append(sentence(t("why_canon"), t("add_to_canon"), t("added"), (why) =>
+    post({ gate: run.id, picture: one.picture, choice: "accept", why, canon: run.family || "default" })));
+  if (!one.passed) {
+    item.append(sentence(t("why_promote"), t("promote"), t("promoted"), (why) =>
+      post({ gate: run.id, picture: one.picture, choice: "accept", why })));
+  }
+  return item;
+}
+
+function gateRun(run) {
+  const box = element("article", { class: "family" });
+  box.append(element("h2", {}, t("gate_of", { at: when(run.at) }) + (run.family ? " (" + run.family + ")" : "")));
+  box.append(element("p", { class: "says" }, t("chosen", { chosen: run.chosen || t("none"), why: run.why })));
+  const kept = run.candidates.filter((one) => one.passed);
+  const refused = run.candidates.filter((one) => !one.passed);
+  const keptLane = element("div", { class: "lane" }, element("h3", {}, t("kept", { n: kept.length })));
+  for (const one of kept) keptLane.append(candidate(run, one));
+  const refusedLane = element("details", { class: "lane" }, element("summary", {}, t("refused", { n: refused.length })));
+  for (const one of refused) refusedLane.append(candidate(run, one));
+  box.append(keptLane, refusedLane);
+  return box;
+}
+
+// A mesh turned at the rig's own camera, never a viewer's (§PW176).
+function meshes(turntables) {
+  const byAsset = {};
+  for (const one of turntables) (byAsset[one.asset] = byAsset[one.asset] || []).push(one);
+  const section = element("section");
+  for (const [asset, turned] of Object.entries(byAsset)) {
+    const box = element("article", { class: "family" }, element("h2", {}, t("turned", { asset })));
+    const newest = turned[turned.length - 1];
+    const before = turned.length > 1 ? turned[turned.length - 2] : null;
+    const pick = element("input", { type: "range", min: "0", max: String(newest.frames.length - 1),
+      value: "0", "aria-label": t("which_frame") });
+    const said = element("p", { class: "says" });
+    const stage = element("div");
+    const show = () => {
+      const at = Number(pick.value);
+      const frame = newest.frames[at];
+      said.textContent = t("azimuth", { azimuth: frame.azimuth, elevation: newest.elevation }) +
+        (before ? t("turned_against", { before: before.at, newest: newest.at }) : t("one_turntable"));
+      stage.replaceChildren(before && before.frames[at]
+        ? compare(before.frames[at].picture, frame.picture, "slider", null)
+        : element("img", { src: file(frame.picture), alt: asset + " " + frame.azimuth + "°" }));
+    };
+    pick.addEventListener("input", show);
+    show();
+    box.append(pick, said, stage);
+    if (newest.against) {
+      box.append(element("h3", {}, t("front_against")), compare(newest.against, newest.front, "onion", null));
+    }
+    section.append(box);
+  }
+  return section;
+}
+
+// The canon on one board per family (§PW177), loaded when asked.
 function canonBoard(one) {
-  const box = element("article", { class: "family" }, element("h2", {}, one.family + " canon"));
+  const box = element("article", { class: "family" }, element("h2", {}, t("canon_of", { family: one.family })));
   const swatches = element("div", { class: "swatches" });
   for (const colour of one.palette) {
     const chip = element("span", { class: "swatch", title: colour }, colour);
@@ -371,64 +465,35 @@ function canonBoard(one) {
     swatches.append(chip);
   }
   box.append(swatches, element("pre", {}, JSON.stringify(one.skeleton, null, 2)));
-  const floors = element("p", { class: "says" }, "floors: " + Object.entries(one.floors)
-    .map(([k, v]) => k + " " + (v === null ? "none (fewer than two pictures)" : v)).join(", "));
-  box.append(floors);
+  box.append(element("p", { class: "says" }, t("floors", { floors: Object.entries(one.floors)
+    .map(([k, v]) => k + " " + (v === null ? t("floor_none") : v)).join(", ") })));
   const grid = element("div", { class: "canon" });
   for (const picture of one.pictures) {
-    const card = element("div", { class: "candidate" });
-    card.append(element("img", { src: file(picture.path), alt: picture.picture }));
+    const item = element("div", { class: "candidate" });
+    item.append(element("img", { src: file(picture.path), alt: picture.picture }));
     const facts = element("ul");
-    facts.append(element("li", {}, picture.picture + ": " + picture.verdict.choice + " on " +
+    facts.append(element("li", {}, picture.picture + ": " + picture.verdict.choice + ", " +
       picture.verdict.when + ", “" + picture.verdict.why + "”"));
     const without = one.without[picture.picture] || {};
     const narrower = Object.entries(without).filter(([k, v]) => v !== null && one.floors[k] !== null
       && v < one.floors[k]).map(([k, v]) => k + " " + one.floors[k] + " → " + v);
-    facts.append(element("li", {}, narrower.length
-      ? "without it the floors narrow: " + narrower.join(", ")
-      : "without it no floor narrows"));
-    card.append(facts);
-    const form = element("form");
-    const why = element("textarea", { placeholder: "Why it no longer belongs.", "aria-label": "why" });
-    const send = element("button", { type: "submit" }, "Take out of the canon");
-    const said = element("p", { class: "answer", "aria-live": "polite" });
-    form.append(why, send, said);
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      if (!why.value.trim()) { said.textContent = "Write a sentence first."; return; }
-      send.disabled = true;
-      const { ok, body } = await post({ canon: one.family, withdraw: picture.picture, why: why.value });
-      said.textContent = ok ? "Taken out." : body.code + ": " + body.message;
-    });
-    card.append(form);
-    grid.append(card);
+    facts.append(element("li", {}, narrower.length ? t("narrow", { which: narrower.join(", ") }) : t("no_narrow")));
+    item.append(facts, sentence(t("why_withdraw"), t("withdraw"), t("withdrawn"), (why) =>
+      post({ canon: one.family, withdraw: picture.picture, why })));
+    grid.append(item);
   }
   box.append(grid);
   if (one.says) box.append(element("p", { class: "says" }, one.says));
-  // Pictures the project pointed at that no gate ever saw (§PW266): key art and a
-  // wordmark have no outline to gate, and a brand canon starts from them.
+  // Pictures the project pointed at that no gate ever saw (§PW266).
   if ((one.candidates || []).length) {
-    box.append(element("h3", {}, "Candidates"));
+    box.append(element("h3", {}, t("candidates")));
     const offered = element("div", { class: "canon" });
-    for (const candidate of one.candidates) {
-      const card = element("div", { class: "candidate" });
-      card.append(element("img", { src: file(candidate.path), alt: candidate.path }),
-        element("p", {}, candidate.path));
-      const form = element("form");
-      const why = element("textarea", { placeholder: "Why it belongs in the canon.", "aria-label": "why" });
-      const send = element("button", { type: "submit" }, "Add to canon");
-      const said = element("p", { class: "answer", "aria-live": "polite" });
-      form.append(why, send, said);
-      form.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        if (!why.value.trim()) { said.textContent = "Write a sentence first."; return; }
-        send.disabled = true;
-        const { ok, body } = await post({ canon: one.family, admit: candidate.path, why: why.value });
-        said.textContent = ok ? "Added to the canon." : body.code + ": " + body.message;
-        send.disabled = ok;
-      });
-      card.append(form);
-      offered.append(card);
+    for (const offer of one.candidates) {
+      const item = element("div", { class: "candidate" });
+      item.append(element("img", { src: file(offer.path), alt: offer.path }), element("p", {}, offer.path),
+        sentence(t("why_canon"), t("add_to_canon"), t("added"), (why) =>
+          post({ canon: one.family, admit: offer.path, why })));
+      offered.append(item);
     }
     box.append(offered);
   }
@@ -437,7 +502,7 @@ function canonBoard(one) {
 
 async function drawCanons() {
   const boards = document.getElementById("canons");
-  boards.replaceChildren("Measuring the canons.");
+  boards.replaceChildren(t("measuring_canons"));
   const answer = await fetch("/api/canon", { cache: "no-store" });
   const found = await answer.json();
   boards.replaceChildren(...(Array.isArray(found) ? found.map(canonBoard)
@@ -446,14 +511,30 @@ async function drawCanons() {
 
 async function draw() {
   const found = await state();
-  document.getElementById("says").textContent = found.pending.says;
+  await speak(found.language || "en");
+  document.getElementById("project").textContent = found.project || "";
   const sittings = document.getElementById("sittings");
+  const older = document.getElementById("older");
+  const newest = found.sittings.slice().reverse();
   sittings.replaceChildren();
-  for (const sitting of found.sittings.slice().reverse()) {
-    sittings.append(element("h2", {}, "Sitting of " + sitting.at));
-    for (const [name, laid] of Object.entries(sitting.families)) {
-      sittings.append(family(
-        sitting.manifest, name, laid, sitting.choices, found.answers, found.pending.assets));
+  older.replaceChildren();
+  const progress = document.getElementById("progress");
+  if (!newest.length) {
+    sittings.append(element("p", { class: "empty" }, t("empty")));
+    progress.hidden = true;
+  } else {
+    // The newest sitting in full; the earlier ones folded under it.
+    const current = newest[0];
+    sittings.append(sittingView(current, found));
+    const total = Object.keys(current.families).length;
+    const done = answered(current, found.answers);
+    progress.hidden = false;
+    document.getElementById("bar").style.width = (total ? (100 * done) / total : 0) + "%";
+    document.getElementById("counted").textContent = t("progress", { done, total });
+    if (newest.length > 1) {
+      const fold = element("details", { class: "older" }, element("summary", {}, t("older", { n: newest.length - 1 })));
+      for (const earlier of newest.slice(1)) fold.append(sittingView(earlier, found));
+      older.append(fold);
     }
   }
   document.getElementById("meshes").replaceChildren(meshes(found.turntables || []));
@@ -465,20 +546,25 @@ async function draw() {
   for (const asset of found.pending.assets) {
     rows.append(element("tr", {},
       element("td", {}, asset.asset),
-      element("td", {}, asset.waiting ? "yes" : "no"),
+      element("td", {}, asset.waiting ? t("yes") : t("no")),
       element("td", {}, asset.candidate || ""),
       element("td", {}, asset.judged || "")));
   }
 }
 
+document.getElementById("zoom-close").addEventListener("click", () => document.getElementById("zoom").close());
+document.getElementById("zoom").addEventListener("click", (event) => {
+  if (event.target.id === "zoom") event.target.close();
+});
 draw();
 // The page reads the files again every few seconds, so an answer, or the agent's next
 // candidate, shows without a reload. It keeps nothing of its own between reads.
-// A redraw never runs over an answer being written: anything typed or chosen holds it.
+// A redraw never runs over a decision being made: a choice picked or a word typed holds it.
 let marking = false;
 document.addEventListener("pointerdown", (event) => { marking = event.target.tagName === "CANVAS" || marking; });
 const writing = () =>
-  marking ||
+  marking || document.getElementById("zoom").open ||
   [...document.querySelectorAll("textarea")].some((box) => box.value.trim()) ||
-  document.querySelector("input[type=radio]:checked") !== null;
+  document.querySelector('.option[aria-pressed="true"]') !== null ||
+  [...document.querySelectorAll("details")].some((one) => one.open && one.closest(".card"));
 setInterval(() => { if (!writing()) draw(); }, 5000);

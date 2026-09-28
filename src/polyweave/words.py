@@ -500,7 +500,7 @@ def sheet(
             ],
         }
     if families:
-        verdict._manifest(folder, families, sheets, root, choices=LINE_CHOICES)
+        verdict._manifest(folder, families, sheets, root, kind="line")
     return {
         "sitting": provenance.relative(folder / verdict.MANIFEST, config.root)
         if families

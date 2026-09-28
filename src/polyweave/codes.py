@@ -442,6 +442,13 @@ CODES: dict[str, Code] = {
         when="a read of a table or key that the schema does not carry",
         doors=("list the addresses",),
     ),
+    "config.bad-language": Code(
+        means="[review] language names a language the review page has no catalog for",
+        when="a sitting laid out, or the page read, under a language not in "
+        "review_page/locales/",
+        doors=("set [review] language to en or pt-BR",
+               "add review_page/locales/<language>.json"),
+    ),
     "config.bad-type": Code(
         means="a setting was given a value of the wrong type",
         when="a number written as a string, a table given a value, or a date that is "

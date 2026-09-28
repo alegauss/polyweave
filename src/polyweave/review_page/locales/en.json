@@ -1,0 +1,177 @@
+{
+  "name": "English",
+  "page": {
+    "heading": "Review",
+    "reading": "Reading what is on disk…",
+    "empty": "Nothing is waiting for your review.",
+    "progress": "{done} of {total} reviewed",
+    "laid_out": "Laid out {at}",
+    "question": "What do you decide?",
+    "note_accept": "Comment (optional)",
+    "note_look": "What is different? (required)",
+    "placeholder_accept": "Anything you want to add.",
+    "placeholder_look": "Describe what you see that is not right.",
+    "placeholder_other": "Say why, in your own words.",
+    "record": "Record my decision",
+    "recording": "Recording…",
+    "need_choice": "Pick one of the options first.",
+    "need_note": "Write what is different before recording.",
+    "recorded": "Recorded.",
+    "no_comment": "(no comment)",
+    "status_wait": "Waiting for you",
+    "status_accept": "Accepted",
+    "status_look": "Redo asked",
+    "status_other": "Answered",
+    "answered": "You chose “{choice}” on {at}.",
+    "answer_again": "Answer again",
+    "newer_candidate": "{name} has a newer version since: {candidate}",
+    "legend": "What the numbers mean",
+    "zoom": "Click the picture to see it full size",
+    "close": "Close",
+    "mark": "Mark where it is wrong (optional)",
+    "mark_help": "Drag over the picture to draw a box around the problem.",
+    "mark_alt": "{name}, to mark where it is wrong",
+    "clear_marks": "Clear marks",
+    "details": "Technical details",
+    "passes": "passes",
+    "fails": "fails",
+    "measured": "Measured",
+    "older": "Earlier sittings ({n})",
+    "advanced": "Advanced: gates, turntables, canons and every asset",
+    "canons_title": "The canons",
+    "show_canons": "Show every family's canon",
+    "measuring_canons": "Measuring the canons…",
+    "pending_title": "Where every asset stands",
+    "th_asset": "asset",
+    "th_waiting": "waiting",
+    "th_candidate": "newest candidate",
+    "th_judged": "last judged",
+    "yes": "yes",
+    "no": "no",
+    "before": "before",
+    "after": "after",
+    "mode_side": "side by side",
+    "mode_slider": "slider",
+    "mode_onion": "onion skin",
+    "mode_difference": "difference",
+    "measuring_difference": "Measuring the difference…",
+    "no_map": "No map could be made.",
+    "difference_says": "{changed} of {patches} patches past a floor of {tolerance} ({from})",
+    "gate_of": "Gate of {at}",
+    "chosen": "chosen: {chosen} — {why}",
+    "none": "none",
+    "kept": "Kept ({n})",
+    "refused": "Refused ({n})",
+    "unchecked": "unchecked: {gap}",
+    "cost": "cost {credits} on {service}",
+    "left": ", {left} {unit} left",
+    "why_canon": "Why it belongs in the canon.",
+    "add_to_canon": "Add to canon",
+    "added": "Added to the canon.",
+    "why_promote": "Why this one is right after all.",
+    "promote": "Promote: the bar was wrong for this one",
+    "promoted": "Recorded: promoted.",
+    "write_first": "Write a sentence first.",
+    "turned": "{asset}, turned",
+    "which_frame": "which frame round the up axis",
+    "azimuth": "azimuth {azimuth}°, elevation {elevation}°",
+    "turned_against": " — {before} against {newest}",
+    "one_turntable": " — only one turntable so far",
+    "front_against": "The front view against the drawing",
+    "canon_of": "{family} canon",
+    "floors": "floors: {floors}",
+    "floor_none": "none (fewer than two pictures)",
+    "narrow": "without it the floors narrow: {which}",
+    "no_narrow": "without it no floor narrows",
+    "why_withdraw": "Why it no longer belongs.",
+    "withdraw": "Take out of the canon",
+    "withdrawn": "Taken out.",
+    "candidates": "Candidates",
+    "frames": "See it frame by frame"
+  },
+  "kinds": {
+    "look": {
+      "title": "Pictures to approve",
+      "about": "Each card is a family of pictures: the new one beside the old where there is one, at the size the game draws it. Under it is what its acceptance spec measured.",
+      "choices": {
+        "accept": {
+          "label": "Accept",
+          "means": "The look is right and the spec agrees.",
+          "then": "The pictures are kept, and your decision is recorded."
+        },
+        "look": {
+          "label": "Redo",
+          "means": "The look is wrong.",
+          "then": "The pictures go back to be made again; the spec's bounds stay as they are."
+        },
+        "number": {
+          "label": "Move the bound",
+          "means": "The look is right, and a bound that failed it is wrong.",
+          "then": "That bound moves to the measured value, recorded as yours."
+        }
+      }
+    },
+    "effect": {
+      "title": "Visual effects to approve",
+      "about": "Each card shows one visual effect moving, filmed over a neutral grey. The emitter circles so a trail is seen as it would follow a ship. Decide whether it looks right for the game.",
+      "legend": {
+        "lifetime": "seconds each particle lives",
+        "reach": "how far a particle travels, in metres",
+        "alive": "particles or ribbon points at once: its budget",
+        "rate": "particles started each second",
+        "brightness": "its brightest colour, from 0 to 1"
+      },
+      "rows": [
+        "In the game today",
+        "Built by polyweave"
+      ],
+      "family": "The effect “{name}”",
+      "parts": ", made of: {parts}",
+      "against": ". On the left, how it looks in the game today; on the right, what was built from the declaration. The two should match.",
+      "choices": {
+        "accept": {
+          "label": "Accept",
+          "means": "The effect looks right.",
+          "then": "The game plays exactly the effect that was built, and your decision is recorded."
+        },
+        "look": {
+          "label": "Redo",
+          "means": "The effect does not look right.",
+          "then": "Say what is different; the declaration goes back to be changed, and the effect comes back in a new sitting."
+        }
+      }
+    },
+    "line": {
+      "title": "Lines to approve",
+      "about": "Each card is a line of the game's world in each language, with what the words check found in it.",
+      "choices": {
+        "accept": {
+          "label": "Accept",
+          "means": "The line sounds like the world.",
+          "then": "It joins the lines canon, which later lines are held to."
+        },
+        "look": {
+          "label": "Reject",
+          "means": "It does not sound like the world.",
+          "then": "Say why; it stays out of the canon."
+        }
+      }
+    },
+    "sound": {
+      "title": "Sounds to approve",
+      "about": "Each card plays the new sound beside the old one where there is one; a loop plays over and over so its seam is heard. Under it is what was measured.",
+      "choices": {
+        "accept": {
+          "label": "Accept",
+          "means": "It sounds right.",
+          "then": "The new sound replaces the old one in the game."
+        },
+        "look": {
+          "label": "Redo",
+          "means": "It does not sound right.",
+          "then": "Say why; the sound goes back to be made again."
+        }
+      }
+    }
+  }
+}

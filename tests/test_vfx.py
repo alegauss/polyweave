@@ -343,7 +343,14 @@ def test_an_effect_is_watched_over_its_life_as_a_sitting(tmp_path):
                        root=str(tmp_path))
     assert laid["effects"]["sparks"]["frames"] > 60
     manifest = json.loads((tmp_path / laid["sitting"]).read_text("utf-8"))
-    assert manifest["choices"] == vfx.VFX_CHOICES
+    assert set(manifest["choices"]) == set(vfx.VFX_CHOICES)
+    # Each choice says what it is and what it leads to (§PW287).
+    assert all({"label", "means", "then"} <= set(one)
+               for one in manifest["choices"].values())
+    # And the effect plays as a film the page loops, beside today's where one is named.
+    films = manifest["families"]["sparks"]["members"][0]["films"]
+    assert [film["label"] for film in films] == ["Built by polyweave"]
+    assert (tmp_path / films[0]["path"]).is_file()
     from PIL import Image
 
     with Image.open(tmp_path / "review" / "fx" / "sparks.png") as sheet:

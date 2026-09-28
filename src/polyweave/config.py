@@ -154,6 +154,10 @@ DEFAULTS: dict[str, Any] = {
         # has to stay worth reading for the one week in a year when a mesh goes missing.
         "handmade": [],
     },
+    "review": {
+        # The language a sitting and the review page are read in (§PW287): en, pt-BR.
+        "language": "en",
+    },
     "engine": {
         # The bounds a scene script runs under. Both of them, because the frame budget
         # is what ends a script the engine would otherwise sit in forever, and the wall
