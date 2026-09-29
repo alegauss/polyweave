@@ -139,6 +139,41 @@ class Driven:
             self.process.kill()
 
 
+#: A splash that hands over to the game a few frames in, as a game's scenes do.
+SPLASH = """extends Node2D
+
+var frames := 0
+
+func _process(_delta: float) -> void:
+\tframes += 1
+\tif frames == 3:
+\t\tget_tree().change_scene_to_file("res://main.tscn")
+"""
+
+
+def test_a_scene_the_game_leaves_is_gone(tmp_path):
+    # §PW297: the driver's scene is the current one, so the game's own change frees it.
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    root = game(tmp_path)
+    (root / "splash.gd").write_text(SPLASH, encoding="utf-8")
+    (root / "splash.tscn").write_text(
+        SCENE.replace("main.gd", "splash.gd").replace('"Main"', '"Splash"'),
+        encoding="utf-8",
+    )
+    session = Driven(root, "--scene=res://splash.tscn")
+    try:
+        assert session.ask("query", path="/root/Splash")["ok"]
+        session.ask("step", frames=10)
+        gone = session.ask("query", path="/root/Splash")
+        assert (gone["ok"], gone["error"]) == (False, "driver.no-node")
+        assert session.ask("query", path="/root/Main")["ok"]
+        # A relative path follows the scene playing now.
+        assert session.ask("query", path="UI/Press")["result"][0]["class"] == "Button"
+    finally:
+        session.close()
+
+
 @pytest.fixture
 def driven(tmp_path):
     if not os.environ.get("GODOT"):

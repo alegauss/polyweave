@@ -11,7 +11,9 @@ contract, which is why it is written before them.
 
 The driver is `addons/polyweave_driver/driver.gd`. It is a `SceneTree` script, not an
 autoload: the engine runner launches it with `--script`, and it loads the project's own
-main scene (`application/run/main_scene`) under the root itself. **A project need install
+main scene (`application/run/main_scene`) under the root itself and makes it the current
+scene, so the game's own `change_scene_to_file` replaces it as it does for a player
+(§PW297). **A project need install
 nothing** (§PW216): the engine runs a script from outside the project, so where a game
 has no `addons/polyweave_driver/`, the copy polyweave carries is launched by its own path,
 and driving the game writes nothing into its tree beyond `.polyweave/`. A project that
@@ -95,7 +97,7 @@ them; the driver quits on `close`, or after `--idle=N` seconds with no request.
 
 | `cmd` | Fields | What it does, and what `result` is |
 |---|---|---|
-| `query` | `path`, or `group`, or `class`; optional `properties` | The nodes found, each `{path, class, properties}`. A path is absolute from `/root` or relative to the main scene. Without `properties`: `name`, `visible`, `position`, `text` and `disabled` where the node has them |
+| `query` | `path`, or `group`, or `class`; optional `properties` | The nodes found, each `{path, class, properties}`. A path is absolute from `/root` or relative to the current scene. Without `properties`: `name`, `visible`, `position`, `text` and `disabled` where the node has them |
 | `input` | `action` or `key`, with `hold` or `release`; or `click` with `path` or `at` | Queued, and delivered when the next frames pass — so a signal the input causes fires inside the `step` or `wait` that follows, where a wait armed for it sees it. An action or a key goes through `Input.parse_input_event`, which is what a game polling `Input.is_action_pressed` reads; a tap presses on one frame and releases on the next, so `is_action_just_pressed` sees it once; `hold` sends only the press, kept down across frames until a `release` (§PW216). A click goes through `Viewport.push_input`, moving the pointer there first, since a Button fires only while hovered; `click` at a node aims at its centre on screen (a Control's rect, a Node2D's position, through its canvas transform), and `at` is a point in the viewport. `result` says where a click lands |
 | `step` | `frames` (default 1) | Lets that many frames pass, then holds |
 | `wait` | `frames` budget, and one of `signal` + `path`, `node` (a path or group that must exist), or `path` + `property` + `equals` | Lets frames pass until the condition holds or the budget is spent; `result` is `{met, frames}`. An unmet wait is `ok` with `met: false` — the budget ran out, which is an answer and not an error |

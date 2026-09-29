@@ -262,29 +262,6 @@ this is where that is recorded honestly: what still runs by hand, and why the ri
 instead of disappearing. An outcome worth having, stated, beats the same outcome
 unstated.
 
-### §PW297 The driven game's scene changes as it does for a player
-
-Met in starship (RK143), putting the new Lancer in front of a camera. `game.open
-display=true` loads the project's main scene, the Splash, and the game leaves it with
-`get_tree().change_scene_to_file(next)`. Five thousand frames later `game.query` still
-found `/root/Splash`, its `Camera` still `current = true`, and `/root/Main/Camera` not
-current. Every `game.shot` showed the splash's intro close-up of the ship while `Main`
-was playing under it. Nothing in the answer said so: the shot came back with a path and
-a size, as it always does.
-
-The cause is in `godot/addons/polyweave_driver/driver.gd`, `_initialize`: the scene is
-instantiated and `root.add_child(main)`, and `current_scene` is never set. Godot's
-`change_scene_to_file` frees the current scene, and there is none, so the first scene
-never leaves. A game whose scenes hand over to each other (splash, title, ship select,
-play) runs two at once under the driver, which it never does for a player.
-
-The workaround was `game.set /root/Main/Camera current true` before the shot. It lives
-nowhere, since the session was thrown away.
-
-What polyweave should do: set `current_scene = main` after adding it, so the game's own
-scene changes behave as they do without the driver. A check drives a two-scene fixture
-where the first changes to the second and asserts the first is gone.
-
 ### §PW298 A spec that measures the model the game draws
 
 Met in starship (RK143). `art/accept/gunship.accept.toml` holds the gunship to

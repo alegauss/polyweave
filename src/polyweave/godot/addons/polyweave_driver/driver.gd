@@ -84,6 +84,10 @@ func _initialize() -> void:
 			return
 		main = packed.instantiate()
 		root.add_child(main)
+		# Current, as the engine makes it for a player, so the game's own
+		# change_scene_to_file frees it rather than running a second scene over it
+		# (§PW297).
+		current_scene = main
 	if flow_path == "":
 		print("polyweave_driver: port=%d token=%s" % [server.get_local_port(), token])
 
@@ -312,8 +316,9 @@ func _found(asked: Dictionary) -> Array:
 		return _selected(asked["select"])
 	if asked.has("path"):
 		var path := str(asked["path"])
+		# Relative to the scene playing now, which a scene change replaces.
 		var node: Node = root.get_node_or_null(path) if path.begins_with("/") else (
-			main.get_node_or_null(path) if main else null
+			current_scene.get_node_or_null(path) if current_scene else null
 		)
 		return [node] if node else []
 	if asked.has("group"):

@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 9 },
+  { block: "H", title: "Proof on a real game", open: 8 },
   { block: "I", title: "Voxel models from a declaration", open: 3 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
@@ -69,13 +69,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent",
     why: "The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question.",
     deps: ["PW57"],
-  },
-  {
-    id: "PW297",
-    block: "H",
-    symptom: "game.open never makes the scene it loads current, so a game's scene change leaves the first scene and its camera up",
-    why: "Every shot of a game whose scenes hand over shows a scene the player left, and the answer says nothing about it.",
-    deps: [],
   },
   {
     id: "PW298",
