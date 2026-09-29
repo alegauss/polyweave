@@ -38,6 +38,10 @@ from .files import read_text_retrying
 #: Where the page's own files are, beside this module.
 PAGE = Path(__file__).with_name("review_page")
 
+#: The package whose code the server runs. The page's files are read on every request,
+#: but its Python is the copy the server started with (§PW294).
+CODE = Path(__file__).parent
+
 #: The only address the server listens on. A verdict is a person's, and a page anyone
 #: on the network could post to would make it anyone's.
 HOST = "127.0.0.1"
@@ -447,9 +451,29 @@ def _served(here: Path, wanted: str) -> bool:
     )
 
 
+def newest(code: Path) -> float:
+    """The newest modification time of the package's Python, in seconds."""
+    return max((one.stat().st_mtime for one in code.rglob("*.py")), default=0.0)
+
+
+def staleness(code: Path, started: float) -> dict | None:
+    """What changed in the package since the server started, or None (§PW294)."""
+    now = newest(code)
+    if now <= started:
+        return None
+    return PolyweaveError(
+        "review.stale-server",
+        "polyweave changed after this review server started, so it would judge with "
+        "older code than the specs it reads",
+        "stop the server and start it again: python -m polyweave review",
+    ).as_dict()
+
+
 def server(root=".", port: int = 0) -> ThreadingHTTPServer:
     """The page's server for one project, bound and not yet serving."""
     here = load(root).root
+    code = CODE
+    started = newest(code)
 
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, *_):  # the terminal is the agent's, not a request log
@@ -482,6 +506,8 @@ def server(root=".", port: int = 0) -> ThreadingHTTPServer:
                         "answers": verdict.answers(root=str(here))["answers"],
                         "gates": looked_at(here),
                         "turntables": turntables(here),
+                        # The page shows a banner naming the restart.
+                        "stale": staleness(code, started),
                     }
                 )
             if asked.path == "/api/canon":
@@ -517,6 +543,10 @@ def server(root=".", port: int = 0) -> ThreadingHTTPServer:
                 or self.headers.get(ASKED) != "1"
             ):
                 return self._json({"code": "refused"}, HTTPStatus.FORBIDDEN)
+            stale = staleness(code, started)
+            if stale:
+                # Never an answer judged by code older than the specs it reads.
+                return self._json(stale, HTTPStatus.CONFLICT)
             try:
                 body = json.loads(sent or b"{}")
                 return self._json(answer(here, body))

@@ -274,6 +274,7 @@
 - ✅ **PW289** **the review page redraws itself whole after each answer and every few seconds, so a click between two is lost** — The review page redraws only when what it read changed, and an answer redraws its own card alone, so a person answers card after card with one click each.
 - ✅ **PW293** **a sitting laid out before PW287 reads in English on the page, with no summary, and looks broken to its owner** — The review page reads a sitting laid out before PW287 through the catalog: its choices by key, its title and summary from its kind, in the project's language.
 - ✅ **PW295** **a sitting's summary draws its choices as boxes that look pressable, and nothing parts one sitting from the next** — A sitting's summary lists its choices as a plain legend under How to decide, and each sitting is its own section, parted by a rule, with its count of items and answers.
+- ✅ **PW294** **the review server keeps the polyweave it started with, so a spec using a measure added since is refused on Accept** — A review server started before polyweave changed refuses an answer with review.stale-server naming the restart, and the page shows a banner saying so.
 
 ## Block P — Music and sound a game can ship
 

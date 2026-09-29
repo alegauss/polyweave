@@ -4,6 +4,7 @@
     "heading": "Review",
     "reading": "Reading what is on disk…",
     "empty": "Nothing is waiting for your review.",
+    "stale": "polyweave was updated after this page's server started, so it cannot record an answer yet. Stop it (Ctrl+C in its terminal) and start it again with: python -m polyweave review. Then reload this page.",
     "progress": "{done} of {total} reviewed",
     "laid_out": "Laid out {at}",
     "question": "What do you decide?",

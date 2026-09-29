@@ -487,25 +487,6 @@ since a reference the service ignores is dropped without an error.
 
 ## Block O — A person sees and answers
 
-### §PW294 A review server that knows its code moved
-
-Found by Starship's owner on 2026-09-28. `polyweave review` had been running since
-before PW292 added `silhouette_aspect`. When the owner pressed Accept on a sitting whose
-specs now use it, the page answered `spec.unknown-measure: 'silhouette_aspect' is not a
-measure`. The page's own files are read from disk on every request, so the page was new,
-but the server's Python was the version it had started with. So the page and the code
-behind it disagreed, and only a restart mended it, which the owner had no way to know.
-
-The server should know the code it runs. It should note the package's newest file time
-when it starts, and compare it on each answer. Where the package changed since, it
-should say so before answering: a refusal `review.stale-server` that names the restart,
-`python -m polyweave review`. It should never judge with code older than the specs it
-reads. /api/state should carry the same flag, so the page shows a banner telling the
-person to restart it.
-
-Done when a server started before a change to the package refuses an answer with that
-code and the page says so, with a test that touches a module after the server starts.
-
 ## Block P — Music and sound a game can ship
 
 ### §PW192 Cottony's audio made through polyweave

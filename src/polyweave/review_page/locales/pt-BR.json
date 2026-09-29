@@ -4,6 +4,7 @@
     "heading": "Revisão",
     "reading": "Lendo o que está no disco…",
     "empty": "Nada está esperando a sua revisão.",
+    "stale": "O polyweave foi atualizado depois que o servidor desta página começou, então ele ainda não pode registrar uma resposta. Pare-o (Ctrl+C no terminal dele) e inicie de novo com: python -m polyweave review. Depois recarregue esta página.",
     "progress": "{done} de {total} revisados",
     "laid_out": "Montada em {at}",
     "question": "Qual é a sua decisão?",

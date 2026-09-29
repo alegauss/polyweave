@@ -60,6 +60,7 @@ AREAS: dict[str, str] = {
     "music": "a score written as a source, compiled to notes and checked",
     "vfx": "a particle or ribbon effect declared as data and built for the engine",
     "store": "a store's capsule set, cut from one key art and a logo",
+    "review": "the local page a person answers a sitting on, and the server behind it",
 }
 
 CODES: dict[str, Code] = {
@@ -856,6 +857,13 @@ CODES: dict[str, Code] = {
         means="a member of a sheet, a sitting or a verdict is not one",
         when="a member that is a number or a list, or a table with no name or no new",
         doors=("write each member as a table, or as the picture's path",),
+    ),
+    # -- review: the page a person answers on, and its server ---------------------
+    "review.stale-server": Code(
+        means="the review server runs older code than the plugin it was started from",
+        when="polyweave changed after `polyweave review` started, so a spec using a "
+        "measure added since would be refused by the server's own copy (§PW294)",
+        doors=("stop the server and start it again: python -m polyweave review",),
     ),
     # -- vfx: an effect declared as data and built for the engine -----------------
     "vfx.no-source": Code(

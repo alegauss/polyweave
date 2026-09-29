@@ -44,8 +44,6 @@
 
 ## Block O — A person sees and answers
 
-- 📋 **PW294** (deps: —) **the review server keeps the polyweave it started with, so a spec using a measure added since is refused on Accept** — Starship's owner got spec.unknown-measure for silhouette_aspect, and only a restart the page never asked for mended it. → §PW294
-
 ## Block P — Music and sound a game can ship
 
 - 📋 **PW313** (deps: —) **sound.sitting plays a jingle's cues one by one, so a person never hears them mixed at the times the game plays them** — A jingle is judged as a whole, so its parts' balance and timing can only be heard today by launching the game. → §PW313

@@ -604,11 +604,20 @@ async function redrawCard(manifest, name) {
   progressOf(found);
 }
 
+// A server older than the plugin cannot record an answer, and says so above everything
+// (§PW294). Shown on every read, whatever else changed.
+function staleBanner(found) {
+  const banner = document.getElementById("stale");
+  banner.hidden = !found.stale;
+  if (found.stale) banner.textContent = t("stale");
+}
+
 async function draw() {
   const found = await state();
+  await speak(found.language || "en");
+  staleBanner(found);
   if (seen(found) === drawn) return;
   drawn = seen(found);
-  await speak(found.language || "en");
   document.getElementById("project").textContent = found.project || "";
   const sittings = document.getElementById("sittings");
   const older = document.getElementById("older");
@@ -657,4 +666,5 @@ const writing = () =>
   [...document.querySelectorAll("textarea")].some((box) => box.value.trim()) ||
   document.querySelector('.option[aria-pressed="true"]') !== null ||
   [...document.querySelectorAll("details")].some((one) => one.open && one.closest(".card"));
-setInterval(() => { if (!writing()) draw(); }, 5000);
+// Only the banner is kept current while a person writes, so they learn before they send.
+setInterval(() => { if (!writing()) draw(); else state().then(staleBanner); }, 5000);

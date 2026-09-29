@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import threading
 import urllib.error
 import urllib.request
@@ -137,6 +138,45 @@ def test_an_answer_for_a_sitting_never_laid_out_is_refused(page):
         base + "/api/judge", judged(sitting="elsewhere/sitting.json", choice="accept")
     )
     assert status == 400 and said["code"] == "loop.unknown-sitting"
+
+
+def test_a_server_older_than_its_code_refuses_to_judge(tmp_path, monkeypatch):
+    # §PW294: the page is read from disk on every request, the Python is not.
+    code = tmp_path / "code"
+    code.mkdir()
+    module = code / "measure.py"
+    module.write_text("", encoding="utf-8")
+    os.utime(module, (1_000_000, 1_000_000))
+    monkeypatch.setattr(review, "CODE", code)
+    project = tmp_path / "project"
+    project.mkdir()
+    (project / "polyweave.toml").write_text("", encoding="utf-8")
+    verdict.sitting(
+        {"stars": [member(project, "star_dim", 200)]}, out="review", root=project
+    )
+    serving = review.server(project)
+    threading.Thread(target=serving.serve_forever, daemon=True).start()
+    host, port = serving.server_address[:2]
+    base = f"http://{host}:{port}"
+    try:
+        assert json.loads(get(base + "/api/state")[1])["stale"] is None
+        os.utime(module, (2_000_000, 2_000_000))  # the package changed under it
+        stale = json.loads(get(base + "/api/state")[1])["stale"]
+        assert stale["code"] == "review.stale-server"
+        assert "python -m polyweave review" in stale["remedy"]
+        status, said = post(base + "/api/judge", judged(why="judged by old code"))
+        assert status == 409 and said["code"] == "review.stale-server"
+        spec = (project / "accept" / "star_dim.accept.toml").read_text(encoding="utf-8")
+        assert "judged by old code" not in spec
+    finally:
+        serving.shutdown()
+        serving.server_close()
+
+
+def test_the_page_shows_the_restart_it_needs():
+    script = (review.PAGE / "page.js").read_text(encoding="utf-8")
+    assert 'getElementById("stale")' in script and 't("stale")' in script
+    assert 'id="stale"' in (review.PAGE / "index.html").read_text(encoding="utf-8")
 
 
 def test_the_command_line_has_the_verb():

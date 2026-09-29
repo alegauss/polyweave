@@ -178,6 +178,10 @@
   pre { background: var(--ground); padding: 8px; border-radius: 6px; overflow-x: auto; }
   table { border-collapse: collapse; width: 100%; background: var(--panel); font-size: 14px; }
   td, th { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: left; }
+  .stale {
+    margin: 0 0 20px; padding: 14px 18px; border-radius: 10px; border: 2px solid var(--no);
+    background: var(--no-soft); color: var(--ink); font-weight: 600;
+  }
   .empty { text-align: center; color: var(--quiet); padding: 40px 16px; }
   dialog.zoom { border: 0; padding: 0; background: transparent; max-width: 96vw; }
   dialog.zoom::backdrop { background: rgb(0 0 0 / 80%); }
@@ -198,6 +202,7 @@
       <span id="counted"></span>
     </div>
   </header>
+  <p class="stale" id="stale" role="alert" hidden></p>
   <section id="sittings"><p class="empty" id="says">…</p></section>
   <section id="older"></section>
   <details class="advanced" id="advanced">
