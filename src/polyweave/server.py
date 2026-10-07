@@ -86,7 +86,8 @@ TOOL_BUDGET = 4500
 #: 83,800 at 83,227 for a sitting's about, against and spoken (§PW287, §PW291).
 #: 84,600 at 83,982 for project.inventory, the first read of a project (§PW299).
 #: 86,400 at 85,837 for revision.ask, .open and .close (§PW301).
-LIST_BUDGET = 86400
+#: 87,100 at 86,617 for picture.vector (§PW315).
+LIST_BUDGET = 87100
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

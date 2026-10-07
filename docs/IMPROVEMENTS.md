@@ -262,26 +262,6 @@ this is where that is recorded honestly: what still runs by hand, and why the ri
 instead of disappearing. An outcome worth having, stated, beats the same outcome
 unstated.
 
-### §PW315 A vector logo rendered whole and in layers
-
-Met in starship (RK150): the title should show the logo the owner accepted for the Steam
-page. That logo is a vector, `art/brand/spinhold-wordmark-clear.svg`, whose groups hold
-a blurred magenta halo, a dashed cyan ring through the O, and the letters with their
-drop and bevel, drawn with blur filters and masks. The store's `library_logo.png` came
-from a work-area rasterisation that no record covers.
-
-The game needs that logo at 4K width, transparent, with a `.prov.json` naming the SVG,
-so store and game cannot drift. It also needs it in layers (ring, halo, letters) on one
-canvas, so the ring can turn and the glow pulse while the letters hold still. `describe`
-lists no operation that rasterises a vector or picks groups out of one. Nothing was
-built: RK150 waits on this line.
-
-What polyweave should do: render a vector picture to PNG at a stated width, filters and
-masks included, recording the SVG as input. Given group selectors, write one PNG per
-layer on the same canvas and origin, so the layers stack back into the whole, and let a
-spec hold each layer's alpha edge. The SVG's groups carry no ids, so selecting by order
-or paint, or naming layers in a declaration, is part of the answer.
-
 ### §PW316 A UI panel built from a declaration
 
 Met in starship (RK151): the menus need a kit of panels, bevelled holo-glass frames with

@@ -60,3 +60,22 @@ it, so its stroke is measured on the letters as the capsule shows them rather th
 scaled-down export. A vector has no size to be too small at, so the logo half of
 `store.too-small` does not apply to it. Without the engine it is `store.no-rasteriser`,
 and a PNG with alpha is the other way in.
+
+## The same logo in the game
+
+**The game draws the logo the store shows, from the same file** (§PW315). Starship's
+title wanted the logo accepted for its store page, an SVG with a blurred halo, a dashed
+ring and the letters, and the store's PNG came from a rasterisation nothing recorded.
+`picture.vector(source, out, width, layers=)` draws the SVG at `width` pixels through the
+same ThorVG run, blur filters and masks included, and writes a record whose `vector`
+input is the SVG. So `provenance.outdated` names the PNG once the SVG changes.
+
+**A part that moves is drawn as its own layer.** `layers` maps a name to one top-level
+element of the drawing: `#id`, or its place counted from 1, because exported SVGs often
+leave their groups without ids. Each layer is written beside `out` as
+`<out>.<name>.png`, drawn with every other element hidden and the `<defs>` kept, on the
+whole picture's canvas and origin, so a ring can turn and a glow pulse while the letters
+hold still, and the layers stack back into the whole. A selector naming no element is
+`compose.no-layer`, and its `allowed` lists the places and ids there are. An SVG that
+does not parse, or states neither a pixel width nor a viewBox, is `compose.no-vector`.
+Each layer is a picture like any other, so a spec can hold its alpha edge.

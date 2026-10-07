@@ -137,6 +137,7 @@ MODULES: tuple[str, ...] = (
     "polyweave.words",
     "polyweave.project",
     "polyweave.revision",
+    "polyweave.vector",
 )
 
 

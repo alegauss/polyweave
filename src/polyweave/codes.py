@@ -1918,6 +1918,18 @@ CODES: dict[str, Code] = {
         when="a bound on a measure that returns a set or a colour rather than a number",
         doors=("bound a statistic of it instead",),
     ),
+    "compose.no-vector": Code(
+        means="the vector picture named cannot be drawn",
+        when="picture.vector given a path with no SVG, one that does not parse, or one "
+        "stating neither a pixel width nor a viewBox (§PW315)",
+        doors=("name an .svg under the project", "give its svg element a viewBox"),
+    ),
+    "compose.no-layer": Code(
+        means="a layer names an element the SVG does not have",
+        when="picture.vector given a layer whose #id or place matches no top-level "
+        "drawing element",
+        doors=("name it by #id, or by its place counted from 1",),
+    ),
     "review.unknown-item": Code(
         means="a revision names an item the inventory does not list",
         when="revision.ask given a name or a path project.inventory has no row for "

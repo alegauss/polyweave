@@ -8,12 +8,12 @@ This page groups them by task.
 | Adopt | `project.init` (`init`), `project.check`, `project.inventory` |
 | Know the machine | `capabilities` (verb), `engine.find`, `offscreen.routes`, `search.worth_parallel` |
 | Start on an asset | `asset.brief`, `loop.pending` |
-| Make a shape | `geometry.build`, `geometry.build_all`, `geometry.describe`, `geometry.variants`, `geometry.fit` (proportions to a reference), `geometry.compare` (two voxel models, by cell) |
+| Make a shape | `geometry.build`, `geometry.build_all`, `geometry.describe`, `geometry.variants`, `geometry.fit` (to a reference), `geometry.compare` (two voxel models, by cell) |
 | Render | `render.plan` (free), `render.bake` (a render) |
 | Measure | `measure.take`, `measure.same`, `measure.available`, `measure.digest` (did the outline move, or only the look), `measure.contrast` |
-| Judge against the bar | `accept.check`, `accept.verify`, `accept.check_screen`, `cost.read` (what it costs to draw), `sound.measure` (a loop's seam, level), `sound.declared` (the game's declared audio and what is missing) |
+| Judge against the bar | `accept.check`, `accept.verify`, `accept.check_screen`, `cost.read` (what it costs to draw), `sound.measure` (seam, level), `sound.declared` (declared audio, and what is missing) |
 | Search for numbers | `search.sweep`, `port.run` (a whole family), `trace.read` |
-| See it where it is seen | `compose.place`, `compose.sheet`, `store.capsules` (a store's set) |
+| See it where it is seen | `compose.place`, `compose.sheet`, `store.capsules` (a store's set), `picture.vector` (SVG layers) |
 | Size a bound from noise | `calibrate.run`, then `calibrate.apply` |
 | Carry a person's verdict | `verdict.sheet`, `verdict.sitting`, `verdict.judge`, `verdict.promote`, `sound.sitting`; `review` shows a sitting, `verdict.answers` resumes from it |
 | Asked changes | `revision.ask`, `revision.open`, `revision.close` |
