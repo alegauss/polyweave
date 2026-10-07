@@ -143,7 +143,7 @@
 - ✅ **PW120** **every family port is a hand-written script repeating the same build, search, check, bake and record steps** — A family file states members, axes and bake targets, and port.port runs the build, family search, final bake and ledger record from it (design recorded in `docs/specs/adoption.md`).
 - ✅ **PW258** **what a change costs a frame is found only by stashing, re-importing and timing both sides by hand** — engine.cost times a script on the tree and a revision's worktree, alternating, with each measure's difference, interval and sure; RK131 read +1.11 ms GPU (design recorded in `docs/specs/engine.md`).
 - ✅ **PW297** **game.open never makes the scene it loads current, so a game's scene change leaves the first scene and its camera up** — The driver makes the scene it loads current, so a game's own change_scene_to_file frees it as for a player, and relative paths follow the scene playing now.
-- ✅ **PW298 (the warning half)** **asset.brief calls a spec current while its render is of a mesh the game stopped drawing when voxels replaced it** — asset.brief and accept.verify answer `parted` where a spec's render is of a mesh other than what its declaration builds, naming the declaration, its builds and the mesh.
+- ✅ **PW298** **asset.brief calls a spec current while its render is of a mesh the game stopped drawing when voxels replaced it** — A spec's `subject` names its declaration; render.bake and the search render its build, and verify calls a render of another mesh stale (design recorded in `docs/specs/acceptance-spec.md`).
 
 ## Block I — Voxel models from a declaration
 

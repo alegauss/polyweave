@@ -1918,6 +1918,27 @@ CODES: dict[str, Code] = {
         when="a bound on a measure that returns a set or a colour rather than a number",
         doors=("bound a statistic of it instead",),
     ),
+    "spec.no-subject": Code(
+        means="a render was asked of a spec's subject and the spec names none",
+        when="render.bake given a spec, and no model, where the spec has no `subject` "
+        "(§PW298)",
+        doors=(
+            "pass the mesh as `model`",
+            'add subject = "<declaration>.toml" to the spec',
+        ),
+    ),
+    "spec.subject-not-declaration": Code(
+        means="a spec's `subject` names something that is not a geometry declaration",
+        when="a mesh, a picture or another spec given where the declaration whose "
+        "build the spec measures belongs (§PW298)",
+        doors=("name the declaration's .toml, as a path under the project",),
+    ),
+    "spec.subject-unbuilt": Code(
+        means="the declaration a spec names as its subject has no build to render",
+        when="no mesh record names that declaration as its input, or the mesh it names "
+        "is gone (§PW298)",
+        doors=("build the declaration with geometry.build",),
+    ),
     "spec.rung-too-low": Code(
         means="the render was taken lower on the ladder than the spec allows",
         when="a verdict taken at the sphere on an asset whose spec names a floor",

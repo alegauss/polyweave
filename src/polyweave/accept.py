@@ -83,6 +83,8 @@ class Spec:
     artefact: str | None = None
     #: Where the asset stands on screen: a capture and the region it named (§PW112).
     screen: dict | None = None
+    #: The geometry declaration whose build is the model this spec measures (§PW298).
+    subject: str | None = None
 
     def needs_rung(self) -> str:
         """The lowest rung a verdict on this asset may be taken at.
@@ -122,17 +124,29 @@ def read(path: str | Path, root: str | Path = ".") -> Spec:
 
 
 def parse(declared: dict, path: Path | None = None) -> Spec:
-    unknown = sorted(
-        set(declared) - {"asset", "artefact", "screen", "rung", "predicate", "search"}
-    )
+    unknown = sorted(set(declared) - set(_FIELDS))
     if unknown:
         raise PolyweaveError(
             "spec.unknown-field",
             f"an acceptance spec has no {', '.join(unknown)}",
-            "it takes asset, artefact, screen, rung, [[predicate]] and "
+            "it takes asset, artefact, subject, screen, rung, [[predicate]] and "
             "[search.<param>]",
             given=unknown[0],
-            allowed=("asset", "artefact", "screen", "rung", "predicate", "search"),
+            allowed=_FIELDS,
+        )
+    subject = declared.get("subject")
+    if subject is not None and (
+        not isinstance(subject, str)
+        or not subject.endswith(".toml")
+        or subject.endswith(SUFFIX)
+    ):
+        raise PolyweaveError(
+            "spec.subject-not-declaration",
+            f"subject is {subject!r}, which is not a geometry declaration",
+            "name the declaration whose build this spec measures, as a .toml path "
+            "under the project",
+            example='subject = "art/voxels/gunship.toml"',
+            at="subject",
         )
     screen = declared.get("screen")
     if screen is not None and (
@@ -178,7 +192,60 @@ def parse(declared: dict, path: Path | None = None) -> Spec:
         path=path,
         artefact=str(declared["artefact"]) if declared.get("artefact") else None,
         screen=dict(screen) if screen else None,
+        subject=subject,
     )
+
+
+#: What a spec's top level takes.
+_FIELDS = ("asset", "artefact", "subject", "screen", "rung", "predicate", "search")
+
+
+def _subject_model(spec: Spec, root: str | Path = ".") -> str:
+    """The mesh a spec measures: its declaration's newest recorded build (§PW298).
+
+    Read off the provenance records, so it is the file `geometry.build` last wrote for
+    that declaration and still on disk, in a format the renderer loads. A declaration
+    with variants builds one mesh each, and the one named after the asset is preferred.
+    Refused where the spec names no subject, or the declaration has no build to render.
+    """
+    from . import provenance
+    from .doors import door
+
+    here = Path(root).resolve()
+    if not spec.subject:
+        raise PolyweaveError(
+            "spec.no-subject",
+            f"the spec for {spec.asset} names no subject, so it has no build to render",
+            "pass the mesh as `model`, or add subject = \"<declaration>.toml\" to the "
+            "spec",
+            example='subject = "art/voxels/gunship.toml"',
+        )
+    made = [
+        (record.get("produced_at") or "", record["artefact"]["path"])
+        for record in provenance._records(here)
+        if record.get("kind") == "mesh"
+        and any(
+            one.get("role") == "declaration" and one.get("path") == spec.subject
+            for one in record.get("inputs") or ()
+        )
+        and Path(record["artefact"]["path"]).suffix.lower() in _MESHES
+        and (here / record["artefact"]["path"]).is_file()
+    ]
+    own = [one for one in made if Path(one[1]).stem == spec.asset]
+    made = own or made
+    if not made:
+        raise PolyweaveError(
+            "spec.subject-unbuilt",
+            f"{spec.subject}, the subject of {spec.asset}'s spec, has no recorded "
+            "build to render",
+            "build it with geometry.build, which records what it wrote",
+            call=door("geometry.build", source=spec.subject),
+        )
+    return max(made)[1]
+
+
+#: The mesh formats the renderer loads, which is what a subject's build has to be.
+_MESHES = (".blend", ".fbx", ".glb", ".gltf")
 
 
 def _predicate(entry: dict, index: int) -> Predicate:
@@ -637,7 +704,9 @@ def verify(
 
     `passed` is false when any artefact fails, is missing, or its spec is refused, so a
     CI job fails on it; an unanchored spec is said, not failed. So is `parted`, a spec
-    whose artefact renders a mesh its asset's declaration does not build (§PW298).
+    whose artefact renders a mesh its asset's declaration does not build (§PW298). A
+    spec that names that declaration as its `subject` has said which model it holds,
+    so there the same render is `stale` and fails until it is made again.
 
     A spec with a `screen` gets a second answer, on the capture (§PW112), and the spec
     fails where either does. Where the bake passes and the screen fails, `disagree`
@@ -664,10 +733,15 @@ def verify(
         if spec.artefact:
             if declared is None:
                 declared, built = brief._declarations(here), brief._builds(here)
-            gone = brief._parted(declared.get(spec.asset), spec.artefact, here, built)
+            gone = brief._parted(
+                spec.subject or declared.get(spec.asset), spec.artefact, here, built
+            )
             if gone:
-                # Said, not failed: which model the spec should hold is a person's call.
+                # Said, not failed: which model the spec should hold is a person's call,
+                # unless the spec has made it by naming its subject.
                 one["parted"] = gone
+                if spec.subject:
+                    one["status"] = _worse(one["status"], "stale")
         if spec.screen:
             one["screen"] = _attempt(lambda s=spec: check_screen(s, root=here))
             one["status"] = _worse(one["status"], one["screen"]["status"])
@@ -679,17 +753,17 @@ def verify(
         results.append(one)
     counts = {
         status: sum(1 for r in results if r["status"] == status)
-        for status in ("passed", "failed", "missing", "refused", "unanchored")
+        for status in _ORDER
     }
     return {
         "specs": results,
         "counts": counts,
-        "passed": not (counts["failed"] or counts["missing"] or counts["refused"]),
+        "passed": not any(counts[s] for s in ("failed", "stale", "missing", "refused")),
     }
 
 
 #: How bad each answer is, worst last: a spec reads as the worse of its two answers.
-_ORDER = ("unanchored", "passed", "failed", "missing", "refused")
+_ORDER = ("unanchored", "passed", "failed", "stale", "missing", "refused")
 
 
 def _worse(one: str, other: str) -> str:

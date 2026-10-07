@@ -13,6 +13,7 @@ into a gate.
 ```toml
 asset    = "mascot"
 artefact = "docs/renders/mascot.png"   # optional: the file `verify` holds to this
+subject  = "art/mascot.toml"           # optional: the declaration whose build it measures
 rung     = "final"       # the lowest preview rung a verdict may be taken at
 
 [[predicate]]
@@ -297,6 +298,16 @@ builds and the mesh the render was made from. The artefact can still match its r
 while the spec measures a mesh the project has replaced. `parted` is reported and does not
 fail the spec. Moving the spec onto the build may need its bounds set again, and a
 person sets those.
+
+**A spec can name that model** (§PW298). `subject = "art/voxels/gunship.toml"` names the
+geometry declaration whose build the spec measures. `render.bake` given `spec` renders
+that build, the newest one its records name in a format the renderer loads, preferring the
+member named after the asset, and takes the spec's rung as its floor. A `model` passed as
+well is the one rendered. A search over the spec holds the same build still. A subject with
+no recorded build is `spec.subject-unbuilt`, whose door is `geometry.build`. Once the spec
+names its subject, the choice `parted` leaves to a person has been made. So `verify`
+answers `stale` for an artefact rendered from another mesh, and `stale` fails like
+`missing` does until the build is rendered again.
 
 **The same bar holds on screen** (§PW112). Once the game loads a mesh, its material is what
 the player sees and the bake is a reference. `screen = { capture = "captures/title.png",

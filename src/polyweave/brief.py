@@ -225,6 +225,7 @@ def brief(
         else {
             "path": spec.path.relative_to(here).as_posix() if spec.path else None,
             "rung": spec.needs_rung(),
+            "subject": spec.subject,
             "predicates": _predicates(spec),
         },
         "artefact": artefact,
@@ -233,7 +234,9 @@ def brief(
         "bought": _bought(artefact, here),
         # A render of a mesh the declaration no longer builds (§PW298).
         "parted": _parted(
-            declared and declared["path"], artefact and artefact["path"], here
+            (spec and spec.subject) or (declared and declared["path"]),
+            artefact and artefact["path"],
+            here,
         ),
     }
     if not any(answer[k] for k in ("declaration", "spec", "last_verdict")):

@@ -172,6 +172,7 @@ def bake(
     model: Annotated[
         str, Param("the mesh to render; not read at the sphere rung")
     ] = "",
+    spec: Annotated[str, Param("a spec whose subject's build is the mesh")] = "",
     rung: Annotated[str, Param("which rung to render at", choices=RUNGS)] = "",
     asking: Annotated[
         list, Param("the measures the answer has to carry, if no rung is named")
@@ -264,9 +265,17 @@ def bake(
     is what calibrating a bound re-renders under (§PW107). They default to the
     project's, and a search is refused them as axes: one that picks a lucky seed has
     fitted the noise, not the asset.
+
+    `spec` renders the build its `subject` names, at its rung (§PW298).
     """
     from . import blender
 
+    if spec:
+        from .. import accept
+
+        held = accept.read(spec, root)
+        model = model or accept._subject_model(held, root)
+        floor = floor or held.needs_rung()
     started = time.monotonic()
     chosen = plan(rung or None, list(asking) or None, floor=floor or None, root=root)
     if seed >= 0:

@@ -72,13 +72,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW57"],
   },
   {
-    id: "PW298",
-    block: "H",
-    symptom: "asset.brief calls a spec current while its render is of a mesh the game stopped drawing when voxels replaced it",
-    why: "A spec cannot yet name its declaration's build as its subject, so render.bake renders that build at the rung instead of a mesh path.",
-    deps: [],
-  },
-  {
     id: "PW312",
     block: "H",
     symptom: "geometry.describe warns a param no node reads when every node reads it, if its name is also a function",
@@ -118,6 +111,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "nothing reads a held screen for text leaving its box or lying over other text, so a fit is judged by eye",
     why: "A longer translation breaks a layout unseen until a person happens to look at that screen.",
+    deps: [],
+  },
+  {
+    id: "PW372",
+    block: "H",
+    symptom: "a camera move cannot be declared as a clip or played by the game, so a cutscene's shots are numbers in the project",
+    why: "A cinema opening's framing and timing are set by eye in the game's own data, with no record, spec or review page.",
     deps: [],
   },
   {

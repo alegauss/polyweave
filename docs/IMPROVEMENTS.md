@@ -262,29 +262,6 @@ this is where that is recorded honestly: what still runs by hand, and why the ri
 instead of disappearing. An outcome worth having, stated, beats the same outcome
 unstated.
 
-### §PW298 A spec that measures the model the game draws
-
-Met in starship (RK143). `art/accept/gunship.accept.toml` holds the gunship to
-`silhouette_aspect >= 0.6`, and its artefact `art/renders/gunship.png` is a render of
-`assets/models/gunship.glb`, the Meshy mesh. The game has drawn the voxel build of
-`art/voxels/gunship.toml` since RK40, so the spec measured a model no player sees.
-`asset.brief --asset gunship` names both the declaration and the artefact, reports
-`matches_record: true`, and says nothing about the render's input not being the
-declaration's output.
-
-When the voxel gunship was made again, its preview render (`render.bake` of
-`assets/voxels/gunship.glb`) passed the aspect at 1.09, but failed `brightness-holds`
-and `stays-untextured`. Those two bounds were set by margin from the grey Meshy render,
-and a coloured voxel model can never meet them. So the spec cannot be moved onto the
-model the game draws without a person redoing those bounds. Its render was left where it
-was.
-
-Landed: `asset.brief` and `accept.verify` answer `parted` when an asset has a geometry
-declaration whose built output is not the input its spec's artefact was rendered from,
-naming both paths. A spec should also be able to name the declaration's build as its
-subject, so `render.bake` renders that build at the rung. Then a spec written for a mesh
-the project replaced reads as stale, and doesn't pass as current.
-
 ### §PW312 A parameter named like a function still counts as read
 
 Met in starship (RK144), building `art/voxels/mine_layer.toml`. It declares `[params]

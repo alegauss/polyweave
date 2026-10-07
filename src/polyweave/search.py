@@ -485,6 +485,16 @@ def _close_around(best, windows, steps, per_axis) -> dict:
 # -- the evaluator that actually renders ---------------------------------------------
 
 
+def _subject(spec: Spec, fixed: dict | None, root: str | Path) -> dict:
+    """What a render holds still, with the spec's subject as the model (§PW298).
+
+    A model named by the caller is kept: that one was asked for.
+    """
+    if spec.subject and "model" not in (fixed or {}):
+        return {**(fixed or {}), "model": accept._subject_model(spec, root)}
+    return dict(fixed or {})
+
+
 def renderer(
     spec: Spec,
     *,
@@ -503,6 +513,7 @@ def renderer(
 
     at = rung or _rung_for(spec, root)
     draw = bake or R.bake
+    fixed = _subject(spec, fixed, root)
     turnable(draw, ranges(spec), also=fixed or {})
 
     class Quiet:
@@ -571,6 +582,7 @@ def in_parallel(
     from .jobs import JobStore
 
     at = rung or _rung_for(spec, root)
+    fixed = _subject(spec, fixed, root)
     turnable(_bake_signature(), ranges(spec), also=fixed or {})
     jobs = store or JobStore.for_project(root)
     where = Path(out)
