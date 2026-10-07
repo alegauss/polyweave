@@ -45,7 +45,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "R", title: "Levels measured before a person plays them", open: 8 },
   { block: "S", title: "Playing the game, not only rendering it", open: 1 },
   { block: "T", title: "Adopting polyweave in a project", open: 1 },
-  { block: "U", title: "A window on everything a project governs", open: 10 },
+  { block: "U", title: "A window on everything a project governs", open: 9 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 32 },
 ];
 
@@ -310,18 +310,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW302",
-    block: "U",
-    symptom: "the plugin is sourced from the repository root, so a desktop app added to the tree ships in every adopter's cache",
-    why: "The marketplace names a plugin folder holding only what Claude Code loads, so gui/ can live in this repository without reaching an adopter.",
-    deps: [],
-  },
-  {
     id: "PW303",
     block: "U",
     symptom: "there is no desktop window that finds the projects on a machine using polyweave and opens one",
     why: "gui/ is an Electron app split into core, ui and shell like roadkeep's; it finds projects by polyweave.toml and reads one only through a held polyweave serve.",
-    deps: ["PW302"],
+    deps: [],
   },
   {
     id: "PW304",

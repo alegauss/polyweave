@@ -9,7 +9,8 @@ from pathlib import Path
 from polyweave import commands, describe
 
 REPO = Path(__file__).parents[1]
-SKILL = REPO / "skills" / "polyweave"
+PLUGIN = REPO / "plugin"
+SKILL = PLUGIN / "skills" / "polyweave"
 
 #: The driving skill is read whole when it triggers, so it is held to a size; the
 #: reference pages are opened on demand and held separately.
@@ -29,19 +30,27 @@ REFERENCE_BUDGET = 3_900
 
 
 def test_the_manifest_and_the_marketplace_name_the_plugin():
-    plugin = json.loads((REPO / ".claude-plugin" / "plugin.json").read_text("utf-8"))
+    plugin = json.loads((PLUGIN / ".claude-plugin" / "plugin.json").read_text("utf-8"))
     market = json.loads(
         (REPO / ".claude-plugin" / "marketplace.json").read_text("utf-8")
     )
     assert plugin["name"] == "polyweave"
     assert plugin["mcpServers"]["polyweave"]["args"] == ["-m", "polyweave", "serve"]
     assert market["plugins"] == [
-        {**market["plugins"][0], "name": "polyweave", "source": "./"}
+        {**market["plugins"][0], "name": "polyweave", "source": "./plugin"}
     ]
 
 
+def test_the_plugin_folder_holds_only_what_claude_code_loads():
+    """§PW302: the marketplace copies this folder into every adopter's cache, so the
+    window, the site and their node_modules stay outside it."""
+    held = {p.name for p in PLUGIN.iterdir()}
+    assert held == {".claude-plugin", "hooks", "skills"}
+    assert not [p for p in PLUGIN.rglob("node_modules")]
+
+
 def test_a_session_starts_with_the_notice():
-    hooks = json.loads((REPO / "hooks" / "hooks.json").read_text("utf-8"))
+    hooks = json.loads((PLUGIN / "hooks" / "hooks.json").read_text("utf-8"))
     (start,) = hooks["hooks"]["SessionStart"]
     assert "polyweave notice" in start["hooks"][0]["command"]
 
@@ -71,6 +80,6 @@ def test_every_operation_the_skill_names_exists():
 
 def test_no_skill_name_serves_both_sides():
     """A plugin skill drives the tool, a project skill changes it: never one name."""
-    plugin = {p.name for p in (REPO / "skills").iterdir() if p.is_dir()}
+    plugin = {p.name for p in (PLUGIN / "skills").iterdir() if p.is_dir()}
     project = {p.name for p in (REPO / ".claude" / "skills").iterdir() if p.is_dir()}
     assert plugin & project == set()

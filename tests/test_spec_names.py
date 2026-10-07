@@ -32,7 +32,7 @@ from polyweave.provenance import key_subset
 
 ROOT = Path(__file__).resolve().parent.parent
 SPECS = ROOT / "docs" / "specs"
-SKILL = ROOT / "skills" / "polyweave"
+SKILL = ROOT / "plugin" / "skills" / "polyweave"
 
 #: A name a document spells ahead of its code, with the open line that builds it. Only
 #: an open line may be named here; the test below refuses one that has shipped.

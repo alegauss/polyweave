@@ -34,9 +34,11 @@ nothing else. Blender is optional: `pip install -e ".[blender]"` brings `bpy` in
 render path, and without it `capabilities()` says so and a render refuses rather than
 importing a renderer nobody asked for.
 
-It is served as a Claude Code plugin from this repository: `.claude-plugin/` holds the
-manifest, `skills/polyweave/` the skill that drives it, and `python -m polyweave serve`
-the MCP server every operation is exposed through.
+It is served as a Claude Code plugin from this repository. `.claude-plugin/` holds the
+marketplace, which names `plugin/` as the plugin: its manifest, its hooks and
+`skills/polyweave/`, the skill that drives it, and nothing else an adopter would have to
+download. `python -m polyweave serve` is the MCP server every operation is exposed
+through.
 
 ```
 python tools/gate.py     # the suite, in tests/, under a lock, stamped

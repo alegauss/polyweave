@@ -336,11 +336,17 @@ they were already UTF-8, and is safe to call twice. All three of Cottony's runne
 **A consumer's agent is told the plugin exists** (§PW132). Six of Cottony's tools
 imported it and none of its agent documents named it, so each session rediscovered it
 from a script's imports. The repository is now a Claude Code plugin and its own
-marketplace. `.claude-plugin/plugin.json` declares the `polyweave` MCP server inline,
-since the root `.mcp.json` also launches this repository's roadkeep and would break in
-someone else's project. `skills/polyweave/` is a skill for a session *driving* the tool:
+marketplace. The marketplace at `.claude-plugin/marketplace.json` names `plugin/` as the
+plugin's source, and that folder holds only what Claude Code loads, so the site, the tests
+and a desktop app in this repository never reach an adopter's plugin cache (§PW302).
+`tests/test_plugin.py` fails on anything else in it. The MCP server runs as `python -m
+polyweave serve` from the installed package, so the plugin folder needs no source.
+`plugin/.claude-plugin/plugin.json` declares the `polyweave` MCP server inline, since the
+root `.mcp.json` also launches this repository's roadkeep and would break in someone
+else's project. `plugin/skills/polyweave/` is a skill for a session *driving* the tool:
 the four-call loop (brief, build, search, check) and its rules, with two reference pages
-opened on demand. `hooks/hooks.json` runs `python -m polyweave notice` at SessionStart.
+opened on demand. `plugin/hooks/hooks.json` runs `python -m polyweave notice` at
+SessionStart.
 That prints one line saying which installed copy answered, how many declarations and
 specs the project holds, and that `asset.brief` answers where one stands.
 `tests/test_plugin.py` holds the notice to 240 characters and the skill to 3,400. It
@@ -349,7 +355,7 @@ names apart, because a plugin skill drives the tool and a project skill changes 
 
 **A derived file is not edited by hand** (§PW133). A built mesh or voxel file follows its
 declaration, and the build stamp hashes only inputs, so a hand edit went unnoticed and
-kept being reported `cached`. The plugin's `hooks/guard.py` holds the rule where it is
+kept being reported `cached`. The plugin's `plugin/hooks/guard.py` holds the rule where it is
 broken, as roadkeep's guard does for its files. On `PreToolUse` it denies a Write or Edit
 to a file a build stamp lists as an output, or that carries a provenance record. The
 denial names the declaration to change and the `geometry.build` to run; the stamp now

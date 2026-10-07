@@ -5,7 +5,7 @@
   "plugins": [
     {
       "name": "polyweave",
-      "source": "./",
+      "source": "./plugin",
       "description": "Declare what a game's parts must satisfy (3D assets, pictures, sound loops, the world's text) and let a search find and check them."
     }
   ]

@@ -88,8 +88,7 @@
 
 ## Block U — A window on everything a project governs
 
-- 📋 **PW302** (deps: —) **the plugin is sourced from the repository root, so a desktop app added to the tree ships in every adopter's cache** — The marketplace names a plugin folder holding only what Claude Code loads, so gui/ can live in this repository without reaching an adopter. → §PW302
-- 📋 **PW303** (deps: PW299 ✅, PW302) **there is no desktop window that finds the projects on a machine using polyweave and opens one** — gui/ is an Electron app split into core, ui and shell like roadkeep's; it finds projects by polyweave.toml and reads one only through a held polyweave serve. → §PW303
+- 📋 **PW303** (deps: PW299 ✅, PW302 ✅) **there is no desktop window that finds the projects on a machine using polyweave and opens one** — gui/ is an Electron app split into core, ui and shell like roadkeep's; it finds projects by polyweave.toml and reads one only through a held polyweave serve. → §PW303
 - 📋 **PW304** (deps: PW300 ✅, PW303) **a person sees one item of a project only by opening its file by hand, with no declaration, record or bar beside it** — The window lists the inventory by kind and shows each item in its own viewer, beside its brief: bounds, measures, provenance chain and dependents. → §PW304
 - 📋 **PW305** (deps: PW304) **the window and the review page would each show a sitting, so two surfaces answer the same verdict and drift** — The window shows sittings and answers them through the review server's own judge call, so verdict.judge stays the one write for a verdict. → §PW305
 - 📋 **PW306** (deps: PW301 ✅, PW304) **asking for a change to one item means leaving the window for a terminal and retelling the agent which item and what** — An item's view opens a Claude Code session through the Agent SDK and the person's own claude, started from its revision and brief, not a typed path. → §PW306

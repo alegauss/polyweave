@@ -9,7 +9,7 @@ from pathlib import Path
 
 from polyweave import cli, provenance
 
-GUARD = Path(__file__).parents[1] / "hooks" / "guard.py"
+GUARD = Path(__file__).parents[1] / "plugin" / "hooks" / "guard.py"
 
 VOXEL = """name = "crate"
 output = "crate"

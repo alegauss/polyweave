@@ -1067,25 +1067,6 @@ Workaround: the PNG is copied by hand to `game/ui/brand/viglet_games_badge.png`,
 
 ## Block U — A window on everything a project governs
 
-### §PW302 The plugin ships without the window
-
-`.claude-plugin/marketplace.json` declares `"source": "./"`, so installing polyweave
-copies the whole repository into the adopter's plugin cache: the site, the tests, and
-from now on an Electron app with its `node_modules`. Roadkeep hit exactly this when its
-GUI moved into its tree (RK1699) and answered by moving the plugin into `plugin/`.
-
-The window belongs in this repository and not a second one. Roadkeep kept its GUI apart
-first, and every CLI change then reached the GUI's CI only through a second checkout
-(RK1697). A payload change here, to the inventory, the brief or a revision, has to break
-the window's tests in the same commit.
-
-So the plugin's manifest, `.mcp.json`, `hooks/` and `skills/` move under a folder the
-marketplace names, with the MCP server command still resolving to `src/polyweave`. The
-gates add a check that the plugin folder holds no `gui/`, `site/` or `node_modules`. The
-move is its own task because it changes what every adopter installs. It is verified by
-installing from the marketplace into a scratch project and running `project.check`
-there.
-
 ### §PW303 A desktop window that opens a polyweave project
 
 The model is roadkeep's own GUI (`D:\Git\alegauss\roadkeep\gui`), whose choices were
