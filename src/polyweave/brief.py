@@ -135,13 +135,18 @@ def _predicates(spec: Any) -> list[dict]:
 
 
 def _artefact(spec: Any, here: Path) -> dict | None:
+    if not spec or not spec.artefact:
+        return None
+    return _artefact_at(spec.artefact, here)
+
+
+def _artefact_at(path: str, here: Path) -> dict:
+    """One artefact on disk against its record, and whether the cache holds it."""
     from . import cache, provenance
     from .config import load
 
-    if not spec or not spec.artefact:
-        return None
-    picture = here / spec.artefact
-    answer: dict[str, Any] = {"path": spec.artefact, "present": picture.is_file()}
+    picture = here / path
+    answer: dict[str, Any] = {"path": path, "present": picture.is_file()}
     if not answer["present"]:
         return answer
     try:
@@ -202,23 +207,113 @@ def _bought(artefact: dict | None, here: Path) -> dict | None:
     return {"entry": entry, "budget": budget}
 
 
+def _item(asset: str, here: Path) -> dict | None:
+    """The inventory's row whose id this is, where it names one (§PW300).
+
+    An id is a path or `line:<key>`, and a name is neither, so a name costs no walk.
+    """
+    from . import project
+
+    if not any(mark in asset for mark in "/.:"):
+        return None
+    return next((row for row in project._items(here) if row["id"] == asset), None)
+
+
+def _named(item: dict) -> str:
+    """The name an item's spec and ledger use: its file's, without the suffix."""
+    return Path(item["artefact"] or item["declaration"] or item["id"]).stem
+
+
+def _declared_item(item: dict, here: Path) -> dict | None:
+    """An item's declaration, read back in the words its kind uses where one does."""
+    from .cli import is_declaration
+
+    path = item["declaration"]
+    if item["kind"] == "line":
+        return _line(item, here)
+    if not path:
+        return None
+    if path.endswith(".toml") and is_declaration(here / path):
+        from . import geometry as G
+        from .geometry import review
+
+        try:
+            said = review.describe(G.read(here / path, root=here))
+        except PolyweaveError as refused:
+            return {"path": path, "refused": refused.as_dict()}
+        return {"path": path, "reads": said["reads"], "warnings": said["warnings"]}
+    return {"path": path, "kind": item["kind"]}
+
+
+def _line(item: dict, here: Path) -> dict:
+    """A line of the string table: its text in each locale, who says it, its verdict."""
+    from . import words
+    from .config import load
+
+    where, locales, table = words.table(here)
+    key = item["id"][len("line:") :]
+    row = next(one for one in table if one["key"] == key)
+    sha = words._digest(row, locales)
+    latest = [one for one in words.held(here) if one["key"] == key]
+    verdict = latest[-1] if latest else None
+    speaker = load(here).get("words.speaker")
+    return {
+        "path": item["declaration"],
+        "key": key,
+        "row": row["row"],
+        "text": {locale: row["cells"].get(locale) or "" for locale in locales},
+        "speaker": (row["cells"].get(speaker) or "").strip() or None,
+        "verdict": None
+        if verdict is None
+        else {
+            "approved": verdict.get("approved"),
+            **verdict.get("verdict", {}),
+            # A verdict on the line as it read then; false once the text moved.
+            "on_this_text": verdict.get("sha256") == sha,
+        },
+    }
+
+
+def _dependents(path: str | None, here: Path) -> list[dict]:
+    """What was made from this file, which a change to it reaches (§PW300)."""
+    from . import provenance
+
+    if not path or path.startswith("line:"):
+        return []
+    return provenance.dependents(path, root=str(here))["artefacts"]
+
+
 @operation("asset.brief")
 def brief(
-    asset: Annotated[str, Param("the asset, by the name its declaration and spec use")],
+    asset: Annotated[
+        str, Param("the asset's name, or an id project.inventory gave the item")
+    ],
     root: Annotated[str, Param("the project the asset is in")] = ".",
 ) -> dict:
-    """Where one asset stands, in one read: shape, bar, artefact, verdict and budget."""
+    """Where one item stands, in one read: shape, bar, artefact, verdict and budget.
+
+    `asset` is a name, or any id `project.inventory` lists (§PW300): a picture, a
+    sound, an effect or a line then answers with its row as `item`, and every answer
+    names the artefacts made from it as `dependents`.
+    """
     from . import loop
 
     here = Path(root).resolve()
-    spec = _spec(asset, here)
-    artefact = _artefact(spec, here)
-    waiting = next(
-        (row for row in loop.pending(here)["assets"] if row["asset"] == asset), None
+    item = _item(asset, here)
+    name = _named(item) if item and item["kind"] != "line" else asset
+    spec = None if item and item["kind"] == "line" else _spec(name, here)
+    artefact = (
+        _artefact_at(item["artefact"], here)
+        if item and item["artefact"]
+        else _artefact(spec, here)
     )
-    declared = _declaration(asset, here)
+    waiting = next(
+        (row for row in loop.pending(here)["assets"] if row["asset"] == name), None
+    )
+    declared = _declared_item(item, here) if item else _declaration(asset, here)
     answer: dict[str, Any] = {
         "asset": asset,
+        "item": item,
         "declaration": declared,
         "spec": None
         if spec is None
@@ -229,8 +324,10 @@ def brief(
             "predicates": _predicates(spec),
         },
         "artefact": artefact,
-        "last_verdict": _last_verdict(asset, here),
-        "waiting_on_a_person": bool(waiting and waiting["waiting"]),
+        "last_verdict": _last_verdict(name, here),
+        "waiting_on_a_person": bool(
+            item["pending"] if item else waiting and waiting["waiting"]
+        ),
         "bought": _bought(artefact, here),
         # A render of a mesh the declaration no longer builds (§PW298).
         "parted": _parted(
@@ -239,11 +336,15 @@ def brief(
             here,
         ),
     }
-    if not any(answer[k] for k in ("declaration", "spec", "last_verdict")):
+    answer["dependents"] = _dependents(
+        (artefact and artefact["path"]) or (declared and declared.get("path")), here
+    )
+    if not any(answer[k] for k in ("item", "declaration", "spec", "last_verdict")):
         raise PolyweaveError(
             "op.unknown-argument",
             f"nothing in {here.name} is called {asset!r}: no declaration, spec or run",
-            "name an asset by the name its declaration or its spec gives it",
+            "name an asset by the name its declaration or its spec gives it, or "
+            "pass an id project.inventory lists",
             given=asset,
             allowed=loop.assets(here),
         )

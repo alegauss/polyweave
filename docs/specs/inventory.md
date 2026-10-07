@@ -72,6 +72,15 @@ false where the project names no canon, because then a verdict has nowhere to be
 artefact's SHA-256 as its record states it (as found on disk, for an unrecorded file), or
 the digest of the line's text in every locale. It is `null` for an unbuilt declaration.
 
+## Who reads it
+
+`asset.brief` takes a row's `id` as well as an asset's name (§PW300). It answers with
+the row as `item`, the artefact against its record, and the declaration read back. For a
+geometry declaration that means the lines its parts read as, and for a line it means its
+text in each locale, its speaker and the canon's latest verdict, with `on_this_text`
+false once the text has moved. Every brief names the artefacts made from the item as
+`dependents`, because a change to it reaches them.
+
 ## What is not listed
 
 Records under a hidden folder, such as the cache in `.polyweave/`, which hold the

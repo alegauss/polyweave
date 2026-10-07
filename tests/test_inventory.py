@@ -157,3 +157,60 @@ def test_a_record_that_does_not_read_is_left_out_not_raised(tree):
         project.inventory(str(tree))
     except PolyweaveError as refused:  # pragma: no cover - the failure being tested
         pytest.fail(f"refused: {refused}")
+
+
+def test_a_brief_answers_for_any_item_the_inventory_lists(tree):
+    # §PW300: a sound, a picture or a line has a one-read state, not only a mesh.
+    from polyweave import brief
+
+    hit = brief.brief("audio/hit.wav", root=str(tree))
+    assert hit["item"]["kind"] == "sound"
+    assert hit["artefact"]["matches_record"] is True
+    theme = brief.brief("audio/theme.ogg", root=str(tree))
+    assert theme["declaration"] == {"path": "music/theme.toml", "kind": "music"}
+    # A change to the mesh reaches the render made from it.
+    barrel = brief.brief("assets/barrel.glb", root=str(tree))
+    assert barrel["declaration"]["path"] == "shapes/barrel.toml"
+    assert barrel["declaration"]["reads"]
+    assert [d["artefact"] for d in barrel["dependents"]] == ["docs/renders/barrel.png"]
+
+
+def test_a_brief_on_a_line_reads_its_text_speaker_and_verdict(tree):
+    import json
+
+    from polyweave import brief
+
+    (tree / "text" / "strings.csv").write_text(
+        "keys,en,pt_BR,_speaker\nTITLE,Starship,Nave,captain\n", encoding="utf-8"
+    )
+    line = brief.brief("line:TITLE", root=str(tree))
+    assert line["item"]["pending"] is True
+    assert line["waiting_on_a_person"] is True
+    assert line["declaration"]["text"] == {"en": "Starship", "pt_BR": "Nave"}
+    assert line["declaration"]["speaker"] == "captain"
+    assert line["declaration"]["verdict"] is None
+    assert line["spec"] is None
+    (tree / "text" / "canon.json").write_text(
+        json.dumps(
+            [
+                {
+                    "key": "TITLE",
+                    "sha256": "an older text",
+                    "approved": True,
+                    "verdict": {"choice": "accept", "why": "fits"},
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+    judged = brief.brief("line:TITLE", root=str(tree))["declaration"]["verdict"]
+    assert judged["approved"] is True
+    assert judged["on_this_text"] is False
+
+
+def test_an_id_nothing_lists_is_refused_like_an_unknown_name(tree):
+    from polyweave import brief
+
+    with pytest.raises(PolyweaveError) as refused:
+        brief.brief("audio/nothing.wav", root=str(tree))
+    assert "project.inventory" in refused.value.remedy

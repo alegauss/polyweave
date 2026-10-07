@@ -313,7 +313,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW300",
     block: "U",
     symptom: "asset.brief reads a geometry declaration only, so a picture, sound, effect or line has no one-read state",
-    why: "asset.brief answers for every kind the inventory lists, so a session opened on any item starts from one read.",
+    why: "A music cue, an sfx or vfx effect and a style family still read back as a path and kind, not in the words their own describe uses.",
     deps: [],
   },
   {
@@ -341,7 +341,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW304",
     block: "U",
     symptom: "a person sees one item of a project only by opening its file by hand, with no declaration, record or bar beside it",
-    why: "The window lists the inventory by kind and shows each item in its own viewer, beside its brief: bounds, measures, provenance chain and what depends on it.",
+    why: "The window lists the inventory by kind and shows each item in its own viewer, beside its brief: bounds, measures, provenance chain and dependents.",
     deps: ["PW300", "PW303"],
   },
   {

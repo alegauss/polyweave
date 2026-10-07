@@ -355,6 +355,7 @@
 ## Block U — A window on everything a project governs
 
 - ✅ **PW299** **nothing lists every item a project governs, so a picture, sound or line is found only by knowing its path** — project.inventory lists every artefact, unrecorded file, unbuilt declaration and line by kind, with record state, pending verdict and digest (design recorded in `docs/specs/inventory.md`).
+- ✅ **PW300 (ids, lines and dependents)** **asset.brief reads a geometry declaration only, so a picture, sound, effect or line has no one-read state** — asset.brief takes any inventory id, answering with its row, artefact state and dependents; a line reads back its text, speaker and canon verdict.
 
 ## Block V — Parts every game repeats, installed already proved
 

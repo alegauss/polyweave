@@ -1085,6 +1085,10 @@ moved while it worked. It adds `dependents` from `provenance_dependents`, becaus
 change to one item reaches whatever was made from it, and the person should see that
 before asking for the change.
 
+Landed: the id, the row as `item`, `dependents`, and a line's text, speaker and verdict
+(docs/specs/inventory.md). Left: a cue, an effect and a family read back in their own
+words, which `_declared_item` in brief.py answers as a path and a kind today.
+
 ### §PW301 A change a person asks for is a record, not a chat line
 
 The review page already keeps a person's words and a mask tied to a picture's digest
