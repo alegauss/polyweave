@@ -976,31 +976,6 @@ Workaround: the PNG is copied by hand to `game/ui/brand/viglet_games_badge.png`,
 
 ## Block U — A window on everything a project governs
 
-### §PW303 A desktop window that opens a polyweave project
-
-The model is roadkeep's own GUI (`D:\Git\alegauss\roadkeep\gui`), whose choices were
-paid for once already. It uses npm workspaces with three `tsc` projects. `core` holds
-the transport, the payload readers and pure rules, with no Node or DOM. `ui` is React 19
-with Tailwind and the viglet design system. `shell` is Electron main with a sandboxed
-renderer, a frozen preload bridge and no raw `ipcRenderer`.
-
-Nothing is scanned until a person names a root and a depth. A project is a folder with
-`polyweave.toml`.
-
-Opening a project holds one `python -m polyweave serve` process over stdio JSON-RPC.
-Every fact on screen is an operation's payload, and the window never parses a TOML, a
-sidecar or a JSONL itself, so a kind added in Python appears without a client change.
-The engine resolves the project's own polyweave first and PATH last, and is named on
-screen. That copy may be pinned, and a server that outlives a change to its code is the
-defect in PW294.
-
-Every string comes from the locale catalogs, `en` and `pt-BR`, chosen by `[review]
-language`, as the review page does (PW287). The window is local only: no account, no
-remote store (non-goal: a hosted service). Its tests run under `python tools/gate.py`
-beside pytest, so one gate covers both halves.
-
-Landed: `core`, and `shell`'s held servers, run by the gate. Left: Electron and `ui`.
-
 ### §PW304 Each item seen with what it was held to
 
 This is the browsing half of the window. On the left is the inventory, grouped by kind,

@@ -1,0 +1,12 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+/*
+ * The design system is not this app's: `@viglet/viglet-design-system` is the package the
+ * sibling consoles and roadkeep's window render with, and every colour, radius and face
+ * arrives from it. Tailwind first, because its `@theme inline` block extends Tailwind's.
+ */
+@import '@viglet/viglet-design-system/styles';
+@import '@viglet/viglet-design-system/fonts';
+
+@source '../node_modules/@viglet/viglet-design-system/dist';

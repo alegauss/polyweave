@@ -1,0 +1,45 @@
+{
+  "app": {
+    "title": "polyweave"
+  },
+  "projects": {
+    "heading": "Projects",
+    "root": "Folder to look under",
+    "depth": "Folders deep",
+    "find": "Find projects",
+    "none": "No folder under here holds a polyweave.toml.",
+    "nothing_yet": "Name a folder and how deep to look. Nothing is scanned until you do.",
+    "open": "Open"
+  },
+  "project": {
+    "back": "Projects",
+    "engine": "Served by {{name}} {{version}}, found {{command}}",
+    "from_project": "in the project's own environment",
+    "from_path": "on the PATH",
+    "items": "{{count}} items",
+    "empty": "This project governs nothing yet.",
+    "pending": "waits on a person"
+  },
+  "record": {
+    "sound": "sound",
+    "changed": "changed",
+    "missing": "missing",
+    "outdated": "outdated",
+    "unrecorded": "unrecorded",
+    "unbuilt": "unbuilt",
+    "none": "no record"
+  },
+  "kind": {
+    "mesh": "Meshes",
+    "picture": "Pictures",
+    "sound": "Sounds",
+    "music": "Music",
+    "vfx": "Effects",
+    "clip": "Clips",
+    "line": "Lines",
+    "capture": "Captures"
+  },
+  "error": {
+    "failed": "That did not work: {{message}}"
+  }
+}

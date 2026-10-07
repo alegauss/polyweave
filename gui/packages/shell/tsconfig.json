@@ -5,11 +5,11 @@
     // compiler rather than in review.
     "lib": ["ES2023"],
     "types": ["node"],
-    "rootDir": "src",
+    "rootDir": ".",
     "outDir": "dist-types",
     "tsBuildInfoFile": "dist-types/.tsbuildinfo"
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "vite.main.config.ts", "vite.preload.config.ts"],
   "exclude": ["src/**/*.test.ts"],
   "references": [{ "path": "../core" }]
 }

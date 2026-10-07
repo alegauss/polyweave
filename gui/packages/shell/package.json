@@ -4,8 +4,9 @@
   "version": "0.0.0",
   "description": "The only place a path or a process appears: the server each open project holds, and the disk core is handed.",
   "type": "module",
-  "main": "./src/index.ts",
+  "main": "./dist/main.js",
   "scripts": {
+    "build": "vite build --config vite.main.config.ts && vite build --config vite.preload.config.ts",
     "test": "vitest run"
   },
   "dependencies": {

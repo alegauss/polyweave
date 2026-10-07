@@ -84,8 +84,7 @@
 
 ## Block U — A window on everything a project governs
 
-- 🛠 **PW303** (deps: PW299 ✅, PW302 ✅) **there is no desktop window that finds the projects on a machine using polyweave and opens one** — The Electron main process with its sandboxed renderer and preload bridge, and the ui package drawing from the en and pt-BR catalogs, are still to build. → §PW303
-- 📋 **PW304** (deps: PW300 ✅, PW303 🛠) **a person sees one item of a project only by opening its file by hand, with no declaration, record or bar beside it** — The window lists the inventory by kind and shows each item in its own viewer, beside its brief: bounds, measures, provenance chain and dependents. → §PW304
+- 📋 **PW304** (deps: PW300 ✅, PW303 ✅) **a person sees one item of a project only by opening its file by hand, with no declaration, record or bar beside it** — The window lists the inventory by kind and shows each item in its own viewer, beside its brief: bounds, measures, provenance chain and dependents. → §PW304
 - 📋 **PW305** (deps: PW304) **the window and the review page would each show a sitting, so two surfaces answer the same verdict and drift** — The window shows sittings and answers them through the review server's own judge call, so verdict.judge stays the one write for a verdict. → §PW305
 - 📋 **PW306** (deps: PW301 ✅, PW304) **asking for a change to one item means leaving the window for a terminal and retelling the agent which item and what** — An item's view opens a Claude Code session through the Agent SDK and the person's own claude, started from its revision and brief, not a typed path. → §PW306
 - 📋 **PW307** (deps: PW305, PW306) **a session changing an item can report done with no check run, and nothing makes it end on the person's verdict** — A revision harness re-runs the item's own checks after each change, shows old beside new in the window, and ends only in a sitting the person answers. → §PW307
@@ -207,13 +206,6 @@
   Cottony family, a person answers on the review page, the ledger holds that verdict
   through judge alone, and the agent's next candidate follows from verdict.answers with
   no chat message in between.
-
-## Done when — PW303
-
-- **A window opens a project found under a named root** The Electron shell, with a
-  sandboxed renderer and a frozen preload bridge, finds projects under a root and depth
-  a person names, holds one polyweave serve per open project, names that engine on
-  screen, and draws every string from the en and pt-BR catalogs; a live test opens one.
 
 ## Non-goals
 

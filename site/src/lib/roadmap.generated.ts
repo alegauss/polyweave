@@ -45,7 +45,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "R", title: "Levels measured before a person plays them", open: 8 },
   { block: "S", title: "Playing the game, not only rendering it", open: 1 },
   { block: "T", title: "Adopting polyweave in a project", open: 1 },
-  { block: "U", title: "A window on everything a project governs", open: 9 },
+  { block: "U", title: "A window on everything a project governs", open: 8 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 32 },
 ];
 
@@ -282,18 +282,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW303",
-    block: "U",
-    symptom: "there is no desktop window that finds the projects on a machine using polyweave and opens one",
-    why: "The Electron main process with its sandboxed renderer and preload bridge, and the ui package drawing from the en and pt-BR catalogs, are still to build.",
-    deps: [],
-  },
-  {
     id: "PW304",
     block: "U",
     symptom: "a person sees one item of a project only by opening its file by hand, with no declaration, record or bar beside it",
     why: "The window lists the inventory by kind and shows each item in its own viewer, beside its brief: bounds, measures, provenance chain and dependents.",
-    deps: ["PW303"],
+    deps: [],
   },
   {
     id: "PW305",

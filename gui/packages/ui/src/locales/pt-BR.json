@@ -1,0 +1,45 @@
+{
+  "app": {
+    "title": "polyweave"
+  },
+  "projects": {
+    "heading": "Projetos",
+    "root": "Pasta onde procurar",
+    "depth": "Níveis de pasta",
+    "find": "Procurar projetos",
+    "none": "Nenhuma pasta aqui tem um polyweave.toml.",
+    "nothing_yet": "Diga uma pasta e até que nível procurar. Nada é varrido antes disso.",
+    "open": "Abrir"
+  },
+  "project": {
+    "back": "Projetos",
+    "engine": "Servido por {{name}} {{version}}, encontrado {{command}}",
+    "from_project": "no ambiente do próprio projeto",
+    "from_path": "no PATH",
+    "items": "{{count}} itens",
+    "empty": "Este projeto ainda não governa nada.",
+    "pending": "aguarda uma pessoa"
+  },
+  "record": {
+    "sound": "íntegro",
+    "changed": "alterado",
+    "missing": "ausente",
+    "outdated": "desatualizado",
+    "unrecorded": "sem registro",
+    "unbuilt": "não construído",
+    "none": "sem registro próprio"
+  },
+  "kind": {
+    "mesh": "Malhas",
+    "picture": "Imagens",
+    "sound": "Sons",
+    "music": "Música",
+    "vfx": "Efeitos",
+    "clip": "Animações",
+    "line": "Falas",
+    "capture": "Capturas"
+  },
+  "error": {
+    "failed": "Não deu certo: {{message}}"
+  }
+}

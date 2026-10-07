@@ -5,6 +5,6 @@ import { defineConfig } from 'vitest/config'
 // starts processes, and its `*-live.test.ts` start a real polyweave serve.
 export default defineConfig({
   test: {
-    projects: ['packages/core', 'packages/shell'],
+    projects: ['packages/core', 'packages/shell', 'packages/ui/vite.config.ts'],
   },
 })

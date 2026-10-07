@@ -16,9 +16,9 @@ drawn; a run left in the background is known only to whoever read the tail of it
   Shio measured a false red of three errors from exactly that.
 
 The window's tests run here too (§PW303), so one gate covers both halves: where `gui/`
-is installed, its typecheck and vitest run after pytest, into `gui.log`, and the last
-line says how they went. Where node or `gui/node_modules` is missing, the line says that
-instead, as it says an engine is absent.
+is installed, its typecheck, build and vitest run after pytest, into `gui.log`, and the
+last line says how they went. Where node or `gui/node_modules` is missing, the line says
+that instead, as it says an engine is absent.
 
 The exit code is pytest's own, or 1 where pytest passed and the window did not. A
 gate piped into `grep` reports `grep`'s; this does not.
@@ -143,7 +143,8 @@ def window(log: Path) -> dict:
     if not (GUI / "node_modules").is_dir():
         return {"ran": False, "why": "not installed: run npm ci in gui/"}
     with log.open("w", encoding="utf-8") as out:
-        for script in ("typecheck", "test"):
+        # Built before the tests, so the live one opens the window as it ships.
+        for script in ("typecheck", "build", "test"):
             done = subprocess.run(
                 [npm, "run", script],
                 cwd=GUI,
@@ -160,7 +161,7 @@ def _said(gui: dict) -> str:
     if not gui["ran"]:
         return f"gui: skipped, {gui['why']}"
     if gui["exit"] == 0:
-        return "gui: typecheck and tests green"
+        return "gui: typecheck, build and tests green"
     return f"gui: {gui['failed']} RED"
 
 

@@ -77,5 +77,8 @@ jobs:
         run: npm ci
       - name: typecheck
         run: npm run typecheck
+      - name: build
+        run: npm run build
+      # The window's live test opens Electron, which needs a display even unshown.
       - name: vitest
-        run: npm test
+        run: xvfb-run -a npm test
