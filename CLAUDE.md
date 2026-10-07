@@ -41,6 +41,11 @@ Also `tools/art/solid.py` (the geometry vocabulary Block G is read off), `tools/
 (the paid-service client Block D generalises) and `tools/capture_screens.py` (the Godot
 runner Block E replaces).
 
+The second consumer is **Spinhold** (`D:\Git\viglet\spinhold`, repo `openviglet/spinhold`).
+It was called **Starship** until 2026-10-07, and the roadmap, changelog, specs and
+docstrings here still use that name: wherever they say Starship, read Spinhold and look in
+that directory. Its `RK` ids are the same as before.
+
 ## The specs are where a format lives
 
 `docs/specs/` holds the contracts more than one roadmap line depends on — the tool surface,
