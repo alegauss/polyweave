@@ -265,6 +265,10 @@ DEFAULTS: dict[str, Any] = {
         # Capitalised words that are not names, such as START on a title screen, so the
         # name check passes over them.
         "ordinary": [],
+        # The ordinary words of one locale alone, `{ pt_BR = ["VIDAS", ...] }`
+        # (§PW329), so a word another language writes in capitals is not read as a
+        # name there, and an English column cannot lean on it.
+        "ordinary_in": {},
         # Where a person's verdicts on lines are kept, as JSON (§PW199): the approved
         # ones are the lines canon, and only `verdict.judge` writes it.
         "canon": "",

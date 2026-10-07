@@ -113,6 +113,18 @@ and `I'd` are never names (§PW244): English capitalises them wherever they
 fall, so "Hold still, I've got you" passes with nothing in `[words] ordinary`. Another
 locale still reads them, since there they are no pronoun.
 
+**A column is held to its own language's names** (§PW329). An entity may declare its
+name in another language as `[entity.<id>.names.<locale>]`, keyed by the column's
+header (`pt_BR`): `name`, and where the language's rule does not make them, `plural`,
+the grammatical `gender` (`m` or `f`), and for a role a woman may hold, `feminine` and
+`feminine_plural`. In that column the form is what the entity is shown by, its plural
+by `plural` or else `-s` and `-es`; an entity with no form for the locale keeps its own
+name there, which is how a proper noun stays the same. The English name of an entity
+the locale renames reads there as its code, and the form reads as an unknown name in
+any other column. `[words] ordinary_in = { pt_BR = [...] }` adds ordinary words to one
+locale alone. `world.validate` refuses a form with no `name`, a key a form does not
+have, and a gender that is neither.
+
 **A name's plural is the name** (§PW257). Every entity is spoken of in the plural
 somewhere, so each word of a name counts in its English plural too: `-s`, `-es` after s,
 x, z, ch and sh, `-ies` after a consonant's y, and both `-s` and `-men` for `-man`

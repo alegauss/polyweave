@@ -221,3 +221,49 @@ def test_scene_literals_not_in_the_table_are_counted(tmp_path):
     assert found["literals"] == [
         {"scene": "ui/hud.tscn", "line": 6, "node": "Title", "text": "KEEPERS"}
     ]
+
+
+NAMED = WORLD.replace(
+    '[entity.drone]\nname = "Drone"\nkind = "enemy"\n',
+    '[entity.drone]\nname = "Drone"\nkind = "enemy"\n\n'
+    '[entity.drone.names.pt_BR]\nname = "Zangão"\nplural = "Zangões"\ngender = "m"\n\n'
+    '[entity.medic]\nname = "Medic"\nkind = "character"\n\n'
+    '[entity.medic.names.pt_BR]\nname = "Médico"\nfeminine = "Médica"\n',
+)
+
+
+def test_each_column_is_held_to_the_names_of_its_own_language(tmp_path):
+    _project(
+        tmp_path,
+        [
+            "BANNER,ZANGÕES INCOMING,ZANGÕES À VISTA,",
+            "WHO,The Medic is here,A Médica chegou,",
+            "LEFT,Captain Ada,Captain Ada,",
+            "CODE,Drone,Drone,",
+        ],
+        ordinary=["INCOMING"],
+        world=NAMED,
+    )
+    found = _found(tmp_path)
+    # a Portuguese name in the English column is a finding; in its own, with its
+    # feminine form and a plural, it passes; a name the language keeps passes too
+    assert ("words.unknown-name", "BANNER", "en", "names") in found
+    assert not [f for f in found if f[2] == "pt_BR" and f[1] in ("WHO", "LEFT")]
+    assert ("words.unknown-name", "BANNER", "pt_BR", "names") in found  # VISTA
+    # and the English name of an entity the language renames reads as its code there
+    assert ("words.code-name", "CODE", "pt_BR", "code_names") in found
+
+
+def test_ordinary_words_of_one_locale_count_in_that_locale_alone(tmp_path):
+    _project(
+        tmp_path,
+        ["LIVES,LIVES VIDAS,VIDAS,"],
+        world=NAMED,
+    )
+    (tmp_path / "polyweave.toml").write_text(
+        '[words]\ntable = "i18n/strings.csv"\nordinary = ["LIVES"]\n'
+        "ordinary_in = { pt_BR = [\"VIDAS\"] }\n",
+        encoding="utf-8",
+    )
+    found = _found(tmp_path)
+    assert found == [("words.unknown-name", "LIVES", "en", "names")]

@@ -151,6 +151,7 @@ note   = "the author cannot vouch for the origin of every sample"
 table    = "i18n/strings.csv"      # Godot's translation CSV, one column per locale
 speaker  = "_speaker"              # the column naming who speaks, as a world entity id
 ordinary = ["START", "OK"]         # capitalised words that are not names
+ordinary_in = { pt_BR = ["VIDAS"] } # and those of one locale alone (PW329)
 canon    = "docs/design/lines.json"  # a person's verdicts on lines; only a verdict adds
 
 [voxels]

@@ -12,6 +12,10 @@ speaks the line, as an entity id of the world (§PW196).
 
 - every capitalised name is one the world shows (`[words] ordinary` lists the
   capitalised words that are not names, such as START on a title screen);
+- a column is held to the names in its own language (§PW329): an entity's
+  `[entity.<id>.names.<locale>]` form where it declares one, its own name where it does
+  not, so a Portuguese name passes in the pt_BR column and is a finding in the English
+  one, and `[words] ordinary_in` adds the ordinary words of one locale;
 - no entity's code name reaches the screen;
 - no line is longer than `[rules] longest_line`;
 - a speaker the world calls silent has no line;
@@ -83,18 +87,35 @@ def _plurals(word: str) -> list[str]:
     return [word + "s", *([word[:-2] + "en"] if lower.endswith("man") else [])]
 
 
-def _spoken(entity: dict) -> set[str]:
+def _spoken(entity: dict, locale: str | None = None) -> set[str]:
     """Every word an entity is shown by: its name's, and the same in the plural.
 
     A name is spoken of in the plural as often as not (Motes, Lancers, Foremen), and a
     check that read the plural as a new name made every project list it as ordinary,
     which then hid a real misspelling of it (§PW257). An entity states an irregular
     plural as `plural`.
+
+    In `locale`, the entity's form for that language where it declares one (§PW329),
+    with its feminine form beside it; its own name where it does not.
     """
-    words = _words(entity["name"])
-    stated = entity.get("plural")
-    plurals = _words(stated) if stated else [p for w in words for p in _plurals(w)]
-    return {w.casefold() for w in [*words, *plurals]}
+    form = (entity.get("names") or {}).get(locale) if locale else None
+    if not isinstance(form, dict) or not form.get("name"):
+        words = _words(entity["name"])
+        stated = entity.get("plural")
+        plurals = _words(stated) if stated else [p for w in words for p in _plurals(w)]
+        return {w.casefold() for w in [*words, *plurals]}
+    said: list[str] = []
+    for name, plural in (("name", "plural"), ("feminine", "feminine_plural")):
+        if not form.get(name):
+            continue
+        words = _words(form[name])
+        said += words
+        # another language's plural by rule is not English's: a stated one, or the
+        # word with -s and -es, which is what most Romance plurals add
+        said += _words(form[plural]) if form.get(plural) else [
+            p for w in words for p in (w + "s", w + "es")
+        ]
+    return {w.casefold() for w in said}
 
 
 def _plain(text: str) -> str:
@@ -171,18 +192,29 @@ def check(
     source, entities, rules = declared(world, root)
     unshown = set(rules.get("unshown") or [])
     silent = set(rules.get("silent") or [])
-    shown = {
-        w for i, e in entities.items() if i not in unshown for w in _spoken(e)
-    }
-    hidden = {
-        i: _spoken(entities[i]) - shown for i in unshown if i in entities
-    }
-    codes = {
-        e["code"].casefold(): i
-        for i, e in entities.items()
-        if e["code"].casefold() not in shown
-    }
     ordinary = {str(w).casefold() for w in config.get("words.ordinary")}
+    by_locale = config.get("words.ordinary_in") or {}
+
+    # what each column is held to: its own language's names (§PW329)
+    def held_to(locale: str | None) -> tuple:
+        shown = {
+            w
+            for i, e in entities.items()
+            if i not in unshown
+            for w in _spoken(e, locale)
+        }
+        hidden = {
+            i: _spoken(entities[i], locale) - shown for i in unshown if i in entities
+        }
+        codes = {
+            e["code"].casefold(): i
+            for i, e in entities.items()
+            if e["code"].casefold() not in shown
+        }
+        own = ordinary | {str(w).casefold() for w in by_locale.get(locale, [])}
+        return shown, hidden, codes, own
+
+    columns = {locale: held_to(locale) for locale in locales}
     longest = rules.get("longest_line")
     speaker = config.get("words.speaker")
     findings: list[dict] = []
@@ -230,7 +262,7 @@ def check(
         for locale in locales:
             text = row["cells"].get(locale) or ""
             if text.strip():
-                _held(text, row, locale, found, shown, hidden, codes, ordinary, longest)
+                _held(text, row, locale, found, *columns[locale], longest)
     judged = verdicts(root)
     return {
         "table": provenance.relative(where, config.root),

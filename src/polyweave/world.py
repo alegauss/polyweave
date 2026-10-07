@@ -64,7 +64,23 @@ ENTITY_KEYS = {
     "style": False,
     "first": False,
     "look": False,
+    # The name in another language, one table per locale (§PW329).
+    "names": False,
 }
+
+#: What one locale's form of a name may say, and whether it must (§PW329): the name, its
+#: plural where the language's rule does not make it, its grammatical gender, and for a
+#: role a woman may hold, the feminine form and its plural.
+NAME_KEYS = {
+    "name": True,
+    "plural": False,
+    "gender": False,
+    "feminine": False,
+    "feminine_plural": False,
+}
+
+#: What a name's `gender` may be.
+GENDERS = ("m", "f")
 
 #: What an entity's `look` may say, and the type of each (§PW198).
 LOOK_KEYS = {"description": str, "shows": list, "never": list}
@@ -215,7 +231,7 @@ def _parse(source: Path) -> tuple[dict, dict, _Findings]:
                 ),
                 table,
             )
-        for key in (k for k in ENTITY_KEYS if k in own and k != "look"):
+        for key in (k for k in ENTITY_KEYS if k in own and k not in ("look", "names")):
             if not isinstance(own[key], str) or not own[key].strip():
                 faults.add(
                     PolyweaveError(
@@ -240,6 +256,8 @@ def _parse(source: Path) -> tuple[dict, dict, _Findings]:
             )
         if "look" in own:
             _look(own["look"], table, faults)
+        if "names" in own:
+            _names(own["names"], table, faults)
         entities[ident] = {"id": ident, "code": ident, **own}
     rules = declared.get("rules") or {}
     if not isinstance(rules, dict):
@@ -338,6 +356,79 @@ def _look(look, table: str, faults: _Findings) -> None:
             where,
             key,
         )
+
+
+def _names(names, table: str, faults: _Findings) -> None:
+    """An entity's names in other languages, a table of locales (§PW329)."""
+    where = f"{table}.names"
+    if not isinstance(names, dict):
+        faults.add(
+            PolyweaveError(
+                "world.bad-value",
+                f"[{table}] names is {names!r}, and it is a table of locales",
+                f'write it as [{where}.pt_BR] with name = "..." under it',
+            ),
+            where,
+        )
+        return
+    for locale, form in names.items():
+        at = f"{where}.{locale}"
+        if not isinstance(form, dict):
+            faults.add(
+                PolyweaveError(
+                    "world.bad-value",
+                    f"[{where}] {locale} is {form!r}, and a locale's form is a table",
+                    f'write it as [{at}] with name = "..." under it',
+                ),
+                where,
+                locale,
+            )
+            continue
+        for key in sorted(set(form) - set(NAME_KEYS)):
+            faults.add(
+                PolyweaveError(
+                    "world.unknown-key",
+                    f"[{at}] declares {key}, which a name's form does not have",
+                    f"use one of {', '.join(NAME_KEYS)}",
+                    given=key,
+                    allowed=list(NAME_KEYS),
+                ),
+                at,
+                key,
+            )
+        if "name" not in form:
+            faults.add(
+                PolyweaveError(
+                    "world.missing-field",
+                    f"[{at}] has no name",
+                    f'write name = "..." under [{at}]',
+                ),
+                at,
+            )
+        for key in (k for k in NAME_KEYS if k in form and k != "gender"):
+            if not _shaped(form[key], str):
+                faults.add(
+                    PolyweaveError(
+                        "world.bad-value",
+                        f"[{at}] {key} is {form[key]!r}, and it is a non-empty text",
+                        f'write it in quotes, such as {key} = "..."',
+                    ),
+                    at,
+                    key,
+                )
+        if "gender" in form and form["gender"] not in GENDERS:
+            faults.add(
+                PolyweaveError(
+                    "world.bad-value",
+                    f"[{at}] gender is {form['gender']!r}, and it is one of "
+                    + ", ".join(GENDERS),
+                    'write gender = "m" or gender = "f"',
+                    given=str(form["gender"]),
+                    allowed=GENDERS,
+                ),
+                at,
+                "gender",
+            )
 
 
 def _shaped(value, kind: type) -> bool:

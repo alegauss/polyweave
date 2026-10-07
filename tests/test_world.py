@@ -178,3 +178,26 @@ def test_both_operations_answer_by_name_on_the_command_line(tmp_path):
         ["world.read", "--entity", "ada", "--root", str(tmp_path)]
     )
     assert answer_for(stated)["entity"]["kind"] == "character"
+
+
+def test_a_name_in_another_language_reads_back_and_a_bad_form_is_refused(tmp_path):
+    named = GOOD.replace(
+        '[entity.drone]\nname = "Drone"\nkind = "enemy"\n',
+        '[entity.drone]\nname = "Drone"\nkind = "enemy"\n\n'
+        '[entity.drone.names.pt_BR]\nname = "Zangão"\n'
+        'plural = "Zangões"\ngender = "m"\n',
+    )
+    _project(tmp_path, named)
+    read = world.read("drone", root=str(tmp_path))
+    form = read["entity"]["names"]["pt_BR"]
+    assert form == {"name": "Zangão", "plural": "Zangões", "gender": "m"}
+    assert world.validate(root=str(tmp_path))["valid"] is True
+    broken = GOOD.replace(
+        '[entity.drone]\nname = "Drone"\nkind = "enemy"\n',
+        '[entity.drone]\nname = "Drone"\nkind = "enemy"\n\n'
+        '[entity.drone.names.pt_BR]\nplural = "Zangões"\n'
+        'gender = "x"\ncase = "a"\n',
+    )
+    _project(tmp_path, broken)
+    codes = sorted(f["code"] for f in world.validate(root=str(tmp_path))["findings"])
+    assert codes == ["world.bad-value", "world.missing-field", "world.unknown-key"]
