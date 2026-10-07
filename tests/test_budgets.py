@@ -71,7 +71,9 @@ from polyweave.errors import PolyweaveError
 #: (§PW287, §PW291): what a person reads before they judge.
 #: 94,802 with render.bake's spec (§PW298) and project.inventory (§PW299), the one
 #: read that lists what a project holds.
-DESCRIBE = 95_300
+#: 96,845 with revision.ask, .open and .close (§PW301): a person's request kept
+#: as a record rather than a chat line.
+DESCRIBE = 97_300
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -121,7 +123,8 @@ DESCRIBE = 95_300
 #: §PW291).
 #: 105,920 with render.bake's spec and three spec.subject codes (§PW298), and
 #: project.inventory (§PW299).
-CAPABILITIES = 106_500
+#: 108,082 with the revision operations and their six review codes (§PW301).
+CAPABILITIES = 108_600
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
@@ -151,7 +154,8 @@ HELP_VERB = 4_100
 #: 19,569 with vfx.build (§PW259).
 #: 20,028 with store.capsules (§PW268).
 #: 20,485 with game.batch, measure.contrast and game.rekey (§PW271, §PW272, §PW276).
-HELP_TOP = 21_000
+#: 21,262 with project.inventory and revision.ask, .open and .close (§PW299, §PW301).
+HELP_TOP = 21_600
 #: A search's answer over its default budget of 24 samples: 3,739.
 SEARCH = 4_000
 

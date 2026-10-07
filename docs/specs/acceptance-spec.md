@@ -201,6 +201,22 @@ version, and only then by a described element's box. The record's `mask_from` sa
 (`given`, `person` or `described`), and `picture.against_parent` then checks the region the
 person drew.
 
+**A person can ask for a change unprompted** (§PW301). An answer replies to a sitting the
+agent laid out, and a revision starts from the other end: a request about any item the
+inventory lists ([inventory.md](inventory.md)), whether or not anyone put it up for review.
+`revision.ask(item, words, mask=, span=)` appends one event to `[paths]
+work`/`revisions.jsonl`. The event holds the item's id, the digest it had then, the
+person's words, when they asked, and optionally a mask under the project or, for a sound,
+a `[start, end]` span in seconds. `revision.open(item=)` lists the revisions still open,
+each with the item's `asset.brief`. Each also carries `moved`, which is true where the
+item's digest is no longer the one the person was looking at.
+`revision.close(revision, run=, sitting=)` ends one with the loop run and the sitting that
+answered it, and `withdrawn=` ends one with a reason instead. Exactly one of the two is
+accepted (`review.unanswered`). A revision never closes on a verdict, because whether the
+answer is right is the person's to say in that sitting. The file is only ever appended to,
+like `answers.jsonl`, so two sessions never race on a rewrite. An agent writes a revision
+only on a person's behalf, and the words are theirs.
+
 **The refused are shown beside the kept** (§PW175), because a filter nobody sees into is a
 filter nobody audits. Every `picture.gate` run appends its answer to `[paths]
 work`/`gates.jsonl`. Each candidate carries its failures, its silhouette IoU, every drifted

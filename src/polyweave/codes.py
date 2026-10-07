@@ -1918,6 +1918,41 @@ CODES: dict[str, Code] = {
         when="a bound on a measure that returns a set or a colour rather than a number",
         doors=("bound a statistic of it instead",),
     ),
+    "review.unknown-item": Code(
+        means="a revision names an item the inventory does not list",
+        when="revision.ask given a name or a path project.inventory has no row for "
+        "(§PW301)",
+        doors=("name the item by the id project.inventory gives it",),
+    ),
+    "review.no-words": Code(
+        means="a revision was asked with nothing said",
+        when="revision.ask given empty words",
+        doors=("pass what the person asked for, in their words",),
+    ),
+    "review.no-mask": Code(
+        means="the mask a revision names is not on disk",
+        when="revision.ask given a mask path with no file there",
+        doors=("pass a mask image under the project",),
+    ),
+    "review.bad-span": Code(
+        means="a revision's span is not a stretch of time",
+        when="span not two numbers, a negative start, or a start not before the end",
+        doors=("pass [start, end] in seconds",),
+    ),
+    "review.not-open": Code(
+        means="the revision named is not an open one",
+        when="revision.close on an id never asked, or one already closed",
+        doors=("close one revision.open lists",),
+    ),
+    "review.unanswered": Code(
+        means="a revision was closed with neither an answer nor a reason",
+        when="revision.close without run and sitting together, or without withdrawn, "
+        "or with both",
+        doors=(
+            "pass the run and the sitting that answered it",
+            "pass withdrawn with the reason",
+        ),
+    ),
     "spec.no-subject": Code(
         means="a render was asked of a spec's subject and the spec names none",
         when="render.bake given a spec, and no model, where the spec has no `subject` "

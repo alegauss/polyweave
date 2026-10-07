@@ -45,7 +45,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "R", title: "Levels measured before a person plays them", open: 8 },
   { block: "S", title: "Playing the game, not only rendering it", open: 1 },
   { block: "T", title: "Adopting polyweave in a project", open: 1 },
-  { block: "U", title: "A window on everything a project governs", open: 11 },
+  { block: "U", title: "A window on everything a project governs", open: 10 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 32 },
 ];
 
@@ -310,13 +310,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW301",
-    block: "U",
-    symptom: "a person's request to change one item lives only in a chat, so no run, sitting or record ties it to the item",
-    why: "A revision is a line in .polyweave/revisions.jsonl naming the item, its digest, a mask and the person's words; revision.open and .close carry it through a run.",
-    deps: [],
-  },
-  {
     id: "PW302",
     block: "U",
     symptom: "the plugin is sourced from the repository root, so a desktop app added to the tree ships in every adopter's cache",
@@ -349,7 +342,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "U",
     symptom: "asking for a change to one item means leaving the window for a terminal and retelling the agent which item and what",
     why: "An item's view opens a Claude Code session through the Agent SDK and the person's own claude, started from its revision and brief, not a typed path.",
-    deps: ["PW301", "PW304"],
+    deps: ["PW304"],
   },
   {
     id: "PW307",

@@ -1067,24 +1067,6 @@ Workaround: the PNG is copied by hand to `game/ui/brand/viglet_games_badge.png`,
 
 ## Block U — A window on everything a project governs
 
-### §PW301 A change a person asks for is a record, not a chat line
-
-The review page already keeps a person's words and a mask tied to a picture's digest
-(PW173, PW174), but only as an answer to a sitting the agent laid out. Starting from the
-other end is not possible: "this picture needs a warmer rim", said about an item nobody
-put up for review, exists only in the conversation that heard it. It is lost when that
-session ends, and nothing tells the next one it was asked.
-
-A revision is an append-only line in `.polyweave/revisions.jsonl`, the same shape as
-`answers.jsonl`: the inventory id, the digest the person was looking at, an optional
-mask or time range (a sound), their words, and when it was asked. `revision.open` hands
-the agent the open revisions with the item's brief. `revision.close` ends one with the
-run and the sitting that answered it, or with the reason it was withdrawn. It never
-closes on a verdict, because the verdict stays the person's (non-goal: an agent
-accepting its own look). Writing a revision is the window's second write, and like
-`verdict.judge` it is an operation an agent could call on a person's behalf from chat.
-Its record goes in `docs/specs/acceptance-spec.md` beside the answer.
-
 ### §PW302 The plugin ships without the window
 
 `.claude-plugin/marketplace.json` declares `"source": "./"`, so installing polyweave

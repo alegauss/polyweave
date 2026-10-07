@@ -356,6 +356,7 @@
 
 - ✅ **PW299** **nothing lists every item a project governs, so a picture, sound or line is found only by knowing its path** — project.inventory lists every artefact, unrecorded file, unbuilt declaration and line by kind, with record state, pending verdict and digest (design recorded in `docs/specs/inventory.md`).
 - ✅ **PW300** **asset.brief reads a geometry declaration only, so a picture, sound, effect or line has no one-read state** — asset.brief reads a cue as music.validate, an sfx or vfx effect as its table and measures, a picture as its style family, and any inventory id (design recorded in `docs/specs/inventory.md`).
+- ✅ **PW301** **a person's request to change one item lives only in a chat, so no run, sitting or record ties it to the item** — revision.ask keeps a person's request against an item's digest; revision.open lists open ones with briefs, and revision.close ends one (design recorded in `docs/specs/acceptance-spec.md`).
 
 ## Block V — Parts every game repeats, installed already proved
 

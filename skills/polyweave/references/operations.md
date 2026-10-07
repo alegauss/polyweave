@@ -1,7 +1,7 @@
 # Operations by task
 
 `describe` is the authority: every operation, its parameters, ranges, choices and units.
-This page only groups them by what you are trying to do.
+This page groups them by task.
 
 | Task | Operations |
 |---|---|
@@ -15,7 +15,8 @@ This page only groups them by what you are trying to do.
 | Search for numbers | `search.sweep`, `port.run` (a whole family), `trace.read` |
 | See it where it is seen | `compose.place`, `compose.sheet`, `store.capsules` (a store's set) |
 | Size a bound from noise | `calibrate.run`, then `calibrate.apply` |
-| Carry a person's verdict | `verdict.sheet`, `verdict.sitting`, `verdict.judge`, `verdict.promote`, `sound.sitting`; `python -m polyweave review` shows a person a sitting, `verdict.answers` resumes from what they said there |
+| Carry a person's verdict | `verdict.sheet`, `verdict.sitting`, `verdict.judge`, `verdict.promote`, `sound.sitting`; `review` shows a sitting, `verdict.answers` resumes from it |
+| Asked changes | `revision.ask`, `revision.open`, `revision.close` |
 | Keep the ledger | `loop.start`, `loop.spent`, `loop.judged`, `loop.finish`, `loop.compare` |
 | Read the ledger | `loop.runs`, `loop.assets`, `loop.changes`, `loop.bounds` |
 | Provenance | `provenance.read`, `provenance.verify`, `provenance.dependents`, `provenance.outdated`, `provenance.unrecorded`, `provenance.credits`, `provenance.generated` |
