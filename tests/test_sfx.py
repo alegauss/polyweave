@@ -199,3 +199,78 @@ def test_a_missing_file_and_an_unknown_effect_are_refused(tmp_path):
     with pytest.raises(PolyweaveError) as unknown:
         sfx.synth(source, effect="bom", root=str(tmp_path))
     assert "'bomb'" in unknown.value.remedy
+
+
+JINGLE = """\
+[effect.whistle]
+generator = "powerup"
+seed = 3
+
+[effect.pop]
+generator = "pickup"
+seed = 7
+
+[arrangement.splash]
+cues = [
+  { effect = "whistle", at = 0.0 },
+  { effect = "pop", at = 0.25, pitch = 2 },
+  { effect = "pop", at = 0.5, pitch = 4, gain = -6 },
+]
+"""
+
+
+def test_an_arrangement_is_mixed_as_the_game_plays_it(tmp_path):
+    # §PW313: a jingle heard whole, at the times its cues are played.
+    import json
+
+    from polyweave import provenance
+
+    made = sfx.synth(effects(tmp_path, JINGLE), root=str(tmp_path))
+    splash = made["arrangements"]["splash"]
+    assert splash["file"] == "audio/splash.wav"
+    pop = made["effects"]["pop"]["duration"]
+    # The last pop starts at 0.5 s and, a major third up, plays shorter than its own.
+    assert 0.5 < splash["duration"] < 0.5 + pop + 0.01
+    assert splash["peak"] <= sfx.MIX_PEAK + 0.001
+    plan = json.loads((tmp_path / splash["plan"]).read_text("utf-8"))
+    assert [c["at"] for c in plan["cues"]] == [0.0, 0.25, 0.5]
+    assert plan["cues"][1] == {
+        "effect": "pop", "file": "audio/pop.wav", "at": 0.25, "pitch": 2.0, "gain": 0.0
+    }
+    record = provenance.read(str(tmp_path / "audio" / "splash.wav"), root=tmp_path)
+    assert record["params"]["arrangement"] == "splash"
+
+
+def test_a_higher_pitch_plays_shorter():
+    import numpy as np
+
+    tone = np.ones(1200)
+    assert len(sfx._pitched(tone, 12)) == 600
+    assert len(sfx._pitched(tone, -12)) == 2400
+
+
+@pytest.mark.parametrize(
+    ("cue", "said"),
+    [
+        ('{ effect = "boing", at = 0.0 }', "boing"),
+        ('{ effect = "pop" }', "no time"),
+        ('{ effect = "pop", at = 0.0, volume = 2 }', "volume"),
+    ],
+)
+def test_a_cue_that_cannot_be_played_is_refused(tmp_path, cue, said):
+    body = JINGLE.split("[arrangement.splash]")[0] + (
+        f"[arrangement.splash]\ncues = [{cue}]\n"
+    )
+    with pytest.raises(PolyweaveError) as refused:
+        sfx.synth(effects(tmp_path, body), root=str(tmp_path))
+    assert refused.value.code == "sound.bad-effect"
+    assert said in refused.value.message
+
+
+def test_a_brief_on_a_mix_reads_back_its_cues(tmp_path):
+    from polyweave import brief
+
+    sfx.synth(effects(tmp_path, JINGLE), root=str(tmp_path))
+    said = brief.brief("audio/splash.wav", root=str(tmp_path))["declaration"]
+    assert said["arrangement"] == "splash"
+    assert [c["effect"] for c in said["cues"]] == ["whistle", "pop", "pop"]

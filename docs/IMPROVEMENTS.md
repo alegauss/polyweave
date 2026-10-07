@@ -590,29 +590,6 @@ declared in its `polyweave.toml`, made by `music.render` and `sound.synth`, and 
 `*.accept.toml` bounds, and its own audio scripts are removed. Anything Cottony needs
 that a second game would not becomes configuration.
 
-### §PW313 A jingle heard as one
-
-Found in starship (RK160), scoring the Viglet Games splash as a cartoon jingle: five
-`sound.synth` cues (`splash_gather`, `splash_pop`, `splash_boing`, `splash_crash`,
-`splash_fall` in `art/audio/effects.sfx.toml`) that `game/ui/splash.gd` plays on its own
-clock: the whistle at 0 s, eight pops at the times a share of the cells lands, each
-pitched up the major pentatonic, the boing at 1.2 s, crash and fall together at 1.75 s.
-
-`sound.sitting --members [...] --out art/review/splash-jingle` laid the five out one by
-one. A person judging a jingle hears its parts, never the jingle: whether the boing is
-too loud over the whistle, or the pops land on the beat, only shows when they are heard
-together, and today that means launching the game and watching the splash.
-
-What polyweave should do: a declared arrangement, cues at times with a pitch and a gain
-each (`[arrangement.splash]` beside the effects, say), that a sitting can play as one
-mixed preview beside its parts, and that the project's code can read so the times it
-plays match what the person accepted instead of being repeated in GDScript. A verdict on
-the arrangement then covers the mix, and `sound.measure` can report its peak once
-summed.
-
-Workaround: none written. The times live only in `splash.gd`, and the owner hears the
-whole only in the running game.
-
 ### §PW314 A line spoken aloud
 
 Found in starship: the owner asked for the Viglet Games splash to end on a spoken

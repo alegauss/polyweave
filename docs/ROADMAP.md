@@ -53,7 +53,6 @@
 
 ## Block P — Music and sound a game can ship
 
-- 📋 **PW313** (deps: —) **sound.sitting plays a jingle's cues one by one, so a person never hears them mixed at the times the game plays them** — A jingle is judged as a whole, so its parts' balance and timing can only be heard today by launching the game. → §PW313
 - 📋 **PW314** (deps: PW320) **no operation speaks a line, so a game cannot get a voiced tag like a studio name read aloud** — Voiced lines are a common game asset, and without one a project must record speech outside polyweave, with no record, budget or verdict. → §PW314
 - 📋 **PW320** (deps: —) **a service's price is one figure per call, so a spoken line billed by its characters cannot be priced before it is sent** — ElevenLabs bills speech by character and says so on its subscription endpoint, so a quoted per-sound price would overstate short lines and understate long ones. → §PW320
 - 📋 **PW321** (deps: PW314, PW320) **a world's character has no voice of its own, so each spoken line sounds like whichever voice its call happened to name** — A character is recognised by its voice across every line, so the voice must be chosen once by a person and read from the world, never passed per call. → §PW321

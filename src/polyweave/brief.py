@@ -279,8 +279,13 @@ def _effect(item: dict, path: str, record: dict, here: Path) -> dict:
 
     tables = tomllib.loads((here / path).read_text(encoding="utf-8")).get("effect")
     tables = tables if isinstance(tables, dict) else {}
+    params = record.get("params") or {}
+    if params.get("arrangement"):
+        # A mix of several effects reads back as the cues it was mixed from (§PW313).
+        return {"path": path, "arrangement": params["arrangement"],
+                "cues": params.get("cues") or []}
     # The record names its effect; one written before it did is matched by its file.
-    name = (record.get("params") or {}).get("effect") or Path(item["id"]).stem
+    name = params.get("effect") or Path(item["id"]).stem
     if name not in tables:
         return {"path": path, "effects": sorted(tables)}
     answer = {"path": path, "effect": name, "table": tables[name]}

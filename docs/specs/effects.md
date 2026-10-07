@@ -63,6 +63,39 @@ Declaring both is `sound.bad-effect`.
 The port is held to the spike's ten effects, which a person listened to and passed: the
 same generators and seeds give the lengths the spike measured, to the millisecond.
 
+## A jingle as one
+
+**An arrangement is effects at the times a game plays them** (§PW313). Played one by one
+on a sitting, a jingle's parts are heard and the jingle is not: whether the boing is too
+loud over the whistle, or the pops land on the beat. The same `*.sfx.toml` may say:
+
+```toml
+[arrangement.splash]
+peak = -1.0              # the mix's ceiling in dBFS; -1 when left out
+cues = [
+  { effect = "splash_gather", at = 0.0 },
+  { effect = "splash_pop", at = 0.40, pitch = 2 },
+  { effect = "splash_pop", at = 0.55, pitch = 4, gain = -3 },
+  { effect = "splash_boing", at = 1.2 },
+]
+```
+
+`at` is seconds from the start, `pitch` semitones (played faster and shorter, as a game's
+`pitch_scale` does) and `gain` dB. A cue naming an effect the file does not declare, with
+no time, or with a key of its own is `sound.bad-effect`, naming the cue. `sound.synth`
+mixes each arrangement after the effects, holds the mix under its `peak`, and places it as
+an effect is placed: at the cue `[sound]` declares under the arrangement's name, or
+beside the file. Its record names the arrangement and its cues, and the answer's
+`arrangements` gives each one's `file`, `duration`, `peak`, `loudness` and
+`ceiling_bound`.
+
+**The game reads the times the person heard.** Beside the mix,
+`<name>.arrangement.json` lists every cue with its effect's file, its time, pitch and
+gain, so the code that plays the jingle reads them rather than repeating them. A person
+hears the jingle on a sitting by naming the mix as a member beside its parts:
+`sound.sitting` with `new` the mix, and one member per effect. A verdict on the mix covers
+the balance and the timing, and `sound.measure` reads its summed peak.
+
 ## Bought effects
 
 Footsteps, glass or rain are not what a synthesiser does well. `sound.buy` (a `fetch` job)

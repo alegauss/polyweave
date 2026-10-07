@@ -17,6 +17,20 @@ says which seed was kept and after how many tries.
 
 An effect whose name is a cue declared under `[sound]` lands at that cue's file, in its
 format; any other lands beside the `*.sfx.toml`.
+
+A jingle is several effects at the times a game plays them, and a person judges it whole
+(§PW313). So the same file may hold arrangements:
+
+    [arrangement.splash]
+    cues = [
+      { effect = "splash_gather", at = 0.0 },
+      { effect = "splash_pop", at = 0.4, pitch = 2, gain = -3 },
+    ]
+
+`at` is in seconds, `pitch` in semitones and `gain` in dB; `peak` caps the mix. Each
+arrangement is mixed into one file, placed as an effect is, with
+`<name>.arrangement.json` beside it naming every cue's file, time, pitch and gain: what
+the game reads, so the times it plays are the ones the person heard.
 """
 
 from __future__ import annotations
@@ -239,7 +253,7 @@ def synth(
         raise PolyweaveError("sound.no-source", f"{source} is not TOML",
                              "fix the syntax the detail names",
                              detail=str(exc)) from exc
-    stray = sorted(set(effects) - {"effect"})
+    stray = sorted(set(effects) - {"effect", "arrangement"})
     if stray or not isinstance(effects.get("effect"), dict) or not effects["effect"]:
         raise PolyweaveError("sound.no-source",
                              f"{source} holds no [effect.<name>] tables",
@@ -253,13 +267,16 @@ def synth(
             else f"name one of {', '.join(tables)}",
             given=effect, allowed=sorted(tables),
         )
+    arranged = _arrangements(effects.get("arrangement"), tables)
     chosen = {effect: tables[effect]} if effect else tables
     checked = {name: _checked(name, table) for name, table in chosen.items()}
     declared = config.cue_files()
     made = {}
+    heard: dict[str, np.ndarray] = {}
     for name, table in checked.items():
         audio, seed, tries = _made(name, table)
         audio, levelled = _levelled(name, audio, table, config.root)
+        heard[name] = audio
         target = declared.get(name, where.parent / f"{name}.wav")
         made[name] = _placed(target, audio, config.root)
         measured = {
@@ -285,7 +302,146 @@ def synth(
             extra={"instruments": [licences.engine("sfxr", [name])]},
             root=config.root,
         ), config.root)
-    return {"source": where.relative_to(config.root).as_posix(), "effects": made}
+    answer = {"source": where.relative_to(config.root).as_posix(), "effects": made}
+    if arranged and effect is None:
+        answer["arrangements"] = {
+            name: _arranged(name, held, tables, heard, made, where, declared, config)
+            for name, held in arranged.items()
+        }
+    return answer
+
+
+#: What one cue of an arrangement may say, and what each is when left out.
+_CUE = {"effect": None, "at": None, "pitch": 0.0, "gain": 0.0}
+
+#: The ceiling a mix is held under unless its arrangement says otherwise, in dBFS.
+MIX_PEAK = -1.0
+
+
+def _arrangements(declared: Any, tables: dict) -> dict[str, dict]:
+    """Each arrangement's cues and ceiling, refused unless every cue means something."""
+    if declared is None:
+        return {}
+    if not isinstance(declared, dict):
+        raise PolyweaveError("sound.bad-effect", "arrangement is not a table",
+                             "write each one as [arrangement.<name>] with cues")
+    out = {}
+    for name, table in declared.items():
+        own = table if isinstance(table, dict) else {}
+        stray = sorted(set(own) - {"cues", "peak"})
+        cues = own.get("cues")
+        if stray or not isinstance(cues, list) or not cues:
+            said = f"has no key {stray[0]!r}" if stray else "has no cues"
+            raise PolyweaveError(
+                "sound.bad-effect", f"arrangement {name}: {said}",
+                'write cues = [{ effect = "<name>", at = 0.0 }, ...], and peak if the '
+                "mix needs another ceiling",
+                **({"given": stray[0], "allowed": ["cues", "peak"]} if stray else {}),
+            )
+        if "peak" in own and not _number(own["peak"]):
+            raise PolyweaveError("sound.bad-effect", f"arrangement {name}: sets peak "
+                                 f"to {own['peak']!r}", "write peak in dBFS, as -1.0")
+        out[name] = {
+            "cues": [_cue(name, index, cue, tables) for index, cue in enumerate(cues)],
+            "peak": float(own.get("peak", MIX_PEAK)),
+        }
+    return out
+
+
+def _cue(name: str, index: int, cue: Any, tables: dict) -> dict:
+    where = f"arrangement {name}, cue {index + 1}"
+    extra = sorted(set(cue) - set(_CUE)) if isinstance(cue, dict) else []
+    if not isinstance(cue, dict) or extra:
+        raise PolyweaveError(
+            "sound.bad-effect",
+            f"{where} " + (f"has no key {extra[0]!r}" if extra else "is not a table"),
+            'write it as { effect = "<name>", at = <seconds>, pitch = <semitones>, '
+            "gain = <dB> }",
+            **({"given": extra[0], "allowed": sorted(_CUE)} if extra else {}),
+        )
+    if cue.get("effect") not in tables:
+        raise PolyweaveError(
+            "sound.bad-effect",
+            f"{where} names effect {cue.get('effect')!r}, which this file does not "
+            "declare",
+            f"name one of {', '.join(sorted(tables))}",
+            given=str(cue.get("effect")), allowed=sorted(tables),
+        )
+    for key in ("at", "pitch", "gain"):
+        if key in cue and not _number(cue[key]):
+            raise PolyweaveError("sound.bad-effect",
+                                 f"{where} sets {key} to {cue[key]!r}",
+                                 f"write {key} as a number")
+    if "at" not in cue or cue["at"] < 0:
+        raise PolyweaveError("sound.bad-effect",
+                             f"{where} has no time, or one before 0",
+                             "give it at, in seconds from the start")
+    return {**_CUE, **cue}
+
+
+def _pitched(audio: np.ndarray, semitones: float) -> np.ndarray:
+    """Played faster or slower, as a game's pitch_scale does: higher is shorter."""
+    if not semitones or not len(audio):
+        return audio
+    ratio = 2.0 ** (semitones / 12.0)
+    count = max(1, int(round(len(audio) / ratio)))
+    return np.interp(np.arange(count) * ratio, np.arange(len(audio)), audio)
+
+
+def _arranged(
+    name: str, held: dict, tables: dict, heard: dict, made: dict, where: Path,
+    declared: dict, config,
+) -> dict:
+    """One arrangement mixed as the game plays it, and the plan the game reads."""
+    import json
+
+    cues = held["cues"]
+    for cue in cues:
+        effect = cue["effect"]
+        if effect not in heard:
+            table = _checked(effect, tables[effect])
+            heard[effect] = _levelled(effect, _made(effect, table)[0], table,
+                                      config.root)[0]
+    placed = [
+        (int(round(cue["at"] * sfxr.RATE)),
+         _pitched(heard[cue["effect"]], cue["pitch"]) * 10 ** (cue["gain"] / 20.0))
+        for cue in cues
+    ]
+    mix = np.zeros(max(start + len(audio) for start, audio in placed))
+    for start, audio in placed:
+        mix[start:start + len(audio)] += audio
+    peak = _db(float(np.abs(mix).max()) if len(mix) else 0.0)
+    bound = peak > held["peak"]
+    if bound:
+        mix = mix * 10 ** ((held["peak"] - peak) / 20.0)
+    target = declared.get(name, where.parent / f"{name}.wav")
+    answer = _placed(target, mix, config.root)
+    measured = {
+        "duration": round(len(mix) / sfxr.RATE, 4),
+        "peak": _db(float(np.abs(mix).max()) if len(mix) else 0.0),
+        "loudness": _db(float(np.sqrt(np.mean(mix**2))) if len(mix) else 0.0),
+    }
+    played = [
+        {"effect": cue["effect"], "file": (made.get(cue["effect"]) or {}).get("file"),
+         "at": float(cue["at"]), "pitch": float(cue["pitch"]),
+         "gain": float(cue["gain"])}
+        for cue in cues
+    ]
+    plan = (config.root / answer["file"]).with_suffix(".arrangement.json")
+    plan.write_text(json.dumps({"arrangement": name, "cues": played}, indent=1) + "\n",
+                    encoding="utf-8", newline="\n")
+    provenance.write(provenance.build(
+        "sound", config.root / answer["file"], engine={"name": "sound.synth"},
+        inputs=[provenance.source("effects", where, config.root)],
+        params={"arrangement": name, "cues": played},
+        measurements=measured,
+        extra={"instruments": [
+            licences.engine("sfxr", sorted({c["effect"] for c in cues}))
+        ]},
+        root=config.root,
+    ), config.root)
+    return {**answer, "plan": plan.relative_to(config.root).as_posix(),
+            "cues": played, **measured, "ceiling_bound": bound}
 
 
 def _placed(target: Path, audio: np.ndarray, root: Path) -> dict:

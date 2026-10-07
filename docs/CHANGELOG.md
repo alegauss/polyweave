@@ -297,6 +297,7 @@
 - ✅ **PW254** **a synthesised effect is normalised to a peak alone, so a replacement lands 10 dB louder than the sound it replaces** — An effect may declare its loudness or match the sound it replaces and lands within 0.5 dB of it, peak a ceiling said when it binds (design recorded in `docs/specs/effects.md`).
 - ✅ **PW255** **music.render always writes both WAV and OGG, so a game that loads one ships the other or deletes it by hand** — music.render writes only the formats a game loads: those named, else its declared cue's format, else both; an OGG asked for without ffmpeg is refused, not dropped.
 - ✅ **PW282** **music.render refuses an unwritable format as music.no-engine on a machine without the engines** — music.render names a format it cannot write as music.bad-format before it looks for engines, so the refusal and the CI gate read the same on every machine.
+- ✅ **PW313** **sound.sitting plays a jingle's cues one by one, so a person never hears them mixed at the times the game plays them** — An [arrangement] mixes its cues at their times, pitches and gains into one sound with a plan the game reads, so a sitting hears it whole (design recorded in `docs/specs/effects.md`).
 
 ## Block Q — Words held to the world
 
