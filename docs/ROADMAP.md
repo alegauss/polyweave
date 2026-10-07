@@ -81,6 +81,7 @@
 ## Block T — Adopting polyweave in a project
 
 - 📋 **PW325** (deps: —) **no operation brings an artefact another project made into this one with a record of where it came from** — A studio's shared badge is copied into each game by hand, with no record, so none of them learns when the source changes. → §PW325
+- 📋 **PW374** (deps: —) **vfx.build writes each scene beside its declaration, so effects declared in an unshipped folder load only in the editor** — A project whose sources the export leaves out ships a game that cannot load its effects, and every check passes. → §PW374
 
 ## Block U — A window on everything a project governs
 
