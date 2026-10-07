@@ -1,0 +1,12 @@
+{
+  "name": "@pw/core",
+  "private": true,
+  "version": "0.0.0",
+  "description": "The half that needs no window: the transport interface, the MCP client, project discovery over a lister it is handed, and the payload readers. No Electron, no React, no Node.",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./dist-types/index.d.ts",
+  "scripts": {
+    "test": "vitest run"
+  }
+}

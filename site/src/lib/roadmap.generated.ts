@@ -313,7 +313,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW303",
     block: "U",
     symptom: "there is no desktop window that finds the projects on a machine using polyweave and opens one",
-    why: "gui/ is an Electron app split into core, ui and shell like roadkeep's; it finds projects by polyweave.toml and reads one only through a held polyweave serve.",
+    why: "The ui package (React, the locale catalogs) and the Electron shell that spawns the server and owns every path are still to build on core.",
     deps: [],
   },
   {

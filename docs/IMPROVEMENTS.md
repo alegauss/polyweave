@@ -1090,6 +1090,8 @@ language`, as the review page does (PW287). The window is local only: no account
 remote store (non-goal: a hosted service). Its tests run under `python tools/gate.py`
 beside pytest, so one gate covers both halves.
 
+Landed: `gui/packages/core`, run by the gate. Left: `ui` and `shell`.
+
 ### §PW304 Each item seen with what it was held to
 
 This is the browsing half of the window. On the left is the inventory, grouped by kind,

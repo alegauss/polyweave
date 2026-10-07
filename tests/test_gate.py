@@ -19,6 +19,7 @@ def gate(tmp_path, monkeypatch):
     spec.loader.exec_module(module)
     monkeypatch.setattr(module, "HERE", tmp_path / "gate")
     monkeypatch.setattr(module, "ROOT", tmp_path)
+    monkeypatch.setattr(module, "GUI", tmp_path / "gui")
     return module
 
 
@@ -90,3 +91,28 @@ def test_a_red_run_keeps_its_log_aside_and_its_exit_code(gate, tmp_path):
     assert stamp["failed"] == 1
     assert (tmp_path / stamp["red_log"]).is_file()
     assert not (gate.HERE / "lock").exists()
+
+
+def test_the_window_is_said_skipped_with_the_reason_where_it_cannot_run(gate, tmp_path):
+    # §PW303: one gate covers both halves, and a half it could not run is said.
+    assert gate.window(tmp_path / "gui.log") == {"ran": False, "why": "no gui/ here"}
+    (tmp_path / "gui").mkdir()
+    (tmp_path / "gui" / "package.json").write_text("{}", encoding="utf-8")
+    if gate.shutil.which("npm"):
+        found = gate.window(tmp_path / "gui.log")
+        assert found["why"] == "not installed: run npm ci in gui/"
+
+
+def test_the_summary_says_how_the_window_went(gate):
+    stamp = {
+        "exit": 1,
+        "commit": "abc",
+        "passed": 10,
+        "failed": 0,
+        "skipped": 0,
+        "present": {"Blender": True, "Godot": True, "Audio": True},
+        "skipped_for": {"Blender": 0, "Godot": 0, "Audio": 0},
+        "log": "x.log",
+        "gui": {"ran": True, "exit": 1, "failed": "test"},
+    }
+    assert "gui: test RED" in gate.summary(stamp)

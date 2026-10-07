@@ -15,7 +15,13 @@ drawn; a run left in the background is known only to whoever read the tail of it
 - a lock is held while it runs, since two overlapping runs share `.polyweave/` and
   Shio measured a false red of three errors from exactly that.
 
-The exit code is pytest's own. A gate piped into `grep` reports `grep`'s; this does not.
+The window's tests run here too (§PW303), so one gate covers both halves: where `gui/`
+is installed, its typecheck and vitest run after pytest, into `gui.log`, and the last
+line says how they went. Where node or `gui/node_modules` is missing, the line says that
+instead, as it says an engine is absent.
+
+The exit code is pytest's own, or 1 where pytest passed and the window did not. A
+gate piped into `grep` reports `grep`'s; this does not.
 """
 
 from __future__ import annotations
@@ -32,6 +38,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 HERE = ROOT / ".polyweave" / "gate"
+GUI = ROOT / "gui"
 
 #: What a skip reason says when the engine it needs is missing.
 ENGINES = {
@@ -126,16 +133,48 @@ def commit() -> str:
     return done.stdout.strip()
 
 
+def window(log: Path) -> dict:
+    """The window's typecheck and tests, where it is installed (§PW303)."""
+    npm = shutil.which("npm")
+    if not (GUI / "package.json").is_file():
+        return {"ran": False, "why": "no gui/ here"}
+    if npm is None:
+        return {"ran": False, "why": "node is absent"}
+    if not (GUI / "node_modules").is_dir():
+        return {"ran": False, "why": "not installed: run npm ci in gui/"}
+    with log.open("w", encoding="utf-8") as out:
+        for script in ("typecheck", "test"):
+            done = subprocess.run(
+                [npm, "run", script],
+                cwd=GUI,
+                stdout=out,
+                stderr=subprocess.STDOUT,
+                check=False,
+            )
+            if done.returncode != 0:
+                return {"ran": True, "exit": done.returncode, "failed": script}
+    return {"ran": True, "exit": 0}
+
+
+def _said(gui: dict) -> str:
+    if not gui["ran"]:
+        return f"gui: skipped, {gui['why']}"
+    if gui["exit"] == 0:
+        return "gui: typecheck and tests green"
+    return f"gui: {gui['failed']} RED"
+
+
 def summary(stamp: dict) -> str:
     engines = "; ".join(
         f"{engine}: {'present' if stamp['present'][engine] else 'absent'}, "
         f"{stamp['skipped_for'][engine]} tests skipped for it"
         for engine in ENGINES
     )
+    gui = f" {_said(stamp['gui'])}." if "gui" in stamp else ""
     return (
         f"gate {'green' if stamp['exit'] == 0 else 'RED'} at {stamp['commit']}: "
         f"{stamp['passed']} passed, {stamp['failed']} failed, {stamp['skipped']} "
-        f"skipped. {engines}. Log: {stamp['log']}"
+        f"skipped. {engines}.{gui} Log: {stamp['log']}"
     )
 
 
@@ -157,21 +196,24 @@ def main(argv: list[str]) -> int:
                 stderr=subprocess.STDOUT,
                 check=False,
             )
+        gui = window(HERE / "gui.log")
+        failed = done.returncode or (gui.get("exit", 0) and 1)
         stamp = {
             "commit": commit(),
-            "exit": done.returncode,
+            "exit": failed,
+            "gui": gui,
             "at": time.strftime("%Y-%m-%dT%H:%M:%S"),
             "log": log.relative_to(ROOT).as_posix(),
             "present": present(),
             **counts(report),
         }
-        if done.returncode != 0:
+        if failed:
             kept = HERE / f"pytest-red-{time.strftime('%Y%m%d-%H%M%S')}.log"
             shutil.copyfile(log, kept)
             stamp["red_log"] = kept.relative_to(ROOT).as_posix()
         (HERE / "stamp.json").write_text(json.dumps(stamp, indent=1) + "\n", "utf-8")
         print(summary(stamp))
-        return done.returncode
+        return failed
     finally:
         held.unlink(missing_ok=True)
 

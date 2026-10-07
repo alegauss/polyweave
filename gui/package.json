@@ -1,0 +1,25 @@
+{
+  "name": "polyweave-gui",
+  "private": true,
+  "version": "0.0.0",
+  "description": "A desktop window onto the polyweave projects on a machine. core reads what a held polyweave serve answers; ui renders it; shell is the Electron process that owns every path.",
+  "license": "MIT",
+  "author": "Alexandre Oliveira",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "typecheck": "tsc -b",
+    "test": "vitest run",
+    "clean": "tsc -b --clean"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vite": "^8.3.0",
+    "vitest": "^5.0.0"
+  }
+}
