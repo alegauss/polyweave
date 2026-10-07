@@ -262,29 +262,6 @@ this is where that is recorded honestly: what still runs by hand, and why the ri
 instead of disappearing. An outcome worth having, stated, beats the same outcome
 unstated.
 
-### §PW312 A parameter named like a function still counts as read
-
-Met in starship (RK144), building `art/voxels/mine_layer.toml`. It declares `[params]
-floor = -0.38`, and nearly every node places itself with it in an expression, such as
-`at = ["0", "floor + 0.35", "0"]`. `geometry.build` and `geometry.describe` both answer
-`warnings: ["the parameter floor is declared and no node reads it"]`. The model builds
-with `floor` applied: the discs stand where the expressions put them. So the warning is
-false, and it has stood on that declaration since RK42 without anyone trusting it.
-
-The warning comes from `warn` in `src/polyweave/geometry/review.py`, which collects
-`uses(node)` over the nodes. My guess is that `floor` is also a function name the
-expression language knows, so `uses` counts it as a call rather than as a parameter. The
-other params of the same file (`wide`, `long`, `lights`) are not reported.
-
-Nothing was worked round; the warning was ignored. A warning that is sometimes false
-teaches the reader to ignore all of them, and that is the cost.
-
-What polyweave should do: a name that is declared in `[params]` is a parameter wherever
-an expression names it, even when a function shares the name. Better, a param that
-shadows a built-in function is refused, or named at declaration, so `floor(x)` and
-`floor` cannot mean two things in one file. A check declares a param named after a
-function, reads it in an expression, and asserts that no unused warning comes back.
-
 ### §PW315 A vector logo rendered whole and in layers
 
 Met in starship (RK150): the title should show the logo the owner accepted for the Steam

@@ -190,7 +190,9 @@ def mentions(source: Any) -> set[str]:
     """Every name an expression reads, for working out what a change rebuilds.
 
     Read off the tree rather than by matching text, so a parameter called `pad` is not
-    found inside a function called `padding`.
+    found inside a function called `padding`. Only a name being called is a function: a
+    parameter called `floor` is read in `floor + 0.35` and in `floor(floor)` (§PW312),
+    as the evaluator reads it.
     """
     if not isinstance(source, str):
         return set()
@@ -198,8 +200,11 @@ def mentions(source: Any) -> set[str]:
         tree = ast.parse(source.strip(), mode="eval")
     except SyntaxError:
         return set()
+    called = {
+        id(node.func) for node in ast.walk(tree) if isinstance(node, ast.Call)
+    }
     return {
         node.id
         for node in ast.walk(tree)
-        if isinstance(node, ast.Name) and node.id not in FUNCTIONS
+        if isinstance(node, ast.Name) and id(node) not in called
     }

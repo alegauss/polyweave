@@ -139,6 +139,15 @@ def test_a_parameter_nothing_reads_is_named(tmp_path):
     )
 
 
+def test_a_parameter_named_like_a_function_is_read_and_not_warned_about(tmp_path):
+    # §PW312: `floor` read in an expression was reported as read by nothing.
+    body = TRAY.replace("bevel      = 2.0", "bevel      = 2.0\nfloor      = -0.38")
+    placed = 'id     = "tray"\nat     = [0, 0, "floor + 0.35"]'
+    body = body.replace('id     = "tray"', placed)
+    found = review.describe(tray(tmp_path, body))
+    assert not [one for one in found["warnings"] if "floor" in one]
+
+
 def test_a_repeat_bigger_than_a_document_usually_means_is_named(tmp_path):
     body = TRAY.replace("board      = 8", "board      = 40")
     found = review.describe(tray(tmp_path, body))

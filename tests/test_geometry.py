@@ -149,6 +149,13 @@ def test_which_names_an_expression_reads_is_read_off_the_tree():
     assert G.mentions("round(cell)") == {"cell"}, "a function name is not a parameter"
 
 
+def test_a_parameter_named_like_a_function_is_still_read():
+    """§PW312: only a name being called is a function."""
+    assert G.mentions("floor + 0.35") == {"floor"}
+    assert G.mentions("floor(floor * 2)") == {"floor"}
+    assert G.mentions("floor(cell)") == {"cell"}
+
+
 # -- the document ----------------------------------------------------------------------
 
 

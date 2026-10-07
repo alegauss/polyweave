@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 11 },
+  { block: "H", title: "Proof on a real game", open: 10 },
   { block: "I", title: "Voxel models from a declaration", open: 3 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 2 },
@@ -70,13 +70,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent",
     why: "The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question.",
     deps: ["PW57"],
-  },
-  {
-    id: "PW312",
-    block: "H",
-    symptom: "geometry.describe warns a param no node reads when every node reads it, if its name is also a function",
-    why: "A warning that is sometimes false teaches a reader to ignore all of them.",
-    deps: [],
   },
   {
     id: "PW315",
