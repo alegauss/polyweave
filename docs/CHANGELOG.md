@@ -146,6 +146,7 @@
 - ✅ **PW298** **asset.brief calls a spec current while its render is of a mesh the game stopped drawing when voxels replaced it** — A spec's `subject` names its declaration; render.bake and the search render its build, and verify calls a render of another mesh stale (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW312** **geometry.describe warns a param no node reads when every node reads it, if its name is also a function** — A name counts as a function only where it is called, so a param named floor and read in floor + 0.35 is read, and no unused warning comes back.
 - ✅ **PW315** **a vector logo cannot be rendered to a game texture, whole or in its layers, with a record naming the SVG** — picture.vector draws an SVG at a width through ThorVG, blur and masks kept, and named layers on one canvas, each with a record naming the SVG (design recorded in `docs/specs/store.md`).
+- ✅ **PW316 (nine-patch panels)** **a menu panel, frame or stylebox cannot be declared, built or held to a spec, so a game draws its UI kit by hand** — panel.build draws a declared frame (fill, cut, edge, brackets, scan lines) per state to nine-patch PNGs with records and Godot styleboxes.
 
 ## Block I — Voxel models from a declaration
 

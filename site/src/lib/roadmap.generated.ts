@@ -75,7 +75,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW316",
     block: "H",
     symptom: "a menu panel, frame or stylebox cannot be declared, built or held to a spec, so a game draws its UI kit by hand",
-    why: "A menu's look is then numbers chosen in code, with nothing but a verdict on a screenshot to hold it.",
+    why: "A panel built as a Godot canvas shader with its uniforms, an accent mark mid-edge, and a screen wipe captured per progress step are still to build.",
     deps: [],
   },
   {

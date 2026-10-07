@@ -19,7 +19,7 @@
 - 📋 **PW57** (deps: PW53 ⏸) **every Cottony look gate restates its own floor, so no asset has a bar a search can aim at** — Five check scripts measure after the render is spent, which is a verdict and never a target, and a threshold moved in one of them is invisible to the rest. → §PW57
 - 📋 **PW59** (deps: PW53 ⏸, PW54 ✅, PW55 ✅, PW56 ⏳, PW57, PW58 ✅) **nothing says how much of Cottony still does its own version of what the plugin does** — Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion. → §PW59
 - ⏳ **PW56** (deps: PW57) **twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent** — The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question. → §PW56
-- 📋 **PW316** (deps: —) **a menu panel, frame or stylebox cannot be declared, built or held to a spec, so a game draws its UI kit by hand** — A menu's look is then numbers chosen in code, with nothing but a verdict on a screenshot to hold it. → §PW316
+- ⏳ **PW316** (deps: —) **a menu panel, frame or stylebox cannot be declared, built or held to a spec, so a game draws its UI kit by hand** — A panel built as a Godot canvas shader with its uniforms, an accent mark mid-edge, and a screen wipe captured per progress step are still to build. → §PW316
 - 📋 **PW319** (deps: —) **measure.contrast rates a text box against its surround, so nothing says whether text reads over the picture behind it** — A menu drawn over a living scene cannot hold its text to a declared contrast, and its veil is set by eye. → §PW319
 - 📋 **PW331** (deps: —) **a set of small 2D icons, such as a pad's button prompts, cannot be declared, built or accepted** — A game's prompts must draw each button as the pad shows it, in detail, and with no operation for it the project would have to draw them by hand. → §PW331
 - 📋 **PW336** (deps: —) **nothing reads a held screen for text leaving its box or lying over other text, so a fit is judged by eye** — A longer translation breaks a layout unseen until a person happens to look at that screen. → §PW336
@@ -215,6 +215,13 @@
   sandboxed renderer and a frozen preload bridge, finds projects under a root and depth
   a person names, holds one polyweave serve per open project, names that engine on
   screen, and draws every string from the en and pt-BR catalogs; a live test opens one.
+
+## Done when — PW316
+
+- **A panel and a wipe built as shaders and captured** A declared panel also builds to a
+  Godot canvas shader with its uniforms, accent mark included, and a declared screen
+  wipe builds to a shader whose capture at each progress step a spec holds; starship's
+  hand-written holo_panel and wipe shaders are replaced.
 
 ## Non-goals
 

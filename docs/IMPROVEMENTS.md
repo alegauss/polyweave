@@ -264,28 +264,21 @@ unstated.
 
 ### §PW316 A UI panel built from a declaration
 
-Met in starship (RK151): the menus need a kit of panels, bevelled holo-glass frames with
-corner brackets, scan lines and an accent tick in the logo's palette, each with a focus,
-pressed and disabled state. The design asks for them "generated and checked through
-polyweave (nine-patch textures or a shader with a declared spec)". `describe` has
-nothing for it: `vfx.build` declares particles and ribbons, `geometry` builds meshes and
-voxels, and no operation makes a nine-patch, a UI shader or a stylebox from a
-declaration.
+Met in starship (RK151): the menus need holo-glass panels, a bevelled edge, corner
+brackets, scan lines and an accent tick, each with focus, pressed and disabled states.
+`describe` had nothing for it, so starship hand-wrote `game/ui/kit/holo_panel.gdshader`
+and held it only by a verdict on screenshots. RK156 did the same for a screen wipe, a
+bowed sweep and an iris timed by a progress uniform, in `game/ui/kit/wipe.gdshader`.
 
-The workaround is a hand-written canvas shader in the project,
-game/ui/kit/holo_panel.gdshader, with its look held only by the owner's verdict on
-screenshots. Its numbers (edge width, bracket length, scan-line pitch, glow) are chosen
-in code, which is what "never tuned by eye" meant to prevent.
+Landed (docs/specs/panel.md): a `*.panel.toml` declares a frame's fill, cut, edge,
+brackets, scan lines and states, and `panel.build` draws each state to nine-patch PNGs
+with records, plus a `StyleBoxTexture` with the margins. A corner reaching past the
+margin is refused.
 
-What polyweave should do: declare a UI panel (a frame's parts, palette, states, and the
-nine-patch margins) and build it to either nine-patch PNGs with a `.prov.json` or a
-Godot canvas shader with its uniforms. Then capture it in each state and hold a spec to
-it: text contrast over the fill (measure.contrast), edge crispness at the smallest scale
-the game draws, and the palette's distance from the declared colours. The project's
-shader is then replaced by the built one. The same gap holds a screen wipe: starship's
-RK156 hand-wrote game/ui/kit/wipe.gdshader (a bowed sweep and an iris, timed by a
-progress uniform), which a declaration should build and a capture per progress step
-check.
+Left: build the same declaration to a Godot canvas shader with its uniforms, which is
+where an accent mark mid-edge belongs, since a nine-patch would stretch it. Then declare
+a screen wipe, build it to a shader, and capture it at each progress step so a spec can
+hold the steps. Starship's two hand-written shaders are then replaced by built ones.
 
 ### §PW319 Text legibility measured glyph by glyph
 

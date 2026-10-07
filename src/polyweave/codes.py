@@ -1918,6 +1918,16 @@ CODES: dict[str, Code] = {
         when="a bound on a measure that returns a set or a colour rather than a number",
         doors=("bound a statistic of it instead",),
     ),
+    "compose.bad-panel": Code(
+        means="a menu panel's declaration cannot be drawn",
+        when="a *.panel.toml missing or not TOML, a key nothing reads, a colour or "
+        "number that is not one, or a corner (cut, bracket) reaching past the "
+        "nine-patch margin, which the stretch would bend (§PW316)",
+        doors=(
+            "name a declared key; the refusal says the nearest",
+            "make the margin at least as wide as the cut plus the bracket",
+        ),
+    ),
     "compose.no-vector": Code(
         means="the vector picture named cannot be drawn",
         when="picture.vector given a path with no SVG, one that does not parse, or one "

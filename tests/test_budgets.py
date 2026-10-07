@@ -74,7 +74,8 @@ from polyweave.errors import PolyweaveError
 #: 96,845 with revision.ask, .open and .close (§PW301): a person's request kept
 #: as a record rather than a chat line.
 #: 97,728 with picture.vector (§PW315), a logo drawn whole and in layers.
-DESCRIBE = 98_200
+#: 98,420 with panel.build (§PW316), a menu panel built from a declaration.
+DESCRIBE = 98_900
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -126,7 +127,8 @@ DESCRIBE = 98_200
 #: project.inventory (§PW299).
 #: 108,082 with the revision operations and their six review codes (§PW301).
 #: 109,006 with picture.vector and compose.no-vector, .no-layer (§PW315).
-CAPABILITIES = 109_500
+#: 109,719 with panel.build and compose.bad-panel (§PW316).
+CAPABILITIES = 110_200
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
