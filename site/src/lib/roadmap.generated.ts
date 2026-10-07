@@ -41,7 +41,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "N", title: "Pictures held to a canon", open: 0 },
   { block: "O", title: "A person sees and answers", open: 2 },
   { block: "P", title: "Music and sound a game can ship", open: 8 },
-  { block: "Q", title: "Words held to the world", open: 2 },
+  { block: "Q", title: "Words held to the world", open: 1 },
   { block: "R", title: "Levels measured before a person plays them", open: 8 },
   { block: "S", title: "Playing the game, not only rendering it", open: 1 },
   { block: "T", title: "Adopting polyweave in a project", open: 1 },
@@ -222,13 +222,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "P",
     symptom: "an sfx effect cannot be declared at a note, so putting a menu sound in a key means working out base_freq by hand",
     why: "The pitch formula lives only in the source, so every tuned effect is numbers derived off the page that nothing checks.",
-    deps: [],
-  },
-  {
-    id: "PW329",
-    block: "Q",
-    symptom: "words.check holds a translated column to the English names, so a name written in that language reads as unknown",
-    why: "A second language cannot be checked against the world at all, and listing its names as ordinary also lets them leak into the English column unseen.",
     deps: [],
   },
   {

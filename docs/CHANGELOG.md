@@ -309,6 +309,7 @@
 - ✅ **PW257** **words.check reads the plural of a declared name as a name the world does not show** — words.check takes a declared name's English plural as the name (Gleaners, Foremen), an entity may state an irregular plural, and a near miss names the name it is near.
 - ✅ **PW291** **words.sheet lays out every row of the string table, so a person judges the tone of interface labels nobody speaks** — words.sheet lays out only spoken lines, with an about, and the page shows each as large text by its speaker; Starship's sitting holds its 174 crew lines.
 - ✅ **PW290** **a picture bought from a world entity on 4.0 is refused with 400, its json_prompt lacking compositional_deconstruction** — A world entity's picture on 4.0 carries compositional_deconstruction composed from its look, so the service takes it; Starship's Lancer was bought through it.
+- ✅ **PW329** **words.check holds a translated column to the English names, so a name written in that language reads as unknown** — An entity declares its name per locale, and words.check holds each column of the string table to that locale's forms, so a translated name reads as known.
 
 ## Block R — Levels measured before a person plays them
 

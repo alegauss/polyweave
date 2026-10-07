@@ -782,35 +782,6 @@ notes.
 
 ## Block Q — Words held to the world
 
-### §PW329 Each name in each locale
-
-Met in starship (RK162): `strings.csv` has `en` and `pt_BR` columns and `words.check`
-reads both. But an entity has one `name` and one `plural`, `[words] ordinary` is one
-list, and `_held` pools every locale's names into one set.
-
-What goes wrong:
-
-- A pt-BR line naming a declared entity in Portuguese (a Fundição for the Kiln) is
-  `words.unknown-name`, and the only way out is listing it as ordinary, which hides a
-  misspelling and accepts the word in the English column too.
-- Every capitalised Portuguese menu word (VIDAS, OPÇÕES) joins the same shared list.
-
-Starship's thin workaround: "Brasil" (the language's own name) sits in its `[words]
-ordinary`.
-
-What polyweave should do:
-
-- An entity declares a form per locale, `[entity.kiln.names.pt_BR] name = "a
-  Fundição"`, with `plural` and `gender`, since Portuguese inflects around a noun. A
-  locale with no form keeps `name`, so a proper noun like SPINHOLD stays.
-- Each column is held to its own locale's forms; `ordinary.pt_BR = [...]` sits beside
-  the shared list.
-- `world.read` prints the name table per locale, so a prose glossary is generated.
-
-Done when a starship pt-BR line naming the Kiln in Portuguese passes, the same word in
-the English column is a finding, and `world.validate` refuses a locale form with no
-`name`.
-
 ### §PW335 Glyphs a string table needs and its fonts lack
 
 Met in starship (RK166), holding every screen of the game to its Brazilian Portuguese.

@@ -64,7 +64,6 @@
 
 ## Block Q — Words held to the world
 
-- 📋 **PW329** (deps: —) **words.check holds a translated column to the English names, so a name written in that language reads as unknown** — A second language cannot be checked against the world at all, and listing its names as ordinary also lets them leak into the English column unseen. → §PW329
 - 📋 **PW335** (deps: —) **no operation says which characters of a string table its fonts lack, so a missing accent shows only on screen** — A box or a borrowed system glyph reaches a player because only the project checked its own fonts. → §PW335
 
 ## Block R — Levels measured before a person plays them
