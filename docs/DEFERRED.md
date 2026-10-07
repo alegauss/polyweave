@@ -57,3 +57,5 @@
 
 ## Block U — A window on everything a project governs
 
+## Block V — Parts every game repeats, installed already proved
+

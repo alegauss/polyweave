@@ -417,6 +417,25 @@ drawn size against its rect and its container's, how many lines it took against 
 it was laid out for, and any other text whose rect it overlaps on screen. It runs per
 locale, so a project sweeps each screen in each language and a finding names the key.
 
+### §PW372 A camera clip the game plays
+
+Met in starship (RK190): a cinema opening before the first phase, with four camera shots
+of the city, each a position, a target and a slow drift over about 1.2 s, cut by a
+flash, then a glide back to the run's camera. The project's rule is that timing and
+curves are declared and built through polyweave, not set by eye.
+
+`clip.new`/`clip.set_key`/`clip.write` author a clip of joints and their properties, and
+`motion.bake` bakes one onto a skeleton. Nothing declares a camera move (a shot list
+with position, look-at, field of view, hold, drift, ease and cut), and nothing writes
+one the game can play, so the shots live in the project's own
+`game/ui/opening_shots.json`, read by `game/ui/opening.gd`, with no record and no spec.
+
+What polyweave should do: a camera clip, a clip whose channels are a camera's position,
+target and FOV (absolute or relative to a named anchor, here the ship's start on the
+ring), with cuts and holds. Plus an export the engine plays (a Godot Animation resource
+on a Camera3D, with its record), and a capture per shot so a person accepts the framing
+on the review page.
+
 ## Block I — Voxel models from a declaration
 
 ### §PW317 A voxel build's --set that is dropped
@@ -1044,6 +1063,11 @@ and its sha256, and lets `polyweave provenance outdated` say when the source has
 on, so a change to the studio badge in Cottony shows up as stale in every game that
 borrowed it.
 
+The same gap holds inside one project: starship keeps Godot out of art/ and the export,
+so its accepted store logo and icon (RK150, RK188) are copied by hand into
+game/ui/brand/ with no record; the operation should take a source path in this project
+too.
+
 Workaround: the PNG is copied by hand to `game/ui/brand/viglet_games_badge.png`, and
 `game/ui/splash.gd` names its source in a comment.
 
@@ -1318,3 +1342,540 @@ before handing the window over, and every friction filed as its own line in this
 It is not a test run. A change of plan that the owner asks for mid-way ("undo, try the
 other palette") is part of what is being proved, because a revision a person refines
 several times is the case this block exists for.
+
+## Block V — Parts every game repeats, installed already proved
+
+### §PW340 The kit contract
+
+Met across Starship and Cottony: both games wrote their own controls, settings and save
+code. Starship's game/core/bindings.gd names pad buttons in text for Xbox, PlayStation
+and a generic pad, with no Switch layout and no icons; Cottony has its own
+scripts/settings.gd and scripts/save_file.gd. An agent starting a third game writes them
+a third time, and what costs it is not the typing but the details only a run reveals (an
+orphaned focus neighbour, the Switch's swapped face buttons, a filter that leaves a
+resource out of the export), which nobody but a person at the screen can confirm today.
+
+What polyweave should do: a spec, docs/specs/kit.md, for a kit as a unit that lives in
+this repository under kits/<name>/ and carries a kit.toml (what it declares, installs
+and depends on, and its version), a core copied into the project's
+res://addons/polyweave/<name>/ and never edited there, a scene the project owns once
+installed, and the acceptance spec that proves it in the game it lands in.
+
+The contract every kit keeps is five steps: read the project, propose the declaration,
+install, prove, answer ready to decide. An agent's whole share is one call and one
+reading of the answer; a question left over is a person's decision, never an analysis
+for the agent. A kit carries no palette or theme of its own and assumes no genre.
+
+### §PW341 Installing a kit in one call
+
+The format of §PW340 says what a kit is; this is the operation that lands one.
+`kit.install <name>` reads the project (project.godot's renderer and main scene, the
+InputMap, export_presets.cfg, which kits are already in), writes the declaration it
+proposes into the project config only where the project has none, copies the core into
+res://addons/polyweave/<name>/ and the scene where the declaration says, and records the
+kit and its version in the provenance record, so provenance.read answers what the
+project carries and from where. It installs first whatever kit.toml names as a
+dependency.
+
+Then it runs the kit's own acceptance spec through accept.verify in the real game, and
+answers in the shape the tool surface spec asks of every operation: ok or the first
+finding with its remedy, the points of the scene meant to be changed, and any question
+that is a person's to answer (a verdict, a budget), never a file for the agent to read.
+A dry run (`write=false`, as project.init has) answers the same without writing
+anything.
+
+An installed kit is then part of the project's own gate, so a later change in the game
+that breaks it fails there and not in front of a player.
+
+### §PW342 Every kit proved in polyweave's own gate
+
+A kit is worth more than a snippet only while its proof holds, and a proof that runs
+only after install finds a broken kit in the consumer's tree. Each kit under kits/
+should carry a fixture, a minimal Godot project shaped to exercise it, and tools/gate.py
+should install every kit into its fixture and run the kit's acceptance spec headless
+against the Godot that godot.install fetches, saying per kit which held, which failed
+and which skipped for want of an engine, as the gate already says for the engine tests.
+
+A Godot upgrade in polyweave then re-proves every kit at once, which is what keeps a kit
+from rotting the way a copied snippet does. The fixture is also where a kit's
+dependencies are exercised together, the settings kit with the input and audio kits
+beside it, so a kit that only works alone is found here and not in a game.
+
+### §PW343 An installed kit that has fallen behind
+
+The provenance record of §PW341 names the kit and the version a project carries.
+provenance.outdated should name a kit whose version in polyweave is newer, with the
+changelog lines between the two.
+
+`kit.update <name>` replaces the core, which the project never edits: a core whose hash
+differs from the version recorded is a finding naming the files, never an overwrite. It
+leaves the scene alone, since the project owns it, and lists what the new version
+changed in its own copy of the scene for the agent to carry over. Then it re-runs the
+acceptance spec, so an upgrade lands proved or not at all.
+
+A project whose own fix belongs in the kit files it through the polyweave-friction
+skill, which is how a kit gets better from use: the fix ships as a new version here, and
+every other game that carries the kit hears of it from provenance.outdated rather than
+by luck.
+
+### §PW344 Button prompts for the pad in the player's hands
+
+Met in Starship: game/core/bindings.gd holds a GLYPHS table for xbox, playstation and
+generic, each button a text label ("CROSS", "LB") picked from the pad's name. There is
+no Switch layout, whose face buttons sit swapped, and no image.
+
+The kit reads the project's InputMap, declares the families the game supports (xbox,
+playstation, switch, keyboard and mouse), and installs a prompt service that knows the
+family in use from Input.get_joy_name and the last event, switches live when the player
+picks up another device, and draws an action's binding as an icon: a node for menus and
+a RichTextLabel tag ([action=jump]) for tutorial text.
+
+The icons are a declared set. A CC0 set ships with the kit (Kenney's input prompts), and
+the declaration can point at another, since console certification asks for the platform
+holder's own glyphs, which this repository must never carry.
+
+Proof: every action has an icon in every declared family; a game.input from another
+family changes what is drawn; an icon's legibility over its backdrop is held by
+measure.contrast.
+
+### §PW345 Rebinding the controls
+
+Starship's game/core/bindings.gd is the source. An action's binding is stored as codes a
+settings file can hold (key:<physical keycode>, button:<n>, axis:<n>:<-1 or 1>); keys
+and pad are two halves replaced independently; a code another action already holds is
+swapped, never shared; a reset goes back to the declared defaults; and the stick's
+deadzone and inverted vertical sit beside them. What is Starship's own, its actions and
+its twin-stick fire, becomes the declaration.
+
+The kit installs the binding store and a remap screen built on the prompt service of
+§PW344, so every binding is shown in the icons of the device in use.
+
+Proof, driven through the game: open the screen with the pad alone, rebind an action,
+press the new button and query the InputMap; rebind onto a code another action holds and
+see the swap; restart the game and find the binding kept; reset and find the defaults.
+
+### §PW346 Menus a pad can drive
+
+A main menu, a pause menu and a yes-or-no confirm are in every game, and the failure
+that costs is silent: a control no focus neighbour reaches, a back button that follows
+one platform's convention on all of them, a pause that leaves the game ticking
+underneath. The kit installs those three screens on the prompt service of §PW344, with
+back and confirm bound to the convention of the family in use, and pauses through the
+scene tree's pause and each node's process mode.
+
+Proof: a walk of every focusable control by pad events alone reaches each one and comes
+back; back from every screen lands where the declaration says; the game's own time does
+not advance while it is paused.
+
+The look is the project's Theme, never the kit's. A panel, a frame or a stylebox the
+menus draw is §PW316's to declare and build, so this kit owns the behaviour and nothing
+of how it looks.
+
+### §PW347 An options screen assembled from the kits
+
+Cottony's scripts/settings.gd and Starship's SettingsStore, fed by the options() rows in
+bindings.gd, are two versions of one thing. The kit installs a settings store in
+user://, versioned so that a key renamed in a later build migrates, and an options
+screen whose tabs are contributed by the kits present: controls from the remap kit of
+§PW345, and audio, language, accessibility and graphics from their own kits in this
+block, plus any rows the project declares for itself. A kit that contributes a tab
+declares it in its kit.toml, so this screen names no kit it does not find installed.
+
+Proof: every row changes what it says it changes, read back in the running game after
+the change (a bus volume, a window mode, a locale); every value survives a restart; an
+unknown or renamed key in an older file is kept or migrated, never a crash and never a
+silent reset of the player's choices.
+
+The screen is navigable by pad through the menus kit of §PW346, so it inherits that
+kit's focus walk as part of its own proof.
+
+### §PW348 Saves that survive a crash and an update
+
+Cottony has scripts/save_file.gd and tests/save_test.gd, its own answer to a question
+every game asks. The kit installs a save service with slots; it writes through a
+temporary file and a rename, so a crash mid-write leaves the last good save in place; it
+carries a schema version with migration functions the project declares; and it falls
+back to the previous save when the current one fails to parse.
+
+What is saved is the project's: the kit takes a dictionary from the game and never names
+a field, so it fits a puzzle game and a shooter alike.
+
+Proof, all automatic: stop the game between the write and the rename and load the old
+save; corrupt the file and open the game; load a version-1 file into version 2 through
+the declared migration; fill every slot and read each back. None of it needs a person,
+which makes this one of the cheapest kits to keep proved.
+
+### §PW349 From launch to the first menu
+
+Cottony has scripts/splash.gd, and every game has some version of it. The kit installs a
+declared splash sequence (logos and their durations), skippable by any button of any
+family, followed by a threaded load (ResourceLoader.load_threaded_request) into the main
+scene, and a scene transition service with a loading screen that every later change of
+scene goes through.
+
+Proof: the time from launch to the main menu is measured and held to a declared budget;
+a skip from each declared family ends the splash; no frame during a transition exceeds
+the frame budget, read from frame times at a percentile and never at a mean, so one long
+hitch is not averaged away by a hundred short frames.
+
+The logos are the project's and so is the look of the loading screen; the kit owns the
+order, the timing and the threading.
+
+### §PW350 A credits screen from the provenance record
+
+provenance.credits already answers, from the record, who made what and under which
+licence. The kit installs a credits scene that reads a file generated from that answer
+at build time, beside the people and roles the project declares, so the screen lists
+exactly what the game ships and nothing it no longer does.
+
+Proof: every record whose licence requires attribution appears on the screen; nothing is
+listed that the record does not hold; the scene scrolls at a declared rate and is
+skippable by any family. A generated file older than the record is a finding, so an
+asset added after the last build cannot ship uncredited.
+
+It is the cheapest kit in the block, since the answer it draws exists already, and the
+one whose failure is a legal one rather than a bug.
+
+### §PW351 The audio runtime a game needs
+
+Cottony has scripts/music.gd and scripts/sound.gd, its own version of what every game
+with sound writes. The kit installs a declared bus layout (Master, Music, SFX, UI and
+Voice by default), a music player that crossfades between tracks and ducks under voice,
+a pooled sound player with pitch variation so a repeated sound does not machine-gun, and
+UI sounds wired to the menus kit's focus and confirm.
+
+Proof: each bus exists and routes as declared; a crossfade leaves no gap and no
+clipping; sound.measure holds each bus's loudness to its declared target in a captured
+scene, the same measure Block P holds a track to, so a track mastered right cannot be
+made wrong by the bus it plays through.
+
+The bus volumes are what the settings kit of §PW347 shows as an audio tab, which is why
+the layout is declared once here and read there.
+
+### §PW352 The string table on screen in every language
+
+Block Q checks a string table against the world the person declared, and §PW335 finds
+the characters its fonts lack. Neither puts the table on screen. This kit is that
+runtime half: it loads the [words] table into Godot's TranslationServer, installs a
+language selector for the settings kit of §PW347, sets fallback fonts per script (CJK,
+Cyrillic, Arabic) as the project declares them, and picks the system locale on first
+launch when the game supports it.
+
+Proof: switching to each locale changes every visible label of a captured screen; no key
+ever shows its raw name; with §PW335, no character falls to a box or a borrowed system
+glyph; a line that grows in translation still fits its control, measured on the capture
+rather than assumed.
+
+The words themselves stay the project's and the person's, held by Block Q; the kit only
+carries them to the screen.
+
+### §PW353 A dialogue box
+
+Cottony has scripts/dialog.gd. The kit installs a dialogue box that types a line at a
+declared rate, completes it on the first press and advances on the next, by the confirm
+button of the family in use (§PW344), with an optional portrait and speaker name,
+reading each line by its key from the string table so that a translation needs no change
+here.
+
+Proof: every line of a declared sequence is reachable by pad alone; a skip completes a
+line without dropping any of it; the text fits its box in every locale, measured on a
+capture, which is where a longer translation overflows without anyone noticing.
+
+The kit carries no line of its own and orders none: the sequence and the words are the
+project's, so it never comes near "Writing a game's story for it".
+
+### §PW354 Flashes counted in a capture
+
+Guidance on photosensitive seizures (WCAG 2.3.1, and the Harding test broadcasters use)
+limits a sequence to three general or red flashes in any one second, a flash being a
+pair of opposing luminance changes beyond a threshold over a large enough area of the
+screen. capture.movie already records a run of the game; nothing reads that recording
+for this.
+
+What polyweave should do: measure.flashes over a capture, answering the worst second,
+the count of flashes in it, the share of the screen involved and the frame where it
+starts, with the threshold and the area taken from the guidance by default and
+overridable in the project config.
+
+It is a measure, so an acceptance spec and the accessibility kit can both hold a game to
+it. It certifies nothing beyond the run it measured, and its answer says so: a flash in
+a scene nobody captured is not found.
+
+### §PW355 Accessibility options with their effect measured
+
+The kit adds an accessibility tab to the settings kit of §PW347: a text scale applied
+through the project's Theme; colourblind filters as a full-screen shader (protanopia,
+deuteranopia and tritanopia, as simulation and as correction); subtitles for the lines
+the voice bus plays; a switch for screen shake and for flashes, which the game's own
+effects consult through the kit; and hold-or-toggle for held actions.
+
+Proof: at the largest text scale no label overflows on a captured screen; the colour
+pairs the project declares must stay apart stay apart under each filter, by
+measure.contrast; with flashes switched off, measure.flashes (§PW354) finds none over a
+declared run; with shake off, the camera's offset stays at zero through a declared run.
+
+A filter or a scale is measured, never judged by the agent; whether the result still
+looks like the game is a person's verdict, as every look is here.
+
+### §PW356 A pad that leaves, a window that loses focus
+
+When a joypad disconnects mid-game (Input.joy_connection_changed), the kit pauses the
+game and says whose pad left, in the prompts of that pad's family (§PW344); it resumes
+when the pad reconnects or another pad confirms. When the game's window loses focus it
+pauses too, unless the project declares otherwise, as a game meant to run in the
+background would.
+
+Proof, driven: a simulated disconnect pauses the game and shows the prompt in the family
+of the pad that left; a reconnect resumes it; a focus-out pauses it and a focus-in
+leaves it paused until the player says so. Starship's local co-op is where two pads make
+the first of these matter most, since the wrong player's pad leaving is the case a
+single-player test never meets.
+
+### §PW357 A second player on the same machine
+
+Starship's game/core/coop.gd and the coop_device kept in bindings.gd hold a second
+player's pad apart from the first one's, and a rebind there keeps the two pads apart.
+The kit installs a join flow (press to join on any unassigned pad), a device-to-player
+map the input layer filters every event by, and per-player bindings through the remap
+kit of §PW345.
+
+Proof, driven with two simulated pads: both join as two players; an event from one never
+moves the other; a rebind on one leaves the other's bindings alone; a leave frees the
+pad for the next to join; with the pad lifecycle kit present, the pad that disconnects
+is named as that player's.
+
+How many players a game takes, and what a player is in it, are the project's
+declaration; the kit assumes neither a genre nor a split screen.
+
+### §PW358 A project that imports and parses clean
+
+Godot 4 refers to resources by UID, and since 4.4 a script carries a .uid file beside
+it. Moving a file without its .uid, or editing a .tscn as text, leaves a reference that
+resolves to nothing until that scene is loaded; a script with a parse error waits the
+same way. An agent moves and writes files without the editor open, so it meets both, and
+today learns of them from a person or from a crash.
+
+What polyweave should do: a check, part of project.check or an operation of its own,
+that imports the project headless, parses every script (--check-only), and reports each
+UID or path reference that resolves to nothing, each .uid left without its file, each
+.import out of date with its source, and each resource nothing references, every one
+with its file and line and the call that fixes it where one exists.
+
+It belongs in the project's gate, and it is the cheapest item in this block for the most
+turns saved, since nothing about it needs a person or a GPU.
+
+### §PW359 A game's state declared for reading
+
+game.query reads whatever the driver can reach, but which values matter (the player's
+health, the current scene, the enemy count, the seed) lives only in the agent's head for
+one session. So it adds a print, runs the game, reads the output and removes the print,
+and the next session does it again.
+
+The kit lets the project declare named paths into its state, each a node path and a
+property or a method that returns a dictionary, installs an autoload that exposes them
+to the driver, and gives game.query those names, so `game.query health` answers without
+the agent knowing where health lives.
+
+Proof: every declared name answers in the running game with its declared type, and a
+name whose node is gone is a finding naming it. The same surface is what a crash dump
+writes and what a determinism check compares between two runs, so it is declared once
+and read three ways.
+
+### §PW360 The same run twice
+
+The kit installs a central random service seeded from the declaration or the command
+line, which the project's code draws from instead of the global randf, and a record of
+input events stamped with their physics frame. A run is then reproducible from its seed
+and its record.
+
+Proof: two runs with the same seed and the same input end in the same observable state
+(§PW359), compared name by name; a run that diverges is answered with the first frame
+and the first name that differ, which usually points at the one call to the global
+random someone forgot.
+
+A divergence, or any bug seen once, is then saved with its seed and recording as a
+game.keep flow, so game.replay runs it in the gate from then on. That is the step that
+turns a report of "it happened once" into a test that fails until it is fixed, without
+the agent guessing at the cause first.
+
+### §PW361 What a crash leaves behind
+
+The kit installs structured logging (level, time, physics frame, current scene) to a
+rotating file in user://. On an error it writes the last lines beside a dump of the
+observable state of §PW359 and, when the determinism kit is present, the seed and the
+input record so far. A crash that kills the process leaves the log up to its last flush,
+and the next launch notices the unclean exit and packs what is there.
+
+An operation reads such a capture back, from the user:// of this machine or a file a
+person sends, and answers the first error, the script and line that raised it, and the
+state at the time, so the agent starts from facts rather than from a retelling.
+
+Proof: an error forced in the fixture leaves the capture, and reading it back names the
+forced error with its script and line; a process killed mid-run is reported as an
+unclean exit on the next launch.
+
+### §PW362 One way to run a game's tests
+
+Starship runs dev/check.gd; Cottony keeps tests/*.gd with its own runner. Each is fine
+alone, and each is a thing a new session must discover before it can tell whether its
+change broke anything.
+
+The kit installs a headless test runner that finds the project's tests by a declared
+convention, adopts the tests that already exist without rewriting them, and answers in
+one shape: the counts first, then each failure with its file, line and message, the same
+shape polyweave's other answers take. It wires itself into the project's tools/gate, so
+running the gate runs the game's tests too.
+
+Proof: the fixture's passing and failing tests are reported as such; a parse error in a
+test file is a failure with its line, never a silent skip; a test that hangs is stopped
+at a declared timeout and named.
+
+### §PW363 The exported build, launched
+
+game.release_check reads the export presets and a .pck to make sure the driver does not
+ship. What it cannot see is a build that fails at run time: a resource an export filter
+excluded, an autoload whose script was stripped, a feature the target renderer lacks.
+The editor runs from the project folder, so every one of these works there and fails
+only in the exported binary.
+
+What polyweave should do: an operation that exports each declared preset for the host
+platform, launches the binary, runs a short kept flow (game.keep) through to the main
+menu and back out, and answers per preset whether it held, with the log of any that did
+not.
+
+The driver must never ship in a release, which is what game.release_check exists to
+hold, so the smoke run uses a debug export of the same preset or a driver loaded from
+outside the pack, and the answer says which of the two it ran against, since a pass on
+the debug build proves less than a pass on the release.
+
+### §PW364 Data tables with a schema
+
+Games keep their tuning in tables: enemies, items, waves, prices. Read as loose JSON or
+CSV, a "10" typed as a string or a field misspelled reaches the game and shows as a
+wrong number in play, found by whoever happens to notice.
+
+The kit lets a project declare a table, a CSV or JSON file and the schema of one row,
+which is the project's own and assumes no genre, so it stays clear of the non-goal on
+one genre's level format. It validates every row with schema.validate in the gate, and
+generates a typed Resource per table that the game loads, with a reload in a debug build
+so a tuned value shows without a restart.
+
+Proof: a row with a wrong type or a missing required field is a finding naming the file,
+the row and the column; the game reads a value back through the generated Resource
+exactly as declared; a table edited while the debug build runs is picked up by the
+reload.
+
+### §PW365 A performance budget the gate holds
+
+Cottony keeps tools/perf/ (board3d_beside.gd, cascade.gd and others), started by hand,
+which PW56 names too. Each measures, prints, and leaves the comparison with last week to
+whoever remembers last week's number.
+
+What polyweave should do: let a project declare budgets per scene (frame time at p95 and
+p99, never a mean, which is the doctrine of Cottony's art pipeline; load time; peak
+memory; node count), and an operation that drives each scene through a declared run,
+measures, writes a baseline the first time, and answers each budget held or exceeded and
+how far each moved from the baseline.
+
+A measure holds only on the machine that took it, and the answer names that machine's
+GPU and driver. On it the gate catches a regression; it never certifies a player's
+hardware, and a machine with no GPU skips with that reason rather than passing. The
+graphics kit's preset search reads its frame times from here.
+
+### §PW366 Graphics presets and a renderer fallback
+
+The kit reads the project's renderer, whether its scenes are 3D or 2D, and which costly
+features its environments use (SDFGI, SSAO, volumetric fog, shadows), and installs
+presets that touch only what the game uses. For 3D: render scale with Godot's built-in
+upscalers (FSR 1 and FSR 2), anti-aliasing (MSAA, TAA, FXAA), shadow and effect quality,
+and a frame cap. For 2D: the stretch mode and integer scaling. It picks a first preset
+from RenderingServer's adapter vendor and name, adds a graphics tab to the settings kit
+of §PW347, and falls back to the Compatibility renderer when Vulkan fails to start.
+
+Vendor SDKs (DLSS, Reflex, XeSS) stay out: their licences keep them from shipping here
+and Godot builds in none of them, so a kit per GPU maker would be the wrong unit.
+
+Proof: every preset applies what it declares, read back from the running game; a launch
+with a driver forced to fail reaches the menu on the fallback.
+
+### §PW367 Presets found by search
+
+Cottony's render rig shows the cost: every constant of it was found by hand at two
+minutes a sample. A graphics preset is the same problem in another place, a handful of
+settings tuned until it looks right and runs fast enough on one machine.
+
+With the frame budget of §PW365 and the settings space of §PW366, engine.sweep can
+search, for each preset, the combination that fits its declared budget at p95 and loses
+least against the native full-quality frame, scored by measure.same on a captured scene.
+The answer per preset is its settings, its frame time, its visual loss, and the feature
+that costs most on that scene, so a sentence such as "SDFGI costs 5.9 ms here" arrives
+without anyone profiling by hand.
+
+How much visual loss is acceptable is taste, so a preset that trades quality for its
+budget goes to the verdict page and the agent never accepts it. The search holds for the
+machine it ran on, as §PW365 says of every measure.
+
+### §PW368 Declared states and transitions
+
+Menus, characters and the flow of a game are each a state machine written by hand, and
+the failure is structural: a state no transition reaches, or one with no way out that
+was not meant to be final, found only by a person who walks into it.
+
+A kit could let the project declare its states and transitions, generate the skeleton
+the code fills in, and check in the gate that every state is reachable from the start
+and has an exit unless it is declared final. The check is the valuable half, since it
+needs no run.
+
+It is the most opinionated kit in this block: games structure their state very
+differently, and a skeleton that suits one may fight the next. So it stays an idea until
+Starship and Cottony both show code it would replace, at which point the shape it should
+take is read off that code rather than invented here.
+
+### §PW369 A game born adopted
+
+project.init adopts a tree that already exists, which is the right door for Starship and
+Cottony and the wrong one for the next game, which would be created bare and adopted
+afterwards with its first weeks of hand-rolled code to undo.
+
+A new game should start from one call that creates the Godot project; the repository's
+.gitignore and .gitattributes, with Git LFS for binaries; the project config with
+project.init already run; a gate holding the test runner of §PW362 and the hygiene check
+of §PW358; and whichever base kits its declaration asks for, typically input, menus,
+settings and save, each installed by kit.install with its proof.
+
+Proof: the new project's gate passes on its first commit, project.check reports it
+clean, and provenance.read lists every kit it carries with its version. From then on the
+game never has a version of these parts of its own to migrate away from.
+
+### §PW370 Starship onto the input kits
+
+The prompt, remap and co-op kits (§PW344, §PW345, §PW357) are extracted from Starship's
+game/core/bindings.gd, controls.gd and coop.gd. Starship then adopts them, which is the
+decision that every project adapts to polyweave rather than the other way round: its
+actions and options become the kit's declaration, its own input code is removed, its
+Controls tab becomes the kit's screen under Starship's Theme, and the checks in
+dev/check.gd that cover the same ground give way to the kits' acceptance specs.
+
+Whatever Starship needs that the kits lack is filed here as friction and fixed in the
+kit, never patched in the game, so the extraction ends with one copy of the code and not
+two.
+
+Done when Starship carries no input code the kits provide, its gate passes on the kits'
+proof, and provenance.read names each kit with its version.
+
+### §PW371 Cottony onto the settings and save kits
+
+Cottony's scripts/settings.gd, and scripts/save_file.gd with tests/save_test.gd, are a
+second instance of what §PW347 and §PW348 provide, written without either kit in mind.
+Moving Cottony onto them proves the kits against a game they were not extracted from,
+which is the non-goal on one project's palette, rig or paths compiled in, checked in
+practice rather than asserted.
+
+Players' existing save files must load through the kit's declared migration, so no one
+loses progress on the update that swaps the code; that is part of the proof, not a
+follow-up.
+
+What Cottony needs that the kits lack is filed as friction and fixed in the kits. Done
+when Cottony carries neither file, its own save test is replaced by the kit's
+acceptance, a save written by the current release loads after the swap, and its gate
+passes.
