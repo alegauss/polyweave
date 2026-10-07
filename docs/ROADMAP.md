@@ -26,6 +26,7 @@
 - 📋 **PW331** (deps: —) **a set of small 2D icons, such as a pad's button prompts, cannot be declared, built or accepted** — A game's prompts must draw each button as the pad shows it, in detail, and with no operation for it the project would have to draw them by hand. → §PW331
 - 📋 **PW336** (deps: —) **nothing reads a held screen for text leaving its box or lying over other text, so a fit is judged by eye** — A longer translation breaks a layout unseen until a person happens to look at that screen. → §PW336
 - 📋 **PW372** (deps: —) **a camera move cannot be declared as a clip or played by the game, so a cutscene's shots are numbers in the project** — A cinema opening's framing and timing are set by eye in the game's own data, with no record, spec or review page. → §PW372
+- 📋 **PW373** (deps: —) **game.shot answers success and a path when the save failed, and never makes the folder it is given** — A worker builds on frames that do not exist, and learns only when a later operation refuses the missing file. → §PW373
 
 ## Block I — Voxel models from a declaration
 
@@ -87,7 +88,7 @@
 
 ## Block U — A window on everything a project governs
 
-- 📋 **PW299** (deps: —) **nothing lists every item a project governs, so a picture, sound or line is found only by knowing its path** — project.inventory lists each governed item by kind with its declaration, artefact, record state and pending verdict, the first read a window or an agent needs. → §PW299
+- 🛠 **PW299** (deps: —) **nothing lists every item a project governs, so a picture, sound or line is found only by knowing its path** — project.inventory lists each governed item by kind with its declaration, artefact, record state and pending verdict, the first read a window or an agent needs. → §PW299
 - 📋 **PW300** (deps: PW299) **asset.brief reads a geometry declaration only, so a picture, sound, effect or line has no one-read state** — asset.brief answers for every kind the inventory lists, so a session opened on any item starts from one read. → §PW300
 - 📋 **PW301** (deps: PW299) **a person's request to change one item lives only in a chat, so no run, sitting or record ties it to the item** — A revision is a line in .polyweave/revisions.jsonl naming the item, its digest, a mask and the person's words; revision.open and revision.close carry it through a run. → §PW301
 - 📋 **PW302** (deps: —) **the plugin is sourced from the repository root, so a desktop app added to the tree ships in every adopter's cache** — The marketplace names a plugin folder holding only what Claude Code loads, so gui/ can live in this repository without reaching an adopter. → §PW302
