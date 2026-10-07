@@ -1,0 +1,14 @@
+{
+  "name": "@pw/shell",
+  "private": true,
+  "version": "0.0.0",
+  "description": "The only place a path or a process appears: the server each open project holds, and the disk core is handed.",
+  "type": "module",
+  "main": "./src/index.ts",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@pw/core": "*"
+  }
+}

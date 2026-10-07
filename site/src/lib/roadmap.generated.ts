@@ -313,7 +313,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW303",
     block: "U",
     symptom: "there is no desktop window that finds the projects on a machine using polyweave and opens one",
-    why: "The ui package (React, the locale catalogs) and the Electron shell that spawns the server and owns every path are still to build on core.",
+    why: "The Electron main process with its sandboxed renderer and preload bridge, and the ui package drawing from the en and pt-BR catalogs, are still to build.",
     deps: [],
   },
   {

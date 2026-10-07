@@ -358,7 +358,7 @@
 - ✅ **PW300** **asset.brief reads a geometry declaration only, so a picture, sound, effect or line has no one-read state** — asset.brief reads a cue as music.validate, an sfx or vfx effect as its table and measures, a picture as its style family, and any inventory id (design recorded in `docs/specs/inventory.md`).
 - ✅ **PW301** **a person's request to change one item lives only in a chat, so no run, sitting or record ties it to the item** — revision.ask keeps a person's request against an item's digest; revision.open lists open ones with briefs, and revision.close ends one (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW302** **the plugin is sourced from the repository root, so a desktop app added to the tree ships in every adopter's cache** — The marketplace sources plugin/, holding only the manifest, hooks and skills; a scratch install cached just those, and project.check passed (design recorded in `docs/specs/adoption.md`).
-- ✅ **PW303 (the core package)** **there is no desktop window that finds the projects on a machine using polyweave and opens one** — gui/ holds core: an MCP client over a held polyweave serve, project discovery by polyweave.toml, engine choice and the inventory reader, run by the gate.
+- ✅ **PW303 (core and the shell's held servers)** **there is no desktop window that finds the projects on a machine using polyweave and opens one** — gui/ holds core (MCP client, discovery, engine choice, inventory reader) and a shell holding one real polyweave serve per project, both run by the gate.
 
 ## Block V — Parts every game repeats, installed already proved
 
