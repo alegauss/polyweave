@@ -1964,6 +1964,82 @@ section.band {
   font-size: 0.9rem;
 }
 
+/* ---------- made with polyweave ---------- */
+.games {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+  max-width: 920px;
+  margin: 0 auto;
+}
+@media (max-width: 720px) {
+  .games {
+    grid-template-columns: 1fr;
+  }
+}
+.game {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  overflow: hidden;
+  transition: transform 0.2s ease, border-color 0.2s, box-shadow 0.25s;
+}
+.game:hover {
+  transform: translateY(-4px);
+  border-color: rgba(122, 90, 248, 0.5);
+  box-shadow: 0 22px 50px -28px rgba(122, 90, 248, 0.7);
+}
+.game-stage {
+  display: grid;
+  place-items: center;
+  height: 190px;
+  padding: 26px 34px;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(122, 90, 248, 0.32), transparent 65%),
+    #0c0a18;
+}
+.game-stage img {
+  max-width: 100%;
+  max-height: 128px;
+  object-fit: contain;
+}
+.game-body {
+  padding: 20px 22px 22px;
+}
+.game-kind {
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+.game h3 {
+  font-size: 1.3rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+}
+.game p {
+  color: var(--muted);
+  font-size: 0.93rem;
+  margin-bottom: 12px;
+}
+.game h3 a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+.game p.game-link {
+  margin-bottom: 0;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--accent);
+}
+
 /* ---------- the demo ---------- */
 .demo {
   max-width: 860px;
@@ -2356,6 +2432,7 @@ section.band {
   .sponsor-product:hover,
   .card:hover,
   .tile:hover,
+  .game:hover,
   .part-chip:hover,
   .link-card:hover,
   .btn:hover {

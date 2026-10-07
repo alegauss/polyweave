@@ -279,6 +279,37 @@ export const heroParts: { icon: IconName; label: string }[] = [
   { icon: "kit", label: "Kits" },
 ];
 
+/* ------------------------------------------------------------------ made with it */
+
+// The games polyweave is built against and used on. Each logo is copied from the game's own
+// repository into public/showcase/, so the page fetches nothing from their sites.
+export const showcase = {
+  eyebrow: "Made with polyweave",
+  heading: "Real games, made with it.",
+  intro: [
+    "Viglet Games makes its games with polyweave. Both are in development for Steam.",
+  ] as Rich,
+  games: [
+    {
+      name: "Cottony",
+      kind: "A plush match-3",
+      body: "Hearts, drops, stars and buttons made of felt, that squash when they land and puff when they pop.",
+      url: "https://cottony.viglet.com/",
+      site: "cottony.viglet.com",
+      logo: "/polyweave/showcase/cottony-logo.webp",
+    },
+    {
+      name: "Spinhold",
+      kind: "A neon ring shooter",
+      body: "Fly round the outside of a spinning colony, shoot the Lattice into cubes and bring its people home.",
+      // http until its certificate is issued; switch to https then.
+      url: "http://spinhold.viglet.com/",
+      site: "spinhold.viglet.com",
+      logo: "/polyweave/showcase/spinhold-logo.svg",
+    },
+  ],
+};
+
 /* ------------------------------------------------------------------ session */
 
 export const session = {

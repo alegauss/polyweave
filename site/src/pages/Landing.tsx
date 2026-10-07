@@ -4,6 +4,7 @@ import { Hero } from "../components/sections/Hero";
 import { Gains } from "../components/sections/Gains";
 import { Steps } from "../components/sections/Steps";
 import { Makes } from "../components/sections/Makes";
+import { Showcase } from "../components/sections/Showcase";
 import { Demo } from "../components/sections/Demo";
 import { Middle } from "../components/sections/Middle";
 import { Review } from "../components/sections/Review";
@@ -14,7 +15,7 @@ import { Explore } from "../components/sections/Explore";
 // The landing page, and the section order is the pitch:
 //
 //   hero (what it is, in one picture) → what Claude Code gains (the reason to install it)
-//   → how it works → what it makes → see it run → the models it sits in front of
+//   → how it works → what it makes → the games made with it → see it run → the models it sits in front of
 //   → the review page (where the person decides) → why it is safe → install → go deeper.
 //
 // Claude Code comes first because it is the operator: every section answers what it can
@@ -27,6 +28,7 @@ export function Landing() {
       <Gains />
       <Steps />
       <Makes />
+      <Showcase />
       <Demo />
       <Middle />
       <Review />
