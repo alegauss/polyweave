@@ -636,19 +636,23 @@ def verify(
     project's layout compiled in.
 
     `passed` is false when any artefact fails, is missing, or its spec is refused, so a
-    CI job fails on it; an unanchored spec is said, not failed.
+    CI job fails on it; an unanchored spec is said, not failed. So is `parted`, a spec
+    whose artefact renders a mesh its asset's declaration does not build (§PW298).
 
     A spec with a `screen` gets a second answer, on the capture (§PW112), and the spec
     fails where either does. Where the bake passes and the screen fails, `disagree`
     says the engine draws it differently, which is the finding the second check is for.
     """
-    from . import provenance
+    from . import brief, provenance
     from .config import load as load_config
 
     here = Path(root).resolve()
     folder = Path(under) if under else load_config(here).path("paths.specs")
     folder = folder if folder.is_absolute() else here / folder
     results = []
+    # Read once for every spec: which asset is declared where, and built into what.
+    declared: dict | None = None
+    built: dict | None = None
     for found in sorted(folder.rglob(f"*{SUFFIX}")) if folder.is_dir() else ():
         one = {"spec": provenance.relative(found, here)}
         try:
@@ -657,6 +661,13 @@ def verify(
             results.append({**one, "status": "refused", "refusal": refused.as_dict()})
             continue
         one.update(asset=spec.asset, artefact=spec.artefact, **_baked(spec, here))
+        if spec.artefact:
+            if declared is None:
+                declared, built = brief._declarations(here), brief._builds(here)
+            gone = brief._parted(declared.get(spec.asset), spec.artefact, here, built)
+            if gone:
+                # Said, not failed: which model the spec should hold is a person's call.
+                one["parted"] = gone
         if spec.screen:
             one["screen"] = _attempt(lambda s=spec: check_screen(s, root=here))
             one["status"] = _worse(one["status"], one["screen"]["status"])

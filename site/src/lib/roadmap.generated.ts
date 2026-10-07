@@ -74,7 +74,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW298",
     block: "H",
     symptom: "asset.brief calls a spec current while its render is of a mesh the game stopped drawing when voxels replaced it",
-    why: "A premise held on a model no player sees is not held at all, and nothing says the two have parted.",
+    why: "A spec cannot yet name its declaration's build as its subject, so render.bake renders that build at the rung instead of a mesh path.",
     deps: [],
   },
   {

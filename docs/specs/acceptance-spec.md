@@ -289,6 +289,15 @@ given a path guessed from its name, which would be one project's layout compiled
 answer's `passed`, and the command's exit status, fail on anything failed, missing or
 refused, so a CI job can stand on it. An unanchored spec does not fail.
 
+**A spec holds the model the declaration builds** (§PW298). Where the asset has a
+geometry declaration whose built output has a record, and the artefact's own record says
+it was rendered from a different mesh, `verify` gives the spec a `parted` answer. The
+same answer comes back from `asset.brief`. It names the declaration, what the declaration
+builds and the mesh the render was made from. The artefact can still match its record
+while the spec measures a mesh the project has replaced. `parted` is reported and does not
+fail the spec. Moving the spec onto the build may need its bounds set again, and a
+person sets those.
+
 **The same bar holds on screen** (§PW112). Once the game loads a mesh, its material is what
 the player sees and the bake is a reference. `screen = { capture = "captures/title.png",
 region = "star" }` names a capture and a rectangle its script printed (see

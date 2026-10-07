@@ -90,3 +90,52 @@ def test_an_asset_nothing_names_is_refused_with_the_ones_that_exist(tmp_path):
     with pytest.raises(PolyweaveError) as refused:
         brief.brief("crat", root=str(root))
     assert "crat" in refused.value.message
+
+
+def rendered_from(root, mesh: str, built: str = "assets/crate.glb"):
+    """The declaration built into `built`, and the spec's render made from `mesh`."""
+    for one in {mesh, built}:
+        (root / one).parent.mkdir(parents=True, exist_ok=True)
+        (root / one).write_bytes(b"glTF" + one.encode())
+    provenance.write(
+        provenance.build(
+            "mesh",
+            root / built,
+            root=root,
+            inputs=[provenance.source("declaration", "shapes/crate.toml", root)],
+        ),
+        root=root,
+    )
+    provenance.write(
+        provenance.build(
+            "render",
+            root / "renders" / "crate.png",
+            root=root,
+            inputs=[provenance.source("mesh", mesh, root)],
+        ),
+        root=root,
+    )
+
+
+def test_a_render_of_a_mesh_the_declaration_no_longer_builds_is_said(tmp_path):
+    # §PW298: the spec measured the bought mesh while the game drew the voxel build.
+    from polyweave import accept
+
+    root = project(tmp_path)
+    rendered_from(root, "assets/models/crate.glb")
+    found = brief.brief("crate", root=str(root))
+    assert found["artefact"]["matches_record"] is True
+    assert found["parted"]["rendered_from"] == "assets/models/crate.glb"
+    assert found["parted"]["built"] == ["assets/crate.glb"]
+    assert found["parted"]["declaration"] == "shapes/crate.toml"
+    checked = accept.verify(str(root), under="docs/accept")["specs"][0]
+    assert checked["parted"]["rendered_from"] == "assets/models/crate.glb"
+
+
+def test_a_render_of_the_build_is_not_parted(tmp_path):
+    from polyweave import accept
+
+    root = project(tmp_path)
+    rendered_from(root, "assets/crate.glb")
+    assert brief.brief("crate", root=str(root))["parted"] is None
+    assert "parted" not in accept.verify(str(root), under="docs/accept")["specs"][0]

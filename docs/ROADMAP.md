@@ -19,7 +19,7 @@
 - 📋 **PW57** (deps: PW53 ⏸) **every Cottony look gate restates its own floor, so no asset has a bar a search can aim at** — Five check scripts measure after the render is spent, which is a verdict and never a target, and a threshold moved in one of them is invisible to the rest. → §PW57
 - 📋 **PW59** (deps: PW53 ⏸, PW54 ✅, PW55 ✅, PW56 ⏳, PW57, PW58 ✅) **nothing says how much of Cottony still does its own version of what the plugin does** — Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion. → §PW59
 - ⏳ **PW56** (deps: PW57) **twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent** — The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question. → §PW56
-- 🛠 **PW298** (deps: —) **asset.brief calls a spec current while its render is of a mesh the game stopped drawing when voxels replaced it** — A premise held on a model no player sees is not held at all, and nothing says the two have parted. → §PW298
+- ⏳ **PW298** (deps: —) **asset.brief calls a spec current while its render is of a mesh the game stopped drawing when voxels replaced it** — A spec cannot yet name its declaration's build as its subject, so render.bake renders that build at the rung instead of a mesh path. → §PW298
 - 📋 **PW312** (deps: —) **geometry.describe warns a param no node reads when every node reads it, if its name is also a function** — A warning that is sometimes false teaches a reader to ignore all of them. → §PW312
 - 📋 **PW315** (deps: —) **a vector logo cannot be rendered to a game texture, whole or in its layers, with a record naming the SVG** — The game's logo drifts from the store's, and a ring that turns or a glow that pulses has no layer to move. → §PW315
 - 📋 **PW316** (deps: —) **a menu panel, frame or stylebox cannot be declared, built or held to a spec, so a game draws its UI kit by hand** — A menu's look is then numbers chosen in code, with nothing but a verdict on a screenshot to hold it. → §PW316
@@ -180,6 +180,13 @@
   Cottony family, a person answers on the review page, the ledger holds that verdict
   through judge alone, and the agent's next candidate follows from verdict.answers with
   no chat message in between.
+
+## Done when — PW298
+
+- **A spec can name its declaration's build as the subject it renders** A spec naming
+  the declaration's build is rendered by render.bake from that build at the rung, with
+  no mesh path written by hand, and a test checks that the render's record names the
+  built mesh.
 
 ## Non-goals
 

@@ -279,11 +279,11 @@ and a coloured voxel model can never meet them. So the spec cannot be moved onto
 model the game draws without a person redoing those bounds. Its render was left where it
 was.
 
-What polyweave should do: `asset.brief` (and `accept.verify`) should say when an asset
-has a geometry declaration whose built output is not the input its spec's artefact was
-rendered from, naming both paths. A spec should also be able to name the declaration's
-build as its subject, so `render.bake` renders that build at the rung. Then a spec
-written for a mesh the project replaced reads as stale, and doesn't pass as current.
+Landed: `asset.brief` and `accept.verify` answer `parted` when an asset has a geometry
+declaration whose built output is not the input its spec's artefact was rendered from,
+naming both paths. A spec should also be able to name the declaration's build as its
+subject, so `render.bake` renders that build at the rung. Then a spec written for a mesh
+the project replaced reads as stale, and doesn't pass as current.
 
 ### §PW312 A parameter named like a function still counts as read
 
