@@ -5,11 +5,11 @@ This page only groups them by what you are trying to do.
 
 | Task | Operations |
 |---|---|
-| Adopt | `project.init` (`init`), `project.check` |
+| Adopt | `project.init` (`init`), `project.check`, `project.inventory` |
 | Know the machine | `capabilities` (verb), `engine.find`, `offscreen.routes`, `search.worth_parallel` |
 | Start on an asset | `asset.brief`, `loop.pending` |
-| Make a shape | `geometry.build`, `geometry.build_all`, `geometry.describe`, `geometry.variants`, `geometry.fit` (proportions to a reference), `geometry.compare` (two voxel models, cell by cell) |
-| Render | `render.plan` (free), `render.bake` (costs a render) |
+| Make a shape | `geometry.build`, `geometry.build_all`, `geometry.describe`, `geometry.variants`, `geometry.fit` (proportions to a reference), `geometry.compare` (two voxel models, by cell) |
+| Render | `render.plan` (free), `render.bake` (a render) |
 | Measure | `measure.take`, `measure.same`, `measure.available`, `measure.digest` (did the outline move, or only the look), `measure.contrast` |
 | Judge against the bar | `accept.check`, `accept.verify`, `accept.check_screen`, `cost.read` (what it costs to draw), `sound.measure` (a loop's seam, level), `sound.declared` (the game's declared audio and what is missing) |
 | Search for numbers | `search.sweep`, `port.run` (a whole family), `trace.read` |
@@ -23,7 +23,7 @@ This page only groups them by what you are trying to do.
 | Drive a game | `game.open`, `game.query`, `game.input`, `game.step`, `game.wait`, `game.call`, `game.set`, `game.shot`, `game.close`, `game.batch`, `game.keep`, `game.rekey`, `game.replay`, `game.release_check` |
 | Scale against the engine | `units.check`, `units.engine_scale`, `units.read_number` |
 | World | `world.read`, `world.validate`, `words.check`, `words.unlisted`, `words.sheet` |
-| Music | `music.validate` (every problem, with its line), `music.to_midi`, `music.render`, `sound.synth` (effects from a seed), `sound.buy` (a paid one) |
+| Music | `music.validate` (every problem, by line), `music.to_midi`, `music.render`, `sound.synth` (effects from a seed), `sound.buy` (a paid one) |
 | Visual effects | `vfx.build` (particles or a ribbon), `vfx.preview` (a sitting) |
 | A project's look | `style.read`, `style.drift` (before a person looks; only `verdict.judge` grows a canon) |
 | Buy a drawing | `picture.buy`, `picture.gate` (before the mesh is bought), `picture.letters`, `picture.describe`, `picture.vary`, `picture.against_parent`, `picture.fit` (onto the family's grid), `picture.collect` |

@@ -1067,26 +1067,6 @@ Workaround: the PNG is copied by hand to `game/ui/brand/viglet_games_badge.png`,
 
 ## Block U — A window on everything a project governs
 
-### §PW299 One read lists everything a project governs
-
-Today the view of what a project holds is spread over `polyweave.toml` paths,
-`.prov.json` sidecars, `*.accept.toml` specs, geometry, music, sfx, vfx and world
-declarations, the style families and the line table. `loop.assets` lists the assets with
-a spec, and `provenance_verify` lists records, but no single read says "here is
-everything, by kind". An agent starting in an unfamiliar project walks the tree by hand,
-and a desktop window (the rest of this block) has nothing to draw its tree from without
-reimplementing that walk in TypeScript, which would drift from the Python the first time
-a kind is added.
-
-`project.inventory` is one bounded read. Each row carries a stable id, a kind (mesh,
-picture, sound, music, vfx, clip, line, capture), the declaration path, the artefact
-path, whether the provenance record is sound, changed, missing or outdated, whether a
-verdict is pending, and a digest. It pages and filters by kind, so a large project fits
-a turn. The row format goes in a new `docs/specs/inventory.md`, because the window,
-`asset.brief` and the revision record later in this block all depend on it. The
-operation writes nothing, and a kind the project does not use is simply absent. It is
-never refused.
-
 ### §PW300 A brief for every kind, not only a mesh
 
 `asset.brief` (PW131) joins the declaration, the spec's predicates, the artefact's

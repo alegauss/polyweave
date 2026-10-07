@@ -604,3 +604,206 @@ def _money(config, said) -> None:
                 ),
                 "error" if expired else "warning",
             )
+
+
+# -- the inventory ---------------------------------------------------------------------
+
+#: The kinds of item a project governs, in the order the inventory lists them (§PW299).
+KINDS = ("mesh", "picture", "sound", "music", "vfx", "clip", "line", "capture")
+
+#: The roles of a record's input that is what the artefact was declared by.
+DECLARING = ("declaration", "effects", "score", "script", "world")
+
+#: A file's kind by its suffix, where its record does not settle it.
+SUFFIXES = {
+    **dict.fromkeys((".glb", ".gltf", ".fbx", ".blend", ".obj"), "mesh"),
+    **dict.fromkeys((".png", ".jpg", ".jpeg", ".webp", ".svg"), "picture"),
+    **dict.fromkeys((".wav", ".ogg", ".mp3", ".flac"), "sound"),
+    ".mid": "music",
+    ".tscn": "vfx",
+}
+
+#: The rows one read returns where no limit is asked for.
+PAGE = 200
+
+
+@operation("project.inventory")
+def inventory(
+    root: Annotated[str, Param("the project to list")] = ".",
+    *,
+    kind: Annotated[str, Param("only this kind", choices=KINDS)] = "",
+    offset: Annotated[int, Param("rows to skip: the last answer's next", lo=0)] = 0,
+    limit: Annotated[int, Param("rows to return", lo=1)] = PAGE,
+) -> dict:
+    """Every item the project governs, by kind, in one bounded read (§PW299).
+
+    A row is an artefact a record names, a produced file with no record, a geometry
+    declaration not built yet, or a line of the string table. It writes nothing, and a
+    kind the project does not use is absent. The row format is docs/specs/inventory.md.
+    """
+    from .config import load
+
+    here = load(root).root
+    rows = _items(here)
+    counts = {k: sum(1 for r in rows if r["kind"] == k) for k in KINDS}
+    chosen = [r for r in rows if not kind or r["kind"] == kind]
+    page = chosen[offset : offset + limit]
+    more = offset + len(page) < len(chosen)
+    return {
+        "items": page,
+        "total": len(chosen),
+        "kinds": {k: n for k, n in counts.items() if n},
+        "next": offset + len(page) if more else None,
+    }
+
+
+def _items(here: Path) -> list[dict]:
+    """Every row, sorted by kind and then by id."""
+    from . import provenance
+
+    rows: dict[str, dict] = {}
+    outdated = {o["artefact"] for o in provenance.outdated(str(here))["outdated"]}
+    waiting = _waiting(here)
+    for found in sorted(here.rglob(f"*{provenance.SUFFIX}")):
+        if _hidden(found, here):
+            continue  # the cache's own records, which are not the project's items
+        try:
+            record = provenance.read(found, here)
+        except PolyweaveError:
+            continue
+        artefact = (record.get("artefact") or {}).get("path")
+        if not artefact:
+            continue
+        recorded = record["artefact"].get("sha256")
+        on_disk = here / artefact
+        if not on_disk.is_file():
+            state = "missing"
+        elif provenance.sha256_of(on_disk)[0] != recorded:
+            state = "changed"
+        else:
+            state = "outdated" if artefact in outdated else "sound"
+        rows[artefact] = _row(
+            artefact,
+            _kind(record, artefact),
+            declaration=next(
+                (
+                    one.get("path")
+                    for one in record.get("inputs") or ()
+                    if one.get("role") in DECLARING and one.get("path")
+                ),
+                None,
+            ),
+            artefact=artefact,
+            record=state,
+            pending=artefact in waiting,
+            digest=(recorded or "")[:16] or None,
+        )
+    for one in provenance.unrecorded(str(here)):
+        path = one["artefact"]
+        rows.setdefault(
+            path,
+            _row(
+                path,
+                SUFFIXES.get(Path(path).suffix.lower(), "picture"),
+                artefact=path,
+                record="unrecorded",
+                pending=path in waiting,
+                digest=provenance.sha256_of(here / path)[0][:16],
+            ),
+        )
+    built = {r["declaration"] for r in rows.values() if r["declaration"]}
+    for path in _shapes(here):
+        if path not in built:
+            unbuilt = _row(path, "mesh", declaration=path, record="unbuilt")
+            rows.setdefault(path, unbuilt)
+    for line in _lines(here):
+        rows.setdefault(line["id"], line)
+    return sorted(rows.values(), key=lambda r: (KINDS.index(r["kind"]), r["id"]))
+
+
+def _row(
+    name: str,
+    kind: str,
+    *,
+    declaration: str | None = None,
+    artefact: str | None = None,
+    record: str | None = None,
+    pending: bool = False,
+    digest: str | None = None,
+) -> dict:
+    return {
+        "id": name,
+        "kind": kind,
+        "declaration": declaration,
+        "artefact": artefact,
+        "record": record,
+        "pending": pending,
+        "digest": digest,
+    }
+
+
+def _kind(record: dict, artefact: str) -> str:
+    """Which kind a recorded artefact is, from what made it."""
+    made = record.get("kind")
+    engine = (record.get("engine") or {}).get("name")
+    if made in ("capture", "vfx"):
+        return made
+    if made == "sound":
+        return "music" if engine == "music.render" else "sound"
+    if made == "mesh" and (record.get("params") or {}).get("clip"):
+        return "clip"
+    if made in ("render", "picture"):
+        return "picture"
+    return SUFFIXES.get(Path(artefact).suffix.lower(), "picture")
+
+
+def _waiting(here: Path) -> set[str]:
+    """The artefacts that wait on a person's look, as loop.pending says."""
+    from . import loop
+
+    return {
+        row["candidate"]
+        for row in loop.pending(str(here))["assets"]
+        if row["waiting"] and row["candidate"]
+    }
+
+
+def _shapes(here: Path) -> list[str]:
+    """Every geometry declaration under the project, readable or not."""
+    from .cli import is_declaration
+    from .provenance import relative
+
+    return [
+        relative(source, here)
+        for source in sorted(here.rglob("*.toml"))
+        if not _hidden(source, here)
+        and not source.name.endswith(".accept.toml")
+        and source.name != FILENAME
+        and is_declaration(source)
+    ]
+
+
+def _lines(here: Path) -> list[dict]:
+    """Each line of the string table, pending until a person judged it as it reads."""
+    from . import words
+    from .provenance import relative
+
+    try:
+        where, locales, table = words.table(here)
+    except PolyweaveError:
+        return []
+    canon = words._canon(here) is not None
+    judged = words.verdicts(here) if canon else {}
+    out = []
+    for row in table:
+        digest = words._digest(row, locales)
+        out.append(
+            _row(
+                f"line:{row['key']}",
+                "line",
+                declaration=relative(where, here),
+                pending=canon and (row["key"], digest) not in judged,
+                digest=digest[:16],
+            )
+        )
+    return out

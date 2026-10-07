@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 10 },
+  { block: "H", title: "Proof on a real game", open: 11 },
   { block: "I", title: "Voxel models from a declaration", open: 3 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 2 },
@@ -45,7 +45,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "R", title: "Levels measured before a person plays them", open: 8 },
   { block: "S", title: "Playing the game, not only rendering it", open: 1 },
   { block: "T", title: "Adopting polyweave in a project", open: 1 },
-  { block: "U", title: "A window on everything a project governs", open: 13 },
+  { block: "U", title: "A window on everything a project governs", open: 12 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 32 },
 ];
 
@@ -118,6 +118,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "a camera move cannot be declared as a clip or played by the game, so a cutscene's shots are numbers in the project",
     why: "A cinema opening's framing and timing are set by eye in the game's own data, with no record, spec or review page.",
+    deps: [],
+  },
+  {
+    id: "PW373",
+    block: "H",
+    symptom: "game.shot answers success and a path when the save failed, and never makes the folder it is given",
+    why: "A worker builds on frames that do not exist, and learns only when a later operation refuses the missing file.",
     deps: [],
   },
   {
@@ -303,25 +310,18 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW299",
-    block: "U",
-    symptom: "nothing lists every item a project governs, so a picture, sound or line is found only by knowing its path",
-    why: "project.inventory lists each governed item by kind with its declaration, artefact, record state and pending verdict, the first read a window or an agent needs.",
-    deps: [],
-  },
-  {
     id: "PW300",
     block: "U",
     symptom: "asset.brief reads a geometry declaration only, so a picture, sound, effect or line has no one-read state",
     why: "asset.brief answers for every kind the inventory lists, so a session opened on any item starts from one read.",
-    deps: ["PW299"],
+    deps: [],
   },
   {
     id: "PW301",
     block: "U",
     symptom: "a person's request to change one item lives only in a chat, so no run, sitting or record ties it to the item",
-    why: "A revision is a line in .polyweave/revisions.jsonl naming the item, its digest, a mask and the person's words; revision.open and revision.close carry it through a run.",
-    deps: ["PW299"],
+    why: "A revision is a line in .polyweave/revisions.jsonl naming the item, its digest, a mask and the person's words; revision.open and .close carry it through a run.",
+    deps: [],
   },
   {
     id: "PW302",
@@ -335,7 +335,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "U",
     symptom: "there is no desktop window that finds the projects on a machine using polyweave and opens one",
     why: "gui/ is an Electron app split into core, ui and shell like roadkeep's; it finds projects by polyweave.toml and reads one only through a held polyweave serve.",
-    deps: ["PW299", "PW302"],
+    deps: ["PW302"],
   },
   {
     id: "PW304",

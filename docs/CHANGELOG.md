@@ -354,5 +354,7 @@
 
 ## Block U — A window on everything a project governs
 
+- ✅ **PW299** **nothing lists every item a project governs, so a picture, sound or line is found only by knowing its path** — project.inventory lists every artefact, unrecorded file, unbuilt declaration and line by kind, with record state, pending verdict and digest (design recorded in `docs/specs/inventory.md`).
+
 ## Block V — Parts every game repeats, installed already proved
 

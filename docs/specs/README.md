@@ -34,6 +34,7 @@ needed.
 | [store.md](store.md) | A store's capsule set cut from one key art and a logo, with the store's shapes as data | PW268 |
 | [vfx.md](vfx.md) | A particle or ribbon effect declared as data and built into the scene the engine plays, with what it measures | PW259 |
 | [driving.md](driving.md) | A running game held still between an agent's calls, and the commands that move and read it | PW211–PW217 |
+| [inventory.md](inventory.md) | Every item a project governs, by kind, in one paged read with its record's state | PW299 |
 | [adoption.md](adoption.md) | What one asset cost to make each way, so the claim can be falsified | PW35 |
 
 ## Two format rules, so nobody has to decide twice
