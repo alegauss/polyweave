@@ -279,7 +279,8 @@ def synth(
         provenance.write(provenance.build(
             "sound", config.root / made[name]["file"], engine={"name": "sound.synth"},
             inputs=[provenance.source("effects", where, config.root)],
-            params={"generator": table.get("generator"), "seed": seed},
+            params={"effect": name, "generator": table.get("generator"),
+                    "seed": seed},
             measurements=measured,
             extra={"instruments": [licences.engine("sfxr", [name])]},
             root=config.root,

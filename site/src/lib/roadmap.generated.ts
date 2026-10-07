@@ -45,7 +45,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "R", title: "Levels measured before a person plays them", open: 8 },
   { block: "S", title: "Playing the game, not only rendering it", open: 1 },
   { block: "T", title: "Adopting polyweave in a project", open: 1 },
-  { block: "U", title: "A window on everything a project governs", open: 12 },
+  { block: "U", title: "A window on everything a project governs", open: 11 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 32 },
 ];
 
@@ -310,13 +310,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW300",
-    block: "U",
-    symptom: "asset.brief reads a geometry declaration only, so a picture, sound, effect or line has no one-read state",
-    why: "A music cue, an sfx or vfx effect and a style family still read back as a path and kind, not in the words their own describe uses.",
-    deps: [],
-  },
-  {
     id: "PW301",
     block: "U",
     symptom: "a person's request to change one item lives only in a chat, so no run, sitting or record ties it to the item",
@@ -342,7 +335,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "U",
     symptom: "a person sees one item of a project only by opening its file by hand, with no declaration, record or bar beside it",
     why: "The window lists the inventory by kind and shows each item in its own viewer, beside its brief: bounds, measures, provenance chain and dependents.",
-    deps: ["PW300", "PW303"],
+    deps: ["PW303"],
   },
   {
     id: "PW305",

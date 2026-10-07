@@ -1067,28 +1067,6 @@ Workaround: the PNG is copied by hand to `game/ui/brand/viglet_games_badge.png`,
 
 ## Block U — A window on everything a project governs
 
-### §PW300 A brief for every kind, not only a mesh
-
-`asset.brief` (PW131) joins the declaration, the spec's predicates, the artefact's
-record, the last verdict, the budget and whether a person is waited on. Its
-`_declaration` walks `*.toml` through `is_declaration`, which is the geometry
-vocabulary, so a `*.music.toml`, `*.sfx.toml`, `*.vfx.toml`, a style family in
-`[style.<family>]` or a line in the words table comes back with `declaration: null` even
-where its spec and record exist. A line with no spec at all is refused as unknown.
-
-The window's item view and the per-item Claude Code session both start from this read,
-so it has to answer for everything the inventory lists. It takes the inventory's id as
-well as a name, reads each kind's declaration back in the words that kind's own describe
-uses (the music vocabulary for a cue, the family's palette and floors for a picture, the
-world's canon for a line), and keeps the digest so a session can ask whether anything
-moved while it worked. It adds `dependents` from `provenance_dependents`, because a
-change to one item reaches whatever was made from it, and the person should see that
-before asking for the change.
-
-Landed: the id, the row as `item`, `dependents`, and a line's text, speaker and verdict
-(docs/specs/inventory.md). Left: a cue, an effect and a family read back in their own
-words, which `_declared_item` in brief.py answers as a path and a kind today.
-
 ### §PW301 A change a person asks for is a record, not a chat line
 
 The review page already keeps a person's words and a mask tied to a picture's digest

@@ -167,7 +167,8 @@ def test_a_brief_answers_for_any_item_the_inventory_lists(tree):
     assert hit["item"]["kind"] == "sound"
     assert hit["artefact"]["matches_record"] is True
     theme = brief.brief("audio/theme.ogg", root=str(tree))
-    assert theme["declaration"] == {"path": "music/theme.toml", "kind": "music"}
+    assert theme["declaration"]["path"] == "music/theme.toml"
+    assert "valid" in theme["declaration"]
     # A change to the mesh reaches the render made from it.
     barrel = brief.brief("assets/barrel.glb", root=str(tree))
     assert barrel["declaration"]["path"] == "shapes/barrel.toml"
@@ -214,3 +215,50 @@ def test_an_id_nothing_lists_is_refused_like_an_unknown_name(tree):
     with pytest.raises(PolyweaveError) as refused:
         brief.brief("audio/nothing.wav", root=str(tree))
     assert "project.inventory" in refused.value.remedy
+
+
+def test_a_brief_reads_each_kind_back_in_its_own_words(tmp_path):
+    # §PW300: an effect as its table, a cue as music.validate, a picture as its family.
+    from polyweave import brief, sfx, vfx
+
+    (tmp_path / C.FILENAME).write_text(
+        '[style]\npalette = ["#112233", "#ffeedd"]\nfilter = "pixel"\n',
+        encoding="utf-8",
+    )
+    (tmp_path / "audio").mkdir()
+    (tmp_path / "audio" / "board.sfx.toml").write_text(
+        '[effect.pop]\ngenerator = "pickup"\nseed = 7\n', encoding="utf-8"
+    )
+    sfx.synth("audio/board.sfx.toml", root=str(tmp_path))
+    (tmp_path / "vfx").mkdir()
+    (tmp_path / "vfx" / "trails.vfx.toml").write_text(
+        "[effect.sparks]\namount = 64\nlifetime = 0.8\nsize = 0.2\n", encoding="utf-8"
+    )
+    vfx.build("vfx/trails.vfx.toml", root=str(tmp_path))
+    (tmp_path / "music").mkdir()
+    (tmp_path / "music" / "theme.music.toml").write_text(
+        '[music]\ntitle = "Theme"\n', encoding="utf-8"
+    )
+    record(
+        tmp_path,
+        "sound",
+        "audio/theme.ogg",
+        inputs=[("score", "music/theme.music.toml")],
+        engine={"name": "music.render"},
+    )
+    record(tmp_path, "picture", "art/icon.png")
+
+    pop = brief.brief("audio/pop.wav", root=str(tmp_path))["declaration"]
+    assert pop["effect"] == "pop"
+    assert pop["table"]["generator"] == "pickup"
+    sparks = brief.brief("vfx/sparks.tscn", root=str(tmp_path))["declaration"]
+    assert sparks["effect"] == "sparks"
+    assert sparks["table"]["amount"] == 64
+    assert sparks["measures"]
+    theme = brief.brief("audio/theme.ogg", root=str(tmp_path))["declaration"]
+    assert theme["valid"] is False
+    assert theme["problems"]
+    icon = brief.brief("art/icon.png", root=str(tmp_path))["declaration"]
+    assert icon["family"] == "default"
+    assert icon["palette"] == ["#112233", "#ffeedd"]
+    assert icon["filter"] == "pixel"

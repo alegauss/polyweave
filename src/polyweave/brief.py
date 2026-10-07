@@ -225,14 +225,30 @@ def _named(item: dict) -> str:
 
 
 def _declared_item(item: dict, here: Path) -> dict | None:
-    """An item's declaration, read back in the words its kind uses where one does."""
+    """An item's declaration, read back in the words its kind uses (§PW300).
+
+    A shape in its parts, a line in its locales, a cue as music.validate says it, an
+    effect as its own table, and a picture as the style family it is held to.
+    """
     from .cli import is_declaration
 
     path = item["declaration"]
     if item["kind"] == "line":
         return _line(item, here)
+    record = _record_of(item, here)
+    if item["kind"] == "picture":
+        return _family(record, here)
     if not path:
         return None
+    try:
+        if item["kind"] == "music":
+            from . import music
+
+            return {"path": path, **music.validate(path, root=str(here))}
+        if item["kind"] in ("sound", "vfx") and path.endswith(".toml"):
+            return _effect(item, path, record, here)
+    except PolyweaveError as refused:
+        return {"path": path, "refused": refused.as_dict()}
     if path.endswith(".toml") and is_declaration(here / path):
         from . import geometry as G
         from .geometry import review
@@ -243,6 +259,61 @@ def _declared_item(item: dict, here: Path) -> dict | None:
             return {"path": path, "refused": refused.as_dict()}
         return {"path": path, "reads": said["reads"], "warnings": said["warnings"]}
     return {"path": path, "kind": item["kind"]}
+
+
+def _record_of(item: dict, here: Path) -> dict:
+    """The record beside an item's artefact, or nothing where it has none."""
+    from . import provenance
+
+    if not item["artefact"] or item["record"] in ("unrecorded", "missing"):
+        return {}
+    try:
+        return provenance.read(here / item["artefact"], here)
+    except PolyweaveError:
+        return {}
+
+
+def _effect(item: dict, path: str, record: dict, here: Path) -> dict:
+    """An sfx or vfx effect as its table declares it, and what a built one measures."""
+    import tomllib
+
+    tables = tomllib.loads((here / path).read_text(encoding="utf-8")).get("effect")
+    tables = tables if isinstance(tables, dict) else {}
+    # The record names its effect; one written before it did is matched by its file.
+    name = (record.get("params") or {}).get("effect") or Path(item["id"]).stem
+    if name not in tables:
+        return {"path": path, "effects": sorted(tables)}
+    answer = {"path": path, "effect": name, "table": tables[name]}
+    if item["kind"] == "vfx":
+        from . import vfx
+
+        answer["measures"] = vfx.measured_whole(vfx.declared(name, tables[name], here))
+    return answer
+
+
+def _family(record: dict, here: Path) -> dict | None:
+    """The style family a picture is held to: the one it was bought for, or the one."""
+    from .config import load
+
+    config = load(here)
+    if not config.states("style"):
+        return None
+    family = (record.get("details") or {}).get("family")
+    try:
+        name, style = config.style(family)
+    except PolyweaveError as refused:
+        return {"refused": refused.as_dict()}
+    from . import style as S
+
+    return {
+        "family": name,
+        "palette": style["palette"],
+        "skeleton": style["skeleton"],
+        "cell": style["cell"],
+        "filter": style["filter"],
+        "canon": style["canon"] or None,
+        "admitted": len(S.admitted(style)),
+    }
 
 
 def _line(item: dict, here: Path) -> dict:
@@ -331,7 +402,7 @@ def brief(
         "bought": _bought(artefact, here),
         # A render of a mesh the declaration no longer builds (§PW298).
         "parted": _parted(
-            (spec and spec.subject) or (declared and declared["path"]),
+            (spec and spec.subject) or (declared and declared.get("path")),
             artefact and artefact["path"],
             here,
         ),

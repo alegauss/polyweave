@@ -75,11 +75,22 @@ the digest of the line's text in every locale. It is `null` for an unbuilt decla
 ## Who reads it
 
 `asset.brief` takes a row's `id` as well as an asset's name (§PW300). It answers with
-the row as `item`, the artefact against its record, and the declaration read back. For a
-geometry declaration that means the lines its parts read as, and for a line it means its
-text in each locale, its speaker and the canon's latest verdict, with `on_this_text`
-false once the text has moved. Every brief names the artefacts made from the item as
-`dependents`, because a change to it reaches them.
+the row as `item`, the artefact against its record, and the declaration read back in the
+words its kind uses:
+
+- a geometry declaration as the lines its parts read as;
+- a line as its text in each locale, its speaker and the canon's latest verdict, with
+  `on_this_text` false once the text has moved;
+- a music cue as `music.validate` answers its score;
+- an sfx or vfx effect as its own `[effect.<name>]` table, and a built vfx effect with
+  what it measures. A sound's record names its effect, and one written before it did is
+  matched by its file's name;
+- a picture as the style family it is held to (the family it was bought for, or the
+  project's only one): palette, skeleton, cell, filter, canon and how many pictures the
+  canon admits.
+
+Every brief names the artefacts made from the item as `dependents`, because a change to
+it reaches them.
 
 ## What is not listed
 
