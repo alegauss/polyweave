@@ -49,8 +49,50 @@ A built state is a picture like any other. A spec holds it to text contrast over
 (`measure.contrast`), its edge and its palette, and a capture of the menu holds it where
 the game draws it.
 
-## Not yet
+## As a shader
 
-A panel as a Godot canvas shader with its uniforms, and a screen wipe whose progress is
-captured step by step, are the other half of §PW316 and are not built here. An accent
-mark in the middle of an edge waits on the shader, because a nine-patch would stretch it.
+`panel.build(shader=true)` also writes `<name>.gdshader`, a canvas shader that draws the
+same parts at whatever size the Control is, and `<name>.<state>.material.tres` per state,
+a `ShaderMaterial` holding that state's look as uniforms. Sizes stay in the panel's
+pixels, and `pixel_scale` says how many screen pixels one of them takes. The shader also
+draws what a nine-patch cannot:
+
+```toml
+[panel.holo.tick]                 # an accent mark centred on the top edge
+length = 20
+width = 2
+colour = "#ff4fd8"
+```
+
+Built without the shader, a panel with a `tick` says `not_drawn: ["tick"]` for each state
+rather than dropping it unannounced. Every number is written to the material with a
+point, because Godot reads `4` as an integer and a float uniform given one keeps its
+default.
+
+## Screen wipes
+
+The same file declares the wipes the menus move between:
+
+```toml
+[wipe.sweep]
+kind = "sweep"          # or "iris"
+colour = "#05070c"
+angle = 0               # the direction it sweeps, in degrees (sweep)
+bow = 0.2               # how far its front bows (sweep)
+softness = 0.02         # the width of its edge, as a share of the screen
+# centre = [0.5, 0.5]   # where an iris closes to (iris)
+```
+
+`panel.build` writes each one as `<name>.gdshader` and `<name>.material.tres`. Its
+`progress` uniform covers the screen from 0, nothing, to 1, all of it, so the game tweens
+one number. A kind other than these two is `compose.bad-panel`, naming both.
+
+## Seen as the engine draws them
+
+`panel.capture(source, out=, steps=, scale=)` builds the shaders and films them through
+`capture.movie`. The stills are each panel state as `<name>.<state>.capture.png`, drawn
+`scale` times larger on a grey screen, and each wipe at `steps` even points of its
+progress as `<name>.<step>.capture.png`. Each still has a record naming the declaration
+and the material it shows, so a spec can hold the edge's colour in a state or what a
+wipe covers halfway, and a person can judge them on a sitting. Like every capture it
+needs a display or the offscreen route, and without one it is `compose.unfilmed`.

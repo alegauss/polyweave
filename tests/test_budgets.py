@@ -75,7 +75,8 @@ from polyweave.errors import PolyweaveError
 #: as a record rather than a chat line.
 #: 97,728 with picture.vector (§PW315), a logo drawn whole and in layers.
 #: 98,420 with panel.build (§PW316), a menu panel built from a declaration.
-DESCRIBE = 98_900
+#: 99,402 with panel.capture and panel.build's shader (§PW316).
+DESCRIBE = 99_900
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -128,7 +129,8 @@ DESCRIBE = 98_900
 #: 108,082 with the revision operations and their six review codes (§PW301).
 #: 109,006 with picture.vector and compose.no-vector, .no-layer (§PW315).
 #: 109,719 with panel.build and compose.bad-panel (§PW316).
-CAPABILITIES = 110_200
+#: 110,721 with panel.capture and compose.unfilmed (§PW316).
+CAPABILITIES = 111_200
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
@@ -159,7 +161,8 @@ HELP_VERB = 4_100
 #: 20,028 with store.capsules (§PW268).
 #: 20,485 with game.batch, measure.contrast and game.rekey (§PW271, §PW272, §PW276).
 #: 21,262 with project.inventory and revision.ask, .open and .close (§PW299, §PW301).
-HELP_TOP = 21_600
+#: 21,720 with panel.build and panel.capture (§PW316).
+HELP_TOP = 22_200
 #: A search's answer over its default budget of 24 samples: 3,739.
 SEARCH = 4_000
 

@@ -262,24 +262,6 @@ this is where that is recorded honestly: what still runs by hand, and why the ri
 instead of disappearing. An outcome worth having, stated, beats the same outcome
 unstated.
 
-### §PW316 A UI panel built from a declaration
-
-Met in starship (RK151): the menus need holo-glass panels, a bevelled edge, corner
-brackets, scan lines and an accent tick, each with focus, pressed and disabled states.
-`describe` had nothing for it, so starship hand-wrote `game/ui/kit/holo_panel.gdshader`
-and held it only by a verdict on screenshots. RK156 did the same for a screen wipe, a
-bowed sweep and an iris timed by a progress uniform, in `game/ui/kit/wipe.gdshader`.
-
-Landed (docs/specs/panel.md): a `*.panel.toml` declares a frame's fill, cut, edge,
-brackets, scan lines and states, and `panel.build` draws each state to nine-patch PNGs
-with records, plus a `StyleBoxTexture` with the margins. A corner reaching past the
-margin is refused.
-
-Left: build the same declaration to a Godot canvas shader with its uniforms, which is
-where an accent mark mid-edge belongs, since a nine-patch would stretch it. Then declare
-a screen wipe, build it to a shader, and capture it at each progress step so a spec can
-hold the steps. Starship's two hand-written shaders are then replaced by built ones.
-
 ### §PW319 Text legibility measured glyph by glyph
 
 Met in starship (RK154): the title now stands over the living voxel city, and the design
@@ -1316,8 +1298,8 @@ back; back from every screen lands where the declaration says; the game's own ti
 not advance while it is paused.
 
 The look is the project's Theme, never the kit's. A panel, a frame or a stylebox the
-menus draw is §PW316's to declare and build, so this kit owns the behaviour and nothing
-of how it looks.
+menus draw is panel.build's to declare and build (docs/specs/panel.md), so this kit owns
+the behaviour and nothing of how it looks.
 
 ### §PW347 An options screen assembled from the kits
 

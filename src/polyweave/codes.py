@@ -1928,6 +1928,12 @@ CODES: dict[str, Code] = {
             "make the margin at least as wide as the cut plus the bracket",
         ),
     ),
+    "compose.unfilmed": Code(
+        means="a built panel or wipe could not be filmed by the engine",
+        when="panel.capture where no display or offscreen route draws real pixels, or "
+        "the run never reached its marks (§PW316)",
+        doors=("run it where a display is, or through the offscreen route",),
+    ),
     "compose.no-vector": Code(
         means="the vector picture named cannot be drawn",
         when="picture.vector given a path with no SVG, one that does not parse, or one "

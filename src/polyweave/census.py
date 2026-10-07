@@ -73,6 +73,7 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.vfx:measures_of": ("internal", "a built effect's measures, for accept"),
     "polyweave.vfx:declared": ("internal", "one effect, or one made of parts"),
     "polyweave.panel:declared": ("internal", "a panel's states, checked; panel.build"),
+    "polyweave.panel:wipe": ("internal", "a wipe's kind and uniforms, for panel.build"),
     "polyweave.review_text": ("internal", "a sitting's words, from the catalogs"),
     "polyweave.vfx:measured_whole": ("internal", "a whole's measures, over its parts"),
     "polyweave.vfx:scene_whole": ("internal", "a whole's scene, its parts under one"),
