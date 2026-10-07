@@ -27,24 +27,24 @@ GitHub Pages derives the base path from the repository name, so Vite's `base` is
 `/polyweave/` and every asset path carries that prefix. It is written twice — in
 [vite.config.ts](vite.config.ts) and in [src/routes.tsx](src/routes.tsx) — and nowhere else.
 
-## The one rule this site is held to
+## The two rules this site is held to
 
-**It states where the project stands from the roadmap, and never claims a result no run
-has measured.**
+**It sells polyweave as the roadmap leaves it, and never claims a result no run has
+measured.**
 
-A status typed into the copy goes stale: this page said "there is no code yet" a hundred
-shipped lines after the code arrived, and its own test defended the sentence. So:
+The landing page is a pitch for the finished product — every block built — written for a
+person who has never heard of polyweave and has a few seconds to see what it is for. So:
 
-- The landing page carries a status band, second on the page, built from
-  `roadmap.generated.ts`: how many blocks have nothing left open, and how many lines do.
-  `scripts/prerender.test.mjs` fails the build if the page disagrees with the module.
-- Every measurement quoted is Cottony's, named as Cottony's, and describes the cost
-  polyweave exists to remove.
-- `scripts/lint.test.mjs` refuses copy that claims a result for polyweave ("faster than",
-  "we measured", "benchmarked"). The loop ledger that would measure it has only begun.
-
-A site for a tool whose argument is *an unmeasured claim is worthless* does not get to make
-one.
+- It states no status. A count typed or derived into the pitch either goes stale or turns
+  the page into a status report; what is still open lives in `docs/ROADMAP.md`, which the
+  footer links. `scripts/prerender.test.mjs` refuses an open-line count on the landing and
+  requires the install commands and every roadmap non-goal to reach it.
+- It is pictures first: tiles, a hub diagram, a review-page mock, one sentence each.
+  Claude Code is the operator and the page is about what it gains, so there is no separate
+  "Claude Code" item in the nav.
+- `scripts/lint.test.mjs` refuses copy that claims a measured result for polyweave
+  ("faster than", "we measured", "benchmarked"). Describing what a feature does is the
+  pitch; quoting a number nobody recorded is not.
 
 ## Where things live
 
@@ -52,13 +52,14 @@ one.
 |---|---|
 | `src/lib/site-content.ts` | **All copy** — sections only render it, so a claim is one array element a reviewer can check |
 | `src/lib/roadmap.generated.ts` | **Generated** from `docs/ROADMAP.md` through roadkeep: the blocks, the lines and the non-goals. Committed, because roadkeep is not |
-| `src/lib/roadmap.ts` | The typed read over it, and where every count in the prose comes from |
+| `src/lib/roadmap.ts` | The typed read over it: block titles for the depth pages, and the non-goals |
 | `src/lib/features.ts` | One record per roadmap block — route, `<head>` and page, declared together |
-| `src/lib/diagrams.ts` | The illustrative SVGs and the session transcript, kept verbatim as figures |
+| `src/lib/diagrams.ts` | The depth pages' SVGs and the session transcript, kept verbatim as figures |
+| `src/components/ui/Icon.tsx` | The line icons the landing tiles use, drawn in the current text colour |
 | `src/lib/theme.ts` + `index.html` pre-paint script + `src/index.css` tokens | **The theme follows the OS**, a stored choice overrides it, applied before first paint |
 | `src/routes.tsx` | The route table and its metadata, asserted against each other at import time |
 | `src/components/sections/` | One component per landing section; the composition lives here |
-| `src/pages/Landing.tsx` | The landing page — the section order is the argument |
+| `src/pages/Landing.tsx` | The landing page — the section order is the pitch |
 | `scripts/` | The generator, the prerender, the social card and the tests that read `dist/` |
 
 ## The generated module, and why it is committed

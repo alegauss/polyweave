@@ -1,26 +1,21 @@
 // The copy lives here and nowhere else. Every section component imports a value from this
 // module and only renders it — so a claim is an array element a reviewer can check against
 // the roadmap, not a string welded into the markup that displays it. The composition
-// (which section, in which order, and the illustrative SVGs) lives in the JSX; this file
-// is the words.
+// (which section, in which order, and the figures) lives in the JSX; this file is the words.
 //
 // Fragments carrying inline code or emphasis are modelled as a small tagged run list
 // (`Rich`) rather than raw HTML, so a section renders them without dangerouslySetInnerHTML
 // and the twin generator has a structure to convert rather than markup to parse.
 //
-// Two rules this file is held to, and they are the reason the project exists:
-//
-//   1. Every count comes from `roadmap.ts`, which reads the governed roadmap through
-//      roadkeep. None of them is typed here.
-//   2. Every measurement quoted is one the roadmap records against Cottony, and it is
-//      named as such. There is no measurement of polyweave on this site, because there is
-//      no polyweave yet to measure. A page for a product that searches for evidence does
-//      not get to assert its own.
-import { Spelled, blockCount, finishedCount, spelled, taskCount } from "./roadmap";
-import { conventions as conventionRows, sessionTerminal } from "./diagrams";
+// The landing page describes polyweave as the roadmap leaves it: every block built. It
+// states no status — what is still open lives in docs/ROADMAP.md, which the depth pages
+// link to — and it still claims no measured result for polyweave, which
+// scripts/lint.test.mjs enforces.
+import { sessionTerminal } from "./diagrams";
 
 /** How many commands the transcript actually runs, so the sentence under it can say. */
 const sessionCalls = (sessionTerminal.match(/&gt;<\/span> polyweave /g) ?? []).length;
+const SPELLED_SMALL = ["zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight"];
 
 export type Run =
   | string
@@ -30,16 +25,23 @@ export type Run =
 
 export type Rich = Run[];
 
+/** The name of an inline icon, drawn by components/ui/Icon.tsx. */
+export type IconName =
+  | "hand" | "eye" | "ear" | "target" | "gamepad" | "verdict" | "wrench" | "memory"
+  | "book" | "wallet" | "record" | "box" | "cube" | "image" | "wave" | "music" | "mic"
+  | "text" | "map" | "motion" | "kit" | "laptop" | "file" | "shield" | "chat" | "check"
+  | "spark";
+
 /* ------------------------------------------------------------------ meta + chrome */
 
 export const meta = {
-  title: "polyweave — declare what a game's parts have to be, and let it search",
+  title: "polyweave — a Claude Code plugin that makes your game's parts",
   description:
-    "A Claude Code plugin that makes a game's parts (3D assets, pictures, sound loops and the world's text) by declaring what each has to satisfy and searching for the parameters that satisfy it, on top of Blender, Godot and paid generators. Runs on your machine, against files in your own repository.",
+    "polyweave gives Claude Code the hands to drive Blender, Godot and AI generators, the eyes and ears to check every result against the bar you set, and a review page where you approve what ships: 3D models, pictures, sound, music, voices, words, levels and game kits.",
   og: {
     title: "polyweave",
     description:
-      "State what each part of a game has to satisfy; let a search find the parameters that satisfy it. Measured against your own reference, not against an opinion.",
+      "Claude Code can write your game. Now it can make the rest of it — and you approve every part.",
     url: "https://alegauss.github.io/polyweave/",
   },
 } as const;
@@ -52,24 +54,24 @@ export const specsUrl = `${repoUrl}/tree/main/docs/specs`;
 export const roadkeepUrl = "https://github.com/alegauss/roadkeep";
 
 // Section anchors (#x) act on the landing page; the page links are base-absolute so they
-// resolve the same from every route. The brand and footer link home the same way.
+// resolve the same from every route. There is no "Claude Code" item: the whole page is.
 export const navLinks = [
-  { href: "#loop", label: "The loop" },
-  { href: "#contract", label: "The contract" },
-  { href: "/polyweave/claude-code/", label: "Claude Code" },
-  { href: "/polyweave/specs/", label: "Specs" },
+  { href: "/polyweave/#gains", label: "Why Claude Code" },
+  { href: "/polyweave/#how", label: "How it works" },
+  { href: "/polyweave/#makes", label: "What it makes" },
+  { href: "/polyweave/#review", label: "Review" },
 ] as const;
 
 export const footer = {
   links: [
-    { href: "/polyweave/claude-code/", label: "Claude Code" },
+    { href: "/polyweave/claude-code/", label: "For agents" },
     { href: "/polyweave/specs/", label: "Specs" },
     { href: repoUrl, label: "GitHub" },
     { href: roadmapUrl, label: "Roadmap" },
-    { href: specsUrl, label: "Contracts" },
+    { href: changelogUrl, label: "Changelog" },
   ],
   disclaimer:
-    "polyweave is an independent open-source project. It orchestrates Blender, Godot and paid generators and re-implements none of them; it is not affiliated with, endorsed by or sponsored by any of their authors, and every mark named on this page belongs to its owner. Nothing here is installable yet — the plan, and the evidence behind each line of it, is in docs/ROADMAP.md. © 2026 Alexandre Oliveira.",
+    "polyweave is an independent open-source project. It orchestrates Blender, Godot and the generative services named on this page and re-implements none of them; it is not affiliated with, endorsed by or sponsored by any of their authors, and every mark named here belongs to its owner. © 2026 Alexandre Oliveira.",
 } as const;
 
 /* --------------------------------------------------------------- sponsor */
@@ -106,528 +108,342 @@ export const sponsor = {
 /* ------------------------------------------------------------------ hero */
 
 export const hero = {
-  badge: `${Spelled(finishedCount())} of ${spelled(blockCount())} blocks built · ${taskCount()} lines open`,
-  titleLead: "Say what each part has to be.",
-  titleAccent: "Let it find the numbers.",
+  badge: "A plugin for Claude Code",
+  titleLead: "Claude Code can write your game.",
+  titleAccent: "Now it can make the rest of it.",
   sub: [
-    "polyweave is a Claude Code plugin for making a game's parts: 3D assets and the pictures they start from, sound loops, and the names and lines of its world, with levels next on the roadmap. You state what a part has to ",
-    { b: "satisfy" },
-    "; it searches for the parameters that satisfy it, measuring against ",
-    { b: "your own reference" },
-    " rather than against an opinion. On top of Blender, Godot and paid generators, on your machine, against files in your own repository.",
+    "polyweave sits ",
+    { b: "between Claude Code and the tools that make game content" },
+    ". It drives Blender, Godot and AI generators, checks every result against the bar you set, and puts the best candidates on one page where ",
+    { b: "you approve what ships" },
+    ".",
   ] as Rich,
-  // No emoji on these three, and that is a writing rule rather than a taste: an emoji glued
-  // to the front of a feature line is the most recognisable mannerism of a generated landing
-  // page, and these strings are also bullets in the Markdown twin an agent reads.
-  meta: [
-    "No GUI and no account",
-    "Nothing leaves your machine",
-    "It never spends money on its own judgement",
-  ],
-  pills: [
-    ["Blender for the ", { b: "bake" }] as Rich,
-    ["Godot for the ", { b: "world" }] as Rich,
-    ["A generative service for the ", { b: "mesh" }] as Rich,
-    [{ b: "TOML" }, " for what a person writes, ", { b: "JSON" }, " for what a machine does"] as Rich,
-  ],
-  cta: "Read the plan",
-  ctaShort: "The plan",
+  cta: "Install in Claude Code",
+  ctaShort: "Install",
+  // The middle figure, in words: who talks to whom.
+  hub: {
+    you: { title: "You + Claude Code", lines: ["“Make the mascot from my sketch.”", "“Level 3, a little harder.”"] },
+    core: { title: "polyweave", lines: ["makes", "checks", "tunes", "records"] },
+    tools: ["Blender", "Godot", "Meshy", "FLUX", "Ideogram", "ElevenLabs", "sfxr"],
+    review: { title: "Your review page", line: "approve · reject · ask for a change" },
+  },
+  meta: ["Runs on your machine", "Works with the models you pick", "Spends only what you allow"],
 };
 
-/* ------------------------------------------------------------------ the stage band */
-// The first thing after the transcript, and deliberately not in a footnote. Its status
-// is derived from the roadmap, never typed (§PW137): the typed version said there was no
-// code a hundred shipped lines after it stopped being true, and a test defended it.
+/* ------------------------------------------------------------------ what Claude Code gains */
 
-export const stage = {
-  eyebrow: "Read this first",
-  heading: `${Spelled(finishedCount())} of ${spelled(blockCount())} blocks are built.`,
-  body: [
-    "polyweave is Python under ",
-    { code: "src/polyweave" },
-    ", served as a Claude Code plugin. What this page describes is the product ",
-    { code: "docs/ROADMAP.md" },
-    " and ",
-    { code: "docs/specs/" },
-    " specify, and ",
-    { b: `${taskCount()} lines are still open across ${spelled(blockCount() - finishedCount())} blocks` },
-    ". ",
+export const gains = {
+  eyebrow: "Claude Code first",
+  heading: "Everything Claude Code gains with polyweave.",
+  intro: [
+    "On its own, Claude Code writes code and reads text. It cannot see a render, hear a sound or play a level, and it has no way to know when a part is good enough. polyweave gives it all of that through ",
+    { b: "one MCP server" },
+    ", installed with the plugin.",
   ] as Rich,
-  body2: [
-    "Every measurement quoted here was taken in ",
-    { b: "Cottony" },
-    ", the game the backlog was drawn from, and describes the cost polyweave exists to remove. ",
-    { b: "None of it is a benchmark of polyweave" },
-    ": the loop ledger that would measure the plugin against the hand-tuned way has only begun to record runs, and a claim this page cannot cite a run for is one it does not make.",
-  ] as Rich,
+  items: [
+    {
+      icon: "hand",
+      title: "Hands on every tool",
+      body: "Drives Blender, Godot and the 3D, picture, sound and voice generators through one set of calls, each tool in its own language.",
+    },
+    {
+      icon: "eye",
+      title: "Eyes",
+      body: "Every render comes back with its numbers: silhouette, colour, contrast, and how it reads at the size a player sees it.",
+    },
+    {
+      icon: "ear",
+      title: "Ears",
+      body: "Loudness, clipping, loop seams and spoken takes are measured, so a sound is checked before a person hears it.",
+    },
+    {
+      icon: "target",
+      title: "A bar to aim at",
+      body: "Each part has a short file saying what correct means. A search tunes the settings until every check passes.",
+    },
+    {
+      icon: "gamepad",
+      title: "Hands on the game",
+      body: "Opens your game, presses buttons, waits for a state, takes screenshots and replays a run, all without a screen.",
+    },
+    {
+      icon: "verdict",
+      title: "Your verdict, on tap",
+      body: "Sends the candidates to your review page and waits for your answer, so it never has to guess your taste.",
+    },
+    {
+      icon: "wrench",
+      title: "Errors that carry the fix",
+      body: "Every failure has a stable code and the exact call that resolves it. No traceback to decode, no second round trip.",
+    },
+    {
+      icon: "memory",
+      title: "Memory across sessions",
+      body: "Long jobs return a handle, and jobs, traces and records are files in the repo, so the next session picks up where this one stopped.",
+    },
+    {
+      icon: "book",
+      title: "Tools that explain themselves",
+      body: "Each operation lists its parameters, ranges and defaults, and the plugin says which tools this machine has.",
+    },
+    {
+      icon: "wallet",
+      title: "A budget it can work inside",
+      body: "You set a spending ceiling once. Claude Code works freely under it and can never raise it.",
+    },
+    {
+      icon: "record",
+      title: "The history of every file",
+      body: "Which model, prompt, seed, cost and licence made each part. Credits and licence checks are written from it.",
+    },
+    {
+      icon: "box",
+      title: "Game parts already proven",
+      body: "Menus, settings, saves, controls, co-op and accessibility arrive as kits, installed and tested in your project.",
+    },
+  ] as { icon: IconName; title: string; body: string }[],
 };
+
+/* ------------------------------------------------------------------ how it works */
+
+export const steps = {
+  eyebrow: "How it works",
+  heading: "From a request to a part you approved, in four steps.",
+  items: [
+    {
+      n: "1",
+      title: "Ask",
+      body: [
+        "Tell Claude Code what you need, in plain words: ",
+        { i: "“a mascot like this sketch”" },
+        ", ",
+        { i: "“a coin sound in C”" },
+        ", ",
+        { i: "“make level 3 a bit harder”" },
+        ".",
+      ] as Rich,
+    },
+    {
+      n: "2",
+      title: "Make",
+      body: [
+        "polyweave picks up the right tool and drives it: Blender, Godot, a 3D or picture generator, a synth or a voice.",
+      ] as Rich,
+    },
+    {
+      n: "3",
+      title: "Check",
+      body: [
+        "Every result is measured against the bar you set. A miss is tuned and tried again before you ever see it.",
+      ] as Rich,
+    },
+    {
+      n: "4",
+      title: "Approve",
+      body: [
+        "The best candidates land on your review page. Approve, reject, or ask for a change, and Claude Code takes it from there.",
+      ] as Rich,
+    },
+  ],
+};
+
+/* ------------------------------------------------------------------ what it makes */
+
+export const makes = {
+  eyebrow: "What it makes",
+  heading: "One plugin for every part of a game.",
+  intro: [
+    "Each layer works the same way: say what the part should be, let it be made and checked, approve the result. All of them share one project config, one record and one review page.",
+  ] as Rich,
+  items: [
+    { icon: "cube", title: "3D models", body: "Built in Blender from a declaration, or bought from a generator and fitted to your drawing." },
+    { icon: "image", title: "Images", body: "Concept art, icons, sprite sheets and store capsules, held to your style." },
+    { icon: "music", title: "Music", body: "Loops that close without a seam, rendered from MIDI and heard mixed." },
+    { icon: "wave", title: "Sound", body: "Effects synthesised or bought, put in a key, checked for loudness and clicks." },
+    { icon: "spark", title: "Effects", body: "Particles, glows and hits declared as data and previewed before they ship." },
+    { icon: "kit", title: "Game kits", body: "Menus, saves, settings, controls, co-op and accessibility, installed already tested." },
+    { icon: "mic", title: "Voices", body: "Lines read in each character's own voice, priced before anything is spent." },
+    { icon: "text", title: "Words", body: "Names, dialogue and string tables checked against your world and your fonts." },
+    { icon: "map", title: "Levels", body: "Declared as data, built into the engine, measured for difficulty before anyone plays." },
+    { icon: "motion", title: "Animation", body: "Skeletons and clips kept as text, so a timing change is one edit you can diff." },
+  ] as { icon: IconName; title: string; body: string }[],
+};
+
+/** The six the hero names first, as chips. Each one links to its card below. */
+export const heroParts: { icon: IconName; label: string }[] = [
+  { icon: "cube", label: "3D" },
+  { icon: "image", label: "Images" },
+  { icon: "music", label: "Music" },
+  { icon: "wave", label: "Sound" },
+  { icon: "spark", label: "Effects" },
+  { icon: "kit", label: "Kits" },
+];
 
 /* ------------------------------------------------------------------ session */
 
 export const session = {
-  eyebrow: "What driving it looks like",
+  eyebrow: "See it in action",
+  heading: "What Claude Code actually does.",
+  intro: [
+    `${SPELLED_SMALL[sessionCalls] ?? sessionCalls} calls: turn a sketch into a bar, search until it passes, take the final render, and get a failure that says how to fix it.`,
+  ] as Rich,
   note: [
-    `${Spelled(sessionCalls)} calls: turn a drawing into a spec, search for the parameters that satisfy it, take the verdict at the final rung, and — on the last one — get a failure that names the door instead of a traceback. The commands are the surface `,
+    "The commands are the surface ",
     { code: "docs/specs/tool-surface.md" },
     " fixes; the values are illustrative.",
   ] as Rich,
+  more: "How polyweave is built for an agent",
 };
 
-/* ------------------------------------------------------------------ friction */
+/* ------------------------------------------------------------------ the middle */
 
-// The cards first, so the sentence that counts them can count them. This one sentence is
-// why: it said "four" for as long as there were four cards and stayed saying it when two
-// more were added, which is the drift this whole module is arranged to make impossible.
-const frictionCards = [
-  {
-    ico: "⏱",
-    title: "Fourteen constants, at two minutes a sample",
-    body: [
-      "Cottony's render rig has fourteen tuned fields, and every one of them was found by rendering, looking, and changing it by hand. It is the single largest cost in making an asset, and it is the cost this plugin exists to remove.",
-    ] as Rich,
-  },
-  {
-    ico: "📉",
-    title: "0.31 against 0.32, and plainly wrong",
-    body: [
-      "A board matched the concept art's mean saturation to within 0.01 and still looked washed out. The whole difference sat at the ",
-      { b: "99th percentile" },
-      ", which is why a measurement here is a distribution and never a single number.",
-    ] as Rich,
-  },
-  {
-    ico: "💳",
-    title: "Thirty credits for a silhouette",
-    body: [
-      "A wide low cap was sent to the generative service and a tall dome on a long stem came back. A silhouette check against the drawing would have said so before a credit moved.",
-    ] as Rich,
-  },
-  {
-    ico: "🎲",
-    title: "29,696 pixels, none by more than 1/255",
-    body: [
-      "Two runs of one unchanged scene. A path-traced bake is not byte-reproducible, so equality is the wrong question and a tolerance is the right one — and any usable distance metric has to sit above that noise floor.",
-    ] as Rich,
-  },
-  {
-    ico: "🔇",
-    title: "A success returned over an empty mesh",
-    body: [
-      "Blender's ",
-      { code: "EXACT" },
-      " boolean returns an empty mesh with no error when its target was bevelled. The silence cost a full render to locate, which is why every operation here asserts its own output before returning.",
-    ] as Rich,
-  },
-{
-  ico: "📖",
-  title: "Fourteen fields, documented as comments",
-  body: [
-    "The rig's parameters live in a thousand-line module, so every caller pays a file read to find out what it may set. A surface an agent has to read the implementation to use is one it will get wrong on the first call.",
-  ] as Rich,
-},
-];
-
-export const friction = {
-  eyebrow: "The cost today",
-  heading: "Generating a mesh is the cheap part.",
+export const middle = {
+  eyebrow: "The middle layer",
+  heading: "Many models. One way to use them.",
   intro: [
-    "What is expensive is everything between ",
-    { i: "having a mesh" },
-    " and ",
-    { i: "knowing it is right" },
-    ` — and today that is a person changing one number at a time and looking at a two-minute render. ${Spelled(frictionCards.length)} measurements from Cottony, each of which put a line on the backlog.`,
+    "Claude Code talks to polyweave, and polyweave talks to each tool in its own language. Pick the models you like; the rules stay the same.",
   ] as Rich,
-  cards: frictionCards,
-};
-
-/* ------------------------------------------------------------------ the loop */
-
-export const loop = {
-  eyebrow: "The mechanism",
-  heading: "Declare it, then search for it.",
-  lead: [
-    "One file beside the asset says what makes a render of it correct. A search reads it, proposes values for the parameters the file permits, bakes at the cheapest rung that can answer, measures the result and scores how comfortably each predicate passed. What comes back is the winning values, a contact sheet and a trace of everything it rejected.",
-  ] as Rich,
-  points: [
-    [
-      { b: "A bound, not an expression." },
-      " ",
-      { code: "min" },
-      ", ",
-      { code: "max" },
-      " and ",
-      { code: "target" },
-      " are the only comparisons a predicate has. Anything needing more is a measure that does not exist yet, and the honest response is to add the measure rather than widen the grammar.",
-    ] as Rich,
-    [
-      { b: "A margin, not a verdict." },
-      " Each predicate yields pass/fail ",
-      { i: "and" },
-      " a value in [0, 1] for how comfortably it passed. A pure boolean gives a search a cliff and nothing to climb; the margin is what makes it converge on something rather than wander.",
-    ] as Rich,
-    [
-      { b: "The spec is the whole permission." },
-      " A parameter ",
-      { code: "[search.<param>]" },
-      " does not name is not searched, whatever the optimiser would like. It can tune the exposure; it cannot decide the asset should be twice as large.",
-    ] as Rich,
-    [
-      { b: "Every predicate has a name." },
-      " The trace addresses them by ",
-      { code: "id" },
-      ", so a result can be argued with. An anonymous predicate is one nobody can discuss.",
-    ] as Rich,
-    [
-      { b: "Cancelling is not advisory." },
-      " A search that has found its answer stops paying for the renders it no longer needs, which is what makes running one affordable at all.",
-    ] as Rich,
-    [
-      { b: "Nothing is rendered twice." },
-      " The cache is keyed on the inputs, the renderer and its version, and the seed — a sweep revisits neighbourhoods, and without that key the same picture is paid for as many times as the search returns to it.",
-    ] as Rich,
+  groups: [
+    { label: "3D", names: ["Blender", "Meshy"] },
+    { label: "Pictures", names: ["FLUX", "Ideogram"] },
+    { label: "Sound and music", names: ["sfxr", "MIDI"] },
+    { label: "Voice", names: ["ElevenLabs"] },
+    { label: "Game engine", names: ["Godot"] },
   ],
-  sheetCaption: [
-    "The contact sheet, and why it is not a nicety: the expected case is a search that satisfies the spec and returns a render a person rejects. That is the moment you find out the ",
-    { b: "spec" },
-    " is incomplete rather than the renderer — and it is the fastest way this loop earns its keep.",
-  ] as Rich,
-};
-
-/* ------------------------------------------------------------------ seeing cheaply */
-
-export const seeing = {
-  eyebrow: "Before you pay for a render",
-  heading: "Three seconds, not two minutes.",
-  lead: [
-    "A surface is read on a sphere, and a sphere renders in three seconds. Nothing in the old pipeline made the cheap look the default, so the expensive one is what got run — every time, for every judgement, including the ones a sphere could have settled.",
-  ] as Rich,
-  measures: {
-    heading: "A closed vocabulary, so a spec is checkable",
-    intro: [
-      "A measure named in an acceptance spec has to be one of these. An unknown name is a refusal — ",
-      { code: "spec.unknown-measure" },
-      " — never a warning, because a spec that accepts any string is a spec that silently checks nothing.",
-    ] as Rich,
-    rows: [
-      {
-        name: "saturation_{p1,p50,p99,mean,std}",
-        range: "0–1",
-        what: "HSL saturation over the region, returned as a set and never as one number",
-      },
-      {
-        name: "luma_{p1,p50,p99,mean,std}",
-        range: "0–1",
-        what: "Relative luminance, sRGB-weighted",
-      },
-      { name: "hue_spread", range: "0–1", what: "Circular standard deviation of hue, weighted by saturation" },
-      { name: "alpha_coverage", range: "0–1", what: "Fraction of the region above the alpha floor" },
-      {
-        name: "silhouette_iou",
-        range: "0–1",
-        what: "Intersection over union of the alpha mask against a reference drawing",
-      },
-      { name: "silhouette_centroid_offset", range: "px", what: "Distance between the two mask centroids" },
-      { name: "silhouette_bbox_delta", range: "px", what: "Largest per-edge difference between the bounding boxes" },
-      { name: "region_colour", range: "Lab", what: "Mean CIELAB colour over the region" },
-      { name: "delta_e", range: "0–100", what: "CIEDE2000 distance to a target: under 2 is a difference you have to look for" },
-      { name: "distance", range: "0–1", what: "Perceptual distance between two renders, above the sampler's own noise" },
-      { name: "changed_fraction", range: "0–1", what: "Fraction of pixels differing by more than a stated amount" },
-      { name: "luma_bands", range: "count", what: "Distinct luminance bands surviving a downscale to the size it will be seen at" },
-    ],
-  },
   points: [
-    [
-      { b: "The picture and its numbers are one answer." },
-      " A render returns the image alongside its measurements, so a verdict costs one turn rather than three.",
-    ] as Rich,
-    [
-      { b: "The region is masked, and named." },
-      " ",
-      { code: "subject" },
-      " means the pixels where alpha clears the floor, so a prop is measured over its own pixels and not diluted by whatever background it happens to sit on.",
-    ] as Rich,
-    [
-      { b: "At the size it will be seen." },
-      " Cottony's fluff read at 1.2 and vanished at 1.0, at a third of the sprite's authored size. ",
-      { code: "luma_bands" },
-      " takes the display size and downscales before counting, which is the only honest way to ask that question.",
-    ] as Rich,
-    [
-      { b: "Beside its siblings, not alone." },
-      " A prop that reads correctly on its own can be the one thing on a sheet with no shadow and no specular window, which no solo render shows.",
-    ] as Rich,
-  ],
+    {
+      icon: "file",
+      title: "Chosen in one config",
+      body: [
+        "Models, budgets and paths live in ",
+        { code: "polyweave.toml" },
+        ", in your repo. Switching is a config change, not a rewrite.",
+      ] as Rich,
+    },
+    {
+      icon: "check",
+      title: "Checked before you pay",
+      body: [
+        "A request is checked against your drawing before a credit moves, and every price is quoted before it is spent.",
+      ] as Rich,
+    },
+    {
+      icon: "record",
+      title: "Kept, with its receipt",
+      body: [
+        "What a service made is copied into your project with its prompt, seed, cost and licence, so nothing expires out from under you.",
+      ] as Rich,
+    },
+  ] as { icon: IconName; title: string; body: Rich }[],
 };
 
-/* ------------------------------------------------------------------ the contract */
+/* ------------------------------------------------------------------ review */
 
-export const contract = {
-  eyebrow: "What a call costs the turn",
-  heading: "One call, right the first time.",
-  lead: [
-    "One measure governs the whole surface: ",
-    { b: "a caller gets a call right on the first attempt, and answers a failure, without opening an implementation file." },
-    " Where a rule does not serve that, the rule is wrong.",
-  ] as Rich,
-  points: [
-    [
-      { b: "Anything over a couple of seconds returns a handle." },
-      " A bake, a fetch, a capture and a search all do; a measurement and a config read do not. ",
-      { code: "stage" },
-      " is a short vocabulary, so a caller branches on a word rather than parsing a message.",
-    ] as Rich,
-    [
-      { b: "The handle survives the session." },
-      " Job state is a file in ",
-      { code: ".polyweave/jobs/" },
-      ", so a session that ends mid-render can be told what happened by the next one.",
-    ] as Rich,
-    [
-      { b: "A dead worker is a failure, not a hang." },
-      " The record carries the OS process id; a poll that finds no live process and no result returns ",
-      { code: "job.worker-gone" },
-      ".",
-    ] as Rich,
-    [
-      { b: "An unknown field is refused, never dropped." },
-      " A silent drop makes a typo indistinguishable from a working call, which is how a payload that validates comes to prove nothing.",
-    ] as Rich,
-    [
-      { b: "The surface describes itself." },
-      " ",
-      { code: "describe()" },
-      " returns each parameter's type, range, default and one sentence, read from the implementation, so the documentation and the code cannot drift.",
-    ] as Rich,
-    [
-      { b: "And it describes this machine." },
-      " ",
-      { code: "capabilities()" },
-      " says which renderer and version are here, whether an engine is reachable, which offscreen route works, whether a service key is present and what budget is left — so a caller plans against it rather than discovering a missing binary three calls later.",
-    ] as Rich,
-  ],
-  post: {
-    heading: "Every operation asserts its own output",
-    intro: [
-      "A success returned over a result nobody checked is a failure this plugin exists partly to remove. Before returning, each operation checks what must be true of what it produced. A failed assertion is an ",
-      { b: "error" },
-      ", never a warning, and its code names the assertion.",
-    ] as Rich,
-    rows: [
-      { produces: "A mesh", asserted: "at least one face; finite bounds; no NaN in any vertex" },
-      { produces: "A boolean result", asserted: "face count is not zero where both operands had faces" },
-      { produces: "A render", asserted: "not a single uniform colour; not fully transparent; dimensions as requested" },
-      { produces: "A texture", asserted: "not fully transparent; not a single uniform colour" },
-      { produces: "A download", asserted: "byte length matches the declared length; sha256 recorded" },
-      { produces: "A capture", asserted: "the named artefact exists on disk and is a readable image" },
-    ],
-  },
-  error: {
-    heading: "An error names the door",
-    intro: [
-      "A traceback says where the code gave up, not what the caller should do instead — which is the one thing needed to retry without another round trip.",
-    ] as Rich,
-    sample: `{
-  "code": "render.no-material",
-  "message": "the model 'mascot' carries no material, so the rig has nothing to light",
-  "remedy": "set \`material\` on the model, or pass \`glaze: {roughness: 0.22}\` to apply the default",
-  "detail": "…traceback, for a human…"
-}`,
-    after: [
-      { code: "code" },
-      " is stable and namespaced by area, and does not change once published. ",
-      { code: "remedy" },
-      " is the call that closes it, with the arguments filled in wherever they are derivable; where the choice is a judgement the tool cannot make, it names both doors and what separates them. ",
-      { code: "message" },
-      " never contains a traceback. ",
-      { code: "detail" },
-      " may.",
-    ] as Rich,
-  },
-};
-
-/* ------------------------------------------------------------------ the paid service */
-
-export const service = {
-  eyebrow: "Someone else's balance",
-  heading: "Bounded, visible, and never the agent's call.",
-  lead: [
-    "A fetch draws on a real balance. The ceiling is a person's to set; the plugin's job is to make a spend bounded and visible, and never to decide one is worth it. That is a constraint on this project, not a feature of it.",
-  ] as Rich,
-  points: [
-    [
-      { b: "The silhouette is checked before the credit moves." },
-      " The request carries the drawing it has to match, and a mismatch is a refusal that costs nothing.",
-    ] as Rich,
-    [
-      { b: "A ceiling agreed once, not a question each time." },
-      " The rule that an agent may not spend on its own judgement is right; enforcing it by asking every time is what stops work between approvals. The budget and the ledger are files in the project.",
-    ] as Rich,
-    [
-      { b: "What was bought is kept." },
-      " The service deletes what it made seventy-two hours later. The mesh is copied locally with its sha256 and a provenance sidecar — prompt, seed, service, version, cost — so the receipt never outlives the thing.",
-    ] as Rich,
-    [
-      { b: "The schema is learned once and written down." },
-      " Finding out what a service accepts takes a series of deliberately invalid payloads, each with a made-up field as its control. That knowledge is recorded rather than rediscovered.",
-    ] as Rich,
-    [
-      { b: "It arrives in this project's axes." },
-      " A fetched mesh comes at an arbitrary orientation, scale and origin — a hammer standing upright where the drawing leans it. Normalising it is one conversion on the boundary, not two angles found by re-rendering until it looks right.",
-    ] as Rich,
-    [
-      { b: "The background does not become geometry." },
-      " A photograph of a plush toy returned the logo the toy was sitting on, fused into the mesh, and no camera move takes that back out.",
-    ] as Rich,
-  ],
-};
-
-/* ------------------------------------------------------------------ the engine */
-
-export const engine = {
-  eyebrow: "One world",
-  heading: "The engine's exit code is not the verdict.",
-  lead: [
-    "Godot exits zero on a script error and non-zero on a clean quit. The only honest signal is a line the script printed and no error in the log — and every project that has driven it headless has written that parser again.",
-  ] as Rich,
-  points: [
-    [
-      { b: "A capture runs where there is no screen." },
-      " Headless mode draws nothing at all, which makes every screenshot a manual step on a developer's desk and keeps it out of any gate. ",
-      { code: "capabilities()" },
-      " names the offscreen route that works on this machine.",
-    ] as Rich,
-    [
-      { b: "Scale is derived, not tuned." },
-      " One unit is one pixel today because somebody set a render rectangle to match a cell size the game holds separately, and nothing fails if either moves. Here the grid is declared once and both sides read it.",
-    ] as Rich,
-    [
-      { b: "The runner is pinned." },
-      " Language, locale and settings are declared, so the same script on two machines produces the same image — and a difference is a change somebody made rather than an environment nobody stated.",
-    ] as Rich,
-  ],
-};
-
-/* ------------------------------------------------------------------ motion */
-
-export const motion = {
-  eyebrow: "Motion",
-  heading: "A pose needs a skeleton.",
-  lead: [
-    "Every generative mesh arrives as a static surface, and rigging one by hand is the step that keeps character animation out of reach entirely. Everything below follows from fixing that one thing.",
-  ] as Rich,
-  points: [
-    [
-      { b: "A clip, not a second static render." },
-      " A settle expressed as a squashed re-render of the same mesh is right for one beat and has no way to say what a walk or a reaction would be.",
-    ] as Rich,
-    [
-      { b: "Curves as text." },
-      " A timing change inside a binary track is invisible in a diff and unreachable by an edit, which makes every adjustment a re-export from a tool nobody scripted.",
-    ] as Rich,
-    [
-      { b: "One source, two outputs." },
-      " The same settle is frames a 2D interface crossfades to and a clip a 3D scene plays. Authoring it twice and keeping the two in step by hand is the work being removed.",
-    ] as Rich,
-  ],
-};
-
-/* ------------------------------------------------------------------ geometry */
-
-export const geometry = {
-  eyebrow: "Geometry",
-  heading: "A shape is data, not a program.",
-  lead: [
-    "Cottony's tray, star, ball and props are four modules of imperative geometry code, and the shape each one describes is not readable without running it. A declaration is the same shape in a file a person can read, a search can reach and a reviewer can argue with.",
-  ] as Rich,
-  points: [
-    [
-      { b: "The vocabulary is read off real assets." },
-      " Extruded outlines, crowned plates, radial arrays, annuli and boolean pockets — because a format covering only primitives would leave every real asset back in code.",
-    ] as Rich,
-    [
-      { b: "Its numbers are reachable." },
-      " Geometry constants sit inside a module while the rig's sit in a dataclass, so a search can reach the lighting and never the shape it is lighting. In a declaration both are fields.",
-    ] as Rich,
-    [
-      { b: "It can be reviewed before it is built." },
-      " Two wrong constructions of one tray's seats each looked reasonable while being written and were only visible once rendered, which is the expensive place to find out.",
-    ] as Rich,
-    [
-      { b: "And there is a way back to code." },
-      " Any format will meet a shape it cannot state, and forcing that shape into the format produces worse geometry than the script it replaced. The escape hatch is part of the design, not an admission.",
-    ] as Rich,
-  ],
-};
-
-/* ------------------------------------------------------------------ conventions */
-
-export const conventions = {
-  eyebrow: "Fixed once",
-  heading: `${Spelled(conventionRows.length)} decisions nothing downstream has to guess.`,
+export const review = {
+  eyebrow: "Review",
+  heading: "You judge the result. Never the file.",
   intro: [
-    "Stated in ",
-    { code: "docs/specs/tool-surface.md" },
-    " so that no other spec has to repeat them and no ingest has to invent one.",
+    "Only a person can say a look is right, a line sounds true or a level feels fair. polyweave makes that the quick part.",
   ] as Rich,
+  mock: {
+    window: "polyweave · mascot",
+    candidates: [
+      { label: "A", hue: 32, checks: [["silhouette", "0.98", true], ["colour", "ΔE 1.4", true]] },
+      { label: "B", hue: 14, checks: [["silhouette", "0.97", true], ["colour", "ΔE 1.9", true]] },
+      { label: "C", hue: 300, checks: [["silhouette", "0.91", false], ["colour", "ΔE 4.2", false]] },
+    ] as { label: string; hue: number; checks: [string, string, boolean][] }[],
+    approve: "Approve",
+    reject: "Reject",
+    change: "Ask for a change",
+    ask: "“Make the ears rounder.”",
+    status: "Claude Code is on it",
+  },
+  points: [
+    [
+      { b: "Every candidate side by side," },
+      " with the checks behind it, so you compare instead of opening files.",
+    ] as Rich,
+    [
+      { b: "Ask for a change in your own words." },
+      " Claude Code makes it, runs the checks again, and comes back to you.",
+    ] as Rich,
+    [
+      { b: "A desktop window for every project" },
+      " on your machine: each item with its bar, its history and its next step.",
+    ] as Rich,
+    [
+      { b: "Sounds heard mixed, words seen in place." },
+      " You judge a part the way the player will meet it.",
+    ] as Rich,
+    [
+      { b: "Claude Code cannot approve its own work." },
+      " The verdict is always yours.",
+    ] as Rich,
+  ],
 };
 
-/* ------------------------------------------------------------------ feature index */
+/* ------------------------------------------------------------------ trust */
 
-export const featureIndex = {
-  eyebrow: "In depth",
-  heading: "The seven blocks, one page each.",
-  intro: [
-    "Each block on the roadmap is a group of lines that share a failure. These pages carry the lines themselves — the symptom in the roadmap's own words, and the measurement behind it.",
-  ] as Rich,
+export const trust = {
+  eyebrow: "Safe by design",
+  heading: "Your project. Your money. Your call.",
+  items: [
+    {
+      icon: "laptop",
+      title: "Runs on your machine",
+      body: "No account and no hosted service. polyweave works on files in your own repository.",
+    },
+    {
+      icon: "wallet",
+      title: "You set the budget",
+      body: "A ceiling you agree once. Every spend is bounded, quoted and written in a ledger.",
+    },
+    {
+      icon: "shield",
+      title: "You approve every look",
+      body: "An agent can measure a part. Only you can accept it.",
+    },
+    {
+      icon: "file",
+      title: "Everything is a file",
+      body: "Specs, records and jobs live in your repo, so a colleague can review and repeat any of it.",
+    },
+  ] as { icon: IconName; title: string; body: string }[],
 };
 
 /* ------------------------------------------------------------------ non-goals */
 
 export const nonGoals = {
   eyebrow: "Deliberately not",
-  heading: "What this will not be.",
+  heading: "What polyweave will never be.",
   intro: [
-    "Five constraints bind the project, and they are governed alongside the backlog: a proposal is read against them before it becomes a line. The sharpest is the third.",
+    "These constraints bind the project, and every new idea is read against them first.",
   ] as Rich,
 };
 
-/* ------------------------------------------------------------------ proof */
+/* ------------------------------------------------------------------ install */
 
-export const proof = {
-  eyebrow: "The last block",
-  heading: "Measured against what it replaced.",
-  body: [
-    "Cottony is the first consumer and the test of whether the configuration boundary holds — an adoption that needs a fork proves that it does not. It is also where the claim gets settled: nothing today records how long a correct asset took before and after, so there is no way to tell a real improvement from a rearrangement of the same work.",
+export const install = {
+  eyebrow: "Get started",
+  heading: "Three lines, then just ask.",
+  intro: [
+    "Add the plugin from inside Claude Code. It brings the MCP server, the skill that teaches Claude Code to drive it, and the hooks that keep it safe.",
   ] as Rich,
-  body2: [
-    "Until that line ships, every number on this page is Cottony's cost and not polyweave's saving. That is the honest state of it, and it is why the benchmark is on the roadmap rather than in the pitch.",
+  commands: `pip install git+https://github.com/alegauss/polyweave
+/plugin marketplace add alegauss/polyweave
+/plugin install polyweave@polyweave`,
+  tryHeading: "Then try",
+  prompt: "Set up polyweave in this project, and make me a mascot from docs/sketch.png.",
+  needs: [
+    "Python 3.11 or newer. Blender and Godot are optional: polyweave says which tools it found, and what each missing one would unlock.",
   ] as Rich,
 };
 
-/* ------------------------------------------------------------------ the close */
+/* ------------------------------------------------------------------ explore */
 
-export const close = {
-  eyebrow: "Where it stands",
-  heading: "Nothing to install yet.",
-  body: [
-    "The plan is the artefact. ",
-    { code: "docs/ROADMAP.md" },
-    " holds ",
-    { b: `${taskCount()} lines` },
-    ", each one a failure measured in a real project rather than a feature somebody wanted, and ",
-    { code: "docs/specs/" },
-    " holds the contracts that more than one of them depends on. Both are worth reading before the code exists, because that is when they are still cheap to argue with.",
-  ] as Rich,
-  ctaPrimary: "Read the roadmap",
-  ctaGhost: "★ View on GitHub",
-  // Split around the link rather than carrying one in the run list: a `Rich` run is text,
-  // code, bold or italic, and adding a fifth kind for the one anchor on the page would put
-  // href handling into the twin generator for no other caller.
-  noteLead: ["The roadmap, the changelog and the rationale file are governed by "] as Rich,
-  noteLink: "roadkeep",
-  noteTail: [
-    ", which refuses a hand edit — so a line shipped is a line removed from the backlog and written into the ledger by a tool, and the counts on this page are generated from it rather than typed.",
-  ] as Rich,
+export const explore = {
+  eyebrow: "Go deeper",
+  heading: "How each piece works.",
 };
 
 /* ------------------------------------------------------------------ claude code page */
@@ -836,22 +652,4 @@ step = 0.1`,
       " is a real criterion and not a predicate, and pretending otherwise by inventing a proxy for it is how a spec ends up satisfied by a render a person rejects. That case is expected rather than designed away — it is exactly what the contact sheet is for.",
     ] as Rich,
   },
-};
-
-/* ------------------------------------------------------------------ shared bits */
-
-export const evidence = {
-  eyebrow: "Where the evidence comes from",
-  // The count is derived; the sentence is a sentence. That split is the rule this whole
-  // module follows, and it is the one that survives somebody reworking the copy.
-  heading: `Every one of the ${taskCount()} lines is a failure somebody measured.`,
-  body: [
-    { b: "Cottony" },
-    " is a real game, and it is where nearly every symptom in this backlog was measured: a fourteen-field render rig found by hand at two minutes a sample, a silhouette bought for thirty credits, a percentile that disagreed with a mean, and two runs of one unchanged scene that differed in 29,696 pixels. The backlog was not imagined and then justified — it was read off a project that already hurt.",
-  ] as Rich,
-  stats: [
-    { value: String(taskCount()), label: "lines, each with its measurement" },
-    { value: Spelled(blockCount()), label: "blocks, grouped by the failure they share" },
-    { value: "0", label: "shipped, because this is a plan and not a product" },
-  ],
 };

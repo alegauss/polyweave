@@ -1,7 +1,7 @@
 // The site's own claims, asserted against the built output. These read dist/, so they run
 // after `npm run build` (which is what CI does). A claim that has gone false — a route with
 // no file, a duplicate title, a twin that leaked the nav or the call to action, a card that
-// is not 1200x630, a landing page whose status disagrees with the roadmap — fails here
+// is not 1200x630, a landing page that lost its install commands — fails here
 // rather than being invisible until somebody reads the page against the repository.
 import { test, before } from "node:test";
 import assert from "node:assert/strict";
@@ -61,7 +61,7 @@ test("no twin leaks the nav, the footer or the call to action", () => {
   // Deliberately not a short phrase like "part of" — the copy says "part of the design"
   // about the geometry escape hatch, and a guard that fires on prose is one somebody
   // silences by rewording the prose.
-  const banned = ["★ View on GitHub", "Read the plan", "independent open-source project"];
+  const banned = ["★ View on GitHub", "Install in Claude Code", "independent open-source project"];
   for (const r of manifest.routes) {
     const md = readFileSync(join(distDir, r.markdown), "utf8");
     assert.ok(md.trim().length > 0, `${r.markdown} is empty`);
@@ -77,43 +77,24 @@ test("the landing twin carries the session — the product an agent can grep", (
   assert.ok(md.includes("post.render-uniform"), "landing twin missing the typed failure");
 });
 
-// --- the honesty gate ---
-// The one thing this site must never stop saying is where the project stands, and it
-// says it from the roadmap rather than from a sentence somebody typed (§PW137). This gate
-// used to require "There is no code yet" and so defended a false page a hundred shipped
-// lines after the code arrived. It now requires the page to agree with the generated
-// module: how many blocks have nothing open, and how many lines are left. If this ever
-// fails, the fix is the copy or the roadmap, not the test.
+// --- the promise ---
+// The landing page describes polyweave as the roadmap leaves it, every block built, and
+// states no status of its own: what is still open lives in docs/ROADMAP.md. What it must
+// never lose is the thing a reader came for — how to install it — and the non-goals, which
+// are read from the roadmap rather than typed.
 
-// The site's own rule (roadmap.ts): prose counts up to twelve in words, then in digits.
-const SPELLED = [
-  "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
-  "ten", "eleven", "twelve",
-];
-const spell = (n) => SPELLED[n] ?? String(n);
-const Spell = (n) => spell(n).charAt(0).toUpperCase() + spell(n).slice(1);
-
-test("the landing page states the status the roadmap derives", () => {
+test("the landing page carries the install commands", () => {
   const md = readFileSync(join(distDir, "index.md"), "utf8");
-  const opens = [...generated.matchAll(/\{ block: "[^"]+", title: "[^"]*", open: (\d+) \}/g)]
-    .map((m) => Number(m[1]));
-  const finished = opens.filter((n) => n === 0).length;
-  assert.ok(opens.length > 0, "the generated module declares no blocks");
-  assert.ok(
-    md.includes(`${Spell(finished)} of ${spell(opens.length)} blocks are built`),
-    `the landing page does not say ${finished} of ${opens.length} blocks are built`,
-  );
-  assert.ok(!md.includes("There is no code yet"), "the landing page denies the code again");
+  assert.ok(md.includes("/plugin marketplace add alegauss/polyweave"), "landing twin missing the marketplace line");
+  assert.ok(md.includes("/plugin install polyweave@polyweave"), "landing twin missing the install line");
 });
 
-test("the landing page states the roadmap's own counts", () => {
+test("the landing page states no backlog count", () => {
+  // A count typed or derived into the pitch goes stale or reads as a status page; the
+  // roadmap is where a reader goes for that, and the depth pages link to it.
   const md = readFileSync(join(distDir, "index.md"), "utf8");
-  const lines = [...generated.matchAll(/^    id: "([^"]+)",$/gm)].length;
-  assert.ok(
-    md.includes(`${lines} lines are still open`),
-    `the landing page does not state ${lines} open lines`,
-  );
-  assert.ok(lines > 0, "the generated module is empty");
+  assert.ok(!/\d+ lines are still open/.test(md), "the landing page states an open-line count");
+  assert.ok(!md.includes("There is no code yet"), "the landing page denies the code again");
 });
 
 test("every non-goal in the roadmap reaches the landing page", () => {

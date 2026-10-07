@@ -197,8 +197,10 @@ function blocks(node, out) {
       const pre = child.querySelector("pre");
       if (pre) out.push(fencedFrom(pre));
     } else if (cls.includes("codeblock")) {
-      const code = child.querySelector("code");
-      if (code) out.push(fencedFrom(code));
+      // A <pre>'s content is one raw text node, so its inner <code> is never an element
+      // querySelector can find: fence the <pre> itself, whether it is this node or inside it.
+      const pre = tag === "PRE" ? child : child.querySelector("pre");
+      if (pre) out.push(fencedFrom(pre));
     } else if (tag === "PRE") {
       out.push(fencedFrom(child));
     } else if (tag === "TABLE") {

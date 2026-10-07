@@ -7,8 +7,8 @@
 //
 // Every number that appears inside one of these figures is either a measurement the
 // roadmap records against Cottony or a name from docs/specs/. Nothing here is a benchmark
-// of polyweave, because there is nothing yet to benchmark, and a figure that implied
-// otherwise would be the exact failure the product exists to remove.
+// of polyweave, and a figure that implied one would be the exact failure the product
+// exists to remove.
 
 export const loopDiagram = `
 <svg viewBox="0 0 900 310" role="img" aria-label="An acceptance spec feeds a search; the search proposes parameters, bakes at a preview rung, measures the render and scores the margin, looping; what comes back is the winning parameters, a contact sheet and a trace of every sample. A cache keyed on the inputs and the renderer version means a state already rendered is never rendered twice.">

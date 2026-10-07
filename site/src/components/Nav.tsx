@@ -1,4 +1,4 @@
-import { hero, navLinks, parentUrl, repoUrl, roadmapUrl } from "../lib/site-content";
+import { hero, navLinks, parentUrl, repoUrl } from "../lib/site-content";
 import { ThemeToggle } from "./ui/ThemeToggle";
 
 export function Nav() {
@@ -25,10 +25,8 @@ export function Nav() {
               {link.label}
             </a>
           ))}
-          {/* The primary button is the roadmap, because the roadmap is what exists. A
-              download button on a project with no code is the one thing this page must
-              not have. */}
-          <a className="btn btn-primary" href={roadmapUrl}>
+          {/* The primary button is the install, from every route. */}
+          <a className="btn btn-primary" href="/polyweave/#install">
             {hero.ctaShort}
           </a>
           <a className="btn btn-ghost" href={repoUrl}>

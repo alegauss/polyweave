@@ -6,10 +6,10 @@ import { blockTitle } from "./roadmap";
 // ship half-declared or untitled: add a record here and its route, its <head> and its page
 // all appear together, or none of them do.
 //
-// `block` is the letter the roadmap files those lines under. The page renders the block's
-// own lines from the generated module, so a depth page carries the backlog rather than a
-// second description of it — and `blockTitle` throws at import time if the letter is gone,
-// which fails the build rather than publishing a page about a block that no longer exists.
+// `block` is the letter the roadmap files those lines under. The page reads the block's
+// title from the generated module, and `blockTitle` throws at import time if the letter is
+// gone, which fails the build rather than publishing a page about a block that no longer
+// exists.
 
 export interface FeatureSection {
   heading: string;

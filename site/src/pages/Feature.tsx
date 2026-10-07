@@ -4,8 +4,7 @@ import { Rich } from "../components/ui/Rich";
 import { RawSvg } from "../components/ui/RawSvg";
 import type { FeatureRecord } from "../lib/features";
 import { features } from "../lib/features";
-import { blockTitle, Spelled, tasksIn } from "../lib/roadmap";
-import { changelogUrl, roadmapUrl } from "../lib/site-content";
+import { blockTitle } from "../lib/roadmap";
 import {
   fetchDiagram,
   geometryDiagram,
@@ -23,13 +22,11 @@ const FIGURES: Record<NonNullable<FeatureRecord["figure"]>, string> = {
 };
 
 /**
- * One depth page per roadmap block. The prose is the record; the backlog at the bottom is
- * the block's own lines, generated from the governed roadmap — so this page carries the
- * work rather than a second description of it, and a line that ships disappears from here
- * the next time the site is generated.
+ * One depth page per roadmap block: the prose is the record, the figure the mechanism, and
+ * the cards at the bottom the blocks it sits next to. The title is read from the roadmap,
+ * so a page cannot outlive the block it describes.
  */
 export function FeaturePage({ record }: { record: FeatureRecord }) {
-  const lines = tasksIn(record.block);
   const others = features.filter((f) => f.slug !== record.slug);
 
   return (
@@ -82,60 +79,6 @@ export function FeaturePage({ record }: { record: FeatureRecord }) {
         </div>
       </section>
 
-      <section id="lines">
-        <div className="wrap">
-          <div className="sec-head reveal">
-            <div className="eyebrow">The block itself</div>
-            <h2>
-              {lines.length === 0 ? (
-                <>This block is finished</>
-              ) : (
-                <>
-                  {Spelled(lines.length)} open {lines.length === 1 ? "line" : "lines"}, in
-                  the roadmap's own words
-                </>
-              )}
-            </h2>
-            <p>
-              {lines.length === 0 ? (
-                <>
-                  Every line it held has shipped, so the roadmap no longer carries any —
-                  which is why there are none below. What each one turned out to be is in{" "}
-                  <a href={changelogUrl}>
-                    <code>docs/CHANGELOG.md</code>
-                  </a>
-                  .
-                </>
-              ) : (
-                <>
-                  Each line names the failure it exists to remove and the measurement
-                  behind it. None of them has shipped. This list is generated from{" "}
-                  <a href={roadmapUrl}>
-                    <code>docs/ROADMAP.md</code>
-                  </a>
-                  , so it cannot describe a backlog the file does not have.
-                </>
-              )}
-            </p>
-          </div>
-          <div className="rows reveal">
-            {lines.map((t) => (
-              <div className="row" key={t.id}>
-                <span className="mark">📋</span>
-                <span className="id">{t.id}</span>
-                <span className="what">
-                  <b>{t.symptom}</b>
-                  <span>{t.why}</span>
-                  {t.deps.length > 0 && (
-                    <span className="deps">waits on {t.deps.join(", ")}</span>
-                  )}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       <section id="more">
         <div className="wrap">
           <div className="sec-head reveal">
@@ -148,7 +91,6 @@ export function FeaturePage({ record }: { record: FeatureRecord }) {
                 <div className="block-letter">{f.block}</div>
                 <h3>{f.heading}</h3>
                 <p>{f.description}</p>
-                <span className="block-count">{tasksIn(f.block).length} lines</span>
               </a>
             ))}
           </div>
