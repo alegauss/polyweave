@@ -19,11 +19,13 @@
 - 📋 **PW57** (deps: PW53 ⏸) **every Cottony look gate restates its own floor, so no asset has a bar a search can aim at** — Five check scripts measure after the render is spent, which is a verdict and never a target, and a threshold moved in one of them is invisible to the rest. → §PW57
 - 📋 **PW59** (deps: PW53 ⏸, PW54 ✅, PW55 ✅, PW56 ⏳, PW57, PW58 ✅) **nothing says how much of Cottony still does its own version of what the plugin does** — Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion. → §PW59
 - ⏳ **PW56** (deps: PW57) **twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent** — The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question. → §PW56
-- 📋 **PW298** (deps: —) **asset.brief calls a spec current while its render is of a mesh the game stopped drawing when voxels replaced it** — A premise held on a model no player sees is not held at all, and nothing says the two have parted. → §PW298
+- 🛠 **PW298** (deps: —) **asset.brief calls a spec current while its render is of a mesh the game stopped drawing when voxels replaced it** — A premise held on a model no player sees is not held at all, and nothing says the two have parted. → §PW298
 - 📋 **PW312** (deps: —) **geometry.describe warns a param no node reads when every node reads it, if its name is also a function** — A warning that is sometimes false teaches a reader to ignore all of them. → §PW312
 - 📋 **PW315** (deps: —) **a vector logo cannot be rendered to a game texture, whole or in its layers, with a record naming the SVG** — The game's logo drifts from the store's, and a ring that turns or a glow that pulses has no layer to move. → §PW315
 - 📋 **PW316** (deps: —) **a menu panel, frame or stylebox cannot be declared, built or held to a spec, so a game draws its UI kit by hand** — A menu's look is then numbers chosen in code, with nothing but a verdict on a screenshot to hold it. → §PW316
 - 📋 **PW319** (deps: —) **measure.contrast rates a text box against its surround, so nothing says whether text reads over the picture behind it** — A menu drawn over a living scene cannot hold its text to a declared contrast, and its veil is set by eye. → §PW319
+- 📋 **PW331** (deps: —) **a set of small 2D icons, such as a pad's button prompts, cannot be declared, built or accepted** — A game's prompts must draw each button as the pad shows it, in detail, and with no operation for it the project would have to draw them by hand. → §PW331
+- 📋 **PW336** (deps: —) **nothing reads a held screen for text leaving its box or lying over other text, so a fit is judged by eye** — A longer translation breaks a layout unseen until a person happens to look at that screen. → §PW336
 
 ## Block I — Voxel models from a declaration
 
@@ -35,6 +37,9 @@
 
 ## Block K — Reached without reading the source
 
+- 📋 **PW334** (deps: —) **an @file list written by Windows PowerShell is refused for its UTF-8 BOM, so PW247's remedy fails in that shell** — The file the refusal tells a PowerShell user to write is refused again for a mark their shell always adds. → §PW334
+- 📋 **PW337** (deps: —) **a dict parameter is refused as an @file, so PowerShell cannot pass one to the CLI at all** — The remedy PW247 gave lists does not reach dicts, which leaves verdict.sitting unusable from that shell. → §PW337
+
 ## Block L — What a run leaves as evidence
 
 ## Block M — What a game needs beyond the look
@@ -42,6 +47,9 @@
 ## Block N — Pictures held to a canon
 
 ## Block O — A person sees and answers
+
+- 📋 **PW332** (deps: —) **a verdict given through the CLI never reaches the ledger, since an open run cannot outlive the call that opened it** — A person's accept given in a conversation must land in one call, and today it is lost or recorded as unjudged while every answer says it was kept. → §PW332
+- 📋 **PW338** (deps: —) **verdict.sitting marks a member with no spec as passed, as if something had measured it** — A screen nothing holds reads on the sheet and in the answer as held by a spec that agreed. → §PW338
 
 ## Block P — Music and sound a game can ship
 
@@ -52,8 +60,12 @@
 - 📋 **PW322** (deps: PW321) **a locale catalog's lines cannot be voiced as a set, so a cast's dialogue is one hand-made call and cue per line** — Dialogue arrives as hundreds of catalog rows per locale, and voicing them one by one leaves no view of the total cost, the lines still unvoiced or those gone stale. → §PW322
 - 📋 **PW323** (deps: PW314) **nothing measures a spoken take, so a clipped, padded or misread line reaches the person's verdict as a candidate** — Speech services drop words, add breaths and pad silence, and a person should hear only takes that already say their line, at the length and level the game needs. → §PW323
 - 📋 **PW324** (deps: PW314) **a spoken line can only be heard after paying for it, so its wording and timing in the game cannot be tried for free** — Most of a line's revisions are about words and timing, not the voice, so a free local draft lets them settle before a single character is billed. → §PW324
+- 📋 **PW333** (deps: —) **an sfx effect cannot be declared at a note, so putting a menu sound in a key means working out base_freq by hand** — The pitch formula lives only in the source, so every tuned effect is numbers derived off the page that nothing checks. → §PW333
 
 ## Block Q — Words held to the world
+
+- 📋 **PW329** (deps: —) **words.check holds a translated column to the English names, so a name written in that language reads as unknown** — A second language cannot be checked against the world at all, and listing its names as ordinary also lets them leak into the English column unseen. → §PW329
+- 📋 **PW335** (deps: —) **no operation says which characters of a string table its fonts lack, so a missing accent shows only on screen** — A box or a borrowed system glyph reaches a player because only the project checked its own fonts. → §PW335
 
 ## Block R — Levels measured before a person plays them
 
@@ -62,8 +74,13 @@
 - 📋 **PW204** (deps: PW202, PW203) **A level's difficulty has no bar a search can aim at, and a level set has no curve to hold** — Cottony's curve constants were set by feel and never measured, so a level can be unwinnable or trivial and nothing fails. → §PW204
 - 📋 **PW205** (deps: PW202, PW203) **A shooter's waves have no measure of threat, so the level contract is proven on one genre only** — A contract only Cottony's match-3 has exercised may still assume a board, and Starship's check_phase_waves counts enemies without asking how many arrive at once. → §PW205
 - 📋 **PW206** (deps: PW204, PW205) **Cottony's levels are still tuned by a curve nobody measured** — The block is proven only when its first consumer's shipped levels are declared, compiled, probed and accepted here, and make_levels.py has nothing left to do. → §PW206
+- 📋 **PW327** (deps: PW205) **A playtest's trace of spawns, kills and hits cannot be measured or laid against the wave it played** — A declared wave says what it asks of a player; only a trace says where players struggle, and Starship's balance needs both. → §PW327
+- 📋 **PW328** (deps: —) **A reference gameplay video cannot be sampled into frames or contact sheets an agent can read** — Rebuilding a known level from video means hand-run ffmpeg and hundreds of frame reads, with no record of the source. → §PW328
+- 📋 **PW330** (deps: —) **a wave timeline's threat per second, in its two bounding cases, and its gaps with nothing to shoot cannot be measured** — A shooter is balanced on how pressure rises and falls through a phase, and a total or a peak cannot show the second a wave goes empty or floods. → §PW330
 
 ## Block S — Playing the game, not only rendering it
+
+- 📋 **PW339** (deps: —) **game.open ignores the resolution and locale [capture] declares, and game.shot does not say what it took** — A held screen is pictured at the window size and the machine locale with nothing in the answer to show it. → §PW339
 
 ## Block T — Adopting polyweave in a project
 

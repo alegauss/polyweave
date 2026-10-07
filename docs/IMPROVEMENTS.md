@@ -348,7 +348,10 @@ nine-patch margins) and build it to either nine-patch PNGs with a `.prov.json` o
 Godot canvas shader with its uniforms. Then capture it in each state and hold a spec to
 it: text contrast over the fill (measure.contrast), edge crispness at the smallest scale
 the game draws, and the palette's distance from the declared colours. The project's
-shader is then replaced by the built one.
+shader is then replaced by the built one. The same gap holds a screen wipe: starship's
+RK156 hand-wrote game/ui/kit/wipe.gdshader (a bowed sweep and an iris, timed by a
+progress uniform), which a declaration should build and a capture per progress step
+check.
 
 ### §PW319 Text legibility measured glyph by glyph
 
@@ -369,6 +372,50 @@ backdrop), it separates glyph pixels from background. It reports the contrast ra
 each line's glyphs against the local background behind them, the worst line named, so a
 spec can hold `text_contrast_min >= 4.5`. `capture.run` could emit the label boxes it
 drew, the way `measure.contrast` already reads a `target:` log.
+
+### §PW331 A declared icon set, built and accepted
+
+Met in starship (RK147): every prompt names its button in words (A, RB, CROSS, OPTIONS,
+LS DOWN, SPACE), and the owner wants the button drawn as the player sees it on the pad.
+`describe` lists no operation that makes a set of small 2D icons, and the project may
+not draw them by hand. Nothing was built; RK147 waits on this line.
+
+What the game needs, per layout (Xbox, PlayStation, a generic pad, and keycaps for the
+keyboard): the face buttons in their own colours (green A, red B, blue X, yellow Y; the
+cross, circle, square and triangle), shoulders and triggers as their shapes, the two
+menu buttons, the sticks and their clicks, and the D-pad directions. The premise asks
+for detail: a lit rim, shading, the symbol in its colour and a dark outline that reads
+over a bright scene, never a flat disc with a letter.
+
+What polyweave should do: build a declared icon set (each icon a base shape, its fill,
+rim, symbol and outline, from a small set of primitives) into PNGs at stated sizes, or
+one atlas with a map of names, each recorded with the declaration as input. An
+acceptance spec per set holds legibility at the smallest size (contrast against light
+and dark backgrounds, the symbol's share of the face), and a sitting puts each set in
+front of a person.
+
+Done when starship's three pad sets and its keycaps build from a declaration, pass their
+specs and wait in a sitting.
+
+### §PW336 Text that fits, read off a held screen
+
+Met in starship (RK166). The design asks that every screen, captured in pt-BR, be held
+with `accept.check_screen` so no text leaves its box or overlaps another. That operation
+holds an asset's spec to where the asset stands in a capture, and has no predicate for
+text. Nothing in `describe` reads a running screen's labels and says whether each fits.
+
+The worker drove each screen through `game.open`/`game.call`/`game.shot` and looked at
+the pictures. Three faults were found by eye: the options' sixteenth row sat on the
+panel's bevel, the title's help line read through the options' help line, and a crew
+card wrapped "MARA ·" / "ENFERMEIRA" with the dot left at a line's end. Each was fixed
+in layout, but only a person's eye found them, and the next string change can bring them
+back unseen.
+
+What polyweave should do: a `game.text_fit` (or a predicate on a held session) that
+walks every visible Label and Button in the tree and answers, per node, its text, its
+drawn size against its rect and its container's, how many lines it took against how many
+it was laid out for, and any other text whose rect it overlaps on screen. It runs per
+locale, so a project sweeps each screen in each language and a finding names the key.
 
 ## Block I — Voxel models from a declaration
 
@@ -435,6 +482,41 @@ PNG, and a probe declaration in `.polyweave/fit/` holds the V and the same ring;
 
 ## Block K — Reached without reading the source
 
+### §PW334 An @file read past its byte order mark
+
+Met in starship (RK157), laying out a sound sitting from Windows PowerShell 5.1. A list
+parameter cannot be passed inline there (the shell eats the JSON's quotes, which the
+refusal says), so the remedy offered is a JSON file: `--members @members.json`. The file
+was written with `Set-Content -Encoding utf8`, which in Windows PowerShell 5.1 always
+writes a UTF-8 byte order mark, and the call came back:
+
+`op.bad-type: --members names ...members.json, which is no JSON file: Unexpected UTF-8
+BOM (decode using utf-8-sig)`
+
+The file was valid JSON in every other respect, and the error itself names the fix. The
+worker rewrote the file through another tool to drop the mark.
+
+What polyweave should do: read an `@file` argument (and any JSON or TOML a declaration
+names) as `utf-8-sig`, so a leading mark is skipped, since on Windows the shell's own
+way to write UTF-8 is the one that adds it. A test writes the file with a BOM and
+expects the list back.
+
+### §PW337 An @file for every structured parameter
+
+Met in starship (RK166), laying out a sitting from Windows PowerShell. `verdict.sitting`
+takes `--families`, a dict. Inline JSON loses its quotes in that shell (PW247's case),
+and the remedy PW247 gave lists, `@file.json`, is refused for a dict:
+
+`op.bad-type: --families is a dict, and '@C:\...\ptbr_families.json' does not read as
+one` `do: pass it as JSON, such as {"a": 1}`
+
+The file held valid JSON. The worker went round it through the MCP tool, which takes the
+object as it is. A CLI-only worker in PowerShell has no way to pass a dict at all.
+
+What polyweave should do: read `@path` for every structured parameter (dict as well as
+list), with the same refusal text naming the file when it is not JSON, and say in the
+`do:` of a dict's refusal that `@file.json` works.
+
 ## Block L — What a run leaves as evidence
 
 ## Block M — What a game needs beyond the look
@@ -463,6 +545,51 @@ Check first whether 4.0 has gained a reference field, and learn it by the schema
 since a reference the service ignores is dropped without an error.
 
 ## Block O — A person sees and answers
+
+### §PW332 A verdict that lands from the CLI
+
+Met in starship (RK143, RK144), carrying the owner's acceptance of three voxel enemies
+given in chat.
+
+What happened, through the CLI:
+
+- `verdict.judge --run '<json from loop.start>'` answered "recorded in the open run",
+  but the run is a dict in that process: the verdict was appended to a copy that died
+  with the call.
+- `loop.finish --run '<the same json>' --accepted true` then appended a run with no
+  verdict, said `accepted: true`, and `loop.pending` still showed the asset with
+  `judged: null`, waiting.
+- `verdict.judge` with no run answers "not recorded: no run was open", which is honest
+  but leaves the person's words nowhere.
+
+The workaround was a Python snippet calling `loop.start`, `verdict.judge` and
+`loop.finish` in one process.
+
+What polyweave should do: keep an open run on disk (under `.polyweave/`), addressed by
+its id, so `verdict.judge --run <id>` and `loop.finish --run <id>` work across calls;
+and let `verdict.judge` open and close a run itself when none is named, so a verdict
+given in a conversation lands in the ledger in one call. `loop.finish` with `accepted`
+and no verdict should be refused, or record the acceptance where `loop.pending` reads
+it.
+
+Done when one CLI call carries a person's accept into the ledger and `loop.pending`
+shows the asset judged.
+
+### §PW338 A member nothing holds says so
+
+Met in starship (RK166). A sitting of plain screen captures was laid out with
+`verdict.sitting`, its members given a `name` and `new` and no `spec`, since no spec
+holds a screen's text yet. The answer marked every member `"passed": true, "failed": []`
+and offered the choice "the look is right and the spec agrees with it".
+
+No spec was checked, so "passed" claims a measurement that never happened. A person
+reading the sheet, or an agent reading the answer, takes the screens to be held by
+something.
+
+What polyweave should do: a member without a spec answers `"passed": null` (or
+`"checked": false`) with a line saying nothing holds it, the sheet draws it as unheld
+rather than green, and the choices drop the spec's wording ("the look is right") for
+such a member.
 
 ## Block P — Music and sound a game can ship
 
@@ -631,7 +758,79 @@ Where no local engine is installed the draft rung is refused with the install co
 the person's call. The engine and its model are configuration in the project, not
 compiled in, since a project in Portuguese needs a different model than one in English.
 
+### §PW333 An effect declared at a note
+
+Met in starship (RK157): the menu's interface sounds (move, confirm, back, refused, tab,
+open, close) are to be "tuned to the theme's key", A minor, so a confirm lands on a note
+of the title music under it. An effect in `*.sfx.toml` takes sfxr's own parameters:
+`base_freq` is a number from 0 to 1, `freq_ramp` a slide per sample, `arp_mod` a period
+multiplier. Nothing in `describe` or in `sound.synth`'s answer says which pitch they
+make.
+
+To place a sound on a note the worker read `src/polyweave/sfxr.py` and worked out that
+the pitch is 3528 x (base_freq^2 + 0.001) Hz at 44.1 kHz with 8x supersampling, then
+converted each note by hand (A5 is 0.4984, E5 0.4311), the arpeggio's jump from
+`arp_mod` (a fourth up is 0.528, a fourth down -0.183), its timing from `arp_speed`, and
+a slide of one octave over a duration from `freq_ramp`. The numbers sit in starship's
+art/audio/interface.sfx.toml with the notes in comments, and nothing checks them.
+
+What polyweave should do: let an effect declare its pitch as a note or Hz (`note =
+"A5"`), its arpeggio as an interval and a time (`arp = { to = "E5", at = 0.05 }`), and a
+slide as a target and a duration, compiling them to sfxr's parameters; and have
+`sound.measure` answer an effect's fundamental, so a spec can bound a sound to a key's
+notes.
+
 ## Block Q — Words held to the world
+
+### §PW329 Each name in each locale
+
+Met in starship (RK162): `strings.csv` has `en` and `pt_BR` columns and `words.check`
+reads both. But an entity has one `name` and one `plural`, `[words] ordinary` is one
+list, and `_held` pools every locale's names into one set.
+
+What goes wrong:
+
+- A pt-BR line naming a declared entity in Portuguese (a Fundição for the Kiln) is
+  `words.unknown-name`, and the only way out is listing it as ordinary, which hides a
+  misspelling and accepts the word in the English column too.
+- Every capitalised Portuguese menu word (VIDAS, OPÇÕES) joins the same shared list.
+
+Starship's thin workaround: "Brasil" (the language's own name) sits in its `[words]
+ordinary`.
+
+What polyweave should do:
+
+- An entity declares a form per locale, `[entity.kiln.names.pt_BR] name = "a
+  Fundição"`, with `plural` and `gender`, since Portuguese inflects around a noun. A
+  locale with no form keeps `name`, so a proper noun like SPINHOLD stays.
+- Each column is held to its own locale's forms; `ordinary.pt_BR = [...]` sits beside
+  the shared list.
+- `world.read` prints the name table per locale, so a prose glossary is generated.
+
+Done when a starship pt-BR line naming the Kiln in Portuguese passes, the same word in
+the English column is a finding, and `world.validate` refuses a locale form with no
+`name`.
+
+### §PW335 Glyphs a string table needs and its fonts lack
+
+Met in starship (RK166), holding every screen of the game to its Brazilian Portuguese.
+The design asks that every character of every pt-BR cell exist in the font its Label
+draws with, and says to file a PW line where polyweave cannot answer it. `describe` has
+no such operation: `words.check` holds the table to the world's names, `picture.letters`
+reads lettering off a picture, and neither opens a font.
+
+The worker read both of the game's fonts once with fontTools from a throwaway command
+(Nunito lacks "▶"; Orbitron lacks "·" and "▶"), and the game's own check now asks
+Godot's `Font.has_char` for every character of the table, upper case included, against
+every font the game ships. That is a font analysed inside the project, which is the
+workaround to retire.
+
+What polyweave should do: `words.glyphs` (or a predicate of `words.check`) that reads
+the `[words] table` and the fonts the project declares (a `[words] fonts` list, each
+with the keys or text styles it draws), and answers, per font and locale, every
+character a line needs and the font lacks, with the keys that use it. Upper case counts,
+since a game may upper-case a line at draw time. A missing character is a finding, so
+the gate goes red before a player sees a box or a borrowed system glyph.
 
 ## Block R — Levels measured before a person plays them
 
@@ -769,7 +968,89 @@ probe can at least sample it. Probing levels 21 to 200 from the curve and report
 where they leave the set spec's bounds says whether the endless tail keeps the promise
 the first twenty make.
 
+### §PW327 Playtest traces measured beside the declared curve
+
+Found in starship while planning its Block V (RK176, RK177): the owner finds the waves
+unbalanced and wants balance measured, not felt.
+
+§PW205 measures what a wave declares. It cannot measure what happened when a person
+played it, and it still reads `.tres`: starship's waves are now authored in
+`game/waves/phase_<n>.waves.toml` (RK122), and Block V adds formations, rails, `follow`
+and `sway` (RK172 to RK174), so a probe must read the compiled spawn timeline, not the
+file format.
+
+What starship needs from polyweave:
+
+- **A trace contract.** The game writes one event per line, each stamped with phase, wave and second: `spawn` (kind, weight), `kill` (kind, time alive), `hit` and `life_lost`. polyweave reads one trace or many and gives, per second, damage taken, kills and enemies alive, averaged across runs.
+- **The declared curve beside it.** From the spawn timeline and the per-kind weights (§PW205), the pressure entering and alive in the two bounding cases (every enemy killed on landing; nothing killed until the time limit), and the longest gap with nothing to shoot.
+- **A spec over both.** Bounds such as "alive pressure never above N", "never more than 2.5 s with nothing to shoot" (starship's multiplier window) and "each phase's peak above the one before", checked by `accept.check` and failing with the rule named. A person sets the bounds; the feel stays a verdict.
+
+Until it lands, starship keeps the pass in `dev/` as the thinnest workaround, named
+against this line.
+
+### §PW328 Frames and contact sheets from a reference video
+
+Found in starship (RK178): the owner wants Resogun's first phase rebuilt from a gameplay
+video as a proof of concept, so the gaps in starship's wave format and enemy behaviour
+show up against a known-good level.
+
+`describe` has nothing that takes a video in. The workaround is ffmpeg called directly
+(`ffmpeg -i <video> -vf fps=2 <dir>/%05d.png`), then an agent reads the frames. That is
+analysis of an artefact done outside polyweave.
+
+What polyweave should do:
+
+- **`reference.frames`**: from a video path, sample frames at a rate, or denser inside named time ranges, into the work area, each frame named by its timestamp, with a `.prov.json` that records the source video's hash, the rate and the ranges. The video is never copied into the project.
+- **Cheap reading.** A contact sheet per stretch (say a 4x4 grid of 16 frames with timestamps burnt in), so an agent reads 16 seconds of play as one image instead of 32 reads. A crop option (the radar strip at the top of a Resogun frame, say) gives a second sheet of just that region.
+- **Change detection**: optionally keep only frames that differ from the one before by more than a bound, so a quiet stretch costs nothing.
+
+The transcription itself (what spawned, where, on what path) stays the agent's and the
+owner's work. polyweave only makes the frames cheap and recorded.
+
+### §PW330 Pressure per second from weighted events
+
+Met in starship (RK176): the owner finds the waves unbalanced, and nothing says how hard
+a second of a phase is. §PW205 covers enemies alive at once and a weighted total for a
+compiled `.tres`, but starship's waves are now authored `.waves.toml` files with
+`times`, drawn shapes and rails, and it needs a curve, not a total.
+
+What polyweave should take: a list of weighted events on a timeline, each `{second,
+kind, weight, until}`, where `until` is the end of the wave it belongs to (the game
+writes these; it alone knows its own format). What it should answer, per second:
+
+- the threat that enters;
+- the threat alive in the two bounding cases, every enemy killed the moment it lands
+  (after a declared warp-in) and nothing killed until its wave's end;
+- the longest gap with nothing to shoot, against a declared window (starship's
+  multiplier window is 2.5 s), and every gap past it.
+
+Two versions of one timeline should lay side by side, so a change is compared with the
+one before it, and the result should be a record with provenance like any other.
+
+Starship's thin workaround until this lands: `WaveFile.events` writes the events, and
+`dev/pressure.gd` computes the curves and the gaps from them, with weights from
+`game/waves/threat.toml`.
+
+Done when starship's `dev/pressure.gd` is deleted and its check calls the operation.
+
 ## Block S — Playing the game, not only rendering it
+
+### §PW339 A held game in the declared environment
+
+Met in starship (RK166). The project's `[capture]` declares `resolution = [1920, 1080]`
+and `locale = "en"`. Screens were driven with `game.open` (display true), `game.call`
+and `game.shot`, and every shot came back `"size": [1280, 720]`: the window override in
+project.godot, not the declared resolution. The locale was the machine's (pt_BR), not
+`[capture]`'s either. Nothing in the answers said the environment differed from the one
+the project declares, so a picture for a fit check was at the wrong size without notice.
+
+`capture.run` states and checks that environment, but it runs a script to its end and
+cannot hold a game between calls.
+
+What polyweave should do: `game.open` takes `[capture]` as its default environment
+(resolution and locale, overridable per call), applies it the way `capture.run` does,
+and `game.shot` answers the environment it was taken in beside its size, so a shot at
+the wrong one is visible in the answer.
 
 ## Block T — Adopting polyweave in a project
 
