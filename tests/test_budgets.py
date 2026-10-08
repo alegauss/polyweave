@@ -84,7 +84,8 @@ from polyweave.errors import PolyweaveError
 #: 105,461 with voice.design and voice.choose (§PW321), a character's voice.
 #: 106,700 with voice.lines (§PW322), a string table voiced as a set.
 #: 107,312 with sound.speech (§PW323), a take held to its line.
-DESCRIBE = 107_900
+#: 108,057 with provenance.borrow (§PW325), a sibling project's artefact.
+DESCRIBE = 108_700
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -179,7 +180,8 @@ HELP_VERB = 4_100
 #: 21,720 with panel.build and panel.capture (§PW316).
 #: 22,237 with revision.turn, .check, .settings and the hook verb (§PW306, §PW307).
 #: 22,842 with sound.speak, voice.design and voice.choose (§PW314, §PW321).
-HELP_TOP = 23_300
+#: 23,302 with voice.lines, sound.speech and provenance.borrow (§PW322-§PW325).
+HELP_TOP = 23_900
 #: A search's answer over its default budget of 24 samples: 3,739.
 SEARCH = 4_000
 

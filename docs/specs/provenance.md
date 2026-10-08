@@ -34,7 +34,7 @@ JSON, written beside every artefact this plugin produces, named `<artefact>.prov
 }
 ```
 
-`kind` is `render`, `mesh`, `capture`, `fetch`, `picture`, `sound` or `vfx`; `picture` is a
+`kind` is `render`, `mesh`, `capture`, `fetch`, `picture`, `sound`, `vfx` or `borrow`; `picture` is a
 bought picture put on the project's grid (§PW171), or one composed from others:
 `compose.place` records the asset and the picture it went `into` with `at`, `width` and
 `anchor`, `compose.sheet` each tile in order, and `store.capsules` the key art and logo
@@ -42,6 +42,16 @@ bought picture put on the project's grid (§PW171), or one composed from others:
 it. `vfx` is a scene `vfx.build` wrote from an effect's declaration (§PW259). A `fetch` carries the service fields §PW17
 requires — task id, prompt or reference hash, credits consumed — in the same record rather
 than a second one.
+
+`borrow` is a file another project made, brought in by `provenance.borrow(path, out)`
+(§PW325): a studio's badge every game shows and none redraws. It is copied to `out`, and
+its record has the source as an input with the role `borrowed` (an absolute path where
+it is outside the project) and `borrowed`: the source's git `project`, its `path` there,
+the `commit` it was taken at and whether the file was `uncommitted` in that working
+tree. So `provenance.outdated` names every borrower once the source changes, and
+borrowing again takes it as it is now. A path in this project works too, for a file kept
+apart from the engine's tree. A source that is not a file, or an `out` that is the
+source itself, is `prov.missing-input`.
 
 **Every text artefact and record is written with LF**, on every platform (§PW228). The
 digest is taken over the bytes, and Windows' text mode writes CRLF, so a record made there

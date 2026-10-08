@@ -44,7 +44,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "Q", title: "Words held to the world", open: 1 },
   { block: "R", title: "Levels measured before a person plays them", open: 14 },
   { block: "S", title: "Playing the game, not only rendering it", open: 1 },
-  { block: "T", title: "Adopting polyweave in a project", open: 3 },
+  { block: "T", title: "Adopting polyweave in a project", open: 2 },
   { block: "U", title: "A window on everything a project governs", open: 2 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 32 },
 ];
@@ -279,13 +279,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "S",
     symptom: "game.open ignores the resolution and locale [capture] declares, and game.shot does not say what it took",
     why: "A held screen is pictured at the window size and the machine locale with nothing in the answer to show it.",
-    deps: [],
-  },
-  {
-    id: "PW325",
-    block: "T",
-    symptom: "no operation brings an artefact another project made into this one with a record of where it came from",
-    why: "A studio's shared badge is copied into each game by hand, with no record, so none of them learns when the source changes.",
     deps: [],
   },
   {

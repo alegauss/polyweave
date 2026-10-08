@@ -19,7 +19,7 @@ page groups them by task.
 | Asked changes | `revision.ask`, `revision.open`, `revision.turn`, `revision.check`, `revision.settings`, `revision.close` |
 | Keep the ledger | `loop.start`, `loop.spent`, `loop.judged`, `loop.finish`, `loop.compare` |
 | Read the ledger | `loop.runs`, `loop.assets`, `loop.changes`, `loop.bounds` |
-| Provenance | `provenance.read`, `provenance.verify`, `provenance.dependents`, `provenance.outdated`, `provenance.unrecorded`, `provenance.credits`, `provenance.generated` |
+| Provenance | `provenance.read`, `provenance.verify`, `provenance.dependents`, `provenance.outdated`, `provenance.unrecorded`, `provenance.credits`, `provenance.generated`, `provenance.borrow` |
 | The game side | `capture.run`, `capture.movie`, `capture.declared`, `engine.run`, `engine.sweep`, `engine.cost`, `godot.install` |
 | Drive a game | `game.open`, `game.query`, `game.input`, `game.step`, `game.wait`, `game.call`, `game.set`, `game.shot`, `game.close`, `game.batch`, `game.keep`, `game.rekey`, `game.replay`, `game.release_check` |
 | Scale against the engine | `units.check`, `units.engine_scale`, `units.read_number` |
@@ -27,9 +27,9 @@ page groups them by task.
 | Music | `music.validate`, `music.to_midi`, `music.render`, `sound.synth` (effects from a seed), `sound.buy`, `sound.speak` (paid) |
 | Visual effects | `vfx.build` (particles, ribbon), `vfx.preview`, `panel.build` (a menu panel), `panel.capture` |
 | A project's look | `style.read`, `style.drift` (before a person looks; only `verdict.judge` grows a canon) |
-| Buy a drawing | `picture.buy`, `picture.gate` (before the mesh is bought), `picture.letters`, `picture.describe`, `picture.vary`, `picture.against_parent`, `picture.fit` (onto the family's grid), `picture.collect` |
+| Buy a drawing | `picture.buy`, `picture.gate` (before a mesh), `picture.letters`, `picture.describe`, `picture.vary`, `picture.against_parent`, `picture.fit` (onto the family's grid), `picture.collect` |
 | Before buying a mesh | `reference.pick`, `reference.prepare`, `shape.check`, `shape.silhouette`, `shape.turntable` |
-| Paid meshes | `mesh.buy` (words, or a gated picture), `purchase.remaining`, `purchase.quote`, `purchase.allow`, `purchase.held`, `schema.validate`, `schema.read`, `schema.proved` |
+| Paid meshes | `mesh.buy`, `purchase.remaining`, `purchase.quote`, `purchase.allow`, `purchase.held`, `schema.validate`, `schema.read`, `schema.proved` |
 | The purchase ledger | `purchase.spent`, `purchase.ledger`, `purchase.find`, `purchase.adopt`, `purchase.reconcile` |
 | After buying | `normalise.ingest`, `texture.worth_scrubbing` |
 | Bake a clip | `motion.bake` (animation and sheet, from files) |

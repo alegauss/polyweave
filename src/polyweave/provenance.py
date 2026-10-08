@@ -30,7 +30,7 @@ from .describe import Param, operation
 from .errors import PolyweaveError
 
 #: What a record may describe. Closed, because a reader branches on it.
-KINDS = ("render", "mesh", "capture", "fetch", "picture", "sound", "vfx")
+KINDS = ("render", "mesh", "capture", "fetch", "picture", "sound", "vfx", "borrow")
 
 SUFFIX = ".prov.json"
 
@@ -804,6 +804,87 @@ def _sidecar_params(path: str, where: Path) -> dict | None:
         return held.get("params")
     except (OSError, ValueError):
         return None
+
+
+@operation("provenance.borrow")
+def borrow(
+    path: Annotated[
+        str, Param("the file to bring in: another project's, as an absolute path")
+    ],
+    out: Annotated[str, Param("where it lands here, as a path under the project")],
+    *,
+    root: Annotated[str, ROOT] = ".",
+) -> dict:
+    """Copy an artefact another project made into this one, recording where from.
+
+    The record names the source's project, its path there, the commit it was taken at
+    and its SHA-256, so `provenance.outdated` says when the source has moved on and
+    every game that borrowed a studio's badge learns it changed (§PW325). A path in this
+    project works too, for a file kept apart from the engine's tree. Borrowing again
+    takes the source as it is now.
+    """
+    import shutil
+
+    where = Path(root).resolve()
+    origin = Path(path) if Path(path).is_absolute() else where / path
+    if not origin.is_file():
+        raise PolyweaveError(
+            "prov.missing-input",
+            f"there is no file at {origin} to borrow",
+            "name the file the other project made, as an absolute path",
+            given=str(path),
+        )
+    landed = Path(out) if Path(out).is_absolute() else where / out
+    if landed.resolve() == origin.resolve():
+        raise PolyweaveError(
+            "prov.missing-input",
+            f"{out} is the file being borrowed",
+            "name where the copy lands, apart from its source",
+            given=str(out),
+        )
+    landed.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(origin, landed)
+    taken = _from(origin)
+    record = build(
+        "borrow", landed,
+        engine={"name": "provenance.borrow"},
+        inputs=[source("borrowed", origin, root=where)],
+        extra={"borrowed": taken},
+        root=where,
+    )
+    write(record, where)
+    return {"artefact": record["artefact"]["path"], "borrowed": taken,
+            "sha256": record["artefact"]["sha256"]}
+
+
+def _from(origin: Path) -> dict:
+    """Where a borrowed file lives: its project, its path there and the commit."""
+    import subprocess
+
+    def git(*argv: str) -> str | None:
+        try:
+            done = subprocess.run(
+                ["git", "-C", str(origin.parent), *argv],
+                capture_output=True, text=True, check=False, timeout=20,
+            )
+        except (OSError, subprocess.TimeoutExpired):
+            return None
+        return done.stdout.strip() if done.returncode == 0 else None
+
+    top = git("rev-parse", "--show-toplevel")
+    if not top:
+        return {"project": None, "path": origin.resolve().as_posix(), "commit": None}
+    project = Path(top).resolve()
+    inside = origin.resolve().relative_to(project).as_posix()
+    # From the top, which is what the path is relative to.
+    changed = git("-C", str(project), "status", "--porcelain", "--", inside)
+    return {
+        "project": project.as_posix(),
+        "path": inside,
+        "commit": git("rev-parse", "HEAD"),
+        # Taken from a working tree that differs from the commit it names.
+        "uncommitted": bool(changed),
+    }
 
 
 @operation("provenance.dependents")

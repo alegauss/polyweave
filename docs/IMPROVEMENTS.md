@@ -979,33 +979,6 @@ the wrong one is visible in the answer.
 
 ## Block T — Adopting polyweave in a project
 
-### §PW325 An artefact borrowed from a sibling project
-
-Found in starship (RK170): the splash now turns its voxel V into the studio's real
-badge, `viglet_games_badge.png`, which Cottony renders from the publisher's model
-(`D:\Git\viglet\cottony\docs\design\art\brand\viglet_games_badge.png`, made by Cottony's
-`tools/art/bake_model.py` from `tools/art/3d/viglet-logo.blend`, commit 00a3663). The
-badge is shared by every Viglet game and redrawn by none.
-
-polyweave has no operation that brings an artefact another project made into this one:
-`normalise.ingest` takes a mesh, `picture.buy`/`picture.collect` a paid picture, and
-`purchase.adopt` a ledger. The badge carries no `.prov.json` in Cottony either, so there
-is no record to carry.
-
-Expected: an operation (`artefact.borrow`, say) that copies a file from a named sibling
-project to a path here, writes a record naming the source project, its path, its commit
-and its sha256, and lets `polyweave provenance outdated` say when the source has moved
-on, so a change to the studio badge in Cottony shows up as stale in every game that
-borrowed it.
-
-The same gap holds inside one project: starship keeps Godot out of art/ and the export,
-so its accepted store logo and icon (RK150, RK188) are copied by hand into
-game/ui/brand/ with no record; the operation should take a source path in this project
-too.
-
-Workaround: the PNG is copied by hand to `game/ui/brand/viglet_games_badge.png`, and
-`game/ui/splash.gd` names its source in a comment.
-
 ### §PW374 Built effects land where the game ships
 
 Met in spinhold (RK189). Its effect declarations live in `art/vfx/*.vfx.toml`, and
