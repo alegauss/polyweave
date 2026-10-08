@@ -262,3 +262,44 @@ def test_a_brief_reads_each_kind_back_in_its_own_words(tmp_path):
     assert icon["family"] == "default"
     assert icon["palette"] == ["#112233", "#ffeedd"]
     assert icon["filter"] == "pixel"
+
+
+def test_a_brief_carries_a_pictures_last_gate_in_its_two_lanes(tree):
+    # §PW304: the refused beside the kept, for the window to show beside the picture.
+    import json
+
+    record(tree, "picture", "art/a.png")
+    record(tree, "picture", "art/b.png")
+    log = tree / ".polyweave" / "gates.jsonl"
+    log.parent.mkdir(parents=True, exist_ok=True)
+    run = {
+        "id": "g1",
+        "at": "2026-10-07T12:00:00+00:00",
+        "candidates": [
+            {"picture": str(tree / "art" / "a.png"), "passed": True, "failed": []},
+            {"picture": "art/b.png", "passed": False, "failed": ["edge drifted: dark"]},
+        ],
+    }
+    log.write_text(json.dumps(run) + "\n", encoding="utf-8")
+    from polyweave import brief
+
+    gate = brief.brief("art/b.png", root=str(tree))["gate"]
+    assert gate["run"] == "g1"
+    assert gate["kept"] == ["art/a.png"]
+    refused = [{"picture": "art/b.png", "failed": ["edge drifted: dark"]}]
+    assert gate["refused"] == refused
+    assert brief.brief("audio/hit.wav", root=str(tree))["gate"] is None
+
+
+def test_a_brief_says_a_loop_is_a_loop(tmp_path):
+    from polyweave import brief
+
+    (tmp_path / C.FILENAME).write_text(
+        '[paths]\naudio = "audio"\n\n[sound.music]\nkind = "loop"\nformat = "ogg"\n'
+        'cues = ["calm"]\n\n[sound.effects]\ncues = ["pop"]\n',
+        encoding="utf-8",
+    )
+    record(tmp_path, "sound", "audio/calm.ogg")
+    record(tmp_path, "sound", "audio/pop.wav")
+    assert brief.brief("audio/calm.ogg", root=str(tmp_path))["loop"] is True
+    assert brief.brief("audio/pop.wav", root=str(tmp_path))["loop"] is False

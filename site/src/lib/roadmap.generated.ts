@@ -35,7 +35,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "H", title: "Proof on a real game", open: 8 },
   { block: "I", title: "Voxel models from a declaration", open: 3 },
   { block: "J", title: "A bar a person sets once", open: 0 },
-  { block: "K", title: "Reached without reading the source", open: 2 },
+  { block: "K", title: "Reached without reading the source", open: 3 },
   { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 0 },
@@ -45,7 +45,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "R", title: "Levels measured before a person plays them", open: 8 },
   { block: "S", title: "Playing the game, not only rendering it", open: 1 },
   { block: "T", title: "Adopting polyweave in a project", open: 2 },
-  { block: "U", title: "A window on everything a project governs", open: 8 },
+  { block: "U", title: "A window on everything a project governs", open: 7 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 32 },
 ];
 
@@ -139,6 +139,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "K",
     symptom: "a dict parameter is refused as an @file, so PowerShell cannot pass one to the CLI at all",
     why: "The remedy PW247 gave lists does not reach dicts, which leaves verdict.sitting unusable from that shell.",
+    deps: [],
+  },
+  {
+    id: "PW376",
+    block: "K",
+    symptom: "provenance.verify reports the work area's snapshots of old commits as the project's drift",
+    why: "A project whose own records all hold reads as 46 changed artefacts, and finding that out takes --json and a filter by hand.",
     deps: [],
   },
   {
@@ -296,25 +303,18 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW304",
-    block: "U",
-    symptom: "a person sees one item of a project only by opening its file by hand, with no declaration, record or bar beside it",
-    why: "A picture's gate lanes, a loop played looped, and a filter for items with an open revision are still to add to the item view.",
-    deps: [],
-  },
-  {
     id: "PW305",
     block: "U",
     symptom: "the window and the review page would each show a sitting, so two surfaces answer the same verdict and drift",
     why: "The window shows sittings and answers them through the review server's own judge call, so verdict.judge stays the one write for a verdict.",
-    deps: ["PW304"],
+    deps: [],
   },
   {
     id: "PW306",
     block: "U",
     symptom: "asking for a change to one item means leaving the window for a terminal and retelling the agent which item and what",
     why: "An item's view opens a Claude Code session through the Agent SDK and the person's own claude, started from its revision and brief, not a typed path.",
-    deps: ["PW304"],
+    deps: [],
   },
   {
     id: "PW307",
@@ -342,7 +342,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "U",
     symptom: "the window would show a project as it was when opened, so an item a session or terminal changed looks untouched",
     why: "The window watches the project's governed paths and its answers and revisions files, and redraws only the rows and item whose digest changed.",
-    deps: ["PW304"],
+    deps: [],
   },
   {
     id: "PW311",

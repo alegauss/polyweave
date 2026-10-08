@@ -350,6 +350,58 @@ def _line(item: dict, here: Path) -> dict:
     }
 
 
+def _gate(path: str | None, here: Path) -> dict | None:
+    """The last gate run that weighed this picture, in its two lanes (§PW175, §PW304).
+
+    The refused beside the kept, each refused one with what failed it, so a person sees
+    what the filter turned away and not only what it let through.
+    """
+    from . import picture, provenance
+
+    if not path:
+        return None
+    runs = [
+        run
+        for run in picture.gates(here)
+        if any(
+            provenance.relative(one["picture"], here) == path
+            for one in run.get("candidates") or ()
+        )
+    ]
+    if not runs:
+        return None
+    run = runs[-1]
+    lanes = [
+        (provenance.relative(one["picture"], here), one) for one in run["candidates"]
+    ]
+    return {
+        "run": run.get("id"),
+        "at": run.get("at"),
+        "kept": [where for where, one in lanes if one.get("passed")],
+        "refused": [
+            {"picture": where, "failed": one.get("failed") or []}
+            for where, one in lanes
+            if not one.get("passed")
+        ],
+    }
+
+
+def _loop(path: str | None, here: Path) -> bool:
+    """Whether a sound is a loop, as sound.sitting decides: its cue's family says so."""
+    from .config import load
+
+    if not path:
+        return False
+    config = load(here)
+    looped = {
+        (Path(sound["folder"]) / f"{cue}.{sound['format']}").resolve()
+        for sound in config.sounds().values()
+        if sound["kind"] == "loop"
+        for cue in sound["cues"]
+    }
+    return (here / path).resolve() in looped
+
+
 def _dependents(path: str | None, here: Path) -> list[dict]:
     """What was made from this file, which a change to it reaches (§PW300)."""
     from . import provenance
@@ -415,6 +467,10 @@ def brief(
     answer["dependents"] = _dependents(
         (artefact and artefact["path"]) or (declared and declared.get("path")), here
     )
+    path = artefact and artefact["path"]
+    # The window shows a picture's last gate beside it and loops a loop (§PW304).
+    answer["gate"] = _gate(path, here)
+    answer["loop"] = _loop(path, here)
     if not any(answer[k] for k in ("item", "declaration", "spec", "last_verdict")):
         raise PolyweaveError(
             "op.unknown-argument",

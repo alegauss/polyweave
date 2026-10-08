@@ -45,7 +45,8 @@
   "filter": {
     "all": "All",
     "pending": "Waiting on a person",
-    "attention": "Needs attention"
+    "attention": "Needs attention",
+    "revision": "With an open revision"
   },
   "item": {
     "choose": "Choose an item to see it beside what it was held to.",
@@ -59,6 +60,9 @@
     "speaker": "Said by {{who}}",
     "judged": "A person said: {{choice}}",
     "judged_before": "A person said {{choice}} to an earlier text",
-    "not_judged": "No person has judged this line yet."
+    "not_judged": "No person has judged this line yet.",
+    "gate": "Its last gate",
+    "kept": "Kept",
+    "refused": "Refused"
   }
 }

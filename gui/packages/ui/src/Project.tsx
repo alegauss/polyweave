@@ -11,13 +11,14 @@ import { KINDS, type Bridge, type Item, type Opened, type Smoke } from '@pw/core
 import { ItemView } from './ItemView'
 
 /** What the list can be narrowed to. */
-export const FILTERS = ['all', 'pending', 'attention'] as const
+export const FILTERS = ['all', 'pending', 'attention', 'revision'] as const
 type Filter = (typeof FILTERS)[number]
 
 /** Record states that mean the file and what made it no longer agree. */
 const ATTENTION = new Set(['changed', 'missing', 'outdated', 'unrecorded'])
 
-export function kept(items: Item[], filter: Filter): Item[] {
+export function kept(items: Item[], filter: Filter, revised: string[] = []): Item[] {
+  if (filter === 'revision') return items.filter((i) => revised.includes(i.id))
   if (filter === 'pending') return items.filter((i) => i.pending)
   if (filter === 'attention') return items.filter((i) => ATTENTION.has(i.record ?? ''))
   return items
@@ -42,14 +43,18 @@ export function Project({
     items.find((i) => i.id === smoke?.item) ?? null,
   )
   const [drawn, setDrawn] = useState(false)
-  const shown = kept(items, filter)
+  const [revised, setRevised] = useState<string[] | null>(null)
+  useEffect(() => {
+    void bridge.revisions(opened.project).then(setRevised, () => setRevised([]))
+  }, [bridge, opened.project])
+  const shown = kept(items, filter, revised ?? [])
   const byKind = KINDS.map((kind) => [kind, shown.filter((i) => i.kind === kind)] as const).filter(
     ([, rows]) => rows.length > 0,
   )
 
   // A smoke run reports once the list, and the item it asked for, are on the page.
   useEffect(() => {
-    if (!smoke || (chosen && !drawn)) return
+    if (!smoke || revised === null || (chosen && !drawn)) return
     requestAnimationFrame(() => {
       void bridge.rendered({
         project: opened.project,
@@ -62,10 +67,13 @@ export function Project({
         viewer: document.querySelector('[data-viewer]')?.getAttribute('data-viewer') ?? null,
         bar: document.querySelectorAll('[data-predicate]').length,
         dependents: document.querySelectorAll('[data-dependent]').length,
+        lanes: document.querySelectorAll('[data-lane] li').length,
+        looped: document.querySelector('audio')?.loop ?? null,
+        revised: revised.length,
         said: document.querySelector('[data-said]')?.textContent ?? null,
       })
     })
-  }, [smoke, chosen, drawn, bridge, opened])
+  }, [smoke, chosen, drawn, revised, bridge, opened])
 
   return (
     <section className="flex flex-col gap-4">

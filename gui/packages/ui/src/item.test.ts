@@ -44,5 +44,6 @@ describe('an item seen', () => {
     expect(kept(rows, 'pending').map((r) => r.id)).toEqual(['a'])
     expect(kept(rows, 'attention').map((r) => r.id)).toEqual(['b'])
     expect(kept(rows, 'all')).toHaveLength(3)
+    expect(kept(rows, 'revision', ['c']).map((r) => r.id)).toEqual(['c'])
   })
 })

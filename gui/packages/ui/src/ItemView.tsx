@@ -92,7 +92,9 @@ export function ItemView({
         {seen === 'picture' && source && (
           <img src={source} alt={item.id} className="max-w-none" style={{ imageRendering: 'pixelated' }} />
         )}
-        {seen === 'sound' && source && <audio controls src={source} className="w-full" />}
+        {seen === 'sound' && source && (
+          <audio controls loop={brief?.['loop'] === true} src={source} className="w-full" />
+        )}
         {seen === 'line' && line && (
           <dl className="flex flex-col gap-1 text-sm">
             {Object.entries((line['text'] as Record<string, string>) ?? {}).map(([locale, text]) => (
@@ -119,6 +121,35 @@ export function ItemView({
           </p>
         )}
       </div>
+
+      {brief?.['gate'] && (
+        <section className="flex flex-col gap-1">
+          <h3 className="font-medium">{t('item.gate')}</h3>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div data-lane="kept">
+              <p className="text-muted-foreground">{t('item.kept')}</p>
+              <ul>
+                {(brief['gate']['kept'] as string[]).map((where) => (
+                  <li key={where} className={lane(where, item)}>
+                    {where}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div data-lane="refused">
+              <p className="text-muted-foreground">{t('item.refused')}</p>
+              <ul>
+                {(brief['gate']['refused'] as { picture: string; failed: string[] }[]).map((one) => (
+                  <li key={one.picture} className={lane(one.picture, item)}>
+                    {one.picture}
+                    <span className="block text-xs text-muted-foreground">{one.failed.join('; ')}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="flex flex-col gap-1">
         <h3 className="font-medium">{t('item.bar')}</h3>
@@ -162,6 +193,11 @@ export function ItemView({
       </section>
     </article>
   )
+}
+
+/** A gate lane's entry, marked where it is the item being looked at. */
+function lane(where: string, item: Item): string {
+  return where === item.artefact ? 'font-mono font-semibold' : 'font-mono'
 }
 
 function bound(side: unknown, sign: string): string {

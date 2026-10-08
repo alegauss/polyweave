@@ -17,6 +17,7 @@ export const CHANNELS = {
   brief: 'pw:brief',
   lineage: 'pw:lineage',
   file: 'pw:file',
+  revisions: 'pw:revisions',
   smoke: 'pw:smoke',
   rendered: 'pw:rendered',
 } as const
@@ -56,6 +57,8 @@ export interface Bridge {
   lineage(project: string, path: string): Promise<Record<string, unknown>>
   /** One file under the project, refused for any path that resolves outside it. */
   file(project: string, path: string): Promise<Shown>
+  /** The items a person has an open revision on, from `revision.open` (§PW301). */
+  revisions(project: string): Promise<string[]>
   smoke(): Promise<Smoke | null>
   rendered(report: Record<string, unknown>): Promise<void>
 }

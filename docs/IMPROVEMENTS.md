@@ -1035,33 +1035,6 @@ at the build.
 
 ## Block U — A window on everything a project governs
 
-### §PW304 Each item seen with what it was held to
-
-This is the browsing half of the window. On the left is the inventory, grouped by kind,
-and filterable by what needs a person: a pending verdict, an outdated record, an open
-revision. On the right is one item.
-
-Each kind gets the viewer that fits it:
-- a picture at its real size, with its gate lanes (PW175);
-- a mesh as the turntable the rig already bakes (PW176), never a live 3D editor;
-- a sound or music cue with a player, and the loop played looped (PW256);
-- a clip as its curves;
-- a line with its speaker and the world canon it is held to;
-- an effect through `vfx.preview`.
-
-Beside the viewer is `asset.brief` read back in words. It shows each predicate with its
-bound and where the bound came from, the last measures, the provenance chain up to its
-purchase (`provenance_generated`), and what was made from it (`provenance_dependents`).
-
-Nothing on this view writes. The files it shows come through the operations or the
-review server's `/file` route, which already refuses anything outside the project. A
-render or preview that does not exist yet is offered as the operation that would make
-it, run by the agent session and never by the window. Only then is the view a reader and
-not the graphical editor the non-goals rule out.
-
-Landed (gui/README.md): filters, the pane, and the viewers. Left: gate lanes, a looped
-loop, an open-revision filter.
-
 ### §PW305 One verdict path, whichever surface a person uses
 
 `review.py` and `review_page/` already do the hard part of a verdict. They lay a sitting

@@ -45,7 +45,8 @@
   "filter": {
     "all": "Todos",
     "pending": "Aguardando uma pessoa",
-    "attention": "Pedem atenção"
+    "attention": "Pedem atenção",
+    "revision": "Com revisão aberta"
   },
   "item": {
     "choose": "Escolha um item para vê-lo ao lado do que o sustenta.",
@@ -59,6 +60,9 @@
     "speaker": "Dita por {{who}}",
     "judged": "Uma pessoa disse: {{choice}}",
     "judged_before": "Uma pessoa disse {{choice}} para um texto anterior",
-    "not_judged": "Ninguém julgou esta fala ainda."
+    "not_judged": "Ninguém julgou esta fala ainda.",
+    "gate": "Seu último filtro",
+    "kept": "Mantidas",
+    "refused": "Recusadas"
   }
 }

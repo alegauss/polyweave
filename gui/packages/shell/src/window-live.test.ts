@@ -2,7 +2,7 @@
 // (§PW303). It runs in its smoke mode: the renderer drives the find and the open, and
 // main prints what the page drew, read back off the page.
 
-import { spawn } from 'node:child_process'
+import { spawn, spawnSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -44,11 +44,36 @@ describe.skipIf(!existsSync(MAIN))('the window', () => {
   beforeEach(async () => {
     root = await mkdtemp(join(tmpdir(), 'pw-window-'))
     await mkdir(join(root, 'starship', 'text'), { recursive: true })
-    await writeFile(join(root, 'starship', 'polyweave.toml'), '[words]\ntable = "text/strings.csv"\n')
-    await writeFile(join(root, 'starship', 'text', 'strings.csv'), 'keys,en\nTITLE,Starship\nSTART,Go\n')
+    const game = join(root, 'starship')
+    await writeFile(
+      join(game, 'polyweave.toml'),
+      '[words]\ntable = "text/strings.csv"\n\n[paths]\naudio = "audio"\n\n' +
+        '[sound.music]\nkind = "loop"\nformat = "wav"\ncues = ["calm"]\n',
+    )
+    await writeFile(join(game, 'text', 'strings.csv'), 'keys,en\nTITLE,Starship\nSTART,Go\n')
     // A picture where the project keeps its renders, with no record: listed, and shown.
-    await mkdir(join(root, 'starship', 'docs', 'renders'), { recursive: true })
-    await writeFile(join(root, 'starship', 'docs', 'renders', 'icon.png'), Buffer.from(PNG, 'base64'))
+    await mkdir(join(game, 'docs', 'renders'), { recursive: true })
+    await writeFile(join(game, 'docs', 'renders', 'icon.png'), Buffer.from(PNG, 'base64'))
+    // The last gate that weighed it, the icon kept and another refused.
+    await mkdir(join(game, '.polyweave'), { recursive: true })
+    await writeFile(
+      join(game, '.polyweave', 'gates.jsonl'),
+      JSON.stringify({
+        id: 'g1',
+        candidates: [
+          { picture: 'docs/renders/icon.png', passed: true, failed: [] },
+          { picture: 'docs/renders/other.png', passed: false, failed: ['edge drifted'] },
+        ],
+      }) + '\n',
+    )
+    // A loop, made the real way: an effect named as a cue a loop family declares.
+    await mkdir(join(game, 'audio'), { recursive: true })
+    await writeFile(join(game, 'audio', 'fx.sfx.toml'), '[effect.calm]\ngenerator = "pickup"\n')
+    const made = spawnSync('python', ['-m', 'polyweave', 'sound.synth', '--source', 'audio/fx.sfx.toml', '--root', game])
+    expect(made.status, made.stderr?.toString()).toBe(0)
+    // A change a person asked for, still open.
+    const asked = spawnSync('python', ['-m', 'polyweave', 'revision.ask', '--item', 'line:TITLE', '--words', 'shorter', '--root', game])
+    expect(asked.status, asked.stderr?.toString()).toBe(0)
   })
 
   afterEach(async () => {
@@ -60,17 +85,27 @@ describe.skipIf(!existsSync(MAIN))('the window', () => {
     expect(drew['project']).toBe(join(root, 'starship'))
     expect(drew['server']).toBe('polyweave')
     expect(drew['engine']).toBe('path')
-    expect(drew['groups']).toEqual(['picture', 'line'])
-    expect(drew['rows']).toBe(3)
+    expect(drew['groups']).toEqual(['picture', 'sound', 'line'])
+    expect(drew['rows']).toBe(4)
     // The words are the catalog's, in the language asked.
-    expect(drew['count']).toBe('3 itens')
+    expect(drew['count']).toBe('4 itens')
+    // The open revision is what the list can be narrowed to.
+    expect(drew['revised']).toBe(1)
   })
 
-  it('shows a line beside what it was held to, and a picture as itself', async () => {
+  it('shows a line beside what it was held to, and a picture beside its gate', async () => {
     const line = await opened(root, 'en', 'line:TITLE')
     expect(line['viewer']).toBe('line')
     expect(line['said']).toBe('Starship')
     const picture = await opened(root, 'en', 'docs/renders/icon.png')
     expect(picture['viewer']).toBe('picture')
+    // Both lanes: the kept icon and the refused one beside it.
+    expect(picture['lanes']).toBe(2)
+  })
+
+  it('plays a loop looped', async () => {
+    const sound = await opened(root, 'en', 'audio/calm.wav')
+    expect(sound['viewer']).toBe('sound')
+    expect(sound['looped']).toBe(true)
   })
 })

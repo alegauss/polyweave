@@ -44,6 +44,12 @@ ipcMain.handle(CHANNELS.lineage, async (_event, project: string, path: string) =
   }),
 )
 ipcMain.handle(CHANNELS.file, (_event, project: string, path: string) => shown(project, path))
+ipcMain.handle(CHANNELS.revisions, async (_event, project: string) => {
+  const open = (await (await held.opened(project)).client.call('revision.open', {
+    root: project,
+  })) as { revisions: { item: string }[] }
+  return [...new Set(open.revisions.map((one) => one.item))]
+})
 ipcMain.handle(CHANNELS.smoke, () => smoke)
 ipcMain.handle(CHANNELS.rendered, async (event, report: Record<string, unknown>) => {
   if (!smoke) return
