@@ -100,7 +100,8 @@ reason about mixed-type arrays.
 
 The expression grammar is deliberately small: numeric literals, parameter names, repeat
 variables, `+ - * / %`, parentheses, and `min`, `max`, `abs`, `round`, `floor`, `ceil`,
-`sqrt`, `sin`, `cos`, `radians`. **Nothing evaluates arbitrary code.** That is a determinism
+`sqrt`, `sin`, `cos`, `radians`, and `atan`, `atan2` and `degrees` so a part can be declared
+by its two end points rather than a length and a tilt (§PW326). **Nothing evaluates arbitrary code.** That is a determinism
 requirement before it is a security one: an expression whose value can depend on anything but
 its parameters breaks the cache key in [provenance.md](provenance.md). Python's own parser
 produces the tree and every node of it is then checked against that list, so a call, an
@@ -711,6 +712,16 @@ reference is 1.97:1 in front and the declaration reached 1.43:1 at most"); `boun
 each best value on an edge of its range, and `why_bound` joins the two when both hold.
 `boxed=true` scores each silhouette stretched to its own box instead, so the fit compares
 where the parts sit and how thick they are inside the box, and never the box.
+
+**A part is fitted to a region of a drawing** (§PW326). A badge's outline is its disc, so
+the V inside it, which is what has to stand where the drawing's does, is invisible to an
+alpha silhouette. `region = {colours = ["#2b2b3a"], materials = ["mark"]}` scores the
+drawing's pixels within CIE76 ΔE 12 of any colour named (`delta_e` widens it) against
+the front outline of the cells wearing the materials named. Both are framed by their
+whole, the drawing's subject and the whole model, so the part is fitted in place and at
+scale, not only in proportion. It is the front view of a drawing, unboxed, and a
+material the declaration lacks, a colour that is not hex or one no pixel is near is
+`geom.bad-fit`.
 
 **One cell for a project** (§PW229). A game whose actors break into their own cubes needs
 every actor on one cell, so the debris of a drone and of a boss are the same cubes. So

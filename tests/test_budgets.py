@@ -146,7 +146,8 @@ DESCRIBE = 108_700
 #: 116,904 with voice.design, voice.choose and three world codes (§PW321).
 #: 118,162 with voice.lines and words.no-voiced (§PW322).
 #: 118,966 with sound.speak's draft rung and sound.no-speech-engine (§PW324).
-CAPABILITIES = 119_600
+#: 119,686 with provenance.borrow and geometry.fit's region (§PW325, §PW326).
+CAPABILITIES = 120_300
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

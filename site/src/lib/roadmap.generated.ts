@@ -33,7 +33,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
   { block: "H", title: "Proof on a real game", open: 7 },
-  { block: "I", title: "Voxel models from a declaration", open: 1 },
+  { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 4 },
   { block: "L", title: "What a run leaves as evidence", open: 0 },
@@ -97,13 +97,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "game.shot answers success and a path when the save failed, and never makes the folder it is given",
     why: "A worker builds on frames that do not exist, and learns only when a later operation refuses the missing file.",
-    deps: [],
-  },
-  {
-    id: "PW326",
-    block: "I",
-    symptom: "geometry.fit scores a whole alpha silhouette, so a part inside a picture, like the V on a badge's disc, cannot be fitted",
-    why: "A voxel part that must stand where a drawing's part does is measured and masked by a script in the project instead.",
     deps: [],
   },
   {

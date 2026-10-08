@@ -89,3 +89,88 @@ def test_it_runs_from_the_command_line(tmp_path, capsys):
                        "ref.png", "--root", str(tmp_path)])
     assert status == 0
     assert "best.w: 6.0" in capsys.readouterr().out
+
+
+BADGE = """name = "badge"
+output = "badge"
+
+[params]
+y = 0.5
+h = 1.0
+
+[materials]
+body = { colour = "#202030" }
+mark = { colour = "#F0E6C8" }
+
+[voxels]
+cell = 0.25
+mesh = false
+
+[search.y]
+min = 0.0
+max = 4.0
+
+[search.h]
+min = 1.0
+max = 7.0
+
+[[nodes]]
+id = "face"
+op = "plate"
+rect = [0, 0, 8, 8]
+depth = 1
+material = "body"
+
+[[nodes]]
+id = "stroke"
+op = "plate"
+rect = [3, "y", 2, "h"]
+depth = 0.5
+front = 1
+material = "mark"
+
+[[nodes]]
+id = "badge"
+op = "union"
+inputs = ["face", "stroke"]
+"""
+
+
+def badge(tmp_path):
+    """A dark badge whose cream mark sits 2 up and is 4 tall, of 8: the part to fit."""
+    (tmp_path / "badge.toml").write_text(BADGE, encoding="utf-8")
+    picture = Image.new("RGBA", (80, 80), (32, 32, 48, 255))
+    picture.paste((240, 230, 200, 255), (30, 20, 50, 60))
+    picture.save(tmp_path / "badge.png")
+
+
+def test_a_part_inside_a_drawing_is_fitted_in_place_and_at_scale(tmp_path):
+    """§PW326: the disc's outline hid the V, so only the whole could be fitted."""
+    badge(tmp_path)
+    region = {"colours": ["#F0E6C8"], "materials": ["mark"]}
+    found = cli.fit_one("badge.toml", "badge.png", region=region, budget=200,
+                        root=str(tmp_path))
+    assert found["best"]["h"] == pytest.approx(4.0, abs=0.35)
+    assert found["best"]["y"] == pytest.approx(2.0, abs=0.35)
+    assert found["views"]["front"] > 0.85
+    assert found["region"] == region
+
+
+@pytest.mark.parametrize("region", [
+    {"colours": ["#F0E6C8"], "materials": ["glow"]},
+    {"colours": ["cream"], "materials": ["mark"]},
+    {"colours": ["#00FF00"], "materials": ["mark"]},
+])
+def test_a_region_that_names_nothing_real_is_refused(tmp_path, region):
+    badge(tmp_path)
+    with pytest.raises(PolyweaveError) as refused:
+        cli.fit_one("badge.toml", "badge.png", region=region, root=str(tmp_path))
+    assert refused.value.code == "geom.bad-fit"
+
+
+def test_a_part_can_be_declared_by_its_end_points():
+    from polyweave.geometry.expr import evaluate
+
+    tilt = evaluate("degrees(atan2(dy, dx))", {"dx": 1.0, "dy": 1.0})
+    assert tilt == pytest.approx(45.0)
+    assert evaluate("atan(1)", {}) == pytest.approx(0.785398, abs=1e-6)

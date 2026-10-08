@@ -344,27 +344,6 @@ exist yet and expects the file.
 
 ## Block I — Voxel models from a declaration
 
-### §PW326 A part fitted to a region of a picture
-
-Found in starship (RK170): the splash's voxel V gives way to the studio's real badge PNG
-under a flash, so the voxel V must stand exactly where the badge's V does. The badge's
-silhouette is a disc, so `geometry.fit --source art/voxels/viglet_v.toml --reference
-game/ui/brand/viglet_games_badge.png` can only fit the disc: the V inside it, which is
-what moved, is invisible to an alpha silhouette. The voxel V was 1.49 units tall against
-the badge's 1.22, and the jump showed on screen.
-
-Expected: a fit reference can be a region of a picture, named by colour or palette entry
-(the badge's dark body and cream edge), scored against the cells of the declaration's
-materials that stand for it (`body`, `edge`), with the frame held by the whole picture's
-bounds, so a part is fitted in place and at scale, not only in proportion. Also
-`atan`/`atan2` and `degrees` in the expression grammar, so a part can be declared by two
-end points instead of a length and a tilt.
-
-Workaround: a throwaway script in the scratchpad (`measure_v.py`, `v_reference.py`)
-masked the badge's dark and cream pixels plus the disc's inset ring into a reference
-PNG, and a probe declaration in `.polyweave/fit/` holds the V and the same ring;
-`geometry.fit` then searched the arm's parameters against it.
-
 ## Block J — A bar a person sets once
 
 ## Block K — Reached without reading the source

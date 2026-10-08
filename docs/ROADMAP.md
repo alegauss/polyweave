@@ -26,8 +26,6 @@
 
 ## Block I — Voxel models from a declaration
 
-- 📋 **PW326** (deps: —) **geometry.fit scores a whole alpha silhouette, so a part inside a picture, like the V on a badge's disc, cannot be fitted** — A voxel part that must stand where a drawing's part does is measured and masked by a script in the project instead. → §PW326
-
 ## Block J — A bar a person sets once
 
 ## Block K — Reached without reading the source

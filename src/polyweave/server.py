@@ -96,7 +96,8 @@ TOOL_BUDGET = 4500
 #: 93,800 at 93,221 for voice.design and voice.choose (§PW321).
 #: 94,800 at 94,221 for voice.lines (§PW322).
 #: 95,500 at 94,923 for sound.speak's draft rung (§PW324).
-LIST_BUDGET = 95500
+#: 96,100 at 95,560 for geometry.fit's region (§PW326).
+LIST_BUDGET = 96100
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

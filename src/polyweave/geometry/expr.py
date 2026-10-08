@@ -47,6 +47,11 @@ FUNCTIONS = {
     "sin": math.sin,
     "cos": math.cos,
     "radians": math.radians,
+    # So a part can be declared by its two end points instead of a length and a tilt
+    # (§PW326).
+    "atan": math.atan,
+    "atan2": math.atan2,
+    "degrees": math.degrees,
 }
 
 #: The grammar, for a refusal that can name it.

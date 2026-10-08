@@ -393,15 +393,20 @@ def drawing(reference: str | Path, *, grid: int = GRID, alpha_floor: float):
     return fitted(mask, grid=grid)
 
 
-def fitted(mask: np.ndarray, *, grid: int = GRID) -> np.ndarray:
+def fitted(
+    mask: np.ndarray, *, grid: int = GRID, within: np.ndarray | None = None
+) -> np.ndarray:
     """A mask cropped to what it covers and fitted onto the grid, proportions kept.
 
     The one framing every silhouette here is compared in, so a drawing, a mesh and a
     voxel model (§PW98) differ in outline and proportion and never in how they were
-    framed. An empty mask stays empty.
+    framed. An empty mask stays empty. `within` frames the mask by another one's bounds
+    instead, the whole a part belongs to, so the part keeps its place and scale in it
+    (§PW326).
     """
-    rows = np.flatnonzero(mask.any(axis=1))
-    columns = np.flatnonzero(mask.any(axis=0))
+    frame = mask if within is None else within
+    rows = np.flatnonzero(frame.any(axis=1))
+    columns = np.flatnonzero(frame.any(axis=0))
     if not rows.size or not columns.size:
         return np.zeros((grid, grid), dtype=bool)
     box = mask[rows[0] : rows[-1] + 1, columns[0] : columns[-1] + 1]

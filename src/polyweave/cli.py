@@ -459,6 +459,9 @@ def fit_one(
     boxed: Annotated[
         bool, Param("score shape inside each view's box, not the box itself")
     ] = False,
+    region: Annotated[
+        dict, Param("a part of a drawing: {colours: [hex], materials: [name]}")
+    ] = None,
     root: Annotated[str, Param("the project the paths resolve against")] = ".",
 ) -> dict:
     """Fit a voxel declaration's [search] parameters to a drawing or a mesh (§PW230).
@@ -476,7 +479,7 @@ def fit_one(
     document = G.read(where, root=here)
     found = voxel_fit.fit(
         document, reference, views=tuple(views or ("front",)), root=here,
-        budget=budget, points=points, sheet=sheet, boxed=boxed,
+        budget=budget, points=points, sheet=sheet, boxed=boxed, region=region,
     )
     answer = {k: v for k, v in found.items() if k != "model"}
     answer.update(document=_kept(where, here), reference=reference, written=[])

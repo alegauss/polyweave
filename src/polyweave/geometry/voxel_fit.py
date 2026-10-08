@@ -45,6 +45,68 @@ _TURNED = {
 }
 
 
+def _part(model: dict, materials: list, grid: int) -> np.ndarray:
+    """The front outline of the cells wearing `materials`, framed by the whole model.
+
+    A part fitted in place: where it stands and how big it is inside the model, which
+    a whole-model outline cannot say once the part sits within it (§PW326).
+    """
+    names = [entry.get("name") for entry in model["palette"]]
+    wanted = {i for i, name in enumerate(names) if name in materials}
+    cells = model["cells"]
+    filled = np.zeros(tuple(model["size"]), dtype=bool)
+    part = np.zeros_like(filled)
+    if len(cells["x"]):
+        at = (np.asarray(cells["x"]), np.asarray(cells["y"]), np.asarray(cells["z"]))
+        filled[at] = True
+        worn = np.isin(np.asarray(cells["palette"]), list(wanted))
+        part[tuple(axis[worn] for axis in at)] = True
+    whole = filled.any(axis=2).T[::-1, :]
+    return fitted(part.any(axis=2).T[::-1, :], grid=grid, within=whole)
+
+
+#: How far a pixel's colour may sit from one a region names, as CIE76 ΔE, and still be
+#: the region's: antialiased edges and a lossy file's noise, not another colour.
+REGION_DELTA_E = 12.0
+
+
+def _region(reference: Any, region: dict, grid: int, root: Path) -> np.ndarray:
+    """A drawing's pixels near the region's colours, framed by the whole drawing."""
+    from ..config import load
+    from ..image import load as load_image
+    from ..measure import to_lab
+
+    where = Path(reference)
+    where = where if where.is_absolute() else root / where
+    image = load_image(where)
+    whole = image.subject(float(load(root).get("tolerance.alpha_floor")))
+    colours = region.get("colours") or []
+    try:
+        named = np.array([[int(c.lstrip("#")[i : i + 2], 16) / 255 for i in (0, 2, 4)]
+                          for c in colours])
+    except (AttributeError, ValueError):
+        named = np.zeros((0, 3))
+    if not len(named) or len(named) != len(colours):
+        raise PolyweaveError(
+            "geom.bad-fit",
+            f"a region's colours are {colours!r}, and they are hex colours",
+            'give region colours = ["#2b2b3a", "#f3e6c8"], the part\'s own colours',
+        )
+    lab = to_lab(image.rgba[..., :3].astype(np.float64) / 255.0)
+    targets = to_lab(named)
+    near = np.min(
+        np.linalg.norm(lab[..., None, :] - targets[None, None, :, :], axis=-1), axis=-1
+    ) <= float(region.get("delta_e", REGION_DELTA_E))
+    part = whole & near
+    if not part.any():
+        raise PolyweaveError(
+            "geom.bad-fit",
+            f"no pixel of {where.name} is near {', '.join(colours)}",
+            "name the colours the part is drawn in, or widen region delta_e",
+        )
+    return fitted(part, grid=grid, within=whole)
+
+
 def silhouettes(model: dict, *, grid: int = GRID) -> dict[str, np.ndarray]:
     """A voxel model's outline in each view, rows top to bottom, fitted to the grid."""
     filled = np.zeros(tuple(model["size"]), dtype=bool)
@@ -234,6 +296,7 @@ def fit(
     grid: int = GRID,
     sheet: str | Path | None = None,
     boxed: bool = False,
+    region: dict | None = None,
 ) -> dict:
     """Search a voxel model's declared parameters for the best overlap with a reference.
 
@@ -247,6 +310,11 @@ def fit(
     its best values land on their range edges, which `bound` names (§PW263). `boxed`
     scores each silhouette stretched to its box instead, so shape is compared and the
     box is not.
+
+    `region` fits a part inside a drawing (§PW326): `colours` pick the drawing's pixels
+    that are the part, `materials` the cells that stand for it, and both are framed by
+    their whole, the drawing's and the model's, so the part is fitted in place and at
+    scale, not only in proportion.
     """
     from .. import search as S
     from . import voxel_sheet, voxels
@@ -260,7 +328,23 @@ def fit(
             f"name some of {', '.join(VIEWS)}",
         )
     here = Path(root).resolve()
-    kept = _references(reference, views, grid, here)
+    materials = list((region or {}).get("materials") or [])
+    if region is not None:
+        declared = list(document.get("materials") or {})
+        unknown = [one for one in materials if one not in declared]
+        if boxed or views != ("front",) or not materials or unknown:
+            raise PolyweaveError(
+                "geom.bad-fit",
+                "a region is fitted on a drawing's front view, unboxed, against "
+                "materials the declaration has"
+                + (f"; it has no {', '.join(unknown)}" if unknown else ""),
+                "give region materials from the declaration's [materials], with "
+                "views = ['front'] and boxed off",
+                allowed=declared,
+            )
+        kept = {"front": _region(reference, region, grid, here)}
+    else:
+        kept = _references(reference, views, grid, here)
     wanted = {v: _boxed(m, grid) for v, m in kept.items()} if boxed else kept
     permitted = _ranges(document, ranges)
     reached: dict[str, list] = {view: [] for view in views}
@@ -275,7 +359,10 @@ def fit(
                 "failed": [refused.code],
                 "why": refused.message,
             }
-        seen = silhouettes(made, grid=grid)
+        seen = (
+            {"front": _part(made, materials, grid)} if region is not None
+            else silhouettes(made, grid=grid)
+        )
         for view in views:
             reached[view].append(_aspect(seen[view]))
         if boxed:
@@ -311,8 +398,9 @@ def fit(
         "says": made["says"],
         # How much of each outline the mesh left as holes, filled before scoring: a
         # reference that is mostly holes shows as that rather than as a poor fit.
-        "filled": _holes(reference, views, grid, here),
+        "filled": {} if region is not None else _holes(reference, views, grid, here),
         "boxed": bool(boxed),
+        **({"region": region} if region is not None else {}),
     }
     answer["aspect"], answer["aspect_gaps"] = _aspects(kept, reached)
     answer["bound"] = _on_edges(found["best"], permitted)
