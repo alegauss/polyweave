@@ -352,7 +352,7 @@ def judge(
     stamp = when or Date.today().isoformat()
     opened = run is None and bool(asset)
     if opened:
-        run = loop.start(str(asset), "after", root=str(here), who="verdict.judge")
+        run = loop.judging(str(asset), root=str(here))
     answers = []
     for member, _spec, spec_path, found in checked:
         mine = [n for n in named if n in {r["id"] for r in found["predicates"]}]

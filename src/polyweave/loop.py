@@ -56,6 +56,19 @@ def _where(root: str | Path) -> Path:
 
 ROOT = Param("the project whose ledger this is")
 
+#: Who opens a run that carries only a verdict, as written on runs before `made` was.
+JUDGE = "verdict.judge"
+
+
+def was_made(run: dict) -> bool:
+    """Whether a run made its asset, rather than only carrying a verdict on it (§PW388).
+
+    A verdict given with `asset=` opens a run to land in, and read as an `after` run it
+    refused that asset's baseline for good. Runs written before `made` existed are told
+    apart by who opened them.
+    """
+    return bool(run.get("made", run.get("who") != JUDGE))
+
 
 def _open(run_id: str, root: str | Path) -> Path:
     """Where an open run is kept between calls (§PW332)."""
@@ -186,7 +199,7 @@ def start(
             given=way,
             allowed=WAYS,
         )
-    runs = [r for r in read(root) if r["asset"] == asset]
+    runs = [r for r in read(root) if r["asset"] == asset and was_made(r)]
     if change is not None:
         ported = {r["way"] for r in runs if r.get("change") is None}
         if ported != set(WAYS):
@@ -234,6 +247,18 @@ def start(
     kept = _open(run["id"], root)
     kept.parent.mkdir(parents=True, exist_ok=True)
     write_atomic(kept, json.dumps(run, indent=1, sort_keys=True) + "\n")
+    return run
+
+
+def judging(asset: str, root: str | Path = ".") -> dict:
+    """Open a run that only carries a verdict on `asset` (§PW388).
+
+    It is an `after` run, since a person judges what the new way made, but it made
+    nothing: no baseline is refused for it and no cost is read off it.
+    """
+    run = start(str(asset), "after", root=root, who=JUDGE)
+    run["made"] = False
+    _keep(run, root)
     return run
 
 
@@ -561,7 +586,7 @@ def pending(root: Annotated[str, ROOT] = ".") -> dict:
     judged_at: dict[str, float] = {}
     for run in read(root):
         one = row(run["asset"])
-        one[run["way"]] = True
+        one[run["way"]] = one[run["way"]] or was_made(run)
         for verdict in run.get("verdicts", ()):
             judged_at[run["asset"]] = max(
                 judged_at.get(run["asset"], 0.0), float(verdict.get("at", 0.0))
@@ -654,18 +679,27 @@ def compare(
         for one in read(root)
         if one["asset"] == asset and one.get("change") == change
     ]
-    sides = {way: [one for one in runs if one["way"] == way] for way in WAYS}
+    # Costs come off the runs that made the asset; a run that only carried a verdict
+    # adds its verdicts to its side and nothing else (§PW388).
+    sides = {
+        way: [one for one in runs if one["way"] == way and was_made(one)]
+        for way in WAYS
+    }
     if not sides["before"] or not sides["after"]:
         missing = "before" if not sides["before"] else "after"
         event = f" after {change!r}" if change is not None else ""
         raise PolyweaveError(
             "loop.nothing-to-compare",
-            f"{asset} has no {missing} run recorded{event}, so there is nothing to "
-            "compare",
-            f"record the {missing} way; a claim measured on one side is not measured",
+            f"{asset} has no {missing} run recorded{event} that made it, so there is "
+            "nothing to compare",
+            f"record the {missing} way; a claim measured on one side is not measured, "
+            "and a verdict alone measures no cost",
         )
 
-    before, after = _totals(sides["before"]), _totals(sides["after"])
+    before, after = (
+        _with_verdicts(_totals(sides[way]), [r for r in runs if r["way"] == way])
+        for way in WAYS
+    )
     changed = {
         name: _change(before[name], after[name])
         for name in (
@@ -695,6 +729,15 @@ def compare(
             changed, before, after, set(missing["before"]) | set(missing["after"])
         ),
     }
+
+
+def _with_verdicts(totals: dict, runs: list[dict]) -> dict:
+    """A side's totals with the verdicts its verdict-only runs carried (§PW388)."""
+    judged = [one for one in runs if not was_made(one)]
+    totals["overruled"] += sum(one.get("overruled", 0) for one in judged)
+    totals["results"] += sum(one.get("results", 0) for one in judged)
+    totals["judged_only"] = len(judged)
+    return totals
 
 
 def _change(before: float, after: float) -> dict:

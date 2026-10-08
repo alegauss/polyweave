@@ -85,6 +85,15 @@ the verdict and finishes it, so a person's word given in a conversation lands in
 ledger in one call. `loop.finish` with `accepted` and no verdict keeps that as the
 person's verdict, so `loop.pending` reads the asset as judged.
 
+**A verdict is not a way of making the asset** (§PW388). The run `verdict.judge(asset=)`
+opens is an `after` run carrying `made: false`, and one written before that field, with
+`who = "verdict.judge"`, reads the same. It made nothing, so it does not refuse a
+baseline (`loop.baseline-too-late`), does not count as a port for `loop.not-ported`, and
+does not mark an `after` side in `loop.pending`. `loop.compare` reads costs only off runs
+that made the asset, adds a verdict run's `overruled` and `results` to its side, and
+counts it as `judged_only`. A side with only verdict runs is `loop.nothing-to-compare`.
+Spinhold had five assets closed to measurement this way, each by a single yes.
+
 ## The claim is about the second change, not the first bake
 
 Binds **PW114**. The stars' first comparison said the work was not reduced: 8.6 s the new
