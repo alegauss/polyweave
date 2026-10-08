@@ -1037,24 +1037,6 @@ at the build.
 
 ## Block U — A window on everything a project governs
 
-### §PW307 The harness that keeps a revision honest
-
-A session left alone does what a chat does: it changes a file and says it is better. The
-harness is what makes a revision a polyweave loop.
-
-1. **Start.** It opens a loop run against the revision (`loop.start`), so the change has a run, a ledger line and a budget.
-2. **After every write.** When the session writes the item's artefact or declaration, the window runs the item's own checks, not the agent's choice of them. That means `accept.check` against its spec, or `words.check`, `sound.measure` or `geometry.compare` by kind. It shows the result beside the change, old and new, with each predicate's bound. The session hears the same result as a hook message, so it cannot skip it.
-3. **When it thinks it is finished.** It must lay a sitting out (`verdict.sitting`, `sound.sitting` or `words.sheet`). The window shows it through the review page (PW305).
-4. **Closing.** The revision closes only when the person answers it. A `look` or `number` answer goes back to the same session as the next turn.
-
-The session's tool list leaves out `verdict.judge` and `verdict.promote`, and the
-harness refuses them if called (non-goal: an agent accepting its own look). A question
-the agent needs answered, such as "warmer rim or brighter?", reaches the window as an
-ask. The harness is a Claude Code hook plus settings the window passes, so a terminal
-session on a revision gets the same one.
-
-Landed: revision.check, revision.settings, the hook. Left: steps 1, 3 and 4.
-
 ### §PW308 A revision spends only what a person weighed
 
 "Make this picture different" can be answered by a local re-fit, or by `picture.buy`,

@@ -94,7 +94,10 @@ time: a second revision on the same item starts once the first one's session end
 (`shell/src/holding.ts`), and the window says which one it waits on. The session runs under
 `revision.settings`: the item's own checks after every write, by hook and again in the
 window, where they show as a line of the conversation, and no verdict tool. A verdict is
-the person's.
+the person's. A picture shows before beside now after each change. The session cannot
+stop until a sitting holds the item, and the window watches for the person's answer
+there (`shell/src/answers.ts`). An accept closes the revision with its run and sitting,
+and a look or a number goes back to the session as its next turn.
 
 ## The live test
 

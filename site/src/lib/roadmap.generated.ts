@@ -45,7 +45,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "R", title: "Levels measured before a person plays them", open: 8 },
   { block: "S", title: "Playing the game, not only rendering it", open: 1 },
   { block: "T", title: "Adopting polyweave in a project", open: 2 },
-  { block: "U", title: "A window on everything a project governs", open: 6 },
+  { block: "U", title: "A window on everything a project governs", open: 5 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 32 },
 ];
 
@@ -303,13 +303,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW307",
-    block: "U",
-    symptom: "a session changing an item can report done with no check run, and nothing makes it end on the person's verdict",
-    why: "The loop run, old beside new, ending only in a sitting, and a look or number answer fed back as the next turn are still to build.",
-    deps: [],
-  },
-  {
     id: "PW308",
     block: "U",
     symptom: "a revision session can call a paid generator on its own, so a click on one picture spends credits nobody weighed",
@@ -321,7 +314,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "U",
     symptom: "a revision's change can rewrite items outside the one asked about, and the person learns of it only by diffing",
     why: "Before a revision's session writes outside its item and dependents, the window names the file and asks; on close it lists every file touched and each re-checked.",
-    deps: ["PW307"],
+    deps: [],
   },
   {
     id: "PW310",
@@ -335,7 +328,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "U",
     symptom: "no revision has been asked, made and judged from the window on a real game, so its gaps are guesses",
     why: "Starship's owner opens the project in the window, asks for one picture and one sound to change, and judges both there; what got in the way is filed.",
-    deps: ["PW307", "PW308", "PW309", "PW310"],
+    deps: ["PW308", "PW309", "PW310"],
   },
   {
     id: "PW377",

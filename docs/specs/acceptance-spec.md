@@ -223,12 +223,21 @@ the conversation a revision is worked through is kept on it (`revision.turn`), a
 never the ones the session prefers. That means `accept.check` where a spec holds it,
 `words.check` on a line's row, and `sound.measure` on a sound, and `passed` is None where
 nothing checks the kind yet. `revision.settings(revision)` is the Claude Code settings a
-session on the revision runs under. Its hooks call `python -m polyweave hook revision`,
+session on the revision runs under. Its hooks call `python -m polyweave hook revision --revision <id>`,
 which runs those checks after every write that touches the item and hands the result to
 the session as context it cannot skip. It denies `verdict.judge` and `verdict.promote`
 before they run, and the same two are in the settings' denied permissions. The window
 passes these settings to the session it opens, and a terminal session gets the same with
 `claude --settings`.
+
+**A revision ends in the person's answer, never the session's word.** The settings' `Stop`
+hook refuses to let the session finish until a sitting laid out since the request holds
+the item, and its reason names the call that lays one out. `revision.open` says, for
+each revision, the `sitting` that holds it and the person's `answer` there. The window
+opens a loop run for the change when the session starts. When the person answers, an
+accept carries their verdict into that run, finishes it, and closes the revision with
+the run and the sitting. A look or a number goes back to the same session as its next
+turn, in the person's words.
 
 **The refused are shown beside the kept** (§PW175), because a filter nobody sees into is a
 filter nobody audits. Every `picture.gate` run appends its answer to `[paths]

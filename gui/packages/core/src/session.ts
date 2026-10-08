@@ -79,6 +79,8 @@ export type Said =
   | { kind: 'withdrawn'; requestId: string }
   | { kind: 'result'; ok: boolean; text: string }
   | { kind: 'check'; passed: boolean | null; said: string }
+  | { kind: 'answered'; said: string }
+  | { kind: 'closed'; sitting: string }
   | { kind: 'other' }
 
 /** A session's line as the screen draws it. A line that is not JSON reads as `other`. */
@@ -114,6 +116,10 @@ export function said(line: string): Said {
       return { kind: 'withdrawn', requestId: String(message['request_id']) }
     case 'result':
       return { kind: 'result', ok: message['is_error'] !== true, text: String(message['result'] ?? '') }
+    case 'polyweave_answer':
+      return { kind: 'answered', said: String(message['said'] ?? '') }
+    case 'polyweave_closed':
+      return { kind: 'closed', sitting: String(message['sitting'] ?? '') }
     case 'polyweave_check':
       // The window's own line: the item's checks after a change (§PW307).
       return {
@@ -123,5 +129,29 @@ export function said(line: string): Said {
       }
     default:
       return { kind: 'other' }
+  }
+}
+
+/** The person's answer on the sitting a revision ended in, as `revision.open` reads it. */
+export interface Answer {
+  choice: string
+  why?: string | null
+  at?: string | null
+}
+
+/**
+ * What a revision does with the person's answer (§PW307): an accept closes it with its
+ * run and sitting; anything else, a look or a number, goes back to the same session as
+ * its next turn, in the person's own words.
+ */
+export function followUp(answer: Answer): { close: true } | { close: false; say: string } {
+  if (answer.choice === 'accept') return { close: true }
+  const why = answer.why?.trim()
+  return {
+    close: false,
+    say:
+      `The person answered "${answer.choice}" on the sitting` +
+      (why ? `: ${why}` : ', with no comment') +
+      '. Change the item again from there, run its checks, and lay a new sitting out.',
   }
 }

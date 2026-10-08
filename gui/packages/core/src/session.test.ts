@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { opening, said } from './session'
+import { followUp, opening, said } from './session'
 
 const revision = {
   revision: 'r1',
@@ -54,5 +54,13 @@ describe('a session on one item', () => {
       said: 'failed: tone',
     })
     expect(said('not json')).toEqual({ kind: 'other' })
+  })
+
+  it("closes on an accept and hands anything else back as the session's next turn", () => {
+    expect(followUp({ choice: 'accept' })).toEqual({ close: true })
+    const look = followUp({ choice: 'look', why: 'still too bright' })
+    expect(look).toMatchObject({ close: false })
+    expect((look as { say: string }).say).toContain('"look" on the sitting: still too bright')
+    expect((followUp({ choice: 'number' }) as { say: string }).say).toContain('with no comment')
   })
 })

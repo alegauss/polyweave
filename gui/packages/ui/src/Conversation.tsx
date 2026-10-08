@@ -18,11 +18,14 @@ export function Conversation({
   revision,
   first,
   onResult,
+  onCheck,
 }: {
   bridge: Bridge
   revision: string
   first: string
   onResult?: () => void
+  /** Called on each check the window ran after a change, to show old beside new. */
+  onCheck?: () => void
 }) {
   const { t } = useTranslation()
   const [heard, setHeard] = useState<Heard[]>([])
@@ -38,6 +41,7 @@ export function Conversation({
         setHeard((before) => [...before, { line, read }])
         // Where the session now waits on the person: a question, or the end of a turn.
         if (read.kind === 'result' || read.kind === 'ask') onResult?.()
+        if (read.kind === 'check') onCheck?.()
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [bridge, revision],
@@ -128,6 +132,10 @@ function Turn({ read }: { read: Said }) {
           {t('session.checked', { said: read.said })}
         </li>
       )
+    case 'answered':
+      return <li className="whitespace-pre-wrap font-medium">{t('session.answered', { said: read.said })}</li>
+    case 'closed':
+      return <li data-closed className="font-medium">{t('session.closed', { sitting: read.sitting })}</li>
     case 'result':
       return (
         <li data-result={read.ok ? 'ok' : 'failed'} className={read.ok ? 'text-muted-foreground' : 'text-destructive'}>

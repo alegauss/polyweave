@@ -177,6 +177,9 @@ def open_(
             continue
         row = rows.get(event["item"])
         one = {**event, "moved": row is None or row["digest"] != event["digest"]}
+        # Where it is judged, and what the person said there (§PW307).
+        one["sitting"] = _laid(event, root)
+        one["answer"] = _answer(one["sitting"], root)
         try:
             one["brief"] = brief.brief(event["item"], root=root)
         except PolyweaveError as refused:
@@ -221,6 +224,46 @@ def turn(
     event = {"event": "turn", "revision": revision, "by": by, "text": text.strip(),
              "at": _now()}
     return _append(event, root)
+
+
+def _when(stamp: str) -> datetime:
+    return datetime.fromisoformat(str(stamp).replace("Z", "+00:00"))
+
+
+def _laid(asked: dict, root: str) -> str | None:
+    """The newest sitting laid out for this item since the person asked (§PW307).
+
+    A member holds the item by its file, or, for a line, by its key. A sitting laid
+    before the request answers an older question, so it does not count.
+    """
+    from . import review
+    from .config import load
+
+    item = asked["item"]
+    key = item[len("line:"):] if item.startswith("line:") else None
+    since = _when(asked["at"])
+    found = None
+    for sitting in review.sittings(load(root).root):
+        if not sitting.get("at") or _when(sitting["at"]) < since.replace(microsecond=0):
+            continue
+        for laid in (sitting.get("families") or {}).values():
+            for member in laid.get("members") or ():
+                if member.get("new") == item or (key and member.get("line") == key):
+                    found = sitting["manifest"]
+    return found
+
+
+def _answer(sitting: str | None, root: str) -> dict | None:
+    """The person's latest answer on that sitting, as the review page kept it."""
+    from . import verdict
+
+    if not sitting:
+        return None
+    said = [one for one in verdict.answers(root=root)["answers"]
+            if one.get("sitting") == sitting]
+    if not said:
+        return None
+    return {key: said[-1].get(key) for key in ("choice", "why", "at", "family")}
 
 
 def _asked(revision: str, root: str) -> dict:
@@ -323,6 +366,8 @@ def settings(
         "hooks": {
             "PreToolUse": [{"matcher": "|".join(WITHHELD), **hook[0]}],
             "PostToolUse": [{"matcher": WRITES, **hook[0]}],
+            # Finishing means a sitting the person answers, never the session's word.
+            "Stop": hook,
         },
     }
 
@@ -343,6 +388,17 @@ def hooked(event: dict, revision: str, root: str) -> dict | None:
             "permissionDecisionReason": "a verdict is the person's to give, never the "
             "session's: lay a sitting out and the person answers it",
         }}
+    if name == "Stop":
+        asked = _asked(revision, root)
+        if _laid(asked, root) or event.get("stop_hook_active"):
+            return None
+        return {
+            "decision": "block",
+            "reason": "This revision ends in a sitting the person answers, not in the "
+            f"session's word: lay {asked['item']} out with verdict.sitting (a "
+            "picture), "
+            "sound.sitting (a sound) or words.sheet (a line), beside what it was.",
+        }
     if name != "PostToolUse":
         return None
     asked = _asked(revision, root)

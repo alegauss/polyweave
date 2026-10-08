@@ -9,6 +9,7 @@ import { app, BrowserWindow, ipcMain } from 'electron'
 import { CHANNELS, find, opening, page, said, type Kind, type Opened, type Revision, type Smoke } from '@pw/core'
 
 import { agent } from './agent'
+import { Answers } from './answers'
 import { disk } from './disk'
 import { shown } from './files'
 import { Held } from './held'
@@ -25,6 +26,10 @@ const sessions = new Map<string, Session>()
 /** The project each revision's session works in, for keeping its turns. */
 const worked = new Map<string, string>()
 const holding = new Holding()
+const answers = new Answers()
+// The person answers on the review page, so the window reads the answers every few
+// seconds, as the page itself does (§PW307).
+setInterval(() => void answers.look(), 5000)
 
 /** Turns still being written, which quitting waits for so none is lost. */
 const writing = new Set<Promise<unknown>>()
@@ -102,6 +107,26 @@ ipcMain.handle(CHANNELS.sessionStart, async (event, project: string, revision: s
     const send = (line: string) => {
       if (!window.isDestroyed()) window.send(CHANNELS.sessionLine, revision, line)
     }
+    // The change has a run, a ledger line and a budget, as any polyweave change does.
+    const name = asked.item.split('/').pop()!.replace(/\.[^.]+$/, '')
+    const run = (await client
+      .call('loop.start', { asset: name, way: 'after', brief: asked.words, root: project })
+      .catch(() => null)) as Record<string, unknown> | null
+    answers.watch(revision, {
+      project,
+      call: (operation, args) => client.call(operation, args),
+      run,
+      say: (text) => {
+        sessions.get(revision)?.say(text)
+        kept(revision, text, 'person')
+        send(JSON.stringify({ type: 'polyweave_answer', said: text }))
+      },
+      closed: (sitting) => {
+        send(JSON.stringify({ type: 'polyweave_closed', sitting }))
+        sessions.get(revision)?.stop()
+        sessions.delete(revision)
+      },
+    })
     waiting = holding.take(asked.item, revision, () => {
       const session = start(
         runs,
@@ -137,6 +162,7 @@ ipcMain.handle(CHANNELS.sessionAnswer, (_event, revision: string, requestId: str
   sessions.get(revision)?.answer(requestId, allow) ?? false,
 )
 ipcMain.handle(CHANNELS.sessionStop, (_event, revision: string) => {
+  answers.forget(revision)
   sessions.get(revision)?.stop()
   sessions.delete(revision)
 })

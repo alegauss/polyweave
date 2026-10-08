@@ -160,3 +160,31 @@ def test_the_hook_denies_a_verdict_and_answers_a_write_to_the_item(tree):
     )
     said = json.loads(ran.stdout)["hookSpecificOutput"]["additionalContext"]
     assert said.startswith("The item's own checks after this change")
+
+
+def test_a_revision_ends_in_a_sitting_and_hears_the_persons_answer(tree):
+    # §PW307: the session cannot stop on its own word; the person's answer is read back.
+    from polyweave import verdict
+
+    asked = revision.ask("art/icon.png", "darker", root=str(tree))["revision"]
+    stopping = {"hook_event_name": "Stop"}
+    blocked = revision.hooked(stopping, asked, str(tree))
+    assert blocked["decision"] == "block"
+    assert "verdict.sitting" in blocked["reason"]
+    assert revision.open_(root=str(tree))["revisions"][0]["sitting"] is None
+
+    laid = verdict.sitting(
+        {"icon": [{"name": "icon", "new": "art/icon.png"}]}, out="review/s1",
+        root=str(tree),
+    )
+    assert laid
+    assert revision.hooked(stopping, asked, str(tree)) is None
+    opened = revision.open_(root=str(tree))["revisions"][0]
+    assert opened["sitting"] == "review/s1/sitting.json"
+    assert opened["answer"] is None
+    verdict.record_answer(
+        {"choice": "look", "why": "still too bright", "members": []},
+        sitting="review/s1/sitting.json", family="icon", root=str(tree),
+    )
+    answer = revision.open_(root=str(tree))["revisions"][0]["answer"]
+    assert (answer["choice"], answer["why"]) == ("look", "still too bright")

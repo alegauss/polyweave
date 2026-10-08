@@ -366,7 +366,7 @@
 - ✅ **PW304** **a person sees one item of a project only by opening its file by hand, with no declaration, record or bar beside it** — The window shows an item beside its bar, chain and dependents, a picture with its gate lanes and a loop looped, and filters to open revisions (design recorded in `gui/README.md`).
 - ✅ **PW305** **the window and the review page would each show a sitting, so two surfaces answer the same verdict and drift** — The window hosts the project's own review page, its server held beside the project's, so verdict.judge stays the one write; an item links to its sitting (design recorded in `gui/README.md`).
 - ✅ **PW306** **asking for a change to one item means leaving the window for a terminal and retelling the agent which item and what** — An item's ask opens a session on the person's claude from its revision and brief; turns are kept on the revision, one session holding an item (design recorded in `gui/README.md`).
-- ✅ **PW307 (the checks and the refusals)** **a session changing an item can report done with no check run, and nothing makes it end on the person's verdict** — A revision's session runs under its settings: the item's own checks after every write, by hook and in the window, and no verdict tool.
+- ✅ **PW307** **a session changing an item can report done with no check run, and nothing makes it end on the person's verdict** — A revision's session runs the item's checks after each write, cannot stop without a sitting, and closes only on the person's answer (design recorded in `docs/specs/acceptance-spec.md`).
 
 ## Block V — Parts every game repeats, installed already proved
 

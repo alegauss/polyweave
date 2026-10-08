@@ -66,7 +66,9 @@
     "not_judged": "No person has judged this line yet.",
     "gate": "Its last gate",
     "kept": "Kept",
-    "refused": "Refused"
+    "refused": "Refused",
+    "before": "Before",
+    "now": "Now"
   },
   "session": {
     "ask": "Ask for a change",
@@ -86,6 +88,8 @@
     "done": "Turn ended: {{text}}",
     "failed": "The turn failed: {{text}}",
     "waiting": "It starts once the session on revision {{revision}} ends: one change to an item at a time.",
-    "checked": "The item's own checks: {{said}}"
+    "checked": "The item's own checks: {{said}}",
+    "answered": "Your answer, sent to the session: {{said}}",
+    "closed": "Closed on your answer in {{sitting}}."
   }
 }

@@ -63,6 +63,7 @@ export function ItemView({
   const [chain, setChain] = useState<string[] | null>(null)
   const [file, setFile] = useState<Shown | null>(null)
   const [failed, setFailed] = useState<string | null>(null)
+  const [before, setBefore] = useState<Shown | null>(null)
   const seen = viewer(item)
   const [words, setWords] = useState(ask ?? '')
   const [talking, setTalking] = useState<{ revision: string; first: string; waiting: string | null } | null>(
@@ -74,6 +75,8 @@ export function ItemView({
     try {
       const { revision } = await bridge.revise(project, item.id, said)
       const { first, waiting } = await bridge.startSession(project, revision)
+      // What it was, kept as the session starts, so each change shows beside it (§PW307).
+      setBefore(file)
       setTalking({ revision, first, waiting })
     } catch (error) {
       setFailed(error instanceof Error ? error.message : String(error))
@@ -110,6 +113,13 @@ export function ItemView({
   }, [item.id])
 
   const source = file ? `data:${file.mime};base64,${file.base64}` : null
+  const was = before ? `data:${before.mime};base64,${before.base64}` : null
+  const changed = Boolean(was && file && before!.base64 !== file.base64)
+  const reread = () => {
+    if (seen === 'picture' || seen === 'sound') {
+      void bridge.file(project, item.artefact!).then(setFile, () => undefined)
+    }
+  }
   const line = brief?.['declaration'] as Brief | undefined
   const spec = brief?.['spec'] as Brief | null | undefined
   const dependents = (brief?.['dependents'] as { artefact: string; kind: string }[]) ?? []
@@ -128,7 +138,18 @@ export function ItemView({
 
       <div data-viewer={seen} className="overflow-auto rounded-md bg-muted/40 p-2">
         {seen === 'picture' && source && (
-          <img src={source} alt={item.id} className="max-w-none" style={{ imageRendering: 'pixelated' }} />
+          <div className="flex gap-4">
+            {changed && (
+              <figure data-before>
+                <img src={was!} alt={item.id} className="max-w-none" style={{ imageRendering: 'pixelated' }} />
+                <figcaption className="text-xs text-muted-foreground">{t('item.before')}</figcaption>
+              </figure>
+            )}
+            <figure>
+              <img src={source} alt={item.id} className="max-w-none" style={{ imageRendering: 'pixelated' }} />
+              {changed && <figcaption className="text-xs text-muted-foreground">{t('item.now')}</figcaption>}
+            </figure>
+          </div>
         )}
         {seen === 'sound' && source && (
           <audio controls loop={brief?.['loop'] === true} src={source} className="w-full" />
@@ -222,7 +243,13 @@ export function ItemView({
               {t('session.waiting', { revision: talking.waiting })}
             </p>
           )}
-          <Conversation bridge={bridge} revision={talking.revision} first={talking.first} onResult={onTalked} />
+          <Conversation
+            bridge={bridge}
+            revision={talking.revision}
+            first={talking.first}
+            onResult={onTalked}
+            onCheck={reread}
+          />
         </>
       ) : (
         <section className="flex flex-col gap-2">
