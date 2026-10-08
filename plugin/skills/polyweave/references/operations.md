@@ -11,16 +11,16 @@ page groups them by task.
 | Make a shape | `geometry.build`, `geometry.build_all`, `geometry.describe`, `geometry.variants`, `geometry.fit` (to a reference), `geometry.compare` (voxel models) |
 | Render | `render.plan` (free), `render.bake` (a render) |
 | Measure | `measure.take`, `measure.same`, `measure.available`, `measure.digest` (did the outline move, or only the look), `measure.contrast` |
-| Judge against the bar | `accept.check`, `accept.verify`, `accept.check_screen`, `cost.read` (what it costs to draw), `sound.measure` (seam, level), `sound.declared` (declared audio, and what is missing) |
+| Judge against the bar | `accept.check`, `accept.verify`, `accept.check_screen`, `cost.read` (draw cost), `sound.measure` (seam, level), `sound.speech` (a voiced line), `sound.declared` (declared audio, and what is missing) |
 | Search for numbers | `search.sweep`, `port.run` (a whole family), `trace.read` |
-| See it where it is seen | `compose.place`, `compose.sheet`, `store.capsules` (a store's set), `picture.vector` (SVG layers) |
+| See it where it is seen | `compose.place`, `compose.sheet`, `store.capsules`, `picture.vector` (SVG layers) |
 | Size a bound from noise | `calibrate.run`, then `calibrate.apply` |
 | Carry a person's verdict | `verdict.sheet`, `verdict.sitting`, `verdict.judge`, `verdict.promote`, `sound.sitting`; `review` shows a sitting, `verdict.answers` resumes from it |
 | Asked changes | `revision.ask`, `revision.open`, `revision.turn`, `revision.check`, `revision.settings`, `revision.close` |
 | Keep the ledger | `loop.start`, `loop.spent`, `loop.judged`, `loop.finish`, `loop.compare` |
 | Read the ledger | `loop.runs`, `loop.assets`, `loop.changes`, `loop.bounds` |
 | Provenance | `provenance.read`, `provenance.verify`, `provenance.dependents`, `provenance.outdated`, `provenance.unrecorded`, `provenance.credits`, `provenance.generated` |
-| The game side | `capture.run`, `capture.movie` (a shot), `capture.declared`, `engine.run`, `engine.sweep`, `engine.cost`, `godot.install` |
+| The game side | `capture.run`, `capture.movie`, `capture.declared`, `engine.run`, `engine.sweep`, `engine.cost`, `godot.install` |
 | Drive a game | `game.open`, `game.query`, `game.input`, `game.step`, `game.wait`, `game.call`, `game.set`, `game.shot`, `game.close`, `game.batch`, `game.keep`, `game.rekey`, `game.replay`, `game.release_check` |
 | Scale against the engine | `units.check`, `units.engine_scale`, `units.read_number` |
 | World | `world.read`, `world.validate`, `voice.design`, `voice.choose`, `voice.lines`, `words.check`, `words.unlisted`, `words.sheet` |

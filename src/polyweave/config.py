@@ -276,6 +276,18 @@ DEFAULTS: dict[str, Any] = {
         # ones are the lines canon, and only `verdict.judge` writes it.
         "canon": "",
     },
+    "voice": {
+        # What a spoken take is held to before a person hears it (§PW323). The game's
+        # numbers, so nothing here invents one: zero, or an empty band, bounds nothing.
+        # Seconds of silence before the first word and after the last.
+        "lead_silence": 0.0,
+        "tail_silence": 0.0,
+        # [low, high] characters of the line per second spoken: a skipped phrase reads
+        # fast, a repeated one slow.
+        "rate": [],
+        # [low, high] dBFS, so dialogue sits where the project's effects do.
+        "loudness": [],
+    },
     "voxels": {
         # What a voxel build is checked against (§PW97). A game decides how many cubes
         # it can draw and how thin a part may be before it vanishes, so these are the

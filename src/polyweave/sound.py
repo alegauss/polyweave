@@ -26,6 +26,7 @@ PATH, and refused where it is not.
 
 from __future__ import annotations
 
+import re
 import shutil
 import subprocess
 import wave
@@ -357,7 +358,7 @@ SOUND_CHOICES = {
 
 LISTENED = (
     "each member: name and new, and optionally old (the sound it replaces), loop, "
-    "and spec, its *.accept.toml"
+    "spec, its *.accept.toml, and line, the words a spoken take should say"
 )
 
 
@@ -408,9 +409,17 @@ def sitting(
             for key in ("old", "new")
             if key in heard
         }
+        # A spoken take is held to its line as well, and shows what it measures beside
+        # it, so a person's ear goes to the takes worth it (§PW323).
+        spoken_fails = []
+        if member.get("line"):
+            heard["line"] = str(member["line"])
+            found = speech(here / heard["new"], heard["line"], _names(here))
+            spoken_fails = held(found, config.table("voice"))
+            heard["speech"] = {**found, "failed": spoken_fails}
         # Held to its spec where it has one; otherwise nothing but the ear judges it.
         spec = verdict._checked(heard, here)[2] if heard.get("spec") else None
-        passed = bool(spec["passed"]) if spec else True
+        passed = (bool(spec["passed"]) if spec else True) and not spoken_fails
         heard["passed"] = passed
         drawn = folder / f"{heard['name']}.png"
         _drawn(drawn, heard, here)
@@ -418,8 +427,9 @@ def sitting(
         sheets[heard["name"]] = {
             "sheet": str(drawn),
             "members": [{"name": heard["name"], "passed": passed,
-                         "failed": [verdict._said(r) for r in spec["predicates"]
-                                    if not r["passed"]] if spec else []}],
+                         "failed": ([verdict._said(r) for r in spec["predicates"]
+                                     if not r["passed"]] if spec else [])
+                         + [_spoke(one) for one in spoken_fails]}],
         }
     if families:
         verdict._manifest(folder, families, sheets, here, kind="sound")
@@ -427,6 +437,9 @@ def sitting(
         "sitting": relative(folder / verdict.MANIFEST, here) if families else None,
         "sounds": list(families),
         "measured": {name: m[0]["measured"] for name, m in families.items()},
+        **({"speech": {name: m[0]["speech"] for name, m in families.items()
+                       if "speech" in m[0]}}
+           if any("speech" in m[0] for m in families.values()) else {}),
         "choices": dict(SOUND_CHOICES),
         "says": f"{len(families)} sound{'' if len(families) == 1 else 's'} for a "
         "person to hear on the review page; verdict.answers resumes from what they "
@@ -470,11 +483,176 @@ def _drawn(where: Path, member: dict, here: Path) -> None:
                          if isinstance(v, int | float))
         draw.text((gap, y), f"{key}: {member[key]}", fill=(235, 235, 235, 255))
         draw.text((gap, y + line), said, fill=(235, 235, 235, 255))
+        if key == "new" and member.get("speech"):
+            draw.text((gap, y + 2 * line), _speech_said(member["speech"]),
+                      fill=(255, 150, 150, 255) if member["speech"]["failed"]
+                      else (235, 235, 235, 255))
         y += 3 * line + gap
     looped = "played looped, so its seam is heard" if member["loop"] else "played once"
     draw.text((gap, y), f"{member['name']}: {looped}", fill=(255, 210, 90, 255))
     where.parent.mkdir(parents=True, exist_ok=True)
     canvas.save(where)
+
+
+def _spoke(failed: dict) -> str:
+    """A failed speech measure as a sitting says it."""
+    if failed["measure"] == "said":
+        return (f"said: missing {', '.join(failed['missing']) or 'nothing'}, heard "
+                f"{', '.join(failed['extra']) or 'nothing else'}")
+    bound = failed.get("max", failed.get("band"))
+    return f"{failed['measure']} {failed['value']:g} outside {bound}"
+
+
+def _speech_said(found: dict) -> str:
+    """One line of what a spoken take measures, for its sheet."""
+    said = (f"lead {found['lead_silence']:g}s, tail {found['tail_silence']:g}s, "
+            f"{found['rate']:g} chars/s")
+    if found.get("said"):
+        said += "; said as written" if found["said"]["matches"] else (
+            "; heard: " + found["said"]["heard"][:60])
+    return said
+
+
+#: How far under a take's loudest frame a frame still counts as speech, in dB, and the
+#: frame it is judged over in seconds: a breath or room tone sits well under a word.
+SPEECH_FLOOR, SPEECH_FRAME = 40.0, 0.02
+
+
+def speech(path: str | Path, text: str, vocabulary=()) -> dict:
+    """What a spoken take measures against its line (§PW323).
+
+    The silence before the first word and after the last, the line's characters per
+    second spoken, its loudness, and `said`: the words a local transcription heard that
+    the line does not have, or misses, where faster-whisper is installed.
+    """
+    samples, rate = read(path)
+    mono = samples.mean(axis=1)
+    size = max(1, int(rate * SPEECH_FRAME))
+    frames = len(mono) // size
+    if not frames:
+        raise PolyweaveError(
+            "spec.unreadable-sound",
+            f"{Path(path).name} is too short to hold a word",
+            "check the take; it is empty or a click",
+        )
+    levels = np.array([
+        _db(float(np.sqrt(np.mean(mono[i * size : (i + 1) * size] ** 2))))
+        for i in range(frames)
+    ])
+    spoken = np.flatnonzero(levels >= max(levels.max() - SPEECH_FLOOR, -60.0))
+    duration = len(mono) / rate
+    first, last = spoken[0] * size / rate, (spoken[-1] + 1) * size / rate
+    letters = len(re.sub(r"\s+", "", text))
+    found = {
+        "lead_silence": round(first, 3),
+        "tail_silence": round(max(duration - last, 0.0), 3),
+        "rate": round(letters / max(last - first, 1e-6), 2),
+        "loudness": measure(path)["loudness"],
+        "duration": round(duration, 3),
+    }
+    heard = _transcribed(Path(path), vocabulary)
+    if heard is None:
+        found["said"] = None
+        found["unheard"] = "faster-whisper is not installed; the words go unchecked"
+    else:
+        found["said"] = _differs(text, heard)
+    return found
+
+
+def _transcribed(path: Path, vocabulary=()) -> str | None:
+    """What a local speech-to-text model hears, or None where there is none.
+
+    Local on purpose: paying a service to check a take would be spending on the
+    agent's own judgement. The world's names are passed as the words to expect.
+    """
+    try:
+        from faster_whisper import WhisperModel
+    except ImportError:
+        return None
+    model = WhisperModel("base", device="cpu", compute_type="int8")
+    parts, _ = model.transcribe(
+        str(path), initial_prompt=", ".join(vocabulary) or None
+    )
+    return " ".join(part.text for part in parts).strip()
+
+
+def _differs(line: str, heard: str) -> dict:
+    """The words of the line a transcription missed, and those it heard instead."""
+    import difflib
+
+    def words(text: str) -> list[str]:
+        return re.findall(r"[\w']+", text.lower())
+
+    wanted, got = words(line), words(heard)
+    missing, extra = [], []
+    for op, a, b, c, d in difflib.SequenceMatcher(a=wanted, b=got).get_opcodes():
+        if op in ("delete", "replace"):
+            missing += wanted[a:b]
+        if op in ("insert", "replace"):
+            extra += got[c:d]
+    return {"heard": heard, "missing": missing, "extra": extra,
+            "matches": not missing and not extra}
+
+
+def held(found: dict, bounds: dict) -> list[dict]:
+    """Each speech measure outside the project's `[voice]` bound, as a finding."""
+    failed = []
+    for key in ("lead_silence", "tail_silence"):
+        if bounds.get(key) and found[key] > float(bounds[key]):
+            failed.append({"measure": key, "value": found[key], "max": bounds[key]})
+    for key in ("rate", "loudness"):
+        band = bounds.get(key) or []
+        if len(band) == 2 and not float(band[0]) <= found[key] <= float(band[1]):
+            failed.append({"measure": key, "value": found[key], "band": list(band)})
+    if found.get("said") and not found["said"]["matches"]:
+        failed.append({"measure": "said", "missing": found["said"]["missing"],
+                       "extra": found["said"]["extra"]})
+    return failed
+
+
+@operation("sound.speech")
+def spoken(
+    take: Annotated[str, Param("the spoken take, as a path under the project")],
+    text: Annotated[str, Param("the line it should say; its record's where unset")] = (
+        None
+    ),
+    root: Annotated[str, Param("the project the path resolves against")] = ".",
+) -> dict:
+    """A spoken take held to its line and the project's `[voice]` bounds (§PW323).
+
+    `failed` names each measure outside its bound. A take that fails is reported, never
+    bought again: whether to spend on another is the person's ceiling.
+    """
+    from . import provenance
+
+    config = load(root)
+    here = config.root
+    where = config.path("paths.work", take)
+    if text is None:
+        try:
+            text = provenance.read(str(where), root=here).get("prompt")
+        except PolyweaveError:
+            text = None
+    if not text:
+        raise PolyweaveError(
+            "spec.unreadable-sound",
+            f"{take} names no line to hold it to",
+            "pass text, the words the take should say",
+        )
+    found = speech(where, text, _names(here))
+    return {"take": take, "text": text, **found,
+            "failed": held(found, config.table("voice"))}
+
+
+def _names(here: Path) -> list[str]:
+    """The world's names, for a transcription to expect; none without a world."""
+    from .world import declared
+
+    try:
+        _, entities, _ = declared(None, here)
+    except PolyweaveError:
+        return []
+    return sorted({one["name"] for one in entities.values()})
 
 
 @operation("sound.measure")

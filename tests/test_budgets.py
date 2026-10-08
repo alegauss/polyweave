@@ -83,7 +83,8 @@ from polyweave.errors import PolyweaveError
 #: spoken aloud.
 #: 105,461 with voice.design and voice.choose (§PW321), a character's voice.
 #: 106,700 with voice.lines (§PW322), a string table voiced as a set.
-DESCRIBE = 107_300
+#: 107,312 with sound.speech (§PW323), a take held to its line.
+DESCRIBE = 107_900
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with

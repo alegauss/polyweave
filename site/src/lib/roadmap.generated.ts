@@ -166,7 +166,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW323",
     block: "P",
     symptom: "nothing measures a spoken take, so a clipped, padded or misread line reaches the person's verdict as a candidate",
-    why: "Speech services drop words, add breaths and pad silence, and a person should hear only takes that already say their line, at the length and level the game needs.",
+    why: "A take's lead and tail silence are measured but not yet trimmed to their bound on capture where the project asks for it.",
     deps: [],
   },
   {

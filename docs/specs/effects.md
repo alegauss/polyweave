@@ -151,3 +151,29 @@ The delivery is the voice's own unless the call sets it: `stability`, `similarit
 take is captured as a `sound`, and its record keeps the words, the voice, the model and
 the delivery set, so the same line can be made again. `entity=<id>` speaks in the voice
 the world gives that entity instead of a `voice` the call names (world.md, §PW321).
+
+## A take that says its line
+
+A speech service drops words, adds breaths and pads silence, so a take is measured
+against its line before a person hears it (§PW323). `sound.speech(take, text=)` (the
+words from the take's record where `text` is unset) answers:
+
+- `lead_silence` and `tail_silence`: seconds before the first frame within 40 dB of the
+  take's loudest, judged over 20 ms frames, and after the last, which the game would play
+  as a pause;
+- `rate`: the line's characters, spaces left out, per second between them, so a skipped
+  phrase reads fast and a repeated one slow;
+- `loudness`, as `sound.measure` gives it, and `duration`;
+- `said`: where faster-whisper is installed, what a local transcription heard, with the
+  line's words it `missing` and those it heard `extra`, the world's names passed as the
+  words to expect, since an invented name is what a service misreads. It runs locally
+  because paying a service to check a take is spending on the agent's own judgement;
+  where it is not installed `said` is null and `unheard` says why.
+
+`failed` names each measure outside the project's `[voice]` bound: `lead_silence` and
+`tail_silence` as maxima, `rate` and `loudness` as `[low, high]` bands, and `said` where
+the words differ. Zero or an empty band bounds nothing, since the numbers are the
+game's. `sound.speak` and `voice.lines` answer the same `speech` with each take, and a
+sound sitting member given its `line` shows the measures on its sheet and is marked as
+failing where any bound fails. A failing take is kept and reported, never bought again:
+whether to spend on another is the person's ceiling.

@@ -260,8 +260,22 @@ def _bought(
         inputs=inputs,
         root=here,
     )
-    return {**entry, "file": target.relative_to(here).as_posix(),
-            "measured": _measured(target)}
+    answer = {**entry, "file": target.relative_to(here).as_posix(),
+              "measured": _measured(target)}
+    if details.get("spoken"):
+        # Held to its line before a person hears it (§PW323); a take that fails is
+        # kept and said, never bought again here.
+        answer["speech"] = _speech(target, words, config)
+    return answer
+
+
+def _speech(target: Path, words: str, config) -> dict:
+    """What a spoken take measures against its line, or why it cannot be measured."""
+    try:
+        found = sound.speech(target, words, sound._names(config.root))
+    except PolyweaveError as refused:
+        return {"unmeasured": refused.message}
+    return {**found, "failed": sound.held(found, config.table("voice"))}
 
 
 #: Where a voice is designed from words, and where a chosen preview is kept (§PW321).
@@ -375,7 +389,7 @@ def design(
             inputs=[provenance.source("world", source, root=here)],
             root=here,
         )
-        heard.append({"name": target.stem, "new": entry["artefact"]})
+        heard.append({"name": target.stem, "new": entry["artefact"], "line": sample})
     laid = sound.sitting(
         heard, out=provenance.relative(folder, here), root=str(here)
     )
@@ -566,7 +580,7 @@ def lines(
             request["voice_settings"] = delivery
         route = SPEAK.format(voice=urllib.parse.quote(own["id"], safe=""))
         try:
-            _bought(
+            took = _bought(
                 report, f"{route}?output_format={FORMAT}", request, words=one["text"],
                 cue=None, out=one["out"], model=model, service=name, root=here,
                 details={"voice": own["id"], "delivery": delivery, "spoken": True,
@@ -582,11 +596,11 @@ def lines(
                        for one in plan[index:]]
             answer["stopped_by"] = refused.message
             break
-        voiced.append(one)
+        voiced.append({**one, "failed": took["speech"].get("failed", [])})
     if voiced:
         heard = [
             {"name": f"{one['speaker']}.{one['key']}.{one['locale']}",
-             "new": one["out"]}
+             "new": one["out"], "line": one["text"]}
             for one in sorted(voiced, key=lambda one: one["speaker"])
         ]
         folder = config.path("paths.work", "voices/lines")
@@ -595,7 +609,7 @@ def lines(
         )["sitting"]
     answer.update({
         "spent": True,
-        "voiced": [{k: one[k] for k in ("key", "locale", "speaker", "out")}
+        "voiced": [{k: one[k] for k in ("key", "locale", "speaker", "out", "failed")}
                    for one in voiced],
         "not_voiced": stopped,
     })

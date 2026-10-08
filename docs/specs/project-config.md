@@ -155,6 +155,12 @@ ordinary_in = { pt_BR = ["VIDAS"] } # and those of one locale alone (PW329)
 canon    = "docs/design/lines.json"  # a person's verdicts on lines; only a verdict adds
 voiced   = "audio/voice/{locale}/{key}.ogg"  # where voice.lines puts a take (PW322)
 
+[voice]                            # what a spoken take is held to (PW323)
+lead_silence = 0.25                # seconds before the first word; zero bounds nothing
+tail_silence = 0.4                 # and after the last
+rate         = [8.0, 20.0]         # characters of the line per second spoken
+loudness     = [-24.0, -14.0]      # dBFS, where the project's effects sit
+
 [voxels]
 budget        = 4000           # the most cells a model may have; zero is no ceiling
 thread        = 3              # the longest run one cell thick before it is reported
