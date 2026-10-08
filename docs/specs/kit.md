@@ -155,3 +155,16 @@ which polyweave never carries. Its proof script holds every bound action to an i
 every family it is bound for, a pad's name to its family, and a key after a pad to the
 keyboard's icons. The kit reads a game's `project.godot` as Godot writes it, a value
 over several lines included.
+
+**remap** (§PW345, requires prompts): rebinding the controls, extracted from Starship's
+bindings. `PolyweaveBindings` stores a binding as codes a settings file holds
+(`key:<physical keycode>`, `mouse:<n>`, `button:<n>`, `axis:<n>:<-1 or 1>`); keys and
+pad are two halves replaced apart, so a key leaves the pad's binding alone; a code
+another action holds on that half is swapped, never shared; a reset goes back to the
+bindings `project.godot` declares; and the stick's deadzone and inverted vertical are
+kept beside them in `user://polyweave_bindings.cfg`. The actions are the game's own,
+every project action but the `ui_` ones unless the screen names them. Its scene, a
+remap screen, draws each binding as the prompts kit's icon for the device in use,
+listens on the half pressed for the next input, says a swap, and holds a deadzone
+slider, the inverted vertical and a reset. Its proof script rebinds, swaps, restarts
+the store from the file, resets, and drives the screen with a pad button.

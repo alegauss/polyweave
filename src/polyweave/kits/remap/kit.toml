@@ -1,0 +1,21 @@
+name = "remap"
+version = "0.1.0"
+summary = "rebinding on the keys and the pad apart, a clash swapped, kept across restarts, reset to the game's own"
+requires = ["prompts"]
+
+[installs]
+core = "core"
+scene = "scene/remap_menu.tscn"
+
+[declares]
+file = "user://polyweave_bindings.cfg"
+halves = ["keys", "pad"]
+conflict = "swap"
+
+[proves]
+spec = "proof.accept.toml"
+fixture = "fixture"
+script = "core/proof.gd"
+
+[changes]
+"0.1.0" = "the binding store extracted from Starship, its swap and reset, and a remap screen drawn with the prompts kit's icons"

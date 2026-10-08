@@ -1,0 +1,28 @@
+{
+  "artefact": {
+    "bytes": 2500,
+    "path": "src/polyweave/kits/remap/core/icons/remap/listening_64.png",
+    "sha256": "0a8b52df7dfcc1feed459fb670510ef2ade19dfeba039af8c9ced9480b9c86c0"
+  },
+  "elapsed_s": null,
+  "engine": {
+    "name": "icons.build"
+  },
+  "inputs": [
+    {
+      "path": "src/polyweave/kits/remap/icons/remap.icons.toml",
+      "role": "icons",
+      "sha256": "54c1eb55dc3e41b8cf12baf8acdc29a6ad48e13ed108398bebc4e23c87ad112a"
+    }
+  ],
+  "kind": "picture",
+  "measurements": {},
+  "params": {
+    "set": "remap"
+  },
+  "produced_at": "2026-10-08T22:48:22Z",
+  "producer": {
+    "tool": "polyweave",
+    "version": "0.1.0"
+  }
+}

@@ -1,0 +1,10 @@
+# What the remap kit's pictures hold in the game they land in: the icon a binding shows
+# while it listens fills its frame.
+asset = "remap"
+artefact = "addons/polyweave/remap/icons/remap/listening_64.png"
+
+[[predicate]]
+id = "fills-its-frame"
+measure = "alpha_coverage"
+region = "frame"
+min = { value = 0.6, origin = "margin" }

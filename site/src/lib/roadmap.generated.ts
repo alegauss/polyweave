@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 2 },
   { block: "U", title: "A window on everything a project governs", open: 2 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 27 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 26 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -226,13 +226,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW345",
-    block: "V",
-    symptom: "rebinding, its conflicts, its reset and its persistence are written anew by each game that lets a player change controls",
-    why: "Starship already solved it well once, so a kit costs extracting what it solved, not inventing it.",
-    deps: [],
-  },
-  {
     id: "PW346",
     block: "V",
     symptom: "a main menu, a pause menu and a confirm dialog are rebuilt per game, and a control no pad can reach is found by a person",
@@ -314,7 +307,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "V",
     symptom: "a second player joining, which pad is whose and keeping two players' bindings apart are rewritten per game",
     why: "Starship solved it in coop.gd, and the binding half of it already lives in the remap kit.",
-    deps: ["PW345"],
+    deps: [],
   },
   {
     id: "PW358",
@@ -405,7 +398,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "V",
     symptom: "Starship keeps its own bindings and co-op code after the input kits were extracted from it",
     why: "A kit proved only in a fixture has not met a game, and the game it came from is the cheapest first consumer.",
-    deps: ["PW345", "PW357"],
+    deps: ["PW357"],
   },
   {
     id: "PW371",

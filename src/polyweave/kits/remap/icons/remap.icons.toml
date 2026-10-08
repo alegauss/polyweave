@@ -1,0 +1,20 @@
+# The remap screen's own icons: what a binding shows while it listens for the next
+# input, and the reset to the game's own bindings.
+name = "remap"
+sizes = [64]
+
+[style]
+fill = "#E9E9EC"
+symbol_colour = "#202024"
+
+[icon.listening]
+shape = "keycap"
+symbol = "?"
+
+[icon.reset]
+shape = "rounded"
+symbol = "R"
+
+[accept]
+symbol_contrast_min = 3.0
+background_contrast_min = 1.5

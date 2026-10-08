@@ -845,22 +845,6 @@ line in the window and the file in `touched`.
 
 ## Block V — Parts every game repeats, installed already proved
 
-### §PW345 Rebinding the controls
-
-Starship's game/core/bindings.gd is the source. An action's binding is stored as codes a
-settings file can hold (key:<physical keycode>, button:<n>, axis:<n>:<-1 or 1>); keys
-and pad are two halves replaced independently; a code another action already holds is
-swapped, never shared; a reset goes back to the declared defaults; and the stick's
-deadzone and inverted vertical sit beside them. What is Starship's own, its actions and
-its twin-stick fire, becomes the declaration.
-
-The kit installs the binding store and a remap screen built on the prompt service of the
-prompts kit, so every binding is shown in the icons of the device in use.
-
-Proof, driven through the game: open the screen with the pad alone, rebind an action,
-press the new button and query the InputMap; rebind onto a code another action holds and
-see the swap; restart the game and find the binding kept; reset and find the defaults.
-
 ### §PW346 Menus a pad can drive
 
 A main menu, a pause menu and a yes-or-no confirm are in every game, and the failure
@@ -883,10 +867,10 @@ the behaviour and nothing of how it looks.
 Cottony's scripts/settings.gd and Starship's SettingsStore, fed by the options() rows in
 bindings.gd, are two versions of one thing. The kit installs a settings store in
 user://, versioned so that a key renamed in a later build migrates, and an options
-screen whose tabs are contributed by the kits present: controls from the remap kit of
-§PW345, and audio, language, accessibility and graphics from their own kits in this
-block, plus any rows the project declares for itself. A kit that contributes a tab
-declares it in its kit.toml, so this screen names no kit it does not find installed.
+screen whose tabs are contributed by the kits present: controls from the remap kit
+(docs/specs/kit.md), and audio, language, accessibility and graphics from their own kits
+in this block, plus any rows the project declares for itself. A kit that contributes a
+tab declares it in its kit.toml, so this screen names no kit it does not find installed.
 
 Proof: every row changes what it says it changes, read back in the running game after
 the change (a bus volume, a window mode, a locale); every value survives a restart; an
@@ -1044,7 +1028,7 @@ Starship's game/core/coop.gd and the coop_device kept in bindings.gd hold a seco
 player's pad apart from the first one's, and a rebind there keeps the two pads apart.
 The kit installs a join flow (press to join on any unassigned pad), a device-to-player
 map the input layer filters every event by, and per-player bindings through the remap
-kit of §PW345.
+kit (docs/specs/kit.md).
 
 Proof, driven with two simulated pads: both join as two players; an event from one never
 moves the other; a rebind on one leaves the other's bindings alone; a leave frees the
@@ -1256,7 +1240,7 @@ game never has a version of these parts of its own to migrate away from.
 
 ### §PW370 Starship onto the input kits
 
-The prompt, remap and co-op kits (the prompts kit, §PW345, §PW357) are extracted from
+The prompt, remap and co-op kits (the prompts and remap kits, §PW357) are extracted from
 Starship's game/core/bindings.gd, controls.gd and coop.gd. Starship then adopts them,
 which is the decision that every project adapts to polyweave rather than the other way
 round: its actions and options become the kit's declaration, its own input code is

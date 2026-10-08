@@ -1,0 +1,24 @@
+; The remap kit's fixture: three actions, each bound on both halves, so a rebind can
+; clash on the keys' half while the pad's stays put.
+
+config_version=5
+
+[application]
+
+config/name="remap fixture"
+run/main_scene="res://main.tscn"
+
+[input]
+
+jump={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"physical_keycode":32), Object(InputEventJoypadButton,"button_index":0)]
+}
+fire={
+"deadzone": 0.5,
+"events": [Object(InputEventMouseButton,"button_index":1), Object(InputEventJoypadMotion,"axis":5,"axis_value":1.0)]
+}
+pause={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"physical_keycode":4194305), Object(InputEventJoypadButton,"button_index":6)]
+}

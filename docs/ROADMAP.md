@@ -75,7 +75,6 @@
 
 ## Block V — Parts every game repeats, installed already proved
 
-- 📋 **PW345** (deps: PW344 ✅) **rebinding, its conflicts, its reset and its persistence are written anew by each game that lets a player change controls** — Starship already solved it well once, so a kit costs extracting what it solved, not inventing it. → §PW345
 - 📋 **PW346** (deps: PW344 ✅) **a main menu, a pause menu and a confirm dialog are rebuilt per game, and a control no pad can reach is found by a person** — Focus navigation fails silently and back is a different button per family, which a check holds and a review misses. → §PW346
 - 📋 **PW347** (deps: PW341 ✅) **each game writes its own options screen and settings file, and an option that changes nothing goes unnoticed** — Both games built one; a screen whose tabs come from the installed kits makes each option a declared row with a check. → §PW347
 - 📋 **PW348** (deps: PW341 ✅) **a save is written in place with no schema version, so a crash mid-write or a game update can lose a player's progress** — Cottony wrote its own save and tests for it; the failures that matter are the same in every game and can be forced. → §PW348
@@ -87,7 +86,7 @@
 - 📋 **PW354** (deps: —) **no measure counts the flashes in a captured run, so a photosensitivity risk is found by a player** — A flash count is a number read from pixels, the kind of check polyweave exists to make, and no snippet carries one. → §PW354
 - 📋 **PW355** (deps: PW347, PW354) **text size, colourblind filters, subtitles and less shake are each left out or hand-built, and none is checked** — They are options in every game's settings and their effect can be measured, which makes them a kit rather than a wish. → §PW355
 - 📋 **PW356** (deps: PW344 ✅) **a pad unplugged mid-game or a window losing focus leaves the game running with no one at the controls** — It is a few lines each game forgets, and the console makers' certification asks for it. → §PW356
-- 📋 **PW357** (deps: PW345) **a second player joining, which pad is whose and keeping two players' bindings apart are rewritten per game** — Starship solved it in coop.gd, and the binding half of it already lives in the remap kit. → §PW357
+- 📋 **PW357** (deps: PW345 ✅) **a second player joining, which pad is whose and keeping two players' bindings apart are rewritten per game** — Starship solved it in coop.gd, and the binding half of it already lives in the remap kit. → §PW357
 - 📋 **PW358** (deps: —) **a moved file breaks a UID reference and a script that does not parse is found only when its scene loads** — These are the commonest silent failures an agent causes in Godot 4, and each is decidable without playing the game. → §PW358
 - 📋 **PW359** (deps: PW341 ✅) **an agent reads a game's state by adding prints and running it, since nothing declares which state a query may read** — A declared surface lets game.query answer with no instrumentation, and it is what a crash dump and a determinism check read. → §PW359
 - 📋 **PW360** (deps: PW359) **a bug that happens only sometimes cannot be reproduced, because a game's randomness and timing are held to no seed** — With one seed and recorded input a report becomes a game.keep flow, and the flow becomes a regression test. → §PW360
@@ -100,7 +99,7 @@
 - 📋 **PW367** (deps: PW365, PW366) **a preset's settings are chosen by eye, so no one knows if it is the best-looking one that fits its frame budget** — Searching parameters to meet a declaration is what polyweave exists for, and a preset is a parameter set like Cottony's render rig. → §PW367
 - 💭 **PW368** (deps: —) **a game's states and transitions live only in code, so a state nothing reaches or nothing leaves is found by playing** — Generic enough for a kit, but the most opinionated one here, so it waits until two games show code it would replace. → §PW368
 - 📋 **PW369** (deps: PW341 ✅, PW358, PW362) **a new game starts as an empty Godot project and is adopted onto polyweave later, by hand** — If every project is to adapt to polyweave, the cheapest moment to do it is the first commit. → §PW369
-- 📋 **PW370** (deps: PW345, PW357) **Starship keeps its own bindings and co-op code after the input kits were extracted from it** — A kit proved only in a fixture has not met a game, and the game it came from is the cheapest first consumer. → §PW370
+- 📋 **PW370** (deps: PW345 ✅, PW357) **Starship keeps its own bindings and co-op code after the input kits were extracted from it** — A kit proved only in a fixture has not met a game, and the game it came from is the cheapest first consumer. → §PW370
 - 📋 **PW371** (deps: PW347, PW348) **Cottony keeps its own settings and save code where the kits provide them** — The second game is what shows a kit is not one project's code moved into a folder. → §PW371
 
 ## Done when — PW36
