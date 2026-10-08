@@ -845,27 +845,6 @@ line in the window and the file in `touched`.
 
 ## Block V — Parts every game repeats, installed already proved
 
-### §PW341 Installing a kit in one call
-
-The format of docs/specs/kit.md says what a kit is; this is the operation that lands
-one. `kit.install <name>` reads the project (project.godot's renderer and main scene,
-the InputMap, export_presets.cfg, which kits are already in), writes the declaration it
-proposes into the project config only where the project has none, copies the core into
-res://addons/polyweave/<name>/ and the scene where the declaration says, and records the
-kit and its version in the provenance record, so provenance.read answers what the
-project carries and from where. It installs first whatever kit.toml names as a
-dependency.
-
-Then it runs the kit's own acceptance spec through accept.verify in the real game, and
-answers in the shape the tool surface spec asks of every operation: ok or the first
-finding with its remedy, the points of the scene meant to be changed, and any question
-that is a person's to answer (a verdict, a budget), never a file for the agent to read.
-A dry run (`write=false`, as project.init has) answers the same without writing
-anything.
-
-An installed kit is then part of the project's own gate, so a later change in the game
-that breaks it fails there and not in front of a player.
-
 ### §PW342 Every kit proved in polyweave's own gate
 
 A kit is worth more than a snippet only while its proof holds, and a proof that runs
@@ -882,9 +861,9 @@ beside it, so a kit that only works alone is found here and not in a game.
 
 ### §PW343 An installed kit that has fallen behind
 
-The provenance record of §PW341 names the kit and the version a project carries.
-provenance.outdated should name a kit whose version in polyweave is newer, with the
-changelog lines between the two.
+The provenance record kit.install writes names the kit and the version a project
+carries. provenance.outdated should name a kit whose version in polyweave is newer, with
+the changelog lines between the two.
 
 `kit.update <name>` replaces the core, which the project never edits: a core whose hash
 differs from the version recorded is a finding naming the files, never an overwrite. It

@@ -168,6 +168,9 @@ DEFAULTS: dict[str, Any] = {
         # A capture's window starts minimised and unfocused, out of sight (§PW296).
         "quiet": True,
     },
+    # Each installed kit's declaration, `[kit.<name>]` (§PW341): its keys are the kit's
+    # own, so the kit checks them and this table does not.
+    "kit": {},
     "driving": {
         # Seconds a driven game waits for its next call before it quits, so a session an
         # agent forgot never outlives the conversation that opened it (§PW213).
@@ -794,6 +797,16 @@ def _check(declared: dict, source: Path) -> None:
                 f"[{table}] is a table, and {source.name} gives it a value",
                 f"write it as [{table}] with keys under it",
             )
+        if table == "kit":
+            loose = sorted(k for k, v in values.items() if not isinstance(v, dict))
+            if loose:
+                raise PolyweaveError(
+                    "config.bad-type",
+                    f"[kit] holds {', '.join(loose)}, and it holds one table per kit",
+                    "write it as [kit.<name>], the kit's own declaration",
+                    at=f"kit.{loose[0]}",
+                )
+            continue
         if table in _NAMED_TABLES and _named(values):
             _check_named(table, values, source)
             continue

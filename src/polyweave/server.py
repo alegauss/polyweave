@@ -102,7 +102,8 @@ TOOL_BUDGET = 4500
 #: 98,800 at 98,256 for icons.build (§PW331).
 #: 99,400 at 98,895 for words.glyphs (§PW335).
 #: 100,000 at 99,419 for game.text_fit (§PW336).
-LIST_BUDGET = 100000
+#: 101,000 at 100,419 for kit.list and kit.install (§PW340, §PW341).
+LIST_BUDGET = 101000
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

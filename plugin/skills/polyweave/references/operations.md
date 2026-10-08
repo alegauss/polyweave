@@ -5,7 +5,7 @@ page groups them by task.
 
 | Task | Operations |
 |---|---|
-| Adopt | `project.init` (`init`), `project.check`, `project.inventory`, `kit.list` |
+| Adopt | `project.init` (`init`), `project.check`, `project.inventory`, `kit.list`, `kit.install` |
 | Know the machine | `capabilities` (verb), `engine.find`, `offscreen.routes`, `search.worth_parallel` |
 | Start on an asset | `asset.brief`, `loop.pending` |
 | Make a shape | `geometry.build`, `geometry.build_all`, `geometry.describe`, `geometry.variants`, `geometry.fit` (to a reference), `geometry.compare` (voxel models) |

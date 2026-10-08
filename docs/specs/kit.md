@@ -72,3 +72,30 @@ An agent's whole share is one call and one reading of the answer. A question a k
 leaves is a person's decision (a verdict, a budget), never an analysis for the agent. A
 kit assumes no genre. Installing (§PW341) and proving every kit in polyweave's own gate
 (§PW342) are the operations this format is read by.
+
+## Installing one, in one call
+
+`kit.install <name>` lands a kit in the Godot project at `root` (§PW341):
+
+1. it reads the game: `project.godot`'s main scene and renderer, the InputMap's actions,
+   whether `export_presets.cfg` exists, and the kits already in, each by the version its
+   `addons/polyweave/<name>/kit.json` records; a folder with no `project.godot` is
+   `kits.no-game`, and a name `kit.list` does not answer is `kits.unknown`;
+2. it installs what the kit requires first, in order, then the kit;
+3. for each, it writes the `[declares]` table into `polyweave.toml` as `[kit.<name>]`
+   only where the project has none, so a project's own declaration is never replaced;
+4. it copies the core to `addons/polyweave/<name>/`, replaced whole so an upgrade
+   leaves no stale file, and the scene to `kits/<name>/` only where the project has
+   none, since the scene is the project's once it lands;
+5. it records the kit: `addons/polyweave/<name>/kit.json` holds its name and version,
+   with a `borrow` record whose input is the kit's `kit.toml`, so `provenance.read`
+   answers what the project carries and from where; the answer's `installed` gives each
+   kit's version and the one that `was` there;
+6. it copies the kit's proof to `<[paths] specs>/kits/<name>/proof.accept.toml` and runs
+   it through `accept.verify` in the game.
+
+The answer is ready to decide: `ok`, `proved` with the first finding where the proof
+fails, `declared` (what it proposed), `scenes` and `change` (what is the project's to
+change from now on), and `questions`, a person's, never a file for the agent to read.
+`write=false` answers the same and writes nothing. An installed kit's proof sits among
+the project's specs, so the project's own gate holds it from then on.

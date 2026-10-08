@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 2 },
   { block: "U", title: "A window on everything a project governs", open: 2 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 31 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 30 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -226,13 +226,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW341",
-    block: "V",
-    symptom: "nothing installs a kit into a project, records which version landed and proves it there in the same call",
-    why: "Without that call a kit is a folder to copy, and a copy is the snippet the format exists to replace.",
-    deps: [],
-  },
-  {
     id: "PW342",
     block: "V",
     symptom: "a kit's proof runs only in a game that installed it, so a kit can leave this repository broken",
@@ -244,14 +237,14 @@ export const generatedTasks: GeneratedTask[] = [
     block: "V",
     symptom: "a project cannot tell that a kit it installed has a newer proved version, or what upgrading would replace",
     why: "A fix to a kit then reaches only the next game, and every earlier one keeps the bug the fix was for.",
-    deps: ["PW341"],
+    deps: [],
   },
   {
     id: "PW344",
     block: "V",
     symptom: "a game names a pad's buttons in its own text per layout, with no icons, no Switch layout and no change on a new device",
     why: "Every game needs it, its details are found only by running, and the icons are a part an agent cannot draw well alone.",
-    deps: ["PW341"],
+    deps: [],
   },
   {
     id: "PW345",
@@ -272,42 +265,42 @@ export const generatedTasks: GeneratedTask[] = [
     block: "V",
     symptom: "each game writes its own options screen and settings file, and an option that changes nothing goes unnoticed",
     why: "Both games built one; a screen whose tabs come from the installed kits makes each option a declared row with a check.",
-    deps: ["PW341"],
+    deps: [],
   },
   {
     id: "PW348",
     block: "V",
     symptom: "a save is written in place with no schema version, so a crash mid-write or a game update can lose a player's progress",
     why: "Cottony wrote its own save and tests for it; the failures that matter are the same in every game and can be forced.",
-    deps: ["PW341"],
+    deps: [],
   },
   {
     id: "PW349",
     block: "V",
     symptom: "the splash, the load into the first scene and each change of scene are hand-made per game and freeze on a large scene",
     why: "A splash no pad can skip and a frozen frame while a scene loads are the first things a player sees.",
-    deps: ["PW341"],
+    deps: [],
   },
   {
     id: "PW350",
     block: "V",
     symptom: "a game's credits are typed by hand while the provenance record already knows every asset's source and licence",
     why: "A hand-typed credit drifts from what shipped, and a CC-BY asset missing from the screen is a licence broken.",
-    deps: ["PW341"],
+    deps: [],
   },
   {
     id: "PW351",
     block: "V",
     symptom: "each game lays out its audio buses, music crossfade and sound pooling its own way, and a bus's loudness is never checked",
     why: "The bus layout is what both the options screen and Block P's music lean on, so one declared layout serves both.",
-    deps: ["PW341"],
+    deps: [],
   },
   {
     id: "PW352",
     block: "V",
     symptom: "the string table words checks reaches a game's TranslationServer by hand, with no fallback font for another script",
     why: "Block Q holds the table to the world; the step from the table to the screen is the one every game rewrites.",
-    deps: ["PW341"],
+    deps: [],
   },
   {
     id: "PW353",
@@ -356,7 +349,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "V",
     symptom: "an agent reads a game's state by adding prints and running it, since nothing declares which state a query may read",
     why: "A declared surface lets game.query answer with no instrumentation, and it is what a crash dump and a determinism check read.",
-    deps: ["PW341"],
+    deps: [],
   },
   {
     id: "PW360",
@@ -377,7 +370,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "V",
     symptom: "each game runs its tests its own way, so an agent learns per project how to run them and read what failed",
     why: "One runner and one answer shape make a game's tests part of its gate without the project being read first.",
-    deps: ["PW341"],
+    deps: [],
   },
   {
     id: "PW363",
@@ -391,7 +384,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "V",
     symptom: "a game's tables of enemies, items or waves are read as loose JSON, and a number typed as a string is found in play",
     why: "schema.validate already checks a declaration, so a table whose schema the project declares can be held the same way.",
-    deps: ["PW341"],
+    deps: [],
   },
   {
     id: "PW365",
@@ -426,7 +419,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "V",
     symptom: "a new game starts as an empty Godot project and is adopted onto polyweave later, by hand",
     why: "If every project is to adapt to polyweave, the cheapest moment to do it is the first commit.",
-    deps: ["PW341", "PW358", "PW362"],
+    deps: ["PW358", "PW362"],
   },
   {
     id: "PW370",

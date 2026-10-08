@@ -1967,6 +1967,16 @@ CODES: dict[str, Code] = {
         when="a bound on a measure that returns a set or a colour rather than a number",
         doors=("bound a statistic of it instead",),
     ),
+    "kits.unknown": Code(
+        means="a kit was named that the plugin does not carry",
+        when="kit.install with a name kit.list does not answer (§PW341)",
+        doors=("name a kit kit.list answers",),
+    ),
+    "kits.no-game": Code(
+        means="a kit was to be installed where there is no Godot project",
+        when="kit.install in a folder with no project.godot (§PW341)",
+        doors=("install from the Godot project's own folder",),
+    ),
     "kits.bad": Code(
         means="a kit's kit.toml does not keep the kit contract",
         when="a kit.toml missing, not TOML, with a key it does not know, a name that "
