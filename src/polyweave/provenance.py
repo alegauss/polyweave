@@ -927,7 +927,9 @@ def outdated(root: Annotated[str, ROOT] = ".") -> dict:
     """Artefacts made from a file that has changed since, and not made again (§PW119).
 
     The gate half: a file moved and an artefact depending on it did not, so a committed
-    screenshot no longer shows the game. `sound` is false while any is left.
+    screenshot no longer shows the game. `sound` is false while any is left. `kits`
+    names each installed kit the plugin now carries in a newer version, with the
+    changes between the two (§PW343).
     """
     where = Path(root).resolve()
     stale = []
@@ -949,7 +951,9 @@ def outdated(root: Annotated[str, ROOT] = ".") -> dict:
                     "moved": moved,
                 }
             )
-    return {"outdated": stale, "sound": not stale}
+    from .kits import behind
+
+    return {"outdated": stale, "sound": not stale, "kits": behind(where)}
 
 
 def _entity(record: dict) -> dict | None:

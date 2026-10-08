@@ -5,10 +5,10 @@ page groups them by task.
 
 | Task | Operations |
 |---|---|
-| Adopt | `project.init` (`init`), `project.check`, `project.inventory`, `kit.list`, `kit.install`, `kit.prove` |
+| Adopt | `project.init` (`init`), `project.check`, `project.inventory`, `kit.list`, `kit.install`, `kit.update`, `kit.prove` |
 | Know the machine | `capabilities` (verb), `engine.find`, `offscreen.routes`, `search.worth_parallel` |
 | Start on an asset | `asset.brief`, `loop.pending` |
-| Make a shape | `geometry.build`, `geometry.build_all`, `geometry.describe`, `geometry.variants`, `geometry.fit` (to a reference), `geometry.compare` (voxel models) |
+| Make a shape | `geometry.build`, `geometry.build_all`, `geometry.describe`, `geometry.variants`, `geometry.fit`, `geometry.compare` (voxel models) |
 | Render | `render.plan` (free), `render.bake` |
 | Measure | `measure.take`, `measure.same`, `measure.available`, `measure.digest` (outline or look), `measure.contrast`, `measure.pressure` |
 | Judge against the bar | `accept.check`, `accept.verify`, `accept.check_screen`, `cost.read` (draw cost), `sound.measure` (seam, level), `sound.speech` (a voiced line), `sound.declared` (declared audio, and what is missing) |

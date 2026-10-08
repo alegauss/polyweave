@@ -45,7 +45,16 @@ from .errors import PolyweaveError
 KITS = Path(__file__).parent / "kits"
 
 #: Every key a kit.toml may hold, and the keys of each of its tables.
-TOP = {"name", "version", "summary", "requires", "installs", "declares", "proves"}
+TOP = {
+    "name",
+    "version",
+    "summary",
+    "requires",
+    "installs",
+    "declares",
+    "proves",
+    "changes",
+}
 INSTALLS = {"core", "scene"}
 PROVES = {"spec", "fixture"}
 
@@ -143,6 +152,15 @@ def read(folder: Path) -> dict:
                 f"names {one!r}, which the kit does not hold",
                 "name a path inside the kit's folder",
             )
+    changes = held.get("changes", {})
+    if not isinstance(changes, dict) or not all(
+        _VERSION.match(str(v)) and isinstance(t, str) for v, t in changes.items()
+    ):
+        raise _bad(
+            where,
+            "has a [changes] that is not versions to sentences",
+            'write [changes] as "0.2.0" = "what that version changed"',
+        )
     declares = held.get("declares", {})
     if not isinstance(declares, dict):
         raise _bad(
@@ -158,6 +176,7 @@ def read(folder: Path) -> dict:
         "installs": dict(held["installs"]),
         "declares": dict(declares),
         "proves": dict(held["proves"]),
+        "changes": dict(changes),
         "folder": str(folder),
     }
 
@@ -327,8 +346,12 @@ def install(
         spec.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(source / kit["proves"]["spec"], spec)
         manifest = core / "kit.json"
+        files = _digests(core)
         manifest.write_text(
-            json.dumps({"name": one, "version": kit["version"]}, indent=1) + "\n",
+            json.dumps(
+                {"name": one, "version": kit["version"], "files": files}, indent=1
+            )
+            + "\n",
             encoding="utf-8",
             newline="\n",
         )
@@ -396,6 +419,171 @@ def _first(verdict: dict) -> dict:
     return {"said": "the proof did not pass"}
 
 
+def _digests(core: Path) -> dict[str, str]:
+    """Every file a kit's core laid down, by its path in the core, with its SHA-256."""
+    from .provenance import sha256_of
+
+    return {
+        one.relative_to(core).as_posix(): sha256_of(one)[0]
+        for one in sorted(core.rglob("*"))
+        if one.is_file()
+        and one.name not in ("kit.json", "kit.json.prov.json")
+        and not one.name.endswith(".prov.json")
+    }
+
+
+def _version(text: str) -> tuple[int, ...]:
+    return tuple(int(n) for n in str(text).split("."))
+
+
+def behind(root: str | Path = ".") -> list[dict]:
+    """Every kit a project carries that the plugin now has in a newer version.
+
+    Each with the version installed, the one the plugin carries, and the kit's own
+    `[changes]` between the two, so a project hears of a fix rather than by luck
+    (§PW343).
+    """
+    here = Path(root).resolve()
+    folder = here / "addons" / "polyweave"
+    if not folder.is_dir():
+        return []
+    try:
+        carried = every()
+    except PolyweaveError:
+        return []
+    found = []
+    for manifest in sorted(folder.glob("*/kit.json")):
+        held = json.loads(manifest.read_text(encoding="utf-8"))
+        kit = carried.get(held.get("name"))
+        if not kit or _version(kit["version"]) <= _version(
+            held.get("version", "0.0.0")
+        ):
+            continue
+        between = [
+            {"version": v, "change": t}
+            for v, t in sorted(kit["changes"].items(), key=lambda vt: _version(vt[0]))
+            if _version(held["version"]) < _version(v) <= _version(kit["version"])
+        ]
+        found.append(
+            {
+                "kit": held["name"],
+                "installed": held["version"],
+                "carried": kit["version"],
+                "changes": between,
+            }
+        )
+    return found
+
+
+@operation("kit.update")
+def update(
+    name: Annotated[str, Param("an installed kit")],
+    *,
+    write: Annotated[bool, Param("false answers what it would do, writing nothing")] = (
+        True
+    ),
+    root: Annotated[str, Param("the Godot project the kit is installed in")] = ".",
+) -> dict:
+    """Bring an installed kit to the version the plugin carries, proved or not at all.
+
+    The core is the plugin's and the project never edits it, so a core file whose hash
+    differs from the one recorded at install is a finding naming the files, and nothing
+    is overwritten. The scene is the project's and is left alone; the answer shows
+    what the new version's scene differs by, for the agent to carry over. The proof is
+    run again, and an upgrade whose proof fails is put back (§PW343).
+    """
+    import difflib
+    import tempfile
+
+    here = Path(root).resolve()
+    core = here / "addons" / "polyweave" / name
+    manifest = core / "kit.json"
+    if not manifest.is_file():
+        raise PolyweaveError(
+            "kits.unknown",
+            f"the project carries no kit {name!r}",
+            "install it first with kit.install",
+            given=name,
+            allowed=sorted(
+                p.parent.name for p in core.parent.glob("*/kit.json")
+            ),
+        )
+    held = json.loads(manifest.read_text(encoding="utf-8"))
+    kits = every()
+    if name not in kits:
+        raise PolyweaveError(
+            "kits.unknown",
+            f"the plugin carries no kit {name!r}",
+            "name one kit.list answers",
+            given=name,
+            allowed=sorted(kits),
+        )
+    kit = kits[name]
+    recorded = held.get("files") or {}
+    now = _digests(core)
+    edited = sorted(
+        path for path, digest in recorded.items() if now.get(path) != digest
+    )
+    answer = {
+        "kit": name,
+        "installed": held["version"],
+        "carried": kit["version"],
+        "changes": next((b["changes"] for b in behind(here) if b["kit"] == name), []),
+    }
+    if edited:
+        return {
+            **answer,
+            "ok": False,
+            "edited": edited,
+            "says": f"the core of {name} was edited in the project: "
+            f"{', '.join(edited)}; nothing was overwritten. Move the change into the "
+            "kit, or put the files back, and update again",
+        }
+    if _version(kit["version"]) <= _version(held["version"]):
+        return {**answer, "ok": True, "says": f"{name} is already at {held['version']}"}
+    scene = kit["installs"].get("scene")
+    ours = here / "kits" / name / Path(scene).name if scene else None
+    if ours is not None and ours.is_file():
+        theirs = (Path(kit["folder"]) / scene).read_text(encoding="utf-8").splitlines()
+        mine = ours.read_text(encoding="utf-8").splitlines()
+        answer["scene"] = {
+            "path": ours.relative_to(here).as_posix(),
+            "differs": list(
+                difflib.unified_diff(
+                    mine,
+                    theirs,
+                    "the project's",
+                    f"{name} {kit['version']}",
+                    lineterm="",
+                )
+            ),
+        }
+    if not write:
+        return {**answer, "ok": None, "wrote": False}
+    with tempfile.TemporaryDirectory() as scratch:
+        kept = Path(scratch) / "core"
+        shutil.copytree(core, kept)
+        result = install(name, root=str(here))
+        if not result["ok"]:
+            shutil.rmtree(core)
+            shutil.copytree(kept, core)
+            return {
+                **answer,
+                "ok": False,
+                "proved": result["proved"],
+                "wrote": False,
+                "says": f"{name} {kit['version']} did not prove in this game, so "
+                f"{held['version']} was put back",
+            }
+    return {
+        **answer,
+        "ok": True,
+        "proved": result["proved"],
+        "wrote": True,
+        "says": f"{name} is now {kit['version']}, proved in this game",
+    }
+
+
 @operation("kit.prove")
 def prove(
     name: Annotated[str, Param("one kit; every kit the plugin carries if unset")] = "",
@@ -431,8 +619,14 @@ def prove(
         folder = Path(kit["folder"])
         spec = accept.read(folder / kit["proves"]["spec"])
         if spec.screen and not engine:
-            said.append({"kit": one, "version": kit["version"], "status": "skipped",
-                         "why": "its proof needs a running game, and no $GODOT is set"})
+            said.append(
+                {
+                    "kit": one,
+                    "version": kit["version"],
+                    "status": "skipped",
+                    "why": "its proof needs a running game, and no $GODOT is set",
+                }
+            )
             continue
         with tempfile.TemporaryDirectory() as scratch:
             game = Path(scratch) / "game"
@@ -440,18 +634,28 @@ def prove(
             try:
                 answer = install(one, root=str(game))
             except PolyweaveError as refused:
-                said.append({"kit": one, "version": kit["version"], "status": "failed",
-                             "why": refused.message})
+                said.append(
+                    {
+                        "kit": one,
+                        "version": kit["version"],
+                        "status": "failed",
+                        "why": refused.message,
+                    }
+                )
                 continue
         held = answer["ok"]
-        said.append({
-            "kit": one,
-            "version": kit["version"],
-            "status": "held" if held else "failed",
-            **({} if held else {"why": answer["proved"]["first"]}),
-        })
-    counted = {s: sum(1 for one in said if one["status"] == s)
-               for s in ("held", "failed", "skipped")}
+        said.append(
+            {
+                "kit": one,
+                "version": kit["version"],
+                "status": "held" if held else "failed",
+                **({} if held else {"why": answer["proved"]["first"]}),
+            }
+        )
+    counted = {
+        s: sum(1 for one in said if one["status"] == s)
+        for s in ("held", "failed", "skipped")
+    }
     return {
         "kits": said,
         **counted,

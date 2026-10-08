@@ -91,7 +91,8 @@ from polyweave.errors import PolyweaveError
 #: 112,103 with words.glyphs (§PW335), the characters a font lacks.
 #: 112,930 with game.text_fit and game.open's environment (§PW336, §PW339).
 #: 113,780 with kit.list and kit.install (§PW340, §PW341), a kit landed and proved.
-DESCRIBE = 114_500
+#: 114,759 with kit.prove and kit.update (§PW342, §PW343).
+DESCRIBE = 115_400
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -159,7 +160,8 @@ DESCRIBE = 114_500
 #: 123,630 with words.glyphs and words.no-fonts (§PW335).
 #: 124,457 with game.text_fit and game.open's environment (§PW336, §PW339).
 #: 125,435 with kit.list, kit.install and the kits codes (§PW340, §PW341).
-CAPABILITIES = 126_200
+#: 126,414 with kit.prove and kit.update (§PW342, §PW343).
+CAPABILITIES = 127_100
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
@@ -195,7 +197,8 @@ HELP_VERB = 4_100
 #: 22,842 with sound.speak, voice.design and voice.choose (§PW314, §PW321).
 #: 23,302 with voice.lines, sound.speech and provenance.borrow (§PW322-§PW325).
 #: 23,916 with reference.frames, measure.pressure, icons.build and words.glyphs.
-HELP_TOP = 24_500
+#: 24,640 with game.text_fit and the four kit verbs (§PW336, §PW340-§PW343).
+HELP_TOP = 25_200
 #: A search's answer over its default budget of 24 samples: 3,739.
 SEARCH = 4_000
 

@@ -116,3 +116,21 @@ fixture is copied, never written into. `tools/gate.py` runs it after the tests a
 a kit that fails turns the gate red, so a Godot upgrade in polyweave re-proves every
 kit at once and a kit cannot leave this repository broken. The fixture is also where a
 kit's requirements are exercised together, so a kit that only works alone is found here.
+
+## A kit that has fallen behind
+
+`kit.install` records in `kit.json` the SHA-256 of every core file it laid down, and a
+kit may say what each version changed under `[changes]`, `"0.2.0" = "the sentence"`
+(§PW343). `provenance.outdated` answers `kits`: every kit a project carries that the
+plugin now has in a newer version, with the version installed, the one carried and the
+changes between them, so a fix reaches every game that carries the kit rather than the
+next one only.
+
+`kit.update <name>` brings one up. The core is the plugin's and the project never edits
+it, so a core file whose hash differs from the one recorded is a finding, `edited`
+naming the files, and nothing is overwritten. The scene is the project's and is left
+alone; `scene.differs` is a unified diff from the project's copy to the new version's,
+for the agent to carry over. The core is replaced and the proof run again, and an
+upgrade whose proof fails is put back, the old core restored, so an upgrade lands proved
+or not at all. `write=false` answers the same and writes nothing. A fix a project makes
+that belongs in the kit is filed against polyweave and ships as a new version here.

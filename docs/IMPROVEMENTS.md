@@ -845,23 +845,6 @@ line in the window and the file in `touched`.
 
 ## Block V — Parts every game repeats, installed already proved
 
-### §PW343 An installed kit that has fallen behind
-
-The provenance record kit.install writes names the kit and the version a project
-carries. provenance.outdated should name a kit whose version in polyweave is newer, with
-the changelog lines between the two.
-
-`kit.update <name>` replaces the core, which the project never edits: a core whose hash
-differs from the version recorded is a finding naming the files, never an overwrite. It
-leaves the scene alone, since the project owns it, and lists what the new version
-changed in its own copy of the scene for the agent to carry over. Then it re-runs the
-acceptance spec, so an upgrade lands proved or not at all.
-
-A project whose own fix belongs in the kit files it through the polyweave-friction
-skill, which is how a kit gets better from use: the fix ships as a new version here, and
-every other game that carries the kit hears of it from provenance.outdated rather than
-by luck.
-
 ### §PW344 Button prompts for the pad in the player's hands
 
 Met in Starship: game/core/bindings.gd holds a GLYPHS table for xbox, playstation and

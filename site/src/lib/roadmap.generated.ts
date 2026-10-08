@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 2 },
   { block: "U", title: "A window on everything a project governs", open: 2 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 29 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 28 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -223,13 +223,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "U",
     symptom: "a revision's session can write outside its item through Bash, and neither the question nor the touched list sees it",
     why: "The scope hook reads only the file a Write or Edit names, so a shell write to the config or a canon slips past the person.",
-    deps: [],
-  },
-  {
-    id: "PW343",
-    block: "V",
-    symptom: "a project cannot tell that a kit it installed has a newer proved version, or what upgrading would replace",
-    why: "A fix to a kit then reaches only the next game, and every earlier one keeps the bug the fix was for.",
     deps: [],
   },
   {
