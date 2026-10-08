@@ -780,6 +780,15 @@ still checked while its waving member is not. The symmetry finding names its mod
 (`colonist_wave: 3 cells of a model 97% symmetric ...`), since a family's build prints
 several.
 
+**A model may state its own cell ceiling** (§PW318). The project's `[voxels] budget` is
+what the game's actors can afford, crowding the screen and breaking into debris; a model
+the owner allowed past it, a splash logo alone on its screen, states `[voxels] budget =
+<cells>` (a whole number, or an expression over the params) and is held to that instead,
+so its build carries no finding that reads like a real overrun. Raising the project's
+ceiling would loosen it for every actor. The checks say whose bound was used, `budget:
+{"cells", "from": "declaration" | "project"}`, and a budget finding names it too: `over
+the 6000 this project can afford`, or `over the 12000 its declaration allows`.
+
 **How a model breaks is planned at build time** (§PW99), so a game spawns one piece per
 fragment rather than one per cell and does no geometry on the kill frame:
 

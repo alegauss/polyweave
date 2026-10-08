@@ -12,7 +12,14 @@ from polyweave import post
 from polyweave.errors import PolyweaveError
 from polyweave.geometry import voxels as V
 
-LIMITS = {"parts": 1, "thread": 3, "budget": 0, "extent": [], "near_symmetry": 0.9}
+LIMITS = {
+    "parts": 1,
+    "thread": 3,
+    "budget": 0,
+    "budget_from": "project",
+    "extent": [],
+    "near_symmetry": 0.9,
+}
 
 
 def drawn(*layers, voxels=None):
@@ -206,6 +213,33 @@ def test_the_project_config_sets_the_limits(tmp_path):
     (tmp_path / "polyweave.toml").write_text("[voxels]\nbudget = 4\n", encoding="utf-8")
     checks = found(drawn(["####", "####"]), root=tmp_path)
     assert kinds(checks) == ["budget"]
+
+
+def test_a_declaration_states_its_own_ceiling_and_is_held_to_it(tmp_path):
+    """§PW318: a model the owner allowed over the game's budget states its own."""
+    (tmp_path / "polyweave.toml").write_text("[voxels]\nbudget = 4\n", encoding="utf-8")
+    allowed = drawn(["####", "####"], voxels={"cell": 1.0, "budget": 12})
+    checks = found(allowed, root=tmp_path)
+    assert kinds(checks) == []
+    assert checks["budget"] == {"cells": 12, "from": "declaration"}
+    tighter = drawn(["####", "####"], voxels={"cell": 1.0, "budget": 6})
+    over = found(tighter, root=tmp_path)
+    assert kinds(over) == ["budget"]
+    assert "over the 6 its declaration allows" in over["findings"][0]["says"]
+    assert over["findings"][0]["budget_from"] == "declaration"
+
+
+def test_the_projects_ceiling_says_it_is_the_projects(tmp_path):
+    (tmp_path / "polyweave.toml").write_text("[voxels]\nbudget = 4\n", encoding="utf-8")
+    checks = found(drawn(["####", "####"]), root=tmp_path)
+    assert checks["budget"] == {"cells": 4, "from": "project"}
+    assert "this project can afford" in checks["findings"][0]["says"]
+
+
+def test_a_budget_that_is_not_a_count_of_cells_is_refused():
+    with pytest.raises(PolyweaveError) as refused:
+        found(drawn(["##"], voxels={"cell": 1.0, "budget": 2.5}))
+    assert refused.value.code == "geom.bad-voxels"
 
 
 def test_a_model_with_no_cells_is_refused():

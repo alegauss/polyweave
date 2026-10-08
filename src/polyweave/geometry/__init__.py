@@ -182,6 +182,7 @@ VOXELS_FIELDS = (
     "hollow",
     "near_symmetry",
     "asymmetric",
+    "budget",
 )
 
 #: What a variant's own `[variants.<name>.voxels]` may say (§PW241): whether a member is

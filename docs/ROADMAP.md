@@ -27,7 +27,6 @@
 
 ## Block I — Voxel models from a declaration
 
-- 📋 **PW318** (deps: —) **a declaration cannot state its own cell ceiling, so a model allowed over the voxels budget carries the finding for good** — A standing budget finding the owner allowed reads like a real overrun, so the one that matters is lost in it. → §PW318
 - 📋 **PW326** (deps: —) **geometry.fit scores a whole alpha silhouette, so a part inside a picture, like the V on a badge's disc, cannot be fitted** — A voxel part that must stand where a drawing's part does is measured and masked by a script in the project instead. → §PW326
 
 ## Block J — A bar a person sets once

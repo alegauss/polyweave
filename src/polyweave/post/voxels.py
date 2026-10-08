@@ -24,7 +24,17 @@ import numpy as np
 from ..errors import PolyweaveError
 
 #: What `check_voxels` takes; every one is stated by the caller.
-ACCEPTS_VOXELS = frozenset({"parts", "thread", "budget", "extent", "near_symmetry"})
+#: `budget_from` says whose ceiling `budget` is, the declaration's or the project's
+#: (§PW318), so a finding names who set the bound it was held to.
+ACCEPTS_VOXELS = frozenset(
+    {"parts", "thread", "budget", "budget_from", "extent", "near_symmetry"}
+)
+
+#: Who set the ceiling, as a budget finding says it.
+_WHOSE = {
+    "declaration": "its declaration allows",
+    "project": "this project can afford",
+}
 
 #: How many cells a finding lists before it says how many more there are.
 NAMED = 12
@@ -212,6 +222,7 @@ def check_voxels(
     parts: int,
     thread: int,
     budget: int,
+    budget_from: str,
     extent: Any,
     near_symmetry: float,
 ) -> dict:
@@ -250,11 +261,12 @@ def check_voxels(
         findings.append(
             {
                 "check": "budget",
-                "says": f"{model['count']} cells, over the {int(budget)} this project "
-                f"can afford{advice}",
+                "says": f"{model['count']} cells, over the {int(budget)} "
+                f"{_WHOSE.get(budget_from, 'this project can afford')}{advice}",
                 "cells": [],
                 "count": int(model["count"]),
                 "buried": buried,
+                "budget_from": budget_from,
             }
         )
     size = [n * float(model["cell"]) for n in model["size"]]
@@ -282,6 +294,7 @@ def check_voxels(
     return {
         **measured,
         "cells": int(model["count"]),
+        "budget": {"cells": int(budget), "from": budget_from},
         "longest_thread": longest,
         "symmetry": share,
         "extent": size,

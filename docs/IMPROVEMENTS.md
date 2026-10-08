@@ -364,26 +364,6 @@ exist yet and expects the file.
 
 ## Block I — Voxel models from a declaration
 
-### §PW318 A cell ceiling per declaration
-
-Found in starship (RK169). `[voxels] budget = 6000` in polyweave.toml is the ceiling the
-owner set for the game's actors, which crowd the screen and break into debris. The
-Viglet Games splash V is the one model on its screen, and the owner asked for three
-times its cells (8732 at cell 0.033). Every build of it now carries `budget: 8732 cells,
-over the 6000 this project can afford`, a finding that stands for good though the owner
-allowed it, and that reads the same as a real overrun on an actor.
-
-`post/voxels.py` reads the budget only from the project's `[voxels]` table
-(`ACCEPTS_VOXELS`); a declaration cannot state a ceiling of its own.
-
-Expected: a declaration may state `[voxels] budget = <n>` (or a named class the project
-declares, `[voxels.budget] actor = 6000, hero = 12000`), and the check holds it to that,
-with the provenance saying where the bound came from. Raising the project's ceiling
-instead would loosen it for every actor, which is not what the owner said.
-
-Workaround: none; the V's declaration says in a comment that it stands over the budget
-by the owner's word, and the finding stays.
-
 ### §PW326 A part fitted to a region of a picture
 
 Found in starship (RK170): the splash's voxel V gives way to the studio's real badge PNG

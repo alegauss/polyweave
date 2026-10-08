@@ -884,8 +884,10 @@ def _unworn(document: dict, worn: list[str]) -> list:
 def _checked(made: dict, document: dict, params: dict, root: str | Path) -> dict:
     """What the cells are checked for (§PW97), with the project's own limits.
 
-    `parts` and `extent` are the model's and come from its `[voxels]`; the budget and
-    the thread length are the game's and come from the project config. The symmetry bar
+    `parts` and `extent` are the model's and come from its `[voxels]`; the thread length
+    is the game's and comes from the project config. So is the budget, unless the model
+    states its own (§PW318): one the owner allowed over the game's ceiling, which would
+    otherwise carry a finding for good that reads like a real overrun. The symmetry bar
     is the game's too, unless the model says its asymmetry is meant (§PW241): its own
     `near_symmetry`, or `asymmetric = true`, which switches that one check off for it.
     """
@@ -908,12 +910,25 @@ def _checked(made: dict, document: dict, params: dict, root: str | Path) -> dict
         )
     if meant:
         near = _NEVER
+    budget, whose = int(settings.get("voxels.budget")), "project"
+    if table.get("budget") is not None:
+        budget = evaluate(table["budget"], params, where="voxels.budget")
+        if isinstance(budget, bool) or not float(budget).is_integer() or budget < 0:
+            raise PolyweaveError(
+                "geom.bad-voxels",
+                f"{document['name']}: voxels.budget is {table['budget']!r}, not a "
+                "whole number of cells",
+                "write budget = <cells> for this model's own ceiling, or leave it out "
+                "for the project's",
+            )
+        budget, whose = int(budget), "declaration"
     return post.check(
         "voxels",
         made,
         parts=int(evaluate(table.get("parts", 1), params, where="voxels.parts")),
         thread=int(settings.get("voxels.thread")),
-        budget=int(settings.get("voxels.budget")),
+        budget=budget,
+        budget_from=whose,
         extent=[evaluate(v, params, where="voxels.extent") for v in extent or ()],
         near_symmetry=float(near),
     )
