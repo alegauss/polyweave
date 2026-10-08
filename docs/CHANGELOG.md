@@ -305,6 +305,7 @@
 - ✅ **PW313** **sound.sitting plays a jingle's cues one by one, so a person never hears them mixed at the times the game plays them** — An [arrangement] mixes its cues at their times, pitches and gains into one sound with a plan the game reads, so a sitting hears it whole (design recorded in `docs/specs/effects.md`).
 - ✅ **PW320** **a service's price is one figure per call, so a spoken line billed by its characters cannot be priced before it is sent** — A prices row may be by the character: a call counts its text first, a refusal quotes count and rate, and usage readings measure spend (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW314** **no operation speaks a line, so a game cannot get a voiced tag like a studio name read aloud** — sound.speak speaks a given line in a named voice through ElevenLabs' text to speech, priced by the character, and recorded with its voice and delivery (design recorded in `docs/specs/effects.md`).
+- ✅ **PW321 (local half)** **a world's character has no voice of its own, so each spoken line sounds like whichever voice its call happened to name** — An entity's voice is declared in the world and sound.speak entity= speaks in it, refusing one with no id; its lines go stale when the voice changes.
 
 ## Block Q — Words held to the world
 

@@ -149,5 +149,5 @@ prices = { "eleven_multilingual_v2" = { per = "character", rate = 0.0003 } }
 The delivery is the voice's own unless the call sets it: `stability`, `similarity` and
 `style` (0 to 1) and `speed` (0.7 to 1.2), sent as the service's `voice_settings`. The
 take is captured as a `sound`, and its record keeps the words, the voice, the model and
-the delivery set, so the same line can be made again. Choosing a character's voice once
-and reading it from the world is §PW321.
+the delivery set, so the same line can be made again. `entity=<id>` speaks in the voice
+the world gives that entity instead of a `voice` the call names (world.md, §PW321).

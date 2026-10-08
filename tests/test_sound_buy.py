@@ -281,3 +281,68 @@ def test_a_spoken_line_is_quoted_by_its_characters(tmp_path, voiced):
     said = purchase.quote("sound.speak", {"text": "x" * 100}, root=str(tmp_path))
     assert said["price"] == pytest.approx(0.03)
     assert said["count"] == 100
+
+
+WORLD = (
+    '[entity.ada]\nname = "Captain Ada"\nkind = "character"\n\n'
+    '[entity.ada.voice]\nid = "ada-voice"\nstability = 0.3\nspeed = 0.9\n\n'
+    '[entity.bo]\nname = "Bo"\nkind = "character"\n\n'
+    '[entity.bo.voice]\ndescription = "a dry, tired foreman"\n'
+)
+
+
+@pytest.fixture
+def cast(tmp_path, voiced):
+    (tmp_path / "game.world.toml").write_text(WORLD, encoding="utf-8")
+    return voiced
+
+
+def test_an_entitys_line_is_spoken_in_the_voice_the_world_gives_it(tmp_path, cast):
+    """§PW321: each line sounded like whichever voice its call happened to name."""
+    sound_buy.speak(text="Hold fast", entity="ada", out="vo/ada.mp3", speed=1.1,
+                    root=str(tmp_path))
+    url, _, sent = cast.sent[0]
+    assert "/v1/text-to-speech/ada-voice?" in url
+    # The voice's own delivery, and the line's override of one setting.
+    assert sent["voice_settings"] == {"stability": 0.3, "speed": 1.1}
+
+
+def test_a_changed_voice_makes_its_lines_outdated_and_a_look_does_not(tmp_path, cast):
+    from polyweave import provenance
+
+    sound_buy.speak(text="Hold fast", entity="ada", out="vo/ada.mp3",
+                    root=str(tmp_path))
+    world = tmp_path / "game.world.toml"
+    world.write_text(WORLD + '\n[entity.ada.look]\ndescription = "tall"\n', "utf-8")
+    assert provenance.outdated(root=str(tmp_path))["outdated"] == []
+    world.write_text(WORLD.replace('"ada-voice"', '"other"'), "utf-8")
+    stale = provenance.outdated(root=str(tmp_path))["outdated"]
+    assert [one["artefact"] for one in stale] == ["vo/ada.mp3"]
+
+
+def test_an_entity_with_no_voice_id_is_refused_not_guessed(tmp_path, cast):
+    with pytest.raises(PolyweaveError) as refused:
+        sound_buy.speak(text="Shift's over", entity="bo", out="vo/bo.mp3",
+                        root=str(tmp_path))
+    assert refused.value.code == "world.no-voice"
+    assert "only words about one" in refused.value.message
+    assert cast.sent == []
+
+
+def test_a_call_that_names_another_voice_for_an_entity_is_refused(tmp_path, cast):
+    with pytest.raises(PolyweaveError) as refused:
+        sound_buy.speak(text="Hold fast", entity="ada", voice="impostor",
+                        out="vo/ada.mp3", root=str(tmp_path))
+    assert refused.value.code == "world.voice-mismatch"
+    assert cast.sent == []
+
+
+def test_a_voice_the_world_says_wrong_is_found(tmp_path):
+    from polyweave import world
+
+    (tmp_path / "game.world.toml").write_text(
+        WORLD.replace("speed = 0.9", "speed = 3\npitch = 2"), encoding="utf-8"
+    )
+    found = world.validate(root=str(tmp_path))
+    codes = sorted(one["code"] for one in found["findings"])
+    assert codes == ["world.bad-value", "world.unknown-key"]

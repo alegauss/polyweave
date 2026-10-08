@@ -18,6 +18,11 @@ game have drifted apart. The prose stays the source a person writes, and beside 
     shows = ["a brass eyepiece"]
     never = ["a weapon"]
 
+    [entity.ada.voice]        # what every line she speaks is spoken in (§PW321)
+    id = "JBFqnCBsd6RMkjVDRZzb"   # the service's voice, chosen once by a person
+    description = "dry and tired, in her fifties"
+    stability = 0.5           # her delivery; a line may override it
+
     [rules]
     longest_line = 80         # the longest line a player reads, in characters
     silent = ["drone"]        # entities that never speak
@@ -64,6 +69,8 @@ ENTITY_KEYS = {
     "style": False,
     "first": False,
     "look": False,
+    # The voice every line of hers is spoken in (§PW321).
+    "voice": False,
     # The name in another language, one table per locale (§PW329).
     "names": False,
 }
@@ -84,6 +91,18 @@ GENDERS = ("m", "f")
 
 #: What an entity's `look` may say, and the type of each (§PW198).
 LOOK_KEYS = {"description": str, "shows": list, "never": list}
+
+#: What an entity's `voice` may say (§PW321): the service's voice id a person chose,
+#: what it should sound like and a line to hear it on, and its delivery.
+VOICE_KEYS = {"id": str, "description": str, "sample": str}
+
+#: The delivery a voice may set, each as the range it takes.
+DELIVERY = {
+    "stability": (0.0, 1.0),
+    "similarity": (0.0, 1.0),
+    "style": (0.0, 1.0),
+    "speed": (0.7, 1.2),
+}
 
 #: Every key `[rules]` may carry.
 RULE_KEYS = ("longest_line", "silent", "unshown", "tone")
@@ -231,7 +250,8 @@ def _parse(source: Path) -> tuple[dict, dict, _Findings]:
                 ),
                 table,
             )
-        for key in (k for k in ENTITY_KEYS if k in own and k not in ("look", "names")):
+        tables = ("look", "names", "voice")
+        for key in (k for k in ENTITY_KEYS if k in own and k not in tables):
             if not isinstance(own[key], str) or not own[key].strip():
                 faults.add(
                     PolyweaveError(
@@ -258,6 +278,8 @@ def _parse(source: Path) -> tuple[dict, dict, _Findings]:
             _look(own["look"], table, faults)
         if "names" in own:
             _names(own["names"], table, faults)
+        if "voice" in own:
+            _voice(own["voice"], table, faults)
         entities[ident] = {"id": ident, "code": ident, **own}
     rules = declared.get("rules") or {}
     if not isinstance(rules, dict):
@@ -358,6 +380,63 @@ def _look(look, table: str, faults: _Findings) -> None:
         )
 
 
+def _voice(voice, table: str, faults: _Findings) -> None:
+    """An entity's voice: the service's id, words about it, and its delivery."""
+    where = f"{table}.voice"
+    if not isinstance(voice, dict):
+        faults.add(
+            PolyweaveError(
+                "world.bad-value",
+                f"[{table}] voice is {voice!r}, and a voice is a table",
+                f'write it as [{where}] with id = "..." under it',
+            ),
+            where,
+        )
+        return
+    known = [*VOICE_KEYS, *DELIVERY]
+    for key in sorted(set(voice) - set(known)):
+        faults.add(
+            PolyweaveError(
+                "world.unknown-key",
+                f"[{where}] declares {key}, which a voice does not have",
+                f"use one of {', '.join(known)}",
+                given=key,
+                allowed=known,
+            ),
+            where,
+            key,
+        )
+    for key in (k for k in VOICE_KEYS if k in voice):
+        if not _shaped(voice[key], str):
+            faults.add(
+                PolyweaveError(
+                    "world.bad-value",
+                    f"[{where}] {key} is {voice[key]!r}, and it is a non-empty text",
+                    f'write it in quotes, such as {key} = "..."',
+                ),
+                where,
+                key,
+            )
+    for key, (low, high) in DELIVERY.items():
+        value = voice.get(key)
+        if value is None:
+            continue
+        if isinstance(value, bool) or not isinstance(value, int | float) or not (
+            low <= value <= high
+        ):
+            faults.add(
+                PolyweaveError(
+                    "world.bad-value",
+                    f"[{where}] {key} is {value!r}, and it is a number from {low:g} "
+                    f"to {high:g}",
+                    f"write {key} = <{low:g} to {high:g}>, or leave it out for the "
+                    "voice's own",
+                ),
+                where,
+                key,
+            )
+
+
 def _names(names, table: str, faults: _Findings) -> None:
     """An entity's names in other languages, a table of locales (§PW329)."""
     where = f"{table}.names"
@@ -450,10 +529,21 @@ def look_digest(entity: dict) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
-def still_drawn(world: str | Path, ident: str, digest: str) -> bool:
+def voice_digest(entity: dict) -> str:
+    """What a spoken line of an entity was spoken in, as one hash (§PW321).
+
+    The voice table alone: an edit to the entity's look does not call its lines stale,
+    and a new voice or delivery does.
+    """
+    text = json.dumps(entity.get("voice") or {}, sort_keys=True, ensure_ascii=False)
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def still_drawn(world: str | Path, ident: str, digest: str, of: str = "look") -> bool:
     """Whether the world file still describes this entity as the digest recorded it.
 
-    A world that no longer parses, or no longer holds the entity, does not.
+    `of` is what was drawn from it: its look, or for a spoken line its voice. A world
+    that no longer parses, or no longer holds the entity, does not.
     """
     try:
         entities, _, faults = _parse(Path(world))
@@ -461,7 +551,36 @@ def still_drawn(world: str | Path, ident: str, digest: str) -> bool:
         return False
     if faults.found or ident not in entities:
         return False
-    return look_digest(entities[ident]) == digest
+    digested = voice_digest if of == "voice" else look_digest
+    return digested(entities[ident]) == digest
+
+
+def voiced(
+    entity: str, world: str | None = None, root: str | Path = "."
+) -> tuple[dict, dict]:
+    """What a line of an entity is spoken in, and the record of where it came from.
+
+    Refused where the entity has no voice id, rather than spoken in some other voice:
+    a character is known by the voice of every line (§PW321).
+    """
+    source, found = brief(entity, world, root)
+    voice = found.get("voice") or {}
+    if not voice.get("id"):
+        raise PolyweaveError(
+            "world.no-voice",
+            f"{entity} has no voice in the world"
+            + (", only words about one" if voice.get("description") else ""),
+            f'have a person choose one and write it as [entity.{entity}.voice] '
+            'id = "<the service\'s voice id>"',
+            given=entity,
+        )
+    record = {
+        "id": entity,
+        "world": provenance.relative(source, Path(root).resolve()),
+        "sha256": voice_digest(found),
+        "of": "voice",
+    }
+    return record, voice
 
 
 def brief(
@@ -473,7 +592,8 @@ def brief(
         near = difflib.get_close_matches(entity, entities, n=1)
         raise PolyweaveError(
             "world.unknown-entity",
-            f"the world declares no entity {entity!r} to buy a picture or mesh of",
+            f"the world declares no entity {entity!r} to buy a picture, mesh or "
+            "line of",
             f"did you mean {near[0]!r}?"
             if near
             else f"name one it declares, or write [entity.{entity}] in the world",

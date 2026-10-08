@@ -687,6 +687,17 @@ CODES: dict[str, Code] = {
         "no text to count (§PW320)",
         doors=("pass the text the call would send",),
     ),
+    "world.no-voice": Code(
+        means="a line was asked of an entity the world gives no voice id",
+        when="sound.speak with entity= where [entity.<id>.voice] has no id (§PW321); "
+        "it is refused rather than spoken in a voice nobody chose for it",
+        doors=("have a person choose the voice and write its id in the world",),
+    ),
+    "world.voice-mismatch": Code(
+        means="a call named a voice other than the one the world gives its entity",
+        when="sound.speak with both entity= and a voice= that is not the entity's",
+        doors=("leave voice unset to speak in the entity's own",),
+    ),
     "fetch.service-unconfigured": Code(
         means="the service named cannot be reached: no base, or no key in this "
         "environment",

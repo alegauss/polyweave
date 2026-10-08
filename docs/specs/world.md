@@ -42,6 +42,10 @@ unshown = ["nemesis"]     # entities whose name is never shown
 - `[entity.<id>.look]` is optional: a `description` and two lists of texts, `shows` (the
   traits that must appear) and `never` (the ones that must not). It is what a picture or
   a mesh of the entity is bought from.
+- `[entity.<id>.voice]` is optional: the service's voice `id` a person chose, a
+  `description` of how it should sound and a `sample` line, all text, and its delivery,
+  `stability`, `similarity` and `style` from 0 to 1 and `speed` from 0.7 to 1.2. It is
+  what every line the entity speaks is spoken in (§PW321).
 - `[rules]` is optional, and each of its keys is too. `tone` is a list of sentences no
   check applies: it is what a person judges a line by.
 - Any other table, entity field or rule is refused, as an unknown config key is: a field
@@ -86,6 +90,20 @@ entity's name, kind, style and look) and the world file as an input with the rol
 `provenance.outdated` counts a changed world against an artefact only where that
 entity's own digest changed. Buying again is still a person's decision under the
 purchase ceiling; a world edit triggers nothing.
+
+## A line an entity speaks
+
+A character is known by its voice across every line, so its voice is read from the world
+and never passed per call (§PW321). `sound.speak` takes `entity=<id>` and speaks in the
+voice's `id`, with the voice's delivery where the line sets none and the line's own
+where it does. An entity whose voice has no `id`, only words about one, is refused with
+`world.no-voice` rather than spoken in a voice nobody chose for it, and a call naming a
+`voice` other than the entity's is refused with `world.voice-mismatch`.
+
+The record carries `details.entity` as a bought picture's does, with `of = "voice"` and
+the SHA-256 of the voice table alone, and the world as an input. So a new voice or
+delivery makes every line spoken in it outdated, and an edit to the entity's look does
+not.
 
 ## The text a player reads
 

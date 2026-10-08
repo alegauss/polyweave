@@ -159,14 +159,14 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW321",
     block: "P",
     symptom: "a world's character has no voice of its own, so each spoken line sounds like whichever voice its call happened to name",
-    why: "A character is known by its voice across every line, so the voice must be chosen once by a person and read from the world, never passed per call.",
+    why: "voice.design still sends a voice's description to the service, and a person's verdict on its previews writes the chosen id back to the world.",
     deps: [],
   },
   {
     id: "PW322",
     block: "P",
     symptom: "a locale catalog's lines cannot be voiced as a set, so a cast's dialogue is one hand-made call and cue per line",
-    why: "Dialogue arrives as hundreds of catalog rows per locale, and voicing them one by one leaves no view of the total cost, the lines still unvoiced or those gone stale.",
+    why: "Dialogue arrives as hundreds of catalog rows per locale, and voicing them one by one leaves no view of the total cost, the lines unvoiced or those gone stale.",
     deps: ["PW321"],
   },
   {

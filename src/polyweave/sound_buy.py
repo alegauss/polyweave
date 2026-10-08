@@ -36,7 +36,7 @@ import urllib.request
 from pathlib import Path
 from typing import Annotated
 
-from . import picture, purchase, sound
+from . import picture, provenance, purchase, sound
 from .config import load
 from .describe import Param, operation
 from .errors import PolyweaveError
@@ -127,10 +127,17 @@ def speak(
     model: Annotated[str, Param("the service's model, priced in [service]")] = (
         "eleven_multilingual_v2"
     ),
+    entity: Annotated[str, Param("a world entity, whose voice speaks it")] = None,
+    world: Annotated[str, Param("the *.world.toml, where the project has several")] = (
+        None
+    ),
     service: Annotated[str, purchase.SERVICE] = None,
     root: Annotated[str, Param("the project whose ledger this is")] = ".",
 ) -> dict:
     """Speak one line aloud in a named voice, at a cue's file, against the ceiling.
+
+    `entity` speaks it in the voice the world gives that entity (§PW321), its delivery
+    the voice's own where the call sets none; an entity with no voice id is refused.
 
     Text to speech is billed by the character, so its `prices` row is one by the
     character (§PW320) and the line is counted before anything is sent. The record
@@ -143,17 +150,34 @@ def speak(
             "a line was asked to be spoken without its words",
             "pass text, the line exactly as it is to be said",
         )
+    drawn_from, own = None, {}
+    if entity:
+        from .world import voiced
+
+        drawn_from, own = voiced(entity, world, root)
+        if voice and voice != own["id"]:
+            raise PolyweaveError(
+                "world.voice-mismatch",
+                f"{entity} speaks in {own['id']!r} in the world, and the call named "
+                f"{voice!r}",
+                "leave voice unset, so every line of theirs is in their own voice",
+                given=voice,
+                allowed=[own["id"]],
+            )
+        voice = own["id"]
     if not voice:
         raise PolyweaveError(
             "fetch.missing-field",
             "a line was asked to be spoken in no voice",
-            "pass voice, the id of one of the service's voices",
+            "pass voice, the id of one of the service's voices, or entity, one the "
+            "world gives a voice",
         )
+    called = {"stability": stability, "similarity": similarity, "style": style,
+              "speed": speed}
     delivery = {
-        DELIVERY[name]: float(value)
-        for name, value in (("stability", stability), ("similarity", similarity),
-                            ("style", style), ("speed", speed))
-        if value is not None
+        DELIVERY[name]: float(called[name] if called[name] is not None else own[name])
+        for name in DELIVERY
+        if called[name] is not None or own.get(name) is not None
     }
     request: dict = {"text": text, "model_id": model}
     if delivery:
@@ -162,13 +186,17 @@ def speak(
     return _bought(
         report, f"{route}?output_format={FORMAT}", request, words=text, cue=cue,
         out=out, model=model, service=service, root=root,
-        details={"cue": cue, "voice": voice, "delivery": delivery, "spoken": True},
+        details={"cue": cue, "voice": voice, "delivery": delivery, "spoken": True,
+                 "entity": drawn_from},
+        inputs=[provenance.source("world", drawn_from["world"], root=load(root).root)]
+        if drawn_from
+        else None,
     )
 
 
 def _bought(
     report, route: str, request: dict, *, words: str, cue, out, model: str,
-    service, root, details: dict,
+    service, root, details: dict, inputs: list | None = None,
 ) -> dict:
     """One paid request for audio, priced, allowed, captured and ledgered.
 
@@ -227,6 +255,7 @@ def _bought(
         engine={"name": name, "model": model},
         service=name,
         details={**details, "format": target.suffix[1:]},
+        inputs=inputs,
         root=here,
     )
     return {**entry, "file": target.relative_to(here).as_posix(),
