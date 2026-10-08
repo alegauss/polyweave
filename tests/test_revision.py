@@ -103,3 +103,60 @@ def test_each_turn_is_kept_on_its_revision_in_order(tree):
     with pytest.raises(PolyweaveError) as refused:
         revision.turn(asked, "too late", root=str(tree))
     assert refused.value.code == "review.not-open"
+
+
+SPEC = """asset = "icon"
+artefact = "art/icon.png"
+
+[[predicate]]
+id      = "tone"
+measure = "luma_p99"
+region  = "frame"
+max     = 0.5
+"""
+
+
+def test_the_items_own_checks_run_and_none_is_said_where_nothing_checks(tree):
+    # §PW307: chosen by the item, never by the session.
+    asked = revision.ask("art/icon.png", "darker", root=str(tree))["revision"]
+    unheld = revision.check(asked, root=str(tree))
+    assert unheld["passed"] is None
+    assert "nothing checks" in unheld["said"]
+    (tree / "docs" / "accept").mkdir(parents=True)
+    (tree / "docs" / "accept" / "icon.accept.toml").write_text(SPEC, encoding="utf-8")
+    held = revision.check(asked, root=str(tree))
+    assert [one["check"] for one in held["checks"]] == ["accept.check"]
+    assert held["passed"] is True
+
+
+def test_a_sessions_settings_refuse_a_verdict_and_check_after_writes(tree):
+    asked = revision.ask("art/icon.png", "darker", root=str(tree))["revision"]
+    made = revision.settings(asked, root=str(tree))
+    assert set(made["permissions"]["deny"]) == set(revision.WITHHELD)
+    command = made["hooks"]["PostToolUse"][0]["hooks"][0]["command"]
+    assert f"hook revision --revision {asked}" in command
+
+
+def test_the_hook_denies_a_verdict_and_answers_a_write_to_the_item(tree):
+    import subprocess
+    import sys
+
+    asked = revision.ask("art/icon.png", "darker", root=str(tree))["revision"]
+    denied = revision.hooked(
+        {"hook_event_name": "PreToolUse", "tool_name": revision.WITHHELD[0]},
+        asked, str(tree),
+    )
+    assert denied["hookSpecificOutput"]["permissionDecision"] == "deny"
+    elsewhere = {"hook_event_name": "PostToolUse", "tool_name": "Write",
+                 "tool_input": {"file_path": str(tree / "notes.md")}}
+    assert revision.hooked(elsewhere, asked, str(tree)) is None
+    # Through the command line, as Claude Code runs it.
+    event = {"hook_event_name": "PostToolUse", "tool_name": "Write",
+             "tool_input": {"file_path": str(tree / "art" / "icon.png")}}
+    ran = subprocess.run(
+        [sys.executable, "-m", "polyweave", "hook", "revision", "--revision", asked,
+         "--root", str(tree)],
+        input=json.dumps(event), capture_output=True, text=True, check=True,
+    )
+    said = json.loads(ran.stdout)["hookSpecificOutput"]["additionalContext"]
+    assert said.startswith("The item's own checks after this change")

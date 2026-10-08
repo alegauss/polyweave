@@ -119,6 +119,15 @@ function Turn({ read }: { read: Said }) {
       return <li data-turn className="whitespace-pre-wrap">{read.text}</li>
     case 'tool':
       return <li className="font-mono text-xs text-muted-foreground">{t('session.used', { tool: read.tool })}</li>
+    case 'check':
+      return (
+        <li
+          data-check={read.passed === null ? 'none' : read.passed ? 'passed' : 'failed'}
+          className={read.passed === false ? 'text-destructive' : 'text-muted-foreground'}
+        >
+          {t('session.checked', { said: read.said })}
+        </li>
+      )
     case 'result':
       return (
         <li data-result={read.ok ? 'ok' : 'failed'} className={read.ok ? 'text-muted-foreground' : 'text-destructive'}>

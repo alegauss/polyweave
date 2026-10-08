@@ -16,7 +16,7 @@ This page groups them by task.
 | See it where it is seen | `compose.place`, `compose.sheet`, `store.capsules` (a store's set), `picture.vector` (SVG layers) |
 | Size a bound from noise | `calibrate.run`, then `calibrate.apply` |
 | Carry a person's verdict | `verdict.sheet`, `verdict.sitting`, `verdict.judge`, `verdict.promote`, `sound.sitting`; `review` shows a sitting, `verdict.answers` resumes from it |
-| Asked changes | `revision.ask`, `revision.open`, `revision.turn`, `revision.close` |
+| Asked changes | `revision.ask`, `revision.open`, `revision.turn`, `revision.check`, `revision.settings`, `revision.close` |
 | Keep the ledger | `loop.start`, `loop.spent`, `loop.judged`, `loop.finish`, `loop.compare` |
 | Read the ledger | `loop.runs`, `loop.assets`, `loop.changes`, `loop.bounds` |
 | Provenance | `provenance.read`, `provenance.verify`, `provenance.dependents`, `provenance.outdated`, `provenance.unrecorded`, `provenance.credits`, `provenance.generated` |

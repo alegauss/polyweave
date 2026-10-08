@@ -70,12 +70,19 @@ export interface Session {
   readonly finished: Promise<{ code: number | null; said: string }>
 }
 
+/** What a session runs under besides its prompt: the revision's hooks and refusals. */
+export interface Harness {
+  settings?: Record<string, unknown>
+  disallowed?: string[]
+}
+
 export function start(
   agent: Agent,
   cwd: string,
   first: string,
   onLine: (line: string) => void,
   env: NodeJS.ProcessEnv = process.env,
+  harness: Harness = {},
 ): Session {
   const inbox = new Inbox()
   inbox.put(first)
@@ -153,6 +160,9 @@ export function start(
           canUseTool,
           settingSources: ['user', 'project', 'local'],
           systemPrompt: { type: 'preset', preset: 'claude_code' },
+          // The revision's harness (§PW307): checks after every write, no verdict tool.
+          ...(harness.settings ? { settings: harness.settings as never } : {}),
+          ...(harness.disallowed?.length ? { disallowedTools: harness.disallowed } : {}),
         },
       })) {
         onLine(JSON.stringify(message))

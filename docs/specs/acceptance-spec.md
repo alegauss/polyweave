@@ -217,6 +217,19 @@ answer is right is the person's to say in that sitting. The file is only ever ap
 like `answers.jsonl`, so two sessions never race on a rewrite. An agent writes a revision
 only on a person's behalf, and the words are theirs.
 
+**A revision's session is held to the item's own checks** (§PW306, §PW307). Each turn of
+the conversation a revision is worked through is kept on it (`revision.turn`), and
+`revision.open` lists them. `revision.check(revision)` runs the checks the item chooses,
+never the ones the session prefers. That means `accept.check` where a spec holds it,
+`words.check` on a line's row, and `sound.measure` on a sound, and `passed` is None where
+nothing checks the kind yet. `revision.settings(revision)` is the Claude Code settings a
+session on the revision runs under. Its hooks call `python -m polyweave hook revision`,
+which runs those checks after every write that touches the item and hands the result to
+the session as context it cannot skip. It denies `verdict.judge` and `verdict.promote`
+before they run, and the same two are in the settings' denied permissions. The window
+passes these settings to the session it opens, and a terminal session gets the same with
+`claude --settings`.
+
 **The refused are shown beside the kept** (§PW175), because a filter nobody sees into is a
 filter nobody audits. Every `picture.gate` run appends its answer to `[paths]
 work`/`gates.jsonl`. Each candidate carries its failures, its silhouette IoU, every drifted

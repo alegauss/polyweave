@@ -33,7 +33,9 @@ from typing import Any
 from .errors import PolyweaveError
 
 #: The verbs that are not operations: the first reads, the job handle's, and the server.
-VERBS = ("capabilities", "explain", "describe", "job", "serve", "notice", "init")
+VERBS = (
+    "capabilities", "explain", "describe", "job", "serve", "notice", "init", "hook"
+)
 
 #: The most a session notice may cost, in characters: one line, read every session.
 NOTICE_BUDGET = 240
@@ -208,6 +210,10 @@ def add_operations(commands: Any) -> None:
     commands.add_parser("serve", help="serve every operation as an MCP tool, on stdio")
     notice = commands.add_parser("notice", help="the one line a session starts with")
     notice.add_argument("--root", default=".")
+    hook = commands.add_parser("hook", help="a Claude Code hook, its event on stdin")
+    hook.add_argument("which", choices=("revision",))
+    hook.add_argument("--revision", required=True)
+    hook.add_argument("--root", default=".")
 
 
 def answer_for(stated: argparse.Namespace) -> Any:
@@ -337,6 +343,20 @@ def run(stated: argparse.Namespace) -> int:
         return 0
     if stated.command == "notice":
         print(notice(stated.root))
+        return 0
+    if stated.command == "hook":
+        # A hook that fails must not fail the session's tool call: it says nothing.
+        from .revision import hooked
+
+        try:
+            event = json.loads(sys.stdin.read() or "{}")
+            with contextlib.redirect_stdout(sys.stderr):
+                said = hooked(event, stated.revision, stated.root)
+        except (PolyweaveError, json.JSONDecodeError) as failed:
+            print(f"polyweave hook: {failed}", file=sys.stderr)
+            return 0
+        if said is not None:
+            print(json.dumps(said))
         return 0
     try:
         # Anything the work prints (Blender's exporter logs to stdout) goes to stderr,

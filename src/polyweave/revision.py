@@ -223,6 +223,145 @@ def turn(
     return _append(event, root)
 
 
+def _asked(revision: str, root: str) -> dict:
+    still = _open(root)
+    if revision not in still:
+        raise PolyweaveError(
+            "review.not-open",
+            f"revision {revision!r} is not open",
+            "name one revision.open lists",
+            given=revision,
+            allowed=sorted(still),
+        )
+    return still[revision]
+
+
+@operation("revision.check")
+def check(
+    revision: Annotated[str, Param("the revision, by the id revision.ask gave it")],
+    *,
+    root: Annotated[str, ROOT] = ".",
+) -> dict:
+    """The item's own checks, run on it as it now stands (§PW307).
+
+    Chosen by the item and never by the session: its acceptance spec where one holds
+    it, words.check on a line's row, sound.measure on a sound. `passed` is None where
+    nothing checks this kind yet, which is said rather than passed.
+    """
+    from . import brief, words
+    from .config import load
+
+    here = load(root).root
+    asked = _asked(revision, root)
+    item = asked["item"]
+    briefed = brief.brief(item, root=str(here))
+    kind = (briefed.get("item") or {}).get("kind")
+    artefact = (briefed.get("artefact") or {}).get("path")
+    spec = briefed.get("spec")
+    checks: list[dict] = []
+    if spec and spec.get("path") and artefact:
+        from . import accept
+
+        found = accept.checked(spec["path"], artefact, root=str(here))
+        checks.append({
+            "check": "accept.check",
+            "passed": bool(found["passed"]),
+            "failed": [r["id"] for r in found["predicates"] if not r["passed"]],
+        })
+    if kind == "line":
+        key = item[len("line:"):]
+        found = words.check(root=str(here))
+        mine = [f for f in found["findings"] if f.get("key") == key]
+        checks.append({"check": "words.check", "passed": not mine, "failed": mine})
+    if kind in ("sound", "music") and artefact:
+        from . import sound
+
+        measured = sound.measure(here / artefact)
+        checks.append({"check": "sound.measure", "passed": True, "measured": measured})
+    passed = all(one["passed"] for one in checks) if checks else None
+    said = (
+        "nothing checks this kind of item yet; a person's verdict is the only bar"
+        if passed is None
+        else "every check passed" if passed
+        else "failed: " + "; ".join(
+            f"{one['check']} {one.get('failed')}" for one in checks if not one["passed"]
+        )
+    )
+    return {"revision": revision, "item": item, "kind": kind, "checks": checks,
+            "passed": passed, "said": said}
+
+
+#: The tools after which the item's checks run: a write, or a polyweave operation.
+WRITES = "Write|Edit|MultiEdit|NotebookEdit|mcp__polyweave__.*"
+
+#: The tools a revision's session never has: a verdict is the person's (non-goal).
+WITHHELD = ("mcp__polyweave__verdict_judge", "mcp__polyweave__verdict_promote")
+
+
+@operation("revision.settings")
+def settings(
+    revision: Annotated[str, Param("the revision, by the id revision.ask gave it")],
+    *,
+    root: Annotated[str, ROOT] = ".",
+) -> dict:
+    """The Claude Code settings a session on this revision runs under (§PW307).
+
+    Hooks that run the item's own checks after every write and refuse a verdict tool,
+    and a permission denying those tools outright. The window passes them as the
+    session's settings; a terminal session gets the same with `claude --settings`.
+    """
+    import sys
+
+    _asked(revision, root)
+    command = (
+        f'"{sys.executable}" -m polyweave hook revision --revision {revision} '
+        f'--root "{Path(root).resolve()}"'
+    )
+    hook = [{"hooks": [{"type": "command", "command": command}]}]
+    return {
+        "permissions": {"deny": list(WITHHELD)},
+        "hooks": {
+            "PreToolUse": [{"matcher": "|".join(WITHHELD), **hook[0]}],
+            "PostToolUse": [{"matcher": WRITES, **hook[0]}],
+        },
+    }
+
+
+def hooked(event: dict, revision: str, root: str) -> dict | None:
+    """What the revision's hook answers one Claude Code hook event with (§PW307).
+
+    A verdict tool is denied before it runs. After a write, the item's own checks run
+    and their result goes back to the session as context it cannot skip; a write that
+    did not touch the item, or its declaration, says nothing.
+    """
+    name = str(event.get("hook_event_name") or "")
+    tool = str(event.get("tool_name") or "")
+    if name == "PreToolUse" and tool in WITHHELD:
+        return {"hookSpecificOutput": {
+            "hookEventName": "PreToolUse",
+            "permissionDecision": "deny",
+            "permissionDecisionReason": "a verdict is the person's to give, never the "
+            "session's: lay a sitting out and the person answers it",
+        }}
+    if name != "PostToolUse":
+        return None
+    asked = _asked(revision, root)
+    rows = _rows(root)
+    row = rows.get(asked["item"]) or {}
+    touched = str((event.get("tool_input") or {}).get("file_path") or "")
+    own = [one for one in (row.get("artefact"), row.get("declaration")) if one]
+    if not tool.startswith("mcp__polyweave__") and not any(
+        touched.replace("\\", "/").endswith(one) for one in own
+    ):
+        return None
+    found = check(revision, root=root)
+    return {"hookSpecificOutput": {
+        "hookEventName": "PostToolUse",
+        "additionalContext": "The item's own checks after this change: "
+        f"{found['said']}.",
+    }}
+
+
 @operation("revision.close")
 def close(
     revision: Annotated[str, Param("the revision, by the id revision.ask gave it")],

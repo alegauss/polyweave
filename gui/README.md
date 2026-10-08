@@ -91,7 +91,10 @@ talking to the session or stop it. What the person says and what the session ans
 kept on the revision as turns (`revision.turn`), so a later session reads how the request
 was talked through. One revision has one session, and one session holds an item at a
 time: a second revision on the same item starts once the first one's session ends
-(`shell/src/holding.ts`), and the window says which one it waits on.
+(`shell/src/holding.ts`), and the window says which one it waits on. The session runs under
+`revision.settings`: the item's own checks after every write, by hook and again in the
+window, where they show as a line of the conversation, and no verdict tool. A verdict is
+the person's.
 
 ## The live test
 

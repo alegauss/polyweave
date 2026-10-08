@@ -36,7 +36,10 @@ input.on('line', (line) => {
       asked = true
       write({ type: 'control_request', request_id: 'ask-1', request: { subtype: 'can_use_tool', tool_name: 'Write', input: { file_path: 'art/icon.png' }, tool_use_id: 'use-1' } })
     } else {
-      write({ type: 'result', subtype: 'success', is_error: false, result: 'heard', num_turns: 2, duration_ms: 1, session_id: 'fake-1' })
+      // Says back what it was started under, so a test sees the harness arrive.
+      const flag = (name) => { const at = process.argv.indexOf(name); return at < 0 ? null : process.argv[at + 1] }
+      const heard = 'heard' + (flag('--settings') ? ' with settings' : '') + (flag('--disallowedTools') ? ' denying ' + flag('--disallowedTools') : '')
+      write({ type: 'result', subtype: 'success', is_error: false, result: heard, num_turns: 2, duration_ms: 1, session_id: 'fake-1' })
     }
     return
   }

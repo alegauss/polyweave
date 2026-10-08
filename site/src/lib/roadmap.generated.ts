@@ -306,7 +306,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW307",
     block: "U",
     symptom: "a session changing an item can report done with no check run, and nothing makes it end on the person's verdict",
-    why: "A revision harness re-runs the item's own checks after each change, shows old beside new in the window, and ends only in a sitting the person answers.",
+    why: "The loop run, old beside new, ending only in a sitting, and a look or number answer fed back as the next turn are still to build.",
     deps: [],
   },
   {

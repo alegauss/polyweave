@@ -48,6 +48,11 @@ describe('a session on one item', () => {
       said('{"type":"control_request","request_id":"q1","request":{"subtype":"can_use_tool","tool_name":"Write","input":{}}}'),
     ).toEqual({ kind: 'ask', requestId: 'q1', tool: 'Write', input: {} })
     expect(said('{"type":"result","is_error":false,"result":"done"}')).toEqual({ kind: 'result', ok: true, text: 'done' })
+    expect(said('{"type":"polyweave_check","passed":false,"said":"failed: tone"}')).toEqual({
+      kind: 'check',
+      passed: false,
+      said: 'failed: tone',
+    })
     expect(said('not json')).toEqual({ kind: 'other' })
   })
 })

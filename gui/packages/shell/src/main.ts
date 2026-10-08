@@ -96,12 +96,33 @@ ipcMain.handle(CHANNELS.sessionStart, async (event, project: string, revision: s
     const window = event.sender
     worked.set(revision, project)
     // One session holds an item: a second revision on it starts once the first ends.
+    const harness = (await client.call('revision.settings', { revision, root: project })) as {
+      permissions: { deny: string[] }
+    }
+    const send = (line: string) => {
+      if (!window.isDestroyed()) window.send(CHANNELS.sessionLine, revision, line)
+    }
     waiting = holding.take(asked.item, revision, () => {
-      const session = start(runs, project, first, (line) => {
-        if (!window.isDestroyed()) window.send(CHANNELS.sessionLine, revision, line)
-        const read = said(line)
-        if (read.kind === 'text') kept(revision, read.text, 'session')
-      })
+      const session = start(
+        runs,
+        project,
+        first,
+        (line) => {
+          send(line)
+          const read = said(line)
+          if (read.kind === 'text') kept(revision, read.text, 'session')
+          // After a tool that may have changed the item, the window runs its checks too,
+          // and shows them beside the conversation (§PW307).
+          if (read.kind === 'tool' && /^(Write|Edit|MultiEdit|mcp__polyweave__)/.test(read.tool)) {
+            void client
+              .call('revision.check', { revision, root: project })
+              .then((found) => send(JSON.stringify({ type: 'polyweave_check', ...(found as object) })))
+              .catch(() => undefined)
+          }
+        },
+        process.env,
+        { settings: harness, disallowed: harness.permissions.deny },
+      )
       sessions.set(revision, session)
       return session.finished
     })

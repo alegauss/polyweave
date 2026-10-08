@@ -1053,6 +1053,8 @@ the agent needs answered, such as "warmer rim or brighter?", reaches the window 
 ask. The harness is a Claude Code hook plus settings the window passes, so a terminal
 session on a revision gets the same one.
 
+Landed: revision.check, revision.settings, the hook. Left: steps 1, 3 and 4.
+
 ### §PW308 A revision spends only what a person weighed
 
 "Make this picture different" can be answered by a local re-fit, or by `picture.buy`,

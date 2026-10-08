@@ -78,6 +78,7 @@ export type Said =
   | { kind: 'ask'; requestId: string; tool: string; input: unknown }
   | { kind: 'withdrawn'; requestId: string }
   | { kind: 'result'; ok: boolean; text: string }
+  | { kind: 'check'; passed: boolean | null; said: string }
   | { kind: 'other' }
 
 /** A session's line as the screen draws it. A line that is not JSON reads as `other`. */
@@ -113,6 +114,13 @@ export function said(line: string): Said {
       return { kind: 'withdrawn', requestId: String(message['request_id']) }
     case 'result':
       return { kind: 'result', ok: message['is_error'] !== true, text: String(message['result'] ?? '') }
+    case 'polyweave_check':
+      // The window's own line: the item's checks after a change (§PW307).
+      return {
+        kind: 'check',
+        passed: message['passed'] === null ? null : message['passed'] === true,
+        said: String(message['said'] ?? ''),
+      }
     default:
       return { kind: 'other' }
   }

@@ -42,6 +42,33 @@ describe('a session on one item', () => {
     expect(read.some((r) => r.kind === 'ask' && r.tool === 'Write')).toBe(true)
     expect(results).toEqual(['allow', 'heard'])
   })
+
+  it('runs under the revision harness: its settings, and no verdict tool', async () => {
+    fake = fakeClaude()
+    const runs = agent({ [AGENT_VAR]: JSON.stringify(fake.argv), PATH: '' })!
+    let session: ReturnType<typeof start> | null = null
+    const result = await new Promise<string>((resolve) => {
+      session = start(
+        runs,
+        tmpdir(),
+        'first',
+        (line) => {
+          const one = said(line)
+          if (one.kind === 'ask') {
+            session!.answer(one.requestId, true)
+            session!.say('then')
+          }
+          if (one.kind === 'result' && one.text.startsWith('heard')) resolve(one.text)
+        },
+        process.env,
+        { settings: { hooks: {} }, disallowed: ['mcp__polyweave__verdict_judge'] },
+      )
+    })
+    session!.stop()
+    await session!.finished
+    expect(result).toContain('with settings')
+    expect(result).toContain('denying mcp__polyweave__verdict_judge')
+  })
 })
 
 describe('the claude a session runs', () => {
