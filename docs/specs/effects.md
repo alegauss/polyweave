@@ -152,6 +152,25 @@ take is captured as a `sound`, and its record keeps the words, the voice, the mo
 the delivery set, so the same line can be made again. `entity=<id>` speaks in the voice
 the world gives that entity instead of a `voice` the call names (world.md, §PW321).
 
+## A free draft before a paid take
+
+Most of a line's revisions are about words and timing, not the voice, so speech climbs
+rungs as pictures do (§PW324). `sound.speak` takes `rung`: `paid`, the default, is the
+service above; `draft` speaks the line through a local engine at the same cue or path,
+free, with no budget asked and nothing ledgered. The engine is the project's, in
+`[voice]`: `draft_engine` is `piper`, with `draft_model` a downloaded `.onnx` voice, or
+`espeak-ng`, with `draft_voice` (such as `pt-br`), since a project in Portuguese needs a
+different model than one in English; left empty, the first one installed is used. The
+engine writes WAV, transcoded by ffmpeg where the target is another format.
+
+The record is a `sound` whose engine says `draft: true` and whose params carry `rung =
+"draft"`, the line and the engine's model or voice. A draft never satisfies a line:
+`voice.lines` offers its row again, marked `draft`, so a game cannot ship the
+placeholder by accident, and `provenance.generated` lists drafts apart under `drafts`,
+never as authored. With no local engine, the draft rung is refused with
+`sound.no-speech-engine` and the install command, never moved to the paid rung: a rung
+that costs money is the person's call.
+
 ## A take that says its line
 
 A speech service drops words, adds breaths and pads silence, so a take is measured

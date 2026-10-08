@@ -144,7 +144,8 @@ DESCRIBE = 107_900
 #: 114,749 with fetch.uncounted (§PW320) and sound.speak (§PW314).
 #: 116,904 with voice.design, voice.choose and three world codes (§PW321).
 #: 118,162 with voice.lines and words.no-voiced (§PW322).
-CAPABILITIES = 118_800
+#: 118,966 with sound.speak's draft rung and sound.no-speech-engine (§PW324).
+CAPABILITIES = 119_600
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

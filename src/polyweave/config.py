@@ -290,6 +290,12 @@ DEFAULTS: dict[str, Any] = {
         # Cut a bought take's silence down to the two bounds above as it lands, the
         # service's own bytes kept on its record by their digest.
         "trim": False,
+        # The free rung a line is drafted on before a character is billed (§PW324):
+        # "piper" with `draft_model` (a downloaded .onnx), or "espeak-ng" with
+        # `draft_voice` (such as "pt-br"). Empty takes the first one installed.
+        "draft_engine": "",
+        "draft_model": "",
+        "draft_voice": "",
     },
     "voxels": {
         # What a voxel build is checked against (§PW97). A game decides how many cubes

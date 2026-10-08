@@ -161,6 +161,9 @@ tail_silence = 0.4                 # and after the last
 rate         = [8.0, 20.0]         # characters of the line per second spoken
 loudness     = [-24.0, -14.0]      # dBFS, where the project's effects sit
 trim         = true                # cut a bought take's silence to the bounds above
+draft_engine = "piper"             # the free rung: piper or espeak-ng (PW324)
+draft_model  = "tools/voices/pt_BR-faber-medium.onnx"  # piper's downloaded model
+draft_voice  = "pt-br"             # espeak-ng's voice
 
 [voxels]
 budget        = 4000           # the most cells a model may have; zero is no ceiling

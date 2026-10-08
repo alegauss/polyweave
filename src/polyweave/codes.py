@@ -705,6 +705,12 @@ CODES: dict[str, Code] = {
         "(§PW322)",
         doors=('set [words] voiced = "audio/voice/{locale}/{key}.ogg"',),
     ),
+    "sound.no-speech-engine": Code(
+        means="a line was asked to be drafted and no local speech engine is installed",
+        when="sound.speak rung=draft with neither piper (and a model) nor espeak-ng "
+        "on PATH (§PW324); it is refused rather than moved to the paid rung",
+        doors=("install espeak-ng, or piper with a model in [voice] draft_model",),
+    ),
     "world.voice-mismatch": Code(
         means="a call named a voice other than the one the world gives its entity",
         when="sound.speak with both entity= and a voice= that is not the entity's",

@@ -308,6 +308,7 @@
 - ✅ **PW321** **a world's character has no voice of its own, so each spoken line sounds like whichever voice its call happened to name** — An entity's voice is declared in the world, designed as paid previews, kept once a person accepts one, and spoken by sound.speak entity= (design recorded in `docs/specs/world.md`).
 - ✅ **PW322** **a locale catalog's lines cannot be voiced as a set, so a cast's dialogue is one hand-made call and cue per line** — voice.lines prices a string table's lines and voices them only on spend, skipping current takes, naming voiceless speakers, halting at a ceiling (design recorded in `docs/specs/world.md`).
 - ✅ **PW323** **nothing measures a spoken take, so a clipped, padded or misread line reaches the person's verdict as a candidate** — A spoken take is held to its line and [voice] bounds before a person hears it, and with trim on, lands with its silence cut to the bound (design recorded in `docs/specs/effects.md`).
+- ✅ **PW324** **a spoken line can only be heard after paying for it, so its wording and timing in the game cannot be tried for free** — sound.speak rung=draft speaks a line free on the project's local engine, as a draft voice.lines offers again and provenance sets apart (design recorded in `docs/specs/effects.md`).
 
 ## Block Q — Words held to the world
 

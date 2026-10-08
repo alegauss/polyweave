@@ -52,7 +52,6 @@
 
 ## Block P — Music and sound a game can ship
 
-- 📋 **PW324** (deps: PW314 ✅) **a spoken line can only be heard after paying for it, so its wording and timing in the game cannot be tried for free** — Most of a line's revisions are about words and timing, not the voice, so a free local draft lets them settle before a single character is billed. → §PW324
 - 📋 **PW333** (deps: —) **an sfx effect cannot be declared at a note, so putting a menu sound in a key means working out base_freq by hand** — The pitch formula lives only in the source, so every tuned effect is numbers derived off the page that nothing checks. → §PW333
 
 ## Block Q — Words held to the world

@@ -40,7 +40,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 0 },
   { block: "O", title: "A person sees and answers", open: 4 },
-  { block: "P", title: "Music and sound a game can ship", open: 2 },
+  { block: "P", title: "Music and sound a game can ship", open: 1 },
   { block: "Q", title: "Words held to the world", open: 1 },
   { block: "R", title: "Levels measured before a person plays them", open: 14 },
   { block: "S", title: "Playing the game, not only rendering it", open: 1 },
@@ -161,13 +161,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "a transcription read from a reference video cites no frames, and a person's corrections to it are kept nowhere",
     why: "A wrong count is cheapest to fix on the sheet, and only if the person sees the frames beside each row and their answer is recorded.",
     deps: ["PW379"],
-  },
-  {
-    id: "PW324",
-    block: "P",
-    symptom: "a spoken line can only be heard after paying for it, so its wording and timing in the game cannot be tried for free",
-    why: "Most of a line's revisions are about words and timing, not the voice, so a free local draft lets them settle before a single character is billed.",
-    deps: [],
   },
   {
     id: "PW333",

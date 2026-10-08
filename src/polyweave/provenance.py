@@ -769,9 +769,15 @@ def generated(
     made: list[dict] = []
     authored: list[str] = []
     unrecorded: list[str] = []
+    drafts: list[str] = []
     for path in dict.fromkeys(files):
         if not sidecar(path, where).is_file():
             unrecorded.append(path)
+            continue
+        # A free local draft is a placeholder, shown apart so it is never shipped as
+        # the line (§PW324).
+        if (_sidecar_params(path, where) or {}).get("rung") == "draft":
+            drafts.append(path)
             continue
         found = _lineage(path, where, set())
         if found is None:
@@ -788,7 +794,16 @@ def generated(
                 "direct": len(chain) == 1,
             }
         )
-    return {"generated": made, "authored": authored, "unrecorded": unrecorded}
+    return {"generated": made, "authored": authored, "unrecorded": unrecorded,
+            "drafts": drafts}
+
+
+def _sidecar_params(path: str, where: Path) -> dict | None:
+    try:
+        held = json.loads(sidecar(path, where).read_text(encoding="utf-8"))
+        return held.get("params")
+    except (OSError, ValueError):
+        return None
 
 
 @operation("provenance.dependents")

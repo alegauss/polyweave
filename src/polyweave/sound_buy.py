@@ -133,6 +133,10 @@ def speak(
     world: Annotated[str, Param("the *.world.toml, where the project has several")] = (
         None
     ),
+    rung: Annotated[
+        str, Param("draft speaks it free on a local engine; paid buys it",
+                   choices=("paid", "draft"))
+    ] = "paid",
     service: Annotated[str, purchase.SERVICE] = None,
     root: Annotated[str, Param("the project whose ledger this is")] = ".",
 ) -> dict:
@@ -152,6 +156,8 @@ def speak(
             "a line was asked to be spoken without its words",
             "pass text, the line exactly as it is to be said",
         )
+    if rung == "draft":
+        return _drafted(text, cue=cue, out=out, entity=entity, root=root)
     drawn_from, own = None, {}
     if entity:
         from .world import voiced
@@ -597,7 +603,8 @@ def lines(
                 continue
             price = picture._priced(name, prices, model, None, len(text))["price"]
             plan.append({**at, "out": out, "text": text, "characters": len(text),
-                         "price": price, "line": line})
+                         "price": price, "line": line,
+                         **({"draft": True} if _draft(here / out, here) else {})})
     total = round(sum(one["price"] for one in plan), 6)
     left = purchase.remaining(str(here), service=name)
     answer = {
@@ -664,6 +671,17 @@ def lines(
     return answer
 
 
+def _draft(where: Path, here: Path) -> bool:
+    """Whether the take at a path is a free draft still to be bought (§PW324)."""
+    if not where.is_file():
+        return False
+    try:
+        record = provenance.read(str(where), root=here)
+    except PolyweaveError:
+        return False
+    return (record.get("params") or {}).get("rung") == "draft"
+
+
 def _still(where: Path, line: dict, voice: str, model: str, here: Path) -> bool:
     """Whether a take already says this line, in this voice, on this model."""
     if not where.is_file():
@@ -671,6 +689,9 @@ def _still(where: Path, line: dict, voice: str, model: str, here: Path) -> bool:
     try:
         record = provenance.read(str(where), root=here)
     except PolyweaveError:
+        return False
+    if (record.get("params") or {}).get("rung") == "draft":
+        # A placeholder never satisfies a line, so a game cannot ship it by accident.
         return False
     details = record.get("details") or {}
     said = details.get("line") or {}
@@ -682,6 +703,107 @@ def _still(where: Path, line: dict, voice: str, model: str, here: Path) -> bool:
             "sha256"
         )
     )
+
+
+#: How to install each local engine, for a refusal to say.
+_INSTALL = {
+    "espeak-ng": "winget install eSpeak-NG.eSpeak-NG (or apt install espeak-ng)",
+    "piper": "pip install piper-tts, and download a model for [voice] draft_model",
+}
+
+
+def _drafted(text: str, *, cue, out, entity, root) -> dict:
+    """A line spoken free on a local engine, at the cue's file, recorded as a draft.
+
+    The free rung (§PW324): wording and timing are judged in a plain voice before a
+    character is billed. It needs no budget and never moves to the paid rung by itself;
+    `voice.lines` reports a draft as a take still to be bought.
+    """
+    import tempfile
+
+    config = load(root)
+    here = config.root
+    target = _target(config, cue, out)
+    engine = _engine(config)
+    with tempfile.TemporaryDirectory() as scratch:
+        wav = Path(scratch) / "draft.wav"
+        _local_speech(engine, text, wav)
+        body = wav.read_bytes()
+    if target.suffix.lower() != ".wav":
+        if not shutil.which("ffmpeg"):
+            raise PolyweaveError(
+                "sound.no-encoder",
+                f"{target.name} wants {target.suffix[1:]}, the engine writes WAV, and "
+                "there is no ffmpeg on PATH to transcode it",
+                "put ffmpeg on PATH, or draft to a .wav",
+            )
+        shaped = {".mp3": ["-f", "mp3"], **_SHAPED}
+        done = subprocess.run(
+            [shutil.which("ffmpeg"), "-v", "error", "-i", "pipe:0",
+             *shaped[target.suffix.lower()], "pipe:1"],
+            input=body, capture_output=True, check=False,
+        )
+        body = done.stdout
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes(body)
+    record = provenance.build(
+        "sound", target, engine={"name": engine["name"], "draft": True},
+        params={"rung": "draft", "line": text, "entity": entity,
+                **{k: v for k, v in engine.items() if k in ("model", "voice") and v}},
+        measurements=_measured(target),
+        root=here,
+    )
+    provenance.write(record, here)
+    return {"file": target.relative_to(here).as_posix(), "rung": "draft",
+            "engine": engine["name"], "spent": 0,
+            "speech": _speech(target, text, config),
+            "says": "a draft on a local engine, free; buy the take with rung=paid "
+                    "once its words and timing are settled"}
+
+
+def _engine(config) -> dict:
+    """The local engine the project names, or the first one installed, or a refusal."""
+    named = config.get("voice.draft_engine") or ""
+    model = config.get("voice.draft_model") or ""
+    voice = config.get("voice.draft_voice") or ""
+    model_at = str(config.path("voice.draft_model")) if model else ""
+    order = [named] if named else ["piper", "espeak-ng"]
+    for name in order:
+        found = shutil.which(name) or (shutil.which("espeak") if name == "espeak-ng"
+                                       else None)
+        if name == "piper" and found and model_at and Path(model_at).is_file():
+            return {"name": "piper", "path": found, "model": model}
+        if name == "espeak-ng" and found:
+            return {"name": "espeak-ng", "path": found, "voice": voice}
+    wanted = named or "espeak-ng"
+    raise PolyweaveError(
+        "sound.no-speech-engine",
+        "no local speech engine is installed to draft the line"
+        + (f": [voice] draft_engine names {named}" if named else ""),
+        f"install one: {_INSTALL.get(wanted, _INSTALL['espeak-ng'])}; the paid rung "
+        "is the person's call, never taken in its place",
+        given=named or None,
+    )
+
+
+def _local_speech(engine: dict, text: str, wav: Path) -> None:
+    """Speak `text` into a WAV with the local engine."""
+    if engine["name"] == "piper":
+        argv = [engine["path"], "--model", engine["model"], "--output_file", str(wav)]
+        done = subprocess.run(argv, input=text.encode("utf-8"), capture_output=True,
+                              check=False)
+    else:
+        argv = [engine["path"], "-w", str(wav)]
+        if engine.get("voice"):
+            argv += ["-v", engine["voice"]]
+        done = subprocess.run([*argv, text], capture_output=True, check=False)
+    if done.returncode or not wav.is_file():
+        raise PolyweaveError(
+            "sound.no-speech-engine",
+            f"{engine['name']} did not speak the line",
+            "read the detail; check its model or voice in [voice]",
+            detail=done.stderr[:400].decode("utf-8", "replace"),
+        )
 
 
 def _asked(url: str, key: str, payload: dict) -> dict:

@@ -568,27 +568,6 @@ declared in its `polyweave.toml`, made by `music.render` and `sound.synth`, and 
 `*.accept.toml` bounds, and its own audio scripts are removed. Anything Cottony needs
 that a second game would not becomes configuration.
 
-### §PW324 A free draft before a paid take
-
-Pictures and meshes climb rungs from cheap to dear, and the dear rung is reached only
-when the cheap one has settled what it can. Speech has the same shape: whether a line
-fits the moment, whether a tag ends on the beat of a splash, whether a subtitle keeps
-up, can all be judged in a plain voice, and only the character of the voice needs the
-service.
-
-What polyweave should do: the speech operation takes a `rung`. The draft rung speaks
-through a local engine the machine already has (Piper with a downloaded model, or
-espeak-ng as the floor), at the same cue path, with a record that says it is a draft and
-names the engine; it costs nothing and needs no budget. The paid rung is ElevenLabs as
-PW314 describes. A draft never satisfies a line in `voice.lines`: its take is reported
-as a draft still to be bought, so a game cannot ship the placeholder by accident, and
-the provenance list of generated artefacts shows it apart.
-
-Where no local engine is installed the draft rung is refused with the install command
-(`speech.no-engine`), not replaced by the paid one: moving to a rung that costs money is
-the person's call. The engine and its model are configuration in the project, not
-compiled in, since a project in Portuguese needs a different model than one in English.
-
 ### §PW333 An effect declared at a note
 
 Met in starship (RK157): the menu's interface sounds (move, confirm, back, refused, tab,
