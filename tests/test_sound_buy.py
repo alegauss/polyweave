@@ -153,3 +153,69 @@ def test_a_refusal_from_the_service_is_a_code(monkeypatch, status, code):
         sound_buy._post("https://api.elevenlabs.io/v1/sound-generation", "k", {})
     assert caught.value.code == code
 
+
+
+BY_CHARACTER = PROJECT.replace(
+    '"eleven_text_to_sound_v2" = 0.05',
+    '"eleven_text_to_sound_v2" = { per = "character", rate = 0.001 }',
+)
+
+
+@pytest.fixture
+def counted(tmp_path, monkeypatch, service):
+    """The project priced by the character, and the service's usage readings."""
+    (tmp_path / "polyweave.toml").write_text(BY_CHARACTER, encoding="utf-8")
+    readings = []
+    monkeypatch.setattr(sound_buy, "_used", lambda base, key: readings.pop(0))
+    return readings
+
+
+def test_a_price_by_the_character_is_the_rate_times_the_words(tmp_path, counted):
+    """§PW320: a short tag and a paragraph were priced the same."""
+    counted.extend([None, None])
+    sound_buy.buy(prompt="rain on a tin roof", out="sfx/rain.mp3", root=str(tmp_path))
+    [entry] = purchase.read(tmp_path)
+    assert entry["credits"] == pytest.approx(18 * 0.001)
+    assert entry["measured"] is False
+
+
+def test_a_spend_by_the_character_is_measured_where_the_service_says(
+    tmp_path, counted
+):
+    counted.extend([1000, 1025])
+    sound_buy.buy(prompt="rain on a tin roof", out="sfx/rain.mp3", root=str(tmp_path))
+    [entry] = purchase.read(tmp_path)
+    assert entry["credits"] == pytest.approx(25 * 0.001)
+    assert entry["expected_credits"] == pytest.approx(18 * 0.001)
+    assert entry["measured"] is True
+
+
+def test_a_long_text_over_the_ceiling_is_refused_with_its_count(tmp_path, counted):
+    with pytest.raises(PolyweaveError) as caught:
+        sound_buy.buy(prompt="x" * 2000, out="sfx/long.mp3", root=str(tmp_path))
+    assert caught.value.code == "fetch.over-budget"
+    assert "2000 characters at 0.001 each" in caught.value.message
+
+
+def test_a_quote_counts_the_text_the_call_would_send(tmp_path, counted):
+    said = purchase.quote("sound.buy", {"prompt": "x" * 40}, root=str(tmp_path))
+    assert said["price"] == pytest.approx(0.04)
+    assert (said["per"], said["count"], said["rate"]) == ("character", 40, 0.001)
+    with pytest.raises(PolyweaveError) as refused:
+        purchase.quote("sound.buy", {}, root=str(tmp_path))
+    assert refused.value.code == "fetch.uncounted"
+
+
+@pytest.mark.parametrize(
+    "row", ['{ per = "word", rate = 0.1 }', '{ per = "character" }',
+            '{ per = "character", rate = 0.1, cap = 3 }'],
+)
+def test_a_row_by_the_unit_that_says_it_wrong_is_refused(tmp_path, row):
+    from polyweave.config import load
+
+    (tmp_path / "polyweave.toml").write_text(
+        PROJECT.replace("0.05", row), encoding="utf-8"
+    )
+    with pytest.raises(PolyweaveError) as refused:
+        load(tmp_path)
+    assert refused.value.code == "config.bad-type"

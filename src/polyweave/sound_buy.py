@@ -12,6 +12,11 @@ The service is ElevenLabs' sound generation: one JSON request, answered with the
 It answers MP3, so a sound bought for a cue declared in another format is transcoded by
 ffmpeg before it is captured, and the file on record is the one the game plays.
 
+A `prices` row may be by the character, `{ per = "character", rate }` (§PW320): the
+words sent are counted before anything is, and where the service's subscription answers
+its `character_count` before and after, the spend is the difference times the rate and
+the entry is `measured`. The quoted rate stays as the fallback, and says it was quoted.
+
 No budget means no spend, and the decision to spend stays with a person: a ceiling is
 written into `[budget.<name>]` by a person and never proposed by the plugin.
 """
@@ -34,6 +39,9 @@ from .errors import PolyweaveError
 
 #: The service's route, and the format it is asked to answer in.
 ROUTE = "/v1/sound-generation"
+
+#: Where the service says how many characters the account has used (§PW320).
+USAGE = "/v1/user/subscription"
 FORMAT = "mp3_44100_128"
 
 TIMEOUT = 120
@@ -78,7 +86,10 @@ def buy(
     name = config.service(service, model=model)
     about = config.services()[name]
     base, key = picture._reached(name, about)
-    price = picture._price(name, about.get("prices") or {}, model, None)
+    priced = picture._priced(
+        name, about.get("prices") or {}, model, None, len(prompt)
+    )
+    price = priced["price"]
     if target.suffix.lower() != ".mp3" and not shutil.which("ffmpeg"):
         raise PolyweaveError(
             "sound.no-encoder",
@@ -92,10 +103,18 @@ def buy(
     if loop:
         request["loop"] = True
 
-    purchase.allow(price, root=here, service=name)
+    purchase.allow_priced(priced, root=here, service=name)
+    by_character = priced["per"] == "character"
+    before = _used(base, key) if by_character else None
     if report is not None:
         report.stage("building", progress=0.2, note="asking the service for the sound")
     body, asked = _post(f"{base}{ROUTE}?output_format={FORMAT}", key, request)
+    after = _used(base, key) if before is not None else None
+    reported = (
+        round((after - before) * priced["rate"], 6)
+        if before is not None and after is not None and after >= before
+        else None
+    )
     if not body:
         raise PolyweaveError(
             "fetch.nothing-arrived",
@@ -110,6 +129,7 @@ def buy(
         out=target.relative_to(here).as_posix(),
         task_id=f"{name}:{asked or hashlib.sha256(body).hexdigest()[:16]}",
         credits=price,
+        reported=reported,
         prompt=prompt,
         bought="sound",
         engine={"name": name, "model": model},
@@ -194,6 +214,26 @@ def _post(url: str, key: str, payload: dict) -> tuple[bytes, str]:
             "check the base under [service] and the network",
             detail=str(exc.reason),
         ) from exc
+
+
+def _used(base: str, key: str) -> int | None:
+    """The characters the account has used, or None where the service will not say.
+
+    Read before and after a call priced by the character, so its spend is measured; a
+    reading that fails leaves the quoted price standing, never a guess (§PW320).
+    """
+    request = urllib.request.Request(  # noqa: S310
+        f"{base}{USAGE}",
+        headers={"xi-api-key": key, "Accept": "application/json",
+                 "User-Agent": picture.AGENT},
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=TIMEOUT) as answer:  # noqa: S310
+            said = json.loads(answer.read())
+    except (urllib.error.URLError, OSError, ValueError):
+        return None
+    count = said.get("character_count") if isinstance(said, dict) else None
+    return count if isinstance(count, int) and not isinstance(count, bool) else None
 
 
 def _transcoded(body: bytes, target: Path) -> bytes:

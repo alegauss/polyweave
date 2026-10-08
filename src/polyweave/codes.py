@@ -680,6 +680,13 @@ CODES: dict[str, Code] = {
         "is refused rather than priced at zero, which would under-count the ceiling",
         doors=("add the row to [service.<name>] prices",),
     ),
+    "fetch.uncounted": Code(
+        means="the price is by a unit, such as a character, and the call states no "
+        "count of it",
+        when="a prices row { per = \"character\", rate = ... } quoted or charged with "
+        "no text to count (§PW320)",
+        doors=("pass the text the call would send",),
+    ),
     "fetch.service-unconfigured": Code(
         means="the service named cannot be reached: no base, or no key in this "
         "environment",

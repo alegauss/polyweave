@@ -244,6 +244,12 @@ base    = "https://api.ideogram.ai"
 key_env = "IDEOGRAM_API_KEY"
 prices  = { "4.0" = 0.06, "4.0:TURBO" = 0.03 }   # per picture, in the ceiling's unit
 
+[service.elevenlabs]
+base    = "https://api.elevenlabs.io"
+key_env = "ELEVENLABS_API_KEY"
+# A row may be by the unit sent instead of the call (§PW320, fetching.md).
+prices  = { "eleven_v3" = { per = "character", rate = 0.00003 } }
+
 [budget.meshy]
 amount  = 60
 unit    = "credits"

@@ -946,9 +946,20 @@ def _check_value(address: str, key: str, value: Any, source: Path) -> None:
             )
 
 
+#: The units a `prices` row may be charged by, besides one call (§PW320).
+PER = ("character",)
+
+
 def _check_prices(address: str, prices: dict, source: Path) -> None:
-    """A price is a number above nothing: a free row would under-count the ceiling."""
+    """A price is a number above nothing: a free row would under-count the ceiling.
+
+    A row may name its unit instead, `{ per = "character", rate = <n> }`, for a service
+    that bills by what is sent rather than by the call (§PW320).
+    """
     for row, price in prices.items():
+        if isinstance(price, dict):
+            _check_rate(f"{address}.{row}", price, source)
+            continue
         if isinstance(price, bool) or not isinstance(price, int | float) or price <= 0:
             raise PolyweaveError(
                 "config.bad-type",
@@ -957,6 +968,23 @@ def _check_prices(address: str, prices: dict, source: Path) -> None:
                 "write what one output costs, in the unit of the service's ceiling",
                 at=f"{address}.{row}",
             )
+
+
+def _check_rate(address: str, row: dict, source: Path) -> None:
+    """A row by the unit: what it is charged per, and a rate above nothing."""
+    unknown = sorted(set(row) - {"per", "rate"})
+    rate = row.get("rate")
+    if unknown or row.get("per") not in PER or (
+        isinstance(rate, bool) or not isinstance(rate, int | float) or rate <= 0
+    ):
+        raise PolyweaveError(
+            "config.bad-type",
+            f"{address} is {row!r} in {source.name}, and a row by the unit is "
+            f"{{ per = <unit>, rate = <price of one> }}",
+            f"write per as one of {', '.join(PER)} and rate as a number above zero, "
+            "in the unit of the service's ceiling",
+            at=address,
+        )
 
 
 def _check_type(address: str, default: Any, value: Any, source: Path) -> None:

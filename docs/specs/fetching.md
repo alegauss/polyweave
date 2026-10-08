@@ -165,6 +165,20 @@ difference sets `surprised`. A row nothing matches is reported under `unmatched_
 because a charge with no entry is money the ceiling never saw. A stale price table is
 found on the first reconcile rather than on the invoice.
 
+**A price may be by the character** (§PW320). Speech is billed per character sent, at a
+rate the model sets, so one figure per call would overstate a twelve-character tag and
+understate a paragraph. A row may name its unit instead of being a number,
+`"eleven_v3" = { per = "character", rate = 0.00003 }`, `per` one of `character` and the
+rate above zero, or the file is refused when it is read. The call counts what it would
+send (`sound.buy` its `prompt`) before anything is sent, and the price is the count
+times the rate. `purchase.quote` counts the `text` or `prompt` among the arguments and
+answers `per`, `rate` and `count` beside the price; a row by the unit with nothing to
+count is `fetch.uncounted`, never priced at zero. A refusal over the ceiling quotes the
+count and the rate as well as the sum. Where the service answers `/v1/user/subscription`,
+its `character_count` is read before and after the call, and the spend is the difference
+times the rate, a measurement (`measured: true`, the quote kept as `expected_credits`). A
+reading that fails leaves the quote standing, and the entry says it was quoted.
+
 ### A picture its record can make again
 
 Ideogram 4.0 rewrites a text prompt before it draws, and its answer returns the prompt it

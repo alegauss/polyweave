@@ -888,16 +888,39 @@ def _get(url: str, key: str) -> tuple[int, bytes]:
             ) from exc
 
 
-def _price(name: str, prices: dict, model: str, speed: str | None) -> float:
-    """What one picture costs, from the declared table, or a refusal (§PW164).
+def _price(
+    name: str, prices: dict, model: str, speed: str | None, count: int | None = None
+) -> float:
+    """What one call costs, from the declared table, or a refusal (§PW164)."""
+    return _priced(name, prices, model, speed, count)["price"]
+
+
+def _priced(
+    name: str, prices: dict, model: str, speed: str | None, count: int | None = None
+) -> dict:
+    """What one call costs and how it was reached, or a refusal (§PW164, §PW320).
 
     A row is `<model>:<speed>`, or `<model>` for the speed the service defaults to. A
     call with no row is refused rather than priced at zero: under-counting is the
-    direction that lets a session pass a ceiling a person set.
+    direction that lets a session pass a ceiling a person set. A row by the unit,
+    `{ per = "character", rate }`, is the rate times `count`, the characters the call
+    sends, and one with no count is refused for the same reason.
     """
     row = f"{model}:{speed}" if speed else model
+    if row in prices and isinstance(prices[row], dict):
+        per, rate = prices[row]["per"], float(prices[row]["rate"])
+        if count is None:
+            raise PolyweaveError(
+                "fetch.uncounted",
+                f"[service.{name}] prices {row!r} by the {per}, and this call states "
+                f"no count of them",
+                "pass the text the call would send, so its length can be priced",
+                given=row,
+            )
+        return {"price": round(rate * int(count), 6), "per": per, "rate": rate,
+                "count": int(count)}
     if row in prices:
-        return float(prices[row])
+        return {"price": float(prices[row]), "per": "call"}
     raise PolyweaveError(
         "fetch.unpriced",
         f"[service.{name}] prices has no row {row!r}, so what the picture costs is "

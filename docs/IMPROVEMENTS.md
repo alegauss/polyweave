@@ -547,28 +547,6 @@ Workaround: none; starship's RK161 waits on this rather than recording a voice o
 polyweave. It also needs the owner to set a `[budget.elevenlabs]` in starship's
 polyweave.toml.
 
-### §PW320 A price by the character
-
-`[service.<name>] prices` holds one figure per model, and `sound.buy` charges it per
-sound. That fits Ideogram, which bills per picture, and ElevenLabs' sound generation,
-which bills per request. Text to speech does not: ElevenLabs charges credits per
-character of the text sent, at a rate that depends on the model (the Flash and Turbo
-models are cheaper per character than Multilingual v2). A studio tag of twelve
-characters and a paragraph of briefing are priced the same today, so a ceiling either
-blocks the paragraph or lets through far more tag takes than the person expected.
-
-What polyweave should do: a `prices` row may name its unit, e.g. `{ per = "character",
-rate = 0.00003 }`, and a job states the count before anything is sent. `purchase.allow`
-then asks about the count times the rate, and the refusal quotes both. The service also
-publishes `/v1/user/subscription` with `character_count` and `character_limit`, so where
-it answers, the spend is the difference between two readings and the entry carries
-`measured: true`, as a mesh's does. The quoted rate stays as the fallback and says it
-was quoted.
-
-The spec change belongs in `docs/specs/fetching.md` beside the quoted-price exception.
-Nothing here decides a line is worth voicing: it only makes the ceiling a person set
-mean what they meant.
-
 ### §PW321 A character's voice, designed once
 
 PW314 speaks one line in a voice the call names. A game has a cast: Ada's lines must all

@@ -152,6 +152,9 @@ REVISION_VAR = "POLYWEAVE_REVISION"
 #: `[service.<name>] prices` it charges (§PW308).
 PRICED_BY = {"picture.describe": "describe", "picture.vary": "change"}
 
+#: The arguments whose length is the count a row by the character prices (§PW320).
+COUNTED = ("text", "prompt")
+
 #: The free operation beside a paid one, where the item may not need a purchase. Named
 #: by operation, so the window says it in the person's language.
 CHEAPER = {"picture.buy": "picture.fit", "picture.vary": "picture.fit"}
@@ -197,15 +200,19 @@ def quote(
     config = load(root)
     service = config.service(given.get("service") or None, model=model or None)
     about = config.services()[service]
-    price = picture._price(
-        service, about.get("prices") or {}, model, given.get("rendering_speed")
+    counted = next((given[k] for k in COUNTED if isinstance(given.get(k), str)), None)
+    found_price = picture._priced(
+        service, about.get("prices") or {}, model, given.get("rendering_speed"),
+        None if counted is None else len(counted),
     )
+    price = found_price["price"]
     left = remaining(root, service=service)
     return {
         "operation": operation,
         "service": service,
         "model": model,
         "price": price,
+        **{k: v for k, v in found_price.items() if k != "price"},
         "unit": left["unit"],
         "left": left["left"],
         "after": round(float(left["left"]) - price, 4),
@@ -251,6 +258,25 @@ def allow(
             f"for something that costs less",
         )
     return left
+
+
+def allow_priced(priced: dict, *, root: str | Path = ".", service: str) -> dict:
+    """`allow` for a price `picture._priced` reached, saying what a count came to.
+
+    A refusal of a price by the unit quotes the count and the rate as well as the sum,
+    so the person sees a paragraph cost what twelve characters did not (§PW320).
+    """
+    try:
+        return allow(priced["price"], root=root, service=service)
+    except PolyweaveError as refused:
+        if refused.code != "fetch.over-budget" or priced.get("count") is None:
+            raise
+        raise PolyweaveError(
+            refused.code,
+            f"{refused.message}: {priced['count']} {priced['per']}s at "
+            f"{priced['rate']:g} each",
+            refused.remedy,
+        ) from refused
 
 
 def capture(
