@@ -153,7 +153,7 @@ def _image_bytes(image: dict, gltf: dict, binary: bytes) -> int:
 
 
 def _voxels(where: Path) -> dict:
-    stated = json.loads(where.read_text(encoding="utf-8"))
+    stated = json.loads(where.read_text(encoding="utf-8-sig"))
     cells = stated.get("cells")
     if not isinstance(cells, dict) or not {"x", "y", "z"} <= set(cells):
         raise PolyweaveError(

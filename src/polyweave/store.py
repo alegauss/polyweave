@@ -50,7 +50,7 @@ def _store(store: str, root: Path) -> dict:
             given=store,
             allowed=known_names,
         )
-    declared = tomllib.loads(where.read_text(encoding="utf-8"))
+    declared = tomllib.loads(where.read_text(encoding="utf-8-sig"))
     for name, shape in (declared.get("shape") or {}).items():
         size = shape.get("size")
         if (not isinstance(size, list) or len(size) != 2

@@ -263,7 +263,7 @@ def matched(
     stated = (
         atlas
         if isinstance(atlas, dict)
-        else json.loads(Path(atlas).read_text(encoding="utf-8"))
+        else json.loads(Path(atlas).read_text(encoding="utf-8-sig"))
     )
     if isinstance(animation, dict) and "clip_sha256" in animation:
         recorded = animation

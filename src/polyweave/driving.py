@@ -106,7 +106,7 @@ def _session(session: str, root: str | Path) -> dict:
             "open the game again with game.open and use the session it answers",
             given=session,
         )
-    return json.loads(where.read_text(encoding="utf-8"))
+    return json.loads(where.read_text(encoding="utf-8-sig"))
 
 
 def _alive(pid: int) -> bool:
@@ -719,7 +719,7 @@ def rekeyed(
             f"there is no flow at {where}",
             "name a .flow.json game.keep wrote, under the project",
         )
-    kept = json.loads(where.read_text(encoding="utf-8"))
+    kept = json.loads(where.read_text(encoding="utf-8-sig"))
     session = opened(root, scene=kept.get("scene", ""), seed=int(kept.get("seed", 0)))
     selectors: dict[str, dict] = {}
     broke = None
@@ -783,7 +783,7 @@ def replayed(
             f"there is no flow at {where}",
             "write one with game.keep, and name it relative to the project",
         )
-    stated = json.loads(where.read_text(encoding="utf-8"))
+    stated = json.loads(where.read_text(encoding="utf-8-sig"))
     if stated.get("format") != FLOW_FORMAT:
         raise PolyweaveError(
             "game.no-flow",

@@ -439,7 +439,7 @@ def _read(source: str, config) -> tuple[Path, dict, dict]:
                              f"there is no panel file at {source}",
                              "name a *.panel.toml relative to the project root")
     try:
-        tables = tomllib.loads(where.read_text(encoding="utf-8"))
+        tables = tomllib.loads(where.read_text(encoding="utf-8-sig"))
     except tomllib.TOMLDecodeError as exc:
         raise PolyweaveError("compose.bad-panel", f"{source} is not TOML",
                              "fix the syntax the detail names",

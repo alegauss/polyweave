@@ -327,7 +327,7 @@ def routes(
     where = _kept(root)
     if not recheck and where.is_file():
         try:
-            return json.loads(where.read_text(encoding="utf-8"))
+            return json.loads(where.read_text(encoding="utf-8-sig"))
         except (OSError, json.JSONDecodeError):
             pass
     found = [probe(route, root=root) for route in ROUTES]

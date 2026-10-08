@@ -69,7 +69,7 @@ def _refuse(source: Path, what: str, remedy: str, **more) -> PolyweaveError:
 def read(source: Path) -> dict:
     """The declaration, its icons resolved over the set's style, or a refusal."""
     try:
-        declared = tomllib.loads(source.read_text(encoding="utf-8"))
+        declared = tomllib.loads(source.read_text(encoding="utf-8-sig"))
     except (OSError, tomllib.TOMLDecodeError) as exc:
         raise _refuse(source, "the declaration cannot be read as TOML",
                       "fix the syntax the detail points at", detail=str(exc)) from exc

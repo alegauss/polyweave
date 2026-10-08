@@ -74,7 +74,7 @@ def held(run: dict, root: str | Path) -> dict:
     where = _open(str(run["id"]), root)
     if not where.is_file():
         return run
-    kept = json.loads(where.read_text(encoding="utf-8"))
+    kept = json.loads(where.read_text(encoding="utf-8-sig"))
     # Neither copy is always the newer: a command line passes a stale one, and a
     # caller in one process may have judged into its own dict. So both are kept: every
     # verdict either holds, and the larger of each count.
@@ -106,7 +106,7 @@ def read(root: Annotated[str, ROOT] = ".") -> list[dict]:
     if not where.is_file():
         return []
     try:
-        found = json.loads(where.read_text(encoding="utf-8"))
+        found = json.loads(where.read_text(encoding="utf-8-sig"))
     except json.JSONDecodeError as exc:
         raise PolyweaveError(
             "loop.malformed",

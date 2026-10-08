@@ -885,7 +885,7 @@ def validate(
     answers its length in seconds, its notes per track and its loop in ticks.
     """
     base, where = _score(source, root)
-    model, problems = compile_source(where.read_text(encoding="utf-8"), where.stem)
+    model, problems = compile_source(where.read_text(encoding="utf-8-sig"), where.stem)
     if model is not None:
         problems = kit_problems(model, base)
         model = None if problems else model
@@ -907,7 +907,7 @@ def to_midi(
 ) -> dict:
     """Write a valid score as a Standard MIDI File a DAW opens, one track per part."""
     base, where = _score(source, root)
-    model, problems = compile_source(where.read_text(encoding="utf-8"), where.stem)
+    model, problems = compile_source(where.read_text(encoding="utf-8-sig"), where.stem)
     if model is None:
         first = problems[0]
         raise PolyweaveError(

@@ -119,6 +119,30 @@ def test_a_list_flag_may_name_a_json_file(tmp_path):
     assert commands.parsed([f"@{where}"], LIST) == ["--boss", "--frames=420"]
 
 
+def test_a_json_file_written_by_windows_powershell_is_read_past_its_mark(tmp_path):
+    """§PW334: Set-Content -Encoding utf8 in PowerShell 5.1 always writes a BOM."""
+    where = tmp_path / "members.json"
+    where.write_bytes(b"\xef\xbb\xbf" + b'["--boss", "--frames=420"]')
+    assert commands.parsed([f"@{where}"], LIST) == ["--boss", "--frames=420"]
+
+
+def test_declarations_saved_with_a_byte_order_mark_are_read(tmp_path):
+    from polyweave import pressure, world
+    from polyweave.config import load
+
+    mark = b"\xef\xbb\xbf"
+    (tmp_path / "polyweave.toml").write_bytes(mark + b'[project]\nname = "game"\n')
+    assert load(tmp_path).get("project.name") == "game"
+    (tmp_path / "game.world.toml").write_bytes(
+        mark + b'[entity.ada]\nname = "Ada"\nkind = "character"\n'
+    )
+    assert world.validate(root=str(tmp_path))["valid"]
+    (tmp_path / "waves.json").write_bytes(
+        mark + b'[{"second": 0, "weight": 1, "until": 2}]'
+    )
+    assert pressure.pressure(file="waves.json", root=str(tmp_path))["total"] == 1.0
+
+
 def test_one_plain_value_is_a_list_of_one():
     assert commands.parsed(["--boss"], LIST) == ["--boss"]
 

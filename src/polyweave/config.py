@@ -745,7 +745,7 @@ def load(root: str | Path = ".") -> Config:
     if not source.is_file():
         return Config(where, {}, None)
     try:
-        declared = tomllib.loads(source.read_text(encoding="utf-8"))
+        declared = tomllib.loads(source.read_text(encoding="utf-8-sig"))
     except tomllib.TOMLDecodeError as exc:
         raise PolyweaveError(
             "config.malformed",

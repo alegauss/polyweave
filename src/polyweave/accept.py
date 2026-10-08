@@ -114,7 +114,7 @@ def read(path: str | Path, root: str | Path = ".") -> Spec:
             f"write one as <asset>{SUFFIX}, beside the asset or under [paths] specs",
         )
     try:
-        declared = tomllib.loads(where.read_text(encoding="utf-8"))
+        declared = tomllib.loads(where.read_text(encoding="utf-8-sig"))
     except tomllib.TOMLDecodeError as exc:
         raise PolyweaveError(
             "spec.malformed",

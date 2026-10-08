@@ -214,7 +214,7 @@ def _mask_for(source: Path, region, mask, here: Path, out: str) -> tuple[Path, s
             "describe it first with picture.describe, or pass mask",
         )
     elements = (
-        json.loads(described.read_text(encoding="utf-8")).get(
+        json.loads(described.read_text(encoding="utf-8-sig")).get(
             "compositional_deconstruction", {}
         )
     ).get("elements") or []

@@ -41,7 +41,7 @@ def load(stated: str | Path, *, root: str | Path = ".") -> dict:
             "name a .voxels.json a build wrote, or a declaration with a [voxels] table",
         )
     if where.suffix == ".json":
-        model = json.loads(where.read_text(encoding="utf-8"))
+        model = json.loads(where.read_text(encoding="utf-8-sig"))
         if "cells" not in model or "cell" not in model:
             raise PolyweaveError(
                 "geom.bad-voxels",

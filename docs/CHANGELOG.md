@@ -215,6 +215,7 @@
 - ✅ **PW160** **a clip is baked to an animation and a sheet only from Python, since every step takes a mesh and a rig in memory** — motion.bake takes the clip, mesh and plan by name, fits, weights, compiles and bakes, and answers with the paths and whether both outputs match (design recorded in `docs/specs/motion.md`).
 - ✅ **PW246** **capture.run answers ok false with verdict ok and an empty why when only the environment differed** — A capture whose environment did not hold now names the cause in verdict and why at the top, and lists the pictures its expect lines named (design recorded in `docs/specs/engine.md`).
 - ✅ **PW247** **a list parameter passed from PowerShell never arrives as JSON, so the CLI refuses it** — A list flag may be given once per item or as @file.json, so it survives PowerShell 5.1, and a mangled list is refused naming both forms (design recorded in `docs/specs/tool-surface.md`).
+- ✅ **PW334** **an @file list written by Windows PowerShell is refused for its UTF-8 BOM, so PW247's remedy fails in that shell** — An @file argument and every JSON or TOML declaration are read past a UTF-8 byte order mark, so a file PowerShell 5.1 wrote is taken (design recorded in `docs/specs/tool-surface.md`).
 
 ## Block L — What a run leaves as evidence
 

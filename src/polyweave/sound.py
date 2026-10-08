@@ -325,7 +325,7 @@ def _recorded_bar(where: Path) -> float | None:
 
     sidecar = where.with_name(where.name + ".prov.json")
     try:
-        record = json.loads(sidecar.read_text(encoding="utf-8"))
+        record = json.loads(sidecar.read_text(encoding="utf-8-sig"))
     except (OSError, ValueError):
         return None
     bar = (record.get("params") or {}).get("bar_seconds")

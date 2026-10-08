@@ -454,7 +454,7 @@ def sweep(
     ).hexdigest()[:16]
     kept = here / ".polyweave" / "sweeps" / f"{key}.json"
     if build and kept.is_file() and not again:
-        return {**json.loads(kept.read_text(encoding="utf-8")), "cached": True}
+        return {**json.loads(kept.read_text(encoding="utf-8-sig")), "cached": True}
 
     def one_run(combo: dict) -> dict:
         printed: dict[str, str] = {}

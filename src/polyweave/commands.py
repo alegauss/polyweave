@@ -117,7 +117,7 @@ def _listed(given: Any, declared: dict) -> list:
     if text.startswith("@"):
         where = Path(text[1:])
         try:
-            read = json.loads(where.read_text(encoding="utf-8"))
+            read = json.loads(where.read_text(encoding="utf-8-sig"))
         except (OSError, json.JSONDecodeError) as failed:
             raise PolyweaveError(
                 "op.bad-type",

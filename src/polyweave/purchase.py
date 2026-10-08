@@ -547,7 +547,7 @@ def reconcile(
     config = load(here)
     name = config.service(service)
     if isinstance(rows, str | Path):
-        rows = json.loads(Path(here / rows).read_text(encoding="utf-8"))
+        rows = json.loads(Path(here / rows).read_text(encoding="utf-8-sig"))
     ledger = read(here)
     only = next(iter(config.services())) if len(config.services()) == 1 else None
     open_ = [

@@ -44,7 +44,7 @@ def _read(events: Any, root: Path) -> tuple[list[dict], Path | None]:
                 "weight, until}, or pass the list",
                 given=str(events),
             )
-        events = json.loads(source.read_text(encoding="utf-8"))
+        events = json.loads(source.read_text(encoding="utf-8-sig"))
         if isinstance(events, dict):
             events = events.get("events")
     if not isinstance(events, list) or not events:

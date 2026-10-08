@@ -205,7 +205,7 @@ def declared(source: Any, *, root: str | Path = ".") -> dict:
                 f"there is no declaration at {path}",
                 "write one with covers and pixels_per_unit in it",
             )
-        text = path.read_text(encoding="utf-8")
+        text = path.read_text(encoding="utf-8-sig")
         if path.suffix.lower() == ".json":
             stated = json.loads(text)
         else:

@@ -185,7 +185,7 @@ def _comparison(taken: list[list[dict]], measures) -> dict:
 def _previous(record: Path, sides: list[dict]) -> dict | None:
     """The last answer for this script, and whether either build has moved since."""
     try:
-        last = json.loads(record.read_text(encoding="utf-8"))
+        last = json.loads(record.read_text(encoding="utf-8-sig"))
     except (OSError, ValueError):
         return None
     return {

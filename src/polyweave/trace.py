@@ -149,4 +149,4 @@ def read(
     path: Annotated[str, Param("the trace's .json, as search.sweep wrote it")],
 ) -> dict[str, Any]:
     """Read a trace back, which is what makes a past search arguable."""
-    return json.loads(Path(path).read_text(encoding="utf-8"))
+    return json.loads(Path(path).read_text(encoding="utf-8-sig"))

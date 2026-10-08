@@ -71,7 +71,7 @@ def _kept(where: Path, axes: dict) -> dict | None:
     be ones the family's search could never have proposed.
     """
     try:
-        kept = json.loads(where.read_text(encoding="utf-8"))
+        kept = json.loads(where.read_text(encoding="utf-8-sig"))
     except (FileNotFoundError, json.JSONDecodeError):
         return None
     values = {k: v for k, v in (kept.get("values") or {}).items() if k in axes}
@@ -108,7 +108,7 @@ def read(path: str | Path, root: str | Path = ".") -> dict:
     where = Path(path)
     where = where if where.is_absolute() else Path(root) / where
     try:
-        declared = tomllib.loads(where.read_text(encoding="utf-8"))
+        declared = tomllib.loads(where.read_text(encoding="utf-8-sig"))
     except FileNotFoundError:
         raise PolyweaveError(
             "search.bad-family",

@@ -301,7 +301,7 @@ def kit(path: Path) -> dict[str, np.ndarray]:
     score are the same sound.
     """
     try:
-        effects = tomllib.loads(path.read_text(encoding="utf-8"))
+        effects = tomllib.loads(path.read_text(encoding="utf-8-sig"))
     except (OSError, tomllib.TOMLDecodeError) as exc:
         raise PolyweaveError(
             "sound.no-source",
@@ -344,7 +344,7 @@ def synth(
         raise PolyweaveError("sound.no-source", f"there is no effects file at {source}",
                              "name a *.sfx.toml relative to the project root")
     try:
-        effects = tomllib.loads(where.read_text(encoding="utf-8"))
+        effects = tomllib.loads(where.read_text(encoding="utf-8-sig"))
     except tomllib.TOMLDecodeError as exc:
         raise PolyweaveError("sound.no-source", f"{source} is not TOML",
                              "fix the syntax the detail names",

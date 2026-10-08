@@ -324,25 +324,6 @@ exist yet and expects the file.
 
 ## Block K — Reached without reading the source
 
-### §PW334 An @file read past its byte order mark
-
-Met in starship (RK157), laying out a sound sitting from Windows PowerShell 5.1. A list
-parameter cannot be passed inline there (the shell eats the JSON's quotes, which the
-refusal says), so the remedy offered is a JSON file: `--members @members.json`. The file
-was written with `Set-Content -Encoding utf8`, which in Windows PowerShell 5.1 always
-writes a UTF-8 byte order mark, and the call came back:
-
-`op.bad-type: --members names ...members.json, which is no JSON file: Unexpected UTF-8
-BOM (decode using utf-8-sig)`
-
-The file was valid JSON in every other respect, and the error itself names the fix. The
-worker rewrote the file through another tool to drop the mark.
-
-What polyweave should do: read an `@file` argument (and any JSON or TOML a declaration
-names) as `utf-8-sig`, so a leading mark is skipped, since on Windows the shell's own
-way to write UTF-8 is the one that adds it. A test writes the file with a BOM and
-expects the list back.
-
 ### §PW337 An @file for every structured parameter
 
 Met in starship (RK166), laying out a sitting from Windows PowerShell. `verdict.sitting`

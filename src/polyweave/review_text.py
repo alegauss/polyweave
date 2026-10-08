@@ -37,7 +37,7 @@ def languages() -> tuple[str, ...]:
 @cache
 def catalog(speaks: str) -> dict:
     """One language's catalog, the page's words and every kind of sitting's."""
-    return json.loads((LOCALES / f"{speaks}.json").read_text(encoding="utf-8"))
+    return json.loads((LOCALES / f"{speaks}.json").read_text(encoding="utf-8-sig"))
 
 
 def language(root: str | Path = ".") -> str:

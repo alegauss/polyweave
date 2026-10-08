@@ -580,7 +580,7 @@ def _source(source: str, config) -> tuple[Path, dict]:
         raise PolyweaveError("vfx.no-source", f"there is no effects file at {source}",
                              "name a *.vfx.toml relative to the project root")
     try:
-        declared = tomllib.loads(where.read_text(encoding="utf-8"))
+        declared = tomllib.loads(where.read_text(encoding="utf-8-sig"))
     except tomllib.TOMLDecodeError as exc:
         raise PolyweaveError("vfx.no-source", f"{source} is not TOML",
                              "fix the syntax the detail names",

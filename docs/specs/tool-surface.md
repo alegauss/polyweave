@@ -288,7 +288,9 @@ both answers.
   strips the inner quotes of a single-quoted argument it hands a native program, so a
   JSON list never arrives, and a list flag may also be given once per item
   (`--args=--boss --args=--frames=420`, the `=` because an item may start with `--`) or
-  name a JSON file (`--args @args.json`); a single value that reads as neither JSON nor a
+  name a JSON file (`--args @args.json`), read past a UTF-8 byte order mark, since that
+  shell's own `Set-Content -Encoding utf8` always writes one (§PW334), as is every JSON or
+  TOML file a call or a declaration names; a single value that reads as neither JSON nor a
   file is a list of that one item, and one that opens a bracket and does not read is the
   mangled list, refused naming those forms. An asynchronous operation takes `--job`, which starts it through the
   job store and prints the handle, and `job list|poll|result|cancel <handle>` answers for

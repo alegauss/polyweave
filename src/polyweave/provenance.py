@@ -280,7 +280,7 @@ def read(
             "the artefact was produced without one, or beside a different file",
         )
     try:
-        return json.loads(candidate.read_text(encoding="utf-8"))
+        return json.loads(candidate.read_text(encoding="utf-8-sig"))
     except (OSError, json.JSONDecodeError) as exc:
         raise PolyweaveError(
             "prov.malformed",
@@ -800,7 +800,7 @@ def generated(
 
 def _sidecar_params(path: str, where: Path) -> dict | None:
     try:
-        held = json.loads(sidecar(path, where).read_text(encoding="utf-8"))
+        held = json.loads(sidecar(path, where).read_text(encoding="utf-8-sig"))
         return held.get("params")
     except (OSError, ValueError):
         return None

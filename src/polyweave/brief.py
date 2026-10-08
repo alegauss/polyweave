@@ -277,7 +277,7 @@ def _effect(item: dict, path: str, record: dict, here: Path) -> dict:
     """An sfx or vfx effect as its table declares it, and what a built one measures."""
     import tomllib
 
-    tables = tomllib.loads((here / path).read_text(encoding="utf-8")).get("effect")
+    tables = tomllib.loads((here / path).read_text(encoding="utf-8-sig")).get("effect")
     tables = tables if isinstance(tables, dict) else {}
     params = record.get("params") or {}
     if params.get("arrangement"):

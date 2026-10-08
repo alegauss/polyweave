@@ -455,7 +455,7 @@ def read(
             "check the path, or write the clip before reading it",
         )
     try:
-        stated = tomllib.loads(where.read_text(encoding="utf-8"))
+        stated = tomllib.loads(where.read_text(encoding="utf-8-sig"))
     except tomllib.TOMLDecodeError as exc:
         raise PolyweaveError(
             "clip.unreadable",

@@ -232,7 +232,7 @@ def _built(source, out, root, given, preview, force, mesh, *, strict: bool) -> d
         given = named
         key = stamp(made)
         if not force and mark.is_file():
-            kept = json.loads(mark.read_text(encoding="utf-8"))
+            kept = json.loads(mark.read_text(encoding="utf-8-sig"))
             outputs = [str(_under(one, here)) for one in kept.get("outputs", ())]
             if kept.get("stamp") == key and all(Path(one).is_file() for one in outputs):
                 return {**answer, "status": "cached", "outputs": outputs}

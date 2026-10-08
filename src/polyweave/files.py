@@ -59,7 +59,7 @@ def read_text_retrying(path: Path, attempts: int = 5) -> str | None:
     """
     for attempt in range(attempts):
         try:
-            return path.read_text(encoding="utf-8")
+            return path.read_text(encoding="utf-8-sig")
         except FileNotFoundError:
             return None
         except PermissionError:
