@@ -935,7 +935,9 @@ What polyweave should do:
 - **Change detection**: optionally keep only frames that differ from the one before by more than a bound, so a quiet stretch costs nothing.
 
 The transcription itself (what spawned, where, on what path) stays the agent's and the
-owner's work. polyweave only makes the frames cheap and recorded.
+owner's work. polyweave only makes the frames cheap and recorded. Done by hand in
+spinhold (2026-10-08): 61 sheets for 68 s, and burning timestamps in needed a font
+copied beside them.
 
 ### §PW330 Pressure per second from weighted events
 
