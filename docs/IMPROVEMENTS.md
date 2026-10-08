@@ -568,27 +568,6 @@ declared in its `polyweave.toml`, made by `music.render` and `sound.synth`, and 
 `*.accept.toml` bounds, and its own audio scripts are removed. Anything Cottony needs
 that a second game would not becomes configuration.
 
-### §PW323 A take that says its line
-
-`sound.measure` reports loudness, peak and length, which is what an effect is held to. A
-spoken take has failures of its own that are measurable before anybody listens: leading
-and trailing silence the game would play as a pause, a take far longer or shorter than
-its words suggest (a skipped phrase, a repeated one), a clipped last syllable, and a
-name read wrongly, which is the common failure on invented names like the world's.
-
-What polyweave should do: speech measures in the vocabulary, each with a declared bound
-in `[voice]`: `lead_silence` and `tail_silence` in seconds, trimmed to the bound on
-capture where the project asks; `rate` in characters per second against a band;
-`loudness` aimed at the same integrated target a project's effects use, so dialogue and
-effects sit together. And `said`: a local speech-to-text pass (faster-whisper, when
-installed) transcribes the take and reports the words that differ from the line, with
-the entity names from the world passed as the vocabulary to expect. It runs locally
-because paying a service to check a take is spending on the agent's own judgement.
-
-A take that fails a bound is kept and reported, never silently re-bought: whether to
-spend on another take is the person's ceiling, and the measures only say which takes are
-worth their ear. The sitting shows each take's measures beside it.
-
 ### §PW324 A free draft before a paid take
 
 Pictures and meshes climb rungs from cheap to dear, and the dear rung is reached only

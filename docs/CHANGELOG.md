@@ -307,7 +307,7 @@
 - ✅ **PW314** **no operation speaks a line, so a game cannot get a voiced tag like a studio name read aloud** — sound.speak speaks a given line in a named voice through ElevenLabs' text to speech, priced by the character, and recorded with its voice and delivery (design recorded in `docs/specs/effects.md`).
 - ✅ **PW321** **a world's character has no voice of its own, so each spoken line sounds like whichever voice its call happened to name** — An entity's voice is declared in the world, designed as paid previews, kept once a person accepts one, and spoken by sound.speak entity= (design recorded in `docs/specs/world.md`).
 - ✅ **PW322** **a locale catalog's lines cannot be voiced as a set, so a cast's dialogue is one hand-made call and cue per line** — voice.lines prices a string table's lines and voices them only on spend, skipping current takes, naming voiceless speakers, halting at a ceiling (design recorded in `docs/specs/world.md`).
-- ✅ **PW323 (measures)** **nothing measures a spoken take, so a clipped, padded or misread line reaches the person's verdict as a candidate** — sound.speech holds a spoken take to its line and [voice] bounds (silence, rate, loudness, a local transcription), and takes and sittings report it.
+- ✅ **PW323** **nothing measures a spoken take, so a clipped, padded or misread line reaches the person's verdict as a candidate** — A spoken take is held to its line and [voice] bounds before a person hears it, and with trim on, lands with its silence cut to the bound (design recorded in `docs/specs/effects.md`).
 
 ## Block Q — Words held to the world
 

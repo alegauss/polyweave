@@ -52,7 +52,6 @@
 
 ## Block P — Music and sound a game can ship
 
-- ⏳ **PW323** (deps: PW314 ✅) **nothing measures a spoken take, so a clipped, padded or misread line reaches the person's verdict as a candidate** — A take's lead and tail silence are measured but not yet trimmed to their bound on capture where the project asks for it. → §PW323
 - 📋 **PW324** (deps: PW314 ✅) **a spoken line can only be heard after paying for it, so its wording and timing in the game cannot be tried for free** — Most of a line's revisions are about words and timing, not the voice, so a free local draft lets them settle before a single character is billed. → §PW324
 - 📋 **PW333** (deps: —) **an sfx effect cannot be declared at a note, so putting a menu sound in a key means working out base_freq by hand** — The pitch formula lives only in the source, so every tuned effect is numbers derived off the page that nothing checks. → §PW333
 
@@ -205,13 +204,6 @@
   Cottony family, a person answers on the review page, the ledger holds that verdict
   through judge alone, and the agent's next candidate follows from verdict.answers with
   no chat message in between.
-
-## Done when — PW323
-
-- **A take's silence is trimmed to its [voice] bound on capture** With [voice] trim =
-  true, a bought take with more lead or tail silence than its bound lands trimmed to the
-  bound, its record keeping the bytes the service sent as the source, and sound.speech
-  then reads within it.
 
 ## Non-goals
 

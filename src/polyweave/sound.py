@@ -518,13 +518,8 @@ def _speech_said(found: dict) -> str:
 SPEECH_FLOOR, SPEECH_FRAME = 40.0, 0.02
 
 
-def speech(path: str | Path, text: str, vocabulary=()) -> dict:
-    """What a spoken take measures against its line (§PW323).
-
-    The silence before the first word and after the last, the line's characters per
-    second spoken, its loudness, and `said`: the words a local transcription heard that
-    the line does not have, or misses, where faster-whisper is installed.
-    """
+def _span(path: str | Path) -> tuple[float, float, float]:
+    """Where a take's speech starts and ends, and how long the take is, in seconds."""
     samples, rate = read(path)
     mono = samples.mean(axis=1)
     size = max(1, int(rate * SPEECH_FRAME))
@@ -540,8 +535,18 @@ def speech(path: str | Path, text: str, vocabulary=()) -> dict:
         for i in range(frames)
     ])
     spoken = np.flatnonzero(levels >= max(levels.max() - SPEECH_FLOOR, -60.0))
-    duration = len(mono) / rate
     first, last = spoken[0] * size / rate, (spoken[-1] + 1) * size / rate
+    return first, last, len(mono) / rate
+
+
+def speech(path: str | Path, text: str, vocabulary=()) -> dict:
+    """What a spoken take measures against its line (§PW323).
+
+    The silence before the first word and after the last, the line's characters per
+    second spoken, its loudness, and `said`: the words a local transcription heard that
+    the line does not have, or misses, where faster-whisper is installed.
+    """
+    first, last, duration = _span(path)
     letters = len(re.sub(r"\s+", "", text))
     found = {
         "lead_silence": round(first, 3),

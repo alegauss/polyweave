@@ -287,6 +287,9 @@ DEFAULTS: dict[str, Any] = {
         "rate": [],
         # [low, high] dBFS, so dialogue sits where the project's effects do.
         "loudness": [],
+        # Cut a bought take's silence down to the two bounds above as it lands, the
+        # service's own bytes kept on its record by their digest.
+        "trim": False,
     },
     "voxels": {
         # What a voxel build is checked against (§PW97). A game decides how many cubes

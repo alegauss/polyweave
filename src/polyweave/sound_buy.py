@@ -224,6 +224,14 @@ def _bought(
             f"there is no ffmpeg on PATH to transcode it",
             "put ffmpeg on PATH before spending, or ask for an .mp3",
         )
+    trimming = bool(details.get("spoken")) and bool(config.get("voice.trim"))
+    if trimming and not shutil.which("ffmpeg"):
+        raise PolyweaveError(
+            "sound.no-encoder",
+            "[voice] trim asks for a take's silence to be cut, and there is no ffmpeg "
+            "on PATH to cut it",
+            "put ffmpeg on PATH before spending, or set [voice] trim = false",
+        )
 
     purchase.allow_priced(priced, root=here, service=name)
     by_character = priced["per"] == "character"
@@ -246,6 +254,11 @@ def _bought(
     if report is not None:
         report.stage("downloading", progress=0.9, note="taking delivery of the sound")
     played = body if target.suffix.lower() == ".mp3" else _transcoded(body, target)
+    if trimming:
+        played, cut = _trim(played, target, config.table("voice"))
+        if cut:
+            details = {**details, "trimmed": {
+                **cut, "sent_sha256": hashlib.sha256(body).hexdigest()}}
     entry = purchase.capture(
         played,
         out=target.relative_to(here).as_posix(),
@@ -267,6 +280,41 @@ def _bought(
         # kept and said, never bought again here.
         answer["speech"] = _speech(target, words, config)
     return answer
+
+
+def _trim(played: bytes, target: Path, bounds: dict) -> tuple[bytes, dict | None]:
+    """A take with its lead and tail silence cut down to their bounds (§PW323).
+
+    Only silence past a bound goes: speech is never cut, and a bound of zero cuts
+    nothing on its side. Answers the bytes to keep and what was cut, or None.
+    """
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as scratch:
+        held = Path(scratch) / f"take{target.suffix}"
+        held.write_bytes(played)
+        first, last, duration = sound._span(held)
+    lead, tail = float(bounds.get("lead_silence") or 0), float(
+        bounds.get("tail_silence") or 0)
+    start = first - lead if lead and first > lead else 0.0
+    end = last + tail if tail and duration - last > tail else duration
+    if start <= 0 and end >= duration:
+        return played, None
+    shaped = {".mp3": ["-f", "mp3"], **_SHAPED}
+    done = subprocess.run(
+        [shutil.which("ffmpeg"), "-v", "error", "-i", "pipe:0", "-ss", f"{start:.3f}",
+         "-to", f"{end:.3f}", *shaped[target.suffix.lower()], "pipe:1"],
+        input=played, capture_output=True, check=False,
+    )
+    if done.returncode or not done.stdout:
+        raise PolyweaveError(
+            "fetch.nothing-arrived",
+            f"ffmpeg could not cut the take's silence from {target.name}",
+            "read the detail; nothing was ledgered, and [voice] trim = false keeps "
+            "the take whole",
+            detail=done.stderr[:400].decode("utf-8", "replace"),
+        )
+    return done.stdout, {"lead": round(start, 3), "tail": round(duration - end, 3)}
 
 
 def _speech(target: Path, words: str, config) -> dict:
@@ -760,14 +808,17 @@ def _used(base: str, key: str) -> int | None:
     return count if isinstance(count, int) and not isinstance(count, bool) else None
 
 
+#: How ffmpeg writes each format a cue may declare.
+_SHAPED = {".wav": ["-f", "wav", "-c:a", "pcm_s16le"],
+           ".ogg": ["-f", "ogg", "-c:a", "libvorbis", "-q:a", "6"],
+           ".flac": ["-f", "flac"], ".opus": ["-f", "opus", "-c:a", "libopus"]}
+
+
 def _transcoded(body: bytes, target: Path) -> bytes:
     """The service's MP3 in the format the cue declares, through ffmpeg's pipes."""
-    shaped = {".wav": ["-f", "wav", "-c:a", "pcm_s16le"],
-              ".ogg": ["-f", "ogg", "-c:a", "libvorbis", "-q:a", "6"],
-              ".flac": ["-f", "flac"], ".opus": ["-f", "opus", "-c:a", "libopus"]}
     done = subprocess.run(
         [shutil.which("ffmpeg"), "-v", "error", "-i", "pipe:0",
-         *shaped[target.suffix.lower()], "pipe:1"],
+         *_SHAPED[target.suffix.lower()], "pipe:1"],
         input=body, capture_output=True, check=False,
     )
     if done.returncode or not done.stdout:

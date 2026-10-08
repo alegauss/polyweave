@@ -84,3 +84,39 @@ def test_a_sitting_shows_a_takes_speech_and_marks_one_that_fails(tmp_path, monke
               for name, said in laid["speech"].items()}
     assert failed == {"late": ["lead_silence"], "prompt": []}
     assert (tmp_path / "sitting" / "late.png").is_file()
+
+
+def test_a_bought_take_lands_with_its_silence_cut_to_the_bound(tmp_path, monkeypatch):
+    import hashlib
+    import shutil
+    import subprocess
+
+    from polyweave import provenance, sound_buy
+    from test_sound_buy import PROJECT, Service
+
+    if not shutil.which("ffmpeg"):
+        pytest.skip("needs ffmpeg")
+    padded = take(tmp_path / "padded.wav", lead=1.0, tail=1.2)
+    sent = subprocess.run(
+        [shutil.which("ffmpeg"), "-v", "error", "-i", str(padded), "-f", "mp3",
+         "pipe:1"], capture_output=True, check=True,
+    ).stdout
+    (tmp_path / "polyweave.toml").write_text(
+        PROJECT.replace('"eleven_text_to_sound_v2" = 0.05',
+                        '"eleven_multilingual_v2" = 0.05')
+        + "\n[voice]\nlead_silence = 0.2\ntail_silence = 0.3\ntrim = true\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("POLYWEAVE_TEST_E", "sk-sound")
+    monkeypatch.setattr(sound_buy, "_used", lambda base, key: None)
+    monkeypatch.setattr(sound, "_transcribed", lambda path, vocabulary=(): None)
+    monkeypatch.setattr(sound_buy, "_post", Service(sent).post)
+    found = sound_buy.speak(text="Hold fast", voice="v1", out="vo/hold.wav",
+                            root=str(tmp_path))
+    assert found["speech"]["failed"] == []
+    assert found["speech"]["lead_silence"] == pytest.approx(0.2, abs=0.08)
+    assert found["speech"]["tail_silence"] == pytest.approx(0.3, abs=0.08)
+    trimmed = provenance.read(str(tmp_path / "vo" / "hold.wav"), root=tmp_path)
+    cut = trimmed["details"]["trimmed"]
+    assert cut["sent_sha256"] == hashlib.sha256(sent).hexdigest()
+    assert cut["lead"] > 0.6

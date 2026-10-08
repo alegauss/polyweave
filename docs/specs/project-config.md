@@ -160,6 +160,7 @@ lead_silence = 0.25                # seconds before the first word; zero bounds 
 tail_silence = 0.4                 # and after the last
 rate         = [8.0, 20.0]         # characters of the line per second spoken
 loudness     = [-24.0, -14.0]      # dBFS, where the project's effects sit
+trim         = true                # cut a bought take's silence to the bounds above
 
 [voxels]
 budget        = 4000           # the most cells a model may have; zero is no ceiling

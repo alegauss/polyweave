@@ -177,3 +177,11 @@ game's. `sound.speak` and `voice.lines` answer the same `speech` with each take,
 sound sitting member given its `line` shows the measures on its sheet and is marked as
 failing where any bound fails. A failing take is kept and reported, never bought again:
 whether to spend on another is the person's ceiling.
+
+With `[voice] trim = true`, a bought take's silence is cut down to the two silence
+bounds as it lands, before it is hashed and ledgered: only silence past a bound goes,
+speech is never cut, and a bound of zero cuts nothing on its side. The record keeps what
+was cut (`details.trimmed`: `lead` and `tail` in seconds) and the SHA-256 of the bytes
+the service sent, so the take on disk is the one the game plays and the purchase is
+still traceable. Trimming needs ffmpeg, and a project asking for it without one is
+refused before anything is spent (`sound.no-encoder`).
