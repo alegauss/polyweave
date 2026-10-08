@@ -75,7 +75,6 @@
 
 ## Block V — Parts every game repeats, installed already proved
 
-- 📋 **PW342** (deps: PW340 ✅) **a kit's proof runs only in a game that installed it, so a kit can leave this repository broken** — Pre-validated means proved before any project receives it, against the Godot that polyweave itself installs. → §PW342
 - 📋 **PW343** (deps: PW341 ✅) **a project cannot tell that a kit it installed has a newer proved version, or what upgrading would replace** — A fix to a kit then reaches only the next game, and every earlier one keeps the bug the fix was for. → §PW343
 - 📋 **PW344** (deps: PW341 ✅) **a game names a pad's buttons in its own text per layout, with no icons, no Switch layout and no change on a new device** — Every game needs it, its details are found only by running, and the icons are a part an agent cannot draw well alone. → §PW344
 - 📋 **PW345** (deps: PW344) **rebinding, its conflicts, its reset and its persistence are written anew by each game that lets a player change controls** — Starship already solved it well once, so a kit costs extracting what it solved, not inventing it. → §PW345

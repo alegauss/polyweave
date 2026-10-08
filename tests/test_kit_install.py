@@ -30,6 +30,7 @@ layouts = ["xbox", "playstation"]
 
 [proves]
 spec = "proof.accept.toml"
+fixture = "fixture"
 """
 
 PROOF = """asset = "{name}"
@@ -61,6 +62,8 @@ def kit(under, name, *, version="0.1.0", requires=(), low=0.1):
     (folder / "scene").mkdir()
     (folder / "scene" / f"{name}.tscn").write_text("[gd_scene format=3]\n", "utf-8")
     (folder / "proof.accept.toml").write_text(PROOF.format(name=name, low=low), "utf-8")
+    (folder / "fixture").mkdir()
+    (folder / "fixture" / "project.godot").write_text(GAME, encoding="utf-8")
     (folder / "kit.toml").write_text(
         KIT.format(name=name, version=version, requires=json.dumps(list(requires))),
         encoding="utf-8",

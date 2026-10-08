@@ -34,6 +34,7 @@ layouts = ["xbox", "playstation", "switch", "generic", "keyboard"]
 
 [proves]
 spec = "proof.accept.toml"    # its acceptance spec, run in the game it lands in
+fixture = "fixture"           # a minimal Godot project it is proved in, in this repo
 ```
 
 - `name`, `version` (major.minor.patch) and a one-line `summary` are required.
@@ -49,6 +50,9 @@ spec = "proof.accept.toml"    # its acceptance spec, run in the game it lands in
 - `[proves] spec` is the kit's acceptance spec, the proof that it works in the game it
   lands in. A kit with no proof is refused: it is worth more than a snippet only while
   its proof holds.
+- `[proves] fixture` is a folder of the kit holding a minimal Godot project shaped to
+  exercise it, where polyweave proves it before any project receives it. A kit with no
+  fixture is refused too.
 
 Any other key, a name that is not the folder's, a version in another form, a file the
 kit names and does not hold, a kit it requires that does not exist, and a loop of
@@ -99,3 +103,16 @@ fails, `declared` (what it proposed), `scenes` and `change` (what is the project
 change from now on), and `questions`, a person's, never a file for the agent to read.
 `write=false` answers the same and writes nothing. An installed kit's proof sits among
 the project's specs, so the project's own gate holds it from then on.
+
+## Every kit proved in polyweave's own gate
+
+A proof that runs only after install finds a broken kit in the consumer's tree (§PW342).
+`kit.prove` (one kit, or every kit the plugin carries) copies each kit's fixture fresh,
+installs the kit into it with what it requires, as `kit.install` does, and runs its
+proof there, answering each kit `held`, `failed` with the first finding, or `skipped`
+where its proof has a `screen` that needs a running game and no `$GODOT` is set. The
+fixture is copied, never written into. `tools/gate.py` runs it after the tests and says
+`kits: N held, M failed, K skipped for want of an engine`, naming each that failed, and
+a kit that fails turns the gate red, so a Godot upgrade in polyweave re-proves every
+kit at once and a kit cannot leave this repository broken. The fixture is also where a
+kit's requirements are exercised together, so a kit that only works alone is found here.

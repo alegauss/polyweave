@@ -845,20 +845,6 @@ line in the window and the file in `touched`.
 
 ## Block V — Parts every game repeats, installed already proved
 
-### §PW342 Every kit proved in polyweave's own gate
-
-A kit is worth more than a snippet only while its proof holds, and a proof that runs
-only after install finds a broken kit in the consumer's tree. Each kit under kits/
-should carry a fixture, a minimal Godot project shaped to exercise it, and tools/gate.py
-should install every kit into its fixture and run the kit's acceptance spec headless
-against the Godot that godot.install fetches, saying per kit which held, which failed
-and which skipped for want of an engine, as the gate already says for the engine tests.
-
-A Godot upgrade in polyweave then re-proves every kit at once, which is what keeps a kit
-from rotting the way a copied snippet does. The fixture is also where a kit's
-dependencies are exercised together, the settings kit with the input and audio kits
-beside it, so a kit that only works alone is found here and not in a game.
-
 ### §PW343 An installed kit that has fallen behind
 
 The provenance record kit.install writes names the kit and the version a project

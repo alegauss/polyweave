@@ -157,6 +157,30 @@ def window(log: Path) -> dict:
     return {"ran": True, "exit": 0}
 
 
+def kits() -> dict:
+    """Every kit the plugin carries, proved in its own fixture (§PW342)."""
+    done = subprocess.run(
+        [sys.executable, "-m", "polyweave", "kit.prove", "--json"],
+        cwd=ROOT, capture_output=True, text=True, check=False,
+    )
+    try:
+        said = json.loads(done.stdout)
+    except json.JSONDecodeError:
+        return {"held": 0, "failed": 1, "skipped": 0,
+                "why": (done.stderr or done.stdout)[-400:]}
+    if "kits" not in said:
+        return {"held": 0, "failed": 1, "skipped": 0, "why": said.get("message", "")}
+    return {key: said[key] for key in ("held", "failed", "skipped")} | {
+        "red": [one["kit"] for one in said["kits"] if one["status"] == "failed"]}
+
+
+def _kits_said(proved: dict) -> str:
+    said = (f"kits: {proved['held']} held, {proved['failed']} failed, "
+            f"{proved['skipped']} skipped for want of an engine")
+    red = proved.get("red") or ([proved["why"]] if proved.get("why") else [])
+    return said + (f" ({', '.join(red)})" if proved["failed"] and red else "")
+
+
 def _said(gui: dict) -> str:
     if not gui["ran"]:
         return f"gui: skipped, {gui['why']}"
@@ -172,10 +196,11 @@ def summary(stamp: dict) -> str:
         for engine in ENGINES
     )
     gui = f" {_said(stamp['gui'])}." if "gui" in stamp else ""
+    proved = f" {_kits_said(stamp['kits'])}." if "kits" in stamp else ""
     return (
         f"gate {'green' if stamp['exit'] == 0 else 'RED'} at {stamp['commit']}: "
         f"{stamp['passed']} passed, {stamp['failed']} failed, {stamp['skipped']} "
-        f"skipped. {engines}.{gui} Log: {stamp['log']}"
+        f"skipped. {engines}.{gui}{proved} Log: {stamp['log']}"
     )
 
 
@@ -198,11 +223,14 @@ def main(argv: list[str]) -> int:
                 check=False,
             )
         gui = window(HERE / "gui.log")
-        failed = done.returncode or (gui.get("exit", 0) and 1)
+        proved = kits()
+        failed = (done.returncode or (gui.get("exit", 0) and 1)
+                  or (proved["failed"] and 1))
         stamp = {
             "commit": commit(),
             "exit": failed,
             "gui": gui,
+            "kits": proved,
             "at": time.strftime("%Y-%m-%dT%H:%M:%S"),
             "log": log.relative_to(ROOT).as_posix(),
             "present": present(),

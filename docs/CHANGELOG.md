@@ -399,3 +399,4 @@
 
 - ✅ **PW340** **no format says what a kit is, so a part every game repeats is rewritten in each one, a little different each time** — A kit is a kit.toml with its core, scene, declaration and proof, under one five-step contract, and kit.list checks every kit the plugin carries (design recorded in `docs/specs/kit.md`).
 - ✅ **PW341** **nothing installs a kit into a project, records which version landed and proves it there in the same call** — kit.install lands a kit and what it requires, proposing its declaration, copying core and scene, recording its version and proving it, in one call (design recorded in `docs/specs/kit.md`).
+- ✅ **PW342** **a kit's proof runs only in a game that installed it, so a kit can leave this repository broken** — kit.prove installs every kit into a fresh copy of its fixture and runs its proof, and tools/gate.py names each kit held, failed or skipped, red on a failure (design recorded in `docs/specs/kit.md`).

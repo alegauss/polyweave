@@ -5,7 +5,7 @@ page groups them by task.
 
 | Task | Operations |
 |---|---|
-| Adopt | `project.init` (`init`), `project.check`, `project.inventory`, `kit.list`, `kit.install` |
+| Adopt | `project.init` (`init`), `project.check`, `project.inventory`, `kit.list`, `kit.install`, `kit.prove` |
 | Know the machine | `capabilities` (verb), `engine.find`, `offscreen.routes`, `search.worth_parallel` |
 | Start on an asset | `asset.brief`, `loop.pending` |
 | Make a shape | `geometry.build`, `geometry.build_all`, `geometry.describe`, `geometry.variants`, `geometry.fit` (to a reference), `geometry.compare` (voxel models) |
@@ -27,7 +27,7 @@ page groups them by task.
 | Music | `music.validate`, `music.to_midi`, `music.render`, `sound.synth` (effects from a seed), `sound.buy`, `sound.speak` (paid) |
 | Visual effects | `vfx.build`, `vfx.preview`, `panel.build` (a menu panel), `panel.capture`, `icons.build` |
 | A project's look | `style.read`, `style.drift` (before a person looks; only `verdict.judge` grows a canon) |
-| Buy a drawing | `picture.buy`, `picture.gate` (before a mesh), `picture.letters`, `picture.describe`, `picture.vary`, `picture.against_parent`, `picture.fit` (onto the family's grid), `picture.collect` |
+| Buy a drawing | `picture.buy`, `picture.gate` (before a mesh), `picture.letters`, `picture.describe`, `picture.vary`, `picture.against_parent`, `picture.fit`, `picture.collect` |
 | Before buying a mesh | `reference.pick`, `reference.prepare`, `reference.frames`, `shape.check`, `shape.silhouette`, `shape.turntable` |
 | Paid meshes | `mesh.buy`, `purchase.remaining`, `purchase.quote`, `purchase.allow`, `purchase.held`, `schema.validate`, `schema.read`, `schema.proved` |
 | The purchase ledger | `purchase.spent`, `purchase.ledger`, `purchase.find`, `purchase.adopt`, `purchase.reconcile` |

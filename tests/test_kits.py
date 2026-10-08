@@ -23,6 +23,7 @@ layouts = ["xbox", "playstation", "switch", "generic", "keyboard"]
 
 [proves]
 spec = "proof.accept.toml"
+fixture = "fixture"
 """
 
 
@@ -32,6 +33,7 @@ def kit(under, name, *, requires=(), body=None):
     (folder / "scene").mkdir()
     (folder / "scene" / "controls.tscn").write_text("[gd_scene format=3]\n", "utf-8")
     (folder / "proof.accept.toml").write_text(f'asset = "{name}"\n', "utf-8")
+    (folder / "fixture").mkdir()
     text = body or KIT.format(name=name, requires=json.dumps(list(requires)))
     (folder / "kit.toml").write_text(text, encoding="utf-8")
     return folder
@@ -44,7 +46,7 @@ def test_a_kit_that_keeps_the_contract_is_read_whole(tmp_path):
     one = found["input"]
     assert one["version"] == "0.1.0"
     assert one["installs"] == {"core": "core", "scene": "scene/controls.tscn"}
-    assert one["proves"] == {"spec": "proof.accept.toml"}
+    assert one["proves"] == {"spec": "proof.accept.toml", "fixture": "fixture"}
     assert one["declares"]["layouts"][2] == "switch"
 
 

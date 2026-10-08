@@ -47,7 +47,7 @@ KITS = Path(__file__).parent / "kits"
 #: Every key a kit.toml may hold, and the keys of each of its tables.
 TOP = {"name", "version", "summary", "requires", "installs", "declares", "proves"}
 INSTALLS = {"core", "scene"}
-PROVES = {"spec"}
+PROVES = {"spec", "fixture"}
 
 _VERSION = re.compile(r"^\d+\.\d+\.\d+$")
 _NAME = re.compile(r"^[a-z][a-z0-9_]*$")
@@ -116,6 +116,13 @@ def read(folder: Path) -> dict:
             )
     if "core" not in held["installs"]:
         raise _bad(where, "installs no core", 'write core = "core" under [installs]')
+    if "fixture" not in held["proves"]:
+        raise _bad(
+            where,
+            "has no fixture to be proved in",
+            'write fixture = "fixture" under [proves]: a minimal Godot project shaped '
+            "to exercise the kit, where polyweave's gate proves it (§PW342)",
+        )
     if "spec" not in held["proves"]:
         raise _bad(
             where,
@@ -127,6 +134,7 @@ def read(folder: Path) -> dict:
         held["installs"]["core"],
         held["installs"].get("scene"),
         held["proves"]["spec"],
+        held["proves"]["fixture"],
     ]
     for one in (n for n in named if n is not None):
         if not isinstance(one, str) or not (folder / one).exists():
@@ -386,6 +394,71 @@ def _first(verdict: dict) -> dict:
                 "said": one.get("failed") or one.get("why"),
             }
     return {"said": "the proof did not pass"}
+
+
+@operation("kit.prove")
+def prove(
+    name: Annotated[str, Param("one kit; every kit the plugin carries if unset")] = "",
+    root: Annotated[str, Param("unused; a kit is proved in its own fixture")] = ".",
+) -> dict:
+    """Every kit installed into its own fixture and proved there (§PW342).
+
+    A kit is worth more than a snippet only while its proof holds, so each is proved
+    before any project receives it: its fixture, a minimal Godot project shaped to
+    exercise it, is copied fresh, the kit is installed into it with what it requires,
+    and its proof runs. A kit whose proof needs a running game is skipped, said as
+    such, where no engine is present. polyweave's own gate runs this, so a Godot
+    upgrade re-proves every kit at once.
+    """
+    import os
+    import tempfile
+
+    from . import accept
+
+    kits = every()
+    if name and name not in kits:
+        raise PolyweaveError(
+            "kits.unknown",
+            f"the plugin carries no kit {name!r}",
+            "name one kit.list answers",
+            given=name,
+            allowed=sorted(kits),
+        )
+    engine = bool(os.environ.get("GODOT"))
+    said = []
+    for one in [name] if name else sorted(kits):
+        kit = kits[one]
+        folder = Path(kit["folder"])
+        spec = accept.read(folder / kit["proves"]["spec"])
+        if spec.screen and not engine:
+            said.append({"kit": one, "version": kit["version"], "status": "skipped",
+                         "why": "its proof needs a running game, and no $GODOT is set"})
+            continue
+        with tempfile.TemporaryDirectory() as scratch:
+            game = Path(scratch) / "game"
+            shutil.copytree(folder / kit["proves"]["fixture"], game)
+            try:
+                answer = install(one, root=str(game))
+            except PolyweaveError as refused:
+                said.append({"kit": one, "version": kit["version"], "status": "failed",
+                             "why": refused.message})
+                continue
+        held = answer["ok"]
+        said.append({
+            "kit": one,
+            "version": kit["version"],
+            "status": "held" if held else "failed",
+            **({} if held else {"why": answer["proved"]["first"]}),
+        })
+    counted = {s: sum(1 for one in said if one["status"] == s)
+               for s in ("held", "failed", "skipped")}
+    return {
+        "kits": said,
+        **counted,
+        "passed": not counted["failed"],
+        "says": f"{counted['held']} kit(s) held, {counted['failed']} failed, "
+        f"{counted['skipped']} skipped for want of an engine",
+    }
 
 
 @operation("kit.list")
