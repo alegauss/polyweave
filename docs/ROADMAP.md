@@ -35,6 +35,7 @@
 - 📋 **PW334** (deps: —) **an @file list written by Windows PowerShell is refused for its UTF-8 BOM, so PW247's remedy fails in that shell** — The file the refusal tells a PowerShell user to write is refused again for a mark their shell always adds. → §PW334
 - 📋 **PW337** (deps: —) **a dict parameter is refused as an @file, so PowerShell cannot pass one to the CLI at all** — The remedy PW247 gave lists does not reach dicts, which leaves verdict.sitting unusable from that shell. → §PW337
 - 📋 **PW376** (deps: —) **provenance.verify reports the work area's snapshots of old commits as the project's drift** — A project whose own records all hold reads as 46 changed artefacts, and finding that out takes --json and a filter by hand. → §PW376
+- 📋 **PW386** (deps: —) **measure.take asks for contrast_min and refuses it for want of targets, yet takes no targets parameter** — The refusal names a door the operation does not have, so the agent reads the source to find the spec key and measure.contrast that do take them. → §PW386
 
 ## Block L — What a run leaves as evidence
 
@@ -51,7 +52,6 @@
 
 ## Block P — Music and sound a game can ship
 
-- 📋 **PW322** (deps: PW321 ✅) **a locale catalog's lines cannot be voiced as a set, so a cast's dialogue is one hand-made call and cue per line** — Dialogue arrives as hundreds of catalog rows per locale, and voicing them one by one leaves no view of the total cost, the lines unvoiced or those gone stale. → §PW322
 - 📋 **PW323** (deps: PW314 ✅) **nothing measures a spoken take, so a clipped, padded or misread line reaches the person's verdict as a candidate** — Speech services drop words, add breaths and pad silence, and a person should hear only takes that already say their line, at the length and level the game needs. → §PW323
 - 📋 **PW324** (deps: PW314 ✅) **a spoken line can only be heard after paying for it, so its wording and timing in the game cannot be tried for free** — Most of a line's revisions are about words and timing, not the voice, so a free local draft lets them settle before a single character is billed. → §PW324
 - 📋 **PW333** (deps: —) **an sfx effect cannot be declared at a note, so putting a menu sound in a key means working out base_freq by hand** — The pitch formula lives only in the source, so every tuned effect is numbers derived off the page that nothing checks. → §PW333
@@ -85,6 +85,7 @@
 
 - 📋 **PW325** (deps: —) **no operation brings an artefact another project made into this one with a record of where it came from** — A studio's shared badge is copied into each game by hand, with no record, so none of them learns when the source changes. → §PW325
 - 📋 **PW374** (deps: —) **vfx.build writes each scene beside its declaration, so effects declared in an unshipped folder load only in the editor** — A project whose sources the export leaves out ships a game that cannot load its effects, and every check passes. → §PW374
+- 📋 **PW387** (deps: —) **a style cannot take its palette from another project, so a game in a sister game's colours keeps a copy that drifts** — A crossover world is only true to its source while its colours follow it, and a hand copy says nothing when the source moves. → §PW387
 
 ## Block U — A window on everything a project governs
 

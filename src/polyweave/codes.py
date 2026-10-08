@@ -699,6 +699,12 @@ CODES: dict[str, Code] = {
         "no person's accept on its bytes (§PW321); an agent never picks a voice",
         doors=("let a person accept one on the review page voice.design lays out",),
     ),
+    "words.no-voiced": Code(
+        means="the project says nowhere for a spoken line to land",
+        when="voice.lines with no [words] voiced, the path each take is written to "
+        "(§PW322)",
+        doors=('set [words] voiced = "audio/voice/{locale}/{key}.ogg"',),
+    ),
     "world.voice-mismatch": Code(
         means="a call named a voice other than the one the world gives its entity",
         when="sound.speak with both entity= and a voice= that is not the entity's",

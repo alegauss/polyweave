@@ -262,6 +262,9 @@ DEFAULTS: dict[str, Any] = {
         # who speaks the line, as an entity id of the world.
         "table": "",
         "speaker": "_speaker",
+        # Where a spoken take of a row lands, `audio/voice/{locale}/{key}.ogg` (§PW322):
+        # one file per key and locale, in the format its suffix names.
+        "voiced": "",
         # Capitalised words that are not names, such as START on a title screen, so the
         # name check passes over them.
         "ordinary": [],

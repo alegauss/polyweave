@@ -399,6 +399,27 @@ LINE_CHOICES = {
 }
 
 
+def said_digest(text: str) -> str:
+    """What a spoken take of one cell said, as one hash (§PW322)."""
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def still_said(source: str | Path, key: str, locale: str, digest: str) -> bool:
+    """Whether the table still says this cell as the digest recorded it.
+
+    A table that no longer reads, or no longer holds the key, does not.
+    """
+    text = read_text_retrying(Path(source))
+    if text is None:
+        return False
+    reader = csv.DictReader(io.StringIO(text.lstrip("\ufeff"), newline=""))
+    first = (reader.fieldnames or [""])[0]
+    for row in reader:
+        if row.get(first) == key:
+            return said_digest(row.get(locale) or "") == digest
+    return False
+
+
 def _digest(row: dict, locales: list[str]) -> str:
     """What a verdict on a line was given to: its text in every locale."""
     said = {locale: row["cells"].get(locale) or "" for locale in locales}

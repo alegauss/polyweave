@@ -29,6 +29,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
+import re
 import shutil
 import subprocess
 import urllib.error
@@ -457,6 +458,168 @@ def choose(
     )
     return {"entity": drawn["id"], "voice": saved["voice_id"], "world": kept,
             "from": provenance.relative(where, here)}
+
+
+@operation("voice.lines", kind="fetch", injects=("report",), spends=True)
+def lines(
+    report=None,
+    speaker: Annotated[str, Param("only this entity's lines; all if unset")] = None,
+    *,
+    locale: Annotated[str, Param("only this locale's column; every one if unset")] = (
+        None
+    ),
+    keys: Annotated[list, Param("only these keys of the table")] = None,
+    spend: Annotated[bool, Param("send them; false answers the plan alone")] = False,
+    model: Annotated[str, Param("the service's model, priced in [service]")] = (
+        "eleven_multilingual_v2"
+    ),
+    world: Annotated[str, Param("the *.world.toml, where the project has several")] = (
+        None
+    ),
+    service: Annotated[str, purchase.SERVICE] = None,
+    root: Annotated[str, Param("the project whose ledger this is")] = ".",
+) -> dict:
+    """Voice the string table's lines as a set, each in its speaker's voice (§PW322).
+
+    Without `spend` it sends nothing: each row it would voice with its characters and
+    price, the takes still current, and the rows whose speaker has no voice. With it,
+    the same selection is spoken until the ceiling stops it, the rest named as not
+    voiced, and a sitting lays the new takes out by speaker for a person to hear.
+    """
+    from . import words
+    from .world import declared, voice_digest
+
+    config = load(root)
+    here = config.root
+    if not config.get("words.voiced"):
+        raise PolyweaveError(
+            "words.no-voiced",
+            "the project says nowhere for a spoken line to land",
+            'set [words] voiced = "audio/voice/{locale}/{key}.ogg" in polyweave.toml',
+        )
+    source, locales, rows = words.table(here)
+    column = config.get("words.speaker")
+    world_file, entities, _ = declared(world, here)
+    if locale is not None and locale not in locales:
+        raise PolyweaveError(
+            "fetch.missing-field",
+            f"the table has no {locale!r} column",
+            f"name one of {', '.join(locales)}",
+            given=locale,
+            allowed=locales,
+        )
+    name = config.service(service, model=model)
+    prices = config.services()[name].get("prices") or {}
+    plan, current, unvoiced = [], [], []
+    for row in rows:
+        who = (row["cells"].get(column) or "").strip()
+        if not who or (speaker and who != speaker):
+            continue
+        if keys and row["key"] not in keys:
+            continue
+        voice = (entities.get(who) or {}).get("voice") or {}
+        for one in [locale] if locale else locales:
+            text = (row["cells"].get(one) or "").strip()
+            if not text:
+                continue
+            at = {"key": row["key"], "locale": one, "speaker": who}
+            if not voice.get("id"):
+                unvoiced.append({**at, "code": "world.no-voice"})
+                continue
+            out = config.get("words.voiced").format(
+                locale=one, key=re.sub(r"[^\w.-]+", "_", row["key"])
+            )
+            line = {"key": row["key"], "locale": one, "sha256": words.said_digest(text)}
+            if _still(here / out, line, voice_digest(entities[who]), model, here):
+                current.append({**at, "out": out})
+                continue
+            price = picture._priced(name, prices, model, None, len(text))["price"]
+            plan.append({**at, "out": out, "text": text, "characters": len(text),
+                         "price": price, "line": line})
+    total = round(sum(one["price"] for one in plan), 6)
+    left = purchase.remaining(str(here), service=name)
+    answer = {
+        "voice": [{k: v for k, v in one.items() if k != "line"} for one in plan],
+        "current": current,
+        "unvoiced": unvoiced,
+        "characters": sum(one["characters"] for one in plan),
+        "price": total,
+        "left": left["left"],
+        "unit": left["unit"],
+        "spent": False,
+    }
+    if not spend or not plan:
+        return answer
+    table_at = provenance.relative(source, here)
+    voiced, stopped = [], []
+    for index, one in enumerate(plan):
+        drawn_from, own = (
+            {"id": one["speaker"], "world": provenance.relative(world_file, here),
+             "sha256": voice_digest(entities[one["speaker"]]), "of": "voice"},
+            entities[one["speaker"]]["voice"],
+        )
+        delivery = {
+            DELIVERY[k]: float(own[k]) for k in DELIVERY if own.get(k) is not None
+        }
+        request: dict = {"text": one["text"], "model_id": model}
+        if delivery:
+            request["voice_settings"] = delivery
+        route = SPEAK.format(voice=urllib.parse.quote(own["id"], safe=""))
+        try:
+            _bought(
+                report, f"{route}?output_format={FORMAT}", request, words=one["text"],
+                cue=None, out=one["out"], model=model, service=name, root=here,
+                details={"voice": own["id"], "delivery": delivery, "spoken": True,
+                         "entity": drawn_from, "line": {**one["line"],
+                                                        "table": table_at}},
+                inputs=[provenance.source("world", world_file, root=here),
+                        provenance.source("words", source, root=here)],
+            )
+        except PolyweaveError as refused:
+            if refused.code not in ("fetch.over-budget", "fetch.budget-closed"):
+                raise
+            stopped = [{k: one[k] for k in ("key", "locale", "speaker", "price")}
+                       for one in plan[index:]]
+            answer["stopped_by"] = refused.message
+            break
+        voiced.append(one)
+    if voiced:
+        heard = [
+            {"name": f"{one['speaker']}.{one['key']}.{one['locale']}",
+             "new": one["out"]}
+            for one in sorted(voiced, key=lambda one: one["speaker"])
+        ]
+        folder = config.path("paths.work", "voices/lines")
+        answer["sitting"] = sound.sitting(
+            heard, out=provenance.relative(folder, here), root=str(here)
+        )["sitting"]
+    answer.update({
+        "spent": True,
+        "voiced": [{k: one[k] for k in ("key", "locale", "speaker", "out")}
+                   for one in voiced],
+        "not_voiced": stopped,
+    })
+    return answer
+
+
+def _still(where: Path, line: dict, voice: str, model: str, here: Path) -> bool:
+    """Whether a take already says this line, in this voice, on this model."""
+    if not where.is_file():
+        return False
+    try:
+        record = provenance.read(str(where), root=here)
+    except PolyweaveError:
+        return False
+    details = record.get("details") or {}
+    said = details.get("line") or {}
+    return (
+        said.get("sha256") == line["sha256"]
+        and (details.get("entity") or {}).get("sha256") == voice
+        and (record.get("engine") or {}).get("model") == model
+        and provenance.sha256_of(where)[0] == (record.get("artefact") or {}).get(
+            "sha256"
+        )
+    )
 
 
 def _asked(url: str, key: str, payload: dict) -> dict:

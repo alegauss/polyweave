@@ -866,8 +866,14 @@ def _same_entity(record: dict, one: dict, source: Path) -> bool:
 
     A world file holds every entity, so any edit changes its hash. What was bought from
     one entity is stale only when that entity's look changed, and the digest recorded
-    beside the id is what says so.
+    beside the id is what says so. A string table is the same (§PW322): a spoken take
+    is stale only when its own row's words changed.
     """
+    line = (record.get("details") or {}).get("line")
+    if one.get("role") == "words" and line and source.is_file():
+        from .words import still_said
+
+        return still_said(source, line["key"], line["locale"], line["sha256"])
     drawn = _entity(record)
     if one.get("role") != "world" or not drawn or not source.is_file():
         return False

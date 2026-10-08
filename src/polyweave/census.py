@@ -115,6 +115,8 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.world:voice_digest": ("internal", "what a spoken line records"),
     "polyweave.world:voiced": ("internal", "sound.speak's entity, read once"),
     "polyweave.world:keep_voice": ("internal", "voice.choose's one write"),
+    "polyweave.words:said_digest": ("internal", "what a spoken take records"),
+    "polyweave.words:still_said": ("internal", "provenance.outdated, per row"),
     "polyweave.picture:from_world": ("internal", "entity= on picture and mesh.buy"),
     "polyweave.words:table": ("internal", "the string table, inside words.check"),
     "polyweave.words:held": ("internal", "every verdict on a line, oldest first"),

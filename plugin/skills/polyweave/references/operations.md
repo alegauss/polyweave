@@ -1,7 +1,7 @@
 # Operations by task
 
-`describe` is the authority: every operation, its parameters, ranges, choices and units.
-This page groups them by task.
+`describe` is the authority on every operation, its parameters, ranges and units. This
+page groups them by task.
 
 | Task | Operations |
 |---|---|
@@ -23,7 +23,7 @@ This page groups them by task.
 | The game side | `capture.run`, `capture.movie` (a shot), `capture.declared`, `engine.run`, `engine.sweep`, `engine.cost`, `godot.install` |
 | Drive a game | `game.open`, `game.query`, `game.input`, `game.step`, `game.wait`, `game.call`, `game.set`, `game.shot`, `game.close`, `game.batch`, `game.keep`, `game.rekey`, `game.replay`, `game.release_check` |
 | Scale against the engine | `units.check`, `units.engine_scale`, `units.read_number` |
-| World | `world.read`, `world.validate`, `voice.design`, `voice.choose`, `words.check`, `words.unlisted`, `words.sheet` |
+| World | `world.read`, `world.validate`, `voice.design`, `voice.choose`, `voice.lines`, `words.check`, `words.unlisted`, `words.sheet` |
 | Music | `music.validate`, `music.to_midi`, `music.render`, `sound.synth` (effects from a seed), `sound.buy`, `sound.speak` (paid) |
 | Visual effects | `vfx.build` (particles, ribbon), `vfx.preview`, `panel.build` (a menu panel), `panel.capture` |
 | A project's look | `style.read`, `style.drift` (before a person looks; only `verdict.judge` grows a canon) |

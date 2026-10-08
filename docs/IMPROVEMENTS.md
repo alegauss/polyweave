@@ -421,6 +421,27 @@ checked against the snapshot, if at all. Where the work area is walked on purpos
 entries are reported apart from the project's, so `changed` and `missing` mean the
 project and nothing else.
 
+### §PW386 Targets for a contrast taken with the other measures
+
+Spinhold RK200 measured how well a fight's targets stand out from the ring behind them.
+`python -m polyweave measure.take --subject art/renders/legibility-neon.png --measures
+'["contrast_min", "contrast_median"]'` is refused with spec.no-targets, whose remedy
+says "pass targets, each {at: [x, y], radius} or {box: [l, t, r, b]}, or a log whose
+lines say `target: <x> <y>`". But measure.take publishes no such parameter: passing
+`--targets art/renders/legibility-neon.targets` is refused by the CLI as an unrecognised
+argument, and `describe` lists subject, measures, region, alpha_floor, rung, root,
+target, against, display and delta only.
+
+The measure works inside an acceptance spec, where a predicate may carry `targets =
+"<log>"` (accept.py's ARGUMENTS), and measure.contrast takes the same log as `--log`.
+Learning that took reading src/polyweave/accept.py and contrast.py.
+
+Expected: measure.take takes `targets` (a list or a log path) and `ring`, as the spec's
+predicate does, so contrast_min and contrast_median can be asked for beside the other
+measures; or the refusal's remedy names measure.contrast and the spec key, rather than a
+parameter the operation does not have. Workaround used: measure.contrast --log for the
+reading, and the predicate's `targets` key in art/accept/legibility-*.accept.toml.
+
 ## Block L — What a run leaves as evidence
 
 ## Block M — What a game needs beyond the look
@@ -546,29 +567,6 @@ The block is proven when its first consumer uses it. Cottony's music and effects
 declared in its `polyweave.toml`, made by `music.render` and `sound.synth`, and held to
 `*.accept.toml` bounds, and its own audio scripts are removed. Anything Cottony needs
 that a second game would not becomes configuration.
-
-### §PW322 A catalog voiced as a set
-
-A game's lines already live in locale catalogs, and each row names its speaker (the
-`_speaker` column `words.check` reads). Once a speaker has a voice (PW321), the takes a
-game ships are a function of those rows: one file per key, speaker and locale.
-
-What polyweave should do: `voice.lines` takes a catalog, and optionally a speaker, a
-locale or a list of keys, and answers first without spending: each row it would voice,
-the characters and the price (PW320), and each row it would skip because a take already
-exists whose text, voice and model digests still match. Only a second call with the same
-selection and a `spend` flag sends them, stopping at the ceiling with the rest named as
-not voiced. Takes land at a cue path the project declares (`[voice] out =
-"audio/voice/{locale}/{key}.ogg"`), transcoded as `sound.buy` does, each with its own
-record naming the catalog, the row and the entity.
-
-A row whose words change in the catalog makes its take outdated in the provenance
-record's outdated report, so the next call offers it again. A row whose speaker has no
-voice is reported (`voice.none`), not voiced in a default. The locale selects a
-multilingual model where the voice is in another language, and a sitting groups the new
-takes by speaker so a person hears a character's lines together before any is accepted.
-
-Nothing here writes a line: the catalog is the person's, and this only speaks it.
 
 ### §PW323 A take that says its line
 
@@ -1071,6 +1069,28 @@ export leaves out (a `.gdignore`, or an `exclude_filter` in `export_presets.cfg`
 refuse with a remedy naming `out`, rather than writing a scene the shipped game cannot
 load. PW363, which launches an exported build, would catch the result; this catches it
 at the build.
+
+### §PW387 A style borrowed from another project
+
+Spinhold RK201 declares a style for a ring drawn in another game's colours: the Quilt is
+Cottony's world, so `[style.quilt]` in spinhold/polyweave.toml should take its palette
+from Cottony, not from a copy that drifts.
+
+`python -m polyweave style.read --root D:/Git/viglet/cottony` answers family "default"
+with an empty palette and skeleton: Cottony declares no `[style]`, because its palette
+lives in its own tools/art/palette.py (the single source its art generator and
+scripts/pieces.gd are checked against). A style also has no field that names another
+project's style or palette, so Spinhold cannot say "Cottony's palette, at dusk".
+
+Workaround: spinhold/polyweave.toml's `[style.quilt]` holds a snapshot of Cottony's hex
+values, with a comment naming palette.py and the date it was copied. Nothing tells
+Spinhold when Cottony's palette moves.
+
+What polyweave should do: let a style borrow from another project's style by reference
+(`from = { root = "../cottony", family = "..." }`), with a transform for the borrowing
+game (a value shift for dusk, say), and let style.drift report when the source moved;
+and give a project whose palette lives in code a way to declare it as a style, so a game
+like Cottony can be borrowed from at all.
 
 ## Block U — A window on everything a project governs
 

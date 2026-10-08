@@ -123,6 +123,26 @@ voice (the non-goal on accepting its own look, applied to a sound). The service 
 table is added where the world has none, a voice written inline is refused, and a write
 that would leave the world unreadable is put back.
 
+**A string table is voiced as a set** (§PW322). Dialogue arrives as catalog rows, each
+naming its speaker in the `[words] speaker` column, so the takes a game ships are a
+function of those rows: one file per key and locale, at `[words] voiced`, a path such as
+`audio/voice/{locale}/{key}.ogg` (beside the table it voices, rather than a table of its
+own). `voice.lines` takes an optional `speaker`, `locale` and `keys`, and without
+`spend` sends nothing: it answers each row it would voice with its characters and price,
+the total and what the ceiling leaves, the takes still `current` (their record's line,
+voice and model digests match), and the rows whose speaker has no voice id as
+`unvoiced`, `world.no-voice`, never spoken in a default. With `spend`, the same
+selection is spoken in each speaker's voice and delivery until the ceiling stops it;
+the rest is `not_voiced`, with `stopped_by` saying why. A sound sitting lays the new
+takes out ordered by speaker, so a person hears a character's lines together.
+
+Each take's record names its row (`details.line`: the key, the locale, the table and the
+SHA-256 of the words spoken) and has the table as an input with the role `words`. So
+`provenance.outdated` counts an edit to the table against a take only where that row's
+words in that locale changed, and the next plan offers it again. Nothing here writes a
+line: the table is the person's, and this only speaks it. With no `[words] voiced` it is
+`words.no-voiced`.
+
 ## The text a player reads
 
 The text is held to the world through a string table, never through a pattern about one

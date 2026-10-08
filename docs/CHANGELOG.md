@@ -306,6 +306,7 @@
 - ✅ **PW320** **a service's price is one figure per call, so a spoken line billed by its characters cannot be priced before it is sent** — A prices row may be by the character: a call counts its text first, a refusal quotes count and rate, and usage readings measure spend (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW314** **no operation speaks a line, so a game cannot get a voiced tag like a studio name read aloud** — sound.speak speaks a given line in a named voice through ElevenLabs' text to speech, priced by the character, and recorded with its voice and delivery (design recorded in `docs/specs/effects.md`).
 - ✅ **PW321** **a world's character has no voice of its own, so each spoken line sounds like whichever voice its call happened to name** — An entity's voice is declared in the world, designed as paid previews, kept once a person accepts one, and spoken by sound.speak entity= (design recorded in `docs/specs/world.md`).
+- ✅ **PW322** **a locale catalog's lines cannot be voiced as a set, so a cast's dialogue is one hand-made call and cue per line** — voice.lines prices a string table's lines and voices them only on spend, skipping current takes, naming voiceless speakers, halting at a ceiling (design recorded in `docs/specs/world.md`).
 
 ## Block Q — Words held to the world
 

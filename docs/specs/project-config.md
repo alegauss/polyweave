@@ -153,6 +153,7 @@ speaker  = "_speaker"              # the column naming who speaks, as a world en
 ordinary = ["START", "OK"]         # capitalised words that are not names
 ordinary_in = { pt_BR = ["VIDAS"] } # and those of one locale alone (PW329)
 canon    = "docs/design/lines.json"  # a person's verdicts on lines; only a verdict adds
+voiced   = "audio/voice/{locale}/{key}.ogg"  # where voice.lines puts a take (PW322)
 
 [voxels]
 budget        = 4000           # the most cells a model may have; zero is no ceiling

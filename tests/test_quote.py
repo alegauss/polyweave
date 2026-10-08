@@ -26,7 +26,7 @@ def test_the_registry_marks_every_operation_that_spends():
     paid = sorted(o["operation"] for o in describe.describe() if o.get("spends"))
     assert paid == [
         "mesh.buy", "picture.buy", "picture.describe", "picture.vary", "sound.buy",
-        "sound.speak", "voice.design",
+        "sound.speak", "voice.design", "voice.lines",
     ]
 
 
