@@ -379,3 +379,190 @@ def prepared(
         coverage=coverage,
         longest=longest,
     )
+
+
+#: How many frames a contact sheet holds across and down, and how wide each tile is.
+SHEET_GRID, TILE = 4, 320
+
+
+@operation("reference.frames")
+def frames(
+    video: Annotated[str, Param("the gameplay video, anywhere; it is never copied in")],
+    *,
+    rate: Annotated[float, Param("frames a second across the video", lo=0.01)] = 2.0,
+    ranges: Annotated[
+        list, Param("denser stretches: [start, end, rate] in seconds and per second")
+    ] = None,
+    changed: Annotated[
+        float, Param("keep a frame only where it differs by this share; 0 keeps all",
+                     lo=0.0, hi=1.0)
+    ] = 0.0,
+    crop: Annotated[
+        list, Param("[left, top, right, bottom] pixels: a second sheet of that strip")
+    ] = None,
+    out: Annotated[str, Param("the folder under the project the frames land in")] = (
+        None
+    ),
+    root: Annotated[str, Param("the project the frames are written into")] = ".",
+) -> dict:
+    """A reference video sampled into frames and contact sheets an agent can read.
+
+    Frames are named by their time in milliseconds, at `rate` across the video and
+    denser inside `ranges`. A contact sheet holds sixteen of them with the time burnt
+    in, so sixteen moments of play are one read; `crop` adds a sheet of that strip
+    alone (a radar, say). `frames.json` lists them, and its record holds the video's
+    SHA-256, the rate and the ranges, so what was read can be traced to the source
+    (§PW328). Reading what happened in them stays the agent's and the person's work.
+    """
+    import json
+    import shutil
+    import subprocess
+    import tempfile
+
+    from . import provenance
+
+    config = load(root)
+    here = config.root
+    source = Path(video) if Path(video).is_absolute() else here / video
+    if not source.is_file():
+        raise PolyweaveError(
+            "fetch.no-reference",
+            f"there is no video at {source}",
+            "name the gameplay video's path; it stays where it is",
+            given=str(video),
+        )
+    ffmpeg = shutil.which("ffmpeg")
+    if not ffmpeg:
+        raise PolyweaveError(
+            "sound.no-encoder",
+            "there is no ffmpeg on PATH to read the video's frames",
+            "put ffmpeg on PATH",
+        )
+    stretches = [(None, None, float(rate))]
+    for one in ranges or ():
+        if not isinstance(one, list | tuple) or len(one) != 3 or not (
+            0 <= float(one[0]) < float(one[1]) and float(one[2]) > 0
+        ):
+            raise PolyweaveError(
+                "fetch.no-reference",
+                f"a range is {one!r}, and a range is [start, end, rate]",
+                "give each as [start seconds, end seconds, frames a second]",
+                given=str(one),
+            )
+        stretches.append((float(one[0]), float(one[1]), float(one[2])))
+    folder = config.path("paths.work", out or f"references/{source.stem}")
+    folder.mkdir(parents=True, exist_ok=True)
+    taken: dict[int, Path] = {}
+    with tempfile.TemporaryDirectory() as scratch:
+        for index, (start, end, every) in enumerate(stretches):
+            place = Path(scratch) / str(index)
+            place.mkdir()
+            argv = [ffmpeg, "-v", "error"]
+            if start is not None:
+                argv += ["-ss", f"{start:.3f}", "-to", f"{end:.3f}"]
+            argv += ["-i", str(source), "-vf", f"fps={every}", str(place / "%06d.png")]
+            done = subprocess.run(argv, capture_output=True, check=False)
+            if done.returncode:
+                raise PolyweaveError(
+                    "fetch.no-reference",
+                    f"ffmpeg could not read {source.name}",
+                    "read the detail; check the file is a video",
+                    detail=done.stderr[:400].decode("utf-8", "replace"),
+                )
+            for frame in sorted(place.glob("*.png")):
+                at = (start or 0.0) + (int(frame.stem) - 1) / every
+                taken.setdefault(int(round(at * 1000)), frame)
+        kept = _changed(taken, float(changed))
+        for old in folder.glob("t*.png"):
+            old.unlink()
+        names = []
+        for ms in kept:
+            name = folder / f"t{ms:08d}.png"
+            shutil.copyfile(taken[ms], name)
+            names.append((ms, name))
+    sheets = _sheets(names, folder, "sheet", None)
+    cropped = _sheets(names, folder, "crop", crop) if crop else []
+    listed = {
+        "video": source.resolve().as_posix(),
+        "rate": float(rate),
+        "ranges": [list(one) for one in stretches[1:]],
+        "changed": float(changed),
+        "frames": [{"ms": ms, "file": name.name} for ms, name in names],
+        "sheets": [one.name for one in sheets],
+        "crops": [one.name for one in cropped],
+    }
+    manifest = folder / "frames.json"
+    manifest.write_text(json.dumps(listed, indent=1) + "\n", encoding="utf-8",
+                        newline="\n")
+    record = provenance.build(
+        "capture", manifest, engine={"name": "ffmpeg"},
+        inputs=[provenance.source("video", source, root=here)],
+        params={"rate": float(rate), "ranges": listed["ranges"],
+                "changed": float(changed), "crop": list(crop) if crop else None},
+        root=here,
+    )
+    provenance.write(record, here)
+    rel = provenance.relative
+    return {
+        "frames": len(names),
+        "sampled": len(taken),
+        "folder": rel(folder, here),
+        "manifest": rel(manifest, here),
+        "sheets": [rel(one, here) for one in sheets],
+        "crops": [rel(one, here) for one in cropped],
+        "says": f"{len(names)} frames of {source.name} on {len(sheets)} sheet"
+        f"{'' if len(sheets) == 1 else 's'}, sixteen moments a read",
+    }
+
+
+def _changed(taken: dict, bound: float) -> list[int]:
+    """The frames worth reading: each that differs from the last kept by `bound`."""
+    from PIL import Image as Pil
+
+    order = sorted(taken)
+    if bound <= 0:
+        return order
+    kept, last = [], None
+    for ms in order:
+        with Pil.open(taken[ms]) as frame:
+            pixels = np.asarray(frame.convert("L").resize((96, 54)), dtype=np.float64)
+        if last is None or float(np.mean(np.abs(pixels - last))) / 255.0 > bound:
+            kept.append(ms)
+            last = pixels
+    return kept
+
+
+def _sheets(names: list, folder: Path, stem: str, crop) -> list[Path]:
+    """Contact sheets of the frames, sixteen a sheet, each with its time burnt in."""
+    from PIL import Image as Pil
+    from PIL import ImageDraw, ImageFont
+
+    for old in folder.glob(f"{stem}_*.png"):
+        old.unlink()
+    font = ImageFont.load_default(size=18)
+    made = []
+    per = SHEET_GRID * SHEET_GRID
+    for at in range(0, len(names), per):
+        group = names[at : at + per]
+        tiles = []
+        for ms, name in group:
+            with Pil.open(name) as frame:
+                image = frame.convert("RGB")
+                if crop:
+                    left, top, right, bottom = (int(v) for v in crop)
+                    image = image.crop((left, top, right, bottom))
+                tall = max(1, round(image.height * TILE / max(image.width, 1)))
+                tiles.append((ms, image.resize((TILE, tall))))
+        tall = max(tile.height for _, tile in tiles)
+        sheet = Pil.new("RGB", (SHEET_GRID * TILE, SHEET_GRID * tall), (20, 20, 20))
+        draw = ImageDraw.Draw(sheet)
+        for i, (ms, tile) in enumerate(tiles):
+            x, y = (i % SHEET_GRID) * TILE, (i // SHEET_GRID) * tall
+            sheet.paste(tile, (x, y))
+            said = f"{ms // 60000}:{ms / 1000 % 60:06.3f}"
+            draw.rectangle((x, y, x + 110, y + 22), fill=(0, 0, 0))
+            draw.text((x + 4, y + 2), said, fill=(255, 220, 90), font=font)
+        where = folder / f"{stem}_{at // per + 1:03d}.png"
+        sheet.save(where)
+        made.append(where)
+    return made

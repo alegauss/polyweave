@@ -85,7 +85,8 @@ from polyweave.errors import PolyweaveError
 #: 106,700 with voice.lines (§PW322), a string table voiced as a set.
 #: 107,312 with sound.speech (§PW323), a take held to its line.
 #: 108,057 with provenance.borrow (§PW325), a sibling project's artefact.
-DESCRIBE = 108_700
+#: 109,374 with reference.frames (§PW328), a gameplay video read as sheets.
+DESCRIBE = 110_000
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -147,7 +148,8 @@ DESCRIBE = 108_700
 #: 118,162 with voice.lines and words.no-voiced (§PW322).
 #: 118,966 with sound.speak's draft rung and sound.no-speech-engine (§PW324).
 #: 119,686 with provenance.borrow and geometry.fit's region (§PW325, §PW326).
-CAPABILITIES = 120_300
+#: 120,862 with reference.frames (§PW328).
+CAPABILITIES = 121_500
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

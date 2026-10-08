@@ -452,6 +452,27 @@ by being the argument that was passed. A drawing is recognised mechanically — 
 channel with a transparent border — and it is passed through untouched, because a picture
 with no background does not need one cut away.
 
+## A reference video, read as frames
+
+Rebuilding a known level from a gameplay video meant ffmpeg by hand and hundreds of frame
+reads, with no record of the source (§PW328). `reference.frames(video)` samples it into
+the work area, `references/<video stem>/` unless `out` says otherwise, and the video
+itself is never copied in:
+
+- frames at `rate` a second across the whole video, and denser inside `ranges`, each
+  `[start, end, rate]` in seconds; each frame is `t<milliseconds>.png`, named by its
+  time, the first sample of a time kept where two stretches overlap;
+- `changed` (a share of 0 to 1) keeps a frame only where it differs from the last one
+  kept by that mean, so a still stretch costs one frame;
+- contact sheets of sixteen frames, four by four with the time burnt into each tile,
+  `sheet_001.png` on, so sixteen moments of play are one read; `crop`, `[left, top,
+  right, bottom]` in the video's pixels, adds `crop_001.png` on of that strip alone.
+
+`frames.json` lists the frames, sheets and crops with the rate and ranges, and its record
+(`capture`, by ffmpeg) has the video as an input with its SHA-256, so what was read is
+traced to the file it came from. What happened in the frames, what spawned where on what
+path, stays the agent's and the person's reading.
+
 ## Still to come in this block
 
 The service client itself, and the lock that stops two sessions spending at once.

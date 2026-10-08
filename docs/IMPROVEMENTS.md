@@ -748,27 +748,6 @@ What starship needs from polyweave:
 Until it lands, starship keeps the pass in `dev/` as the thinnest workaround, named
 against this line.
 
-### §PW328 Frames and contact sheets from a reference video
-
-Found in starship (RK178): the owner wants Resogun's first phase rebuilt from a gameplay
-video as a proof of concept, so the gaps in starship's wave format and enemy behaviour
-show up against a known-good level.
-
-`describe` has nothing that takes a video in. The workaround is ffmpeg called directly
-(`ffmpeg -i <video> -vf fps=2 <dir>/%05d.png`), then an agent reads the frames. That is
-analysis of an artefact done outside polyweave.
-
-What polyweave should do:
-
-- **`reference.frames`**: from a video path, sample frames at a rate, or denser inside named time ranges, into the work area, each frame named by its timestamp, with a `.prov.json` that records the source video's hash, the rate and the ranges. The video is never copied into the project.
-- **Cheap reading.** A contact sheet per stretch (say a 4x4 grid of 16 frames with timestamps burnt in), so an agent reads 16 seconds of play as one image instead of 32 reads. A crop option (the radar strip at the top of a Resogun frame, say) gives a second sheet of just that region.
-- **Change detection**: optionally keep only frames that differ from the one before by more than a bound, so a quiet stretch costs nothing.
-
-The transcription itself (what spawned, where, on what path) stays the agent's and the
-owner's work. polyweave only makes the frames cheap and recorded. Done by hand in
-spinhold (2026-10-08): 61 sheets for 68 s, and burning timestamps in needed a font
-copied beside them.
-
 ### §PW330 Pressure per second from weighted events
 
 Met in starship (RK176): the owner finds the waves unbalanced, and nothing says how hard
@@ -799,15 +778,16 @@ Done when starship's `dev/pressure.gd` is deleted and its check calls the operat
 
 Found in spinhold (RK178): rebuilding Resogun's first phase from a gameplay video needs,
 per stretch, the second each group appears, its count, formation, rail and how it ends.
-Even with §PW328's frames and contact sheets, an agent counts twenty small enemies by
-eye in each sheet, and a miscount reaches the written sheet the owner reviews.
+Even with `reference.frames`' frames and contact sheets, an agent counts twenty small
+enemies by eye in each sheet, and a miscount reaches the written sheet the owner
+reviews.
 
 What polyweave should do:
 
-- **`reference.objects`**: over §PW328's frames, find what moves in the play area, each
-  detection labelled by a kind the project declares (a colour range, a size, a few sample
-  crops per kind), with its position and the frame it was seen in. No genre and no game
-  built in: the kinds are the project's.
+- **`reference.objects`**: over `reference.frames`' frames, find what moves in the play
+  area, each detection labelled by a kind the project declares (a colour range, a size, a
+  few sample crops per kind), with its position and the frame it was seen in. No genre and
+  no game built in: the kinds are the project's.
 - **Tracks**: join detections across frames into tracks, each with its first and last
   second, its path and how it ended (left the frame, was destroyed, still alive at the end).
 - **Groups**: tracks born within a short window and moving together are one group, with
@@ -827,7 +807,8 @@ which side. In a full frame it is a few dozen pixels high, so reading it by eye 
 contact sheet guesses more than it reads. The score, multiplier and humans counter sit
 in fixed places too.
 
-§PW328 offers a crop option per call. What is missing is a declaration and a reading:
+`reference.frames` offers a crop per call. What is missing is a declaration and a
+reading:
 
 - **Regions declared once** in `polyweave.toml` for a reference (say `[reference.<name>]`
   with `radar`, `hud`, `play` as rectangles in source pixels), checked against the video's
@@ -899,7 +880,7 @@ remembering both.
 
 What polyweave should do, as **`reference.compare`**:
 
-- Take a reference video (with §PW328's frames) and a capture of the project's game
+- Take a reference video (with `reference.frames`' frames) and a capture of the project's game
   playing the rebuilt level (`capture.movie`, or a kept `game.replay`), and align them in
   time from an anchor each side declares (the first enemy appearing, an event from
   §PW381, or a plain offset).

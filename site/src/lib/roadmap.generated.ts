@@ -42,7 +42,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "O", title: "A person sees and answers", open: 4 },
   { block: "P", title: "Music and sound a game can ship", open: 1 },
   { block: "Q", title: "Words held to the world", open: 1 },
-  { block: "R", title: "Levels measured before a person plays them", open: 14 },
+  { block: "R", title: "Levels measured before a person plays them", open: 13 },
   { block: "S", title: "Playing the game, not only rendering it", open: 1 },
   { block: "T", title: "Adopting polyweave in a project", open: 2 },
   { block: "U", title: "A window on everything a project governs", open: 2 },
@@ -212,13 +212,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW205"],
   },
   {
-    id: "PW328",
-    block: "R",
-    symptom: "A reference gameplay video cannot be sampled into frames or contact sheets an agent can read",
-    why: "Rebuilding a known level from video means hand-run ffmpeg and hundreds of frame reads, with no record of the source.",
-    deps: [],
-  },
-  {
     id: "PW330",
     block: "R",
     symptom: "a wave timeline's threat per second, in its two bounding cases, and its gaps with nothing to shoot cannot be measured",
@@ -230,14 +223,14 @@ export const generatedTasks: GeneratedTask[] = [
     block: "R",
     symptom: "the enemies in a reference video's frames cannot be counted or followed, so an agent counts them by eye on every sheet",
     why: "A wave rebuilt from video is only as right as its counts, and a miscount by eye reaches the person who reviews the transcription.",
-    deps: ["PW328"],
+    deps: [],
   },
   {
     id: "PW380",
     block: "R",
     symptom: "a reference video's radar and HUD cannot be declared as regions, and the blips on its radar cannot be read as positions",
     why: "The radar is the only place a video shows what spawns off camera and on which side, and at a few dozen pixels it is guessed rather than read.",
-    deps: ["PW328"],
+    deps: [],
   },
   {
     id: "PW384",
@@ -258,7 +251,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "R",
     symptom: "a rebuilt level's capture cannot be aligned with the video it copies, so where it plays differently is found by memory",
     why: "The list of differences is half of what a rebuild is for, and two sources looked at separately miss the gaps a curve laid over the other would show.",
-    deps: ["PW328", "PW379"],
+    deps: ["PW379"],
   },
   {
     id: "PW385",

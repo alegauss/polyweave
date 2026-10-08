@@ -327,6 +327,8 @@
 
 ## Block R — Levels measured before a person plays them
 
+- ✅ **PW328** **A reference gameplay video cannot be sampled into frames or contact sheets an agent can read** — reference.frames samples a video into time-named frames, denser in ranges, dropping still ones, on 4x4 sheets with times burnt in, tied to its hash (design recorded in `docs/specs/fetching.md`).
+
 ## Block S — Playing the game, not only rendering it
 
 - ✅ **PW211** **Nobody knows if an agent can drive a Godot game from its menu to a won level and get the same result twice** — A GDScript harness drove Cottony from its splash to a won level 1 by input alone, and ten runs agreed to the frame and the board.
