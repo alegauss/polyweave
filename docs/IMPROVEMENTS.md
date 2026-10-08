@@ -845,23 +845,6 @@ line in the window and the file in `touched`.
 
 ## Block V — Parts every game repeats, installed already proved
 
-### §PW346 Menus a pad can drive
-
-A main menu, a pause menu and a yes-or-no confirm are in every game, and the failure
-that costs is silent: a control no focus neighbour reaches, a back button that follows
-one platform's convention on all of them, a pause that leaves the game ticking
-underneath. The kit installs those three screens on the prompts kit's service, with back
-and confirm bound to the convention of the family in use, and pauses through the scene
-tree's pause and each node's process mode.
-
-Proof: a walk of every focusable control by pad events alone reaches each one and comes
-back; back from every screen lands where the declaration says; the game's own time does
-not advance while it is paused.
-
-The look is the project's Theme, never the kit's. A panel, a frame or a stylebox the
-menus draw is panel.build's to declare and build (docs/specs/panel.md), so this kit owns
-the behaviour and nothing of how it looks.
-
 ### §PW347 An options screen assembled from the kits
 
 Cottony's scripts/settings.gd and Starship's SettingsStore, fed by the options() rows in
@@ -877,8 +860,8 @@ the change (a bus volume, a window mode, a locale); every value survives a resta
 unknown or renamed key in an older file is kept or migrated, never a crash and never a
 silent reset of the player's choices.
 
-The screen is navigable by pad through the menus kit of §PW346, so it inherits that
-kit's focus walk as part of its own proof.
+The screen is navigable by pad through the menus kit (docs/specs/kit.md), so it inherits
+that kit's focus walk as part of its own proof.
 
 ### §PW348 Saves that survive a crash and an update
 

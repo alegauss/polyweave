@@ -75,7 +75,6 @@
 
 ## Block V — Parts every game repeats, installed already proved
 
-- 📋 **PW346** (deps: PW344 ✅) **a main menu, a pause menu and a confirm dialog are rebuilt per game, and a control no pad can reach is found by a person** — Focus navigation fails silently and back is a different button per family, which a check holds and a review misses. → §PW346
 - 📋 **PW347** (deps: PW341 ✅) **each game writes its own options screen and settings file, and an option that changes nothing goes unnoticed** — Both games built one; a screen whose tabs come from the installed kits makes each option a declared row with a check. → §PW347
 - 📋 **PW348** (deps: PW341 ✅) **a save is written in place with no schema version, so a crash mid-write or a game update can lose a player's progress** — Cottony wrote its own save and tests for it; the failures that matter are the same in every game and can be forced. → §PW348
 - 📋 **PW349** (deps: PW341 ✅) **the splash, the load into the first scene and each change of scene are hand-made per game and freeze on a large scene** — A splash no pad can skip and a frozen frame while a scene loads are the first things a player sees. → §PW349

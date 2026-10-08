@@ -135,12 +135,13 @@ def read(folder: Path) -> dict:
             'write fixture = "fixture" under [proves]: a minimal Godot project shaped '
             "to exercise the kit, where polyweave's gate proves it (§PW342)",
         )
-    if "spec" not in held["proves"]:
+    if "spec" not in held["proves"] and "script" not in held["proves"]:
         raise _bad(
             where,
             "proves nothing",
-            'write spec = "proof.accept.toml" under [proves]: a kit is worth '
-            "more than a snippet only while its proof holds",
+            'write spec = "proof.accept.toml" under [proves], or script = '
+            '"core/proof.gd" where only a running game can say it holds: a kit is '
+            "worth more than a snippet only while its proof holds",
         )
     script = held["proves"].get("script")
     if script is not None and not str(script).startswith(
@@ -154,7 +155,7 @@ def read(folder: Path) -> dict:
     named = [
         held["installs"]["core"],
         held["installs"].get("scene"),
-        held["proves"]["spec"],
+        held["proves"].get("spec"),
         held["proves"]["fixture"],
         script,
     ]
@@ -352,7 +353,8 @@ def install(
         if target is not None and not target.exists():
             scenes.append(provenance.relative(target, here))
         spec = config.path("paths.specs") / "kits" / one / "proof.accept.toml"
-        proofs.append(spec)
+        if kit["proves"].get("spec"):
+            proofs.append(spec)
         if not write:
             continue
         if core.exists():
@@ -361,8 +363,9 @@ def install(
         if target is not None and not target.exists():
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(source / scene, target)
-        spec.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(source / kit["proves"]["spec"], spec)
+        if kit["proves"].get("spec"):
+            spec.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source / kit["proves"]["spec"], spec)
         manifest = core / "kit.json"
         files = _digests(core)
         manifest.write_text(
@@ -685,8 +688,9 @@ def prove(
     for one in [name] if name else sorted(kits):
         kit = kits[one]
         folder = Path(kit["folder"])
-        spec = accept.read(folder / kit["proves"]["spec"])
-        if spec.screen and not engine:
+        named = kit["proves"].get("spec")
+        spec = accept.read(folder / named) if named else None
+        if not engine and (spec is None or spec.screen):
             said.append(
                 {
                     "kit": one,

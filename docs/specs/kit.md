@@ -47,16 +47,19 @@ fixture = "fixture"           # a minimal Godot project it is proved in, in this
 - `[declares]` is the declaration the kit proposes, written into the project's
   `[kit.<name>]` only where the project has none. A kit carries no palette or theme of
   its own: anything that is a game's look is the game's to declare.
-- `[proves] spec` is the kit's acceptance spec, the proof that it works in the game it
-  lands in. A kit with no proof is refused: it is worth more than a snippet only while
-  its proof holds.
+- `[proves] spec` is the kit's acceptance spec, the proof that its pictures hold in the
+  game it lands in.
 - `[proves] fixture` is a folder of the kit holding a minimal Godot project shaped to
   exercise it, where polyweave proves it before any project receives it. A kit with no
-  fixture is refused too.
-- `[proves] script` is optional: a GDScript inside the core, run headless in the game
-  after the spec holds, for what only a running game can say (every bound action has an
-  icon in every family, say). It prints `KIT PROVED`, or `KIT FAILED: <why>`, and the
-  answer carries that line; with no `$GODOT` it is `skipped` and said (§PW344).
+  fixture is refused.
+- `[proves] script` is a GDScript inside the core, run headless in the game after the
+  spec holds, for what only a running game can say (every bound action has an icon in
+  every family, say). It prints `KIT PROVED`, or `KIT FAILED: <why>`, and the answer
+  carries that line; with no `$GODOT` it is `skipped` and said (§PW344).
+- A kit proves with a spec, a script or both, and one with neither is refused: it is
+  worth more than a snippet only while its proof holds. A kit with no picture to hold,
+  such as a menu, proves by its script alone, and `kit.prove` then answers it `skipped`
+  where no engine is set, never `held` on nothing (§PW346).
 
 Any other key, a name that is not the folder's, a version in another form, a file the
 kit names and does not hold, a kit it requires that does not exist, and a loop of
@@ -99,8 +102,9 @@ kit assumes no genre. Installing (§PW341) and proving every kit in polyweave's 
    with a `borrow` record whose input is the kit's `kit.toml`, so `provenance.read`
    answers what the project carries and from where; the answer's `installed` gives each
    kit's version and the one that `was` there;
-6. it copies the kit's proof to `<[paths] specs>/kits/<name>/proof.accept.toml` and runs
-   it through `accept.verify` in the game.
+6. it copies the kit's spec, where it has one, to
+   `<[paths] specs>/kits/<name>/proof.accept.toml` and runs it through `accept.verify`
+   in the game, then the kit's script.
 
 The answer is ready to decide: `ok`, `proved` with the first finding where the proof
 fails, `declared` (what it proposed), `scenes` and `change` (what is the project's to
@@ -168,3 +172,17 @@ remap screen, draws each binding as the prompts kit's icon for the device in use
 listens on the half pressed for the next input, says a swap, and holds a deadzone
 slider, the inverted vertical and a reset. Its proof script rebinds, swaps, restarts
 the store from the file, resets, and drives the screen with a pad button.
+
+**menus** (§PW346, requires prompts): a main menu, a pause menu and a yes-or-no confirm
+a pad can drive. `PolyweaveMenu` makes a button per item, named by the item and
+labelled `tr(item)`, links focus top to bottom and round again, and follows the family
+in hand for confirm and back: a Switch pad confirms on its east button and goes back on
+its south one, every other pad the other way round, and Escape goes back. Back chooses
+the item the menu declares (`back_to`). `PolyweavePause` stops the game through the
+scene tree's pause while its own layer processes always, opens and closes on the game's
+`pause` action, and resumes on back; `PolyweaveConfirm` focuses "no" first and answers
+no on back. The main menu is the project's scene; the look is the project's Theme, as
+panel.build declares it, and the kit adds no style. Its proof is a script alone, by pad
+events: every menu walked down reaches each button and comes back round, back lands
+where each menu says in every family's convention, and the game does not tick while
+paused.

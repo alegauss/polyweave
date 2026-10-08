@@ -1,0 +1,15 @@
+; The menus kit's fixture: a game with a pause action on Escape and the pad's start.
+
+config_version=5
+
+[application]
+
+config/name="menus fixture"
+run/main_scene="res://main.tscn"
+
+[input]
+
+pause={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"physical_keycode":4194305), Object(InputEventJoypadButton,"button_index":6)]
+}

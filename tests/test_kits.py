@@ -74,6 +74,20 @@ def test_a_kit_that_breaks_the_contract_is_refused(tmp_path, change):
     assert refused.value.code == "kits.bad"
 
 
+def test_a_script_alone_proves_a_kit_and_nothing_at_all_is_refused(tmp_path):
+    scripted = KIT.format(name="menus", requires="[]").replace(
+        'spec = "proof.accept.toml"', 'script = "core/proof.gd"')
+    folder = kit(tmp_path, "menus", body=scripted)
+    (folder / "core" / "proof.gd").write_text("extends SceneTree\n", "utf-8")
+    assert kits.every(tmp_path)["menus"]["proves"] == {
+        "script": "core/proof.gd", "fixture": "fixture"}
+    (folder / "kit.toml").write_text(
+        scripted.replace('script = "core/proof.gd"\n', ""), encoding="utf-8")
+    with pytest.raises(PolyweaveError) as refused:
+        kits.every(tmp_path)
+    assert "proves nothing" in refused.value.message
+
+
 def test_a_kit_requires_only_kits_there_are_and_never_in_a_loop(tmp_path):
     kit(tmp_path, "settings", requires=["input"])
     with pytest.raises(PolyweaveError) as missing:

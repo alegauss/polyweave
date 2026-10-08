@@ -1,0 +1,20 @@
+name = "menus"
+version = "0.1.0"
+summary = "a main menu, a pause menu and a confirm a pad can drive, back and confirm by the family in hand"
+requires = ["prompts"]
+
+[installs]
+core = "core"
+scene = "scene/main_menu.tscn"
+
+[declares]
+main = ["play", "options", "quit"]
+pause = ["resume", "options", "quit_to_menu"]
+back = { main = "quit", pause = "resume", confirm = "no" }
+
+[proves]
+fixture = "fixture"
+script = "core/proof.gd"
+
+[changes]
+"0.1.0" = "a menu linked for the pad, a pause on the scene tree's pause and a confirm that defaults to no"
