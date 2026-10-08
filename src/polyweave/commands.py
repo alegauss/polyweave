@@ -72,6 +72,18 @@ def parsed(text: str, declared: dict) -> Any:
         text = text[-1]  # a flag given twice that takes one value: the last one wins
     if kind == "str":
         return text
+    if kind == "dict" and isinstance(text, str) and text.startswith("@"):
+        # A dict reaches a shell that eats JSON's quotes as a file, as a list does
+        # (§PW337).
+        read = _from_file(text, declared)
+        if not isinstance(read, dict):
+            raise PolyweaveError(
+                "op.bad-type",
+                f"--{declared['name']} is a dict, and {text[1:]} holds a "
+                f"{type(read).__name__}",
+                f"write the object there as JSON, such as {_example(kind)}",
+            )
+        return read
     try:
         return json.loads(text)
     except json.JSONDecodeError:
@@ -80,7 +92,23 @@ def parsed(text: str, declared: dict) -> Any:
         raise PolyweaveError(
             "op.bad-type",
             f"--{declared['name']} is a {kind}, and {text!r} does not read as one",
-            f"pass it as JSON, such as {_example(kind)}",
+            f"pass it as JSON, such as {_example(kind)}"
+            + (f", or name a JSON file (--{declared['name']} @{declared['name']}.json)"
+               if kind == "dict" else ""),
+        ) from None
+
+
+def _from_file(text: str, declared: dict) -> Any:
+    """The JSON an `@path` argument names, read past a byte order mark (§PW334)."""
+    where = Path(text[1:])
+    try:
+        return json.loads(where.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError) as failed:
+        raise PolyweaveError(
+            "op.bad-type",
+            f"--{declared['name']} names {where}, which is no JSON file: {failed}",
+            f"write the {declared['type']} there as JSON, such as "
+            f"{_example(declared['type'])}",
         ) from None
 
 
@@ -115,15 +143,7 @@ def _listed(given: Any, declared: dict) -> list:
         return [_item(one) for one in values]
     text = values[0]
     if text.startswith("@"):
-        where = Path(text[1:])
-        try:
-            read = json.loads(where.read_text(encoding="utf-8-sig"))
-        except (OSError, json.JSONDecodeError) as failed:
-            raise PolyweaveError(
-                "op.bad-type",
-                f"--{declared['name']} names {where}, which is no JSON file: {failed}",
-                f"write the list there as JSON, or pass it as {LIST_FORMS}",
-            ) from None
+        read = _from_file(text, declared)
         return read if isinstance(read, list) else [read]
     try:
         read = json.loads(text)

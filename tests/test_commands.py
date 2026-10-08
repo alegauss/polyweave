@@ -143,6 +143,31 @@ def test_declarations_saved_with_a_byte_order_mark_are_read(tmp_path):
     assert pressure.pressure(file="waves.json", root=str(tmp_path))["total"] == 1.0
 
 
+DICT = {"name": "families", "type": "dict"}
+
+
+def test_a_dict_flag_may_name_a_json_file(tmp_path):
+    """§PW337: PowerShell eats an inline object's quotes, and @file was lists only."""
+    where = tmp_path / "families.json"
+    where.write_bytes(b"\xef\xbb\xbf" + b'{"stars": ["renders/star.png"]}')
+    assert commands.parsed(f"@{where}", DICT) == {"stars": ["renders/star.png"]}
+
+
+def test_a_dict_file_that_holds_a_list_is_refused_naming_it(tmp_path):
+    where = tmp_path / "families.json"
+    where.write_text('["renders/star.png"]', encoding="utf-8")
+    with pytest.raises(PolyweaveError) as refused:
+        commands.parsed(f"@{where}", DICT)
+    assert refused.value.code == "op.bad-type"
+    assert "holds a list" in refused.value.message
+
+
+def test_a_dict_that_does_not_read_says_a_file_works(tmp_path):
+    with pytest.raises(PolyweaveError) as refused:
+        commands.parsed("{stars: [a]}", DICT)
+    assert "@families.json" in refused.value.remedy
+
+
 def test_one_plain_value_is_a_list_of_one():
     assert commands.parsed(["--boss"], LIST) == ["--boss"]
 

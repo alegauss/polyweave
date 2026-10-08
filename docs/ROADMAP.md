@@ -28,7 +28,6 @@
 
 ## Block K — Reached without reading the source
 
-- 📋 **PW337** (deps: —) **a dict parameter is refused as an @file, so PowerShell cannot pass one to the CLI at all** — The remedy PW247 gave lists does not reach dicts, which leaves verdict.sitting unusable from that shell. → §PW337
 - 📋 **PW376** (deps: —) **provenance.verify reports the work area's snapshots of old commits as the project's drift** — A project whose own records all hold reads as 46 changed artefacts, and finding that out takes --json and a filter by hand. → §PW376
 - 📋 **PW386** (deps: —) **measure.take asks for contrast_min and refuses it for want of targets, yet takes no targets parameter** — The refusal names a door the operation does not have, so the agent reads the source to find the spec key and measure.contrast that do take them. → §PW386
 

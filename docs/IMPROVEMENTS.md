@@ -304,22 +304,6 @@ exist yet and expects the file.
 
 ## Block K — Reached without reading the source
 
-### §PW337 An @file for every structured parameter
-
-Met in starship (RK166), laying out a sitting from Windows PowerShell. `verdict.sitting`
-takes `--families`, a dict. Inline JSON loses its quotes in that shell (PW247's case),
-and the remedy PW247 gave lists, `@file.json`, is refused for a dict:
-
-`op.bad-type: --families is a dict, and '@C:\...\ptbr_families.json' does not read as
-one` `do: pass it as JSON, such as {"a": 1}`
-
-The file held valid JSON. The worker went round it through the MCP tool, which takes the
-object as it is. A CLI-only worker in PowerShell has no way to pass a dict at all.
-
-What polyweave should do: read `@path` for every structured parameter (dict as well as
-list), with the same refusal text naming the file when it is not JSON, and say in the
-`do:` of a dict's refusal that `@file.json` works.
-
 ### §PW376 Verify answers for the project alone
 
 Met in spinhold on 2026-10-07. `python -m polyweave provenance.verify` answered 46

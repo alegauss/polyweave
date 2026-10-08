@@ -35,7 +35,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "H", title: "Proof on a real game", open: 5 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
-  { block: "K", title: "Reached without reading the source", open: 3 },
+  { block: "K", title: "Reached without reading the source", open: 2 },
   { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 0 },
@@ -83,13 +83,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "game.shot answers success and a path when the save failed, and never makes the folder it is given",
     why: "A worker builds on frames that do not exist, and learns only when a later operation refuses the missing file.",
-    deps: [],
-  },
-  {
-    id: "PW337",
-    block: "K",
-    symptom: "a dict parameter is refused as an @file, so PowerShell cannot pass one to the CLI at all",
-    why: "The remedy PW247 gave lists does not reach dicts, which leaves verdict.sitting unusable from that shell.",
     deps: [],
   },
   {
