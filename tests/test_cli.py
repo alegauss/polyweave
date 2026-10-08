@@ -53,6 +53,51 @@ def test_a_setting_reaches_the_shape(tmp_path, capsys):
     assert json.loads(printed.out)["says"].startswith("a voxel model 2 by 2 by 2")
 
 
+def test_a_setting_reaches_a_field_of_the_declaration_and_is_echoed(tmp_path, capsys):
+    """§PW317: `voxels.cell` was dropped without a word; now it builds at that cell."""
+    status, printed = run(
+        tmp_path, declared(tmp_path), "--set", "voxels.cell=0.5", "--json",
+        capsys=capsys,
+    )
+    assert status == 0
+    said = json.loads(printed.out)
+    assert said["says"].startswith("a voxel model 8 by 8 by 8")
+    assert said["set"] == {"voxels.cell": {"was": 1, "now": 0.5}}
+    cells = json.loads((tmp_path / "box.voxels.json").read_text("utf-8"))
+    assert cells["cell"] == 0.5
+
+
+def test_a_setting_that_names_nothing_is_refused_with_what_it_takes(tmp_path):
+    found = cli.build_one(
+        declared(tmp_path), root=str(tmp_path), given={"voxel.cell": 0.5}, mesh=False
+    )
+    assert found["status"] == "refused"
+    refusal = found["refusal"]
+    assert refusal["code"] == "op.bad-setting"
+    assert "size" in refusal["allowed"] and "voxels.cell" in refusal["allowed"]
+    assert not (tmp_path / "box.voxels.json").exists()
+
+
+def test_a_setting_of_the_wrong_kind_is_refused(tmp_path):
+    found = cli.build_one(
+        declared(tmp_path), root=str(tmp_path), given={"voxels.cell": "big"}, mesh=False
+    )
+    assert found["refusal"]["code"] == "op.bad-setting"
+
+
+def test_a_folder_build_says_which_settings_a_declaration_did_not_take(tmp_path):
+    declared(tmp_path)
+    declared(tmp_path, VOXEL.replace("size = 4", "width = 4").replace(
+        'size = "size"', 'size = "width"').replace('"box"', '"slab"'), "slab.toml")
+    found = {
+        Path(one["document"]).name: one
+        for one in cli.build_all(".", root=str(tmp_path), given={"size": 2}, mesh=False)
+    }
+    assert found["box.toml"]["set"] == {"size": {"was": 4, "now": 2}}
+    assert found["slab.toml"]["status"] == "built"
+    assert found["slab.toml"]["not_set"] == ["size"]
+
+
 def test_a_preview_writes_the_contact_sheet(tmp_path, capsys):
     status, printed = run(
         tmp_path, declared(tmp_path), "--preview", "--json", capsys=capsys

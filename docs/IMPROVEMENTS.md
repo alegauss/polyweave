@@ -364,24 +364,6 @@ exist yet and expects the file.
 
 ## Block I — Voxel models from a declaration
 
-### §PW317 A voxel build's --set that is dropped
-
-Found in starship (RK169), searching for the cell size that gives the splash V three
-times its cells. `python -m polyweave build art/voxels/viglet_v.toml --out <scratch>
---root . --set voxels.cell=0.03 --no-mesh --json` came back `"status": "built"` with the
-same 2590 cells and the findings of the 0.05 cell: the `--set` was dropped without a
-word. Four sizes were "tried" this way before the counts gave it away.
-
-Expected: `--set voxels.cell=<n>` overrides the declaration's `[voxels] cell` for that
-build (the way `--set` answers a declared parameter), or a refusal naming the keys
-`--set` does take, with `allowed` and `did_you_mean`. A build answer should also echo
-what each `--set` changed, so a silent drop cannot pass as a result.
-
-Workaround: `sed` copied the declaration to the scratchpad with the cell edited, once
-per size, and built the copy. A sweep over the cell (count, findings per size) is the
-operation this really wanted; `search.sweep` over a voxel declaration's `cell` would do
-it.
-
 ### §PW318 A cell ceiling per declaration
 
 Found in starship (RK169). `[voxels] budget = 6000` in polyweave.toml is the ceiling the

@@ -413,8 +413,8 @@ CODES: dict[str, Code] = {
     ),
     "op.bad-setting": Code(
         means="a value set on the command line does not name what it sets",
-        when="a `--set` with no `=` in it, or nothing before it",
-        doors=("write it as name=value",),
+        when="a `--set` with no `=` in it, or a key the declaration does not take",
+        doors=("write it as name=value", "set one of the keys `allowed` lists"),
     ),
     # -- config: what a project declares, and how a value is resolved --------
     "config.malformed": Code(

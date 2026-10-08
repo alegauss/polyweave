@@ -33,7 +33,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
   { block: "H", title: "Proof on a real game", open: 8 },
-  { block: "I", title: "Voxel models from a declaration", open: 3 },
+  { block: "I", title: "Voxel models from a declaration", open: 2 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 3 },
   { block: "L", title: "What a run leaves as evidence", open: 0 },
@@ -104,13 +104,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "game.shot answers success and a path when the save failed, and never makes the folder it is given",
     why: "A worker builds on frames that do not exist, and learns only when a later operation refuses the missing file.",
-    deps: [],
-  },
-  {
-    id: "PW317",
-    block: "I",
-    symptom: "build --set voxels.cell=0.03 is dropped without a word, and the build answers built at the declared cell",
-    why: "A silent override passes as a result: four cell sizes were read as tried before the counts showed none had applied.",
     deps: [],
   },
   {

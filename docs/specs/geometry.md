@@ -426,6 +426,14 @@ stamp is the cache key of the provenance record the build writes beside every ou
 (§PW140): the document, the values set, every file it names, `--preview` and the plugin's
 version, so a fixed builder rebuilds what the defect made and `unrecorded` finds nothing.
 
+`--set` takes a declared param by name, or a field the declaration already has by its
+table and key, `--set voxels.cell=0.03`, for that build only and with a value of the same
+kind (any number for a number). The answer's `set` says what each one changed, `{"was",
+"now"}`. A key that names neither is refused as `op.bad-setting`, its `allowed` listing
+what `--set` does take, where it used to be dropped without a word (§PW317). Under
+`--all` the same keys go to every declaration, so one a declaration does not take is
+named on its answer as `not_set` instead.
+
 **The stamp is committed beside its declaration** (§PW227). The edit guard reads it from
 a fresh clone to name the declaration an output came from, and a clone that finds it
 also skips what has not changed, so it belongs with the tree rather than in

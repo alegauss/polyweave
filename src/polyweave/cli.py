@@ -130,12 +130,85 @@ def build_one(
     *,
     out: Annotated[str, Param("where to write; its own folder if unset")] = None,
     root: Annotated[str, Param("the project the paths resolve against")] = ".",
-    given: Annotated[dict, Param("values set for the declaration's params")] = None,
+    given: Annotated[dict, Param("params by name, or fields as voxels.cell")] = None,
     preview: Annotated[bool, Param("also write a cheap look: a silhouette")] = False,
     force: Annotated[bool, Param("build even where the stamp still matches")] = True,
     mesh: Annotated[bool, _MESH] = True,
 ) -> dict:
-    """Build one declaration and say what came out; a refusal is an answer too."""
+    """Build one declaration and say what came out; a refusal is an answer too.
+
+    `given` sets a declared param by name, or a field of the declaration by its table
+    and key, such as `voxels.cell`, for this build only (§PW317). The answer's `set`
+    says what each one changed, and a key that names nothing is refused.
+    """
+    return _built(source, out, root, given, preview, force, mesh, strict=True)
+
+
+def _set(document: dict, given: dict, strict: bool) -> tuple[dict, dict, dict, list]:
+    """The declaration with `given` applied: its params, and the fields it overrides.
+
+    A dotted key, `table.key`, overrides a field the declaration already has, with a
+    value of the same kind, for this build only. A key that is neither a declared param
+    nor such a field is refused where `strict`, and listed as not applied otherwise,
+    never dropped without a word (§PW317).
+    """
+    import copy
+
+    params = set(document.get("params") or {})
+    fields = {
+        f"{table}.{key}": value
+        for table, own in document.items()
+        if isinstance(own, dict) and table != "params"
+        for key, value in own.items()
+        if isinstance(value, int | float | str | bool)
+    }
+    built = copy.deepcopy(document)
+    named: dict = {}
+    said: dict = {}
+    ignored: list = []
+    for key, value in given.items():
+        if key in params:
+            named[key] = value
+            said[key] = {"was": document["params"][key], "now": value}
+            continue
+        if key in fields and _alike(fields[key], value):
+            table, _, field = key.partition(".")
+            built[table][field] = value
+            said[key] = {"was": fields[key], "now": value}
+            continue
+        if not strict:
+            ignored.append(key)
+            continue
+        if key in fields:
+            raise PolyweaveError(
+                "op.bad-setting",
+                f"--set {key}={value!r} is not a {type(fields[key]).__name__}, as "
+                f"{key} is",
+                f"set it to a value like {fields[key]!r}",
+                given=key,
+            )
+        raise PolyweaveError(
+            "op.bad-setting",
+            f"--set {key} names nothing {document.get('name', 'this declaration')} "
+            "declares, so it would change nothing",
+            "set a declared param by name, or a field by its table and key, such as "
+            "voxels.cell",
+            given=key,
+            allowed=sorted(params) + sorted(fields),
+        )
+    return built, named, said, ignored
+
+
+def _alike(was, now) -> bool:
+    """Whether `now` can stand where `was` did: a number for a number, else one kind."""
+
+    def number(one):
+        return isinstance(one, int | float) and not isinstance(one, bool)
+
+    return number(was) and number(now) or type(was) is type(now)
+
+
+def _built(source, out, root, given, preview, force, mesh, *, strict: bool) -> dict:
     from . import geometry as G
 
     here = Path(root).resolve()
@@ -145,12 +218,18 @@ def build_one(
     answer: dict = {"document": str(where), "status": "built", "outputs": []}
     try:
         document = G.read(where, root=here)
+        document, named, said, ignored = _set(document, given, strict)
+        if said:
+            answer["set"] = said
+        if ignored:
+            answer["not_set"] = ignored
         folder = Path(out) if out else where.parent
         folder = folder if folder.is_absolute() else here / folder
         folder.mkdir(parents=True, exist_ok=True)
         mark = folder / f"{document['name']}{STAMP}"
         mesh = mesh and _wants_mesh(document)
         made = made_from(where, document, given, preview, here, mesh)
+        given = named
         key = stamp(made)
         if not force and mark.is_file():
             kept = json.loads(mark.read_text(encoding="utf-8"))
@@ -337,7 +416,7 @@ def build_all(
     *,
     out: Annotated[str, Param("where to write; each one's folder if unset")] = None,
     root: Annotated[str, Param("the project the paths resolve against")] = ".",
-    given: Annotated[dict, Param("values set for every declaration's params")] = None,
+    given: Annotated[dict, Param("params or fields, for every declaration")] = None,
     preview: Annotated[bool, Param("also write a cheap look for each")] = False,
     mesh: Annotated[bool, _MESH] = True,
 ) -> list[dict]:
@@ -353,10 +432,9 @@ def build_all(
     under = Path(folder)
     under = under if under.is_absolute() else here / under
     return [
-        build_one(
-            source, out=out, root=root, given=given, preview=preview, force=False,
-            mesh=mesh,
-        )
+        # A key one declaration does not take is said on its answer, not refused: the
+        # same `given` goes to every declaration in the folder.
+        _built(source, out, root, given, preview, False, mesh, strict=False)
         for source in sorted(under.rglob("*.toml"))
         if is_declaration(source)
     ]

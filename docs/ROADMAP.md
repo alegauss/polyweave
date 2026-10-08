@@ -27,7 +27,6 @@
 
 ## Block I — Voxel models from a declaration
 
-- 📋 **PW317** (deps: —) **build --set voxels.cell=0.03 is dropped without a word, and the build answers built at the declared cell** — A silent override passes as a result: four cell sizes were read as tried before the counts showed none had applied. → §PW317
 - 📋 **PW318** (deps: —) **a declaration cannot state its own cell ceiling, so a model allowed over the voxels budget carries the finding for good** — A standing budget finding the owner allowed reads like a real overrun, so the one that matters is lost in it. → §PW318
 - 📋 **PW326** (deps: —) **geometry.fit scores a whole alpha silhouette, so a part inside a picture, like the V on a badge's disc, cannot be fitted** — A voxel part that must stand where a drawing's part does is measured and masked by a script in the project instead. → §PW326
 
