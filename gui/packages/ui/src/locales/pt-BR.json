@@ -94,6 +94,8 @@
     "price": "Custa {{price}} {{unit}}. Restam {{left}} sob o teto; depois, {{after}}.",
     "cheaper": "Um caminho grátis: {{how}}, que reajusta a imagem que o projeto já tem, sem custo.",
     "once": "Um sim permite esta chamada, nunca a próxima.",
-    "unpriced": "Não foi possível ler o preço: {{why}}"
+    "unpriced": "Não foi possível ler o preço: {{why}}",
+    "touched": "Ela escreveu: {{files}}",
+    "waits": "Agora desatualizados, esperando ser refeitos: {{files}}"
   }
 }

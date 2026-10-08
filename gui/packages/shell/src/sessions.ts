@@ -141,7 +141,14 @@ export function start(
           JSON.stringify({
             type: 'control_request',
             request_id: id,
-            request: { subtype: 'can_use_tool', tool_name: tool, input, description: asked.description },
+            request: {
+              subtype: 'can_use_tool',
+              tool_name: tool,
+              input,
+              description: asked.description,
+              // Why it is asked, where a hook said so: a write outside the item (§PW309).
+              ...(asked.decisionReason ? { reason: asked.decisionReason } : {}),
+            },
           }),
         )
       })

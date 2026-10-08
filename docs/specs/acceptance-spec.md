@@ -239,6 +239,16 @@ accept carries their verdict into that run, finishes it, and closes the revision
 the run and the sitting. A look or a number goes back to the same session as its next
 turn, in the person's words.
 
+**A revision stays inside its item** (§PW309). Its scope is the item's artefact and that
+file's record, its declaration, its spec, and everything the provenance graph says was made
+from it. The plugin's own work area is in it too. Before the session writes any other file,
+the revision's `PreToolUse` hook answers `ask`, naming the file and why it is outside ("the
+project's config, which every item is held to"). The window shows that reason beside the
+question, and the person allows the write once or tells the session to find another way.
+Every file the session wrote is kept on the revision. Its closing event lists them as
+`touched`, and lists under `waiting` the dependents `provenance.outdated` now marks, so
+accepting one item never silently leaves others out of date.
+
 **The refused are shown beside the kept** (§PW175), because a filter nobody sees into is a
 filter nobody audits. Every `picture.gate` run appends its answer to `[paths]
 work`/`gates.jsonl`. Each candidate carries its failures, its silhouette IoU, every drifted

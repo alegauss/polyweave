@@ -10,6 +10,7 @@ function project(answer: { choice: string; why?: string; at: string } | null) {
     if (operation === 'revision.open') {
       return { revisions: [{ revision: 'r1', sitting: 'review/s1/sitting.json', answer }] }
     }
+    if (operation === 'revision.close') return { touched: ['art/icon.png'], waiting: ['docs/sheet.png'] }
     return {}
   }
   return { call, called }
@@ -29,14 +30,14 @@ describe("the person's answer on a revision's sitting", () => {
 
   it('closes the revision with its run and sitting on an accept', async () => {
     const { call, called } = project({ choice: 'accept', at: 't1' })
-    const closed: string[] = []
+    const closed: unknown[] = []
     const answers = new Answers()
     answers.watch('r1', {
       project: '/g',
       call,
       run: { id: 'run1' },
       say: () => {},
-      closed: (sitting) => closed.push(sitting),
+      closed: (sitting, reached) => closed.push([sitting, reached]),
     })
     await answers.look()
     expect(called.map(([op]) => op)).toEqual([
@@ -46,7 +47,9 @@ describe("the person's answer on a revision's sitting", () => {
       'revision.close',
     ])
     expect(called[3]![1]).toMatchObject({ revision: 'r1', run: 'run1', sitting: 'review/s1/sitting.json' })
-    expect(closed).toEqual(['review/s1/sitting.json'])
+    expect(closed).toEqual([
+      ['review/s1/sitting.json', { touched: ['art/icon.png'], waiting: ['docs/sheet.png'] }],
+    ])
   })
 
   it('does nothing while no one has answered', async () => {

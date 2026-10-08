@@ -188,3 +188,34 @@ def test_a_revision_ends_in_a_sitting_and_hears_the_persons_answer(tree):
     )
     answer = revision.open_(root=str(tree))["revisions"][0]["answer"]
     assert (answer["choice"], answer["why"]) == ("look", "still too bright")
+
+
+def test_a_write_outside_the_item_asks_and_the_close_lists_what_was_reached(tree):
+    # §PW309: a change to one item stays inside it, or asks.
+    asked = revision.ask("art/icon.png", "darker", root=str(tree))["revision"]
+
+    def before(path):
+        return revision.hooked(
+            {"hook_event_name": "PreToolUse", "tool_name": "Write",
+             "tool_input": {"file_path": path}},
+            asked, str(tree),
+        )
+
+    assert before(str(tree / "art" / "icon.png")) is None
+    assert before(str(tree / ".polyweave" / "marks" / "m.png")) is None
+    config = before(str(tree / "polyweave.toml"))
+    assert config["hookSpecificOutput"]["permissionDecision"] == "ask"
+    assert "every item is held to" in config["hookSpecificOutput"][
+        "permissionDecisionReason"
+    ]
+    other = before("game/hud.gd")["hookSpecificOutput"]["permissionDecisionReason"]
+    assert "game/hud.gd is not art/icon.png" in other
+
+    revision.hooked(
+        {"hook_event_name": "PostToolUse", "tool_name": "Write",
+         "tool_input": {"file_path": str(tree / "art" / "icon.png")}},
+        asked, str(tree),
+    )
+    closed = revision.close(asked, withdrawn="enough", root=str(tree))
+    assert closed["touched"] == ["art/icon.png"]
+    assert closed["waiting"] == []

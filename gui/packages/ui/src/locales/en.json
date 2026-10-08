@@ -94,6 +94,8 @@
     "price": "This costs {{price}} {{unit}}. {{left}} is left under the ceiling, {{after}} after.",
     "cheaper": "A free path: {{how}}, which re-fits the picture the project already has, at no cost.",
     "once": "A yes allows this one call, never the next.",
-    "unpriced": "Its price could not be read: {{why}}"
+    "unpriced": "Its price could not be read: {{why}}",
+    "touched": "It wrote: {{files}}",
+    "waits": "Now out of date, waiting to be made again: {{files}}"
   }
 }

@@ -266,6 +266,77 @@ def _answer(sitting: str | None, root: str) -> dict | None:
     return {key: said[-1].get(key) for key in ("choice", "why", "at", "family")}
 
 
+#: The tools that write a file, whose path the scope is held against (§PW309).
+WRITERS = "Write|Edit|MultiEdit|NotebookEdit"
+
+
+def _scope(asked: dict, root: str) -> set[str]:
+    """The files a change to this item may legitimately reach (§PW309).
+
+    Its artefact and that file's record, its declaration, its spec, and everything made
+    from it, by the provenance graph. Anything else is outside the revision.
+    """
+    from . import brief, provenance
+
+    here = Path(root).resolve()
+    row = _rows(root).get(asked["item"]) or {}
+    own = [one for one in (row.get("artefact"), row.get("declaration")) if one]
+    found = set(own)
+    for path in own:
+        found.add(provenance.relative(provenance.sidecar(path, here), here))
+        for made in provenance.dependents(path, root=str(here))["artefacts"]:
+            found.add(made["artefact"])
+    try:
+        held = brief.brief(asked["item"], root=str(here)).get("spec") or {}
+        spec = held.get("path")
+    except PolyweaveError:
+        spec = None
+    if spec:
+        found.add(spec)
+    return found
+
+
+def _outside(path: str, asked: dict, root: str) -> str | None:
+    """Why a write to this file is outside the revision, or None where it is inside."""
+    from .config import FILENAME, load
+
+    here = Path(root).resolve()
+    where = Path(path)
+    where = where if where.is_absolute() else here / where
+    try:
+        relative = where.resolve().relative_to(here).as_posix()
+    except ValueError:
+        return f"{path} is outside the project altogether"
+    work = load(here).path("paths.work").resolve()
+    if where.resolve().is_relative_to(work):
+        return None  # the plugin's own work area: sittings, marks, caches
+    if relative in _scope(asked, root):
+        return None
+    if relative == FILENAME:
+        return (f"{relative} is the project's config, which every item is held to, "
+                f"not only {asked['item']}")
+    return (f"{relative} is not {asked['item']}, its declaration, its spec, or "
+            "anything made from it")
+
+
+def _reached(revision: str, asked: dict, root: str) -> dict:
+    """What a revision's session wrote, and which of the item's dependents now wait."""
+    from . import provenance
+
+    here = Path(root).resolve()
+    wrote = sorted({
+        provenance.relative(e["file"], here)
+        for e in _events(root)
+        if e.get("event") == "touched" and e.get("revision") == revision
+    })
+    made = _scope(asked, root)
+    waiting = sorted(
+        one["artefact"] for one in provenance.outdated(str(here))["outdated"]
+        if one["artefact"] in made
+    )
+    return {"touched": wrote, "waiting": waiting}
+
+
 def _asked(revision: str, root: str) -> dict:
     still = _open(root)
     if revision not in still:
@@ -383,7 +454,9 @@ def settings(
         # What the session buys is tied to this revision in the ledger.
         "env": {"POLYWEAVE_REVISION": revision},
         "hooks": {
-            "PreToolUse": [{"matcher": "|".join(WITHHELD), **hook[0]}],
+            "PreToolUse": [{"matcher": "|".join(WITHHELD), **hook[0]},
+                           # A write outside the item asks first (§PW309).
+                           {"matcher": WRITERS, **hook[0]}],
             "PostToolUse": [{"matcher": WRITES, **hook[0]}],
             # Finishing means a sitting the person answers, never the session's word.
             "Stop": hook,
@@ -407,6 +480,20 @@ def hooked(event: dict, revision: str, root: str) -> dict | None:
             "permissionDecisionReason": "a verdict is the person's to give, never the "
             "session's: lay a sitting out and the person answers it",
         }}
+    touched = str((event.get("tool_input") or {}).get("file_path") or "")
+    if name == "PreToolUse" and touched:
+        why = _outside(touched, _asked(revision, root), root)
+        if why is None:
+            return None
+        return {"hookSpecificOutput": {
+            "hookEventName": "PreToolUse",
+            "permissionDecision": "ask",
+            "permissionDecisionReason": f"Outside revision {revision}: {why}.",
+        }}
+    if name == "PostToolUse" and touched and tool in WRITERS.split("|"):
+        # Every file the session wrote is kept, so the closed revision lists them.
+        _append({"event": "touched", "revision": revision, "file": touched,
+                 "at": _now()}, root)
     if name == "Stop":
         asked = _asked(revision, root)
         if _laid(asked, root) or event.get("stop_hook_active"):
@@ -473,6 +560,8 @@ def close(
             "pass run and sitting together, or withdrawn with the reason, not both",
         )
     event = {"event": "closed", "revision": revision, "at": _now()}
+    # Every file it wrote, and what made from the item is now out of date (§PW309).
+    event.update(_reached(revision, still[revision], root))
     # What the change cost, from the ledger entries its session tied to it (§PW308).
     from . import purchase
 

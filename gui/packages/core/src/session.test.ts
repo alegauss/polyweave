@@ -56,6 +56,9 @@ describe('a session on one item', () => {
     expect(
       said('{"type":"polyweave_quote","request_id":"q1","price":0.08,"unit":"USD","left":1,"after":0.92,"affordable":true}'),
     ).toEqual({ kind: 'quote', requestId: 'q1', price: 0.08, unit: 'USD', left: 1, after: 0.92, affordable: true })
+    expect(
+      said('{"type":"control_request","request_id":"q2","request":{"subtype":"can_use_tool","tool_name":"Write","input":{},"reason":"Outside revision r1"}}'),
+    ).toEqual({ kind: 'ask', requestId: 'q2', tool: 'Write', input: {}, why: 'Outside revision r1' })
     expect(said('not json')).toEqual({ kind: 'other' })
   })
 

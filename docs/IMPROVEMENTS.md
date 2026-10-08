@@ -1037,27 +1037,6 @@ at the build.
 
 ## Block U — A window on everything a project governs
 
-### §PW309 A revision stays inside the item it was asked about
-
-The point of opening a change from one item is that the change is about that item. What
-a change to it may legitimately reach is already known. The provenance graph gives the
-item's dependents: a picture's dependents are the meshes modelled from it, a palette's
-dependents are every picture of that family. The inventory gives the item's own
-declaration, spec and artefact. Everything else is outside the revision.
-
-While the session runs, the window watches the project root recursively, as roadkeep's
-session watch does (RG247). A write inside the scope passes. A write outside it, for
-example a shared palette in `polyweave.toml`, a second family's canon, or a script in
-the game, pauses on a question in the window. The question names the file and why it is
-outside ("this is the style family every hull picture is held to"). The person can allow
-it once, or tell the session to find another way.
-
-When the revision closes, its record lists every file the session touched. Each
-dependent that `provenance_outdated` now marks is either re-checked by the harness or
-listed as waiting. So accepting a change to one item never silently leaves ten others
-out of date. This is also what makes a later `git` commit of one revision a clean one,
-though the window itself runs no git command.
-
 ### §PW310 The window follows the project as it changes
 
 A project changes under the window in several ways. A revision session writes, an agent
@@ -1128,6 +1107,24 @@ Build, in parts:
    and the window then run one code, which is what PW305 protected.
 
 The iframe and `?member=` stay until step 4 lands.
+
+### §PW378 A revision's shell writes seen too
+
+PW309 holds a revision's session to its item through the revision's `PreToolUse` hook,
+which sees the file a `Write`, `Edit`, `MultiEdit` or `NotebookEdit` names. A shell
+command names no file the hook can read, so `sed -i` on `polyweave.toml` or a script
+that rewrites a canon goes through without the question, and the closed revision's
+`touched` list does not name it either.
+
+Build: while a revision's session runs, the window watches the project root recursively,
+as roadkeep's session watch does (RG247), ignoring the plugin's work area. A change
+outside `_scope` that no hook announced appears in the conversation as a write outside
+the item, naming the file and why, so the person can tell the session to undo it. The
+revision gets a `touched` event for it, so the close lists it. A Bash write cannot be
+paused before it lands, so this answer comes after the fact, and it says so.
+
+A test runs the fake claude with a shell write outside the scope and expects both the
+line in the window and the file in `touched`.
 
 ## Block V — Parts every game repeats, installed already proved
 

@@ -122,8 +122,8 @@ ipcMain.handle(CHANNELS.sessionStart, async (event, project: string, revision: s
         kept(revision, text, 'person')
         send(JSON.stringify({ type: 'polyweave_answer', said: text }))
       },
-      closed: (sitting) => {
-        send(JSON.stringify({ type: 'polyweave_closed', sitting }))
+      closed: (sitting, reached) => {
+        send(JSON.stringify({ type: 'polyweave_closed', sitting, ...reached }))
         sessions.get(revision)?.stop()
         sessions.delete(revision)
       },

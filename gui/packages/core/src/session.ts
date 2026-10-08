@@ -75,7 +75,7 @@ export type Said =
   | { kind: 'started'; session: string }
   | { kind: 'text'; text: string }
   | { kind: 'tool'; tool: string; input: unknown }
-  | { kind: 'ask'; requestId: string; tool: string; input: unknown }
+  | { kind: 'ask'; requestId: string; tool: string; input: unknown; why?: string }
   | { kind: 'withdrawn'; requestId: string }
   | { kind: 'result'; ok: boolean; text: string }
   | { kind: 'check'; passed: boolean | null; said: string }
@@ -91,7 +91,7 @@ export type Said =
       cheaper?: string
       failed?: string
     }
-  | { kind: 'closed'; sitting: string }
+  | { kind: 'closed'; sitting: string; touched: string[]; waiting: string[] }
   | { kind: 'other' }
 
 /** A session's line as the screen draws it. A line that is not JSON reads as `other`. */
@@ -121,6 +121,7 @@ export function said(line: string): Said {
             requestId: String(message['request_id']),
             tool: String(message['request']['tool_name']),
             input: message['request']['input'],
+            ...(message['request']['reason'] ? { why: String(message['request']['reason']) } : {}),
           }
         : { kind: 'other' }
     case 'control_cancel_request':
@@ -142,7 +143,12 @@ export function said(line: string): Said {
     case 'polyweave_answer':
       return { kind: 'answered', said: String(message['said'] ?? '') }
     case 'polyweave_closed':
-      return { kind: 'closed', sitting: String(message['sitting'] ?? '') }
+      return {
+        kind: 'closed',
+        sitting: String(message['sitting'] ?? ''),
+        touched: (message['touched'] as string[] | undefined) ?? [],
+        waiting: (message['waiting'] as string[] | undefined) ?? [],
+      }
     case 'polyweave_check':
       // The window's own line: the item's checks after a change (§PW307).
       return {

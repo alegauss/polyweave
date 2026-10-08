@@ -91,6 +91,7 @@ export function Conversation({
       {open.map(({ read }) => (
         <div key={read.requestId} data-ask={read.tool} className="flex flex-wrap items-center gap-2 rounded bg-muted p-2 text-sm">
           <span className="flex-1">{t('session.asks', { tool: read.tool })}</span>
+          {read.why && <p data-why className="w-full text-amber-700">{read.why}</p>}
           {quotes.has(read.requestId) && <Price quote={quotes.get(read.requestId)!} />}
           <Button size="sm" onClick={() => answer(read.requestId, true)}>
             {t('session.allow')}
@@ -157,7 +158,17 @@ function Turn({ read }: { read: Said }) {
     case 'answered':
       return <li className="whitespace-pre-wrap font-medium">{t('session.answered', { said: read.said })}</li>
     case 'closed':
-      return <li data-closed className="font-medium">{t('session.closed', { sitting: read.sitting })}</li>
+      return (
+        <li data-closed className="flex flex-col gap-1">
+          <span className="font-medium">{t('session.closed', { sitting: read.sitting })}</span>
+          {read.touched.length > 0 && (
+            <span className="text-xs">{t('session.touched', { files: read.touched.join(', ') })}</span>
+          )}
+          {read.waiting.length > 0 && (
+            <span className="text-xs text-amber-700">{t('session.waits', { files: read.waiting.join(', ') })}</span>
+          )}
+        </li>
+      )
     case 'result':
       return (
         <li data-result={read.ok ? 'ok' : 'failed'} className={read.ok ? 'text-muted-foreground' : 'text-destructive'}>

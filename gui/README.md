@@ -102,7 +102,9 @@ and a look or a number goes back to the session as its next turn.
 A paid call in a session stops with its price, what the ceiling leaves before and after it,
 and a free path where there is one (`purchase.quote`). The question is held until the price
 is beside it, and a yes is for that one call: the window offers no "always allow" for a
-paid tool.
+paid tool. A write outside the item, its declaration, its spec and what is made from it
+asks first, with the reason beside the question, and a closed revision lists every file it
+wrote and the dependents left waiting.
 
 ## The live test
 

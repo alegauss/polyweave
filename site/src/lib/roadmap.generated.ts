@@ -303,13 +303,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW309",
-    block: "U",
-    symptom: "a revision's change can rewrite items outside the one asked about, and the person learns of it only by diffing",
-    why: "Before a revision's session writes outside its item and dependents, the window names the file and asks; on close it lists every file touched and each re-checked.",
-    deps: [],
-  },
-  {
     id: "PW310",
     block: "U",
     symptom: "the window would show a project as it was when opened, so an item a session or terminal changed looks untouched",
@@ -321,13 +314,20 @@ export const generatedTasks: GeneratedTask[] = [
     block: "U",
     symptom: "no revision has been asked, made and judged from the window on a real game, so its gaps are guesses",
     why: "Starship's owner opens the project in the window, asks for one picture and one sound to change, and judges both there; what got in the way is filed.",
-    deps: ["PW309", "PW310"],
+    deps: ["PW310"],
   },
   {
     id: "PW377",
     block: "U",
     symptom: "half the decision screen's facts and its masked write are no operation, so the window can only frame the Python page",
     why: "A typed SDK generated from describe, and one React screen served to the window and the browser alike, end the iframe without a second implementation.",
+    deps: [],
+  },
+  {
+    id: "PW378",
+    block: "U",
+    symptom: "a revision's session can write outside its item through Bash, and neither the question nor the touched list sees it",
+    why: "The scope hook reads only the file a Write or Edit names, so a shell write to the config or a canon slips past the person.",
     deps: [],
   },
   {

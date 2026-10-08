@@ -14,7 +14,7 @@ interface Watched {
   /** The answer already acted on, so one answer is acted on once. */
   seen: string | null
   say(text: string): void
-  closed(sitting: string): void
+  closed(sitting: string, reached: { touched: string[]; waiting: string[] }): void
 }
 
 interface Opened {
@@ -54,14 +54,14 @@ export class Answers {
         await one.call('verdict.answers', { run: one.run, root: one.project }).catch(() => null)
         await one.call('loop.finish', { run: one.run, root: one.project }).catch(() => null)
       }
-      await one.call('revision.close', {
+      const closed = (await one.call('revision.close', {
         revision,
         run: String(one.run?.['id'] ?? 'no-run'),
         sitting: mine.sitting,
         root: one.project,
-      })
+      })) as { touched?: string[]; waiting?: string[] } | null
       this.watched.delete(revision)
-      one.closed(mine.sitting)
+      one.closed(mine.sitting, { touched: closed?.touched ?? [], waiting: closed?.waiting ?? [] })
     }
   }
 }
