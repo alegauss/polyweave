@@ -45,10 +45,12 @@ def test_the_manifest_and_the_marketplace_name_the_plugin():
 
 def test_the_plugin_folder_holds_only_what_claude_code_loads():
     """§PW302: the marketplace copies this folder into every adopter's cache, so the
-    window, the site and their node_modules stay outside it."""
+    window, the site and their node_modules stay outside it. The licence goes with
+    the code it covers, so the copy an adopter holds is the repository's own."""
     held = {p.name for p in PLUGIN.iterdir()}
-    assert held == {".claude-plugin", "hooks", "skills"}
+    assert held == {".claude-plugin", "hooks", "skills", "LICENSE"}
     assert not [p for p in PLUGIN.rglob("node_modules")]
+    assert (PLUGIN / "LICENSE").read_bytes() == (REPO / "LICENSE").read_bytes()
 
 
 def test_a_session_starts_with_the_notice():
