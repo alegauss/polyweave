@@ -1,4 +1,7 @@
-"""Buying a realistic effect from a service, under the project's ceiling (§PW190).
+"""Buying a realistic effect, or a line spoken aloud, under the project's ceiling.
+
+§PW190 bought effects; §PW314 speaks a given line in a named voice, through the same
+doors and the same service.
 
 Footsteps, glass or rain are not what a synthesiser does well, and a paid fetch without
 a ceiling is the surprise Block D exists to prevent. So a bought sound goes through the
@@ -28,6 +31,7 @@ import json
 import shutil
 import subprocess
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 from typing import Annotated
@@ -80,6 +84,99 @@ def buy(
             "a sound was asked for without words",
             "pass prompt, the sound described as a sound designer would",
         )
+    request: dict = {"text": prompt, "model_id": model, "prompt_influence": influence}
+    if seconds is not None:
+        request["duration_seconds"] = float(seconds)
+    if loop:
+        request["loop"] = True
+    return _bought(
+        report, f"{ROUTE}?output_format={FORMAT}", request, words=prompt, cue=cue,
+        out=out, model=model, service=service, root=root,
+        details={"cue": cue, "seconds": seconds, "influence": influence, "loop": loop},
+    )
+
+
+#: Where a line is spoken, by the voice the route names (§PW314).
+SPEAK = "/v1/text-to-speech/{voice}"
+
+#: How each delivery setting is named in the service's `voice_settings`.
+DELIVERY = {
+    "stability": "stability",
+    "similarity": "similarity_boost",
+    "style": "style",
+    "speed": "speed",
+}
+
+_UNIT = Param("0 to 1; the voice's own if unset", lo=0.0, hi=1.0)
+
+
+@operation("sound.speak", kind="fetch", injects=("report",), spends=True)
+def speak(
+    report=None,
+    text: Annotated[str, Param("the line, word for word: Viglet Games")] = None,
+    *,
+    voice: Annotated[str, Param("the service's voice id that speaks it")] = None,
+    cue: Annotated[str, _CUE] = None,
+    out: Annotated[str, _OUT] = None,
+    stability: Annotated[float, _UNIT] = None,
+    similarity: Annotated[float, _UNIT] = None,
+    style: Annotated[float, _UNIT] = None,
+    speed: Annotated[
+        float, Param("how fast, 0.7 to 1.2; the voice's own if unset", lo=0.7, hi=1.2)
+    ] = None,
+    model: Annotated[str, Param("the service's model, priced in [service]")] = (
+        "eleven_multilingual_v2"
+    ),
+    service: Annotated[str, purchase.SERVICE] = None,
+    root: Annotated[str, Param("the project whose ledger this is")] = ".",
+) -> dict:
+    """Speak one line aloud in a named voice, at a cue's file, against the ceiling.
+
+    Text to speech is billed by the character, so its `prices` row is one by the
+    character (§PW320) and the line is counted before anything is sent. The record
+    keeps the words, the voice, the model and the delivery, so the take can be made
+    again (§PW314).
+    """
+    if not text or not text.strip():
+        raise PolyweaveError(
+            "fetch.missing-field",
+            "a line was asked to be spoken without its words",
+            "pass text, the line exactly as it is to be said",
+        )
+    if not voice:
+        raise PolyweaveError(
+            "fetch.missing-field",
+            "a line was asked to be spoken in no voice",
+            "pass voice, the id of one of the service's voices",
+        )
+    delivery = {
+        DELIVERY[name]: float(value)
+        for name, value in (("stability", stability), ("similarity", similarity),
+                            ("style", style), ("speed", speed))
+        if value is not None
+    }
+    request: dict = {"text": text, "model_id": model}
+    if delivery:
+        request["voice_settings"] = delivery
+    route = SPEAK.format(voice=urllib.parse.quote(voice, safe=""))
+    return _bought(
+        report, f"{route}?output_format={FORMAT}", request, words=text, cue=cue,
+        out=out, model=model, service=service, root=root,
+        details={"cue": cue, "voice": voice, "delivery": delivery, "spoken": True},
+    )
+
+
+def _bought(
+    report, route: str, request: dict, *, words: str, cue, out, model: str,
+    service, root, details: dict,
+) -> dict:
+    """One paid request for audio, priced, allowed, captured and ledgered.
+
+    What `sound.buy` and `sound.speak` share: the price by the project's row for the
+    model, counted by the words where it is by the character, the ceiling asked before
+    anything is sent, and the spend read off the service's usage where it answers
+    (§PW320).
+    """
     config = load(root)
     here = config.root
     target = _target(config, cue, out)
@@ -87,7 +184,7 @@ def buy(
     about = config.services()[name]
     base, key = picture._reached(name, about)
     priced = picture._priced(
-        name, about.get("prices") or {}, model, None, len(prompt)
+        name, about.get("prices") or {}, model, None, len(words)
     )
     price = priced["price"]
     if target.suffix.lower() != ".mp3" and not shutil.which("ffmpeg"):
@@ -97,18 +194,13 @@ def buy(
             f"there is no ffmpeg on PATH to transcode it",
             "put ffmpeg on PATH before spending, or ask for an .mp3",
         )
-    request: dict = {"text": prompt, "model_id": model, "prompt_influence": influence}
-    if seconds is not None:
-        request["duration_seconds"] = float(seconds)
-    if loop:
-        request["loop"] = True
 
     purchase.allow_priced(priced, root=here, service=name)
     by_character = priced["per"] == "character"
     before = _used(base, key) if by_character else None
     if report is not None:
         report.stage("building", progress=0.2, note="asking the service for the sound")
-    body, asked = _post(f"{base}{ROUTE}?output_format={FORMAT}", key, request)
+    body, asked = _post(f"{base}{route}", key, request)
     after = _used(base, key) if before is not None else None
     reported = (
         round((after - before) * priced["rate"], 6)
@@ -130,12 +222,11 @@ def buy(
         task_id=f"{name}:{asked or hashlib.sha256(body).hexdigest()[:16]}",
         credits=price,
         reported=reported,
-        prompt=prompt,
+        prompt=words,
         bought="sound",
         engine={"name": name, "model": model},
         service=name,
-        details={"cue": cue, "seconds": seconds, "influence": influence, "loop": loop,
-                 "format": target.suffix[1:]},
+        details={**details, "format": target.suffix[1:]},
         root=here,
     )
     return {**entry, "file": target.relative_to(here).as_posix(),

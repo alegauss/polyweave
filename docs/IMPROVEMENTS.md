@@ -515,6 +515,29 @@ manifest the page lists), `family` (one, or every family when left out), `choice
 and named, not judged twice. The answer records the person's words as given, so the
 ledger cannot tell a click from a sentence carried from chat, which is the point.
 
+### §PW383 A transcription sheet a person reviews row by row
+
+Found in spinhold (RK178): before any TOML is written, the agent writes a sheet from the
+video (per stretch: second, side, count, formation, rail, ending) and the owner reviews
+it, because a wrong count is cheaper to fix in prose. Today the sheet is free prose, its
+lines do not say which frames they were read from, and the owner's corrections live only
+in a conversation.
+
+What polyweave should do:
+
+- **A transcription sheet as an artefact**: a TOML or JSON whose columns the project
+  declares, where each row cites the timestamp range and the frames (or track ids from
+  §PW379) that support it, with a `.prov.json` naming the reference.
+- **A sitting from it** through `verdict.sitting`: each row shown with its cited frames
+  cropped beside it, so the owner checks a count against the picture without opening the
+  video, and answers per row (right, wrong with the correct value, unsure).
+- The answers carried by `verdict.judge` onto the rows, so a corrected count is recorded
+  with who corrected it, and the sheet counts as accepted only when every row has a
+  person's answer.
+
+The agent never accepts its own transcription; this only puts the evidence beside each
+row and keeps what the person said.
+
 ## Block P — Music and sound a game can ship
 
 ### §PW192 Cottony's audio made through polyweave
@@ -523,29 +546,6 @@ The block is proven when its first consumer uses it. Cottony's music and effects
 declared in its `polyweave.toml`, made by `music.render` and `sound.synth`, and held to
 `*.accept.toml` bounds, and its own audio scripts are removed. Anything Cottony needs
 that a second game would not becomes configuration.
-
-### §PW314 A line spoken aloud
-
-Found in starship: the owner asked for the Viglet Games splash to end on a spoken
-"Viglet Games", the way EA Sports games open on a voiced tag. polyweave has no operation
-that makes speech. `sound.buy` drives ElevenLabs' text-to-sound model
-(`eleven_text_to_sound_v2`), which makes effects from a description and does not speak a
-given line reliably; `python -m polyweave describe` lists nothing for a voice, a speaker
-or text to speech.
-
-What polyweave should do: `voice.buy` (or `sound.speak`) that speaks a declared line
-through a text-to-speech service (ElevenLabs' TTS models are one), at a declared cue's
-file, against the project's budget and ledger as `sound.buy` is. The declaration names
-the words, the voice (a service voice id, or a described voice), and the delivery
-(energy, pace, stability), so the same line can be re-made; the record keeps the voice
-and model, and the credits list the service. Optionally a local engine (Piper,
-espeak-ng) as a free rung for a draft before money is spent. A sitting plays takes side
-by side for a person's verdict, and `words.check` can hold the spoken text to the world
-like any other line.
-
-Workaround: none; starship's RK161 waits on this rather than recording a voice outside
-polyweave. It also needs the owner to set a `[budget.elevenlabs]` in starship's
-polyweave.toml.
 
 ### §PW321 A character's voice, designed once
 
@@ -884,6 +884,125 @@ Starship's thin workaround until this lands: `WaveFile.events` writes the events
 `game/waves/threat.toml`.
 
 Done when starship's `dev/pressure.gd` is deleted and its check calls the operation.
+
+### §PW379 Objects counted and tracked across a reference video's frames
+
+Found in spinhold (RK178): rebuilding Resogun's first phase from a gameplay video needs,
+per stretch, the second each group appears, its count, formation, rail and how it ends.
+Even with §PW328's frames and contact sheets, an agent counts twenty small enemies by
+eye in each sheet, and a miscount reaches the written sheet the owner reviews.
+
+What polyweave should do:
+
+- **`reference.objects`**: over §PW328's frames, find what moves in the play area, each
+  detection labelled by a kind the project declares (a colour range, a size, a few sample
+  crops per kind), with its position and the frame it was seen in. No genre and no game
+  built in: the kinds are the project's.
+- **Tracks**: join detections across frames into tracks, each with its first and last
+  second, its path and how it ended (left the frame, was destroyed, still alive at the end).
+- **Groups**: tracks born within a short window and moving together are one group, with
+  a count and a rough formation (line, ring, cluster).
+- A JSON written beside the frames, with a `.prov.json` naming the frames and the kinds
+  it used, and a contact sheet with each track's id drawn on, so the agent checks the
+  data against the picture instead of producing it.
+
+The transcription into the project's wave format stays the agent's and the owner's work;
+this only turns pixels into counts and paths an agent can check.
+
+### §PW380 Regions of a reference video, and its minimap read as positions
+
+Found in spinhold (RK178): in Resogun the radar strip at the top of the screen shows the
+whole cylinder, and it is the only place an agent learns what spawns off camera and on
+which side. In a full frame it is a few dozen pixels high, so reading it by eye from a
+contact sheet guesses more than it reads. The score, multiplier and humans counter sit
+in fixed places too.
+
+§PW328 offers a crop option per call. What is missing is a declaration and a reading:
+
+- **Regions declared once** in `polyweave.toml` for a reference (say `[reference.<name>]`
+  with `radar`, `hud`, `play` as rectangles in source pixels), checked against the video's
+  resolution, so every later call names a region instead of repeating numbers.
+- **Each region sampled and enlarged** on its own sheet, nearest-neighbour so the dots
+  stay dots.
+- **`reference.minimap`**: inside a region the project declares as a minimap, find each
+  blip per frame and map it to a position on the declared shape of the map (a strip that
+  wraps, for a cylinder; a rectangle, for a flat level), giving each blip's angle or
+  position over time as JSON with its `.prov.json`. The player's own blip, declared by
+  colour, is what the others are measured from, so "left" and "right" of the player come
+  out as data.
+
+Nothing here knows Resogun: the region names, the map's shape and the blip colours are
+the project's declaration.
+
+### §PW384 A reference registered and kept internal
+
+Found in spinhold (RK178): the reference is a commercial game's gameplay, recorded by
+the owner, and it must stay an internal reference: never committed, never published with
+the site, and the frames taken from it neither. Today that rests on the agent
+remembering to keep the files out of git.
+
+What polyweave should do:
+
+- **A reference registered, not copied**: `reference.register` records a video by path
+  and hash in the work area (`.polyweave/references/`), with its duration, resolution and
+  frame rate, and every later reference call names it instead of a path. A video whose
+  hash changed is refused with a remedy.
+- **Kept out of the repository**: everything derived from a registered reference (frames,
+  sheets, tracks, timelines) is written under the work area and carries `internal: true`
+  in its `.prov.json`. `provenance.verify`, and `project.check`, fail when a file tracked
+  by git is derived from an internal reference, naming the file.
+- **Kept out of what ships**: `capture.run` and `store.capsules` refuse an input whose
+  record is internal.
+
+This is about a project not leaking what it was given to study, not about deciding
+whether a use is allowed; that stays the owner's.
+
+### §PW381 A timeline of events read from a reference video
+
+Found in spinhold (RK178): a gameplay video has no markers, so an agent reading it
+stretch by stretch has nothing to anchor "the second wave starts here" except watching
+frames. The game's own signals already say it: the score jumps, a counter of humans
+changes, a burst of explosions fills the screen, a sound plays when a wave begins.
+
+What polyweave should do, as **`reference.events`** over a reference video:
+
+- **Numbers read from a declared HUD region** (§PW380) per sampled frame:
+  score, multiplier, any counter the project names, with the frames where reading failed
+  listed rather than guessed.
+- **Visual peaks**: frames where the play area's brightness or the share of changed
+  pixels spikes, marked as candidate explosions or screen flashes.
+- **Audio onsets**: loud onsets in the soundtrack, and where the music changes section,
+  using the audio measures polyweave already has for its own sound.
+- One timeline JSON of all of these, in seconds from the start of the video, with a
+  `.prov.json`, and a sheet that draws the timeline under the matching frames.
+
+The agent then splits the video into stretches at those events and reads each stretch,
+instead of finding the boundaries by eye. Which event means a new wave is the agent's
+reading, not polyweave's.
+
+### §PW382 A rebuilt level compared with its reference video
+
+Found in spinhold (RK178): the deliverable is as much the list of places the rebuilt
+phase plays differently from the reference as the phase itself. Today that comparison is
+an agent looking at a capture of the game and the reference's frames separately and
+remembering both.
+
+What polyweave should do, as **`reference.compare`**:
+
+- Take a reference video (with §PW328's frames) and a capture of the project's game
+  playing the rebuilt level (`capture.movie`, or a kept `game.replay`), and align them in
+  time from an anchor each side declares (the first enemy appearing, an event from
+  §PW381, or a plain offset).
+- A **side-by-side sheet** per stretch: the reference frame and the game's frame at the
+  same second, with timestamps on both.
+- **Curves** from both sides on one chart: objects on screen per second (from §PW379
+  on the reference, and from the game's own trace or the same detection on its
+  capture), and, where §PW330 has the declared wave, its pressure curve beside them.
+- The seconds where the curves differ by more than a bound the call is given, listed
+  with the two frames, so each gap becomes a line an agent can file.
+
+polyweave shows and measures the difference; whether a difference is a bug or a choice
+is the owner's call through a sitting.
 
 ## Block S — Playing the game, not only rendering it
 

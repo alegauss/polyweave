@@ -81,7 +81,7 @@ than asserted: two equal readings either side of it, written down.
 **A change a person asked for spends only what they weighed** (§PW308). The ceiling is
 approved once for a plan, and a session opened from one click on one picture is not that
 plan. Every operation that draws on a balance is marked `spends` in `describe`: `mesh.buy`,
-`picture.buy`, `picture.describe`, `picture.vary` and `sound.buy`. A window reads that mark
+`picture.buy`, `picture.describe`, `picture.vary`, `sound.buy` and `sound.speak`. A window reads that mark
 and keeps no list of its own. `purchase.quote(operation, arguments)` prices one call the way
 the operation prices itself, by its service's `prices` row for the model it would buy, and
 spends nothing. It answers the price, what the ceiling leaves before and after, whether it

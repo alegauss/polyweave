@@ -129,3 +129,25 @@ The request is the words, the model, `influence` (0 to 1, how closely it follows
 rain. The answer is transcoded to the cue's format where it is not MP3, then captured
 before anything else: written, hashed and ledgered as a `sound`, with the service's
 request id as its task. The answer is the ledger entry, the `file` and what it measures.
+
+## A line spoken aloud
+
+The effects model makes a sound from a description and does not reliably say a given
+line, so a studio tag read aloud has its own operation (§PW314). `sound.speak` (a `fetch`
+job) sends `text`, word for word, to ElevenLabs' text to speech in the `voice` named, a
+service voice id, through the same four doors as `sound.buy`. A missing text or voice is
+`fetch.missing-field`, before anything is priced.
+
+Speech is billed by the character, so its `prices` row is one by the character
+(fetching.md, §PW320): the line is counted, the price is the count times the rate, and
+the spend is read off the service's usage where it answers it.
+
+```toml
+prices = { "eleven_multilingual_v2" = { per = "character", rate = 0.0003 } }
+```
+
+The delivery is the voice's own unless the call sets it: `stability`, `similarity` and
+`style` (0 to 1) and `speed` (0.7 to 1.2), sent as the service's `voice_settings`. The
+take is captured as a `sound`, and its record keeps the words, the voice, the model and
+the delivery set, so the same line can be made again. Choosing a character's voice once
+and reading it from the world is §PW321.

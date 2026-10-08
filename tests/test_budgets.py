@@ -79,7 +79,9 @@ from polyweave.errors import PolyweaveError
 #: 100,063 with revision.turn (§PW306), a conversation kept on its revision.
 #: 100,917 with revision.check and revision.settings (§PW307), a revision's harness.
 #: 101,553 with purchase.quote and the `spends` mark (§PW308).
-DESCRIBE = 102_200
+#: 103,372 with prices by the character (§PW320) and sound.speak (§PW314), a line
+#: spoken aloud.
+DESCRIBE = 104_000
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -136,7 +138,8 @@ DESCRIBE = 102_200
 #: 111,382 with revision.turn (§PW306).
 #: 112,236 with revision.check and revision.settings (§PW307).
 #: 112,890 with purchase.quote and fetch.not-paid (§PW308).
-CAPABILITIES = 113_500
+#: 114,749 with fetch.uncounted (§PW320) and sound.speak (§PW314).
+CAPABILITIES = 115_400
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

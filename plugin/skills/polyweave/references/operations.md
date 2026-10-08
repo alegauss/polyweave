@@ -24,7 +24,7 @@ This page groups them by task.
 | Drive a game | `game.open`, `game.query`, `game.input`, `game.step`, `game.wait`, `game.call`, `game.set`, `game.shot`, `game.close`, `game.batch`, `game.keep`, `game.rekey`, `game.replay`, `game.release_check` |
 | Scale against the engine | `units.check`, `units.engine_scale`, `units.read_number` |
 | World | `world.read`, `world.validate`, `words.check`, `words.unlisted`, `words.sheet` |
-| Music | `music.validate` (every problem, by line), `music.to_midi`, `music.render`, `sound.synth` (effects from a seed), `sound.buy` (a paid one) |
+| Music | `music.validate` (every problem, by line), `music.to_midi`, `music.render`, `sound.synth` (effects from a seed), `sound.buy`, `sound.speak` (paid) |
 | Visual effects | `vfx.build` (particles, ribbon), `vfx.preview`, `panel.build` (a menu panel), `panel.capture` |
 | A project's look | `style.read`, `style.drift` (before a person looks; only `verdict.judge` grows a canon) |
 | Buy a drawing | `picture.buy`, `picture.gate` (before the mesh is bought), `picture.letters`, `picture.describe`, `picture.vary`, `picture.against_parent`, `picture.fit` (onto the family's grid), `picture.collect` |

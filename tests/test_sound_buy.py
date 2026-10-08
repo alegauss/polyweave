@@ -219,3 +219,65 @@ def test_a_row_by_the_unit_that_says_it_wrong_is_refused(tmp_path, row):
     with pytest.raises(PolyweaveError) as refused:
         load(tmp_path)
     assert refused.value.code == "config.bad-type"
+
+
+SPEECH = PROJECT.replace(
+    '"eleven_text_to_sound_v2" = 0.05',
+    '"eleven_text_to_sound_v2" = 0.05, '
+    '"eleven_multilingual_v2" = { per = "character", rate = 0.0003 }',
+)
+
+
+@pytest.fixture
+def voiced(tmp_path, monkeypatch, service):
+    (tmp_path / "polyweave.toml").write_text(SPEECH, encoding="utf-8")
+    monkeypatch.setattr(sound_buy, "_used", lambda base, key: None)
+    return service
+
+
+def test_a_line_is_spoken_in_the_voice_named(tmp_path, voiced):
+    """§PW314: no operation spoke a line, so a studio tag could not be voiced."""
+    found = sound_buy.speak(text="Viglet Games", voice="voice/7", out="vo/tag.mp3",
+                            stability=0.4, speed=0.9, root=str(tmp_path))
+    url, key, sent = voiced.sent[0]
+    assert url == (
+        "https://api.elevenlabs.io/v1/text-to-speech/voice%2F7"
+        "?output_format=mp3_44100_128"
+    )
+    assert sent == {
+        "text": "Viglet Games", "model_id": "eleven_multilingual_v2",
+        "voice_settings": {"stability": 0.4, "speed": 0.9},
+    }
+    assert found["file"] == "vo/tag.mp3"
+    [entry] = purchase.read(tmp_path)
+    assert entry["credits"] == pytest.approx(12 * 0.0003)
+    assert entry["prompt"] == "Viglet Games"
+
+
+def test_the_record_keeps_what_makes_the_take_again(tmp_path, voiced):
+    from polyweave import provenance
+
+    sound_buy.speak(
+        text="Go", voice="v1", out="vo/go.mp3", style=0.2, root=str(tmp_path)
+    )
+    record = provenance.read(tmp_path / "vo" / "go.mp3")
+    details = record["details"]
+    assert details["voice"] == "v1"
+    assert details["delivery"] == {"style": 0.2}
+    assert record["engine"]["model"] == "eleven_multilingual_v2"
+
+
+@pytest.mark.parametrize("text, voice", [("", "v1"), ("Go", None)])
+def test_a_line_without_words_or_a_voice_is_refused_before_sending(
+    tmp_path, voiced, text, voice
+):
+    with pytest.raises(PolyweaveError) as refused:
+        sound_buy.speak(text=text, voice=voice, out="vo/x.mp3", root=str(tmp_path))
+    assert refused.value.code == "fetch.missing-field"
+    assert voiced.sent == []
+
+
+def test_a_spoken_line_is_quoted_by_its_characters(tmp_path, voiced):
+    said = purchase.quote("sound.speak", {"text": "x" * 100}, root=str(tmp_path))
+    assert said["price"] == pytest.approx(0.03)
+    assert said["count"] == 100

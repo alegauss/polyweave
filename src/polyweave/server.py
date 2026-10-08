@@ -92,7 +92,8 @@ TOOL_BUDGET = 4500
 #: 89,300 at 88,722 for revision.turn (§PW306).
 #: 90,100 at 89,544 for revision.check and revision.settings (§PW307).
 #: 90,400 at 90,139 for measure.contrast's `behind`, a frame without text (§PW319).
-LIST_BUDGET = 90400
+#: 92,100 at 91,510 for sound.speak, a line spoken aloud (§PW314).
+LIST_BUDGET = 92100
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {
