@@ -25,7 +25,7 @@ page groups them by task.
 | Scale against the engine | `units.check`, `units.engine_scale`, `units.read_number` |
 | World | `world.read`, `world.validate`, `voice.design`, `voice.choose`, `voice.lines`, `words.check`, `words.unlisted`, `words.sheet` |
 | Music | `music.validate`, `music.to_midi`, `music.render`, `sound.synth` (effects from a seed), `sound.buy`, `sound.speak` (paid) |
-| Visual effects | `vfx.build` (particles, ribbon), `vfx.preview`, `panel.build` (a menu panel), `panel.capture` |
+| Visual effects | `vfx.build`, `vfx.preview`, `panel.build` (a menu panel), `panel.capture`, `icons.build` |
 | A project's look | `style.read`, `style.drift` (before a person looks; only `verdict.judge` grows a canon) |
 | Buy a drawing | `picture.buy`, `picture.gate` (before a mesh), `picture.letters`, `picture.describe`, `picture.vary`, `picture.against_parent`, `picture.fit` (onto the family's grid), `picture.collect` |
 | Before buying a mesh | `reference.pick`, `reference.prepare`, `reference.frames`, `shape.check`, `shape.silhouette`, `shape.turntable` |

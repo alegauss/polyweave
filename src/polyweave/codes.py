@@ -1960,6 +1960,12 @@ CODES: dict[str, Code] = {
         when="a bound on a measure that returns a set or a colour rather than a number",
         doors=("bound a statistic of it instead",),
     ),
+    "compose.bad-icons": Code(
+        means="an icon set's declaration cannot be drawn",
+        when="a *.icons.toml missing or not TOML, a shape or key it does not know, a "
+        "size out of range, or no icon at all (§PW331)",
+        doors=("declare each icon with a shape the refusal lists",),
+    ),
     "compose.bad-panel": Code(
         means="a menu panel's declaration cannot be drawn",
         when="a *.panel.toml missing or not TOML, a key nothing reads, a colour or "

@@ -262,30 +262,6 @@ this is where that is recorded honestly: what still runs by hand, and why the ri
 instead of disappearing. An outcome worth having, stated, beats the same outcome
 unstated.
 
-### §PW331 A declared icon set, built and accepted
-
-Met in starship (RK147): every prompt names its button in words (A, RB, CROSS, OPTIONS,
-LS DOWN, SPACE), and the owner wants the button drawn as the player sees it on the pad.
-`describe` lists no operation that makes a set of small 2D icons, and the project may
-not draw them by hand. Nothing was built; RK147 waits on this line.
-
-What the game needs, per layout (Xbox, PlayStation, a generic pad, and keycaps for the
-keyboard): the face buttons in their own colours (green A, red B, blue X, yellow Y; the
-cross, circle, square and triangle), shoulders and triggers as their shapes, the two
-menu buttons, the sticks and their clicks, and the D-pad directions. The premise asks
-for detail: a lit rim, shading, the symbol in its colour and a dark outline that reads
-over a bright scene, never a flat disc with a letter.
-
-What polyweave should do: build a declared icon set (each icon a base shape, its fill,
-rim, symbol and outline, from a small set of primitives) into PNGs at stated sizes, or
-one atlas with a map of names, each recorded with the declaration as input. An
-acceptance spec per set holds legibility at the smallest size (contrast against light
-and dark backgrounds, the symbol's share of the face), and a sitting puts each set in
-front of a person.
-
-Done when starship's three pad sets and its keycaps build from a declaration, pass their
-specs and wait in a sitting.
-
 ### §PW336 Text that fits, read off a held screen
 
 Met in starship (RK166). The design asks that every screen, captured in pt-BR, be held

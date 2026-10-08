@@ -96,3 +96,31 @@ progress as `<name>.<step>.capture.png`. Each still has a record naming the decl
 and the material it shows, so a spec can hold the edge's colour in a state or what a
 wipe covers halfway, and a person can judge them on a sitting. Like every capture it
 needs a display or the offscreen route, and without one it is `compose.unfilmed`.
+
+## An icon set
+
+A game's prompts draw each button as the pad shows it (§PW331), and the project does not
+draw them by hand, so a set of small icons is a declaration, `*.icons.toml`: `name`,
+`sizes` (8 to 1024 pixels), `atlas`, a `[style]` every icon inherits, and one
+`[icon.<name>]` each. An icon is a `shape` (`circle`, `rounded`, `pill`, `trigger`,
+`keycap`, `dpad`, `stick`), a `fill`, a `symbol` with its `symbol_colour`, and the
+style's `outline`, `outline_width` (a share of the size), `rim` and `shade`, any of which
+it may override. A symbol is text, or a glyph: `cross`, `ring`, `square`, `triangle`, the
+four arrows, `menu` (three bars) and `view`. A `dpad` with a `direction` lights that arm
+and puts its arrow in it.
+
+`icons.build(source)` draws each icon four times over and brings it down, so a 32-pixel
+icon keeps smooth edges: the dark outline that reads over a bright scene, the fill
+lighter at its top than its foot, a lit rim inside the outline, and the symbol in its
+colour. Each lands as `<set>/<icon>_<size>.png`, or with `atlas = true` each size as
+`<set>/<set>_<size>.png` and a JSON map of names to `[x, y, w, h]`; every file's record
+(`picture`) has the declaration as an input. `out` sets the folder.
+
+`[accept]` holds every icon at the smallest size: `symbol_contrast_min`, the WCAG ratio
+of the symbol against its face; `background_contrast_min`, the worse of the outline
+against white and the face against black; `symbol_share_min`, the symbol's share of the
+face. `measured` gives each icon's three, and `failed` names each one under a bound.
+With `sitting`, on by default, the set waits on the review page at its largest size,
+since whether it reads as the pad's own button is a person's to say. A declaration that
+cannot be drawn (an unknown shape or key, a size out of range, no icon) is
+`compose.bad-icons`.
