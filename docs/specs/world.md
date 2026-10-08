@@ -7,7 +7,9 @@ stays the source; the declaration is what every later line in Block Q checks aga
 what Block R's level declarations refer to by id.
 
 **A person writes this file and the plugin only reads it.** Nothing in polyweave composes
-an entity, a name or a rule, for the reason the non-goal on a game's story gives.
+an entity, a name or a rule, for the reason the non-goal on a game's story gives. The one
+write is a voice a person chose by ear (§PW321): its service id is not a thing a person
+can type from what they heard, so `voice.choose` writes it, and nothing else.
 
 ## The file
 
@@ -43,7 +45,8 @@ unshown = ["nemesis"]     # entities whose name is never shown
   traits that must appear) and `never` (the ones that must not). It is what a picture or
   a mesh of the entity is bought from.
 - `[entity.<id>.voice]` is optional: the service's voice `id` a person chose, a
-  `description` of how it should sound and a `sample` line, all text, and its delivery,
+  `description` of how it should sound and a `sample` line, `chosen_from` (the preview
+  it was chosen from), all text, and its delivery,
   `stability`, `similarity` and `style` from 0 to 1 and `speed` from 0.7 to 1.2. It is
   what every line the entity speaks is spoken in (§PW321).
 - `[rules]` is optional, and each of its keys is too. `tone` is a list of sentences no
@@ -104,6 +107,21 @@ The record carries `details.entity` as a bought picture's does, with `of = "voic
 the SHA-256 of the voice table alone, and the world as an input. So a new voice or
 delivery makes every line spoken in it outdated, and an edit to the entity's look does
 not.
+
+**A voice is designed from words and chosen by ear.** `voice.design(entity)` sends the
+voice's `description`, speaking its `sample` (or the call's), to the service's voice
+design (`/v1/text-to-voice/design`), priced by its `prices` row and allowed against the
+ceiling like any purchase. Each preview lands as an MP3 under `voices/<id>/` (or `out`)
+with its record: its share of the price, the preview's service id and the entity. A
+sound sitting lays them out, and a person accepts one on the review page.
+
+`voice.choose(preview)` keeps that one: refused with `world.voice-unchosen` unless the
+preview's record holds a person's `accept` on its very bytes, since an agent never picks a
+voice (the non-goal on accepting its own look, applied to a sound). The service saves it
+(`/v1/text-to-voice`), and its id and `chosen_from` are written under the entity's
+`[entity.<id>.voice]`, line by line so the person's comments and order survive; the
+table is added where the world has none, a voice written inline is refused, and a write
+that would leave the world unreadable is put back.
 
 ## The text a player reads
 

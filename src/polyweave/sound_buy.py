@@ -26,6 +26,7 @@ written into `[budget.<name>]` by a person and never proposed by the plugin.
 
 from __future__ import annotations
 
+import base64
 import hashlib
 import json
 import shutil
@@ -260,6 +261,232 @@ def _bought(
     )
     return {**entry, "file": target.relative_to(here).as_posix(),
             "measured": _measured(target)}
+
+
+#: Where a voice is designed from words, and where a chosen preview is kept (§PW321).
+DESIGN = "/v1/text-to-voice/design"
+SAVE = "/v1/text-to-voice"
+
+
+@operation("voice.design", kind="fetch", injects=("report",), spends=True)
+def design(
+    report=None,
+    entity: Annotated[str, Param("the world entity whose voice is described")] = None,
+    *,
+    sample: Annotated[str, Param("the line the previews speak; the voice's own")] = (
+        None
+    ),
+    out: Annotated[str, Param("the folder the previews and the sitting go in")] = (
+        None
+    ),
+    model: Annotated[str, Param("the service's model, priced in [service]")] = (
+        "eleven_multilingual_ttv_v2"
+    ),
+    world: Annotated[str, Param("the *.world.toml, where the project has several")] = (
+        None
+    ),
+    service: Annotated[str, purchase.SERVICE] = None,
+    root: Annotated[str, Param("the project whose ledger this is")] = ".",
+) -> dict:
+    """Previews of an entity's described voice, laid out for a person to hear.
+
+    Sends the world's `description` of the voice, speaking its `sample`, to the
+    service's voice design, priced and ledgered as any purchase. Each preview lands as a
+    sound with its record, and a sitting plays them; the person's verdict, not the
+    agent's, is what `voice.choose` saves (§PW321).
+    """
+    from .world import brief
+
+    if not entity:
+        raise PolyweaveError(
+            "fetch.missing-field",
+            "a voice was asked to be designed for no entity",
+            "pass entity, one the world describes a voice for",
+        )
+    source, found = brief(entity, world, root)
+    voice = found.get("voice") or {}
+    if not voice.get("description"):
+        raise PolyweaveError(
+            "world.no-voice",
+            f"{entity} has no words about a voice to design it from",
+            f'write description = "..." under [entity.{entity}.voice]',
+            given=entity,
+        )
+    sample = sample or voice.get("sample")
+    if not sample:
+        raise PolyweaveError(
+            "fetch.missing-field",
+            f"no line to hear {entity}'s voice on",
+            f'pass sample, or write sample = "..." under [entity.{entity}.voice]',
+        )
+    config = load(root)
+    here = config.root
+    folder = config.path("paths.work", out or f"voices/{entity}")
+    name = config.service(service, model=model)
+    about = config.services()[name]
+    base, key = picture._reached(name, about)
+    priced = picture._priced(
+        name, about.get("prices") or {}, model, None, len(sample)
+    )
+    purchase.allow_priced(priced, root=here, service=name)
+    before = _used(base, key) if priced["per"] == "character" else None
+    if report is not None:
+        report.stage("building", progress=0.2, note="asking the service for voices")
+    answer = _asked(
+        f"{base}{DESIGN}", key,
+        {"voice_description": voice["description"], "text": sample, "model_id": model},
+    )
+    after = _used(base, key) if before is not None else None
+    previews = [one for one in answer.get("previews") or () if one.get("audio_base_64")]
+    if not previews:
+        raise PolyweaveError(
+            "fetch.nothing-arrived",
+            "the service answered with no preview of the voice",
+            "reword the description; nothing was ledgered",
+        )
+    spent = (
+        (after - before) * priced["rate"]
+        if before is not None and after is not None and after >= before
+        else None
+    )
+    drawn_from = {
+        "id": entity,
+        "world": provenance.relative(source, here),
+        "description": voice["description"],
+    }
+    heard = []
+    for index, preview in enumerate(previews, start=1):
+        body = base64.b64decode(preview["audio_base_64"])
+        target = folder / f"{entity}_{index}.mp3"
+        # One call answers every preview, so each carries its share of the price.
+        entry = purchase.capture(
+            body,
+            out=target.relative_to(here).as_posix(),
+            task_id=f"{name}:{preview.get('generated_voice_id') or index}",
+            credits=round(priced["price"] / len(previews), 6),
+            reported=None if spent is None else round(spent / len(previews), 6),
+            prompt=sample,
+            bought="sound",
+            engine={"name": name, "model": model},
+            service=name,
+            details={"voice_preview": preview.get("generated_voice_id"),
+                     "entity": drawn_from, "format": "mp3"},
+            inputs=[provenance.source("world", source, root=here)],
+            root=here,
+        )
+        heard.append({"name": target.stem, "new": entry["artefact"]})
+    laid = sound.sitting(
+        heard, out=provenance.relative(folder, here), root=str(here)
+    )
+    return {
+        "entity": entity,
+        "description": voice["description"],
+        "sample": sample,
+        "previews": [one["new"] for one in heard],
+        "sitting": laid["sitting"],
+        "says": f"{len(heard)} previews of {entity}'s voice for a person to hear; "
+        "voice.choose saves the one they accept",
+    }
+
+
+@operation("voice.choose", kind="fetch")
+def choose(
+    preview: Annotated[str, Param("the preview a person accepted, as a path")],
+    *,
+    world: Annotated[str, Param("the *.world.toml, where the project has several")] = (
+        None
+    ),
+    service: Annotated[str, purchase.SERVICE] = None,
+    root: Annotated[str, Param("the project whose ledger this is")] = ".",
+) -> dict:
+    """Keep the preview a person accepted as its entity's voice, written in the world.
+
+    Refused unless the preview's record holds a person's `accept` on those very bytes:
+    the agent never picks a voice (§PW321). The service saves it as a voice, and its id
+    is written under `[entity.<id>.voice]` with the preview it came from.
+    """
+    config = load(root)
+    here = config.root
+    where = config.path("paths.work", preview)
+    try:
+        record = provenance.read(str(where), root=here)
+    except PolyweaveError as missing:
+        raise PolyweaveError(
+            "world.voice-unchosen",
+            f"{preview} has no record, so no one chose it",
+            "run voice.design and choose from the previews it lays out",
+            given=preview,
+        ) from missing
+    details = record.get("details") or {}
+    drawn = details.get("entity") or {}
+    if not details.get("voice_preview") or not drawn.get("id"):
+        raise PolyweaveError(
+            "world.voice-unchosen",
+            f"{preview} is not a preview voice.design made",
+            "choose from the previews voice.design lays out",
+            given=preview,
+        )
+    digest = provenance.sha256_of(where)[0]
+    said = [v for v in record.get("verdicts") or () if v.get("sha256") == digest]
+    if not said or said[-1].get("choice") != "accept":
+        raise PolyweaveError(
+            "world.voice-unchosen",
+            f"no person has accepted {preview} as {drawn['id']}'s voice",
+            "lay the previews out with voice.design and let a person accept one on "
+            "the review page; an agent does not choose a voice",
+            given=preview,
+        )
+    name = config.service(service, model=str((record.get("engine") or {}).get("model")))
+    base, key = picture._reached(name, config.services()[name])
+    saved = _asked(
+        f"{base}{SAVE}", key,
+        {"voice_name": drawn["id"], "voice_description": drawn.get("description", ""),
+         "generated_voice_id": details["voice_preview"]},
+    )
+    if not saved.get("voice_id"):
+        raise PolyweaveError(
+            "fetch.nothing-arrived",
+            "the service kept no voice from the preview",
+            "ask again; the world was not changed",
+        )
+    from .world import keep_voice
+
+    kept = keep_voice(
+        drawn["id"], saved["voice_id"], provenance.relative(where, here),
+        world or drawn.get("world"), here,
+    )
+    return {"entity": drawn["id"], "voice": saved["voice_id"], "world": kept,
+            "from": provenance.relative(where, here)}
+
+
+def _asked(url: str, key: str, payload: dict) -> dict:
+    """One JSON request with the service's key header, answered with JSON."""
+    request = urllib.request.Request(  # noqa: S310
+        url,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"xi-api-key": key, "Content-Type": "application/json",
+                 "Accept": "application/json", "User-Agent": picture.AGENT},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=TIMEOUT) as answer:  # noqa: S310
+            said = json.loads(answer.read() or b"{}")
+    except urllib.error.HTTPError as refused:
+        raise PolyweaveError(
+            "fetch.service-error",
+            f"the service answered {refused.code}",
+            "read the detail; a 401 is a key the service does not accept, or an "
+            "account out of credits, and a 422 words it would not use",
+            detail=refused.read()[:400].decode("utf-8", "replace"),
+        ) from refused
+    except urllib.error.URLError as exc:
+        raise PolyweaveError(
+            "fetch.service-error",
+            f"the service could not be reached at {url}",
+            "check the base under [service] and the network",
+            detail=str(exc.reason),
+        ) from exc
+    return said if isinstance(said, dict) else {}
 
 
 def _target(config, cue: str | None, out: str | None) -> Path:

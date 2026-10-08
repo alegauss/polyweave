@@ -51,8 +51,7 @@
 
 ## Block P — Music and sound a game can ship
 
-- ⏳ **PW321** (deps: PW314 ✅, PW320 ✅) **a world's character has no voice of its own, so each spoken line sounds like whichever voice its call happened to name** — voice.design still sends a voice's description to the service, and a person's verdict on its previews writes the chosen id back to the world. → §PW321
-- 📋 **PW322** (deps: PW321 ⏳) **a locale catalog's lines cannot be voiced as a set, so a cast's dialogue is one hand-made call and cue per line** — Dialogue arrives as hundreds of catalog rows per locale, and voicing them one by one leaves no view of the total cost, the lines unvoiced or those gone stale. → §PW322
+- 📋 **PW322** (deps: PW321 ✅) **a locale catalog's lines cannot be voiced as a set, so a cast's dialogue is one hand-made call and cue per line** — Dialogue arrives as hundreds of catalog rows per locale, and voicing them one by one leaves no view of the total cost, the lines unvoiced or those gone stale. → §PW322
 - 📋 **PW323** (deps: PW314 ✅) **nothing measures a spoken take, so a clipped, padded or misread line reaches the person's verdict as a candidate** — Speech services drop words, add breaths and pad silence, and a person should hear only takes that already say their line, at the length and level the game needs. → §PW323
 - 📋 **PW324** (deps: PW314 ✅) **a spoken line can only be heard after paying for it, so its wording and timing in the game cannot be tried for free** — Most of a line's revisions are about words and timing, not the voice, so a free local draft lets them settle before a single character is billed. → §PW324
 - 📋 **PW333** (deps: —) **an sfx effect cannot be declared at a note, so putting a menu sound in a key means working out base_freq by hand** — The pitch formula lives only in the source, so every tuned effect is numbers derived off the page that nothing checks. → §PW333
@@ -76,6 +75,7 @@
 - 📋 **PW384** (deps: —) **nothing keeps a reference video, or the frames taken from it, out of the repository and out of what ships** — A commercial game's footage given to study must stay internal, and today that rests on an agent remembering not to stage it. → §PW384
 - 📋 **PW381** (deps: PW380) **a reference video has no timeline of its score, flashes and sound onsets, so where each wave starts is found by eye** — Without anchors an agent spends frame reads finding where a stretch begins before it can read what happens in it. → §PW381
 - 📋 **PW382** (deps: PW328, PW379) **a rebuilt level's capture cannot be aligned with the video it copies, so where it plays differently is found by memory** — The list of differences is half of what a rebuild is for, and two sources looked at separately miss the gaps a curve laid over the other would show. → §PW382
+- 📋 **PW385** (deps: PW330) **worlds offered on one tier of a route cannot be held level in whole threat and in what they give to save** — A score table shared by routes is only fair while every fork's worlds are worth the same, and nothing measures one world against another. → §PW385
 
 ## Block S — Playing the game, not only rendering it
 

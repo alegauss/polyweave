@@ -547,31 +547,6 @@ declared in its `polyweave.toml`, made by `music.render` and `sound.synth`, and 
 `*.accept.toml` bounds, and its own audio scripts are removed. Anything Cottony needs
 that a second game would not becomes configuration.
 
-### §PW321 A character's voice, designed once
-
-PW314 speaks one line in a voice the call names. A game has a cast: Ada's lines must all
-sound like Ada, and a second session that picks another voice id for her next line
-breaks that without anything noticing.
-
-What polyweave should do: `[entity.<id>.voice]` in the world file, beside `look`,
-holding either a service voice id or a `description` ("a dry, tired foreman in their
-fifties, northern accent") with a sample line. `voice.design` sends the description to
-ElevenLabs' voice design endpoint (`/v1/text-to-voice/design`), which answers several
-previews speaking the sample, each priced and ledgered against the service's ceiling. A
-sitting plays the previews side by side with the entity's description and the world's
-`tone`, and the person's verdict names one; only then is it saved as a voice
-(`/v1/text-to-voice`) and its id written back as the entity's voice, with the preview's
-record as its provenance.
-
-The speech operation then takes `entity=<id>` and reads the voice from the world,
-refusing an entity without one (`voice.none`) instead of guessing. Delivery settings
-(stability, similarity, style, speed) belong to the voice and may be overridden per
-line. The agent never picks among previews itself: that is the non-goal on accepting its
-own look, applied to a sound.
-
-The record carries the entity's voice digest, so changing a voice makes every line
-spoken in it outdated.
-
 ### §PW322 A catalog voiced as a set
 
 A game's lines already live in locale catalogs, and each row names its speaker (the
@@ -1003,6 +978,29 @@ What polyweave should do, as **`reference.compare`**:
 
 polyweave shows and measures the difference; whether a difference is a bug or a choice
 is the owner's call through a sitting.
+
+### §PW385 Worlds of a tier held level
+
+Spinhold made its shift a chart of worlds (RK210): tiers in order, each a choice of
+worlds, and a run flies one path through it. Arcade's score table is one table, so every
+world on a tier must be worth the same: the same whole threat within a band the owner
+sets, and the same number of Holders to save, which caps the multiplier (RK212).
+
+Nothing in polyweave answers that. PW330 measures one wave timeline's threat per second;
+it does not total a world, count what a world gives to rescue, or hold one world against
+another. Spinhold extended its own stand-in for PW330, dev/pressure.gd, with
+`Pressure.level(world)`, which sums the owner's weights in game/waves/threat.toml over
+the events of a phase's waves and counts its Gleaners as Holders, and with
+`Pressure.unlevel(chart, rule)`, which names every world of a tier whose threat is more
+than `[rules] tier_band` away from the tier's first world's, or whose Holders differ.
+The check lives in dev/check.gd as check_routes_level.
+
+What polyweave should do: an operation that takes several wave timelines declared as one
+tier (or a chart's tiers) with the project's threat weights, reports each one's total
+threat, peak and count of a named kind, and refuses any outside a declared band of a
+reference, naming the world, its value, the reference and the band. A refusal should
+carry the share it is off by. Then the project deletes level and unlevel along with the
+rest of the PW330 stand-in.
 
 ## Block S — Playing the game, not only rendering it
 

@@ -81,7 +81,8 @@ from polyweave.errors import PolyweaveError
 #: 101,553 with purchase.quote and the `spends` mark (§PW308).
 #: 103,372 with prices by the character (§PW320) and sound.speak (§PW314), a line
 #: spoken aloud.
-DESCRIBE = 104_000
+#: 105,461 with voice.design and voice.choose (§PW321), a character's voice.
+DESCRIBE = 106_100
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -139,7 +140,8 @@ DESCRIBE = 104_000
 #: 112,236 with revision.check and revision.settings (§PW307).
 #: 112,890 with purchase.quote and fetch.not-paid (§PW308).
 #: 114,749 with fetch.uncounted (§PW320) and sound.speak (§PW314).
-CAPABILITIES = 115_400
+#: 116,904 with voice.design, voice.choose and three world codes (§PW321).
+CAPABILITIES = 117_500
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
@@ -172,7 +174,8 @@ HELP_VERB = 4_100
 #: 21,262 with project.inventory and revision.ask, .open and .close (§PW299, §PW301).
 #: 21,720 with panel.build and panel.capture (§PW316).
 #: 22,237 with revision.turn, .check, .settings and the hook verb (§PW306, §PW307).
-HELP_TOP = 22_800
+#: 22,842 with sound.speak, voice.design and voice.choose (§PW314, §PW321).
+HELP_TOP = 23_300
 #: A search's answer over its default budget of 24 samples: 3,739.
 SEARCH = 4_000
 

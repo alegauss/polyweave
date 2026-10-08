@@ -693,6 +693,12 @@ CODES: dict[str, Code] = {
         "it is refused rather than spoken in a voice nobody chose for it",
         doors=("have a person choose the voice and write its id in the world",),
     ),
+    "world.voice-unchosen": Code(
+        means="a voice was to be kept that no person accepted",
+        when="voice.choose on a file that is not a voice.design preview, or one with "
+        "no person's accept on its bytes (§PW321); an agent never picks a voice",
+        doors=("let a person accept one on the review page voice.design lays out",),
+    ),
     "world.voice-mismatch": Code(
         means="a call named a voice other than the one the world gives its entity",
         when="sound.speak with both entity= and a voice= that is not the entity's",

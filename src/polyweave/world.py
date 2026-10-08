@@ -33,7 +33,9 @@ game have drifted apart. The prose stays the source a person writes, and beside 
 shape is wrong. `world.validate` reports everything wrong with it, each finding against
 the source's own line with the remedy. **Nothing here writes the file**: a person
 authors the world, and the plugin reads it, for the reason the non-goal on a game's
-story gives.
+story gives. The one exception is a voice a person chose by ear (§PW321): `voice.choose`
+writes its id under the entity's `voice`, because a service's voice id is not a thing a
+person can type from what they heard.
 """
 
 from __future__ import annotations
@@ -94,7 +96,7 @@ LOOK_KEYS = {"description": str, "shows": list, "never": list}
 
 #: What an entity's `voice` may say (§PW321): the service's voice id a person chose,
 #: what it should sound like and a line to hear it on, and its delivery.
-VOICE_KEYS = {"id": str, "description": str, "sample": str}
+VOICE_KEYS = {"id": str, "description": str, "sample": str, "chosen_from": str}
 
 #: The delivery a voice may set, each as the range it takes.
 DELIVERY = {
@@ -553,6 +555,67 @@ def still_drawn(world: str | Path, ident: str, digest: str, of: str = "look") ->
         return False
     digested = voice_digest if of == "voice" else look_digest
     return digested(entities[ident]) == digest
+
+
+def keep_voice(
+    entity: str, voice: str, chosen_from: str, world: str | None, root: str | Path
+) -> str:
+    """Write a chosen voice's id under the entity's `voice` table, and nothing else.
+
+    Line by line, so the person's comments and order survive: the `id` and
+    `chosen_from` lines are replaced or added under `[entity.<id>.voice]`, which is
+    added where the world has none. A voice written inline cannot be edited this way
+    and is refused. The file is read back and must say what was written.
+    """
+    source = find(world, root)
+    original = read_text_retrying(source)
+    lines = original.splitlines()
+    header = f"[entity.{entity}.voice]"
+    at = next((i for i, line in enumerate(lines) if line.strip() == header), None)
+    own = {"id": voice, "chosen_from": chosen_from}
+    if at is None:
+        if re.search(r"^\s*voice\s*=", _block(lines, f"[entity.{entity}]"), re.M):
+            raise PolyweaveError(
+                "world.bad-value",
+                f"{entity}'s voice is written inline, and only a [{header[1:-1]}] "
+                "table can be written to",
+                f"move it to its own {header} table",
+            )
+        lines += ["", header] + [f"{k} = {json.dumps(v)}" for k, v in own.items()]
+    else:
+        end = next(
+            (i for i in range(at + 1, len(lines)) if lines[i].lstrip().startswith("[")),
+            len(lines),
+        )
+        body = [
+            line for line in lines[at + 1 : end]
+            if not re.match(r"\s*(id|chosen_from)\s*=", line)
+        ]
+        lines[at + 1 : end] = [f"{k} = {json.dumps(v)}" for k, v in own.items()] + body
+    written = "\n".join(lines) + "\n"
+    source.write_text(written, encoding="utf-8", newline="")
+    entities, _, faults = _parse(source)
+    if faults.found or (entities.get(entity, {}).get("voice") or {}).get("id") != voice:
+        source.write_text(original, encoding="utf-8", newline="")
+        raise PolyweaveError(
+            "world.bad-value",
+            f"writing {entity}'s voice would have left the world unreadable, so it was "
+            "put back as it was",
+            f"write id = {json.dumps(voice)} under {header} by hand",
+        )
+    return provenance.relative(source, Path(root).resolve())
+
+
+def _block(lines: list[str], header: str) -> str:
+    """The lines under one table header, up to the next."""
+    at = next((i for i, line in enumerate(lines) if line.strip() == header), None)
+    if at is None:
+        return ""
+    end = next(
+        (i for i in range(at + 1, len(lines)) if lines[i].lstrip().startswith("[")),
+        len(lines),
+    )
+    return "\n".join(lines[at + 1 : end])
 
 
 def voiced(
