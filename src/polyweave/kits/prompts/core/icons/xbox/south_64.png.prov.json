@@ -1,0 +1,28 @@
+{
+  "artefact": {
+    "bytes": 5716,
+    "path": "core/icons/xbox/south_64.png",
+    "sha256": "e24ea0dadcc9db6d9e30d5089403cc09de65af1178aaf12129389f717a4e81e7"
+  },
+  "elapsed_s": null,
+  "engine": {
+    "name": "icons.build"
+  },
+  "inputs": [
+    {
+      "path": "icons/xbox.icons.toml",
+      "role": "icons",
+      "sha256": "34b2cbb64fbbcf0cffbd731aa01b868b112ed34115442e12d7d6e215f6917dfa"
+    }
+  ],
+  "kind": "picture",
+  "measurements": {},
+  "params": {
+    "set": "xbox"
+  },
+  "produced_at": "2026-10-08T21:41:25Z",
+  "producer": {
+    "tool": "polyweave",
+    "version": "0.1.0"
+  }
+}

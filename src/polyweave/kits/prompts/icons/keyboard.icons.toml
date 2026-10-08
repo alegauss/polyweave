@@ -1,0 +1,216 @@
+# The keyboard and mouse family's prompts: a keycap per key, by the name Godot's
+# OS.get_keycode_string gives it, and the three mouse buttons.
+name = "keyboard"
+sizes = [64]
+
+[style]
+fill = "#E9E9EC"
+symbol_colour = "#202024"
+
+[icon.key_a]
+shape = "keycap"
+symbol = "A"
+
+[icon.key_b]
+shape = "keycap"
+symbol = "B"
+
+[icon.key_c]
+shape = "keycap"
+symbol = "C"
+
+[icon.key_d]
+shape = "keycap"
+symbol = "D"
+
+[icon.key_e]
+shape = "keycap"
+symbol = "E"
+
+[icon.key_f]
+shape = "keycap"
+symbol = "F"
+
+[icon.key_g]
+shape = "keycap"
+symbol = "G"
+
+[icon.key_h]
+shape = "keycap"
+symbol = "H"
+
+[icon.key_i]
+shape = "keycap"
+symbol = "I"
+
+[icon.key_j]
+shape = "keycap"
+symbol = "J"
+
+[icon.key_k]
+shape = "keycap"
+symbol = "K"
+
+[icon.key_l]
+shape = "keycap"
+symbol = "L"
+
+[icon.key_m]
+shape = "keycap"
+symbol = "M"
+
+[icon.key_n]
+shape = "keycap"
+symbol = "N"
+
+[icon.key_o]
+shape = "keycap"
+symbol = "O"
+
+[icon.key_p]
+shape = "keycap"
+symbol = "P"
+
+[icon.key_q]
+shape = "keycap"
+symbol = "Q"
+
+[icon.key_r]
+shape = "keycap"
+symbol = "R"
+
+[icon.key_s]
+shape = "keycap"
+symbol = "S"
+
+[icon.key_t]
+shape = "keycap"
+symbol = "T"
+
+[icon.key_u]
+shape = "keycap"
+symbol = "U"
+
+[icon.key_v]
+shape = "keycap"
+symbol = "V"
+
+[icon.key_w]
+shape = "keycap"
+symbol = "W"
+
+[icon.key_x]
+shape = "keycap"
+symbol = "X"
+
+[icon.key_y]
+shape = "keycap"
+symbol = "Y"
+
+[icon.key_z]
+shape = "keycap"
+symbol = "Z"
+
+[icon.key_0]
+shape = "keycap"
+symbol = "0"
+
+[icon.key_1]
+shape = "keycap"
+symbol = "1"
+
+[icon.key_2]
+shape = "keycap"
+symbol = "2"
+
+[icon.key_3]
+shape = "keycap"
+symbol = "3"
+
+[icon.key_4]
+shape = "keycap"
+symbol = "4"
+
+[icon.key_5]
+shape = "keycap"
+symbol = "5"
+
+[icon.key_6]
+shape = "keycap"
+symbol = "6"
+
+[icon.key_7]
+shape = "keycap"
+symbol = "7"
+
+[icon.key_8]
+shape = "keycap"
+symbol = "8"
+
+[icon.key_9]
+shape = "keycap"
+symbol = "9"
+
+[icon.key_space]
+shape = "keycap"
+symbol = "SPACE"
+
+[icon.key_enter]
+shape = "keycap"
+symbol = "ENTER"
+
+[icon.key_escape]
+shape = "keycap"
+symbol = "ESC"
+
+[icon.key_tab]
+shape = "keycap"
+symbol = "TAB"
+
+[icon.key_shift]
+shape = "keycap"
+symbol = "SHIFT"
+
+[icon.key_ctrl]
+shape = "keycap"
+symbol = "CTRL"
+
+[icon.key_alt]
+shape = "keycap"
+symbol = "ALT"
+
+[icon.key_backspace]
+shape = "keycap"
+symbol = "BKSP"
+
+[icon.key_up]
+shape = "keycap"
+symbol = "up"
+
+[icon.key_down]
+shape = "keycap"
+symbol = "down"
+
+[icon.key_left]
+shape = "keycap"
+symbol = "left"
+
+[icon.key_right]
+shape = "keycap"
+symbol = "right"
+
+[icon.mouse_left]
+shape = "rounded"
+symbol = "LMB"
+
+[icon.mouse_right]
+shape = "rounded"
+symbol = "RMB"
+
+[icon.mouse_middle]
+shape = "rounded"
+symbol = "MMB"
+
+[accept]
+symbol_contrast_min = 3.0
+background_contrast_min = 1.5

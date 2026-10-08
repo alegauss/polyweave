@@ -1,0 +1,10 @@
+# What the prompts kit's pictures hold in the game they land in: the south button's
+# icon reads over a dark scene and a light one, its face filling the frame.
+asset = "prompts"
+artefact = "addons/polyweave/prompts/icons/xbox/south_64.png"
+
+[[predicate]]
+id = "fills-its-frame"
+measure = "alpha_coverage"
+region = "frame"
+min = { value = 0.6, origin = "margin" }

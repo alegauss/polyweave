@@ -1,0 +1,28 @@
+{
+  "artefact": {
+    "bytes": 2128,
+    "path": "core/icons/keyboard/key_e_64.png",
+    "sha256": "a2c2a5e880b66cece652d0bcb370716dc6a1e3df591a56ce58e55ad4c355e610"
+  },
+  "elapsed_s": null,
+  "engine": {
+    "name": "icons.build"
+  },
+  "inputs": [
+    {
+      "path": "icons/keyboard.icons.toml",
+      "role": "icons",
+      "sha256": "191ae90e74084da622f43b6e9d0e0610a1994bf88bc32853481778aa126f5c59"
+    }
+  ],
+  "kind": "picture",
+  "measurements": {},
+  "params": {
+    "set": "keyboard"
+  },
+  "produced_at": "2026-10-08T21:41:26Z",
+  "producer": {
+    "tool": "polyweave",
+    "version": "0.1.0"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "artefact": {
+    "bytes": 1812,
+    "path": "core/icons/xbox/dpad_down_64.png",
+    "sha256": "81c77f883cf75532ad128163a0c197f76bd8cdac3a386640966239e22d2845f9"
+  },
+  "elapsed_s": null,
+  "engine": {
+    "name": "icons.build"
+  },
+  "inputs": [
+    {
+      "path": "icons/xbox.icons.toml",
+      "role": "icons",
+      "sha256": "34b2cbb64fbbcf0cffbd731aa01b868b112ed34115442e12d7d6e215f6917dfa"
+    }
+  ],
+  "kind": "picture",
+  "measurements": {},
+  "params": {
+    "set": "xbox"
+  },
+  "produced_at": "2026-10-08T21:41:25Z",
+  "producer": {
+    "tool": "polyweave",
+    "version": "0.1.0"
+  }
+}

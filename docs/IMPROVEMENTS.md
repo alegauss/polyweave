@@ -845,26 +845,6 @@ line in the window and the file in `touched`.
 
 ## Block V — Parts every game repeats, installed already proved
 
-### §PW344 Button prompts for the pad in the player's hands
-
-Met in Starship: game/core/bindings.gd holds a GLYPHS table for xbox, playstation and
-generic, each button a text label ("CROSS", "LB") picked from the pad's name. There is
-no Switch layout, whose face buttons sit swapped, and no image.
-
-The kit reads the project's InputMap, declares the families the game supports (xbox,
-playstation, switch, keyboard and mouse), and installs a prompt service that knows the
-family in use from Input.get_joy_name and the last event, switches live when the player
-picks up another device, and draws an action's binding as an icon: a node for menus and
-a RichTextLabel tag ([action=jump]) for tutorial text.
-
-The icons are a declared set. A CC0 set ships with the kit (Kenney's input prompts), and
-the declaration can point at another, since console certification asks for the platform
-holder's own glyphs, which this repository must never carry.
-
-Proof: every action has an icon in every declared family; a game.input from another
-family changes what is drawn; an icon's legibility over its backdrop is held by
-measure.contrast.
-
 ### §PW345 Rebinding the controls
 
 Starship's game/core/bindings.gd is the source. An action's binding is stored as codes a
@@ -874,8 +854,8 @@ swapped, never shared; a reset goes back to the declared defaults; and the stick
 deadzone and inverted vertical sit beside them. What is Starship's own, its actions and
 its twin-stick fire, becomes the declaration.
 
-The kit installs the binding store and a remap screen built on the prompt service of
-§PW344, so every binding is shown in the icons of the device in use.
+The kit installs the binding store and a remap screen built on the prompt service of the
+prompts kit, so every binding is shown in the icons of the device in use.
 
 Proof, driven through the game: open the screen with the pad alone, rebind an action,
 press the new button and query the InputMap; rebind onto a code another action holds and
@@ -886,9 +866,9 @@ see the swap; restart the game and find the binding kept; reset and find the def
 A main menu, a pause menu and a yes-or-no confirm are in every game, and the failure
 that costs is silent: a control no focus neighbour reaches, a back button that follows
 one platform's convention on all of them, a pause that leaves the game ticking
-underneath. The kit installs those three screens on the prompt service of §PW344, with
-back and confirm bound to the convention of the family in use, and pauses through the
-scene tree's pause and each node's process mode.
+underneath. The kit installs those three screens on the prompts kit's service, with back
+and confirm bound to the convention of the family in use, and pauses through the scene
+tree's pause and each node's process mode.
 
 Proof: a walk of every focusable control by pad events alone reaches each one and comes
 back; back from every screen lands where the declaration says; the game's own time does
@@ -1000,9 +980,9 @@ carries them to the screen.
 
 Cottony has scripts/dialog.gd. The kit installs a dialogue box that types a line at a
 declared rate, completes it on the first press and advances on the next, by the confirm
-button of the family in use (§PW344), with an optional portrait and speaker name,
-reading each line by its key from the string table so that a translation needs no change
-here.
+button of the family in use (the prompts kit), with an optional portrait and speaker
+name, reading each line by its key from the string table so that a translation needs no
+change here.
 
 Proof: every line of a declared sequence is reachable by pad alone; a skip completes a
 line without dropping any of it; the text fits its box in every locale, measured on a
@@ -1047,10 +1027,10 @@ looks like the game is a person's verdict, as every look is here.
 ### §PW356 A pad that leaves, a window that loses focus
 
 When a joypad disconnects mid-game (Input.joy_connection_changed), the kit pauses the
-game and says whose pad left, in the prompts of that pad's family (§PW344); it resumes
-when the pad reconnects or another pad confirms. When the game's window loses focus it
-pauses too, unless the project declares otherwise, as a game meant to run in the
-background would.
+game and says whose pad left, in the prompts of that pad's family (the prompts kit); it
+resumes when the pad reconnects or another pad confirms. When the game's window loses
+focus it pauses too, unless the project declares otherwise, as a game meant to run in
+the background would.
 
 Proof, driven: a simulated disconnect pauses the game and shows the prompt in the family
 of the pad that left; a reconnect resumes it; a focus-out pauses it and a focus-in
@@ -1276,12 +1256,13 @@ game never has a version of these parts of its own to migrate away from.
 
 ### §PW370 Starship onto the input kits
 
-The prompt, remap and co-op kits (§PW344, §PW345, §PW357) are extracted from Starship's
-game/core/bindings.gd, controls.gd and coop.gd. Starship then adopts them, which is the
-decision that every project adapts to polyweave rather than the other way round: its
-actions and options become the kit's declaration, its own input code is removed, its
-Controls tab becomes the kit's screen under Starship's Theme, and the checks in
-dev/check.gd that cover the same ground give way to the kits' acceptance specs.
+The prompt, remap and co-op kits (the prompts kit, §PW345, §PW357) are extracted from
+Starship's game/core/bindings.gd, controls.gd and coop.gd. Starship then adopts them,
+which is the decision that every project adapts to polyweave rather than the other way
+round: its actions and options become the kit's declaration, its own input code is
+removed, its Controls tab becomes the kit's screen under Starship's Theme, and the
+checks in dev/check.gd that cover the same ground give way to the kits' acceptance
+specs.
 
 Whatever Starship needs that the kits lack is filed here as friction and fixed in the
 kit, never patched in the game, so the extraction ends with one copy of the code and not

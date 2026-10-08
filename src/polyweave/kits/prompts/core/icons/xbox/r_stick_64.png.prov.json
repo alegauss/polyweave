@@ -1,0 +1,28 @@
+{
+  "artefact": {
+    "bytes": 5107,
+    "path": "core/icons/xbox/r_stick_64.png",
+    "sha256": "7d2100a208f7e30abf53b6dd3a31bd77b8cd362a6df527bb4bc9ff07be0a87c9"
+  },
+  "elapsed_s": null,
+  "engine": {
+    "name": "icons.build"
+  },
+  "inputs": [
+    {
+      "path": "icons/xbox.icons.toml",
+      "role": "icons",
+      "sha256": "34b2cbb64fbbcf0cffbd731aa01b868b112ed34115442e12d7d6e215f6917dfa"
+    }
+  ],
+  "kind": "picture",
+  "measurements": {},
+  "params": {
+    "set": "xbox"
+  },
+  "produced_at": "2026-10-08T21:41:25Z",
+  "producer": {
+    "tool": "polyweave",
+    "version": "0.1.0"
+  }
+}

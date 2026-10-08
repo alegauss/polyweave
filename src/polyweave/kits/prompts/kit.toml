@@ -1,0 +1,20 @@
+name = "prompts"
+version = "0.1.0"
+summary = "button prompts for the pad in the player's hands, switched live, drawn as icons"
+requires = []
+
+[installs]
+core = "core"
+scene = "scene/prompt_legend.tscn"
+
+[declares]
+families = ["xbox", "playstation", "switch", "keyboard"]
+icons = "res://addons/polyweave/prompts/icons"
+
+[proves]
+spec = "proof.accept.toml"
+fixture = "fixture"
+script = "core/proof.gd"
+
+[changes]
+"0.1.0" = "the four families, drawn by icons.build, and a service that follows the device"

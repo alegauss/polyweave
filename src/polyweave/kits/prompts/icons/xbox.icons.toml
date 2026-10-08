@@ -1,0 +1,88 @@
+# The Xbox family's prompts, each icon named by where it sits on the pad, so a game asks
+# for "south" and gets A here, cross on a PlayStation pad and B on a Switch one.
+name = "xbox"
+sizes = [64]
+
+[style]
+fill = "#3A3D44"
+
+[icon.south]
+shape = "circle"
+fill = "#3BA935"
+symbol = "A"
+
+[icon.east]
+shape = "circle"
+fill = "#D7262B"
+symbol = "B"
+
+[icon.west]
+shape = "circle"
+fill = "#1F6FD9"
+symbol = "X"
+
+[icon.north]
+shape = "circle"
+fill = "#F2B705"
+symbol = "Y"
+symbol_colour = "#2A2000"
+
+[icon.lb]
+shape = "pill"
+symbol = "LB"
+
+[icon.rb]
+shape = "pill"
+symbol = "RB"
+
+[icon.lt]
+shape = "trigger"
+symbol = "LT"
+
+[icon.rt]
+shape = "trigger"
+symbol = "RT"
+
+[icon.ls]
+shape = "stick"
+symbol = "LS"
+
+[icon.rs]
+shape = "stick"
+symbol = "RS"
+
+[icon.l_stick]
+shape = "stick"
+symbol = "L"
+
+[icon.r_stick]
+shape = "stick"
+symbol = "R"
+
+[icon.start]
+shape = "circle"
+symbol = "menu"
+
+[icon.select]
+shape = "circle"
+symbol = "view"
+
+[icon.dpad_up]
+shape = "dpad"
+direction = "up"
+
+[icon.dpad_down]
+shape = "dpad"
+direction = "down"
+
+[icon.dpad_left]
+shape = "dpad"
+direction = "left"
+
+[icon.dpad_right]
+shape = "dpad"
+direction = "right"
+
+[accept]
+symbol_contrast_min = 3.0
+background_contrast_min = 1.5

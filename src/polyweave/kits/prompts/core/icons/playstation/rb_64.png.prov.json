@@ -1,0 +1,28 @@
+{
+  "artefact": {
+    "bytes": 3151,
+    "path": "core/icons/playstation/rb_64.png",
+    "sha256": "3df4fa3401ceff022547fcd33f0c6afaf13e4aeabacac69a9256ee9fe04e9ea1"
+  },
+  "elapsed_s": null,
+  "engine": {
+    "name": "icons.build"
+  },
+  "inputs": [
+    {
+      "path": "icons/playstation.icons.toml",
+      "role": "icons",
+      "sha256": "5388794fdf48cd375a3bfaa8c9590cc39298f828d7c80af60ebeef80f3771b96"
+    }
+  ],
+  "kind": "picture",
+  "measurements": {},
+  "params": {
+    "set": "playstation"
+  },
+  "produced_at": "2026-10-08T21:41:31Z",
+  "producer": {
+    "tool": "polyweave",
+    "version": "0.1.0"
+  }
+}

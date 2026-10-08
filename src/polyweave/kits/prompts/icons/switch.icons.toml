@@ -1,0 +1,83 @@
+# The Switch family's prompts, by position. Its face buttons sit swapped against the
+# Xbox pad's: the south button reads B and the east reads A.
+name = "switch"
+sizes = [64]
+
+[style]
+fill = "#3A3D44"
+
+[icon.south]
+shape = "circle"
+symbol = "B"
+
+[icon.east]
+shape = "circle"
+symbol = "A"
+
+[icon.west]
+shape = "circle"
+symbol = "Y"
+
+[icon.north]
+shape = "circle"
+symbol = "X"
+
+[icon.lb]
+shape = "pill"
+symbol = "L"
+
+[icon.rb]
+shape = "pill"
+symbol = "R"
+
+[icon.lt]
+shape = "trigger"
+symbol = "ZL"
+
+[icon.rt]
+shape = "trigger"
+symbol = "ZR"
+
+[icon.ls]
+shape = "stick"
+symbol = "LS"
+
+[icon.rs]
+shape = "stick"
+symbol = "RS"
+
+[icon.l_stick]
+shape = "stick"
+symbol = "L"
+
+[icon.r_stick]
+shape = "stick"
+symbol = "R"
+
+[icon.start]
+shape = "circle"
+symbol = "+"
+
+[icon.select]
+shape = "circle"
+symbol = "-"
+
+[icon.dpad_up]
+shape = "dpad"
+direction = "up"
+
+[icon.dpad_down]
+shape = "dpad"
+direction = "down"
+
+[icon.dpad_left]
+shape = "dpad"
+direction = "left"
+
+[icon.dpad_right]
+shape = "dpad"
+direction = "right"
+
+[accept]
+symbol_contrast_min = 3.0
+background_contrast_min = 1.5

@@ -1,0 +1,28 @@
+{
+  "artefact": {
+    "bytes": 5973,
+    "path": "core/icons/xbox/west_64.png",
+    "sha256": "f31a5d165f7bb53d53f81becfb709d52a320ea5447a8b6bd79fe7413534f7de4"
+  },
+  "elapsed_s": null,
+  "engine": {
+    "name": "icons.build"
+  },
+  "inputs": [
+    {
+      "path": "icons/xbox.icons.toml",
+      "role": "icons",
+      "sha256": "34b2cbb64fbbcf0cffbd731aa01b868b112ed34115442e12d7d6e215f6917dfa"
+    }
+  ],
+  "kind": "picture",
+  "measurements": {},
+  "params": {
+    "set": "xbox"
+  },
+  "produced_at": "2026-10-08T21:41:25Z",
+  "producer": {
+    "tool": "polyweave",
+    "version": "0.1.0"
+  }
+}

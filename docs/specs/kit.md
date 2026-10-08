@@ -53,6 +53,10 @@ fixture = "fixture"           # a minimal Godot project it is proved in, in this
 - `[proves] fixture` is a folder of the kit holding a minimal Godot project shaped to
   exercise it, where polyweave proves it before any project receives it. A kit with no
   fixture is refused too.
+- `[proves] script` is optional: a GDScript inside the core, run headless in the game
+  after the spec holds, for what only a running game can say (every bound action has an
+  icon in every family, say). It prints `KIT PROVED`, or `KIT FAILED: <why>`, and the
+  answer carries that line; with no `$GODOT` it is `skipped` and said (§PW344).
 
 Any other key, a name that is not the folder's, a version in another form, a file the
 kit names and does not hold, a kit it requires that does not exist, and a loop of
@@ -134,3 +138,20 @@ for the agent to carry over. The core is replaced and the proof run again, and a
 upgrade whose proof fails is put back, the old core restored, so an upgrade lands proved
 or not at all. `write=false` answers the same and writes nothing. A fix a project makes
 that belongs in the kit is filed against polyweave and ships as a new version here.
+
+## The kits it carries
+
+**prompts** (§PW344): button prompts for the pad in the player's hands. A service,
+`PolyweavePrompts.shared()`, knows the family in use (`xbox`, `playstation`, `switch`,
+`keyboard`) from `Input.get_joy_name` and the last event, switches the moment the player
+picks up another device (`family_changed`), and answers an action's binding as an icon:
+`icon(action)`, a `PromptIcon` node for menus, and `bbcode(text)` turning
+`[action=jump]` into the icon for a RichTextLabel. A pad's icons are named by where the
+button sits (`south`, `east`, `lt`, `dpad_up`), so a Switch pad's south button reads B
+where an Xbox pad's reads A. The four sets are drawn by `icons.build` from declarations
+the kit keeps beside them, each held to its legibility bounds, and are the kit's own;
+`icons_root` points the service at another set, such as a platform holder's glyphs,
+which polyweave never carries. Its proof script holds every bound action to an icon in
+every family it is bound for, a pad's name to its family, and a key after a pad to the
+keyboard's icons. The kit reads a game's `project.godot` as Godot writes it, a value
+over several lines included.

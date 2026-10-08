@@ -1,0 +1,28 @@
+{
+  "artefact": {
+    "bytes": 3154,
+    "path": "core/icons/keyboard/key_backspace_64.png",
+    "sha256": "9c513317395aeab90a725cd80e322ab846d74a520c44da4175f55e2ca91273aa"
+  },
+  "elapsed_s": null,
+  "engine": {
+    "name": "icons.build"
+  },
+  "inputs": [
+    {
+      "path": "icons/keyboard.icons.toml",
+      "role": "icons",
+      "sha256": "191ae90e74084da622f43b6e9d0e0610a1994bf88bc32853481778aa126f5c59"
+    }
+  ],
+  "kind": "picture",
+  "measurements": {},
+  "params": {
+    "set": "keyboard"
+  },
+  "produced_at": "2026-10-08T21:41:26Z",
+  "producer": {
+    "tool": "polyweave",
+    "version": "0.1.0"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "artefact": {
+    "bytes": 4534,
+    "path": "core/icons/xbox/l_stick_64.png",
+    "sha256": "097861b425e6abc474fb1a807423123b70bfdb6ed29f0b18c97133e959545b64"
+  },
+  "elapsed_s": null,
+  "engine": {
+    "name": "icons.build"
+  },
+  "inputs": [
+    {
+      "path": "icons/xbox.icons.toml",
+      "role": "icons",
+      "sha256": "34b2cbb64fbbcf0cffbd731aa01b868b112ed34115442e12d7d6e215f6917dfa"
+    }
+  ],
+  "kind": "picture",
+  "measurements": {},
+  "params": {
+    "set": "xbox"
+  },
+  "produced_at": "2026-10-08T21:41:25Z",
+  "producer": {
+    "tool": "polyweave",
+    "version": "0.1.0"
+  }
+}

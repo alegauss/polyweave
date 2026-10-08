@@ -1,0 +1,28 @@
+{
+  "artefact": {
+    "bytes": 3418,
+    "path": "core/icons/xbox/rb_64.png",
+    "sha256": "c4c1900db95f69611ab9134393a2021374af6bc3f3c96bd78c6ee0a7247e2982"
+  },
+  "elapsed_s": null,
+  "engine": {
+    "name": "icons.build"
+  },
+  "inputs": [
+    {
+      "path": "icons/xbox.icons.toml",
+      "role": "icons",
+      "sha256": "34b2cbb64fbbcf0cffbd731aa01b868b112ed34115442e12d7d6e215f6917dfa"
+    }
+  ],
+  "kind": "picture",
+  "measurements": {},
+  "params": {
+    "set": "xbox"
+  },
+  "produced_at": "2026-10-08T21:41:25Z",
+  "producer": {
+    "tool": "polyweave",
+    "version": "0.1.0"
+  }
+}

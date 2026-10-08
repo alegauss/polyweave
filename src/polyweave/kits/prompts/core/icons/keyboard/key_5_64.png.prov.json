@@ -1,0 +1,28 @@
+{
+  "artefact": {
+    "bytes": 2632,
+    "path": "core/icons/keyboard/key_5_64.png",
+    "sha256": "eb502b8e7698e1bbdaa856410e1c4de99a33e044955d6ef1ea9239335a5a1537"
+  },
+  "elapsed_s": null,
+  "engine": {
+    "name": "icons.build"
+  },
+  "inputs": [
+    {
+      "path": "icons/keyboard.icons.toml",
+      "role": "icons",
+      "sha256": "191ae90e74084da622f43b6e9d0e0610a1994bf88bc32853481778aa126f5c59"
+    }
+  ],
+  "kind": "picture",
+  "measurements": {},
+  "params": {
+    "set": "keyboard"
+  },
+  "produced_at": "2026-10-08T21:41:26Z",
+  "producer": {
+    "tool": "polyweave",
+    "version": "0.1.0"
+  }
+}

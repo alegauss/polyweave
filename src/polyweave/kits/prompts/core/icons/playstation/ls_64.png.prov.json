@@ -1,0 +1,28 @@
+{
+  "artefact": {
+    "bytes": 5358,
+    "path": "core/icons/playstation/ls_64.png",
+    "sha256": "c65edbac0a0bab0b9e88c817563d5eb8debafcb58f5e5ea30fc01100b534a4a3"
+  },
+  "elapsed_s": null,
+  "engine": {
+    "name": "icons.build"
+  },
+  "inputs": [
+    {
+      "path": "icons/playstation.icons.toml",
+      "role": "icons",
+      "sha256": "5388794fdf48cd375a3bfaa8c9590cc39298f828d7c80af60ebeef80f3771b96"
+    }
+  ],
+  "kind": "picture",
+  "measurements": {},
+  "params": {
+    "set": "playstation"
+  },
+  "produced_at": "2026-10-08T21:41:31Z",
+  "producer": {
+    "tool": "polyweave",
+    "version": "0.1.0"
+  }
+}

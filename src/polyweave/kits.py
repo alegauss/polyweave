@@ -56,7 +56,10 @@ TOP = {
     "changes",
 }
 INSTALLS = {"core", "scene"}
-PROVES = {"spec", "fixture"}
+PROVES = {"spec", "fixture", "script"}
+
+#: The line a kit's proof script prints when it holds, and the one when it does not.
+PROVED = r"^KIT PROVED$"
 
 _VERSION = re.compile(r"^\d+\.\d+\.\d+$")
 _NAME = re.compile(r"^[a-z][a-z0-9_]*$")
@@ -139,11 +142,21 @@ def read(folder: Path) -> dict:
             'write spec = "proof.accept.toml" under [proves]: a kit is worth '
             "more than a snippet only while its proof holds",
         )
+    script = held["proves"].get("script")
+    if script is not None and not str(script).startswith(
+        str(held["installs"]["core"]).rstrip("/") + "/"
+    ):
+        raise _bad(
+            where,
+            f"proves with {script!r}, outside its core",
+            "keep the proof script inside the core, so it lands in the game",
+        )
     named = [
         held["installs"]["core"],
         held["installs"].get("scene"),
         held["proves"]["spec"],
         held["proves"]["fixture"],
+        script,
     ]
     for one in (n for n in named if n is not None):
         if not isinstance(one, str) or not (folder / one).exists():
@@ -246,8 +259,6 @@ def _toml(value: Any) -> str:
 
 def _game(here: Path) -> dict:
     """What a kit reads of the game before it installs (§PW341)."""
-    from configparser import ConfigParser
-
     project = here / "project.godot"
     if not project.is_file():
         raise PolyweaveError(
@@ -255,13 +266,22 @@ def _game(here: Path) -> dict:
             f"there is no project.godot at {here}, so there is no game to install into",
             "install a kit from the Godot project's own folder",
         )
-    parsed = ConfigParser(strict=False, interpolation=None)
-    parsed.optionxform = str
-    text = project.read_text(encoding="utf-8-sig")
-    parsed.read_string("[_top]\n" + text)
+    # Godot writes a value over several lines (an input action's events, a dictionary),
+    # which an INI reader refuses, so a key is a name at the start of a line, in its
+    # section, and only the one-line values are read.
+    sections: dict[str, dict[str, str]] = {"": {}}
+    current = ""
+    for line in project.read_text(encoding="utf-8-sig").splitlines():
+        if line.startswith("[") and line.rstrip().endswith("]"):
+            current = line.strip()[1:-1]
+            sections.setdefault(current, {})
+            continue
+        found = re.match(r"^([A-Za-z0-9_./-]+)=(.*)$", line)
+        if found:
+            sections[current][found[1]] = found[2]
 
     def said(section: str, key: str) -> str:
-        return parsed.get(section, key, fallback="").strip().strip('"')
+        return sections.get(section, {}).get(key, "").strip().strip('"')
 
     folder = here / "addons" / "polyweave"
     present = {}
@@ -271,9 +291,7 @@ def _game(here: Path) -> dict:
     return {
         "main_scene": said("application", "run/main_scene") or None,
         "renderer": said("rendering", "renderer/rendering_method") or None,
-        "actions": sorted(parsed.options("input"))
-        if parsed.has_section("input")
-        else [],
+        "actions": sorted(sections.get("input", {})),
         "exports": (here / "export_presets.cfg").is_file(),
         "kits": present,
     }
@@ -389,6 +407,11 @@ def install(
             "passed": failing is None,
             "first": _first(failing) if failing else None,
         }
+        ran = _scripts(order, kits, here) if failing is None else []
+        broken = next((r for r in ran if r["status"] == "failed"), None)
+        if broken:
+            proved = {"passed": False, "first": broken}
+        proved["scripts"] = ran
     return {
         "kit": name,
         "order": order,
@@ -405,6 +428,53 @@ def install(
         "questions": [],
         "wrote": bool(write),
     }
+
+
+def _scripts(order: list, kits: dict, here: Path) -> list[dict]:
+    """Each kit's proof script, run in the game, where it has one and an engine is set.
+
+    A proof that only a running game can give (every action has an icon in every
+    family, say) is a GDScript in the kit's core, printing `KIT PROVED` when it holds
+    and why it does not otherwise (§PW344). With no `$GODOT` it is skipped, and said.
+    """
+    import os
+
+    from . import engine
+
+    said = []
+    for one in order:
+        script = kits[one]["proves"].get("script")
+        if not script:
+            continue
+        inside = Path(script).relative_to(kits[one]["installs"]["core"])
+        at = Path("addons") / "polyweave" / one / inside
+        if not os.environ.get("GODOT"):
+            said.append(
+                {
+                    "kit": one,
+                    "script": at.as_posix(),
+                    "status": "skipped",
+                    "why": "no $GODOT is set",
+                }
+            )
+            continue
+        found = engine.run(at.as_posix(), expect=PROVED, root=here, headless=True)
+        if found.get("ok"):
+            said.append({"kit": one, "script": at.as_posix(), "status": "held"})
+            continue
+        log = Path(str(found.get("log") or ""))
+        printed = log.read_text(encoding="utf-8", errors="replace") if (
+            found.get("log") and log.is_file()) else ""
+        lines = [ln for ln in printed.splitlines() if ln.startswith("KIT ")]
+        said.append(
+            {
+                "kit": one,
+                "script": at.as_posix(),
+                "status": "failed",
+                "said": lines[-1] if lines else found.get("verdict"),
+            }
+        )
+    return said
 
 
 def _first(verdict: dict) -> dict:
@@ -504,9 +574,7 @@ def update(
             f"the project carries no kit {name!r}",
             "install it first with kit.install",
             given=name,
-            allowed=sorted(
-                p.parent.name for p in core.parent.glob("*/kit.json")
-            ),
+            allowed=sorted(p.parent.name for p in core.parent.glob("*/kit.json")),
         )
     held = json.loads(manifest.read_text(encoding="utf-8"))
     kits = every()

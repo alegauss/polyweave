@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 2 },
   { block: "U", title: "A window on everything a project governs", open: 2 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 28 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 27 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -226,25 +226,18 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW344",
-    block: "V",
-    symptom: "a game names a pad's buttons in its own text per layout, with no icons, no Switch layout and no change on a new device",
-    why: "Every game needs it, its details are found only by running, and the icons are a part an agent cannot draw well alone.",
-    deps: [],
-  },
-  {
     id: "PW345",
     block: "V",
     symptom: "rebinding, its conflicts, its reset and its persistence are written anew by each game that lets a player change controls",
     why: "Starship already solved it well once, so a kit costs extracting what it solved, not inventing it.",
-    deps: ["PW344"],
+    deps: [],
   },
   {
     id: "PW346",
     block: "V",
     symptom: "a main menu, a pause menu and a confirm dialog are rebuilt per game, and a control no pad can reach is found by a person",
     why: "Focus navigation fails silently and back is a different button per family, which a check holds and a review misses.",
-    deps: ["PW344"],
+    deps: [],
   },
   {
     id: "PW347",
@@ -293,7 +286,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "V",
     symptom: "a dialogue box with typed text, skip, advance and a portrait is rewritten per game, each advancing on its own button",
     why: "It shows lines a person wrote and never writes them, so it sits beside Block Q clear of the non-goal on story.",
-    deps: ["PW344"],
+    deps: [],
   },
   {
     id: "PW354",
@@ -314,7 +307,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "V",
     symptom: "a pad unplugged mid-game or a window losing focus leaves the game running with no one at the controls",
     why: "It is a few lines each game forgets, and the console makers' certification asks for it.",
-    deps: ["PW344"],
+    deps: [],
   },
   {
     id: "PW357",

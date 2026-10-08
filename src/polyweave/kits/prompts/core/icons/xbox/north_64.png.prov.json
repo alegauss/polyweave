@@ -1,0 +1,28 @@
+{
+  "artefact": {
+    "bytes": 5623,
+    "path": "core/icons/xbox/north_64.png",
+    "sha256": "66ada5cf35dc7c31a8aee6ea1181d08eb7ecaa861d37dc55c588a9148c94c71f"
+  },
+  "elapsed_s": null,
+  "engine": {
+    "name": "icons.build"
+  },
+  "inputs": [
+    {
+      "path": "icons/xbox.icons.toml",
+      "role": "icons",
+      "sha256": "34b2cbb64fbbcf0cffbd731aa01b868b112ed34115442e12d7d6e215f6917dfa"
+    }
+  ],
+  "kind": "picture",
+  "measurements": {},
+  "params": {
+    "set": "xbox"
+  },
+  "produced_at": "2026-10-08T21:41:25Z",
+  "producer": {
+    "tool": "polyweave",
+    "version": "0.1.0"
+  }
+}

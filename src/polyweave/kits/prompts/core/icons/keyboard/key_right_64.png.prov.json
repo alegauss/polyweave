@@ -1,0 +1,28 @@
+{
+  "artefact": {
+    "bytes": 2395,
+    "path": "core/icons/keyboard/key_right_64.png",
+    "sha256": "fd4c1759d0aba6ab76b4f2b98a90ec6ae4fdbd0c645c8395140ed00a04aa1571"
+  },
+  "elapsed_s": null,
+  "engine": {
+    "name": "icons.build"
+  },
+  "inputs": [
+    {
+      "path": "icons/keyboard.icons.toml",
+      "role": "icons",
+      "sha256": "191ae90e74084da622f43b6e9d0e0610a1994bf88bc32853481778aa126f5c59"
+    }
+  ],
+  "kind": "picture",
+  "measurements": {},
+  "params": {
+    "set": "keyboard"
+  },
+  "produced_at": "2026-10-08T21:41:26Z",
+  "producer": {
+    "tool": "polyweave",
+    "version": "0.1.0"
+  }
+}

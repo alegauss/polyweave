@@ -1,0 +1,28 @@
+{
+  "artefact": {
+    "bytes": 5593,
+    "path": "core/icons/switch/rs_64.png",
+    "sha256": "57b356ee04512252a94ba462f1b25412e9fb8d68b86433515c115c6f5b4f5b15"
+  },
+  "elapsed_s": null,
+  "engine": {
+    "name": "icons.build"
+  },
+  "inputs": [
+    {
+      "path": "icons/switch.icons.toml",
+      "role": "icons",
+      "sha256": "a10c3e13d0f64be147e60f621e2d2d30baf8e32b47d546dd5b454b991e313d5d"
+    }
+  ],
+  "kind": "picture",
+  "measurements": {},
+  "params": {
+    "set": "switch"
+  },
+  "produced_at": "2026-10-08T21:41:25Z",
+  "producer": {
+    "tool": "polyweave",
+    "version": "0.1.0"
+  }
+}

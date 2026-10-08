@@ -1,0 +1,15 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/polyweave/prompts/prompt_icon.gd" id="1"]
+
+[node name="PromptLegend" type="HBoxContainer"]
+
+[node name="Jump" type="TextureRect" parent="."]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+script = ExtResource("1")
+action = &"jump"
+
+[node name="JumpLabel" type="Label" parent="."]
+layout_mode = 2
+text = "JUMP"

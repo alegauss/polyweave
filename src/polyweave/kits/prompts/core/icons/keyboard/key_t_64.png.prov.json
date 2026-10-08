@@ -1,0 +1,28 @@
+{
+  "artefact": {
+    "bytes": 2002,
+    "path": "core/icons/keyboard/key_t_64.png",
+    "sha256": "d1b8608563c3e5ed0ba7e5dd8e2ee8f9d4b602c13bbb4f1761bdc694fdef6e1a"
+  },
+  "elapsed_s": null,
+  "engine": {
+    "name": "icons.build"
+  },
+  "inputs": [
+    {
+      "path": "icons/keyboard.icons.toml",
+      "role": "icons",
+      "sha256": "191ae90e74084da622f43b6e9d0e0610a1994bf88bc32853481778aa126f5c59"
+    }
+  ],
+  "kind": "picture",
+  "measurements": {},
+  "params": {
+    "set": "keyboard"
+  },
+  "produced_at": "2026-10-08T21:41:26Z",
+  "producer": {
+    "tool": "polyweave",
+    "version": "0.1.0"
+  }
+}

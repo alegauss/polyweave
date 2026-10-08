@@ -1,0 +1,28 @@
+; The prompts kit's fixture: a game that binds each kind of input a prompt draws, a key,
+; a mouse button, a pad's face button, its start, a d-pad and a trigger.
+
+config_version=5
+
+[application]
+
+config/name="prompts fixture"
+run/main_scene="res://main.tscn"
+
+[input]
+
+jump={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"physical_keycode":32), Object(InputEventJoypadButton,"button_index":0)]
+}
+pause={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"physical_keycode":4194305), Object(InputEventJoypadButton,"button_index":6)]
+}
+move_left={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"physical_keycode":65), Object(InputEventJoypadButton,"button_index":13)]
+}
+fire={
+"deadzone": 0.5,
+"events": [Object(InputEventMouseButton,"button_index":1), Object(InputEventJoypadMotion,"axis":5,"axis_value":1.0)]
+}

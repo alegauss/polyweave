@@ -1,0 +1,28 @@
+{
+  "artefact": {
+    "bytes": 1844,
+    "path": "core/icons/switch/dpad_right_64.png",
+    "sha256": "c92944b39c9ad6eaad46a1887a3e1e8f7669237fd03691c4e47dca9d8d359dcf"
+  },
+  "elapsed_s": null,
+  "engine": {
+    "name": "icons.build"
+  },
+  "inputs": [
+    {
+      "path": "icons/switch.icons.toml",
+      "role": "icons",
+      "sha256": "a10c3e13d0f64be147e60f621e2d2d30baf8e32b47d546dd5b454b991e313d5d"
+    }
+  ],
+  "kind": "picture",
+  "measurements": {},
+  "params": {
+    "set": "switch"
+  },
+  "produced_at": "2026-10-08T21:41:25Z",
+  "producer": {
+    "tool": "polyweave",
+    "version": "0.1.0"
+  }
+}

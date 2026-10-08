@@ -1,0 +1,86 @@
+# The PlayStation family's prompts, by position: south is the cross.
+name = "playstation"
+sizes = [64]
+
+[style]
+fill = "#3A3E4A"
+
+[icon.south]
+shape = "circle"
+symbol = "cross"
+symbol_colour = "#8DB4E8"
+
+[icon.east]
+shape = "circle"
+symbol = "ring"
+symbol_colour = "#E8707A"
+
+[icon.west]
+shape = "circle"
+symbol = "square"
+symbol_colour = "#E09AD2"
+
+[icon.north]
+shape = "circle"
+symbol = "triangle"
+symbol_colour = "#5ED1AE"
+
+[icon.lb]
+shape = "pill"
+symbol = "L1"
+
+[icon.rb]
+shape = "pill"
+symbol = "R1"
+
+[icon.lt]
+shape = "trigger"
+symbol = "L2"
+
+[icon.rt]
+shape = "trigger"
+symbol = "R2"
+
+[icon.ls]
+shape = "stick"
+symbol = "L3"
+
+[icon.rs]
+shape = "stick"
+symbol = "R3"
+
+[icon.l_stick]
+shape = "stick"
+symbol = "L"
+
+[icon.r_stick]
+shape = "stick"
+symbol = "R"
+
+[icon.start]
+shape = "pill"
+symbol = "menu"
+
+[icon.select]
+shape = "pill"
+symbol = "view"
+
+[icon.dpad_up]
+shape = "dpad"
+direction = "up"
+
+[icon.dpad_down]
+shape = "dpad"
+direction = "down"
+
+[icon.dpad_left]
+shape = "dpad"
+direction = "left"
+
+[icon.dpad_right]
+shape = "dpad"
+direction = "right"
+
+[accept]
+symbol_contrast_min = 3.0
+background_contrast_min = 1.5
