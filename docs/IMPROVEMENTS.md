@@ -748,32 +748,6 @@ What starship needs from polyweave:
 Until it lands, starship keeps the pass in `dev/` as the thinnest workaround, named
 against this line.
 
-### §PW330 Pressure per second from weighted events
-
-Met in starship (RK176): the owner finds the waves unbalanced, and nothing says how hard
-a second of a phase is. §PW205 covers enemies alive at once and a weighted total for a
-compiled `.tres`, but starship's waves are now authored `.waves.toml` files with
-`times`, drawn shapes and rails, and it needs a curve, not a total.
-
-What polyweave should take: a list of weighted events on a timeline, each `{second,
-kind, weight, until}`, where `until` is the end of the wave it belongs to (the game
-writes these; it alone knows its own format). What it should answer, per second:
-
-- the threat that enters;
-- the threat alive in the two bounding cases, every enemy killed the moment it lands
-  (after a declared warp-in) and nothing killed until its wave's end;
-- the longest gap with nothing to shoot, against a declared window (starship's
-  multiplier window is 2.5 s), and every gap past it.
-
-Two versions of one timeline should lay side by side, so a change is compared with the
-one before it, and the result should be a record with provenance like any other.
-
-Starship's thin workaround until this lands: `WaveFile.events` writes the events, and
-`dev/pressure.gd` computes the curves and the gaps from them, with weights from
-`game/waves/threat.toml`.
-
-Done when starship's `dev/pressure.gd` is deleted and its check calls the operation.
-
 ### §PW379 Objects counted and tracked across a reference video's frames
 
 Found in spinhold (RK178): rebuilding Resogun's first phase from a gameplay video needs,
@@ -888,7 +862,7 @@ What polyweave should do, as **`reference.compare`**:
   same second, with timestamps on both.
 - **Curves** from both sides on one chart: objects on screen per second (from §PW379
   on the reference, and from the game's own trace or the same detection on its
-  capture), and, where §PW330 has the declared wave, its pressure curve beside them.
+  capture), and, where `measure.pressure` has the declared wave, its pressure curve beside them.
 - The seconds where the curves differ by more than a bound the call is given, listed
   with the two frames, so each gap becomes a line an agent can file.
 

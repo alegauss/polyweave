@@ -98,7 +98,8 @@ TOOL_BUDGET = 4500
 #: 95,500 at 94,923 for sound.speak's draft rung (§PW324).
 #: 96,100 at 95,560 for geometry.fit's region (§PW326).
 #: 97,200 at 96,573 for reference.frames (§PW328).
-LIST_BUDGET = 97200
+#: 98,200 at 97,606 for measure.pressure (§PW330).
+LIST_BUDGET = 98200
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

@@ -10,7 +10,7 @@ page groups them by task.
 | Start on an asset | `asset.brief`, `loop.pending` |
 | Make a shape | `geometry.build`, `geometry.build_all`, `geometry.describe`, `geometry.variants`, `geometry.fit` (to a reference), `geometry.compare` (voxel models) |
 | Render | `render.plan` (free), `render.bake` (a render) |
-| Measure | `measure.take`, `measure.same`, `measure.available`, `measure.digest` (did the outline move, or only the look), `measure.contrast` |
+| Measure | `measure.take`, `measure.same`, `measure.available`, `measure.digest` (outline or look), `measure.contrast`, `measure.pressure` |
 | Judge against the bar | `accept.check`, `accept.verify`, `accept.check_screen`, `cost.read` (draw cost), `sound.measure` (seam, level), `sound.speech` (a voiced line), `sound.declared` (declared audio, and what is missing) |
 | Search for numbers | `search.sweep`, `port.run` (a whole family), `trace.read` |
 | See it where it is seen | `compose.place`, `compose.sheet`, `store.capsules`, `picture.vector` (SVG layers) |

@@ -281,6 +281,28 @@ its stroke and its antialiased rim is the low tail. A line answers its worst str
 shots, so a spec holds `text_contrast_min >= 4.5` and bounding the other one with text
 alone is `spec.no-targets`. A box with no glyph told apart is `spec.no-targets` too.
 
+## Pressure through a wave timeline
+
+A shooter is balanced on how pressure rises and falls through a phase, and a total or a
+peak cannot show the second a wave goes empty or floods (§PW330). The game alone knows
+its wave format, so it writes the timeline as events, each `{second, kind, weight,
+until}`, `until` the end of the wave it belongs to, and `measure.pressure(events=` or
+`file=)` answers per second:
+
+- `entering`: the weight spawning in that second;
+- `alive_fast`: the weight alive when every enemy is killed the moment it lands, after
+  `warp` seconds of warp-in, and `alive_slow` when none is killed before its wave ends,
+  each weighted by the share of the second it is alive;
+- `gaps`, the stretches from the first spawn on where nothing is alive in the fast
+  case, so a player who kills everything finds the screen empty; `longest_gap`, and
+  `past_window`, every gap longer than `window` (a multiplier's timeout, say).
+
+`total` and `peak_slow` sum it up. `compare=` (or `compare_file=`) answers the same of
+an earlier timeline beside it, with `change` in `total`, `peak_slow` and `longest_gap`.
+`out` keeps the answer as a JSON file whose record (`capture`) has each events file as
+an input. An empty timeline, an event with no second, or one whose wave ends before it
+spawns is `spec.no-targets`.
+
 ## A visual effect
 
 An effect `vfx.build` made is measured off its declaration, which its record keeps

@@ -42,7 +42,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "O", title: "A person sees and answers", open: 4 },
   { block: "P", title: "Music and sound a game can ship", open: 1 },
   { block: "Q", title: "Words held to the world", open: 1 },
-  { block: "R", title: "Levels measured before a person plays them", open: 13 },
+  { block: "R", title: "Levels measured before a person plays them", open: 12 },
   { block: "S", title: "Playing the game, not only rendering it", open: 1 },
   { block: "T", title: "Adopting polyweave in a project", open: 2 },
   { block: "U", title: "A window on everything a project governs", open: 2 },
@@ -212,13 +212,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW205"],
   },
   {
-    id: "PW330",
-    block: "R",
-    symptom: "a wave timeline's threat per second, in its two bounding cases, and its gaps with nothing to shoot cannot be measured",
-    why: "A shooter is balanced on how pressure rises and falls through a phase, and a total or a peak cannot show the second a wave goes empty or floods.",
-    deps: [],
-  },
-  {
     id: "PW379",
     block: "R",
     symptom: "the enemies in a reference video's frames cannot be counted or followed, so an agent counts them by eye on every sheet",
@@ -258,7 +251,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "R",
     symptom: "worlds offered on one tier of a route cannot be held level in whole threat and in what they give to save",
     why: "A score table shared by routes is only fair while every fork's worlds are worth the same, and nothing measures one world against another.",
-    deps: ["PW330"],
+    deps: [],
   },
   {
     id: "PW339",

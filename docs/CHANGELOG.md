@@ -328,6 +328,7 @@
 ## Block R — Levels measured before a person plays them
 
 - ✅ **PW328** **A reference gameplay video cannot be sampled into frames or contact sheets an agent can read** — reference.frames samples a video into time-named frames, denser in ranges, dropping still ones, on 4x4 sheets with times burnt in, tied to its hash (design recorded in `docs/specs/fetching.md`).
+- ✅ **PW330** **a wave timeline's threat per second, in its two bounding cases, and its gaps with nothing to shoot cannot be measured** — measure.pressure reads a game's weighted events as threat per second in both bounding cases, with gaps past a window, and diffs two (design recorded in `docs/specs/measurements.md`).
 
 ## Block S — Playing the game, not only rendering it
 
