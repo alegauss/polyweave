@@ -38,7 +38,6 @@
 - 📋 **PW334** (deps: —) **an @file list written by Windows PowerShell is refused for its UTF-8 BOM, so PW247's remedy fails in that shell** — The file the refusal tells a PowerShell user to write is refused again for a mark their shell always adds. → §PW334
 - 📋 **PW337** (deps: —) **a dict parameter is refused as an @file, so PowerShell cannot pass one to the CLI at all** — The remedy PW247 gave lists does not reach dicts, which leaves verdict.sitting unusable from that shell. → §PW337
 - 📋 **PW376** (deps: —) **provenance.verify reports the work area's snapshots of old commits as the project's drift** — A project whose own records all hold reads as 46 changed artefacts, and finding that out takes --json and a filter by hand. → §PW376
-- 📋 **PW376** (deps: —) **provenance.verify reports the work area's snapshots of old commits as the project's drift** — A project whose own records all hold reads as 46 changed artefacts, and finding that out takes --json and a filter by hand. → §PW376
 
 ## Block L — What a run leaves as evidence
 
@@ -50,7 +49,6 @@
 
 - 📋 **PW332** (deps: —) **a verdict given through the CLI never reaches the ledger, since an open run cannot outlive the call that opened it** — A person's accept given in a conversation must land in one call, and today it is lost or recorded as unjudged while every answer says it was kept. → §PW332
 - 📋 **PW338** (deps: —) **verdict.sitting marks a member with no spec as passed, as if something had measured it** — A screen nothing holds reads on the sheet and in the answer as held by a spec that agreed. → §PW338
-- 📋 **PW375** (deps: —) **a verdict a person gives in chat answers no sitting by name, so the agent rebuilds each family's members for judge** — Carrying one sentence over four sittings took a driver calling the page's internal write, which describe never lists. → §PW375
 - 📋 **PW375** (deps: —) **a verdict a person gives in chat answers no sitting by name, so the agent rebuilds each family's members for judge** — Carrying one sentence over four sittings took a driver calling the page's internal write, which describe never lists. → §PW375
 
 ## Block P — Music and sound a game can ship
