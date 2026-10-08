@@ -41,5 +41,24 @@
   },
   "error": {
     "failed": "That did not work: {{message}}"
+  },
+  "filter": {
+    "all": "All",
+    "pending": "Waiting on a person",
+    "attention": "Needs attention"
+  },
+  "item": {
+    "choose": "Choose an item to see it beside what it was held to.",
+    "bar": "The bar it is held to",
+    "no_bar": "No spec holds it yet.",
+    "chain": "Where it came from",
+    "authored": "Made here, from nothing bought.",
+    "dependents": "Made from it",
+    "no_dependents": "Nothing is made from it.",
+    "offered": "The window does not draw this kind itself. The session can, with",
+    "speaker": "Said by {{who}}",
+    "judged": "A person said: {{choice}}",
+    "judged_before": "A person said {{choice}} to an earlier text",
+    "not_judged": "No person has judged this line yet."
   }
 }

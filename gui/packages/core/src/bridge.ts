@@ -14,9 +14,19 @@ export const CHANNELS = {
   find: 'pw:find',
   open: 'pw:open',
   inventory: 'pw:inventory',
+  brief: 'pw:brief',
+  lineage: 'pw:lineage',
+  file: 'pw:file',
   smoke: 'pw:smoke',
   rendered: 'pw:rendered',
 } as const
+
+/** A file of the project, carried across as bytes the page can show (§PW304). */
+export interface Shown {
+  path: string
+  mime: string
+  base64: string
+}
 
 /** An open project, as the screen names it: who answered and which engine it is. */
 export interface Opened {
@@ -30,6 +40,8 @@ export interface Smoke {
   root: string
   depth: number
   language: string
+  /** The item to open once the project is drawn, by its inventory id. */
+  item?: string
   /** Where to save a picture of the window once it has drawn, when asked. */
   shot?: string
 }
@@ -38,6 +50,12 @@ export interface Bridge {
   find(root: string, depth: number): Promise<string[]>
   open(project: string): Promise<Opened>
   inventory(project: string, kind?: Kind, offset?: number): Promise<Page>
+  /** `asset.brief` on one item, as polyweave answers it. */
+  brief(project: string, id: string): Promise<Record<string, unknown>>
+  /** `provenance.generated` on one file: its chain back to a purchase, if it has one. */
+  lineage(project: string, path: string): Promise<Record<string, unknown>>
+  /** One file under the project, refused for any path that resolves outside it. */
+  file(project: string, path: string): Promise<Shown>
   smoke(): Promise<Smoke | null>
   rendered(report: Record<string, unknown>): Promise<void>
 }

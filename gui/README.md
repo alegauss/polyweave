@@ -48,6 +48,19 @@ interface: no `ipcRenderer`, no module, no path.
 
 **It is local.** No account and no remote store.
 
+## One item, beside what it was held to
+
+The project screen filters its list to what waits on a person or what needs attention
+(a record changed, missing, outdated, or never written). Choosing an item opens it beside
+its `asset.brief`: each predicate with its bound and where the bound came from, its chain
+back to a purchase (`provenance.generated`), and what was made from it. The window draws
+a picture at its real size, plays a sound, and shows a line in each locale with its
+speaker and its verdict. Any other kind is offered as the call that would draw it, such
+as `shape.turntable` for a mesh or `vfx.preview` for an effect, for the agent session to
+run. The window never runs one, because it is a reader and not an editor. A file reaches
+the page only through `shell/src/files.ts`, which refuses any path outside the open
+project and any file that is not a picture or a sound.
+
 ## The live test
 
 `shell/src/window-live.test.ts` starts Electron in smoke mode (`POLYWEAVE_GUI_SMOKE`).

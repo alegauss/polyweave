@@ -39,12 +39,12 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 0 },
-  { block: "O", title: "A person sees and answers", open: 2 },
+  { block: "O", title: "A person sees and answers", open: 3 },
   { block: "P", title: "Music and sound a game can ship", open: 7 },
   { block: "Q", title: "Words held to the world", open: 1 },
   { block: "R", title: "Levels measured before a person plays them", open: 8 },
   { block: "S", title: "Playing the game, not only rendering it", open: 1 },
-  { block: "T", title: "Adopting polyweave in a project", open: 1 },
+  { block: "T", title: "Adopting polyweave in a project", open: 2 },
   { block: "U", title: "A window on everything a project governs", open: 8 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 32 },
 ];
@@ -153,6 +153,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "O",
     symptom: "verdict.sitting marks a member with no spec as passed, as if something had measured it",
     why: "A screen nothing holds reads on the sheet and in the answer as held by a spec that agreed.",
+    deps: [],
+  },
+  {
+    id: "PW375",
+    block: "O",
+    symptom: "a verdict a person gives in chat answers no sitting by name, so the agent rebuilds each family's members for judge",
+    why: "Carrying one sentence over four sittings took a driver calling the page's internal write, which describe never lists.",
     deps: [],
   },
   {
@@ -282,10 +289,17 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
+    id: "PW374",
+    block: "T",
+    symptom: "vfx.build writes each scene beside its declaration, so effects declared in an unshipped folder load only in the editor",
+    why: "A project whose sources the export leaves out ships a game that cannot load its effects, and every check passes.",
+    deps: [],
+  },
+  {
     id: "PW304",
     block: "U",
     symptom: "a person sees one item of a project only by opening its file by hand, with no declaration, record or bar beside it",
-    why: "The window lists the inventory by kind and shows each item in its own viewer, beside its brief: bounds, measures, provenance chain and dependents.",
+    why: "A picture's gate lanes, a loop played looped, and a filter for items with an open revision are still to add to the item view.",
     deps: [],
   },
   {

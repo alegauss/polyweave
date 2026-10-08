@@ -11,6 +11,9 @@ const bridge: Bridge = {
   open: (project) => ipcRenderer.invoke(CHANNELS.open, project),
   inventory: (project, kind, offset) =>
     ipcRenderer.invoke(CHANNELS.inventory, project, kind, offset),
+  brief: (project, id) => ipcRenderer.invoke(CHANNELS.brief, project, id),
+  lineage: (project, path) => ipcRenderer.invoke(CHANNELS.lineage, project, path),
+  file: (project, path) => ipcRenderer.invoke(CHANNELS.file, project, path),
   smoke: () => ipcRenderer.invoke(CHANNELS.smoke),
   rendered: (report) => ipcRenderer.invoke(CHANNELS.rendered, report),
 }

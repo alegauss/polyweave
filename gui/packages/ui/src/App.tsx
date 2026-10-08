@@ -1,11 +1,13 @@
-// The window's two screens (§PW303): the projects under a folder a person names, and one
-// project's inventory, by kind, with the engine that answered named at the top.
+// The window's first screen (§PW303): the projects under a folder a person names. Opening
+// one hands it to the project screen.
 
 import { Button, Input } from '@viglet/viglet-design-system'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { KINDS, type Bridge, type Item, type Kind, type Opened, type Smoke } from '@pw/core'
+import type { Bridge, Item, Opened, Smoke } from '@pw/core'
+
+import { Project } from './Project'
 
 interface Shown {
   opened: Opened
@@ -55,22 +57,6 @@ export function App({ bridge, smoke }: { bridge: Bridge; smoke: Smoke | null }) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  useEffect(() => {
-    if (!smoke || !shown) return
-    // What was drawn, read back off the page, so the test asserts the screen and not the data.
-    requestAnimationFrame(() => {
-      void bridge.rendered({
-        project: shown.opened.project,
-        server: shown.opened.server.name,
-        engine: shown.opened.engine.from,
-        heading: document.querySelector('h1')?.textContent ?? '',
-        count: document.querySelector('[data-count]')?.textContent ?? '',
-        groups: [...document.querySelectorAll('[data-kind]')].map((g) => g.getAttribute('data-kind')),
-        rows: document.querySelectorAll('[data-item]').length,
-      })
-    })
-  }, [smoke, shown, bridge])
-
   return (
     <main className="mx-auto flex max-w-5xl flex-col gap-6 p-8">
       {failed && (
@@ -79,7 +65,13 @@ export function App({ bridge, smoke }: { bridge: Bridge; smoke: Smoke | null }) 
         </p>
       )}
       {shown ? (
-        <Project shown={shown} back={() => setShown(null)} />
+        <Project
+          bridge={bridge}
+          opened={shown.opened}
+          items={shown.items}
+          smoke={smoke}
+          back={() => setShown(null)}
+        />
       ) : (
         <section className="flex flex-col gap-4">
           <h1 className="text-2xl font-semibold">{t('projects.heading')}</h1>
@@ -121,61 +113,5 @@ export function App({ bridge, smoke }: { bridge: Bridge; smoke: Smoke | null }) 
         </section>
       )}
     </main>
-  )
-}
-
-function Project({ shown, back }: { shown: Shown; back: () => void }) {
-  const { t } = useTranslation()
-  const { opened, items } = shown
-  const byKind = KINDS.map((kind) => [kind, items.filter((i) => i.kind === kind)] as const).filter(
-    ([, rows]) => rows.length > 0,
-  )
-  return (
-    <section className="flex flex-col gap-4">
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" onClick={back}>
-          {t('project.back')}
-        </Button>
-        <h1 className="truncate text-2xl font-semibold">
-          {opened.project.split(/[\\/]/).filter(Boolean).pop()}
-        </h1>
-      </div>
-      <p className="truncate font-mono text-xs text-muted-foreground">{opened.project}</p>
-      <p className="text-sm text-muted-foreground">
-        {t('project.engine', {
-          name: opened.server.name,
-          version: opened.server.version,
-          command:
-            opened.engine.from === 'project' ? t('project.from_project') : t('project.from_path'),
-        })}
-      </p>
-      <p data-count className="text-sm">
-        {t('project.items', { count: items.length })}
-      </p>
-      {byKind.length === 0 && <p className="text-muted-foreground">{t('project.empty')}</p>}
-      {byKind.map(([kind, rows]) => (
-        <Group key={kind} kind={kind} rows={rows} />
-      ))}
-    </section>
-  )
-}
-
-function Group({ kind, rows }: { kind: Kind; rows: Item[] }) {
-  const { t } = useTranslation()
-  return (
-    <section data-kind={kind} className="flex flex-col gap-2">
-      <h2 className="text-lg font-medium">
-        {t(`kind.${kind}`)} <span className="text-muted-foreground">({rows.length})</span>
-      </h2>
-      <ul className="flex flex-col divide-y rounded-lg border">
-        {rows.map((item) => (
-          <li data-item={item.id} key={item.id} className="flex items-center gap-3 p-2 text-sm">
-            <span className="flex-1 truncate font-mono">{item.id}</span>
-            {item.pending && <span className="text-amber-600">{t('project.pending')}</span>}
-            <span className="text-muted-foreground">{t(`record.${item.record ?? 'none'}`)}</span>
-          </li>
-        ))}
-      </ul>
-    </section>
   )
 }

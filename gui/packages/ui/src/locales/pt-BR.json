@@ -41,5 +41,24 @@
   },
   "error": {
     "failed": "Não deu certo: {{message}}"
+  },
+  "filter": {
+    "all": "Todos",
+    "pending": "Aguardando uma pessoa",
+    "attention": "Pedem atenção"
+  },
+  "item": {
+    "choose": "Escolha um item para vê-lo ao lado do que o sustenta.",
+    "bar": "O critério que o sustenta",
+    "no_bar": "Nenhuma especificação o sustenta ainda.",
+    "chain": "De onde veio",
+    "authored": "Feito aqui, sem nada comprado.",
+    "dependents": "Feito a partir dele",
+    "no_dependents": "Nada é feito a partir dele.",
+    "offered": "A janela não desenha este tipo. A sessão desenha, com",
+    "speaker": "Dita por {{who}}",
+    "judged": "Uma pessoa disse: {{choice}}",
+    "judged_before": "Uma pessoa disse {{choice}} para um texto anterior",
+    "not_judged": "Ninguém julgou esta fala ainda."
   }
 }

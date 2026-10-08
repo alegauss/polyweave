@@ -9,6 +9,7 @@ import { app, BrowserWindow, ipcMain } from 'electron'
 import { CHANNELS, find, page, type Kind, type Opened, type Smoke } from '@pw/core'
 
 import { disk } from './disk'
+import { shown } from './files'
 import { Held } from './held'
 import { SMOKE_VAR } from './smoke'
 import { createWindow } from './window'
@@ -33,6 +34,16 @@ ipcMain.handle(
       ...(offset ? { offset } : {}),
     }),
 )
+ipcMain.handle(CHANNELS.brief, async (_event, project: string, id: string) =>
+  (await held.opened(project)).client.call('asset.brief', { asset: id, root: project }),
+)
+ipcMain.handle(CHANNELS.lineage, async (_event, project: string, path: string) =>
+  (await held.opened(project)).client.call('provenance.generated', {
+    paths: [path],
+    root: project,
+  }),
+)
+ipcMain.handle(CHANNELS.file, (_event, project: string, path: string) => shown(project, path))
 ipcMain.handle(CHANNELS.smoke, () => smoke)
 ipcMain.handle(CHANNELS.rendered, async (event, report: Record<string, unknown>) => {
   if (!smoke) return

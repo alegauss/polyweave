@@ -462,6 +462,23 @@ What polyweave should do: read `@path` for every structured parameter (dict as w
 list), with the same refusal text naming the file when it is not JSON, and say in the
 `do:` of a dict's refusal that `@file.json` works.
 
+### §PW376 Verify answers for the project alone
+
+Met in spinhold on 2026-10-07. `python -m polyweave provenance.verify` answered 46
+`changed` and 11 `missing` entries, which read as the project's models and site pictures
+having drifted from their records. Every one of them was a record under
+`.polyweave/cost/trees/<commit>/...`: the checked-out copies `frame_cost.py` keeps of
+older commits (`work / "cost" / "trees" / commit[:12]`). Their records are compared
+against the project's current files, so any artefact rebuilt since that commit shows as
+changed, and one moved since (art/vfx to game/vfx) shows as missing. The project's own
+937 records were all fine. Telling the two apart took `--json` and a filter by hand.
+
+What polyweave should do: `provenance.verify` skips the work area's copies of other
+trees, as it skips any path that is not the project's own; a snapshot's record is
+checked against the snapshot, if at all. Where the work area is walked on purpose, its
+entries are reported apart from the project's, so `changed` and `missing` mean the
+project and nothing else.
+
 ## Block L — What a run leaves as evidence
 
 ## Block M — What a game needs beyond the look
@@ -535,6 +552,26 @@ What polyweave should do: a member without a spec answers `"passed": null` (or
 `"checked": false`) with a line saying nothing holds it, the sheet draws it as unheld
 rather than green, and the choices drop the spec's wording ("the look is right") for
 such a member.
+
+### §PW375 A sitting answered by name, from chat
+
+Met in spinhold on 2026-10-07. Four sittings were open on the review page
+(`art/review/title-life`, `rk190-opening`, `rk157-menu-sound`, `ptbr-screens`); the
+owner looked at them and said in chat "está tudo certo, pode continuar" rather than
+clicking each family's button. No verdict landed, and the agent had to carry it.
+
+`verdict.judge` takes `members` (name, spec, new...), so carrying that sentence means
+reading each `sitting.json`, copying every family's member list into a JSON argument and
+calling judge once per family, then `verdict.record_answer` by hand so `verdict.answers`
+sees it. The page does exactly that in `review.answer(root, body)`, which takes a
+sitting and a family by name, but `describe` lists no operation for it, so the
+workaround was a throwaway driver calling that internal function.
+
+What polyweave should do: an operation, say `verdict.answer`, taking `sitting` (the
+manifest the page lists), `family` (one, or every family when left out), `choice` and
+`why`, which runs the page's own write for each. A family already answered is skipped
+and named, not judged twice. The answer records the person's words as given, so the
+ledger cannot tell a click from a sentence carried from chat, which is the point.
 
 ## Block P — Music and sound a game can ship
 
@@ -1021,6 +1058,9 @@ review server's `/file` route, which already refuses anything outside the projec
 render or preview that does not exist yet is offered as the operation that would make
 it, run by the agent session and never by the window. Only then is the view a reader and
 not the graphical editor the non-goals rule out.
+
+Landed (gui/README.md): filters, the pane, and the viewers. Left: gate lanes, a looped
+loop, an open-revision filter.
 
 ### §PW305 One verdict path, whichever surface a person uses
 

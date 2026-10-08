@@ -1,5 +1,5 @@
 export { BRIDGE_KEY, CHANNELS } from './bridge'
-export type { Bridge, Opened, Smoke } from './bridge'
+export type { Bridge, Opened, Shown, Smoke } from './bridge'
 export { Broken, Client, Refused } from './client'
 export type { Refusal, Server, Transport } from './client'
 export { engine } from './engine'
