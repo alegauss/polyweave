@@ -306,7 +306,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW306",
     block: "U",
     symptom: "asking for a change to one item means leaving the window for a terminal and retelling the agent which item and what",
-    why: "An item's view opens a Claude Code session through the Agent SDK and the person's own claude, started from its revision and brief, not a typed path.",
+    why: "Turns are not yet kept on the revision, and a second revision on an item does not wait while the first holds it.",
     deps: [],
   },
   {

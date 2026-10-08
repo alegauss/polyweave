@@ -75,6 +75,20 @@ project's own server ends. "Where it is judged" on an item opens the page at
 `?member=<path>`, which scrolls to the card holding that file and outlines it. A browser
 given the same link lands on the same card.
 
+## A change asked for, and the session that makes it
+
+"Ask for a change" on an item keeps the person's words as a revision (`revision.ask`) and
+opens a Claude Code session on it (§PW306). The session is the person's own `claude`:
+found on PATH, then where Claude Code installs itself, and never one bundled with the
+window or the SDK. An unpackaged window also takes a JSON argv in `POLYWEAVE_AGENT`,
+which is how the tests run a fake. `shell/src/sessions.ts` carries it through the Agent
+SDK the way roadkeep's window does: Claude Code's own system prompt, the user, project
+and local settings, the person's command line before the SDK's flags. Its first message
+is built by `core`'s `opening()` from `revision.open` and `asset.brief`, never written
+freehand. The conversation shows beside the item, with every raw line one click away.
+A permission the session asks for is answered in the window, and the person can keep
+talking to the session or stop it. One revision has one session.
+
 ## The live test
 
 `shell/src/window-live.test.ts` starts Electron in smoke mode (`POLYWEAVE_GUI_SMOKE`).

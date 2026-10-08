@@ -50,6 +50,7 @@ export function Project({
   // The project's verdicts are the review page itself, hosted, never rebuilt (§PW305).
   const [reviewing, setReviewing] = useState<string | null>(null)
   const [framed, setFramed] = useState(false)
+  const [talked, setTalked] = useState(false)
   const judge = (member?: string | null) =>
     void bridge.review(opened.project).then((url) => {
       setFramed(false)
@@ -65,6 +66,7 @@ export function Project({
     if (!smoke || revised === null || (chosen && !drawn)) return
     if (smoke.review && !reviewing) return judge(chosen?.artefact)
     if (smoke.review && !framed) return
+    if (smoke.ask && !talked) return
     requestAnimationFrame(() => {
       void bridge.rendered({
         project: opened.project,
@@ -84,10 +86,12 @@ export function Project({
         review: reviewing,
         framed,
         hosted: document.querySelector('[data-review]') !== null,
+        turns: [...document.querySelectorAll('[data-turn]')].map((one) => one.textContent),
+        asked: [...document.querySelectorAll('[data-ask]')].map((one) => one.getAttribute('data-ask')),
       })
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [smoke, chosen, drawn, revised, reviewing, framed, bridge, opened])
+  }, [smoke, chosen, drawn, revised, reviewing, framed, talked, bridge, opened])
 
   return (
     <section className="flex flex-col gap-4">
@@ -193,6 +197,8 @@ export function Project({
               item={chosen}
               onDrawn={() => setDrawn(true)}
               onJudge={() => judge(chosen.artefact)}
+              ask={smoke?.ask}
+              onTalked={() => setTalked(true)}
             />
           ) : (
             <p className="text-muted-foreground">{t('item.choose')}</p>

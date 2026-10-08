@@ -19,6 +19,12 @@ export const CHANNELS = {
   file: 'pw:file',
   revisions: 'pw:revisions',
   review: 'pw:review',
+  revise: 'pw:revise',
+  sessionStart: 'pw:session-start',
+  sessionSay: 'pw:session-say',
+  sessionAnswer: 'pw:session-answer',
+  sessionStop: 'pw:session-stop',
+  sessionLine: 'pw:session-line',
   smoke: 'pw:smoke',
   rendered: 'pw:rendered',
 } as const
@@ -48,6 +54,8 @@ export interface Smoke {
   shot?: string
   /** Open the project's verdicts, on the item's sitting where an item is named. */
   review?: boolean
+  /** Ask for this change on the item and open a session on it (§PW306). */
+  ask?: string
 }
 
 export interface Bridge {
@@ -64,6 +72,15 @@ export interface Bridge {
   revisions(project: string): Promise<string[]>
   /** The review page's address for the project, its server started on the first call. */
   review(project: string): Promise<string>
+  /** Keep a person's request to change an item, with `revision.ask` (§PW301). */
+  revise(project: string, item: string, words: string): Promise<{ revision: string }>
+  /** Open the session on a revision; one revision has one session, kept by its id. */
+  startSession(project: string, revision: string): Promise<{ agent: string; first: string }>
+  say(revision: string, text: string): Promise<void>
+  answer(revision: string, requestId: string, allow: boolean): Promise<boolean>
+  stop(revision: string): Promise<void>
+  /** Every line a session writes, as it writes it; the answer stops listening. */
+  onSessionLine(listener: (revision: string, line: string) => void): () => void
   smoke(): Promise<Smoke | null>
   rendered(report: Record<string, unknown>): Promise<void>
 }

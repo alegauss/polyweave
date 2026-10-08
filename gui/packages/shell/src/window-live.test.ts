@@ -11,6 +11,8 @@ import { join } from 'node:path'
 import electron from 'electron'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
+import { AGENT_VAR } from './agent'
+import { fakeClaude } from './fake-claude'
 import { SMOKE_VAR } from './smoke'
 
 const MAIN = join(import.meta.dirname, '..', 'dist', 'main.js')
@@ -24,6 +26,7 @@ function opened(
   language: string,
   item?: string,
   review?: boolean,
+  ask?: { words: string; agent: string[] },
 ): Promise<Record<string, unknown>> {
   return new Promise((resolve, reject) => {
     const env: Record<string, string | undefined> = {
@@ -34,7 +37,9 @@ function opened(
         language,
         ...(item ? { item } : {}),
         ...(review ? { review } : {}),
+        ...(ask ? { ask: ask.words } : {}),
       }),
+      ...(ask ? { [AGENT_VAR]: JSON.stringify(ask.agent) } : {}),
     }
     delete env['ELECTRON_RUN_AS_NODE']
     const child = spawn(String(electron), [MAIN], { env, windowsHide: true })
@@ -120,6 +125,21 @@ describe.skipIf(!existsSync(MAIN))('the window', () => {
     expect(drew['hosted']).toBe(true)
     const url = String(drew['review'])
     expect(url).toMatch(/^http:\/\/127\.0\.0\.1:\d+\/\?member=docs%2Frenders%2Ficon\.png$/)
+  })
+
+  it('asks for a change and opens a session on it, beside the item', async () => {
+    const fake = fakeClaude()
+    try {
+      const drew = await opened(root, 'en', 'line:TITLE', false, { words: 'shorter', agent: fake.argv })
+      // The fake says its first message back: built from the revision and the brief.
+      const turns = drew['turns'] as string[]
+      expect(turns[0]).toContain('Item: line:TITLE')
+      expect(turns[0]).toContain('What they said: shorter')
+      // Its question is the window's to answer.
+      expect(drew['asked']).toEqual(['Write'])
+    } finally {
+      fake.dispose()
+    }
   })
 
   it('plays a loop looped', async () => {

@@ -67,5 +67,23 @@
     "gate": "Seu último filtro",
     "kept": "Mantidas",
     "refused": "Recusadas"
+  },
+  "session": {
+    "ask": "Pedir uma mudança",
+    "words": "O que deve mudar, nas suas palavras",
+    "open": "Pedir, e abrir uma sessão do Claude Code nisso",
+    "heading": "A sessão desta mudança",
+    "first": "O que a sessão recebeu primeiro",
+    "raw": "Linhas cruas",
+    "read": "Legível",
+    "stop": "Parar",
+    "asks": "Ela pede para usar {{tool}}",
+    "allow": "Permitir",
+    "deny": "Negar",
+    "more": "Diga mais: refine, explique, detalhe",
+    "send": "Enviar",
+    "used": "usou {{tool}}",
+    "done": "Turno encerrado: {{text}}",
+    "failed": "O turno falhou: {{text}}"
   }
 }

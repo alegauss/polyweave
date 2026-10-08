@@ -67,5 +67,23 @@
     "gate": "Its last gate",
     "kept": "Kept",
     "refused": "Refused"
+  },
+  "session": {
+    "ask": "Ask for a change",
+    "words": "What should change, in your words",
+    "open": "Ask, and open a Claude Code session on it",
+    "heading": "The session on this change",
+    "first": "What the session was handed first",
+    "raw": "Raw lines",
+    "read": "Readable",
+    "stop": "Stop",
+    "asks": "It asks to use {{tool}}",
+    "allow": "Allow",
+    "deny": "Deny",
+    "more": "Say more: refine, explain, add detail",
+    "send": "Send",
+    "used": "used {{tool}}",
+    "done": "Turn ended: {{text}}",
+    "failed": "The turn failed: {{text}}"
   }
 }

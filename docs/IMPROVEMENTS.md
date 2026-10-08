@@ -1060,6 +1060,9 @@ One session belongs to one revision. Two revisions on one item are two sessions,
 second waits while the first holds the item. That gives the isolation asked for: each
 improvement is made, seen and judged on its own.
 
+Landed (gui/README.md): the ask, the session, the conversation. Left: turns kept, a
+queue per item.
+
 ### §PW307 The harness that keeps a revision honest
 
 A session left alone does what a chat does: it changes a file and says it is better. The

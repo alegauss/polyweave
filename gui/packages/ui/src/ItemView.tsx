@@ -2,11 +2,13 @@
 // `asset.brief`, the chain back to a purchase, and what was made from it. Read-only: a
 // view the window cannot draw is offered as the operation that would, for the session.
 
-import { Button } from '@viglet/viglet-design-system'
+import { Button, Textarea } from '@viglet/viglet-design-system'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { Bridge, Item, Shown } from '@pw/core'
+
+import { Conversation } from './Conversation'
 
 type Brief = Record<string, any>
 
@@ -42,6 +44,8 @@ export function ItemView({
   item,
   onDrawn,
   onJudge,
+  ask,
+  onTalked,
 }: {
   bridge: Bridge
   project: string
@@ -49,6 +53,10 @@ export function ItemView({
   onDrawn: () => void
   /** Open the verdicts on the sitting that holds this item. */
   onJudge?: () => void
+  /** A change to ask for at once, as the smoke run does. */
+  ask?: string
+  /** Called once the session has ended a turn. */
+  onTalked?: () => void
 }) {
   const { t } = useTranslation()
   const [brief, setBrief] = useState<Brief | null>(null)
@@ -56,6 +64,23 @@ export function ItemView({
   const [file, setFile] = useState<Shown | null>(null)
   const [failed, setFailed] = useState<string | null>(null)
   const seen = viewer(item)
+  const [words, setWords] = useState(ask ?? '')
+  const [talking, setTalking] = useState<{ revision: string; first: string } | null>(null)
+
+  // Kept as a revision first, then a session opened on that revision (§PW306).
+  const request = async (said: string) => {
+    try {
+      const { revision } = await bridge.revise(project, item.id, said)
+      const { first } = await bridge.startSession(project, revision)
+      setTalking({ revision, first })
+    } catch (error) {
+      setFailed(error instanceof Error ? error.message : String(error))
+    }
+  }
+  useEffect(() => {
+    if (ask) void request(ask)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     let live = true
@@ -185,6 +210,18 @@ export function ItemView({
           <p className={chain?.length ? 'font-mono text-sm' : 'text-sm text-muted-foreground'}>
             {chain === null ? '…' : chain.length ? chain.join(' ← ') : t('item.authored')}
           </p>
+        </section>
+      )}
+
+      {talking ? (
+        <Conversation bridge={bridge} revision={talking.revision} first={talking.first} onResult={onTalked} />
+      ) : (
+        <section className="flex flex-col gap-2">
+          <h3 className="font-medium">{t('session.ask')}</h3>
+          <Textarea value={words} placeholder={t('session.words')} onChange={(e) => setWords(e.target.value)} />
+          <Button className="self-start" disabled={!words.trim()} onClick={() => void request(words.trim())}>
+            {t('session.open')}
+          </Button>
         </section>
       )}
 
