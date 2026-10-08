@@ -2,6 +2,7 @@
 // `asset.brief`, the chain back to a purchase, and what was made from it. Read-only: a
 // view the window cannot draw is offered as the operation that would, for the session.
 
+import { Button } from '@viglet/viglet-design-system'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -40,11 +41,14 @@ export function ItemView({
   project,
   item,
   onDrawn,
+  onJudge,
 }: {
   bridge: Bridge
   project: string
   item: Item
   onDrawn: () => void
+  /** Open the verdicts on the sitting that holds this item. */
+  onJudge?: () => void
 }) {
   const { t } = useTranslation()
   const [brief, setBrief] = useState<Brief | null>(null)
@@ -85,7 +89,14 @@ export function ItemView({
 
   return (
     <article className="flex flex-col gap-4 rounded-lg border p-4">
-      <h2 className="truncate font-mono text-base">{item.id}</h2>
+      <div className="flex items-center gap-2">
+        <h2 className="flex-1 truncate font-mono text-base">{item.id}</h2>
+        {item.artefact && onJudge && (
+          <Button size="sm" variant="outline" onClick={onJudge}>
+            {t('project.where_judged')}
+          </Button>
+        )}
+      </div>
       {failed && <p role="alert" className="text-destructive">{t('error.failed', { message: failed })}</p>}
 
       <div data-viewer={seen} className="overflow-auto rounded-md bg-muted/40 p-2">

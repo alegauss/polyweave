@@ -18,7 +18,10 @@
     "from_path": "no PATH",
     "items": "{{count}} itens",
     "empty": "Este projeto ainda não governa nada.",
-    "pending": "aguarda uma pessoa"
+    "pending": "aguarda uma pessoa",
+    "verdicts": "Veredictos",
+    "inventory": "Inventário",
+    "where_judged": "Onde é julgado"
   },
   "record": {
     "sound": "íntegro",

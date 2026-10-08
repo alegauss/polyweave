@@ -63,6 +63,18 @@ run. The window never runs one, because it is a reader and not an editor. A file
 the page only through `shell/src/files.ts`, which refuses any path outside the open
 project and any file that is not a picture or a sound.
 
+## Verdicts: the review page, hosted
+
+The project's Verdicts view is the page `python -m polyweave review` serves, shown in a
+sandboxed iframe, and not a second implementation of it (§PW305). That page lays a
+sitting out, takes a verdict through `/api/judge`, which is `verdict.judge`, refuses to
+judge on stale code, and keeps `answers.jsonl`. Each of those behaviours was a defect
+first found on a real owner's screen. `shell/src/reviews.ts` starts the server with the
+engine that serves the project, reads the address it prints, and ends it when the
+project's own server ends. "Where it is judged" on an item opens the page at
+`?member=<path>`, which scrolls to the card holding that file and outlines it. A browser
+given the same link lands on the same card.
+
 ## The live test
 
 `shell/src/window-live.test.ts` starts Electron in smoke mode (`POLYWEAVE_GUI_SMOKE`).

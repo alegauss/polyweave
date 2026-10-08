@@ -1035,28 +1035,6 @@ at the build.
 
 ## Block U — A window on everything a project governs
 
-### §PW305 One verdict path, whichever surface a person uses
-
-`review.py` and `review_page/` already do the hard part of a verdict. They lay a sitting
-out old beside new. They lay out kept and refused lanes, a canon board, and a sound
-played beside the one it replaces. They take the choices with a consequence per choice,
-in the project's language (PW287). They keep masks tied to a digest, and an accept may
-carry no comment (PW288). They redraw only what changed (PW289), and they read sittings
-from before PW287 through the catalog (PW293). Each of those was a defect found on a
-real owner's screen.
-
-A second implementation in React would have to find every one of them again. So the
-window does not rebuild the sitting view. It hosts the review page for the open project
-in a sandboxed view: the same server, the same `/api/judge` with its `X-Polyweave`
-header, the same `answers.jsonl`. The window's own inventory then links an item to the
-sitting that holds it.
-
-Where the page needs a change to sit inside the window, such as a route for one sitting,
-a link out to an item, or the theme, that change is made in `review_page/`. That keeps
-the browser-only path and the window the same code. The review server's lifetime then
-follows the window's held server, which also closes PW294's stale-code case for a person
-using the window.
-
 ### §PW306 A Claude Code session opened on one item
 
 The person looks at an item, marks where it is wrong if it is a picture (the PW174 mask)
@@ -1182,6 +1160,32 @@ before handing the window over, and every friction filed as its own line in this
 It is not a test run. A change of plan that the owner asks for mid-way ("undo, try the
 other palette") is part of what is being proved, because a revision a person refines
 several times is the case this block exists for.
+
+### §PW377 The decision screen drawn natively, from typed operations
+
+PW305 hosts the review page in an iframe, which keeps one verdict path, but the window
+cannot draw the decision screen itself. Half of what the page shows is no operation: the
+sitting list (`review.sittings`), gate lanes with ceilings (`review.looked_at`),
+turntables, the canon board (`style.board`), the old/new difference and the stale-code
+check. Its write, `review.answer`, turns drawn boxes into a mask tied to a digest before
+`verdict.judge`, and that is no operation either. In the owner's screenshot the page
+also spoke English inside a pt-BR window.
+
+Build, in parts:
+1. Operations for every fact: `review.state` (the `/api/state` payload),
+   `review.compare`, and `review.answer` (masks, then `verdict.judge`, refused on
+   stale code as the page is).
+2. A typed SDK: `gui/packages/core/src/operations.generated.ts`, generated from
+   `describe` (parameters, ranges, choices, payloads), with a test that fails when it
+   is stale, like `site/src/lib/roadmap.generated.ts`.
+3. The decision screen in React with viglet in `gui/packages/ui`: cards, mask drawing,
+   compare, sentence, lanes, canon. `tests/test_review_page.py` is the checklist of
+   behaviour it must keep (PW287 to PW293).
+4. One implementation: the same bundle, built into `src/polyweave/review_page/` and
+   checked fresh by a test, is what `python -m polyweave review` serves. The browser
+   and the window then run one code, which is what PW305 protected.
+
+The iframe and `?member=` stay until step 4 lands.
 
 ## Block V — Parts every game repeats, installed already proved
 

@@ -11,10 +11,12 @@ import { CHANNELS, find, page, type Kind, type Opened, type Smoke } from '@pw/co
 import { disk } from './disk'
 import { shown } from './files'
 import { Held } from './held'
+import { Reviews } from './reviews'
 import { SMOKE_VAR } from './smoke'
 import { createWindow } from './window'
 
 const held = new Held()
+const reviews = new Reviews()
 const smoke: Smoke | null = process.env[SMOKE_VAR]
   ? (JSON.parse(process.env[SMOKE_VAR]) as Smoke)
   : null
@@ -50,6 +52,9 @@ ipcMain.handle(CHANNELS.revisions, async (_event, project: string) => {
   })) as { revisions: { item: string }[] }
   return [...new Set(open.revisions.map((one) => one.item))]
 })
+ipcMain.handle(CHANNELS.review, async (_event, project: string) =>
+  reviews.url(project, (await held.opened(project)).engine),
+)
 ipcMain.handle(CHANNELS.smoke, () => smoke)
 ipcMain.handle(CHANNELS.rendered, async (event, report: Record<string, unknown>) => {
   if (!smoke) return
@@ -62,10 +67,13 @@ ipcMain.handle(CHANNELS.rendered, async (event, report: Record<string, unknown>)
 })
 
 app.on('before-quit', () => {
+  // The review page's server lives as long as the project's own (§PW305).
+  void reviews.closeAll()
   void held.closeAll()
 })
 app.on('window-all-closed', () => app.quit())
 
 void app.whenReady().then(() => {
-  createWindow(!smoke)
+  // A hidden window is not composited, so a smoke run asked for a picture is shown.
+  createWindow(!smoke || Boolean(smoke.shot))
 })

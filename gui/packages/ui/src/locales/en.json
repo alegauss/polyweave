@@ -18,7 +18,10 @@
     "from_path": "on the PATH",
     "items": "{{count}} items",
     "empty": "This project governs nothing yet.",
-    "pending": "waits on a person"
+    "pending": "waits on a person",
+    "verdicts": "Verdicts",
+    "inventory": "Inventory",
+    "where_judged": "Where it is judged"
   },
   "record": {
     "sound": "sound",

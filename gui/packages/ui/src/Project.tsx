@@ -47,6 +47,14 @@ export function Project({
   useEffect(() => {
     void bridge.revisions(opened.project).then(setRevised, () => setRevised([]))
   }, [bridge, opened.project])
+  // The project's verdicts are the review page itself, hosted, never rebuilt (§PW305).
+  const [reviewing, setReviewing] = useState<string | null>(null)
+  const [framed, setFramed] = useState(false)
+  const judge = (member?: string | null) =>
+    void bridge.review(opened.project).then((url) => {
+      setFramed(false)
+      setReviewing(member ? `${url}?member=${encodeURIComponent(member)}` : url)
+    })
   const shown = kept(items, filter, revised ?? [])
   const byKind = KINDS.map((kind) => [kind, shown.filter((i) => i.kind === kind)] as const).filter(
     ([, rows]) => rows.length > 0,
@@ -55,6 +63,8 @@ export function Project({
   // A smoke run reports once the list, and the item it asked for, are on the page.
   useEffect(() => {
     if (!smoke || revised === null || (chosen && !drawn)) return
+    if (smoke.review && !reviewing) return judge(chosen?.artefact)
+    if (smoke.review && !framed) return
     requestAnimationFrame(() => {
       void bridge.rendered({
         project: opened.project,
@@ -71,9 +81,13 @@ export function Project({
         looped: document.querySelector('audio')?.loop ?? null,
         revised: revised.length,
         said: document.querySelector('[data-said]')?.textContent ?? null,
+        review: reviewing,
+        framed,
+        hosted: document.querySelector('[data-review]') !== null,
       })
     })
-  }, [smoke, chosen, drawn, revised, bridge, opened])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [smoke, chosen, drawn, revised, reviewing, framed, bridge, opened])
 
   return (
     <section className="flex flex-col gap-4">
@@ -94,6 +108,30 @@ export function Project({
             opened.engine.from === 'project' ? t('project.from_project') : t('project.from_path'),
         })}
       </p>
+      <div className="flex gap-2">
+        <Button
+          size="sm"
+          variant={reviewing ? 'outline' : 'default'}
+          onClick={() => setReviewing(null)}
+        >
+          {t('project.inventory')}
+        </Button>
+        <Button size="sm" variant={reviewing ? 'default' : 'outline'} onClick={() => judge()}>
+          {t('project.verdicts')}
+        </Button>
+      </div>
+      {reviewing ? (
+        <iframe
+          data-review
+          title={t('project.verdicts')}
+          src={reviewing}
+          // Its own origin, its own scripts: the page posts its verdict to its own server.
+          sandbox="allow-scripts allow-same-origin allow-forms"
+          onLoad={() => setFramed(true)}
+          className="h-[78vh] w-full rounded-lg border"
+        />
+      ) : (
+        <>
       <div className="flex flex-wrap items-center gap-2">
         <p data-count className="mr-auto text-sm">
           {t('project.items', { count: items.length })}
@@ -128,7 +166,7 @@ export function Project({
                         setDrawn(false)
                         setChosen(item)
                       }}
-                      className="flex w-full items-center gap-3 p-2 text-left text-sm hover:bg-muted aria-[current=true]:bg-muted"
+                      className="flex w-full flex-wrap items-center gap-x-3 gap-y-1 p-2 text-left text-sm hover:bg-muted aria-[current=true]:bg-muted"
                     >
                       <span className="min-w-32 flex-1 truncate font-mono">{item.id}</span>
                       {item.pending && (
@@ -154,12 +192,15 @@ export function Project({
               project={opened.project}
               item={chosen}
               onDrawn={() => setDrawn(true)}
+              onJudge={() => judge(chosen.artefact)}
             />
           ) : (
             <p className="text-muted-foreground">{t('item.choose')}</p>
           )}
         </div>
       </div>
+        </>
+      )}
     </section>
   )
 }

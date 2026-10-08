@@ -18,6 +18,7 @@ export const CHANNELS = {
   lineage: 'pw:lineage',
   file: 'pw:file',
   revisions: 'pw:revisions',
+  review: 'pw:review',
   smoke: 'pw:smoke',
   rendered: 'pw:rendered',
 } as const
@@ -45,6 +46,8 @@ export interface Smoke {
   item?: string
   /** Where to save a picture of the window once it has drawn, when asked. */
   shot?: string
+  /** Open the project's verdicts, on the item's sitting where an item is named. */
+  review?: boolean
 }
 
 export interface Bridge {
@@ -59,6 +62,8 @@ export interface Bridge {
   file(project: string, path: string): Promise<Shown>
   /** The items a person has an open revision on, from `revision.open` (§PW301). */
   revisions(project: string): Promise<string[]>
+  /** The review page's address for the project, its server started on the first call. */
+  review(project: string): Promise<string>
   smoke(): Promise<Smoke | null>
   rendered(report: Record<string, unknown>): Promise<void>
 }

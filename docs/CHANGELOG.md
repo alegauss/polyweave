@@ -364,6 +364,7 @@
 - ✅ **PW302** **the plugin is sourced from the repository root, so a desktop app added to the tree ships in every adopter's cache** — The marketplace sources plugin/, holding only the manifest, hooks and skills; a scratch install cached just those, and project.check passed (design recorded in `docs/specs/adoption.md`).
 - ✅ **PW303** **there is no desktop window that finds the projects on a machine using polyweave and opens one** — An Electron window finds projects under a named root, opens one on a held polyweave serve, names its engine and draws its inventory by kind in en or pt-BR (design recorded in `gui/README.md`).
 - ✅ **PW304** **a person sees one item of a project only by opening its file by hand, with no declaration, record or bar beside it** — The window shows an item beside its bar, chain and dependents, a picture with its gate lanes and a loop looped, and filters to open revisions (design recorded in `gui/README.md`).
+- ✅ **PW305** **the window and the review page would each show a sitting, so two surfaces answer the same verdict and drift** — The window hosts the project's own review page, its server held beside the project's, so verdict.judge stays the one write; an item links to its sitting (design recorded in `gui/README.md`).
 
 ## Block V — Parts every game repeats, installed already proved
 

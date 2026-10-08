@@ -19,11 +19,22 @@ const MAIN = join(import.meta.dirname, '..', 'dist', 'main.js')
 const PNG =
   'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFklEQVR4nGP4z8DwnwEJMGHjEcEFABQ7Av8bS6RhAAAAAElFTkSuQmCC'
 
-function opened(root: string, language: string, item?: string): Promise<Record<string, unknown>> {
+function opened(
+  root: string,
+  language: string,
+  item?: string,
+  review?: boolean,
+): Promise<Record<string, unknown>> {
   return new Promise((resolve, reject) => {
     const env: Record<string, string | undefined> = {
       ...process.env,
-      [SMOKE_VAR]: JSON.stringify({ root, depth: 1, language, ...(item ? { item } : {}) }),
+      [SMOKE_VAR]: JSON.stringify({
+        root,
+        depth: 1,
+        language,
+        ...(item ? { item } : {}),
+        ...(review ? { review } : {}),
+      }),
     }
     delete env['ELECTRON_RUN_AS_NODE']
     const child = spawn(String(electron), [MAIN], { env, windowsHide: true })
@@ -101,6 +112,14 @@ describe.skipIf(!existsSync(MAIN))('the window', () => {
     expect(picture['viewer']).toBe('picture')
     // Both lanes: the kept icon and the refused one beside it.
     expect(picture['lanes']).toBe(2)
+  })
+
+  it("hosts the project's review page for its verdicts, on an item's sitting", async () => {
+    const drew = await opened(root, 'en', 'docs/renders/icon.png', true)
+    expect(drew['framed']).toBe(true)
+    expect(drew['hosted']).toBe(true)
+    const url = String(drew['review'])
+    expect(url).toMatch(/^http:\/\/127\.0\.0\.1:\d+\/\?member=docs%2Frenders%2Ficon\.png$/)
   })
 
   it('plays a loop looped', async () => {

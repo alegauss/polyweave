@@ -303,13 +303,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW305",
-    block: "U",
-    symptom: "the window and the review page would each show a sitting, so two surfaces answer the same verdict and drift",
-    why: "The window shows sittings and answers them through the review server's own judge call, so verdict.judge stays the one write for a verdict.",
-    deps: [],
-  },
-  {
     id: "PW306",
     block: "U",
     symptom: "asking for a change to one item means leaving the window for a terminal and retelling the agent which item and what",
@@ -321,7 +314,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "U",
     symptom: "a session changing an item can report done with no check run, and nothing makes it end on the person's verdict",
     why: "A revision harness re-runs the item's own checks after each change, shows old beside new in the window, and ends only in a sitting the person answers.",
-    deps: ["PW305", "PW306"],
+    deps: ["PW306"],
   },
   {
     id: "PW308",
@@ -350,6 +343,13 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "no revision has been asked, made and judged from the window on a real game, so its gaps are guesses",
     why: "Starship's owner opens the project in the window, asks for one picture and one sound to change, and judges both there; what got in the way is filed.",
     deps: ["PW307", "PW308", "PW309", "PW310"],
+  },
+  {
+    id: "PW377",
+    block: "U",
+    symptom: "half the decision screen's facts and its masked write are no operation, so the window can only frame the Python page",
+    why: "A typed SDK generated from describe, and one React screen served to the window and the browser alike, end the iframe without a second implementation.",
+    deps: [],
   },
   {
     id: "PW340",

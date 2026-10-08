@@ -649,6 +649,27 @@ async function draw() {
       element("td", {}, asset.candidate || ""),
       element("td", {}, asset.judged || "")));
   }
+  focusMember(found);
+}
+
+// `?member=<path>` opens on the card a file is judged in (§PW305): the window links an item
+// to its sitting this way, and a link pasted into a browser lands in the same place.
+let focused = false;
+function focusMember(found) {
+  const wanted = new URLSearchParams(location.search).get("member");
+  if (!wanted || focused) return;
+  for (const sitting of found.sittings) {
+    for (const [name, laid] of Object.entries(sitting.families || {})) {
+      const members = laid.members || [];
+      if (!members.some((one) => one.new === wanted || one.old === wanted)) continue;
+      const card = document.getElementById(cardId(sitting.manifest, name));
+      if (!card) continue;
+      card.classList.add("focused");
+      card.scrollIntoView({ block: "start" });
+      focused = true;
+      return;
+    }
+  }
 }
 
 document.getElementById("zoom-close").addEventListener("click", () => document.getElementById("zoom").close());
