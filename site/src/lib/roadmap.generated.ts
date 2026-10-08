@@ -41,7 +41,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "N", title: "Pictures held to a canon", open: 0 },
   { block: "O", title: "A person sees and answers", open: 3 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
-  { block: "Q", title: "Words held to the world", open: 1 },
+  { block: "Q", title: "Words held to the world", open: 0 },
   { block: "R", title: "Levels measured before a person plays them", open: 12 },
   { block: "S", title: "Playing the game, not only rendering it", open: 1 },
   { block: "T", title: "Adopting polyweave in a project", open: 2 },
@@ -133,13 +133,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "a transcription read from a reference video cites no frames, and a person's corrections to it are kept nowhere",
     why: "A wrong count is cheapest to fix on the sheet, and only if the person sees the frames beside each row and their answer is recorded.",
     deps: ["PW379"],
-  },
-  {
-    id: "PW335",
-    block: "Q",
-    symptom: "no operation says which characters of a string table its fonts lack, so a missing accent shows only on screen",
-    why: "A box or a borrowed system glyph reaches a player because only the project checked its own fonts.",
-    deps: [],
   },
   {
     id: "PW202",
@@ -349,7 +342,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "V",
     symptom: "the string table words checks reaches a game's TranslationServer by hand, with no fallback font for another script",
     why: "Block Q holds the table to the world; the step from the table to the screen is the one every game rewrites.",
-    deps: ["PW341", "PW335"],
+    deps: ["PW341"],
   },
   {
     id: "PW353",

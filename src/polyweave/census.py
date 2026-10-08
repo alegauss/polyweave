@@ -119,6 +119,7 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.icons:read": ("internal", "icons.build's declaration, resolved"),
     "polyweave.loop:held": ("internal", "the open run kept between calls"),
     "polyweave.sfx:hz": ("internal", "a note name as Hz"),
+    "polyweave.words:characters": ("internal", "a font's character map"),
     "polyweave.sfx:tuned": ("internal", "an effect's notes as sfxr's numbers"),
     "polyweave.sound:note_of": ("internal", "a pitch as its nearest note"),
     "polyweave.icons:draw": ("internal", "one icon at one size"),

@@ -353,6 +353,159 @@ _TEXT = re.compile(r'^text = "((?:[^"\\]|\\.)*)"', re.M | re.S)
 _NODE = re.compile(r'^\[node name="([^"]*)"', re.M)
 
 
+def characters(font: Path) -> set[int]:
+    """Every code point a TrueType or OpenType font maps to a glyph (§PW335).
+
+    Read off the font's `cmap` table directly, formats 4 and 12, which between them
+    are every Unicode map a game's font carries; nothing is drawn, so no renderer and
+    no font library is needed. A file that is not a font, or maps nothing this reads,
+    is refused.
+    """
+    import struct
+
+    data = font.read_bytes()
+
+    def bad(why: str) -> PolyweaveError:
+        return PolyweaveError(
+            "words.no-fonts",
+            f"{font.name} {why}",
+            "name a .ttf or .otf the game draws with",
+            given=str(font),
+        )
+
+    if len(data) < 12:
+        raise bad("is too short to be a font")
+    (count,) = struct.unpack(">H", data[4:6])
+    tables = {
+        data[12 + 16 * i : 16 + 16 * i]: struct.unpack(
+            ">II", data[20 + 16 * i : 28 + 16 * i]
+        )
+        for i in range(count)
+        if 28 + 16 * i <= len(data)
+    }
+    if b"cmap" not in tables:
+        raise bad("has no character map, so it is no font this reads")
+    base, _ = tables[b"cmap"]
+    (subtables,) = struct.unpack(">H", data[base + 2 : base + 4])
+    found: set[int] = set()
+    for i in range(subtables):
+        platform, encoding, offset = struct.unpack(
+            ">HHI", data[base + 4 + 8 * i : base + 12 + 8 * i]
+        )
+        if (platform, encoding) not in ((3, 1), (3, 10), (0, 3), (0, 4), (0, 6)):
+            continue
+        at = base + offset
+        (kind,) = struct.unpack(">H", data[at : at + 2])
+        if kind == 4:
+            (doubled,) = struct.unpack(">H", data[at + 6 : at + 8])
+            n = doubled // 2
+            ends = struct.unpack(f">{n}H", data[at + 14 : at + 14 + 2 * n])
+            starts_at = at + 16 + 2 * n
+            starts = struct.unpack(f">{n}H", data[starts_at : starts_at + 2 * n])
+            deltas_at = starts_at + 2 * n
+            deltas = struct.unpack(f">{n}h", data[deltas_at : deltas_at + 2 * n])
+            ranges_at = starts_at + 4 * n
+            offsets = struct.unpack(f">{n}H", data[ranges_at : ranges_at + 2 * n])
+            for seg in range(n):
+                for code in range(starts[seg], ends[seg] + 1):
+                    if code == 0xFFFF:
+                        continue
+                    if offsets[seg] == 0:
+                        glyph = (code + deltas[seg]) & 0xFFFF
+                    else:
+                        where = (ranges_at + 2 * seg + offsets[seg]
+                                 + 2 * (code - starts[seg]))
+                        (glyph,) = struct.unpack(">H", data[where : where + 2])
+                        if glyph:
+                            glyph = (glyph + deltas[seg]) & 0xFFFF
+                    if glyph:
+                        found.add(code)
+        elif kind == 12:
+            (groups,) = struct.unpack(">I", data[at + 12 : at + 16])
+            for g in range(groups):
+                start, end, first = struct.unpack(
+                    ">III", data[at + 16 + 12 * g : at + 28 + 12 * g]
+                )
+                found.update(
+                    code for code in range(start, end + 1) if first + code - start
+                )
+    if not found:
+        raise bad("maps no Unicode character this reads")
+    return found
+
+
+#: Characters no font is asked to draw: the space and line breaks a layout handles.
+_DRAWN_BY_LAYOUT = {" ", "\n", "\r", "\t", "\u00a0"}
+
+
+@operation("words.glyphs")
+def glyphs(root: Annotated[str, _ROOT] = ".") -> dict:
+    """Every character a line needs that the font drawing it lacks (§PW335).
+
+    Reads `[words] table` and `[words] fonts`, each font with the glob patterns of the
+    rows it draws (every row where it names none), and answers, per font, each
+    character missing from it with the locales and keys that use it. Upper case
+    counts, since a game may upper-case a line at draw time. A missing character is a
+    finding, so a gate goes red before a player sees a box or a borrowed glyph.
+    """
+    import fnmatch
+
+    config = load(root)
+    fonts = config.get("words.fonts") or []
+    if not fonts:
+        raise PolyweaveError(
+            "words.no-fonts",
+            "polyweave.toml names no font to hold the table's lines to",
+            'set [words] fonts = [{ path = "fonts/Game.ttf" }], one per font the '
+            "game draws with",
+        )
+    source, locales, rows = table(root)
+    answer = []
+    for one in fonts:
+        declared = one if isinstance(one, dict) else {"path": one}
+        where = config.path("paths.work", str(declared.get("path", "")))
+        if not where.is_file():
+            raise PolyweaveError(
+                "words.no-fonts",
+                f"[words] fonts names {declared.get('path')!r}, and there is no file "
+                "there",
+                "name the font file the game ships, relative to the project",
+                given=str(declared.get("path")),
+            )
+        has = characters(where)
+        patterns = declared.get("keys") or ["*"]
+        missing: dict[str, dict] = {}
+        for row in rows:
+            if not any(fnmatch.fnmatchcase(row["key"], p) for p in patterns):
+                continue
+            for locale in locales:
+                text = row["cells"].get(locale) or ""
+                for char in set(text) | set(text.upper()):
+                    if char in _DRAWN_BY_LAYOUT or ord(char) in has:
+                        continue
+                    seen = missing.setdefault(char, {"locales": set(), "keys": set()})
+                    seen["locales"].add(locale)
+                    seen["keys"].add(row["key"])
+        answer.append({
+            "font": provenance.relative(where, config.root),
+            "keys": patterns,
+            "missing": [
+                {"char": char, "code": f"U+{ord(char):04X}",
+                 "locales": sorted(seen["locales"]), "keys": sorted(seen["keys"])}
+                for char, seen in sorted(missing.items())
+            ],
+        })
+    lacking = sum(len(one["missing"]) for one in answer)
+    return {
+        "table": provenance.relative(source, config.root),
+        "fonts": answer,
+        "passed": not lacking,
+        "says": "every character the table needs is in the font that draws it"
+        if not lacking
+        else f"{lacking} character(s) a line needs are missing from its font",
+    }
+
+
 @operation("words.unlisted")
 def unlisted(root: Annotated[str, _ROOT] = ".") -> dict:
     """The literal texts in the project's scenes that are not keys of the string table.

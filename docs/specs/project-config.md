@@ -154,6 +154,7 @@ ordinary = ["START", "OK"]         # capitalised words that are not names
 ordinary_in = { pt_BR = ["VIDAS"] } # and those of one locale alone (PW329)
 canon    = "docs/design/lines.json"  # a person's verdicts on lines; only a verdict adds
 voiced   = "audio/voice/{locale}/{key}.ogg"  # where voice.lines puts a take (PW322)
+fonts    = [{ path = "fonts/Nunito.ttf" }, { path = "fonts/Orbitron.ttf", keys = ["TITLE*"] }]
 
 [voice]                            # what a spoken take is held to (PW323)
 lead_silence = 0.25                # seconds before the first word; zero bounds nothing

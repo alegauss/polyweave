@@ -88,7 +88,8 @@ from polyweave.errors import PolyweaveError
 #: 109,374 with reference.frames (§PW328), a gameplay video read as sheets.
 #: 110,664 with measure.pressure (§PW330), a wave timeline's threat per second.
 #: 111,385 with icons.build (§PW331), a pad's button prompts as a declared set.
-DESCRIBE = 112_000
+#: 112,103 with words.glyphs (§PW335), the characters a font lacks.
+DESCRIBE = 112_700
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -153,7 +154,8 @@ DESCRIBE = 112_000
 #: 120,862 with reference.frames (§PW328).
 #: 122,152 with measure.pressure (§PW330).
 #: 122,894 with icons.build and compose.bad-icons (§PW331).
-CAPABILITIES = 123_500
+#: 123,630 with words.glyphs and words.no-fonts (§PW335).
+CAPABILITIES = 124_300
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
@@ -188,7 +190,8 @@ HELP_VERB = 4_100
 #: 22,237 with revision.turn, .check, .settings and the hook verb (§PW306, §PW307).
 #: 22,842 with sound.speak, voice.design and voice.choose (§PW314, §PW321).
 #: 23,302 with voice.lines, sound.speech and provenance.borrow (§PW322-§PW325).
-HELP_TOP = 23_900
+#: 23,916 with reference.frames, measure.pressure, icons.build and words.glyphs.
+HELP_TOP = 24_500
 #: A search's answer over its default budget of 24 samples: 3,739.
 SEARCH = 4_000
 

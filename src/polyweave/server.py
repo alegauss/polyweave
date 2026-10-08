@@ -100,7 +100,8 @@ TOOL_BUDGET = 4500
 #: 97,200 at 96,573 for reference.frames (§PW328).
 #: 98,200 at 97,606 for measure.pressure (§PW330).
 #: 98,800 at 98,256 for icons.build (§PW331).
-LIST_BUDGET = 98800
+#: 99,400 at 98,895 for words.glyphs (§PW335).
+LIST_BUDGET = 99400
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

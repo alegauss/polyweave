@@ -49,8 +49,6 @@
 
 ## Block Q — Words held to the world
 
-- 📋 **PW335** (deps: —) **no operation says which characters of a string table its fonts lack, so a missing accent shows only on screen** — A box or a borrowed system glyph reaches a player because only the project checked its own fonts. → §PW335
-
 ## Block R — Levels measured before a person plays them
 
 - 📋 **PW202** (deps: PW201 ⏸) **A game's own headless play of a level has no way to report what it measured** — Only the game can play its own rules, so polyweave needs a contract for what the game's probe prints, not a simulator of its own. → §PW202
@@ -94,7 +92,7 @@
 - 📋 **PW349** (deps: PW341) **the splash, the load into the first scene and each change of scene are hand-made per game and freeze on a large scene** — A splash no pad can skip and a frozen frame while a scene loads are the first things a player sees. → §PW349
 - 📋 **PW350** (deps: PW341) **a game's credits are typed by hand while the provenance record already knows every asset's source and licence** — A hand-typed credit drifts from what shipped, and a CC-BY asset missing from the screen is a licence broken. → §PW350
 - 📋 **PW351** (deps: PW341) **each game lays out its audio buses, music crossfade and sound pooling its own way, and a bus's loudness is never checked** — The bus layout is what both the options screen and Block P's music lean on, so one declared layout serves both. → §PW351
-- 📋 **PW352** (deps: PW341, PW335) **the string table words checks reaches a game's TranslationServer by hand, with no fallback font for another script** — Block Q holds the table to the world; the step from the table to the screen is the one every game rewrites. → §PW352
+- 📋 **PW352** (deps: PW341, PW335 ✅) **the string table words checks reaches a game's TranslationServer by hand, with no fallback font for another script** — Block Q holds the table to the world; the step from the table to the screen is the one every game rewrites. → §PW352
 - 📋 **PW353** (deps: PW344) **a dialogue box with typed text, skip, advance and a portrait is rewritten per game, each advancing on its own button** — It shows lines a person wrote and never writes them, so it sits beside Block Q clear of the non-goal on story. → §PW353
 - 📋 **PW354** (deps: —) **no measure counts the flashes in a captured run, so a photosensitivity risk is found by a player** — A flash count is a number read from pixels, the kind of check polyweave exists to make, and no snippet carries one. → §PW354
 - 📋 **PW355** (deps: PW347, PW354) **text size, colourblind filters, subtitles and less shake are each left out or hand-built, and none is checked** — They are options in every game's settings and their effect can be measured, which makes them a kit rather than a wish. → §PW355

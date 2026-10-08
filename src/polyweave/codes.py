@@ -699,6 +699,12 @@ CODES: dict[str, Code] = {
         "no person's accept on its bytes (§PW321); an agent never picks a voice",
         doors=("let a person accept one on the review page voice.design lays out",),
     ),
+    "words.no-fonts": Code(
+        means="the project names no font, or one that cannot be read, to hold lines to",
+        when="words.glyphs with no [words] fonts, a path with nothing there, or a "
+        "file whose character map is not one this reads (§PW335)",
+        doors=('set [words] fonts = [{ path = "fonts/Game.ttf" }]',),
+    ),
     "words.no-voiced": Code(
         means="the project says nowhere for a spoken line to land",
         when="voice.lines with no [words] voiced, the path each take is written to "

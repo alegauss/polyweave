@@ -477,27 +477,6 @@ that a second game would not becomes configuration.
 
 ## Block Q — Words held to the world
 
-### §PW335 Glyphs a string table needs and its fonts lack
-
-Met in starship (RK166), holding every screen of the game to its Brazilian Portuguese.
-The design asks that every character of every pt-BR cell exist in the font its Label
-draws with, and says to file a PW line where polyweave cannot answer it. `describe` has
-no such operation: `words.check` holds the table to the world's names, `picture.letters`
-reads lettering off a picture, and neither opens a font.
-
-The worker read both of the game's fonts once with fontTools from a throwaway command
-(Nunito lacks "▶"; Orbitron lacks "·" and "▶"), and the game's own check now asks
-Godot's `Font.has_char` for every character of the table, upper case included, against
-every font the game ships. That is a font analysed inside the project, which is the
-workaround to retire.
-
-What polyweave should do: `words.glyphs` (or a predicate of `words.check`) that reads
-the `[words] table` and the fonts the project declares (a `[words] fonts` list, each
-with the keys or text styles it draws), and answers, per font and locale, every
-character a line needs and the font lacks, with the keys that use it. Upper case counts,
-since a game may upper-case a line at draw time. A missing character is a finding, so
-the gate goes red before a player sees a box or a borrowed system glyph.
-
 ## Block R — Levels measured before a person plays them
 
 ### §PW201 Whether a bot's win rate says how hard a level feels
@@ -1144,17 +1123,17 @@ the layout is declared once here and read there.
 
 ### §PW352 The string table on screen in every language
 
-Block Q checks a string table against the world the person declared, and §PW335 finds
-the characters its fonts lack. Neither puts the table on screen. This kit is that
+Block Q checks a string table against the world the person declared, and `words.glyphs`
+finds the characters its fonts lack. Neither puts the table on screen. This kit is that
 runtime half: it loads the [words] table into Godot's TranslationServer, installs a
 language selector for the settings kit of §PW347, sets fallback fonts per script (CJK,
 Cyrillic, Arabic) as the project declares them, and picks the system locale on first
 launch when the game supports it.
 
 Proof: switching to each locale changes every visible label of a captured screen; no key
-ever shows its raw name; with §PW335, no character falls to a box or a borrowed system
-glyph; a line that grows in translation still fits its control, measured on the capture
-rather than assumed.
+ever shows its raw name; with `words.glyphs`, no character falls to a box or a borrowed
+system glyph; a line that grows in translation still fits its control, measured on the
+capture rather than assumed.
 
 The words themselves stay the project's and the person's, held by Block Q; the kit only
 carries them to the screen.

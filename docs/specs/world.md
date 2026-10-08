@@ -221,3 +221,15 @@ line starts from.
 `words.unlisted` answers what the check cannot see: every literal `text` a node carries
 in the project's `.tscn` files that is not a key of the table, as `count` and
 `literals` with the scene, line and node.
+
+**Every character a line needs is in the font that draws it** (§PW335). A missing
+accent or arrow shows only on screen, as a box or a glyph borrowed from a system font.
+`[words] fonts` lists the fonts the game draws with, each `{ path, keys }`, `keys` the
+glob patterns of the rows it draws (every row where it names none). `words.glyphs` reads
+each font's character map itself, the `cmap` table in formats 4 and 12, so no renderer
+and no font library is needed, and answers per font every character a row it draws needs
+and it lacks: the character, its code point, and the locales and keys that use it. Upper
+case counts, since a game may upper-case a line as it draws it; the space and line
+breaks a layout handles do not. `passed` is false while any is missing. No font
+declared, a path with nothing there, or a file with no character map this reads is
+`words.no-fonts`.
