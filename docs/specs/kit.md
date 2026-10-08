@@ -210,3 +210,18 @@ tab per tab, a slider, switch, choice or button per row; the d-pad walks the row
 round again, left and right move a value, the shoulders change tab, and confirm and
 back follow the menus kit's convention. Its proof script runs `unchanging`, a restart,
 an older file and a pad walk of every tab.
+
+**saves** (§PW348): a game's saves in slots, kept through a crash and an update, from
+Cottony's save file. `PolyweaveSaves` takes a Dictionary and never names a field. A
+slot is `user://saves/<slot>.save`, JSON written from Godot's own types inside an
+envelope with the version, the time and a SHA-256 of the data. A save is written to
+`.tmp`, the save it replaces moves to `.bak` (or to `.bad` where it does not read, so a
+corrupt save never pushes the last good one out), and only then is the new one renamed
+into place. `load_slot` falls back to `.bak` where the save is missing, does not parse
+or fails its sum, and `said` says so. The project's `res://polyweave_saves.gd` declares
+`const VERSION`, `const SLOTS` and `static func migrations()`, version to a Callable
+that brings a save to the next; a save from an older version comes up step by step,
+and one with a step missing or from a newer build is refused and left on disk. Its
+proof script fills and reads back every slot, stops a save after its write and after
+its move, corrupts the data under a sum, and loads saves from every older version and
+from a newer one.

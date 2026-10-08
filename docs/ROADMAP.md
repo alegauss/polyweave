@@ -75,7 +75,6 @@
 
 ## Block V — Parts every game repeats, installed already proved
 
-- 📋 **PW348** (deps: PW341 ✅) **a save is written in place with no schema version, so a crash mid-write or a game update can lose a player's progress** — Cottony wrote its own save and tests for it; the failures that matter are the same in every game and can be forced. → §PW348
 - 📋 **PW349** (deps: PW341 ✅) **the splash, the load into the first scene and each change of scene are hand-made per game and freeze on a large scene** — A splash no pad can skip and a frozen frame while a scene loads are the first things a player sees. → §PW349
 - 📋 **PW350** (deps: PW341 ✅) **a game's credits are typed by hand while the provenance record already knows every asset's source and licence** — A hand-typed credit drifts from what shipped, and a CC-BY asset missing from the screen is a licence broken. → §PW350
 - 📋 **PW351** (deps: PW341 ✅) **each game lays out its audio buses, music crossfade and sound pooling its own way, and a bus's loudness is never checked** — The bus layout is what both the options screen and Block P's music lean on, so one declared layout serves both. → §PW351
@@ -98,7 +97,7 @@
 - 💭 **PW368** (deps: —) **a game's states and transitions live only in code, so a state nothing reaches or nothing leaves is found by playing** — Generic enough for a kit, but the most opinionated one here, so it waits until two games show code it would replace. → §PW368
 - 📋 **PW369** (deps: PW341 ✅, PW358, PW362) **a new game starts as an empty Godot project and is adopted onto polyweave later, by hand** — If every project is to adapt to polyweave, the cheapest moment to do it is the first commit. → §PW369
 - 📋 **PW370** (deps: PW345 ✅, PW357) **Starship keeps its own bindings and co-op code after the input kits were extracted from it** — A kit proved only in a fixture has not met a game, and the game it came from is the cheapest first consumer. → §PW370
-- 📋 **PW371** (deps: PW347 ✅, PW348) **Cottony keeps its own settings and save code where the kits provide them** — The second game is what shows a kit is not one project's code moved into a folder. → §PW371
+- 📋 **PW371** (deps: PW347 ✅, PW348 ✅) **Cottony keeps its own settings and save code where the kits provide them** — The second game is what shows a kit is not one project's code moved into a folder. → §PW371
 
 ## Done when — PW36
 

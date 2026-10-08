@@ -845,22 +845,6 @@ line in the window and the file in `touched`.
 
 ## Block V — Parts every game repeats, installed already proved
 
-### §PW348 Saves that survive a crash and an update
-
-Cottony has scripts/save_file.gd and tests/save_test.gd, its own answer to a question
-every game asks. The kit installs a save service with slots; it writes through a
-temporary file and a rename, so a crash mid-write leaves the last good save in place; it
-carries a schema version with migration functions the project declares; and it falls
-back to the previous save when the current one fails to parse.
-
-What is saved is the project's: the kit takes a dictionary from the game and never names
-a field, so it fits a puzzle game and a shooter alike.
-
-Proof, all automatic: stop the game between the write and the rename and load the old
-save; corrupt the file and open the game; load a version-1 file into version 2 through
-the declared migration; fill every slot and read each back. None of it needs a person,
-which makes this one of the cheapest kits to keep proved.
-
 ### §PW349 From launch to the first menu
 
 Cottony has scripts/splash.gd, and every game has some version of it. The kit installs a
@@ -1224,7 +1208,7 @@ proof, and provenance.read names each kit with its version.
 ### §PW371 Cottony onto the settings and save kits
 
 Cottony's scripts/settings.gd, and scripts/save_file.gd with tests/save_test.gd, are a
-second instance of what the options kit and §PW348 provide, written without either kit
+second instance of what the options and saves kits provide, written without either kit
 in mind. Moving Cottony onto them proves the kits against a game they were not extracted
 from, which is the non-goal on one project's palette, rig or paths compiled in, checked
 in practice rather than asserted.

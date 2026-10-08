@@ -1,0 +1,8 @@
+; The saves kit's fixture: a game at the second version of its save.
+
+config_version=5
+
+[application]
+
+config/name="saves fixture"
+run/main_scene="res://main.tscn"

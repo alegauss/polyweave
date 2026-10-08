@@ -1,0 +1,18 @@
+name = "saves"
+version = "0.1.0"
+summary = "saves in slots through a temporary file and a rename, a sum, the save before, and migrations by version"
+requires = []
+
+[installs]
+core = "core"
+
+[declares]
+dir = "user://saves"
+declaration = "res://polyweave_saves.gd"
+
+[proves]
+fixture = "fixture"
+script = "core/proof.gd"
+
+[changes]
+"0.1.0" = "slots written safely, read with a fallback, brought up through the project's migrations"

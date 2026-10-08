@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 2 },
   { block: "U", title: "A window on everything a project governs", open: 2 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 24 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 23 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -226,13 +226,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW348",
-    block: "V",
-    symptom: "a save is written in place with no schema version, so a crash mid-write or a game update can lose a player's progress",
-    why: "Cottony wrote its own save and tests for it; the failures that matter are the same in every game and can be forced.",
-    deps: [],
-  },
-  {
     id: "PW349",
     block: "V",
     symptom: "the splash, the load into the first scene and each change of scene are hand-made per game and freeze on a large scene",
@@ -391,7 +384,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "V",
     symptom: "Cottony keeps its own settings and save code where the kits provide them",
     why: "The second game is what shows a kit is not one project's code moved into a folder.",
-    deps: ["PW348"],
+    deps: [],
   },
 ];
 
