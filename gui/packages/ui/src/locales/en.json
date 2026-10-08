@@ -90,6 +90,10 @@
     "waiting": "It starts once the session on revision {{revision}} ends: one change to an item at a time.",
     "checked": "The item's own checks: {{said}}",
     "answered": "Your answer, sent to the session: {{said}}",
-    "closed": "Closed on your answer in {{sitting}}."
+    "closed": "Closed on your answer in {{sitting}}.",
+    "price": "This costs {{price}} {{unit}}. {{left}} is left under the ceiling, {{after}} after.",
+    "cheaper": "A free path: {{how}}, which re-fits the picture the project already has, at no cost.",
+    "once": "A yes allows this one call, never the next.",
+    "unpriced": "Its price could not be read: {{why}}"
   }
 }

@@ -1037,27 +1037,6 @@ at the build.
 
 ## Block U — A window on everything a project governs
 
-### §PW308 A revision spends only what a person weighed
-
-"Make this picture different" can be answered by a local re-fit, or by `picture.buy`,
-`mesh.buy` or `sound.buy` against a real balance. The purchase ceiling (Block D) bounds
-how much an agent may spend. But a session opened from a click can burn through that
-ceiling one small buy at a time while the person is looking at something else. That is
-the spend-on-its-own-judgement the non-goals rule out.
-
-Every tool that draws on a balance is marked in the operation registry, and the window reads that mark instead of keeping its own list. In a revision session the window answers `canUseTool` for such a tool by stopping and showing:
-- the call;
-- the service's price for it, from `purchase.find`;
-- what `purchase.remaining` leaves under the ceiling;
-- the revision it is for.
-
-Only an explicit yes lets it run, and the yes is for that one call. The window never
-offers "always allow" for a paid tool, even though Claude Code does for other tools. A
-local alternative, a re-fit or a variation from the existing parent (`picture.vary`), is
-named beside the price when the item has one, because the cheaper path is often what the
-person meant. Each purchase is tied to the revision in the ledger, so the credits a
-change cost appear on its closed record.
-
 ### §PW309 A revision stays inside the item it was asked about
 
 The point of opening a change from one item is that the change is about that item. What

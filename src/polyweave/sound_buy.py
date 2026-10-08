@@ -43,7 +43,7 @@ _OUT = Param("or a path for it under the project, with its suffix")
 _SECONDS = Param("how long, 0.5 to 30; the service's choice if unset", lo=0.5, hi=30)
 
 
-@operation("sound.buy", kind="fetch", injects=("report",))
+@operation("sound.buy", kind="fetch", injects=("report",), spends=True)
 def buy(
     report=None,
     prompt: Annotated[str, Param("the sound, in words: footsteps on gravel")] = None,

@@ -46,7 +46,7 @@ OPERATIONS = {
 }
 
 
-@operation("picture.vary")
+@operation("picture.vary", spends=True)
 def vary(
     parent: Annotated[str, Param("the approved picture, under the project")],
     out: Annotated[str, Param("where the variation is written, under the project")],

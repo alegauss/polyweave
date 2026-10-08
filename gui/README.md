@@ -99,6 +99,11 @@ stop until a sitting holds the item, and the window watches for the person's ans
 there (`shell/src/answers.ts`). An accept closes the revision with its run and sitting,
 and a look or a number goes back to the session as its next turn.
 
+A paid call in a session stops with its price, what the ceiling leaves before and after it,
+and a free path where there is one (`purchase.quote`). The question is held until the price
+is beside it, and a yes is for that one call: the window offers no "always allow" for a
+paid tool.
+
 ## The live test
 
 `shell/src/window-live.test.ts` starts Electron in smoke mode (`POLYWEAVE_GUI_SMOKE`).

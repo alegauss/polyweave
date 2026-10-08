@@ -52,6 +52,10 @@ export function Conversation({
     heard.flatMap((h) => (h.read.kind === 'withdrawn' ? [h.read.requestId] : [])),
   )
   const open = asks.filter((a) => !answered.includes(a.read.requestId) && !withdrawn.has(a.read.requestId))
+  // A paid call's price, matched to the question it holds up (§PW308).
+  const quotes = new Map(
+    heard.flatMap((h) => (h.read.kind === 'quote' ? [[h.read.requestId, h.read] as const] : [])),
+  )
 
   const answer = (requestId: string, allow: boolean) => {
     setAnswered((before) => [...before, requestId])
@@ -85,8 +89,9 @@ export function Conversation({
         )}
       </ol>
       {open.map(({ read }) => (
-        <div key={read.requestId} data-ask={read.tool} className="flex items-center gap-2 rounded bg-muted p-2 text-sm">
+        <div key={read.requestId} data-ask={read.tool} className="flex flex-wrap items-center gap-2 rounded bg-muted p-2 text-sm">
           <span className="flex-1">{t('session.asks', { tool: read.tool })}</span>
+          {quotes.has(read.requestId) && <Price quote={quotes.get(read.requestId)!} />}
           <Button size="sm" onClick={() => answer(read.requestId, true)}>
             {t('session.allow')}
           </Button>
@@ -113,6 +118,23 @@ export function Conversation({
         </Button>
       </div>
     </section>
+  )
+}
+
+/** What a paid call costs, beside the question; a yes is for this one call. */
+function Price({ quote }: { quote: Extract<Said, { kind: 'quote' }> }) {
+  const { t } = useTranslation()
+  if (quote.failed) {
+    return <p data-price="unknown" className="w-full text-destructive">{t('session.unpriced', { why: quote.failed })}</p>
+  }
+  return (
+    <div data-price={quote.price} className="w-full text-xs">
+      <p className={quote.affordable ? '' : 'text-destructive'}>
+        {t('session.price', { price: quote.price, unit: quote.unit, left: quote.left, after: quote.after })}
+      </p>
+      {quote.cheaper && <p className="text-muted-foreground">{t('session.cheaper', { how: quote.cheaper })}</p>}
+      <p className="text-muted-foreground">{t('session.once')}</p>
+    </div>
   )
 }
 

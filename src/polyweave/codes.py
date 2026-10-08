@@ -612,6 +612,12 @@ CODES: dict[str, Code] = {
         "absent ceiling is never read as permission",
         doors=("set credits and an expiry in the project config",),
     ),
+    "fetch.not-paid": Code(
+        means="a quote was asked of an operation that spends nothing",
+        when="purchase.quote given an operation describe does not mark `spends` "
+        "(§PW308)",
+        doors=("quote one of the paid operations the refusal lists",),
+    ),
     "fetch.over-budget": Code(
         means="the spend would pass the ceiling a person set",
         when="a fetch costing more than the credits left against [budget]",

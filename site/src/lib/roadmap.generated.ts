@@ -45,7 +45,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "R", title: "Levels measured before a person plays them", open: 8 },
   { block: "S", title: "Playing the game, not only rendering it", open: 1 },
   { block: "T", title: "Adopting polyweave in a project", open: 2 },
-  { block: "U", title: "A window on everything a project governs", open: 5 },
+  { block: "U", title: "A window on everything a project governs", open: 4 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 32 },
 ];
 
@@ -303,13 +303,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW308",
-    block: "U",
-    symptom: "a revision session can call a paid generator on its own, so a click on one picture spends credits nobody weighed",
-    why: "A paid call in a revision session stops in the window with its price and what the ceiling leaves, and runs only on the person's yes, never on a saved allow.",
-    deps: [],
-  },
-  {
     id: "PW309",
     block: "U",
     symptom: "a revision's change can rewrite items outside the one asked about, and the person learns of it only by diffing",
@@ -328,7 +321,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "U",
     symptom: "no revision has been asked, made and judged from the window on a real game, so its gaps are guesses",
     why: "Starship's owner opens the project in the window, asks for one picture and one sound to change, and judges both there; what got in the way is filed.",
-    deps: ["PW308", "PW309", "PW310"],
+    deps: ["PW309", "PW310"],
   },
   {
     id: "PW377",

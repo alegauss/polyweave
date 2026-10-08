@@ -337,6 +337,19 @@ def check(
 #: The tools after which the item's checks run: a write, or a polyweave operation.
 WRITES = "Write|Edit|MultiEdit|NotebookEdit|mcp__polyweave__.*"
 
+def paid() -> list[str]:
+    """Every tool that draws on a paid balance, read from the registry (§PW308)."""
+    from . import describe as D
+    from .server import tool_name
+
+    D.load()
+    return sorted(
+        f"mcp__polyweave__{tool_name(name)}"
+        for name, op in D._REGISTRY.items()
+        if op.spends
+    )
+
+
 #: The tools a revision's session never has: a verdict is the person's (non-goal).
 WITHHELD = ("mcp__polyweave__verdict_judge", "mcp__polyweave__verdict_promote")
 
@@ -362,7 +375,13 @@ def settings(
     )
     hook = [{"hooks": [{"type": "command", "command": command}]}]
     return {
-        "permissions": {"deny": list(WITHHELD)},
+        "permissions": {
+            "deny": list(WITHHELD),
+            # Asked every time, so a saved allow can never let one through (§PW308).
+            "ask": paid(),
+        },
+        # What the session buys is tied to this revision in the ledger.
+        "env": {"POLYWEAVE_REVISION": revision},
         "hooks": {
             "PreToolUse": [{"matcher": "|".join(WITHHELD), **hook[0]}],
             "PostToolUse": [{"matcher": WRITES, **hook[0]}],
@@ -454,6 +473,16 @@ def close(
             "pass run and sitting together, or withdrawn with the reason, not both",
         )
     event = {"event": "closed", "revision": revision, "at": _now()}
+    # What the change cost, from the ledger entries its session tied to it (§PW308).
+    from . import purchase
+
+    bought = [e for e in purchase.read(root) if e.get("revision") == revision]
+    if bought:
+        event["spent"] = {
+            service: round(sum(float(e.get("credits") or 0) for e in bought
+                               if e.get("service") == service), 4)
+            for service in sorted({str(e.get("service")) for e in bought})
+        }
     if answered:
         event.update(run=run, sitting=sitting)
     else:

@@ -44,7 +44,7 @@ POLL_TIMEOUT = 900
 TIMEOUT = 120
 
 
-@operation("mesh.buy", kind="fetch", injects=("report",))
+@operation("mesh.buy", kind="fetch", injects=("report",), spends=True)
 def buy(
     report=None,
     out: Annotated[str, Param("where the .glb is written, under the project")] = None,

@@ -64,6 +64,8 @@ class Operation:
     kind: str | None
     injects: tuple[str, ...]
     parameters: tuple[dict, ...]
+    #: It draws on a paid service's balance (§PW308): read, never kept in a list.
+    spends: bool = False
 
     def as_dict(self) -> dict:
         return {
@@ -72,6 +74,8 @@ class Operation:
             "produces": self.produces,
             "kind": self.kind,
             "asynchronous": self.kind is not None,
+            # Said only where true, so the many that spend nothing cost nothing to read.
+            **({"spends": True} if self.spends else {}),
             "parameters": [dict(p) for p in self.parameters],
         }
 
@@ -165,12 +169,14 @@ def operation(
     produces: str | None = None,
     kind: str | None = None,
     injects: Sequence[str] = (),
+    spends: bool = False,
 ) -> Callable:
     """Register `fn` as an operation a caller can discover and describe.
 
     `produces` is what §2 asserts about its output; `kind` is the job kind where the
     work is asynchronous. `injects` names the parameters the harness supplies, which a
-    caller never passes and never needs described.
+    caller never passes and never needs described. `spends` marks one that draws on a
+    paid service's balance (§PW308).
     """
 
     def register(fn: Callable) -> Callable:
@@ -195,6 +201,7 @@ def operation(
             kind=kind,
             injects=tuple(injects),
             parameters=tuple(_parameters(name, fn, tuple(injects))),
+            spends=spends,
         )
         return fn
 

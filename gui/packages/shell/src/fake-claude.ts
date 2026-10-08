@@ -34,7 +34,7 @@ input.on('line', (line) => {
     write({ type: 'assistant', message: { role: 'assistant', content: [{ type: 'text', text }] }, session_id: 'fake-1' })
     if (!asked) {
       asked = true
-      write({ type: 'control_request', request_id: 'ask-1', request: { subtype: 'can_use_tool', tool_name: 'Write', input: { file_path: 'art/icon.png' }, tool_use_id: 'use-1' } })
+      write({ type: 'control_request', request_id: 'ask-1', request: { subtype: 'can_use_tool', tool_name: process.env.PW_FAKE_ASK || 'Write', input: { file_path: 'art/icon.png', prompt: 'a warmer rim' }, tool_use_id: 'use-1' } })
     } else {
       // Says back what it was started under, so a test sees the harness arrive.
       const flag = (name) => { const at = process.argv.indexOf(name); return at < 0 ? null : process.argv[at + 1] }

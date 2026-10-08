@@ -87,10 +87,9 @@
 
 ## Block U — A window on everything a project governs
 
-- 📋 **PW308** (deps: PW306 ✅) **a revision session can call a paid generator on its own, so a click on one picture spends credits nobody weighed** — A paid call in a revision session stops in the window with its price and what the ceiling leaves, and runs only on the person's yes, never on a saved allow. → §PW308
 - 📋 **PW309** (deps: PW307 ✅) **a revision's change can rewrite items outside the one asked about, and the person learns of it only by diffing** — Before a revision's session writes outside its item and dependents, the window names the file and asks; on close it lists every file touched and each re-checked. → §PW309
 - 📋 **PW310** (deps: PW304 ✅) **the window would show a project as it was when opened, so an item a session or terminal changed looks untouched** — The window watches the project's governed paths and its answers and revisions files, and redraws only the rows and item whose digest changed. → §PW310
-- 📋 **PW311** (deps: PW307 ✅, PW308, PW309, PW310) **no revision has been asked, made and judged from the window on a real game, so its gaps are guesses** — Starship's owner opens the project in the window, asks for one picture and one sound to change, and judges both there; what got in the way is filed. → §PW311
+- 📋 **PW311** (deps: PW307 ✅, PW308 ✅, PW309, PW310) **no revision has been asked, made and judged from the window on a real game, so its gaps are guesses** — Starship's owner opens the project in the window, asks for one picture and one sound to change, and judges both there; what got in the way is filed. → §PW311
 - 📋 **PW377** (deps: PW305 ✅) **half the decision screen's facts and its masked write are no operation, so the window can only frame the Python page** — A typed SDK generated from describe, and one React screen served to the window and the browser alike, end the iframe without a second implementation. → §PW377
 
 ## Block V — Parts every game repeats, installed already proved

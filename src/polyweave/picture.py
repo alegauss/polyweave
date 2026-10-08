@@ -62,7 +62,7 @@ ENTITY = Param("a world entity to compose the prompt from")
 WORLD = Param("the *.world.toml, needed only among several")
 
 
-@operation("picture.buy", kind="fetch", injects=("report",))
+@operation("picture.buy", kind="fetch", injects=("report",), spends=True)
 def buy(
     report=None,
     out: Annotated[str, Param("where it is written, under the project")] = None,
@@ -356,7 +356,7 @@ def collect(
     return _delivered(owed_for["link"], owed_for["capture"], root)
 
 
-@operation("picture.describe")
+@operation("picture.describe", spends=True)
 def describe_picture(
     picture: Annotated[str, Param("an approved picture, under the project")],
     out: Annotated[str, Param("where the description goes; beside it if unset")] = None,

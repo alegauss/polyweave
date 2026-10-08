@@ -102,7 +102,8 @@ ipcMain.handle(CHANNELS.sessionStart, async (event, project: string, revision: s
     worked.set(revision, project)
     // One session holds an item: a second revision on it starts once the first ends.
     const harness = (await client.call('revision.settings', { revision, root: project })) as {
-      permissions: { deny: string[] }
+      permissions: { deny: string[]; ask: string[] }
+      env: Record<string, string>
     }
     const send = (line: string) => {
       if (!window.isDestroyed()) window.send(CHANNELS.sessionLine, revision, line)
@@ -133,9 +134,24 @@ ipcMain.handle(CHANNELS.sessionStart, async (event, project: string, revision: s
         project,
         first,
         (line) => {
-          send(line)
           const read = said(line)
           if (read.kind === 'text') kept(revision, read.text, 'session')
+          // A paid call stops with its price and what the ceiling leaves (§PW308): the
+          // question is held until its quote is beside it, so it is never asked bare.
+          if (read.kind === 'ask' && harness.permissions.ask.includes(read.tool)) {
+            void client
+              .call('purchase.quote', { operation: read.tool, arguments: read.input, root: project })
+              .then(
+                (quoted) => ({ ...(quoted as object) }),
+                (failed: Error) => ({ failed: failed.message }),
+              )
+              .then((quoted) => {
+                send(JSON.stringify({ type: 'polyweave_quote', request_id: read.requestId, ...quoted }))
+                send(line)
+              })
+          } else {
+            send(line)
+          }
           // After a tool that may have changed the item, the window runs its checks too,
           // and shows them beside the conversation (§PW307).
           if (read.kind === 'tool' && /^(Write|Edit|MultiEdit|mcp__polyweave__)/.test(read.tool)) {
@@ -145,7 +161,7 @@ ipcMain.handle(CHANNELS.sessionStart, async (event, project: string, revision: s
               .catch(() => undefined)
           }
         },
-        process.env,
+        { ...process.env, ...harness.env },
         { settings: harness, disallowed: harness.permissions.deny },
       )
       sessions.set(revision, session)

@@ -78,6 +78,20 @@ is what goes in the ledger and counts against the ceiling, and an entry where th
 disagree is flagged. It is also what makes a claim that some call is free checkable rather
 than asserted: two equal readings either side of it, written down.
 
+**A change a person asked for spends only what they weighed** (§PW308). The ceiling is
+approved once for a plan, and a session opened from one click on one picture is not that
+plan. Every operation that draws on a balance is marked `spends` in `describe`: `mesh.buy`,
+`picture.buy`, `picture.describe`, `picture.vary` and `sound.buy`. A window reads that mark
+and keeps no list of its own. `purchase.quote(operation, arguments)` prices one call the way
+the operation prices itself, by its service's `prices` row for the model it would buy, and
+spends nothing. It answers the price, what the ceiling leaves before and after, whether it
+is affordable, and `cheaper`, a free operation where one may do (`picture.fit` beside a
+picture). A revision's settings put every paid tool under `permissions.ask`, so a saved
+allow never lets one run. The window holds the question until its quote is beside it, and a
+yes allows that one call. The session's environment carries `POLYWEAVE_REVISION`, so what
+it buys enters the ledger tied to the revision, and the revision's closing event says what
+the change spent, per service.
+
 ## The schema is learned once and kept
 
 A request the server refuses never enqueues a task, so **a rejection is free information**.

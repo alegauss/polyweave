@@ -75,6 +75,7 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.panel:declared": ("internal", "a panel's states, checked; panel.build"),
     "polyweave.panel:wipe": ("internal", "a wipe's kind and uniforms, for panel.build"),
     "polyweave.revision:hooked": ("internal", "the `hook revision` verb's answer"),
+    "polyweave.revision:paid": ("internal", "the paid tools a revision always asks"),
     "polyweave.review_text": ("internal", "a sitting's words, from the catalogs"),
     "polyweave.vfx:measured_whole": ("internal", "a whole's measures, over its parts"),
     "polyweave.vfx:scene_whole": ("internal", "a whole's scene, its parts under one"),

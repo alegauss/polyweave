@@ -80,6 +80,17 @@ export type Said =
   | { kind: 'result'; ok: boolean; text: string }
   | { kind: 'check'; passed: boolean | null; said: string }
   | { kind: 'answered'; said: string }
+  | {
+      kind: 'quote'
+      requestId: string
+      price?: number
+      unit?: string
+      left?: number
+      after?: number
+      affordable?: boolean
+      cheaper?: string
+      failed?: string
+    }
   | { kind: 'closed'; sitting: string }
   | { kind: 'other' }
 
@@ -116,6 +127,18 @@ export function said(line: string): Said {
       return { kind: 'withdrawn', requestId: String(message['request_id']) }
     case 'result':
       return { kind: 'result', ok: message['is_error'] !== true, text: String(message['result'] ?? '') }
+    case 'polyweave_quote':
+      return {
+        kind: 'quote',
+        requestId: String(message['request_id']),
+        ...(typeof message['price'] === 'number' ? { price: message['price'] } : {}),
+        ...(message['unit'] ? { unit: String(message['unit']) } : {}),
+        ...(typeof message['left'] === 'number' ? { left: message['left'] } : {}),
+        ...(typeof message['after'] === 'number' ? { after: message['after'] } : {}),
+        ...(typeof message['affordable'] === 'boolean' ? { affordable: message['affordable'] } : {}),
+        ...(message['cheaper'] ? { cheaper: String(message['cheaper']) } : {}),
+        ...(message['failed'] ? { failed: String(message['failed']) } : {}),
+      }
     case 'polyweave_answer':
       return { kind: 'answered', said: String(message['said'] ?? '') }
     case 'polyweave_closed':

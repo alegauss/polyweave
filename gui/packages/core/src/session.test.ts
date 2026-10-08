@@ -53,6 +53,9 @@ describe('a session on one item', () => {
       passed: false,
       said: 'failed: tone',
     })
+    expect(
+      said('{"type":"polyweave_quote","request_id":"q1","price":0.08,"unit":"USD","left":1,"after":0.92,"affordable":true}'),
+    ).toEqual({ kind: 'quote', requestId: 'q1', price: 0.08, unit: 'USD', left: 1, after: 0.92, affordable: true })
     expect(said('not json')).toEqual({ kind: 'other' })
   })
 

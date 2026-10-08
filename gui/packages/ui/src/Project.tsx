@@ -67,6 +67,8 @@ export function Project({
     if (smoke.review && !reviewing) return judge(chosen?.artefact)
     if (smoke.review && !framed) return
     if (smoke.ask && !talked) return
+    // A question waiting on the person is what a smoke run's picture is of.
+    document.querySelector('[data-ask]')?.scrollIntoView({ block: 'center' })
     requestAnimationFrame(() => {
       void bridge.rendered({
         project: opened.project,
@@ -88,6 +90,7 @@ export function Project({
         hosted: document.querySelector('[data-review]') !== null,
         turns: [...document.querySelectorAll('[data-turn]')].map((one) => one.textContent),
         asked: [...document.querySelectorAll('[data-ask]')].map((one) => one.getAttribute('data-ask')),
+        price: document.querySelector('[data-price]')?.getAttribute('data-price') ?? null,
       })
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps

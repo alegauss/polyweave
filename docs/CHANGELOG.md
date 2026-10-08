@@ -367,6 +367,7 @@
 - ✅ **PW305** **the window and the review page would each show a sitting, so two surfaces answer the same verdict and drift** — The window hosts the project's own review page, its server held beside the project's, so verdict.judge stays the one write; an item links to its sitting (design recorded in `gui/README.md`).
 - ✅ **PW306** **asking for a change to one item means leaving the window for a terminal and retelling the agent which item and what** — An item's ask opens a session on the person's claude from its revision and brief; turns are kept on the revision, one session holding an item (design recorded in `gui/README.md`).
 - ✅ **PW307** **a session changing an item can report done with no check run, and nothing makes it end on the person's verdict** — A revision's session runs the item's checks after each write, cannot stop without a sitting, and closes only on the person's answer (design recorded in `docs/specs/acceptance-spec.md`).
+- ✅ **PW308** **a revision session can call a paid generator on its own, so a click on one picture spends credits nobody weighed** — A paid call in a revision stops with purchase.quote's price and what the ceiling leaves, runs on one yes, and its spend is tied to it (design recorded in `docs/specs/fetching.md`).
 
 ## Block V — Parts every game repeats, installed already proved
 

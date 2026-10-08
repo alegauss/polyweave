@@ -90,6 +90,10 @@
     "waiting": "Começa quando terminar a sessão da revisão {{revision}}: uma mudança por item de cada vez.",
     "checked": "As verificações do próprio item: {{said}}",
     "answered": "Sua resposta, enviada à sessão: {{said}}",
-    "closed": "Fechada com a sua resposta em {{sitting}}."
+    "closed": "Fechada com a sua resposta em {{sitting}}.",
+    "price": "Custa {{price}} {{unit}}. Restam {{left}} sob o teto; depois, {{after}}.",
+    "cheaper": "Um caminho grátis: {{how}}, que reajusta a imagem que o projeto já tem, sem custo.",
+    "once": "Um sim permite esta chamada, nunca a próxima.",
+    "unpriced": "Não foi possível ler o preço: {{why}}"
   }
 }

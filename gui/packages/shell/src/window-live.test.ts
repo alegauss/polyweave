@@ -3,7 +3,7 @@
 // main prints what the page drew, read back off the page.
 
 import { spawn, spawnSync } from 'node:child_process'
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -26,7 +26,7 @@ function opened(
   language: string,
   item?: string,
   review?: boolean,
-  ask?: { words: string; agent: string[] },
+  ask?: { words: string; agent: string[]; env?: Record<string, string> },
 ): Promise<Record<string, unknown>> {
   return new Promise((resolve, reject) => {
     const env: Record<string, string | undefined> = {
@@ -39,7 +39,7 @@ function opened(
         ...(review ? { review } : {}),
         ...(ask ? { ask: ask.words } : {}),
       }),
-      ...(ask ? { [AGENT_VAR]: JSON.stringify(ask.agent) } : {}),
+      ...(ask ? { [AGENT_VAR]: JSON.stringify(ask.agent), ...ask.env } : {}),
     }
     delete env['ELECTRON_RUN_AS_NODE']
     const child = spawn(String(electron), [MAIN], { env, windowsHide: true })
@@ -142,6 +142,40 @@ describe.skipIf(!existsSync(MAIN))('the window', () => {
       const open = JSON.parse(listed.stdout.toString()) as { revisions: { words: string; turns: { by: string }[] }[] }
       const mine = open.revisions.find((one) => one.words === 'shorter, in capitals')!
       expect(mine.turns.map((one) => one.by)).toContain('session')
+    } finally {
+      fake.dispose()
+    }
+  })
+
+  it('stops a paid call with its price, for one yes', async () => {
+    const game = join(root, 'starship')
+    const config = join(game, 'polyweave.toml')
+    const declared = readFileSync(config, 'utf8')
+    await writeFile(
+      config,
+      [
+        declared,
+        '[service.ideogram]',
+        'base = "https://api.ideogram.ai"',
+        'key_env = "PW_TEST_KEY"',
+        'prices = { "4.0" = 0.08 }',
+        '',
+        '[budget.ideogram]',
+        'amount = 1.0',
+        'unit = "USD"',
+        'expires = "2099-12-31"',
+        '',
+      ].join('\n'),
+    )
+    const fake = fakeClaude()
+    try {
+      const drew = await opened(root, 'en', 'docs/renders/icon.png', false, {
+        words: 'a warmer rim',
+        agent: fake.argv,
+        env: { PW_FAKE_ASK: 'mcp__polyweave__picture_buy' },
+      })
+      expect(drew['asked']).toEqual(['mcp__polyweave__picture_buy'])
+      expect(drew['price']).toBe('0.08')
     } finally {
       fake.dispose()
     }
