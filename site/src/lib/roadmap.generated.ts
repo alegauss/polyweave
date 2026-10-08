@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 8 },
+  { block: "H", title: "Proof on a real game", open: 7 },
   { block: "I", title: "Voxel models from a declaration", open: 1 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 3 },
@@ -70,13 +70,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent",
     why: "The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question.",
     deps: ["PW57"],
-  },
-  {
-    id: "PW319",
-    block: "H",
-    symptom: "measure.contrast rates a text box against its surround, so nothing says whether text reads over the picture behind it",
-    why: "A menu drawn over a living scene cannot hold its text to a declared contrast, and its veil is set by eye.",
-    deps: [],
   },
   {
     id: "PW331",

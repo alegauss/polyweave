@@ -262,26 +262,6 @@ this is where that is recorded honestly: what still runs by hand, and why the ri
 instead of disappearing. An outcome worth having, stated, beats the same outcome
 unstated.
 
-### §PW319 Text legibility measured glyph by glyph
-
-Met in starship (RK154): the title now stands over the living voxel city, and the design
-asks that "a gradient keeps the text above the declared contrast". The screenshot was
-taken with dev/shot.gd. `measure.contrast --targets '[{"box":[360,405,925,635]}]'` then
-answered `ratio: 2.549`. That ratio is the box against the ring around it: a whole score
-table against the city beside it. It is not each glyph against the pixels behind it,
-which is what decides whether a line reads, so no bound on it can say the text is
-legible.
-
-The workaround was a radial veil behind the text column (game/ui/title.tscn, `Veil`),
-with its strength chosen by looking at the shot.
-
-What polyweave should do: a measure of text legibility over a picture. Given the text's
-boxes (or a capture where the game draws its labels once with and once without the
-backdrop), it separates glyph pixels from background. It reports the contrast ratio of
-each line's glyphs against the local background behind them, the worst line named, so a
-spec can hold `text_contrast_min >= 4.5`. `capture.run` could emit the label boxes it
-drew, the way `measure.contrast` already reads a `target:` log.
-
 ### §PW331 A declared icon set, built and accepted
 
 Met in starship (RK147): every prompt names its button in words (A, RB, CROSS, OPTIONS,

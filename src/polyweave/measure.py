@@ -130,18 +130,28 @@ def _contrast(key: str):
     """A contrast measure over the predicate's `targets`, not its region (§PW272)."""
 
     def compute(image: Image, _mask: np.ndarray, *, targets: Any = None,
-                ring: Any = None, radius: Any = None, **_: Any):
+                ring: Any = None, radius: Any = None, behind: Any = None, **_: Any):
         from .contrast import RADIUS, RING, contrasts
 
         # A spec gives the measure's own ring and default radius (§PW279).
-        return contrasts(image, targets, ring=RING if ring is None else int(ring),
-                         radius=RADIUS if radius is None else float(radius))[key]
+        said = contrasts(image, targets, ring=RING if ring is None else int(ring),
+                         radius=RADIUS if radius is None else float(radius),
+                         behind=behind)
+        if key not in said:
+            # A text box has no ring and a shot no glyphs (§PW319).
+            raise PolyweaveError(
+                "spec.no-targets",
+                f"no target here is measured by {key}",
+                "give text lines as {text: [l, t, r, b]} for text_contrast_min, and "
+                "shots as points or boxes for the others",
+            )
+        return said[key]
 
     compute.__doc__ = f"{key} over the targets, each against the ring around it"
     return compute
 
 
-for _key in ("contrast_min", "contrast_median", "delta_e_min"):
+for _key in ("contrast_min", "contrast_median", "delta_e_min", "text_contrast_min"):
     _computes(_key)(_contrast(_key))
 
 

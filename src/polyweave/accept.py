@@ -36,7 +36,9 @@ BOUNDS = ("min", "max")
 FIELDS = ("id", "measure", "region", "weight", "of", *BOUNDS)
 
 #: Arguments a predicate may pass through to the measure it names.
-ARGUMENTS = ("target", "against", "display", "delta", "targets", "ring", "radius")
+ARGUMENTS = (
+    "target", "against", "display", "delta", "targets", "ring", "radius", "behind",
+)
 
 
 @dataclass(frozen=True)
@@ -460,9 +462,9 @@ def check(
             results.append(_effected(p, subject, root))
             continue
         arguments = dict(p.arguments)
-        for key in ("against", "target", "targets"):
+        for key in ("against", "target", "targets", "behind"):
             # A log of targets is a path under the project, as a picture compared is.
-            if key in ("against", "targets") and isinstance(arguments.get(key), str):
+            if key != "target" and isinstance(arguments.get(key), str):
                 arguments[key] = str(Path(root) / arguments[key])
         taken = M.measure(
             subject,

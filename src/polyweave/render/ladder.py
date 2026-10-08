@@ -56,6 +56,7 @@ ANSWERS_AT = {
     "contrast_min": "final",
     "contrast_median": "final",
     "delta_e_min": "final",
+    "text_contrast_min": "final",
 }
 
 

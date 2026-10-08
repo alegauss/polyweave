@@ -154,3 +154,87 @@ def test_a_target_that_cannot_be_measured_is_refused(tmp_path, targets):
     with pytest.raises(PolyweaveError) as refused:
         contrast.measured("combat.png", targets=targets, root=str(tmp_path))
     assert refused.value.code == "spec.no-targets"
+
+
+def scene(where, *, left=30, right=220, glyph=255, veil=None, text=True):
+    """A scene dark on the left and bright on the right, a line of bars across both.
+
+    The bars are the glyphs: two pixels wide, every five, over rows 20 to 31; the
+    halves meet where a stretch of the line does, so each has one light. `veil`
+    darkens what is behind the line to that grey, as a title's veil does.
+    """
+    pixels = np.zeros((64, 96, 4), dtype=np.uint8)
+    pixels[..., 3] = 255
+    pixels[:, :56, :3] = left
+    pixels[:, 56:, :3] = right
+    if veil is not None:
+        pixels[18:34, 8:88, :3] = veil
+    if text:
+        for x in range(10, 86, 5):
+            pixels[20:32, x : x + 2, :3] = glyph
+    Image.fromarray(pixels).save(where)
+    return where
+
+
+LINE = {"text": [8, 18, 87, 33]}
+
+
+def test_a_line_reads_by_its_worst_stretch_not_by_its_box(tmp_path):
+    """§PW319: a box against its ring rated a line against the scene beside it."""
+    scene(tmp_path / "title.png")
+    said = contrast.measured("title.png", targets=[LINE], root=str(tmp_path))
+    line = said["texts"][0]
+    # White over the bright half is the stretch that fails, and it is the one named.
+    expected = (1.0 + 0.05) / (luminance(220) + 0.05)
+    assert line["ratio"] == pytest.approx(expected, rel=0.02)
+    assert line["worst_at"][0] >= 56
+    assert said["text_contrast_min"] == line["ratio"]
+    assert said["text_worst"] == line
+    assert "contrast_min" not in said
+
+
+def test_a_veil_behind_the_line_is_what_lifts_it(tmp_path):
+    scene(tmp_path / "veiled.png", veil=40)
+    said = contrast.measured("veiled.png", targets=[LINE], root=str(tmp_path))
+    assert said["text_contrast_min"] > 4.5
+
+
+def test_the_frame_without_the_text_tells_glyphs_from_the_scene(tmp_path):
+    scene(tmp_path / "title.png")
+    scene(tmp_path / "bare.png", text=False)
+    said = contrast.measured(
+        "title.png", targets=[LINE], behind="bare.png", root=str(tmp_path)
+    )
+    expected = (1.0 + 0.05) / (luminance(220) + 0.05)
+    assert said["text_contrast_min"] == pytest.approx(expected, rel=0.02)
+    assert said["texts"][0]["glyphs"] == 16 * 2 * 12
+
+
+def test_a_text_line_comes_from_the_log_and_a_spec_bounds_it(tmp_path):
+    scene(tmp_path / "title.png")
+    (tmp_path / "run.log").write_text("target: text 8 18 87 33\n", "utf-8")
+    where = tmp_path / "title.accept.toml"
+    where.write_text(
+        'asset = "title"\n[[predicate]]\nid = "legible"\n'
+        'measure = "text_contrast_min"\ntargets = "run.log"\nmin = 4.5\n',
+        encoding="utf-8",
+    )
+    found = accept.checked("title.accept.toml", "title.png", root=str(tmp_path))
+    assert found["failed"] == ["legible"]
+
+
+def test_a_spec_that_bounds_a_ring_over_text_lines_alone_is_refused(tmp_path):
+    scene(tmp_path / "title.png")
+    (tmp_path / "run.log").write_text("target: text 8 18 87 33\n", "utf-8")
+    spec(tmp_path / "title.accept.toml", targets="run.log")
+    with pytest.raises(PolyweaveError) as refused:
+        accept.checked("title.accept.toml", "title.png", root=str(tmp_path))
+    assert refused.value.code == "spec.no-targets"
+
+
+def test_a_box_with_no_glyphs_in_it_is_refused(tmp_path):
+    scene(tmp_path / "bare.png", text=False)
+    with pytest.raises(PolyweaveError) as refused:
+        contrast.measured("bare.png", targets=[{"text": [4, 4, 40, 15]}],
+                          root=str(tmp_path))
+    assert refused.value.code == "spec.no-targets"

@@ -91,6 +91,7 @@ Lancer candidates stood at 0.29 to 0.50 and the Mote the owner approved at 0.63.
 | `contrast_min` | 1–21 | The worst target's luminance ratio against the ring around it |
 | `contrast_median` | 1–21 | The median target's luminance ratio against its ring |
 | `delta_e_min` | 0–100 | The smallest CIEDE2000 distance of a target from its ring |
+| `text_contrast_min` | 1–21 | The worst line's glyphs against what is behind them |
 
 Perceptual, because the question being asked is always "does this read as the right colour",
 and RGB distance answers a different question. A `delta_e` under 2 is a difference a person
@@ -257,6 +258,28 @@ A radius smaller than the shot puts the ring on the shot, and the ratio would re
 as if the shot were invisible (§PW279). Where the ring reads within 1.25 of the target's
 core and the band one ring further out differs from both by 1.5 or more, the measure
 refuses with `spec.ring-inside-target`, naming the target, rather than answer.
+
+## Text over a picture
+
+A line of text is not a shot (§PW319). Its box against the ring around it rates the whole
+line against the scene beside it, which says nothing about whether a glyph reads over
+what is behind it. So a line is its own target, `{text: [l, t, r, b]}` or the log line
+`target: text <l> <t> <r> <b>`. It is measured in stretches one line-height wide, since
+the scene behind a title changes along it:
+
+- with `behind`, the same frame captured without the text, a glyph pixel is one whose
+  luminance ratio to the pixel behind it is 1.2 or more, and it is rated against that
+  pixel. This is exact, and the way to measure text over a living scene;
+- without it, each stretch parts into two populations at Otsu's threshold and the glyphs
+  are the fewer, rated against the median of the rest. A stretch of one light holds no
+  glyph, and a background edge inside one stretch can fool it, so it is an estimate.
+
+A stretch answers the upper quartile of its glyph pixels' ratios, since a glyph reads by
+its stroke and its antialiased rim is the low tail. A line answers its worst stretch, as
+`ratio` with `worst_at`, the stretch's box, and `glyphs`. The answer's `texts`,
+`text_contrast_min` and `text_worst` sit beside the shots' measures, which count only the
+shots, so a spec holds `text_contrast_min >= 4.5` and bounding the other one with text
+alone is `spec.no-targets`. A box with no glyph told apart is `spec.no-targets` too.
 
 ## A visual effect
 

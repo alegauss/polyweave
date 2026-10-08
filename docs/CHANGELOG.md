@@ -147,6 +147,7 @@
 - ✅ **PW312** **geometry.describe warns a param no node reads when every node reads it, if its name is also a function** — A name counts as a function only where it is called, so a param named floor and read in floor + 0.35 is read, and no unused warning comes back.
 - ✅ **PW315** **a vector logo cannot be rendered to a game texture, whole or in its layers, with a record naming the SVG** — picture.vector draws an SVG at a width through ThorVG, blur and masks kept, and named layers on one canvas, each with a record naming the SVG (design recorded in `docs/specs/store.md`).
 - ✅ **PW316** **a menu panel, frame or stylebox cannot be declared, built or held to a spec, so a game draws its UI kit by hand** — A declared panel builds to nine-patches and a canvas shader with a tick, wipes to progress shaders, and panel.capture films every state and step (design recorded in `docs/specs/panel.md`).
+- ✅ **PW319** **measure.contrast rates a text box against its surround, so nothing says whether text reads over the picture behind it** — measure.contrast takes text lines, rating each stretch's glyphs against what is behind them, so a spec holds text_contrast_min (design recorded in `docs/specs/measurements.md`).
 
 ## Block I — Voxel models from a declaration
 
