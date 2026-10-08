@@ -118,6 +118,8 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.words:said_digest": ("internal", "what a spoken take records"),
     "polyweave.icons:read": ("internal", "icons.build's declaration, resolved"),
     "polyweave.loop:held": ("internal", "the open run kept between calls"),
+    "polyweave.kits:read": ("internal", "one kit.toml, checked"),
+    "polyweave.kits:every": ("internal", "every kit the plugin carries, checked"),
     "polyweave.loop:judging": ("internal", "the run verdict.judge opens with asset="),
     "polyweave.loop:was_made": ("internal", "a run that made its asset, not a verdict"),
     "polyweave.sfx:hz": ("internal", "a note name as Hz"),

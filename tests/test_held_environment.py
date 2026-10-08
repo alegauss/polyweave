@@ -1,4 +1,4 @@
-"""A held game runs in the environment [capture] declares, and its shot says so (§PW339).
+"""A held game runs in what [capture] declares, and its shot says so (§PW339).
 
 Starship's [capture] declared 1920x1080 and en, and every held shot came back 1280x720
 in the machine's locale with nothing in the answer to show it. These tests open a game

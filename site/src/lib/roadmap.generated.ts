@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 2 },
   { block: "U", title: "A window on everything a project governs", open: 2 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 32 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 31 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -226,25 +226,18 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW340",
-    block: "V",
-    symptom: "no format says what a kit is, so a part every game repeats is rewritten in each one, a little different each time",
-    why: "Starship's bindings and Cottony's settings each solve the same screen alone, and neither carries a proof the next game can reuse.",
-    deps: [],
-  },
-  {
     id: "PW341",
     block: "V",
     symptom: "nothing installs a kit into a project, records which version landed and proves it there in the same call",
     why: "Without that call a kit is a folder to copy, and a copy is the snippet the format exists to replace.",
-    deps: ["PW340"],
+    deps: [],
   },
   {
     id: "PW342",
     block: "V",
     symptom: "a kit's proof runs only in a game that installed it, so a kit can leave this repository broken",
     why: "Pre-validated means proved before any project receives it, against the Godot that polyweave itself installs.",
-    deps: ["PW340"],
+    deps: [],
   },
   {
     id: "PW343",

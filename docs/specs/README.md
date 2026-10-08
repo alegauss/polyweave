@@ -37,6 +37,7 @@ needed.
 | [panel.md](panel.md) | A menu panel's frame declared once and built to nine-patch textures and styleboxes, by state | PW316 |
 | [inventory.md](inventory.md) | Every item a project governs, by kind, in one paged read with its record's state | PW299 |
 | [adoption.md](adoption.md) | What one asset cost to make each way, so the claim can be falsified | PW35 |
+| [kit.md](kit.md) | A part every game repeats, made once in the plugin as a kit with its proof, and the five steps every kit keeps | PW340–PW342 |
 
 ## Two format rules, so nobody has to decide twice
 

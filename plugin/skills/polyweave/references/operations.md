@@ -5,7 +5,7 @@ page groups them by task.
 
 | Task | Operations |
 |---|---|
-| Adopt | `project.init` (`init`), `project.check`, `project.inventory` |
+| Adopt | `project.init` (`init`), `project.check`, `project.inventory`, `kit.list` |
 | Know the machine | `capabilities` (verb), `engine.find`, `offscreen.routes`, `search.worth_parallel` |
 | Start on an asset | `asset.brief`, `loop.pending` |
 | Make a shape | `geometry.build`, `geometry.build_all`, `geometry.describe`, `geometry.variants`, `geometry.fit` (to a reference), `geometry.compare` (voxel models) |
@@ -32,7 +32,7 @@ page groups them by task.
 | Paid meshes | `mesh.buy`, `purchase.remaining`, `purchase.quote`, `purchase.allow`, `purchase.held`, `schema.validate`, `schema.read`, `schema.proved` |
 | The purchase ledger | `purchase.spent`, `purchase.ledger`, `purchase.find`, `purchase.adopt`, `purchase.reconcile` |
 | After buying | `normalise.ingest`, `texture.worth_scrubbing` |
-| Bake a clip | `motion.bake` (animation and sheet, from files) |
+| Bake a clip | `motion.bake` (from files) |
 | Motion | `clip.new`, `clip.read`, `clip.set_key`, `clip.retime`, `clip.write`, `clip.compiled` |
 | A skeleton | `skeleton.plan`, `skeleton.shared`, `skeleton.joints_in`, `skeleton.plays`, `sprites.matched` |
 

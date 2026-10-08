@@ -397,3 +397,4 @@
 
 ## Block V — Parts every game repeats, installed already proved
 
+- ✅ **PW340** **no format says what a kit is, so a part every game repeats is rewritten in each one, a little different each time** — A kit is a kit.toml with its core, scene, declaration and proof, under one five-step contract, and kit.list checks every kit the plugin carries (design recorded in `docs/specs/kit.md`).

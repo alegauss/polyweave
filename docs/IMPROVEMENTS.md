@@ -845,32 +845,11 @@ line in the window and the file in `touched`.
 
 ## Block V — Parts every game repeats, installed already proved
 
-### §PW340 The kit contract
-
-Met across Starship and Cottony: both games wrote their own controls, settings and save
-code. Starship's game/core/bindings.gd names pad buttons in text for Xbox, PlayStation
-and a generic pad, with no Switch layout and no icons; Cottony has its own
-scripts/settings.gd and scripts/save_file.gd. An agent starting a third game writes them
-a third time, and what costs it is not the typing but the details only a run reveals (an
-orphaned focus neighbour, the Switch's swapped face buttons, a filter that leaves a
-resource out of the export), which nobody but a person at the screen can confirm today.
-
-What polyweave should do: a spec, docs/specs/kit.md, for a kit as a unit that lives in
-this repository under kits/<name>/ and carries a kit.toml (what it declares, installs
-and depends on, and its version), a core copied into the project's
-res://addons/polyweave/<name>/ and never edited there, a scene the project owns once
-installed, and the acceptance spec that proves it in the game it lands in.
-
-The contract every kit keeps is five steps: read the project, propose the declaration,
-install, prove, answer ready to decide. An agent's whole share is one call and one
-reading of the answer; a question left over is a person's decision, never an analysis
-for the agent. A kit carries no palette or theme of its own and assumes no genre.
-
 ### §PW341 Installing a kit in one call
 
-The format of §PW340 says what a kit is; this is the operation that lands one.
-`kit.install <name>` reads the project (project.godot's renderer and main scene, the
-InputMap, export_presets.cfg, which kits are already in), writes the declaration it
+The format of docs/specs/kit.md says what a kit is; this is the operation that lands
+one. `kit.install <name>` reads the project (project.godot's renderer and main scene,
+the InputMap, export_presets.cfg, which kits are already in), writes the declaration it
 proposes into the project config only where the project has none, copies the core into
 res://addons/polyweave/<name>/ and the scene where the declaration says, and records the
 kit and its version in the provenance record, so provenance.read answers what the

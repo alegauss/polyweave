@@ -61,6 +61,7 @@ AREAS: dict[str, str] = {
     "vfx": "a particle or ribbon effect declared as data and built for the engine",
     "store": "a store's capsule set, cut from one key art and a logo",
     "review": "the local page a person answers a sitting on, and the server behind it",
+    "kits": "a part every game repeats, made once in the plugin, proved and installed",
 }
 
 CODES: dict[str, Code] = {
@@ -1965,6 +1966,13 @@ CODES: dict[str, Code] = {
         means="the measure answers with something a bound cannot hold",
         when="a bound on a measure that returns a set or a colour rather than a number",
         doors=("bound a statistic of it instead",),
+    ),
+    "kits.bad": Code(
+        means="a kit's kit.toml does not keep the kit contract",
+        when="a kit.toml missing, not TOML, with a key it does not know, a name that "
+        "is not its folder's, a version not major.minor.patch, no core or proof, a "
+        "file it names and does not hold, or kits that require each other (§PW340)",
+        doors=("fix the kit.toml the refusal names, as docs/specs/kit.md says",),
     ),
     "compose.bad-icons": Code(
         means="an icon set's declaration cannot be drawn",
