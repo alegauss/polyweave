@@ -68,7 +68,9 @@
     "kept": "Mantidas",
     "refused": "Recusadas",
     "before": "Antes",
-    "now": "Agora"
+    "now": "Agora",
+    "changed": "Este item mudou no disco enquanto você olhava.",
+    "see_new": "Ver o novo"
   },
   "session": {
     "ask": "Pedir uma mudança",

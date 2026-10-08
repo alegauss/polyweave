@@ -5,13 +5,15 @@ import { Button, Input } from '@viglet/viglet-design-system'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { Bridge, Item, Opened, Smoke } from '@pw/core'
+import { merged, type Bridge, type Item, type Opened, type Smoke } from '@pw/core'
 
 import { Project } from './Project'
 
 interface Shown {
   opened: Opened
   items: Item[]
+  /** The ids whose digest moved in the last re-read, for the item on screen. */
+  moved: string[]
 }
 
 export function App({ bridge, smoke }: { bridge: Bridge; smoke: Smoke | null }) {
@@ -34,18 +36,40 @@ export function App({ bridge, smoke }: { bridge: Bridge; smoke: Smoke | null }) 
 
   const look = () => attempt(async () => setFound(await bridge.find(root, depth)))
 
+  const everything = async (project: string) => {
+    const items: Item[] = []
+    let offset: number | null = 0
+    while (offset !== null) {
+      const read = await bridge.inventory(project, undefined, offset)
+      items.push(...read.items)
+      offset = read.next
+    }
+    return items
+  }
+
   const open = (project: string) =>
     attempt(async () => {
       const opened = await bridge.open(project)
-      const items: Item[] = []
-      let offset: number | null = 0
-      while (offset !== null) {
-        const read = await bridge.inventory(project, undefined, offset)
-        items.push(...read.items)
-        offset = read.next
-      }
-      setShown({ opened, items })
+      setShown({ opened, items: await everything(project), moved: [] })
     })
+
+  // A burst of changes is one re-read, folded over what is on screen (§PW310).
+  useEffect(
+    () =>
+      bridge.onChanged((project) => {
+        void everything(project).then(
+          (fresh) =>
+            setShown((now) => {
+              if (!now || now.opened.project !== project) return now
+              const folded = merged(now.items, fresh)
+              return { ...now, items: folded.items, moved: [...now.moved, ...folded.moved] }
+            }),
+          () => undefined,
+        )
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [bridge],
+  )
 
   // A smoke run drives itself: find under the root it was given, and open the first.
   useEffect(() => {
@@ -69,6 +93,7 @@ export function App({ bridge, smoke }: { bridge: Bridge; smoke: Smoke | null }) 
           bridge={bridge}
           opened={shown.opened}
           items={shown.items}
+          moved={shown.moved}
           smoke={smoke}
           back={() => setShown(null)}
         />

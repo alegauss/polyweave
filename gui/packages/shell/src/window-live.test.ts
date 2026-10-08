@@ -27,6 +27,7 @@ function opened(
   item?: string,
   review?: boolean,
   ask?: { words: string; agent: string[]; env?: Record<string, string> },
+  more: Record<string, unknown> = {},
 ): Promise<Record<string, unknown>> {
   return new Promise((resolve, reject) => {
     const env: Record<string, string | undefined> = {
@@ -37,6 +38,7 @@ function opened(
         language,
         ...(item ? { item } : {}),
         ...(review ? { review } : {}),
+        ...more,
         ...(ask ? { ask: ask.words } : {}),
       }),
       ...(ask ? { [AGENT_VAR]: JSON.stringify(ask.agent), ...ask.env } : {}),
@@ -178,6 +180,22 @@ describe.skipIf(!existsSync(MAIN))('the window', () => {
       expect(drew['price']).toBe('0.08')
     } finally {
       fake.dispose()
+    }
+  })
+
+  it('follows the project: an item changed on disk is marked, not swapped silently', async () => {
+    const icon = join(root, 'starship', 'docs', 'renders', 'icon.png')
+    let flip = 0
+    // Rewritten until the window says it saw the change, as a session or terminal would.
+    const writing = setInterval(() => {
+      flip += 1
+      void writeFile(icon, Buffer.concat([Buffer.from(PNG, 'base64'), Buffer.from([flip])]))
+    }, 700)
+    try {
+      const drew = await opened(root, 'en', 'docs/renders/icon.png', false, undefined, { follow: true })
+      expect(drew['changed']).toBe(true)
+    } finally {
+      clearInterval(writing)
     }
   })
 

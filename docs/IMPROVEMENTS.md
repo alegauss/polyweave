@@ -1037,27 +1037,6 @@ at the build.
 
 ## Block U — A window on everything a project governs
 
-### §PW310 The window follows the project as it changes
-
-A project changes under the window in several ways. A revision session writes, an agent
-in a terminal runs a fit, the person edits a declaration in their editor, or `git
-checkout` swaps half the tree. A window that shows the state it read at open time
-invites a verdict on a picture that is no longer the one on disk. That is the same
-failure the digest on an answer exists to catch.
-
-The window watches the directories that hold what the inventory lists, plus
-`.polyweave/answers.jsonl`, `revisions.jsonl` and `sittings.json`. It watches
-directories, not files, so a file that did not exist yet, or one rewritten by rename, is
-still caught, as roadkeep's governed watch learned. A burst of events becomes one
-re-read of `project.inventory`.
-
-Rows are keyed by the inventory id and redrawn only where the digest moved. The open
-item is redrawn only when its brief's digest changed, and never in the middle of an
-answer. The review page learned this the hard way (PW289): redrawing everything every
-few seconds lost a click between two. An item whose artefact changed while the person
-was looking at it is marked as changed, with old and new offered side by side, instead
-of swapped silently.
-
 ### §PW311 The window proved on Starship
 
 Every block here that reached a person was finished only when a real owner used it.

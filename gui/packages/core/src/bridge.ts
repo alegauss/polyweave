@@ -25,6 +25,7 @@ export const CHANNELS = {
   sessionAnswer: 'pw:session-answer',
   sessionStop: 'pw:session-stop',
   sessionLine: 'pw:session-line',
+  changed: 'pw:changed',
   smoke: 'pw:smoke',
   rendered: 'pw:rendered',
 } as const
@@ -54,6 +55,8 @@ export interface Smoke {
   shot?: string
   /** Open the project's verdicts, on the item's sitting where an item is named. */
   review?: boolean
+  /** Report only once the chosen item has changed on disk and been redrawn (§PW310). */
+  follow?: boolean
   /** Ask for this change on the item and open a session on it (§PW306). */
   ask?: string
 }
@@ -84,6 +87,8 @@ export interface Bridge {
   stop(revision: string): Promise<void>
   /** Every line a session writes, as it writes it; the answer stops listening. */
   onSessionLine(listener: (revision: string, line: string) => void): () => void
+  /** Called once per burst of changes under an open project (§PW310). */
+  onChanged(listener: (project: string) => void): () => void
   smoke(): Promise<Smoke | null>
   rendered(report: Record<string, unknown>): Promise<void>
 }

@@ -93,3 +93,23 @@ export async function all(client: Client, root: string, kind?: Kind): Promise<It
   }
   return items
 }
+
+/**
+ * A fresh read of the inventory folded over the one on screen (§PW310): rows keyed by
+ * id keep their object where the digest did not move, so only what changed redraws, and
+ * the ids whose digest moved are named.
+ */
+export function merged(shown: Item[], fresh: Item[]): { items: Item[]; moved: string[] } {
+  const before = new Map(shown.map((item) => [item.id, item]))
+  const moved: string[] = []
+  const items = fresh.map((item) => {
+    const was = before.get(item.id)
+    if (!was) return item
+    if (was.digest === item.digest && was.record === item.record && was.pending === item.pending) {
+      return was
+    }
+    if (was.digest !== item.digest) moved.push(item.id)
+    return item
+  })
+  return { items, moved }
+}

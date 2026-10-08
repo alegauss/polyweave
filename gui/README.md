@@ -106,6 +106,19 @@ paid tool. A write outside the item, its declaration, its spec and what is made 
 asks first, with the reason beside the question, and a closed revision lists every file it
 wrote and the dependents left waiting.
 
+## Following the project as it changes
+
+A project changes under the window: a revision's session writes, a terminal runs a fit,
+the person edits a declaration, a checkout swaps half the tree. `shell/src/watch.ts`
+watches the open project's root recursively, the directories and not the files, so a
+new file or one rewritten by a rename is caught. It passes over `node_modules`, `.git`,
+Godot's import caches and the plugin's caches, and still hears `.polyweave/answers.jsonl`,
+`revisions.jsonl` and `sittings.json`. A burst of changes is one call, and the window
+re-reads `project.inventory` once. `core`'s `merged()` folds the fresh rows over the ones
+on screen by id, keeping each unchanged row's object, so only what moved redraws. An item
+the person is looking at that changed on disk is marked as changed, never swapped
+silently, and they open the new one when they choose.
+
 ## The live test
 
 `shell/src/window-live.test.ts` starts Electron in smoke mode (`POLYWEAVE_GUI_SMOKE`).

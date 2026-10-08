@@ -68,7 +68,9 @@
     "kept": "Kept",
     "refused": "Refused",
     "before": "Before",
-    "now": "Now"
+    "now": "Now",
+    "changed": "This item changed on disk while you looked at it.",
+    "see_new": "See the new one"
   },
   "session": {
     "ask": "Ask for a change",

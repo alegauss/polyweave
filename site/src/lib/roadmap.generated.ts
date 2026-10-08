@@ -45,7 +45,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "R", title: "Levels measured before a person plays them", open: 8 },
   { block: "S", title: "Playing the game, not only rendering it", open: 1 },
   { block: "T", title: "Adopting polyweave in a project", open: 2 },
-  { block: "U", title: "A window on everything a project governs", open: 4 },
+  { block: "U", title: "A window on everything a project governs", open: 3 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 32 },
 ];
 
@@ -303,18 +303,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW310",
-    block: "U",
-    symptom: "the window would show a project as it was when opened, so an item a session or terminal changed looks untouched",
-    why: "The window watches the project's governed paths and its answers and revisions files, and redraws only the rows and item whose digest changed.",
-    deps: [],
-  },
-  {
     id: "PW311",
     block: "U",
     symptom: "no revision has been asked, made and judged from the window on a real game, so its gaps are guesses",
-    why: "Starship's owner opens the project in the window, asks for one picture and one sound to change, and judges both there; what got in the way is filed.",
-    deps: ["PW310"],
+    why: "Spinhold's owner opens the project in the window, asks for a picture and a sound to change, and judges both there; what got in the way is filed.",
+    deps: [],
   },
   {
     id: "PW377",

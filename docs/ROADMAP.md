@@ -87,8 +87,7 @@
 
 ## Block U — A window on everything a project governs
 
-- 📋 **PW310** (deps: PW304 ✅) **the window would show a project as it was when opened, so an item a session or terminal changed looks untouched** — The window watches the project's governed paths and its answers and revisions files, and redraws only the rows and item whose digest changed. → §PW310
-- 📋 **PW311** (deps: PW307 ✅, PW308 ✅, PW309 ✅, PW310) **no revision has been asked, made and judged from the window on a real game, so its gaps are guesses** — Starship's owner opens the project in the window, asks for one picture and one sound to change, and judges both there; what got in the way is filed. → §PW311
+- 📋 **PW311** (deps: PW307 ✅, PW308 ✅, PW309 ✅, PW310 ✅) **no revision has been asked, made and judged from the window on a real game, so its gaps are guesses** — Spinhold's owner opens the project in the window, asks for a picture and a sound to change, and judges both there; what got in the way is filed. → §PW311
 - 📋 **PW377** (deps: PW305 ✅) **half the decision screen's facts and its masked write are no operation, so the window can only frame the Python page** — A typed SDK generated from describe, and one React screen served to the window and the browser alike, end the iframe without a second implementation. → §PW377
 - 📋 **PW378** (deps: PW309 ✅) **a revision's session can write outside its item through Bash, and neither the question nor the touched list sees it** — The scope hook reads only the file a Write or Edit names, so a shell write to the config or a canon slips past the person. → §PW378
 

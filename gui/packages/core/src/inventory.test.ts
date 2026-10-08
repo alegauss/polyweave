@@ -52,4 +52,16 @@ describe('the inventory', () => {
     const client = { call: async () => ({ rows: [] }) } as unknown as Client
     await expect(page(client, '/g')).rejects.toBeInstanceOf(Unreadable)
   })
+
+  it('keeps the rows that did not move, and names the ones whose digest did', async () => {
+    const { merged } = await import('./inventory')
+    const a = { ...row('a.glb'), digest: '1' }
+    const b = { ...row('b.glb'), digest: '1' }
+    const fresh = [{ ...a }, { ...b, digest: '2' }, row('c.glb')]
+    const folded = merged([a as never, b as never], fresh as never)
+    expect(folded.items[0]).toBe(a)
+    expect(folded.items[1]).not.toBe(b)
+    expect(folded.moved).toEqual(['b.glb'])
+    expect(folded.items.map((i) => i.id)).toEqual(['a.glb', 'b.glb', 'c.glb'])
+  })
 })

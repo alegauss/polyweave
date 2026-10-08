@@ -28,12 +28,15 @@ export function Project({
   bridge,
   opened,
   items,
+  moved = [],
   smoke,
   back,
 }: {
   bridge: Bridge
   opened: Opened
   items: Item[]
+  /** Ids whose digest moved since the window drew them (§PW310). */
+  moved?: string[]
   smoke: Smoke | null
   back: () => void
 }) {
@@ -43,6 +46,10 @@ export function Project({
     items.find((i) => i.id === smoke?.item) ?? null,
   )
   const [drawn, setDrawn] = useState(false)
+  // The digest of the item as the person was last shown it: a change to it is marked,
+  // never swapped in silently, and the new one is shown when they ask (§PW310).
+  const chosenDigest = chosen ? (items.find((i) => i.id === chosen.id)?.digest ?? null) : null
+  const [seenAt, setSeenAt] = useState<string | null>(null)
   const [revised, setRevised] = useState<string[] | null>(null)
   useEffect(() => {
     void bridge.revisions(opened.project).then(setRevised, () => setRevised([]))
@@ -67,6 +74,7 @@ export function Project({
     if (smoke.review && !reviewing) return judge(chosen?.artefact)
     if (smoke.review && !framed) return
     if (smoke.ask && !talked) return
+    if (smoke.follow && !(chosen && moved.includes(chosen.id))) return
     // A question waiting on the person is what a smoke run's picture is of.
     document.querySelector('[data-ask]')?.scrollIntoView({ block: 'center' })
     requestAnimationFrame(() => {
@@ -91,10 +99,11 @@ export function Project({
         turns: [...document.querySelectorAll('[data-turn]')].map((one) => one.textContent),
         asked: [...document.querySelectorAll('[data-ask]')].map((one) => one.getAttribute('data-ask')),
         price: document.querySelector('[data-price]')?.getAttribute('data-price') ?? null,
+        changed: document.querySelector('[data-changed]') !== null,
       })
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [smoke, chosen, drawn, revised, reviewing, framed, talked, bridge, opened])
+  }, [smoke, chosen, drawn, revised, reviewing, framed, talked, moved, bridge, opened])
 
   return (
     <section className="flex flex-col gap-4">
@@ -192,9 +201,17 @@ export function Project({
           ))}
         </div>
         <div>
+          {chosen && moved.includes(chosen.id) && seenAt !== chosenDigest && (
+            <div data-changed className="mb-2 flex items-center gap-2 rounded-md bg-amber-50 p-2 text-sm">
+              <span className="flex-1">{t('item.changed')}</span>
+              <Button size="sm" onClick={() => setSeenAt(chosenDigest)}>
+                {t('item.see_new')}
+              </Button>
+            </div>
+          )}
           {chosen ? (
             <ItemView
-              key={chosen.id}
+              key={`${chosen.id}@${seenAt ?? ''}`}
               bridge={bridge}
               project={opened.project}
               item={chosen}

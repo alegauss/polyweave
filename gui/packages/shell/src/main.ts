@@ -17,10 +17,12 @@ import { Holding } from './holding'
 import { Reviews } from './reviews'
 import { start, type Session } from './sessions'
 import { SMOKE_VAR } from './smoke'
+import { Watching } from './watch'
 import { createWindow } from './window'
 
 const held = new Held()
 const reviews = new Reviews()
+const watching = new Watching()
 /** One session per revision, by the revision's id (§PW306). */
 const sessions = new Map<string, Session>()
 /** The project each revision's session works in, for keeping its turns. */
@@ -52,8 +54,13 @@ const smoke: Smoke | null = process.env[SMOKE_VAR]
 ipcMain.handle(CHANNELS.find, (_event, root: string, depth: number) =>
   find(disk, root, depth),
 )
-ipcMain.handle(CHANNELS.open, async (_event, project: string): Promise<Opened> => {
+ipcMain.handle(CHANNELS.open, async (event, project: string): Promise<Opened> => {
   const open = await held.opened(project)
+  // The window follows the project as it changes (§PW310).
+  const window = event.sender
+  watching.start(project, () => {
+    if (!window.isDestroyed()) window.send(CHANNELS.changed, project)
+  })
   return { project, server: open.server, engine: open.engine }
 })
 ipcMain.handle(
@@ -197,6 +204,7 @@ ipcMain.handle(CHANNELS.rendered, async (event, report: Record<string, unknown>)
 
 app.on('before-quit', () => {
   // The review page's server lives as long as the project's own (§PW305).
+  watching.stopAll()
   for (const session of sessions.values()) session.stop()
   void reviews.closeAll()
   void held.closeAll()

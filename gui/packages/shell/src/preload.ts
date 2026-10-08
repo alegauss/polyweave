@@ -22,6 +22,11 @@ const bridge: Bridge = {
   answer: (revision, requestId, allow) =>
     ipcRenderer.invoke(CHANNELS.sessionAnswer, revision, requestId, allow),
   stop: (revision) => ipcRenderer.invoke(CHANNELS.sessionStop, revision),
+  onChanged: (listener) => {
+    const heard = (_event: IpcRendererEvent, project: string) => listener(project)
+    ipcRenderer.on(CHANNELS.changed, heard)
+    return () => ipcRenderer.removeListener(CHANNELS.changed, heard)
+  },
   onSessionLine: (listener) => {
     const heard = (_event: IpcRendererEvent, revision: string, line: string) => listener(revision, line)
     ipcRenderer.on(CHANNELS.sessionLine, heard)

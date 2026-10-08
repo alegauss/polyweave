@@ -369,6 +369,7 @@
 - ✅ **PW307** **a session changing an item can report done with no check run, and nothing makes it end on the person's verdict** — A revision's session runs the item's checks after each write, cannot stop without a sitting, and closes only on the person's answer (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW308** **a revision session can call a paid generator on its own, so a click on one picture spends credits nobody weighed** — A paid call in a revision stops with purchase.quote's price and what the ceiling leaves, runs on one yes, and its spend is tied to it (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW309** **a revision's change can rewrite items outside the one asked about, and the person learns of it only by diffing** — A revision's write outside its item and dependents asks first, with the reason; its close lists each file written and what waits (design recorded in `docs/specs/acceptance-spec.md`).
+- ✅ **PW310** **the window would show a project as it was when opened, so an item a session or terminal changed looks untouched** — The window watches the open project's root, re-reads the inventory once per burst, redraws only what moved, and marks an item changed while looked at (design recorded in `gui/README.md`).
 
 ## Block V — Parts every game repeats, installed already proved
 
