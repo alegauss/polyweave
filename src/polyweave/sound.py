@@ -26,6 +26,7 @@ PATH, and refused where it is not.
 
 from __future__ import annotations
 
+import math
 import re
 import shutil
 import subprocess
@@ -47,6 +48,7 @@ SOUNDS: dict[str, str] = {
     "loudness": "RMS level, in dBFS",
     "peak": "the largest sample, in dBFS",
     "duration": "length, in seconds",
+    "fundamental": "the pitch of the loudest moment, in Hz, where it has one",
 }
 
 #: What is read as sound rather than as a picture.
@@ -177,6 +179,59 @@ def _onset_level(flux: np.ndarray) -> float:
     return float(np.percentile(peaks, ONSET_PERCENTILE))
 
 
+def _fundamental(mono: np.ndarray, rate: int) -> float | None:
+    """The pitch of the loudest moment, by autocorrelation; None where there is none.
+
+    A sound bounded to a key's notes is held to this (§PW333). Noise, such as an
+    explosion, has no lag its waveform repeats at, and answers no pitch rather than a
+    made-up one.
+    """
+    size = min(len(mono), 4096)
+    if size < 256:
+        return None
+    frames = max(1, len(mono) // size)
+    energy = [
+        float(np.sum(mono[i * size : (i + 1) * size] ** 2)) for i in range(frames)
+    ]
+    loud = int(np.argmax(energy))
+    window = mono[loud * size:(loud + 1) * size]
+    window = window - window.mean()
+    if not np.any(window):
+        return None
+    full = np.correlate(window, window, mode="full")[len(window) - 1:]
+    low, high = int(rate / 4000), min(int(rate / 30), len(full) - 1)
+    if high <= low:
+        return None
+    span = full[low:high]
+    best = float(span.max())
+    if best < 0.5 * full[0]:
+        return None
+    # The first peak nearly as strong as the best, not the best: a cycle that is not
+    # a whole number of samples correlates better over two, an octave low.
+    peaks = [
+        i for i in range(1, len(span) - 1)
+        if span[i] >= span[i - 1] and span[i] >= span[i + 1] and span[i] >= 0.85 * best
+    ]
+    lag = low + (peaks[0] if peaks else int(np.argmax(span)))
+    # A peak between two samples, placed by the parabola through it and its neighbours.
+    if 0 < lag < len(full) - 1:
+        a, b, c = full[lag - 1], full[lag], full[lag + 1]
+        shift = 0.5 * (a - c) / (a - 2 * b + c) if (a - 2 * b + c) else 0.0
+        lag = lag + max(-0.5, min(0.5, shift))
+    return rate / lag if lag > 0 else None
+
+
+_NAMES = ("C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B")
+
+
+def note_of(pitch: float) -> str:
+    """The nearest note to a pitch and how far off it is, such as A5 +3c."""
+    steps = 12 * math.log2(pitch / 440.0) + 57
+    nearest = round(steps)
+    cents = round((steps - nearest) * 100)
+    return f"{_NAMES[nearest % 12]}{nearest // 12}{cents:+d}c"
+
+
 def _db(value: float) -> float:
     return round(20.0 * float(np.log10(max(value, 1e-12))), 3)
 
@@ -211,6 +266,10 @@ def measure(path: str | Path) -> dict:
         "peak": _db(float(np.abs(samples).max())),
         "duration": round(len(mono) / rate, 4),
     }
+    pitch = _fundamental(mono, rate)
+    if pitch is not None:
+        found["fundamental"] = round(pitch, 2)
+        found["note"] = note_of(pitch)
     if len(mono) < SEAM_WINDOWS * _SIZE:
         return found
     steps = np.abs(np.diff(mono))

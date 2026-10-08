@@ -494,28 +494,6 @@ declared in its `polyweave.toml`, made by `music.render` and `sound.synth`, and 
 `*.accept.toml` bounds, and its own audio scripts are removed. Anything Cottony needs
 that a second game would not becomes configuration.
 
-### §PW333 An effect declared at a note
-
-Met in starship (RK157): the menu's interface sounds (move, confirm, back, refused, tab,
-open, close) are to be "tuned to the theme's key", A minor, so a confirm lands on a note
-of the title music under it. An effect in `*.sfx.toml` takes sfxr's own parameters:
-`base_freq` is a number from 0 to 1, `freq_ramp` a slide per sample, `arp_mod` a period
-multiplier. Nothing in `describe` or in `sound.synth`'s answer says which pitch they
-make.
-
-To place a sound on a note the worker read `src/polyweave/sfxr.py` and worked out that
-the pitch is 3528 x (base_freq^2 + 0.001) Hz at 44.1 kHz with 8x supersampling, then
-converted each note by hand (A5 is 0.4984, E5 0.4311), the arpeggio's jump from
-`arp_mod` (a fourth up is 0.528, a fourth down -0.183), its timing from `arp_speed`, and
-a slide of one octave over a duration from `freq_ramp`. The numbers sit in starship's
-art/audio/interface.sfx.toml with the notes in comments, and nothing checks them.
-
-What polyweave should do: let an effect declare its pitch as a note or Hz (`note =
-"A5"`), its arpeggio as an interval and a time (`arp = { to = "E5", at = 0.05 }`), and a
-slide as a target and a duration, compiling them to sfxr's parameters; and have
-`sound.measure` answer an effect's fundamental, so a spec can bound a sound to a key's
-notes.
-
 ## Block Q — Words held to the world
 
 ### §PW335 Glyphs a string table needs and its fonts lack

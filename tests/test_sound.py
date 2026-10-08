@@ -229,7 +229,10 @@ def test_a_committed_loop_is_held_to_its_spec_by_verify(tmp_path):
 
 def test_a_one_shot_is_measured_without_a_seam(tmp_path):
     found = sound.measure(written(tmp_path / "short.wav", tone(0.1)))
-    assert set(found) == {"loudness", "peak", "duration"}
+    assert set(found) == {"loudness", "peak", "duration", "fundamental", "note"}
+    # A one-shot that has a pitch says it (§PW333): the tone is 441 Hz.
+    assert found["fundamental"] == pytest.approx(441.0, rel=0.005)
+    assert found["note"].startswith("A4")
     assert found["duration"] == pytest.approx(0.1, abs=0.001)
     assert found["peak"] == pytest.approx(-6.02, abs=0.05)
 

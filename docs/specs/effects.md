@@ -33,6 +33,28 @@ sfxr's parameters are `wave`, `base_freq`, `freq_limit`, `freq_ramp`, `freq_dram
 for a ramp, `pha_offset` and `arp_mod`. Anything else is refused with its nearest name
 (`sound.bad-effect`), and so is an effect with neither a generator nor a parameter.
 
+**An effect may be declared at a note** (§PW333), so a menu sound is put in the theme's
+key without working sfxr's numbers out by hand:
+
+```toml
+[effect.confirm]
+wave  = "square"
+note  = "A5"                        # or Hz: note = 880; A4 is 440
+arp   = { to = "E6", at = 0.05 }    # jump to a note after `at` seconds
+slide = { to = "A4", over = 0.4 }   # glide to a note, reached after `over` seconds
+```
+
+They compile to sfxr's own: the pitch is 3528 x (`base_freq`² + 0.001) Hz at 44.1 kHz with
+8x oversampling, so `note` sets `base_freq`; the arp's ratio sets `arp_mod` (a period
+multiplier, 1 - mod² x 0.9 up and 1 + mod² x 10 down) and its time `arp_speed` (sfxr
+waits (1 - speed)² x 20000 + 32 samples); the slide sets `freq_ramp` so the period has
+moved by the ratio after `over`. A slide keeps its rate past `over`, as sfxr's does, so
+the sound's length decides where it stops. A note and the number it replaces together, an
+arp or slide with no note, a name that is not a note, or a pitch sfxr cannot reach (3.5
+Hz to about 3.5 kHz, a jump past ten times up or eleven down, an arp later than 0.45 s)
+is `sound.bad-effect`. `sound.measure` answers the `fundamental` and `note` that came out,
+so the declaration is checked by what is heard.
+
 ## Making them
 
 `sound.synth` makes every effect in a file, or the one named. Each is centred, faded over

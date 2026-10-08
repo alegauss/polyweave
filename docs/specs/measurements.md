@@ -218,6 +218,13 @@ autocorrelation's peak under ten times its median; the waltz's soft pizzicato re
 chiptune 199) has no grid (`none`) and no `seam_grid`, rather than a guessed one, and a
 spec that bounds it there is refused (`spec.no-seam`) saying so.
 - `loudness` (RMS, dBFS), `peak` (dBFS) and `duration` (seconds).
+- `fundamental` (Hz), the pitch of the loudest 4096 samples, by autocorrelation between
+  30 Hz and 4 kHz, with `note` beside it, the nearest note and how far off in cents
+  (`A5 +3c`), so a spec bounds a menu sound to a key's notes (§PW333). The first lag
+  within 85% of the strongest is taken, since a cycle that is not a whole number of
+  samples correlates better over two and would read an octave low. A sound whose
+  waveform repeats at no lag, noise or an explosion, carries neither rather than a
+  guessed pitch.
 
 A 16-bit or 24-bit PCM WAV is read with the standard library, and anything else is
 decoded by ffmpeg or refused (`spec.unreadable-sound`), as is a file with no samples.

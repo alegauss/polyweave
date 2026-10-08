@@ -27,7 +27,19 @@ A jingle is several effects at the times a game plays them, and a person judges 
       { effect = "splash_pop", at = 0.4, pitch = 2, gain = -3 },
     ]
 
-`at` is in seconds, `pitch` in semitones and `gain` in dB; `peak` caps the mix. Each
+`at` is in seconds, `pitch` in semitones and `gain` in dB; `peak` caps the mix.
+
+An effect may be declared at a note rather than in sfxr's numbers (§PW333):
+
+    [effect.confirm]
+    wave = "square"
+    note = "A5"                         # or a frequency in Hz: note = 880
+    arp = { to = "E6", at = 0.05 }      # jump to a note after a time, in seconds
+    slide = { to = "A4", over = 0.4 }   # glide to a note, reached after `over`
+
+which compile to `base_freq`, `arp_mod` and `arp_speed`, and `freq_ramp`: sfxr's pitch
+is 3528 x (base_freq^2 + 0.001) Hz at 44.1 kHz, sampled eight times over. A slide keeps
+its rate past `over`, as sfxr's does, so the sound's length decides where it stops. Each
 arrangement is mixed into one file, placed as an effect is, with
 `<name>.arrangement.json` beside it naming every cue's file, time, pitch and gain: what
 the game reads, so the times it plays are the ones the person heard.
@@ -55,7 +67,86 @@ from .errors import PolyweaveError
 
 #: What an effect's table may hold besides sfxr's own parameters.
 _OWN = {"generator": str, "seed": int, "min_duration": float, "max_duration": float,
-        "peak": float, "loudness": float, "match": str}
+        "peak": float, "loudness": float, "match": str, "note": object,
+        "arp": dict, "slide": dict}
+
+#: sfxr's pitch: Hz = PITCH x (base_freq^2 + 0.001), at 44.1 kHz and 8x oversampling.
+PITCH = sfxr.RATE * 8 / 100.0
+
+#: What a musical declaration replaces, so the two are never mixed (§PW333).
+_TUNED = {"note": "base_freq", "arp": "arp_mod", "slide": "freq_ramp"}
+
+_NOTE = __import__("re").compile(r"^([A-Ga-g])([#b]?)(-?\d+)$")
+_STEPS = {"C": -9, "D": -7, "E": -5, "F": -4, "G": -2, "A": 0, "B": 2}
+
+
+def hz(name: str, value: Any) -> float:
+    """A note name such as A5 or C#4, or a number of Hz, as Hz (A4 is 440)."""
+    if _number(value):
+        if value <= 0:
+            raise _bad(name, f"has a pitch of {value!r} Hz",
+                       "write a frequency above 0")
+        return float(value)
+    found = _NOTE.match(str(value).strip())
+    if not found:
+        raise _bad(name, f"has a note {value!r}",
+                   'write a note as a letter, an optional # or b and an octave, "A5"')
+    letter, accidental, octave = found.groups()
+    steps = _STEPS[letter.upper()] + {"#": 1, "b": -1, "": 0}[accidental]
+    steps += (int(octave) - 4) * 12
+    return 440.0 * 2 ** (steps / 12)
+
+
+def tuned(name: str, table: dict) -> dict:
+    """The table with its notes compiled to sfxr's parameters (§PW333)."""
+    mixed = [f"{own} and {theirs}" for own, theirs in _TUNED.items()
+             if own in table and theirs in table]
+    if mixed:
+        raise _bad(name, f"declares both {mixed[0]}",
+                   "keep one: the note, or sfxr's own number")
+    if "note" not in table:
+        if "arp" in table or "slide" in table:
+            raise _bad(name, "declares an arp or a slide without a note to start on",
+                       'add note = "A5"')
+        return table
+    out = {k: v for k, v in table.items() if k not in _TUNED}
+    start = hz(name, table["note"])
+    base = math.sqrt(max(start / PITCH - 0.001, 0.0))
+    if base > 1.0 or start / PITCH <= 0.001:
+        raise _bad(name, f"starts at {start:.1f} Hz, which sfxr cannot play",
+                   f"keep a note from {PITCH * 0.001:.1f} to {PITCH * 1.001:.0f} Hz")
+    out["base_freq"] = round(base, 6)
+    if "arp" in table:
+        arp = table["arp"]
+        if not isinstance(arp, dict) or "to" not in arp or not _number(arp.get("at")):
+            raise _bad(name, f"has arp {arp!r}", 'write arp = { to = "E6", at = 0.05 }')
+        ratio = hz(name, arp["to"]) / start
+        factor = 1.0 / ratio
+        mod = (math.sqrt((1.0 - factor) / 0.9) if factor <= 1.0
+               else -math.sqrt((factor - 1.0) / 10.0))
+        samples = float(arp["at"]) * sfxr.RATE
+        if not -1.0 <= mod <= 1.0 or not 32 <= samples <= 20032:
+            raise _bad(name, f"arps by {ratio:.3f}x at {arp['at']} s",
+                       "keep the jump within ten times up or eleven down, and its "
+                       "time from 0.001 to 0.45 s")
+        out["arp_mod"] = round(mod, 6)
+        out["arp_speed"] = round(1.0 - math.sqrt((samples - 32) / 20000.0), 6)
+    if "slide" in table:
+        slide = table["slide"]
+        if (not isinstance(slide, dict) or "to" not in slide
+                or not _number(slide.get("over")) or slide["over"] <= 0):
+            raise _bad(name, f"has slide {slide!r}",
+                       'write slide = { to = "A4", over = 0.4 }')
+        samples = float(slide["over"]) * sfxr.RATE
+        step = (start / hz(name, slide["to"])) ** (1.0 / samples)
+        cubed = (1.0 - step) / 0.01
+        ramp = math.copysign(abs(cubed) ** (1.0 / 3.0), cubed)
+        if not -1.0 <= ramp <= 1.0:
+            raise _bad(name, f"slides too fast to reach {slide['to']} in "
+                       f"{slide['over']} s",
+                       "slide further in time, or by less")
+        out["freq_ramp"] = round(ramp, 6)
+    return out
 
 #: How many seeds a bound may try before the effect is refused.
 TRIES = 64
@@ -81,7 +172,9 @@ def _checked(name: str, table: Any) -> dict:
         raise _bad(name, "is not a table", f"write it as [effect.{name}]")
     for key, value in table.items():
         _check_key(name, key, value)
-    if "generator" not in table and not any(k in sfxr.NAMES for k in table):
+    if "generator" not in table and not any(
+        k in sfxr.NAMES or k in _TUNED for k in table
+    ):
         raise _bad(name, "has neither a generator nor a parameter",
                    f"set generator to one of {', '.join(sfxr.GENERATORS)}")
     return table
@@ -118,6 +211,8 @@ def _check_key(name: str, key: str, value: Any) -> None:
         raise _bad(name, f"sets {key} to {value!r}", f"write {key} as a number")
     elif _OWN[key] is str and not isinstance(value, str):
         raise _bad(name, f"sets {key} to {value!r}", f"write {key} as a path")
+    elif key == "note":
+        hz(name, value)
 
 
 def _levelled(
@@ -158,6 +253,7 @@ def _levelled(
 def _params(table: dict, seed: int) -> sfxr.Params:
     """The generator's draw from this seed, with the parameters the table pins."""
     drawn = sfxr.Params()
+    table = tuned("", table)
     if "generator" in table:
         drawn = sfxr.drawn(table["generator"], seed)
     pinned = {k: v for k, v in table.items() if k in sfxr.NAMES}

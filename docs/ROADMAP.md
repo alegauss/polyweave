@@ -48,8 +48,6 @@
 
 ## Block P — Music and sound a game can ship
 
-- 📋 **PW333** (deps: —) **an sfx effect cannot be declared at a note, so putting a menu sound in a key means working out base_freq by hand** — The pitch formula lives only in the source, so every tuned effect is numbers derived off the page that nothing checks. → §PW333
-
 ## Block Q — Words held to the world
 
 - 📋 **PW335** (deps: —) **no operation says which characters of a string table its fonts lack, so a missing accent shows only on screen** — A box or a borrowed system glyph reaches a player because only the project checked its own fonts. → §PW335
