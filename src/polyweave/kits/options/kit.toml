@@ -1,0 +1,19 @@
+name = "options"
+version = "0.1.0"
+summary = "a versioned settings store and an options screen whose tabs come from the kits installed"
+requires = ["menus"]
+
+[installs]
+core = "core"
+scene = "scene/options_screen.tscn"
+
+[declares]
+file = "user://polyweave_settings.cfg"
+rows = "res://polyweave_options.gd"
+
+[proves]
+fixture = "fixture"
+script = "core/proof.gd"
+
+[changes]
+"0.1.0" = "rows contributed by kits and the project, each read back; a file migrated by version, its unknown keys kept"

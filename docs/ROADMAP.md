@@ -75,7 +75,6 @@
 
 ## Block V — Parts every game repeats, installed already proved
 
-- 📋 **PW347** (deps: PW341 ✅) **each game writes its own options screen and settings file, and an option that changes nothing goes unnoticed** — Both games built one; a screen whose tabs come from the installed kits makes each option a declared row with a check. → §PW347
 - 📋 **PW348** (deps: PW341 ✅) **a save is written in place with no schema version, so a crash mid-write or a game update can lose a player's progress** — Cottony wrote its own save and tests for it; the failures that matter are the same in every game and can be forced. → §PW348
 - 📋 **PW349** (deps: PW341 ✅) **the splash, the load into the first scene and each change of scene are hand-made per game and freeze on a large scene** — A splash no pad can skip and a frozen frame while a scene loads are the first things a player sees. → §PW349
 - 📋 **PW350** (deps: PW341 ✅) **a game's credits are typed by hand while the provenance record already knows every asset's source and licence** — A hand-typed credit drifts from what shipped, and a CC-BY asset missing from the screen is a licence broken. → §PW350
@@ -83,7 +82,7 @@
 - 📋 **PW352** (deps: PW341 ✅, PW335 ✅) **the string table words checks reaches a game's TranslationServer by hand, with no fallback font for another script** — Block Q holds the table to the world; the step from the table to the screen is the one every game rewrites. → §PW352
 - 📋 **PW353** (deps: PW344 ✅) **a dialogue box with typed text, skip, advance and a portrait is rewritten per game, each advancing on its own button** — It shows lines a person wrote and never writes them, so it sits beside Block Q clear of the non-goal on story. → §PW353
 - 📋 **PW354** (deps: —) **no measure counts the flashes in a captured run, so a photosensitivity risk is found by a player** — A flash count is a number read from pixels, the kind of check polyweave exists to make, and no snippet carries one. → §PW354
-- 📋 **PW355** (deps: PW347, PW354) **text size, colourblind filters, subtitles and less shake are each left out or hand-built, and none is checked** — They are options in every game's settings and their effect can be measured, which makes them a kit rather than a wish. → §PW355
+- 📋 **PW355** (deps: PW347 ✅, PW354) **text size, colourblind filters, subtitles and less shake are each left out or hand-built, and none is checked** — They are options in every game's settings and their effect can be measured, which makes them a kit rather than a wish. → §PW355
 - 📋 **PW356** (deps: PW344 ✅) **a pad unplugged mid-game or a window losing focus leaves the game running with no one at the controls** — It is a few lines each game forgets, and the console makers' certification asks for it. → §PW356
 - 📋 **PW357** (deps: PW345 ✅) **a second player joining, which pad is whose and keeping two players' bindings apart are rewritten per game** — Starship solved it in coop.gd, and the binding half of it already lives in the remap kit. → §PW357
 - 📋 **PW358** (deps: —) **a moved file breaks a UID reference and a script that does not parse is found only when its scene loads** — These are the commonest silent failures an agent causes in Godot 4, and each is decidable without playing the game. → §PW358
@@ -94,12 +93,12 @@
 - 📋 **PW363** (deps: —) **an exported build is never launched before a player launches it, so a resource the export left out is found by them** — game.release_check reads presets and packs, and nothing runs the binary, which is the one thing a player does. → §PW363
 - 📋 **PW364** (deps: PW341 ✅) **a game's tables of enemies, items or waves are read as loose JSON, and a number typed as a string is found in play** — schema.validate already checks a declaration, so a table whose schema the project declares can be held the same way. → §PW364
 - 📋 **PW365** (deps: —) **a game's frame time, load time and memory are measured by scripts run by hand, with no baseline a commit regresses from** — Cottony's tools/perf is that work done by hand; a percentile held to a declared budget makes a slower commit fail. → §PW365
-- 📋 **PW366** (deps: PW347) **a game ships one graphics setting or presets chosen by hand, and no fallback when its renderer fails to start** — Godot carries the upscalers, anti-aliasing and renderers; what each game rewrites is choosing among them and surviving a driver that refuses. → §PW366
+- 📋 **PW366** (deps: PW347 ✅) **a game ships one graphics setting or presets chosen by hand, and no fallback when its renderer fails to start** — Godot carries the upscalers, anti-aliasing and renderers; what each game rewrites is choosing among them and surviving a driver that refuses. → §PW366
 - 📋 **PW367** (deps: PW365, PW366) **a preset's settings are chosen by eye, so no one knows if it is the best-looking one that fits its frame budget** — Searching parameters to meet a declaration is what polyweave exists for, and a preset is a parameter set like Cottony's render rig. → §PW367
 - 💭 **PW368** (deps: —) **a game's states and transitions live only in code, so a state nothing reaches or nothing leaves is found by playing** — Generic enough for a kit, but the most opinionated one here, so it waits until two games show code it would replace. → §PW368
 - 📋 **PW369** (deps: PW341 ✅, PW358, PW362) **a new game starts as an empty Godot project and is adopted onto polyweave later, by hand** — If every project is to adapt to polyweave, the cheapest moment to do it is the first commit. → §PW369
 - 📋 **PW370** (deps: PW345 ✅, PW357) **Starship keeps its own bindings and co-op code after the input kits were extracted from it** — A kit proved only in a fixture has not met a game, and the game it came from is the cheapest first consumer. → §PW370
-- 📋 **PW371** (deps: PW347, PW348) **Cottony keeps its own settings and save code where the kits provide them** — The second game is what shows a kit is not one project's code moved into a folder. → §PW371
+- 📋 **PW371** (deps: PW347 ✅, PW348) **Cottony keeps its own settings and save code where the kits provide them** — The second game is what shows a kit is not one project's code moved into a folder. → §PW371
 
 ## Done when — PW36
 

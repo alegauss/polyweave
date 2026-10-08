@@ -845,24 +845,6 @@ line in the window and the file in `touched`.
 
 ## Block V — Parts every game repeats, installed already proved
 
-### §PW347 An options screen assembled from the kits
-
-Cottony's scripts/settings.gd and Starship's SettingsStore, fed by the options() rows in
-bindings.gd, are two versions of one thing. The kit installs a settings store in
-user://, versioned so that a key renamed in a later build migrates, and an options
-screen whose tabs are contributed by the kits present: controls from the remap kit
-(docs/specs/kit.md), and audio, language, accessibility and graphics from their own kits
-in this block, plus any rows the project declares for itself. A kit that contributes a
-tab declares it in its kit.toml, so this screen names no kit it does not find installed.
-
-Proof: every row changes what it says it changes, read back in the running game after
-the change (a bus volume, a window mode, a locale); every value survives a restart; an
-unknown or renamed key in an older file is kept or migrated, never a crash and never a
-silent reset of the player's choices.
-
-The screen is navigable by pad through the menus kit (docs/specs/kit.md), so it inherits
-that kit's focus walk as part of its own proof.
-
 ### §PW348 Saves that survive a crash and an update
 
 Cottony has scripts/save_file.gd and tests/save_test.gd, its own answer to a question
@@ -923,17 +905,17 @@ clipping; sound.measure holds each bus's loudness to its declared target in a ca
 scene, the same measure Block P holds a track to, so a track mastered right cannot be
 made wrong by the bus it plays through.
 
-The bus volumes are what the settings kit of §PW347 shows as an audio tab, which is why
-the layout is declared once here and read there.
+The bus volumes are what the options kit (docs/specs/kit.md) shows as an audio tab,
+which is why the layout is declared once here and read there.
 
 ### §PW352 The string table on screen in every language
 
 Block Q checks a string table against the world the person declared, and `words.glyphs`
 finds the characters its fonts lack. Neither puts the table on screen. This kit is that
 runtime half: it loads the [words] table into Godot's TranslationServer, installs a
-language selector for the settings kit of §PW347, sets fallback fonts per script (CJK,
-Cyrillic, Arabic) as the project declares them, and picks the system locale on first
-launch when the game supports it.
+language selector for the options kit (docs/specs/kit.md), sets fallback fonts per
+script (CJK, Cyrillic, Arabic) as the project declares them, and picks the system locale
+on first launch when the game supports it.
 
 Proof: switching to each locale changes every visible label of a captured screen; no key
 ever shows its raw name; with `words.glyphs`, no character falls to a box or a borrowed
@@ -977,11 +959,11 @@ a scene nobody captured is not found.
 
 ### §PW355 Accessibility options with their effect measured
 
-The kit adds an accessibility tab to the settings kit of §PW347: a text scale applied
-through the project's Theme; colourblind filters as a full-screen shader (protanopia,
-deuteranopia and tritanopia, as simulation and as correction); subtitles for the lines
-the voice bus plays; a switch for screen shake and for flashes, which the game's own
-effects consult through the kit; and hold-or-toggle for held actions.
+The kit adds an accessibility tab to the options kit (docs/specs/kit.md): a text scale
+applied through the project's Theme; colourblind filters as a full-screen shader
+(protanopia, deuteranopia and tritanopia, as simulation and as correction); subtitles
+for the lines the voice bus plays; a switch for screen shake and for flashes, which the
+game's own effects consult through the kit; and hold-or-toggle for held actions.
 
 Proof: at the largest text scale no label overflows on a captured screen; the colour
 pairs the project declares must stay apart stay apart under each filter, by
@@ -1163,8 +1145,9 @@ features its environments use (SDFGI, SSAO, volumetric fog, shadows), and instal
 presets that touch only what the game uses. For 3D: render scale with Godot's built-in
 upscalers (FSR 1 and FSR 2), anti-aliasing (MSAA, TAA, FXAA), shadow and effect quality,
 and a frame cap. For 2D: the stretch mode and integer scaling. It picks a first preset
-from RenderingServer's adapter vendor and name, adds a graphics tab to the settings kit
-of §PW347, and falls back to the Compatibility renderer when Vulkan fails to start.
+from RenderingServer's adapter vendor and name, adds a graphics tab to the options kit
+(docs/specs/kit.md), and falls back to the Compatibility renderer when Vulkan fails to
+start.
 
 Vendor SDKs (DLSS, Reflex, XeSS) stay out: their licences keep them from shipping here
 and Godot builds in none of them, so a kit per GPU maker would be the wrong unit.
@@ -1241,10 +1224,10 @@ proof, and provenance.read names each kit with its version.
 ### §PW371 Cottony onto the settings and save kits
 
 Cottony's scripts/settings.gd, and scripts/save_file.gd with tests/save_test.gd, are a
-second instance of what §PW347 and §PW348 provide, written without either kit in mind.
-Moving Cottony onto them proves the kits against a game they were not extracted from,
-which is the non-goal on one project's palette, rig or paths compiled in, checked in
-practice rather than asserted.
+second instance of what the options kit and §PW348 provide, written without either kit
+in mind. Moving Cottony onto them proves the kits against a game they were not extracted
+from, which is the non-goal on one project's palette, rig or paths compiled in, checked
+in practice rather than asserted.
 
 Players' existing save files must load through the kit's declared migration, so no one
 loses progress on the update that swaps the code; that is part of the proof, not a

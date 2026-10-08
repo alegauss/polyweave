@@ -54,6 +54,7 @@ TOP = {
     "declares",
     "proves",
     "changes",
+    "tab",
 }
 INSTALLS = {"core", "scene"}
 PROVES = {"spec", "fixture", "script"}
@@ -166,6 +167,20 @@ def read(folder: Path) -> dict:
                 f"names {one!r}, which the kit does not hold",
                 "name a path inside the kit's folder",
             )
+    tab = held.get("tab")
+    rows = folder / held["installs"]["core"] / "options.gd"
+    if tab is not None and (not isinstance(tab, str) or not rows.is_file()):
+        raise _bad(
+            where,
+            f"contributes the tab {tab!r} and keeps no options.gd in its core",
+            "write core/options.gd with const TAB and static func options() (§PW347)",
+        )
+    if tab is None and rows.is_file():
+        raise _bad(
+            where,
+            "keeps an options.gd and declares no tab",
+            'name the tab it contributes to the options screen: tab = "controls"',
+        )
     changes = held.get("changes", {})
     if not isinstance(changes, dict) or not all(
         _VERSION.match(str(v)) and isinstance(t, str) for v, t in changes.items()
@@ -191,6 +206,7 @@ def read(folder: Path) -> dict:
         "declares": dict(declares),
         "proves": dict(held["proves"]),
         "changes": dict(changes),
+        "tab": tab,
         "folder": str(folder),
     }
 

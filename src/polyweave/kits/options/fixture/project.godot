@@ -1,0 +1,8 @@
+; The options kit's fixture: a game with three rows of its own in polyweave_options.gd.
+
+config_version=5
+
+[application]
+
+config/name="options fixture"
+run/main_scene="res://main.tscn"

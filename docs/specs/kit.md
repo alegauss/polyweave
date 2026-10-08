@@ -47,6 +47,10 @@ fixture = "fixture"           # a minimal Godot project it is proved in, in this
 - `[declares]` is the declaration the kit proposes, written into the project's
   `[kit.<name>]` only where the project has none. A kit carries no palette or theme of
   its own: anything that is a game's look is the game's to declare.
+- `tab` names the tab the kit contributes to the options kit's screen (§PW347). A kit
+  that declares one keeps `options.gd` in its core, a script with `const TAB` and
+  `static func options()` answering its rows, and a kit that keeps one declares its
+  tab; either alone is `kits.bad`.
 - `[proves] spec` is the kit's acceptance spec, the proof that its pictures hold in the
   game it lands in.
 - `[proves] fixture` is a folder of the kit holding a minimal Godot project shaped to
@@ -171,7 +175,8 @@ every project action but the `ui_` ones unless the screen names them. Its scene,
 remap screen, draws each binding as the prompts kit's icon for the device in use,
 listens on the half pressed for the next input, says a swap, and holds a deadzone
 slider, the inverted vertical and a reset. Its proof script rebinds, swaps, restarts
-the store from the file, resets, and drives the screen with a pad button.
+the store from the file, resets, and drives the screen with a pad button. Since 0.2.0
+it contributes the `controls` tab to the options screen, a row opening its screen.
 
 **menus** (§PW346, requires prompts): a main menu, a pause menu and a yes-or-no confirm
 a pad can drive. `PolyweaveMenu` makes a button per item, named by the item and
@@ -186,3 +191,22 @@ panel.build declares it, and the kit adds no style. Its proof is a script alone,
 events: every menu walked down reaches each button and comes back round, back lands
 where each menu says in every family's convention, and the game does not tick while
 paused.
+
+**options** (§PW347, requires menus): one settings file and the screen over it, from
+Starship's SettingsStore and Cottony's settings. `PolyweaveSettings` keeps every option
+in `user://polyweave_settings.cfg` under `[meta] version`. A row is
+`{tab, key, label, default}` with `choices` (and `names`), `range` `[min, max, step]`,
+`opens` (a scene, holding no value) or a bool default, and every row holding a value
+declares `apply`, which puts it in force, and `read`, which reads back what is in
+force. Rows come from each installed kit's `options.gd`, then from the project's
+`res://polyweave_options.gd`, which may declare `const VERSION` and
+`static func renamed()` mapping an older build's "tab/key" to today's. Loading an older
+file migrates it, keeps a key no row declares, and lets a value a row may not take read
+as its default while the file keeps it; `said` names each, so nothing a player chose is
+dropped in silence. `unchanging()` sets each row to another value and names every row
+whose `read` does not answer it, every row with no `read`, and every `opens` whose
+scene is missing; a game's own tests may call it too. `PolyweaveOptionsScreen` draws a
+tab per tab, a slider, switch, choice or button per row; the d-pad walks the rows and
+round again, left and right move a value, the shoulders change tab, and confirm and
+back follow the menus kit's convention. Its proof script runs `unchanging`, a restart,
+an older file and a pad walk of every tab.

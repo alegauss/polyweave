@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 2 },
   { block: "U", title: "A window on everything a project governs", open: 2 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 25 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 24 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -226,13 +226,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW347",
-    block: "V",
-    symptom: "each game writes its own options screen and settings file, and an option that changes nothing goes unnoticed",
-    why: "Both games built one; a screen whose tabs come from the installed kits makes each option a declared row with a check.",
-    deps: [],
-  },
-  {
     id: "PW348",
     block: "V",
     symptom: "a save is written in place with no schema version, so a crash mid-write or a game update can lose a player's progress",
@@ -286,7 +279,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "V",
     symptom: "text size, colourblind filters, subtitles and less shake are each left out or hand-built, and none is checked",
     why: "They are options in every game's settings and their effect can be measured, which makes them a kit rather than a wish.",
-    deps: ["PW347", "PW354"],
+    deps: ["PW354"],
   },
   {
     id: "PW356",
@@ -363,7 +356,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "V",
     symptom: "a game ships one graphics setting or presets chosen by hand, and no fallback when its renderer fails to start",
     why: "Godot carries the upscalers, anti-aliasing and renderers; what each game rewrites is choosing among them and surviving a driver that refuses.",
-    deps: ["PW347"],
+    deps: [],
   },
   {
     id: "PW367",
@@ -398,7 +391,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "V",
     symptom: "Cottony keeps its own settings and save code where the kits provide them",
     why: "The second game is what shows a kit is not one project's code moved into a folder.",
-    deps: ["PW347", "PW348"],
+    deps: ["PW348"],
   },
 ];
 
