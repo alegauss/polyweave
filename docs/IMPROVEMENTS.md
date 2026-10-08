@@ -426,35 +426,6 @@ since a reference the service ignores is dropped without an error.
 
 ## Block O — A person sees and answers
 
-### §PW332 A verdict that lands from the CLI
-
-Met in starship (RK143, RK144), carrying the owner's acceptance of three voxel enemies
-given in chat.
-
-What happened, through the CLI:
-
-- `verdict.judge --run '<json from loop.start>'` answered "recorded in the open run",
-  but the run is a dict in that process: the verdict was appended to a copy that died
-  with the call.
-- `loop.finish --run '<the same json>' --accepted true` then appended a run with no
-  verdict, said `accepted: true`, and `loop.pending` still showed the asset with
-  `judged: null`, waiting.
-- `verdict.judge` with no run answers "not recorded: no run was open", which is honest
-  but leaves the person's words nowhere.
-
-The workaround was a Python snippet calling `loop.start`, `verdict.judge` and
-`loop.finish` in one process.
-
-What polyweave should do: keep an open run on disk (under `.polyweave/`), addressed by
-its id, so `verdict.judge --run <id>` and `loop.finish --run <id>` work across calls;
-and let `verdict.judge` open and close a run itself when none is named, so a verdict
-given in a conversation lands in the ledger in one call. `loop.finish` with `accepted`
-and no verdict should be refused, or record the acceptance where `loop.pending` reads
-it.
-
-Done when one CLI call carries a person's accept into the ledger and `loop.pending`
-shows the asset judged.
-
 ### §PW338 A member nothing holds says so
 
 Met in starship (RK166). A sitting of plain screen captures was laid out with

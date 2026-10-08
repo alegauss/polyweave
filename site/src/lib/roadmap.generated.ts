@@ -39,7 +39,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 0 },
-  { block: "O", title: "A person sees and answers", open: 4 },
+  { block: "O", title: "A person sees and answers", open: 3 },
   { block: "P", title: "Music and sound a game can ship", open: 1 },
   { block: "Q", title: "Words held to the world", open: 1 },
   { block: "R", title: "Levels measured before a person plays them", open: 12 },
@@ -118,13 +118,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "K",
     symptom: "measure.take asks for contrast_min and refuses it for want of targets, yet takes no targets parameter",
     why: "The refusal names a door the operation does not have, so the agent reads the source to find the spec key and measure.contrast that do take them.",
-    deps: [],
-  },
-  {
-    id: "PW332",
-    block: "O",
-    symptom: "a verdict given through the CLI never reaches the ledger, since an open run cannot outlive the call that opened it",
-    why: "A person's accept given in a conversation must land in one call, and today it is lost or recorded as unjudged while every answer says it was kept.",
     deps: [],
   },
   {

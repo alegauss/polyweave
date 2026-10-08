@@ -57,6 +57,48 @@ def _where(root: str | Path) -> Path:
 ROOT = Param("the project whose ledger this is")
 
 
+def _open(run_id: str, root: str | Path) -> Path:
+    """Where an open run is kept between calls (§PW332)."""
+    return _where(root).parent / "open-runs" / f"{run_id}.json"
+
+
+def held(run: dict, root: str | Path) -> dict:
+    """The run as kept on disk where `run` names one, else `run` itself.
+
+    A run passed on the command line is a copy that dies with the call, so a verdict
+    appended to it was lost (§PW332). The kept one is the run; a caller may pass only
+    `{"id": ...}`.
+    """
+    if not isinstance(run, dict) or not run.get("id"):
+        return run
+    where = _open(str(run["id"]), root)
+    if not where.is_file():
+        return run
+    kept = json.loads(where.read_text(encoding="utf-8"))
+    # Neither copy is always the newer: a command line passes a stale one, and a
+    # caller in one process may have judged into its own dict. So both are kept: every
+    # verdict either holds, and the larger of each count.
+    seen = {(one.get("at"), one.get("why")) for one in kept.get("verdicts", ())}
+    for one in run.get("verdicts") or ():
+        if (one.get("at"), one.get("why")) not in seen:
+            kept["verdicts"].append(one)
+    for key in ("renders", "calls", "credits", "seconds", "person_minutes",
+                "cache_hits", "render_seconds"):
+        if isinstance(run.get(key), int | float):
+            kept[key] = max(kept.get(key) or 0, run[key])
+    # Into the caller's own dict, which callers in one process go on reading.
+    run.clear()
+    run.update(kept)
+    return run
+
+
+def _keep(run: dict, root: str | Path) -> None:
+    """Write an open run back where it is kept, if it is kept."""
+    where = _open(str(run["id"]), root)
+    if where.is_file():
+        write_atomic(where, json.dumps(run, indent=1, sort_keys=True) + "\n")
+
+
 @operation("loop.runs")
 def read(root: Annotated[str, ROOT] = ".") -> list[dict]:
     """Every run recorded, oldest first."""
@@ -169,7 +211,7 @@ def start(
                 "that has not been ported; a baseline written once the answer is "
                 "known is a justification",
             )
-    return {
+    run = {
         "id": uuid.uuid4().hex[:12],
         "asset": str(asset),
         "way": way,
@@ -187,9 +229,15 @@ def start(
         **({"change": str(change)} if change is not None else {}),
         **({"unmeasured": sorted(set(unmeasured))} if unmeasured else {}),
     }
+    # Kept on disk until it is finished, so a later call that names its id records
+    # into this run and not into a copy (§PW332).
+    kept = _open(run["id"], root)
+    kept.parent.mkdir(parents=True, exist_ok=True)
+    write_atomic(kept, json.dumps(run, indent=1, sort_keys=True) + "\n")
+    return run
 
 
-RUN = Param("the open run, as loop.start returned it")
+RUN = Param("the open run, as loop.start returned it, or just its id")
 
 
 @operation("loop.spent")
@@ -203,17 +251,20 @@ def spent(
     person_minutes: Annotated[
         float, Param("a person's own time spent", lo=0, unit="min")
     ] = 0,
+    root: Annotated[str, ROOT] = ".",
 ) -> dict:
     """Add to what this run has cost so far. Called as the work happens.
 
     `person_minutes` is a person's own time, timed as it happens: retuning constants by
     hand is what the old way costs after a change, and the machine's seconds miss it.
     """
+    run = held(run, root)
     run["renders"] += int(renders)
     run["calls"] += int(calls)
     run["credits"] += int(credits)
     run["seconds"] += float(seconds)
     run["person_minutes"] = run.get("person_minutes", 0.0) + float(person_minutes)
+    _keep(run, root)
     return run
 
 
@@ -259,6 +310,7 @@ def judged(
     why: Annotated[str, Param("the person's sentence")] = "",
     check: Annotated[dict, Param("what accept.check said of the result")] = None,
     named: Annotated[list, Param("the predicates the person blamed")] = (),
+    root: Annotated[str, ROOT] = ".",
 ) -> dict:
     """One result, as the tool called it and as a person called it.
 
@@ -300,7 +352,9 @@ def judged(
                 allowed=known,
             )
         verdict["named"] = sorted(set(named))
+    run = held(run, root)
     run["verdicts"].append(verdict)
+    _keep(run, root)
     return run
 
 
@@ -322,7 +376,20 @@ def finish(
         bool, Param("whether it was accepted; the last verdict where unset")
     ] = None,
 ) -> dict:
-    """Close the run and append it to the ledger, which is append-only."""
+    """Close the run and append it to the ledger, which is append-only.
+
+    `accepted` with no verdict in the run is kept as the person's verdict, so the
+    acceptance is where `loop.pending` reads it rather than a flag nothing reads
+    (§PW332).
+    """
+    run = held(run, root)
+    if not run["verdicts"] and accepted is not None:
+        run["verdicts"].append({
+            "tool_passed": None,
+            "person_accepted": bool(accepted),
+            "why": "given at finish, with no verdict recorded before it",
+            "at": time.time(),
+        })
     if not run["verdicts"] and accepted is None:
         raise PolyweaveError(
             "loop.unfinished",
@@ -347,6 +414,7 @@ def finish(
         where,
         json.dumps({"runs": [*read(root), done]}, indent=2, sort_keys=True) + "\n",
     )
+    _open(str(run["id"]), root).unlink(missing_ok=True)
     return done
 
 

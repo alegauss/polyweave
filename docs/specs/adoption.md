@@ -73,6 +73,18 @@ the same way, since no run is open in a worker. A comparison shows `cache_hits` 
 `renders`. A hit is not free and not a render, and a loop that is fast because it repeats
 itself should be visible as that. `spent` stays for what the plugin cannot see.
 
+**An open run outlives the call that opened it** (§PW332). A run passed on the command
+line is a copy that dies with the call, so `verdict.judge --run '<json>'` used to append
+to nothing and `loop.finish` then ledgered a run with no verdict. `loop.start` keeps the
+open run beside the ledger, `open-runs/<id>.json`, until `loop.finish` appends it and
+removes it. `loop.spent`, `loop.judged`, `loop.finish` and `verdict.judge` take the run
+as `loop.start` returned it or as `{"id": ...}` alone, and work on the kept one: every
+verdict either copy holds and the larger of each count, written back into the caller's
+dict too. `verdict.judge` with no run and `asset=` opens a run for that asset, records
+the verdict and finishes it, so a person's word given in a conversation lands in the
+ledger in one call. `loop.finish` with `accepted` and no verdict keeps that as the
+person's verdict, so `loop.pending` reads the asset as judged.
+
 ## The claim is about the second change, not the first bake
 
 Binds **PW114**. The stars' first comparison said the work was not reduced: 8.6 s the new

@@ -42,7 +42,6 @@
 
 ## Block O — A person sees and answers
 
-- 📋 **PW332** (deps: —) **a verdict given through the CLI never reaches the ledger, since an open run cannot outlive the call that opened it** — A person's accept given in a conversation must land in one call, and today it is lost or recorded as unjudged while every answer says it was kept. → §PW332
 - 📋 **PW338** (deps: —) **verdict.sitting marks a member with no spec as passed, as if something had measured it** — A screen nothing holds reads on the sheet and in the answer as held by a spec that agreed. → §PW338
 - 📋 **PW375** (deps: —) **a verdict a person gives in chat answers no sitting by name, so the agent rebuilds each family's members for judge** — Carrying one sentence over four sittings took a driver calling the page's internal write, which describe never lists. → §PW375
 - 📋 **PW383** (deps: PW379) **a transcription read from a reference video cites no frames, and a person's corrections to it are kept nowhere** — A wrong count is cheapest to fix on the sheet, and only if the person sees the frames beside each row and their answer is recorded. → §PW383

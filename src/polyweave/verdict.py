@@ -277,10 +277,16 @@ def judge(
     *,
     root: Annotated[str, Param("the project the paths resolve against")] = ".",
     run: Annotated[dict, Param("the open loop run the verdict is recorded in")] = None,
+    asset: Annotated[
+        str, Param("with no run: the asset a run is opened and closed for, here")
+    ] = None,
     named: Annotated[list, Param("the predicates the person blamed, for look")] = (),
     when: Annotated[str, Param("the date of the verdict; today where empty")] = "",
 ) -> dict:
     """What a person said of a family, carried into the ledger and the spec.
+
+    With no `run`, `asset` opens one for that asset, records the verdict and closes
+    it, so a verdict given in a conversation lands in the ledger in one call (§PW332).
 
     `choice` is one of `CHOICES` and `why` their sentence. Each member's verdict goes
     into `run` (an open `loop.start`) with its check, and `named` — the predicates the
@@ -344,6 +350,9 @@ def judge(
             "is the project's, in [tolerance]",
         )
     stamp = when or Date.today().isoformat()
+    opened = run is None and bool(asset)
+    if opened:
+        run = loop.start(str(asset), "after", root=str(here), who="verdict.judge")
     answers = []
     for member, _spec, spec_path, found in checked:
         mine = [n for n in named if n in {r["id"] for r in found["predicates"]}]
@@ -355,6 +364,7 @@ def judge(
                 why=f"{member['name']}: {why}",
                 check=found,
                 named=mine,
+                root=str(here),
             )
         rewritten: list[str] = []
         if choice == "number" and not found["passed"]:
@@ -418,15 +428,19 @@ def judge(
                 },
             }
         )
+    if opened:
+        loop.finish(run, root=str(here))
     return {
         "choice": choice,
         "why": why,
         "members": answers,
         # Said rather than left out: a verdict with no run open never reached the
         # ledger, and the caller should know that before assuming it did.
-        "ledger": "recorded in the open run"
+        "ledger": f"recorded in a run opened and closed for {asset}"
+        if opened
+        else "recorded in the open run"
         if run is not None
-        else "not recorded: no run was open; pass run= from loop.start",
+        else "not recorded: no run was open; pass run= from loop.start, or asset=",
     }
 
 

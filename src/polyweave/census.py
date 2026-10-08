@@ -117,6 +117,7 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.world:keep_voice": ("internal", "voice.choose's one write"),
     "polyweave.words:said_digest": ("internal", "what a spoken take records"),
     "polyweave.icons:read": ("internal", "icons.build's declaration, resolved"),
+    "polyweave.loop:held": ("internal", "the open run kept between calls"),
     "polyweave.icons:draw": ("internal", "one icon at one size"),
     "polyweave.icons:legibility": ("internal", "what icons.build holds a set to"),
     "polyweave.words:still_said": ("internal", "provenance.outdated, per row"),
