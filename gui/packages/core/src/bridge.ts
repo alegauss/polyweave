@@ -75,7 +75,10 @@ export interface Bridge {
   /** Keep a person's request to change an item, with `revision.ask` (§PW301). */
   revise(project: string, item: string, words: string): Promise<{ revision: string }>
   /** Open the session on a revision; one revision has one session, kept by its id. */
-  startSession(project: string, revision: string): Promise<{ agent: string; first: string }>
+  startSession(
+    project: string,
+    revision: string,
+  ): Promise<{ agent: string; first: string; waiting: string | null }>
   say(revision: string, text: string): Promise<void>
   answer(revision: string, requestId: string, allow: boolean): Promise<boolean>
   stop(revision: string): Promise<void>

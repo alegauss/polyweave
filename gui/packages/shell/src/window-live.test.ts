@@ -130,13 +130,18 @@ describe.skipIf(!existsSync(MAIN))('the window', () => {
   it('asks for a change and opens a session on it, beside the item', async () => {
     const fake = fakeClaude()
     try {
-      const drew = await opened(root, 'en', 'line:TITLE', false, { words: 'shorter', agent: fake.argv })
+      const drew = await opened(root, 'en', 'line:TITLE', false, { words: 'shorter, in capitals', agent: fake.argv })
       // The fake says its first message back: built from the revision and the brief.
       const turns = drew['turns'] as string[]
       expect(turns[0]).toContain('Item: line:TITLE')
-      expect(turns[0]).toContain('What they said: shorter')
+      expect(turns[0]).toContain('What they said: shorter, in capitals')
       // Its question is the window's to answer.
       expect(drew['asked']).toEqual(['Write'])
+      // What the session said is kept on the revision it works through.
+      const listed = spawnSync('python', ['-m', 'polyweave', 'revision.open', '--item', 'line:TITLE', '--root', join(root, 'starship'), '--json'])
+      const open = JSON.parse(listed.stdout.toString()) as { revisions: { words: string; turns: { by: string }[] }[] }
+      const mine = open.revisions.find((one) => one.words === 'shorter, in capitals')!
+      expect(mine.turns.map((one) => one.by)).toContain('session')
     } finally {
       fake.dispose()
     }

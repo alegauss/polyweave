@@ -84,6 +84,7 @@
     "send": "Enviar",
     "used": "usou {{tool}}",
     "done": "Turno encerrado: {{text}}",
-    "failed": "O turno falhou: {{text}}"
+    "failed": "O turno falhou: {{text}}",
+    "waiting": "Começa quando terminar a sessão da revisão {{revision}}: uma mudança por item de cada vez."
   }
 }

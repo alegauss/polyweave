@@ -45,7 +45,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "R", title: "Levels measured before a person plays them", open: 8 },
   { block: "S", title: "Playing the game, not only rendering it", open: 1 },
   { block: "T", title: "Adopting polyweave in a project", open: 2 },
-  { block: "U", title: "A window on everything a project governs", open: 7 },
+  { block: "U", title: "A window on everything a project governs", open: 6 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 32 },
 ];
 
@@ -303,25 +303,18 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW306",
-    block: "U",
-    symptom: "asking for a change to one item means leaving the window for a terminal and retelling the agent which item and what",
-    why: "Turns are not yet kept on the revision, and a second revision on an item does not wait while the first holds it.",
-    deps: [],
-  },
-  {
     id: "PW307",
     block: "U",
     symptom: "a session changing an item can report done with no check run, and nothing makes it end on the person's verdict",
     why: "A revision harness re-runs the item's own checks after each change, shows old beside new in the window, and ends only in a sitting the person answers.",
-    deps: ["PW306"],
+    deps: [],
   },
   {
     id: "PW308",
     block: "U",
     symptom: "a revision session can call a paid generator on its own, so a click on one picture spends credits nobody weighed",
     why: "A paid call in a revision session stops in the window with its price and what the ceiling leaves, and runs only on the person's yes, never on a saved allow.",
-    deps: ["PW306"],
+    deps: [],
   },
   {
     id: "PW309",

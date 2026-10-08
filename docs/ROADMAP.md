@@ -87,9 +87,8 @@
 
 ## Block U — A window on everything a project governs
 
-- ⏳ **PW306** (deps: PW301 ✅, PW304 ✅) **asking for a change to one item means leaving the window for a terminal and retelling the agent which item and what** — Turns are not yet kept on the revision, and a second revision on an item does not wait while the first holds it. → §PW306
-- 📋 **PW307** (deps: PW305 ✅, PW306 ⏳) **a session changing an item can report done with no check run, and nothing makes it end on the person's verdict** — A revision harness re-runs the item's own checks after each change, shows old beside new in the window, and ends only in a sitting the person answers. → §PW307
-- 📋 **PW308** (deps: PW306 ⏳) **a revision session can call a paid generator on its own, so a click on one picture spends credits nobody weighed** — A paid call in a revision session stops in the window with its price and what the ceiling leaves, and runs only on the person's yes, never on a saved allow. → §PW308
+- 📋 **PW307** (deps: PW305 ✅, PW306 ✅) **a session changing an item can report done with no check run, and nothing makes it end on the person's verdict** — A revision harness re-runs the item's own checks after each change, shows old beside new in the window, and ends only in a sitting the person answers. → §PW307
+- 📋 **PW308** (deps: PW306 ✅) **a revision session can call a paid generator on its own, so a click on one picture spends credits nobody weighed** — A paid call in a revision session stops in the window with its price and what the ceiling leaves, and runs only on the person's yes, never on a saved allow. → §PW308
 - 📋 **PW309** (deps: PW307) **a revision's change can rewrite items outside the one asked about, and the person learns of it only by diffing** — Before a revision's session writes outside its item and dependents, the window names the file and asks; on close it lists every file touched and each re-checked. → §PW309
 - 📋 **PW310** (deps: PW304 ✅) **the window would show a project as it was when opened, so an item a session or terminal changed looks untouched** — The window watches the project's governed paths and its answers and revisions files, and redraws only the rows and item whose digest changed. → §PW310
 - 📋 **PW311** (deps: PW307, PW308, PW309, PW310) **no revision has been asked, made and judged from the window on a real game, so its gaps are guesses** — Starship's owner opens the project in the window, asks for one picture and one sound to change, and judges both there; what got in the way is filed. → §PW311
@@ -208,13 +207,6 @@
   Cottony family, a person answers on the review page, the ledger holds that verdict
   through judge alone, and the agent's next candidate follows from verdict.answers with
   no chat message in between.
-
-## Done when — PW306
-
-- **Each turn kept on its revision, one session holding an item** Every turn of a
-  revision's session is appended to the revision's record, and a second revision's
-  session on the same item waits until the first one's ends; both are proven against the
-  fake claude.
 
 ## Non-goals
 

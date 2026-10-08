@@ -146,7 +146,11 @@ def _open(root: str) -> dict[str, dict]:
     asked: dict[str, dict] = {}
     for event in _events(root):
         if event.get("event") == "asked":
-            asked[event["revision"]] = event
+            asked[event["revision"]] = {**event, "turns": []}
+        elif event.get("event") == "turn" and event.get("revision") in asked:
+            asked[event["revision"]]["turns"].append(
+                {key: event[key] for key in ("by", "text", "at")}
+            )
         elif event.get("event") == "closed":
             asked.pop(event.get("revision"), None)
     return asked
@@ -179,6 +183,44 @@ def open_(
             one["brief"] = {"refused": refused.as_dict()}
         found.append(one)
     return {"revisions": found, "file": str(_file(root))}
+
+
+#: Who a turn of a revision's conversation is from.
+SPEAKERS = ("person", "session")
+
+
+@operation("revision.turn")
+def turn(
+    revision: Annotated[str, Param("the revision, by the id revision.ask gave it")],
+    text: Annotated[str, Param("what was said, whole")],
+    *,
+    by: Annotated[str, Param("who said it", choices=SPEAKERS)] = "person",
+    root: Annotated[str, ROOT] = ".",
+) -> dict:
+    """Keep one turn of the conversation a revision is worked through (§PW306).
+
+    The person refining what they asked, or the session answering, kept on the revision
+    itself, so the request and how it was talked through travel together and a later
+    session reads both. `revision.open` lists each revision's turns, oldest first.
+    """
+    still = _open(root)
+    if revision not in still:
+        raise PolyweaveError(
+            "review.not-open",
+            f"revision {revision!r} is not open, so it takes no more turns",
+            "keep a turn on one revision.open lists",
+            given=revision,
+            allowed=sorted(still),
+        )
+    if not text.strip():
+        raise PolyweaveError(
+            "review.no-words",
+            "a turn with no words says nothing",
+            "pass what was said",
+        )
+    event = {"event": "turn", "revision": revision, "by": by, "text": text.strip(),
+             "at": _now()}
+    return _append(event, root)
 
 
 @operation("revision.close")

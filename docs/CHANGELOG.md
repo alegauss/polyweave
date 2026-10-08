@@ -365,7 +365,7 @@
 - ✅ **PW303** **there is no desktop window that finds the projects on a machine using polyweave and opens one** — An Electron window finds projects under a named root, opens one on a held polyweave serve, names its engine and draws its inventory by kind in en or pt-BR (design recorded in `gui/README.md`).
 - ✅ **PW304** **a person sees one item of a project only by opening its file by hand, with no declaration, record or bar beside it** — The window shows an item beside its bar, chain and dependents, a picture with its gate lanes and a loop looped, and filters to open revisions (design recorded in `gui/README.md`).
 - ✅ **PW305** **the window and the review page would each show a sitting, so two surfaces answer the same verdict and drift** — The window hosts the project's own review page, its server held beside the project's, so verdict.judge stays the one write; an item links to its sitting (design recorded in `gui/README.md`).
-- ✅ **PW306 (the session beside the item)** **asking for a change to one item means leaving the window for a terminal and retelling the agent which item and what** — An item's ask keeps a revision and opens a session on the person's claude via the Agent SDK, from its revision and brief; it streams, asks, hears more.
+- ✅ **PW306** **asking for a change to one item means leaving the window for a terminal and retelling the agent which item and what** — An item's ask opens a session on the person's claude from its revision and brief; turns are kept on the revision, one session holding an item (design recorded in `gui/README.md`).
 
 ## Block V — Parts every game repeats, installed already proved
 

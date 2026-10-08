@@ -76,7 +76,8 @@ from polyweave.errors import PolyweaveError
 #: 97,728 with picture.vector (§PW315), a logo drawn whole and in layers.
 #: 98,420 with panel.build (§PW316), a menu panel built from a declaration.
 #: 99,402 with panel.capture and panel.build's shader (§PW316).
-DESCRIBE = 99_900
+#: 100,063 with revision.turn (§PW306), a conversation kept on its revision.
+DESCRIBE = 100_600
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -130,7 +131,8 @@ DESCRIBE = 99_900
 #: 109,006 with picture.vector and compose.no-vector, .no-layer (§PW315).
 #: 109,719 with panel.build and compose.bad-panel (§PW316).
 #: 110,721 with panel.capture and compose.unfilmed (§PW316).
-CAPABILITIES = 111_200
+#: 111,382 with revision.turn (§PW306).
+CAPABILITIES = 111_900
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

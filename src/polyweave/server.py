@@ -89,7 +89,8 @@ TOOL_BUDGET = 4500
 #: 87,100 at 86,617 for picture.vector (§PW315).
 #: 87,800 at 87,221 for panel.build (§PW316).
 #: 88,700 at 88,124 for panel.capture and panel.build's shader (§PW316).
-LIST_BUDGET = 88700
+#: 89,300 at 88,722 for revision.turn (§PW306).
+LIST_BUDGET = 89300
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

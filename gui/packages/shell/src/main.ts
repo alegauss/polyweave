@@ -6,12 +6,13 @@ import { writeFile } from 'node:fs/promises'
 
 import { app, BrowserWindow, ipcMain } from 'electron'
 
-import { CHANNELS, find, opening, page, type Kind, type Opened, type Revision, type Smoke } from '@pw/core'
+import { CHANNELS, find, opening, page, said, type Kind, type Opened, type Revision, type Smoke } from '@pw/core'
 
 import { agent } from './agent'
 import { disk } from './disk'
 import { shown } from './files'
 import { Held } from './held'
+import { Holding } from './holding'
 import { Reviews } from './reviews'
 import { start, type Session } from './sessions'
 import { SMOKE_VAR } from './smoke'
@@ -21,6 +22,24 @@ const held = new Held()
 const reviews = new Reviews()
 /** One session per revision, by the revision's id (§PW306). */
 const sessions = new Map<string, Session>()
+/** The project each revision's session works in, for keeping its turns. */
+const worked = new Map<string, string>()
+const holding = new Holding()
+
+/** Turns still being written, which quitting waits for so none is lost. */
+const writing = new Set<Promise<unknown>>()
+
+/** One turn kept on its revision (§PW306); a turn that cannot be kept is not fatal. */
+function kept(revision: string, text: string, by: 'person' | 'session'): void {
+  const project = worked.get(revision)
+  if (!project || !text.trim()) return
+  const write = held
+    .opened(project)
+    .then((open) => open.client.call('revision.turn', { revision, text, by, root: project }))
+    .catch(() => undefined)
+  writing.add(write)
+  void write.finally(() => writing.delete(write))
+}
 const smoke: Smoke | null = process.env[SMOKE_VAR]
   ? (JSON.parse(process.env[SMOKE_VAR]) as Smoke)
   : null
@@ -72,20 +91,27 @@ ipcMain.handle(CHANNELS.sessionStart, async (event, project: string, revision: s
   const runs = agent(process.env, app.isPackaged)
   if (!runs) throw new Error('there is no claude on this machine: install Claude Code and sign in')
   const first = opening(asked, asked.brief)
-  if (!sessions.has(revision)) {
+  let waiting: string | null = null
+  if (!sessions.has(revision) && !worked.has(revision)) {
     const window = event.sender
-    sessions.set(
-      revision,
-      start(runs, project, first, (line) => {
+    worked.set(revision, project)
+    // One session holds an item: a second revision on it starts once the first ends.
+    waiting = holding.take(asked.item, revision, () => {
+      const session = start(runs, project, first, (line) => {
         if (!window.isDestroyed()) window.send(CHANNELS.sessionLine, revision, line)
-      }),
-    )
+        const read = said(line)
+        if (read.kind === 'text') kept(revision, read.text, 'session')
+      })
+      sessions.set(revision, session)
+      return session.finished
+    })
   }
-  return { agent: runs.from, first }
+  return { agent: runs.from, first, waiting }
 })
-ipcMain.handle(CHANNELS.sessionSay, (_event, revision: string, text: string) =>
-  sessions.get(revision)?.say(text),
-)
+ipcMain.handle(CHANNELS.sessionSay, (_event, revision: string, text: string) => {
+  sessions.get(revision)?.say(text)
+  kept(revision, text, 'person')
+})
 ipcMain.handle(CHANNELS.sessionAnswer, (_event, revision: string, requestId: string, allow: boolean) =>
   sessions.get(revision)?.answer(requestId, allow) ?? false,
 )
@@ -100,6 +126,8 @@ ipcMain.handle(CHANNELS.rendered, async (event, report: Record<string, unknown>)
   if (smoke.shot && window) {
     await writeFile(smoke.shot, (await window.webContents.capturePage()).toPNG())
   }
+  // A turn still being written is kept before the run ends.
+  await Promise.all(writing)
   process.stdout.write(`rendered: ${JSON.stringify(report)}\n`)
   app.quit()
 })

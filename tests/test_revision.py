@@ -87,3 +87,19 @@ def test_a_span_must_be_a_stretch_of_time(tree):
     assert refused.value.code == "review.bad-span"
     asked = revision.ask("art/icon.png", "here", span=[1, 2.5], root=str(tree))
     assert asked["span"] == [1.0, 2.5]
+
+
+def test_each_turn_is_kept_on_its_revision_in_order(tree):
+    # §PW306: the request and how it was talked through travel together.
+    asked = revision.ask("art/icon.png", "a warmer rim", root=str(tree))["revision"]
+    revision.turn(asked, "keep the outline", root=str(tree))
+    revision.turn(asked, "Warmed the rim; outline kept.", by="session", root=str(tree))
+    turns = revision.open_(root=str(tree))["revisions"][0]["turns"]
+    assert [(t["by"], t["text"]) for t in turns] == [
+        ("person", "keep the outline"),
+        ("session", "Warmed the rim; outline kept."),
+    ]
+    revision.close(asked, withdrawn="done another way", root=str(tree))
+    with pytest.raises(PolyweaveError) as refused:
+        revision.turn(asked, "too late", root=str(tree))
+    assert refused.value.code == "review.not-open"

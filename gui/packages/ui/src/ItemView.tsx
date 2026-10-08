@@ -65,14 +65,16 @@ export function ItemView({
   const [failed, setFailed] = useState<string | null>(null)
   const seen = viewer(item)
   const [words, setWords] = useState(ask ?? '')
-  const [talking, setTalking] = useState<{ revision: string; first: string } | null>(null)
+  const [talking, setTalking] = useState<{ revision: string; first: string; waiting: string | null } | null>(
+    null,
+  )
 
   // Kept as a revision first, then a session opened on that revision (§PW306).
   const request = async (said: string) => {
     try {
       const { revision } = await bridge.revise(project, item.id, said)
-      const { first } = await bridge.startSession(project, revision)
-      setTalking({ revision, first })
+      const { first, waiting } = await bridge.startSession(project, revision)
+      setTalking({ revision, first, waiting })
     } catch (error) {
       setFailed(error instanceof Error ? error.message : String(error))
     }
@@ -214,7 +216,14 @@ export function ItemView({
       )}
 
       {talking ? (
-        <Conversation bridge={bridge} revision={talking.revision} first={talking.first} onResult={onTalked} />
+        <>
+          {talking.waiting && (
+            <p data-waiting className="text-sm text-muted-foreground">
+              {t('session.waiting', { revision: talking.waiting })}
+            </p>
+          )}
+          <Conversation bridge={bridge} revision={talking.revision} first={talking.first} onResult={onTalked} />
+        </>
       ) : (
         <section className="flex flex-col gap-2">
           <h3 className="font-medium">{t('session.ask')}</h3>

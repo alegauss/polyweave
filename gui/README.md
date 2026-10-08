@@ -87,7 +87,11 @@ and local settings, the person's command line before the SDK's flags. Its first 
 is built by `core`'s `opening()` from `revision.open` and `asset.brief`, never written
 freehand. The conversation shows beside the item, with every raw line one click away.
 A permission the session asks for is answered in the window, and the person can keep
-talking to the session or stop it. One revision has one session.
+talking to the session or stop it. What the person says and what the session answers are
+kept on the revision as turns (`revision.turn`), so a later session reads how the request
+was talked through. One revision has one session, and one session holds an item at a
+time: a second revision on the same item starts once the first one's session ends
+(`shell/src/holding.ts`), and the window says which one it waits on.
 
 ## The live test
 

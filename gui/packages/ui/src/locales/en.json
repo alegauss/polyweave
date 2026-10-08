@@ -84,6 +84,7 @@
     "send": "Send",
     "used": "used {{tool}}",
     "done": "Turn ended: {{text}}",
-    "failed": "The turn failed: {{text}}"
+    "failed": "The turn failed: {{text}}",
+    "waiting": "It starts once the session on revision {{revision}} ends: one change to an item at a time."
   }
 }

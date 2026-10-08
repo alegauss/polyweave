@@ -1037,32 +1037,6 @@ at the build.
 
 ## Block U — A window on everything a project governs
 
-### §PW306 A Claude Code session opened on one item
-
-The person looks at an item, marks where it is wrong if it is a picture (the PW174 mask)
-or a sound (a time range), and says what should change. The window writes that as a
-revision and opens a session on it.
-
-The mechanics are roadkeep's (RG273). The Agent SDK's `query()` runs the person's own
-`claude` binary, found on PATH and then at its install locations, and never the SDK's
-bundled one. The session uses the `claude_code` preset and the user, project and local
-setting sources, so the project's CLAUDE.md, the polyweave skill and its MCP server are
-the ones a terminal session would have. The session's first message is built from
-`revision.open` and `asset.brief`: the item, the digest the person saw, their words, the
-bounds, and what depends on the item. It is not a prompt the window wrote freehand.
-
-The window shows the session as a conversation beside the item. Every raw message stays
-readable, and a permission request is answered in the window (`canUseTool`). The person
-can keep talking to it to refine, explain or add technical detail, and each turn is kept
-on the revision.
-
-One session belongs to one revision. Two revisions on one item are two sessions, and the
-second waits while the first holds the item. That gives the isolation asked for: each
-improvement is made, seen and judged on its own.
-
-Landed (gui/README.md): the ask, the session, the conversation. Left: turns kept, a
-queue per item.
-
 ### §PW307 The harness that keeps a revision honest
 
 A session left alone does what a chat does: it changes a file and says it is better. The
