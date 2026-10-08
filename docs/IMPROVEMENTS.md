@@ -262,26 +262,6 @@ this is where that is recorded honestly: what still runs by hand, and why the ri
 instead of disappearing. An outcome worth having, stated, beats the same outcome
 unstated.
 
-### §PW336 Text that fits, read off a held screen
-
-Met in starship (RK166). The design asks that every screen, captured in pt-BR, be held
-with `accept.check_screen` so no text leaves its box or overlaps another. That operation
-holds an asset's spec to where the asset stands in a capture, and has no predicate for
-text. Nothing in `describe` reads a running screen's labels and says whether each fits.
-
-The worker drove each screen through `game.open`/`game.call`/`game.shot` and looked at
-the pictures. Three faults were found by eye: the options' sixteenth row sat on the
-panel's bevel, the title's help line read through the options' help line, and a crew
-card wrapped "MARA ·" / "ENFERMEIRA" with the dot left at a line's end. Each was fixed
-in layout, but only a person's eye found them, and the next string change can bring them
-back unseen.
-
-What polyweave should do: a `game.text_fit` (or a predicate on a held session) that
-walks every visible Label and Button in the tree and answers, per node, its text, its
-drawn size against its rect and its container's, how many lines it took against how many
-it was laid out for, and any other text whose rect it overlaps on screen. It runs per
-locale, so a project sweeps each screen in each language and a finding names the key.
-
 ### §PW372 A camera clip the game plays
 
 Met in starship (RK190): a cinema opening before the first phase, with four camera shots

@@ -298,13 +298,85 @@ func _command(asked: Dictionary) -> Dictionary:
 			return _set_property(asked)
 		"selector":
 			return _selector_of(asked)
+		"locale":
+			# The table's language on screen, two frames on so every label relaid out.
+			TranslationServer.set_locale(str(asked.get("locale", "")))
+			running = 2
+			pending = asked
+			return {"run": true}
+		"text_fit":
+			return _text_fit()
 		"close":
 			return {"quit": true}
 	return _refused(
 		"driver.bad-command",
-		"there is no command %s; the commands are query, input, step, wait, call, shot and close"
+		"there is no command %s; the commands are query, input, step, wait, call, shot, locale, text_fit and close"
 		% JSON.stringify(asked.get("cmd"))
 	)
+
+
+## Every visible Label and Button, and whether its text fits where it is drawn (§PW336):
+## wider than its box, more lines than it shows, out of its container, or over another.
+func _text_fit() -> Dictionary:
+	var texts := []
+	_texts(get_root(), texts)
+	var found := []
+	for node: Control in texts:
+		var box := _screen_rect(node)
+		var shown: String = node.tr(node.text) if node.auto_translate_mode != Node.AUTO_TRANSLATE_MODE_DISABLED else node.text
+		var font: Font = node.get_theme_font("font")
+		var font_size: int = node.get_theme_font_size("font_size")
+		var widest := 0.0
+		for line in shown.split("\n"):
+			widest = max(widest, font.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x)
+		var entry := {"path": str(node.get_path()), "class": node.get_class(), "key": node.text,
+			"text": shown, "box": [box.position.x, box.position.y, box.size.x, box.size.y],
+			"findings": []}
+		if node is Label:
+			var label := node as Label
+			var lines := label.get_line_count()
+			var visible_lines := label.get_visible_line_count()
+			entry["lines"] = lines
+			entry["visible_lines"] = visible_lines
+			if lines > visible_lines:
+				entry["findings"].append("shows %d of its %d lines" % [visible_lines, lines])
+			if label.autowrap_mode == TextServer.AUTOWRAP_OFF and widest > box.size.x + 0.5:
+				entry["findings"].append("its text is %d px wide in a %d px box" % [widest, box.size.x])
+		elif widest > box.size.x + 0.5:
+			entry["findings"].append("its text is %d px wide in a %d px box" % [widest, box.size.x])
+		var parent := node.get_parent()
+		if parent is Control and not (parent is Container and parent is ScrollContainer):
+			var outer := _screen_rect(parent as Control)
+			if outer.size.x > 0 and outer.size.y > 0 and not outer.grow(0.5).encloses(box):
+				entry["findings"].append("it leaves its container %s" % str(parent.get_path()))
+		entry["overlaps"] = []
+		found.append(entry)
+	for i in found.size():
+		for j in range(i + 1, found.size()):
+			var a: Control = texts[i]
+			var b: Control = texts[j]
+			if a.is_ancestor_of(b) or b.is_ancestor_of(a):
+				continue
+			if _screen_rect(a).grow(-0.5).intersects(_screen_rect(b).grow(-0.5)):
+				found[i]["overlaps"].append(found[j]["path"])
+				found[j]["overlaps"].append(found[i]["path"])
+	for entry in found:
+		for other in entry["overlaps"]:
+			entry["findings"].append("it lies over %s" % other)
+	return {"result": found}
+
+
+func _texts(node: Node, out: Array) -> void:
+	if (node is Label or node is Button) and (node as CanvasItem).is_visible_in_tree() \
+			and str(node.text) != "":
+		out.append(node)
+	for child in node.get_children():
+		_texts(child, out)
+
+
+func _screen_rect(node: Control) -> Rect2:
+	var placed := node.get_global_transform_with_canvas()
+	return Rect2(placed.origin, node.size * placed.get_scale())
 
 
 func _refused(code: String, message: String) -> Dictionary:

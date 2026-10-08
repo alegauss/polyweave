@@ -383,6 +383,36 @@ def queried(
     return send(session, "query", root=root, **fields)
 
 
+@operation("game.text_fit")
+def text_fit(
+    session: Annotated[str, _SESSION],
+    *,
+    locale: Annotated[
+        str, Param("a locale to switch the game to first, such as pt_BR")
+    ] = "",
+    root: Annotated[str, _ROOT] = ".",
+) -> dict:
+    """Every visible Label and Button, and whether its text fits on screen (§PW336).
+
+    Per node: its key and the text shown, its box, the lines it took against those it
+    shows, and `findings`: text wider than its box, lines it cannot show, a box out of
+    its container, and text it lies over. `locale` switches the game's language first,
+    so a project sweeps each screen in each language and a finding names the key.
+    """
+    if locale:
+        send(session, "locale", root=root, locale=locale)
+    nodes = send(session, "text_fit", root=root)["result"]
+    unfit = [one for one in nodes if one.get("findings")]
+    return {
+        "locale": locale or None,
+        "nodes": nodes,
+        "unfit": [{"path": one["path"], "key": one["key"], "findings": one["findings"]}
+                  for one in unfit],
+        "passed": not unfit,
+        "says": f"{len(nodes)} text node(s), {len(unfit)} that do not fit",
+    }
+
+
 @operation("game.input")
 def inputted(
     session: Annotated[str, _SESSION],

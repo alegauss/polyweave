@@ -164,6 +164,16 @@ between connections.
   the game exposes for setup, such as starting a level, rather than winning the ones
   before it; where a game has none, `driver.no-method` says so, and adding one is the
   game's change.
+- `game.text_fit` reads the held screen for text that does not fit (§PW336): every
+  visible Label and Button with text, its key (the `text` property) and the text shown,
+  its box on screen, a Label's lines against those it shows, and `findings`: text wider
+  than its box (a label that clips or ellipsizes), lines it cannot show, a box leaving
+  its parent Control (an unwrapped label grows to its text, so a line too long for its
+  menu shows here), and text it lies over, a node's own children aside. `locale`
+  switches the game's TranslationServer first and lets two frames pass, so a project
+  sweeps each screen in each language and a finding names the key; the driver's
+  commands are `locale` and `text_fit`. `unfit` lists the nodes with findings, and
+  `passed` is false while any is.
 - `game.close` ends the game and says whether it ended.
 
 Every answer carries `frame` and `errors`: the lines the engine printed since the last
