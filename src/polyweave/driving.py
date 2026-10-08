@@ -138,17 +138,31 @@ def opened(
     display: Annotated[
         bool, Param("draw real pixels, through the offscreen route, so game.shot works")
     ] = False,
+    resolution: Annotated[
+        list, Param("[width, height] of the window; [capture]'s where unset")
+    ] = None,
+    locale: Annotated[str, Param("the game's language; [capture]'s if unset")] = None,
 ) -> dict:
     """Launch the game held at its first frame, and answer the session to drive it with.
 
     The project need install nothing: where it has no polyweave_driver addon, the
     driver polyweave carries is run from outside it (§PW216). The game runs until
-    game.close, or `[driving] idle` seconds with no call.
+    game.close, or `[driving] idle` seconds with no call. It runs in the environment
+    `[capture]` declares, its resolution and locale, as capture.run's pictures are,
+    unless the call names its own (§PW339).
     """
+    from .capture import _size_of
+
     settings = load(root)
     here = settings.root
     script, _ = _driver_for(here)
-    args =["--path", str(here), "--fixed-fps", str(settings.get("engine.fixed_fps"))]
+    wanted = list(resolution) if resolution else settings.get("capture.resolution")
+    size = _size_of("x".join(str(int(v)) for v in wanted or ()))
+    language = settings.get("capture.locale") if locale is None else locale
+    args = ["--path", str(here), "--fixed-fps", str(settings.get("engine.fixed_fps"))]
+    if size:
+        # On the engine's command line, which beats the project's window override.
+        args += ["--resolution", size]
     through: tuple[str, ...] = ()
     after = [f"--idle={int(settings.get('driving.idle'))}"]
     if display:
@@ -163,6 +177,8 @@ def opened(
         after.append(f"--seed={int(seed)}")
     if scene:
         after.append(f"--scene={scene}")
+    if language:
+        after.append(f"--locale={language}")
     folder = _folder(here)
     folder.mkdir(parents=True, exist_ok=True)
     session = "g" + secrets.token_hex(4)
@@ -209,6 +225,7 @@ def opened(
         "log": str(log),
         "read": found.end(),
         "display": bool(display),
+        "environment": {"resolution": size or None, "locale": language or None},
         "seed": int(seed or 0),
         "scene": scene,
         # Every command that answered, in order, for game.keep (§PW214).
@@ -223,6 +240,7 @@ def opened(
         "frame": first["frame"],
         "pid": process.pid,
         "log": str(log),
+        "environment": record["environment"],
     }
 
 
@@ -534,13 +552,31 @@ def shot(
 
     A picture costs many tokens and a query few, so the agent chooses to read it.
     Whether it looks right stays a person's verdict. Needs a session opened with
-    display, since a headless run draws nothing.
+    display, since a headless run draws nothing. The answer says the environment it
+    was taken in, the size and locale, beside the one the session asked, and
+    `differs` names any that are not (§PW339).
     """
     where = Path(out)
     if not where.is_absolute():
         where = load(root).root / where
     where.parent.mkdir(parents=True, exist_ok=True)
-    return send(session, "shot", root=root, out=str(where))
+    answer = send(session, "shot", root=root, out=str(where))
+    took = answer.get("result") or {}
+    asked = _session(session, root).get("environment") or {}
+    size = took.get("size")
+    environment = {
+        "resolution": f"{size[0]}x{size[1]}" if size else None,
+        "locale": took.get("locale"),
+    }
+    differs = [
+        f"{key} is {environment[key]}, and the session asked {asked[key]}"
+        for key in ("resolution", "locale")
+        if asked.get(key) and environment[key] and not (
+            environment[key] == asked[key]
+            or (key == "locale" and str(environment[key]).startswith(str(asked[key])))
+        )
+    ]
+    return {**answer, "environment": environment, "asked": asked, "differs": differs}
 
 
 #: The commands a batch may send: the session's own, each journalled as its tool's is.

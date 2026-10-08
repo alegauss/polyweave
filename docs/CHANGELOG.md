@@ -354,6 +354,7 @@
 - ✅ **PW276** **a flow kept before selectors still clicks at generated paths, and re-keeping it means driving every step again** — game.rekey puts selectors in an older flow by sending it through a held session; Cottony's two flows were re-keyed and replay to the same frames.
 - ✅ **PW277** **a selector cannot pick out an unnamed node by its place under a named one, so buttons inside a screen stay fragile** — A selector may name the ancestor it looks under and the node's order there, so re-keying Cottony left no generated path in either flow.
 - ✅ **PW278** **a kept expectation on a dictionary or array of numbers fails every replay, since 1 is compared to 1.0 as text** — The driver compares numbers as numbers inside a Dictionary or Array, so an expectation on a tally replays as passed and a wrong one still fails.
+- ✅ **PW339** **game.open ignores the resolution and locale [capture] declares, and game.shot does not say what it took** — game.open runs in [capture]'s resolution and locale unless the call names its own, and game.shot answers the size and locale it took, naming a gap (design recorded in `docs/specs/driving.md`).
 
 ## Block T — Adopting polyweave in a project
 

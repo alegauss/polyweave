@@ -89,7 +89,8 @@ from polyweave.errors import PolyweaveError
 #: 110,664 with measure.pressure (§PW330), a wave timeline's threat per second.
 #: 111,385 with icons.build (§PW331), a pad's button prompts as a declared set.
 #: 112,103 with words.glyphs (§PW335), the characters a font lacks.
-DESCRIBE = 112_700
+#: 112,930 with game.text_fit and game.open's environment (§PW336, §PW339).
+DESCRIBE = 113_600
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -155,7 +156,8 @@ DESCRIBE = 112_700
 #: 122,152 with measure.pressure (§PW330).
 #: 122,894 with icons.build and compose.bad-icons (§PW331).
 #: 123,630 with words.glyphs and words.no-fonts (§PW335).
-CAPABILITIES = 124_300
+#: 124,457 with game.text_fit and game.open's environment (§PW336, §PW339).
+CAPABILITIES = 125_100
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

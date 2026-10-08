@@ -63,8 +63,6 @@
 
 ## Block S — Playing the game, not only rendering it
 
-- 📋 **PW339** (deps: —) **game.open ignores the resolution and locale [capture] declares, and game.shot does not say what it took** — A held screen is pictured at the window size and the machine locale with nothing in the answer to show it. → §PW339
-
 ## Block T — Adopting polyweave in a project
 
 - 📋 **PW374** (deps: —) **vfx.build writes each scene beside its declaration, so effects declared in an unshipped folder load only in the editor** — A project whose sources the export leaves out ships a game that cannot load its effects, and every check passes. → §PW374

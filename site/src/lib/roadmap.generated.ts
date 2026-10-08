@@ -43,7 +43,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "P", title: "Music and sound a game can ship", open: 0 },
   { block: "Q", title: "Words held to the world", open: 0 },
   { block: "R", title: "Levels measured before a person plays them", open: 12 },
-  { block: "S", title: "Playing the game, not only rendering it", open: 1 },
+  { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 2 },
   { block: "U", title: "A window on everything a project governs", open: 2 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 32 },
@@ -195,13 +195,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "R",
     symptom: "worlds offered on one tier of a route cannot be held level in whole threat and in what they give to save",
     why: "A score table shared by routes is only fair while every fork's worlds are worth the same, and nothing measures one world against another.",
-    deps: [],
-  },
-  {
-    id: "PW339",
-    block: "S",
-    symptom: "game.open ignores the resolution and locale [capture] declares, and game.shot does not say what it took",
-    why: "A held screen is pictured at the window size and the machine locale with nothing in the answer to show it.",
     deps: [],
   },
   {

@@ -727,23 +727,6 @@ rest of the PW330 stand-in.
 
 ## Block S — Playing the game, not only rendering it
 
-### §PW339 A held game in the declared environment
-
-Met in starship (RK166). The project's `[capture]` declares `resolution = [1920, 1080]`
-and `locale = "en"`. Screens were driven with `game.open` (display true), `game.call`
-and `game.shot`, and every shot came back `"size": [1280, 720]`: the window override in
-project.godot, not the declared resolution. The locale was the machine's (pt_BR), not
-`[capture]`'s either. Nothing in the answers said the environment differed from the one
-the project declares, so a picture for a fit check was at the wrong size without notice.
-
-`capture.run` states and checks that environment, but it runs a script to its end and
-cannot hold a game between calls.
-
-What polyweave should do: `game.open` takes `[capture]` as its default environment
-(resolution and locale, overridable per call), applies it the way `capture.run` does,
-and `game.shot` answers the environment it was taken in beside its size, so a shot at
-the wrong one is visible in the answer.
-
 ## Block T — Adopting polyweave in a project
 
 ### §PW374 Built effects land where the game ships

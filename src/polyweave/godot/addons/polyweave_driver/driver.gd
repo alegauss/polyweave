@@ -48,6 +48,9 @@ func _initialize() -> void:
 			seed(int(arg.get_slice("=", 1)))
 		elif arg.begins_with("--scene="):
 			scene_path = arg.get_slice("=", 1)
+		elif arg.begins_with("--locale="):
+			# The language the project declares for its pictures (§PW339).
+			TranslationServer.set_locale(arg.get_slice("=", 1))
 		elif arg.begins_with("--idle="):
 			idle = int(arg.get_slice("=", 1))
 		elif arg.begins_with("--flow="):
@@ -705,7 +708,8 @@ func _shot(asked: Dictionary) -> Dictionary:
 	if out.begins_with("res://") or out.begins_with("user://"):
 		out = ProjectSettings.globalize_path(out)
 	image.save_png(out)
-	return {"result": {"out": out, "size": [image.get_width(), image.get_height()]}}
+	return {"result": {"out": out, "size": [image.get_width(), image.get_height()],
+		"locale": TranslationServer.get_locale()}}
 
 
 func _named(asked: Dictionary) -> String:

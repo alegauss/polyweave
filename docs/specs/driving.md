@@ -150,7 +150,14 @@ between connections.
 
 - `game.open` launches the project headless (or through the offscreen route with
   `display`, so `game.shot` has pixels), waits for the driver's line, and answers the
-  `session`.
+  `session`. It runs in the environment `[capture]` declares, as `capture.run`'s pictures
+  are (§PW339): its `resolution` on the engine's command line as `--resolution`, which
+  beats the project's window override, and its `locale` set on the TranslationServer by
+  the driver before the first frame; `resolution` and `locale` on the call override
+  them, and the answer's `environment` says what was asked. `game.shot` answers the
+  `environment` it was taken in, the picture's size and the game's locale, beside the
+  `asked` one, and `differs` names each that is not what was asked, so a picture at the
+  wrong size shows in the answer.
 - `game.query`, `game.input`, `game.step`, `game.wait`, `game.call` and `game.shot` each
   forward one command. `game.query` takes one of `path`, `group` and `of_class`;
   `game.wait` takes `prop` and `equals` (a JSON value), a `signal`, or a `node`.
