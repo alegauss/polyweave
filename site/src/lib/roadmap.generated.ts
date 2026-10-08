@@ -45,7 +45,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "R", title: "Levels measured before a person plays them", open: 8 },
   { block: "S", title: "Playing the game, not only rendering it", open: 1 },
   { block: "T", title: "Adopting polyweave in a project", open: 2 },
-  { block: "U", title: "A window on everything a project governs", open: 3 },
+  { block: "U", title: "A window on everything a project governs", open: 2 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 32 },
 ];
 
@@ -300,13 +300,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "T",
     symptom: "vfx.build writes each scene beside its declaration, so effects declared in an unshipped folder load only in the editor",
     why: "A project whose sources the export leaves out ships a game that cannot load its effects, and every check passes.",
-    deps: [],
-  },
-  {
-    id: "PW311",
-    block: "U",
-    symptom: "no revision has been asked, made and judged from the window on a real game, so its gaps are guesses",
-    why: "Spinhold's owner opens the project in the window, asks for a picture and a sound to change, and judges both there; what got in the way is filed.",
     deps: [],
   },
   {
@@ -585,4 +578,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW36", "PW53", "PW77", "PW78", "PW79", "PW80", "PW81", "PW82", "PW180", "PW192", "PW201"];
+export const generatedPaused: string[] = ["PW36", "PW53", "PW77", "PW78", "PW79", "PW80", "PW81", "PW82", "PW180", "PW192", "PW201", "PW311"];

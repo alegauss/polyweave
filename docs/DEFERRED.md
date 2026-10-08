@@ -57,5 +57,7 @@
 
 ## Block U — A window on everything a project governs
 
+- ⏸ **PW311** (deps: PW307 ✅, PW308 ✅, PW309 ✅, PW310 ✅) **no revision has been asked, made and judged from the window on a real game, so its gaps are guesses** — set aside (It waits on Spinhold's owner.): The owner asks the window to change a picture and a sound, and judges both there. → §PW311
+
 ## Block V — Parts every game repeats, installed already proved
 
