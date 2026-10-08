@@ -36,6 +36,7 @@
     "details": "Detalhes técnicos",
     "passes": "passa",
     "fails": "falha",
+    "unheld": "nada o verifica: nenhuma spec o mediu",
     "measured": "Medido",
     "older": "Sessões anteriores ({n})",
     "advanced": "Avançado: portões, giros, cânones e todos os itens",
@@ -118,6 +119,22 @@
           "label": "Ajustar o limite",
           "means": "O visual está certo, mas um limite que o reprovou está errado.",
           "then": "Esse limite passa a ser o valor medido, registrado como decisão sua."
+        }
+      }
+    },
+    "unheld": {
+      "title": "Imagens para aprovar",
+      "about": "Cada cartão é uma família de imagens: a nova ao lado da antiga, quando existe, no tamanho em que o jogo a desenha. Nenhuma especificação mede estas imagens: nada as verificou, então só o seu olhar decide.",
+      "choices": {
+        "accept": {
+          "label": "Aceitar",
+          "means": "O visual está certo.",
+          "then": "As imagens são mantidas e a sua decisão fica registrada."
+        },
+        "look": {
+          "label": "Refazer",
+          "means": "O visual está errado.",
+          "then": "Diga o que está errado; as imagens voltam para ser feitas de novo."
         }
       }
     },

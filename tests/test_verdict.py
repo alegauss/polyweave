@@ -59,7 +59,11 @@ def test_a_bare_path_is_read_as_the_picture_it_names(tmp_path):
     """§PW261: a family of paths is the commonest first guess at a member."""
     member(tmp_path, "citadel", DARK, old=False)
     found = verdict.sheet(["renders/citadel.png"], out="review/c.png", root=tmp_path)
-    assert found["members"] == [{"name": "citadel", "passed": True, "failed": []}]
+    # Nothing measured it, so it neither passes nor fails: it is unheld (§PW338).
+    assert found["members"] == [
+        {"name": "citadel", "passed": None, "checked": False, "failed": []}
+    ]
+    assert found["choices"] == verdict.UNHELD_CHOICES
 
 
 @pytest.mark.parametrize(
@@ -164,3 +168,30 @@ def test_the_choices_fit_on_a_sheet_of_small_members(tmp_path):
     pen = ImageDraw.Draw(Image.new("RGBA", (1, 1)))
     widest = max(pen.textlength(f"{w}: {m}") for w, m in verdict.CHOICES.items())
     assert width >= widest
+
+
+def test_a_member_nothing_holds_is_unheld_not_passed(tmp_path):
+    """§PW338: a screen with no spec read as held by a spec that agreed."""
+    member(tmp_path, "citadel", DARK, old=False)
+    plain = {"name": "citadel", "new": "renders/citadel.png"}
+    found = verdict.sheet([plain], out="review/c.png", root=tmp_path)
+    [said] = found["members"]
+    assert said["passed"] is None and said["checked"] is False
+    assert "the spec agrees" not in found["choices"]["accept"]
+    assert "number" not in found["choices"]
+
+
+def test_a_family_with_one_held_member_keeps_the_spec_choices(tmp_path):
+    held = member(tmp_path, "star_gold", DARK)
+    member(tmp_path, "citadel", DARK, old=False)
+    plain = {"name": "citadel", "new": "renders/citadel.png"}
+    found = verdict.sheet([held, plain], out="review/c.png", root=tmp_path)
+    assert [one["checked"] for one in found["members"]] == [True, False]
+    assert set(found["choices"]) == {"accept", "look", "number"}
+
+
+def test_a_gates_own_refusal_still_fails_a_member_with_no_spec(tmp_path):
+    member(tmp_path, "citadel", DARK, old=False)
+    refused = {"name": "citadel", "new": "renders/citadel.png", "passed": False}
+    [said] = verdict.sheet([refused], out="review/c.png", root=tmp_path)["members"]
+    assert said["passed"] is False and said["checked"] is True

@@ -290,6 +290,7 @@
 - ✅ **PW295** **a sitting's summary draws its choices as boxes that look pressable, and nothing parts one sitting from the next** — A sitting's summary lists its choices as a plain legend under How to decide, and each sitting is its own section, parted by a rule, with its count of items and answers.
 - ✅ **PW294** **the review server keeps the polyweave it started with, so a spec using a measure added since is refused on Accept** — A review server started before polyweave changed refuses an answer with review.stale-server naming the restart, and the page shows a banner saying so.
 - ✅ **PW332** **a verdict given through the CLI never reaches the ledger, since an open run cannot outlive the call that opened it** — An open run is kept on disk by its id until it finishes, so a CLI verdict lands; verdict.judge asset= opens and closes a run in one call (design recorded in `docs/specs/adoption.md`).
+- ✅ **PW338** **verdict.sitting marks a member with no spec as passed, as if something had measured it** — A sitting member no spec holds answers passed null and checked false, sheet and page say nothing holds it, and its family gets no spec wording (design recorded in `docs/specs/acceptance-spec.md`).
 
 ## Block P — Music and sound a game can ship
 

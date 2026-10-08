@@ -299,7 +299,9 @@ function card(sitting, name, laid, answers, assets) {
   const facts = element("details", {}, element("summary", {}, t("details")));
   for (const member of laid.said || []) {
     const line = element("p", { class: "facts" }, element("strong", {}, member.name + ": "),
-      element("span", { class: member.passed ? "passes" : "fails" }, member.passed ? t("passes") : t("fails")));
+      member.passed === null || member.passed === undefined
+        ? element("span", { class: "unheld" }, t("unheld"))
+        : element("span", { class: member.passed ? "passes" : "fails" }, member.passed ? t("passes") : t("fails")));
     for (const failed of member.failed || []) line.append(element("br"), failed);
     facts.append(line);
   }

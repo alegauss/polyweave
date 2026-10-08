@@ -36,6 +36,7 @@
     "details": "Technical details",
     "passes": "passes",
     "fails": "fails",
+    "unheld": "nothing holds it: no spec measured it",
     "measured": "Measured",
     "older": "Earlier sittings ({n})",
     "advanced": "Advanced: gates, turntables, canons and every asset",
@@ -118,6 +119,22 @@
           "label": "Move the bound",
           "means": "The look is right, and a bound that failed it is wrong.",
           "then": "That bound moves to the measured value, recorded as yours."
+        }
+      }
+    },
+    "unheld": {
+      "title": "Pictures to approve",
+      "about": "Each card is a family of pictures, the new beside the old where there is one, at the size the game draws it. No specification measures these: nothing has checked them, so your eye is the only judge.",
+      "choices": {
+        "accept": {
+          "label": "Accept",
+          "means": "It looks right.",
+          "then": "The pictures are kept and your decision is recorded."
+        },
+        "look": {
+          "label": "Redo",
+          "means": "It does not look right.",
+          "then": "Say what is wrong; the pictures go back to be made again."
         }
       }
     },

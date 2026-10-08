@@ -34,15 +34,25 @@ CHOICES = {
     "what was measured, as the person's",
 }
 
+#: The choices for a family no spec holds (§PW338): nothing agreed or failed it, so
+#: nothing speaks of a spec, and no bound is there to move.
+UNHELD_CHOICES = {
+    "accept": "the look is right",
+    "look": "the look is wrong: it goes back to be made again",
+}
+
 
 def _checked(member: dict, root: Path) -> tuple[accept.Spec | None, Path | None, dict]:
     if not member.get("spec"):
         # A picture the gate refused has no acceptance spec: what the tool said of it
         # is the gate's verdict, which the member carries (§PW175).
         # A picture with no spec was measured against nothing, so nothing failed it:
-        # only a gate's own refusal, which the member says, fails it (§PW291).
-        said = {"passed": bool(member.get("passed", True)), "predicates": []}
-        return None, None, said
+        # only a gate's own refusal, which the member says, fails it (§PW291). And
+        # nothing passed it either: with no gate's word it is unheld, not passed
+        # (§PW338).
+        if "passed" in member:
+            return None, None, {"passed": bool(member["passed"]), "predicates": []}
+        return None, None, {"passed": None, "checked": False, "predicates": []}
     spec_path = Path(member["spec"])
     spec_path = spec_path if spec_path.is_absolute() else root / spec_path
     spec = accept.read(spec_path)
@@ -84,7 +94,7 @@ def members_of(members: Any) -> list[dict]:
     for index, member in enumerate(members):
         if isinstance(member, str) and member.strip():
             # Nothing checked it, so nothing failed it: the ear or the eye alone judges.
-            found.append({"name": Path(member).stem, "new": member, "passed": True})
+            found.append({"name": Path(member).stem, "new": member})
             continue
         if not isinstance(member, dict):
             said = f"is a {type(member).__name__}"
@@ -137,19 +147,24 @@ def sheet(
             size = tuple(int(v) for v in member["shown"])
             tiles = [t.resize(size, Image.Resampling.LANCZOS) for t in tiles]
         failed = [_said(r) for r in found["predicates"] if not r["passed"]]
-        lines = [f"{member['name']}: " + ("passes" if found["passed"] else "fails")]
-        lines += [f"  {one}" for one in failed]
+        held = found["passed"] is not None
+        state = ("passes" if found["passed"] else "fails") if held else (
+            "nothing holds it: no spec measured it")
+        lines = [f"{member['name']}: {state}", *[f"  {one}" for one in failed]]
         rows.append((tiles, lines))
         said.append(
-            {"name": member["name"], "passed": found["passed"], "failed": failed}
+            {"name": member["name"], "passed": found["passed"], "checked": held,
+             "failed": failed}
         )
+    # A family nothing holds is offered no choice that speaks of a spec (§PW338).
+    offered = CHOICES if any(one["checked"] for one in said) else UNHELD_CHOICES
 
     gap, line = 8, 14
     # Every line is measured with the font that draws it, the choices under the rows
     # included: a choice cut off at the sheet's edge is one a person is never offered
     # (§PW182), and a guess at a character's width is what cut them off.
     measuring = ImageDraw.Draw(Image.new("RGBA", (1, 1)))
-    choices = [f"{word}: {meaning}" for word, meaning in CHOICES.items()]
+    choices = [f"{word}: {meaning}" for word, meaning in offered.items()]
     texts = [text for _, lines in rows for text in lines] + choices
     width = max(
         max(sum(t.width + gap for t in tiles) for tiles, _ in rows),
@@ -170,13 +185,13 @@ def sheet(
             draw.text((gap, y), text, fill=(235, 235, 235, 255))
             y += line
         y += gap
-    for word, meaning in CHOICES.items():
+    for word, meaning in offered.items():
         draw.text((gap, y), f"{word}: {meaning}", fill=(255, 210, 90, 255))
         y += line
     where = Path(out) if Path(out).is_absolute() else here / out
     where.parent.mkdir(parents=True, exist_ok=True)
     canvas.save(where)
-    return {"sheet": str(where), "members": said, "choices": dict(CHOICES)}
+    return {"sheet": str(where), "members": said, "choices": dict(offered)}
 
 
 @operation("verdict.sitting")
@@ -208,7 +223,11 @@ def sitting(
         name: sheet(members, out=folder / f"{name}.png", root=root)
         for name, members in families.items()
     }
-    _manifest(folder, families, sheets, root, about=about)
+    # A sitting nothing holds is put to the person in words that claim no spec
+    # (§PW338).
+    held = any(one["checked"] for laid in sheets.values() for one in laid["members"])
+    _manifest(folder, families, sheets, root, about=about,
+              kind="look" if held else "unheld")
     return {
         "sheets": sheets,
         "says": f"{len(sheets)} famil{'y' if len(sheets) == 1 else 'ies'} to look at "

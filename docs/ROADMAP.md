@@ -39,7 +39,6 @@
 
 ## Block O — A person sees and answers
 
-- 📋 **PW338** (deps: —) **verdict.sitting marks a member with no spec as passed, as if something had measured it** — A screen nothing holds reads on the sheet and in the answer as held by a spec that agreed. → §PW338
 - 📋 **PW375** (deps: —) **a verdict a person gives in chat answers no sitting by name, so the agent rebuilds each family's members for judge** — Carrying one sentence over four sittings took a driver calling the page's internal write, which describe never lists. → §PW375
 - 📋 **PW383** (deps: PW379) **a transcription read from a reference video cites no frames, and a person's corrections to it are kept nowhere** — A wrong count is cheapest to fix on the sheet, and only if the person sees the frames beside each row and their answer is recorded. → §PW383
 

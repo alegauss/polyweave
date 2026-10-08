@@ -371,22 +371,6 @@ since a reference the service ignores is dropped without an error.
 
 ## Block O — A person sees and answers
 
-### §PW338 A member nothing holds says so
-
-Met in starship (RK166). A sitting of plain screen captures was laid out with
-`verdict.sitting`, its members given a `name` and `new` and no `spec`, since no spec
-holds a screen's text yet. The answer marked every member `"passed": true, "failed": []`
-and offered the choice "the look is right and the spec agrees with it".
-
-No spec was checked, so "passed" claims a measurement that never happened. A person
-reading the sheet, or an agent reading the answer, takes the screens to be held by
-something.
-
-What polyweave should do: a member without a spec answers `"passed": null` (or
-`"checked": false`) with a line saying nothing holds it, the sheet draws it as unheld
-rather than green, and the choices drop the spec's wording ("the look is right") for
-such a member.
-
 ### §PW375 A sitting answered by name, from chat
 
 Met in spinhold on 2026-10-07. Four sittings were open on the review page

@@ -136,6 +136,16 @@ check. With no run open, the answer says it was not recorded. The codes are
 said of a family that all passes. A sheet and a command, never an editor, and the verdict
 stays the person's.
 
+**A member nothing holds says so** (§PW338). A member with no `spec`, a bare path among
+them, was measured against nothing, so it neither passes nor fails: it answers
+`"passed": null, "checked": false`, the sheet says "nothing holds it: no spec measured
+it", and the page draws it as unheld rather than green. Only a gate's own refusal, which
+the member carries as `passed`, fails one without a spec. A family with no held member
+is offered `UNHELD_CHOICES`, accept ("the look is right") and look, with nothing said of
+a spec and no `number`, and a sitting of such families is laid out as the kind `unheld`,
+whose page words, in each catalog, say that no specification measures these pictures
+and only the person's eye decides.
+
 **The sheet is put in front of the person on one local page** (§PW172). `verdict.sitting`
 writes `<out>/sitting.json` beside its sheets, with each family's members, sheet and failed
 predicates, and lists it in `[paths] work`/`sittings.json`. `python -m polyweave review`

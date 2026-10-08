@@ -39,7 +39,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 0 },
-  { block: "O", title: "A person sees and answers", open: 3 },
+  { block: "O", title: "A person sees and answers", open: 2 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
   { block: "Q", title: "Words held to the world", open: 0 },
   { block: "R", title: "Levels measured before a person plays them", open: 12 },
@@ -97,13 +97,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "K",
     symptom: "measure.take asks for contrast_min and refuses it for want of targets, yet takes no targets parameter",
     why: "The refusal names a door the operation does not have, so the agent reads the source to find the spec key and measure.contrast that do take them.",
-    deps: [],
-  },
-  {
-    id: "PW338",
-    block: "O",
-    symptom: "verdict.sitting marks a member with no spec as passed, as if something had measured it",
-    why: "A screen nothing holds reads on the sheet and in the answer as held by a spec that agreed.",
     deps: [],
   },
   {
