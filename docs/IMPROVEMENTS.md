@@ -845,23 +845,6 @@ line in the window and the file in `touched`.
 
 ## Block V — Parts every game repeats, installed already proved
 
-### §PW364 Data tables with a schema
-
-Games keep their tuning in tables: enemies, items, waves, prices. Read as loose JSON or
-CSV, a "10" typed as a string or a field misspelled reaches the game and shows as a
-wrong number in play, found by whoever happens to notice.
-
-The kit lets a project declare a table, a CSV or JSON file and the schema of one row,
-which is the project's own and assumes no genre, so it stays clear of the non-goal on
-one genre's level format. It validates every row with schema.validate in the gate, and
-generates a typed Resource per table that the game loads, with a reload in a debug build
-so a tuned value shows without a restart.
-
-Proof: a row with a wrong type or a missing required field is a finding naming the file,
-the row and the column; the game reads a value back through the generated Resource
-exactly as declared; a table edited while the debug build runs is picked up by the
-reload.
-
 ### §PW365 A performance budget the gate holds
 
 Cottony keeps tools/perf/ (board3d_beside.gd, cascade.gd and others), started by hand,

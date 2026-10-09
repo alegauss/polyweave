@@ -450,3 +450,21 @@ on the first frame, `check` and `equal` name a failure with the line of the chec
 `python -m polyweave game.test` exits 1 when a test failed, so a project's own gate runs
 its game's tests with one line. Its proof script runs a test on the base with one check
 failing on purpose, and holds the counts and the failure's line.
+
+**tables** (§PW364): a game's data tables held to the schema of one row. The project
+declares each table in the TOML file `[kit.tables] schema` names (`data/tables.toml`):
+its `file`, a CSV with a header or a JSON list of objects, its `key`, and each column's
+`type` (`int`, `float`, `bool` or `string`), `required`, `choices`, `min` and `max`. The
+tables are the project's own and assume no genre. `tables.check` holds every row to its
+schema in the gate, each finding naming the file, the row (the CSV line, or the JSON
+place) and the column. A value of another type (a JSON `"10"` in an int column
+included), a required column missing, a column the schema does not declare, a choice
+outside its set, a number outside its bounds and a key used twice are each a finding.
+`write=true` writes one typed script per table under `[kit.tables] out` (`tables/`): a
+`Row` class with a typed field per column and a `read()` that loads the file. A script
+that no longer matches its schema is a finding too. `PolyweaveTables.shared()` loads a
+table through its script (`get_rows`, `row(table, key)`), and in a debug build reads a
+changed file again within a second and emits `changed`, so a tuned value shows without a
+restart. Its proof script loads every generated table and holds each field to its
+declared type and to the value read for it, since a typed field refuses a value of
+another type in silence. It then writes a table file again and waits for `changed`.

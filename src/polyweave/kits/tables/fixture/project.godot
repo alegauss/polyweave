@@ -1,0 +1,7 @@
+; The tables kit's fixture: a game whose enemies are a CSV table with a schema.
+
+config_version=5
+
+[application]
+
+config/name="tables fixture"

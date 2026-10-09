@@ -1,0 +1,18 @@
+name = "tables"
+version = "0.1.0"
+summary = "a game's data tables loaded typed as their schema declares, read again in a debug build when a file changes"
+requires = []
+
+[installs]
+core = "core"
+
+[declares]
+schema = "data/tables.toml"
+out = "tables"
+
+[proves]
+fixture = "fixture"
+script = "core/proof.gd"
+
+[changes]
+"0.1.0" = "tables loaded through the scripts tables.check writes, each value typed, and read again when a file changes"

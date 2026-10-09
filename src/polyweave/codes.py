@@ -62,6 +62,7 @@ AREAS: dict[str, str] = {
     "store": "a store's capsule set, cut from one key art and a logo",
     "review": "the local page a person answers a sitting on, and the server behind it",
     "kits": "a part every game repeats, made once in the plugin, proved and installed",
+    "tables": "a game's data tables, held to the schema of one row",
 }
 
 CODES: dict[str, Code] = {
@@ -1953,6 +1954,12 @@ CODES: dict[str, Code] = {
         means="engine.check was pointed at a folder with no project.godot",
         when="engine.check outside a Godot project (§PW358)",
         doors=("check the Godot project's own folder",),
+    ),
+    "tables.no-schema": Code(
+        means="tables.check found no table schema, or one it cannot read",
+        when="no data/tables.toml (or [kit.tables] schema), or a table with no file, "
+        "columns or a column type (§PW364)",
+        doors=("declare each table, its file and its columns' types",),
     ),
     "engine.no-tests": Code(
         means="game.test found no test script by the project's convention",

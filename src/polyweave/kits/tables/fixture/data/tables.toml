@@ -1,0 +1,12 @@
+# The fixture's one table: its enemies, each found by its id.
+
+[enemies]
+file = "data/enemies.csv"
+key = "id"
+
+[enemies.columns]
+id = { type = "string", required = true }
+hp = { type = "int", required = true, min = 1 }
+speed = { type = "float" }
+flies = { type = "bool" }
+kind = { type = "string", choices = ["walker", "flyer", "boss"] }
