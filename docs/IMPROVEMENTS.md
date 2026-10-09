@@ -845,23 +845,6 @@ line in the window and the file in `touched`.
 
 ## Block V — Parts every game repeats, installed already proved
 
-### §PW365 A performance budget the gate holds
-
-Cottony keeps tools/perf/ (board3d_beside.gd, cascade.gd and others), started by hand,
-which PW56 names too. Each measures, prints, and leaves the comparison with last week to
-whoever remembers last week's number.
-
-What polyweave should do: let a project declare budgets per scene (frame time at p95 and
-p99, never a mean, which is the doctrine of Cottony's art pipeline; load time; peak
-memory; node count), and an operation that drives each scene through a declared run,
-measures, writes a baseline the first time, and answers each budget held or exceeded and
-how far each moved from the baseline.
-
-A measure holds only on the machine that took it, and the answer names that machine's
-GPU and driver. On it the gate catches a regression; it never certifies a player's
-hardware, and a machine with no GPU skips with that reason rather than passing. The
-graphics kit's preset search reads its frame times from here.
-
 ### §PW366 Graphics presets and a renderer fallback
 
 The kit reads the project's renderer, whether its scenes are 3D or 2D, and which costly
@@ -885,16 +868,16 @@ Cottony's render rig shows the cost: every constant of it was found by hand at t
 minutes a sample. A graphics preset is the same problem in another place, a handful of
 settings tuned until it looks right and runs fast enough on one machine.
 
-With the frame budget of §PW365 and the settings space of §PW366, engine.sweep can
-search, for each preset, the combination that fits its declared budget at p95 and loses
-least against the native full-quality frame, scored by measure.same on a captured scene.
-The answer per preset is its settings, its frame time, its visual loss, and the feature
-that costs most on that scene, so a sentence such as "SDFGI costs 5.9 ms here" arrives
-without anyone profiling by hand.
+With engine.perf's frame budget (docs/specs/engine.md) and the settings space of §PW366,
+engine.sweep can search, for each preset, the combination that fits its declared budget
+at p95 and loses least against the native full-quality frame, scored by measure.same on
+a captured scene. The answer per preset is its settings, its frame time, its visual
+loss, and the feature that costs most on that scene, so a sentence such as "SDFGI costs
+5.9 ms here" arrives without anyone profiling by hand.
 
 How much visual loss is acceptable is taste, so a preset that trades quality for its
 budget goes to the verdict page and the agent never accepts it. The search holds for the
-machine it ran on, as §PW365 says of every measure.
+machine it ran on, as engine.perf says of every measure.
 
 ### §PW368 Declared states and transitions
 

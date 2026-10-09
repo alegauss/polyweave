@@ -97,7 +97,8 @@ from polyweave.errors import PolyweaveError
 #: 117,493 with game.record_flow (§PW360), a recorded run kept as a flow.
 #: 118,408 with game.test (§PW362), a game's tests run the one way.
 #: 119,156 with game.export_smoke (§PW363), each preset built and launched.
-DESCRIBE = 119_800
+#: 120,213 with tables.check and engine.perf (§PW364, §PW365).
+DESCRIBE = 120_900
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -171,7 +172,8 @@ DESCRIBE = 119_800
 #: 129,414 with game.record_flow and driver.no-state (§PW359, §PW360).
 #: 130,367 with game.test and engine.no-tests (§PW362).
 #: 131,133 with game.export_smoke and game.no-preset (§PW363).
-CAPABILITIES = 131_800
+#: 132,295 with tables.check, engine.perf and their codes (§PW364, §PW365).
+CAPABILITIES = 133_000
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
@@ -210,7 +212,8 @@ HELP_VERB = 4_100
 #: 24,640 with game.text_fit and the four kit verbs (§PW336, §PW340-§PW343).
 #: 25,256 with measure.flashes, engine.check, game.record_flow and game.crash_read
 #: (§PW354, §PW358, §PW360, §PW361).
-HELP_TOP = 25_800
+#: 25,868 with game.test, game.export_smoke, tables.check and engine.perf.
+HELP_TOP = 26_500
 #: A search's answer over its default budget of 24 samples: 3,739.
 SEARCH = 4_000
 

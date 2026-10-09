@@ -156,6 +156,15 @@ canon    = "docs/design/lines.json"  # a person's verdicts on lines; only a verd
 voiced   = "audio/voice/{locale}/{key}.ogg"  # where voice.lines puts a take (PW322)
 fonts    = [{ path = "fonts/Nunito.ttf" }, { path = "fonts/Orbitron.ttf", keys = ["TITLE*"] }]
 
+[perf.title]                       # a scene's performance budget, engine.perf (PW365)
+scene     = "res://title.tscn"
+frames    = 300                    # frames measured after a short settling
+p95_ms    = 16.6                   # frame time at the 95th and 99th percentile
+p99_ms    = 33.3
+load_ms   = 1500                   # loading the scene and putting it in place
+memory_mb = 512                    # peak static memory
+nodes     = 4000                   # peak node count
+
 [flashes]                          # what measure.flashes holds a captured run to (PW354)
 limit     = 3                      # flashes allowed in any one second
 luminance = 0.1                    # a general flash's change of relative luminance

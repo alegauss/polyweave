@@ -41,7 +41,7 @@ _OPEN_TABLES = ("render.samples",)
 #: is one because the settings a picture depends on are per project and short, and a
 #: project that cannot name its own has to leave them to the machine (§PW25).
 #: `[licence]` is keyed by the file names of the libraries a render plays (§PW191).
-_FREE_TABLES = ("capture", "licence")
+_FREE_TABLES = ("capture", "licence", "perf")
 
 #: Only a binary may sit outside the tree. Everything else resolves under
 #: `project.root`, because a path elsewhere is state a colleague cannot reproduce.
@@ -168,6 +168,9 @@ DEFAULTS: dict[str, Any] = {
         # A capture's window starts minimised and unfocused, out of sight (§PW296).
         "quiet": True,
     },
+    # Each scene's performance budget, `[perf.<name>]` (§PW365): its scene, the frames
+    # measured, and the most each measure may reach; engine.perf reads them.
+    "perf": {},
     # Each installed kit's declaration, `[kit.<name>]` (§PW341): its keys are the kit's
     # own, so the kit checks them and this table does not.
     "kit": {},

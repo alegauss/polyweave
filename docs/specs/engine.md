@@ -410,6 +410,23 @@ another's `class_name` needs, and parses every script with
 error is left. `project.check` adds the text half for any adopted project holding a
 `project.godot`, so a project's gate holds its references with no engine at all.
 
+## A performance budget the gate holds
+
+Cottony's `tools/perf/` scripts are started by hand, and each leaves the comparison with
+last week to whoever remembers last week's number (§PW365). A project declares a budget
+per scene under `[perf.<name>]`: its `scene`, the `frames` measured, and the most each
+measure may reach, `p95_ms` and `p99_ms` (frame time at a percentile, never a mean, so
+one hitch is not averaged away), `load_ms`, `memory_mb` (peak static memory) and `nodes`
+(peak node count). `engine.perf` runs each scene with polyweave's own
+`src/polyweave/godot/perf_run.gd`, through the route that draws real pixels with vsync
+off, and answers each budget held or exceeded. The first run on a machine and device
+writes the baseline under the work folder (`perf/baseline.json`), and every later run
+answers how far each measure moved from it as a share; `rebase=true` writes it again. A
+measure holds only on the machine that took it, which the answer names with its device,
+so it catches a regression there and never certifies a player's hardware. A machine with
+no route that draws is skipped and said, never passed, and a project with no budget is
+`engine.no-budget`.
+
 ## Still to come in this block
 
 Baking at the size a unit declaration gives (PW47).

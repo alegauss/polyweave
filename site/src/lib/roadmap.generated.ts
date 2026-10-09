@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 2 },
   { block: "U", title: "A window on everything a project governs", open: 2 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 7 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 6 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -226,13 +226,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW365",
-    block: "V",
-    symptom: "a game's frame time, load time and memory are measured by scripts run by hand, with no baseline a commit regresses from",
-    why: "Cottony's tools/perf is that work done by hand; a percentile held to a declared budget makes a slower commit fail.",
-    deps: [],
-  },
-  {
     id: "PW366",
     block: "V",
     symptom: "a game ships one graphics setting or presets chosen by hand, and no fallback when its renderer fails to start",
@@ -244,7 +237,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "V",
     symptom: "a preset's settings are chosen by eye, so no one knows if it is the best-looking one that fits its frame budget",
     why: "Searching parameters to meet a declaration is what polyweave exists for, and a preset is a parameter set like Cottony's render rig.",
-    deps: ["PW365", "PW366"],
+    deps: ["PW366"],
   },
   {
     id: "PW368",

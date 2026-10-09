@@ -1961,6 +1961,11 @@ CODES: dict[str, Code] = {
         "columns or a column type (§PW364)",
         doors=("declare each table, its file and its columns' types",),
     ),
+    "engine.no-budget": Code(
+        means="engine.perf found no [perf.<name>] budget to run",
+        when="a project that declares no scene's performance budget (§PW365)",
+        doors=("declare [perf.<name>]: its scene and the most each measure may be",),
+    ),
     "engine.no-tests": Code(
         means="game.test found no test script by the project's convention",
         when="a game with no tests/*_test.gd and no [kit.tests] scripts (§PW362)",
