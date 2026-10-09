@@ -1,0 +1,18 @@
+name = "crash"
+version = "0.1.0"
+summary = "a structured log in user://, a capture on every error with its script, line and state, and an unclean exit found on the next launch"
+requires = []
+
+[installs]
+core = "core"
+
+[declares]
+declaration = "res://polyweave_crash.gd"
+max_kb = 256
+
+[proves]
+fixture = "fixture"
+script = "core/proof.gd"
+
+[changes]
+"0.1.0" = "a rotating JSON log, an error packed with its script, line and the state kit's snapshot, and an unclean exit packed on the next launch"

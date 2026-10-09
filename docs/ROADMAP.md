@@ -75,7 +75,6 @@
 
 ## Block V — Parts every game repeats, installed already proved
 
-- 📋 **PW361** (deps: PW359 ✅) **when a game crashes on a person's machine, the agent has nothing to read but their description of it** — A log and a state dump in user:// turn a report into a file, and with a seed a file becomes a case to replay. → §PW361
 - 📋 **PW362** (deps: PW341 ✅) **each game runs its tests its own way, so an agent learns per project how to run them and read what failed** — One runner and one answer shape make a game's tests part of its gate without the project being read first. → §PW362
 - 📋 **PW363** (deps: —) **an exported build is never launched before a player launches it, so a resource the export left out is found by them** — game.release_check reads presets and packs, and nothing runs the binary, which is the one thing a player does. → §PW363
 - 📋 **PW364** (deps: PW341 ✅) **a game's tables of enemies, items or waves are read as loose JSON, and a number typed as a string is found in play** — schema.validate already checks a declaration, so a table whose schema the project declares can be held the same way. → §PW364

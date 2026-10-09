@@ -845,22 +845,6 @@ line in the window and the file in `touched`.
 
 ## Block V — Parts every game repeats, installed already proved
 
-### §PW361 What a crash leaves behind
-
-The kit installs structured logging (level, time, physics frame, current scene) to a
-rotating file in user://. On an error it writes the last lines beside a dump of the
-state kit's snapshot (docs/specs/kit.md) and, when the determinism kit is present, the
-seed and the input record so far. A crash that kills the process leaves the log up to
-its last flush, and the next launch notices the unclean exit and packs what is there.
-
-An operation reads such a capture back, from the user:// of this machine or a file a
-person sends, and answers the first error, the script and line that raised it, and the
-state at the time, so the agent starts from facts rather than from a retelling.
-
-Proof: an error forced in the fixture leaves the capture, and reading it back names the
-forced error with its script and line; a process killed mid-run is reported as an
-unclean exit on the next launch.
-
 ### §PW362 One way to run a game's tests
 
 Starship runs dev/check.gd; Cottony keeps tests/*.gd with its own runner. Each is fine

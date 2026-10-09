@@ -1,0 +1,9 @@
+; The crash kit's fixture: a game that opens the log as its main scene starts and then
+; runs until something stops it.
+
+config_version=5
+
+[application]
+
+config/name="polyweave crash fixture"
+run/main_scene="res://main.tscn"

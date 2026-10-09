@@ -11,7 +11,7 @@ page groups them by task.
 | Make a shape | `geometry.build`, `geometry.build_all`, `geometry.describe`, `geometry.variants`, `geometry.fit`, `geometry.compare` (voxel models) |
 | Render | `render.plan` (free), `render.bake` |
 | Measure | `measure.take`, `measure.same`, `measure.available`, `measure.digest`, `measure.contrast`, `measure.pressure`, `measure.flashes` |
-| Judge against the bar | `accept.check`, `accept.verify`, `accept.check_screen`, `cost.read` (draw cost), `sound.measure` (seam, level), `sound.speech`, `sound.declared` (declared audio, what is missing) |
+| Judge against the bar | `accept.check`, `accept.verify`, `accept.check_screen`, `cost.read`, `sound.measure` (seam, level), `sound.speech`, `sound.declared` (declared audio, what is missing) |
 | Search for numbers | `search.sweep`, `port.run` (a whole family), `trace.read` |
 | See it where it is seen | `compose.place`, `compose.sheet`, `store.capsules`, `picture.vector` |
 | Size a bound from noise | `calibrate.run`, then `calibrate.apply` |
@@ -21,7 +21,7 @@ page groups them by task.
 | Read the ledger | `loop.runs`, `loop.assets`, `loop.changes`, `loop.bounds` |
 | Provenance | `provenance.read`, `provenance.verify`, `provenance.dependents`, `provenance.outdated`, `provenance.unrecorded`, `provenance.credits`, `provenance.generated`, `provenance.borrow` |
 | The game side | `engine.check`, `capture.run`, `capture.movie`, `capture.declared`, `engine.run`, `engine.sweep`, `engine.cost`, `godot.install` |
-| Drive a game | `game.open`, `game.query`, `game.input`, `game.step`, `game.wait`, `game.call`, `game.set`, `game.shot`, `game.text_fit`, `game.close`, `game.batch`, `game.keep`, `game.record_flow`, `game.rekey`, `game.replay`, `game.release_check` |
+| Drive a game | `game.open`, `game.query`, `game.input`, `game.step`, `game.wait`, `game.call`, `game.set`, `game.shot`, `game.text_fit`, `game.close`, `game.batch`, `game.keep`, `game.record_flow`, `game.crash_read`, `game.rekey`, `game.replay`, `game.release_check` |
 | Scale against the engine | `units.check`, `units.engine_scale`, `units.read_number` |
 | World | `world.read`, `world.validate`, `voice.design`, `voice.choose`, `voice.lines`, `words.check`, `words.unlisted`, `words.glyphs`, `words.sheet` |
 | Music | `music.validate`, `music.to_midi`, `music.render`, `sound.synth` (effects from a seed), `sound.buy`, `sound.speak` (paid) |

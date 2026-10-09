@@ -414,3 +414,20 @@ and with `RECORD` fed at its frames, and holds the state kit's snapshot of the t
 to agree after every physics frame. It names the first frame and name that differ,
 usually a draw made outside the streams, and refuses a run in which nothing the state
 kit names ever changed.
+
+**crash** (§PW361): what a crash leaves behind. `PolyweaveLog.shared()`, opened first
+thing, writes every line the game logs (`info`, `warn`, `error`) to
+`user://polyweave_log/log.jsonl`, one JSON object a line: its time, level, physics frame,
+current scene and words, rotated past `MAX_KB` into `KEEP` older files. A Godot
+`Logger` it registers hears every error the engine raises, with the script and line: a
+script error names them, and a pushed error is placed by its backtrace's first script
+frame. Each of the first `CAPTURES` errors packs a capture in
+`user://polyweave_log/captures/`: the error, the log's last `LINES`, the state kit's
+snapshot and the determinism kit's seed where the game carries them. A run that never
+closed its log (killed, frozen, a crash of the engine itself) leaves its marker, and the
+next launch packs the log as an `unclean-exit`. `game.crash_read` reads a capture back,
+a file a person sent or the newest in this machine's user:// for the project, and
+answers the error, its script and line, the state, the seed and the last lines. Its
+proof script forces an error and finds the capture naming its own script and line with
+the log's lines, stages a marker for the next log to pack as an unclean exit, and
+checks a clean close leaves none.

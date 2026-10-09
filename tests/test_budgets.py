@@ -204,7 +204,9 @@ HELP_VERB = 4_100
 #: 23,302 with voice.lines, sound.speech and provenance.borrow (§PW322-§PW325).
 #: 23,916 with reference.frames, measure.pressure, icons.build and words.glyphs.
 #: 24,640 with game.text_fit and the four kit verbs (§PW336, §PW340-§PW343).
-HELP_TOP = 25_200
+#: 25,256 with measure.flashes, engine.check, game.record_flow and game.crash_read
+#: (§PW354, §PW358, §PW360, §PW361).
+HELP_TOP = 25_800
 #: A search's answer over its default budget of 24 samples: 3,739.
 SEARCH = 4_000
 

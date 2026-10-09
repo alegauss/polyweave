@@ -831,6 +831,82 @@ def record_flow(
     }
 
 
+def _user_dir(root: str | Path = ".") -> Path:
+    """Where Godot keeps a project's user:// here, by the name project.godot gives."""
+    here = load(root).root
+    text = (here / "project.godot").read_text(encoding="utf-8-sig", errors="replace")
+
+    def said(key: str) -> str:
+        found = re.search(rf'^{re.escape(key)}=(.*)$', text, re.MULTILINE)
+        return found[1].strip().strip('"') if found else ""
+
+    if sys.platform == "win32":
+        base = Path(os.environ.get("APPDATA", Path.home() / "AppData" / "Roaming"))
+    elif sys.platform == "darwin":
+        base = Path.home() / "Library" / "Application Support"
+    else:
+        base = Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local" / "share"))
+    if said("config/use_custom_user_dir") == "true":
+        return base / (said("config/custom_user_dir_name") or said("config/name"))
+    return base / ("Godot" if sys.platform != "linux" else "godot") / "app_userdata" / (
+        said("config/name") or "[unnamed project]")
+
+
+@operation("game.crash_read")
+def crash_read(
+    capture: Annotated[
+        str, Param("a capture a person sent; the newest on this machine where unset")
+    ] = "",
+    root: Annotated[str, _ROOT] = ".",
+) -> dict:
+    """What a crash left: its error, script and line, the state and the log (§PW361).
+
+    The crash kit packs a capture in user://polyweave_log/captures/ on every error, and
+    on the launch after a run that never closed its log. This reads one back: a file a
+    person sent, or the newest of this machine's, found where Godot keeps the project's
+    user:// for its name. The answer is the error with its script and line, the state
+    kit's snapshot, the seed where the determinism kit gave one, and the log's last
+    lines, so an agent starts from the facts rather than from a retelling.
+    """
+    if capture:
+        where = Path(capture)
+        where = where if where.is_absolute() else load(root).root / capture
+        others: list[Path] = []
+    else:
+        folder = _user_dir(root) / "polyweave_log" / "captures"
+        others = sorted(folder.glob("*.json"), key=lambda p: p.stat().st_mtime)
+        if not others:
+            raise PolyweaveError(
+                "game.no-capture",
+                f"there is no capture in {folder}",
+                "install the crash kit and open its log first thing, or name the "
+                "capture a person sent",
+            )
+        where = others[-1]
+    try:
+        packed = json.loads(where.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as failed:
+        raise PolyweaveError(
+            "game.no-capture",
+            f"{where} is no capture the crash kit packed: {failed}",
+            "name the .json file in user://polyweave_log/captures/",
+        ) from None
+    error = packed.get("error") or {}
+    return {
+        "capture": str(where),
+        "reason": packed.get("reason"),
+        "error": error,
+        "at": f"{error['script']}:{error['line']}" if error.get("script") else None,
+        "state": packed.get("state"),
+        "seed": packed.get("seed"),
+        "lines": packed.get("lines", [])[-10:],
+        "captures": len(others),
+        "says": (f"{packed.get('reason')}: {error.get('said', '')}"
+                 + (f" at {error['script']}:{error['line']}"
+                    if error.get("script") else "")),
+    }
+
+
 def _step_paths(step: dict) -> list[str]:
     """The generated paths one kept step reaches its node by."""
     click = step.get("click")

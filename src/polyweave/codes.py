@@ -1334,6 +1334,13 @@ CODES: dict[str, Code] = {
         when="a point past the declared window size, or a node scrolled off screen",
         doors=("click inside the viewport", "set display/window/size in project.godot"),
     ),
+    "game.no-capture": Code(
+        means="game.crash_read found no capture to read, or the file named is none",
+        when="a game that never opened the crash kit's log, or a file that is no "
+        "capture (§PW361)",
+        doors=("install the crash kit and open its log first thing",
+               "name the capture a person sent"),
+    ),
     "driver.no-state": Code(
         means="game.query asked for declared state, and the game carries no state kit",
         when="state= on a game that never installed the state kit (§PW359)",
