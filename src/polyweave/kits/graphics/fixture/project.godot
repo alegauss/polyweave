@@ -1,0 +1,9 @@
+; The graphics kit's fixture: a 3D scene whose environment uses SSAO and not SDFGI or
+; volumetric fog, so a preset may switch the one and must leave the others off.
+
+config_version=5
+
+[application]
+
+config/name="graphics fixture"
+run/main_scene="res://main.tscn"

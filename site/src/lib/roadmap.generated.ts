@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 2 },
   { block: "U", title: "A window on everything a project governs", open: 2 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 6 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 5 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -226,18 +226,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW366",
-    block: "V",
-    symptom: "a game ships one graphics setting or presets chosen by hand, and no fallback when its renderer fails to start",
-    why: "Godot carries the upscalers, anti-aliasing and renderers; what each game rewrites is choosing among them and surviving a driver that refuses.",
-    deps: [],
-  },
-  {
     id: "PW367",
     block: "V",
     symptom: "a preset's settings are chosen by eye, so no one knows if it is the best-looking one that fits its frame budget",
     why: "Searching parameters to meet a declaration is what polyweave exists for, and a preset is a parameter set like Cottony's render rig.",
-    deps: ["PW366"],
+    deps: [],
   },
   {
     id: "PW368",

@@ -845,35 +845,19 @@ line in the window and the file in `touched`.
 
 ## Block V — Parts every game repeats, installed already proved
 
-### §PW366 Graphics presets and a renderer fallback
-
-The kit reads the project's renderer, whether its scenes are 3D or 2D, and which costly
-features its environments use (SDFGI, SSAO, volumetric fog, shadows), and installs
-presets that touch only what the game uses. For 3D: render scale with Godot's built-in
-upscalers (FSR 1 and FSR 2), anti-aliasing (MSAA, TAA, FXAA), shadow and effect quality,
-and a frame cap. For 2D: the stretch mode and integer scaling. It picks a first preset
-from RenderingServer's adapter vendor and name, adds a graphics tab to the options kit
-(docs/specs/kit.md), and falls back to the Compatibility renderer when Vulkan fails to
-start.
-
-Vendor SDKs (DLSS, Reflex, XeSS) stay out: their licences keep them from shipping here
-and Godot builds in none of them, so a kit per GPU maker would be the wrong unit.
-
-Proof: every preset applies what it declares, read back from the running game; a launch
-with a driver forced to fail reaches the menu on the fallback.
-
 ### §PW367 Presets found by search
 
 Cottony's render rig shows the cost: every constant of it was found by hand at two
 minutes a sample. A graphics preset is the same problem in another place, a handful of
 settings tuned until it looks right and runs fast enough on one machine.
 
-With engine.perf's frame budget (docs/specs/engine.md) and the settings space of §PW366,
-engine.sweep can search, for each preset, the combination that fits its declared budget
-at p95 and loses least against the native full-quality frame, scored by measure.same on
-a captured scene. The answer per preset is its settings, its frame time, its visual
-loss, and the feature that costs most on that scene, so a sentence such as "SDFGI costs
-5.9 ms here" arrives without anyone profiling by hand.
+With engine.perf's frame budget (docs/specs/engine.md) and the settings space of the
+graphics kit (docs/specs/kit.md), engine.sweep can search, for each preset, the
+combination that fits its declared budget at p95 and loses least against the native
+full-quality frame, scored by measure.same on a captured scene. The answer per preset is
+its settings, its frame time, its visual loss, and the feature that costs most on that
+scene, so a sentence such as "SDFGI costs 5.9 ms here" arrives without anyone profiling
+by hand.
 
 How much visual loss is acceptable is taste, so a preset that trades quality for its
 budget goes to the verdict page and the agent never accepts it. The search holds for the

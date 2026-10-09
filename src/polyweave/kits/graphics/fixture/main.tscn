@@ -1,0 +1,17 @@
+[gd_scene load_steps=3 format=3]
+
+[sub_resource type="Environment" id="1"]
+ssao_enabled = true
+
+[sub_resource type="BoxMesh" id="2"]
+
+[node name="Main" type="Node3D"]
+
+[node name="World" type="WorldEnvironment" parent="."]
+environment = SubResource("1")
+
+[node name="Box" type="MeshInstance3D" parent="."]
+mesh = SubResource("2")
+
+[node name="Camera" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3)

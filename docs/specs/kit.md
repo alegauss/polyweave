@@ -468,3 +468,20 @@ changed file again within a second and emits `changed`, so a tuned value shows w
 restart. Its proof script loads every generated table and holds each field to its
 declared type and to the value read for it, since a typed field refuses a value of
 another type in silence. It then writes a table file again and waits for `changed`.
+
+**graphics** (§PW366, requires options): graphics presets and a renderer that falls
+back. `PolyweaveGraphics.shared()` reads whether the main scene is 3D, and `watch(scene)`
+notes which costly effects (SDFGI, SSAO, volumetric fog) the game's environments switch
+on. A 3D preset sets the root viewport's render scale and upscaler (bilinear, FSR or FSR
+2, Godot's own), MSAA, TAA, FXAA, positional shadow atlas and the frame cap, and switches
+off or back on only the effects the game uses. A 2D preset sets the stretch mode and
+integer scaling. `in_force()` reads each back in a preset's own terms. A first launch
+takes the lightest preset on an integrated or software adapter, and the middle one where
+the adapter is unknown (or `FIRST`). The kit contributes the `graphics/preset` row, and
+the project's `res://polyweave_graphics.gd` may declare `PRESETS`. Vulkan failing is
+Godot's to survive: the project keeps `rendering/rendering_device/fallback_to_opengl3`
+on, and on Windows Godot reaches Direct3D 12 first. Vendor SDKs (DLSS, Reflex, XeSS)
+stay out; Godot builds in none of them. Its proof script runs the main scene and reads
+every preset back. It checks that no effect the game left off is ever switched on, that
+the row reads back each preset, and that the fallback is on. A test hides Vulkan's
+drivers and sees the game reach its scene on another driver.
