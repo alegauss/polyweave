@@ -84,3 +84,24 @@ def test_the_remap_kit_puts_its_controls_tab_on_the_screen(tmp_path):
     (game / "kits" / "remap" / "remap_menu.tscn").unlink()
     [found] = kits._scripts(["options"], kits.every(), game)
     assert "controls/remap opens res://kits/remap/remap_menu.tscn" in found["said"]
+
+
+ONE_ROW = '''extends RefCounted
+
+
+static func options() -> Array[Dictionary]:
+	return [{"tab": "general", "key": "subtitles", "label": "subtitles",
+		"default": true,
+		"apply": func(v: bool) -> void: Engine.set_meta("subtitles", v),
+		"read": func() -> bool: return Engine.get_meta("subtitles", true)}]
+'''
+
+
+@pytest.mark.skipif(not os.environ.get("GODOT"), reason="no $GODOT on this machine")
+def test_the_options_proof_holds_in_a_game_with_one_value_row(tmp_path):
+    # its refused value once overwrote the one value it kept (§PW393)
+    game = tmp_path / "game"
+    shutil.copytree(kits.KITS / "options" / "fixture", game)
+    (game / "polyweave_options.gd").write_text(ONE_ROW, encoding="utf-8")
+    said = kits.install("options", root=str(game))
+    assert said["proved"]["passed"] is True, said["proved"]

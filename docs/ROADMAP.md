@@ -75,7 +75,7 @@
 
 ## Block V — Parts every game repeats, installed already proved
 
-- 📋 **PW366** (deps: PW347 ✅) **a game ships one graphics setting or presets chosen by hand, and no fallback when its renderer fails to start** — Godot carries the upscalers, anti-aliasing and renderers; what each game rewrites is choosing among them and surviving a driver that refuses. → §PW366
+- 🛠 **PW366** (deps: PW347 ✅) **a game ships one graphics setting or presets chosen by hand, and no fallback when its renderer fails to start** — Godot carries the upscalers, anti-aliasing and renderers; what each game rewrites is choosing among them and surviving a driver that refuses. → §PW366
 - 📋 **PW367** (deps: PW365 ✅, PW366) **a preset's settings are chosen by eye, so no one knows if it is the best-looking one that fits its frame budget** — Searching parameters to meet a declaration is what polyweave exists for, and a preset is a parameter set like Cottony's render rig. → §PW367
 - 💭 **PW368** (deps: —) **a game's states and transitions live only in code, so a state nothing reaches or nothing leaves is found by playing** — Generic enough for a kit, but the most opinionated one here, so it waits until two games show code it would replace. → §PW368
 - 📋 **PW369** (deps: PW341 ✅, PW358 ✅, PW362 ✅) **a new game starts as an empty Godot project and is adopted onto polyweave later, by hand** — If every project is to adapt to polyweave, the cheapest moment to do it is the first commit. → §PW369

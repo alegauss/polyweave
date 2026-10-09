@@ -52,14 +52,24 @@ func _older_file() -> void:
 	var written: String = renamed.get(at, at)
 	old.set_value(written.split("/")[0], written.split("/")[1], chosen)
 	var refused: Dictionary = rows[-1]
-	old.set_value(refused["tab"], refused["key"], {"not": "a value"})
+	# with one row holding a value, the refused value goes in a second older file, or it
+	# would be written over the value this one keeps (§PW393)
+	var alone := refused == row
+	if not alone:
+		old.set_value(refused["tab"], refused["key"], {"not": "a value"})
 	old.save(KEPT)
 	settings.load_file()
 	if settings.get_value(row["tab"], row["key"]) != chosen:
 		failed.append("%s was not taken from the older file as %s" % [at, chosen])
 	elif row.has("read") and str(row["read"].call()) != str(chosen):
 		failed.append("%s was loaded but not put in force" % at)
-	var said := "; ".join(settings.said)
+	var heard: Array[String] = settings.said.duplicate()
+	if alone:
+		old.set_value(refused["tab"], refused["key"], {"not": "a value"})
+		old.save(KEPT)
+		settings.load_file()
+		heard.append_array(settings.said)
+	var said := "; ".join(heard)
 	for expected in ["migrated from version 0", "legacy/thing is no option", "may not take"]:
 		if not said.contains(expected):
 			failed.append("loading the older file did not say %s: %s" % [expected, said])
