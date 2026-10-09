@@ -845,24 +845,6 @@ line in the window and the file in `touched`.
 
 ## Block V — Parts every game repeats, installed already proved
 
-### §PW367 Presets found by search
-
-Cottony's render rig shows the cost: every constant of it was found by hand at two
-minutes a sample. A graphics preset is the same problem in another place, a handful of
-settings tuned until it looks right and runs fast enough on one machine.
-
-With engine.perf's frame budget (docs/specs/engine.md) and the settings space of the
-graphics kit (docs/specs/kit.md), engine.sweep can search, for each preset, the
-combination that fits its declared budget at p95 and loses least against the native
-full-quality frame, scored by measure.same on a captured scene. The answer per preset is
-its settings, its frame time, its visual loss, and the feature that costs most on that
-scene, so a sentence such as "SDFGI costs 5.9 ms here" arrives without anyone profiling
-by hand.
-
-How much visual loss is acceptable is taste, so a preset that trades quality for its
-budget goes to the verdict page and the agent never accepts it. The search holds for the
-machine it ran on, as engine.perf says of every measure.
-
 ### §PW368 Declared states and transitions
 
 Menus, characters and the flow of a game are each a state machine written by hand, and

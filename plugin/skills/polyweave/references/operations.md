@@ -20,11 +20,11 @@ page groups them by task.
 | Keep the ledger | `loop.start`, `loop.spent`, `loop.judged`, `loop.finish`, `loop.compare` |
 | Read the ledger | `loop.runs`, `loop.assets`, `loop.changes`, `loop.bounds` |
 | Provenance | `provenance.read`, `provenance.verify`, `provenance.dependents`, `provenance.outdated`, `provenance.unrecorded`, `provenance.credits`, `provenance.generated`, `provenance.borrow` |
-| The game side | `engine.check`, `game.test`, `tables.check`, `capture.run`, `capture.movie`, `capture.declared`, `engine.run`, `engine.sweep`, `engine.cost`, `engine.perf`, `godot.install` |
+| The game side | `engine.check`, `game.test`, `tables.check`, `capture.run`, `capture.movie`, `capture.declared`, `engine.run`, `engine.sweep`, `engine.cost`, `engine.perf`, `engine.preset_search`, `godot.install` |
 | Drive a game | `game.open`, `game.query`, `game.input`, `game.step`, `game.wait`, `game.call`, `game.set`, `game.shot`, `game.text_fit`, `game.close`, `game.batch`, `game.keep`, `game.record_flow`, `game.crash_read`, `game.rekey`, `game.replay`, `game.release_check`, `game.export_smoke` |
 | Scale against the engine | `units.check`, `units.engine_scale`, `units.read_number` |
 | World | `world.read`, `world.validate`, `voice.design`, `voice.choose`, `voice.lines`, `words.check`, `words.unlisted`, `words.glyphs`, `words.sheet` |
-| Music | `music.validate`, `music.to_midi`, `music.render`, `sound.synth` (effects from a seed), `sound.buy`, `sound.speak` (paid) |
+| Music | `music.validate`, `music.to_midi`, `music.render`, `sound.synth`, `sound.buy`, `sound.speak` (paid) |
 | Visual effects | `vfx.build`, `vfx.preview`, `panel.build` (a menu panel), `panel.capture`, `icons.build` |
 | A project's look | `style.read`, `style.drift` (before a person looks) |
 | Buy a drawing | `picture.buy`, `picture.gate`, `picture.letters`, `picture.describe`, `picture.vary`, `picture.against_parent`, `picture.fit`, `picture.collect` |

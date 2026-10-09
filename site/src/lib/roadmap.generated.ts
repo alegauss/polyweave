@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 2 },
   { block: "U", title: "A window on everything a project governs", open: 2 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 5 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 4 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -223,13 +223,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "U",
     symptom: "a revision's session can write outside its item through Bash, and neither the question nor the touched list sees it",
     why: "The scope hook reads only the file a Write or Edit names, so a shell write to the config or a canon slips past the person.",
-    deps: [],
-  },
-  {
-    id: "PW367",
-    block: "V",
-    symptom: "a preset's settings are chosen by eye, so no one knows if it is the best-looking one that fits its frame budget",
-    why: "Searching parameters to meet a declaration is what polyweave exists for, and a preset is a parameter set like Cottony's render rig.",
     deps: [],
   },
   {

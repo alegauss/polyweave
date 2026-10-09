@@ -98,7 +98,8 @@ from polyweave.errors import PolyweaveError
 #: 118,408 with game.test (§PW362), a game's tests run the one way.
 #: 119,156 with game.export_smoke (§PW363), each preset built and launched.
 #: 120,213 with tables.check and engine.perf (§PW364, §PW365).
-DESCRIBE = 120_900
+#: 121,070 with engine.preset_search (§PW367), each preset found by search.
+DESCRIBE = 121_700
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -173,7 +174,8 @@ DESCRIBE = 120_900
 #: 130,367 with game.test and engine.no-tests (§PW362).
 #: 131,133 with game.export_smoke and game.no-preset (§PW363).
 #: 132,295 with tables.check, engine.perf and their codes (§PW364, §PW365).
-CAPABILITIES = 133_000
+#: 133,152 with engine.preset_search (§PW367).
+CAPABILITIES = 133_800
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

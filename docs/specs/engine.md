@@ -427,6 +427,24 @@ so it catches a regression there and never certifies a player's hardware. A mach
 no route that draws is skipped and said, never passed, and a project with no budget is
 `engine.no-budget`.
 
+## Presets found by search
+
+A graphics preset is tuned by hand until it looks right and runs fast enough on one
+machine, as every constant of Cottony's render rig was (§PW367).
+`engine.preset_search(scene, budgets)` runs the scene once per combination of a grid of
+graphics settings, in the graphics kit's terms (`scale`, `scaler`, `msaa`, `effects`,
+`shadows`; full quality first in each list, and an upscaler tried only below full
+scale). It goes through the route that draws real pixels, timing frames with
+`src/polyweave/godot/preset_run.gd` and keeping the last one. The full-quality
+combination is the reference, and every other is scored against it by `measure.same`.
+Per preset of `budgets` (each a p95 in ms), the answer is the combination that fits and
+loses least, with its frame time, its loss and its picture, or `fits` false with the
+cheapest frame time found. Each feature's cost is the reference's p95 less the same run
+with that feature at its cheapest value searched, and `dearest` names the costliest.
+How much loss is acceptable is taste, so every chosen preset that loses any goes on a
+`verdict.sheet` beside the reference, and the agent never accepts one. A search holds
+for the machine it ran on, and with no route that draws it is skipped and said.
+
 ## Still to come in this block
 
 Baking at the size a unit declaration gives (PW47).

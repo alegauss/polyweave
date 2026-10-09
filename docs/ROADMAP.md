@@ -75,7 +75,6 @@
 
 ## Block V — Parts every game repeats, installed already proved
 
-- 📋 **PW367** (deps: PW365 ✅, PW366 ✅) **a preset's settings are chosen by eye, so no one knows if it is the best-looking one that fits its frame budget** — Searching parameters to meet a declaration is what polyweave exists for, and a preset is a parameter set like Cottony's render rig. → §PW367
 - 💭 **PW368** (deps: —) **a game's states and transitions live only in code, so a state nothing reaches or nothing leaves is found by playing** — Generic enough for a kit, but the most opinionated one here, so it waits until two games show code it would replace. → §PW368
 - 📋 **PW369** (deps: PW341 ✅, PW358 ✅, PW362 ✅) **a new game starts as an empty Godot project and is adopted onto polyweave later, by hand** — If every project is to adapt to polyweave, the cheapest moment to do it is the first commit. → §PW369
 - 📋 **PW370** (deps: PW345 ✅, PW357 ✅) **Starship keeps its own bindings and co-op code after the input kits were extracted from it** — A kit proved only in a fixture has not met a game, and the game it came from is the cheapest first consumer. → §PW370
