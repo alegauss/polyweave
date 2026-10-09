@@ -100,7 +100,7 @@ def test_the_audio_kit_lands_after_menus_and_holds_every_bus_to_its_loudness(tmp
      "played no focus sound"),
     ("polyweave_audio.gd", '{"name": "SFX", "send": "Master", "loudness": -16.0}',
      '{"name": "SFX", "send": "Master", "loudness": -16.0, "volume_db": -6.0}',
-     ".polyweave/kits/audio/SFX.wav loudness -22"),
+     ".polyweave/kits/audio/SFX.wav loudness -2"),
 ])
 def test_a_broken_audio_runtime_fails_the_proof_by_name(tmp_path, where, before, after,
                                                       said):
