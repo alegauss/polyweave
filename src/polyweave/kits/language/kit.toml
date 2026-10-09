@@ -1,0 +1,20 @@
+name = "language"
+version = "0.1.0"
+summary = "the string table words checks on screen in every language, with fallback fonts per script and the system's locale on first launch"
+requires = []
+tab = "general"
+
+[installs]
+core = "core"
+
+[declares]
+declaration = "res://polyweave_language.gd"
+table = "res://i18n/strings.csv"
+fallback = "en"
+
+[proves]
+fixture = "fixture"
+script = "core/proof.gd"
+
+[changes]
+"0.1.0" = "the table read into TranslationServer with empty cells filled, fallback fonts per script, the system's locale first, every screen held in every locale"

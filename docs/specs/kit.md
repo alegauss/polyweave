@@ -277,3 +277,22 @@ line held to `loudness` ± `LOUDNESS_TOLERANCE`. A crossfade's level must stay w
 throughout, with no gap and no clip; the music ducks under a voice and comes back; more
 sounds than the pool holds all play, at differing pitches; a pad's focus and confirm in a
 menu play the UI sounds; and every bus's row reads back what it sets.
+
+**language** (§PW352): the string table `words.check` holds, on screen in every language.
+The project's `res://polyweave_language.gd` declares `TABLE` (the CSV `[words] table`
+names), `FALLBACK`, `FONTS`, `FOLLOW_SYSTEM` and `SCREENS`. `PolyweaveLanguage.start()`
+uses the translations Godot imported and, where nothing was imported, reads the CSV
+itself, a column starting with an underscore skipped. A cell left empty carries the
+fallback locale's line, and `said` names each one. Each of `FONTS`,
+`{"script": "Jpan", "path": ...}` with an ISO 15924 tag, is added to the fallbacks of the
+font the game draws with (the project theme's default font, or Godot's own), so a
+character the main font lacks is drawn by a declared font and not a system one. A first
+launch shows the system's locale where the table has it, else one of the same language,
+else the fallback. The kit contributes a `general/language` row whose default is that
+choice. Its proof script lays out the screens (the main scene where `SCREENS` names
+none) in every locale. In each, every visible Label and Button must show its key's line,
+and a control whose text is no key, which never changes language, is named. No key may
+show its raw name. Every character a line needs, upper case included, must be drawn by
+the font chain, which is the question `words.glyphs` asks of the files. Every line must
+fit its control, by the measure `game.text_fit` takes. Then the first-launch choice and
+the row are checked.

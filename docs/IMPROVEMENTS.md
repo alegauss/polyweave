@@ -845,23 +845,6 @@ line in the window and the file in `touched`.
 
 ## Block V — Parts every game repeats, installed already proved
 
-### §PW352 The string table on screen in every language
-
-Block Q checks a string table against the world the person declared, and `words.glyphs`
-finds the characters its fonts lack. Neither puts the table on screen. This kit is that
-runtime half: it loads the [words] table into Godot's TranslationServer, installs a
-language selector for the options kit (docs/specs/kit.md), sets fallback fonts per
-script (CJK, Cyrillic, Arabic) as the project declares them, and picks the system locale
-on first launch when the game supports it.
-
-Proof: switching to each locale changes every visible label of a captured screen; no key
-ever shows its raw name; with `words.glyphs`, no character falls to a box or a borrowed
-system glyph; a line that grows in translation still fits its control, measured on the
-capture rather than assumed.
-
-The words themselves stay the project's and the person's, held by Block Q; the kit only
-carries them to the screen.
-
 ### §PW353 A dialogue box
 
 Cottony has scripts/dialog.gd. The kit installs a dialogue box that types a line at a

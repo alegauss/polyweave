@@ -1,0 +1,9 @@
+; The language kit's fixture: a title screen whose every line comes from i18n/strings.csv
+; in English, Portuguese and Japanese, the Japanese drawn by a declared fallback font.
+
+config_version=5
+
+[application]
+
+config/name="language fixture"
+run/main_scene="res://main.tscn"
