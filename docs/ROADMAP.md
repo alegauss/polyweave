@@ -75,7 +75,6 @@
 
 ## Block V — Parts every game repeats, installed already proved
 
-- 📋 **PW349** (deps: PW341 ✅) **the splash, the load into the first scene and each change of scene are hand-made per game and freeze on a large scene** — A splash no pad can skip and a frozen frame while a scene loads are the first things a player sees. → §PW349
 - 📋 **PW350** (deps: PW341 ✅) **a game's credits are typed by hand while the provenance record already knows every asset's source and licence** — A hand-typed credit drifts from what shipped, and a CC-BY asset missing from the screen is a licence broken. → §PW350
 - 📋 **PW351** (deps: PW341 ✅) **each game lays out its audio buses, music crossfade and sound pooling its own way, and a bus's loudness is never checked** — The bus layout is what both the options screen and Block P's music lean on, so one declared layout serves both. → §PW351
 - 📋 **PW352** (deps: PW341 ✅, PW335 ✅) **the string table words checks reaches a game's TranslationServer by hand, with no fallback font for another script** — Block Q holds the table to the world; the step from the table to the screen is the one every game rewrites. → §PW352

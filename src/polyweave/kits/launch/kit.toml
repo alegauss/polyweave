@@ -1,0 +1,19 @@
+name = "launch"
+version = "0.1.0"
+summary = "a skippable splash, a threaded load into the first scene and every change of scene measured"
+requires = []
+
+[installs]
+core = "core"
+scene = "scene/splash.tscn"
+
+[declares]
+budgets = "res://polyweave_launch.gd"
+percentile = 0.95
+
+[proves]
+fixture = "fixture"
+script = "core/proof.gd"
+
+[changes]
+"0.1.0" = "a splash any button skips, PolyweaveScenes loading on a thread, and frame times at a percentile"

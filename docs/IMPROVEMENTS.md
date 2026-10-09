@@ -845,22 +845,6 @@ line in the window and the file in `touched`.
 
 ## Block V — Parts every game repeats, installed already proved
 
-### §PW349 From launch to the first menu
-
-Cottony has scripts/splash.gd, and every game has some version of it. The kit installs a
-declared splash sequence (logos and their durations), skippable by any button of any
-family, followed by a threaded load (ResourceLoader.load_threaded_request) into the main
-scene, and a scene transition service with a loading screen that every later change of
-scene goes through.
-
-Proof: the time from launch to the main menu is measured and held to a declared budget;
-a skip from each declared family ends the splash; no frame during a transition exceeds
-the frame budget, read from frame times at a percentile and never at a mean, so one long
-hitch is not averaged away by a hundred short frames.
-
-The logos are the project's and so is the look of the loading screen; the kit owns the
-order, the timing and the threading.
-
 ### §PW350 A credits screen from the provenance record
 
 provenance.credits already answers, from the record, who made what and under which

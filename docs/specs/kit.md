@@ -225,3 +225,19 @@ and one with a step missing or from a newer build is refused and left on disk. I
 proof script fills and reads back every slot, stops a save after its write and after
 its move, corrupts the data under a sum, and loads saves from every older version and
 from a newer one.
+
+**launch** (§PW349): from launch to the first scene, and every change of scene after.
+`PolyweaveSplash` shows the project's logos, each for its seconds, while the first
+scene loads on a thread behind them; any key, mouse button or pad button of any family
+skips the rest. `PolyweaveScenes.shared().go(path)` is the one way every change of
+scene goes: the scene loads on a thread (`ResourceLoader.load_threaded_request`) while
+a loading screen is up (the project's `loading_scene`, told the share loaded through
+`progress`, or a plain dark screen), and each change measures its frame times. `last`
+answers the path, whether it loaded, its seconds, its frames, the 95th percentile and
+the longest frame, a percentile and never a mean, so one hitch is not averaged away;
+`launch_ms` is the time from the engine's start to the first scene. The project's
+`res://polyweave_launch.gd` declares `LAUNCH_MS` and `FRAME_MS`, and the proof script
+holds the fixture to both, with a skip from every family and a change to a scene of
+four thousand nodes. A proof script runs on the wall clock with no frame budget of the
+runner's, since headless frames run unbounded and a threaded load is counted in time;
+the engine's timeout stops a proof that hangs.

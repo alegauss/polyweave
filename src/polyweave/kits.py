@@ -477,7 +477,17 @@ def _scripts(order: list, kits: dict, here: Path) -> list[dict]:
                 }
             )
             continue
-        found = engine.run(at.as_posix(), expect=PROVED, root=here, headless=True)
+        # A proof ends itself, and one timing a load or a frame needs the wall clock:
+        # headless frames run unbounded, so a frame budget would cut a threaded load
+        # short (§PW349). The engine's timeout is what stops a proof that hangs.
+        found = engine.run(
+            at.as_posix(),
+            expect=PROVED,
+            root=here,
+            headless=True,
+            frames=10_000_000,
+            fixed_fps=0,
+        )
         if found.get("ok"):
             said.append({"kit": one, "script": at.as_posix(), "status": "held"})
             continue

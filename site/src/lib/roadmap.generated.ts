@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 2 },
   { block: "U", title: "A window on everything a project governs", open: 2 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 23 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 22 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -223,13 +223,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "U",
     symptom: "a revision's session can write outside its item through Bash, and neither the question nor the touched list sees it",
     why: "The scope hook reads only the file a Write or Edit names, so a shell write to the config or a canon slips past the person.",
-    deps: [],
-  },
-  {
-    id: "PW349",
-    block: "V",
-    symptom: "the splash, the load into the first scene and each change of scene are hand-made per game and freeze on a large scene",
-    why: "A splash no pad can skip and a frozen frame while a scene loads are the first things a player sees.",
     deps: [],
   },
   {

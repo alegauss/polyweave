@@ -1,0 +1,8 @@
+; The launch kit's fixture: a logo, a main scene and the budgets it is held to.
+
+config_version=5
+
+[application]
+
+config/name="launch fixture"
+run/main_scene="res://main.tscn"
