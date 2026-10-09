@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 2 },
   { block: "U", title: "A window on everything a project governs", open: 2 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 10 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 9 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -226,13 +226,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW362",
-    block: "V",
-    symptom: "each game runs its tests its own way, so an agent learns per project how to run them and read what failed",
-    why: "One runner and one answer shape make a game's tests part of its gate without the project being read first.",
-    deps: [],
-  },
-  {
     id: "PW363",
     block: "V",
     symptom: "an exported build is never launched before a player launches it, so a resource the export left out is found by them",
@@ -279,7 +272,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "V",
     symptom: "a new game starts as an empty Godot project and is adopted onto polyweave later, by hand",
     why: "If every project is to adapt to polyweave, the cheapest moment to do it is the first commit.",
-    deps: ["PW362"],
+    deps: [],
   },
   {
     id: "PW370",

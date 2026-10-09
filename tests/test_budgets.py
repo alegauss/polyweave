@@ -95,7 +95,8 @@ from polyweave.errors import PolyweaveError
 #: 115,920 with measure.flashes (§PW354), a captured run's worst second of flashes.
 #: 116,523 with engine.check (§PW358), a project's references and parse held.
 #: 117,493 with game.record_flow (§PW360), a recorded run kept as a flow.
-DESCRIBE = 118_100
+#: 118,408 with game.test (§PW362), a game's tests run the one way.
+DESCRIBE = 119_000
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -167,7 +168,8 @@ DESCRIBE = 118_100
 #: 127,615 with measure.flashes and capture.no-frames, capture.no-rate (§PW354).
 #: 128,425 with engine.check and its nine engine codes (§PW358).
 #: 129,414 with game.record_flow and driver.no-state (§PW359, §PW360).
-CAPABILITIES = 130_000
+#: 130,367 with game.test and engine.no-tests (§PW362).
+CAPABILITIES = 131_000
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

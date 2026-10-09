@@ -1,0 +1,18 @@
+name = "tests"
+version = "0.1.0"
+summary = "a base a game's tests extend, read by game.test with every failure's script and line"
+requires = []
+
+[installs]
+core = "core"
+
+[declares]
+scripts = ["tests/*_test.gd"]
+timeout = 300
+
+[proves]
+fixture = "fixture"
+script = "core/proof.gd"
+
+[changes]
+"0.1.0" = "PolyweaveTest, whose checks name their line, in the convention game.test reads for every project"

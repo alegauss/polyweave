@@ -431,3 +431,22 @@ answers the error, its script and line, the state, the seed and the last lines. 
 proof script forces an error and finds the capture naming its own script and line with
 the log's lines, stages a marker for the next log to pack as an unclean exit, and
 checks a clean close leaves none.
+
+**tests** (§PW362): one way to run a game's tests. `game.test` imports the project
+headless, then runs each test script the project's convention finds, headless at a fixed
+60 fps, bounded by frames and by `timeout` seconds. It reads each run's output for its
+summary and its failure lines, and answers the counts first, then each failure with its
+script, file, line and words. A test that does not parse or raises is a failure at the
+line the engine names. One that never prints its summary is a failure, and one still
+running at `timeout` is stopped and named as hanging; none is ever a silent pass. The
+convention is Cottony's, so its tests are adopted as they stand: `tests/*_test.gd`,
+`  FAIL: <words>` a failure and `checks ran: N, failed: M` the summary. A project whose
+tests speak otherwise declares `[kit.tests]` `scripts`, `summary` and `failure` (named
+groups `ran`, `failed` and `said`) and `timeout`; Starship's `dev/check.gd` is
+`summary = "^CHECK (?:OK|FAILED (?P<failed>\d+))$"` and `failure = "^FAIL (?P<said>.+)$"`.
+The kit installs `PolyweaveTest`, a base a new test extends: every `test_*` method runs
+on the first frame, `check` and `equal` name a failure with the line of the check
+(`(res://file:line)`), and the run ends on the summary, exiting non-zero on a failure.
+`python -m polyweave game.test` exits 1 when a test failed, so a project's own gate runs
+its game's tests with one line. Its proof script runs a test on the base with one check
+failing on purpose, and holds the counts and the failure's line.

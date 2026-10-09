@@ -845,22 +845,6 @@ line in the window and the file in `touched`.
 
 ## Block V — Parts every game repeats, installed already proved
 
-### §PW362 One way to run a game's tests
-
-Starship runs dev/check.gd; Cottony keeps tests/*.gd with its own runner. Each is fine
-alone, and each is a thing a new session must discover before it can tell whether its
-change broke anything.
-
-The kit installs a headless test runner that finds the project's tests by a declared
-convention, adopts the tests that already exist without rewriting them, and answers in
-one shape: the counts first, then each failure with its file, line and message, the same
-shape polyweave's other answers take. It wires itself into the project's tools/gate, so
-running the gate runs the game's tests too.
-
-Proof: the fixture's passing and failing tests are reported as such; a parse error in a
-test file is a failure with its line, never a silent skip; a test that hangs is stopped
-at a declared timeout and named.
-
 ### §PW363 The exported build, launched
 
 game.release_check reads the export presets and a .pck to make sure the driver does not
@@ -971,7 +955,7 @@ afterwards with its first weeks of hand-rolled code to undo.
 
 A new game should start from one call that creates the Godot project; the repository's
 .gitignore and .gitattributes, with Git LFS for binaries; the project config with
-project.init already run; a gate holding the test runner of §PW362 and engine.check
+project.init already run; a gate holding game.test and engine.check
 (docs/specs/engine.md); and whichever base kits its declaration asks for, typically
 input, menus, settings and save, each installed by kit.install with its proof.
 

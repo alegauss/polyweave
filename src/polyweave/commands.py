@@ -395,7 +395,11 @@ def run(stated: argparse.Namespace) -> int:
         print(json.dumps(as_data(answer), indent=1))
     else:
         print("\n".join(text_of(answer)))
-    # An adoption check is a gate a project can put in its own (§PW220).
-    if stated.command in ("init", "project.check") and answer.get("clean") is False:
+    # An adoption check is a gate a project can put in its own (§PW220), and so are the
+    # integrity check and the game's tests (§PW358, §PW362).
+    if stated.command in ("init", "project.check", "engine.check") and answer.get(
+            "clean") is False:
+        return 1
+    if stated.command == "game.test" and answer.get("passed") is False:
         return 1
     return 0

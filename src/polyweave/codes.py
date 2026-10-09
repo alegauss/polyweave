@@ -1949,6 +1949,11 @@ CODES: dict[str, Code] = {
         when="engine.check outside a Godot project (§PW358)",
         doors=("check the Godot project's own folder",),
     ),
+    "engine.no-tests": Code(
+        means="game.test found no test script by the project's convention",
+        when="a game with no tests/*_test.gd and no [kit.tests] scripts (§PW362)",
+        doors=("write tests/<name>_test.gd", "declare [kit.tests] scripts"),
+    ),
     "engine.broken-reference": Code(
         means="a scene, resource or project.godot refers to a file by a UID and a path "
         "that both resolve to nothing",

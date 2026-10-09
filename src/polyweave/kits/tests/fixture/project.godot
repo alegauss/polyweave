@@ -1,0 +1,8 @@
+; The tests kit's fixture: a game with one test written on the kit's base and one in
+; Cottony's older style, both read by game.test.
+
+config_version=5
+
+[application]
+
+config/name="tests fixture"
