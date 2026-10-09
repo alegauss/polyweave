@@ -75,7 +75,6 @@
 
 ## Block V — Parts every game repeats, installed already proved
 
-- 📋 **PW356** (deps: PW344 ✅) **a pad unplugged mid-game or a window losing focus leaves the game running with no one at the controls** — It is a few lines each game forgets, and the console makers' certification asks for it. → §PW356
 - 📋 **PW357** (deps: PW345 ✅) **a second player joining, which pad is whose and keeping two players' bindings apart are rewritten per game** — Starship solved it in coop.gd, and the binding half of it already lives in the remap kit. → §PW357
 - 📋 **PW358** (deps: —) **a moved file breaks a UID reference and a script that does not parse is found only when its scene loads** — These are the commonest silent failures an agent causes in Godot 4, and each is decidable without playing the game. → §PW358
 - 📋 **PW359** (deps: PW341 ✅) **an agent reads a game's state by adding prints and running it, since nothing declares which state a query may read** — A declared surface lets game.query answer with no instrumentation, and it is what a crash dump and a determinism check read. → §PW359

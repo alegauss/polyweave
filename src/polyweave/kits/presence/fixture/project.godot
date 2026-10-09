@@ -1,0 +1,9 @@
+; The presence kit's fixture: a game with nothing in it but time passing, so a pause
+; is seen by its ticks stopping.
+
+config_version=5
+
+[application]
+
+config/name="presence fixture"
+run/main_scene="res://main.tscn"

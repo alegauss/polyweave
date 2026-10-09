@@ -1,0 +1,18 @@
+name = "presence"
+version = "0.1.0"
+summary = "the game paused when a pad leaves or the window loses focus, saying whose pad, resumed by its return or a confirm"
+requires = ["prompts"]
+
+[installs]
+core = "core"
+
+[declares]
+declaration = "res://polyweave_presence.gd"
+pause_on_focus = true
+
+[proves]
+fixture = "fixture"
+script = "core/proof.gd"
+
+[changes]
+"0.1.0" = "a pad leaving or the focus lost pauses the game, the pad's own family drawn, and a confirm or the pad's return resumes it"

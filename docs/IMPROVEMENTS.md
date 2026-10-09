@@ -845,20 +845,6 @@ line in the window and the file in `touched`.
 
 ## Block V — Parts every game repeats, installed already proved
 
-### §PW356 A pad that leaves, a window that loses focus
-
-When a joypad disconnects mid-game (Input.joy_connection_changed), the kit pauses the
-game and says whose pad left, in the prompts of that pad's family (the prompts kit); it
-resumes when the pad reconnects or another pad confirms. When the game's window loses
-focus it pauses too, unless the project declares otherwise, as a game meant to run in
-the background would.
-
-Proof, driven: a simulated disconnect pauses the game and shows the prompt in the family
-of the pad that left; a reconnect resumes it; a focus-out pauses it and a focus-in
-leaves it paused until the player says so. Starship's local co-op is where two pads make
-the first of these matter most, since the wrong player's pad leaving is the case a
-single-player test never meets.
-
 ### §PW357 A second player on the same machine
 
 Starship's game/core/coop.gd and the coop_device kept in bindings.gd hold a second

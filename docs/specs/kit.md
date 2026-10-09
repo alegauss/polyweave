@@ -350,3 +350,19 @@ proof also checks the line clears and that nothing shows with subtitles off. Las
 `FLASH_RUN` is asked for as two `KIT CAPTURE`s of `flash_run.gd`, played for
 `FLASH_SECONDS`. With flashes off it may hold no more than three flashes a second, and
 with them on it must flash at all, so the run is shown to flash.
+
+**presence** (§PW356, requires prompts): nobody left at the controls.
+`PolyweavePresence.shared()` pauses the game through the scene tree when a pad
+disconnects. It says whose pad left (the project's `LEFT` key, given the player's
+number) and draws the confirm button in that pad's family, from the prompts kit's icons,
+by the name the pad had while it was connected. The game resumes when that pad returns,
+or when any pad confirms by its own family's convention (a Switch pad on its east
+button, every other on its south one) or the keyboard on `ui_accept`. Losing the
+window's focus pauses too (`AWAY`), and regaining it leaves the game paused until the
+player confirms; a game meant to run in the background declares `PAUSE_ON_FOCUS`
+false. A game its own menu had paused stays paused when this resumes. Its proof script
+drives a PlayStation pad leaving, where the game must stop ticking, name player 1 and
+draw the PlayStation confirm, and then its return. Another pad's wrong button, in Xbox's
+and in Switch's convention, must hold the game, and that pad's confirm must resume it.
+The proof also checks a game paused by its own menu, a lost and regained focus, and
+`PAUSE_ON_FOCUS` off.
