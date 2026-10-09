@@ -488,12 +488,22 @@ def _scripts(order: list, kits: dict, here: Path) -> list[dict]:
             frames=10_000_000,
             fixed_fps=0,
         )
-        if found.get("ok"):
-            said.append({"kit": one, "script": at.as_posix(), "status": "held"})
-            continue
         log = Path(str(found.get("log") or ""))
         printed = log.read_text(encoding="utf-8", errors="replace") if (
             found.get("log") and log.is_file()) else ""
+        if found.get("ok"):
+            sounds = _sounds(printed, here)
+            off = next((s for s in sounds if not s["held"]), None)
+            said.append(
+                {
+                    "kit": one,
+                    "script": at.as_posix(),
+                    "status": "held" if off is None else "failed",
+                    **({"sounds": sounds} if sounds else {}),
+                    **({} if off is None else {"said": off["said"]}),
+                }
+            )
+            continue
         lines = [ln for ln in printed.splitlines() if ln.startswith("KIT ")]
         said.append(
             {
@@ -504,6 +514,53 @@ def _scripts(order: list, kits: dict, here: Path) -> list[dict]:
             }
         )
     return said
+
+
+#: A sound a proof script captured in the game, and the bounds it is held to.
+SOUND = re.compile(
+    r"^KIT SOUND (?P<path>\S+) (?P<measure>\w+) (?P<low>-?[\d.]+) (?P<high>-?[\d.]+)$",
+    re.MULTILINE,
+)
+
+
+def _sounds(printed: str, here: Path) -> list[dict]:
+    """Each sound a proof script heard in the game, held to its bounds by sound.measure.
+
+    What a game mixes is only heard while it runs, so the script writes it beside the
+    game and prints `KIT SOUND <path> <measure> <min> <max>`; the measure is the one a
+    track is held to, so a bus is held as a track is (§PW351).
+    """
+    from . import sound
+
+    out = []
+    for line in SOUND.finditer(printed):
+        low, high, named = float(line["low"]), float(line["high"]), line["measure"]
+        try:
+            value = sound.measure(here / line["path"]).get(named)
+        except PolyweaveError as refused:
+            value, why = None, refused.message
+        else:
+            why = f"{named} has no value" if value is None else ""
+        held = value is not None and low <= value <= high
+        out.append(
+            {
+                "path": line["path"],
+                "measure": named,
+                "value": value,
+                "min": low,
+                "max": high,
+                "held": held,
+                **(
+                    {}
+                    if held
+                    else {
+                        "said": f"{line['path']} {named} "
+                        + (why or f"{value}, outside [{low}, {high}]")
+                    }
+                ),
+            }
+        )
+    return out
 
 
 def _first(verdict: dict) -> dict:

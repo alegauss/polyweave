@@ -59,7 +59,12 @@ fixture = "fixture"           # a minimal Godot project it is proved in, in this
 - `[proves] script` is a GDScript inside the core, run headless in the game after the
   spec holds, for what only a running game can say (every bound action has an icon in
   every family, say). It prints `KIT PROVED`, or `KIT FAILED: <why>`, and the answer
-  carries that line; with no `$GODOT` it is `skipped` and said (§PW344).
+  carries that line; with no `$GODOT` it is `skipped` and said (§PW344). What a running
+  game mixes is heard only while it runs, so a script may write what it heard beside the
+  game and print `KIT SOUND <path> <measure> <min> <max>`, the path under the game: the
+  answer holds that file to its bounds with `sound.measure`, the measure a track is held
+  to, lists it under the script's `sounds`, and a sound outside them fails the script by
+  its path and value (§PW351).
 - A kit proves with a spec, a script or both, and one with neither is refused: it is
   worth more than a snippet only while its proof holds. A kit with no picture to hold,
   such as a menu, proves by its script alone, and `kit.prove` then answers it `skipped`
@@ -252,3 +257,23 @@ their role, then each credit owed, scrolls at `rate` pixels a second, and any ke
 mouse button or pad button of any family ends it. Its proof script walks the project's
 own records and finds every credit they owe on the screen, nothing on it the file does
 not hold, the scroll at its rate, and a press from every family ending it.
+
+**audio** (§PW351, requires menus): the audio runtime, from Cottony's `music.gd` and
+`sound.gd`. The project's `res://polyweave_audio.gd` declares `BUSES`, each a `name`, the
+bus it `send`s to (Master where unset, and one declared before it, since Godot mixes a bus
+only into one ahead of it), an optional `volume_db` and its `loudness`, the RMS dBFS a
+track mastered for it plays at; Master, Music, SFX, UI and Voice where it declares none.
+`PolyweaveAudio.shared()` adds each missing bus and routes every one as declared, saying in
+`said` what it could not. `play_music` crossfades at equal power over `CROSSFADE` seconds,
+and music ducks by `DUCK_DB` while the Voice bus is heard. `play(stream, bus)` takes a
+player from a pool of `POOL`, the oldest where none is free, its pitch varied by up to
+`PITCH`. `UI_SOUNDS` `{"focus": path, "confirm": path}` play on the UI bus as a control
+takes focus and a focused button is pressed, which is how the menus kit's pad navigation
+sounds. The kit carries no sound of its own. It contributes the `audio` tab: a volume row
+for each declared bus. Its proof script checks that every bus exists and routes as
+declared. It plays a tone mastered to each bus's loudness through that bus, writes what
+the Master bus heard to `.polyweave/kits/audio/<bus>.wav` and prints it as a `KIT SOUND`
+line held to `loudness` ± `LOUDNESS_TOLERANCE`. A crossfade's level must stay within 1.5 dB
+throughout, with no gap and no clip; the music ducks under a voice and comes back; more
+sounds than the pool holds all play, at differing pitches; a pad's focus and confirm in a
+menu play the UI sounds; and every bus's row reads back what it sets.

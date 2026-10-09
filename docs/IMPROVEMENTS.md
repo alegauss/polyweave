@@ -845,22 +845,6 @@ line in the window and the file in `touched`.
 
 ## Block V — Parts every game repeats, installed already proved
 
-### §PW351 The audio runtime a game needs
-
-Cottony has scripts/music.gd and scripts/sound.gd, its own version of what every game
-with sound writes. The kit installs a declared bus layout (Master, Music, SFX, UI and
-Voice by default), a music player that crossfades between tracks and ducks under voice,
-a pooled sound player with pitch variation so a repeated sound does not machine-gun, and
-UI sounds wired to the menus kit's focus and confirm.
-
-Proof: each bus exists and routes as declared; a crossfade leaves no gap and no
-clipping; sound.measure holds each bus's loudness to its declared target in a captured
-scene, the same measure Block P holds a track to, so a track mastered right cannot be
-made wrong by the bus it plays through.
-
-The bus volumes are what the options kit (docs/specs/kit.md) shows as an audio tab,
-which is why the layout is declared once here and read there.
-
 ### §PW352 The string table on screen in every language
 
 Block Q checks a string table against the world the person declared, and `words.glyphs`

@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 2 },
   { block: "U", title: "A window on everything a project governs", open: 2 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 21 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 20 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -223,13 +223,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "U",
     symptom: "a revision's session can write outside its item through Bash, and neither the question nor the touched list sees it",
     why: "The scope hook reads only the file a Write or Edit names, so a shell write to the config or a canon slips past the person.",
-    deps: [],
-  },
-  {
-    id: "PW351",
-    block: "V",
-    symptom: "each game lays out its audio buses, music crossfade and sound pooling its own way, and a bus's loudness is never checked",
-    why: "The bus layout is what both the options screen and Block P's music lean on, so one declared layout serves both.",
     deps: [],
   },
   {

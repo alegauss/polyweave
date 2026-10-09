@@ -1,0 +1,19 @@
+name = "audio"
+version = "0.1.0"
+summary = "a declared bus layout, music that crossfades and ducks under voice, pooled sounds and UI sounds, each bus held to its loudness"
+requires = ["menus"]
+tab = "audio"
+
+[installs]
+core = "core"
+
+[declares]
+layout = "res://polyweave_audio.gd"
+buses = ["Master", "Music", "SFX", "UI", "Voice"]
+
+[proves]
+fixture = "fixture"
+script = "core/proof.gd"
+
+[changes]
+"0.1.0" = "buses laid out as declared, an equal-power crossfade, ducking under voice, a pitch-varied pool and UI sounds on focus and confirm"

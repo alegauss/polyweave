@@ -1,0 +1,9 @@
+; The audio kit's fixture: a game that declares its buses, one of them routed through
+; another, and two UI sounds, in polyweave_audio.gd.
+
+config_version=5
+
+[application]
+
+config/name="audio fixture"
+run/main_scene="res://main.tscn"
