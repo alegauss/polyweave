@@ -187,8 +187,10 @@ every project action but the `ui_` ones unless the screen names them. Its scene,
 remap screen, draws each binding as the prompts kit's icon for the device in use,
 listens on the half pressed for the next input, says a swap, and holds a deadzone
 slider, the inverted vertical and a reset. Its proof script rebinds, swaps, restarts
-the store from the file, resets, and drives the screen with a pad button. Since 0.2.0
-it contributes the `controls` tab to the options screen, a row opening its screen.
+the store from the file, resets, and drives the screen with a pad button, all on three
+actions of its own declared at run time (since 0.2.1), so it holds in a game whatever
+actions that game has. Since 0.2.0 it contributes the `controls` tab to the options
+screen, a row opening its screen.
 
 **menus** (§PW346, requires prompts): a main menu, a pause menu and a yes-or-no confirm
 a pad can drive. `PolyweaveMenu` makes a button per item, named by the item and

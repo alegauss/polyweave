@@ -46,3 +46,12 @@ def test_a_clash_shared_instead_of_swapped_fails_the_proof(tmp_path):
     [found] = kits._scripts(["remap"], kits.every(), game)
     assert found["status"] == "failed"
     assert "fire still shares its key with jump" in found["said"]
+
+
+@pytest.mark.skipif(not os.environ.get("GODOT"), reason="no $GODOT on this machine")
+def test_the_remap_proof_holds_in_a_game_with_none_of_its_actions(tmp_path):
+    # a kit that requires remap lands it in a game of its own actions (§PW392)
+    game = tmp_path / "game"
+    shutil.copytree(kits.KITS / "presence" / "fixture", game)
+    said = kits.install("remap", root=str(game))
+    assert said["proved"]["passed"] is True, said["proved"]

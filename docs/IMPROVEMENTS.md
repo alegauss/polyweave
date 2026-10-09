@@ -1095,3 +1095,16 @@ What Cottony needs that the kits lack is filed as friction and fixed in the kits
 when Cottony carries neither file, its own save test is replaced by the kit's
 acceptance, a save written by the current release loads after the swap, and its gate
 passes.
+
+### §PW391 A rebound pad binding that answers every pad
+
+A binding project.godot declares answers every device: Godot writes its pad events with
+device -1. The remap kit stores a binding as a code with no device in it, and `decode`
+makes the event anew, which leaves Godot's default device 0 on it. So once a player
+rebinds, or the store loads what was kept, every pad binding in the InputMap answers pad
+0 alone, and a player whose pad the system numbered 1 finds their controls dead.
+
+`decode` sets device -1 on every joypad button and motion it makes, which is what the
+project's own binding held, and a test rebinds an action and presses it from pad 1. The
+players kit (§PW357) pins its own copies to a player's pad after decoding, so it is the
+caller that narrows a binding and never the store.

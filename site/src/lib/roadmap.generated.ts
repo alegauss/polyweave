@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 2 },
   { block: "U", title: "A window on everything a project governs", open: 2 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 15 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 16 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -328,6 +328,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "V",
     symptom: "Cottony keeps its own settings and save code where the kits provide them",
     why: "The second game is what shows a kit is not one project's code moved into a folder.",
+    deps: [],
+  },
+  {
+    id: "PW391",
+    block: "V",
+    symptom: "a pad binding the remap kit rebinds answers pad 0 alone, so a lone player on any other pad loses it after a rebind",
+    why: "A decoded event keeps Godot's default device 0 where a project's own binding answers every device, found seating a second player.",
     deps: [],
   },
 ];
