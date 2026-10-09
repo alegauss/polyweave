@@ -376,6 +376,40 @@ in its answer and in the capture's record. They sit outside the cache key, like 
 the same bar is held to what the player sees as well as to the bake (see
 [acceptance-spec.md](acceptance-spec.md)).
 
+## A project that imports and parses clean
+
+Godot 4 refers to a resource by UID, and since 4.4 a script carries a `.uid` file beside
+it. A file moved without its `.uid`, or a `.tscn` written as text, leaves a reference
+that resolves to nothing until its scene loads. A script that does not parse waits the
+same way (§PW358). `engine.check root=` reads the tree as text first, with no engine:
+
+- the UIDs the project declares, from `.uid` files, `.import` remaps and the headers of
+  scenes and resources;
+- each `ext_resource` and each `res://` or `uid://` value in `project.godot`, autoloads
+  included. One whose UID and path both resolve to nothing is
+  `engine.broken-reference`, an error. One whose path is gone while its UID names the
+  file where it is now is `engine.moved-reference`, and `fix=true` repoints it. One
+  whose path is there under a UID nothing declares is `engine.stale-uid`;
+- each literal `res://` or `uid://` path in a script that is not there:
+  `engine.missing-path`, a warning only, since a script may name a file it reads where
+  the project keeps one. A prefix joined to more (`+`, `%`) or tested against
+  (`begins_with`), a pattern, a comment, a path into `.polyweave` or `.godot`, and the
+  scripts under `addons/` (a plugin's, or a kit's that proves itself) are not read;
+- a `.uid` or `.import` left without its source (`engine.orphan-uid`,
+  `engine.orphan-import`), which `fix=true` removes, and an import whose source changed
+  since (`engine.stale-import`), by the MD5 Godot keeps at
+  `.godot/imported/<name>-<md5 of its path>.md5`;
+- each resource nothing refers to, listed as `unreferenced` and counted against
+  nothing, since a game may load one by a path it builds.
+
+Each finding carries its file, line, words and remedy. Where an engine is set it then
+imports the project headless (`--import`), which builds the class cache a script naming
+another's `class_name` needs, and parses every script with
+`src/polyweave/godot/parse_all.gd`. Each script that does not parse is
+`engine.parse-error`, with its line and Godot's own words. `clean` is false while an
+error is left. `project.check` adds the text half for any adopted project holding a
+`project.godot`, so a project's gate holds its references with no engine at all.
+
 ## Still to come in this block
 
 Baking at the size a unit declaration gives (PW47).

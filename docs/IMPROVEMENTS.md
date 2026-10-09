@@ -845,23 +845,6 @@ line in the window and the file in `touched`.
 
 ## Block V — Parts every game repeats, installed already proved
 
-### §PW358 A project that imports and parses clean
-
-Godot 4 refers to resources by UID, and since 4.4 a script carries a .uid file beside
-it. Moving a file without its .uid, or editing a .tscn as text, leaves a reference that
-resolves to nothing until that scene is loaded; a script with a parse error waits the
-same way. An agent moves and writes files without the editor open, so it meets both, and
-today learns of them from a person or from a crash.
-
-What polyweave should do: a check, part of project.check or an operation of its own,
-that imports the project headless, parses every script (--check-only), and reports each
-UID or path reference that resolves to nothing, each .uid left without its file, each
-.import out of date with its source, and each resource nothing references, every one
-with its file and line and the call that fixes it where one exists.
-
-It belongs in the project's gate, and it is the cheapest item in this block for the most
-turns saved, since nothing about it needs a person or a GPU.
-
 ### §PW359 A game's state declared for reading
 
 game.query reads whatever the driver can reach, but which values matter (the player's
@@ -1038,9 +1021,9 @@ afterwards with its first weeks of hand-rolled code to undo.
 
 A new game should start from one call that creates the Godot project; the repository's
 .gitignore and .gitattributes, with Git LFS for binaries; the project config with
-project.init already run; a gate holding the test runner of §PW362 and the hygiene check
-of §PW358; and whichever base kits its declaration asks for, typically input, menus,
-settings and save, each installed by kit.install with its proof.
+project.init already run; a gate holding the test runner of §PW362 and engine.check
+(docs/specs/engine.md); and whichever base kits its declaration asks for, typically
+input, menus, settings and save, each installed by kit.install with its proof.
 
 Proof: the new project's gate passes on its first commit, project.check reports it
 clean, and provenance.read lists every kit it carries with its version. From then on the

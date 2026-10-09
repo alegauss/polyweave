@@ -75,7 +75,6 @@
 
 ## Block V — Parts every game repeats, installed already proved
 
-- 📋 **PW358** (deps: —) **a moved file breaks a UID reference and a script that does not parse is found only when its scene loads** — These are the commonest silent failures an agent causes in Godot 4, and each is decidable without playing the game. → §PW358
 - 📋 **PW359** (deps: PW341 ✅) **an agent reads a game's state by adding prints and running it, since nothing declares which state a query may read** — A declared surface lets game.query answer with no instrumentation, and it is what a crash dump and a determinism check read. → §PW359
 - 📋 **PW360** (deps: PW359) **a bug that happens only sometimes cannot be reproduced, because a game's randomness and timing are held to no seed** — With one seed and recorded input a report becomes a game.keep flow, and the flow becomes a regression test. → §PW360
 - 📋 **PW361** (deps: PW359) **when a game crashes on a person's machine, the agent has nothing to read but their description of it** — A log and a state dump in user:// turn a report into a file, and with a seed a file becomes a case to replay. → §PW361
@@ -86,7 +85,7 @@
 - 📋 **PW366** (deps: PW347 ✅) **a game ships one graphics setting or presets chosen by hand, and no fallback when its renderer fails to start** — Godot carries the upscalers, anti-aliasing and renderers; what each game rewrites is choosing among them and surviving a driver that refuses. → §PW366
 - 📋 **PW367** (deps: PW365, PW366) **a preset's settings are chosen by eye, so no one knows if it is the best-looking one that fits its frame budget** — Searching parameters to meet a declaration is what polyweave exists for, and a preset is a parameter set like Cottony's render rig. → §PW367
 - 💭 **PW368** (deps: —) **a game's states and transitions live only in code, so a state nothing reaches or nothing leaves is found by playing** — Generic enough for a kit, but the most opinionated one here, so it waits until two games show code it would replace. → §PW368
-- 📋 **PW369** (deps: PW341 ✅, PW358, PW362) **a new game starts as an empty Godot project and is adopted onto polyweave later, by hand** — If every project is to adapt to polyweave, the cheapest moment to do it is the first commit. → §PW369
+- 📋 **PW369** (deps: PW341 ✅, PW358 ✅, PW362) **a new game starts as an empty Godot project and is adopted onto polyweave later, by hand** — If every project is to adapt to polyweave, the cheapest moment to do it is the first commit. → §PW369
 - 📋 **PW370** (deps: PW345 ✅, PW357 ✅) **Starship keeps its own bindings and co-op code after the input kits were extracted from it** — A kit proved only in a fixture has not met a game, and the game it came from is the cheapest first consumer. → §PW370
 - 📋 **PW371** (deps: PW347 ✅, PW348 ✅) **Cottony keeps its own settings and save code where the kits provide them** — The second game is what shows a kit is not one project's code moved into a folder. → §PW371
 

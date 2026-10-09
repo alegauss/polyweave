@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 2 },
   { block: "U", title: "A window on everything a project governs", open: 2 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 14 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 13 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -226,13 +226,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW358",
-    block: "V",
-    symptom: "a moved file breaks a UID reference and a script that does not parse is found only when its scene loads",
-    why: "These are the commonest silent failures an agent causes in Godot 4, and each is decidable without playing the game.",
-    deps: [],
-  },
-  {
     id: "PW359",
     block: "V",
     symptom: "an agent reads a game's state by adding prints and running it, since nothing declares which state a query may read",
@@ -307,7 +300,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "V",
     symptom: "a new game starts as an empty Godot project and is adopted onto polyweave later, by hand",
     why: "If every project is to adapt to polyweave, the cheapest moment to do it is the first commit.",
-    deps: ["PW358", "PW362"],
+    deps: ["PW362"],
   },
   {
     id: "PW370",

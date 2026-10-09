@@ -474,7 +474,23 @@ def check(root: Annotated[str, Param("the adopted project")] = ".") -> dict:
                 "under [provenance] handmade",
             )
         )
+    _godot(here, said)
     return _checked(found)
+
+
+def _godot(here: Path, said) -> None:
+    """A Godot project's references held to its files, read as text (§PW358).
+
+    The parse needs an engine and minutes, so it is engine.check's; what the tree says
+    of itself costs nothing, so a project's gate holds it here.
+    """
+    if not (here / "project.godot").is_file():
+        return
+    from .integrity import scan
+
+    for one in scan(here)["findings"]:
+        said(PolyweaveError(one["code"], f"{one['file']}:{one['line']} {one['said']}",
+                            one["remedy"]), one["severity"])
 
 
 def _checked(found: list[dict]) -> dict:

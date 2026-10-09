@@ -64,6 +64,8 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.sfx:kit": ("internal", "a chip kit's hits, made for music.render"),
     "polyweave.contrast:targets_in": ("internal", "the targets a log's lines name"),
     "polyweave.contrast:contrasts": ("internal", "each target against its ring"),
+    "polyweave.integrity:scan": ("internal", "the tree read as text"),
+    "polyweave.integrity:parsed": ("internal", "every script parsed after an import"),
     "polyweave.flashes:is_flash": ("internal", "whether a spec bounds a run's flashes"),
     "polyweave.flashes:count": ("internal", "each kind's worst second over frames"),
     "polyweave.flashes:measured": ("internal", "what a flashes bound reads"),

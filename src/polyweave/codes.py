@@ -1932,6 +1932,53 @@ CODES: dict[str, Code] = {
         "never wrote (§PW354)",
         doors=("capture the run with capture.movie and name the folder it wrote",),
     ),
+    "engine.no-project": Code(
+        means="engine.check was pointed at a folder with no project.godot",
+        when="engine.check outside a Godot project (§PW358)",
+        doors=("check the Godot project's own folder",),
+    ),
+    "engine.broken-reference": Code(
+        means="a scene, resource or project.godot refers to a file by a UID and a path "
+        "that both resolve to nothing",
+        when="a file moved or was deleted without what refers to it (§PW358)",
+        doors=("point the reference at the file as it is now", "put the file back"),
+    ),
+    "engine.moved-reference": Code(
+        means="a reference's path is gone but its UID names the file where it is now",
+        when="a file moved with its .uid; Godot finds it and warns on every load",
+        doors=("engine.check fix=true repoints it",),
+    ),
+    "engine.stale-uid": Code(
+        means="a reference names a UID nothing declares, and Godot falls back to its "
+        "path",
+        when="a scene written as text, or a resource saved again under a new UID",
+        doors=("open and save the scene in the editor", "drop the uid attribute"),
+    ),
+    "engine.missing-path": Code(
+        means="a script names a res:// or uid:// path that is not there",
+        when="a script loads a file that moved, or one a project may keep (a warning)",
+        doors=("point it at a file that is there", "check it exists before loading"),
+    ),
+    "engine.orphan-uid": Code(
+        means="a .uid file sits beside no file",
+        when="a script moved or was deleted without its .uid",
+        doors=("engine.check fix=true removes it", "put its file back"),
+    ),
+    "engine.orphan-import": Code(
+        means="an .import file imports a source that is not there",
+        when="an asset moved or was deleted without its .import",
+        doors=("engine.check fix=true removes it", "put its source back"),
+    ),
+    "engine.stale-import": Code(
+        means="a source changed since Godot last imported it",
+        when="an asset written by a tool with no editor open",
+        doors=("import it again; engine.check imports where an engine is set",),
+    ),
+    "engine.parse-error": Code(
+        means="a script does not parse, so nothing that loads it works",
+        when="engine.check parses every script after an import, with an engine set",
+        doors=("fix the line Godot names",),
+    ),
     "capture.no-rate": Code(
         means="nothing says at what rate a captured run's frames were taken",
         when="measure.flashes on a folder of PNGs with no sequence.json, no fps passed "
