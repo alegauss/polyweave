@@ -38,6 +38,15 @@ var pending: Dictionary = {}
 var waiting: Dictionary = {}
 
 
+## The global random functions seeded, and the determinism kit's streams where the game
+## carries it, so a flow's seed reaches every draw the game makes through it (§PW360).
+func _seeded(value: int) -> void:
+	seed(value)
+	var kit := "res://addons/polyweave/determinism/random.gd"
+	if ResourceLoader.exists(kit):
+		load(kit).reseed(value)
+
+
 func _initialize() -> void:
 	var port := 0
 	var scene_path := str(ProjectSettings.get_setting("application/run/main_scene", ""))
@@ -45,7 +54,7 @@ func _initialize() -> void:
 		if arg.begins_with("--port="):
 			port = int(arg.get_slice("=", 1))
 		elif arg.begins_with("--seed="):
-			seed(int(arg.get_slice("=", 1)))
+			_seeded(int(arg.get_slice("=", 1)))
 		elif arg.begins_with("--scene="):
 			scene_path = arg.get_slice("=", 1)
 		elif arg.begins_with("--locale="):
@@ -70,7 +79,7 @@ func _initialize() -> void:
 			return
 		flow = parsed["steps"]
 		if parsed.get("seed"):
-			seed(int(parsed["seed"]))
+			_seeded(int(parsed["seed"]))
 		if str(parsed.get("scene", "")) != "":
 			scene_path = str(parsed["scene"])
 	var bound := server.listen(port, "127.0.0.1") if flow_path == "" else OK

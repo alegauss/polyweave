@@ -106,7 +106,8 @@ TOOL_BUDGET = 4500
 #: 101,900 at 101,334 for kit.prove and kit.update (§PW342, §PW343).
 #: 103,000 at 102,380 for measure.flashes (§PW354).
 #: 103,600 at 103,053 for engine.check and game.query's state (§PW358, §PW359).
-LIST_BUDGET = 103600
+#: 104,400 at 103,800 for game.record_flow (§PW360).
+LIST_BUDGET = 104400
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

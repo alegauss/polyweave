@@ -845,23 +845,6 @@ line in the window and the file in `touched`.
 
 ## Block V — Parts every game repeats, installed already proved
 
-### §PW360 The same run twice
-
-The kit installs a central random service seeded from the declaration or the command
-line, which the project's code draws from instead of the global randf, and a record of
-input events stamped with their physics frame. A run is then reproducible from its seed
-and its record.
-
-Proof: two runs with the same seed and the same input end in the same observable state
-(the state kit's snapshot, docs/specs/kit.md), compared name by name; a run that
-diverges is answered with the first frame and the first name that differ, which usually
-points at the one call to the global random someone forgot.
-
-A divergence, or any bug seen once, is then saved with its seed and recording as a
-game.keep flow, so game.replay runs it in the gate from then on. That is the step that
-turns a report of "it happened once" into a test that fails until it is fixed, without
-the agent guessing at the cause first.
-
 ### §PW361 What a crash leaves behind
 
 The kit installs structured logging (level, time, physics frame, current scene) to a

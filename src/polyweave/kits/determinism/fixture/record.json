@@ -1,0 +1,4 @@
+{"format": 1, "seed": 7, "events": [
+ {"frame": 10, "action": "right", "pressed": true},
+ {"frame": 40, "action": "right", "pressed": false}
+]}

@@ -1,0 +1,17 @@
+name = "determinism"
+version = "0.1.0"
+summary = "one seed for a run, named random streams and a frame-stamped input record, proved by two runs that agree"
+requires = ["state"]
+
+[installs]
+core = "core"
+
+[declares]
+declaration = "res://polyweave_random.gd"
+
+[proves]
+fixture = "fixture"
+script = "core/proof.gd"
+
+[changes]
+"0.1.0" = "streams seeded from the run's seed and their names, input recorded by physics frame, and two runs held to agree"

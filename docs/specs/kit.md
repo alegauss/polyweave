@@ -399,3 +399,18 @@ its value is of another type. `snapshot()` holds every name's value at once, the
 surface a crash dump writes and a determinism check compares. The driver serves it as
 `state`, so `game.query state=["health"]` (or `["*"]`) reads it with no path and no
 print. Its proof script runs the main scene and holds every name to its declared type.
+
+**determinism** (§PW360, requires state): the same run twice. `PolyweaveRandom` holds one
+seed for a run: the run's `--seed=N` (the driver's, so a driven session and a replayed
+flow reach it), else `SEED` in `res://polyweave_random.gd`, else one drawn and printed
+as `polyweave_random: seed=N`. The project's code draws from named streams,
+`PolyweaveRandom.randf("enemies")`, each seeded from the seed and its own name, so a draw
+added in one never shifts another, and the global random functions are seeded too.
+`PolyweaveRecorder` records each action's press and release by physics frame, and saves
+`{seed, events}`. `game.record_flow` turns a saved record into a `game.keep` flow, ending
+on the `expect` given, so a bug seen once is a flow `game.replay` runs in the gate. The
+proof script plays the declared `RUN` for `RUN_TICKS` physics frames twice, from `SEED`
+and with `RECORD` fed at its frames, and holds the state kit's snapshot of the two runs
+to agree after every physics frame. It names the first frame and name that differ,
+usually a draw made outside the streams, and refuses a run in which nothing the state
+kit names ever changed.

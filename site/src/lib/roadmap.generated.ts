@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 2 },
   { block: "U", title: "A window on everything a project governs", open: 2 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 12 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 11 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -223,13 +223,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "U",
     symptom: "a revision's session can write outside its item through Bash, and neither the question nor the touched list sees it",
     why: "The scope hook reads only the file a Write or Edit names, so a shell write to the config or a canon slips past the person.",
-    deps: [],
-  },
-  {
-    id: "PW360",
-    block: "V",
-    symptom: "a bug that happens only sometimes cannot be reproduced, because a game's randomness and timing are held to no seed",
-    why: "With one seed and recorded input a report becomes a game.keep flow, and the flow becomes a regression test.",
     deps: [],
   },
   {

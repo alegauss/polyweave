@@ -771,6 +771,66 @@ def kept(
     }
 
 
+@operation("game.record_flow")
+def record_flow(
+    record: Annotated[str, Param("a record PolyweaveRecorder saved, as a path")],
+    *,
+    out: Annotated[str, Param("the flow file to write, under the project's tests")],
+    proves: Annotated[str, Param("what the flow proves, in a sentence")],
+    expect: Annotated[
+        list, Param("{path, property, equals} the run must end on, the bug's place")
+    ] = (),
+    root: Annotated[str, _ROOT] = ".",
+) -> dict:
+    """A run a player recorded, written as a flow game.replay runs in the gate (§PW360).
+
+    The determinism kit's record holds the run's seed and each action's press and
+    release by physics frame; the flow steps to each frame, holds or releases the
+    action there, and ends on the expectations given, which is where a bug seen once
+    becomes a test that fails until it is fixed. A step is one frame, which is one
+    physics frame where the project ticks physics at the engine's fixed rate.
+    """
+    here = load(root).root
+    source = Path(record) if Path(record).is_absolute() else here / record
+    try:
+        held = json.loads(source.read_text(encoding="utf-8"))
+        events = sorted(held["events"], key=lambda e: int(e["frame"]))
+    except (OSError, ValueError, KeyError, TypeError) as failed:
+        raise PolyweaveError(
+            "game.bad-target",
+            f"{record} is no record the determinism kit saved: {failed}",
+            "save one with PolyweaveRecorder.save() and name the file it printed",
+            given=record,
+        ) from None
+    steps: list[dict] = []
+    at = 0
+    for event in events:
+        frame = int(event["frame"])
+        if frame > at:
+            steps.append({"cmd": "step", "frames": frame - at})
+            at = frame
+        half = {"hold": True} if event["pressed"] else {"release": True}
+        steps.append({"cmd": "input", "action": str(event["action"]), **half})
+    steps.append({"cmd": "step", "frames": 1})
+    for one in expect or ():
+        steps.append({"cmd": "expect", "path": one["path"], "property": one["property"],
+                      "equals": one["equals"]})
+    flow = {"format": FLOW_FORMAT, "proves": proves, "seed": int(held.get("seed", 0)),
+            "scene": "", "engine": "", "driver": _driver_hash(here), "steps": steps}
+    where = Path(out) if Path(out).is_absolute() else here / out
+    where.parent.mkdir(parents=True, exist_ok=True)
+    with where.open("w", encoding="utf-8", newline="\n") as written:
+        written.write(json.dumps(flow, indent=2) + "\n")
+    return {
+        "flow": str(where),
+        "steps": len(steps),
+        "seed": flow["seed"],
+        "expectations": len(expect or ()),
+        "says": "" if expect else "the flow expects nothing yet: name with expect "
+        "the value the bug leaves wrong, so it fails until the bug is fixed",
+    }
+
+
 def _step_paths(step: dict) -> list[str]:
     """The generated paths one kept step reaches its node by."""
     click = step.get("click")

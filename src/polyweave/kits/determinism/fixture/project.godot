@@ -1,0 +1,16 @@
+; The determinism kit's fixture: a game that spawns enemies by chance every physics
+; frame and moves a player while "right" is held.
+
+config_version=5
+
+[application]
+
+config/name="determinism fixture"
+run/main_scene="res://main.tscn"
+
+[input]
+
+right={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"physical_keycode":68)]
+}

@@ -263,3 +263,11 @@ too, answering `{held, value}` with no frame passing.
 
 A number arrives as JSON gives it, a float, so `wait … equals` compares numbers as
 numbers: a node's int 42 equals the 42 a caller sent.
+
+**A run a player recorded is a flow too** (§PW360). The determinism kit's
+`PolyweaveRecorder` saves a run's seed and each action's press and release by physics
+frame. `game.record_flow(record, out, proves, expect)` writes it as a flow: a `step` to
+each event's frame, an `input` holding or releasing the action there, and the `expect`s
+given, which is where the bug shows, so the flow fails until it is fixed. Wherever the
+driver seeds the global random functions, from `--seed` or a flow's `seed`, it reseeds
+the kit's streams too, so a replay draws what the recorded run drew.
