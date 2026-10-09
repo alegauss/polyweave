@@ -1,0 +1,19 @@
+name = "access"
+version = "0.1.0"
+summary = "an accessibility tab: the text scale through the Theme, shake and flash switches the game's effects ask, and hold or toggle"
+requires = ["options"]
+tab = "accessibility"
+
+[installs]
+core = "core"
+
+[declares]
+declaration = "res://polyweave_access.gd"
+scales = [1.0, 1.25, 1.5, 2.0]
+
+[proves]
+fixture = "fixture"
+script = "core/proof.gd"
+
+[changes]
+"0.1.0" = "the text scale held to fit at its largest, shake held still when off on a declared run, and hold or toggle"

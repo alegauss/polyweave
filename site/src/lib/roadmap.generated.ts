@@ -229,7 +229,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW355",
     block: "V",
     symptom: "text size, colourblind filters, subtitles and less shake are each left out or hand-built, and none is checked",
-    why: "They are options in every game's settings and their effect can be measured, which makes them a kit rather than a wish.",
+    why: "Colourblind filters held apart by measure.contrast, Voice-bus subtitles and a flash-free captured run are still to land.",
     deps: [],
   },
   {

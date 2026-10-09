@@ -313,3 +313,18 @@ every sequence by each family's confirm alone, holding that the other family's b
 moves nothing and that the first press leaves the same line whole. Each line must show
 the speaker and the portrait it declares, and fit its box in every locale by
 `unfit`.
+
+**access** (§PW355, requires options): the accessibility tab. `PolyweaveAccess.shared()`
+puts the project's Theme, duplicated with every item kept (or an empty one), on the root
+window, and the text scale sets its default font size, so every Label and Button that
+sets no size of its own grows with it. `shake(amount)` and `flash(strength)` are what a
+game's own effects ask: each answers the amount, or nothing where the player switched it
+off. With hold or toggle on, `held(action)` turns on at one press and off at the next
+for each action in `HELD` (every action where it lists none). The project's
+`res://polyweave_access.gd` declares `SCALES`, `HELD`, `SCREENS`, and `SHAKE_RUN` with
+`RUN_SECONDS`. Its proof script reads back every row. It lays out the screens at the
+largest scale, naming a control that sets its own size (which the scale never reaches)
+and one that no longer fits. It runs `SHAKE_RUN` with shake off, where no camera's offset
+may move, then with shake on, where one must, so the run is shown to shake at all.
+Finally it checks hold or toggle. Colourblind filters, subtitles for the Voice bus, and a
+flash-free captured run are still to come.

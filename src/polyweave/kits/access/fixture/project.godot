@@ -1,0 +1,9 @@
+; The access kit's fixture: a title screen laid out at every text scale, and a scene
+; whose camera shakes through PolyweaveAccess.shake.
+
+config_version=5
+
+[application]
+
+config/name="access fixture"
+run/main_scene="res://main.tscn"

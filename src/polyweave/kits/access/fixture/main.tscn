@@ -1,0 +1,35 @@
+[gd_scene format=3]
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 640.0
+offset_bottom = 480.0
+
+[node name="Box" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 420.0
+offset_bottom = 460.0
+
+[node name="Title" type="Label" parent="Box"]
+layout_mode = 2
+text = "Star Garden"
+
+[node name="Hint" type="Label" parent="Box"]
+layout_mode = 2
+text = "Press any button to begin"
+autowrap_mode = 3
+
+[node name="Start" type="Button" parent="Box"]
+layout_mode = 2
+text = "Start"
+
+[node name="Options" type="Button" parent="Box"]
+layout_mode = 2
+text = "Options"
+
+[node name="Quit" type="Button" parent="Box"]
+layout_mode = 2
+text = "Quit"
