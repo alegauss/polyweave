@@ -8,8 +8,15 @@ extends SceneTree
 ## press and off at the next, and with it off it is held only while pressed. Each pair
 ## of COLOUR_PAIRS is drawn as a player with each deficiency sees it with its correction
 ## on, a box of one colour in a ring of the other, and printed as a KIT CONTRAST line,
-## which polyweave holds to PAIR_DELTA_E with measure.contrast. Prints KIT PROVED, or
-## KIT FAILED with why.
+## which polyweave holds to PAIR_DELTA_E with measure.contrast. A line played with a
+## subtitle shows it while it plays and clears when it ends, the probe line and every
+## one of SUBTITLE_KEYS fit the subtitle's box in SUBTITLE_LINES rows and stay on a
+## screen of the game's size, and with subtitles off nothing shows.
+## FLASH_RUN is asked for twice as a KIT CAPTURE, which polyweave takes with
+## capture.movie where a screen can draw it and counts with measure.flashes: with
+## flashes off it holds no more than the guidance's three a second, and with them on it
+## flashes at all, so the run is shown to flash. Prints KIT PROVED, or KIT FAILED with
+## why.
 
 const Access := preload("res://addons/polyweave/access/access.gd")
 const Options := preload("res://addons/polyweave/access/options.gd")
@@ -29,6 +36,13 @@ var since := 0
 var run: Node
 var moved := false
 var still := true
+var step := 0
+var lines := []
+var speaker: AudioStreamPlayer
+## the screen the subtitle is laid out on, at the size the game is made for, since a
+## headless window is 64 pixels square whatever it is asked to be
+var screen: SubViewport
+const LINE := "A line long enough to need more than one row of the subtitle box at the largest size"
 
 
 func _initialize() -> void:
@@ -42,7 +56,10 @@ func _process(_delta: float) -> bool:
 				_rows()
 				_toggle()
 				_pairs()
-				_scaled()
+				stage = "subtitle"
+				since = Time.get_ticks_msec()
+		"subtitle":
+			_subtitled()
 		"scale":
 			frames += 1
 			if frames >= 3:
@@ -51,6 +68,7 @@ func _process(_delta: float) -> bool:
 		"shake_off", "shake_on":
 			_watch()
 		"done":
+			_flash_runs()
 			print("KIT PROVED" if failed.is_empty() else "KIT FAILED: " + "; ".join(failed))
 			return true
 	return false
@@ -89,6 +107,81 @@ func _pairs() -> void:
 		file.close()
 		print("KIT CONTRAST %s %s delta_e_min %.2f 1000" % [picture.trim_prefix("res://"),
 			listed.trim_prefix("res://"), float(access.declared["PAIR_DELTA_E"])])
+
+
+## a quiet line half a second long, for a subtitle to follow
+func _line() -> AudioStreamPlayer:
+	var wav := AudioStreamWAV.new()
+	wav.format = AudioStreamWAV.FORMAT_16_BITS
+	wav.mix_rate = 22050
+	var data := PackedByteArray()
+	data.resize(22050)
+	wav.data = data
+	var player := AudioStreamPlayer.new()
+	player.stream = wav
+	root.add_child(player)
+	return player
+
+
+func _subtitled() -> void:
+	match step:
+		0:
+			screen = SubViewport.new()
+			screen.size = Vector2i(
+				int(ProjectSettings.get_setting("display/window/size/viewport_width", 1152)),
+				int(ProjectSettings.get_setting("display/window/size/viewport_height", 648)))
+			root.add_child(screen)
+			access.caption().get_parent().get_parent().reparent(screen)
+			speaker = _line()
+			speaker.play()
+			access.subtitle(speaker, LINE)
+			if access.subtitled() != LINE:
+				failed.append("a line played with a subtitle showed %s" % access.subtitled())
+			lines = [LINE] + Array(access.declared["SUBTITLE_KEYS"])
+			step = 1
+		1:
+			if lines.is_empty():
+				step = 2
+				frames = 0
+				return
+			var label: Label = access.caption()
+			if label.text != lines[0]:
+				label.text = lines[0]
+				frames = 0
+				return
+			frames += 1
+			if frames < 3:
+				return
+			for unfit in _unfit(label, label.tr(label.text)):
+				failed.append("the subtitle %s %s" % [lines[0], unfit])
+			var most := int(access.declared["SUBTITLE_LINES"])
+			if label.get_line_count() > most:
+				failed.append("the subtitle %s takes %d lines, over the %d a subtitle may" % [
+					lines[0], label.get_line_count(), most])
+			var panel := label.get_parent() as Control
+			if not Rect2(Vector2.ZERO, screen.size).grow(0.5).encloses(panel.get_global_rect()):
+				failed.append("the subtitle %s leaves the screen" % lines[0])
+			lines.pop_front()
+			label.text = LINE
+		2:
+			if speaker.playing:
+				frames = 0
+				return
+			# a few frames after the line ends, so the service has had its turn
+			frames += 1
+			if frames < 3:
+				return
+			if access.subtitled() != "":
+				failed.append("the subtitle %s still shows after its line ended" % access.subtitled())
+			access.subtitles = false
+			var quiet := _line()
+			quiet.play()
+			access.subtitle(quiet, LINE)
+			if access.subtitled() != "":
+				failed.append("with subtitles off, a line still showed its subtitle")
+			access.subtitles = true
+			quiet.stop()
+			_scaled()
 
 
 func _press(action: String, pressed: bool) -> void:
@@ -234,6 +327,14 @@ func _end_run() -> void:
 		_shake_run(true)
 	else:
 		stage = "done"
+
+
+func _flash_runs() -> void:
+	if str(access.declared["FLASH_RUN"]) == "":
+		return
+	var script := "addons/polyweave/access/flash_run.gd"
+	print("KIT CAPTURE %s flashes 0 3 flashes=off" % script)
+	print("KIT CAPTURE %s flashes 1 1000000 flashes=on" % script)
 
 
 func _cameras(node: Node, out: Array) -> Array:

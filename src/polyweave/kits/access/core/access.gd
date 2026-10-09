@@ -11,6 +11,9 @@ extends Node
 ##   switched it off;
 ## - a colourblind filter over the whole screen, the correction for protanopia,
 ##   deuteranopia or tritanopia (filters.gd), or "off";
+## - subtitles: `subtitle(player, key)` shows the key's line, through tr(), at the foot
+##   of the screen while the player plays (the one the audio kit's say() answers, for a
+##   line on the Voice bus), and clears it when the player stops;
 ## - hold or toggle: with it on, `held(action)` turns on at one press and off at the
 ##   next, for each action the project lists in HELD (every action where it lists none).
 ##
@@ -18,7 +21,10 @@ extends Node
 ## scenes the proof lays out at the largest scale), and SHAKE_RUN with RUN_SECONDS (a
 ## scene that shakes the camera through `shake`, which the proof runs with shake off), and
 ## COLOUR_PAIRS, colours that must stay told apart, with PAIR_DELTA_E, how far apart
-## (CIEDE2000) each must stay under every filter.
+## (CIEDE2000) each must stay under every filter, and SUBTITLE_KEYS, lines the proof
+## lays out as subtitles, each held to its box and to SUBTITLE_LINES rows (3), and
+## FLASH_RUN with FLASH_SECONDS, a scene whose effects flash through `flash`, which the
+## proof has captured and counted with flashes off and on.
 
 const HERE := "res://addons/polyweave/access/access.gd"
 const PROJECT := "res://polyweave_access.gd"
@@ -30,6 +36,10 @@ const DEFAULTS := {
 	"RUN_SECONDS": 1.0,
 	"COLOUR_PAIRS": [],
 	"PAIR_DELTA_E": 15.0,
+	"SUBTITLE_KEYS": [],
+	"SUBTITLE_LINES": 3,
+	"FLASH_RUN": "",
+	"FLASH_SECONDS": 2.0,
 }
 const Filters := preload("res://addons/polyweave/access/filters.gd")
 
@@ -38,6 +48,9 @@ var shaking := true
 var flashing := true
 var toggling := false
 var filter := "off"
+var subtitles := true
+var _caption: Label
+var _speaking: AudioStreamPlayer
 var _layer: CanvasLayer
 var _veil: ColorRect
 var declared := {}
@@ -120,6 +133,61 @@ func set_filter(deficiency: String, simulating := false) -> void:
 	_layer.visible = deficiency != "off"
 	if deficiency != "off":
 		_veil.material = Filters.material(deficiency, simulating)
+
+
+## show `key`'s line while `player` plays, where the player keeps subtitles on
+func subtitle(player: AudioStreamPlayer, key: String) -> void:
+	if not subtitles or player == null:
+		return
+	var label := caption()
+	label.text = key
+	label.get_parent().visible = true
+	_speaking = player
+	if not player.finished.is_connected(_quiet):
+		player.finished.connect(_quiet)
+
+
+## the label a subtitle is shown in: at the foot of the screen, four fifths of its width
+func caption() -> Label:
+	if _caption == null:
+		var layer := CanvasLayer.new()
+		layer.layer = 100
+		var panel := PanelContainer.new()
+		panel.name = "Subtitle"
+		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		panel.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+		panel.anchor_left = 0.1
+		panel.anchor_right = 0.9
+		panel.offset_left = 0
+		panel.offset_right = 0
+		panel.offset_top = -96
+		panel.offset_bottom = -16
+		panel.grow_vertical = Control.GROW_DIRECTION_BEGIN
+		panel.visible = false
+		_caption = Label.new()
+		_caption.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		_caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_caption.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		panel.add_child(_caption)
+		layer.add_child(panel)
+		add_child(layer)
+	return _caption
+
+
+## the subtitle shown now, or "" where none is
+func subtitled() -> String:
+	return _caption.text if _caption != null and _caption.get_parent().visible else ""
+
+
+func _quiet() -> void:
+	if _caption != null:
+		_caption.get_parent().visible = false
+	_speaking = null
+
+
+func _process(_delta: float) -> void:
+	if _speaking != null and not _speaking.playing:
+		_quiet()
 
 
 func set_toggling(on: bool) -> void:

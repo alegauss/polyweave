@@ -6,3 +6,5 @@ const SHAKE_RUN := "res://shake.tscn"
 const RUN_SECONDS := 0.5
 const COLOUR_PAIRS := [["#d03030", "#30a030"]]
 const PAIR_DELTA_E := 15.0
+const FLASH_RUN := "res://flash.tscn"
+const FLASH_SECONDS := 1.5

@@ -67,7 +67,11 @@ fixture = "fixture"           # a minimal Godot project it is proved in, in this
   its path and value (§PW351). A picture only the game can draw is held the same way:
   the script writes it with its targets as a JSON list beside it and prints
   `KIT CONTRAST <picture> <targets> <measure> <min> <max>`, which `measure.contrast`
-  holds, listed under `contrasts` (§PW355).
+  holds, listed under `contrasts` (§PW355). What a game draws over time needs a screen
+  a headless proof lacks, so the script prints `KIT CAPTURE <script> <measure> <min>
+  <max> [args]`: the run is taken with `capture.movie` (its environment empty, since
+  nothing is committed), measured by `measure.flashes`, and listed under `captures`.
+  Where no route draws real pixels it is `skipped`, and said.
 - A kit proves with a spec, a script or both, and one with neither is refused: it is
   worth more than a snippet only while its proof holds. A kit with no picture to hold,
   such as a menu, proves by its script alone, and `kit.prove` then answers it `skipped`
@@ -337,5 +341,12 @@ by `measure.contrast`. It lays out the screens at the
 largest scale, naming a control that sets its own size (which the scale never reaches)
 and one that no longer fits. It runs `SHAKE_RUN` with shake off, where no camera's offset
 may move, then with shake on, where one must, so the run is shown to shake at all.
-Finally it checks hold or toggle. Subtitles for the Voice bus and a flash-free captured
-run are still to come.
+Then it checks hold or toggle. `subtitle(player, key)` shows the key's line at the foot
+of the screen while the player plays (the one the audio kit's `say()` answers) and
+clears it when the player stops. The proof holds the probe line and each of
+`SUBTITLE_KEYS` to its box, to `SUBTITLE_LINES` rows (3) and to a screen of the game's
+size. That screen is a SubViewport, since a headless window is 64 pixels square. The
+proof also checks the line clears and that nothing shows with subtitles off. Last,
+`FLASH_RUN` is asked for as two `KIT CAPTURE`s of `flash_run.gd`, played for
+`FLASH_SECONDS`. With flashes off it may hold no more than three flashes a second, and
+with them on it must flash at all, so the run is shown to flash.

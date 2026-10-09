@@ -845,23 +845,6 @@ line in the window and the file in `touched`.
 
 ## Block V — Parts every game repeats, installed already proved
 
-### §PW355 Accessibility options with their effect measured
-
-The kit adds an accessibility tab to the options kit (docs/specs/kit.md): a text scale
-applied through the project's Theme; colourblind filters as a full-screen shader
-(protanopia, deuteranopia and tritanopia, as simulation and as correction); subtitles
-for the lines the voice bus plays; a switch for screen shake and for flashes, which the
-game's own effects consult through the kit; and hold-or-toggle for held actions.
-
-Proof: at the largest text scale no label overflows on a captured screen; the colour
-pairs the project declares must stay apart stay apart under each filter, by
-measure.contrast; with flashes switched off, measure.flashes
-(docs/specs/measurements.md) finds none over a declared run; with shake off, the
-camera's offset stays at zero through a declared run.
-
-A filter or a scale is measured, never judged by the agent; whether the result still
-looks like the game is a person's verdict, as every look is here.
-
 ### §PW356 A pad that leaves, a window that loses focus
 
 When a joypad disconnects mid-game (Input.joy_connection_changed), the kit pauses the

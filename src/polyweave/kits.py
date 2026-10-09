@@ -493,7 +493,10 @@ def _scripts(order: list, kits: dict, here: Path) -> list[dict]:
             found.get("log") and log.is_file()) else ""
         if found.get("ok"):
             sounds, contrasts = _sounds(printed, here), _contrasts(printed, here)
-            off = next((s for s in sounds + contrasts if not s["held"]), None)
+            captures = _captures(printed, here)
+            off = next(
+                (s for s in sounds + contrasts + captures if not s["held"]), None
+            )
             said.append(
                 {
                     "kit": one,
@@ -501,6 +504,7 @@ def _scripts(order: list, kits: dict, here: Path) -> list[dict]:
                     "status": "held" if off is None else "failed",
                     **({"sounds": sounds} if sounds else {}),
                     **({"contrasts": contrasts} if contrasts else {}),
+                    **({"captures": captures} if captures else {}),
                     **({} if off is None else {"said": off["said"]}),
                 }
             )
@@ -608,6 +612,52 @@ def _contrasts(printed: str, here: Path) -> list[dict]:
                 ),
             }
         )
+    return out
+
+
+#: A run a proof script asks to have captured on a screen, and its bounds.
+CAPTURED = re.compile(
+    r"^KIT CAPTURE (?P<script>\S+) (?P<measure>\w+) (?P<low>-?[\d.]+) "
+    r"(?P<high>-?[\d.]+)(?P<args>(?: \S+)*)$",
+    re.MULTILINE,
+)
+
+
+def _captures(printed: str, here: Path) -> list[dict]:
+    """Each run a proof script asked for, taken by capture.movie and measured.
+
+    What a game draws over time is only seen on a screen, which a headless proof does
+    not have, so the script prints `KIT CAPTURE <script> <measure> <min> <max> [args]`
+    and the run is taken here with capture.movie and held by measure.flashes (§PW355).
+    Where no route draws real pixels the run is `skipped`, and said.
+    """
+    from . import capture, flashes
+
+    out = []
+    for line in CAPTURED.finditer(printed):
+        low, high, named = float(line["low"]), float(line["high"]), line["measure"]
+        args = line["args"].split()
+        name = Path(line["script"]).stem + ("-" + "-".join(args) if args else "")
+        folder = Path(".polyweave") / "kits" / name.replace("=", "_")
+        entry = {"script": line["script"], "args": args, "measure": named,
+                 "min": low, "max": high}
+        try:
+            taken = capture.movie(line["script"], out=folder.as_posix(), root=str(here),
+                                  args=args, record=False, environment={})
+        except PolyweaveError as refused:
+            if refused.code != "engine.no-offscreen-route":
+                raise
+            out.append({**entry, "held": True, "skipped": refused.message})
+            continue
+        if not taken.get("ok"):
+            out.append({**entry, "held": False, "value": None,
+                        "said": f"{name} was not captured: {taken.get('why')}"})
+            continue
+        value = flashes.measured(folder, root=here).get(named)
+        held = value is not None and low <= value <= high
+        out.append({**entry, "value": value, "held": held,
+                    **({} if held else
+                       {"said": f"{name} {named} {value}, outside [{low}, {high}]"})})
     return out
 
 

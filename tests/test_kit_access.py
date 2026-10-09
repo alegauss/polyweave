@@ -63,6 +63,21 @@ ACCESS = "addons/polyweave/access/access.gd"
     ("addons/polyweave/access/filters.gd",
      "return _colour(lin + _rows(SHIFT, error))", "return c",
      ".polyweave/kits/access/deuteranopia.png delta_e_min"),
+    (ACCESS, "\t\t_caption.get_parent().visible = false\n", "\t\tpass\n",
+     "still shows after its line ended"),
+    (ACCESS, "if not subtitles or player == null:", "if player == null:",
+     "with subtitles off, a line still showed its subtitle"),
+    ("polyweave_access.gd", "const PAIR_DELTA_E := 15.0",
+     'const PAIR_DELTA_E := 15.0\nconst SUBTITLE_KEYS := ["' + "and on " * 60 + '"]',
+     "lines, over the 3 a subtitle may"),
+    ("polyweave_access.gd", "const PAIR_DELTA_E := 15.0",
+     "const PAIR_DELTA_E := 15.0\nconst SUBTITLE_LINES := 99\n"
+     'const SUBTITLE_KEYS := ["' + "and on " * 1000 + '"]',
+     "leaves the screen"),
+    (ACCESS, "return strength if flashing else 0.0", "return strength",
+     "flash_run-flashes=off flashes 7"),
+    ("flash.gd", "Access.shared().flash(1.0 if on else 0.0)", "0.0",
+     "flash_run-flashes=on flashes 0"),
 ])
 def test_a_broken_access_option_fails_the_proof_by_name(tmp_path, where, before, after,
                                                         said):
@@ -74,3 +89,19 @@ def test_a_broken_access_option_fails_the_proof_by_name(tmp_path, where, before,
     [found] = kits._scripts(["access"], kits.every(), game)
     assert found["status"] == "failed"
     assert said in found["said"]
+
+
+def test_a_capture_with_no_screen_to_draw_on_is_skipped_and_said(tmp_path, monkeypatch):
+    from polyweave import capture
+    from polyweave.errors import PolyweaveError
+
+    def no_screen(*_, **__):
+        raise PolyweaveError("engine.no-offscreen-route",
+                             "no route draws real pixels on this machine", "use one")
+
+    monkeypatch.setattr(capture, "movie", no_screen)
+    [said] = kits._captures("KIT CAPTURE core/run.gd flashes 0 3 flashes=off\n",
+                            tmp_path)
+    assert said["held"] is True
+    assert "no route draws" in said["skipped"]
+    assert said["args"] == ["flashes=off"]
