@@ -394,6 +394,7 @@
 - ✅ **PW308** **a revision session can call a paid generator on its own, so a click on one picture spends credits nobody weighed** — A paid call in a revision stops with purchase.quote's price and what the ceiling leaves, runs on one yes, and its spend is tied to it (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW309** **a revision's change can rewrite items outside the one asked about, and the person learns of it only by diffing** — A revision's write outside its item and dependents asks first, with the reason; its close lists each file written and what waits (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW310** **the window would show a project as it was when opened, so an item a session or terminal changed looks untouched** — The window watches the open project's root, re-reads the inventory once per burst, redraws only what moved, and marks an item changed while looked at (design recorded in `gui/README.md`).
+- ✅ **PW389** **the window's live test fails the gate at random when its setup, two Python calls, outruns vitest's 10 s hook limit** — The shell's hooks get the 60 s its tests have, so the window's setup, two Python calls, no longer fails the gate when the machine is loaded.
 
 ## Block V — Parts every game repeats, installed already proved
 
