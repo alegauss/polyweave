@@ -1,0 +1,19 @@
+name = "dialogue"
+version = "0.1.0"
+summary = "a dialogue box that types a line from the string table, completes it on one press and advances on the next, with a speaker and a portrait"
+requires = ["prompts", "language"]
+
+[installs]
+core = "core"
+scene = "scene/dialogue_box.tscn"
+
+[declares]
+sequences = "res://polyweave_dialogue.gd"
+rate = 40.0
+
+[proves]
+fixture = "fixture"
+script = "core/proof.gd"
+
+[changes]
+"0.1.0" = "a line typed at its rate, completed whole by the first confirm of the family in hand and followed by the next, held to its box in every locale"

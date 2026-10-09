@@ -1,0 +1,9 @@
+; The dialogue kit's fixture: a three-line sequence from i18n/strings.csv in English and
+; Portuguese, two speakers and one portrait.
+
+config_version=5
+
+[application]
+
+config/name="dialogue fixture"
+run/main_scene="res://main.tscn"

@@ -295,4 +295,21 @@ and a control whose text is no key, which never changes language, is named. No k
 show its raw name. Every character a line needs, upper case included, must be drawn by
 the font chain, which is the question `words.glyphs` asks of the files. Every line must
 fit its control, by the measure `game.text_fit` takes. Then the first-launch choice and
-the row are checked.
+the row are checked. Since 0.2.0 that measure is `PolyweaveLanguage.unfit(node, shown)`,
+which any kit's proof may call.
+
+**dialogue** (§PW353, requires prompts and language): a dialogue box. A line is
+`{"key", "speaker", "portrait"}`, the last two optional, keys of the string table, so a
+translation needs no change here. `PolyweaveDialogue` types a line at `RATE` characters a
+second. The first confirm completes a line being typed and the next confirm shows the
+next line, using the confirm button of the family in hand as the menus kit has it (east on
+a Switch pad, south on every other, `ui_accept` and a click besides); `finished` follows
+the last. The project's `res://polyweave_dialogue.gd` declares `RATE` and `SEQUENCES`, a
+name to its lines. The kit carries no line and orders none, so it stays clear of writing
+a game's story. The box is the project's scene, `kits/dialogue/dialogue_box.tscn`, with
+a Label named `Text` and, optionally, a Label `Speaker` and a TextureRect `Portrait`,
+wherever it places them. Its proof script checks that a line types at its rate. It walks
+every sequence by each family's confirm alone, holding that the other family's button
+moves nothing and that the first press leaves the same line whole. Each line must show
+the speaker and the portrait it declares, and fit its box in every locale by
+`unfit`.

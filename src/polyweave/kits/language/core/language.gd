@@ -104,6 +104,29 @@ static func drawn(character: int) -> bool:
 	return false
 
 
+## what keeps a line from fitting its control as it is laid out, each said: the
+## measure game.text_fit takes of a running game (§PW336), for any kit's proof
+static func unfit(node: Control, shown: String) -> Array:
+	var out := []
+	var font: Font = node.get_theme_font("font")
+	var size: int = node.get_theme_font_size("font_size")
+	var widest := 0.0
+	for line in shown.split("\n"):
+		widest = maxf(widest, font.get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x)
+	var wraps := node is Label and (node as Label).autowrap_mode != TextServer.AUTOWRAP_OFF
+	if not wraps and widest > node.size.x + 0.5:
+		out.append("is %d px wide in a %d px box" % [widest, node.size.x])
+	if node is Label and (node as Label).get_line_count() > (node as Label).get_visible_line_count():
+		out.append("shows %d of its %d lines" % [(node as Label).get_visible_line_count(),
+			(node as Label).get_line_count()])
+	var parent := node.get_parent()
+	if parent is Control and not parent is ScrollContainer:
+		var outer := (parent as Control).get_global_rect()
+		if outer.size.x > 0 and not outer.grow(0.5).encloses(node.get_global_rect()):
+			out.append("leaves its container %s" % parent.get_path())
+	return out
+
+
 static func _read(path: String, fallback: String) -> void:
 	var file := FileAccess.open(path, FileAccess.READ)
 	if file == null:

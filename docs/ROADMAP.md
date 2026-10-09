@@ -75,7 +75,6 @@
 
 ## Block V — Parts every game repeats, installed already proved
 
-- 📋 **PW353** (deps: PW344 ✅) **a dialogue box with typed text, skip, advance and a portrait is rewritten per game, each advancing on its own button** — It shows lines a person wrote and never writes them, so it sits beside Block Q clear of the non-goal on story. → §PW353
 - 📋 **PW354** (deps: —) **no measure counts the flashes in a captured run, so a photosensitivity risk is found by a player** — A flash count is a number read from pixels, the kind of check polyweave exists to make, and no snippet carries one. → §PW354
 - 📋 **PW355** (deps: PW347 ✅, PW354) **text size, colourblind filters, subtitles and less shake are each left out or hand-built, and none is checked** — They are options in every game's settings and their effect can be measured, which makes them a kit rather than a wish. → §PW355
 - 📋 **PW356** (deps: PW344 ✅) **a pad unplugged mid-game or a window losing focus leaves the game running with no one at the controls** — It is a few lines each game forgets, and the console makers' certification asks for it. → §PW356

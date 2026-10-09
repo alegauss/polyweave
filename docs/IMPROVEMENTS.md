@@ -845,21 +845,6 @@ line in the window and the file in `touched`.
 
 ## Block V — Parts every game repeats, installed already proved
 
-### §PW353 A dialogue box
-
-Cottony has scripts/dialog.gd. The kit installs a dialogue box that types a line at a
-declared rate, completes it on the first press and advances on the next, by the confirm
-button of the family in use (the prompts kit), with an optional portrait and speaker
-name, reading each line by its key from the string table so that a translation needs no
-change here.
-
-Proof: every line of a declared sequence is reachable by pad alone; a skip completes a
-line without dropping any of it; the text fits its box in every locale, measured on a
-capture, which is where a longer translation overflows without anyone noticing.
-
-The kit carries no line of its own and orders none: the sequence and the words are the
-project's, so it never comes near "Writing a game's story for it".
-
 ### §PW354 Flashes counted in a capture
 
 Guidance on photosensitive seizures (WCAG 2.3.1, and the Harding test broadcasters use)
