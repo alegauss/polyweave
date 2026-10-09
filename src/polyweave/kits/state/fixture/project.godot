@@ -1,0 +1,9 @@
+; The state kit's fixture: a player with health and a position, and a level that says
+; where it stands as a dictionary.
+
+config_version=5
+
+[application]
+
+config/name="state fixture"
+run/main_scene="res://main.tscn"

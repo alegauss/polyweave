@@ -129,6 +129,13 @@ Values cross as JSON: a `Vector2` is `[x, y]`, a `Color` `[r, g, b, a]`, a node 
 and any other object its class name. A property a node lacks is left out of its answer
 rather than answered as null.
 
+`state` reads the names a project declares with the state kit (§PW359), `{"cmd":
+"state", "names": ["health"]}` (none, or `["*"]`, for every one), each answered with its
+`value`, its `type` and `ok`, or with `said` where its node, property or method is gone
+or its value is of another type than declared. `game.query state=[...]` sends it, so an
+agent reads a game's health with no path and no print. A game with no state kit is
+`driver.no-state`.
+
 ### Codes
 
 | Code | When |
@@ -139,6 +146,7 @@ rather than answered as null.
 | `driver.no-method` | a `call` to a method the node does not have |
 | `driver.no-picture` | a `shot` in a run that renders nothing |
 | `driver.off-screen` | a click outside the viewport, where nothing can be hovered |
+| `driver.no-state` | a `state` read in a game that carries no state kit |
 
 ## The session tools
 

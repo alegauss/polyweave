@@ -52,6 +52,7 @@ DRIVER_CODES = (
     "driver.no-method",
     "driver.no-picture",
     "driver.off-screen",
+    "driver.no-state",
 )
 
 #: How long a game may take to load before it says where it listens.
@@ -392,9 +393,24 @@ def queried(
     properties: Annotated[
         list, Param("the properties to read; a default set if unset")
     ] = (),
+    state: Annotated[
+        list, Param("names the state kit declares, or ['*'] for every one")
+    ] = (),
     root: Annotated[str, _ROOT] = ".",
 ) -> dict:
-    """The nodes a path, group or class finds, with their properties, the game held."""
+    """The nodes a path, group or class finds, with their properties, the game held.
+
+    `state` reads names the project declared with the state kit instead, each with its
+    value and type, so `state=["health"]` needs no node path (§PW359).
+    """
+    if state:
+        if path or group or of_class:
+            raise PolyweaveError(
+                "game.bad-target",
+                "a query reads declared state or finds nodes, not both",
+                "give state alone, or one of path, group and of_class",
+            )
+        return send(session, "state", root=root, names=list(state))
     fields = _node(path, group, of_class)
     if properties:
         fields["properties"] = list(properties)

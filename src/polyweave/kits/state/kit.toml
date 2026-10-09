@@ -1,0 +1,17 @@
+name = "state"
+version = "0.1.0"
+summary = "a game's state named once, each name read with its declared type by game.query and by a dump"
+requires = []
+
+[installs]
+core = "core"
+
+[declares]
+declaration = "res://polyweave_state.gd"
+
+[proves]
+fixture = "fixture"
+script = "core/proof.gd"
+
+[changes]
+"0.1.0" = "names into a game's state, each a node and a property or method with its type, read by the driver and as one snapshot"

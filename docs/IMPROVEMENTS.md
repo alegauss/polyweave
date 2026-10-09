@@ -845,23 +845,6 @@ line in the window and the file in `touched`.
 
 ## Block V — Parts every game repeats, installed already proved
 
-### §PW359 A game's state declared for reading
-
-game.query reads whatever the driver can reach, but which values matter (the player's
-health, the current scene, the enemy count, the seed) lives only in the agent's head for
-one session. So it adds a print, runs the game, reads the output and removes the print,
-and the next session does it again.
-
-The kit lets the project declare named paths into its state, each a node path and a
-property or a method that returns a dictionary, installs an autoload that exposes them
-to the driver, and gives game.query those names, so `game.query health` answers without
-the agent knowing where health lives.
-
-Proof: every declared name answers in the running game with its declared type, and a
-name whose node is gone is a finding naming it. The same surface is what a crash dump
-writes and what a determinism check compares between two runs, so it is declared once
-and read three ways.
-
 ### §PW360 The same run twice
 
 The kit installs a central random service seeded from the declaration or the command
@@ -870,9 +853,9 @@ input events stamped with their physics frame. A run is then reproducible from i
 and its record.
 
 Proof: two runs with the same seed and the same input end in the same observable state
-(§PW359), compared name by name; a run that diverges is answered with the first frame
-and the first name that differ, which usually points at the one call to the global
-random someone forgot.
+(the state kit's snapshot, docs/specs/kit.md), compared name by name; a run that
+diverges is answered with the first frame and the first name that differ, which usually
+points at the one call to the global random someone forgot.
 
 A divergence, or any bug seen once, is then saved with its seed and recording as a
 game.keep flow, so game.replay runs it in the gate from then on. That is the step that
@@ -883,9 +866,9 @@ the agent guessing at the cause first.
 
 The kit installs structured logging (level, time, physics frame, current scene) to a
 rotating file in user://. On an error it writes the last lines beside a dump of the
-observable state of §PW359 and, when the determinism kit is present, the seed and the
-input record so far. A crash that kills the process leaves the log up to its last flush,
-and the next launch notices the unclean exit and packs what is there.
+state kit's snapshot (docs/specs/kit.md) and, when the determinism kit is present, the
+seed and the input record so far. A crash that kills the process leaves the log up to
+its last flush, and the next launch notices the unclean exit and packs what is there.
 
 An operation reads such a capture back, from the user:// of this machine or a file a
 person sends, and answers the first error, the script and line that raised it, and the

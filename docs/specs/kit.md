@@ -388,3 +388,14 @@ each player's pad to their own actions and the keyboard to the first player's, a
 rebind on either player to leave the other's alone. A leave must free the pad for the
 next to join, and with the presence kit installed, a pad that leaves must be named as
 the player seated on it.
+
+**state** (§PW359): a game's state named once for reading. The project's
+`res://polyweave_state.gd` declares `STATE`, each name a `node` (a path from the current
+scene, or from `/root`) with a `property` (nested as `stats:health`) or a `method`
+answering a Dictionary, and the `type` its value must be, by Godot's own type names
+(`int`, `Vector2`, `Dictionary`). `PolyweaveState.read(names)` answers each name with
+its `value`, `type` and `ok`, and `said` where its node, property or method is gone or
+its value is of another type. `snapshot()` holds every name's value at once, the one
+surface a crash dump writes and a determinism check compares. The driver serves it as
+`state`, so `game.query state=["health"]` (or `["*"]`) reads it with no path and no
+print. Its proof script runs the main scene and holds every name to its declared type.

@@ -1334,6 +1334,11 @@ CODES: dict[str, Code] = {
         when="a point past the declared window size, or a node scrolled off screen",
         doors=("click inside the viewport", "set display/window/size in project.godot"),
     ),
+    "driver.no-state": Code(
+        means="game.query asked for declared state, and the game carries no state kit",
+        when="state= on a game that never installed the state kit (§PW359)",
+        doors=("kit.install state, then name the state in res://polyweave_state.gd",),
+    ),
     "engine.not-found": Code(
         means="no engine binary could be found to run the script with",
         when="neither [paths] godot, nor $GODOT, nor PATH names one",

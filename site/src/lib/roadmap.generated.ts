@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 2 },
   { block: "U", title: "A window on everything a project governs", open: 2 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 13 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 12 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -226,25 +226,18 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW359",
-    block: "V",
-    symptom: "an agent reads a game's state by adding prints and running it, since nothing declares which state a query may read",
-    why: "A declared surface lets game.query answer with no instrumentation, and it is what a crash dump and a determinism check read.",
-    deps: [],
-  },
-  {
     id: "PW360",
     block: "V",
     symptom: "a bug that happens only sometimes cannot be reproduced, because a game's randomness and timing are held to no seed",
     why: "With one seed and recorded input a report becomes a game.keep flow, and the flow becomes a regression test.",
-    deps: ["PW359"],
+    deps: [],
   },
   {
     id: "PW361",
     block: "V",
     symptom: "when a game crashes on a person's machine, the agent has nothing to read but their description of it",
     why: "A log and a state dump in user:// turn a report into a file, and with a seed a file becomes a case to replay.",
-    deps: ["PW359"],
+    deps: [],
   },
   {
     id: "PW362",

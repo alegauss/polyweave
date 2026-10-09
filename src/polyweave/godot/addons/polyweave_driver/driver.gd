@@ -309,11 +309,13 @@ func _command(asked: Dictionary) -> Dictionary:
 			return {"run": true}
 		"text_fit":
 			return _text_fit()
+		"state":
+			return _state(asked)
 		"close":
 			return {"quit": true}
 	return _refused(
 		"driver.bad-command",
-		"there is no command %s; the commands are query, input, step, wait, call, shot, locale, text_fit and close"
+		"there is no command %s; the commands are query, state, input, step, wait, call, shot, locale, text_fit and close"
 		% JSON.stringify(asked.get("cmd"))
 	)
 
@@ -518,6 +520,15 @@ func _query(asked: Dictionary) -> Dictionary:
 		result.append({"path": str(node.get_path()), "class": node.get_class(),
 			"properties": properties})
 	return {"result": result}
+
+
+## The names the project declares into its state, read through the state kit (§PW359).
+func _state(asked: Dictionary) -> Dictionary:
+	var kit := "res://addons/polyweave/state/state.gd"
+	if not ResourceLoader.exists(kit):
+		return _refused("driver.no-state",
+			"this game declares no state: install the state kit and name it in res://polyweave_state.gd")
+	return {"result": load(kit).read(asked.get("names", []))}
 
 
 func _input(asked: Dictionary) -> Dictionary:
