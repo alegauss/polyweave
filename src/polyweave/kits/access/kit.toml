@@ -1,5 +1,5 @@
 name = "access"
-version = "0.1.0"
+version = "0.2.0"
 summary = "an accessibility tab: the text scale through the Theme, shake and flash switches the game's effects ask, and hold or toggle"
 requires = ["options"]
 tab = "accessibility"
@@ -17,3 +17,4 @@ script = "core/proof.gd"
 
 [changes]
 "0.1.0" = "the text scale held to fit at its largest, shake held still when off on a declared run, and hold or toggle"
+"0.2.0" = "colourblind filters, Daltonize over Machado 2009, each declared colour pair held apart by measure.contrast"

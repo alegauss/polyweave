@@ -492,14 +492,15 @@ def _scripts(order: list, kits: dict, here: Path) -> list[dict]:
         printed = log.read_text(encoding="utf-8", errors="replace") if (
             found.get("log") and log.is_file()) else ""
         if found.get("ok"):
-            sounds = _sounds(printed, here)
-            off = next((s for s in sounds if not s["held"]), None)
+            sounds, contrasts = _sounds(printed, here), _contrasts(printed, here)
+            off = next((s for s in sounds + contrasts if not s["held"]), None)
             said.append(
                 {
                     "kit": one,
                     "script": at.as_posix(),
                     "status": "held" if off is None else "failed",
                     **({"sounds": sounds} if sounds else {}),
+                    **({"contrasts": contrasts} if contrasts else {}),
                     **({} if off is None else {"said": off["said"]}),
                 }
             )
@@ -541,6 +542,53 @@ def _sounds(printed: str, here: Path) -> list[dict]:
             value, why = None, refused.message
         else:
             why = f"{named} has no value" if value is None else ""
+        held = value is not None and low <= value <= high
+        out.append(
+            {
+                "path": line["path"],
+                "measure": named,
+                "value": value,
+                "min": low,
+                "max": high,
+                "held": held,
+                **(
+                    {}
+                    if held
+                    else {
+                        "said": f"{line['path']} {named} "
+                        + (why or f"{value}, outside [{low}, {high}]")
+                    }
+                ),
+            }
+        )
+    return out
+
+
+#: A picture a proof script drew in the game, the targets in it, and the bounds.
+CONTRAST = re.compile(
+    r"^KIT CONTRAST (?P<path>\S+) (?P<targets>\S+) (?P<measure>\w+) "
+    r"(?P<low>-?[\d.]+) (?P<high>-?[\d.]+)$",
+    re.MULTILINE,
+)
+
+
+def _contrasts(printed: str, here: Path) -> list[dict]:
+    """Each picture a proof script drew, its targets held to bounds by measure.contrast.
+
+    What only the game can draw, such as a colour seen through a filter, is written
+    beside it with its targets as JSON, and `KIT CONTRAST <picture> <targets> <measure>
+    <min> <max>` says what to hold it to (§PW355).
+    """
+    from . import contrast
+
+    out = []
+    for line in CONTRAST.finditer(printed):
+        low, high, named = float(line["low"]), float(line["high"]), line["measure"]
+        try:
+            found = contrast.measured(line["path"], log=line["targets"], root=str(here))
+            value, why = found.get(named), ""
+        except PolyweaveError as refused:
+            value, why = None, refused.message
         held = value is not None and low <= value <= high
         out.append(
             {

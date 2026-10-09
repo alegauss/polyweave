@@ -9,12 +9,16 @@ extends Node
 ## - shake and flashes, two switches the game's own effects ask through `shake(amount)`
 ##   and `flash(strength)`, which answer the amount, or nothing where the player
 ##   switched it off;
+## - a colourblind filter over the whole screen, the correction for protanopia,
+##   deuteranopia or tritanopia (filters.gd), or "off";
 ## - hold or toggle: with it on, `held(action)` turns on at one press and off at the
 ##   next, for each action the project lists in HELD (every action where it lists none).
 ##
 ## The project's res://polyweave_access.gd may declare SCALES, HELD, SCREENS (the
 ## scenes the proof lays out at the largest scale), and SHAKE_RUN with RUN_SECONDS (a
-## scene that shakes the camera through `shake`, which the proof runs with shake off).
+## scene that shakes the camera through `shake`, which the proof runs with shake off), and
+## COLOUR_PAIRS, colours that must stay told apart, with PAIR_DELTA_E, how far apart
+## (CIEDE2000) each must stay under every filter.
 
 const HERE := "res://addons/polyweave/access/access.gd"
 const PROJECT := "res://polyweave_access.gd"
@@ -24,12 +28,18 @@ const DEFAULTS := {
 	"SCREENS": [],
 	"SHAKE_RUN": "",
 	"RUN_SECONDS": 1.0,
+	"COLOUR_PAIRS": [],
+	"PAIR_DELTA_E": 15.0,
 }
+const Filters := preload("res://addons/polyweave/access/filters.gd")
 
 var text_scale := 1.0
 var shaking := true
 var flashing := true
 var toggling := false
+var filter := "off"
+var _layer: CanvasLayer
+var _veil: ColorRect
 var declared := {}
 var _base := -1
 var _theme: Theme
@@ -93,6 +103,23 @@ func shake(amount: Variant) -> Variant:
 ## the flash an effect asked for, or none where the player switched flashes off
 func flash(strength: float) -> float:
 	return strength if flashing else 0.0
+
+
+## put a deficiency's correction over the screen, or with `simulating` what it sees;
+## "off" takes the filter away
+func set_filter(deficiency: String, simulating := false) -> void:
+	filter = deficiency
+	if _layer == null:
+		_layer = CanvasLayer.new()
+		_layer.layer = 128
+		_veil = ColorRect.new()
+		_veil.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_veil.set_anchors_preset(Control.PRESET_FULL_RECT)
+		_layer.add_child(_veil)
+		add_child(_layer)
+	_layer.visible = deficiency != "off"
+	if deficiency != "off":
+		_veil.material = Filters.material(deficiency, simulating)
 
 
 func set_toggling(on: bool) -> void:

@@ -75,7 +75,7 @@
 
 ## Block V — Parts every game repeats, installed already proved
 
-- 🛠 **PW355** (deps: PW347 ✅, PW354 ✅) **text size, colourblind filters, subtitles and less shake are each left out or hand-built, and none is checked** — Colourblind filters held apart by measure.contrast, Voice-bus subtitles and a flash-free captured run are still to land. → §PW355
+- 🛠 **PW355** (deps: PW347 ✅, PW354 ✅) **text size, colourblind filters, subtitles and less shake are each left out or hand-built, and none is checked** — Subtitles for the Voice bus and a captured run free of flashes with the switch off are still to land; the filters are PW390. → §PW355
 - 📋 **PW356** (deps: PW344 ✅) **a pad unplugged mid-game or a window losing focus leaves the game running with no one at the controls** — It is a few lines each game forgets, and the console makers' certification asks for it. → §PW356
 - 📋 **PW357** (deps: PW345 ✅) **a second player joining, which pad is whose and keeping two players' bindings apart are rewritten per game** — Starship solved it in coop.gd, and the binding half of it already lives in the remap kit. → §PW357
 - 📋 **PW358** (deps: —) **a moved file breaks a UID reference and a script that does not parse is found only when its scene loads** — These are the commonest silent failures an agent causes in Godot 4, and each is decidable without playing the game. → §PW358
@@ -174,10 +174,6 @@
 
 ## Done when — PW355
 
-- **Colourblind filters keep declared colour pairs apart** A full-screen shader
-  simulates and corrects protanopia, deuteranopia and tritanopia, and the access proof
-  holds each colour pair the project declares apart under every filter by
-  measure.contrast.
 - **Subtitles show the lines the Voice bus plays** A line spoken through the audio kit's
   say() shows its string-table text as a subtitle while it plays, and the proof checks
   the subtitle appears, fits its box and clears when the line ends.

@@ -5,12 +5,20 @@ extends SceneTree
 ## grows with the scale and still fits its control. The declared shake run (SHAKE_RUN)
 ## keeps every camera's offset at zero with shake off, and moves one with shake on, so
 ## the run is shown to shake at all. With hold or toggle on, an action turns on at one
-## press and off at the next, and with it off it is held only while pressed. Prints
-## KIT PROVED, or KIT FAILED with why.
+## press and off at the next, and with it off it is held only while pressed. Each pair
+## of COLOUR_PAIRS is drawn as a player with each deficiency sees it with its correction
+## on, a box of one colour in a ring of the other, and printed as a KIT CONTRAST line,
+## which polyweave holds to PAIR_DELTA_E with measure.contrast. Prints KIT PROVED, or
+## KIT FAILED with why.
 
 const Access := preload("res://addons/polyweave/access/access.gd")
 const Options := preload("res://addons/polyweave/access/options.gd")
+const Filters := preload("res://addons/polyweave/access/filters.gd")
 const PROBE := "polyweave_access_probe"
+const SEEN := "res://.polyweave/kits/access"
+## each pair's swatch, and the box of the first colour inside it
+const SWATCH := 120
+const BOX := 40
 
 var failed := []
 var access: Access
@@ -33,6 +41,7 @@ func _process(_delta: float) -> bool:
 			if access.is_inside_tree():
 				_rows()
 				_toggle()
+				_pairs()
 				_scaled()
 		"scale":
 			frames += 1
@@ -55,6 +64,31 @@ func _rows() -> void:
 		if row["read"].call() != other:
 			failed.append("the %s row set %s and read back %s" % [row["key"], other, row["read"].call()])
 		row["apply"].call(row["default"])
+
+
+## each declared pair as each deficiency sees it, corrected, for measure.contrast
+func _pairs() -> void:
+	var pairs: Array = access.declared["COLOUR_PAIRS"]
+	if pairs.is_empty():
+		return
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(SEEN))
+	for deficiency in Filters.DEFICIENCIES:
+		var image := Image.create(SWATCH * pairs.size(), SWATCH, false, Image.FORMAT_RGB8)
+		var targets := []
+		for i in pairs.size():
+			var left := i * SWATCH
+			var inset := (SWATCH - BOX) / 2
+			image.fill_rect(Rect2i(left, 0, SWATCH, SWATCH), Filters.seen(Color(pairs[i][1]), deficiency))
+			image.fill_rect(Rect2i(left + inset, inset, BOX, BOX), Filters.seen(Color(pairs[i][0]), deficiency))
+			targets.append({"box": [left + inset, inset, left + inset + BOX, inset + BOX]})
+		var picture := "%s/%s.png" % [SEEN, deficiency]
+		var listed := "%s/%s.json" % [SEEN, deficiency]
+		image.save_png(ProjectSettings.globalize_path(picture))
+		var file := FileAccess.open(ProjectSettings.globalize_path(listed), FileAccess.WRITE)
+		file.store_string(JSON.stringify(targets))
+		file.close()
+		print("KIT CONTRAST %s %s delta_e_min %.2f 1000" % [picture.trim_prefix("res://"),
+			listed.trim_prefix("res://"), float(access.declared["PAIR_DELTA_E"])])
 
 
 func _press(action: String, pressed: bool) -> void:

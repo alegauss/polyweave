@@ -1,7 +1,7 @@
 extends RefCounted
 ## The accessibility tab the access kit contributes to the options kit's screen
-## (§PW355): the text scale, shake, flashes, and hold or toggle, each put in force
-## through PolyweaveAccess and read back from it.
+## (§PW355): the text scale, the colour filter, shake, flashes, and hold or toggle, each
+## put in force through PolyweaveAccess and read back from it.
 
 const TAB := "accessibility"
 const Access := preload("res://addons/polyweave/access/access.gd")
@@ -17,6 +17,12 @@ static func options() -> Array[Dictionary]:
 			"names": scales.map(func(s: float) -> String: return "%d%%" % int(round(s * 100))),
 			"apply": func(v: float) -> void: access.set_text_scale(v),
 			"read": func() -> float: return access.text_scale,
+		},
+		{
+			"tab": TAB, "key": "colour_filter", "label": "colour filter", "default": "off",
+			"choices": ["off", "protanopia", "deuteranopia", "tritanopia"],
+			"apply": func(v: String) -> void: access.set_filter(v),
+			"read": func() -> String: return access.filter,
 		},
 		{
 			"tab": TAB, "key": "shake", "label": "screen shake", "default": true,

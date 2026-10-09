@@ -64,7 +64,10 @@ fixture = "fixture"           # a minimal Godot project it is proved in, in this
   game and print `KIT SOUND <path> <measure> <min> <max>`, the path under the game: the
   answer holds that file to its bounds with `sound.measure`, the measure a track is held
   to, lists it under the script's `sounds`, and a sound outside them fails the script by
-  its path and value (§PW351).
+  its path and value (§PW351). A picture only the game can draw is held the same way:
+  the script writes it with its targets as a JSON list beside it and prints
+  `KIT CONTRAST <picture> <targets> <measure> <min> <max>`, which `measure.contrast`
+  holds, listed under `contrasts` (§PW355).
 - A kit proves with a spec, a script or both, and one with neither is refused: it is
   worth more than a snippet only while its proof holds. A kit with no picture to hold,
   such as a menu, proves by its script alone, and `kit.prove` then answers it `skipped`
@@ -320,11 +323,19 @@ window, and the text scale sets its default font size, so every Label and Button
 sets no size of its own grows with it. `shake(amount)` and `flash(strength)` are what a
 game's own effects ask: each answers the amount, or nothing where the player switched it
 off. With hold or toggle on, `held(action)` turns on at one press and off at the next
-for each action in `HELD` (every action where it lists none). The project's
-`res://polyweave_access.gd` declares `SCALES`, `HELD`, `SCREENS`, and `SHAKE_RUN` with
-`RUN_SECONDS`. Its proof script reads back every row. It lays out the screens at the
+for each action in `HELD` (every action where it lists none). `set_filter(deficiency)`
+lays the correction for protanopia, deuteranopia or tritanopia over the whole screen
+(`simulating` shows what that player sees, for a person previewing the game). The
+correction is Daltonize, over Machado, Oliveira and Fernandes's 2009 simulation at full
+severity, in linear light. `filters.gd` holds the numbers the shader is given, so the
+proof's sums and the screen are one set. The project's `res://polyweave_access.gd`
+declares `SCALES`, `HELD`, `SCREENS`, `SHAKE_RUN` with `RUN_SECONDS`, and
+`COLOUR_PAIRS` with `PAIR_DELTA_E`. Its proof script reads back every row. It draws
+each colour pair as a player with each deficiency sees it with the correction on, a box
+of one colour in a ring of the other, and holds the pair at `PAIR_DELTA_E` (CIEDE2000)
+by `measure.contrast`. It lays out the screens at the
 largest scale, naming a control that sets its own size (which the scale never reaches)
 and one that no longer fits. It runs `SHAKE_RUN` with shake off, where no camera's offset
 may move, then with shake on, where one must, so the run is shown to shake at all.
-Finally it checks hold or toggle. Colourblind filters, subtitles for the Voice bus, and a
-flash-free captured run are still to come.
+Finally it checks hold or toggle. Subtitles for the Voice bus and a flash-free captured
+run are still to come.

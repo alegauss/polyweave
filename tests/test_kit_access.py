@@ -60,6 +60,9 @@ ACCESS = "addons/polyweave/access/access.gd"
      "with toggle on, an action does not turn on"),
     ("shake.gd", "offset = Access.shared().shake(", "offset = Vector2.ZERO * (",
      "the shake run never moved a camera"),
+    ("addons/polyweave/access/filters.gd",
+     "return _colour(lin + _rows(SHIFT, error))", "return c",
+     ".polyweave/kits/access/deuteranopia.png delta_e_min"),
 ])
 def test_a_broken_access_option_fails_the_proof_by_name(tmp_path, where, before, after,
                                                         said):

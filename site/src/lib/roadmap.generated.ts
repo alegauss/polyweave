@@ -229,7 +229,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW355",
     block: "V",
     symptom: "text size, colourblind filters, subtitles and less shake are each left out or hand-built, and none is checked",
-    why: "Colourblind filters held apart by measure.contrast, Voice-bus subtitles and a flash-free captured run are still to land.",
+    why: "Subtitles for the Voice bus and a captured run free of flashes with the switch off are still to land; the filters are PW390.",
     deps: [],
   },
   {
