@@ -1,0 +1,24 @@
+{
+ "owed": [
+  {
+   "name": "Badge by Studio Norte, CC BY 4.0",
+   "licence": "CC-BY-4.0",
+   "credit": "Badge by Studio Norte, CC BY 4.0",
+   "files": [
+    "art/badge.png"
+   ]
+  }
+ ],
+ "notes": [],
+ "people": [
+  {
+   "name": "Ana Lima",
+   "role": "Art"
+  },
+  {
+   "name": "Rui Sato",
+   "role": "Code"
+  }
+ ],
+ "digest": "64e6cdf2c1ad656a1fe8c4425558069d3f237ee7844a628e1abc293be3c98465"
+}

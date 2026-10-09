@@ -63,7 +63,7 @@ def test_each_effect_carries_a_record_of_what_made_it(tmp_path):
     assert record["params"]["generator"] == "explosion"
     assert record["instruments"][0]["licence"] == "MIT"
     # An engine's licence is on its code, so a game owes nothing for sfxr's sounds.
-    assert provenance.credits(str(tmp_path)) == {"owed": [], "notes": []}
+    assert provenance.credits(str(tmp_path)) == {"owed": [], "notes": [], "people": []}
 
 
 def test_the_same_seed_gives_the_same_bytes(tmp_path):

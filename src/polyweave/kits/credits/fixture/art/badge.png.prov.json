@@ -1,0 +1,34 @@
+{
+  "artefact": {
+    "bytes": 5716,
+    "path": "art/badge.png",
+    "sha256": "e24ea0dadcc9db6d9e30d5089403cc09de65af1178aaf12129389f717a4e81e7"
+  },
+  "borrowed": {
+    "commit": "62bfe75820cb8b284ceb9712aa457993bd5c1e34",
+    "path": "src/polyweave/kits/credits/fixture/source/badge.png",
+    "project": "D:/Git/alegauss/polyweave",
+    "uncommitted": true
+  },
+  "credit": "Badge by Studio Norte, CC BY 4.0",
+  "elapsed_s": null,
+  "engine": {
+    "name": "provenance.borrow"
+  },
+  "inputs": [
+    {
+      "path": "source/badge.png",
+      "role": "borrowed",
+      "sha256": "e24ea0dadcc9db6d9e30d5089403cc09de65af1178aaf12129389f717a4e81e7"
+    }
+  ],
+  "kind": "borrow",
+  "licence": "CC-BY-4.0",
+  "measurements": {},
+  "params": {},
+  "produced_at": "2026-10-09T00:10:34Z",
+  "producer": {
+    "tool": "polyweave",
+    "version": "0.1.0"
+  }
+}

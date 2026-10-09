@@ -75,7 +75,6 @@
 
 ## Block V — Parts every game repeats, installed already proved
 
-- 📋 **PW350** (deps: PW341 ✅) **a game's credits are typed by hand while the provenance record already knows every asset's source and licence** — A hand-typed credit drifts from what shipped, and a CC-BY asset missing from the screen is a licence broken. → §PW350
 - 📋 **PW351** (deps: PW341 ✅) **each game lays out its audio buses, music crossfade and sound pooling its own way, and a bus's loudness is never checked** — The bus layout is what both the options screen and Block P's music lean on, so one declared layout serves both. → §PW351
 - 📋 **PW352** (deps: PW341 ✅, PW335 ✅) **the string table words checks reaches a game's TranslationServer by hand, with no fallback font for another script** — Block Q holds the table to the world; the step from the table to the screen is the one every game rewrites. → §PW352
 - 📋 **PW353** (deps: PW344 ✅) **a dialogue box with typed text, skip, advance and a portrait is rewritten per game, each advancing on its own button** — It shows lines a person wrote and never writes them, so it sits beside Block Q clear of the non-goal on story. → §PW353

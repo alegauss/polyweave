@@ -50,7 +50,8 @@ it is outside the project) and `borrowed`: the source's git `project`, its `path
 the `commit` it was taken at and whether the file was `uncommitted` in that working
 tree. So `provenance.outdated` names every borrower once the source changes, and
 borrowing again takes it as it is now. A path in this project works too, for a file kept
-apart from the engine's tree. A source that is not a file, or an `out` that is the
+apart from the engine's tree. `licence` and `credit` are recorded where given, the credit
+being what the licence requires a game to show (§PW350). A source that is not a file, or an `out` that is the
 source itself, is `prov.missing-input`.
 
 **Every text artefact and record is written with LF**, on every platform (§PW228). The
@@ -66,9 +67,14 @@ A `sound` is audio `music.render` or `sound.synth` made (§PW191). It carries
 `used_by`. The engines' licences are the plugin's to state and cover the software, not the
 audio. A library's are the project's, declared under `[licence."<file name>"]` in
 `polyweave.toml`, and a render through a library nobody declared is refused before anything
-plays (`music.licence-undeclared`). `provenance.credits` reads every `sound` record and
-answers what a game `owed`, each credit with the files it is owed for, and the `notes` a
-person should read, such as a library whose author cannot vouch for every sample.
+plays (`music.licence-undeclared`). `provenance.credits` reads every `sound` record, and
+every record carrying a `credit` of its own, and answers what a game `owed`, each credit
+with the files it is owed for, the `notes` a person should read, such as a library whose
+author cannot vouch for every sample, and the `people` the project declares under
+`[kit.credits] people`. With `out` it writes that answer and its `digest` as JSON, the
+file the credits kit's screen reads; with `check` as well it writes nothing and answers
+`fresh`, false where the file is missing or the records moved since, with `missing`
+naming each credit owed and absent from it (§PW350).
 
 **What a build ships that a generator made is one read** (§PW248). Steam's content survey
 asks whether a game ships generated content, and the honest answer is the lineage of every

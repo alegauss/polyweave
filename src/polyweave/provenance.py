@@ -686,21 +686,41 @@ def _made_by(record: dict) -> str:
 
 
 @operation("provenance.credits")
-def credits(root: Annotated[str, ROOT] = ".") -> dict:
-    """The credits a game owes for its sounds, and what else their licences say.
+def credits(
+    root: Annotated[str, ROOT] = ".",
+    out: Annotated[
+        str, Param("write the answer here for the game's credits screen, as JSON")
+    ] = "",
+    check: Annotated[
+        bool, Param("answer whether the file at `out` still matches the records")
+    ] = False,
+) -> dict:
+    """The credits a game owes, and what else its licences say.
 
-    Read from every `sound` record's instruments (§PW191): `owed` lists each instrument
-    whose licence requires a credit, with the credit and the files it is owed for;
-    `notes` what a person should know of the rest, such as a library whose author
-    cannot vouch for every sample.
+    Read from every `sound` record's instruments (§PW191) and every record that carries
+    a `credit` of its own, as a borrowed file can (§PW350): `owed` lists each credit a
+    licence requires, with the files it is owed for; `notes` what a person should know
+    of the rest, such as a library whose author cannot vouch for every sample; `people`
+    the names and roles the project declares under `[kit.credits] people`.
+
+    With `out`, the answer is written there with its `digest`, for the credits kit's
+    screen to read, so the screen lists what the records hold and nothing else. With
+    `check` as well, nothing is written: `fresh` says whether that file still matches
+    the records, and `why` what moved, so an asset recorded after the last build cannot
+    ship uncredited.
     """
     where = Path(root).resolve()
     owed: dict[str, dict] = {}
     notes: dict[str, dict] = {}
     for record in _records(where):
+        made = record["artefact"]["path"]
+        if record.get("credit"):
+            entry = owed.setdefault(record["credit"], {
+                "name": record["credit"], "licence": record.get("licence", ""),
+                "credit": record["credit"], "files": []})
+            entry["files"].append(made)
         if record.get("kind") != "sound":
             continue
-        made = record["artefact"]["path"]
         for one in record.get("instruments") or ():
             if one.get("credit"):
                 entry = owed.setdefault(one["name"], {
@@ -712,7 +732,43 @@ def credits(root: Annotated[str, ROOT] = ".") -> dict:
                     "name": one["name"], "licence": one.get("licence", ""),
                     "note": one["note"], "files": []})
                 entry["files"].append(made)
-    return {"owed": list(owed.values()), "notes": list(notes.values())}
+    answer = {"owed": list(owed.values()), "notes": list(notes.values()),
+              "people": _people(where)}
+    digest = hashlib.sha256(
+        json.dumps(answer, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    if not out:
+        return answer
+    target = Path(out) if Path(out).is_absolute() else where / out
+    if check:
+        try:
+            held = json.loads(target.read_text(encoding="utf-8-sig"))
+        except (OSError, ValueError):
+            return {**answer, "fresh": False, "file": relative(target, where),
+                    "why": f"{relative(target, where)} is not there to read: "
+                           "write it with provenance.credits out="}
+        written = {c["credit"] for c in held.get("owed", ())}
+        missing = [c["credit"] for c in answer["owed"] if c["credit"] not in written]
+        fresh = held.get("digest") == digest
+        why = (f"{len(missing)} credit(s) owed are not in it: {', '.join(missing)}"
+               if missing else "the records moved since it was written")
+        return {**answer, "fresh": fresh, "file": relative(target, where),
+                **({} if fresh else {"why": why, "missing": missing})}
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps({**answer, "digest": digest}, indent=1) + "\n",
+                      encoding="utf-8", newline="\n")
+    return {**answer, "wrote": relative(target, where), "digest": digest}
+
+
+def _people(where: Path) -> list[dict]:
+    """The names and roles the project declares for its credits, in order."""
+    from .config import load
+
+    if not (where / "polyweave.toml").is_file():
+        return []
+    declared = (load(where).table("kit").get("credits") or {}).get("people") or []
+    return [{"name": str(p.get("name", "")), "role": str(p.get("role", ""))}
+            for p in declared if isinstance(p, dict)]
 
 
 def _lineage(path: str, where: Path, seen: set[str]) -> tuple[list[str], dict] | None:
@@ -813,6 +869,10 @@ def borrow(
     ],
     out: Annotated[str, Param("where it lands here, as a path under the project")],
     *,
+    licence: Annotated[str, Param("the licence it comes under, e.g. CC-BY-4.0")] = "",
+    credit: Annotated[
+        str, Param("the credit its licence requires; the credits screen shows it")
+    ] = "",
     root: Annotated[str, ROOT] = ".",
 ) -> dict:
     """Copy an artefact another project made into this one, recording where from.
@@ -849,12 +909,15 @@ def borrow(
         "borrow", landed,
         engine={"name": "provenance.borrow"},
         inputs=[source("borrowed", origin, root=where)],
-        extra={"borrowed": taken},
+        extra={"borrowed": taken,
+               **({"licence": licence} if licence else {}),
+               **({"credit": credit} if credit else {})},
         root=where,
     )
     write(record, where)
     return {"artefact": record["artefact"]["path"], "borrowed": taken,
-            "sha256": record["artefact"]["sha256"]}
+            "sha256": record["artefact"]["sha256"],
+            **({"credit": credit} if credit else {})}
 
 
 def _from(origin: Path) -> dict:

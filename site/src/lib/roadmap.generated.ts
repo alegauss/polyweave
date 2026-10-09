@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 2 },
   { block: "U", title: "A window on everything a project governs", open: 2 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 22 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 21 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -223,13 +223,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "U",
     symptom: "a revision's session can write outside its item through Bash, and neither the question nor the touched list sees it",
     why: "The scope hook reads only the file a Write or Edit names, so a shell write to the config or a canon slips past the person.",
-    deps: [],
-  },
-  {
-    id: "PW350",
-    block: "V",
-    symptom: "a game's credits are typed by hand while the provenance record already knows every asset's source and licence",
-    why: "A hand-typed credit drifts from what shipped, and a CC-BY asset missing from the screen is a licence broken.",
     deps: [],
   },
   {

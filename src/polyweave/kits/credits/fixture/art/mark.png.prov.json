@@ -1,0 +1,33 @@
+{
+  "artefact": {
+    "bytes": 5658,
+    "path": "art/mark.png",
+    "sha256": "9d847d9f5ccaf875f07bd44d023a7edceeca1e2b3649e18cce44fd42c7253d84"
+  },
+  "borrowed": {
+    "commit": "62bfe75820cb8b284ceb9712aa457993bd5c1e34",
+    "path": "src/polyweave/kits/credits/fixture/source/mark.png",
+    "project": "D:/Git/alegauss/polyweave",
+    "uncommitted": true
+  },
+  "elapsed_s": null,
+  "engine": {
+    "name": "provenance.borrow"
+  },
+  "inputs": [
+    {
+      "path": "source/mark.png",
+      "role": "borrowed",
+      "sha256": "9d847d9f5ccaf875f07bd44d023a7edceeca1e2b3649e18cce44fd42c7253d84"
+    }
+  ],
+  "kind": "borrow",
+  "licence": "CC0-1.0",
+  "measurements": {},
+  "params": {},
+  "produced_at": "2026-10-09T00:10:34Z",
+  "producer": {
+    "tool": "polyweave",
+    "version": "0.1.0"
+  }
+}

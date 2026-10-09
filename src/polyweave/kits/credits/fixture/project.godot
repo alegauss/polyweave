@@ -1,0 +1,9 @@
+; The credits kit's fixture: two borrowed pictures, one whose licence requires a credit,
+; and the credits file provenance.credits wrote from their records.
+
+config_version=5
+
+[application]
+
+config/name="credits fixture"
+run/main_scene="res://main.tscn"

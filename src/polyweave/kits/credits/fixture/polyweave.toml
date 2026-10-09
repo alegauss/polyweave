@@ -1,0 +1,4 @@
+[kit.credits]
+people = [{ name = "Ana Lima", role = "Art" }, { name = "Rui Sato", role = "Code" }]
+file = "credits.json"
+rate = 40

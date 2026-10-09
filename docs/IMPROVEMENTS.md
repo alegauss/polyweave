@@ -845,21 +845,6 @@ line in the window and the file in `touched`.
 
 ## Block V — Parts every game repeats, installed already proved
 
-### §PW350 A credits screen from the provenance record
-
-provenance.credits already answers, from the record, who made what and under which
-licence. The kit installs a credits scene that reads a file generated from that answer
-at build time, beside the people and roles the project declares, so the screen lists
-exactly what the game ships and nothing it no longer does.
-
-Proof: every record whose licence requires attribution appears on the screen; nothing is
-listed that the record does not hold; the scene scrolls at a declared rate and is
-skippable by any family. A generated file older than the record is a finding, so an
-asset added after the last build cannot ship uncredited.
-
-It is the cheapest kit in the block, since the answer it draws exists already, and the
-one whose failure is a legal one rather than a bug.
-
 ### §PW351 The audio runtime a game needs
 
 Cottony has scripts/music.gd and scripts/sound.gd, its own version of what every game

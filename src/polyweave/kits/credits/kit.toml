@@ -1,0 +1,20 @@
+name = "credits"
+version = "0.1.0"
+summary = "a credits screen drawn from the file provenance.credits writes, every credit a licence requires on it"
+requires = []
+
+[installs]
+core = "core"
+scene = "scene/credits.tscn"
+
+[declares]
+people = []
+file = "credits.json"
+rate = 40
+
+[proves]
+fixture = "fixture"
+script = "core/proof.gd"
+
+[changes]
+"0.1.0" = "the people the project declares and every credit the records owe, scrolled and skippable"

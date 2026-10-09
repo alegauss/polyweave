@@ -241,3 +241,14 @@ holds the fixture to both, with a skip from every family and a change to a scene
 four thousand nodes. A proof script runs on the wall clock with no frame budget of the
 runner's, since headless frames run unbounded and a threaded load is counted in time;
 the engine's timeout stops a proof that hangs.
+
+**credits** (§PW350): a credits screen drawn from the records, with nothing typed by
+hand. `provenance.credits out=credits.json` writes, at build time, the people and roles
+the project declares under `[kit.credits] people` and every credit a record owes (a
+sound's instruments, or a file borrowed with `credit=`), with a digest;
+`check=true` answers whether that file still matches the records, so an asset recorded
+after the last build cannot ship uncredited. `PolyweaveCredits` shows each person with
+their role, then each credit owed, scrolls at `rate` pixels a second, and any key,
+mouse button or pad button of any family ends it. Its proof script walks the project's
+own records and finds every credit they owe on the screen, nothing on it the file does
+not hold, the scroll at its rate, and a press from every family ending it.
