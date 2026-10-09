@@ -310,6 +310,32 @@ an earlier timeline beside it, with `change` in `total`, `peak_slow` and `longes
 an input. An empty timeline, an event with no second, or one whose wave ends before it
 spawns is `spec.no-targets`.
 
+## Flashes in a captured run
+
+The photosensitivity guidance (WCAG 2.3.1, and the Harding test broadcasters use)
+allows at most three general and three red flashes in any one second (§PW354).
+`measure.flashes(capture=)` reads the frames `capture.movie` wrote, in the order and at
+the rate its `sequence.json` gives (or a folder of PNGs at `fps`, or `[engine]
+fixed_fps`), each averaged down in linear light to 320 pixels on its longer side. A
+flash is two opposing changes:
+
+- **general**: relative luminance (linear sRGB, 0.2126 R + 0.7152 G + 0.0722 B) moves by
+  `luminance` (0.1) with the darker state under `dark` (0.8);
+- **red**: where R / (R + G + B) is at least 0.8, (R - G - B) * 320 moves by more than
+  `red` (20), the value read as zero where the colour is not a saturated red;
+
+over at least `area` of the screen (0.0277, a quarter of a 10° field at 341 by 256 of a
+1024 by 768 screen). Each pixel's change is read from the last extreme it reached, so a
+ramp over several frames counts, and the changing pixels are counted over the whole
+frame together, which finds at least what a search over every field would. The answer
+is the worst second: `flashes`, its `kind`, the `frame` and `file` it starts at, the
+`share` of the screen involved, and `passed` against `limit` (3). The bounds are the
+project's `[flashes]`. `certifies` says what it rests on: only the frames it read, so a
+flash in a scene nobody captured is not found. A spec bounds `flashes` and
+`flash_share` with the capture's `sequence.json` as its `artefact` (or `of`). A folder
+that holds fewer than two frames is `capture.no-frames`, and frames with no rate are
+`capture.no-rate`.
+
 ## A visual effect
 
 An effect `vfx.build` made is measured off its declaration, which its record keeps

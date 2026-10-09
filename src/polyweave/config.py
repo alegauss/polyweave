@@ -282,6 +282,19 @@ DEFAULTS: dict[str, Any] = {
         # ones are the lines canon, and only `verdict.judge` writes it.
         "canon": "",
     },
+    "flashes": {
+        # The photosensitivity guidance measure.flashes holds a captured run to
+        # (§PW354), WCAG 2.3.1's numbers: at most `limit` flashes in any one second, a
+        # flash being two opposing changes of relative luminance of `luminance` with the
+        # darker state under `dark`, or of a saturated red's (R - G - B) * 320 by more
+        # than `red`, over at least `area` of the screen (a quarter of a 10 degree
+        # field, 341 by 256 of a 1024 by 768 screen).
+        "limit": 3,
+        "luminance": 0.1,
+        "dark": 0.8,
+        "red": 20.0,
+        "area": 0.0277,
+    },
     "voice": {
         # What a spoken take is held to before a person hears it (§PW323). The game's
         # numbers, so nothing here invents one: zero, or an empty band, bounds nothing.

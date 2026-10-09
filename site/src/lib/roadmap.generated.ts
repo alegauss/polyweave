@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 2 },
   { block: "U", title: "A window on everything a project governs", open: 2 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 18 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 17 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -226,18 +226,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW354",
-    block: "V",
-    symptom: "no measure counts the flashes in a captured run, so a photosensitivity risk is found by a player",
-    why: "A flash count is a number read from pixels, the kind of check polyweave exists to make, and no snippet carries one.",
-    deps: [],
-  },
-  {
     id: "PW355",
     block: "V",
     symptom: "text size, colourblind filters, subtitles and less shake are each left out or hand-built, and none is checked",
     why: "They are options in every game's settings and their effect can be measured, which makes them a kit rather than a wish.",
-    deps: ["PW354"],
+    deps: [],
   },
   {
     id: "PW356",

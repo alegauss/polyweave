@@ -156,6 +156,13 @@ canon    = "docs/design/lines.json"  # a person's verdicts on lines; only a verd
 voiced   = "audio/voice/{locale}/{key}.ogg"  # where voice.lines puts a take (PW322)
 fonts    = [{ path = "fonts/Nunito.ttf" }, { path = "fonts/Orbitron.ttf", keys = ["TITLE*"] }]
 
+[flashes]                          # what measure.flashes holds a captured run to (PW354)
+limit     = 3                      # flashes allowed in any one second
+luminance = 0.1                    # a general flash's change of relative luminance
+dark      = 0.8                    # and the darker state is below this
+red       = 20.0                   # a red flash's change of (R - G - B) * 320
+area      = 0.0277                 # share of the screen: a quarter of a 10° field
+
 [voice]                            # what a spoken take is held to (PW323)
 lead_silence = 0.25                # seconds before the first word; zero bounds nothing
 tail_silence = 0.4                 # and after the last

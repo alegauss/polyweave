@@ -92,7 +92,8 @@ from polyweave.errors import PolyweaveError
 #: 112,930 with game.text_fit and game.open's environment (§PW336, §PW339).
 #: 113,780 with kit.list and kit.install (§PW340, §PW341), a kit landed and proved.
 #: 114,759 with kit.prove and kit.update (§PW342, §PW343).
-DESCRIBE = 115_400
+#: 115,920 with measure.flashes (§PW354), a captured run's worst second of flashes.
+DESCRIBE = 116_500
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -161,7 +162,8 @@ DESCRIBE = 115_400
 #: 124,457 with game.text_fit and game.open's environment (§PW336, §PW339).
 #: 125,435 with kit.list, kit.install and the kits codes (§PW340, §PW341).
 #: 126,414 with kit.prove and kit.update (§PW342, §PW343).
-CAPABILITIES = 127_100
+#: 127,615 with measure.flashes and capture.no-frames, capture.no-rate (§PW354).
+CAPABILITIES = 128_200
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

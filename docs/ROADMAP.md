@@ -75,8 +75,7 @@
 
 ## Block V — Parts every game repeats, installed already proved
 
-- 📋 **PW354** (deps: —) **no measure counts the flashes in a captured run, so a photosensitivity risk is found by a player** — A flash count is a number read from pixels, the kind of check polyweave exists to make, and no snippet carries one. → §PW354
-- 📋 **PW355** (deps: PW347 ✅, PW354) **text size, colourblind filters, subtitles and less shake are each left out or hand-built, and none is checked** — They are options in every game's settings and their effect can be measured, which makes them a kit rather than a wish. → §PW355
+- 📋 **PW355** (deps: PW347 ✅, PW354 ✅) **text size, colourblind filters, subtitles and less shake are each left out or hand-built, and none is checked** — They are options in every game's settings and their effect can be measured, which makes them a kit rather than a wish. → §PW355
 - 📋 **PW356** (deps: PW344 ✅) **a pad unplugged mid-game or a window losing focus leaves the game running with no one at the controls** — It is a few lines each game forgets, and the console makers' certification asks for it. → §PW356
 - 📋 **PW357** (deps: PW345 ✅) **a second player joining, which pad is whose and keeping two players' bindings apart are rewritten per game** — Starship solved it in coop.gd, and the binding half of it already lives in the remap kit. → §PW357
 - 📋 **PW358** (deps: —) **a moved file breaks a UID reference and a script that does not parse is found only when its scene loads** — These are the commonest silent failures an agent causes in Godot 4, and each is decidable without playing the game. → §PW358

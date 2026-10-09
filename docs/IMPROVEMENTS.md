@@ -845,23 +845,6 @@ line in the window and the file in `touched`.
 
 ## Block V — Parts every game repeats, installed already proved
 
-### §PW354 Flashes counted in a capture
-
-Guidance on photosensitive seizures (WCAG 2.3.1, and the Harding test broadcasters use)
-limits a sequence to three general or red flashes in any one second, a flash being a
-pair of opposing luminance changes beyond a threshold over a large enough area of the
-screen. capture.movie already records a run of the game; nothing reads that recording
-for this.
-
-What polyweave should do: measure.flashes over a capture, answering the worst second,
-the count of flashes in it, the share of the screen involved and the frame where it
-starts, with the threshold and the area taken from the guidance by default and
-overridable in the project config.
-
-It is a measure, so an acceptance spec and the accessibility kit can both hold a game to
-it. It certifies nothing beyond the run it measured, and its answer says so: a flash in
-a scene nobody captured is not found.
-
 ### §PW355 Accessibility options with their effect measured
 
 The kit adds an accessibility tab to the options kit (docs/specs/kit.md): a text scale
@@ -872,8 +855,9 @@ game's own effects consult through the kit; and hold-or-toggle for held actions.
 
 Proof: at the largest text scale no label overflows on a captured screen; the colour
 pairs the project declares must stay apart stay apart under each filter, by
-measure.contrast; with flashes switched off, measure.flashes (§PW354) finds none over a
-declared run; with shake off, the camera's offset stays at zero through a declared run.
+measure.contrast; with flashes switched off, measure.flashes
+(docs/specs/measurements.md) finds none over a declared run; with shake off, the
+camera's offset stays at zero through a declared run.
 
 A filter or a scale is measured, never judged by the agent; whether the result still
 looks like the game is a person's verdict, as every look is here.

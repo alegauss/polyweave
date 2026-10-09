@@ -22,7 +22,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Annotated, Any
 
-from . import cost, sound, vfx
+from . import cost, flashes, sound, vfx
 from . import measure as M
 from .describe import Param, operation
 from .errors import PolyweaveError
@@ -265,7 +265,8 @@ def _predicate(entry: dict, index: int) -> Predicate:
             f"the predicate {name!r} names no measure",
             f"name one of {', '.join(sorted(M.COMPUTES))}, or a cost: "
             f"{', '.join(cost.COSTS)}, or a sound: {', '.join(sound.SOUNDS)}, or an "
-            f"effect: {', '.join(vfx.EFFECTS)}",
+            f"effect: {', '.join(vfx.EFFECTS)}, or a run's flashes: "
+            f"{', '.join(flashes.FLASHES)}",
         )
     unknown = sorted(set(entry) - set(FIELDS) - set(ARGUMENTS))
     if unknown:
@@ -461,6 +462,9 @@ def check(
         if vfx.is_effect(p.measure):
             results.append(_effected(p, subject, root))
             continue
+        if flashes.is_flash(p.measure):
+            results.append(_flashed(p, subject, root, heard))
+            continue
         arguments = dict(p.arguments)
         for key in ("against", "target", "targets", "behind"):
             # A log of targets is a path under the project, as a picture compared is.
@@ -536,8 +540,10 @@ def checked(
 
 
 def _off_picture(name: str) -> bool:
-    """A measure read off a file rather than pixels: a cost, a sound or an effect."""
-    return cost.is_cost(name) or sound.is_sound(name) or vfx.is_effect(name)
+    """A measure read off a file rather than one picture: a cost, a sound, an effect or
+    the flashes of a captured run."""
+    return (cost.is_cost(name) or sound.is_sound(name) or vfx.is_effect(name)
+            or flashes.is_flash(name))
 
 
 def _effected(p: Predicate, subject: Any, root: str | Path) -> dict:
@@ -558,6 +564,32 @@ def _effected(p: Predicate, subject: Any, root: str | Path) -> dict:
         "passed": _passes(value, p),
         "margin": margin(value, p.minimum, p.maximum),
         "headroom": headroom(value, p.minimum, p.maximum),
+        **_bound(p, value),
+    }
+
+
+def _flashed(p: Predicate, subject: Any, root: str | Path, seen: dict) -> dict:
+    """A flash predicate, read off the captured run it names or the subject (§PW354)."""
+    where = Path(p.of) if p.of else Path(subject)
+    where = where if where.is_absolute() else Path(root) / where
+    key = f"flashes:{where}"
+    if key not in seen:
+        seen[key] = flashes.measured(where, root=root)
+    value = float(seen[key][p.measure])
+    return {
+        "id": p.id,
+        "measure": p.measure,
+        "of": str(where),
+        "region": None,
+        "rung": None,
+        "value": value,
+        "min": p.minimum,
+        "max": p.maximum,
+        "weight": p.weight,
+        "passed": _passes(value, p),
+        "margin": margin(value, p.minimum, p.maximum),
+        "headroom": headroom(value, p.minimum, p.maximum),
+        "certifies": seen[key]["certifies"],
         **_bound(p, value),
     }
 

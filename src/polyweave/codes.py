@@ -1925,6 +1925,19 @@ CODES: dict[str, Code] = {
         when="a seam_step bound in a spec checked against a picture",
         doors=("check it against the audio file, or name that file with `of`",),
     ),
+    "capture.no-frames": Code(
+        means="what was named as a captured run holds fewer than two frames, or is not "
+        "there",
+        when="measure.flashes, or a flashes bound in a spec, on a folder capture.movie "
+        "never wrote (§PW354)",
+        doors=("capture the run with capture.movie and name the folder it wrote",),
+    ),
+    "capture.no-rate": Code(
+        means="nothing says at what rate a captured run's frames were taken",
+        when="measure.flashes on a folder of PNGs with no sequence.json, no fps passed "
+        "and no [engine] fixed_fps",
+        doors=("pass fps", "capture with capture.movie, whose sequence.json says it"),
+    ),
     "capture.override-held": Code(
         means="a movie or an outsized picture writes an override.cfg, and the project "
         "has one",
