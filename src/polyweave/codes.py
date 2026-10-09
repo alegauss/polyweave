@@ -1961,6 +1961,16 @@ CODES: dict[str, Code] = {
         "columns or a column type (§PW364)",
         doors=("declare each table, its file and its columns' types",),
     ),
+    "engine.unreachable-state": Code(
+        means="a state machine's state that nothing assigns and it does not start in",
+        when="engine.states reading a script's enum and its assignments (§PW368)",
+        doors=("assign it where the game should reach it", "drop it from the enum"),
+    ),
+    "engine.stuck-state": Code(
+        means="a state machine's state that nothing leaves, not marked final",
+        when="engine.states finding no assignment out of a state (§PW368)",
+        doors=("assign the way out", "mark its enum line # final where that is meant"),
+    ),
     "engine.no-budget": Code(
         means="engine.perf found no [perf.<name>] budget to run",
         when="a project that declares no scene's performance budget (§PW365)",

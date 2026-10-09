@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 2 },
   { block: "U", title: "A window on everything a project governs", open: 2 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 4 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 3 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -226,13 +226,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW368",
-    block: "V",
-    symptom: "a game's states and transitions live only in code, so a state nothing reaches or nothing leaves is found by playing",
-    why: "Generic enough for a kit, but the most opinionated one here, so it waits until two games show code it would replace.",
-    deps: [],
-  },
-  {
     id: "PW369",
     block: "V",
     symptom: "a new game starts as an empty Godot project and is adopted onto polyweave later, by hand",
@@ -291,4 +284,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW36", "PW53", "PW77", "PW78", "PW79", "PW80", "PW81", "PW82", "PW180", "PW192", "PW201", "PW311"];
+export const generatedPaused: string[] = ["PW36", "PW53", "PW77", "PW78", "PW79", "PW80", "PW81", "PW82", "PW180", "PW192", "PW201", "PW311", "PW368"];

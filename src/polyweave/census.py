@@ -64,6 +64,8 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.sfx:kit": ("internal", "a chip kit's hits, made for music.render"),
     "polyweave.contrast:targets_in": ("internal", "the targets a log's lines name"),
     "polyweave.contrast:contrasts": ("internal", "each target against its ring"),
+    "polyweave.states:machines": ("internal", "each enum state machine in a script"),
+    "polyweave.states:held": ("internal", "one machine's unreachable and stuck states"),
     "polyweave.presets:combinations": ("internal", "every grid combination to run"),
     "polyweave.presets:choose": ("internal", "each preset's run within its budget"),
     "polyweave.perf:held": ("internal", "a run's measures against budget and baseline"),

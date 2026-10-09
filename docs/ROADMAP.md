@@ -75,7 +75,6 @@
 
 ## Block V — Parts every game repeats, installed already proved
 
-- 💭 **PW368** (deps: —) **a game's states and transitions live only in code, so a state nothing reaches or nothing leaves is found by playing** — Generic enough for a kit, but the most opinionated one here, so it waits until two games show code it would replace. → §PW368
 - 📋 **PW369** (deps: PW341 ✅, PW358 ✅, PW362 ✅) **a new game starts as an empty Godot project and is adopted onto polyweave later, by hand** — If every project is to adapt to polyweave, the cheapest moment to do it is the first commit. → §PW369
 - 📋 **PW370** (deps: PW345 ✅, PW357 ✅) **Starship keeps its own bindings and co-op code after the input kits were extracted from it** — A kit proved only in a fixture has not met a game, and the game it came from is the cheapest first consumer. → §PW370
 - 📋 **PW371** (deps: PW347 ✅, PW348 ✅) **Cottony keeps its own settings and save code where the kits provide them** — The second game is what shows a kit is not one project's code moved into a folder. → §PW371
@@ -158,6 +157,12 @@
   Cottony family, a person answers on the review page, the ledger holds that verdict
   through judge alone, and the agent's next candidate follows from verdict.answers with
   no chat message in between.
+
+## Done when — PW368
+
+- **A declared skeleton read off two games' state code** Once Cottony as well as
+  Starship carries a hand-written state machine, the declaration and its generated
+  skeleton take the shape both share, checked by engine.states as it stands.
 
 ## Non-goals
 

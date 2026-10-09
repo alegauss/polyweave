@@ -445,6 +445,21 @@ How much loss is acceptable is taste, so every chosen preset that loses any goes
 `verdict.sheet` beside the reference, and the agent never accepts one. A search holds
 for the machine it ran on, and with no route that draws it is skipped and said.
 
+## The state machines a game wrote
+
+A game's menus, characters and flow are each a state machine written by hand, and a
+state no transition reaches, or one with no way out, is found by whoever walks into it
+(§PW368). `engine.states` reads the shape the code already has, with no declaration:
+each script outside `addons/` with an `enum`, a variable of it (`var state :=
+State.HOVER`, or `var state: State`, which starts at the first member), and its
+assignments (`state = State.LOCK`). An assignment inside an arm of `match state:` leaves
+that arm's states; one outside any arm can be taken from any state. A state that nothing
+assigns and that the variable does not start in is `engine.unreachable-state`, an error.
+A state nothing leaves is `engine.stuck-state`, a warning, unless its line in the enum is
+marked `# final`. It needs no run. A declared skeleton the code fills in waits until a
+second game shows state code it would replace, so its shape is read off that code;
+Starship's two machines today read clean.
+
 ## Still to come in this block
 
 Baking at the size a unit declaration gives (PW47).

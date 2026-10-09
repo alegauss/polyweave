@@ -61,3 +61,4 @@
 
 ## Block V — Parts every game repeats, installed already proved
 
+- ⏸ **PW368** (deps: —) **a game's states and transitions live only in code, so a state nothing reaches or nothing leaves is found by playing** — set aside (Waits for Cottony's state code.): A declared skeleton waits for a second game's state code. → §PW368
