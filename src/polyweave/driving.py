@@ -1208,6 +1208,135 @@ def release_checked(
     }
 
 
+#: The preset platform this machine can launch, by Godot's own name for it.
+_HOST = {"win32": "Windows Desktop", "linux": "Linux"}
+
+#: What an exported build prints when the export left something out or broke it.
+_BROKE = re.compile(
+    r"No loader found|Failed loading resource|Resource file not found|Cannot open file"
+    r"|Failed to load|SCRIPT ERROR|Parse Error|Compile Error"
+)
+
+
+@operation("game.export_smoke")
+def export_smoke(
+    flow: Annotated[
+        str, Param("a kept flow to run in each export, through to the menu and back")
+    ] = "",
+    presets: Annotated[
+        list, Param("the presets to export; every one for this machine where unset")
+    ] = (),
+    frames: Annotated[
+        int, Param("frames the plain run plays before it quits", lo=1)
+    ] = 120,
+    root: Annotated[str, _ROOT] = ".",
+) -> dict:
+    """Each export preset built and launched, as a player would launch it (§PW363).
+
+    Every preset for this machine's platform is exported as a debug build, and its
+    binary runs headless for `frames` frames: a resource an export filter left out, a
+    script stripped from it or one that does not parse prints there, and the preset is
+    answered as broken with that line. With a `flow`, the exported pack also runs on
+    this engine with the driver from outside it, never inside, and replays it. The
+    answer says which each pass ran against, since a debug build proves less than a
+    release; game.release_check is what keeps the driver out of the release itself.
+    """
+    here = load(root).root
+    presets_file = here / "export_presets.cfg"
+    if not presets_file.is_file():
+        raise PolyweaveError(
+            "game.no-preset",
+            f"there is no export_presets.cfg in {here}, so nothing to export",
+            "add an export preset in the editor's Export dialog, for this platform",
+        )
+    host = _HOST.get(sys.platform, "")
+    godot = engine.find(here)
+    work = load(here).path("paths.work") / "exports"
+    engine._launch([godot, "--headless", "--import", "--path", str(here)], cwd=here,
+                   timeout=600)
+    flowed = Path(flow) if flow and Path(flow).is_absolute() else here / flow if flow \
+        else None
+    if flowed is not None and not flowed.is_file():
+        raise PolyweaveError("game.no-flow", f"there is no flow at {flowed}",
+                             "keep one with game.keep or game.record_flow")
+    answered = []
+    for preset in _presets(presets_file.read_text(encoding="utf-8")):
+        name = preset["keys"].get("name", (f"preset.{preset['index']}", 0))[0]
+        platform = preset["keys"].get("platform", ("", 0))[0]
+        if presets and name not in presets:
+            continue
+        if platform != host:
+            answered.append({"preset": name, "held": None, "skipped":
+                             f"a {platform} build does not launch on this machine"})
+            continue
+        answered.append(_smoked(here, godot, work, name, flowed, frames))
+    ran = [one for one in answered if one["held"] is not None]
+    broke = [one for one in ran if not one["held"]]
+    return {
+        "ok": bool(ran) and not broke,
+        "presets": answered,
+        "says": (f"{len(ran)} preset(s) launched, {len(broke)} broken"
+                 + (f", the first {broke[0]['preset']}: {broke[0]['why']}" if broke
+                    else "")) if ran else "no preset here exports for this machine",
+    }
+
+
+def _smoked(here: Path, godot: str, work: Path, name: str, flow: Path | None,
+            frames: int) -> dict:
+    """One preset exported, its binary launched, and its pack running the flow."""
+    import shutil
+
+    out = work / re.sub(r"[^\w.-]+", "_", name)
+    if out.exists():
+        shutil.rmtree(out)
+    out.mkdir(parents=True)
+    suffix = ".exe" if sys.platform == "win32" else ".x86_64"
+    binary = out / f"game{suffix}"
+    exported, _ = engine._launch(
+        [godot, "--headless", "--path", str(here), "--export-debug", name, str(binary)],
+        cwd=here, timeout=900)
+    answer: dict = {"preset": name, "binary": str(binary),
+                    "ran": "the exported debug binary"}
+    if not binary.is_file():
+        (out / "export.log").write_text(exported, encoding="utf-8")
+        return {**answer, "held": False, "log": str(out / "export.log"),
+                "why": "the export wrote no binary: "
+                + (exported.strip().splitlines() or ["nothing said"])[-1]}
+    console = out / "game.console.exe"
+    launched = console if console.is_file() else binary
+    try:
+        output, _ = engine._launch(
+            [str(launched), "--headless", "--quit-after", str(frames)], cwd=out,
+            timeout=300, env=_own_user(out / "user"))
+    except subprocess.TimeoutExpired:
+        output = f"the build was still running after 300 s, past {frames} frames\n"
+    (out / "run.log").write_text(output, encoding="utf-8")
+    broke = [line.strip() for line in output.splitlines() if _BROKE.search(line)]
+    answer.update(log=str(out / "run.log"), held=not broke,
+                  why=broke[0] if broke else "")
+    if flow is None or broke:
+        return answer
+    pack = binary.with_suffix(".pck")
+    from .godot import ADDONS
+
+    # the one polyweave carries, from outside the pack: a release never holds a driver
+    driver = (ADDONS["polyweave_driver"] / Path(DRIVER).name).resolve()
+    played, _ = engine._launch(
+        [godot, "--headless", "--main-pack", str(pack if pack.is_file() else binary),
+         "--fixed-fps", "60", "--script", driver.as_posix(), "--",
+         f"--flow={flow.resolve().as_posix()}"],
+        cwd=out, timeout=600, env=_own_user(out / "flow.user"))
+    (out / "flow.log").write_text(played, encoding="utf-8")
+    said = FLOWED.search(played)
+    passed = bool(said) and said["verdict"] == "passed"
+    answer["ran"] += ", and its pack on this engine with the driver from outside"
+    broke_at = said["why"] if said and said["why"] else (
+        "the flow did not finish in the exported pack")
+    answer.update(held=passed, flow_log=str(out / "flow.log"),
+                  why="" if passed else broke_at)
+    return answer
+
+
 @operation("game.close")
 def closed(
     session: Annotated[str, _SESSION],

@@ -1334,6 +1334,11 @@ CODES: dict[str, Code] = {
         when="a point past the declared window size, or a node scrolled off screen",
         doors=("click inside the viewport", "set display/window/size in project.godot"),
     ),
+    "game.no-preset": Code(
+        means="game.export_smoke found no export_presets.cfg to export from",
+        when="a project no one has set an export preset up in (§PW363)",
+        doors=("add a preset for this platform in the editor's Export dialog",),
+    ),
     "game.no-capture": Code(
         means="game.crash_read found no capture to read, or the file named is none",
         when="a game that never opened the crash kit's log, or a file that is no "

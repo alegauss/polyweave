@@ -264,6 +264,18 @@ too, answering `{held, value}` with no frame passing.
 A number arrives as JSON gives it, a float, so `wait … equals` compares numbers as
 numbers: a node's int 42 equals the 42 a caller sent.
 
+**The exported build, launched** (§PW363). `game.release_check` reads presets and packs,
+and nothing ran the binary, which is the one thing a player does. `game.export_smoke`
+exports every preset for this machine's platform as a debug build into
+`.polyweave/exports/<preset>/` and launches its binary headless for `frames` frames. A
+resource an export filter left out, a script stripped or one that does not parse prints
+there, and the preset is answered broken with that line and its log. With a `flow`, the
+exported pack also runs on this engine (`--main-pack`) with the driver polyweave carries
+from outside it, never inside, and replays the flow. The answer's `ran` says which each
+pass was, since a debug build proves less than the release. A project with no
+`export_presets.cfg` is `game.no-preset`, and a preset for another platform is skipped
+and said.
+
 **A run a player recorded is a flow too** (§PW360). The determinism kit's
 `PolyweaveRecorder` saves a run's seed and each action's press and release by physics
 frame. `game.record_flow(record, out, proves, expect)` writes it as a flow: a `step` to

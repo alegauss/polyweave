@@ -75,7 +75,6 @@
 
 ## Block V — Parts every game repeats, installed already proved
 
-- 📋 **PW363** (deps: —) **an exported build is never launched before a player launches it, so a resource the export left out is found by them** — game.release_check reads presets and packs, and nothing runs the binary, which is the one thing a player does. → §PW363
 - 📋 **PW364** (deps: PW341 ✅) **a game's tables of enemies, items or waves are read as loose JSON, and a number typed as a string is found in play** — schema.validate already checks a declaration, so a table whose schema the project declares can be held the same way. → §PW364
 - 📋 **PW365** (deps: —) **a game's frame time, load time and memory are measured by scripts run by hand, with no baseline a commit regresses from** — Cottony's tools/perf is that work done by hand; a percentile held to a declared budget makes a slower commit fail. → §PW365
 - 📋 **PW366** (deps: PW347 ✅) **a game ships one graphics setting or presets chosen by hand, and no fallback when its renderer fails to start** — Godot carries the upscalers, anti-aliasing and renderers; what each game rewrites is choosing among them and surviving a driver that refuses. → §PW366

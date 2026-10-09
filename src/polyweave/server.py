@@ -108,7 +108,8 @@ TOOL_BUDGET = 4500
 #: 103,600 at 103,053 for engine.check and game.query's state (§PW358, §PW359).
 #: 104,400 at 103,800 for game.record_flow (§PW360).
 #: 105,300 at 104,661 for game.test (§PW362).
-LIST_BUDGET = 105300
+#: 106,000 at 105,340 for game.export_smoke (§PW363).
+LIST_BUDGET = 106000
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

@@ -845,24 +845,6 @@ line in the window and the file in `touched`.
 
 ## Block V — Parts every game repeats, installed already proved
 
-### §PW363 The exported build, launched
-
-game.release_check reads the export presets and a .pck to make sure the driver does not
-ship. What it cannot see is a build that fails at run time: a resource an export filter
-excluded, an autoload whose script was stripped, a feature the target renderer lacks.
-The editor runs from the project folder, so every one of these works there and fails
-only in the exported binary.
-
-What polyweave should do: an operation that exports each declared preset for the host
-platform, launches the binary, runs a short kept flow (game.keep) through to the main
-menu and back out, and answers per preset whether it held, with the log of any that did
-not.
-
-The driver must never ship in a release, which is what game.release_check exists to
-hold, so the smoke run uses a debug export of the same preset or a driver loaded from
-outside the pack, and the answer says which of the two it ran against, since a pass on
-the debug build proves less than a pass on the release.
-
 ### §PW364 Data tables with a schema
 
 Games keep their tuning in tables: enemies, items, waves, prices. Read as loose JSON or
