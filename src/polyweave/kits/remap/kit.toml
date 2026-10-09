@@ -1,5 +1,5 @@
 name = "remap"
-version = "0.2.1"
+version = "0.2.2"
 summary = "rebinding on the keys and the pad apart, a clash swapped, kept across restarts, reset to the game's own"
 requires = ["prompts"]
 tab = "controls"
@@ -22,3 +22,4 @@ script = "core/proof.gd"
 "0.1.0" = "the binding store extracted from Starship, its swap and reset, and a remap screen drawn with the prompts kit's icons"
 "0.2.0" = "a controls tab on the options kit's screen, a row that opens the remap screen"
 "0.2.1" = "its proof works on actions of its own, so it holds in a game whatever actions the game has"
+"0.2.2" = "a rebound pad binding answers every pad, as the project's own do, not pad 0 alone"

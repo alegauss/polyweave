@@ -90,7 +90,6 @@
 - 📋 **PW369** (deps: PW341 ✅, PW358, PW362) **a new game starts as an empty Godot project and is adopted onto polyweave later, by hand** — If every project is to adapt to polyweave, the cheapest moment to do it is the first commit. → §PW369
 - 📋 **PW370** (deps: PW345 ✅, PW357) **Starship keeps its own bindings and co-op code after the input kits were extracted from it** — A kit proved only in a fixture has not met a game, and the game it came from is the cheapest first consumer. → §PW370
 - 📋 **PW371** (deps: PW347 ✅, PW348 ✅) **Cottony keeps its own settings and save code where the kits provide them** — The second game is what shows a kit is not one project's code moved into a folder. → §PW371
-- 📋 **PW391** (deps: —) **a pad binding the remap kit rebinds answers pad 0 alone, so a lone player on any other pad loses it after a rebind** — A decoded event keeps Godot's default device 0 where a project's own binding answers every device, found seating a second player. → §PW391
 
 ## Done when — PW36
 

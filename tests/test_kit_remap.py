@@ -55,3 +55,18 @@ def test_the_remap_proof_holds_in_a_game_with_none_of_its_actions(tmp_path):
     shutil.copytree(kits.KITS / "presence" / "fixture", game)
     said = kits.install("remap", root=str(game))
     assert said["proved"]["passed"] is True, said["proved"]
+
+
+@pytest.mark.skipif(not os.environ.get("GODOT"), reason="no $GODOT on this machine")
+def test_a_rebound_pad_binding_that_answers_pad_0_alone_fails_the_proof(tmp_path):
+    # a decoded event keeps device 0 unless the store says otherwise (§PW391)
+    game = tmp_path / "game"
+    shutil.copytree(kits.KITS / "remap" / "fixture", game)
+    kits.install("remap", root=str(game))
+    broken = game / "addons" / "polyweave" / "remap" / "bindings.gd"
+    text = broken.read_text(encoding="utf-8")
+    assert "\t\t\tbutton.device = -1\n" in text
+    broken.write_text(text.replace("\t\t\tbutton.device = -1\n", ""), encoding="utf-8")
+    [found] = kits._scripts(["remap"], kits.every(), game)
+    assert found["status"] == "failed"
+    assert "answers pad 0 alone" in found["said"]

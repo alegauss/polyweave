@@ -67,6 +67,8 @@ static func encode(event: InputEvent) -> String:
 	return ""
 
 
+## the event a code stands for; a pad's answers every pad, as project.godot's own do,
+## since a new event's device is 0 and would bind pad 0 alone (§PW391)
 static func decode(code: String) -> InputEvent:
 	var parts := code.split(":")
 	match parts[0]:
@@ -81,11 +83,13 @@ static func decode(code: String) -> InputEvent:
 		"button":
 			var button := InputEventJoypadButton.new()
 			button.button_index = int(parts[1]) as JoyButton
+			button.device = -1
 			return button
 		"axis":
 			var motion := InputEventJoypadMotion.new()
 			motion.axis = int(parts[1]) as JoyAxis
 			motion.axis_value = float(parts[2])
+			motion.device = -1
 			return motion
 	return null
 

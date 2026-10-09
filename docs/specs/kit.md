@@ -189,7 +189,8 @@ listens on the half pressed for the next input, says a swap, and holds a deadzon
 slider, the inverted vertical and a reset. Its proof script rebinds, swaps, restarts
 the store from the file, resets, and drives the screen with a pad button, all on three
 actions of its own declared at run time (since 0.2.1), so it holds in a game whatever
-actions that game has. Since 0.2.0 it contributes the `controls` tab to the options
+actions that game has. A pad binding the store puts in force answers every pad, as the
+project's own do, and never pad 0 alone (0.2.2). Since 0.2.0 it contributes the `controls` tab to the options
 screen, a row opening its screen.
 
 **menus** (§PW346, requires prompts): a main menu, a pause menu and a yes-or-no confirm

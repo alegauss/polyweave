@@ -71,6 +71,16 @@ func _initialize() -> void:
 	if now[J].filter(func(c: String) -> bool: return not Bindings.on_keys(c)) != jump_pad:
 		failed.append("rebinding jump's key changed its pad binding")
 
+	var east := InputEventJoypadButton.new()
+	east.button_index = JOY_BUTTON_B
+	bindings.rebind(J, east)
+	var from_pad_one := InputEventJoypadButton.new()
+	from_pad_one.device = 1
+	from_pad_one.button_index = JOY_BUTTON_B
+	if not InputMap.event_is_action(from_pad_one, J):
+		failed.append("a pad binding rebound answers pad 0 alone, not a player on pad 1")
+	bindings.apply(J, now[J])
+
 	if bindings.rebind(P, InputEventAction.new()):
 		failed.append("an event no binding can hold was taken")
 
