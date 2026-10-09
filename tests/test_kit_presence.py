@@ -46,7 +46,7 @@ PRESENCE = "addons/polyweave/presence/presence.gd"
 
 @pytest.mark.skipif(not os.environ.get("GODOT"), reason="no $GODOT on this machine")
 @pytest.mark.parametrize(("before", "after", "said"), [
-    ('_hold("pad", tr(str(declared["LEFT"])) % (device + 1))', "pass",
+    ('_hold("pad", tr(str(declared["LEFT"])) % (player_of(device) + 1))', "pass",
      "a pad leaving did not pause the game"),
     ("family = family_of(device)", 'family = "xbox"',
      "a PlayStation pad leaving drew the xbox family"),

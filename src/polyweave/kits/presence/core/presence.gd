@@ -10,7 +10,8 @@ extends CanvasLayer
 ## false. A game that was already paused stays paused when this resumes.
 ##
 ## The project's res://polyweave_presence.gd may declare PAUSE_ON_FOCUS, and LEFT and
-## AWAY, the keys (through tr()) of the two messages; LEFT is given the player's number.
+## AWAY, the keys (through tr()) of the two messages; LEFT is given the player's number,
+## the seat the players kit gave that pad where it is installed.
 
 signal left(device: int, family: String)
 signal resumed
@@ -18,6 +19,7 @@ signal resumed
 const HERE := "res://addons/polyweave/presence/presence.gd"
 const PROJECT := "res://polyweave_presence.gd"
 const Prompts := preload("res://addons/polyweave/prompts/prompts.gd")
+const PLAYERS := "res://addons/polyweave/players/players.gd"
 ## the pad button that confirms in each family, as the menus kit has it
 const CONFIRM := {"xbox": JOY_BUTTON_A, "playstation": JOY_BUTTON_A, "switch": JOY_BUTTON_B}
 const DEFAULTS := {
@@ -109,8 +111,18 @@ func _connection(device: int, connected: bool) -> void:
 	if why == "":
 		family = family_of(device)
 		absent = device
-		_hold("pad", tr(str(declared["LEFT"])) % (device + 1))
+		_hold("pad", tr(str(declared["LEFT"])) % (player_of(device) + 1))
 		left.emit(device, family)
+
+
+## the player a pad belongs to: the players kit's seat where it is installed (§PW357),
+## the pad's own number otherwise
+func player_of(device: int) -> int:
+	if ResourceLoader.exists(PLAYERS):
+		var seated: int = load(PLAYERS).shared().player_of(device)
+		if seated >= 0:
+			return seated
+	return device
 
 
 func _notification(what: int) -> void:

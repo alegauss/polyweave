@@ -368,4 +368,23 @@ drives a PlayStation pad leaving, where the game must stop ticking, name player 
 draw the PlayStation confirm, and then its return. Another pad's wrong button, in Xbox's
 and in Switch's convention, must hold the game, and that pad's confirm must resume it.
 The proof also checks a game paused by its own menu, a lost and regained focus, and
-`PAUSE_ON_FOCUS` off.
+`PAUSE_ON_FOCUS` off. Since 0.2.0 the player it names is the seat the players kit gave
+that pad, where that kit is installed.
+
+**players** (§PW357, requires remap): more than one player on one machine, from
+Starship's `coop.gd`. `PolyweavePlayers.shared()` seats the first player on the keyboard
+and `FIRST_PAD`. Any other pad joins by pressing `JOIN_BUTTON` (Start) while fewer than
+`MAX_PLAYERS` (2) play. A player who joins gets a copy of every rebindable action,
+`p2_fire` and so on. Each copy holds the first player's pad bindings on that player's
+pad alone, and the first player's pad bindings then answer `FIRST_PAD` alone, so an
+event from one pad never moves another player. `player_of(device)` and
+`player_of_event(event)` answer whose a device is. `rebind(player, action, event)`
+changes one player's binding, swapping a clash among that player's own actions only.
+`leave(player)` drops their actions and frees the pad. How many play and what a player
+is in the game are the project's (`res://polyweave_players.gd`, and the `joined` and
+`left` signals); the kit assumes no genre and no split screen. Its proof script seats a
+second pad, numbered apart from its seat, and refuses one past `MAX_PLAYERS`. It holds
+each player's pad to their own actions and the keyboard to the first player's, and a
+rebind on either player to leave the other's alone. A leave must free the pad for the
+next to join, and with the presence kit installed, a pad that leaves must be named as
+the player seated on it.

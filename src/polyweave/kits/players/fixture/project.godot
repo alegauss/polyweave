@@ -1,0 +1,20 @@
+; The players kit's fixture: a game of two actions, fire and jump, each on a key and a
+; pad button, for two players to share one machine.
+
+config_version=5
+
+[application]
+
+config/name="players fixture"
+run/main_scene="res://main.tscn"
+
+[input]
+
+fire={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"physical_keycode":32), Object(InputEventJoypadButton,"button_index":0)]
+}
+jump={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"physical_keycode":87), Object(InputEventJoypadButton,"button_index":1)]
+}

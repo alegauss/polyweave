@@ -1,5 +1,5 @@
 name = "presence"
-version = "0.1.0"
+version = "0.2.0"
 summary = "the game paused when a pad leaves or the window loses focus, saying whose pad, resumed by its return or a confirm"
 requires = ["prompts"]
 
@@ -16,3 +16,4 @@ script = "core/proof.gd"
 
 [changes]
 "0.1.0" = "a pad leaving or the focus lost pauses the game, the pad's own family drawn, and a confirm or the pad's return resumes it"
+"0.2.0" = "the pad that leaves is named as the player the players kit seated on it, where that kit is installed"

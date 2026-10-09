@@ -845,22 +845,6 @@ line in the window and the file in `touched`.
 
 ## Block V — Parts every game repeats, installed already proved
 
-### §PW357 A second player on the same machine
-
-Starship's game/core/coop.gd and the coop_device kept in bindings.gd hold a second
-player's pad apart from the first one's, and a rebind there keeps the two pads apart.
-The kit installs a join flow (press to join on any unassigned pad), a device-to-player
-map the input layer filters every event by, and per-player bindings through the remap
-kit (docs/specs/kit.md).
-
-Proof, driven with two simulated pads: both join as two players; an event from one never
-moves the other; a rebind on one leaves the other's bindings alone; a leave frees the
-pad for the next to join; with the pad lifecycle kit present, the pad that disconnects
-is named as that player's.
-
-How many players a game takes, and what a player is in it, are the project's
-declaration; the kit assumes neither a genre nor a split screen.
-
 ### §PW358 A project that imports and parses clean
 
 Godot 4 refers to resources by UID, and since 4.4 a script carries a .uid file beside
@@ -1064,13 +1048,13 @@ game never has a version of these parts of its own to migrate away from.
 
 ### §PW370 Starship onto the input kits
 
-The prompt, remap and co-op kits (the prompts and remap kits, §PW357) are extracted from
-Starship's game/core/bindings.gd, controls.gd and coop.gd. Starship then adopts them,
-which is the decision that every project adapts to polyweave rather than the other way
-round: its actions and options become the kit's declaration, its own input code is
-removed, its Controls tab becomes the kit's screen under Starship's Theme, and the
-checks in dev/check.gd that cover the same ground give way to the kits' acceptance
-specs.
+The prompt, remap and co-op kits (the prompts, remap and players kits, in
+docs/specs/kit.md) are extracted from Starship's game/core/bindings.gd, controls.gd and
+coop.gd. Starship then adopts them, which is the decision that every project adapts to
+polyweave rather than the other way round: its actions and options become the kit's
+declaration, its own input code is removed, its Controls tab becomes the kit's screen
+under Starship's Theme, and the checks in dev/check.gd that cover the same ground give
+way to the kits' acceptance specs.
 
 Whatever Starship needs that the kits lack is filed here as friction and fixed in the
 kit, never patched in the game, so the extraction ends with one copy of the code and not

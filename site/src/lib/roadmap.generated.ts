@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 2 },
   { block: "U", title: "A window on everything a project governs", open: 2 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 15 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 14 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -226,13 +226,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW357",
-    block: "V",
-    symptom: "a second player joining, which pad is whose and keeping two players' bindings apart are rewritten per game",
-    why: "Starship solved it in coop.gd, and the binding half of it already lives in the remap kit.",
-    deps: [],
-  },
-  {
     id: "PW358",
     block: "V",
     symptom: "a moved file breaks a UID reference and a script that does not parse is found only when its scene loads",
@@ -321,7 +314,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "V",
     symptom: "Starship keeps its own bindings and co-op code after the input kits were extracted from it",
     why: "A kit proved only in a fixture has not met a game, and the game it came from is the cheapest first consumer.",
-    deps: ["PW357"],
+    deps: [],
   },
   {
     id: "PW371",

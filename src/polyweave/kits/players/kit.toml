@@ -1,0 +1,18 @@
+name = "players"
+version = "0.1.0"
+summary = "a second player joining on any free pad, each player's actions on their own pad alone, rebound apart"
+requires = ["remap"]
+
+[installs]
+core = "core"
+
+[declares]
+declaration = "res://polyweave_players.gd"
+max_players = 2
+
+[proves]
+fixture = "fixture"
+script = "core/proof.gd"
+
+[changes]
+"0.1.0" = "join on a free pad, every action copied per player on that pad alone, rebinds kept apart, a leave freeing the pad"
