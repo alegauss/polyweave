@@ -400,6 +400,7 @@
 - ✅ **PW309** **a revision's change can rewrite items outside the one asked about, and the person learns of it only by diffing** — A revision's write outside its item and dependents asks first, with the reason; its close lists each file written and what waits (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW310** **the window would show a project as it was when opened, so an item a session or terminal changed looks untouched** — The window watches the open project's root, re-reads the inventory once per burst, redraws only what moved, and marks an item changed while looked at (design recorded in `gui/README.md`).
 - ✅ **PW389** **the window's live test fails the gate at random when its setup, two Python calls, outruns vitest's 10 s hook limit** — The shell's hooks get the 60 s its tests have, so the window's setup, two Python calls, no longer fails the gate when the machine is loaded.
+- ✅ **PW377 (the screen's facts as operations)** **half the decision screen's facts and its masked write are no operation, so the window can only frame the Python page** — review.state, .canon, .compare and .answer give the decision screen's facts and masked write as operations the page's routes call.
 
 ## Block V — Parts every game repeats, installed already proved
 

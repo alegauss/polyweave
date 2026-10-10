@@ -28,7 +28,9 @@ SKILL_BUDGET = 3_400
 #: 3,900 at 3,832 once the compose row names store.capsules (§PW268).
 #: 4,000 at 3,910 once the rows name revision, picture.vector and panel.build
 #: (§PW301, §PW315, §PW316), each trimmed elsewhere first.
-REFERENCE_BUDGET = 4_000
+#: 4,200 at 4,089 once a row names the decision screen's four review operations
+#: (§PW377), the rows having been trimmed for clip.camera and verdict.answer already.
+REFERENCE_BUDGET = 4_200
 
 
 def test_the_manifest_and_the_marketplace_name_the_plugin():

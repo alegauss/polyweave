@@ -922,6 +922,11 @@ CODES: dict[str, Code] = {
         doors=("name a *.vfx.toml under the project",
                "write each effect as [effect.<name>] with its amount and lifetime"),
     ),
+    "review.not-served": Code(
+        means="the picture named is not one the page may show",
+        when="a path outside the project, or a file that is not a picture or record",
+        doors=("name a picture by its path under the project root",),
+    ),
     "vfx.unshipped": Code(
         means="the scenes would land beside a declaration the game's export leaves out",
         when="no out and no [paths] vfx, with the declaration under a .gdignore or a "

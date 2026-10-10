@@ -202,6 +202,54 @@ def test_a_redo_still_needs_the_person_s_words(page):
     assert status == 400 and said["code"] == "loop.no-reason"
 
 
+# -- the page's facts and write as operations (§PW377) -------------------------------
+
+
+def test_the_state_operation_is_what_the_page_reads(page):
+    base, where = page
+    _, body, _ = get(base + "/api/state")
+    served = json.loads(body)
+    assert served.pop("stale") is None
+    assert review.state(str(where)) == served
+
+
+def test_the_canon_operation_is_what_the_page_reads(page):
+    base, where = page
+    _, body, _ = get(base + "/api/canon")
+    assert review.canon(str(where))["boards"] == json.loads(body)
+
+
+def test_the_compare_operation_refuses_a_path_the_page_would_not_show(page):
+    from polyweave.errors import PolyweaveError
+
+    _, where = page
+    with pytest.raises(PolyweaveError) as refused:
+        review.compare("../outside.png", "renders/star_dim.png", root=str(where))
+    assert refused.value.code == "review.not-served"
+    said = review.compare("renders/star_dim.png", "renders/star_dim.png",
+                          root=str(where))
+    assert said["changed_patches"] == 0
+
+
+def test_the_answer_operation_is_the_page_s_write(page):
+    _, where = page
+    said = review.answered(judged(choice="accept", why="carried as the page does"),
+                           root=str(where))
+    assert said["answer"]["family"] == "stars"
+    lines = (where / ".polyweave" / "answers.jsonl").read_text(encoding="utf-8")
+    assert json.loads(lines.splitlines()[-1])["why"] == "carried as the page does"
+
+
+def test_the_answer_operation_refuses_on_code_older_than_the_package(page, monkeypatch):
+    from polyweave.errors import PolyweaveError
+
+    _, where = page
+    monkeypatch.setattr(review, "_LOADED", 0.0)
+    with pytest.raises(PolyweaveError) as refused:
+        review.answered(judged(choice="accept", why="old code"), root=str(where))
+    assert refused.value.code == "review.stale-server"
+
+
 # -- an answer the agent can wait on (§PW173) ----------------------------------------
 
 

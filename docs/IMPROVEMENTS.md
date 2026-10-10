@@ -739,7 +739,7 @@ check. Its write, `review.answer`, turns drawn boxes into a mask tied to a diges
 also spoke English inside a pt-BR window.
 
 Build, in parts:
-1. Operations for every fact: `review.state` (the `/api/state` payload),
+1. Landed: operations for every fact, `review.canon` beside them: `review.state` (the `/api/state` payload),
    `review.compare`, and `review.answer` (masks, then `verdict.judge`, refused on
    stale code as the page is).
 2. A typed SDK: `gui/packages/core/src/operations.generated.ts`, generated from

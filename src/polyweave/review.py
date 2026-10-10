@@ -26,12 +26,14 @@ import mimetypes
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from typing import Annotated
 from urllib.parse import parse_qs, urlparse
 
 import numpy as np
 
 from . import loop, verdict
 from .config import load
+from .describe import Param, operation
 from .errors import PolyweaveError
 from .files import read_text_retrying
 
@@ -469,6 +471,81 @@ def staleness(code: Path, started: float) -> dict | None:
     ).as_dict()
 
 
+# -- the page's facts and its write, as operations (§PW377) ---------------------------
+#
+# The page and the window's own screen read the same answers: each route below calls
+# one of these, so there is no second implementation for a screen to drift from.
+
+#: The newest Python the process that imported this module was started with, so an
+#: answer is refused once the package changes under a long-running server (§PW294).
+_LOADED = newest(CODE)
+
+
+@operation("review.state")
+def state(root: Annotated[str, Param("the project the page is for")] = ".") -> dict:
+    """Everything the decision screen shows, as the page reads it: the language, what
+    waits on a person, the sittings, their answers, the gate runs and the turntables."""
+    from . import review_text
+
+    here = load(root).root
+    return {
+        # The page's own words follow the project's (§PW287).
+        "language": review_text.language(here),
+        "project": load(here).get("project.name"),
+        "pending": loop.pending(str(here)),
+        "sittings": sittings(here),
+        "answers": verdict.answers(root=str(here))["answers"],
+        "gates": looked_at(here),
+        "turntables": turntables(here),
+    }
+
+
+@operation("review.canon")
+def canon(root: Annotated[str, Param("the project the page is for")] = ".") -> dict:
+    """Each style family's canon board, as the page's canon tab draws it."""
+    from . import style
+
+    config = load(root)
+    families = config.styles() if config.states("style") else {}
+    return {"boards": [style.board(name, config.root) for name in families]}
+
+
+@operation("review.compare")
+def compare(
+    old: Annotated[str, Param("the picture before, under the project")],
+    new: Annotated[str, Param("the picture after, under the project")],
+    root: Annotated[str, Param("the project the pictures belong to")] = ".",
+) -> dict:
+    """Where two pictures differ above the noise floor, as a map the page shows."""
+    here = load(root).root
+    for one in (old, new):
+        if not _served(here, one):
+            raise PolyweaveError(
+                "review.not-served",
+                f"{one!r} is not a picture under the project the page may show",
+                "name a picture by its path under the project root",
+                given=one,
+            )
+    return difference(here, old, new)
+
+
+@operation("review.answer")
+def answered(
+    body: Annotated[
+        dict,
+        Param("the answer as the page sends it: sitting, family, choice, why and "
+              "marks; or gate and picture; or admit or withdraw, with canon"),
+    ],
+    root: Annotated[str, Param("the project the sitting belongs to")] = ".",
+) -> dict:
+    """The page's one write, marks turned into masks and then verdict.judge, refused
+    where this process runs older code than the package on disk."""
+    stale = staleness(CODE, _LOADED)
+    if stale:
+        raise PolyweaveError(stale["code"], stale["message"], stale["remedy"])
+    return answer(load(root).root, body)
+
+
 def server(root=".", port: int = 0) -> ThreadingHTTPServer:
     """The page's server for one project, bound and not yet serving."""
     here = load(root).root
@@ -494,28 +571,11 @@ def server(root=".", port: int = 0) -> ThreadingHTTPServer:
                     return self._file(review_text.LOCALES / f"{speaks}.json")
                 return self._json({"code": "not-found"}, HTTPStatus.NOT_FOUND)
             if asked.path == "/api/state":
-                from . import review_text
-
-                return self._json(
-                    {
-                        # The page's own words follow the project's (§PW287).
-                        "language": review_text.language(here),
-                        "project": load(here).get("project.name"),
-                        "pending": loop.pending(str(here)),
-                        "sittings": sittings(here),
-                        "answers": verdict.answers(root=str(here))["answers"],
-                        "gates": looked_at(here),
-                        "turntables": turntables(here),
-                        # The page shows a banner naming the restart.
-                        "stale": staleness(code, started),
-                    }
-                )
+                # The page shows a banner naming the restart.
+                return self._json({**state(here), "stale": staleness(code, started)})
             if asked.path == "/api/canon":
-                from . import style
-
                 try:
-                    families = load(here).styles() if load(here).states("style") else {}
-                    return self._json([style.board(name, here) for name in families])
+                    return self._json(canon(here)["boards"])
                 except PolyweaveError as refused:
                     return self._json(refused.as_dict(), HTTPStatus.BAD_REQUEST)
             if asked.path == "/api/compare":

@@ -98,6 +98,7 @@ MODULES: tuple[str, ...] = (
     "polyweave.search",
     "polyweave.calibrate",
     "polyweave.verdict",
+    "polyweave.review",
     "polyweave.loop",
     "polyweave.port",
     "polyweave.trace",

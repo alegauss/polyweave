@@ -66,7 +66,7 @@
 
 ## Block U — A window on everything a project governs
 
-- 📋 **PW377** (deps: PW305 ✅) **half the decision screen's facts and its masked write are no operation, so the window can only frame the Python page** — A typed SDK generated from describe, and one React screen served to the window and the browser alike, end the iframe without a second implementation. → §PW377
+- ⏳ **PW377** (deps: PW305 ✅) **half the decision screen's facts and its masked write are no operation, so the window can only frame the Python page** — The typed SDK generated from describe, the React decision screen and the one bundle both serve are still to build. → §PW377
 - 📋 **PW378** (deps: PW309 ✅) **a revision's session can write outside its item through Bash, and neither the question nor the touched list sees it** — The scope hook reads only the file a Write or Edit names, so a shell write to the config or a canon slips past the person. → §PW378
 
 ## Block V — Parts every game repeats, installed already proved
@@ -173,6 +173,16 @@
   game/ui/opening_shots.json is replaced by a *.camera.toml built with clip.camera, and
   opening.gd seeks the built scene, mapping places on the ring through its place
   Callable.
+
+## Done when — PW377
+
+- **A typed SDK is generated from describe and checked fresh**
+  gui/packages/core/src/operations.generated.ts carries every operation's parameters,
+  ranges and choices, and a test fails when describe changes without it.
+- **One React decision screen is served to the window and the browser** The screen in
+  gui/packages/ui, built into src/polyweave/review_page/, is what python -m polyweave
+  review serves and the window shows, with tests/test_review_page.py held, and the
+  iframe is gone.
 
 ## Non-goals
 
