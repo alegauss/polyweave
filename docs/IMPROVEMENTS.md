@@ -359,26 +359,6 @@ since a reference the service ignores is dropped without an error.
 
 ## Block O — A person sees and answers
 
-### §PW375 A sitting answered by name, from chat
-
-Met in spinhold on 2026-10-07. Four sittings were open on the review page
-(`art/review/title-life`, `rk190-opening`, `rk157-menu-sound`, `ptbr-screens`); the
-owner looked at them and said in chat "está tudo certo, pode continuar" rather than
-clicking each family's button. No verdict landed, and the agent had to carry it.
-
-`verdict.judge` takes `members` (name, spec, new...), so carrying that sentence means
-reading each `sitting.json`, copying every family's member list into a JSON argument and
-calling judge once per family, then `verdict.record_answer` by hand so `verdict.answers`
-sees it. The page does exactly that in `review.answer(root, body)`, which takes a
-sitting and a family by name, but `describe` lists no operation for it, so the
-workaround was a throwaway driver calling that internal function.
-
-What polyweave should do: an operation, say `verdict.answer`, taking `sitting` (the
-manifest the page lists), `family` (one, or every family when left out), `choice` and
-`why`, which runs the page's own write for each. A family already answered is skipped
-and named, not judged twice. The answer records the person's words as given, so the
-ledger cannot tell a click from a sentence carried from chat, which is the point.
-
 ### §PW383 A transcription sheet a person reviews row by row
 
 Found in spinhold (RK178): before any TOML is written, the agent writes a sheet from the

@@ -200,6 +200,13 @@ same file is what a background wait watches instead of polling. The page reads a
 five seconds unless an answer is being written, and shows each family's answers with any
 newer candidate for its members, so the person sees their sentence acted on.
 
+**A verdict given in conversation is the same write** (§PW375). `verdict.answer(sitting,
+choice, why, family=)` names a sitting by its folder or manifest, as the page lists it,
+and runs the page's own write for that family, or for every family where none is named.
+A family already answered in `answers.jsonl` is skipped and named, never judged twice. It
+refuses an empty sentence where the page keeps a silent accept as one, since a verdict
+carried from chat has the person's words, kept as given.
+
 **A mark says where** (§PW174). On the page a person may drag boxes over any member's own
 picture, in that picture's pixels. The API also takes a loose `outline` of points. With the
 answer they become a mask the picture's size, black where marked, in `[paths]

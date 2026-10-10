@@ -10,11 +10,11 @@
 | Make a shape | `geometry.build`, `geometry.build_all`, `geometry.describe`, `geometry.variants`, `geometry.fit`, `geometry.compare` |
 | Render | `render.plan`, `render.bake` |
 | Measure | `measure.take`, `measure.same`, `measure.available`, `measure.digest`, `measure.contrast`, `measure.pressure`, `measure.flashes` |
-| Judge against the bar | `accept.check`, `accept.verify`, `accept.check_screen`, `cost.read`, `sound.measure`, `sound.speech`, `sound.declared` (declared audio, what is missing) |
+| Judge against the bar | `accept.check`, `accept.verify`, `accept.check_screen`, `cost.read`, `sound.measure`, `sound.speech`, `sound.declared` (what is missing) |
 | Search for numbers | `search.sweep`, `port.run` (a whole family), `trace.read` |
 | See it where it is seen | `compose.place`, `compose.sheet`, `store.capsules`, `picture.vector` |
 | Size a bound from noise | `calibrate.run`, then `calibrate.apply` |
-| Carry a person's verdict | `verdict.sheet`, `verdict.sitting`, `verdict.judge`, `verdict.promote`, `sound.sitting`; `review` shows a sitting, `verdict.answers` resumes from it |
+| Carry a person's verdict | `verdict.sheet`, `verdict.sitting`, `verdict.judge`, `verdict.promote`, `sound.sitting`, `verdict.answer` (from chat); `review` shows one, `verdict.answers` resumes |
 | Asked changes | `revision.ask`, `revision.open`, `revision.turn`, `revision.check`, `revision.settings`, `revision.close` |
 | Keep the ledger | `loop.start`, `loop.spent`, `loop.judged`, `loop.finish`, `loop.compare` |
 | Read the ledger | `loop.runs`, `loop.assets`, `loop.changes`, `loop.bounds` |

@@ -100,7 +100,9 @@ from polyweave.errors import PolyweaveError
 #: 120,213 with tables.check and engine.perf (§PW364, §PW365).
 #: 121,070 with engine.preset_search (§PW367), each preset found by search.
 #: 122,180 with engine.states and project.new (§PW368, §PW369).
-DESCRIBE = 122_800
+#: 123,610 with clip.camera and verdict.answer, a sitting answered from chat (§PW372,
+#: §PW375).
+DESCRIBE = 124_200
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with

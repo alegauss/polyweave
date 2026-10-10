@@ -112,7 +112,8 @@ TOOL_BUDGET = 4500
 #: 107,000 at 106,321 for tables.check and engine.perf (§PW364, §PW365).
 #: 107,700 at 107,072 for engine.preset_search (§PW367).
 #: 108,700 at 108,091 for engine.states and project.new (§PW368, §PW369).
-LIST_BUDGET = 108700
+#: 110,000 at 109,379 for clip.camera and verdict.answer (§PW372, §PW375).
+LIST_BUDGET = 110000
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

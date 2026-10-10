@@ -573,6 +573,84 @@ def answers(
     }
 
 
+@operation("verdict.answer")
+def answer(
+    sitting: Annotated[
+        str, Param("the sitting, as its manifest or the folder the page lists it in")
+    ],
+    choice: Annotated[
+        str, Param("what the person said of it", choices=tuple(CHOICES))
+    ],
+    why: Annotated[str, Param("the person's own sentence, as they said it")],
+    *,
+    family: Annotated[str, Param("one family; every family where empty")] = "",
+    root: Annotated[str, Param("the project the sitting belongs to")] = ".",
+) -> dict:
+    """A verdict a person gave in conversation, answering a sitting by name (§PW375).
+
+    The page's own write, run for the family named or every family of the sitting, so
+    the ledger, the spec and `verdict.answers` take it as they take a click. A family
+    already answered is skipped and named, not judged twice.
+    """
+    import json
+
+    from . import review
+    from .config import load
+    from .files import read_text_retrying
+
+    if not str(why).strip():
+        # The page keeps a silent click as one; a sentence carried from chat has words.
+        raise PolyweaveError(
+            "loop.no-reason",
+            "a verdict carried from conversation came with no sentence",
+            "pass the person's own words as `why`, as they said them",
+        )
+    config = load(root)
+    listed = sitting.replace("\\", "/").rstrip("/")
+    if not listed.endswith(MANIFEST):
+        listed = f"{listed}/{MANIFEST}"
+    offered = {one["manifest"]: one for one in review.sittings(config.root)}
+    if listed not in offered:
+        raise PolyweaveError(
+            "loop.unknown-sitting",
+            f"{sitting!r} is not a sitting this project laid out",
+            "name a sitting the review page lists; verdict.sitting lays one out",
+            given=sitting,
+            allowed=sorted(offered),
+        )
+    families = list(offered[listed]["families"])
+    if family and family not in families:
+        raise PolyweaveError(
+            "loop.unknown-sitting",
+            f"the sitting has no family {family!r}",
+            f"name one of {', '.join(sorted(families))}, or none for every family",
+            given=family,
+            allowed=sorted(families),
+        )
+    path = config.path("paths.work") / ANSWERS
+    done = {
+        one["family"]
+        for one in (
+            json.loads(line)
+            for line in (read_text_retrying(path) or "").splitlines()
+            if line.strip()
+        )
+        if one.get("sitting") == listed
+    }
+    answered, skipped = [], []
+    for one in [family] if family else families:
+        if one in done:
+            skipped.append(one)
+            continue
+        said = review.answer(
+            config.root,
+            {"sitting": listed, "family": one, "choice": choice, "why": why},
+        )
+        answered.append({"family": one, "members": said["members"]})
+    return {"sitting": listed, "choice": choice, "why": why, "answered": answered,
+            "skipped": skipped}
+
+
 def _heard(member: dict, *, choice: str, why: str, when: str, root: Path) -> dict:
     """A person's verdict on a sound, appended to the new sound's record.
 
