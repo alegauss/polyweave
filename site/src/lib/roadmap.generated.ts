@@ -187,7 +187,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW377",
     block: "U",
     symptom: "half the decision screen's facts and its masked write are no operation, so the window can only frame the Python page",
-    why: "The typed SDK generated from describe, the React decision screen and the one bundle both serve are still to build.",
+    why: "The React decision screen, and the one bundle the browser and the window both serve, are still to build.",
     deps: [],
   },
   {

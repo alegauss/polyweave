@@ -742,7 +742,7 @@ Build, in parts:
 1. Landed: operations for every fact, `review.canon` beside them: `review.state` (the `/api/state` payload),
    `review.compare`, and `review.answer` (masks, then `verdict.judge`, refused on
    stale code as the page is).
-2. A typed SDK: `gui/packages/core/src/operations.generated.ts`, generated from
+2. Landed as PW399, tools/operations_ts.py writing `gui/packages/core/src/operations.generated.ts`, from
    `describe` (parameters, ranges, choices, payloads), with a test that fails when it
    is stale, like `site/src/lib/roadmap.generated.ts`.
 3. The decision screen in React with viglet in `gui/packages/ui`: cards, mask drawing,

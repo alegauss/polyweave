@@ -401,6 +401,7 @@
 - ✅ **PW310** **the window would show a project as it was when opened, so an item a session or terminal changed looks untouched** — The window watches the open project's root, re-reads the inventory once per burst, redraws only what moved, and marks an item changed while looked at (design recorded in `gui/README.md`).
 - ✅ **PW389** **the window's live test fails the gate at random when its setup, two Python calls, outruns vitest's 10 s hook limit** — The shell's hooks get the 60 s its tests have, so the window's setup, two Python calls, no longer fails the gate when the machine is loaded.
 - ✅ **PW377 (the screen's facts as operations)** **half the decision screen's facts and its masked write are no operation, so the window can only frame the Python page** — review.state, .canon, .compare and .answer give the decision screen's facts and masked write as operations the page's routes call.
+- ✅ **PW399** **the window calls an operation by its name with untyped arguments, so a renamed parameter fails only at run time** — tools/operations_ts.py writes every operation's arguments as TypeScript types the window calls through, kept fresh by a test (design recorded in `tools/operations_ts.py`).
 
 ## Block V — Parts every game repeats, installed already proved
 
