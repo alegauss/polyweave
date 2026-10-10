@@ -286,23 +286,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW373 A shot that says when it was not written
-
-Met in starship (RK190), shooting a cutscene's frames through a held game: `game.batch`
-with `{"cmd": "shot", "out": ".polyweave/shots/opening/0.png"}`, where the folder
-`opening/` did not exist yet. Every shot answered `{"out":
-".polyweave/shots/opening/0.png", "size": [1280, 720]}` with `"errors": []`, and no file
-was written. Only the session's log said so: `ERROR: Can't save PNG at path:
-'.polyweave/shots/opening/0.png'` from the driver's `_shot`. The worker learned it when
-`compose.sheet` refused the first tile as missing, then made the folder by hand and
-drove the whole sequence again.
-
-What polyweave should do: `game.shot` makes the folder `out` names (as every other
-operation that writes does), checks that the file exists after the save, and where it
-does not, answers a refusal (`driver.shot-not-written`) carrying the engine's error,
-never an `out` for a file that is not there. A test shoots into a folder that does not
-exist yet and expects the file.
-
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once

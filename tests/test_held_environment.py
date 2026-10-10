@@ -8,10 +8,12 @@ with a display, so they skip without `$GODOT` or a route that draws real pixels.
 from __future__ import annotations
 
 import os
+from pathlib import Path
 
 import pytest
 
 from polyweave import driving, godot, offscreen
+from polyweave.errors import PolyweaveError
 
 MAIN = """extends Node2D
 """
@@ -60,6 +62,43 @@ def test_a_held_shot_is_taken_in_the_declared_environment(game):
         assert shot["differs"] == []
     finally:
         driving.closed(session, root=game)
+
+
+def test_a_batch_shot_makes_the_folder_it_is_given(game):
+    # Starship's cutscene frames went to a folder not made yet, and every shot answered
+    # an out with no file behind it (§PW373).
+    opened = driving.opened(game, display=True)
+    session = opened["session"]
+    try:
+        done = driving.batched(
+            session, [{"cmd": "shot", "out": ".polyweave/shots/opening/0.png"}],
+            root=game)
+        assert done["stopped"] is None, done
+        assert (Path(game) / ".polyweave" / "shots" / "opening" / "0.png").is_file()
+    finally:
+        driving.closed(session, root=game)
+
+
+def test_a_save_that_wrote_nothing_is_refused_with_the_engine_s_error(game):
+    blocker = Path(game) / "blocker"
+    blocker.write_text("a file, where a folder would have to be", encoding="utf-8")
+    opened = driving.opened(game, display=True)
+    session = opened["session"]
+    try:
+        with pytest.raises(PolyweaveError) as refused:
+            driving.send(session, "shot", root=game, out=str(blocker / "x.png"))
+        assert refused.value.code == "driver.shot-not-written"
+        assert not (blocker / "x.png").exists()
+    finally:
+        driving.closed(session, root=game)
+
+
+def test_a_folder_that_cannot_be_made_is_refused_before_the_game_is_asked(tmp_path):
+    (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
+    (tmp_path / "blocker").write_text("", encoding="utf-8")
+    with pytest.raises(PolyweaveError) as refused:
+        driving.shot("no-session", out="blocker/x.png", root=str(tmp_path))
+    assert refused.value.code == "driver.shot-not-written"
 
 
 def test_a_call_may_name_its_own_environment(game):

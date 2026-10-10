@@ -727,7 +727,13 @@ func _shot(asked: Dictionary) -> Dictionary:
 	var out := str(asked.get("out", "user://driver_shot.png"))
 	if out.begins_with("res://") or out.begins_with("user://"):
 		out = ProjectSettings.globalize_path(out)
-	image.save_png(out)
+	# a folder not made yet is made, and a save that wrote nothing is said, never an `out`
+	# for a file that is not there (§PW373)
+	DirAccess.make_dir_recursive_absolute(out.get_base_dir())
+	var saved := image.save_png(out)
+	if saved != OK or not FileAccess.file_exists(out):
+		return _refused("driver.shot-not-written", "the shot was not written to %s: %s"
+			% [out, error_string(saved if saved != OK else ERR_FILE_CANT_WRITE)])
 	return {"result": {"out": out, "size": [image.get_width(), image.get_height()],
 		"locale": TranslationServer.get_locale()}}
 

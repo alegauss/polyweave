@@ -102,7 +102,7 @@ them; the driver quits on `close`, or after `--idle=N` seconds with no request.
 | `step` | `frames` (default 1) | Lets that many frames pass, then holds |
 | `wait` | `frames` budget, and one of `signal` + `path`, `node` (a path or group that must exist), or `path` + `property` + `equals` | Lets frames pass until the condition holds or the budget is spent; `result` is `{met, frames}`. An unmet wait is `ok` with `met: false` — the budget ran out, which is an answer and not an error |
 | `call` | `path`, `method`, optional `args` | Calls a method the game exposes for setup, and returns its value. An awaited coroutine is not waited on; a caller that needs it done follows with `wait` |
-| `shot` | `out` | Saves the viewport as a PNG at that path and returns it with its size. A headless run draws nothing, so a shot there is refused (`driver.no-picture`) rather than saved blank |
+| `shot` | `out` | Saves the viewport as a PNG at that path and returns it with its size. A headless run draws nothing, so a shot there is refused (`driver.no-picture`) rather than saved blank. The folder is made, and a save that wrote no file is refused (`driver.shot-not-written`), never answered with its `out` |
 | `expect` | `path`, `property`, `equals` | Whether the property holds the value now, no frame passing: `{held, value}`. Numbers are compared as numbers wherever they sit, in a Dictionary or an Array too, since JSON gives every number back as a float (§PW278); the same holds for a `wait` on a property |
 | `set` | `path`, `property`, `value` | Sets a property for setup, a nested one written `rng:seed` (Godot's `set_indexed`), and answers `{was, now}`; an int stays an int though JSON sends a float. How a flow seeds a generator the game made itself, which `--seed` does not reach (§PW217) |
 | `selector` | `path`, or any target | The selector that picks this one node out now, `{select}`, or `select: null` where none does |
@@ -145,6 +145,7 @@ agent reads a game's health with no path and no print. A game with no state kit 
 | `driver.no-node` | a path, group or class that finds nothing |
 | `driver.no-method` | a `call` to a method the node does not have |
 | `driver.no-picture` | a `shot` in a run that renders nothing |
+| `driver.shot-not-written` | a `shot` whose PNG was not written, with the engine's error |
 | `driver.off-screen` | a click outside the viewport, where nothing can be hovered |
 | `driver.no-state` | a `state` read in a game that carries no state kit |
 

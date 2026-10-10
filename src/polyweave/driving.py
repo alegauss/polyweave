@@ -51,6 +51,7 @@ DRIVER_CODES = (
     "driver.no-node",
     "driver.no-method",
     "driver.no-picture",
+    "driver.shot-not-written",
     "driver.off-screen",
     "driver.no-state",
 )
@@ -572,11 +573,7 @@ def shot(
     was taken in, the size and locale, beside the one the session asked, and
     `differs` names any that are not (§PW339).
     """
-    where = Path(out)
-    if not where.is_absolute():
-        where = load(root).root / where
-    where.parent.mkdir(parents=True, exist_ok=True)
-    answer = send(session, "shot", root=root, out=str(where))
+    answer = send(session, "shot", root=root, out=_shot_to(out, root))
     took = answer.get("result") or {}
     asked = _session(session, root).get("environment") or {}
     size = took.get("size")
@@ -593,6 +590,33 @@ def shot(
         )
     ]
     return {**answer, "environment": environment, "asked": asked, "differs": differs}
+
+
+def _shot_to(out: Any, root: str | Path) -> str:
+    """Where a shot goes, absolute under the project, its folder made (§PW373).
+
+    game.shot and a batch's shot both come through here, so neither hands the game a
+    folder that is not there; a folder that cannot be made is refused before the game
+    is asked, and the driver refuses a save that wrote nothing.
+    """
+    where = Path(str(out or ""))
+    if not str(out or "").strip():
+        raise PolyweaveError(
+            "game.bad-target", "a shot names no file to write",
+            "pass out, a .png path under the project",
+        )
+    if not where.is_absolute():
+        where = load(root).root / where
+    try:
+        where.parent.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        raise PolyweaveError(
+            "driver.shot-not-written",
+            f"the shot cannot be written to {where}: its folder cannot be made",
+            "name a folder under the project the game can write to",
+            detail=str(exc),
+        ) from exc
+    return str(where)
 
 
 #: The commands a batch may send: the session's own, each journalled as its tool's is.
@@ -637,6 +661,8 @@ def batched(
             )
         fields = {k: v for k, v in one.items() if k != "cmd"}
         try:
+            if cmd == "shot":
+                fields["out"] = _shot_to(fields.get("out"), root)
             answers.append({"index": index, **send(session, cmd, root=root, **fields)})
         except PolyweaveError as refused:
             answers.append({"index": index, "refused": refused.as_dict()})

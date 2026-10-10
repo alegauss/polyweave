@@ -1330,6 +1330,13 @@ CODES: dict[str, Code] = {
         when="a shot in a session opened headless",
         doors=("open the game with display",),
     ),
+    "driver.shot-not-written": Code(
+        means="the shot was asked for and no file was written",
+        when="a folder that cannot be made, or the engine failing to save the PNG; "
+        "the message carries the engine's error, and no out is answered for a file "
+        "that is not there",
+        doors=("name a folder under the project the game can write to",),
+    ),
     "driver.off-screen": Code(
         means="the click lands outside the viewport, where nothing is hovered",
         when="a point past the declared window size, or a node scrolled off screen",
