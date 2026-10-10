@@ -861,22 +861,6 @@ differently, and a skeleton that suits one may fight the next. So it stays an id
 Starship and Cottony both show code it would replace, at which point the shape it should
 take is read off that code rather than invented here.
 
-### §PW369 A game born adopted
-
-project.init adopts a tree that already exists, which is the right door for Starship and
-Cottony and the wrong one for the next game, which would be created bare and adopted
-afterwards with its first weeks of hand-rolled code to undo.
-
-A new game should start from one call that creates the Godot project; the repository's
-.gitignore and .gitattributes, with Git LFS for binaries; the project config with
-project.init already run; a gate holding game.test and engine.check
-(docs/specs/engine.md); and whichever base kits its declaration asks for, typically
-input, menus, settings and save, each installed by kit.install with its proof.
-
-Proof: the new project's gate passes on its first commit, project.check reports it
-clean, and provenance.read lists every kit it carries with its version. From then on the
-game never has a version of these parts of its own to migrate away from.
-
 ### §PW370 Starship onto the input kits
 
 The prompt, remap and co-op kits (the prompts, remap and players kits, in

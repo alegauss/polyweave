@@ -5,8 +5,8 @@ page groups them by task.
 
 | Task | Operations |
 |---|---|
-| Adopt | `project.init` (`init`), `project.check`, `project.inventory`, `kit.list`, `kit.install`, `kit.update`, `kit.prove` |
-| Know the machine | `capabilities` (verb), `engine.find`, `offscreen.routes`, `search.worth_parallel` |
+| Adopt | `project.new`, `project.init` (`init`), `project.check`, `project.inventory`, `kit.list`, `kit.install`, `kit.update`, `kit.prove` |
+| Know the machine | `capabilities`, `engine.find`, `offscreen.routes`, `search.worth_parallel` |
 | Start on an asset | `asset.brief`, `loop.pending` |
 | Make a shape | `geometry.build`, `geometry.build_all`, `geometry.describe`, `geometry.variants`, `geometry.fit`, `geometry.compare` |
 | Render | `render.plan`, `render.bake` |

@@ -481,6 +481,23 @@ the checkout, not a thing that is wrong with the plugin.
 lived as a Python string literal full of escaped tabs, where nothing highlighted it and
 nothing linted it. It is `tests/fixtures/gdscript/capture.gd` now, read by the test.
 
+## A game born adopted
+
+`project.init` adopts a tree that exists, which is the wrong door for the next game:
+created bare and adopted later, it has its first weeks of hand-rolled code to undo
+(§PW369). `project.new(root, name)` starts a game already on polyweave, in a folder that
+is empty or not there; one that holds files is `adopt.not-empty`. It writes a Godot
+project with a main scene and `rendering_device/fallback_to_opengl3` on, a `.gitignore`
+(`.godot/`, `.polyweave/`, `build/`) and a `.gitattributes` putting every binary in Git
+LFS. It starts a git repository where git is on the machine, and runs `project.init`
+with the agent wired. It then installs the base kits by `kit.install`, each proved where
+it lands: `remap`, `menus`, `options`, `saves` and `tests` (with `prompts` before them),
+or the `kits` named. A first test, `tests/main_test.gd` on the tests kit's base, loads
+the main scene. The gate, `tools/gate.py`, runs `project.check`, `engine.check` and
+`game.test` and exits non-zero on any. The answer is `project.check`'s verdict on the
+new tree and every kit `provenance.read` says it carries, with its version; the gate
+passes on the first commit.
+
 ## Still to come in this block
 
 The port PW36 is deferred on, once somebody records its baseline — and then the six

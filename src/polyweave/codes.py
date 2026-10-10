@@ -1961,6 +1961,12 @@ CODES: dict[str, Code] = {
         "columns or a column type (§PW364)",
         doors=("declare each table, its file and its columns' types",),
     ),
+    "adopt.not-empty": Code(
+        means="project.new was pointed at a folder that already holds files",
+        when="starting a game where one, or anything else, already is (§PW369)",
+        doors=("adopt a game that exists with project.init --write --agent",
+               "name an empty folder, or one not there"),
+    ),
     "engine.unreachable-state": Code(
         means="a state machine's state that nothing assigns and it does not start in",
         when="engine.states reading a script's enum and its assignments (§PW368)",
