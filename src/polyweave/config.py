@@ -103,6 +103,11 @@ DEFAULTS: dict[str, Any] = {
         # Where a game's audio lands (§PW185). One folder by default, because Cottony
         # keeps its music and its effects side by side; a family may name its own.
         "audio": "assets/audio",
+        # Where vfx.build writes its scenes where a call names no out (§PW374). Empty
+        # is beside each declaration, which is refused where the export leaves the
+        # declaration out: a scene the shipped game cannot load passes every editor
+        # check.
+        "vfx": "",
         # What a score renders through (§PW187). Engines and instrument libraries are
         # configuration and never bundled: FluidSynth plays a General MIDI SoundFont,
         # and Surge XT is a VST3, found in the usual plug-in folders where it is empty.

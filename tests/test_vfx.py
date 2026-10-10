@@ -76,6 +76,57 @@ def test_one_effect_can_be_built_alone_and_into_another_folder(tmp_path):
     assert (tmp_path / "game" / "fx" / "band.tscn").is_file()
 
 
+def test_a_scene_beside_a_source_under_a_gdignore_is_refused(tmp_path):
+    # Spinhold's art/ carries a .gdignore, and the trails built beside their declaration
+    # loaded in the editor and would not have shipped (§PW374).
+    source = effects(tmp_path)
+    (tmp_path / "vfx" / ".gdignore").write_text("", encoding="utf-8")
+    with pytest.raises(PolyweaveError) as refused:
+        vfx.build(source, root=str(tmp_path))
+    assert refused.value.code == "vfx.unshipped"
+    assert ".gdignore" in refused.value.message
+    assert not (tmp_path / "vfx" / "sparks.tscn").exists()
+
+
+def test_a_scene_beside_a_source_an_export_excludes_is_refused(tmp_path):
+    source = effects(tmp_path)
+    (tmp_path / "export_presets.cfg").write_text(
+        '[preset.0]\nname="Windows"\nexport_filter="all_resources"\n'
+        'exclude_filter="assets/models/*, vfx/*"\n', encoding="utf-8")
+    with pytest.raises(PolyweaveError) as refused:
+        vfx.build(source, root=str(tmp_path))
+    assert refused.value.code == "vfx.unshipped"
+    assert "Windows" in refused.value.message
+
+
+def test_the_project_names_where_its_built_effects_go(tmp_path):
+    source = effects(tmp_path)
+    (tmp_path / "vfx" / ".gdignore").write_text("", encoding="utf-8")
+    (tmp_path / "polyweave.toml").write_text('[paths]\nvfx = "game/fx"\n',
+                                             encoding="utf-8")
+    made = vfx.build(source, root=str(tmp_path))["effects"]
+    assert made["sparks"]["file"] == "game/fx/sparks.tscn"
+    # A call's own out still wins over the project's folder.
+    made = vfx.build(source, out="game/other", root=str(tmp_path))["effects"]
+    assert made["band"]["file"] == "game/other/band.tscn"
+
+
+def test_a_camera_clip_beside_an_unshipped_source_is_refused(tmp_path):
+    from polyweave import camera
+
+    (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
+    (tmp_path / "art").mkdir()
+    (tmp_path / "art" / ".gdignore").write_text("", encoding="utf-8")
+    (tmp_path / "art" / "a.camera.toml").write_text(
+        'name = "a"\n[[shot]]\nfrom = [0, 0, 1]\nlook = [0, 0, 0]\nhold = 1\n',
+        encoding="utf-8")
+    with pytest.raises(PolyweaveError) as refused:
+        camera.build("art/a.camera.toml", root=str(tmp_path))
+    assert refused.value.code == "clip.unshipped"
+    assert camera.build("art/a.camera.toml", out="game/cinema",
+                        root=str(tmp_path))["file"] == "game/cinema/a.tscn"
+
+
 @pytest.mark.parametrize(
     ("body", "code"),
     [

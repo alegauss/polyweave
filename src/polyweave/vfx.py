@@ -594,20 +594,49 @@ def _source(source: str, config) -> tuple[Path, dict]:
     return where, declared["effect"]
 
 
+def shipped_folder(config, where: Path, out: str | None, address: str | None,
+                   code: str) -> Path:
+    """Where a scene built from the declaration at `where` is written (§PW374).
+
+    A call's `out` first, then the project's folder at `address` where it names one.
+    With neither, beside the declaration, unless the export leaves the declaration out:
+    a scene there loads in the editor and not in the shipped game, so it is refused.
+    """
+    if out:
+        return config.path("paths.work", out)
+    if address and config.get(address):
+        return config.path(address)
+    from .driving import left_out
+
+    why = left_out(config.root, where)
+    if why:
+        setting = f" or set [{address.replace('.', '] ')} in polyweave.toml" \
+            if address else ""
+        raise PolyweaveError(
+            code,
+            f"{provenance.relative(where, config.root)} sits where the game's export "
+            f"leaves it out ({why}), so a scene built beside it would not ship",
+            f"pass out, a folder the game ships{setting}",
+            given=provenance.relative(where, config.root),
+        )
+    return where.parent
+
+
 @operation("vfx.build")
 def build(
     source: Annotated[str, Param("the *.vfx.toml, relative to the project")],
     effect: Annotated[str, Param("one effect; left out, every one")] = None,
     out: Annotated[
-        str, Param("the folder the scenes are written to; beside the source if unset")
+        str, Param("the folder the scenes go to; [paths] vfx, else beside the source")
     ] = None,
     root: Annotated[str, Param("the project the effects belong to")] = ".",
 ) -> dict:
     """Build declared particle and ribbon effects into Godot scenes, each recorded.
 
     Each lands as <name>.tscn the game instances as it is; an effect made of parts is
-    one scene with each part under a Node3D. The answer says what each measures from
-    its declaration: lifetime, reach, alive, rate and brightness.
+    one scene with each part under a Node3D, never beside a source the export leaves
+    out. The answer says what each measures from its declaration: lifetime, reach,
+    alive, rate and brightness.
     """
     config = load(root)
     where, tables = _source(source, config)
@@ -622,7 +651,7 @@ def build(
     chosen = {effect: tables[effect]} if effect else tables
     effects = {name: declared(name, table, config.root)
                for name, table in chosen.items()}
-    folder = config.path("paths.work", out) if out else where.parent
+    folder = shipped_folder(config, where, out, "paths.vfx", "vfx.unshipped")
     folder.mkdir(parents=True, exist_ok=True)
     made = {}
     for name, own in effects.items():

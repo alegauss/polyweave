@@ -177,7 +177,9 @@ DESCRIBE = 122_800
 #: 132,295 with tables.check, engine.perf and their codes (§PW364, §PW365).
 #: 133,152 with engine.preset_search (§PW367).
 #: 134,331 with engine.states, project.new and their codes (§PW368, §PW369).
-CAPABILITIES = 135_000
+#: 135,006 with clip.camera and its codes, driver.shot-not-written, and vfx.unshipped
+#: and clip.unshipped, a scene that would not ship (§PW372-§PW374).
+CAPABILITIES = 136_000
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

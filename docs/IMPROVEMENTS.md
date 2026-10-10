@@ -717,28 +717,6 @@ rest of the PW330 stand-in.
 
 ## Block T — Adopting polyweave in a project
 
-### §PW374 Built effects land where the game ships
-
-Met in spinhold (RK189). Its effect declarations live in `art/vfx/*.vfx.toml`, and
-`art/` carries a `.gdignore` and is in the export preset's `exclude_filter`, as a
-project's sources should be. `vfx.build --source art/vfx/trails.vfx.toml` with no `out`
-wrote each scene beside the declaration, `art/vfx/<effect>.tscn`, the game loaded them
-from there, and every check passed because the editor reads a text scene straight off
-the disk. An exported build has no `art/`, so the first trail or title effect would have
-stopped it.
-
-The workaround: every call now passes `out=game/vfx`, and the declarations' header
-comments say so. Nothing stops the next call from forgetting it, and a scene left beside
-its source would load in the editor again.
-
-What polyweave should do: let `polyweave.toml` name where a project's built effects go
-(a `[vfx] out`, as other kinds bind their folders), used whenever a call passes no
-`out`. Where neither is given and the source sits under a folder the project's Godot
-export leaves out (a `.gdignore`, or an `exclude_filter` in `export_presets.cfg`),
-refuse with a remedy naming `out`, rather than writing a scene the shipped game cannot
-load. PW363, which launches an exported build, would catch the result; this catches it
-at the build.
-
 ### §PW387 A style borrowed from another project
 
 Spinhold RK201 declares a style for a ring drawn in another game's colours: the Quilt is

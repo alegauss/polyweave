@@ -64,7 +64,6 @@
 
 ## Block T — Adopting polyweave in a project
 
-- 📋 **PW374** (deps: —) **vfx.build writes each scene beside its declaration, so effects declared in an unshipped folder load only in the editor** — A project whose sources the export leaves out ships a game that cannot load its effects, and every check passes. → §PW374
 - 📋 **PW387** (deps: —) **a style cannot take its palette from another project, so a game in a sister game's colours keeps a copy that drifts** — A crossover world is only true to its source while its colours follow it, and a hand copy says nothing when the source moves. → §PW387
 
 ## Block U — A window on everything a project governs

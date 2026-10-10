@@ -381,6 +381,7 @@
 - ✅ **PW241** **a declaration cannot say its asymmetry is meant, so a one-armed pose fails the symmetry check the project applies to all** — A declaration or one variant may set near_symmetry or asymmetric in its [voxels], and the symmetry finding names its model (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW242** **a capture of a moment in play misses its subject when spawns vary between runs** — capture.run with until_visible takes the run again, up to tries, until the script reports its subject on screen before the picture (design recorded in `docs/specs/engine.md`).
 - ✅ **PW325** **no operation brings an artefact another project made into this one with a record of where it came from** — provenance.borrow copies another project's file here, recording its project, path, commit and digest, so outdated names each borrower once it moves (design recorded in `docs/specs/provenance.md`).
+- ✅ **PW374** **vfx.build writes each scene beside its declaration, so effects declared in an unshipped folder load only in the editor** — vfx.build writes where out or [paths] vfx says, and refuses beside a source the export leaves out; clip.camera refuses alike (design recorded in `docs/specs/vfx.md`).
 
 ## Block U — A window on everything a project governs
 

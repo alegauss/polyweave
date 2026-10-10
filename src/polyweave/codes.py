@@ -922,6 +922,13 @@ CODES: dict[str, Code] = {
         doors=("name a *.vfx.toml under the project",
                "write each effect as [effect.<name>] with its amount and lifetime"),
     ),
+    "vfx.unshipped": Code(
+        means="the scenes would land beside a declaration the game's export leaves out",
+        when="no out and no [paths] vfx, with the declaration under a .gdignore or a "
+        "preset's exclude_filter; the editor would load them and the shipped game not",
+        doors=("pass out, a folder the game ships",
+               "set [paths] vfx in polyweave.toml"),
+    ),
     "vfx.bad-effect": Code(
         means="an effect's key or value means nothing, or the named one is not there",
         when="a misspelled key, an amount of 0, a colour not written #rrggbb, a kind "
@@ -1688,6 +1695,12 @@ CODES: dict[str, Code] = {
         "numbers, a field of view outside 1 to 179 degrees, an easing nothing "
         "implements, or a camera looking at the place it stands",
         doors=("correct the key or value the refusal names, at the shot it names",),
+    ),
+    "clip.unshipped": Code(
+        means="the camera scene would land beside a declaration the export leaves out",
+        when="no out, with the declaration under a .gdignore or a preset's "
+        "exclude_filter; the editor would load it and the shipped game not",
+        doors=("pass out, a folder the game ships",),
     ),
     "clip.no-frames": Code(
         means="the clip is too short or too slow to have a single frame in it",

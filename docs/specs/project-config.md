@@ -41,6 +41,7 @@ work       = ".polyweave"
 purchases  = "polyweave.purchases.json"
 loop       = "polyweave.loop.json"      # what one asset cost, made each way
 audio      = "docs/design/audio"        # where a game's declared sounds land
+vfx        = "game/vfx"                 # where vfx.build writes scenes; empty is beside each source
 fluidsynth = "fluidsynth"               # plays a score's General MIDI parts
 soundfont  = "${SOUNDFONT}"             # the General MIDI library it plays; never bundled
 surge      = ""                         # Surge XT's .vst3; empty finds the usual install

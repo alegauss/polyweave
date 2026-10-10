@@ -95,6 +95,8 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.review_text": ("internal", "a sitting's words, from the catalogs"),
     "polyweave.vfx:measured_whole": ("internal", "a whole's measures, over its parts"),
     "polyweave.vfx:scene_whole": ("internal", "a whole's scene, its parts under one"),
+    "polyweave.vfx:shipped_folder": ("internal", "where a built scene lands, shipped"),
+    "polyweave.driving:left_out": ("internal", "why the export leaves a path out"),
     "polyweave.camera:checked": ("internal", "a camera clip's table, with defaults"),
     "polyweave.camera:measured": ("internal", "a camera clip's measures"),
     "polyweave.camera:scene": ("internal", "a camera clip as the scene build writes"),

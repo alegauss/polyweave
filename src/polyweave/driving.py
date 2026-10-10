@@ -1105,6 +1105,32 @@ def _matches(patterns: list[str], path: str) -> bool:
     )
 
 
+def left_out(here: Path, path: Path) -> str:
+    """Why a Godot export would leave `path` out of the game, or "" where it ships.
+
+    A folder above it holding a .gdignore is never imported, and a preset exporting
+    all resources leaves out what its exclude_filter names (§PW374). One preset that
+    leaves it out is enough: that build cannot load what is there.
+    """
+    relative = Path(path).resolve().relative_to(here.resolve())
+    for depth in range(len(relative.parts)):
+        if (here.joinpath(*relative.parts[:depth]) / ".gdignore").exists():
+            folder = "/".join(relative.parts[:depth]) or "the project"
+            return f"{folder} holds a .gdignore"
+    presets_file = here / "export_presets.cfg"
+    if not presets_file.is_file():
+        return ""
+    posix = relative.as_posix()
+    for preset in _presets(presets_file.read_text(encoding="utf-8")):
+        keys = preset["keys"]
+        name = keys.get("name", (f"preset.{preset['index']}", 0))[0]
+        if keys.get("export_filter", ("all_resources", 0))[0] != "all_resources":
+            continue
+        if _matches(_patterns(keys.get("exclude_filter", ("", 0))[0]), posix):
+            return f"the {name} preset's exclude_filter leaves it out"
+    return ""
+
+
 @operation("game.release_check")
 def release_checked(
     root: Annotated[str, _ROOT] = ".",

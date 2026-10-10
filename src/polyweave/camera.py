@@ -395,9 +395,11 @@ def build(
     `anchors`, or its own `place` Callable for a frame that is not a node's. The answer
     says the clip's duration, shots and shortest and longest hold.
     """
+    from .vfx import shipped_folder
+
     config = load(root)
     where, clip = _source(source, config)
-    folder = config.path("paths.work", out) if out else where.parent
+    folder = shipped_folder(config, where, out, None, "clip.unshipped")
     folder.mkdir(parents=True, exist_ok=True)
     target = folder / f"{clip['name']}.tscn"
     target.write_text(scene(clip), encoding="utf-8", newline="\n")

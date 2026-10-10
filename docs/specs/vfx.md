@@ -70,7 +70,10 @@ A table mixing keys of its own with parts is refused.
 ## Building
 
 `vfx.build(source, effect=, out=)` builds every effect in the file, or the one named, as
-`<name>.tscn` beside the source or in `out`. The scene is a `GPUParticles3D` whose process
+`<name>.tscn` in `out`, else in `[paths] vfx`, else beside the source. Beside a source the
+game's export leaves out (a `.gdignore` above it, or a preset's `exclude_filter`) is
+refused as `vfx.unshipped`, since the editor would load the scene and the shipped game
+not (§PW374); `clip.camera` refuses the same as `clip.unshipped`. The scene is a `GPUParticles3D` whose process
 material, colour ramp, size curve, material and draw pass are all in the one file: a
 billboarded quad for particles, a `RibbonTrailMesh` with particle trails for a ribbon.
 Each is recorded (`vfx`, [provenance.md](provenance.md)). An effect made of parts is one
