@@ -893,10 +893,11 @@ Players' existing save files must load through the kit's declared migration, so 
 loses progress on the update that swaps the code; that is part of the proof, not a
 follow-up.
 
-What Cottony needs that the kits lack is filed as friction and fixed in the kits. Done
-when Cottony carries neither file, its own save test is replaced by the kit's
-acceptance, a save written by the current release loads after the swap, and its gate
-passes.
+What Cottony needs that the kits lack is filed as friction and fixed in the kits:
+measured on 2026-10-10, the kits read only their own files, so its user://cottony.cfg
+needs a door into them (§PW398). Done when Cottony carries neither file, its own save
+test is replaced by the kit's acceptance, a save written by the current release loads
+after the swap, and its gate passes.
 
 ### §PW394 Prompts in words, per player
 
@@ -962,7 +963,28 @@ Let a project declare where bindings were kept before: polyweave_players.gd or a
 res://polyweave_remap.gd names a file and section (`FROM := ["user://settings.cfg",
 "controls"]`), and `load_kept` with no kit file of its own yet takes the codes under
 each action's name from there, writes its own file and reports what it took, as the
-options kit's migration reports in `said`. Defaults stay the project's InputMap, so a
+options kit's migration reports in `said`. The saves and options kits need the same door
+(§PW398), and the three should read alike. Defaults stay the project's InputMap, so a
 game whose actions are declared in code moves them to project.godot. Done when the kit's
 proof migrates a fixture's older file and Starship's player keeps a rebind across the
 upgrade.
+
+### §PW398 Saves and options taken from where a game kept them
+
+Measured adopting the saves and options kits onto Cottony (§PW371). Cottony keeps
+everything in one ConfigFile, user://cottony.cfg: [save] version 1, [progress]
+best_level with stars and scores per level, [boosters] and the three switches under
+[settings]. The saves kit migrates only its own envelope files in user://saves, and the
+options kit only its own user://polyweave_settings.cfg by renamed keys, so on the first
+launch after the swap a player has no progress and default switches, and nothing says
+so.
+
+Let each kit's project script name what was kept before. polyweave_saves.gd declares
+`static func adopted() -> Dictionary`, which the game writes to read its old file into
+the data a slot holds (the game knows its format, the kit never does);
+polyweave_options.gd declares `const ADOPTED := {"tab/key": ["user://cottony.cfg",
+"settings", "sound"]}`. Where the kit's own file is absent, the kit takes what was
+declared once, writes its own file, leaves the old one on disk, and says so in `said`.
+The remap kit's version of the same door is §PW397, and the two should read alike. Done
+when each kit's proof adopts a fixture's older file and Cottony's player keeps progress
+and switches across the swap.

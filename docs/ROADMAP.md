@@ -76,11 +76,12 @@
 ## Block V — Parts every game repeats, installed already proved
 
 - 🛠 **PW370** (deps: PW345 ✅, PW357 ✅, PW394, PW395, PW396, PW397) **Starship keeps its own bindings and co-op code after the input kits were extracted from it** — A kit proved only in a fixture has not met a game, and the game it came from is the cheapest first consumer. → §PW370
-- 📋 **PW371** (deps: PW347 ✅, PW348 ✅) **Cottony keeps its own settings and save code where the kits provide them** — The second game is what shows a kit is not one project's code moved into a folder. → §PW371
+- 🛠 **PW371** (deps: PW347 ✅, PW348 ✅, PW398) **Cottony keeps its own settings and save code where the kits provide them** — The second game is what shows a kit is not one project's code moved into a folder. → §PW371
 - 📋 **PW394** (deps: PW344 ✅) **the prompts kit names a binding only as an icon, so a help line in words cannot name a player's button in their language** — Starship's help lines are lettering filled per player from the string table, and an icon-only kit leaves that code in the game. → §PW394
 - 📋 **PW395** (deps: PW344 ✅, PW357 ✅) **the prompts kit follows every pad, so a second player moves the first player's prompts, and an unplugged pad keeps them** — In co-op the prompts must name the buttons in each player's own hands, which Starship's notice and unplugged do today. → §PW395
 - 📋 **PW396** (deps: PW357 ✅) **the players kit seats any pad the moment it presses Start, so a game cannot hold a join for the next wave** — When a player may join is the game's rule, and Starship's coop.gd keeps its own join for that alone. → §PW396
 - 📋 **PW397** (deps: PW345 ✅) **the remap kit reads only its own file, so a game adopting it loses every binding its players had already set** — An upgrade that silently resets a player's controls is a regression they notice first, and Starship keeps its bindings in its settings file. → §PW397
+- 📋 **PW398** (deps: PW347 ✅, PW348 ✅) **the saves and options kits read only their own files, so a game adopting them starts its players over** — Cottony keeps progress and switches in user://cottony.cfg, and a swap that loses them is the regression PW371 forbids. → §PW398
 
 ## Done when — PW36
 

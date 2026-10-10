@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 2 },
   { block: "U", title: "A window on everything a project governs", open: 2 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 6 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 7 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -237,7 +237,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "V",
     symptom: "Cottony keeps its own settings and save code where the kits provide them",
     why: "The second game is what shows a kit is not one project's code moved into a folder.",
-    deps: [],
+    deps: ["PW398"],
   },
   {
     id: "PW394",
@@ -265,6 +265,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "V",
     symptom: "the remap kit reads only its own file, so a game adopting it loses every binding its players had already set",
     why: "An upgrade that silently resets a player's controls is a regression they notice first, and Starship keeps its bindings in its settings file.",
+    deps: [],
+  },
+  {
+    id: "PW398",
+    block: "V",
+    symptom: "the saves and options kits read only their own files, so a game adopting them starts its players over",
+    why: "Cottony keeps progress and switches in user://cottony.cfg, and a swap that loses them is the regression PW371 forbids.",
     deps: [],
   },
 ];
