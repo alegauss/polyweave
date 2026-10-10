@@ -243,6 +243,12 @@ broken record must not hide the next. Four outcomes per record: sound, the artef
 **missing**, the artefact **changed** — with both digests, so the difference is attributable
 — or the record itself is **unreadable**.
 
+**Only the project's own records are read** (§PW376). A folder below the root that holds a
+`.git` is another checkout, such as the worktree of an older commit `engine.cost` keeps in
+the work area, and its records describe that commit's files: read against this project's,
+every artefact rebuilt since reads as changed. Such a tree is left out of the walk, and of
+every read that walks the records, and named in `other_trees`.
+
 **The other direction is asked too.** Walking the records cannot find an artefact that was
 produced without one: a mesh that was paid for, downloaded, committed and never recorded has
 no sidecar to start from, so nothing is reported and the project reads as sound. That is the

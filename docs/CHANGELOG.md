@@ -221,6 +221,7 @@
 - ✅ **PW247** **a list parameter passed from PowerShell never arrives as JSON, so the CLI refuses it** — A list flag may be given once per item or as @file.json, so it survives PowerShell 5.1, and a mangled list is refused naming both forms (design recorded in `docs/specs/tool-surface.md`).
 - ✅ **PW334** **an @file list written by Windows PowerShell is refused for its UTF-8 BOM, so PW247's remedy fails in that shell** — An @file argument and every JSON or TOML declaration are read past a UTF-8 byte order mark, so a file PowerShell 5.1 wrote is taken (design recorded in `docs/specs/tool-surface.md`).
 - ✅ **PW337** **a dict parameter is refused as an @file, so PowerShell cannot pass one to the CLI at all** — A dict flag takes @file.json as a list does, read past a byte order mark, and a dict that does not read names that form, so PowerShell can pass one (design recorded in `docs/specs/tool-surface.md`).
+- ✅ **PW376** **provenance.verify reports the work area's snapshots of old commits as the project's drift** — provenance.verify reads only the project's own records, leaving out any checkout below the root and naming it in other_trees (design recorded in `docs/specs/provenance.md`).
 
 ## Block L — What a run leaves as evidence
 

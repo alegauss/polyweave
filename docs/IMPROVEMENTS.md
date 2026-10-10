@@ -292,23 +292,6 @@ Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
 ## Block K — Reached without reading the source
 
-### §PW376 Verify answers for the project alone
-
-Met in spinhold on 2026-10-07. `python -m polyweave provenance.verify` answered 46
-`changed` and 11 `missing` entries, which read as the project's models and site pictures
-having drifted from their records. Every one of them was a record under
-`.polyweave/cost/trees/<commit>/...`: the checked-out copies `frame_cost.py` keeps of
-older commits (`work / "cost" / "trees" / commit[:12]`). Their records are compared
-against the project's current files, so any artefact rebuilt since that commit shows as
-changed, and one moved since (art/vfx to game/vfx) shows as missing. The project's own
-937 records were all fine. Telling the two apart took `--json` and a filter by hand.
-
-What polyweave should do: `provenance.verify` skips the work area's copies of other
-trees, as it skips any path that is not the project's own; a snapshot's record is
-checked against the snapshot, if at all. Where the work area is walked on purpose, its
-entries are reported apart from the project's, so `changed` and `missing` mean the
-project and nothing else.
-
 ### §PW386 Targets for a contrast taken with the other measures
 
 Spinhold RK200 measured how well a fight's targets stand out from the ring behind them.

@@ -595,6 +595,10 @@ def verify(root: Annotated[str, ROOT] = ".") -> dict:
     Both directions are asked (§PW41): every record's artefact is checked, **and** every
     produced file is checked for a record. The second is the expensive half — a paid
     mesh with no sidecar used to read as a sound project.
+
+    Only the project's own records are read: another checkout below the root, such as
+    the work area's worktree of an older commit, is left out and named in `other_trees`
+    (§PW376), so `changed` and `missing` mean this project and nothing else.
     """
     where = Path(root).resolve()
     ok: list[str] = []
@@ -602,7 +606,8 @@ def verify(root: Annotated[str, ROOT] = ".") -> dict:
     changed: list[dict] = []
     unreadable: list[dict] = []
 
-    for found in sorted(where.rglob(f"*{SUFFIX}")):
+    records, trees = _own(where)
+    for found in records:
         try:
             record = read(found, where)
         except PolyweaveError as exc:
@@ -647,6 +652,7 @@ def verify(root: Annotated[str, ROOT] = ".") -> dict:
         "changed": changed,
         "unreadable": unreadable,
         "unrecorded": nowhere,
+        "other_trees": trees,
     }
 
 
@@ -669,9 +675,31 @@ def _over_crlf(artefact: Path, recorded: str | None) -> bool:
     return hashlib.sha256(body.replace(b"\n", b"\r\n")).hexdigest() == recorded
 
 
+def _own(where: Path) -> tuple[list[Path], list[str]]:
+    """The project's own records, and the other checkouts the walk left out (§PW376).
+
+    A folder below the root holding a `.git` is another tree, such as the worktree of
+    an older commit `engine.cost` keeps under the work area: its records describe that
+    commit's files, and read against this project's they report drift that is not.
+    """
+    import os
+
+    found: list[Path] = []
+    trees: list[str] = []
+    for folder, dirs, files in os.walk(where):
+        here = Path(folder)
+        if here != where and (here / ".git").exists():
+            trees.append(relative(here, where))
+            dirs[:] = []
+            continue
+        dirs.sort()
+        found.extend(here / name for name in files if name.endswith(SUFFIX))
+    return sorted(found), sorted(trees)
+
+
 def _records(where: Path):
-    """Every readable record under the root, with the artefact it names."""
-    for found in sorted(where.rglob(f"*{SUFFIX}")):
+    """Every readable record of the project's own, with the artefact it names."""
+    for found in _own(where)[0]:
         try:
             record = read(found, where)
         except PolyweaveError:

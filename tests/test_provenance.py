@@ -266,6 +266,25 @@ def test_verify_walks_the_whole_tree(tmp_path):
     assert P.verify(tmp_path)["ok"] == ["deep/under/here.png"]
 
 
+def test_verify_leaves_out_another_checkout_below_the_root(tmp_path):
+    # Spinhold's verify read 46 changed and 11 missing, every one a record in the work
+    # area's worktree of an older commit, which engine.cost keeps (§PW376).
+    P.write(a_record(tmp_path), root=tmp_path)
+    tree = tmp_path / ".polyweave" / "cost" / "trees" / "0123456789ab"
+    tree.mkdir(parents=True)
+    (tree / ".git").write_text("gitdir: elsewhere\n", encoding="utf-8")
+    stale = json.loads((tmp_path / "mascot.png.prov.json").read_text("utf-8"))
+    stale["artefact"]["sha256"] = "0" * 64
+    (tree / "mascot.png.prov.json").write_text(json.dumps(stale), encoding="utf-8")
+    (tree / "moved.png.prov.json").write_text(
+        json.dumps({**stale, "artefact": {**stale["artefact"], "path": "moved.png"}}),
+        encoding="utf-8")
+    found = P.verify(tmp_path)
+    assert found["sound"] is True, found
+    assert found["checked"] == 1
+    assert found["other_trees"] == [".polyweave/cost/trees/0123456789ab"]
+
+
 # -- the half verify could not ask about (§PW41) --------------------------------------
 
 
