@@ -873,7 +873,10 @@ way to the kits' acceptance specs.
 
 Whatever Starship needs that the kits lack is filed here as friction and fixed in the
 kit, never patched in the game, so the extraction ends with one copy of the code and not
-two.
+two. Measured on 2026-10-10 against Starship's bindings.gd, prompts.gd and coop.gd: the
+prompts in words per player (§PW394), prompts per player's device (§PW395), a join the
+game answers (§PW396) and bindings taken from the game's older file (§PW397). Starship's
+own side is moving Controls.MAP into project.godot, the kits' declaration.
 
 Done when Starship carries no input code the kits provide, its gate passes on the kits'
 proof, and provenance.read names each kit with its version.
@@ -894,3 +897,72 @@ What Cottony needs that the kits lack is filed as friction and fixed in the kits
 when Cottony carries neither file, its own save test is replaced by the kit's
 acceptance, a save written by the current release loads after the swap, and its gate
 passes.
+
+### §PW394 Prompts in words, per player
+
+Measured adopting the prompts kit onto Starship (§PW370). Starship's help lines are
+plain Labels whose string-table text holds `{fire_left}` and `{move}`, and
+game/core/bindings.gd `fill` replaces each with the button that player presses, named in
+the glyphs of their pad (A, CROSS, LB, L1) or as the string table says a key or a
+generic pad's button (`KEYNAME_SPACE`, `PAD_SOUTH`), so a rebind and a language change
+both reach the line. The four moves read as one prompt: WASD on keys, LS where all four
+are one stick. The kit answers only an icon path and `bbcode` for a RichTextLabel, for
+the one family in use.
+
+Add to the kit a `named(action, player := 0)` that answers the binding in words through
+TranslationServer under `KEYNAME_` and `PAD_` rows the game's table may carry, a `fill`
+over `{action}` and `{move}` marks, and the per-player family the players kit seats
+(PW357's pads). Icons stay the default; words are what a game whose look is lettering
+chooses. Done when Starship's help lines are filled by the kit and its check of RK179
+holds on the kit's proof.
+
+### §PW395 Prompts that follow each player's own device
+
+Measured adopting the prompts kit onto Starship (§PW370). The kit's `note` moves the
+family on any pad's button or stick, so in co-op the second player's pad takes the first
+player's prompts away from the device they are holding. Starship's `notice` reads only
+the first player's devices: a key pressed and not an echo, a pad button pressed, or a
+stick past 0.6, and a pad the players kit has seated for another player changes nothing.
+A pad unplugged moves the prompts to one still connected, or the keyboard, where the kit
+stays on a family nobody holds.
+
+Keep a family per player in the kit: `note` asks the players kit (when installed) who an
+event belongs to, and a player's family moves only on their own input; `family_changed`
+carries the player. Listen to `Input.joy_connection_changed` and move a player whose pad
+left. Done when the kit's proof, with two seated pads, shows the second pad's input
+leaving the first player's family alone and an unplugged pad handing the prompts on.
+
+### §PW396 A join the game answers
+
+Measured adopting the players kit onto Starship (§PW370). The kit seats any free pad the
+moment it presses JOIN_BUTTON, from `_input`, on every screen. Starship's
+game/core/coop.gd decides when: a Start pressed while a wave is under way waits for the
+next wave's start and says so on the HUD, a pad that chose a ship at the select is
+seated on the run's first tick, and nothing joins on the title or in a menu. Starship
+also carries a first player's rebind to the second player's copy, since the two share a
+layout; the kit's `rebind(0, ...)` leaves the copy as it was.
+
+Give the kit a join request the game answers: `join_asked(device)` is emitted, and the
+seat is taken only where the project's polyweave_players.gd declares `AUTO_JOIN = true`
+(the default, so a game that says nothing keeps today's behaviour) or the game calls
+`join(device)` itself. Declare `SHARED_LAYOUT` for a first player's rebind to reach the
+other players' copies. Done when Starship's coop.gd holds only what a second ship is in
+its game, and the kit's proof covers a deferred join and a shared layout.
+
+### §PW397 Bindings taken from where a game kept them
+
+Measured adopting the remap kit onto Starship (§PW370). Starship keeps each action's
+codes, the deadzone, inverted vertical and twin-stick fire in its own settings file
+under [controls], written by game/core/settings.gd, in the same `key:`, `button:` and
+`axis:` codes the kit uses. The kit reads only user://polyweave_bindings.cfg, so on the
+first launch after adoption every player's rebinds are back at the defaults, and nothing
+says so.
+
+Let a project declare where bindings were kept before: polyweave_players.gd or a
+res://polyweave_remap.gd names a file and section (`FROM := ["user://settings.cfg",
+"controls"]`), and `load_kept` with no kit file of its own yet takes the codes under
+each action's name from there, writes its own file and reports what it took, as the
+options kit's migration reports in `said`. Defaults stay the project's InputMap, so a
+game whose actions are declared in code moves them to project.godot. Done when the kit's
+proof migrates a fixture's older file and Starship's player keeps a rebind across the
+upgrade.

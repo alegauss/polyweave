@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 2 },
   { block: "U", title: "A window on everything a project governs", open: 2 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 2 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 6 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -230,13 +230,41 @@ export const generatedTasks: GeneratedTask[] = [
     block: "V",
     symptom: "Starship keeps its own bindings and co-op code after the input kits were extracted from it",
     why: "A kit proved only in a fixture has not met a game, and the game it came from is the cheapest first consumer.",
-    deps: [],
+    deps: ["PW394", "PW395", "PW396", "PW397"],
   },
   {
     id: "PW371",
     block: "V",
     symptom: "Cottony keeps its own settings and save code where the kits provide them",
     why: "The second game is what shows a kit is not one project's code moved into a folder.",
+    deps: [],
+  },
+  {
+    id: "PW394",
+    block: "V",
+    symptom: "the prompts kit names a binding only as an icon, so a help line in words cannot name a player's button in their language",
+    why: "Starship's help lines are lettering filled per player from the string table, and an icon-only kit leaves that code in the game.",
+    deps: [],
+  },
+  {
+    id: "PW395",
+    block: "V",
+    symptom: "the prompts kit follows every pad, so a second player moves the first player's prompts, and an unplugged pad keeps them",
+    why: "In co-op the prompts must name the buttons in each player's own hands, which Starship's notice and unplugged do today.",
+    deps: [],
+  },
+  {
+    id: "PW396",
+    block: "V",
+    symptom: "the players kit seats any pad the moment it presses Start, so a game cannot hold a join for the next wave",
+    why: "When a player may join is the game's rule, and Starship's coop.gd keeps its own join for that alone.",
+    deps: [],
+  },
+  {
+    id: "PW397",
+    block: "V",
+    symptom: "the remap kit reads only its own file, so a game adopting it loses every binding its players had already set",
+    why: "An upgrade that silently resets a player's controls is a regression they notice first, and Starship keeps its bindings in its settings file.",
     deps: [],
   },
 ];
