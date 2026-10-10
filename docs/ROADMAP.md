@@ -19,7 +19,7 @@
 - 📋 **PW57** (deps: PW53 ⏸) **every Cottony look gate restates its own floor, so no asset has a bar a search can aim at** — Five check scripts measure after the render is spent, which is a verdict and never a target, and a threshold moved in one of them is invisible to the rest. → §PW57
 - 📋 **PW59** (deps: PW53 ⏸, PW54 ✅, PW55 ✅, PW56 ⏳, PW57, PW58 ✅) **nothing says how much of Cottony still does its own version of what the plugin does** — Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion. → §PW59
 - ⏳ **PW56** (deps: PW57) **twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent** — The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question. → §PW56
-- 📋 **PW372** (deps: —) **a camera move cannot be declared as a clip or played by the game, so a cutscene's shots are numbers in the project** — A cinema opening's framing and timing are set by eye in the game's own data, with no record, spec or review page. → §PW372
+- ⏳ **PW372** (deps: —) **a camera move cannot be declared as a clip or played by the game, so a cutscene's shots are numbers in the project** — No shot is yet captured onto a sitting for a person to accept, and Starship's opening still reads its own JSON. → §PW372
 - 📋 **PW373** (deps: —) **game.shot answers success and a path when the save failed, and never makes the folder it is given** — A worker builds on frames that do not exist, and learns only when a later operation refuses the missing file. → §PW373
 
 ## Block I — Voxel models from a declaration
@@ -167,6 +167,16 @@
 - **A declared skeleton read off two games' state code** Once Cottony as well as
   Starship carries a hand-written state machine, the declaration and its generated
   skeleton take the shape both share, checked by engine.states as it stands.
+
+## Done when — PW372
+
+- **Each shot of a built camera clip is captured onto a sitting** One operation captures
+  the game at every shot of a clip.camera scene and lays the frames on a sitting, so a
+  person accepts or refuses the framing on the review page.
+- **Starship's opening plays a clip.camera scene, not its own JSON**
+  game/ui/opening_shots.json is replaced by a *.camera.toml built with clip.camera, and
+  opening.gd seeks the built scene, mapping places on the ring through its place
+  Callable.
 
 ## Non-goals
 

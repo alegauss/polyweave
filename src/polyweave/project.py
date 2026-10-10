@@ -628,7 +628,7 @@ def _money(config, said) -> None:
 KINDS = ("mesh", "picture", "sound", "music", "vfx", "clip", "line", "capture")
 
 #: The roles of a record's input that is what the artefact was declared by.
-DECLARING = ("declaration", "effects", "score", "script", "world")
+DECLARING = ("declaration", "effects", "camera", "score", "script", "world")
 
 #: A file's kind by its suffix, where its record does not settle it.
 SUFFIXES = {
@@ -766,6 +766,8 @@ def _kind(record: dict, artefact: str) -> str:
         return made
     if made == "sound":
         return "music" if engine == "music.render" else "sound"
+    if made == "camera":
+        return "clip"
     if made == "mesh" and (record.get("params") or {}).get("clip"):
         return "clip"
     if made in ("render", "picture"):

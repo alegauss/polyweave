@@ -214,6 +214,29 @@ both outputs. Both carry the **digest of the authored clip text**, so `matched` 
 "keeping them in step" from a discipline into a check: equal digests are a screen and a
 scene playing the same motion, and a difference says so rather than waiting to be noticed.
 
+## A camera clip
+
+A cutscene's camera is motion too, and was the one kind left as numbers in a game's own
+data (Starship's opening, RK190). A **camera clip** is a `*.camera.toml` of shots, one
+clip to a file: a `name`, a default `easing` and `fov`, and `[[shot]]` tables, each a
+place it starts `from` and may drift `to`, what it `look`s at and may turn to
+(`look_to`), a `fov`, a `hold` in seconds, an `ease` (`linear`, `ease`, `sine` or `step`)
+and a `mark`, a word the game is handed at the cut. Every shot boundary is a cut.
+
+**A place is three numbers in its `anchor`'s frame, and the frame is the game's.** A
+camera aimed from a ship's start on a ring cannot be baked to world positions, since the
+ship is placed at run time and the ring is not Cartesian, so the export is not an
+Animation track. `clip.camera` writes a Camera3D scene whose script holds the shots and
+frames the moment it is `seek`ed to, from the time alone. By default an anchor is a
+Node3D in its `anchors` and a place is a point in that node's frame; a game whose world
+is not a node's frame sets `place`, a Callable(anchor, place) -> Vector3. `cut(index,
+mark)` fires at every cut, so the flash, the click or what blinks stays the game's, and
+`still` holds each shot at its start for reduced motion.
+
+The scene is recorded as kind `camera` with the declaration as its input, and is listed
+by the inventory as a `clip`. What it measures (duration, shots, shortest and longest
+hold) is arithmetic over the declaration; whether a framing is right is a person's call.
+
 **Both are baked by name** (§PW160). Every step between a clip and what a game plays took a
 mesh and a fitted rig as objects in memory, which a JSON call cannot carry, so a GDScript
 project needed a Python script for motion and for nothing else. `motion.bake` takes the

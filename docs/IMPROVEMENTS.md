@@ -277,9 +277,14 @@ one the game can play, so the shots live in the project's own
 
 What polyweave should do: a camera clip, a clip whose channels are a camera's position,
 target and FOV (absolute or relative to a named anchor, here the ship's start on the
-ring), with cuts and holds. Plus an export the engine plays (a Godot Animation resource
-on a Camera3D, with its record), and a capture per shot so a person accepts the framing
-on the review page.
+ring), with cuts and holds. Plus an export the engine plays, and a capture per shot so a
+person accepts the framing on the review page.
+
+Landed: `clip.camera` builds a `*.camera.toml` into a Camera3D scene the game seeks by
+time, recorded as kind `camera` (docs/specs/motion.md, "A camera clip"). Not an
+Animation track: an anchor placed at run time, on a ring that is not Cartesian, cannot
+be baked, so a place stays in its anchor's frame and the game maps it with `place`.
+Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
 ### §PW373 A shot that says when it was not written
 

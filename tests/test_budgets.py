@@ -217,7 +217,8 @@ HELP_VERB = 4_100
 #: 25,256 with measure.flashes, engine.check, game.record_flow and game.crash_read
 #: (§PW354, §PW358, §PW360, §PW361).
 #: 25,868 with game.test, game.export_smoke, tables.check and engine.perf.
-HELP_TOP = 26_500
+#: 26,626 with clip.camera, a cutscene's camera declared and built (§PW372).
+HELP_TOP = 27_000
 #: A search's answer over its default budget of 24 samples: 3,739.
 SEARCH = 4_000
 

@@ -1,7 +1,6 @@
 # Operations by task
 
-`describe` is the authority on every operation, its parameters, ranges and units. This
-page groups them by task.
+`describe` is the authority on every operation, its parameters, ranges and units.
 
 | Task | Operations |
 |---|---|
@@ -32,7 +31,7 @@ page groups them by task.
 | Paid meshes | `mesh.buy`, `purchase.remaining`, `purchase.quote`, `purchase.allow`, `purchase.held`, `schema.validate`, `schema.read`, `schema.proved` |
 | The purchase ledger | `purchase.spent`, `purchase.ledger`, `purchase.find`, `purchase.adopt`, `purchase.reconcile` |
 | After buying | `normalise.ingest`, `texture.worth_scrubbing` |
-| Bake a clip | `motion.bake` |
+| Bake a clip | `motion.bake`, `clip.camera` (a cutscene) |
 | Motion | `clip.new`, `clip.read`, `clip.set_key`, `clip.retime`, `clip.write`, `clip.compiled` |
 | A skeleton | `skeleton.plan`, `skeleton.shared`, `skeleton.joints_in`, `skeleton.plays`, `sprites.matched` |
 

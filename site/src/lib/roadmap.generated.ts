@@ -75,7 +75,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW372",
     block: "H",
     symptom: "a camera move cannot be declared as a clip or played by the game, so a cutscene's shots are numbers in the project",
-    why: "A cinema opening's framing and timing are set by eye in the game's own data, with no record, spec or review page.",
+    why: "No shot is yet captured onto a sitting for a person to accept, and Starship's opening still reads its own JSON.",
     deps: [],
   },
   {

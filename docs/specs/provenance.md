@@ -34,12 +34,14 @@ JSON, written beside every artefact this plugin produces, named `<artefact>.prov
 }
 ```
 
-`kind` is `render`, `mesh`, `capture`, `fetch`, `picture`, `sound`, `vfx` or `borrow`; `picture` is a
+`kind` is `render`, `mesh`, `capture`, `fetch`, `picture`, `sound`, `vfx`, `camera` or
+`borrow`; `picture` is a
 bought picture put on the project's grid (§PW171), or one composed from others:
 `compose.place` records the asset and the picture it went `into` with `at`, `width` and
 `anchor`, `compose.sheet` each tile in order, and `store.capsules` the key art and logo
 (§PW269, §PW268), so `provenance.dependents` on a key art finds every capsule made from
-it. `vfx` is a scene `vfx.build` wrote from an effect's declaration (§PW259). A `fetch` carries the service fields §PW17
+it. `vfx` is a scene `vfx.build` wrote from an effect's declaration (§PW259), and `camera`
+one `clip.camera` wrote from a camera clip's (docs/specs/motion.md). A `fetch` carries the service fields §PW17
 requires — task id, prompt or reference hash, credits consumed — in the same record rather
 than a second one.
 

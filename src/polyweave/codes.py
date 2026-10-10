@@ -1669,6 +1669,19 @@ CODES: dict[str, Code] = {
         when="a file missing a name, a duration, or any channel at all",
         doors=("give it a name, a duration and a channel with keys",),
     ),
+    "clip.no-camera": Code(
+        means="there is no camera clip file, or it is not TOML",
+        when="a path to no file, or a hand edit that left invalid TOML behind",
+        doors=("name a *.camera.toml under the project",
+               "fix the syntax the detail points at"),
+    ),
+    "clip.bad-camera": Code(
+        means="a camera clip's key or value means nothing",
+        when="a misspelled key, a shot with no from, look or hold, a place not three "
+        "numbers, a field of view outside 1 to 179 degrees, an easing nothing "
+        "implements, or a camera looking at the place it stands",
+        doors=("correct the key or value the refusal names, at the shot it names",),
+    ),
     "clip.no-frames": Code(
         means="the clip is too short or too slow to have a single frame in it",
         when="a duration or a frame rate at or below zero",

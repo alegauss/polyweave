@@ -42,7 +42,8 @@ path, and for a line it is `line:<key>`, the key the string table gives it.
 
 **`kind`** is one of `mesh`, `picture`, `sound`, `music`, `vfx`, `clip`, `line` and
 `capture`, in that order. It is read from what made the artefact: the record's own kind,
-`music` where `music.render` made the sound, `clip` where the mesh carries an animation.
+`music` where `music.render` made the sound, `clip` where the mesh carries an animation
+or the scene is a camera clip `clip.camera` built.
 It is read from the file's suffix only where the record does not settle it.
 
 **`declaration`** is the file the item was declared by, where it has one: the first of
