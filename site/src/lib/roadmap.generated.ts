@@ -45,7 +45,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "R", title: "Levels measured before a person plays them", open: 12 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 1 },
-  { block: "U", title: "A window on everything a project governs", open: 2 },
+  { block: "U", title: "A window on everything a project governs", open: 6 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 7 },
 ];
 
@@ -188,7 +188,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "U",
     symptom: "half the decision screen's facts and its masked write are no operation, so the window can only frame the Python page",
     why: "The React decision screen, and the one bundle the browser and the window both serve, are still to build.",
-    deps: [],
+    deps: ["PW403"],
   },
   {
     id: "PW378",
@@ -196,6 +196,34 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "a revision's session can write outside its item through Bash, and neither the question nor the touched list sees it",
     why: "The scope hook reads only the file a Write or Edit names, so a shell write to the config or a canon slips past the person.",
     deps: [],
+  },
+  {
+    id: "PW400",
+    block: "U",
+    symptom: "the window shows a project's verdicts only by framing the review page, never on its own decision screen",
+    why: "PW377's third step begins with the sittings and their answers drawn natively, in the window's components and the catalog's words.",
+    deps: [],
+  },
+  {
+    id: "PW401",
+    block: "U",
+    symptom: "the window's decision screen cannot mark where a picture is wrong or compare two versions of it",
+    why: "A mark and a compare are how a person says what is wrong and sees what changed, and the page has both.",
+    deps: ["PW400"],
+  },
+  {
+    id: "PW402",
+    block: "U",
+    symptom: "the window's decision screen shows no gate lanes, turntables, canon boards or pending table",
+    why: "The refused beside the kept, a mesh turned and the canon are decisions the page puts before a person, and the window would hide them.",
+    deps: ["PW400"],
+  },
+  {
+    id: "PW403",
+    block: "U",
+    symptom: "the browser's review page and the window's decision screen would be two implementations of one screen",
+    why: "A fix landing in one and not the other is the drift PW305 hosted the page to avoid, so one bundle must serve both.",
+    deps: ["PW401", "PW402"],
   },
   {
     id: "PW370",
