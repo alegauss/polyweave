@@ -115,7 +115,8 @@ TOOL_BUDGET = 4500
 #: 110,000 at 109,379 for clip.camera and verdict.answer (§PW372, §PW375).
 #: 111,700 at 111,089 for review.state, .canon, .compare and .answer, the decision
 #: screen's facts and write as operations a native screen calls (§PW377).
-LIST_BUDGET = 111700
+#: 113,300 at 112,682 for revision.outside and reference.objects (§PW378, §PW379).
+LIST_BUDGET = 113300
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

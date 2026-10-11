@@ -103,7 +103,8 @@ from polyweave.errors import PolyweaveError
 #: 123,610 with clip.camera and verdict.answer, a sitting answered from chat (§PW372,
 #: §PW375).
 #: 125,405 with review.state, .canon, .compare and .answer (§PW377).
-DESCRIBE = 126_000
+#: 127,191 with revision.outside and reference.objects (§PW378, §PW379).
+DESCRIBE = 127_800
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -183,7 +184,8 @@ DESCRIBE = 126_000
 #: 135,006 with clip.camera and its codes, driver.shot-not-written, and vfx.unshipped
 #: and clip.unshipped, a scene that would not ship (§PW372-§PW374).
 #: 137,676 with verdict.answer and the four review operations (§PW375, §PW377).
-CAPABILITIES = 138_300
+#: 139,483 with revision.outside, reference.objects and its two codes (§PW378, §PW379).
+CAPABILITIES = 140_100
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

@@ -90,7 +90,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "O",
     symptom: "a transcription read from a reference video cites no frames, and a person's corrections to it are kept nowhere",
     why: "A wrong count is cheapest to fix on the sheet, and only if the person sees the frames beside each row and their answer is recorded.",
-    deps: ["PW379"],
+    deps: [],
   },
   {
     id: "PW202",
@@ -135,13 +135,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW205"],
   },
   {
-    id: "PW379",
-    block: "R",
-    symptom: "the enemies in a reference video's frames cannot be counted or followed, so an agent counts them by eye on every sheet",
-    why: "A wave rebuilt from video is only as right as its counts, and a miscount by eye reaches the person who reviews the transcription.",
-    deps: [],
-  },
-  {
     id: "PW380",
     block: "R",
     symptom: "a reference video's radar and HUD cannot be declared as regions, and the blips on its radar cannot be read as positions",
@@ -166,14 +159,21 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW382",
     block: "R",
     symptom: "a rebuilt level's capture cannot be aligned with the video it copies, so where it plays differently is found by memory",
-    why: "The list of differences is half of what a rebuild is for, and two sources looked at separately miss the gaps a curve laid over the other would show.",
-    deps: ["PW379"],
+    why: "The list of differences is half of what a rebuild is for, and two sources looked at apart miss the gaps one laid over the other would show.",
+    deps: [],
   },
   {
     id: "PW385",
     block: "R",
     symptom: "worlds offered on one tier of a route cannot be held level in whole threat and in what they give to save",
     why: "A score table shared by routes is only fair while every fork's worlds are worth the same, and nothing measures one world against another.",
+    deps: [],
+  },
+  {
+    id: "PW404",
+    block: "R",
+    symptom: "reference.objects tells kinds apart by colour and size alone, so two enemies of one colour count as one kind",
+    why: "PW379's design asked for sample crops per kind, and a count is only as right as the kinds it is split into.",
     deps: [],
   },
   {

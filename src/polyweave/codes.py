@@ -1754,6 +1754,17 @@ CODES: dict[str, Code] = {
         ),
     ),
     # -- capture: the environment a picture is taken in ------------------------
+    "capture.no-reference-frames": Code(
+        means="there are no frames to count objects in",
+        when="a folder or frames.json reference.frames never wrote",
+        doors=("name the folder reference.frames wrote, or its frames.json",),
+    ),
+    "capture.bad-kinds": Code(
+        means="the kinds of object to look for mean nothing",
+        when="no kinds, a colour not written #rrggbb, a size not [least, most] pixels, "
+        "a tolerance outside 0 to 1, or an area not [left, top, right, bottom]",
+        doors=("declare each kind with its colour and size",),
+    ),
     "capture.undeclared": Code(
         means="a setting the project says matters has no value to take",
         when="a name in `[capture] declared` that nothing sets; leaving it to chance "

@@ -473,6 +473,28 @@ itself is never copied in:
 traced to the file it came from. What happened in the frames, what spawned where on what
 path, stays the agent's and the person's reading.
 
+## What moves in those frames, counted
+
+Counting twenty small enemies by eye on every sheet put miscounts in front of the owner
+(§PW379). `reference.objects(frames, kinds)` reads the frames `reference.frames` wrote
+and finds the objects of each kind the call declares: a `colour` (`#rrggbb`), a
+`tolerance` (a share of the widest colour distance, 0.12 unless said) and a `size` range
+in the video's own pixels. No game's kinds are built in; they are kept in the record. An
+`area` leaves the HUD out. Each frame is read at most 480 pixels wide, its islands of a
+kind's colour found four-connected, and positions given back in the video's pixels.
+
+Detections become tracks, joined to the nearest of their kind in the next frame within
+`speed` (a share of the frame's width a second): each track has its first and last
+second, its path, and how it ended: `left` where its last sight was at the frame's edge,
+`gone` where it vanished inside it, `alive` where the last frame still holds it. Tracks of
+one kind born within `together` seconds and `apart` of the frame's width of one another
+are a group, with when it was born, its count, how its members ended, and a formation:
+`line` where their birth places lie along one axis, `ring` where they sit round a centre
+at one radius, else `cluster` (`single` and `pair` below three). `objects.json` lands
+beside the frames with its record (`capture`, the frames as its input), and
+`objects_001.png` on are the frames with each track's id drawn where it was seen, so the
+counts are checked against the picture rather than taken on trust.
+
 ## Still to come in this block
 
 The service client itself, and the lock that stops two sessions spending at once.

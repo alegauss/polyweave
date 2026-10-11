@@ -354,7 +354,7 @@ What polyweave should do:
 
 - **A transcription sheet as an artefact**: a TOML or JSON whose columns the project
   declares, where each row cites the timestamp range and the frames (or track ids from
-  §PW379) that support it, with a `.prov.json` naming the reference.
+  PW379, docs/specs/fetching.md) that support it, with a `.prov.json` naming the reference.
 - **A sitting from it** through `verdict.sitting`: each row shown with its cited frames
   cropped beside it, so the owner checks a count against the picture without opening the
   video, and answers per row (right, wrong with the correct value, unsure).
@@ -532,31 +532,6 @@ What starship needs from polyweave:
 Until it lands, starship keeps the pass in `dev/` as the thinnest workaround, named
 against this line.
 
-### §PW379 Objects counted and tracked across a reference video's frames
-
-Found in spinhold (RK178): rebuilding Resogun's first phase from a gameplay video needs,
-per stretch, the second each group appears, its count, formation, rail and how it ends.
-Even with `reference.frames`' frames and contact sheets, an agent counts twenty small
-enemies by eye in each sheet, and a miscount reaches the written sheet the owner
-reviews.
-
-What polyweave should do:
-
-- **`reference.objects`**: over `reference.frames`' frames, find what moves in the play
-  area, each detection labelled by a kind the project declares (a colour range, a size, a
-  few sample crops per kind), with its position and the frame it was seen in. No genre and
-  no game built in: the kinds are the project's.
-- **Tracks**: join detections across frames into tracks, each with its first and last
-  second, its path and how it ended (left the frame, was destroyed, still alive at the end).
-- **Groups**: tracks born within a short window and moving together are one group, with
-  a count and a rough formation (line, ring, cluster).
-- A JSON written beside the frames, with a `.prov.json` naming the frames and the kinds
-  it used, and a contact sheet with each track's id drawn on, so the agent checks the
-  data against the picture instead of producing it.
-
-The transcription into the project's wave format stays the agent's and the owner's work;
-this only turns pixels into counts and paths an agent can check.
-
 ### §PW380 Regions of a reference video, and its minimap read as positions
 
 Found in spinhold (RK178): in Resogun the radar strip at the top of the screen shows the
@@ -644,7 +619,7 @@ What polyweave should do, as **`reference.compare`**:
   §PW381, or a plain offset).
 - A **side-by-side sheet** per stretch: the reference frame and the game's frame at the
   same second, with timestamps on both.
-- **Curves** from both sides on one chart: objects on screen per second (from §PW379
+- **Curves** from both sides on one chart: objects on screen per second (from PW379, docs/specs/fetching.md
   on the reference, and from the game's own trace or the same detection on its
   capture), and, where `measure.pressure` has the declared wave, its pressure curve beside them.
 - The seconds where the curves differ by more than a bound the call is given, listed
@@ -675,6 +650,23 @@ threat, peak and count of a named kind, and refuses any outside a declared band 
 reference, naming the world, its value, the reference and the band. A refusal should
 carry the share it is off by. Then the project deletes level and unlevel along with the
 rest of the PW330 stand-in.
+
+### §PW404 Kinds told apart by sample crops
+
+`reference.objects` (PW379) tells kinds apart by a colour, a tolerance and a size, so
+two kinds of enemy drawn in one colour are one kind, and a kind whose colour shifts as
+it pulses or explodes falls out of its tolerance. PW379's design asked for a few sample
+crops per kind as well; they did not land with it.
+
+Let a kind name `samples`: a few small pictures under the project, crops of the kind
+taken from the frames. Each island the colour finds is then compared with them (its crop
+resized to the sample's size, the least mean colour difference), and kept for the kind
+whose samples it matches best within a `match` bound, or dropped. A kind with no samples
+behaves as today. The record names each sample with its digest, so a count can be traced
+to what it was matched against.
+
+Done when two kinds of one colour and different shape are told apart in a test's drawn
+frames, and a kind with samples keeps what its colour alone would have lost.
 
 ## Block S — Playing the game, not only rendering it
 

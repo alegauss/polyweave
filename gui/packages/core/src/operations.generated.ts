@@ -1406,6 +1406,24 @@ export interface ReferenceFramesArgs {
   root?: string
 }
 
+/** Count and follow what moves in a reference video's frames, by kinds you declare. */
+export interface ReferenceObjectsArgs {
+  /** the folder reference.frames wrote, or its frames.json */
+  frames: string
+  /** each kind of object by name: {"colour": "#rrggbb", "size": [least, most] pixels, "tolerance": 0 to 1} */
+  kinds: Record<string, unknown>
+  /** [left, top, right, bottom] pixels of the play area; all if empty */
+  area?: unknown[]
+  /** the most an object moves a second, as a share of the frame's width; from 0 to …; in 1/s; default 0.5 */
+  speed?: number
+  /** seconds apart two tracks may be born and be one group; from 0 to …; in s; default 0.5 */
+  together?: number
+  /** how far apart, as a share of the frame's width, two tracks may be born and be one group; from 0 to …; default 0.25 */
+  apart?: number
+  /** the project the frames are under; default "." */
+  root?: string
+}
+
 /** Which of several pictures is the one to fetch from, and why. */
 export interface ReferencePickArgs {
   /** the pictures to choose between, by path */
@@ -2264,6 +2282,7 @@ export interface Operations {
   "purchase.remaining": PurchaseRemainingArgs
   "purchase.spent": PurchaseSpentArgs
   "reference.frames": ReferenceFramesArgs
+  "reference.objects": ReferenceObjectsArgs
   "reference.pick": ReferencePickArgs
   "reference.prepare": ReferencePrepareArgs
   "render.bake": RenderBakeArgs
@@ -2448,6 +2467,7 @@ export const OPERATIONS = [
   "purchase.remaining",
   "purchase.spent",
   "reference.frames",
+  "reference.objects",
   "reference.pick",
   "reference.prepare",
   "render.bake",
