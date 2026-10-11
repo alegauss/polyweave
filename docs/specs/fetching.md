@@ -552,6 +552,25 @@ gaps and unmatched seconds; `compare_001.png` on pair the reference frame with t
 game's, and `compare_counts.png` charts both counts over the reference's time. A gap is
 a bug or a choice by the owner's word, not by this.
 
+## A transcription a person checks row by row
+
+What the agent read from a video was checked as free prose, citing no frames, with the
+corrections kept in a conversation (§PW383). A transcription is a file the agent writes,
+JSON or TOML: the `frames` folder it read, the `columns` it reads, and `rows`, each with
+an `id`, the seconds `from` and `to`, a value for every column, and the `frames` (file
+names in frames.json) or `tracks` (ids in `reference.objects`' objects.json) that support
+it. `reference.transcription(sheet)` refuses a row citing nothing that exists
+(`capture.bad-transcription`), records the sheet against the frames, and lays out a
+sitting of kind `transcription` (`[paths] work`/review/<sheet> unless `out` says): one
+card a row, up to six of its cited frames side by side, its span and values as its words.
+
+On the review page, or through `verdict.answer`, the person answers each row: right, or
+wrong or unsure with the right value in their words. `verdict.judge` keeps each answer
+beside the sheet, `<sheet>.answers.jsonl`, with when, and that is the only door into it.
+`reference.transcribed(sheet)` reads each row's latest answer back: which are unanswered,
+what was corrected and in whose words, and `accepted` only where every row is answered
+and none is wrong. The agent never accepts its own reading.
+
 ## Still to come in this block
 
 The service client itself, and the lock that stops two sessions spending at once.

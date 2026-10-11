@@ -39,7 +39,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 0 },
-  { block: "O", title: "A person sees and answers", open: 1 },
+  { block: "O", title: "A person sees and answers", open: 0 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
   { block: "Q", title: "Words held to the world", open: 0 },
   { block: "R", title: "Levels measured before a person plays them", open: 11 },
@@ -83,13 +83,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "K",
     symptom: "measure.take asks for contrast_min and refuses it for want of targets, yet takes no targets parameter",
     why: "The refusal names a door the operation does not have, so the agent reads the source to find the spec key and measure.contrast that do take them.",
-    deps: [],
-  },
-  {
-    id: "PW383",
-    block: "O",
-    symptom: "a transcription read from a reference video cites no frames, and a person's corrections to it are kept nowhere",
-    why: "A wrong count is cheapest to fix on the sheet, and only if the person sees the frames beside each row and their answer is recorded.",
     deps: [],
   },
   {

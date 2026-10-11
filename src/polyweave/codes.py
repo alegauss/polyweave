@@ -1754,6 +1754,12 @@ CODES: dict[str, Code] = {
         ),
     ),
     # -- capture: the environment a picture is taken in ------------------------
+    "capture.bad-transcription": Code(
+        means="a transcription read from a reference video cannot be checked",
+        when="a file not JSON or TOML, no rows, a row with no id or span, a row "
+        "missing a column, or one citing a frame or track that does not exist",
+        doors=("cite the frames or reference.objects tracks each row was read from",),
+    ),
     "capture.unknown-reference": Code(
         means="the reference video named is not one the project declares",
         when="a name no [reference.<name>] table carries, or none where several do",

@@ -342,29 +342,6 @@ since a reference the service ignores is dropped without an error.
 
 ## Block O — A person sees and answers
 
-### §PW383 A transcription sheet a person reviews row by row
-
-Found in spinhold (RK178): before any TOML is written, the agent writes a sheet from the
-video (per stretch: second, side, count, formation, rail, ending) and the owner reviews
-it, because a wrong count is cheaper to fix in prose. Today the sheet is free prose, its
-lines do not say which frames they were read from, and the owner's corrections live only
-in a conversation.
-
-What polyweave should do:
-
-- **A transcription sheet as an artefact**: a TOML or JSON whose columns the project
-  declares, where each row cites the timestamp range and the frames (or track ids from
-  PW379, docs/specs/fetching.md) that support it, with a `.prov.json` naming the reference.
-- **A sitting from it** through `verdict.sitting`: each row shown with its cited frames
-  cropped beside it, so the owner checks a count against the picture without opening the
-  video, and answers per row (right, wrong with the correct value, unsure).
-- The answers carried by `verdict.judge` onto the rows, so a corrected count is recorded
-  with who corrected it, and the sheet counts as accepted only when every row has a
-  person's answer.
-
-The agent never accepts its own transcription; this only puts the evidence beside each
-row and keeps what the person said.
-
 ## Block P — Music and sound a game can ship
 
 ### §PW192 Cottony's audio made through polyweave

@@ -37,8 +37,6 @@
 
 ## Block O — A person sees and answers
 
-- 📋 **PW383** (deps: PW379 ✅) **a transcription read from a reference video cites no frames, and a person's corrections to it are kept nowhere** — A wrong count is cheapest to fix on the sheet, and only if the person sees the frames beside each row and their answer is recorded. → §PW383
-
 ## Block P — Music and sound a game can ship
 
 ## Block Q — Words held to the world

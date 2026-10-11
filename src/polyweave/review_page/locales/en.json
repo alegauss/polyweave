@@ -199,6 +199,22 @@
           "then": "Say why; the sound goes back to be made again."
         }
       }
+    },
+    "transcription": {
+      "title": "A transcription to check",
+      "about": "Each card is one row an agent read from a reference video, with the frames it says it read the row from. Check the row against the frames; the agent never accepts its own reading.",
+      "choices": {
+        "accept": {
+          "label": "Right",
+          "means": "The row says what the frames show.",
+          "then": "The row is kept as read."
+        },
+        "look": {
+          "label": "Wrong or unsure",
+          "means": "The row is wrong, or the frames do not show it.",
+          "then": "Write the right value, or that you cannot tell; your words are kept on the row."
+        }
+      }
     }
   }
 }

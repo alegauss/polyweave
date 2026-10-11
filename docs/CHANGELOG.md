@@ -295,6 +295,7 @@
 - ✅ **PW332** **a verdict given through the CLI never reaches the ledger, since an open run cannot outlive the call that opened it** — An open run is kept on disk by its id until it finishes, so a CLI verdict lands; verdict.judge asset= opens and closes a run in one call (design recorded in `docs/specs/adoption.md`).
 - ✅ **PW338** **verdict.sitting marks a member with no spec as passed, as if something had measured it** — A sitting member no spec holds answers passed null and checked false, sheet and page say nothing holds it, and its family gets no spec wording (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW375** **a verdict a person gives in chat answers no sitting by name, so the agent rebuilds each family's members for judge** — verdict.answer carries a chat verdict onto a sitting by name through the page's own write, skipping families already answered (design recorded in `docs/specs/acceptance-spec.md`).
+- ✅ **PW383** **a transcription read from a reference video cites no frames, and a person's corrections to it are kept nowhere** — A transcription's rows cite their frames, a sitting shows each beside them, and a person's answer per row is kept and read back (design recorded in `docs/specs/fetching.md`).
 
 ## Block P — Music and sound a game can ship
 

@@ -1506,6 +1506,24 @@ export interface ReferenceRegionsArgs {
   root?: string
 }
 
+/** Which rows of a transcription a person answered, and what they corrected. */
+export interface ReferenceTranscribedArgs {
+  /** the transcription file the sitting was laid out from */
+  sheet: string
+  /** the project the sheet is under; default "." */
+  root?: string
+}
+
+/** A transcription read from a reference video, laid out for a person row by row. */
+export interface ReferenceTranscriptionArgs {
+  /** the transcription file, JSON or TOML, under the project */
+  sheet: string
+  /** the folder the sitting is laid out in; review/<sheet> if empty */
+  out?: string
+  /** the project the sheet is under; default "." */
+  root?: string
+}
+
 /** Render one subject at the cheapest rung that can answer the question. */
 export interface RenderBakeArgs {
   /** where to write the picture, under the project */
@@ -2347,6 +2365,8 @@ export interface Operations {
   "reference.pick": ReferencePickArgs
   "reference.prepare": ReferencePrepareArgs
   "reference.regions": ReferenceRegionsArgs
+  "reference.transcribed": ReferenceTranscribedArgs
+  "reference.transcription": ReferenceTranscriptionArgs
   "render.bake": RenderBakeArgs
   "render.plan": RenderPlanArgs
   "review.answer": ReviewAnswerArgs
@@ -2536,6 +2556,8 @@ export const OPERATIONS = [
   "reference.pick",
   "reference.prepare",
   "reference.regions",
+  "reference.transcribed",
+  "reference.transcription",
   "render.bake",
   "render.plan",
   "review.answer",

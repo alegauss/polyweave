@@ -199,6 +199,22 @@
           "then": "Escreva por quê; o som volta para ser feito de novo."
         }
       }
+    },
+    "transcription": {
+      "title": "Uma transcrição para conferir",
+      "about": "Cada cartão é uma linha que um agente leu de um vídeo de referência, com os quadros de onde diz tê-la lido. Confira a linha contra os quadros; o agente nunca aceita a própria leitura.",
+      "choices": {
+        "accept": {
+          "label": "Certo",
+          "means": "A linha diz o que os quadros mostram.",
+          "then": "A linha fica como foi lida."
+        },
+        "look": {
+          "label": "Errado ou incerto",
+          "means": "A linha está errada, ou os quadros não a mostram.",
+          "then": "Escreva o valor certo, ou que não dá para saber; suas palavras ficam na linha."
+        }
+      }
     }
   }
 }

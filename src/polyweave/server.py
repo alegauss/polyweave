@@ -119,7 +119,8 @@ TOOL_BUDGET = 4500
 #: 114,500 at 113,903 for reference.regions and reference.minimap (§PW380).
 #: 115,400 at 114,806 for reference.events, a reference video's timeline (§PW381).
 #: 116,500 at 115,940 for reference.compare (§PW382).
-LIST_BUDGET = 116500
+#: 117,600 at 116,923 for reference.transcription and reference.transcribed (§PW383).
+LIST_BUDGET = 117600
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

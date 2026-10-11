@@ -107,7 +107,8 @@ from polyweave.errors import PolyweaveError
 #: 128,507 with reference.regions and reference.minimap (§PW380).
 #: 129,502 with reference.events, a reference video's timeline (§PW381).
 #: 130,809 with reference.compare, a rebuild laid against its reference (§PW382).
-DESCRIBE = 131_400
+#: 131,848 with reference.transcription and reference.transcribed (§PW383).
+DESCRIBE = 132_500
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -191,7 +192,8 @@ DESCRIBE = 131_400
 #: 140,907 with reference.regions, reference.minimap and their codes (§PW380).
 #: 141,902 with reference.events (§PW381).
 #: 143,209 with reference.compare (§PW382).
-CAPABILITIES = 143_800
+#: 144,277 with reference.transcription, reference.transcribed and their code (§PW383).
+CAPABILITIES = 144_900
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
@@ -234,7 +236,9 @@ HELP_VERB = 4_100
 #: 26,626 with clip.camera, a cutscene's camera declared and built (§PW372).
 #: 27,598 with verdict.answer and the four review operations (§PW375, §PW377).
 #: 28,236 with revision.outside and the three reference reads (§PW378-§PW380).
-HELP_TOP = 28_900
+#: 28,940 with reference.events, .compare, .transcription and .transcribed
+#: (§PW381-§PW383).
+HELP_TOP = 29_600
 #: A search's answer over its default budget of 24 samples: 3,739.
 SEARCH = 4_000
 

@@ -417,6 +417,16 @@ def judge(
                 when=stamp,
                 root=here,
             )
+        row = None
+        if member.get("transcription"):
+            from . import reference_transcription
+
+            # A row of a transcription read from a video: the person's answer is kept
+            # beside the sheet, and this is the only door into it (§PW383).
+            row = reference_transcription.judged(
+                member, accepted=accepted, choice=choice, why=why, when=stamp,
+                root=here,
+            )
         heard = None
         if member.get("sound"):
             # A sound laid out by sound.sitting: the verdict is kept in its own record,
@@ -431,6 +441,7 @@ def judge(
                 "rewritten": rewritten,
                 "canon": joined,
                 **({"line": kept_line} if kept_line else {}),
+                **({"row": row} if row else {}),
                 **({"heard": heard} if member.get("sound") else {}),
                 # What the check said, as `loop.judged` takes it, so an answer given
                 # where no run was open can still be carried into one (§PW173).
