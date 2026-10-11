@@ -117,7 +117,8 @@ TOOL_BUDGET = 4500
 #: screen's facts and write as operations a native screen calls (§PW377).
 #: 113,300 at 112,682 for revision.outside and reference.objects (§PW378, §PW379).
 #: 114,500 at 113,903 for reference.regions and reference.minimap (§PW380).
-LIST_BUDGET = 114500
+#: 115,400 at 114,806 for reference.events, a reference video's timeline (§PW381).
+LIST_BUDGET = 115400
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

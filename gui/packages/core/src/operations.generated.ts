@@ -1388,6 +1388,22 @@ export interface PurchaseSpentArgs {
   service?: string
 }
 
+/** A timeline of a reference video's events, to split it into stretches at. */
+export interface ReferenceEventsArgs {
+  /** the folder reference.frames wrote, or its frames.json */
+  frames: string
+  /** the [reference.<name>] with the regions; the only one if empty */
+  reference?: string
+  /** the regions holding a number to read: score, a counter; default [] */
+  numbers_in?: unknown[]
+  /** the region flashes are looked for in; the whole frame if empty */
+  play?: string
+  /** read the soundtrack's onsets too; default true */
+  sound?: boolean
+  /** the project the frames are under; default "." */
+  root?: string
+}
+
 /** A reference video sampled into frames and contact sheets an agent can read. */
 export interface ReferenceFramesArgs {
   /** the gameplay video, anywhere; it is never copied in */
@@ -2303,6 +2319,7 @@ export interface Operations {
   "purchase.reconcile": PurchaseReconcileArgs
   "purchase.remaining": PurchaseRemainingArgs
   "purchase.spent": PurchaseSpentArgs
+  "reference.events": ReferenceEventsArgs
   "reference.frames": ReferenceFramesArgs
   "reference.minimap": ReferenceMinimapArgs
   "reference.objects": ReferenceObjectsArgs
@@ -2490,6 +2507,7 @@ export const OPERATIONS = [
   "purchase.reconcile",
   "purchase.remaining",
   "purchase.spent",
+  "reference.events",
   "reference.frames",
   "reference.minimap",
   "reference.objects",

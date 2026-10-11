@@ -514,6 +514,28 @@ the player's `left` or `right`; on a `rect` map the offset is the shares across 
 `minimap.json` lands beside the frames with how many of each blip stood on each side frame
 by frame, recorded with the frames as its input and the declaration as its params.
 
+## A timeline to split a reference at
+
+A video has no markers, so where a wave begins was found by watching frames (§PW381).
+`reference.events(frames)` lays the game's own signals on one timeline, in seconds from
+the start:
+
+- `numbers_in`, regions of the reference holding a number (a score, a counter), read
+  per frame by the OCR engine at `[paths] tesseract`, enlarged three times; each change
+  is an event with its `from` and `to`, and each frame where no number was read is
+  listed under `unread`, never guessed. Without an engine every region is said unread.
+- flashes: frames where the `play` region's mean brightness, or the share of its pixels
+  that moved by more than 0.12 since the frame before, stands above the video's own
+  median by six times its median absolute deviation; the frame after one, which changes
+  as much going dark again, is the same flash and not a second.
+- onsets: the soundtrack's strong onsets, taken through ffmpeg as mono at 11,025 Hz and
+  found as the peaks of its spectral change above the level `sound.measure` holds a
+  seam to, each timed at the end of the window it first shows in, less half a hop.
+
+`events.json` holds them with what could not be read and whether the sound was, recorded
+with the frames as its input, and `events.png` draws them a row a kind. Which event
+begins a wave stays the agent's reading.
+
 ## Still to come in this block
 
 The service client itself, and the lock that stops two sessions spending at once.

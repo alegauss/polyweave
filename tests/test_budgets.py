@@ -105,7 +105,8 @@ from polyweave.errors import PolyweaveError
 #: 125,405 with review.state, .canon, .compare and .answer (§PW377).
 #: 127,191 with revision.outside and reference.objects (§PW378, §PW379).
 #: 128,507 with reference.regions and reference.minimap (§PW380).
-DESCRIBE = 129_100
+#: 129,502 with reference.events, a reference video's timeline (§PW381).
+DESCRIBE = 130_100
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -187,7 +188,8 @@ DESCRIBE = 129_100
 #: 137,676 with verdict.answer and the four review operations (§PW375, §PW377).
 #: 139,483 with revision.outside, reference.objects and its two codes (§PW378, §PW379).
 #: 140,907 with reference.regions, reference.minimap and their codes (§PW380).
-CAPABILITIES = 141_500
+#: 141,902 with reference.events (§PW381).
+CAPABILITIES = 142_500
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

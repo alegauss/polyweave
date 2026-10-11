@@ -143,6 +143,7 @@ MODULES: tuple[str, ...] = (
     "polyweave.reference",
     "polyweave.reference_objects",
     "polyweave.reference_regions",
+    "polyweave.reference_events",
     "polyweave.normalise",
     "polyweave.compose",
     "polyweave.store",

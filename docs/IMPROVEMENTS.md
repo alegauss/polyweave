@@ -555,29 +555,6 @@ What polyweave should do:
 This is about a project not leaking what it was given to study, not about deciding
 whether a use is allowed; that stays the owner's.
 
-### §PW381 A timeline of events read from a reference video
-
-Found in spinhold (RK178): a gameplay video has no markers, so an agent reading it
-stretch by stretch has nothing to anchor "the second wave starts here" except watching
-frames. The game's own signals already say it: the score jumps, a counter of humans
-changes, a burst of explosions fills the screen, a sound plays when a wave begins.
-
-What polyweave should do, as **`reference.events`** over a reference video:
-
-- **Numbers read from a declared HUD region** (PW380, docs/specs/fetching.md) per sampled frame:
-  score, multiplier, any counter the project names, with the frames where reading failed
-  listed rather than guessed.
-- **Visual peaks**: frames where the play area's brightness or the share of changed
-  pixels spikes, marked as candidate explosions or screen flashes.
-- **Audio onsets**: loud onsets in the soundtrack, and where the music changes section,
-  using the audio measures polyweave already has for its own sound.
-- One timeline JSON of all of these, in seconds from the start of the video, with a
-  `.prov.json`, and a sheet that draws the timeline under the matching frames.
-
-The agent then splits the video into stretches at those events and reads each stretch,
-instead of finding the boundaries by eye. Which event means a new wave is the agent's
-reading, not polyweave's.
-
 ### §PW382 A rebuilt level compared with its reference video
 
 Found in spinhold (RK178): the deliverable is as much the list of places the rebuilt
@@ -590,7 +567,7 @@ What polyweave should do, as **`reference.compare`**:
 - Take a reference video (with `reference.frames`' frames) and a capture of the project's game
   playing the rebuilt level (`capture.movie`, or a kept `game.replay`), and align them in
   time from an anchor each side declares (the first enemy appearing, an event from
-  §PW381, or a plain offset).
+  PW381, docs/specs/fetching.md, or a plain offset).
 - A **side-by-side sheet** per stretch: the reference frame and the game's frame at the
   same second, with timestamps on both.
 - **Curves** from both sides on one chart: objects on screen per second (from PW379, docs/specs/fetching.md
@@ -641,6 +618,26 @@ to what it was matched against.
 
 Done when two kinds of one colour and different shape are told apart in a test's drawn
 frames, and a kind with samples keeps what its colour alone would have lost.
+
+### §PW405 Music sections and the timeline under its frames
+
+`reference.events` (PW381) lays a video's number changes, flashes and strong onsets on
+one timeline, but two parts of its design did not land with it. Where the music changes
+section is often the clearest mark a game gives that a stretch ended, and the timeline
+is drawn alone, a row a kind, where the design asked for it under the matching frames,
+so an agent still opens the frames to see what each tick was.
+
+Build both on the soundtrack and frames `reference.events` already reads:
+
+- **Music sections**: from the same mono soundtrack, a chroma or spectral-envelope
+  feature per second and a novelty curve over it (a checkerboard kernel on its
+  self-similarity), its peaks above the curve's own spread kept as `section` events.
+- **The timeline under its frames**: a sheet of thumbnails at a fixed step along the
+  video, with each event's tick drawn under the thumbnail it falls in, its kind's row
+  and, for a number, its new value.
+
+Done when a soundtrack drawn as two tones in turn yields one section event at the turn,
+and the sheet shows a flash's tick under the white frame.
 
 ## Block S — Playing the game, not only rendering it
 

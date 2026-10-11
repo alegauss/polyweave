@@ -142,13 +142,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW381",
-    block: "R",
-    symptom: "a reference video has no timeline of its score, flashes and sound onsets, so where each wave starts is found by eye",
-    why: "Without anchors an agent spends frame reads finding where a stretch begins before it can read what happens in it.",
-    deps: [],
-  },
-  {
     id: "PW382",
     block: "R",
     symptom: "a rebuilt level's capture cannot be aligned with the video it copies, so where it plays differently is found by memory",
@@ -167,6 +160,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "R",
     symptom: "reference.objects tells kinds apart by colour and size alone, so two enemies of one colour count as one kind",
     why: "PW379's design asked for sample crops per kind, and a count is only as right as the kinds it is split into.",
+    deps: [],
+  },
+  {
+    id: "PW405",
+    block: "R",
+    symptom: "a reference video's timeline marks no change of music section, and is drawn apart from the frames its ticks fall in",
+    why: "A new section of music is often the clearest end of a stretch, and a tick under its frame is read without opening the frames.",
     deps: [],
   },
   {
