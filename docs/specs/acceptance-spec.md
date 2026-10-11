@@ -267,6 +267,14 @@ Every file the session wrote is kept on the revision. Its closing event lists th
 `touched`, and lists under `waiting` the dependents `provenance.outdated` now marks, so
 accepting one item never silently leaves others out of date.
 
+**A shell write is found after it** (§PW378). A Bash command names no file the hook could
+ask about, so the hook reads the project's files (size and time, the work area and the
+tree's machinery left out) before the command and again after it. Every file that moved is
+kept as `touched`; one outside the scope also carries why, goes back to the session as
+context telling it to undo the write unless the person asked for it, and is listed by
+`revision.outside`, which the window shows in the conversation. It comes after the fact,
+because a shell write cannot be paused before it lands, and it says so.
+
 **The refused are shown beside the kept** (§PW175), because a filter nobody sees into is a
 filter nobody audits. Every `picture.gate` run appends its answer to `[paths]
 work`/`gates.jsonl`. Each candidate carries its failures, its silhouette IoU, every drifted

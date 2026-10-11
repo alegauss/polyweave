@@ -157,6 +157,13 @@ function Turn({ read }: { read: Said }) {
       )
     case 'answered':
       return <li className="whitespace-pre-wrap font-medium">{t('session.answered', { said: read.said })}</li>
+    case 'outside':
+      // A shell write found after it ran, outside the item (§PW378).
+      return (
+        <li data-outside={read.file} className="text-amber-700">
+          {t('session.outside', { why: read.why })}
+        </li>
+      )
     case 'closed':
       return (
         <li data-closed className="flex flex-col gap-1">

@@ -67,7 +67,6 @@
 ## Block U — A window on everything a project governs
 
 - 🛠 **PW377** (deps: PW305 ✅, PW403) **half the decision screen's facts and its masked write are no operation, so the window can only frame the Python page** — The React decision screen, and the one bundle the browser and the window both serve, are still to build. → §PW377
-- 📋 **PW378** (deps: PW309 ✅) **a revision's session can write outside its item through Bash, and neither the question nor the touched list sees it** — The scope hook reads only the file a Write or Edit names, so a shell write to the config or a canon slips past the person. → §PW378
 - 📋 **PW400** (deps: —) **the window shows a project's verdicts only by framing the review page, never on its own decision screen** — PW377's third step begins with the sittings and their answers drawn natively, in the window's components and the catalog's words. → §PW400
 - 📋 **PW401** (deps: PW400) **the window's decision screen cannot mark where a picture is wrong or compare two versions of it** — A mark and a compare are how a person says what is wrong and sees what changed, and the page has both. → §PW401
 - 📋 **PW402** (deps: PW400) **the window's decision screen shows no gate lanes, turntables, canon boards or pending table** — The refused beside the kept, a mesh turned and the canon are decisions the page puts before a person, and the window would hide them. → §PW402

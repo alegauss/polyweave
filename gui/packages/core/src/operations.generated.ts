@@ -1580,6 +1580,14 @@ export interface RevisionOpenArgs {
   root?: string
 }
 
+/** The files a revision's session wrote outside its item from the shell (§PW378). */
+export interface RevisionOutsideArgs {
+  /** the revision, by the id revision.ask gave it */
+  revision: string
+  /** the project the item is in; default "." */
+  root?: string
+}
+
 /** The Claude Code settings a session on this revision runs under (§PW307). */
 export interface RevisionSettingsArgs {
   /** the revision, by the id revision.ask gave it */
@@ -2268,6 +2276,7 @@ export interface Operations {
   "revision.check": RevisionCheckArgs
   "revision.close": RevisionCloseArgs
   "revision.open": RevisionOpenArgs
+  "revision.outside": RevisionOutsideArgs
   "revision.settings": RevisionSettingsArgs
   "revision.turn": RevisionTurnArgs
   "schema.proved": SchemaProvedArgs
@@ -2451,6 +2460,7 @@ export const OPERATIONS = [
   "revision.check",
   "revision.close",
   "revision.open",
+  "revision.outside",
   "revision.settings",
   "revision.turn",
   "schema.proved",

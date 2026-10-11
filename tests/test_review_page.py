@@ -231,8 +231,11 @@ def test_the_compare_operation_refuses_a_path_the_page_would_not_show(page):
     assert said["changed_patches"] == 0
 
 
-def test_the_answer_operation_is_the_page_s_write(page):
+def test_the_answer_operation_is_the_page_s_write(page, monkeypatch):
     _, where = page
+    # Held fresh, so a file saved in the package while the suite runs does not read as
+    # the process running older code; the next test is the one about that.
+    monkeypatch.setattr(review, "_LOADED", float("inf"))
     said = review.answered(judged(choice="accept", why="carried as the page does"),
                            root=str(where))
     assert said["answer"]["family"] == "stars"

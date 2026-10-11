@@ -219,3 +219,36 @@ def test_a_write_outside_the_item_asks_and_the_close_lists_what_was_reached(tree
     closed = revision.close(asked, withdrawn="enough", root=str(tree))
     assert closed["touched"] == ["art/icon.png"]
     assert closed["waiting"] == []
+
+
+def test_a_shell_write_outside_the_item_is_found_after_it_and_listed(tree):
+    # §PW378: a Bash command names no file the PreToolUse hook could hold to the scope,
+    # so `sed -i` on the config went through unseen and the close never listed it.
+    (tree / "polyweave.toml").write_text("", encoding="utf-8")
+    asked = revision.ask("art/icon.png", "darker", root=str(tree))["revision"]
+    made = revision.settings(asked, root=str(tree))
+    assert any(one["matcher"] == "Bash" for one in made["hooks"]["PreToolUse"])
+    assert any(one["matcher"] == "Bash" for one in made["hooks"]["PostToolUse"])
+
+    def bash(name):
+        return revision.hooked(
+            {"hook_event_name": name, "tool_name": "Bash", "tool_use_id": "use-7",
+             "tool_input": {"command": "sed -i ... polyweave.toml"}},
+            asked, str(tree),
+        )
+
+    assert bash("PreToolUse") is None
+    (tree / "polyweave.toml").write_text("[paths]\nwork = '.polyweave'\n",
+                                         encoding="utf-8")
+    Image.new("RGBA", (8, 8), (10, 10, 10, 255)).save(tree / "art" / "icon.png")
+    (tree / ".polyweave" / "scratch.txt").write_text("the work area", encoding="utf-8")
+    said = bash("PostToolUse")["hookSpecificOutput"]["additionalContext"]
+    assert "polyweave.toml is the project's config" in said
+    assert "Undo it" in said
+    found = revision.outside(asked, root=str(tree))["outside"]
+    assert [one["file"] for one in found] == ["polyweave.toml"]
+    # A command that writes nothing outside says nothing.
+    assert bash("PreToolUse") is None
+    assert bash("PostToolUse") is None
+    closed = revision.close(asked, withdrawn="enough", root=str(tree))
+    assert closed["touched"] == ["art/icon.png", "polyweave.toml"]

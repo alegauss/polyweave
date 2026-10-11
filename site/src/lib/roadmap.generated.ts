@@ -45,7 +45,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "R", title: "Levels measured before a person plays them", open: 12 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 1 },
-  { block: "U", title: "A window on everything a project governs", open: 6 },
+  { block: "U", title: "A window on everything a project governs", open: 5 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 7 },
 ];
 
@@ -189,13 +189,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "half the decision screen's facts and its masked write are no operation, so the window can only frame the Python page",
     why: "The React decision screen, and the one bundle the browser and the window both serve, are still to build.",
     deps: ["PW403"],
-  },
-  {
-    id: "PW378",
-    block: "U",
-    symptom: "a revision's session can write outside its item through Bash, and neither the question nor the touched list sees it",
-    why: "The scope hook reads only the file a Write or Edit names, so a shell write to the config or a canon slips past the person.",
-    deps: [],
   },
   {
     id: "PW400",

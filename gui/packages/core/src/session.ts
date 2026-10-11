@@ -80,6 +80,7 @@ export type Said =
   | { kind: 'result'; ok: boolean; text: string }
   | { kind: 'check'; passed: boolean | null; said: string }
   | { kind: 'answered'; said: string }
+  | { kind: 'outside'; file: string; why: string }
   | {
       kind: 'quote'
       requestId: string
@@ -142,6 +143,9 @@ export function said(line: string): Said {
       }
     case 'polyweave_answer':
       return { kind: 'answered', said: String(message['said'] ?? '') }
+    case 'polyweave_outside':
+      // The window's own line: a shell write outside the item, found after it (§PW378).
+      return { kind: 'outside', file: String(message['file'] ?? ''), why: String(message['why'] ?? '') }
     case 'polyweave_closed':
       return {
         kind: 'closed',

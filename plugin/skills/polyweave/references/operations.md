@@ -16,7 +16,7 @@
 | Size a bound from noise | `calibrate.run`, then `calibrate.apply` |
 | Carry a person's verdict | `verdict.sheet`, `verdict.sitting`, `verdict.judge`, `verdict.promote`, `sound.sitting`, `verdict.answer` (from chat); `review` shows one, `verdict.answers` resumes |
 | The decision screen | `review.state`, `review.canon`, `review.compare`, `review.answer` |
-| Asked changes | `revision.ask`, `revision.open`, `revision.turn`, `revision.check`, `revision.settings`, `revision.close` |
+| Asked changes | `revision.ask`, `revision.open`, `revision.turn`, `revision.check`, `revision.settings`, `revision.outside`, `revision.close` |
 | Keep the ledger | `loop.start`, `loop.spent`, `loop.judged`, `loop.finish`, `loop.compare` |
 | Read the ledger | `loop.runs`, `loop.assets`, `loop.changes`, `loop.bounds` |
 | Provenance | `provenance.read`, `provenance.verify`, `provenance.dependents`, `provenance.outdated`, `provenance.unrecorded`, `provenance.credits`, `provenance.generated`, `provenance.borrow` |

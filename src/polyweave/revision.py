@@ -319,6 +319,92 @@ def _outside(path: str, asked: dict, root: str) -> str | None:
             "anything made from it")
 
 
+#: Folders a shell write is never looked for in: the tree's own machinery, not the
+#: project's files.
+_UNWATCHED = {".git", ".godot", ".import", "node_modules", "__pycache__", ".venv"}
+
+
+def _tree(root: str) -> dict[str, list[int]]:
+    """Every file of the project, by its path, with its size and modification time.
+
+    What a shell command wrote is what moved between two of these (§PW378): a Bash call
+    names no file the hook could hold against the scope, so the tree is read around it.
+    The plugin's own work area is left out, as a write there is never outside the item.
+    """
+    import os
+
+    from .config import load
+
+    config = load(root)
+    here = config.root
+    work = config.path("paths.work").resolve()
+    found: dict[str, list[int]] = {}
+    for folder, dirs, files in os.walk(here):
+        at = Path(folder)
+        dirs[:] = [d for d in dirs
+                   if d not in _UNWATCHED and (at / d).resolve() != work]
+        for name in files:
+            try:
+                seen = (at / name).stat()
+            except OSError:
+                continue
+            found[(at / name).relative_to(here).as_posix()] = [seen.st_size,
+                                                               seen.st_mtime_ns]
+    return found
+
+
+def _snapshot(revision: str, use: str, root: str) -> Path:
+    from .config import load
+
+    safe = "".join(c if c.isalnum() or c in "-_" else "_" for c in use) or "bash"
+    return load(root).path("paths.work") / "revision" / revision / f"{safe}.tree.json"
+
+
+def _shell_wrote(revision: str, use: str, root: str) -> list[dict]:
+    """What one shell command changed, each kept as touched and, outside the item, why.
+
+    Compared with the tree read before it ran; a file it removed counts as written. The
+    snapshot is spent, so the next command is held against its own.
+    """
+    before_at = _snapshot(revision, use, root)
+    if not before_at.is_file():
+        return []
+    before = json.loads(before_at.read_text(encoding="utf-8"))
+    before_at.unlink()
+    now = _tree(root)
+    moved = sorted(path for path in set(before) | set(now)
+                   if before.get(path) != now.get(path))
+    asked = _asked(revision, root)
+    wrote = []
+    for path in moved:
+        why = _outside(path, asked, root)
+        event = {"event": "touched", "revision": revision, "file": path, "by": "Bash",
+                 "at": _now(), **({"outside": why} if why else {})}
+        wrote.append(_append(event, root))
+    return wrote
+
+
+@operation("revision.outside")
+def outside(
+    revision: Annotated[str, Param("the revision, by the id revision.ask gave it")],
+    *,
+    root: Annotated[str, ROOT] = ".",
+) -> dict:
+    """The files a revision's session wrote outside its item from the shell (§PW378).
+
+    A Write or Edit outside the item is asked first; a Bash command cannot be paused, so
+    what it wrote outside is found after it ran and named here, with why, for the person
+    to see and the session to undo.
+    """
+    _asked(revision, root)
+    return {"revision": revision, "outside": [
+        {key: e[key] for key in ("file", "outside", "at")}
+        for e in _events(root)
+        if e.get("event") == "touched" and e.get("revision") == revision
+        and e.get("outside")
+    ]}
+
+
 def _reached(revision: str, asked: dict, root: str) -> dict:
     """What a revision's session wrote, and which of the item's dependents now wait."""
     from . import provenance
@@ -456,8 +542,11 @@ def settings(
         "hooks": {
             "PreToolUse": [{"matcher": "|".join(WITHHELD), **hook[0]},
                            # A write outside the item asks first (§PW309).
-                           {"matcher": WRITERS, **hook[0]}],
-            "PostToolUse": [{"matcher": WRITES, **hook[0]}],
+                           {"matcher": WRITERS, **hook[0]},
+                           # A shell command's writes are found around it (§PW378).
+                           {"matcher": "Bash", **hook[0]}],
+            "PostToolUse": [{"matcher": WRITES, **hook[0]},
+                            {"matcher": "Bash", **hook[0]}],
             # Finishing means a sitting the person answers, never the session's word.
             "Stop": hook,
         },
@@ -479,6 +568,25 @@ def hooked(event: dict, revision: str, root: str) -> dict | None:
             "permissionDecision": "deny",
             "permissionDecisionReason": "a verdict is the person's to give, never the "
             "session's: lay a sitting out and the person answers it",
+        }}
+    if tool == "Bash" and name in ("PreToolUse", "PostToolUse"):
+        use = str(event.get("tool_use_id") or "bash")
+        if name == "PreToolUse":
+            _asked(revision, root)
+            where = _snapshot(revision, use, root)
+            where.parent.mkdir(parents=True, exist_ok=True)
+            where.write_text(json.dumps(_tree(root)), encoding="utf-8")
+            return None
+        wrote = _shell_wrote(revision, use, root)
+        strayed = [one for one in wrote if one.get("outside")]
+        if not strayed:
+            return None
+        return {"hookSpecificOutput": {
+            "hookEventName": "PostToolUse",
+            "additionalContext": f"That command wrote outside revision {revision}, "
+            "which a shell write cannot be asked before: " + "; ".join(
+                one["outside"] for one in strayed)
+            + ". Undo it unless the person asked for it, and say so to them.",
         }}
     touched = str((event.get("tool_input") or {}).get("file_path") or "")
     if name == "PreToolUse" and touched:

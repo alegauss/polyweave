@@ -98,6 +98,7 @@
     "once": "Um sim permite esta chamada, nunca a próxima.",
     "unpriced": "Não foi possível ler o preço: {{why}}",
     "touched": "Ela escreveu: {{files}}",
-    "waits": "Agora desatualizados, esperando ser refeitos: {{files}}"
+    "waits": "Agora desatualizados, esperando ser refeitos: {{files}}",
+    "outside": "Um comando de terminal escreveu fora deste item, o que não dá para perguntar antes de ele rodar: {{why}}. Peça à sessão que desfaça, a menos que você tenha pedido."
   }
 }

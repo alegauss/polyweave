@@ -755,24 +755,6 @@ Build, in parts:
 The iframe and `?member=` stay until step 4 lands. Steps 3 and 4 are filed as PW400 to
 PW403, one id each.
 
-### §PW378 A revision's shell writes seen too
-
-PW309 holds a revision's session to its item through the revision's `PreToolUse` hook,
-which sees the file a `Write`, `Edit`, `MultiEdit` or `NotebookEdit` names. A shell
-command names no file the hook can read, so `sed -i` on `polyweave.toml` or a script
-that rewrites a canon goes through without the question, and the closed revision's
-`touched` list does not name it either.
-
-Build: while a revision's session runs, the window watches the project root recursively,
-as roadkeep's session watch does (RG247), ignoring the plugin's work area. A change
-outside `_scope` that no hook announced appears in the conversation as a write outside
-the item, naming the file and why, so the person can tell the session to undo it. The
-revision gets a `touched` event for it, so the close lists it. A Bash write cannot be
-paused before it lands, so this answer comes after the fact, and it says so.
-
-A test runs the fake claude with a shell write outside the scope and expects both the
-line in the window and the file in `touched`.
-
 ### §PW400 Native decision cards in the window
 
 PW377's third step, first part. The window shows a project's verdicts only by framing

@@ -14,6 +14,7 @@ import { disk } from './disk'
 import { shown } from './files'
 import { Held } from './held'
 import { Holding } from './holding'
+import { Strays, type Stray } from './outside'
 import { Reviews } from './reviews'
 import { start, type Session } from './sessions'
 import { SMOKE_VAR } from './smoke'
@@ -135,6 +136,12 @@ ipcMain.handle(CHANNELS.sessionStart, async (event, project: string, revision: s
         sessions.delete(revision)
       },
     })
+    // What a shell command wrote outside the item, shown after it ran (§PW378).
+    const strays = new Strays(() =>
+      client
+        .call('revision.outside', { revision, root: project })
+        .then((found) => (found as { outside: Stray[] }).outside),
+    )
     waiting = holding.take(asked.item, revision, () => {
       const session = start(
         runs,
@@ -159,6 +166,7 @@ ipcMain.handle(CHANNELS.sessionStart, async (event, project: string, revision: s
           } else {
             send(line)
           }
+          void strays.after(line).then((lines) => lines.forEach(send))
           // After a tool that may have changed the item, the window runs its checks too,
           // and shows them beside the conversation (§PW307).
           if (read.kind === 'tool' && /^(Write|Edit|MultiEdit|mcp__polyweave__)/.test(read.tool)) {

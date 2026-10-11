@@ -98,6 +98,7 @@
     "once": "A yes allows this one call, never the next.",
     "unpriced": "Its price could not be read: {{why}}",
     "touched": "It wrote: {{files}}",
-    "waits": "Now out of date, waiting to be made again: {{files}}"
+    "waits": "Now out of date, waiting to be made again: {{files}}",
+    "outside": "A shell command wrote outside this item, which cannot be asked before it runs: {{why}}. Tell the session to undo it unless you asked for it."
   }
 }
