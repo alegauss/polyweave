@@ -1426,6 +1426,12 @@ export interface ReferenceCompareArgs {
   anchor?: "" | "first"
   /** objects the two sides may differ by before a second is a gap; from 0 to …; default 2 */
   bound?: number
+  /** the rebuilt level's declared events, as measure.pressure reads them, each {second, kind, weight, until} */
+  wave?: unknown[]
+  /** or the file the game wrote them to */
+  wave_file?: string
+  /** the reference's second the wave's zero falls on; in s; default 0.0 */
+  wave_at?: number
   /** the project both are under; default "." */
   root?: string
 }

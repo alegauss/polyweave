@@ -56,8 +56,16 @@ def nearest(seconds: list[float], at: float) -> int:
     return int(np.argmin(np.abs(np.array(seconds) - at)))
 
 
-def _chart(reference: list, capture: list, offset: float, target: Path) -> Path:
-    """Both sides' counts over the reference's seconds, the game's moved by `offset`."""
+def declared_at(alive: list[float], at: float, wave_at: float) -> float:
+    """What the declared wave has alive at a reference second, nothing outside it."""
+    second = int(np.floor(at - wave_at))
+    return alive[second] if 0 <= second < len(alive) else 0.0
+
+
+def _chart(reference: list, capture: list, offset: float, target: Path,
+           wave: tuple[list[float], float] | None = None) -> Path:
+    """Both sides' counts over the reference's seconds, the game's moved by `offset`,
+    and the declared wave's pressure on its own axis where there is one (§PW406)."""
     from PIL import Image as Pil
     from PIL import ImageDraw, ImageFont
 
@@ -70,9 +78,9 @@ def _chart(reference: list, capture: list, offset: float, target: Path) -> Path:
     last = max(t for t, _ in points)
     most = max(1, max(n for _, n in points))
 
-    def place(t: float, n: int) -> tuple[float, float]:
+    def place(t: float, n: float, top: float = most) -> tuple[float, float]:
         x = pad + (wide - 2 * pad) * (t - first) / max(last - first, 1e-6)
-        return x, tall - pad - (tall - 2 * pad) * n / most
+        return x, tall - pad - (tall - 2 * pad) * n / top
 
     for counts, colour, shift in ((reference, (90, 200, 255), 0.0),
                                   (capture, (255, 160, 60), offset)):
@@ -81,6 +89,20 @@ def _chart(reference: list, capture: list, offset: float, target: Path) -> Path:
             draw.line(line, fill=colour, width=2)
     draw.text((pad, 8), "reference", fill=(90, 200, 255), font=font)
     draw.text((pad + 100, 8), "game", fill=(255, 160, 60), font=font)
+    if wave:
+        alive, wave_at = wave
+        highest = max(1.0, max(alive, default=0.0))
+        # A step a second, as the pressure is measured, on its own axis at the right.
+        steps = []
+        for second, value in enumerate(alive):
+            start = max(first, min(last, wave_at + second))
+            stop = max(first, min(last, wave_at + second + 1))
+            steps += [place(start, value, highest), place(stop, value, highest)]
+        if len(steps) > 1:
+            draw.line(steps, fill=(120, 230, 120), width=2)
+        draw.text((pad + 170, 8), "declared", fill=(120, 230, 120), font=font)
+        draw.text((wide - pad + 4, pad - 8), f"{highest:g}", fill=(120, 230, 120),
+                  font=font)
     draw.text((pad, tall - pad + 8), f"{first:.1f}s", fill=(160, 160, 160), font=font)
     draw.text((wide - pad - 40, tall - pad + 8), f"{last:.1f}s", fill=(160, 160, 160),
               font=font)
@@ -148,6 +170,14 @@ def compare(
         int, Param("objects the two sides may differ by before a second is a gap",
                    lo=0)
     ] = 2,
+    wave: Annotated[
+        list, Param("the rebuilt level's declared events, as measure.pressure reads "
+                    "them, each {second, kind, weight, until}")
+    ] = None,
+    wave_file: Annotated[str, Param("or the file the game wrote them to")] = None,
+    wave_at: Annotated[
+        float, Param("the reference's second the wave's zero falls on", unit="s")
+    ] = 0.0,
     root: Annotated[str, Param("the project both are under")] = ".",
 ) -> dict:
     """A rebuilt level's capture laid against the reference video it copies.
@@ -155,9 +185,18 @@ def compare(
     Aligned by `offset`, or by the first second an object of `kinds` appears on each
     side (`anchor` first). Side-by-side sheets at the same aligned second, a chart of
     objects on screen on both sides, and the seconds where the counts differ by more
-    than `bound`, each with its two frames. Whether a gap is a bug is the owner's call.
+    than `bound`, each with its two frames. With the declared `wave` placed at
+    `wave_at`, its pressure is on the chart and each gap says what it declared alive
+    then, so a spawning fault is told from a wave declared differently. Whether a gap
+    is a bug is the owner's call.
     """
     here = load(root).root
+    declared_wave, wave_source = None, None
+    if wave is not None or wave_file is not None:
+        from .pressure import _curves, _read
+
+        events, wave_source = _read(wave_file if wave is None else wave, here)
+        declared_wave = _curves(events, 0.0, 0.0)["alive_slow"]
     ref_manifest, ref_listed = _manifest(reference, here)
     cap_manifest, cap_listed = _manifest(capture, here)
     ref_frames, cap_frames = ref_listed.get("frames", []), cap_listed.get("frames", [])
@@ -196,12 +235,17 @@ def compare(
         other = cap_frames[j]
         pairs.append(((at, one["file"]), (cap_seconds[j], other["file"])))
         if abs(n - cap_count[j][1]) > bound:
-            gaps.append({"at": at, "reference": n, "game": cap_count[j][1],
-                         "reference_frame": one["file"], "game_frame": other["file"],
-                         "game_at": cap_seconds[j]})
+            gap = {"at": at, "reference": n, "game": cap_count[j][1],
+                   "reference_frame": one["file"], "game_frame": other["file"],
+                   "game_at": cap_seconds[j]}
+            if declared_wave is not None:
+                # What the rebuilt level asked for then, beside what both sides show.
+                gap["declared"] = declared_at(declared_wave, at, wave_at)
+            gaps.append(gap)
     folder = ref_manifest.parent
     sheets = _sheets(pairs, (folder, cap_manifest.parent), folder / "compare.png")
-    chart = _chart(ref_count, cap_count, offset, folder / "compare_counts.png")
+    chart = _chart(ref_count, cap_count, offset, folder / "compare_counts.png",
+                   (declared_wave, wave_at) if declared_wave is not None else None)
     written = {
         "reference": provenance.relative(ref_manifest, here),
         "capture": provenance.relative(cap_manifest, here),
@@ -210,15 +254,21 @@ def compare(
         "unmatched": unmatched,
         "sheets": [one.name for one in sheets], "chart": chart.name,
     }
+    if declared_wave is not None:
+        written["declared"] = {"wave_at": wave_at, "alive": declared_wave}
     target = folder / "compare.json"
     target.write_text(json.dumps(written, indent=1) + "\n", encoding="utf-8",
                       newline="\n")
     provenance.write(provenance.build(
         "capture", target, engine={"name": "reference.compare"},
         inputs=[provenance.source("reference", ref_manifest, root=here),
-                provenance.source("capture", cap_manifest, root=here)],
+                provenance.source("capture", cap_manifest, root=here)]
+        + ([provenance.source("wave", wave_source, root=here)] if wave_source else []),
         params={"offset": round(offset, 3), "anchor": anchor, "bound": bound,
-                "kinds": {k: v["colour"] for k, v in own.items()}},
+                "kinds": {k: v["colour"] for k, v in own.items()},
+                # A wave given inline is kept here; one in a file is an input above.
+                **({"wave_at": wave_at} if declared_wave is not None else {}),
+                **({"wave": wave} if wave is not None else {})},
         root=here,
     ), here)
     return {

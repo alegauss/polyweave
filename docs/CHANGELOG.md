@@ -352,6 +352,7 @@
 - ✅ **PW385** **worlds offered on one tier of a route cannot be held level in whole threat and in what they give to save** — measure.level totals each tier's worlds and names any whose threat is off its tier's band or whose saved count differs, refusing as a gate (design recorded in `docs/specs/measurements.md`).
 - ✅ **PW404** **reference.objects tells kinds apart by colour and size alone, so two enemies of one colour count as one kind** — A kind in reference.objects may name sample crops and a match, so one colour is told apart by shape and a flaring kind is kept (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW405** **a reference video's timeline marks no change of music section, and is drawn apart from the frames its ticks fall in** — reference.events marks music sections by a novelty curve over the soundtrack, and draws each event's tick under the thumbnail it falls in (design recorded in `docs/specs/fetching.md`).
+- ✅ **PW406** **a rebuild's comparison with its reference shows no declared pressure, so a spawning fault reads like a choice** — reference.compare takes the declared wave and where it starts, charts its pressure and gives each gap what the wave had alive then (design recorded in `docs/specs/fetching.md`).
 
 ## Block S — Playing the game, not only rendering it
 

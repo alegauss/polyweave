@@ -122,7 +122,8 @@ TOOL_BUDGET = 4500
 #: 117,600 at 116,923 for reference.transcription and reference.transcribed (§PW383).
 #: 118,400 at 117,796 for measure.level (§PW385).
 #: 119,000 at 118,718 for review.words, the decision screen's own words (§PW400).
-LIST_BUDGET = 119000
+#: 119,700 at 119,148 for reference.compare's declared wave (§PW406).
+LIST_BUDGET = 119700
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

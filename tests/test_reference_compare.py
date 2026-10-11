@@ -62,6 +62,38 @@ def test_without_alignment_the_late_start_reads_as_gaps(tmp_path, both):
     assert {g["at"] for g in made["gaps"]} == {1.0, 1.25}
 
 
+# The rebuilt level declared five: three at one second, two more at two (§PW406).
+WAVE = ([{"second": 1.0, "kind": "enemy", "weight": 1, "until": 3.5}] * 3
+        + [{"second": 2.0, "kind": "enemy", "weight": 1, "until": 3.5}] * 2)
+
+
+def test_a_gap_carries_what_the_declared_wave_asked_for_then(tmp_path, both):
+    made = reference_compare.compare(*both, KINDS, anchor="first", bound=1,
+                                     wave=WAVE, root=str(tmp_path))
+    first = made["gaps"][0]
+    # The game shows three where the declaration asked for five: two never spawned.
+    assert (first["reference"], first["game"], first["declared"]) == (5, 3, 5)
+    written = json.loads((tmp_path / made["compare"]).read_text("utf-8"))
+    assert written["declared"]["alive"][:3] == [0.0, 3.0, 5.0]
+
+
+def test_a_wave_written_by_the_game_is_read_from_its_file_and_recorded(tmp_path, both):
+    (tmp_path / "wave.json").write_text(json.dumps({"events": WAVE}), "utf-8")
+    made = reference_compare.compare(*both, KINDS, anchor="first", bound=1,
+                                     wave_file="wave.json", wave_at=0.5,
+                                     root=str(tmp_path))
+    # Placed half a second later, the gap at 2.0 s falls in the wave's first second.
+    assert made["gaps"][0]["declared"] == 3.0
+    record = provenance.read(made["compare"], root=str(tmp_path))
+    assert "wave" in {one["role"] for one in record["inputs"]}
+
+
+def test_without_a_wave_a_gap_says_nothing_declared(tmp_path, both):
+    made = reference_compare.compare(*both, KINDS, anchor="first", bound=1,
+                                     root=str(tmp_path))
+    assert "declared" not in made["gaps"][0]
+
+
 def test_the_comparison_is_recorded_with_both_sides_and_drawn(tmp_path, both):
     made = reference_compare.compare(*both, KINDS, anchor="first", root=str(tmp_path))
     record = provenance.read(made["compare"], root=str(tmp_path))

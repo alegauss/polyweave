@@ -488,23 +488,6 @@ What starship needs from polyweave:
 Until it lands, starship keeps the pass in `dev/` as the thinnest workaround, named
 against this line.
 
-### §PW406 The declared pressure beside a rebuild's comparison
-
-`reference.compare` (PW382) charts how many objects each side shows over time, but its
-design also asked for the declared wave's pressure beside them: what the rebuilt level
-was meant to ask of the player, against what the video and the capture show it asking.
-Without it a gap reads as "the game shows three where the video shows five" and not as
-"the declaration asked for five and the game never spawned two of them".
-
-Let `reference.compare` take the rebuilt level's declared wave, as `measure.pressure`
-reads it, and an offset placing its zero on the reference's time. The pressure curve is
-drawn on the same chart on its own axis, and each gap carries the declared pressure at
-that second, so an agent can tell a spawning fault from a declaration that differs from
-the video. A call without a wave behaves as today.
-
-Done when a test's drawn game that drops two of a declared five shows the gap with the
-declared count beside it.
-
 ### §PW407 A reference registered once, and kept out of captures
 
 PW384 kept a reference's frames in the work area and marked everything made from them

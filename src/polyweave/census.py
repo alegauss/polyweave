@@ -115,6 +115,7 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.reference_transcription:checked": ("internal", "its rows' citations"),
     "polyweave.reference_transcription:judged": ("internal", "a row's answer, kept"),
     "polyweave.reference_compare:nearest": ("internal", "the nearest second's index"),
+    "polyweave.reference_compare:declared_at": ("internal", "a wave's alive, a second"),
     "polyweave.reference_events:onsets": ("internal", "the soundtrack's onsets"),
     "polyweave.reference_events:numbers": ("internal", "the numbers read, changed"),
     "polyweave.reference_events:drawn": ("internal", "the timeline as a picture"),

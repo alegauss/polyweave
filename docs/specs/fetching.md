@@ -578,6 +578,15 @@ gaps and unmatched seconds; `compare_001.png` on pair the reference frame with t
 game's, and `compare_counts.png` charts both counts over the reference's time. A gap is
 a bug or a choice by the owner's word, not by this.
 
+A gap alone reads as "the game shows three where the video shows five", which a fault in
+the game and a wave declared differently both explain (§PW406). Given the rebuilt
+level's declared `wave` (its events, as `measure.pressure` reads them, or `wave_file`,
+the file the game wrote them to) and `wave_at`, the reference's second its zero falls
+on, the declared `alive_slow` curve is drawn on the chart in steps a second on its own
+axis, `compare.json` holds it under `declared`, and each gap carries `declared`, what the
+wave had alive at that second. A wave's file is an input of the record; an inline wave
+is kept with its params. A call without a wave is as before.
+
 ## A transcription a person checks row by row
 
 What the agent read from a video was checked as free prose, citing no frames, with the
