@@ -722,9 +722,9 @@ Whatever Starship needs that the kits lack is filed here as friction and fixed i
 kit, never patched in the game, so the extraction ends with one copy of the code and not
 two. Measured on 2026-10-10 against Starship's bindings.gd, prompts.gd and coop.gd: the
 prompts in words per player (PW394, docs/specs/kit.md), prompts per player's device
-(§PW395), a join the game answers (§PW396) and bindings taken from the game's older file
-(§PW397). Starship's own side is moving Controls.MAP into project.godot, the kits'
-declaration.
+(PW395, docs/specs/kit.md), a join the game answers (§PW396) and bindings taken from the
+game's older file (§PW397). Starship's own side is moving Controls.MAP into
+project.godot, the kits' declaration.
 
 Done when Starship carries no input code the kits provide, its gate passes on the kits'
 proof, and provenance.read names each kit with its version.
@@ -746,22 +746,6 @@ measured on 2026-10-10, the kits read only their own files, so its user://cotton
 needs a door into them (§PW398). Done when Cottony carries neither file, its own save
 test is replaced by the kit's acceptance, a save written by the current release loads
 after the swap, and its gate passes.
-
-### §PW395 Prompts that follow each player's own device
-
-Measured adopting the prompts kit onto Starship (§PW370). The kit's `note` moves the
-family on any pad's button or stick, so in co-op the second player's pad takes the first
-player's prompts away from the device they are holding. Starship's `notice` reads only
-the first player's devices: a key pressed and not an echo, a pad button pressed, or a
-stick past 0.6, and a pad the players kit has seated for another player changes nothing.
-A pad unplugged moves the prompts to one still connected, or the keyboard, where the kit
-stays on a family nobody holds.
-
-Keep a family per player in the kit: `note` asks the players kit (when installed) who an
-event belongs to, and a player's family moves only on their own input; `family_changed`
-carries the player. Listen to `Input.joy_connection_changed` and move a player whose pad
-left. Done when the kit's proof, with two seated pads, shows the second pad's input
-leaving the first player's family alone and an unplugged pad handing the prompts on.
 
 ### §PW396 A join the game answers
 

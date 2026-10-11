@@ -7,6 +7,20 @@ extends SceneTree
 const Prompts := preload("res://addons/polyweave/prompts/prompts.gd")
 
 
+## Two players seated on pads 0 and 1, as the players kit would, without needing it.
+class Seats:
+	var pads := {0: 0, 1: 1}
+
+	func player_of_event(event: InputEvent) -> int:
+		for player in pads:
+			if pads[player] == event.device:
+				return player
+		return -1
+
+	func count() -> int:
+		return pads.size()
+
+
 func _initialize() -> void:
 	var failed := []
 	var prompts = Prompts.new()
@@ -78,6 +92,34 @@ func _initialize() -> void:
 		failed.append("the second player's binding reads %s" % prompts.named(own, 1, "xbox"))
 	for made in [own, second]:
 		InputMap.erase_action(made)
+	# Each player's own device (§PW395): with two pads seated, the second pad's input
+	# moves the second player's family and leaves the first's, and a pad unplugged hands
+	# its player's prompts to a free pad still in, or to the keyboard.
+	var seated = Seats.new()
+	prompts.seats = seated
+	prompts.families.clear()
+	prompts.devices.clear()
+	var first_pad := InputEventJoypadButton.new()
+	first_pad.button_index = JOY_BUTTON_A
+	first_pad.pressed = true
+	first_pad.device = 0
+	prompts.note(first_pad)
+	var other_pad := first_pad.duplicate()
+	other_pad.device = 1
+	prompts.note(other_pad)
+	if prompts.devices.get(0) != 0 or prompts.devices.get(1) != 1:
+		failed.append("two seated pads read as players %s" % prompts.devices)
+	var stranger := first_pad.duplicate()
+	stranger.device = 5
+	prompts.note(stranger)
+	if prompts.devices.get(0) != 0:
+		failed.append("a pad nobody holds moved the first player's prompts")
+	prompts.unplugged(1, false, [0, 1, 3])
+	if prompts.devices.get(1) != 3:
+		failed.append("an unplugged pad did not hand its prompts on: %s" % prompts.devices)
+	prompts.unplugged(3, false, [0])
+	if prompts.devices.get(1) != -1 or prompts.family_for(1) != "keyboard":
+		failed.append("with no pad free the prompts did not go to the keyboard")
 	if prompts.fill("no marks here") != "no marks here":
 		failed.append("a line with no marks was changed")
 	prompts.free()

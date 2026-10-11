@@ -1,5 +1,5 @@
 name = "prompts"
-version = "0.2.0"
+version = "0.3.0"
 summary = "button prompts for the pad in the player's hands, switched live, drawn as icons"
 requires = []
 
@@ -19,3 +19,4 @@ script = "core/proof.gd"
 [changes]
 "0.1.0" = "the four families, drawn by icons.build, and a service that follows the device"
 "0.2.0" = "a binding in words per player and family, and fill over {action} and {move} marks"
+"0.3.0" = "a family per player moved only by their own device, and an unplugged pad handed on"

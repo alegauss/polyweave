@@ -51,22 +51,90 @@ static func shared() -> Node:
 	return _shared
 
 
+## A player's family moved; `family_changed` is the first player's alone (§PW395).
+signal player_changed(player: int, family: String)
+
+## Who holds which device, as the players kit seats them; found when installed, and a
+## stand-in may be set in its place. It answers player_of_event(event) and count().
+var seats: Object = null
+## Each player's family and the device it came from, a pad's id or -1 for the keyboard.
+var families := {}
+var devices := {}
+
+
+func _ready() -> void:
+	Input.joy_connection_changed.connect(unplugged)
+
+
 func _input(event: InputEvent) -> void:
 	note(event)
 
 
-## The family the player is holding now: the pad an event came from, or the keyboard.
+func _seats() -> Object:
+	if seats == null and ResourceLoader.exists("res://addons/polyweave/players/players.gd"):
+		seats = load("res://addons/polyweave/players/players.gd").shared()
+	return seats
+
+
+## The player an event is theirs, or -1 for a pad nobody holds while two play: the
+## keyboard and every pad are the only player's while one plays.
+func player_of(event: InputEvent) -> int:
+	var held := _seats()
+	if held == null or event is InputEventKey or event is InputEventMouse:
+		return 0
+	var player: int = held.player_of_event(event)
+	if player < 0 and held.count() <= 1:
+		return 0
+	return player
+
+
+## The family a player is holding now, moved only by their own input (§PW395): a key
+## pressed, a pad button pressed, a stick or trigger past half way.
 func note(event: InputEvent) -> void:
-	var now := family
-	if event is InputEventJoypadButton or (
+	var device := -2
+	if event is InputEventJoypadButton and event.pressed or (
 		event is InputEventJoypadMotion and absf(event.axis_value) > 0.5
 	):
-		now = family_of(Input.get_joy_name(event.device))
-	elif event is InputEventKey or event is InputEventMouseButton:
-		now = "keyboard"
-	if now != family:
+		device = event.device
+	elif (event is InputEventKey and event.pressed and not event.echo) \
+			or event is InputEventMouseButton:
+		device = -1
+	if device == -2:
+		return
+	var player := player_of(event)
+	if player < 0:
+		return
+	var now := "keyboard" if device < 0 else family_of(Input.get_joy_name(device))
+	devices[player] = device
+	_moved(player, now)
+
+
+func _moved(player: int, now: String) -> void:
+	if families.get(player, family if player == 0 else "") == now:
+		families[player] = now
+		return
+	families[player] = now
+	if player == 0:
 		family = now
 		family_changed.emit(family)
+	player_changed.emit(player, now)
+
+
+## A pad came or went (§PW395): each player whose prompts followed it moves to another
+## pad still connected and held by nobody else, or to the keyboard.
+func unplugged(pad: int, connected: bool, connected_now: Array = []) -> void:
+	if connected:
+		return
+	var left := connected_now if not connected_now.is_empty() \
+		else Array(Input.get_connected_joypads())
+	left = left.filter(func(p: int) -> bool:
+		return p != pad and not devices.values().has(p))
+	for player in devices.keys():
+		if devices[player] != pad:
+			continue
+		var next: int = left.pop_front() if not left.is_empty() else -1
+		devices[player] = next
+		_moved(player, "keyboard" if next < 0 else family_of(Input.get_joy_name(next)))
 
 
 ## A pad's family from the name the system gives it; a pad no one names is an Xbox one.
@@ -159,6 +227,8 @@ static func action_of(action: StringName, player := 0) -> StringName:
 ## The family the player holds: the first player's is the one in use; another's is
 ## the pad the players kit seated them on, read by its name.
 func family_for(player := 0) -> String:
+	if families.has(player):
+		return families[player]
 	if player == 0 or not ResourceLoader.exists(
 			"res://addons/polyweave/players/players.gd"):
 		return family

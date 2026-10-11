@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 5 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 6 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 5 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -188,7 +188,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "V",
     symptom: "Starship keeps its own bindings and co-op code after the input kits were extracted from it",
     why: "A kit proved only in a fixture has not met a game, and the game it came from is the cheapest first consumer.",
-    deps: ["PW395", "PW396", "PW397"],
+    deps: ["PW396", "PW397"],
   },
   {
     id: "PW371",
@@ -196,13 +196,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "Cottony keeps its own settings and save code where the kits provide them",
     why: "The second game is what shows a kit is not one project's code moved into a folder.",
     deps: ["PW398"],
-  },
-  {
-    id: "PW395",
-    block: "V",
-    symptom: "the prompts kit follows every pad, so a second player moves the first player's prompts, and an unplugged pad keeps them",
-    why: "In co-op the prompts must name the buttons in each player's own hands, which Starship's notice and unplugged do today.",
-    deps: [],
   },
   {
     id: "PW396",

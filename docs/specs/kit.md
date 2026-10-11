@@ -186,6 +186,14 @@ where all four are its directions). A second player's binding is read from their
 copy, `p2_<action>`, in the family of the pad the players kit seated them on. Its proof
 holds this on actions of its own, so it holds in any game.
 
+Each player keeps their own family (§PW395). An event moves only its own player's: a key
+pressed and not an echo, a pad button pressed, a stick or trigger past half way, read as
+the players kit seats the device (`seats`, which a game may stand in for); while one plays
+every pad is theirs, and once two play a pad nobody holds moves nothing. `family_changed`
+stays the first player's, and `player_changed(player, family)` says any player's. A pad
+unplugged hands its player's prompts to another pad still in and held by nobody, or to
+the keyboard.
+
 **remap** (§PW345, requires prompts): rebinding the controls, extracted from Starship's
 bindings. `PolyweaveBindings` stores a binding as codes a settings file holds
 (`key:<physical keycode>`, `mouse:<n>`, `button:<n>`, `axis:<n>:<-1 or 1>`); keys and
