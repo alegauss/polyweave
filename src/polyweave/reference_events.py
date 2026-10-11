@@ -13,10 +13,13 @@ the screen, a sound when a wave begins.
 - **flashes**: frames where the play region's brightness, or the share of its pixels
   that changed since the last frame, stands far above the video's own run of frames;
 - **onsets**: the soundtrack's strong onsets, the peaks of its spectral change, as
-  polyweave measures its own sounds.
+  polyweave measures its own sounds;
+- **sections**: where the music changes section, the peaks of a novelty curve over the
+  soundtrack's self-similarity (§PW405).
 
 One `events.json` of all of them in seconds from the start, recorded, and a picture of
-the timeline, a row a kind. Which event begins a wave stays the agent's reading.
+the timeline under its frames: thumbnails at a fixed step, each event's tick under the
+thumbnail it falls in. Which event begins a wave stays the agent's reading.
 """
 
 from __future__ import annotations
@@ -48,6 +51,35 @@ ONSET_RATE = 11025
 
 #: How many times a number region is enlarged before it is read.
 READ_SCALE = 3
+
+#: Music sections are read a window of this many seconds at a time (§PW405).
+SECTION_STEP = 0.5
+
+#: How many windows each side of a moment the novelty kernel compares: two seconds, so a
+#: drum fill is not a section and a new verse is.
+SECTION_KERNEL = 4
+
+#: The bands a window's energy is read in, log-spaced from SECTION_LOW hertz up.
+SECTION_BANDS = 24
+SECTION_LOW = 60.0
+
+#: A window whose mean power is below this is silence.
+SECTION_QUIET = 1e-6
+
+#: A section's novelty is at least this share of the soundtrack's strongest, so a track
+#: whose novelty is flat everywhere but one turn does not find a section in its noise.
+SECTION_FLOOR = 0.25
+
+#: The least novelty a section has at all, on a scale where one sound turning into a
+#: wholly unlike one reads 1: a steady track's novelty is rounding noise, not a turn.
+SECTION_LEAST = 0.05
+
+#: How many thumbnails a timeline picture holds at most, and how many to a strip.
+THUMBNAILS = 30
+PER_STRIP = 10
+
+#: The rows of the timeline picture, one a kind of event.
+KINDS = ("number", "flash", "onset", "section")
 
 
 def _robust_peaks(values: np.ndarray) -> list[int]:
@@ -94,20 +126,24 @@ def flashes(frames: list, folder: Path, box: list | None) -> list[dict]:
     return sorted(out, key=lambda e: e["at"])
 
 
-def onsets(video: Path, start: float = 0.0) -> tuple[list[dict], str]:
-    """The soundtrack's strong onsets, or none and why where it cannot be read."""
-    from .sound import _HOP, _SIZE, _flux, _onset_level
-
+def soundtrack(video: Path) -> tuple[np.ndarray | None, str]:
+    """The video's soundtrack as mono floats at ONSET_RATE, or None and why not."""
     if shutil.which("ffmpeg") is None:
-        return [], "there is no ffmpeg on PATH to read the soundtrack"
+        return None, "there is no ffmpeg on PATH to read the soundtrack"
     decoded = subprocess.run(
         ["ffmpeg", "-v", "error", "-i", str(video), "-vn", "-f", "s16le", "-ac", "1",
          "-ar", str(ONSET_RATE), "-"],
         capture_output=True, check=False,
     )
     if decoded.returncode or not decoded.stdout:
-        return [], "the video has no soundtrack ffmpeg could read"
-    mono = np.frombuffer(decoded.stdout, np.int16).astype(np.float64) / 32768.0
+        return None, "the video has no soundtrack ffmpeg could read"
+    return np.frombuffer(decoded.stdout, np.int16).astype(np.float64) / 32768.0, ""
+
+
+def onsets(mono: np.ndarray, start: float = 0.0) -> tuple[list[dict], str]:
+    """The soundtrack's strong onsets, or none and why where there are none to find."""
+    from .sound import _HOP, _SIZE, _flux, _onset_level
+
     flux = _flux(mono)
     if len(flux) < 3:
         return [], "the soundtrack is too short to have onsets"
@@ -119,6 +155,60 @@ def onsets(video: Path, start: float = 0.0) -> tuple[list[dict], str]:
     # newest hop of window i + 1: its end, less half a hop, is when it struck.
     return [{"at": round(start + ((i + 1) * _HOP + _SIZE - _HOP / 2) / ONSET_RATE, 3),
              "kind": "onset", "value": round(float(flux[i]), 2)} for i in found], ""
+
+
+def _features(mono: np.ndarray, rate: int) -> np.ndarray:
+    """Each SECTION_STEP of sound as its log energy in SECTION_BANDS bands, and one more
+    for quiet, unit length, so two windows alike in timbre and pitch read alike."""
+    size = int(rate * SECTION_STEP)
+    count = len(mono) // size
+    if count == 0:
+        return np.zeros((0, SECTION_BANDS + 1))
+    windows = mono[:count * size].reshape(count, size) * np.hanning(size)
+    power = np.abs(np.fft.rfft(windows, axis=1)) ** 2
+    hertz = np.fft.rfftfreq(size, 1 / rate)
+    edges = np.geomspace(SECTION_LOW, rate / 2, SECTION_BANDS + 1)
+    bands = np.stack([power[:, (hertz >= lo) & (hertz < hi)].sum(axis=1)
+                      for lo, hi in zip(edges[:-1], edges[1:], strict=True)], axis=1)
+    loud = np.log1p(bands / size)
+    # A window with next to nothing in it is silence, and every silence is alike.
+    quiet = (windows ** 2).mean(axis=1) < SECTION_QUIET
+    loud[quiet] = 0.0
+    feature = np.concatenate([loud, quiet[:, None].astype(np.float64)], axis=1)
+    norm = np.linalg.norm(feature, axis=1, keepdims=True)
+    return feature / np.where(norm > 0, norm, 1.0)
+
+
+def sections(mono: np.ndarray, rate: int = ONSET_RATE,
+             start: float = 0.0) -> list[dict]:
+    """Where the music changes section: the peaks of a checkerboard kernel's novelty
+    over the soundtrack's self-similarity, above the curve's own spread (§PW405)."""
+    feature = _features(mono, rate)
+    half = SECTION_KERNEL
+    if len(feature) < 2 * half + 1:
+        return []
+    alike = feature @ feature.T
+    sign = np.concatenate([-np.ones(half), np.ones(half)])
+    kernel = np.outer(sign, sign)  # alike within each side counts, across it subtracts
+    novelty = np.zeros(len(feature))
+    for t in range(half, len(feature) - half + 1):
+        novelty[t] = float((kernel * alike[t - half:t + half, t - half:t + half]).sum())
+    # Within each side alike counts 2·half², across the turn as much again unlike: two
+    # wholly unlike halves read 1.
+    novelty = np.maximum(novelty, 0.0) / (2 * half * half) / 2
+    middle = float(np.median(novelty))
+    spread = float(np.median(np.abs(novelty - middle)))
+    bar = max(middle + FLASH_SPREAD * spread, SECTION_FLOOR * float(novelty.max()),
+              SECTION_LEAST)
+    peaks = [t for t in range(1, len(novelty) - 1)
+             if novelty[t] > bar and novelty[t] >= novelty[t - 1]
+             and novelty[t] >= novelty[t + 1]]
+    kept: list[int] = []
+    for t in sorted(peaks, key=lambda i: -novelty[i]):
+        if all(abs(t - other) >= half for other in kept):
+            kept.append(t)
+    return [{"at": round(start + t * SECTION_STEP, 3), "kind": "section",
+             "value": round(float(novelty[t]), 3)} for t in sorted(kept)]
 
 
 _DIGITS = re.compile(r"\d[\d,.]*")
@@ -169,29 +259,60 @@ def _read(engine: str, part, language: str) -> int | None:
     return int(digits) if digits else None
 
 
-def drawn(events: list[dict], length: float, target: Path) -> Path:
-    """The timeline as a picture: a row a kind, a tick at every event's second."""
+def thumbnailed(frames: list) -> list[dict]:
+    """The frames the timeline shows, at a fixed step along the video."""
+    step = max(1, -(-len(frames) // THUMBNAILS))
+    return frames[::step]
+
+
+def placed(events: list[dict], starts: list[float]) -> list[tuple[int, float]]:
+    """Each event's thumbnail, the last one starting at or before it, and how far into
+    that thumbnail's stretch it falls, from 0 to 1 (§PW405)."""
+    out = []
+    for one in events:
+        at = one["at"]
+        index = max(0, int(np.searchsorted(starts, at, side="right")) - 1)
+        begin = starts[index]
+        # The last thumbnail's stretch is as long as the one before it.
+        step = starts[-1] - starts[-2] if len(starts) > 1 else 1.0
+        end = starts[index + 1] if index + 1 < len(starts) else begin + step
+        out.append((index, min(1.0, max(0.0, (at - begin) / max(end - begin, 1e-9)))))
+    return out
+
+
+def drawn(events: list[dict], frames: list, folder: Path, target: Path) -> Path:
+    """The timeline under its frames: thumbnails at a fixed step, and under each, a row
+    a kind with a tick where each event falls in its stretch, a number's new value
+    beside it, so what each tick was is read without opening the frames (§PW405)."""
     from PIL import Image as Pil
     from PIL import ImageDraw, ImageFont
 
-    kinds = ["number", "flash", "onset"]
-    wide, row, left = 1600, 40, 80
-    picture = Pil.new("RGB", (wide, row * (len(kinds) + 1)), (20, 20, 20))
+    shown = thumbnailed(frames)
+    tile, tall, row, left = 160, 90, 20, 70
+    strips = max(1, -(-len(shown) // PER_STRIP))
+    strip = tall + row * len(KINDS) + 24
+    picture = Pil.new("RGB", (left + tile * PER_STRIP, strip * strips), (20, 20, 20))
     draw = ImageDraw.Draw(picture)
-    font = ImageFont.load_default(size=14)
-    span = max(length, 1e-6)
-    for i, kind in enumerate(kinds):
-        y = row * i + row // 2
-        draw.text((6, y - 8), kind, fill=(220, 220, 220), font=font)
-        for one in events:
-            if one["kind"] == kind:
-                x = left + (wide - left - 10) * one["at"] / span
-                draw.line((x, y - 12, x, y + 12), fill=(255, 220, 90), width=2)
-    y = row * len(kinds) + 8
-    for second in range(0, int(span) + 1, max(1, int(span) // 10 or 1)):
-        x = left + (wide - left - 10) * second / span
-        draw.line((x, y, x, y + 6), fill=(160, 160, 160))
-        draw.text((x + 2, y + 6), f"{second}s", fill=(160, 160, 160), font=font)
+    font = ImageFont.load_default(size=12)
+    for n, one in enumerate(shown):
+        x, y = left + (n % PER_STRIP) * tile, (n // PER_STRIP) * strip
+        with Pil.open(folder / one["file"]) as frame:
+            picture.paste(frame.convert("RGB").resize((tile - 2, tall)), (x + 1, y))
+        # On a dark backing, so a white frame's second still reads.
+        draw.rectangle((x + 1, y, x + 50, y + 15), fill=(0, 0, 0))
+        draw.text((x + 3, y + 2), f"{one['ms'] / 1000:.2f}s", fill=(255, 255, 255),
+                  font=font)
+    for s in range(strips):
+        for k, kind in enumerate(KINDS):
+            draw.text((4, s * strip + tall + k * row + 3), kind, fill=(200, 200, 200),
+                      font=font)
+    starts = [one["ms"] / 1000 for one in shown]
+    for one, (index, share) in zip(events, placed(events, starts), strict=True):
+        x = left + (index % PER_STRIP) * tile + share * (tile - 1)
+        y = (index // PER_STRIP) * strip + tall + KINDS.index(one["kind"]) * row
+        draw.line((x, y + 2, x, y + row - 2), fill=(255, 220, 90), width=2)
+        if one["kind"] == "number":
+            draw.text((x + 3, y + 3), str(one["to"]), fill=(255, 220, 90), font=font)
     picture.save(target)
     return target
 
@@ -211,16 +332,18 @@ def events(
     play: Annotated[
         str, Param("the region flashes are looked for in; the whole frame if empty")
     ] = "",
-    sound: Annotated[bool, Param("read the soundtrack's onsets too")] = True,
+    sound: Annotated[
+        bool, Param("read the soundtrack's onsets and music sections too")
+    ] = True,
     root: Annotated[str, Param("the project the frames are under")] = ".",
 ) -> dict:
     """A timeline of a reference video's events, to split it into stretches at.
 
     Numbers read off the named regions (each change an event, each unread frame
-    listed), flashes where the play region's brightness or changed share spikes, and
-    the soundtrack's strong onsets, in seconds from the start. events.json and a
-    picture of the timeline land beside the frames, recorded. Which event begins a
-    wave stays the agent's reading.
+    listed), flashes where the play region's brightness or changed share spikes, the
+    soundtrack's strong onsets and where its music changes section, in seconds from
+    the start. events.json and the timeline drawn under its frames land beside them,
+    recorded. Which event begins a wave stays the agent's reading.
     """
     config = load(root)
     here = config.root
@@ -248,14 +371,17 @@ def events(
     heard, why = [], "not asked for"
     if sound:
         video = Path(str(listed.get("video", "")))
-        heard, why = onsets(video) if video.is_file() else (
-            [], "the video frames.json names is not there")
+        mono, why = soundtrack(video) if video.is_file() else (
+            None, "the video frames.json names is not there")
+        if mono is not None:
+            heard, why = onsets(mono)
+            heard += sections(mono)
     found += heard
     found.sort(key=lambda e: (e["at"], e["kind"]))
     length = shown[-1]["ms"] / 1000 if shown else 0.0
     if heard:
-        length = max(length, heard[-1]["at"])
-    picture = drawn(found, length, folder / "events.png")
+        length = max(length, max(e["at"] for e in heard))
+    picture = drawn(found, shown, folder, folder / "events.png")
     written = {"frames": provenance.relative(manifest, here), "length": length,
                "events": found, "unread": unread, "sound": why or "read"}
     target = folder / "events.json"
@@ -269,8 +395,7 @@ def events(
                 "regions": {r: regions[r] for r in used}},
         root=here,
     ), here)
-    count = {kind: sum(e["kind"] == kind for e in found)
-             for kind in ("number", "flash", "onset")}
+    count = {kind: sum(e["kind"] == kind for e in found) for kind in KINDS}
     return {
         "events": provenance.relative(target, here),
         "timeline": provenance.relative(picture, here),
@@ -278,7 +403,7 @@ def events(
         "unread": {k: len(v) if isinstance(v, list) else v
                    for k, v in unread.items()},
         "sound": why or "read",
-        "says": f"{count['number']} number changes, {count['flash']} flashes and "
-        f"{count['onset']} onsets over {length:.1f} s; split at them and read each "
-        "stretch",
+        "says": f"{count['number']} number changes, {count['flash']} flashes, "
+        f"{count['onset']} onsets and {count['section']} music sections over "
+        f"{length:.1f} s; split at them and read each stretch",
     }

@@ -1440,7 +1440,7 @@ export interface ReferenceEventsArgs {
   numbers_in?: unknown[]
   /** the region flashes are looked for in; the whole frame if empty */
   play?: string
-  /** read the soundtrack's onsets too; default true */
+  /** read the soundtrack's onsets and music sections too; default true */
   sound?: boolean
   /** the project the frames are under; default "." */
   root?: string

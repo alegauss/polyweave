@@ -548,9 +548,18 @@ the start:
 - onsets: the soundtrack's strong onsets, taken through ffmpeg as mono at 11,025 Hz and
   found as the peaks of its spectral change above the level `sound.measure` holds a
   seam to, each timed at the end of the window it first shows in, less half a hop.
+- sections (§PW405): where the music changes section, from the same soundtrack read in
+  half-second windows, each its log energy in 24 log-spaced bands from 60 Hz with one
+  more for silence, so every silence is alike. A checkerboard kernel two seconds a side
+  over their cosine self-similarity is the novelty, 1 where one sound turns into a
+  wholly unlike one; its peaks above six median absolute deviations, a quarter of its
+  strongest and 0.05, two seconds apart, are the sections.
 
 `events.json` holds them with what could not be read and whether the sound was, recorded
-with the frames as its input, and `events.png` draws them a row a kind. Which event
+with the frames as its input. `events.png` is the timeline under its frames: at most 30
+thumbnails at a fixed step, ten to a strip, each with its second, and under each a row a
+kind with a tick where each event falls in that thumbnail's stretch and a number's new
+value beside it, so what a tick was is read without opening the frames. Which event
 begins a wave stays the agent's reading.
 
 ## A rebuilt level laid against its reference

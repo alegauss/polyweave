@@ -488,26 +488,6 @@ What starship needs from polyweave:
 Until it lands, starship keeps the pass in `dev/` as the thinnest workaround, named
 against this line.
 
-### §PW405 Music sections and the timeline under its frames
-
-`reference.events` (PW381) lays a video's number changes, flashes and strong onsets on
-one timeline, but two parts of its design did not land with it. Where the music changes
-section is often the clearest mark a game gives that a stretch ended, and the timeline
-is drawn alone, a row a kind, where the design asked for it under the matching frames,
-so an agent still opens the frames to see what each tick was.
-
-Build both on the soundtrack and frames `reference.events` already reads:
-
-- **Music sections**: from the same mono soundtrack, a chroma or spectral-envelope
-  feature per second and a novelty curve over it (a checkerboard kernel on its
-  self-similarity), its peaks above the curve's own spread kept as `section` events.
-- **The timeline under its frames**: a sheet of thumbnails at a fixed step along the
-  video, with each event's tick drawn under the thumbnail it falls in, its kind's row
-  and, for a number, its new value.
-
-Done when a soundtrack drawn as two tones in turn yields one section event at the turn,
-and the sheet shows a flash's tick under the white frame.
-
 ### §PW406 The declared pressure beside a rebuild's comparison
 
 `reference.compare` (PW382) charts how many objects each side shows over time, but its

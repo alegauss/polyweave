@@ -96,6 +96,65 @@ def test_without_an_ocr_engine_a_number_is_said_unread_never_guessed(tmp_path):
     assert found == [] and failed == {"score": "no OCR engine to read it"}
 
 
+# -- music sections, and the timeline under its frames (§PW405) ---------------------
+
+
+def tones(first, second, seconds=8.0, rate=reference_events.ONSET_RATE):
+    """One tone for half the soundtrack, another for the rest, both with harmonics."""
+    t = np.arange(int(rate * seconds)) / rate
+    pitch = np.where(t < seconds / 2, first, second)
+    phase = 2 * np.pi * np.cumsum(pitch) / rate
+    return 0.4 * (np.sin(phase) + 0.5 * np.sin(2 * phase) + 0.25 * np.sin(3 * phase))
+
+
+def test_two_tones_in_turn_are_one_section_at_the_turn():
+    found = reference_events.sections(tones(220.0, 660.0))
+    assert [one["kind"] for one in found] == ["section"]
+    assert found[0]["at"] == pytest.approx(4.0, abs=0.5)
+
+
+def test_one_tone_throughout_and_silence_have_no_section():
+    assert reference_events.sections(tones(330.0, 330.0)) == []
+    assert reference_events.sections(np.zeros(reference_events.ONSET_RATE * 8)) == []
+
+
+def test_a_section_is_read_off_a_video_s_soundtrack(tmp_path):
+    if not shutil.which("ffmpeg"):
+        pytest.skip("no ffmpeg on this machine")
+    folder = film(tmp_path)
+    video = tmp_path / "clip.wav"
+    rate = reference_events.ONSET_RATE
+    with wave.open(str(video), "wb") as out:
+        out.setnchannels(1)
+        out.setsampwidth(2)
+        out.setframerate(rate)
+        out.writeframes((tones(220.0, 660.0) * 32767).astype(np.int16).tobytes())
+    made = reference_events.events(folder, root=str(tmp_path))
+    written = json.loads((tmp_path / made["events"]).read_text("utf-8"))
+    turns = [e["at"] for e in written["events"] if e["kind"] == "section"]
+    assert turns == [pytest.approx(4.0, abs=0.5)]
+    assert made["counted"]["section"] == 1
+
+
+def test_a_flash_s_tick_is_drawn_under_the_white_frame(tmp_path):
+    made = reference_events.events(film(tmp_path), play="play", sound=False,
+                                   root=str(tmp_path))
+    folder = tmp_path / ".polyweave" / "references" / "clip"
+    shown = reference_events.thumbnailed(
+        json.loads((folder / "frames.json").read_text("utf-8"))["frames"])
+    written = json.loads((tmp_path / made["events"]).read_text("utf-8"))
+    flash = [e for e in written["events"] if e["kind"] == "flash"]
+    starts = [one["ms"] / 1000 for one in shown]
+    for index, _ in reference_events.placed(flash, starts):
+        assert shown[index]["ms"] == 1500  # the white frame
+    # And on the picture: the flash row under that thumbnail holds the tick.
+    with Image.open(tmp_path / made["timeline"]) as picture:
+        index, share = reference_events.placed(flash[:1], starts)[0]
+        x = 70 + index * 160 + round(share * 159)
+        y = 90 + reference_events.KINDS.index("flash") * 20 + 10
+        assert picture.convert("RGB").getpixel((x, y)) == (255, 220, 90)
+
+
 def test_a_region_the_reference_does_not_declare_is_refused(tmp_path):
     with pytest.raises(PolyweaveError) as refused:
         reference_events.events(film(tmp_path), numbers_in=["lives"], sound=False,
