@@ -2,7 +2,8 @@ extends SceneTree
 ## The options kit's proof, run in the game it lands in (§PW347): every row changes what
 ## it says it changes, read back in the running game; every value survives a restart; a
 ## file an older build wrote is migrated, a key no row declares is kept and a value a
-## row may not take is said, never a crash and never a silent reset; each installed
+## row may not take is said, never a crash and never a silent reset; a game's own older
+## file is taken once (§PW398); each installed
 ## kit's tab is on the screen; and a pad walks every row, changes tab and goes back.
 ## Prints KIT PROVED, or KIT FAILED with why.
 
@@ -25,6 +26,7 @@ func _initialize() -> void:
 	for problem in settings.unchanging():
 		failed.append(problem)
 	_older_file()
+	_adopted()
 	_restart()
 	_tabs()
 	_a_row_that_changes_nothing_is_named()
@@ -79,6 +81,39 @@ func _older_file() -> void:
 		failed.append("a key no row declares was dropped from the file")
 	if int(after.get_value("meta", "version", 0)) != settings.version:
 		failed.append("the migrated file was not written at version %d" % settings.version)
+
+
+## a game's own older file (§PW398): with no kit file yet, a declared value is taken from
+## it once, kept in the kit's file and said, and the older file is left as it was. The
+## proof declares where for itself, so the game's real older file is never read here.
+func _adopted() -> void:
+	var rows := settings.options.filter(func(r: Dictionary) -> bool: return Settings.holds_value(r))
+	if rows.is_empty():
+		return
+	var row: Dictionary = rows[0]
+	var at := "%s/%s" % [row["tab"], row["key"]]
+	var older_path := "user://polyweave_settings_proof_older.cfg"
+	var chosen: Variant = settings._other(row)
+	var older := ConfigFile.new()
+	older.set_value("game", "kept", chosen)
+	older.save(older_path)
+	var before := FileAccess.get_file_as_string(older_path)
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(KEPT))
+	var adopting := Settings.new(KEPT)
+	adopting.adopted = {at: [older_path, "game", "kept"]}
+	adopting.load_file()
+	if adopting.get_value(row["tab"], row["key"]) != chosen:
+		failed.append("%s was not taken from the game's older file" % at)
+	if not "; ".join(adopting.said).contains("took 1 options") or not FileAccess.file_exists(KEPT):
+		failed.append("taking the older file was not said, or not kept: %s" % [adopting.said])
+	if FileAccess.get_file_as_string(older_path) != before:
+		failed.append("taking the older file changed it")
+	adopting.set_value(row["tab"], row["key"], row["default"])
+	adopting.load_file()
+	if adopting.get_value(row["tab"], row["key"]) != row["default"] or not adopting.said.is_empty():
+		failed.append("the older file was taken again once the kit had its own")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(older_path))
+	settings.load_file()
 
 
 func _restart() -> void:

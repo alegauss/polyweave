@@ -251,6 +251,13 @@ round again, left and right move a value, the shoulders change tab, and confirm 
 back follow the menus kit's convention. Its proof script runs `unchanging`, a restart,
 an older file and a pad walk of every tab.
 
+A game that kept its options before the kit loses none of them (§PW398, 0.2.0). Its
+`res://polyweave_options.gd` declares `const ADOPTED := {"tab/key": [<file>, <section>,
+<key>]}`, and a load with no file of the kit's own takes each value from where the game
+kept it, under the rules a value read from the kit's file meets, writes the kit's file
+at once and says so in `said`. The older file is left as it was and not read again,
+the remap kit's `FROM` door in another shape.
+
 **saves** (§PW348): a game's saves in slots, kept through a crash and an update, from
 Cottony's save file. `PolyweaveSaves` takes a Dictionary and never names a field. A
 slot is `user://saves/<slot>.save`, JSON written from Godot's own types inside an
@@ -265,6 +272,15 @@ and one with a step missing or from a newer build is refused and left on disk. I
 proof script fills and reads back every slot, stops a save after its write and after
 its move, corrupts the data under a sum, and loads saves from every older version and
 from a newer one.
+
+A game that kept its progress before the kit loses none of it (§PW398, 0.2.0). Its
+`res://polyweave_saves.gd` declares `static func adopted() -> Dictionary`, which reads
+the game's older file into the data slot 0 holds, since only the game knows that format.
+`load_slot` and `listed`, finding no save in any slot and none taken before, save what
+it returns to slot 0, say so, and leave a marker beside the slots so a slot deleted
+later stays empty. The older file is left as it was. The proof takes a save through a
+Callable of its own, deletes it, and holds that it is not taken again or over a game
+already saved in the kit.
 
 **launch** (§PW349): from launch to the first scene, and every change of scene after.
 `PolyweaveSplash` shows the project's logos, each for its seconds, while the first

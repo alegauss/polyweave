@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 5 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 3 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 2 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -195,13 +195,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "V",
     symptom: "Cottony keeps its own settings and save code where the kits provide them",
     why: "The second game is what shows a kit is not one project's code moved into a folder.",
-    deps: ["PW398"],
-  },
-  {
-    id: "PW398",
-    block: "V",
-    symptom: "the saves and options kits read only their own files, so a game adopting them starts its players over",
-    why: "Cottony keeps progress and switches in user://cottony.cfg, and a swap that loses them is the regression PW371 forbids.",
     deps: [],
   },
 ];

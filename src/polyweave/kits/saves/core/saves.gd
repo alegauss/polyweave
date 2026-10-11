@@ -15,13 +15,23 @@ extends RefCounted
 ## brings a save from that version to the next. A save from an older version is brought
 ## up step by step; one with a step missing, or from a newer build, is refused and left
 ## on disk untouched, never read as a fresh start over the player's progress.
+##
+## A game that kept its progress its own way before the kit declares `static func
+## adopted() -> Dictionary` there (§PW398): it reads its older file into the data slot 0
+## holds, since only the game knows that format. With no save in any slot, what it
+## returns is saved to slot 0 once, said, and never asked for again; the older file is
+## left as it was.
 
 const DIR := "user://saves"
 const PROJECT := "res://polyweave_saves.gd"
+## kept beside the slots once an older save was taken, so a slot deleted later stays empty
+const ADOPTED := "adopted"
 
 var dir := DIR
 var version := 1
 var migrations := {}
+## the project's `adopted`, or an empty Callable where it declares none
+var adopt := Callable()
 ## how many slots there are; a slot is 0 to slots - 1
 var slots := 3
 ## what the last load had to say: a fallback, a migration, a refusal
@@ -40,6 +50,8 @@ func _init(at := DIR, project := PROJECT) -> void:
 		for method in script.get_script_method_list():
 			if method["name"] == "migrations":
 				migrations = script.migrations()
+			elif method["name"] == "adopted":
+				adopt = script.adopted
 
 
 func path_of(slot: int) -> String:
@@ -121,6 +133,7 @@ func _read(path: String) -> Variant:
 ## reads, which `said` explains
 func load_slot(slot: int) -> Dictionary:
 	said.clear()
+	_adopt()
 	var target := path_of(slot)
 	var found: Variant = _read(target)
 	if found == null and FileAccess.file_exists(target + ".bak"):
@@ -137,6 +150,7 @@ func refused(slot: int) -> bool:
 
 ## every slot that holds a save, with when it was saved and its version
 func listed() -> Array[Dictionary]:
+	_adopt()
 	var out: Array[Dictionary] = []
 	for slot in slots:
 		var path := path_of(slot)
@@ -149,6 +163,23 @@ func listed() -> Array[Dictionary]:
 		else:
 			out.append({"slot": slot, "saved": 0, "version": -1})
 	return out
+
+
+## the game's older save into slot 0, where no slot holds one and none was taken before
+func _adopt() -> void:
+	if not adopt.is_valid() or FileAccess.file_exists("%s/%s" % [dir, ADOPTED]):
+		return
+	for slot in slots:
+		for suffix in ["", ".bak"]:
+			if FileAccess.file_exists(path_of(slot) + suffix):
+				return
+	var data: Variant = adopt.call()
+	if not data is Dictionary or (data as Dictionary).is_empty():
+		return
+	if save(0, data):
+		FileAccess.open("%s/%s" % [dir, ADOPTED], FileAccess.WRITE).store_string(
+			str(Time.get_unix_time_from_system()))
+		said.append("slot 0 was taken from the game's older save, which stays as it was")
 
 
 func delete(slot: int) -> void:

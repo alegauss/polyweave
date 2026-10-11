@@ -1,5 +1,5 @@
 name = "options"
-version = "0.1.1"
+version = "0.2.0"
 summary = "a versioned settings store and an options screen whose tabs come from the kits installed"
 requires = ["menus"]
 
@@ -18,3 +18,4 @@ script = "core/proof.gd"
 [changes]
 "0.1.0" = "rows contributed by kits and the project, each read back; a file migrated by version, its unknown keys kept"
 "0.1.1" = "its proof holds in a game whose kits give one row holding a value"
+"0.2.0" = "the values a game kept before the kit, named by ADOPTED, taken once into the kit's file and said"

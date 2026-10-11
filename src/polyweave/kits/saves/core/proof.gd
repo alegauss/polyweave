@@ -3,8 +3,8 @@ extends SceneTree
 ## every slot filled and read back with Godot's own types; a save stopped after its
 ## write and after its move loads the last good one; a corrupt save falls back to the
 ## one before and never pushes it out; a save from each older version comes up through
-## the project's migrations; and one from a newer build is refused and left on disk.
-## Prints KIT PROVED, or KIT FAILED with why.
+## the project's migrations; one from a newer build is refused and left on disk; and a
+## game's older save is taken into slot 0 once (§PW398). Prints KIT PROVED, or KIT FAILED with why.
 
 const Saves := preload("res://addons/polyweave/saves/saves.gd")
 const DIR := "user://polyweave_saves_proof"
@@ -24,6 +24,7 @@ func _same(a: Variant, b: Variant) -> bool:
 func _initialize() -> void:
 	_clear()
 	var saves := Saves.new(DIR)
+	saves.adopt = Callable()
 	for slot in saves.slots:
 		if not saves.save(slot, _data(slot)):
 			failed.append("slot %d could not be saved" % slot)
@@ -87,6 +88,27 @@ func _initialize() -> void:
 		failed.append("a save from a newer build was not refused: %s" % [saves.said])
 	if FileAccess.get_file_as_string(saves.path_of(2)) != text:
 		failed.append("loading a save from a newer build changed it on disk")
+
+	# A game's older save (§PW398): with no slot saved, what its `adopted` reads is taken
+	# into slot 0 once and said; a slot deleted afterwards stays empty. The proof's own
+	# Callable stands in for the game's, so the game's real older file is never read here.
+	_clear()
+	var adopting := Saves.new(DIR)
+	adopting.adopt = func() -> Dictionary: return _data(50)
+	if not _same(adopting.load_slot(0), _data(50)):
+		failed.append("an older save was not taken into slot 0: %s" % [adopting.said])
+	elif not "; ".join(adopting.said).contains("older save"):
+		failed.append("taking an older save was not said")
+	adopting.delete(0)
+	if not adopting.load_slot(0).is_empty() or not adopting.listed().is_empty():
+		failed.append("an older save was taken again after its slot was deleted")
+	var played := Saves.new(DIR)
+	_clear()
+	played.save(1, _data(60))
+	played.adopt = func() -> Dictionary: return _data(50)
+	played.load_slot(0)
+	if FileAccess.file_exists(played.path_of(0)):
+		failed.append("an older save was taken over a game already saved in the kit")
 
 	_clear()
 	if failed.is_empty():

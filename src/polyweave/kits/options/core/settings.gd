@@ -16,6 +16,12 @@ extends RefCounted
 ## from an older version is migrated, a key no row declares is kept, and a value a row
 ## may not take reads as its default while the file keeps it, so nothing the player
 ## chose is ever dropped in silence. Loading says each of these in `said`.
+##
+## A game that kept its options its own way before the kit declares there `const ADOPTED
+## := {"tab/key": ["user://game.cfg", "section", "key"]}` (§PW398): with no file of the
+## kit's own yet, each value is taken from where the game kept it, under the same rules
+## as a value read from the kit's file, written to the kit's file at once and said; the
+## older file is left as it was and not read again.
 
 signal changed(tab: String, key: String, value: Variant)
 
@@ -29,6 +35,8 @@ var options: Array[Dictionary] = []
 var version := 1
 ## "tab/key" an older build wrote -> the "tab/key" it is now
 var renamed := {}
+## "tab/key" -> [file, section, key] where the game kept the value before the kit
+var adopted := {}
 ## what the last load had to say: a migration, a key kept, a value refused
 var said: Array[String] = []
 var _values := {}
@@ -40,7 +48,9 @@ func _init(at := FILE, rows: Array = [], project := PROJECT) -> void:
 	options.assign(rows if not rows.is_empty() else declared(project))
 	if ResourceLoader.exists(project):
 		var script: GDScript = load(project)
-		version = int(script.get_script_constant_map().get("VERSION", version))
+		var constants := script.get_script_constant_map()
+		version = int(constants.get("VERSION", version))
+		adopted = Dictionary(constants.get("ADOPTED", {}))
 		for method in script.get_script_method_list():
 			if method["name"] == "renamed":
 				renamed = script.renamed()
@@ -138,6 +148,7 @@ func load_file() -> void:
 	said.clear()
 	var file := ConfigFile.new()
 	if not FileAccess.file_exists(path):
+		_adopt()
 		apply_all()
 		return
 	if file.load(path) != OK:
@@ -156,6 +167,28 @@ func load_file() -> void:
 		said.append("migrated from version %d to %d" % [from, version])
 		save()
 	apply_all()
+
+
+## each declared value from where the game kept it before the kit, kept at once
+func _adopt() -> void:
+	var files := {}
+	var took := 0
+	for at in adopted:
+		var where: Array = adopted[at]
+		if where.size() != 3:
+			continue
+		var from := str(where[0])
+		if not files.has(from):
+			var read := ConfigFile.new()
+			files[from] = read if read.load(from) == OK else null
+		var older: ConfigFile = files[from]
+		if older != null and older.has_section_key(str(where[1]), str(where[2])):
+			_take(at, older.get_value(str(where[1]), str(where[2])))
+			took += 1
+	if took > 0:
+		save()
+		said.append("took %d options from %s, which stays as it was"
+			% [took, ", ".join(files.keys())])
 
 
 func _take(at: String, value: Variant) -> void:

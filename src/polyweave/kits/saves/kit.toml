@@ -1,5 +1,5 @@
 name = "saves"
-version = "0.1.0"
+version = "0.2.0"
 summary = "saves in slots through a temporary file and a rename, a sum, the save before, and migrations by version"
 requires = []
 
@@ -16,3 +16,4 @@ script = "core/proof.gd"
 
 [changes]
 "0.1.0" = "slots written safely, read with a fallback, brought up through the project's migrations"
+"0.2.0" = "a game's older save, read by the project's adopted(), taken into slot 0 once and said"
