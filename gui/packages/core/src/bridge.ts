@@ -3,7 +3,7 @@
 // every path and every process stays on the shell's side of it.
 
 import type { Server } from './client'
-import type { AnswerBody, State, Words } from './desk'
+import type { AnswerBody, Difference, Mark, State, Words } from './desk'
 import type { Engine } from './engine'
 import type { Kind, Page } from './inventory'
 
@@ -23,6 +23,7 @@ export const CHANNELS = {
   reviewState: 'pw:review-state',
   reviewWords: 'pw:review-words',
   reviewAnswer: 'pw:review-answer',
+  reviewCompare: 'pw:review-compare',
   revise: 'pw:revise',
   sessionStart: 'pw:session-start',
   sessionSay: 'pw:session-say',
@@ -60,7 +61,7 @@ export interface Smoke {
   /** Open the project's verdicts, on the item's sitting where an item is named. */
   review?: boolean
   /** Open the window's own decision screen, and answer this there when given (§PW400). */
-  decide?: boolean | { family: string; choice: string; why: string }
+  decide?: boolean | { family: string; choice: string; why: string; marks?: Mark[] }
   /** Report only once the chosen item has changed on disk and been redrawn (§PW310). */
   follow?: boolean
   /** Ask for this change on the item and open a session on it (§PW306). */
@@ -87,6 +88,8 @@ export interface Bridge {
   reviewWords(project: string): Promise<Words>
   /** `review.answer`: a person's verdict on one family, the page's one write. */
   reviewAnswer(project: string, body: AnswerBody): Promise<Record<string, unknown>>
+  /** `review.compare`: where two pictures differ above the noise floor (§PW401). */
+  reviewCompare(project: string, old: string, now: string): Promise<Difference>
   /** Keep a person's request to change an item, with `revision.ask` (§PW301). */
   revise(project: string, item: string, words: string): Promise<{ revision: string }>
   /** Open the session on a revision; one revision has one session, kept by its id. */

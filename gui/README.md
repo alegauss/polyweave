@@ -89,7 +89,14 @@ are open and newest first, what a card shows, which choices it offers, the progr
 `core/src/desk.ts`. Open sittings are in full and finished ones fold under them; each
 family is a card with its badge, about, line, films or pictures, the choices as buttons
 saying what each leads to, the sentence, record, and "answer again" on an answered card.
-Marks, comparisons, the canon and gate runs are still the hosted page's.
+Under "mark where it is wrong" (§PW401), a box dragged on a member's picture is kept in
+the picture's own pixels whatever size it is shown at and sent with the answer as
+`marks`, which `review.answer` turns into a mask tied to the picture's digest; a member
+with an old picture is compared side by side, by slider, by onion skin, and by the
+difference map `review.compare` draws (the `Desk`'s `compare`). A sound plays its old and
+new side by side, looped where it is a loop, with what was measured. The screen reads the
+files again every few seconds but never while a choice is picked, a word typed or a box
+drawn. The canon and gate runs are still the hosted page's.
 
 ## A change asked for, and the session that makes it
 

@@ -4,21 +4,28 @@
 // over the page's own routes in a browser; the window's desk is three bridge channels.
 
 import { Button, Textarea } from '@viglet/viglet-design-system'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import {
   answered,
   choices,
+  drawn,
+  inPixels,
   last,
+  measuredOf,
   ordered,
   progress,
   say,
+  spanned,
   status,
   title,
   unready,
   visual,
+  type Box,
   type Desk,
+  type Difference,
   type Laid,
+  type Mark,
   type Member,
   type Sitting,
   type State,
@@ -30,6 +37,226 @@ export interface Scripted {
   family: string
   choice: string
   why: string
+  marks?: Mark[]
+}
+
+/** Where a file will show once it has come across the desk. */
+const Loading = () => <div data-loading className="h-24 w-48 animate-pulse rounded bg-muted" />
+
+/** A project file as a data URL, read once across the desk. */
+function useShown(desk: Desk, path: string | null): string | null {
+  const [source, setSource] = useState<string | null>(null)
+  useEffect(() => {
+    if (!path) return
+    let live = true
+    void desk.file(path).then(
+      (one) => live && setSource(`data:${one.mime};base64,${one.base64}`),
+      () => undefined,
+    )
+    return () => {
+      live = false
+    }
+  }, [desk, path])
+  return source
+}
+
+/**
+ * Where it is wrong, drawn over the member's own picture (§PW174). A drag draws a box in
+ * the picture's own pixels, whatever size it is shown at; `review.answer` turns the boxes
+ * into a mask the picture's size and keeps it with the answer.
+ */
+function Marker({
+  desk,
+  words,
+  member,
+  boxes,
+  onBoxes,
+}: {
+  desk: Desk
+  words: Words
+  member: Member
+  boxes: Box[]
+  onBoxes: (boxes: Box[]) => void
+}) {
+  const source = useShown(desk, member.new ?? null)
+  const picture = useRef<HTMLImageElement>(null)
+  const canvas = useRef<HTMLCanvasElement>(null)
+  const [start, setStart] = useState<[number, number] | null>(null)
+  const [moving, setMoving] = useState<Box | null>(null)
+  const at = (event: React.PointerEvent): [number, number] => {
+    const frame = canvas.current!.getBoundingClientRect()
+    const shown = picture.current!
+    return inPixels(event.clientX - frame.left, event.clientY - frame.top, shown.naturalWidth, shown.clientWidth)
+  }
+  const paint = () => {
+    const shown = picture.current
+    const pen = canvas.current?.getContext('2d')
+    if (!shown || !pen || !canvas.current) return
+    canvas.current.width = shown.clientWidth
+    canvas.current.height = shown.clientHeight
+    const k = shown.naturalWidth / (shown.clientWidth || 1)
+    pen.strokeStyle = '#ff3b30'
+    pen.lineWidth = 2
+    for (const box of moving ? [...boxes, moving] : boxes) {
+      pen.strokeRect(box[0] / k, box[1] / k, (box[2] - box[0]) / k, (box[3] - box[1]) / k)
+    }
+  }
+  useEffect(paint)
+  const alt = say(words, 'mark_alt', { name: member.name })
+  return (
+    <div data-marker={member.name} className="flex flex-col gap-2">
+      <p className="text-xs text-muted-foreground">{say(words, 'mark_help')}</p>
+      <div className="relative inline-block self-start">
+        {!source && <Loading />}
+        {source && (
+          <img
+            ref={picture}
+            src={source}
+            alt={alt}
+            onLoad={paint}
+            className="block max-h-96 w-auto min-w-48 [image-rendering:pixelated]"
+          />
+        )}
+        <canvas
+          ref={canvas}
+          aria-label={alt}
+          className="absolute inset-0 h-full w-full cursor-crosshair touch-none"
+          onPointerDown={(event) => setStart(at(event))}
+          onPointerMove={(event) => start && setMoving([...start, ...at(event)] as Box)}
+          onPointerUp={(event) => {
+            if (!start) return
+            const box = spanned(start, at(event))
+            if (box) onBoxes([...boxes, box])
+            setStart(null)
+            setMoving(null)
+          }}
+        />
+      </div>
+      <Button type="button" size="sm" variant="outline" className="self-start" onClick={() => onBoxes([])}>
+        {say(words, 'clear_marks')}
+      </Button>
+    </div>
+  )
+}
+
+const MODES = ['side', 'slider', 'onion', 'difference'] as const
+type Mode = (typeof MODES)[number]
+
+/** Two versions in one place (§PW176): side by side, a slider, an onion skin, and a
+ * difference map lit only above the noise floor. */
+function Compare({ desk, words, old, now }: { desk: Desk; words: Words; old: string; now: string }) {
+  const [mode, setMode] = useState<Mode>('slider')
+  const [at, setAt] = useState(50)
+  const [difference, setDifference] = useState<Difference | string | null>(null)
+  const before = useShown(desk, old)
+  const after = useShown(desk, now)
+  const map = useShown(desk, typeof difference === 'object' && difference ? difference.map : null)
+  useEffect(() => {
+    if (mode !== 'difference' || difference) return
+    void desk.compare(old, now).then(setDifference, (refused: Error) => setDifference(refused.message))
+  }, [desk, mode, old, now, difference])
+  // Shown as large as the marker draws it, so a small sprite is still seen pixel by pixel.
+  const image = 'block max-h-96 w-auto min-w-48 [image-rendering:pixelated]'
+  const layered = (top: React.CSSProperties) => (
+    <div className="flex flex-col gap-2 self-start">
+      <div className="relative">
+        {!(before && after) && <Loading />}
+        {before && <img src={before} alt={say(words, 'before')} className={image} />}
+        {after && (
+          <img
+            src={after}
+            alt={say(words, 'after')}
+            className="absolute inset-0 h-full w-full [image-rendering:pixelated]"
+            style={top}
+          />
+        )}
+      </div>
+      <input
+        className="w-full"
+        type="range"
+        min={0}
+        max={100}
+        value={at}
+        aria-label={say(words, `mode_${mode}`)}
+        onChange={(event) => setAt(Number(event.target.value))}
+      />
+    </div>
+  )
+  return (
+    <div data-compare className="flex flex-col gap-2">
+      <div role="tablist" className="flex flex-wrap gap-1">
+        {MODES.map((one) => (
+          <Button
+            key={one}
+            type="button"
+            role="tab"
+            size="sm"
+            data-mode={one}
+            aria-selected={mode === one}
+            variant={mode === one ? 'default' : 'outline'}
+            onClick={() => setMode(one)}
+          >
+            {say(words, `mode_${one}`)}
+          </Button>
+        ))}
+      </div>
+      {mode === 'side' && (
+        <div className="flex flex-wrap gap-3">
+          {before && <img src={before} alt={say(words, 'before')} className={image} />}
+          {after && <img src={after} alt={say(words, 'after')} className={image} />}
+        </div>
+      )}
+      {mode === 'slider' && layered({ clipPath: `inset(0 ${100 - at}% 0 0)` })}
+      {mode === 'onion' && layered({ opacity: at / 100 })}
+      {mode === 'difference' &&
+        (difference === null ? (
+          <p className="text-sm text-muted-foreground">{say(words, 'measuring_difference')}</p>
+        ) : typeof difference === 'string' ? (
+          <p className="text-sm text-rose-700">{difference || say(words, 'no_map')}</p>
+        ) : (
+          <div className="flex flex-col gap-1">
+            {map && <img src={map} alt={say(words, 'mode_difference')} className={image} />}
+            <p className="text-sm">
+              {say(words, 'difference_says', {
+                changed: difference.changed_patches,
+                patches: difference.patches,
+                tolerance: difference.tolerance,
+                from: difference.tolerance_from ?? '',
+              })}
+            </p>
+          </div>
+        ))}
+    </div>
+  )
+}
+
+/** A sound beside the one it replaces (§PW256), each on its own player, a loop looped so
+ * its seam is heard, with what was measured of it. */
+function Listen({ desk, words, member }: { desk: Desk; words: Words; member: Member }) {
+  const old = useShown(desk, member.old ?? null)
+  const now = useShown(desk, member.new ?? null)
+  return (
+    <div data-listen={member.name} className="grid gap-3 sm:grid-cols-2">
+      {(['old', 'new'] as const)
+        .filter((version) => member[version])
+        .map((version) => (
+          <div key={version} className="flex flex-col gap-1">
+            <strong className="text-sm">{say(words, version === 'old' ? 'before' : 'after')}</strong>
+            {(version === 'old' ? old : now) && (
+              <audio
+                controls
+                preload="auto"
+                loop={Boolean(member.loop)}
+                src={(version === 'old' ? old : now)!}
+                aria-label={say(words, version === 'old' ? 'before' : 'after')}
+                className="w-full"
+              />
+            )}
+            <p className="text-xs text-muted-foreground">{measuredOf(member, version)}</p>
+          </div>
+        ))}
+    </div>
+  )
 }
 
 const BADGE = {
@@ -47,20 +274,9 @@ const when = (words: Words, at: string | undefined) => {
 }
 
 /** A project file, carried across the desk and shown as it is. */
-function Shown({ desk, path, alt, sound }: { desk: Desk; path: string; alt: string; sound?: boolean }) {
-  const [source, setSource] = useState<string | null>(null)
-  useEffect(() => {
-    let live = true
-    void desk.file(path).then(
-      (one) => live && setSource(`data:${one.mime};base64,${one.base64}`),
-      () => undefined,
-    )
-    return () => {
-      live = false
-    }
-  }, [desk, path])
-  if (!source) return <div className="h-24 w-full animate-pulse rounded bg-muted" />
-  if (sound) return <audio controls src={source} className="w-full" />
+function Shown({ desk, path, alt }: { desk: Desk; path: string; alt: string }) {
+  const source = useShown(desk, path)
+  if (!source) return <Loading />
   return <img src={source} alt={alt} className="max-h-80 w-auto rounded border object-contain [image-rendering:pixelated]" />
 }
 
@@ -141,6 +357,7 @@ function Card({
   state,
   scripted,
   onAnswered,
+  onHold,
 }: {
   desk: Desk
   words: Words
@@ -149,6 +366,8 @@ function Card({
   state: State
   scripted?: Scripted
   onAnswered: () => void
+  /** Says whether a decision is being made here, which no redraw may run over. */
+  onHold: (card: string, held: boolean) => void
 }) {
   const laid = sitting.families[name]!
   const before = last(sitting, name, state.answers)
@@ -159,18 +378,34 @@ function Card({
   const [again, setAgain] = useState(false)
   const [message, setMessage] = useState<{ text: string; bad: boolean } | null>(null)
   const [sending, setSending] = useState(false)
+  // Boxes drawn on each member's picture, sent with the answer as its marks (§PW174).
+  const [boxes, setBoxes] = useState<Record<string, Box[]>>({})
+  const marked = Object.values(boxes).some((one) => one.length > 0)
+  const card = `${sitting.manifest}#${name}`
+  useEffect(() => {
+    onHold(card, Boolean(picked || why.trim() || marked))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [card, picked, why, marked])
+  useEffect(() => () => onHold(card, false), [card, onHold])
 
-  const send = async (choice: string | null, said: string) => {
+  const send = async (choice: string | null, said: string, marks: Mark[]) => {
     const missing = unready(choice, said)
     if (missing) return setMessage({ text: say(words, missing), bad: true })
     setSending(true)
     setMessage({ text: say(words, 'recording'), bad: false })
     try {
-      await desk.answer({ sitting: sitting.manifest, family: name, choice: choice!, why: said.trim() })
+      await desk.answer({
+        sitting: sitting.manifest,
+        family: name,
+        choice: choice!,
+        why: said.trim(),
+        marks: drawn(marks),
+      })
       setMessage({ text: say(words, 'recorded'), bad: false })
       setAgain(false)
       setPicked(null)
       setWhy('')
+      setBoxes({})
       onAnswered()
     } catch (refused) {
       setMessage({ text: (refused as Error).message, bad: true })
@@ -181,12 +416,16 @@ function Card({
 
   // A smoke run answers its family once, the way a person would: a choice, then words.
   useEffect(() => {
-    if (scripted?.family === name && !before) void send(scripted.choice, scripted.why)
+    if (scripted?.family === name && !before) void send(scripted.choice, scripted.why, scripted.marks ?? [])
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scripted, name])
 
   const answeredAs = before ? offered.find(([word]) => word === before.choice)?.[1] : undefined
   const sounds = (laid.members ?? []).filter((one) => one.sound && one.new)
+  // Marks are drawn on a picture, so a sound or a line has none to draw on.
+  const drawable = (laid.members ?? []).filter((one) => one.new && !one.sound && !one.text)
+  const marks = (): Mark[] =>
+    Object.entries(boxes).map(([member, shapes]) => ({ member, shapes: shapes.map((box) => ({ box })) }))
   return (
     <article data-card={`${sitting.manifest}#${name}`} className="flex flex-col gap-3 rounded-lg border p-4">
       <header className="flex items-center gap-3">
@@ -198,7 +437,7 @@ function Card({
       {laid.about && <p className="text-sm">{laid.about}</p>}
       <Visual desk={desk} words={words} name={name} laid={laid} />
       {sounds.map((member) => (
-        <Shown key={member.new} desk={desk} path={member.new!} alt={member.name} sound />
+        <Listen key={member.name} desk={desk} words={words} member={member} />
       ))}
       {before && (
         <div data-answered className="flex flex-col gap-1 rounded-md bg-muted p-3 text-sm">
@@ -216,7 +455,7 @@ function Card({
           className="flex flex-col gap-2"
           onSubmit={(event) => {
             event.preventDefault()
-            void send(picked, why)
+            void send(picked, why, marks())
           }}
         >
           <p className="text-sm font-medium">{say(words, 'question')}</p>
@@ -262,6 +501,25 @@ function Card({
           </div>
         </form>
       )}
+      {drawable.length > 0 && (
+        <details className="text-sm">
+          <summary className="cursor-pointer text-muted-foreground">{say(words, 'mark')}</summary>
+          <div className="flex flex-col gap-4 pt-2">
+            {drawable.map((member) => (
+              <div key={member.name} className="flex flex-col gap-3">
+                {member.old && <Compare desk={desk} words={words} old={member.old} now={member.new!} />}
+                <Marker
+                  desk={desk}
+                  words={words}
+                  member={member}
+                  boxes={boxes[member.name] ?? []}
+                  onBoxes={(next) => setBoxes((all) => ({ ...all, [member.name]: next }))}
+                />
+              </div>
+            ))}
+          </div>
+        </details>
+      )}
       {(laid.said ?? []).length > 0 && (
         <details className="text-sm">
           <summary className="cursor-pointer text-muted-foreground">{say(words, 'details')}</summary>
@@ -292,6 +550,7 @@ function SittingView(props: {
   state: State
   scripted?: Scripted
   onAnswered: () => void
+  onHold: (card: string, held: boolean) => void
 }) {
   const { words, sitting, state } = props
   const kind = words.kinds[sitting.kind ?? 'look'] ?? {}
@@ -353,12 +612,21 @@ export function Decide({
   const [failed, setFailed] = useState<string | null>(null)
   const read = () =>
     desk.state().then(setState, (refused: Error) => setFailed(refused.message))
+  // The cards where a decision is being made: a choice picked, a word typed, a box drawn.
+  const holding = useRef(new Set<string>())
+  const onHold = useCallback((card: string, held: boolean) => {
+    if (held) holding.current.add(card)
+    else holding.current.delete(card)
+  }, [])
   useEffect(() => {
     void desk.words().then(setWords, (refused: Error) => setFailed(refused.message))
     void read()
     // The files are read again every few seconds, as the page does, so an answer given
-    // elsewhere, or the agent's next sitting, shows without asking.
-    const every = setInterval(() => void read(), 5000)
+    // elsewhere, or the agent's next sitting, shows without asking; never over a
+    // decision being made.
+    const every = setInterval(() => {
+      if (holding.current.size === 0) void read()
+    }, 5000)
     return () => clearInterval(every)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [desk])
@@ -371,7 +639,7 @@ export function Decide({
   if (!words || !state) return <div className="h-40 w-full animate-pulse rounded bg-muted" />
   const { open, done } = ordered(state)
   const along = progress(state)
-  const shared = { desk, words, state, scripted, onAnswered: () => void read() }
+  const shared = { desk, words, state, scripted, onAnswered: () => void read(), onHold }
   return (
     <div data-decide lang={words.language} className="flex flex-col gap-6">
       {along && (

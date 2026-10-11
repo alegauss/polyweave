@@ -153,6 +153,34 @@ describe.skipIf(!existsSync(MAIN))('the window', () => {
     expect(answer).toMatchObject({ sitting: 'review/first/sitting.json', family: 'icon', choice: 'look', why: 'mais quente na borda' })
   })
 
+  it('compares a picture with the one it replaces, and keeps a mark drawn on it as a mask', async () => {
+    const game = join(root, 'starship')
+    await writeFile(join(game, 'docs', 'renders', 'icon_old.png'), Buffer.from(PNG, 'base64'))
+    const laid = spawnSync('python', [
+      '-m', 'polyweave', 'verdict.sitting',
+      '--families', JSON.stringify({ icon: [{ name: 'icon', old: 'docs/renders/icon_old.png', new: 'docs/renders/icon.png' }] }),
+      '--out', 'review/again', '--root', game,
+    ])
+    expect(laid.status, laid.stderr?.toString()).toBe(0)
+    const drew = await opened(root, 'en', undefined, false, undefined, {
+      decide: {
+        family: 'icon',
+        choice: 'look',
+        why: 'the corner is wrong',
+        marks: [{ member: 'icon', shapes: [{ box: [0, 0, 1, 1] }] }],
+      },
+    })
+    // The four ways to compare two versions, on the card with an old picture.
+    expect(drew['modes']).toEqual(['side by side', 'slider', 'onion skin', 'difference'])
+    expect(drew['markers']).toBe(1)
+    // The mark is the page's: a mask the picture's size, tied to its digest.
+    const kept = readFileSync(join(game, '.polyweave', 'answers.jsonl'), 'utf8').trim().split('\n')
+    const answer = JSON.parse(kept.at(-1)!) as { marks: { member: string; mask: string; sha256: string }[] }
+    expect(answer.marks).toHaveLength(1)
+    expect(answer.marks[0]).toMatchObject({ member: 'icon' })
+    expect(existsSync(join(game, answer.marks[0]!.mask))).toBe(true)
+  })
+
   it('asks for a change and opens a session on it, beside the item', async () => {
     const fake = fakeClaude()
     try {

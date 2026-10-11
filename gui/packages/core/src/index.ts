@@ -2,8 +2,39 @@ export { BRIDGE_KEY, CHANNELS } from './bridge'
 export type { Bridge, Opened, Shown, Smoke } from './bridge'
 export { Broken, Client, Refused } from './client'
 export type { Refusal, Server, Transport } from './client'
-export { answered, choiceOf, choices, last, ordered, progress, say, status, title, unready, visual } from './desk'
-export type { AnswerBody, Choice, Desk, Held, Laid, Member, Recorded, Sitting, State, Visual, Words } from './desk'
+export {
+  answered,
+  choiceOf,
+  choices,
+  drawn,
+  inPixels,
+  last,
+  measuredOf,
+  ordered,
+  progress,
+  say,
+  spanned,
+  status,
+  title,
+  unready,
+  visual,
+} from './desk'
+export type {
+  AnswerBody,
+  Box,
+  Choice,
+  Desk,
+  Difference,
+  Held,
+  Laid,
+  Mark,
+  Member,
+  Recorded,
+  Sitting,
+  State,
+  Visual,
+  Words,
+} from './desk'
 export { engine } from './engine'
 export type { Engine, Probe } from './engine'
 export { all, KINDS, merged, page, Unreadable } from './inventory'

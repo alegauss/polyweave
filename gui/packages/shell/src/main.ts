@@ -114,6 +114,9 @@ ipcMain.handle(CHANNELS.reviewWords, async (_event, project: string) =>
 ipcMain.handle(CHANNELS.reviewAnswer, async (_event, project: string, body: AnswerBody) =>
   call((await held.opened(project)).client, 'review.answer', { body: { ...body }, root: project }),
 )
+ipcMain.handle(CHANNELS.reviewCompare, async (_event, project: string, old: string, now: string) =>
+  call((await held.opened(project)).client, 'review.compare', { old, new: now, root: project }),
+)
 ipcMain.handle(CHANNELS.revise, async (_event, project: string, item: string, words: string) =>
   (await held.opened(project)).client.call('revision.ask', { item, words, root: project }),
 )

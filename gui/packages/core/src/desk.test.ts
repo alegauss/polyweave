@@ -2,7 +2,24 @@
 
 import { describe, expect, it } from 'vitest'
 
-import { choices, last, ordered, progress, say, status, title, unready, visual, type Sitting, type State, type Words } from './desk'
+import {
+  choices,
+  drawn,
+  inPixels,
+  last,
+  measuredOf,
+  ordered,
+  progress,
+  say,
+  spanned,
+  status,
+  title,
+  unready,
+  visual,
+  type Sitting,
+  type State,
+  type Words,
+} from './desk'
 
 const WORDS: Words = {
   language: 'pt-BR',
@@ -62,6 +79,23 @@ describe('the decision screen', () => {
     expect(visual({ sheet: 's', members: [{ name: 'm', films: [{ label: 'f', path: 'f.png' }] }] }).kind).toBe('films')
     expect(visual({ sheet: 's', members: [{ name: 'p', new: 'p.png' }] }).kind).toBe('pictures')
     expect(visual({ sheet: 's', members: [{ name: 'w', new: 'w.wav', sound: true }] }).kind).toBe('sheet')
+  })
+
+  it("keeps a drawn box in the picture's own pixels, and drops one too thin to mean anything", () => {
+    // Drawn on a 256-pixel picture shown 128 wide: every point counts twice.
+    const start = inPixels(10, 5, 256, 128)
+    const end = inPixels(2, 40, 256, 128)
+    expect(spanned(start, end)).toEqual([4, 10, 20, 80])
+    expect(spanned([3, 3], [4, 40])).toBeNull()
+    expect(drawn([{ member: 'a', shapes: [] }, { member: 'b', shapes: [{ box: [0, 0, 4, 4] }] }])).toEqual([
+      { member: 'b', shapes: [{ box: [0, 0, 4, 4] }] },
+    ])
+  })
+
+  it("says a sound's numbers, never its words", () => {
+    const member = { name: 'hit', measured: { new: { peak_db: -1.2, loudness: -14, said: 'clipped' } } }
+    expect(measuredOf(member, 'new')).toBe('peak_db -1.2, loudness -14')
+    expect(measuredOf(member, 'old')).toBe('')
   })
 
   it('asks for a choice, and for words on anything but an accept', () => {

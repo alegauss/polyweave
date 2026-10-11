@@ -74,6 +74,7 @@ export function Project({
       words: () => bridge.reviewWords(opened.project),
       answer: (body) => bridge.reviewAnswer(opened.project, body),
       file: (path) => bridge.file(opened.project, path),
+      compare: (old, now) => bridge.reviewCompare(opened.project, old, now),
     }),
     [bridge, opened.project],
   )
@@ -93,10 +94,24 @@ export function Project({
     if (scripted && !decided?.answers.some((one) => one.family === scripted.family)) return
     if (smoke.ask && !talked) return
     if (smoke.follow && !(chosen && moved.includes(chosen.id))) return
+    // Pictures come across the bridge after the screen is drawn: a picture of the window
+    // is taken once they are in, or after five seconds of waiting for them.
+    const settle = (tries: number) => {
+      if (document.querySelector('[data-loading]') && tries < 100) {
+        setTimeout(() => settle(tries + 1), 50)
+        return
+      }
+      report()
+    }
+    settle(0)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [smoke, chosen, drawn, revised, reviewing, framed, talked, moved, bridge, opened, decided])
+
+  const report = () => {
+    if (!smoke || revised === null) return
     // A question waiting on the person is what a smoke run's picture is of.
     document.querySelector('[data-ask]')?.scrollIntoView({ block: 'center' })
-    requestAnimationFrame(() => {
-      void bridge.rendered({
+    requestAnimationFrame(() => {      void bridge.rendered({
         project: opened.project,
         server: opened.server.name,
         engine: opened.engine.from,
@@ -123,10 +138,11 @@ export function Project({
         cards: [...document.querySelectorAll('[data-card]')].map((one) => one.getAttribute('data-card')),
         badges: [...document.querySelectorAll('[data-badge]')].map((one) => one.textContent),
         how: [...document.querySelectorAll('[data-how] strong')].map((one) => one.textContent?.trim()),
+        modes: [...document.querySelectorAll('[data-compare] [data-mode]')].map((one) => one.textContent),
+        markers: document.querySelectorAll('[data-marker]').length,
       })
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [smoke, chosen, drawn, revised, reviewing, framed, talked, moved, bridge, opened, decided])
+  }
 
   return (
     <section className="flex flex-col gap-4">

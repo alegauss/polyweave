@@ -24,7 +24,28 @@ export interface Member {
   line?: string
   examples?: string[]
   films?: { label: string; path: string }[]
-  measured?: unknown
+  /** A sound's numbers by version, or a line's measure as words. */
+  measured?: { old?: Record<string, unknown>; new?: Record<string, unknown> } | string
+  /** A loop, played looped so its seam is heard. */
+  loop?: boolean
+}
+
+/** A box drawn on a picture, in the picture's own pixels: left, top, right, bottom. */
+export type Box = [number, number, number, number]
+
+/** Where a person marked one member wrong; `review.answer` turns it into a mask. */
+export interface Mark {
+  member: string
+  shapes: { box: Box }[]
+}
+
+/** Where two pictures differ above the noise floor, as `review.compare` answers. */
+export interface Difference {
+  map: string
+  changed_patches: number
+  patches: number
+  tolerance: number
+  tolerance_from?: string | null
 }
 
 /** One member as the tool held it: passed, failed, or not held at all. */
@@ -84,6 +105,7 @@ export interface AnswerBody {
   family: string
   choice: string
   why: string
+  marks?: Mark[]
 }
 
 /** What a decision screen reads and writes through, wherever it runs. */
@@ -92,6 +114,38 @@ export interface Desk {
   words(): Promise<Words>
   answer(body: AnswerBody): Promise<Record<string, unknown>>
   file(path: string): Promise<Shown>
+  compare(old: string, now: string): Promise<Difference>
+}
+
+/** The box two points span, rounded to whole pixels; null where it is too thin to mean one. */
+export function spanned(start: [number, number], end: [number, number]): Box | null {
+  const box = [
+    Math.min(start[0], end[0]),
+    Math.min(start[1], end[1]),
+    Math.max(start[0], end[0]),
+    Math.max(start[1], end[1]),
+  ].map(Math.round) as Box
+  return box[2] - box[0] > 1 && box[3] - box[1] > 1 ? box : null
+}
+
+/** A point on a picture shown `shown` wide, in the pixels of the picture `natural` wide. */
+export function inPixels(x: number, y: number, natural: number, shown: number): [number, number] {
+  const k = shown ? natural / shown : 1
+  return [x * k, y * k]
+}
+
+/** The marks worth sending: a member with no box says nothing. */
+export function drawn(marks: Mark[]): Mark[] {
+  return marks.filter((one) => one.shapes.length > 0)
+}
+
+/** What was measured of one version of a sound, as "name value" pairs. */
+export function measuredOf(member: Member, version: 'old' | 'new'): string {
+  const numbers = typeof member.measured === 'object' ? (member.measured[version] ?? {}) : {}
+  return Object.entries(numbers)
+    .filter(([, value]) => typeof value === 'number')
+    .map(([name, value]) => `${name} ${String(value)}`)
+    .join(', ')
 }
 
 /** A word of the catalog with its `{fields}` filled, or the key where it has none. */

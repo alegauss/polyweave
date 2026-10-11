@@ -45,7 +45,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "R", title: "Levels measured before a person plays them", open: 10 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
-  { block: "U", title: "A window on everything a project governs", open: 4 },
+  { block: "U", title: "A window on everything a project governs", open: 3 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 2 },
 ];
 
@@ -156,13 +156,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW403"],
   },
   {
-    id: "PW401",
-    block: "U",
-    symptom: "the window's decision screen cannot mark where a picture is wrong or compare two versions of it",
-    why: "A mark and a compare are how a person says what is wrong and sees what changed, and the page has both.",
-    deps: [],
-  },
-  {
     id: "PW402",
     block: "U",
     symptom: "the window's decision screen shows no gate lanes, turntables, canon boards or pending table",
@@ -174,7 +167,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "U",
     symptom: "the browser's review page and the window's decision screen would be two implementations of one screen",
     why: "A fix landing in one and not the other is the drift PW305 hosted the page to avoid, so one bundle must serve both.",
-    deps: ["PW401", "PW402"],
+    deps: ["PW402"],
   },
   {
     id: "PW370",

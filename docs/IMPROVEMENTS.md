@@ -617,23 +617,6 @@ Build, in parts:
 The iframe and `?member=` stay until step 4 lands. Steps 3 and 4 are filed as PW400 to
 PW403, one id each.
 
-### §PW401 Marks and compare on the native screen
-
-PW377's third step, second part, after the native cards (PW400). A person says where a
-picture is wrong by drawing boxes on it, and compares two versions side by side, as a
-slider, as an onion skin and as a difference map lit above the noise floor; the window's
-decision screen does neither yet.
-
-Port `marker` and `compare` from src/polyweave/review_page/page.js into components of
-`Decide.tsx`: a box drawn in the picture's own pixels whatever size it is shown at,
-cleared on request, sent with the answer as `marks`, and the four compare modes, the
-difference map through `review.compare` on the `Desk`. A sound member plays its old and
-new side by side, looped where the sitting says, with what was measured. The screen does
-not redraw over a box being drawn, a choice picked or a word typed.
-
-Done when tests/test_review_page.py's mark tests hold for an answer sent from the
-window, and its smoke run shows the four compare modes on a sitting with an old picture.
-
 ### §PW402 Lanes, turntables and canon on the native screen
 
 PW377's third step, last part. Besides the sittings the review page shows each gate
