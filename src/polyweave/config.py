@@ -61,7 +61,7 @@ _INSIDE = ("service.schema",)
 #: Tables that hold either one paid service or several named ones (§PW162). A bare
 #: `[service]` is the one service it always was; `[service.meshy]` beside
 #: `[service.ideogram]` is two, each with its own `[budget.<name>]`.
-_NAMED_TABLES = ("service", "budget", "style", "sound")
+_NAMED_TABLES = ("service", "budget", "style", "sound", "reference")
 
 #: What a bare `[style]` is called: a project with one look has one family (§PW166).
 DEFAULT_FAMILY = "default"
@@ -372,6 +372,25 @@ DEFAULTS: dict[str, Any] = {
         "source": "",
         "tolerance": 0.001,
     },
+    "reference": {
+        # A reference video's fixed places, declared once (§PW380): `[reference.<name>]`
+        # per video or game, as rectangles [left, top, right, bottom] in pixels of the
+        # source frame `size` was read at, so a call names a region and never repeats
+        # numbers, and frames of another size are refused rather than misread.
+        "size": [],
+        "regions": {},
+        # The region that is a minimap, and its shape: `strip`, a band whose left and
+        # right edges meet (a cylinder seen whole), or `rect`, a flat level from above.
+        "minimap": "",
+        "map": "strip",
+        # The player's blip colour, which every other blip is measured from, and each
+        # other blip by name and #rrggbb colour; nothing about a game is known here.
+        "player": "",
+        "blips": {},
+        "tolerance": 0.15,
+        # The pixels of the source frame one blip covers, least and most.
+        "blip_size": [1, 64],
+    },
 }
 
 
@@ -680,6 +699,69 @@ class Config:
             found[family] = sound
         return found
 
+    def references(self) -> dict[str, dict]:
+        """Every reference video's declared regions, by name (§PW380).
+
+        A bare `[reference]` is one, `default`; `[reference.<name>]` tables are as many
+        as the project writes. Each region is checked to be a rectangle inside `size`,
+        the minimap to name one of them, and each blip to be a colour.
+        """
+        stated_table = self._declared.get("reference", {})
+        named = _named(stated_table)
+        stated = named or ({DEFAULT_FAMILY: stated_table} if stated_table else {})
+        found = {}
+        for name, own in stated.items():
+            declared = {**DEFAULTS["reference"], **own}
+            at = f"reference.{name}" if named else "reference"
+
+            def bad(key: str, what: str, remedy: str, at: str = at) -> PolyweaveError:
+                return PolyweaveError("config.bad-type", f"{at}.{key} {what}", remedy,
+                                      at=f"{at}.{key}")
+
+            size = declared["size"]
+            if not (isinstance(size, list) and len(size) == 2
+                    and all(isinstance(v, int) and v > 0 for v in size)):
+                raise bad("size", f"is {size!r}",
+                          "write the source frame's [width, height] in pixels")
+            for region, box in declared["regions"].items():
+                if not (isinstance(box, list) and len(box) == 4
+                        and all(isinstance(v, int | float) for v in box)
+                        and 0 <= box[0] < box[2] <= size[0]
+                        and 0 <= box[1] < box[3] <= size[1]):
+                    raise bad(f"regions.{region}", f"is {box!r}",
+                              f"write it as [left, top, right, bottom] inside the "
+                              f"{size[0]}x{size[1]} frame")
+            if declared["minimap"] and declared["minimap"] not in declared["regions"]:
+                raise bad("minimap",
+                          f"names {declared['minimap']!r}, which is no region",
+                          f"name one of {', '.join(sorted(declared['regions']))}")
+            colours = {"player": declared["player"], **{
+                f"blips.{k}": v for k, v in declared["blips"].items()}}
+            for key, colour in colours.items():
+                if (colour or key != "player") and not (
+                        isinstance(colour, str) and _HEX.fullmatch(colour)):
+                    raise bad(key, f"is {colour!r}", "write a colour as #rrggbb")
+            found[name] = declared
+        return found
+
+    def reference(self, name: str | None = None) -> tuple[str, dict]:
+        """One reference's declaration, resolved as a style is: never guessed."""
+        declared = self.references()
+        if name is None and len(declared) == 1:
+            return next(iter(declared.items()))
+        if name not in declared:
+            raise PolyweaveError(
+                "capture.unknown-reference",
+                f"{name!r} is not a reference this project declares"
+                if name else f"the project declares {len(declared)} references and "
+                "the call named none",
+                f"name one of {', '.join(sorted(declared))}" if declared
+                else "declare [reference.<name>] with its size and regions",
+                given=str(name),
+                allowed=sorted(declared),
+            )
+        return name, declared[name]
+
     def cue_files(self) -> dict[str, Path]:
         """Every declared cue by name, at the file it lands on, across all families."""
         return {
@@ -837,7 +919,7 @@ def _check(declared: dict, source: Path) -> None:
 
 
 #: Settings of one service whose value is itself a table, so not a named service.
-_TABLE_SETTINGS = ("prices", "skeleton")
+_TABLE_SETTINGS = ("prices", "skeleton", "regions", "blips")
 
 
 def _sells(about: dict, model: str) -> bool:
@@ -872,6 +954,7 @@ def _check_named(table: str, values: dict, source: Path) -> None:
         "service": DEFAULTS["service"],
         "style": DEFAULTS["style"],
         "sound": DEFAULTS["sound"],
+        "reference": DEFAULTS["reference"],
     }.get(table, _NAMED_BUDGET)
     for name, stated in values.items():
         for key, value in stated.items():
@@ -946,6 +1029,7 @@ _CHOICES = {
     "filter": ("smooth", "pixel"),
     "kind": ("loop", "stinger", "effect"),
     "format": ("wav", "ogg", "flac", "mp3", "opus"),
+    "map": ("strip", "rect"),
 }
 
 #: A colour as a palette states it.

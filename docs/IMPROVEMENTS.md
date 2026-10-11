@@ -532,32 +532,6 @@ What starship needs from polyweave:
 Until it lands, starship keeps the pass in `dev/` as the thinnest workaround, named
 against this line.
 
-### §PW380 Regions of a reference video, and its minimap read as positions
-
-Found in spinhold (RK178): in Resogun the radar strip at the top of the screen shows the
-whole cylinder, and it is the only place an agent learns what spawns off camera and on
-which side. In a full frame it is a few dozen pixels high, so reading it by eye from a
-contact sheet guesses more than it reads. The score, multiplier and humans counter sit
-in fixed places too.
-
-`reference.frames` offers a crop per call. What is missing is a declaration and a
-reading:
-
-- **Regions declared once** in `polyweave.toml` for a reference (say `[reference.<name>]`
-  with `radar`, `hud`, `play` as rectangles in source pixels), checked against the video's
-  resolution, so every later call names a region instead of repeating numbers.
-- **Each region sampled and enlarged** on its own sheet, nearest-neighbour so the dots
-  stay dots.
-- **`reference.minimap`**: inside a region the project declares as a minimap, find each
-  blip per frame and map it to a position on the declared shape of the map (a strip that
-  wraps, for a cylinder; a rectangle, for a flat level), giving each blip's angle or
-  position over time as JSON with its `.prov.json`. The player's own blip, declared by
-  colour, is what the others are measured from, so "left" and "right" of the player come
-  out as data.
-
-Nothing here knows Resogun: the region names, the map's shape and the blip colours are
-the project's declaration.
-
 ### §PW384 A reference registered and kept internal
 
 Found in spinhold (RK178): the reference is a commercial game's gameplay, recorded by
@@ -590,7 +564,7 @@ changes, a burst of explosions fills the screen, a sound plays when a wave begin
 
 What polyweave should do, as **`reference.events`** over a reference video:
 
-- **Numbers read from a declared HUD region** (§PW380) per sampled frame:
+- **Numbers read from a declared HUD region** (PW380, docs/specs/fetching.md) per sampled frame:
   score, multiplier, any counter the project names, with the frames where reading failed
   listed rather than guessed.
 - **Visual peaks**: frames where the play area's brightness or the share of changed

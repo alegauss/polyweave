@@ -1406,6 +1406,16 @@ export interface ReferenceFramesArgs {
   root?: string
 }
 
+/** Each blip on a minimap per frame placed and measured from the player. */
+export interface ReferenceMinimapArgs {
+  /** the folder reference.frames wrote, or its frames.json */
+  frames: string
+  /** the [reference.<name>] with the minimap; the only one if empty */
+  reference?: string
+  /** the project the frames are under; default "." */
+  root?: string
+}
+
 /** Count and follow what moves in a reference video's frames, by kinds you declare. */
 export interface ReferenceObjectsArgs {
   /** the folder reference.frames wrote, or its frames.json */
@@ -1446,6 +1456,18 @@ export interface ReferencePrepareArgs {
   coverage?: number
   /** the longest side it is sized to; from 16 to …; default 1024 */
   longest?: number
+}
+
+/** Each region a reference declares, laid out enlarged on sheets of its own. */
+export interface ReferenceRegionsArgs {
+  /** the folder reference.frames wrote, or its frames.json */
+  frames: string
+  /** the [reference.<name>] with the regions; the only one if empty */
+  reference?: string
+  /** how many times each region is enlarged; from 1 to …; default 4 */
+  scale?: number
+  /** the project the frames are under; default "." */
+  root?: string
 }
 
 /** Render one subject at the cheapest rung that can answer the question. */
@@ -2282,9 +2304,11 @@ export interface Operations {
   "purchase.remaining": PurchaseRemainingArgs
   "purchase.spent": PurchaseSpentArgs
   "reference.frames": ReferenceFramesArgs
+  "reference.minimap": ReferenceMinimapArgs
   "reference.objects": ReferenceObjectsArgs
   "reference.pick": ReferencePickArgs
   "reference.prepare": ReferencePrepareArgs
+  "reference.regions": ReferenceRegionsArgs
   "render.bake": RenderBakeArgs
   "render.plan": RenderPlanArgs
   "review.answer": ReviewAnswerArgs
@@ -2467,9 +2491,11 @@ export const OPERATIONS = [
   "purchase.remaining",
   "purchase.spent",
   "reference.frames",
+  "reference.minimap",
   "reference.objects",
   "reference.pick",
   "reference.prepare",
+  "reference.regions",
   "render.bake",
   "render.plan",
   "review.answer",

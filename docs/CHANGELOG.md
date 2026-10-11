@@ -343,6 +343,7 @@
 - ✅ **PW328** **A reference gameplay video cannot be sampled into frames or contact sheets an agent can read** — reference.frames samples a video into time-named frames, denser in ranges, dropping still ones, on 4x4 sheets with times burnt in, tied to its hash (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW330** **a wave timeline's threat per second, in its two bounding cases, and its gaps with nothing to shoot cannot be measured** — measure.pressure reads a game's weighted events as threat per second in both bounding cases, with gaps past a window, and diffs two (design recorded in `docs/specs/measurements.md`).
 - ✅ **PW379** **the enemies in a reference video's frames cannot be counted or followed, so an agent counts them by eye on every sheet** — reference.objects counts declared kinds in a video's frames, joins them into tracks and groups with formation and end, ids on sheets (design recorded in `docs/specs/fetching.md`).
+- ✅ **PW380** **a reference video's radar and HUD cannot be declared as regions, and the blips on its radar cannot be read as positions** — A reference's regions are declared once; reference.regions enlarges each and reference.minimap reads blips as places from the player (design recorded in `docs/specs/fetching.md`).
 
 ## Block S — Playing the game, not only rendering it
 

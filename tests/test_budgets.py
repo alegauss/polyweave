@@ -104,7 +104,8 @@ from polyweave.errors import PolyweaveError
 #: §PW375).
 #: 125,405 with review.state, .canon, .compare and .answer (§PW377).
 #: 127,191 with revision.outside and reference.objects (§PW378, §PW379).
-DESCRIBE = 127_800
+#: 128,507 with reference.regions and reference.minimap (§PW380).
+DESCRIBE = 129_100
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -185,7 +186,8 @@ DESCRIBE = 127_800
 #: and clip.unshipped, a scene that would not ship (§PW372-§PW374).
 #: 137,676 with verdict.answer and the four review operations (§PW375, §PW377).
 #: 139,483 with revision.outside, reference.objects and its two codes (§PW378, §PW379).
-CAPABILITIES = 140_100
+#: 140,907 with reference.regions, reference.minimap and their codes (§PW380).
+CAPABILITIES = 141_500
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
@@ -227,7 +229,8 @@ HELP_VERB = 4_100
 #: 25,868 with game.test, game.export_smoke, tables.check and engine.perf.
 #: 26,626 with clip.camera, a cutscene's camera declared and built (§PW372).
 #: 27,598 with verdict.answer and the four review operations (§PW375, §PW377).
-HELP_TOP = 28_200
+#: 28,236 with revision.outside and the three reference reads (§PW378-§PW380).
+HELP_TOP = 28_900
 #: A search's answer over its default budget of 24 samples: 3,739.
 SEARCH = 4_000
 

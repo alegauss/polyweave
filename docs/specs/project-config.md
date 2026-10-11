@@ -115,6 +115,16 @@ pixels_per_unit = 0.0          # the weaker half; `source` is the stronger
 source    = "scripts/board.gd:CELL"      # read the engine's scale where it keeps it
 tolerance = 0.001
 
+[reference]                    # a reference video's fixed places (fetching.md); write
+size    = [1920, 1080]         # [reference.<name>] tables for more than one
+regions = { radar = [480, 20, 1440, 70], score = [40, 1000, 400, 1060] }
+minimap = "radar"              # the region read by reference.minimap
+map     = "strip"              # strip: its ends meet; rect: a flat level from above
+player  = "#00ff00"            # the player's blip, every other blip measured from it
+blips   = { enemy = "#ff3030", human = "#30ff90" }
+tolerance = 0.15               # how far from a blip's colour still counts
+blip_size = [1, 64]            # the pixels of the source frame one blip covers
+
 [capture]
 declared   = ["locale", "resolution", "theme"]  # add your own; `theme` is this project's
 locale     = "pt_BR"

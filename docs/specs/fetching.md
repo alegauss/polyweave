@@ -495,6 +495,25 @@ beside the frames with its record (`capture`, the frames as its input), and
 `objects_001.png` on are the frames with each track's id drawn where it was seen, so the
 counts are checked against the picture rather than taken on trust.
 
+## A reference's fixed places, and its minimap read
+
+A radar a few dozen pixels high is guessed from a contact sheet, not read (§PW380). A
+project declares a video's fixed places once, as `[reference.<name>]` in polyweave.toml
+(project-config.md): the source frame's `size`, `regions` as rectangles in its pixels,
+which region is the `minimap`, its `map` shape, the `player`'s blip colour and each other
+blip's. Frames of another size than `size` are refused (`capture.wrong-size`).
+
+`reference.regions(frames)` lays each region out on sheets of its own,
+`region_<name>_001.png` on, each tile enlarged `scale` times with nearest neighbour so a
+dot stays a dot, its time on it; a strip four times wider than tall is stacked one to a
+row. `reference.minimap(frames)` reads the minimap per frame: each blip of a declared
+colour within `blip_size` pixels, placed as shares across and down the region. On a
+`strip` map, whose left and right ends meet as a cylinder's do, a place is also an angle
+from 0 to 360, and each blip's angle from the player's, -180 to 180, says whether it is to
+the player's `left` or `right`; on a `rect` map the offset is the shares across and down.
+`minimap.json` lands beside the frames with how many of each blip stood on each side frame
+by frame, recorded with the frames as its input and the declaration as its params.
+
 ## Still to come in this block
 
 The service client itself, and the lock that stops two sessions spending at once.

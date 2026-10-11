@@ -42,7 +42,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "O", title: "A person sees and answers", open: 1 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
   { block: "Q", title: "Words held to the world", open: 0 },
-  { block: "R", title: "Levels measured before a person plays them", open: 12 },
+  { block: "R", title: "Levels measured before a person plays them", open: 11 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 1 },
   { block: "U", title: "A window on everything a project governs", open: 5 },
@@ -135,13 +135,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW205"],
   },
   {
-    id: "PW380",
-    block: "R",
-    symptom: "a reference video's radar and HUD cannot be declared as regions, and the blips on its radar cannot be read as positions",
-    why: "The radar is the only place a video shows what spawns off camera and on which side, and at a few dozen pixels it is guessed rather than read.",
-    deps: [],
-  },
-  {
     id: "PW384",
     block: "R",
     symptom: "nothing keeps a reference video, or the frames taken from it, out of the repository and out of what ships",
@@ -153,7 +146,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "R",
     symptom: "a reference video has no timeline of its score, flashes and sound onsets, so where each wave starts is found by eye",
     why: "Without anchors an agent spends frame reads finding where a stretch begins before it can read what happens in it.",
-    deps: ["PW380"],
+    deps: [],
   },
   {
     id: "PW382",

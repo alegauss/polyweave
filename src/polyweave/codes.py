@@ -1754,6 +1754,24 @@ CODES: dict[str, Code] = {
         ),
     ),
     # -- capture: the environment a picture is taken in ------------------------
+    "capture.unknown-reference": Code(
+        means="the reference video named is not one the project declares",
+        when="a name no [reference.<name>] table carries, or none where several do",
+        doors=("name one the answer lists",
+               "declare [reference.<name>] with its size and regions"),
+    ),
+    "capture.unknown-region": Code(
+        means="the region named is not the reference's, or it declares no minimap",
+        when="a region name the [reference.<name>] regions do not carry, or a minimap "
+        "read on a reference that names none",
+        doors=("name one of its regions", "set its minimap to one of its regions"),
+    ),
+    "capture.wrong-size": Code(
+        means="the frames are not the size the reference's regions were declared at",
+        when="frames read from another video, or the video resampled",
+        doors=("read the frames from the video the regions were taken from",
+               "declare the reference again at this size"),
+    ),
     "capture.no-reference-frames": Code(
         means="there are no frames to count objects in",
         when="a folder or frames.json reference.frames never wrote",
