@@ -743,6 +743,7 @@ follow-up.
 
 What Cottony needs that the kits lack is filed as friction and fixed in the kits:
 measured on 2026-10-10, the kits read only their own files, so its user://cottony.cfg
-needs a door into them (PW398, docs/specs/kit.md: `adopted()` and `ADOPTED`). Done when
-Cottony carries neither file, its own save test is replaced by the kit's acceptance, a
-save written by the current release loads after the swap, and its gate passes.
+needs a door into them (PW398, docs/specs/kit.md: `adopted()` and `ADOPTED`). The game's
+own side is Cottony's RK151. Done when Cottony carries neither file, its own save test
+is replaced by the kit's acceptance, a save written by the current release loads after
+the swap, and its gate passes.
