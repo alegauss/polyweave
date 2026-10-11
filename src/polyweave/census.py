@@ -108,6 +108,8 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.review:run": ("internal", "serve the page until interrupted"),
     "polyweave.reference_objects:declared": ("internal", "the kinds, checked"),
     "polyweave.reference_events:flashes": ("internal", "the frames that spike"),
+    "polyweave.reference_compare:counted": ("internal", "objects per frame, by second"),
+    "polyweave.reference_compare:nearest": ("internal", "the nearest second's index"),
     "polyweave.reference_events:onsets": ("internal", "the soundtrack's onsets"),
     "polyweave.reference_events:numbers": ("internal", "the numbers read, changed"),
     "polyweave.reference_events:drawn": ("internal", "the timeline as a picture"),

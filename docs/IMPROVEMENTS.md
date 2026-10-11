@@ -555,30 +555,6 @@ What polyweave should do:
 This is about a project not leaking what it was given to study, not about deciding
 whether a use is allowed; that stays the owner's.
 
-### §PW382 A rebuilt level compared with its reference video
-
-Found in spinhold (RK178): the deliverable is as much the list of places the rebuilt
-phase plays differently from the reference as the phase itself. Today that comparison is
-an agent looking at a capture of the game and the reference's frames separately and
-remembering both.
-
-What polyweave should do, as **`reference.compare`**:
-
-- Take a reference video (with `reference.frames`' frames) and a capture of the project's game
-  playing the rebuilt level (`capture.movie`, or a kept `game.replay`), and align them in
-  time from an anchor each side declares (the first enemy appearing, an event from
-  PW381, docs/specs/fetching.md, or a plain offset).
-- A **side-by-side sheet** per stretch: the reference frame and the game's frame at the
-  same second, with timestamps on both.
-- **Curves** from both sides on one chart: objects on screen per second (from PW379, docs/specs/fetching.md
-  on the reference, and from the game's own trace or the same detection on its
-  capture), and, where `measure.pressure` has the declared wave, its pressure curve beside them.
-- The seconds where the curves differ by more than a bound the call is given, listed
-  with the two frames, so each gap becomes a line an agent can file.
-
-polyweave shows and measures the difference; whether a difference is a bug or a choice
-is the owner's call through a sitting.
-
 ### §PW385 Worlds of a tier held level
 
 Spinhold made its shift a chart of worlds (RK210): tiers in order, each a choice of
@@ -638,6 +614,23 @@ Build both on the soundtrack and frames `reference.events` already reads:
 
 Done when a soundtrack drawn as two tones in turn yields one section event at the turn,
 and the sheet shows a flash's tick under the white frame.
+
+### §PW406 The declared pressure beside a rebuild's comparison
+
+`reference.compare` (PW382) charts how many objects each side shows over time, but its
+design also asked for the declared wave's pressure beside them: what the rebuilt level
+was meant to ask of the player, against what the video and the capture show it asking.
+Without it a gap reads as "the game shows three where the video shows five" and not as
+"the declaration asked for five and the game never spawned two of them".
+
+Let `reference.compare` take the rebuilt level's declared wave, as `measure.pressure`
+reads it, and an offset placing its zero on the reference's time. The pressure curve is
+drawn on the same chart on its own axis, and each gap carries the declared pressure at
+that second, so an agent can tell a spawning fault from a declaration that differs from
+the video. A call without a wave behaves as today.
+
+Done when a test's drawn game that drops two of a declared five shows the gap with the
+declared count beside it.
 
 ## Block S — Playing the game, not only rendering it
 

@@ -345,6 +345,7 @@
 - ✅ **PW379** **the enemies in a reference video's frames cannot be counted or followed, so an agent counts them by eye on every sheet** — reference.objects counts declared kinds in a video's frames, joins them into tracks and groups with formation and end, ids on sheets (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW380** **a reference video's radar and HUD cannot be declared as regions, and the blips on its radar cannot be read as positions** — A reference's regions are declared once; reference.regions enlarges each and reference.minimap reads blips as places from the player (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW381** **a reference video has no timeline of its score, flashes and sound onsets, so where each wave starts is found by eye** — reference.events lays a video's number changes, flashes and strong onsets on one timeline, listing what it could not read (design recorded in `docs/specs/fetching.md`).
+- ✅ **PW382** **a rebuilt level's capture cannot be aligned with the video it copies, so where it plays differently is found by memory** — reference.compare aligns a rebuild's capture with its reference video and lists, with both frames, each second whose counts differ (design recorded in `docs/specs/fetching.md`).
 
 ## Block S — Playing the game, not only rendering it
 

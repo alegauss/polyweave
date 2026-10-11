@@ -1388,6 +1388,26 @@ export interface PurchaseSpentArgs {
   service?: string
 }
 
+/** A rebuilt level's capture laid against the reference video it copies. */
+export interface ReferenceCompareArgs {
+  /** the reference video's frames folder, or its frames.json */
+  reference: string
+  /** the game's capture's frames folder, or its frames.json */
+  capture: string
+  /** the kinds of object counted, as reference.objects takes them */
+  kinds: Record<string, unknown>
+  /** the game's own kinds where its colours differ; kinds if empty */
+  capture_kinds?: Record<string, unknown>
+  /** seconds the game runs ahead of the reference; in s; default 0.0 */
+  offset?: number
+  /** align by this instead of offset */
+  anchor?: "" | "first"
+  /** objects the two sides may differ by before a second is a gap; from 0 to …; default 2 */
+  bound?: number
+  /** the project both are under; default "." */
+  root?: string
+}
+
 /** A timeline of a reference video's events, to split it into stretches at. */
 export interface ReferenceEventsArgs {
   /** the folder reference.frames wrote, or its frames.json */
@@ -2319,6 +2339,7 @@ export interface Operations {
   "purchase.reconcile": PurchaseReconcileArgs
   "purchase.remaining": PurchaseRemainingArgs
   "purchase.spent": PurchaseSpentArgs
+  "reference.compare": ReferenceCompareArgs
   "reference.events": ReferenceEventsArgs
   "reference.frames": ReferenceFramesArgs
   "reference.minimap": ReferenceMinimapArgs
@@ -2507,6 +2528,7 @@ export const OPERATIONS = [
   "purchase.reconcile",
   "purchase.remaining",
   "purchase.spent",
+  "reference.compare",
   "reference.events",
   "reference.frames",
   "reference.minimap",

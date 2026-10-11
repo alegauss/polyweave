@@ -142,13 +142,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW382",
-    block: "R",
-    symptom: "a rebuilt level's capture cannot be aligned with the video it copies, so where it plays differently is found by memory",
-    why: "The list of differences is half of what a rebuild is for, and two sources looked at apart miss the gaps one laid over the other would show.",
-    deps: [],
-  },
-  {
     id: "PW385",
     block: "R",
     symptom: "worlds offered on one tier of a route cannot be held level in whole threat and in what they give to save",
@@ -167,6 +160,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "R",
     symptom: "a reference video's timeline marks no change of music section, and is drawn apart from the frames its ticks fall in",
     why: "A new section of music is often the clearest end of a stretch, and a tick under its frame is read without opening the frames.",
+    deps: [],
+  },
+  {
+    id: "PW406",
+    block: "R",
+    symptom: "a rebuild's comparison with its reference shows no declared pressure, so a spawning fault reads like a choice",
+    why: "What the declaration asked for beside what both sides show is what tells a fault in the game from a wave declared differently.",
     deps: [],
   },
   {

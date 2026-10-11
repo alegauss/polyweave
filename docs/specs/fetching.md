@@ -536,6 +536,22 @@ the start:
 with the frames as its input, and `events.png` draws them a row a kind. Which event
 begins a wave stays the agent's reading.
 
+## A rebuilt level laid against its reference
+
+Where a rebuild plays differently was found by looking at the game and the video apart
+and remembering both (§PW382). `reference.compare(reference, capture, kinds)` takes both
+as `reference.frames` folders, the game's capture sampled from `capture.movie` the same
+way, and counts the objects of `kinds` in every frame of each (`capture_kinds` where the
+game's colours differ). It aligns them by `offset`, the seconds the game runs ahead, or
+by `anchor = "first"`, the first second an object shows on each side. Each reference
+second is paired with the game's nearest aligned frame; one aligned outside the game's
+footage by more than half its step is listed as `unmatched`, never compared with its
+edge frame. A second whose counts differ by more than `bound` is a gap, with both frames
+and both counts. `compare.json`, recorded with both sides as inputs, holds the counts,
+gaps and unmatched seconds; `compare_001.png` on pair the reference frame with the
+game's, and `compare_counts.png` charts both counts over the reference's time. A gap is
+a bug or a choice by the owner's word, not by this.
+
 ## Still to come in this block
 
 The service client itself, and the lock that stops two sessions spending at once.
