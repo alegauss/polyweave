@@ -590,33 +590,6 @@ It is not a test run. A change of plan that the owner asks for mid-way ("undo, t
 other palette") is part of what is being proved, because a revision a person refines
 several times is the case this block exists for.
 
-### §PW377 The decision screen drawn natively, from typed operations
-
-PW305 hosts the review page in an iframe, which keeps one verdict path, but the window
-cannot draw the decision screen itself. Half of what the page shows is no operation: the
-sitting list (`review.sittings`), gate lanes with ceilings (`review.looked_at`),
-turntables, the canon board (`style.board`), the old/new difference and the stale-code
-check. Its write, `review.answer`, turns drawn boxes into a mask tied to a digest before
-`verdict.judge`, and that is no operation either. In the owner's screenshot the page
-also spoke English inside a pt-BR window.
-
-Build, in parts:
-1. Landed: operations for every fact, `review.canon` beside them: `review.state` (the `/api/state` payload),
-   `review.compare`, and `review.answer` (masks, then `verdict.judge`, refused on
-   stale code as the page is).
-2. Landed as PW399, tools/operations_ts.py writing `gui/packages/core/src/operations.generated.ts`, from
-   `describe` (parameters, ranges, choices, payloads), with a test that fails when it
-   is stale, like `site/src/lib/roadmap.generated.ts`.
-3. The decision screen in React with viglet in `gui/packages/ui`: cards, mask drawing,
-   compare, sentence, lanes, canon. `tests/test_review_page.py` is the checklist of
-   behaviour it must keep (PW287 to PW293).
-4. One implementation: the same bundle, built into `src/polyweave/review_page/` and
-   checked fresh by a test, is what `python -m polyweave review` serves. The browser
-   and the window then run one code, which is what PW305 protected.
-
-The iframe and `?member=` stay until step 4 lands. Steps 3 and 4 are filed as PW400 to
-PW403, one id each.
-
 ## Block V — Parts every game repeats, installed already proved
 
 ### §PW368 Declared states and transitions

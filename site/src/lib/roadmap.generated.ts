@@ -45,7 +45,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "R", title: "Levels measured before a person plays them", open: 10 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
-  { block: "U", title: "A window on everything a project governs", open: 1 },
+  { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 2 },
 ];
 
@@ -146,13 +146,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "R",
     symptom: "a reference video is named by path each call, so a changed file is read silently and capture.run takes internal input",
     why: "A registered reference holds its hash and size once, so a reading is never of another file and a capture never runs on footage kept internal.",
-    deps: [],
-  },
-  {
-    id: "PW377",
-    block: "U",
-    symptom: "half the decision screen's facts and its masked write are no operation, so the window can only frame the Python page",
-    why: "The React decision screen, and the one bundle the browser and the window both serve, are still to build.",
     deps: [],
   },
   {
