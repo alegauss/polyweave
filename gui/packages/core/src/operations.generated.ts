@@ -1652,6 +1652,12 @@ export interface ReviewStateArgs {
   root?: string
 }
 
+/** The words the decision screen reads, in the project's language: the review catalog's page and every kind of sitting's, so a screen holds no copy (§PW400). */
+export interface ReviewWordsArgs {
+  /** the project the screen is for; default "." */
+  root?: string
+}
+
 /** Keep a person's request to change one item, against what they were looking at. */
 export interface RevisionAskArgs {
   /** the item, by the id project.inventory gives it */
@@ -2396,6 +2402,7 @@ export interface Operations {
   "review.canon": ReviewCanonArgs
   "review.compare": ReviewCompareArgs
   "review.state": ReviewStateArgs
+  "review.words": ReviewWordsArgs
   "revision.ask": RevisionAskArgs
   "revision.check": RevisionCheckArgs
   "revision.close": RevisionCloseArgs
@@ -2452,7 +2459,7 @@ export interface Operations {
 }
 
 /** The operations whose every argument may be left out. */
-export type Bare = "accept.verify" | "capture.declared" | "engine.check" | "engine.find" | "engine.perf" | "engine.states" | "game.crash_read" | "game.export_smoke" | "game.open" | "game.release_check" | "game.test" | "kit.list" | "kit.prove" | "loop.assets" | "loop.bounds" | "loop.pending" | "loop.runs" | "measure.available" | "measure.pressure" | "mesh.buy" | "offscreen.routes" | "picture.buy" | "project.check" | "project.init" | "project.inventory" | "provenance.credits" | "provenance.generated" | "provenance.outdated" | "provenance.unrecorded" | "provenance.verify" | "purchase.held" | "purchase.ledger" | "purchase.remaining" | "purchase.spent" | "render.plan" | "review.canon" | "review.state" | "revision.open" | "schema.read" | "sound.buy" | "sound.declared" | "sound.speak" | "style.read" | "tables.check" | "units.engine_scale" | "verdict.answers" | "voice.design" | "voice.lines" | "words.check" | "words.glyphs" | "words.unlisted" | "world.read" | "world.validate"
+export type Bare = "accept.verify" | "capture.declared" | "engine.check" | "engine.find" | "engine.perf" | "engine.states" | "game.crash_read" | "game.export_smoke" | "game.open" | "game.release_check" | "game.test" | "kit.list" | "kit.prove" | "loop.assets" | "loop.bounds" | "loop.pending" | "loop.runs" | "measure.available" | "measure.pressure" | "mesh.buy" | "offscreen.routes" | "picture.buy" | "project.check" | "project.init" | "project.inventory" | "provenance.credits" | "provenance.generated" | "provenance.outdated" | "provenance.unrecorded" | "provenance.verify" | "purchase.held" | "purchase.ledger" | "purchase.remaining" | "purchase.spent" | "render.plan" | "review.canon" | "review.state" | "review.words" | "revision.open" | "schema.read" | "sound.buy" | "sound.declared" | "sound.speak" | "style.read" | "tables.check" | "units.engine_scale" | "verdict.answers" | "voice.design" | "voice.lines" | "words.check" | "words.glyphs" | "words.unlisted" | "world.read" | "world.validate"
 
 /** Every operation `describe` listed when this file was written. */
 export const OPERATIONS = [
@@ -2588,6 +2595,7 @@ export const OPERATIONS = [
   "review.canon",
   "review.compare",
   "review.state",
+  "review.words",
   "revision.ask",
   "revision.check",
   "revision.close",

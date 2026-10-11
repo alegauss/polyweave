@@ -75,6 +75,22 @@ project's own server ends. "Where it is judged" on an item opens the page at
 `?member=<path>`, which scrolls to the card holding that file and outlines it. A browser
 given the same link lands on the same card.
 
+## Decide: the window's own decision screen
+
+Beside the hosted page, the Decide view draws the same sittings with the window's own
+components (§PW400), `ui/src/Decide.tsx`. It reads and writes through a `Desk`, `core`'s
+interface of `state`, `words`, `answer` and `file`, so the same screen can later run in a
+browser over the page's routes. The window's desk is three bridge channels the shell
+answers with the operations the page's routes call: `review.state`, `review.words` (the
+review catalog's `page` and `kinds` in the project's `[review] language`, so the screen
+holds no copy of the page's words) and `review.answer`, which keeps the answer in
+`answers.jsonl` exactly as the page does. What the page decides about a sitting (which
+are open and newest first, what a card shows, which choices it offers, the progress) is
+`core/src/desk.ts`. Open sittings are in full and finished ones fold under them; each
+family is a card with its badge, about, line, films or pictures, the choices as buttons
+saying what each leads to, the sentence, record, and "answer again" on an answered card.
+Marks, comparisons, the canon and gate runs are still the hosted page's.
+
 ## A change asked for, and the session that makes it
 
 "Ask for a change" on an item keeps the person's words as a revision (`revision.ask`) and

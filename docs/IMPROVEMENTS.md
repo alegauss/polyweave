@@ -617,27 +617,6 @@ Build, in parts:
 The iframe and `?member=` stay until step 4 lands. Steps 3 and 4 are filed as PW400 to
 PW403, one id each.
 
-### §PW400 Native decision cards in the window
-
-PW377's third step, first part. The window shows a project's verdicts only by framing
-the review page, so its decision screen speaks the page's words and not the window's,
-and nothing on it is drawn with the window's own components.
-
-Build `Decide.tsx` in gui/packages/ui over a small `Desk` interface (state, words,
-answer, file), so the same component later runs in the browser over the page's own
-routes (step 4). The window's `Desk` is three named bridge channels the shell answers
-through the typed SDK: `review.state`, `review.answer`, and a new `review.words`
-operation giving the project's language with the review catalog's `page` and `kinds`, so
-the screen reads review_page/locales and never a copy of it. Drawn, from
-src/polyweave/review_page/page.js: the open sittings newest first and the finished ones
-folded, each sitting's count and how to decide, and one card per family with its badge,
-about, picture, line or films, the choices as buttons saying what each leads to, the
-sentence, record, and an answered card's "answer again". Progress over the open
-sittings. It sits beside the hosted page, behind its own tab, until step 4.
-
-Done when the window's smoke run shows a sitting's cards in pt-BR and an answer given
-there lands in answers.jsonl as the page's does.
-
 ### §PW401 Marks and compare on the native screen
 
 PW377's third step, second part, after the native cards (PW400). A person says where a

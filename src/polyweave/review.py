@@ -500,6 +500,17 @@ def state(root: Annotated[str, Param("the project the page is for")] = ".") -> d
     }
 
 
+@operation("review.words")
+def words(root: Annotated[str, Param("the project the screen is for")] = ".") -> dict:
+    """The words the decision screen reads, in the project's language: the review
+    catalog's page and every kind of sitting's, so a screen holds no copy (§PW400)."""
+    from . import review_text
+
+    speaks = review_text.language(load(root).root)
+    said = review_text.catalog(speaks)
+    return {"language": speaks, "page": said["page"], "kinds": said.get("kinds", {})}
+
+
 @operation("review.canon")
 def canon(root: Annotated[str, Param("the project the page is for")] = ".") -> dict:
     """Each style family's canon board, as the page's canon tab draws it."""

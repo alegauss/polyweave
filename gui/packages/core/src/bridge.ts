@@ -3,6 +3,7 @@
 // every path and every process stays on the shell's side of it.
 
 import type { Server } from './client'
+import type { AnswerBody, State, Words } from './desk'
 import type { Engine } from './engine'
 import type { Kind, Page } from './inventory'
 
@@ -19,6 +20,9 @@ export const CHANNELS = {
   file: 'pw:file',
   revisions: 'pw:revisions',
   review: 'pw:review',
+  reviewState: 'pw:review-state',
+  reviewWords: 'pw:review-words',
+  reviewAnswer: 'pw:review-answer',
   revise: 'pw:revise',
   sessionStart: 'pw:session-start',
   sessionSay: 'pw:session-say',
@@ -55,6 +59,8 @@ export interface Smoke {
   shot?: string
   /** Open the project's verdicts, on the item's sitting where an item is named. */
   review?: boolean
+  /** Open the window's own decision screen, and answer this there when given (§PW400). */
+  decide?: boolean | { family: string; choice: string; why: string }
   /** Report only once the chosen item has changed on disk and been redrawn (§PW310). */
   follow?: boolean
   /** Ask for this change on the item and open a session on it (§PW306). */
@@ -75,6 +81,12 @@ export interface Bridge {
   revisions(project: string): Promise<string[]>
   /** The review page's address for the project, its server started on the first call. */
   review(project: string): Promise<string>
+  /** `review.state`: the sittings, their answers and what waits, as the page reads them. */
+  reviewState(project: string): Promise<State>
+  /** `review.words`: the review catalog's words in the project's language (§PW400). */
+  reviewWords(project: string): Promise<Words>
+  /** `review.answer`: a person's verdict on one family, the page's one write. */
+  reviewAnswer(project: string, body: AnswerBody): Promise<Record<string, unknown>>
   /** Keep a person's request to change an item, with `revision.ask` (§PW301). */
   revise(project: string, item: string, words: string): Promise<{ revision: string }>
   /** Open the session on a revision; one revision has one session, kept by its id. */

@@ -129,6 +129,30 @@ describe.skipIf(!existsSync(MAIN))('the window', () => {
     expect(url).toMatch(/^http:\/\/127\.0\.0\.1:\d+\/\?member=docs%2Frenders%2Ficon\.png$/)
   })
 
+  it('draws a sitting on its own decision screen in pt-BR, and keeps an answer given there', async () => {
+    const game = join(root, 'starship')
+    const config = join(game, 'polyweave.toml')
+    await writeFile(config, readFileSync(config, 'utf8') + '\n[review]\nlanguage = "pt-BR"\n')
+    const laid = spawnSync('python', [
+      '-m', 'polyweave', 'verdict.sitting',
+      '--families', JSON.stringify({ icon: [{ name: 'icon', new: 'docs/renders/icon.png' }] }),
+      '--out', 'review/first', '--root', game,
+    ])
+    expect(laid.status, laid.stderr?.toString()).toBe(0)
+    const drew = await opened(root, 'pt-BR', undefined, false, undefined, {
+      decide: { family: 'icon', choice: 'look', why: 'mais quente na borda' },
+    })
+    // Drawn natively, in the review catalog's words for the project's language.
+    expect(drew['decide']).toBe('pt-BR')
+    expect(drew['cards']).toEqual(['review/first/sitting.json#icon'])
+    expect(drew['how']).toEqual(['Aceitar:', 'Refazer:'])
+    expect(drew['badges']).toEqual(['Pedido para refazer'])
+    // The answer is the page's write: in answers.jsonl, as the page would keep it.
+    const kept = readFileSync(join(game, '.polyweave', 'answers.jsonl'), 'utf8').trim().split('\n')
+    const answer = JSON.parse(kept.at(-1)!) as Record<string, unknown>
+    expect(answer).toMatchObject({ sitting: 'review/first/sitting.json', family: 'icon', choice: 'look', why: 'mais quente na borda' })
+  })
+
   it('asks for a change and opens a session on it, beside the item', async () => {
     const fake = fakeClaude()
     try {

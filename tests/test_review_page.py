@@ -213,6 +213,16 @@ def test_the_state_operation_is_what_the_page_reads(page):
     assert review.state(str(where)) == served
 
 
+def test_the_words_operation_is_the_catalog_the_page_fetches(page):
+    """§PW400: the window's screen reads the page's own words, never a copy of them."""
+    base, where = page
+    said = review.words(str(where))
+    _, body, _ = get(base + "/locales/" + said["language"] + ".json")
+    served = json.loads(body)
+    assert said["page"] == served["page"]
+    assert said["kinds"] == served["kinds"]
+
+
 def test_the_canon_operation_is_what_the_page_reads(page):
     base, where = page
     _, body, _ = get(base + "/api/canon")

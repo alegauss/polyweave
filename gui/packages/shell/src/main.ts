@@ -6,7 +6,19 @@ import { writeFile } from 'node:fs/promises'
 
 import { app, BrowserWindow, ipcMain } from 'electron'
 
-import { CHANNELS, find, opening, page, said, type Kind, type Opened, type Revision, type Smoke } from '@pw/core'
+import {
+  call,
+  CHANNELS,
+  find,
+  opening,
+  page,
+  said,
+  type AnswerBody,
+  type Kind,
+  type Opened,
+  type Revision,
+  type Smoke,
+} from '@pw/core'
 
 import { agent } from './agent'
 import { Answers } from './answers'
@@ -90,6 +102,17 @@ ipcMain.handle(CHANNELS.revisions, async (_event, project: string) => {
 })
 ipcMain.handle(CHANNELS.review, async (_event, project: string) =>
   reviews.url(project, (await held.opened(project)).engine),
+)
+// The window's own decision screen reads and writes what the page does, through the
+// same operations, so the two cannot disagree (§PW400).
+ipcMain.handle(CHANNELS.reviewState, async (_event, project: string) =>
+  call((await held.opened(project)).client, 'review.state', { root: project }),
+)
+ipcMain.handle(CHANNELS.reviewWords, async (_event, project: string) =>
+  call((await held.opened(project)).client, 'review.words', { root: project }),
+)
+ipcMain.handle(CHANNELS.reviewAnswer, async (_event, project: string, body: AnswerBody) =>
+  call((await held.opened(project)).client, 'review.answer', { body: { ...body }, root: project }),
 )
 ipcMain.handle(CHANNELS.revise, async (_event, project: string, item: string, words: string) =>
   (await held.opened(project)).client.call('revision.ask', { item, words, root: project }),

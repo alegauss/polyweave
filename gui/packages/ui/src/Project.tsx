@@ -3,11 +3,12 @@
 // writes: what the window cannot draw itself is offered as the operation that would.
 
 import { Button } from '@viglet/viglet-design-system'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { KINDS, type Bridge, type Item, type Opened, type Smoke } from '@pw/core'
+import { KINDS, type Bridge, type Desk, type Item, type Opened, type Smoke, type State } from '@pw/core'
 
+import { Decide } from './Decide'
 import { ItemView } from './ItemView'
 
 /** What the list can be narrowed to. */
@@ -60,9 +61,23 @@ export function Project({
   const [talked, setTalked] = useState(false)
   const judge = (member?: string | null) =>
     void bridge.review(opened.project).then((url) => {
+      setDeciding(false)
       setFramed(false)
       setReviewing(member ? `${url}?member=${encodeURIComponent(member)}` : url)
     })
+  // The window's own decision screen, beside the hosted page until it replaces it (§PW400).
+  const [deciding, setDeciding] = useState(Boolean(smoke?.decide))
+  const [decided, setDecided] = useState<State | null>(null)
+  const desk = useMemo<Desk>(
+    () => ({
+      state: () => bridge.reviewState(opened.project),
+      words: () => bridge.reviewWords(opened.project),
+      answer: (body) => bridge.reviewAnswer(opened.project, body),
+      file: (path) => bridge.file(opened.project, path),
+    }),
+    [bridge, opened.project],
+  )
+  const scripted = typeof smoke?.decide === 'object' ? smoke.decide : undefined
   const shown = kept(items, filter, revised ?? [])
   const byKind = KINDS.map((kind) => [kind, shown.filter((i) => i.kind === kind)] as const).filter(
     ([, rows]) => rows.length > 0,
@@ -73,6 +88,9 @@ export function Project({
     if (!smoke || revised === null || (chosen && !drawn)) return
     if (smoke.review && !reviewing) return judge(chosen?.artefact)
     if (smoke.review && !framed) return
+    if (smoke.decide && !decided) return
+    // A scripted answer is reported once the screen has read it back from the files.
+    if (scripted && !decided?.answers.some((one) => one.family === scripted.family)) return
     if (smoke.ask && !talked) return
     if (smoke.follow && !(chosen && moved.includes(chosen.id))) return
     // A question waiting on the person is what a smoke run's picture is of.
@@ -100,10 +118,15 @@ export function Project({
         asked: [...document.querySelectorAll('[data-ask]')].map((one) => one.getAttribute('data-ask')),
         price: document.querySelector('[data-price]')?.getAttribute('data-price') ?? null,
         changed: document.querySelector('[data-changed]') !== null,
+        decide: document.querySelector('[data-decide]')?.getAttribute('lang') ?? null,
+        sittings: [...document.querySelectorAll('[data-sitting] h2')].map((one) => one.textContent),
+        cards: [...document.querySelectorAll('[data-card]')].map((one) => one.getAttribute('data-card')),
+        badges: [...document.querySelectorAll('[data-badge]')].map((one) => one.textContent),
+        how: [...document.querySelectorAll('[data-how] strong')].map((one) => one.textContent?.trim()),
       })
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [smoke, chosen, drawn, revised, reviewing, framed, talked, moved, bridge, opened])
+  }, [smoke, chosen, drawn, revised, reviewing, framed, talked, moved, bridge, opened, decided])
 
   return (
     <section className="flex flex-col gap-4">
@@ -127,16 +150,31 @@ export function Project({
       <div className="flex gap-2">
         <Button
           size="sm"
-          variant={reviewing ? 'outline' : 'default'}
-          onClick={() => setReviewing(null)}
+          variant={reviewing || deciding ? 'outline' : 'default'}
+          onClick={() => {
+            setReviewing(null)
+            setDeciding(false)
+          }}
         >
           {t('project.inventory')}
+        </Button>
+        <Button
+          size="sm"
+          variant={deciding ? 'default' : 'outline'}
+          onClick={() => {
+            setReviewing(null)
+            setDeciding(true)
+          }}
+        >
+          {t('project.decide')}
         </Button>
         <Button size="sm" variant={reviewing ? 'default' : 'outline'} onClick={() => judge()}>
           {t('project.verdicts')}
         </Button>
       </div>
-      {reviewing ? (
+      {deciding ? (
+        <Decide desk={desk} scripted={scripted} onDrawn={setDecided} />
+      ) : reviewing ? (
         <iframe
           data-review
           title={t('project.verdicts')}
