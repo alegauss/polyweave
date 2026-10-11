@@ -82,3 +82,60 @@ def test_a_video_that_is_not_there_is_refused(tmp_path):
     with pytest.raises(PolyweaveError) as refused:
         reference.frames(str(tmp_path / "none.mp4"), root=str(tmp_path))
     assert refused.value.code == "fetch.no-reference"
+
+
+# -- another game's footage stays internal (§PW384) ------------------------------------
+
+
+def _git(project, *args):
+    subprocess.run(["git", *args], cwd=project, check=True, capture_output=True)
+
+
+def test_frames_are_marked_internal_and_so_is_what_is_made_from_them(video):
+    from polyweave import reference_objects
+
+    source, project = video
+    found = reference.frames(str(source), rate=2, root=str(project))
+    assert provenance.read(found["manifest"], root=project)["internal"] is True
+    made = reference_objects.objects(
+        found["folder"], {"grey": {"colour": "#808080", "size": [1, 100000]}},
+        root=str(project))
+    # Two steps down, with no mark of its own, it is internal through its input.
+    assert "internal" not in provenance.read(made["objects"], root=project)
+    assert provenance.internal(made["objects"], project) is True
+
+
+def test_frames_written_outside_the_work_area_are_refused(video):
+    source, project = video
+    with pytest.raises(PolyweaveError) as refused:
+        reference.frames(str(source), out="../docs/frames", root=str(project))
+    assert refused.value.code in ("fetch.no-reference", "config.path-outside")
+    with pytest.raises(PolyweaveError) as refused:
+        reference.frames(str(source), out="docs/frames", root=str(project))
+    assert refused.value.code == "fetch.no-reference"
+
+
+def test_a_tracked_file_taken_from_a_reference_is_named_by_verify(video):
+    source, project = video
+    found = reference.frames(str(source), rate=2, root=str(project))
+    assert provenance.verify(str(project))["leaked"] == []
+    _git(project, "init", "-q")
+    _git(project, "add", "-f", found["manifest"])
+    leaked = provenance.verify(str(project))["leaked"]
+    assert [one["artefact"] for one in leaked] == [found["manifest"]]
+    assert provenance.verify(str(project))["sound"] is False
+
+
+def test_a_store_page_is_never_cut_from_internal_footage(video):
+    from polyweave import store
+
+    source, project = video
+    found = reference.frames(str(source), rate=2, root=str(project))
+    frame = f"{found['folder']}/t00000000.png"
+    provenance.write(provenance.build(
+        "picture", frame, inputs=[provenance.source("frames", found["manifest"],
+                                                    root=project)],
+        root=project), project)
+    with pytest.raises(PolyweaveError) as refused:
+        store.capsules(frame, frame, out="store", root=str(project))
+    assert refused.value.code == "store.internal-input"

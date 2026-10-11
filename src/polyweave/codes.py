@@ -1754,6 +1754,12 @@ CODES: dict[str, Code] = {
         ),
     ),
     # -- capture: the environment a picture is taken in ------------------------
+    "store.internal-input": Code(
+        means="a store page would be cut from a picture derived from internal footage",
+        when="a key art or logo whose record, or an input's, says internal: frames "
+        "of another game's video, or anything made from them",
+        doors=("cut the capsules from the game's own key art and logo",),
+    ),
     "capture.bad-transcription": Code(
         means="a transcription read from a reference video cannot be checked",
         when="a file not JSON or TOML, no rows, a row with no id or span, a row "

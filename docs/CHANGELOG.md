@@ -347,6 +347,7 @@
 - ✅ **PW380** **a reference video's radar and HUD cannot be declared as regions, and the blips on its radar cannot be read as positions** — A reference's regions are declared once; reference.regions enlarges each and reference.minimap reads blips as places from the player (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW381** **a reference video has no timeline of its score, flashes and sound onsets, so where each wave starts is found by eye** — reference.events lays a video's number changes, flashes and strong onsets on one timeline, listing what it could not read (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW382** **a rebuilt level's capture cannot be aligned with the video it copies, so where it plays differently is found by memory** — reference.compare aligns a rebuild's capture with its reference video and lists, with both frames, each second whose counts differ (design recorded in `docs/specs/fetching.md`).
+- ✅ **PW384** **nothing keeps a reference video, or the frames taken from it, out of the repository and out of what ships** — A reference's frames stay in the work area and mark all made from them internal; verify names what git tracks of it and store pages refuse it (design recorded in `docs/specs/provenance.md`).
 
 ## Block S — Playing the game, not only rendering it
 

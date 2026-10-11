@@ -236,6 +236,17 @@ def capsules(
     declared = _chosen(_store(store, here), shapes, store)
     _focused(focus)
     art_path, logo_path = here / key_art, here / logo
+    for given, path in ((key_art, art_path), (logo, logo_path)):
+        if provenance.internal(path, here):
+            # A store page is what ships first: nothing from a reference kept internal
+            # goes on it (§PW384).
+            raise PolyweaveError(
+                "store.internal-input",
+                f"{given} is derived from a reference kept internal, and a store page "
+                "is public",
+                "cut the capsules from the game's own key art and logo",
+                given=str(given),
+            )
     art, mark = _opened(art_path, "key art"), _opened(logo_path, "logo", here)
     vector = logo_path.suffix.lower() == ".svg"
     _large_enough(declared, art, None if vector else mark)

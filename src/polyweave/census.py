@@ -107,6 +107,8 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.review:server": ("internal", "the local page's server, behind `review`"),
     "polyweave.review:run": ("internal", "serve the page until interrupted"),
     "polyweave.reference_objects:declared": ("internal", "the kinds, checked"),
+    "polyweave.provenance:internal": ("internal", "whether a file is kept internal"),
+    "polyweave.provenance:leaked": ("internal", "tracked files kept internal; verify"),
     "polyweave.reference_events:flashes": ("internal", "the frames that spike"),
     "polyweave.reference_compare:counted": ("internal", "objects per frame, by second"),
     "polyweave.reference_transcription:read": ("internal", "a sheet, as written"),

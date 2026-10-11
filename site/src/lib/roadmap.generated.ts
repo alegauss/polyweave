@@ -128,13 +128,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW205"],
   },
   {
-    id: "PW384",
-    block: "R",
-    symptom: "nothing keeps a reference video, or the frames taken from it, out of the repository and out of what ships",
-    why: "A commercial game's footage given to study must stay internal, and today that rests on an agent remembering not to stage it.",
-    deps: [],
-  },
-  {
     id: "PW385",
     block: "R",
     symptom: "worlds offered on one tier of a route cannot be held level in whole threat and in what they give to save",
@@ -160,6 +153,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "R",
     symptom: "a rebuild's comparison with its reference shows no declared pressure, so a spawning fault reads like a choice",
     why: "What the declaration asked for beside what both sides show is what tells a fault in the game from a wave declared differently.",
+    deps: [],
+  },
+  {
+    id: "PW407",
+    block: "R",
+    symptom: "a reference video is named by path each call, so a changed file is read silently and capture.run takes internal input",
+    why: "A registered reference holds its hash and size once, so a reading is never of another file and a capture never runs on footage kept internal.",
     deps: [],
   },
   {

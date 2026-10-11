@@ -249,6 +249,14 @@ the work area, and its records describe that commit's files: read against this p
 every artefact rebuilt since reads as changed. Such a tree is left out of the walk, and of
 every read that walks the records, and named in `other_trees`.
 
+**What is kept internal never ships** (§PW384). A record may carry `internal: true`:
+`reference.frames` writes it on another game's footage, given to study. An artefact is
+internal where its own record says so or where any input's record is, followed through
+the inputs, so a track list or a transcription made from those frames is internal with no
+mark of its own. `verify` names under `leaked` each file git tracks that is internal, and
+is not sound while one is; `store.capsules` refuses an internal key art or logo
+(`store.internal-input`).
+
 **The other direction is asked too.** Walking the records cannot find an artefact that was
 produced without one: a mesh that was paid for, downloaded, committed and never recorded has
 no sidecar to start from, so nothing is reported and the project reads as sound. That is the

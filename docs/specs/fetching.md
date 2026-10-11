@@ -473,6 +473,12 @@ itself is never copied in:
 traced to the file it came from. What happened in the frames, what spawned where on what
 path, stays the agent's and the person's reading.
 
+**Another game's footage stays internal** (§PW384). The frames land under `[paths] work`,
+and an `out` outside it is refused, so no commit or export reaches them by default. Their
+record carries `internal: true`, and everything made from them is internal through its
+inputs: `provenance.verify` names any of it git tracks under `leaked`, and a store page is
+never cut from it (provenance.md).
+
 ## What moves in those frames, counted
 
 Counting twenty small enemies by eye on every sheet put miscounts in front of the owner

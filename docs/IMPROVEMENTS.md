@@ -509,29 +509,6 @@ What starship needs from polyweave:
 Until it lands, starship keeps the pass in `dev/` as the thinnest workaround, named
 against this line.
 
-### §PW384 A reference registered and kept internal
-
-Found in spinhold (RK178): the reference is a commercial game's gameplay, recorded by
-the owner, and it must stay an internal reference: never committed, never published with
-the site, and the frames taken from it neither. Today that rests on the agent
-remembering to keep the files out of git.
-
-What polyweave should do:
-
-- **A reference registered, not copied**: `reference.register` records a video by path
-  and hash in the work area (`.polyweave/references/`), with its duration, resolution and
-  frame rate, and every later reference call names it instead of a path. A video whose
-  hash changed is refused with a remedy.
-- **Kept out of the repository**: everything derived from a registered reference (frames,
-  sheets, tracks, timelines) is written under the work area and carries `internal: true`
-  in its `.prov.json`. `provenance.verify`, and `project.check`, fail when a file tracked
-  by git is derived from an internal reference, naming the file.
-- **Kept out of what ships**: `capture.run` and `store.capsules` refuse an input whose
-  record is internal.
-
-This is about a project not leaking what it was given to study, not about deciding
-whether a use is allowed; that stays the owner's.
-
 ### §PW385 Worlds of a tier held level
 
 Spinhold made its shift a chart of worlds (RK210): tiers in order, each a choice of
@@ -608,6 +585,24 @@ the video. A call without a wave behaves as today.
 
 Done when a test's drawn game that drops two of a declared five shows the gap with the
 declared count beside it.
+
+### §PW407 A reference registered once, and kept out of captures
+
+PW384 kept a reference's frames in the work area and marked everything made from them
+internal, so provenance's verify names what git tracks of it and a store page refuses
+it. Two parts of its design did not land.
+
+- **A reference registered, not named by path**: `reference.register` records a video
+  by path and SHA-256 in the work area, with its duration, resolution and frame rate,
+  and every later reference call (frames, regions, minimap, events) names it instead of
+  a path. A video whose hash changed since it was registered is refused, with a remedy
+  to register it again, so a reading is never silently of another file. The registration
+  is what a `[reference.<name>]`'s `size` is checked against.
+- **Kept out of what a capture runs**: `capture.run` refuses an input whose record is
+  internal, as `store.capsules` does, and `project.check` reports a leak as verify does.
+
+Done when a call naming a registered reference reads its frames, a changed video is
+refused, and capture.run refuses an internal input in a test.
 
 ## Block S — Playing the game, not only rendering it
 

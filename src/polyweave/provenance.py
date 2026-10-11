@@ -643,10 +643,13 @@ def verify(root: Annotated[str, ROOT] = ".") -> dict:
         ok.append(claimed)
 
     nowhere = unrecorded(where)
+    out_in_git = leaked(where)
     return {
         "root": str(where),
         "checked": len(ok) + len(missing) + len(changed) + len(unreadable),
-        "sound": not (missing or changed or unreadable or nowhere),
+        "sound": not (missing or changed or unreadable or nowhere or out_in_git),
+        # What git tracks that was taken from a reference kept internal (§PW384).
+        "leaked": out_in_git,
         "ok": ok,
         "missing": missing,
         "changed": changed,
@@ -673,6 +676,52 @@ def _over_crlf(artefact: Path, recorded: str | None) -> bool:
     if b"\r" in body or b"\n" not in body:
         return False
     return hashlib.sha256(body.replace(b"\n", b"\r\n")).hexdigest() == recorded
+
+
+def internal(
+    path: str | Path, root: str | Path = ".", _seen: set | None = None
+) -> bool:
+    """Whether an artefact is internal: its record says so, or an input's does (§PW384).
+
+    A reference video given to study is marked where it is first read, and everything
+    made from it inherits the mark through its record's inputs, so a contact sheet, a
+    track list or a transcription three steps down is as internal as the frames.
+    """
+    where = Path(root).resolve()
+    target = Path(path) if Path(path).is_absolute() else where / path
+    seen = _seen if _seen is not None else set()
+    if target in seen:
+        return False
+    seen.add(target)
+    if not sidecar(target, where).is_file():
+        return False
+    try:
+        record = read(target, where)
+    except PolyweaveError:
+        return False
+    if record.get("internal"):
+        return True
+    return any(
+        one.get("path") and internal(one["path"], where, seen)
+        for one in record.get("inputs") or ()
+    )
+
+
+def leaked(where: Path) -> list[dict]:
+    """Every file git tracks whose record is internal, so a reference never ships."""
+    import subprocess
+
+    done = subprocess.run(
+        ["git", "ls-files", "-z"], cwd=where, capture_output=True, check=False
+    )
+    if done.returncode:
+        return []
+    tracked = [p for p in done.stdout.decode("utf-8", "replace").split("\0") if p]
+    return [
+        {"artefact": path, "why": "derived from a reference kept internal"}
+        for path in tracked
+        if not path.endswith(SUFFIX) and internal(path, where)
+    ]
 
 
 def _own(where: Path) -> tuple[list[Path], list[str]]:

@@ -450,7 +450,21 @@ def frames(
                 given=str(one),
             )
         stretches.append((float(one[0]), float(one[1]), float(one[2])))
-    folder = config.path("paths.work", out or f"references/{source.stem}")
+    work = config.path("paths.work")
+    # Under the work area by default, as the spec has always said; an explicit `out` is
+    # a path under the project, and held to the work area below.
+    folder = (config.path("paths.work", out) if out
+              else work / "references" / source.stem)
+    if not folder.resolve().is_relative_to(work.resolve()):
+        # Frames of another game's footage live in the work area and nowhere a commit
+        # or an export reaches (§PW384).
+        raise PolyweaveError(
+            "fetch.no-reference",
+            f"{out} is outside the work area, and a reference's frames stay in it",
+            "leave out unset, or name a folder under "
+            f"{provenance.relative(work, here)}",
+            given=str(out),
+        )
     folder.mkdir(parents=True, exist_ok=True)
     taken: dict[int, Path] = {}
     with tempfile.TemporaryDirectory() as scratch:
@@ -499,6 +513,9 @@ def frames(
         inputs=[provenance.source("video", source, root=here)],
         params={"rate": float(rate), "ranges": listed["ranges"],
                 "changed": float(changed), "crop": list(crop) if crop else None},
+        # Another game's footage, given to study: kept out of the repository and out of
+        # what ships, and everything made from these frames inherits it (§PW384).
+        extra={"internal": True},
         root=here,
     )
     provenance.write(record, here)
