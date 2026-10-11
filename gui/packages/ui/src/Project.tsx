@@ -6,7 +6,7 @@ import { Button } from '@viglet/viglet-design-system'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { KINDS, type Bridge, type Desk, type Item, type Opened, type Smoke, type State } from '@pw/core'
+import { KINDS, type Board, type Bridge, type Desk, type Item, type Opened, type Smoke, type State } from '@pw/core'
 
 import { Decide } from './Decide'
 import { ItemView } from './ItemView'
@@ -75,10 +75,12 @@ export function Project({
       answer: (body) => bridge.reviewAnswer(opened.project, body),
       file: (path) => bridge.file(opened.project, path),
       compare: (old, now) => bridge.reviewCompare(opened.project, old, now),
+      canon: () => bridge.reviewCanon(opened.project),
     }),
     [bridge, opened.project],
   )
   const scripted = typeof smoke?.decide === 'object' ? smoke.decide : undefined
+  const [boards, setBoards] = useState<Board[] | null>(null)
   const shown = kept(items, filter, revised ?? [])
   const byKind = KINDS.map((kind) => [kind, shown.filter((i) => i.kind === kind)] as const).filter(
     ([, rows]) => rows.length > 0,
@@ -92,6 +94,8 @@ export function Project({
     if (smoke.decide && !decided) return
     // A scripted answer is reported once the screen has read it back from the files.
     if (scripted && !decided?.answers.some((one) => one.family === scripted.family)) return
+    if (smoke.canon && !boards) return
+    if (smoke.promote && !decided?.answers.some((one) => one.sitting.startsWith('gate:'))) return
     if (smoke.ask && !talked) return
     if (smoke.follow && !(chosen && moved.includes(chosen.id))) return
     // Pictures come across the bridge after the screen is drawn: a picture of the window
@@ -105,7 +109,7 @@ export function Project({
     }
     settle(0)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [smoke, chosen, drawn, revised, reviewing, framed, talked, moved, bridge, opened, decided])
+  }, [smoke, chosen, drawn, revised, reviewing, framed, talked, moved, bridge, opened, decided, boards])
 
   const report = () => {
     if (!smoke || revised === null) return
@@ -140,6 +144,12 @@ export function Project({
         how: [...document.querySelectorAll('[data-how] strong')].map((one) => one.textContent?.trim()),
         modes: [...document.querySelectorAll('[data-compare] [data-mode]')].map((one) => one.textContent),
         markers: document.querySelectorAll('[data-marker]').length,
+        gates: document.querySelectorAll('[data-gate]').length,
+        kept: document.querySelectorAll('[data-lane="kept"] [data-candidate]').length,
+        refused: document.querySelectorAll('[data-lane="refused"] [data-candidate]').length,
+        turntables: [...document.querySelectorAll('[data-turntable]')].map((one) => one.getAttribute('data-turntable')),
+        boards: [...document.querySelectorAll('[data-board]')].map((one) => one.getAttribute('data-board')),
+        pending: document.querySelectorAll('[data-pending] tbody tr').length,
       })
     })
   }
@@ -189,7 +199,14 @@ export function Project({
         </Button>
       </div>
       {deciding ? (
-        <Decide desk={desk} scripted={scripted} onDrawn={setDecided} />
+        <Decide
+          desk={desk}
+          scripted={scripted}
+          promote={smoke?.promote}
+          canon={smoke?.canon}
+          onDrawn={setDecided}
+          onBoards={setBoards}
+        />
       ) : reviewing ? (
         <iframe
           data-review

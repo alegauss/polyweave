@@ -96,7 +96,14 @@ with an old picture is compared side by side, by slider, by onion skin, and by t
 difference map `review.compare` draws (the `Desk`'s `compare`). A sound plays its old and
 new side by side, looped where it is a loop, with what was measured. The screen reads the
 files again every few seconds but never while a choice is picked, a word typed or a box
-drawn. The canon and gate runs are still the hosted page's.
+drawn. Under the sittings, "Advanced" (`ui/src/Advanced.tsx`, §PW402) holds the rest of
+the page: each gate run with its kept and refused lanes, every candidate's numbers, a
+comparison with what it is best compared with, and a sentence to take it into the canon
+or, refused, to promote it; each mesh's newest turntable frame by frame against the one
+before, and its front against the picture it was turned against; the canon boards with
+their palette, floors and pictures, each withdrawable, and candidates to admit, loaded
+only when asked through `review.canon` since they measure every picture; and where every
+asset stands. Each write is a `review.answer` gate, admit or withdraw body, as the page's.
 
 ## A change asked for, and the session that makes it
 

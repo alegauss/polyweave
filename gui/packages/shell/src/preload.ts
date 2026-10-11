@@ -20,6 +20,7 @@ const bridge: Bridge = {
   reviewWords: (project) => ipcRenderer.invoke(CHANNELS.reviewWords, project),
   reviewAnswer: (project, body) => ipcRenderer.invoke(CHANNELS.reviewAnswer, project, body),
   reviewCompare: (project, old, now) => ipcRenderer.invoke(CHANNELS.reviewCompare, project, old, now),
+  reviewCanon: (project) => ipcRenderer.invoke(CHANNELS.reviewCanon, project),
   revise: (project, item, words) => ipcRenderer.invoke(CHANNELS.revise, project, item, words),
   startSession: (project, revision) => ipcRenderer.invoke(CHANNELS.sessionStart, project, revision),
   say: (revision, text) => ipcRenderer.invoke(CHANNELS.sessionSay, revision, text),

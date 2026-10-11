@@ -181,6 +181,59 @@ describe.skipIf(!existsSync(MAIN))('the window', () => {
     expect(existsSync(join(game, answer.marks[0]!.mask))).toBe(true)
   })
 
+  it('draws the gate lanes, a turntable and the canon, and promotes a refused picture', async () => {
+    const game = join(root, 'starship')
+    const config = join(game, 'polyweave.toml')
+    await writeFile(config, readFileSync(config, 'utf8') + '\n[style]\ncanon = "canon"\npalette = ["#f2c14e"]\n')
+    // A real gate run against a one-picture canon, and a mesh turned by a stand-in bake.
+    const made = spawnSync('python', [
+      '-c',
+      [
+        'import json, sys',
+        'from pathlib import Path',
+        'from PIL import Image, ImageDraw',
+        'from polyweave import picture, shape',
+        'g = Path(sys.argv[1])',
+        'def drawn(path, box):',
+        '    image = Image.new("RGBA", (128, 128), (0, 0, 0, 0))',
+        '    ImageDraw.Draw(image).ellipse(box, fill=(242, 193, 78, 255))',
+        '    image.save(g / path)',
+        '(g / "canon").mkdir()',
+        'drawn("canon/c0.png", (14, 44, 114, 84))',
+        '(g / "canon" / "canon.json").write_text(json.dumps([{"picture": "c0.png", "sha256": "0",',
+        '    "verdict": {"choice": "accept", "why": "yes", "when": "2026-09-25"}}]))',
+        'drawn("outline.png", (14, 44, 114, 84))',
+        'drawn("wide.png", (15, 44, 115, 84))',
+        'drawn("dome.png", (44, 8, 84, 120))',
+        'picture.gate(["wide.png", "dome.png"], "outline.png", root=g)',
+        'def bake(report, *, out, model, rung, root, inline, azimuth, elevation):',
+        '    Image.new("RGBA", (16, 16), (100, 100, 100, 255)).save(out)',
+        '    return {"artefact": out}',
+        '(g / "m.glb").write_bytes(b"glTF")',
+        'shape.turntable("m.glb", out="turns/m", root=g, frames=4, bake=bake)',
+      ].join('\n'),
+      game,
+    ])
+    expect(made.status, made.stderr?.toString()).toBe(0)
+    const drew = await opened(root, 'en', undefined, false, undefined, {
+      decide: true,
+      canon: true,
+      promote: { picture: 'dome.png', why: 'the dome is what I wanted' },
+    })
+    // The refused beside the kept, for this run and the fixture's own, the mesh turned,
+    // and the canon on its board.
+    expect(drew['gates']).toBe(2)
+    expect(drew['kept']).toBe(2)
+    expect(drew['refused']).toBe(2)
+    expect(drew['turntables']).toEqual(['m'])
+    expect(drew['boards']).toEqual(['default'])
+    // The promotion is the page's write: an overruling of the gate, kept as an answer.
+    const kept = readFileSync(join(game, '.polyweave', 'answers.jsonl'), 'utf8').trim().split('\n')
+    const answer = JSON.parse(kept.at(-1)!) as { sitting: string; family: string; why: string }
+    expect(answer.sitting).toMatch(/^gate:/)
+    expect(answer).toMatchObject({ family: 'dome', why: 'the dome is what I wanted' })
+  })
+
   it('asks for a change and opens a session on it, beside the item', async () => {
     const fake = fakeClaude()
     try {

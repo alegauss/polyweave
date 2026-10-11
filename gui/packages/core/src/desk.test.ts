@@ -5,15 +5,19 @@ import { describe, expect, it } from 'vitest'
 import {
   choices,
   drawn,
+  figures,
   inPixels,
+  lanes,
   last,
   measuredOf,
+  narrower,
   ordered,
   progress,
   say,
   spanned,
   status,
   title,
+  turned,
   unready,
   visual,
   type Sitting,
@@ -96,6 +100,46 @@ describe('the decision screen', () => {
     const member = { name: 'hit', measured: { new: { peak_db: -1.2, loudness: -14, said: 'clipped' } } }
     expect(measuredOf(member, 'new')).toBe('peak_db -1.2, loudness -14')
     expect(measuredOf(member, 'old')).toBe('')
+  })
+
+  it("lays a gate run in two lanes, each candidate's numbers in lines", () => {
+    const run = {
+      id: 'g',
+      candidates: [
+        { picture: 'a.png', passed: true, failed: [], silhouette_iou: 0.99 },
+        {
+          picture: 'b.png',
+          passed: false,
+          failed: ['centroid moved'],
+          silhouette_iou: 0.6,
+          drift: { line_weight: { value: 4, canon: 3, floor: 0.5, which_way: 'heavier' } },
+        },
+      ],
+    }
+    const { kept, refused } = lanes(run)
+    expect([kept.map((one) => one.picture), refused.map((one) => one.picture)]).toEqual([['a.png'], ['b.png']])
+    expect(figures(WORDS, refused[0]!)).toEqual([
+      'b.png: silhouette IoU 0.6',
+      'centroid moved',
+      'line_weight 4 / 3 ± 0.5, heavier',
+    ])
+  })
+
+  it('turns each mesh against the one before, and names the floors a canon picture holds open', () => {
+    const frames = [{ azimuth: 0, picture: 'f.png' }]
+    expect(turned([{ asset: 'm', frames }, { asset: 'n', frames }, { asset: 'm', frames }]).map(([asset, all]) => [asset, all.length])).toEqual([
+      ['m', 2],
+      ['n', 1],
+    ])
+    const board = {
+      family: 'default',
+      palette: [],
+      floors: { line_weight: 2, hue: null },
+      pictures: [],
+      without: { 'c2.png': { line_weight: 1.2, hue: 0.1 } },
+    }
+    expect(narrower(board, 'c2.png')).toEqual(['line_weight 2 → 1.2'])
+    expect(narrower(board, 'c0.png')).toEqual([])
   })
 
   it('asks for a choice, and for words on anything but an accept', () => {

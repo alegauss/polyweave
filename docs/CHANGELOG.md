@@ -414,6 +414,7 @@
 - ✅ **PW378** **a revision's session can write outside its item through Bash, and neither the question nor the touched list sees it** — A Bash write outside a revision's item is found by its hook around the command, kept as touched and shown to session and window (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW400** **the window shows a project's verdicts only by framing the review page, never on its own decision screen** — The window's Decide view draws sittings and cards natively over a Desk, in the review catalog's words via review.words, and answers through review.answer (design recorded in `gui/README.md`).
 - ✅ **PW401** **the window's decision screen cannot mark where a picture is wrong or compare two versions of it** — The window's decision screen marks a picture in its own pixels, sent as masks, and compares old and new four ways through review.compare (design recorded in `gui/README.md`).
+- ✅ **PW402** **the window's decision screen shows no gate lanes, turntables, canon boards or pending table** — The window's decision screen draws gate lanes, turntables, canon boards and the pending table, and writes promotions, admissions and withdrawals via review.answer (design recorded in `gui/README.md`).
 
 ## Block V — Parts every game repeats, installed already proved
 

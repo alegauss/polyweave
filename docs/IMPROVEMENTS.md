@@ -617,23 +617,6 @@ Build, in parts:
 The iframe and `?member=` stay until step 4 lands. Steps 3 and 4 are filed as PW400 to
 PW403, one id each.
 
-### §PW402 Lanes, turntables and canon on the native screen
-
-PW377's third step, last part. Besides the sittings the review page shows each gate
-run's candidates in two lanes, kept and refused, with the numbers each was judged on and
-a door to promote a refused one or add it to a canon; the turntables of each mesh, frame
-by frame against the turntable before; the canon boards with their palette, floors,
-pictures and candidates, each withdrawable; and what waits on a person. The window's
-native screen has none of it.
-
-Port `gateRun`, `candidate`, `meshes`, `canonBoard` and the pending table from
-src/polyweave/review_page/page.js into `Decide.tsx`, reading `review.state` and
-`review.canon` on the `Desk` and writing through `review.answer` (gate, admit and
-withdraw bodies), the canon loaded only when asked, as the page does.
-
-Done when the window's smoke run on a project with a gate run, a turntable and a canon
-draws each, and a promotion from the window lands as the page's does.
-
 ### §PW403 One decision screen for the browser and the window
 
 PW377's fourth step. Once the native screen does all the page does (PW400 to PW402), two

@@ -84,12 +84,66 @@ export interface Recorded {
   at?: string
 }
 
+/** One picture a gate weighed, with the numbers it was judged on (§PW175). */
+export interface Candidate {
+  picture: string
+  passed: boolean
+  failed: string[]
+  silhouette_iou?: number
+  drift?: Record<string, { value: number; canon: number; floor: number; which_way?: string }>
+  unchecked?: string[]
+  bought?: { credits: number; service: string } | null
+  ceiling?: { left: number; unit: string } | null
+  /** What it is best compared with: the parent it was varied from, or the canon. */
+  compare?: { old: string; mode: string; mask: string | null } | null
+}
+
+export interface Gate {
+  id: string
+  at?: string
+  family?: string | null
+  chosen?: string | null
+  why?: string
+  candidates: Candidate[]
+}
+
+/** A mesh turned at the rig's own camera (§PW176). */
+export interface Turntable {
+  asset: string
+  at?: string
+  elevation?: number
+  frames: { azimuth: number; picture: string }[]
+  against?: string | null
+  front?: string | null
+}
+
+/** One style family's canon on a board (§PW177), as `review.canon` answers. */
+export interface Board {
+  family: string
+  palette: string[]
+  skeleton?: unknown
+  floors: Record<string, number | null>
+  pictures: { picture: string; path: string; verdict: { choice: string; when: string; why: string } }[]
+  without: Record<string, Record<string, number | null>>
+  says?: string
+  candidates?: { path: string }[]
+}
+
+export interface Waiting {
+  asset: string
+  waiting?: boolean
+  candidate?: string
+  judged?: string
+}
+
 export interface State {
   language: string
   project?: string | null
-  pending: { assets: { asset: string; waiting?: boolean; candidate?: string; judged?: string }[] }
+  pending: { assets: Waiting[] }
   sittings: Sitting[]
   answers: Recorded[]
+  gates?: Gate[]
+  turntables?: Turntable[]
 }
 
 /** The review catalog in one language: the page's words and each kind of sitting's. */
@@ -108,13 +162,64 @@ export interface AnswerBody {
   marks?: Mark[]
 }
 
+/** The page's other writes: a gate's picture promoted or taken into a canon, a candidate
+ * admitted to a canon, a canon picture withdrawn. Each is still `verdict.judge`'s. */
+export type Overrule =
+  | { gate: string; picture: string; choice: 'accept'; why: string; canon?: string }
+  | { canon: string; admit: string; why: string }
+  | { canon: string; withdraw: string; why: string }
+
 /** What a decision screen reads and writes through, wherever it runs. */
 export interface Desk {
   state(): Promise<State>
   words(): Promise<Words>
-  answer(body: AnswerBody): Promise<Record<string, unknown>>
+  answer(body: AnswerBody | Overrule): Promise<Record<string, unknown>>
   file(path: string): Promise<Shown>
   compare(old: string, now: string): Promise<Difference>
+  /** Every style family's canon board, read only when asked: it measures every picture. */
+  canon(): Promise<Board[]>
+}
+
+/** A gate run's candidates in two lanes, the kept and the refused beside them. */
+export function lanes(run: Gate): { kept: Candidate[]; refused: Candidate[] } {
+  return {
+    kept: run.candidates.filter((one) => one.passed),
+    refused: run.candidates.filter((one) => !one.passed),
+  }
+}
+
+/** A candidate's numbers as lines: the silhouette, what failed, each drift, what went unchecked. */
+export function figures(words: Words, one: Candidate): string[] {
+  const lines = [`${one.picture}: silhouette IoU ${one.silhouette_iou ?? '?'}`, ...one.failed]
+  for (const [measure, number] of Object.entries(one.drift ?? {})) {
+    lines.push(
+      `${measure} ${number.value} / ${number.canon} ± ${number.floor}` +
+        (number.which_way ? `, ${number.which_way}` : ''),
+    )
+  }
+  for (const gap of one.unchecked ?? []) lines.push(say(words, 'unchecked', { gap }))
+  if (one.bought) {
+    const left = one.ceiling ? say(words, 'left', { left: one.ceiling.left, unit: one.ceiling.unit }) : ''
+    lines.push(say(words, 'cost', { credits: one.bought.credits, service: one.bought.service }) + left)
+  }
+  return lines
+}
+
+/** Each asset's turntables, oldest first, so the newest is turned against the one before. */
+export function turned(turntables: Turntable[]): [string, Turntable[]][] {
+  const by = new Map<string, Turntable[]>()
+  for (const one of turntables) by.set(one.asset, [...(by.get(one.asset) ?? []), one])
+  return [...by]
+}
+
+/** The floors a canon picture holds open: each measure its absence would narrow. */
+export function narrower(board: Board, picture: string): string[] {
+  return Object.entries(board.without[picture] ?? {})
+    .filter(([measure, value]) => {
+      const floor = board.floors[measure]
+      return value !== null && floor !== null && floor !== undefined && value < floor
+    })
+    .map(([measure, value]) => `${measure} ${board.floors[measure]} → ${value}`)
 }
 
 /** The box two points span, rounded to whole pixels; null where it is too thin to mean one. */

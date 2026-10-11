@@ -21,6 +21,7 @@ import {
   title,
   unready,
   visual,
+  type Board,
   type Box,
   type Desk,
   type Difference,
@@ -32,6 +33,8 @@ import {
   type Words,
 } from '@pw/core'
 
+import { Advanced, type Promoted } from './Advanced'
+
 /** An answer a smoke run gives on the screen, as a person would. */
 export interface Scripted {
   family: string
@@ -41,10 +44,10 @@ export interface Scripted {
 }
 
 /** Where a file will show once it has come across the desk. */
-const Loading = () => <div data-loading className="h-24 w-48 animate-pulse rounded bg-muted" />
+export const Loading = () => <div data-loading className="h-24 w-48 animate-pulse rounded bg-muted" />
 
 /** A project file as a data URL, read once across the desk. */
-function useShown(desk: Desk, path: string | null): string | null {
+export function useShown(desk: Desk, path: string | null): string | null {
   const [source, setSource] = useState<string | null>(null)
   useEffect(() => {
     if (!path) return
@@ -144,8 +147,25 @@ type Mode = (typeof MODES)[number]
 
 /** Two versions in one place (§PW176): side by side, a slider, an onion skin, and a
  * difference map lit only above the noise floor. */
-function Compare({ desk, words, old, now }: { desk: Desk; words: Words; old: string; now: string }) {
-  const [mode, setMode] = useState<Mode>('slider')
+export function Compare({
+  desk,
+  words,
+  old,
+  now,
+  start = 'slider',
+  mask = null,
+}: {
+  desk: Desk
+  words: Words
+  old: string
+  now: string
+  /** The mode that suits what is compared; the person can switch. */
+  start?: string
+  /** Where an edit was allowed, shown over the slider (§PW174). */
+  mask?: string | null
+}) {
+  const [mode, setMode] = useState<Mode>((MODES as readonly string[]).includes(start) ? (start as Mode) : 'side')
+  const masked = useShown(desk, mask)
   const [at, setAt] = useState(50)
   const [difference, setDifference] = useState<Difference | string | null>(null)
   const before = useShown(desk, old)
@@ -169,6 +189,9 @@ function Compare({ desk, words, old, now }: { desk: Desk; words: Words; old: str
             className="absolute inset-0 h-full w-full [image-rendering:pixelated]"
             style={top}
           />
+        )}
+        {masked && 'clipPath' in top && (
+          <img src={masked} alt="" className="absolute inset-0 h-full w-full opacity-40 mix-blend-multiply" />
         )}
       </div>
       <input
@@ -266,7 +289,7 @@ const BADGE = {
   other: 'bg-sky-100 text-sky-900',
 } as const
 
-const when = (words: Words, at: string | undefined) => {
+export const when = (words: Words, at: string | undefined) => {
   const date = new Date(at ?? '')
   return Number.isNaN(date.getTime())
     ? (at ?? '')
@@ -274,7 +297,7 @@ const when = (words: Words, at: string | undefined) => {
 }
 
 /** A project file, carried across the desk and shown as it is. */
-function Shown({ desk, path, alt }: { desk: Desk; path: string; alt: string }) {
+export function Shown({ desk, path, alt }: { desk: Desk; path: string; alt: string }) {
   const source = useShown(desk, path)
   if (!source) return <Loading />
   return <img src={source} alt={alt} className="max-h-80 w-auto rounded border object-contain [image-rendering:pixelated]" />
@@ -599,13 +622,21 @@ function SittingView(props: {
 export function Decide({
   desk,
   scripted,
+  promote,
+  canon,
   onDrawn,
+  onBoards,
 }: {
   desk: Desk
   /** An answer a smoke run gives here, once its card is drawn. */
   scripted?: Scripted
+  /** A gate's refused picture a smoke run promotes (§PW402). */
+  promote?: Promoted
+  /** Load the canon boards at once, as a smoke run asks. */
+  canon?: boolean
   /** Called after each read is drawn, with whether the scripted answer is in. */
   onDrawn?: (state: State) => void
+  onBoards?: (boards: Board[]) => void
 }) {
   const [words, setWords] = useState<Words | null>(null)
   const [state, setState] = useState<State | null>(null)
@@ -664,6 +695,15 @@ export function Decide({
           ))}
         </details>
       )}
+      <Advanced
+        desk={desk}
+        words={words}
+        state={state}
+        promote={promote}
+        canon={canon}
+        onWritten={() => void read()}
+        onBoards={onBoards}
+      />
     </div>
   )
 }
