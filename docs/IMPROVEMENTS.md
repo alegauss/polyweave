@@ -292,27 +292,6 @@ Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
 ## Block K — Reached without reading the source
 
-### §PW386 Targets for a contrast taken with the other measures
-
-Spinhold RK200 measured how well a fight's targets stand out from the ring behind them.
-`python -m polyweave measure.take --subject art/renders/legibility-neon.png --measures
-'["contrast_min", "contrast_median"]'` is refused with spec.no-targets, whose remedy
-says "pass targets, each {at: [x, y], radius} or {box: [l, t, r, b]}, or a log whose
-lines say `target: <x> <y>`". But measure.take publishes no such parameter: passing
-`--targets art/renders/legibility-neon.targets` is refused by the CLI as an unrecognised
-argument, and `describe` lists subject, measures, region, alpha_floor, rung, root,
-target, against, display and delta only.
-
-The measure works inside an acceptance spec, where a predicate may carry `targets =
-"<log>"` (accept.py's ARGUMENTS), and measure.contrast takes the same log as `--log`.
-Learning that took reading src/polyweave/accept.py and contrast.py.
-
-Expected: measure.take takes `targets` (a list or a log path) and `ring`, as the spec's
-predicate does, so contrast_min and contrast_median can be asked for beside the other
-measures; or the refusal's remedy names measure.contrast and the spec key, rather than a
-parameter the operation does not have. Workaround used: measure.contrast --log for the
-reading, and the predicate's `targets` key in art/accept/legibility-*.accept.toml.
-
 ## Block L — What a run leaves as evidence
 
 ## Block M — What a game needs beyond the look

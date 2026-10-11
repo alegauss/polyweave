@@ -27,8 +27,6 @@
 
 ## Block K — Reached without reading the source
 
-- 📋 **PW386** (deps: —) **measure.take asks for contrast_min and refuses it for want of targets, yet takes no targets parameter** — The refusal names a door the operation does not have, so the agent reads the source to find the spec key and measure.contrast that do take them. → §PW386
-
 ## Block L — What a run leaves as evidence
 
 ## Block M — What a game needs beyond the look

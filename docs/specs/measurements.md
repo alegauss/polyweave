@@ -254,6 +254,9 @@ target's brighter half and the ring's. Over all targets:
   the worst shot (`contrast_min`, min 3) and not an average that hides it;
 - `delta_e_min`: the smallest colour distance, for a target that differs in hue alone.
 
+`measure.take` takes the same `targets`, `ring`, `radius` and `behind` (§PW386), so these
+are asked for beside the other measures of a picture; a file is read under the project.
+
 A predicate passes them `targets`: a list, or the path of a file, either a JSON list of
 targets (or `{"targets": [...]}`) or a log whose lines say `target: <x> <y> [radius]` or
 `target: box <l> <t> <r> <b>`, so the capture that placed the shots names them. It takes

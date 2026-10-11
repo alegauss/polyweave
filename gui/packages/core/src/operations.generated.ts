@@ -942,6 +942,14 @@ export interface MeasureTakeArgs {
   display?: unknown[]
   /** the difference changed_fraction counts */
   delta?: number
+  /** what contrast_min, contrast_median, delta_e_min and text_contrast_min measure: a list of {at: [x, y], radius}, {box: [...]} or {text: [...]}, or a log or JSON file of them under the project */
+  targets?: unknown
+  /** the pixels around a target its contrast is read against; from 1 to … */
+  ring?: number
+  /** a point target's radius where it gives none; from 0 to … */
+  radius?: number
+  /** the frame without its text, for text_contrast_min */
+  behind?: string
 }
 
 /** Buy one untextured mesh, from a prompt or a gated picture, against the ceiling. */

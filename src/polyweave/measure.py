@@ -1101,11 +1101,24 @@ def taken(
     ] = None,
     display: Annotated[list, Param("the size luma_bands counts at")] = None,
     delta: Annotated[float, Param("the difference changed_fraction counts")] = None,
+    targets: Annotated[
+        Any,
+        Param("what contrast_min, contrast_median, delta_e_min and text_contrast_min "
+              "measure: a list of {at: [x, y], radius}, {box: [...]} or {text: [...]}, "
+              "or a log or JSON file of them under the project"),
+    ] = None,
+    ring: Annotated[int, Param("the pixels around a target its contrast is read "
+                               "against", lo=1)] = None,
+    radius: Annotated[float, Param("a point target's radius where it gives none",
+                                   lo=0.0)] = None,
+    behind: Annotated[str, Param("the frame without its text, for text_contrast_min")]
+    = None,
 ) -> list[dict]:
     """Take measurements of a picture, each with the region and rung it was taken at.
 
-    `measure` is the same with any argument a measure takes; this names the four the
-    vocabulary has, so a caller reaching it by name can be told what they are.
+    `measure` is the same with any argument a measure takes; this names those the
+    vocabulary has, so a caller reaching it by name can be told what they are. The
+    contrast measures read `targets`, as a spec's predicate does (§PW386).
     """
     extra = {
         name: value
@@ -1114,13 +1127,19 @@ def taken(
             ("against", against),
             ("display", display),
             ("delta", delta),
+            ("targets", targets),
+            ("ring", ring),
+            ("radius", radius),
+            ("behind", behind),
         )
         if value is not None
     }
     here = Path(root)
     picture = Path(subject) if Path(subject).is_absolute() else here / subject
-    if isinstance(extra.get("against"), str):
-        extra["against"] = str(here / extra["against"])
+    # A file is a path under the project, never under wherever the process runs.
+    for key in ("against", "targets", "behind"):
+        if isinstance(extra.get(key), str) and not Path(extra[key]).is_absolute():
+            extra[key] = str(here / extra[key])
     return measure(
         picture,
         list(measures),

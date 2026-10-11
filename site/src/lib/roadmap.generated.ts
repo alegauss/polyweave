@@ -35,7 +35,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "H", title: "Proof on a real game", open: 4 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
-  { block: "K", title: "Reached without reading the source", open: 1 },
+  { block: "K", title: "Reached without reading the source", open: 0 },
   { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 0 },
@@ -76,13 +76,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "a camera move cannot be declared as a clip or played by the game, so a cutscene's shots are numbers in the project",
     why: "No shot is yet captured onto a sitting for a person to accept, and Starship's opening still reads its own JSON.",
-    deps: [],
-  },
-  {
-    id: "PW386",
-    block: "K",
-    symptom: "measure.take asks for contrast_min and refuses it for want of targets, yet takes no targets parameter",
-    why: "The refusal names a door the operation does not have, so the agent reads the source to find the spec key and measure.contrast that do take them.",
     deps: [],
   },
   {

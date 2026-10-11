@@ -238,3 +238,34 @@ def test_a_box_with_no_glyphs_in_it_is_refused(tmp_path):
         contrast.measured("bare.png", targets=[{"text": [4, 4, 40, 15]}],
                           root=str(tmp_path))
     assert refused.value.code == "spec.no-targets"
+
+
+def test_measure_take_takes_targets_beside_the_other_measures(tmp_path):
+    # §PW386: measure.take refused contrast_min for want of targets and had no door
+    # to pass them; the predicate's own key and measure.contrast were the only way.
+    from polyweave import describe, measure
+
+    field(tmp_path / "combat.png", shots=(((20, 20), (255, 255, 255)),
+                                          ((60, 30), (60, 60, 60))))
+    (tmp_path / "logs").mkdir()
+    (tmp_path / "logs" / "run.log").write_text(
+        "target: 20 20 2\ntarget: box 58 28 62 32\n", encoding="utf-8")
+    taken = measure.taken("combat.png", ["contrast_min", "contrast_median", "luma_p99"],
+                          targets="logs/run.log", ring=3, root=str(tmp_path))
+    said = {one["measure"]: one["value"] for one in taken}
+    expected = contrast.measured("combat.png", log="logs/run.log", ring=3,
+                                 root=str(tmp_path))
+    assert said["contrast_min"] == pytest.approx(expected["contrast_min"])
+    assert "luma_p99" in said
+    names = {p["name"] for p in describe.describe("measure.take")["parameters"]}
+    assert {"targets", "ring", "radius", "behind"} <= names
+
+
+def test_a_contrast_asked_with_no_targets_names_the_doors_that_take_them(tmp_path):
+    from polyweave import measure
+
+    field(tmp_path / "combat.png")
+    with pytest.raises(PolyweaveError) as refused:
+        measure.taken("combat.png", ["contrast_min"], root=str(tmp_path))
+    assert refused.value.code == "spec.no-targets"
+    assert "measure.take" in refused.value.remedy

@@ -120,8 +120,9 @@ def _read(targets: Any, root: Path, radius: float = RADIUS) -> list[dict]:
         raise PolyweaveError(
             "spec.no-targets",
             "no target to measure contrast at",
-            "pass targets, each {at: [x, y], radius} or {box: [l, t, r, b]}, or a log "
-            "whose lines say `target: <x> <y>`",
+            "pass targets (measure.take and measure.contrast take them, a spec's "
+            "predicate as `targets`), each {at: [x, y], radius} or "
+            "{box: [l, t, r, b]}, or a log whose lines say `target: <x> <y>`",
         )
     return found
 
