@@ -488,24 +488,6 @@ What starship needs from polyweave:
 Until it lands, starship keeps the pass in `dev/` as the thinnest workaround, named
 against this line.
 
-### §PW407 A reference registered once, and kept out of captures
-
-PW384 kept a reference's frames in the work area and marked everything made from them
-internal, so provenance's verify names what git tracks of it and a store page refuses
-it. Two parts of its design did not land.
-
-- **A reference registered, not named by path**: `reference.register` records a video
-  by path and SHA-256 in the work area, with its duration, resolution and frame rate,
-  and every later reference call (frames, regions, minimap, events) names it instead of
-  a path. A video whose hash changed since it was registered is refused, with a remedy
-  to register it again, so a reading is never silently of another file. The registration
-  is what a `[reference.<name>]`'s `size` is checked against.
-- **Kept out of what a capture runs**: `capture.run` refuses an input whose record is
-  internal, as `store.capsules` does, and `project.check` reports a leak as verify does.
-
-Done when a call naming a registered reference reads its frames, a changed video is
-refused, and capture.run refuses an internal input in a test.
-
 ## Block S — Playing the game, not only rendering it
 
 ## Block T — Adopting polyweave in a project

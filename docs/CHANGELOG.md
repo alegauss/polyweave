@@ -353,6 +353,7 @@
 - ✅ **PW404** **reference.objects tells kinds apart by colour and size alone, so two enemies of one colour count as one kind** — A kind in reference.objects may name sample crops and a match, so one colour is told apart by shape and a flaring kind is kept (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW405** **a reference video's timeline marks no change of music section, and is drawn apart from the frames its ticks fall in** — reference.events marks music sections by a novelty curve over the soundtrack, and draws each event's tick under the thumbnail it falls in (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW406** **a rebuild's comparison with its reference shows no declared pressure, so a spawning fault reads like a choice** — reference.compare takes the declared wave and where it starts, charts its pressure and gives each gap what the wave had alive then (design recorded in `docs/specs/fetching.md`).
+- ✅ **PW407** **a reference video is named by path each call, so a changed file is read silently and capture.run takes internal input** — reference.register keeps a video's digest so a changed file is refused, and capture.run and project.check catch internal footage (design recorded in `docs/specs/fetching.md`).
 
 ## Block S — Playing the game, not only rendering it
 

@@ -123,6 +123,8 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.reference_events:sections": ("internal", "where the music turns"),
     "polyweave.reference_events:thumbnailed": ("internal", "the timeline's frames"),
     "polyweave.reference_events:placed": ("internal", "an event's thumbnail"),
+    "polyweave.reference_register:registered": ("internal", "the registry, by name"),
+    "polyweave.reference_register:video_of": ("internal", "a named video, checked"),
     "polyweave.reference_objects:islands": ("internal", "a mask's islands, labelled"),
     "polyweave.reference_objects:detect": ("internal", "one frame's objects"),
     "polyweave.reference_objects:likeness": ("internal", "a crop against its samples"),

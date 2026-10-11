@@ -370,7 +370,12 @@ def events(
     found += flashes(shown, folder, regions.get(play) if play else None)
     heard, why = [], "not asked for"
     if sound:
+        from .reference_register import video_of
+
         video = Path(str(listed.get("video", "")))
+        if video.is_file():
+            # The soundtrack is the registered video's, never a file swapped in since.
+            video, _ = video_of(str(listed.get("reference") or video), here)
         mono, why = soundtrack(video) if video.is_file() else (
             None, "the video frames.json names is not there")
         if mono is not None:

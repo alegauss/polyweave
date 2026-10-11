@@ -477,7 +477,21 @@ path, stays the agent's and the person's reading.
 and an `out` outside it is refused, so no commit or export reaches them by default. Their
 record carries `internal: true`, and everything made from them is internal through its
 inputs: `provenance.verify` names any of it git tracks under `leaked`, and a store page is
-never cut from it (provenance.md).
+never cut from it (provenance.md). Nor does a capture run on it (§PW407): `capture.run`
+refuses a scene script, or a path among its arguments (a `--name=value` read by its
+value), that is internal, with `capture.internal-input`, and `project.check` reports
+what git tracks of it as `adopt.internal-tracked`.
+
+**A reference registered once** (§PW407). Named by path each call, a video replaced or
+re-encoded between two calls was read as the same one. `reference.register(video, name)`
+keeps it in the work area's `references/registered.json`: its path, SHA-256, size and
+modification time, and the width, height, frame rate and duration ffprobe reads. A
+`[reference.<name>]` declared at another size than the video is refused then, as
+`capture.wrong-size`. `reference.frames` takes the name in place of a path, and checks a
+path that is registered as well; `frames.json` keeps the name under `reference`. A
+registered video whose size or time moved is hashed again, and one whose digest moved is
+refused as `fetch.reference-changed`, with the call that registers it again; so is
+`reference.events`' reading of the soundtrack the frames came from.
 
 ## What moves in those frames, counted
 

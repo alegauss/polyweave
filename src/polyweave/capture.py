@@ -804,6 +804,23 @@ def movie(
         shutil.rmtree(raw, ignore_errors=True)
 
 
+def _not_internal(script: str, args, root: str) -> None:
+    """Refuse a capture whose script, or a file an argument names, is internal: another
+    game's footage given to study is never what a capture of this game runs on."""
+    here = load(root).root
+    named = [script] + [str(one).split("=", 1)[-1] for one in args]
+    for one in named:
+        path = Path(one) if Path(one).is_absolute() else here / one
+        if one and path.is_file() and provenance.internal(path, here):
+            raise PolyweaveError(
+                "capture.internal-input",
+                f"{one} is derived from a reference kept internal, and a capture runs "
+                "on the game's own files",
+                "run the capture on the game's own scene and files",
+                given=str(one),
+            )
+
+
 @operation("capture.run", kind="capture")
 def taken(
     script: Annotated[str, Param("the scene script, as a path under the project")],
@@ -849,8 +866,10 @@ def taken(
     `OS.get_cmdline_user_args()` ahead of the environment's `name=value` pairs.
     `until_visible` retries a run whose subject was off screen (§PW242). `frames` and
     `timeout` size a run that flies to a late moment, which the project's budget would
-    end before it printed its line (§PW251).
+    end before it printed its line (§PW251). A script, or a path among its arguments,
+    derived from a reference kept internal is refused (§PW407).
     """
+    _not_internal(script, args or (), root)
     how = {
         "expect": expect,
         "root": root,

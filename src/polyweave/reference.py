@@ -387,7 +387,10 @@ SHEET_GRID, TILE = 4, 320
 
 @operation("reference.frames")
 def frames(
-    video: Annotated[str, Param("the gameplay video, anywhere; it is never copied in")],
+    video: Annotated[
+        str, Param("a reference.register name, or the gameplay video's path; it is "
+                   "never copied in")
+    ],
     *,
     rate: Annotated[float, Param("frames a second across the video", lo=0.01)] = 2.0,
     ranges: Annotated[
@@ -420,10 +423,12 @@ def frames(
     import tempfile
 
     from . import provenance
+    from .reference_register import video_of
 
     config = load(root)
     here = config.root
-    source = Path(video) if Path(video).is_absolute() else here / video
+    # A registered video by its name, refused if it is not the file registered (§PW407).
+    source, registered_as = video_of(video, here)
     if not source.is_file():
         raise PolyweaveError(
             "fetch.no-reference",
@@ -498,6 +503,7 @@ def frames(
     cropped = _sheets(names, folder, "crop", crop) if crop else []
     listed = {
         "video": source.resolve().as_posix(),
+        "reference": registered_as,
         "rate": float(rate),
         "ranges": [list(one) for one in stretches[1:]],
         "changed": float(changed),

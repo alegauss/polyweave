@@ -112,7 +112,8 @@ from polyweave.errors import PolyweaveError
 #: 133,519 with measure.take's targets, ring, radius and behind (§PW386).
 #: 134,436 with review.words (§PW400), reference.objects' samples (§PW404) and
 #: reference.compare's declared wave (§PW406).
-DESCRIBE = 135_000
+#: 135,074 with reference.register and capture.run's internal refusal (§PW407).
+DESCRIBE = 135_700
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -201,7 +202,8 @@ DESCRIBE = 135_000
 #: 145,993 with measure.take's contrast arguments (§PW386).
 #: 146,910 with review.words, reference.objects' samples and reference.compare's wave
 #: (§PW400, §PW404, §PW406).
-CAPABILITIES = 147_500
+#: 147,627 with reference.register and its three codes (§PW407).
+CAPABILITIES = 148_400
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

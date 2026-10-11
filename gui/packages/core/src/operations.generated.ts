@@ -1454,7 +1454,7 @@ export interface ReferenceEventsArgs {
 
 /** A reference video sampled into frames and contact sheets an agent can read. */
 export interface ReferenceFramesArgs {
-  /** the gameplay video, anywhere; it is never copied in */
+  /** a reference.register name, or the gameplay video's path; it is never copied in */
   video: string
   /** frames a second across the video; from 0.01 to …; default 2.0 */
   rate?: number
@@ -1531,6 +1531,16 @@ export interface ReferenceRegionsArgs {
   /** how many times each region is enlarged; from 1 to …; default 4 */
   scale?: number
   /** the project the frames are under; default "." */
+  root?: string
+}
+
+/** Register a reference video once, so later calls name it and a changed file is refused (§PW407). */
+export interface ReferenceRegisterArgs {
+  /** the gameplay video, anywhere; it is never copied in */
+  video: string
+  /** what later calls name it by; the video's file name if empty */
+  name?: string
+  /** the project the registry is kept in; default "." */
   root?: string
 }
 
@@ -2400,6 +2410,7 @@ export interface Operations {
   "reference.pick": ReferencePickArgs
   "reference.prepare": ReferencePrepareArgs
   "reference.regions": ReferenceRegionsArgs
+  "reference.register": ReferenceRegisterArgs
   "reference.transcribed": ReferenceTranscribedArgs
   "reference.transcription": ReferenceTranscriptionArgs
   "render.bake": RenderBakeArgs
@@ -2593,6 +2604,7 @@ export const OPERATIONS = [
   "reference.pick",
   "reference.prepare",
   "reference.regions",
+  "reference.register",
   "reference.transcribed",
   "reference.transcription",
   "render.bake",

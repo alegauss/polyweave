@@ -567,6 +567,13 @@ CODES: dict[str, Code] = {
         when="a shape check with no reference, or one pointing at a path that is empty",
         doors=("point it at the drawing that asked for this shape",),
     ),
+    "fetch.reference-changed": Code(
+        means="a registered reference video is not the file it was registered as",
+        when="the video was replaced, re-encoded or cut since reference.register "
+        "took its digest, so a reading would silently be of another file (§PW407)",
+        doors=("register it again with reference.register",
+               "put back the video that was registered"),
+    ),
     "fetch.no-schema": Code(
         means="nothing is known about what this service accepts",
         when="a payload checked before the schema has been learned once",
@@ -1139,6 +1146,12 @@ CODES: dict[str, Code] = {
         means="produced files carry no provenance record",
         when="an artefact made outside polyweave, or a record deleted",
         doors=("produce it again through polyweave", "list it under handmade"),
+    ),
+    "adopt.internal-tracked": Code(
+        means="git tracks a file derived from a reference kept internal",
+        when="frames of another game's video, or something made from them, committed "
+        "where only the work area should hold it (§PW407)",
+        doors=("remove it from git and keep it in the work area",),
     ),
     # -- words: the text a player reads ---------------------------------------
     "words.no-table": Code(
@@ -1766,6 +1779,12 @@ CODES: dict[str, Code] = {
         when="a key art or logo whose record, or an input's, says internal: frames "
         "of another game's video, or anything made from them",
         doors=("cut the capsules from the game's own key art and logo",),
+    ),
+    "capture.internal-input": Code(
+        means="a capture would run on something derived from internal footage",
+        when="a scene script, or a path among its arguments, whose record or an "
+        "input's says internal (§PW407)",
+        doors=("run the capture on the game's own scene and files",),
     ),
     "capture.bad-transcription": Code(
         means="a transcription read from a reference video cannot be checked",

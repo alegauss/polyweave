@@ -474,6 +474,19 @@ def check(root: Annotated[str, Param("the adopted project")] = ".") -> dict:
                 "under [provenance] handmade",
             )
         )
+    from .provenance import leaked
+
+    # What git tracks that was taken from a reference kept internal (§PW407).
+    tracked = leaked(here)
+    if tracked:
+        said(
+            PolyweaveError(
+                "adopt.internal-tracked",
+                f"git tracks {len(tracked)} file(s) derived from a reference kept "
+                f"internal, the first {tracked[0]['artefact']}",
+                "remove them from git (git rm --cached) and keep them in the work area",
+            )
+        )
     _godot(here, said)
     return _checked(found)
 
