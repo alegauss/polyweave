@@ -211,6 +211,13 @@ actions that game has. A pad binding the store puts in force answers every pad, 
 project's own do, and never pad 0 alone (0.2.2). Since 0.2.0 it contributes the `controls` tab to the options
 screen, a row opening its screen.
 
+A game that kept its players' bindings before the kit loses none of them (§PW397, 0.3.0).
+Its `res://polyweave_remap.gd` declares `const FROM := [<file>, <section>]`, and on the
+first load with no file of the kit's own, the codes under each action's name in that
+section are taken, with a `deadzone` and `invert_vertical` where it kept them, written to
+the kit's file at once and said in `said`. The older file is left as it was, and is not
+read again once the kit has its own.
+
 **menus** (§PW346, requires prompts): a main menu, a pause menu and a yes-or-no confirm
 a pad can drive. `PolyweaveMenu` makes a button per item, named by the item and
 labelled `tr(item)`, links focus top to bottom and round again, and follows the family

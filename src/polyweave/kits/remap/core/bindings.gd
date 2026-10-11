@@ -11,6 +11,10 @@ extends RefCounted
 ## beside the bindings in one file under user://.
 
 const FILE := "user://polyweave_bindings.cfg"
+## The project's own declaration (§PW397): `const FROM := ["user://settings.cfg",
+## "controls"]` names the file and section a game kept its players' bindings in before
+## the kit, so the first launch with the kit takes them instead of resetting them.
+const PROJECT := "res://polyweave_remap.gd"
 ## how far a stick or trigger must move to be read as a binding
 const AXIS_PRESS := 0.6
 
@@ -20,13 +24,20 @@ var deadzone := 0.5
 var invert_vertical := false
 var _defaults := {}
 var _path := FILE
+## where the game kept its bindings before the kit, [file, section], or empty
+var from: Array = []
+## what the last load had to say: bindings taken from an older file
+var said: Array[String] = []
 
 
-func _init(rebindable: Array = [], path := FILE) -> void:
+func _init(rebindable: Array = [], path := FILE, project := PROJECT) -> void:
 	_path = path
 	actions = rebindable if not rebindable.is_empty() else _project_actions()
 	for action in actions:
 		_defaults[action] = defaults(action)
+	if ResourceLoader.exists(project):
+		var declared: Dictionary = (load(project) as GDScript).get_script_constant_map()
+		from = Array(declared.get("FROM", []))
 
 
 static func _project_actions() -> Array:
@@ -189,10 +200,13 @@ func save() -> void:
 	file.save(_path)
 
 
-## what was kept, put back in force; a code that no longer reads is left out
+## what was kept, put back in force; a code that no longer reads is left out. With no
+## file of the kit's own yet, the bindings the game kept before are taken (§PW397).
 func load_kept() -> void:
+	said.clear()
 	var file := ConfigFile.new()
 	if file.load(_path) != OK:
+		_adopt()
 		return
 	deadzone = float(file.get_value("pad", "deadzone", deadzone))
 	invert_vertical = bool(file.get_value("pad", "invert_vertical", invert_vertical))
@@ -201,3 +215,31 @@ func load_kept() -> void:
 		if codes is Array:
 			apply(action, (codes as Array).filter(func(c: Variant) -> bool:
 				return c is String and decode(c) != null))
+
+
+## the bindings the game kept before the kit, under each action's name in the declared
+## section, with a deadzone and inverted vertical where it kept them; written to the
+## kit's own file at once, the older file left as it was, and said
+func _adopt() -> void:
+	if from.size() != 2:
+		return
+	var older := ConfigFile.new()
+	if older.load(str(from[0])) != OK:
+		return
+	var section := str(from[1])
+	var took := 0
+	for action in actions:
+		var codes: Variant = older.get_value(section, action, null)
+		if codes is Array:
+			var kept := (codes as Array).filter(func(c: Variant) -> bool:
+				return c is String and decode(c) != null)
+			if not kept.is_empty():
+				apply(action, kept)
+				took += 1
+	if older.has_section_key(section, "deadzone"):
+		set_deadzone(float(older.get_value(section, "deadzone")))
+	if older.has_section_key(section, "invert_vertical"):
+		invert_vertical = bool(older.get_value(section, "invert_vertical"))
+	save()
+	said.append("took %d bindings from %s [%s], which stays as it was"
+		% [took, from[0], section])

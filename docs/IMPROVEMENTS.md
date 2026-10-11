@@ -723,8 +723,8 @@ kit, never patched in the game, so the extraction ends with one copy of the code
 two. Measured on 2026-10-10 against Starship's bindings.gd, prompts.gd and coop.gd: the
 prompts in words per player (PW394, docs/specs/kit.md), prompts per player's device
 (PW395, docs/specs/kit.md), a join the game answers (PW396, docs/specs/kit.md) and
-bindings taken from the game's older file (§PW397). Starship's own side is moving
-Controls.MAP into project.godot, the kits' declaration.
+bindings taken from the game's older file (PW397, docs/specs/kit.md). Starship's own
+side is moving Controls.MAP into project.godot, the kits' declaration.
 
 Done when Starship carries no input code the kits provide, its gate passes on the kits'
 proof, and provenance.read names each kit with its version.
@@ -747,25 +747,6 @@ needs a door into them (§PW398). Done when Cottony carries neither file, its ow
 test is replaced by the kit's acceptance, a save written by the current release loads
 after the swap, and its gate passes.
 
-### §PW397 Bindings taken from where a game kept them
-
-Measured adopting the remap kit onto Starship (§PW370). Starship keeps each action's
-codes, the deadzone, inverted vertical and twin-stick fire in its own settings file
-under [controls], written by game/core/settings.gd, in the same `key:`, `button:` and
-`axis:` codes the kit uses. The kit reads only user://polyweave_bindings.cfg, so on the
-first launch after adoption every player's rebinds are back at the defaults, and nothing
-says so.
-
-Let a project declare where bindings were kept before: polyweave_players.gd or a
-res://polyweave_remap.gd names a file and section (`FROM := ["user://settings.cfg",
-"controls"]`), and `load_kept` with no kit file of its own yet takes the codes under
-each action's name from there, writes its own file and reports what it took, as the
-options kit's migration reports in `said`. The saves and options kits need the same door
-(§PW398), and the three should read alike. Defaults stay the project's InputMap, so a
-game whose actions are declared in code moves them to project.godot. Done when the kit's
-proof migrates a fixture's older file and Starship's player keeps a rebind across the
-upgrade.
-
 ### §PW398 Saves and options taken from where a game kept them
 
 Measured adopting the saves and options kits onto Cottony (§PW371). Cottony keeps
@@ -782,6 +763,6 @@ the data a slot holds (the game knows its format, the kit never does);
 polyweave_options.gd declares `const ADOPTED := {"tab/key": ["user://cottony.cfg",
 "settings", "sound"]}`. Where the kit's own file is absent, the kit takes what was
 declared once, writes its own file, leaves the old one on disk, and says so in `said`.
-The remap kit's version of the same door is §PW397, and the two should read alike. Done
-when each kit's proof adopts a fixture's older file and Cottony's player keeps progress
-and switches across the swap.
+The remap kit's version of the same door is PW397, docs/specs/kit.md, and the two should
+read alike. Done when each kit's proof adopts a fixture's older file and Cottony's
+player keeps progress and switches across the swap.

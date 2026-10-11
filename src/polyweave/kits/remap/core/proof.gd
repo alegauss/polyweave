@@ -110,6 +110,32 @@ func _initialize() -> void:
 	if again.current() != start:
 		failed.append("a reset was not kept")
 
+	# A game's older file (§PW397): with no kit file yet, its bindings are taken once,
+	# written to the kit's own file and said, and the older file is left as it was.
+	var older_path := "user://polyweave_bindings_proof_older.cfg"
+	var older := ConfigFile.new()
+	older.set_value("controls", J, ["key:%d" % KEY_Q, "button:3"])
+	older.set_value("controls", "deadzone", 0.4)
+	older.save(older_path)
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(KEPT))
+	var adopting := Bindings.new(actions, KEPT)
+	adopting.from = [older_path, "controls"]
+	adopting.load_kept()
+	if adopting.current()[J] != ["key:%d" % KEY_Q, "button:3"]:
+		failed.append("an older file's binding was not taken: %s" % [adopting.current()[J]])
+	if not is_equal_approx(adopting.deadzone, 0.4):
+		failed.append("an older file's deadzone was not taken")
+	if adopting.said.is_empty() or not FileAccess.file_exists(KEPT):
+		failed.append("taking an older file was not said, or not written to the kit's own")
+	var later := Bindings.new(actions, KEPT)
+	later.from = [older_path, "controls"]
+	later.load_kept()
+	if not later.said.is_empty():
+		failed.append("the older file was taken again once the kit had its own")
+	# Back to the game's own bindings for the screen's half of the proof.
+	later.reset()
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(older_path))
+
 	_fire_key = fire_key
 	_menu = load("res://addons/polyweave/remap/remap_menu.gd").new()
 	_menu.actions.assign(actions)
