@@ -722,9 +722,9 @@ Whatever Starship needs that the kits lack is filed here as friction and fixed i
 kit, never patched in the game, so the extraction ends with one copy of the code and not
 two. Measured on 2026-10-10 against Starship's bindings.gd, prompts.gd and coop.gd: the
 prompts in words per player (PW394, docs/specs/kit.md), prompts per player's device
-(PW395, docs/specs/kit.md), a join the game answers (§PW396) and bindings taken from the
-game's older file (§PW397). Starship's own side is moving Controls.MAP into
-project.godot, the kits' declaration.
+(PW395, docs/specs/kit.md), a join the game answers (PW396, docs/specs/kit.md) and
+bindings taken from the game's older file (§PW397). Starship's own side is moving
+Controls.MAP into project.godot, the kits' declaration.
 
 Done when Starship carries no input code the kits provide, its gate passes on the kits'
 proof, and provenance.read names each kit with its version.
@@ -746,23 +746,6 @@ measured on 2026-10-10, the kits read only their own files, so its user://cotton
 needs a door into them (§PW398). Done when Cottony carries neither file, its own save
 test is replaced by the kit's acceptance, a save written by the current release loads
 after the swap, and its gate passes.
-
-### §PW396 A join the game answers
-
-Measured adopting the players kit onto Starship (§PW370). The kit seats any free pad the
-moment it presses JOIN_BUTTON, from `_input`, on every screen. Starship's
-game/core/coop.gd decides when: a Start pressed while a wave is under way waits for the
-next wave's start and says so on the HUD, a pad that chose a ship at the select is
-seated on the run's first tick, and nothing joins on the title or in a menu. Starship
-also carries a first player's rebind to the second player's copy, since the two share a
-layout; the kit's `rebind(0, ...)` leaves the copy as it was.
-
-Give the kit a join request the game answers: `join_asked(device)` is emitted, and the
-seat is taken only where the project's polyweave_players.gd declares `AUTO_JOIN = true`
-(the default, so a game that says nothing keeps today's behaviour) or the game calls
-`join(device)` itself. Declare `SHARED_LAYOUT` for a first player's rebind to reach the
-other players' copies. Done when Starship's coop.gd holds only what a second ship is in
-its game, and the kit's proof covers a deferred join and a shared layout.
 
 ### §PW397 Bindings taken from where a game kept them
 

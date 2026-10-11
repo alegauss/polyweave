@@ -407,6 +407,14 @@ rebind on either player to leave the other's alone. A leave must free the pad fo
 next to join, and with the presence kit installed, a pad that leaves must be named as
 the player seated on it.
 
+When a player may join is the game's rule (§PW396). A free pad pressing `JOIN_BUTTON`
+emits `join_asked(device)`; it is seated at once only while the declaration's `AUTO_JOIN`
+is true, the default, and otherwise when the game calls `join(device)` itself, at the
+next wave's start, say, or on the run's first tick for a pad chosen at a select.
+`SHARED_LAYOUT` true carries a first player's rebind to every other player's copy, on
+their own pad, for a game whose players share one layout. The proof holds a deferred join
+and a shared layout too.
+
 **state** (§PW359): a game's state named once for reading. The project's
 `res://polyweave_state.gd` declares `STATE`, each name a `node` (a path from the current
 scene, or from `/root`) with a `property` (nested as `stats:health`) or a `method`

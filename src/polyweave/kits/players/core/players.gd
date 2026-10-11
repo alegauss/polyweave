@@ -15,11 +15,18 @@ extends Node
 
 signal joined(player: int, device: int)
 signal left(player: int, device: int)
+## a free pad pressed JOIN_BUTTON (§PW396): seated at once where AUTO_JOIN, and
+## otherwise when the game, by its own rule, calls join(device)
+signal join_asked(device: int)
 
 const HERE := "res://addons/polyweave/players/players.gd"
 const PROJECT := "res://polyweave_players.gd"
 const Bindings := preload("res://addons/polyweave/remap/bindings.gd")
-const DEFAULTS := {"MAX_PLAYERS": 2, "FIRST_PAD": 0, "JOIN_BUTTON": JOY_BUTTON_START}
+## AUTO_JOIN false leaves a join to the game, which hears join_asked and calls join
+## when its rule allows (the next wave, say); SHARED_LAYOUT true carries a first
+## player's rebind of a pad binding to every other player's copy (§PW396).
+const DEFAULTS := {"MAX_PLAYERS": 2, "FIRST_PAD": 0, "JOIN_BUTTON": JOY_BUTTON_START,
+	"AUTO_JOIN": true, "SHARED_LAYOUT": false}
 
 var declared := {}
 ## player -> the pad they play on; the first player's is FIRST_PAD, with the keyboard
@@ -119,6 +126,13 @@ func rebind(player: int, name: String, event: InputEvent) -> bool:
 	if player == 0:
 		var done := _store.rebind(name, event)
 		_narrow_first()
+		if done and bool(declared["SHARED_LAYOUT"]):
+			# One layout for every player: the first player's pad half is theirs too.
+			var now := _store.current()
+			for other in pads:
+				if other != 0:
+					for each in _store.actions:
+						_apply(action(each, other), _pad_half(now[each]), pads[other])
 		return done
 	if not pads.has(player) or Bindings.on_keys(Bindings.encode(event)):
 		return false
@@ -172,5 +186,7 @@ func _apply(name: String, codes: Array, device: int) -> void:
 func _input(event: InputEvent) -> void:
 	if event is InputEventJoypadButton and event.is_pressed() \
 			and (event as InputEventJoypadButton).button_index == int(declared["JOIN_BUTTON"]) \
-			and player_of(event.device) == -1 and join(event.device) != -1:
-		get_viewport().set_input_as_handled()
+			and player_of(event.device) == -1:
+		join_asked.emit(event.device)
+		if bool(declared["AUTO_JOIN"]) and join(event.device) != -1:
+			get_viewport().set_input_as_handled()

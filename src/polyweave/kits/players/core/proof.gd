@@ -68,6 +68,8 @@ func _process(_delta: float) -> bool:
 		_press(first + THIRD, join)
 		if players.player_of(first + THIRD) != 1:
 			failed.append("a pad freed by a leave could not be joined by the next")
+		_deferred(join, first)
+		_shared_layout(name, first)
 	print("KIT PROVED" if failed.is_empty() else "KIT FAILED: " + "; ".join(failed))
 	return true
 
@@ -104,6 +106,39 @@ func _rebinds(name: String, first: int) -> void:
 	if not InputMap.event_is_action(_button(first, JOY_BUTTON_LEFT_SHOULDER), name) \
 			or InputMap.event_is_action(_button(first + SECOND, JOY_BUTTON_LEFT_SHOULDER), name):
 		failed.append("player 1's rebound %s does not answer their pad alone" % name)
+	players._store.reset()
+	players._narrow_first()
+
+
+## a join the game answers (§PW396): asked, not seated, until the game calls join
+func _deferred(join: int, first: int) -> void:
+	players.leave(1)
+	var asked := []
+	var heard := func(device: int) -> void: asked.append(device)
+	players.join_asked.connect(heard)
+	players.declared["AUTO_JOIN"] = false
+	_press(first + SECOND, join)
+	if asked != [first + SECOND]:
+		failed.append("a pad pressing join was not said as asking: %s" % [asked])
+	if players.player_of(first + SECOND) != -1:
+		failed.append("with AUTO_JOIN false a pad was seated before the game said so")
+	players.join(first + SECOND)
+	if players.player_of(first + SECOND) != 1:
+		failed.append("the game's own join did not seat the pad that asked")
+	players.declared["AUTO_JOIN"] = true
+	players.join_asked.disconnect(heard)
+
+
+## one layout for both (§PW396): the first player's rebind reaches the second's copy
+func _shared_layout(name: String, first: int) -> void:
+	players.declared["SHARED_LAYOUT"] = true
+	players.rebind(0, name, _button(first, JOY_BUTTON_LEFT_SHOULDER))
+	if not InputMap.event_is_action(_button(first + SECOND, JOY_BUTTON_LEFT_SHOULDER),
+			Players.action(name, 1)):
+		failed.append("with SHARED_LAYOUT the first player's rebind did not reach player 2")
+	if InputMap.event_is_action(_button(first + SECOND, JOY_BUTTON_LEFT_SHOULDER), name):
+		failed.append("with SHARED_LAYOUT player 2's pad presses player 1's %s" % name)
+	players.declared["SHARED_LAYOUT"] = false
 	players._store.reset()
 	players._narrow_first()
 
