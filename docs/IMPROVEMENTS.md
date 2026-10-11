@@ -564,28 +564,6 @@ refused, and capture.run refuses an internal input in a test.
 
 ## Block T — Adopting polyweave in a project
 
-### §PW387 A style borrowed from another project
-
-Spinhold RK201 declares a style for a ring drawn in another game's colours: the Quilt is
-Cottony's world, so `[style.quilt]` in spinhold/polyweave.toml should take its palette
-from Cottony, not from a copy that drifts.
-
-`python -m polyweave style.read --root D:/Git/viglet/cottony` answers family "default"
-with an empty palette and skeleton: Cottony declares no `[style]`, because its palette
-lives in its own tools/art/palette.py (the single source its art generator and
-scripts/pieces.gd are checked against). A style also has no field that names another
-project's style or palette, so Spinhold cannot say "Cottony's palette, at dusk".
-
-Workaround: spinhold/polyweave.toml's `[style.quilt]` holds a snapshot of Cottony's hex
-values, with a comment naming palette.py and the date it was copied. Nothing tells
-Spinhold when Cottony's palette moves.
-
-What polyweave should do: let a style borrow from another project's style by reference
-(`from = { root = "../cottony", family = "..." }`), with a transform for the borrowing
-game (a value shift for dusk, say), and let style.drift report when the source moved;
-and give a project whose palette lives in code a way to declare it as a style, so a game
-like Cottony can be borrowed from at all.
-
 ## Block U — A window on everything a project governs
 
 ### §PW311 The window proved on Starship

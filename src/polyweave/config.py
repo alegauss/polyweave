@@ -241,6 +241,16 @@ DEFAULTS: dict[str, Any] = {
         "margin": 0,
         "anchor": "centre",
         "filter": "smooth",
+        # A palette kept in code (§PW387): `{ file = "tools/art/palette.py", names =
+        # ["PIPING", ...] }` reads each `NAME = "#rrggbb"` the file holds, in the order
+        # named, or every one in the file's order where `names` is empty.
+        "palette_source": {},
+        # Another project's palette, borrowed rather than copied (§PW387): `{ root =
+        # "../cottony", family = "", lightness = -0.1, saturation = 0.0, pinned = "" }`.
+        # Its resolved palette is shifted in lightness and saturation for this game,
+        # and `pinned`, the source palette's digest when it was last looked at, makes
+        # a source that moved since say so.
+        "borrow": {},
     },
     "sound": {
         # What a game needs to hear, declared by the game (§PW185): each family is a
@@ -633,6 +643,13 @@ class Config:
             style["canon"] = (
                 str(self.path(address, style["canon"])) if style["canon"] else ""
             )
+            at = f"style.{family}" if named else "style"
+            if style["palette_source"]:
+                style["palette"] = _palette_in_code(self.root, style["palette_source"],
+                                                    at)
+            if style["borrow"]:
+                style["palette"], style["borrowed"] = _borrowed(
+                    self.root, style["borrow"], at)
             found[family] = style
         return found
 
@@ -919,7 +936,7 @@ def _check(declared: dict, source: Path) -> None:
 
 
 #: Settings of one service whose value is itself a table, so not a named service.
-_TABLE_SETTINGS = ("prices", "skeleton", "regions", "blips")
+_TABLE_SETTINGS = ("prices", "skeleton", "regions", "blips", "palette_source", "borrow")
 
 
 def _sells(about: dict, model: str) -> bool:
@@ -928,6 +945,73 @@ def _sells(about: dict, model: str) -> bool:
         str(row) == model or str(row).split(":", 1)[0] == model
         for row in (about.get("prices") or {})
     )
+
+
+#: One `NAME = "#rrggbb"` constant of a file of code, with or without its type.
+_CONSTANT = re.compile(
+    r'(?m)^\s*([A-Za-z_]\w*)\s*(?::[^=]*)?=\s*["\'](#[0-9a-fA-F]{6})["\']'
+)
+
+
+def _palette_in_code(root: Path, source: dict, at: str) -> list[str]:
+    """A palette read off the `NAME = "#rrggbb"` constants of a file (§PW387)."""
+    where = root / str(source.get("file", ""))
+    if not source.get("file") or not where.is_file():
+        raise PolyweaveError(
+            "config.bad-type",
+            f"{at}.palette_source names {source.get('file')!r}, and there is no file "
+            "there",
+            "name the file the palette is kept in, under the project",
+            at=f"{at}.palette_source",
+        )
+    held = {m[1]: m[2].upper() for m in _CONSTANT.finditer(where.read_text("utf-8"))}
+    names = list(source.get("names") or held)
+    lacking = [n for n in names if n not in held]
+    if lacking:
+        raise PolyweaveError(
+            "config.bad-type",
+            f"{where.name} holds no colour called {lacking[0]}",
+            "name constants the file writes as NAME = \"#rrggbb\"",
+            at=f"{at}.palette_source.names", given=lacking[0],
+        )
+    return [held[n] for n in names]
+
+
+def _shifted(colour: str, lightness: float, saturation: float) -> str:
+    """One colour moved in HLS lightness and saturation, each clamped to 0 to 1."""
+    import colorsys
+
+    r, g, b = (int(colour[i:i + 2], 16) / 255 for i in (1, 3, 5))
+    h, light, sat = colorsys.rgb_to_hls(r, g, b)
+    light = min(1.0, max(0.0, light + lightness))
+    sat = min(1.0, max(0.0, sat + saturation))
+    return "#" + "".join(f"{round(v * 255):02X}" for v in colorsys.hls_to_rgb(
+        h, light, sat))
+
+
+def _borrowed(root: Path, borrow: dict, at: str) -> tuple[list[str], dict]:
+    """Another project's palette, shifted for this game, and whether it moved."""
+    import hashlib
+
+    source = Path(str(borrow.get("root", "")))
+    source = source if source.is_absolute() else (root / source).resolve()
+    if not (source / FILENAME).is_file():
+        raise PolyweaveError(
+            "config.bad-type",
+            f"{at}.borrow names {borrow.get('root')!r}, which holds no {FILENAME}",
+            "name the other project's root, relative to this one or absolute",
+            at=f"{at}.borrow.root",
+        )
+    family, theirs = load(source).style(borrow.get("family") or None)
+    palette = [str(c).upper() for c in theirs.get("palette") or []]
+    digest = hashlib.sha256(",".join(palette).encode()).hexdigest()[:16]
+    pinned = str(borrow.get("pinned") or "")
+    shift = float(borrow.get("lightness", 0.0)), float(borrow.get("saturation", 0.0))
+    return [_shifted(c, *shift) for c in palette], {
+        "root": source.as_posix(), "family": family, "digest": digest,
+        "pinned": pinned, "moved": bool(pinned) and pinned != digest,
+        "lightness": shift[0], "saturation": shift[1],
+    }
 
 
 def _named(values: dict) -> dict[str, dict]:

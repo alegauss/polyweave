@@ -208,6 +208,10 @@ def drift(
         "drifted": drifted,
         "measures": measures,
         "not_checked": list(NOT_CHECKED),
+        # A palette borrowed from another project whose source moved since it was
+        # pinned: the canon was judged against colours the source has left (§PW387).
+        **({"source_moved": declared["borrowed"]}
+           if (declared.get("borrowed") or {}).get("moved") else {}),
     }
 
 

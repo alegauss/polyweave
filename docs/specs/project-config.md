@@ -144,6 +144,8 @@ cell     = [64, 64]                # the grid a picture is put on when it arrive
 margin   = 2
 anchor   = "centre"                # or "base", for what stands on the ground
 filter   = "smooth"                # or "pixel": never smoothed, quantised to the palette
+palette_source = { file = "tools/art/palette.py", names = ["PIPING", "CARD"] }  # a palette kept in code
+borrow   = { root = "../cottony", family = "", lightness = -0.1, saturation = 0.0, pinned = "" }  # another project's, shifted
 
 [sound]                            # or [sound.<family>], one table per family
 kind     = "loop"                  # loop, stinger or effect
@@ -339,6 +341,16 @@ so a sprite sheet is never held to a title screen's canon.
   admitted each;
 - `palette`: the colours a picture may use, as `#rrggbb` values, refused as names;
 - `skeleton`: the style block every structured prompt starts from, as the service spells it.
+
+**A palette may live elsewhere** (§PW387). `palette_source = { file, names }` reads it off a
+file of code, each `NAME = "#rrggbb"` constant, in the order `names` lists them or the
+file's own where it lists none; a name the file does not hold is refused. `borrow = { root,
+family, lightness, saturation, pinned }` takes another project's resolved palette (its
+`[style]` or the named family) and moves each colour in HLS lightness and saturation for
+this game, as a world at dusk does. `style.read` names what was borrowed and its `digest`;
+a `pinned` digest that the source no longer matches makes `borrowed.moved` true, and
+`style.drift` says `source_moved`, since the canon was judged against colours the source
+has since left.
 
 **Every picture carries it.** Where a project declares a style, `picture.buy` composes the
 structured prompt over the family's skeleton. The skeleton's keys win over the prompt's, and

@@ -44,7 +44,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "Q", title: "Words held to the world", open: 0 },
   { block: "R", title: "Levels measured before a person plays them", open: 10 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
-  { block: "T", title: "Adopting polyweave in a project", open: 1 },
+  { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 5 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 7 },
 ];
@@ -146,13 +146,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "R",
     symptom: "a reference video is named by path each call, so a changed file is read silently and capture.run takes internal input",
     why: "A registered reference holds its hash and size once, so a reading is never of another file and a capture never runs on footage kept internal.",
-    deps: [],
-  },
-  {
-    id: "PW387",
-    block: "T",
-    symptom: "a style cannot take its palette from another project, so a game in a sister game's colours keeps a copy that drifts",
-    why: "A crossover world is only true to its source while its colours follow it, and a hand copy says nothing when the source moves.",
     deps: [],
   },
   {

@@ -56,8 +56,6 @@
 
 ## Block T — Adopting polyweave in a project
 
-- 📋 **PW387** (deps: —) **a style cannot take its palette from another project, so a game in a sister game's colours keeps a copy that drifts** — A crossover world is only true to its source while its colours follow it, and a hand copy says nothing when the source moves. → §PW387
-
 ## Block U — A window on everything a project governs
 
 - 🛠 **PW377** (deps: PW305 ✅, PW403) **half the decision screen's facts and its masked write are no operation, so the window can only frame the Python page** — The React decision screen, and the one bundle the browser and the window both serve, are still to build. → §PW377
