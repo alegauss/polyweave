@@ -5,8 +5,9 @@ saw a render only by opening files by hand, so in practice they saw the agent's
 description of it, which is the agent's judgement arriving where theirs was asked for.
 
 `python -m polyweave review` serves one page, bound to 127.0.0.1 and nothing else, from
-static files that ship with the plugin, on the standard library's server. No build, no
-account, nothing to install.
+files that ship with the plugin, on the standard library's server. The page is the
+window's own decision screen, built once from gui/ and committed (§PW403), so a person
+needs no build, no account and nothing to install.
 
 **The page is a reader.** Everything it shows is already on disk: `loop.pending`, the
 sittings `verdict.sitting` laid out, their sheets and the project's files. It keeps no
@@ -40,6 +41,11 @@ from .files import read_text_retrying
 #: Where the page's own files are, beside this module.
 PAGE = Path(__file__).with_name("review_page")
 
+#: The decision screen, built from gui/packages/ui by `npm run build:review` and
+#: committed, so the page needs Python alone. It is the window's own screen with a
+#: browser's desk, which makes the browser and the window one screen (§PW403).
+SCREEN = PAGE / "screen"
+
 #: The package whose code the server runs. The page's files are read on every request,
 #: but its Python is the copy the server started with (§PW294).
 CODE = Path(__file__).parent
@@ -62,7 +68,11 @@ SERVED = {".png", ".jpg", ".jpeg", ".webp", ".json", ".wav", ".ogg", ".flac", ".
 # browser may refuse to play.
 for _kind, _suffix in (("audio/wav", ".wav"), ("audio/ogg", ".ogg"),
                        ("audio/flac", ".flac"), ("audio/mpeg", ".mp3"),
-                       ("audio/opus", ".opus")):
+                       ("audio/opus", ".opus"),
+                       # A module script sent as text/plain, as some platforms' tables
+                       # say, is one a browser refuses to run.
+                       ("text/javascript", ".js"), ("text/css", ".css"),
+                       ("font/woff2", ".woff2")):
     mimetypes.add_type(_kind, _suffix)
 
 
@@ -570,9 +580,11 @@ def server(root=".", port: int = 0) -> ThreadingHTTPServer:
         def do_GET(self):  # noqa: N802 - the name the standard library calls
             asked = urlparse(self.path)
             if asked.path in ("/", "/index.html"):
-                return self._file(PAGE / "index.html")
-            if asked.path == "/page.js":
-                return self._file(PAGE / "page.js")
+                return self._file(SCREEN / "index.html")
+            built = asked.path.removeprefix("/")
+            if built and "/" not in built and (SCREEN / built).is_file():
+                # The screen's script, styles and fonts, by name, and nothing below.
+                return self._file(SCREEN / built)
             if asked.path.startswith("/locales/"):
                 # A catalog by its language, and only one the plugin ships (§PW287).
                 from . import review_text

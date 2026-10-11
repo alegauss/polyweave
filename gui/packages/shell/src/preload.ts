@@ -15,7 +15,6 @@ const bridge: Bridge = {
   lineage: (project, path) => ipcRenderer.invoke(CHANNELS.lineage, project, path),
   file: (project, path) => ipcRenderer.invoke(CHANNELS.file, project, path),
   revisions: (project) => ipcRenderer.invoke(CHANNELS.revisions, project),
-  review: (project) => ipcRenderer.invoke(CHANNELS.review, project),
   reviewState: (project) => ipcRenderer.invoke(CHANNELS.reviewState, project),
   reviewWords: (project) => ipcRenderer.invoke(CHANNELS.reviewWords, project),
   reviewAnswer: (project, body) => ipcRenderer.invoke(CHANNELS.reviewAnswer, project, body),

@@ -19,7 +19,6 @@
     "items": "{{count}} itens",
     "empty": "Este projeto ainda não governa nada.",
     "pending": "aguarda uma pessoa",
-    "verdicts": "Veredictos",
     "decide": "Decidir",
     "inventory": "Inventário",
     "where_judged": "Onde é julgado"

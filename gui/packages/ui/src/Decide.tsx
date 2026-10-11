@@ -1,15 +1,17 @@
-// The window's own decision screen (§PW400): the review page's sittings and cards drawn
-// with the window's components, every word from the review catalog (`review.words`) and
-// never a copy of it. It reads and writes through a `Desk`, so the same screen can run
-// over the page's own routes in a browser; the window's desk is three bridge channels.
+// The decision screen (§PW400, §PW403): the sittings and their cards, every word from the
+// review catalog and never a copy of it. It reads and writes through a `Desk`, so one
+// screen runs in both places: the window's desk is bridge channels over the review
+// operations, and the browser's (review.tsx) is the page's own routes, built into
+// src/polyweave/review_page/screen and served by `python -m polyweave review`.
 
 import { Button, Textarea } from '@viglet/viglet-design-system'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
 
 import {
   answered,
   choices,
   drawn,
+  holding,
   inPixels,
   last,
   measuredOf,
@@ -50,7 +52,7 @@ export const Loading = () => <div data-loading className="h-24 w-48 animate-puls
 export function useShown(desk: Desk, path: string | null): string | null {
   const [source, setSource] = useState<string | null>(null)
   useEffect(() => {
-    if (!path) return
+    if (!path || desk.href) return
     let live = true
     void desk.file(path).then(
       (one) => live && setSource(`data:${one.mime};base64,${one.base64}`),
@@ -60,6 +62,7 @@ export function useShown(desk: Desk, path: string | null): string | null {
       live = false
     }
   }, [desk, path])
+  if (path && desk.href) return desk.href(path)
   return source
 }
 
@@ -299,8 +302,31 @@ export const when = (words: Words, at: string | undefined) => {
 /** A project file, carried across the desk and shown as it is. */
 export function Shown({ desk, path, alt }: { desk: Desk; path: string; alt: string }) {
   const source = useShown(desk, path)
+  // Shown whole on a click, since a sheet of six stills is small in a card.
+  const [whole, setWhole] = useState(false)
   if (!source) return <Loading />
-  return <img src={source} alt={alt} className="max-h-80 w-auto rounded border object-contain [image-rendering:pixelated]" />
+  return (
+    <img
+      src={source}
+      alt={alt}
+      onClick={() => setWhole((was) => !was)}
+      className={`${whole ? 'w-full cursor-zoom-out' : 'max-h-80 w-auto cursor-zoom-in'} rounded border object-contain [image-rendering:pixelated]`}
+    />
+  )
+}
+
+/** What each name in a sitting's legend means. */
+function Legend({ entries }: { entries: Record<string, string> }) {
+  return (
+    <dl className="grid grid-cols-[auto_1fr] gap-x-3 text-sm">
+      {Object.entries(entries).map(([name, meaning]) => (
+        <Fragment key={name}>
+          <dt className="font-mono">{name}</dt>
+          <dd>{meaning}</dd>
+        </Fragment>
+      ))}
+    </dl>
+  )
 }
 
 function Visual({ desk, words, name, laid }: { desk: Desk; words: Words; name: string; laid: Laid }) {
@@ -325,6 +351,18 @@ function Visual({ desk, words, name, laid }: { desk: Desk; words: Words; name: s
               </blockquote>
             ))}
             <p className="font-mono text-xs text-muted-foreground">{member.line}</p>
+            {(member.examples ?? []).length > 0 && (
+              <>
+                <p className="text-xs text-muted-foreground">
+                  {say(words, 'examples', { who: member.who ?? member.speaker ?? '' })}
+                </p>
+                <ul className="list-disc pl-5 text-sm">
+                  {member.examples!.map((one) => (
+                    <li key={one}>{one}</li>
+                  ))}
+                </ul>
+              </>
+            )}
           </div>
         ))}
       </>
@@ -381,6 +419,7 @@ function Card({
   scripted,
   onAnswered,
   onHold,
+  focused,
 }: {
   desk: Desk
   words: Words
@@ -391,8 +430,15 @@ function Card({
   onAnswered: () => void
   /** Says whether a decision is being made here, which no redraw may run over. */
   onHold: (card: string, held: boolean) => void
+  /** The card to open on, `sitting#family`, as an item's "where it is judged" asks. */
+  focused?: string | null
 }) {
   const laid = sitting.families[name]!
+  const here = useRef<HTMLElement>(null)
+  const isFocused = focused === `${sitting.manifest}#${name}`
+  useEffect(() => {
+    if (isFocused) here.current?.scrollIntoView({ block: 'start' })
+  }, [isFocused])
   const before = last(sitting, name, state.answers)
   const badge = status(before)
   const offered = choices(words, sitting, laid)
@@ -450,7 +496,12 @@ function Card({
   const marks = (): Mark[] =>
     Object.entries(boxes).map(([member, shapes]) => ({ member, shapes: shapes.map((box) => ({ box })) }))
   return (
-    <article data-card={`${sitting.manifest}#${name}`} className="flex flex-col gap-3 rounded-lg border p-4">
+    <article
+      ref={here}
+      data-card={`${sitting.manifest}#${name}`}
+      data-focused={isFocused || undefined}
+      className={`flex flex-col gap-3 rounded-lg border p-4 ${isFocused ? 'ring-2 ring-primary' : ''}`}
+    >
       <header className="flex items-center gap-3">
         <h3 className="flex-1 truncate text-lg font-medium">{title(name, laid)}</h3>
         <span data-badge={badge} className={`rounded-full px-2 py-0.5 text-xs ${BADGE[badge]}`}>
@@ -466,6 +517,15 @@ function Card({
         <div data-answered className="flex flex-col gap-1 rounded-md bg-muted p-3 text-sm">
           <p>{say(words, 'answered', { choice: answeredAs?.label ?? before.choice, at: when(words, before.at) })}</p>
           <q>{before.why || say(words, 'no_comment')}</q>
+          {(laid.members ?? []).map((member) => {
+            // A newer candidate came after the answer: the answer was about the older one.
+            const row = state.pending.assets.find((asset) => asset.asset === member.name)
+            return row?.candidate && row.waiting ? (
+              <p key={member.name} className="text-xs text-muted-foreground">
+                {say(words, 'newer_candidate', { name: member.name, candidate: row.candidate })}
+              </p>
+            ) : null
+          })}
           {!again && (
             <Button size="sm" variant="link" className="self-start px-0" onClick={() => setAgain(true)}>
               {say(words, 'answer_again')}
@@ -543,10 +603,18 @@ function Card({
           </div>
         </details>
       )}
-      {(laid.said ?? []).length > 0 && (
-        <details className="text-sm">
+      {((laid.said ?? []).length > 0 || sitting.legend) && (
+        <details className="flex flex-col gap-1 text-sm">
           <summary className="cursor-pointer text-muted-foreground">{say(words, 'details')}</summary>
-          {laid.said!.map((held) => (
+          {(laid.members ?? [])
+            .filter((member) => typeof member.measured === 'string')
+            .map((member) => (
+              <p key={member.name}>
+                {say(words, 'measured')}: {member.measured as string}
+              </p>
+            ))}
+          {sitting.legend && <Legend entries={sitting.legend} />}
+          {(laid.said ?? []).map((held) => (
             <p key={held.name}>
               <strong>{held.name}: </strong>
               {held.passed === null || held.passed === undefined
@@ -574,6 +642,7 @@ function SittingView(props: {
   scripted?: Scripted
   onAnswered: () => void
   onHold: (card: string, held: boolean) => void
+  focused?: string | null
 }) {
   const { words, sitting, state } = props
   const kind = words.kinds[sitting.kind ?? 'look'] ?? {}
@@ -611,6 +680,12 @@ function SittingView(props: {
             </ul>
           </details>
         )}
+        {sitting.legend && (
+          <details className="text-sm">
+            <summary className="cursor-pointer">{say(words, 'legend')}</summary>
+            <Legend entries={sitting.legend} />
+          </details>
+        )}
       </div>
       {Object.keys(sitting.families).map((name) => (
         <Card key={name} {...props} name={name} />
@@ -626,8 +701,11 @@ export function Decide({
   canon,
   onDrawn,
   onBoards,
+  member,
 }: {
   desk: Desk
+  /** A file whose card the screen opens on, as `?member=` does in a browser (§PW305). */
+  member?: string | null
   /** An answer a smoke run gives here, once its card is drawn. */
   scripted?: Scripted
   /** A gate's refused picture a smoke run promotes (§PW402). */
@@ -644,10 +722,10 @@ export function Decide({
   const read = () =>
     desk.state().then(setState, (refused: Error) => setFailed(refused.message))
   // The cards where a decision is being made: a choice picked, a word typed, a box drawn.
-  const holding = useRef(new Set<string>())
+  const busy = useRef(new Set<string>())
   const onHold = useCallback((card: string, held: boolean) => {
-    if (held) holding.current.add(card)
-    else holding.current.delete(card)
+    if (held) busy.current.add(card)
+    else busy.current.delete(card)
   }, [])
   useEffect(() => {
     void desk.words().then(setWords, (refused: Error) => setFailed(refused.message))
@@ -656,7 +734,7 @@ export function Decide({
     // elsewhere, or the agent's next sitting, shows without asking; never over a
     // decision being made.
     const every = setInterval(() => {
-      if (holding.current.size === 0) void read()
+      if (busy.current.size === 0) void read()
     }, 5000)
     return () => clearInterval(every)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -670,9 +748,16 @@ export function Decide({
   if (!words || !state) return <div className="h-40 w-full animate-pulse rounded bg-muted" />
   const { open, done } = ordered(state)
   const along = progress(state)
-  const shared = { desk, words, state, scripted, onAnswered: () => void read(), onHold }
+  const focused = member ? holding(state, member) : null
+  const shared = { desk, words, state, scripted, onAnswered: () => void read(), onHold, focused }
   return (
     <div data-decide lang={words.language} className="flex flex-col gap-6">
+      {state.stale && (
+        // A server older than the package cannot record an answer, and says so above all.
+        <p data-stale role="alert" className="rounded-md bg-rose-100 p-3 text-sm text-rose-900">
+          {say(words, 'stale')}
+        </p>
+      )}
       {along && (
         <div className="flex flex-col gap-1">
           <div className="h-2 w-full overflow-hidden rounded bg-muted">
@@ -688,7 +773,10 @@ export function Decide({
         <SittingView key={sitting.manifest} {...shared} sitting={sitting} />
       ))}
       {done.length > 0 && (
-        <details className="flex flex-col gap-4">
+        <details
+          open={Boolean(focused && done.some((one) => focused.startsWith(`${one.manifest}#`)))}
+          className="flex flex-col gap-4"
+        >
           <summary className="cursor-pointer text-sm">{say(words, 'older', { n: done.length })}</summary>
           {done.map((sitting) => (
             <SittingView key={sitting.manifest} {...shared} sitting={sitting} />

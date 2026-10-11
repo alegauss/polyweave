@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
+    "build:review": "vite build --config vite.review.config.ts",
     "test": "vitest run"
   },
   "dependencies": {

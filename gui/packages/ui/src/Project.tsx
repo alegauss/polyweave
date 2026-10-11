@@ -55,18 +55,15 @@ export function Project({
   useEffect(() => {
     void bridge.revisions(opened.project).then(setRevised, () => setRevised([]))
   }, [bridge, opened.project])
-  // The project's verdicts are the review page itself, hosted, never rebuilt (§PW305).
-  const [reviewing, setReviewing] = useState<string | null>(null)
-  const [framed, setFramed] = useState(false)
   const [talked, setTalked] = useState(false)
-  const judge = (member?: string | null) =>
-    void bridge.review(opened.project).then((url) => {
-      setDeciding(false)
-      setFramed(false)
-      setReviewing(member ? `${url}?member=${encodeURIComponent(member)}` : url)
-    })
-  // The window's own decision screen, beside the hosted page until it replaces it (§PW400).
+  // The project's verdicts are the decision screen, the same one the review page serves
+  // in a browser (§PW403); "where it is judged" opens it on the item's card.
   const [deciding, setDeciding] = useState(Boolean(smoke?.decide))
+  const [member, setMember] = useState<string | null>(null)
+  const judge = (on?: string | null) => {
+    setMember(on ?? null)
+    setDeciding(true)
+  }
   const [decided, setDecided] = useState<State | null>(null)
   const desk = useMemo<Desk>(
     () => ({
@@ -89,9 +86,8 @@ export function Project({
   // A smoke run reports once the list, and the item it asked for, are on the page.
   useEffect(() => {
     if (!smoke || revised === null || (chosen && !drawn)) return
-    if (smoke.review && !reviewing) return judge(chosen?.artefact)
-    if (smoke.review && !framed) return
-    if (smoke.decide && !decided) return
+    if (smoke.review && !deciding) return judge(chosen?.artefact)
+    if ((smoke.review || smoke.decide) && !decided) return
     // A scripted answer is reported once the screen has read it back from the files.
     if (scripted && !decided?.answers.some((one) => one.family === scripted.family)) return
     if (smoke.canon && !boards) return
@@ -109,13 +105,14 @@ export function Project({
     }
     settle(0)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [smoke, chosen, drawn, revised, reviewing, framed, talked, moved, bridge, opened, decided, boards])
+  }, [smoke, chosen, drawn, revised, deciding, talked, moved, bridge, opened, decided, boards])
 
   const report = () => {
     if (!smoke || revised === null) return
     // A question waiting on the person is what a smoke run's picture is of.
     document.querySelector('[data-ask]')?.scrollIntoView({ block: 'center' })
-    requestAnimationFrame(() => {      void bridge.rendered({
+    requestAnimationFrame(() => {
+      void bridge.rendered({
         project: opened.project,
         server: opened.server.name,
         engine: opened.engine.from,
@@ -130,9 +127,8 @@ export function Project({
         looped: document.querySelector('audio')?.loop ?? null,
         revised: revised.length,
         said: document.querySelector('[data-said]')?.textContent ?? null,
-        review: reviewing,
-        framed,
-        hosted: document.querySelector('[data-review]') !== null,
+        focused: document.querySelector('[data-focused]')?.getAttribute('data-card') ?? null,
+        framed: document.querySelector('iframe') !== null,
         turns: [...document.querySelectorAll('[data-turn]')].map((one) => one.textContent),
         asked: [...document.querySelectorAll('[data-ask]')].map((one) => one.getAttribute('data-ask')),
         price: document.querySelector('[data-price]')?.getAttribute('data-price') ?? null,
@@ -174,48 +170,22 @@ export function Project({
         })}
       </p>
       <div className="flex gap-2">
-        <Button
-          size="sm"
-          variant={reviewing || deciding ? 'outline' : 'default'}
-          onClick={() => {
-            setReviewing(null)
-            setDeciding(false)
-          }}
-        >
+        <Button size="sm" variant={deciding ? 'outline' : 'default'} onClick={() => setDeciding(false)}>
           {t('project.inventory')}
         </Button>
-        <Button
-          size="sm"
-          variant={deciding ? 'default' : 'outline'}
-          onClick={() => {
-            setReviewing(null)
-            setDeciding(true)
-          }}
-        >
+        <Button size="sm" variant={deciding ? 'default' : 'outline'} onClick={() => judge()}>
           {t('project.decide')}
-        </Button>
-        <Button size="sm" variant={reviewing ? 'default' : 'outline'} onClick={() => judge()}>
-          {t('project.verdicts')}
         </Button>
       </div>
       {deciding ? (
         <Decide
           desk={desk}
+          member={member}
           scripted={scripted}
           promote={smoke?.promote}
           canon={smoke?.canon}
           onDrawn={setDecided}
           onBoards={setBoards}
-        />
-      ) : reviewing ? (
-        <iframe
-          data-review
-          title={t('project.verdicts')}
-          src={reviewing}
-          // Its own origin, its own scripts: the page posts its verdict to its own server.
-          sandbox="allow-scripts allow-same-origin allow-forms"
-          onLoad={() => setFramed(true)}
-          className="h-[78vh] w-full rounded-lg border"
         />
       ) : (
         <>

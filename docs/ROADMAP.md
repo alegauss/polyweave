@@ -58,8 +58,7 @@
 
 ## Block U — A window on everything a project governs
 
-- 🛠 **PW377** (deps: PW305 ✅, PW403) **half the decision screen's facts and its masked write are no operation, so the window can only frame the Python page** — The React decision screen, and the one bundle the browser and the window both serve, are still to build. → §PW377
-- 📋 **PW403** (deps: PW401 ✅, PW402 ✅) **the browser's review page and the window's decision screen would be two implementations of one screen** — A fix landing in one and not the other is the drift PW305 hosted the page to avoid, so one bundle must serve both. → §PW403
+- 🛠 **PW377** (deps: PW305 ✅, PW403 ✅) **half the decision screen's facts and its masked write are no operation, so the window can only frame the Python page** — The React decision screen, and the one bundle the browser and the window both serve, are still to build. → §PW377
 
 ## Block V — Parts every game repeats, installed already proved
 

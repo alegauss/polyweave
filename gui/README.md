@@ -63,25 +63,24 @@ run. The window never runs one, because it is a reader and not an editor. A file
 the page only through `shell/src/files.ts`, which refuses any path outside the open
 project and any file that is not a picture or a sound.
 
-## Verdicts: the review page, hosted
+## Decide: one decision screen, in the window and in a browser
 
-The project's Verdicts view is the page `python -m polyweave review` serves, shown in a
-sandboxed iframe, and not a second implementation of it (§PW305). That page lays a
-sitting out, takes a verdict through `/api/judge`, which is `verdict.judge`, refuses to
-judge on stale code, and keeps `answers.jsonl`. Each of those behaviours was a defect
-first found on a real owner's screen. `shell/src/reviews.ts` starts the server with the
-engine that serves the project, reads the address it prints, and ends it when the
-project's own server ends. "Where it is judged" on an item opens the page at
-`?member=<path>`, which scrolls to the card holding that file and outlines it. A browser
-given the same link lands on the same card.
+The project's verdicts are one screen, `ui/src/Decide.tsx`, which the window draws in its
+Decide view and `python -m polyweave review` serves to a browser (§PW403). It reads and
+writes through a `Desk`, `core`'s interface of `state`, `words`, `answer`, `file`,
+`compare` and `canon`, so the screen never knows where it runs. A fix lands in both at
+once, which is what hosting the old page in an iframe protected before there was one
+screen (§PW305). The browser's desk (`ui/src/review.tsx`) is the page's own routes:
+`/api/state`, `/api/judge` with the header no other site can send, `/api/compare`,
+`/api/canon`, `/locales` and `/file`, linked directly. `npm run build:review` builds it
+into `src/polyweave/review_page/screen`, committed so the page needs Python alone, with a
+`stamp.json` naming its sources and their digest; `tests/test_review_bundle.py` fails
+when the bundle is older than them. "Where it is judged" on an item opens Decide on the
+card holding that file and outlines it, and a browser given `?member=<path>` lands on the
+same card. A server older than the package says so above everything (§PW294).
 
-## Decide: the window's own decision screen
-
-Beside the hosted page, the Decide view draws the same sittings with the window's own
-components (§PW400), `ui/src/Decide.tsx`. It reads and writes through a `Desk`, `core`'s
-interface of `state`, `words`, `answer` and `file`, so the same screen can later run in a
-browser over the page's routes. The window's desk is three bridge channels the shell
-answers with the operations the page's routes call: `review.state`, `review.words` (the
+The window's desk is bridge channels the shell answers with the operations the page's
+routes call: `review.state`, `review.words` (the
 review catalog's `page` and `kinds` in the project's `[review] language`, so the screen
 holds no copy of the page's words) and `review.answer`, which keeps the answer in
 `answers.jsonl` exactly as the page does. What the page decides about a sitting (which

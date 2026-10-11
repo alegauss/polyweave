@@ -617,24 +617,6 @@ Build, in parts:
 The iframe and `?member=` stay until step 4 lands. Steps 3 and 4 are filed as PW400 to
 PW403, one id each.
 
-### §PW403 One decision screen for the browser and the window
-
-PW377's fourth step. Once the native screen does all the page does (PW400 to PW402), two
-implementations of one decision screen are one too many: a fix lands in one and not the
-other, which is what PW305 hosted the page to avoid.
-
-Build `Decide.tsx` as its own entry, with a browser `Desk` over the page's routes
-(`/api/state`, `/api/judge`, `/api/compare`, `/api/canon`, `/locales`, `/file`), into
-src/polyweave/review_page/, and have `python -m polyweave review` serve that bundle in
-place of index.html and page.js. A test fails when the committed bundle is older than
-its sources, as the SDK's does. The window drops the iframe and `?member=`, opening the
-native screen on the member's card instead. tests/test_review_page.py keeps every
-behaviour it checks; the assertions that read page.js's text are rewritten against the
-bundle or against what a browser draws.
-
-Done when the browser and the window run one screen, the iframe is gone, and the review
-page's tests hold.
-
 ## Block V — Parts every game repeats, installed already proved
 
 ### §PW368 Declared states and transitions

@@ -121,12 +121,18 @@ describe.skipIf(!existsSync(MAIN))('the window', () => {
     expect(picture['lanes']).toBe(2)
   })
 
-  it("hosts the project's review page for its verdicts, on an item's sitting", async () => {
+  it("opens the decision screen on the card an item is judged on, in no frame", async () => {
+    const game = join(root, 'starship')
+    const laid = spawnSync('python', [
+      '-m', 'polyweave', 'verdict.sitting',
+      '--families', JSON.stringify({ icon: [{ name: 'icon', new: 'docs/renders/icon.png' }] }),
+      '--out', 'review/first', '--root', game,
+    ])
+    expect(laid.status, laid.stderr?.toString()).toBe(0)
     const drew = await opened(root, 'en', 'docs/renders/icon.png', true)
-    expect(drew['framed']).toBe(true)
-    expect(drew['hosted']).toBe(true)
-    const url = String(drew['review'])
-    expect(url).toMatch(/^http:\/\/127\.0\.0\.1:\d+\/\?member=docs%2Frenders%2Ficon\.png$/)
+    // The window's own screen, the one the review page serves in a browser (§PW403).
+    expect(drew['framed']).toBe(false)
+    expect(drew['focused']).toBe('review/first/sitting.json#icon')
   })
 
   it('draws a sitting on its own decision screen in pt-BR, and keeps an answer given there', async () => {

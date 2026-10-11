@@ -28,14 +28,12 @@ import { shown } from './files'
 import { Held } from './held'
 import { Holding } from './holding'
 import { Strays, type Stray } from './outside'
-import { Reviews } from './reviews'
 import { start, type Session } from './sessions'
 import { SMOKE_VAR } from './smoke'
 import { Watching } from './watch'
 import { createWindow } from './window'
 
 const held = new Held()
-const reviews = new Reviews()
 const watching = new Watching()
 /** One session per revision, by the revision's id (§PW306). */
 const sessions = new Map<string, Session>()
@@ -43,8 +41,8 @@ const sessions = new Map<string, Session>()
 const worked = new Map<string, string>()
 const holding = new Holding()
 const answers = new Answers()
-// The person answers on the review page, so the window reads the answers every few
-// seconds, as the page itself does (§PW307).
+// The person may answer in the window or on the review page in a browser, so the window
+// reads the answers every few seconds, as the screen itself does (§PW307).
 setInterval(() => void answers.look(), 5000)
 
 /** Turns still being written, which quitting waits for so none is lost. */
@@ -101,9 +99,6 @@ ipcMain.handle(CHANNELS.revisions, async (_event, project: string) => {
   })) as { revisions: { item: string }[] }
   return [...new Set(open.revisions.map((one) => one.item))]
 })
-ipcMain.handle(CHANNELS.review, async (_event, project: string) =>
-  reviews.url(project, (await held.opened(project)).engine),
-)
 // The window's own decision screen reads and writes what the page does, through the
 // same operations, so the two cannot disagree (§PW400).
 ipcMain.handle(CHANNELS.reviewState, async (_event, project: string) =>
@@ -242,10 +237,8 @@ ipcMain.handle(CHANNELS.rendered, async (event, report: Record<string, unknown>)
 })
 
 app.on('before-quit', () => {
-  // The review page's server lives as long as the project's own (§PW305).
   watching.stopAll()
   for (const session of sessions.values()) session.stop()
-  void reviews.closeAll()
   void held.closeAll()
 })
 app.on('window-all-closed', () => app.quit())

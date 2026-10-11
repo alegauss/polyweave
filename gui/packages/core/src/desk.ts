@@ -1,7 +1,6 @@
-// The decision screen's facts, read the way the review page reads them (§PW400). The
-// page is src/polyweave/review_page/page.js; what it decides about a sitting (which are
-// open, what a card shows, what a choice says, how far along a person is) is here as
-// plain functions, so the window's screen and, later, the browser's draw the same.
+// The decision screen's facts (§PW400): what it decides about a sitting (which are open,
+// what a card shows, what a choice says, how far along a person is) is here as plain
+// functions, so the screen in the window and in the browser draws the same (§PW403).
 
 import type { Shown } from './bridge'
 
@@ -144,6 +143,20 @@ export interface State {
   answers: Recorded[]
   gates?: Gate[]
   turntables?: Turntable[]
+  /** The page's server, older than the package it runs, cannot record an answer (§PW294). */
+  stale?: { code: string; message: string; remedy?: string } | null
+}
+
+/** The card a file is judged on, as `sitting#family`, or null where none holds it (§PW305). */
+export function holding(state: State, member: string): string | null {
+  for (const sitting of state.sittings) {
+    for (const [name, laid] of Object.entries(sitting.families)) {
+      if ((laid.members ?? []).some((one) => one.new === member || one.old === member)) {
+        return `${sitting.manifest}#${name}`
+      }
+    }
+  }
+  return null
 }
 
 /** The review catalog in one language: the page's words and each kind of sitting's. */
@@ -175,6 +188,8 @@ export interface Desk {
   words(): Promise<Words>
   answer(body: AnswerBody | Overrule): Promise<Record<string, unknown>>
   file(path: string): Promise<Shown>
+  /** Where a browser can load a file itself, so it never crosses the desk as text. */
+  href?(path: string): string
   compare(old: string, now: string): Promise<Difference>
   /** Every style family's canon board, read only when asked: it measures every picture. */
   canon(): Promise<Board[]>

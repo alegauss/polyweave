@@ -1,0 +1,13 @@
+/*
+ * The review page's styles: the window's own (index.css), so the browser and the window
+ * draw one screen. Its sources are named here because the page's build starts from
+ * review/, outside the folder Tailwind would otherwise scan.
+ */
+@import './index.css';
+
+@source '.';
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}

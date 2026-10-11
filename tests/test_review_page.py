@@ -91,7 +91,12 @@ def test_the_page_and_its_script_ship_with_the_plugin(page):
     base, _ = page
     status, body, kind = get(base + "/")
     assert status == 200 and b"polyweave review" in body and kind == "text/html"
-    assert get(base + "/page.js")[0] == 200
+    status, _, kind = get(base + "/review.js")
+    # A module script is run only when it is sent as one (§PW403).
+    assert status == 200 and kind == "text/javascript"
+    for below in ("/screen/review.js", "/..%2Freview.py"):
+        with pytest.raises(urllib.error.HTTPError):
+            get(base + below)
 
 
 def test_the_state_is_what_is_on_disk(page):
@@ -174,9 +179,15 @@ def test_a_server_older_than_its_code_refuses_to_judge(tmp_path, monkeypatch):
 
 
 def test_the_page_shows_the_restart_it_needs():
-    script = (review.PAGE / "page.js").read_text(encoding="utf-8")
-    assert 'getElementById("stale")' in script and 't("stale")' in script
-    assert 'id="stale"' in (review.PAGE / "index.html").read_text(encoding="utf-8")
+    screen = screen_source("ui/src/Decide.tsx")
+    assert "state.stale &&" in screen and "say(words, 'stale')" in screen
+
+
+def screen_source(path):
+    """One source of the decision screen the page and the window share (§PW403)."""
+    from pathlib import Path
+
+    return (Path(__file__).parents[1] / "gui" / "packages" / path).read_text("utf-8")
 
 
 def test_the_command_line_has_the_verb():

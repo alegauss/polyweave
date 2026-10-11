@@ -72,22 +72,27 @@ def test_the_page_reads_its_own_words_from_the_catalog(tmp_path):
         served.shutdown()
 
 
+# The page is the decision screen the window draws (§PW403): these hold its sources, in
+# gui/packages, and the bundle built from them that the page serves.
+
+
+def screen(path):
+    return (Path(__file__).parents[1] / "gui" / "packages" / path).read_text("utf-8")
+
+
 def test_the_page_holds_still_while_a_person_answers():
     """§PW289: a whole redraw between two clicks replaced the button pressed."""
-    script = (Path(review.PAGE) / "page.js").read_text(encoding="utf-8")
-    # A read that found nothing new draws nothing.
-    assert "if (seen(found) === drawn) return;" in script
-    # An answer redraws its own card, never the page.
-    recorded = script.index('message.textContent = t("recorded");')
-    assert "redrawCard(sitting.manifest, name);" in script[recorded:recorded + 120]
-    assert "draw();" not in script[recorded:recorded + 120]
+    decide = screen("ui/src/Decide.tsx")
+    # The files are read again only while no card holds a choice, a word or a box.
+    assert "if (busy.current.size === 0) void read()" in decide
+    assert "onHold(card, Boolean(picked || why.trim() || marked))" in decide
+    # An answer reads the files once more; a card keeps its own state, keyed by name.
+    assert "<Card key={name}" in decide
 
 
 def test_an_older_sitting_is_read_through_the_catalog():
     """§PW293: sittings laid out before PW287 kept their choices as English strings."""
-    script = (Path(review.PAGE) / "page.js").read_text(encoding="utf-8")
-    assert "kinds = catalog.kinds" in script
-    assert "((kinds[kind] || {}).choices || {})[word]" in script
+    assert "words.kinds[kind]?.choices?.[word]" in screen("core/src/desk.ts")
     # Every choice key an older sitting carries is one the catalog can answer for.
     for kind in ("look", "effect", "line", "sound"):
         assert {"accept", "look"} <= set(review_text.kind(kind, "pt-BR")["choices"])
@@ -95,17 +100,17 @@ def test_an_older_sitting_is_read_through_the_catalog():
 
 def test_a_summary_reads_as_a_legend_and_each_sitting_stands_apart():
     """§PW295: the summary's choices looked like buttons, and sittings ran together."""
-    script = (Path(review.PAGE) / "page.js").read_text(encoding="utf-8")
-    page = (Path(review.PAGE) / "index.html").read_text(encoding="utf-8")
-    assert 'element("ul", { class: "how" })' in script
-    assert 'element("section", { class: "sitting" })' in script
-    assert "section.sitting + section.sitting" in page
-    legend = page[page.index(".how li {"):page.index("}", page.index(".how li {"))]
-    assert "cursor: default" in legend and "background" not in legend
+    decide = screen("ui/src/Decide.tsx")
+    start = decide.index("<ul data-how")
+    how = decide[start:decide.index("</ul>", start)]
+    # A list of what each choice means, never a button.
+    assert "<li" in how
+    assert "<Button" not in how
+    assert "<section data-sitting" in decide
 
 
 def test_no_sentence_a_person_reads_is_kept_in_the_page_s_code():
     """The page takes every word from the catalog, so its script names only keys."""
-    script = (Path(review.PAGE) / "page.js").read_text(encoding="utf-8")
+    script = (Path(review.SCREEN) / "review.js").read_text(encoding="utf-8")
     for sentence in ("Record this verdict", "Registrar", "Pick one choice"):
         assert sentence not in script

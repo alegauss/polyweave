@@ -8,6 +8,7 @@ export {
   choices,
   drawn,
   figures,
+  holding,
   inPixels,
   lanes,
   last,

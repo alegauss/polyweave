@@ -15,6 +15,7 @@
   "scripts": {
     "typecheck": "tsc -b",
     "build": "npm run build -w @pw/ui && npm run build -w @pw/shell",
+    "build:review": "npm run build:review -w @pw/ui",
     "start": "npm run build && electron .",
     "test": "vitest run",
     "clean": "tsc -b --clean"
