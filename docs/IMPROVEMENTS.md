@@ -723,8 +723,8 @@ kit, never patched in the game, so the extraction ends with one copy of the code
 two. Measured on 2026-10-10 against Starship's bindings.gd, prompts.gd and coop.gd: the
 prompts in words per player (PW394, docs/specs/kit.md), prompts per player's device
 (PW395, docs/specs/kit.md), a join the game answers (PW396, docs/specs/kit.md) and
-bindings taken from the game's older file (PW397, docs/specs/kit.md). Starship's own
-side is moving Controls.MAP into project.godot, the kits' declaration.
+bindings taken from the game's older file (PW397, docs/specs/kit.md). The game's own
+side, Controls.MAP into project.godot and its input code gone, is Spinhold's RK216.
 
 Done when Starship carries no input code the kits provide, its gate passes on the kits'
 proof, and provenance.read names each kit with its version.
