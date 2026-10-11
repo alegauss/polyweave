@@ -1478,7 +1478,7 @@ export interface ReferenceMinimapArgs {
 export interface ReferenceObjectsArgs {
   /** the folder reference.frames wrote, or its frames.json */
   frames: string
-  /** each kind of object by name: {"colour": "#rrggbb", "size": [least, most] pixels, "tolerance": 0 to 1} */
+  /** each kind of object by name: {"colour": "#rrggbb", "size": [least, most] pixels, "tolerance": 0 to 1, "samples": [crops under the project], "match": 0 to 1} */
   kinds: Record<string, unknown>
   /** [left, top, right, bottom] pixels of the play area; all if empty */
   area?: unknown[]

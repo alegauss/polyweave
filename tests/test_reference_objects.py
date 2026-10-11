@@ -104,6 +104,94 @@ def test_a_kind_that_means_nothing_is_refused(tmp_path, kinds):
     assert refused.value.code == "capture.bad-kinds"
 
 
+# -- kinds told apart by sample crops (§PW404) --------------------------------------
+
+PULSE = (150, 245, 255)  # the lander's cyan flaring, past its colour's tolerance
+
+
+def shapes(tmp_path, frames=4, every=0.5):
+    """Three cyan blocks and three cyan orbs drifting right, one block flaring on every
+    other frame, and a crop of each shape kept as its kind's sample."""
+    (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
+    folder = tmp_path / ".polyweave" / "references" / "shapes"
+    folder.mkdir(parents=True)
+    listed = []
+    for n in range(frames):
+        at = n * every
+        image = Image.new("RGB", (1280, 720), (8, 8, 20))
+        draw = ImageDraw.Draw(image)
+        for row in range(3):
+            x, y = 200 + 40 * at, 150 + 150 * row
+            flare = row == 0 and n % 2 == 1
+            draw.rectangle((x - 20, y - 20, x + 20, y + 20),
+                           fill=PULSE if flare else CYAN)
+            draw.ellipse((x + 380, y - 20, x + 420, y + 20), fill=CYAN)
+        if n == 0:
+            (tmp_path / "samples").mkdir()
+            image.crop((180, 280, 221, 321)).save(tmp_path / "samples" / "block.png")
+            image.crop((580, 280, 621, 321)).save(tmp_path / "samples" / "orb.png")
+        name = f"t{int(at * 1000):08d}.png"
+        image.save(folder / name)
+        listed.append({"ms": int(at * 1000), "file": name})
+    (folder / "frames.json").write_text(json.dumps({"frames": listed}),
+                                        encoding="utf-8")
+    return ".polyweave/references/shapes"
+
+
+SHAPED = {"block": {"colour": "#3fe8ff", "size": [800, 3000],
+                    "samples": ["samples/block.png"]},
+          "orb": {"colour": "#3fe8ff", "size": [800, 3000],
+                  "samples": ["samples/orb.png"]}}
+
+
+def test_two_kinds_of_one_colour_are_told_apart_by_their_samples(tmp_path):
+    made = reference_objects.objects(shapes(tmp_path), SHAPED, root=str(tmp_path))
+    counted = {(g["kind"], g["count"]) for g in made["groups"]}
+    assert counted == {("block", 3), ("orb", 3)}
+
+
+def test_by_colour_alone_the_two_kinds_are_one(tmp_path):
+    alike = {name: {k: v for k, v in kind.items() if k != "samples"}
+             for name, kind in SHAPED.items()}
+    made = reference_objects.objects(shapes(tmp_path), alike, root=str(tmp_path))
+    written = json.loads((tmp_path / made["objects"]).read_text("utf-8"))
+    # Every shape is counted once as a block and once as an orb.
+    assert written["per_frame"][0]["count"] == 12
+
+
+def test_a_kind_with_samples_keeps_what_its_colour_alone_loses(tmp_path):
+    folder = shapes(tmp_path)
+    plain = {"block": {"colour": "#3fe8ff", "size": [1400, 3000]}}
+    lost = reference_objects.objects(folder, plain, root=str(tmp_path))
+    written = json.loads((tmp_path / lost["objects"]).read_text("utf-8"))
+    # The flaring block drops out on the frames it flares.
+    assert [one["count"] for one in written["per_frame"]] == [3, 2, 3, 2]
+    sampled = {"block": {**plain["block"], "samples": ["samples/block.png"]}}
+    kept = reference_objects.objects(folder, sampled, root=str(tmp_path))
+    written = json.loads((tmp_path / kept["objects"]).read_text("utf-8"))
+    assert [one["count"] for one in written["per_frame"]] == [3, 3, 3, 3]
+    assert {(g["kind"], g["count"]) for g in kept["groups"]} == {("block", 3)}
+
+
+def test_each_sample_is_recorded_with_its_digest(tmp_path):
+    made = reference_objects.objects(shapes(tmp_path), SHAPED, root=str(tmp_path))
+    record = provenance.read(made["objects"], root=str(tmp_path))
+    samples = [one for one in record["inputs"] if one["role"] == "sample"]
+    assert [one["path"] for one in samples] == ["samples/block.png", "samples/orb.png"]
+    assert all(one["sha256"] for one in samples)
+    assert record["params"]["kinds"]["orb"]["samples"] == ["samples/orb.png"]
+
+
+@pytest.mark.parametrize("kind", [{"samples": []}, {"samples": ["samples/none.png"]},
+                                  {"samples": ["samples/orb.png"], "match": 0}])
+def test_samples_that_mean_nothing_are_refused(tmp_path, kind):
+    folder = shapes(tmp_path)
+    with pytest.raises(PolyweaveError) as refused:
+        reference_objects.objects(folder, {"orb": {"colour": "#3fe8ff", **kind}},
+                                  root=str(tmp_path))
+    assert refused.value.code == "capture.bad-kinds"
+
+
 def test_frames_that_are_not_there_are_refused(tmp_path):
     (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
     with pytest.raises(PolyweaveError) as refused:

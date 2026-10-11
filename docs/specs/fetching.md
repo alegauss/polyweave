@@ -489,6 +489,17 @@ in the video's own pixels. No game's kinds are built in; they are kept in the re
 `area` leaves the HUD out. Each frame is read at most 480 pixels wide, its islands of a
 kind's colour found four-connected, and positions given back in the video's pixels.
 
+Colour and size alone make two enemies of one colour one kind, and lose a kind whose
+colour flares (§PW404). A kind may name `samples`, a few crops of it taken from the
+frames as pictures under the project, and a `match` (0.2 unless said). Its islands are
+then found at twice its tolerance, and each is kept only where its crop, resized to a
+sample's size, differs from the nearest sample by at most `match`, as a share of the
+widest colour distance averaged over the pixels. An island two sampled kinds both keep
+goes to the one it looks most like. A kind with no samples is found by its colour alone,
+as before. The samples and the match are kept with the kinds in objects.json, and each
+sample is an input of its record with its digest, so a count can be traced to what it
+was matched against.
+
 Detections become tracks, joined to the nearest of their kind in the next frame within
 `speed` (a share of the frame's width a second): each track has its first and last
 second, its path, and how it ended: `left` where its last sight was at the frame's edge,

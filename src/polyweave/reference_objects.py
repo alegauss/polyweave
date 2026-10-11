@@ -42,6 +42,15 @@ TOLERANCE = 0.12
 #: A frame within this share of its width from an edge is at the edge.
 EDGE = 0.04
 
+#: How far an island may differ from a kind's best sample and still be that kind, as a
+#: share of the widest RGB distance averaged over the sample's pixels (§PW404).
+MATCH = 0.2
+
+#: A kind with samples finds its islands this many times as far from its colour, since
+#: the samples, not the colour, decide what it is: a kind whose colour pulses or flares
+#: is not lost when it leaves its tolerance (§PW404).
+WIDEN = 2.0
+
 _COLOUR = re.compile(r"#([0-9a-fA-F]{6})")
 
 
@@ -49,8 +58,9 @@ def _bad(what: str, remedy: str, **extra: Any) -> PolyweaveError:
     return PolyweaveError("capture.bad-kinds", what, remedy, **extra)
 
 
-def declared(kinds: Any) -> dict[str, dict]:
-    """Each kind with its colour as RGB, its tolerance and its size range in pixels."""
+def declared(kinds: Any, here: Path | None = None) -> dict[str, dict]:
+    """Each kind with its colour as RGB, its tolerance, its size range in pixels, and
+    its sample crops read from under the project, where it names any (§PW404)."""
     if not isinstance(kinds, dict) or not kinds:
         raise _bad("no kinds were declared",
                    'pass kinds, such as {"lander": {"colour": "#3fe8ff", '
@@ -80,8 +90,59 @@ def declared(kinds: Any) -> dict[str, dict]:
             "rgb": [int(rgb[i:i + 2], 16) for i in (0, 2, 4)],
             "tolerance": float(tolerance),
             "size": [float(size[0]), float(size[1])],
+            **_sampled(str(name), kind, here),
         }
     return out
+
+
+def _sampled(name: str, kind: dict, here: Path | None) -> dict:
+    """A kind's samples, each a picture under the project read as RGB, and its match."""
+    samples = kind.get("samples")
+    if samples is None:
+        return {}
+    if not isinstance(samples, list) or not samples:
+        raise _bad(f"kind {name!r} has samples {samples!r}",
+                   "list a few crops of the kind taken from the frames, as paths "
+                   "under the project")
+    match = kind.get("match", MATCH)
+    if not isinstance(match, int | float) or not 0 < match <= 1:
+        raise _bad(f"kind {name!r} has match {match!r}",
+                   "write match as a share from 0 to 1 of the widest colour distance")
+    from PIL import Image as Pil
+
+    read = []
+    for one in samples:
+        path = Path(str(one))
+        path = path if path.is_absolute() or here is None else here / path
+        if not path.is_file():
+            raise _bad(f"kind {name!r} names sample {one!r}, which is not there",
+                       "crop the kind from a frame and name the picture under the "
+                       "project", given=str(one))
+        with Pil.open(path) as picture:
+            read.append(np.asarray(picture.convert("RGB"), dtype=np.float64))
+    return {"samples": [str(one) for one in samples], "match": float(match),
+            "pictures": read}
+
+
+def _under(here: Path, one: str) -> Path:
+    path = Path(one)
+    return path if path.is_absolute() else here / path
+
+
+def likeness(crop: np.ndarray, samples: list[np.ndarray]) -> float:
+    """How far a crop is from the nearest sample: the crop resized to each sample's
+    size, their mean colour difference as a share of the widest, the least of them."""
+    from PIL import Image as Pil
+
+    widest = math.sqrt(3) * 255.0
+    best = math.inf
+    for sample in samples:
+        tall, wide = sample.shape[:2]
+        resized = np.asarray(
+            Pil.fromarray(crop.astype(np.uint8)).resize((wide, tall)), dtype=np.float64)
+        best = min(best, float(np.sqrt(((resized - sample) ** 2).sum(axis=2)).mean())
+                   / widest)
+    return best
 
 
 def islands(mask: np.ndarray) -> np.ndarray:
@@ -105,23 +166,54 @@ def islands(mask: np.ndarray) -> np.ndarray:
 
 def detect(rgb: np.ndarray, kinds: dict[str, dict], scale: float) -> list[dict]:
     """Every object of every kind in one frame read at `scale` of the video's size,
-    each with its centre and area in the video's own pixels."""
+    each with its centre and area in the video's own pixels.
+
+    A kind with samples keeps an island only where the island looks like one of them,
+    and an island two such kinds both find goes to the one it looks most like (§PW404).
+    """
     found = []
     pixels = rgb[..., :3].astype(np.float64)
     widest = math.sqrt(3) * 255.0
     for name, kind in kinds.items():
+        sampled = "pictures" in kind
+        reach = min(1.0, kind["tolerance"] * (WIDEN if sampled else 1.0))
         distance = np.sqrt(((pixels - np.array(kind["rgb"])) ** 2).sum(axis=2))
-        labels = islands(distance <= kind["tolerance"] * widest)
+        labels = islands(distance <= reach * widest)
         ids, counts = np.unique(labels[labels >= 0], return_counts=True)
         least, most = (v * scale * scale for v in kind["size"])
         for label, count in zip(ids, counts, strict=True):
             if not least <= count <= most:
                 continue
             ys, xs = np.nonzero(labels == label)
-            found.append({"kind": name, "x": round(float(xs.mean()) / scale, 1),
-                          "y": round(float(ys.mean()) / scale, 1),
-                          "area": round(float(count) / (scale * scale), 1)})
-    return found
+            one = {"kind": name, "x": round(float(xs.mean()) / scale, 1),
+                   "y": round(float(ys.mean()) / scale, 1),
+                   "area": round(float(count) / (scale * scale), 1)}
+            if sampled:
+                crop = pixels[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
+                one["likeness"] = round(likeness(crop, kind["pictures"]), 4)
+                if one["likeness"] > kind["match"]:
+                    continue
+                one["box"] = (int(xs.min()), int(ys.min()),
+                              int(xs.max()), int(ys.max()))
+            found.append(one)
+    return _claimed(found)
+
+
+def _claimed(found: list[dict]) -> list[dict]:
+    """Each island two sampled kinds both kept, left to the kind it looks most like."""
+    sampled = sorted((one for one in found if "box" in one),
+                     key=lambda d: d["likeness"])
+    kept, taken = [], []
+    for one in sampled:
+        left, top, right, bottom = one["box"]
+        if any(left <= b[2] and b[0] <= right and top <= b[3] and b[1] <= bottom
+               for b in taken):
+            continue
+        taken.append(one["box"])
+        kept.append(one)
+    for one in kept:
+        del one["box"]
+    return [one for one in found if "likeness" not in one] + kept
 
 
 def tracked(
@@ -298,7 +390,8 @@ def objects(
     kinds: Annotated[
         dict,
         Param('each kind of object by name: {"colour": "#rrggbb", "size": [least, '
-              'most] pixels, "tolerance": 0 to 1}'),
+              'most] pixels, "tolerance": 0 to 1, "samples": [crops under the '
+              'project], "match": 0 to 1}'),
     ],
     *,
     area: Annotated[
@@ -331,7 +424,7 @@ def objects(
     here = load(root).root
     manifest, listed = _manifest(frames, here)
     folder = manifest.parent
-    kinds_ = declared(kinds)
+    kinds_ = declared(kinds, here)
     if area is not None and (len(area) != 4 or not area[0] < area[2]
                              or not area[1] < area[3]):
         raise _bad(f"area is {area!r}", "write it as [left, top, right, bottom] pixels")
@@ -358,7 +451,8 @@ def objects(
     sheets = _sheet(folder, listed.get("frames", []), tracks) if tracks else []
     written = {
         "frames": provenance.relative(manifest, here),
-        "kinds": {k: {key: v[key] for key in ("colour", "tolerance", "size")}
+        "kinds": {k: {key: v[key] for key in ("colour", "tolerance", "size", "samples",
+                                              "match") if key in v}
                   for k, v in kinds_.items()},
         "area": list(area) if area else None,
         "per_frame": [{"at": at, "count": len(found)} for at, found in seen],
@@ -371,7 +465,10 @@ def objects(
                       newline="\n")
     provenance.write(provenance.build(
         "capture", target, engine={"name": "reference.objects"},
-        inputs=[provenance.source("frames", manifest, root=here)],
+        # Each sample by its digest: a count is traced to what it was matched against.
+        inputs=[provenance.source("frames", manifest, root=here)] + [
+            provenance.source("sample", _under(here, one), root=here)
+            for kind in kinds_.values() for one in kind.get("samples", [])],
         params={"kinds": written["kinds"], "area": written["area"], "speed": speed,
                 "together": together, "apart": apart},
         root=here,

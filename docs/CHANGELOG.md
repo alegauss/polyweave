@@ -350,6 +350,7 @@
 - ✅ **PW382** **a rebuilt level's capture cannot be aligned with the video it copies, so where it plays differently is found by memory** — reference.compare aligns a rebuild's capture with its reference video and lists, with both frames, each second whose counts differ (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW384** **nothing keeps a reference video, or the frames taken from it, out of the repository and out of what ships** — A reference's frames stay in the work area and mark all made from them internal; verify names what git tracks of it and store pages refuse it (design recorded in `docs/specs/provenance.md`).
 - ✅ **PW385** **worlds offered on one tier of a route cannot be held level in whole threat and in what they give to save** — measure.level totals each tier's worlds and names any whose threat is off its tier's band or whose saved count differs, refusing as a gate (design recorded in `docs/specs/measurements.md`).
+- ✅ **PW404** **reference.objects tells kinds apart by colour and size alone, so two enemies of one colour count as one kind** — A kind in reference.objects may name sample crops and a match, so one colour is told apart by shape and a flaring kind is kept (design recorded in `docs/specs/fetching.md`).
 
 ## Block S — Playing the game, not only rendering it
 

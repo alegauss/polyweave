@@ -120,6 +120,7 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.reference_events:drawn": ("internal", "the timeline as a picture"),
     "polyweave.reference_objects:islands": ("internal", "a mask's islands, labelled"),
     "polyweave.reference_objects:detect": ("internal", "one frame's objects"),
+    "polyweave.reference_objects:likeness": ("internal", "a crop against its samples"),
     "polyweave.reference_objects:tracked": ("internal", "detections joined to tracks"),
     "polyweave.reference_objects:formation": ("internal", "a group's rough shape"),
     "polyweave.reference_objects:grouped": ("internal", "tracks born together"),

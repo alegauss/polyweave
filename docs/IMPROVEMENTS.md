@@ -488,23 +488,6 @@ What starship needs from polyweave:
 Until it lands, starship keeps the pass in `dev/` as the thinnest workaround, named
 against this line.
 
-### §PW404 Kinds told apart by sample crops
-
-`reference.objects` (PW379) tells kinds apart by a colour, a tolerance and a size, so
-two kinds of enemy drawn in one colour are one kind, and a kind whose colour shifts as
-it pulses or explodes falls out of its tolerance. PW379's design asked for a few sample
-crops per kind as well; they did not land with it.
-
-Let a kind name `samples`: a few small pictures under the project, crops of the kind
-taken from the frames. Each island the colour finds is then compared with them (its crop
-resized to the sample's size, the least mean colour difference), and kept for the kind
-whose samples it matches best within a `match` bound, or dropped. A kind with no samples
-behaves as today. The record names each sample with its digest, so a count can be traced
-to what it was matched against.
-
-Done when two kinds of one colour and different shape are told apart in a test's drawn
-frames, and a kind with samples keeps what its colour alone would have lost.
-
 ### §PW405 Music sections and the timeline under its frames
 
 `reference.events` (PW381) lays a video's number changes, flashes and strong onsets on
