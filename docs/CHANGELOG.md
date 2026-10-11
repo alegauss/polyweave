@@ -348,6 +348,7 @@
 - ✅ **PW381** **a reference video has no timeline of its score, flashes and sound onsets, so where each wave starts is found by eye** — reference.events lays a video's number changes, flashes and strong onsets on one timeline, listing what it could not read (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW382** **a rebuilt level's capture cannot be aligned with the video it copies, so where it plays differently is found by memory** — reference.compare aligns a rebuild's capture with its reference video and lists, with both frames, each second whose counts differ (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW384** **nothing keeps a reference video, or the frames taken from it, out of the repository and out of what ships** — A reference's frames stay in the work area and mark all made from them internal; verify names what git tracks of it and store pages refuse it (design recorded in `docs/specs/provenance.md`).
+- ✅ **PW385** **worlds offered on one tier of a route cannot be held level in whole threat and in what they give to save** — measure.level totals each tier's worlds and names any whose threat is off its tier's band or whose saved count differs, refusing as a gate (design recorded in `docs/specs/measurements.md`).
 
 ## Block S — Playing the game, not only rendering it
 

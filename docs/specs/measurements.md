@@ -310,6 +310,16 @@ an earlier timeline beside it, with `change` in `total`, `peak_slow` and `longes
 an input. An empty timeline, an event with no second, or one whose wave ends before it
 spawns is `spec.no-targets`.
 
+**The worlds of a tier, held level** (§PW385). A route that offers a choice of worlds on
+each tier is only fair to one score table while every world on a tier is worth the
+same. `measure.level(tiers)` takes the chart's tiers in order, each its worlds by name
+with their events (or events file) as `measure.pressure` reads them, and answers each
+world's `total` threat, `peak` and `count` of the kind `count` names (what a world gives
+to save, say). A world is `unlevel` where its total is more than `band` (a share) from
+its tier's first world's, named with the share it is `off_by`, or where its count
+differs from it. `strict` refuses where any is, as a gate (`spec.unlevel-tier`), naming
+the world, its value, the reference and the band.
+
 ## Flashes in a captured run
 
 The photosensitivity guidance (WCAG 2.3.1, and the Harding test broadcasters use)

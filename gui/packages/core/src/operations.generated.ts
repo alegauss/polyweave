@@ -864,6 +864,20 @@ export interface MeasureFlashesArgs {
   root?: string
 }
 
+/** Whether the worlds offered on each tier of a route are worth the same (§PW385). */
+export interface MeasureLevelArgs {
+  /** the chart's tiers in order, each {world: its events, or their file} */
+  tiers: unknown[]
+  /** how far a world's total threat may be from its tier's first world's, as a share of it; from 0 to …; default 0.1 */
+  band?: number
+  /** the kind whose count every world of a tier must share, such as what is saved; none if empty */
+  count?: string
+  /** refuse where a world is off, as a gate; default false */
+  strict?: boolean
+  /** the project the paths resolve against; default "." */
+  root?: string
+}
+
 /** A wave timeline's threat per second, in its two bounding cases, and its gaps. */
 export interface MeasurePressureArgs {
   /** the events, each {second, kind, weight, until} */
@@ -2314,6 +2328,7 @@ export interface Operations {
   "measure.contrast": MeasureContrastArgs
   "measure.digest": MeasureDigestArgs
   "measure.flashes": MeasureFlashesArgs
+  "measure.level": MeasureLevelArgs
   "measure.pressure": MeasurePressureArgs
   "measure.same": MeasureSameArgs
   "measure.take": MeasureTakeArgs
@@ -2505,6 +2520,7 @@ export const OPERATIONS = [
   "measure.contrast",
   "measure.digest",
   "measure.flashes",
+  "measure.level",
   "measure.pressure",
   "measure.same",
   "measure.take",

@@ -1754,6 +1754,13 @@ CODES: dict[str, Code] = {
         ),
     ),
     # -- capture: the environment a picture is taken in ------------------------
+    "spec.unlevel-tier": Code(
+        means="the worlds offered on one tier of a route are not worth the same",
+        when="a world whose total threat is outside the band of its tier's first "
+        "world's, or which saves a different count of the named kind",
+        doors=("change the worlds' waves until the tier is level",
+               "widen the band where the owner says so"),
+    ),
     "store.internal-input": Code(
         means="a store page would be cut from a picture derived from internal footage",
         when="a key art or logo whose record, or an input's, says internal: frames "

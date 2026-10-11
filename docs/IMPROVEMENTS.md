@@ -509,29 +509,6 @@ What starship needs from polyweave:
 Until it lands, starship keeps the pass in `dev/` as the thinnest workaround, named
 against this line.
 
-### §PW385 Worlds of a tier held level
-
-Spinhold made its shift a chart of worlds (RK210): tiers in order, each a choice of
-worlds, and a run flies one path through it. Arcade's score table is one table, so every
-world on a tier must be worth the same: the same whole threat within a band the owner
-sets, and the same number of Holders to save, which caps the multiplier (RK212).
-
-Nothing in polyweave answers that. PW330 measures one wave timeline's threat per second;
-it does not total a world, count what a world gives to rescue, or hold one world against
-another. Spinhold extended its own stand-in for PW330, dev/pressure.gd, with
-`Pressure.level(world)`, which sums the owner's weights in game/waves/threat.toml over
-the events of a phase's waves and counts its Gleaners as Holders, and with
-`Pressure.unlevel(chart, rule)`, which names every world of a tier whose threat is more
-than `[rules] tier_band` away from the tier's first world's, or whose Holders differ.
-The check lives in dev/check.gd as check_routes_level.
-
-What polyweave should do: an operation that takes several wave timelines declared as one
-tier (or a chart's tiers) with the project's threat weights, reports each one's total
-threat, peak and count of a named kind, and refuses any outside a declared band of a
-reference, naming the world, its value, the reference and the band. A refusal should
-carry the share it is off by. Then the project deletes level and unlevel along with the
-rest of the PW330 stand-in.
-
 ### §PW404 Kinds told apart by sample crops
 
 `reference.objects` (PW379) tells kinds apart by a colour, a tolerance and a size, so

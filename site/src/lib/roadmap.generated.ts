@@ -42,7 +42,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "O", title: "A person sees and answers", open: 0 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
   { block: "Q", title: "Words held to the world", open: 0 },
-  { block: "R", title: "Levels measured before a person plays them", open: 11 },
+  { block: "R", title: "Levels measured before a person plays them", open: 10 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 1 },
   { block: "U", title: "A window on everything a project governs", open: 5 },
@@ -126,13 +126,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "A playtest's trace of spawns, kills and hits cannot be measured or laid against the wave it played",
     why: "A declared wave says what it asks of a player; only a trace says where players struggle, and Starship's balance needs both.",
     deps: ["PW205"],
-  },
-  {
-    id: "PW385",
-    block: "R",
-    symptom: "worlds offered on one tier of a route cannot be held level in whole threat and in what they give to save",
-    why: "A score table shared by routes is only fair while every fork's worlds are worth the same, and nothing measures one world against another.",
-    deps: [],
   },
   {
     id: "PW404",

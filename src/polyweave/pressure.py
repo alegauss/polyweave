@@ -120,6 +120,94 @@ def _curves(events: list[dict], warp: float, window: float) -> dict:
     }
 
 
+def _world(events: Any, here: Path, count: str) -> tuple[dict, Path | None]:
+    """One world's whole: its total threat, its peak, how many of `count` it holds."""
+    found, source = _read(events, here)
+    curves = _curves(found, 0.0, 0.0)
+    return {
+        "total": curves["total"],
+        "peak": curves["peak_slow"],
+        "count": sum(1 for e in found if count and e["kind"] == count),
+    }, source
+
+
+@operation("measure.level")
+def level(
+    tiers: Annotated[
+        list,
+        Param("the chart's tiers in order, each {world: its events, or their file}"),
+    ],
+    *,
+    band: Annotated[
+        float, Param("how far a world's total threat may be from its tier's first "
+                     "world's, as a share of it", lo=0.0)
+    ] = 0.1,
+    count: Annotated[
+        str, Param("the kind whose count every world of a tier must share, such as "
+                   "what is saved; none if empty")
+    ] = "",
+    strict: Annotated[bool, Param("refuse where a world is off, as a gate")] = False,
+    root: Annotated[str, Param("the project the paths resolve against")] = ".",
+) -> dict:
+    """Whether the worlds offered on each tier of a route are worth the same (§PW385).
+
+    Each world's events, as measure.pressure reads them, are totalled: its threat,
+    its peak and its count of `count`. A world is off where its total threat is more
+    than `band` from its tier's first world's, or its count differs from it, named
+    with the share it is off by. `strict` refuses where any is, as a gate.
+    """
+    here = Path(root).resolve()
+    if not isinstance(tiers, list) or not tiers or not all(
+            isinstance(t, dict) and t for t in tiers):
+        raise PolyweaveError(
+            "spec.no-targets",
+            "tiers is not a list of tiers, each its worlds by name",
+            'pass [{"world": <events or file>, ...}, ...] in the chart\'s order',
+        )
+    measured, off, sources = [], [], []
+    for number, tier in enumerate(tiers, start=1):
+        worlds = {}
+        for name, events in tier.items():
+            worlds[name], source = _world(events, here, count)
+            sources += [source] if source else []
+        first_name = next(iter(worlds))
+        first = worlds[first_name]
+        for name, world in worlds.items():
+            share = (abs(world["total"] - first["total"]) / first["total"]
+                     if first["total"] else 0.0)
+            world["off_by"] = round(share, 4)
+            if name == first_name:
+                continue
+            if share > band:
+                off.append({"tier": number, "world": name, "total": world["total"],
+                            "reference": first_name, "reference_total": first["total"],
+                            "off_by": round(share, 4), "band": band, "what": "threat"})
+            if count and world["count"] != first["count"]:
+                off.append({"tier": number, "world": name, "count": world["count"],
+                            "reference": first_name, "reference_count": first["count"],
+                            "what": count})
+        measured.append({"tier": number, "worlds": worlds})
+    if strict and off:
+        one = off[0]
+        said = (f"{one['world']} totals {one['total']:g} against {one['reference']}'s "
+                f"{one['reference_total']:g}, {one['off_by']:.0%} off a band of "
+                f"{band:.0%}" if one["what"] == "threat"
+                else f"{one['world']} holds {one['count']} {count} against "
+                f"{one['reference']}'s {one['reference_count']}")
+        raise PolyweaveError(
+            "spec.unlevel-tier",
+            f"tier {one['tier']} is not level: {said}"
+            + (f", and {len(off) - 1} more" if len(off) > 1 else ""),
+            "change the worlds' waves until each tier totals within the band and "
+            "saves the same, or widen the band if the owner says so",
+            given=one["world"],
+        )
+    return {"tiers": measured, "unlevel": off, "level": not off, "band": band,
+            "count": count,
+            "files": sorted({str(s.relative_to(here)).replace("\\", "/")
+                             for s in sources if s.is_relative_to(here)})}
+
+
 @operation("measure.pressure")
 def pressure(
     events: Annotated[list, _EVENTS] = None,
