@@ -721,9 +721,10 @@ way to the kits' acceptance specs.
 Whatever Starship needs that the kits lack is filed here as friction and fixed in the
 kit, never patched in the game, so the extraction ends with one copy of the code and not
 two. Measured on 2026-10-10 against Starship's bindings.gd, prompts.gd and coop.gd: the
-prompts in words per player (§PW394), prompts per player's device (§PW395), a join the
-game answers (§PW396) and bindings taken from the game's older file (§PW397). Starship's
-own side is moving Controls.MAP into project.godot, the kits' declaration.
+prompts in words per player (PW394, docs/specs/kit.md), prompts per player's device
+(§PW395), a join the game answers (§PW396) and bindings taken from the game's older file
+(§PW397). Starship's own side is moving Controls.MAP into project.godot, the kits'
+declaration.
 
 Done when Starship carries no input code the kits provide, its gate passes on the kits'
 proof, and provenance.read names each kit with its version.
@@ -745,24 +746,6 @@ measured on 2026-10-10, the kits read only their own files, so its user://cotton
 needs a door into them (§PW398). Done when Cottony carries neither file, its own save
 test is replaced by the kit's acceptance, a save written by the current release loads
 after the swap, and its gate passes.
-
-### §PW394 Prompts in words, per player
-
-Measured adopting the prompts kit onto Starship (§PW370). Starship's help lines are
-plain Labels whose string-table text holds `{fire_left}` and `{move}`, and
-game/core/bindings.gd `fill` replaces each with the button that player presses, named in
-the glyphs of their pad (A, CROSS, LB, L1) or as the string table says a key or a
-generic pad's button (`KEYNAME_SPACE`, `PAD_SOUTH`), so a rebind and a language change
-both reach the line. The four moves read as one prompt: WASD on keys, LS where all four
-are one stick. The kit answers only an icon path and `bbcode` for a RichTextLabel, for
-the one family in use.
-
-Add to the kit a `named(action, player := 0)` that answers the binding in words through
-TranslationServer under `KEYNAME_` and `PAD_` rows the game's table may carry, a `fill`
-over `{action}` and `{move}` marks, and the per-player family the players kit seats
-(PW357's pads). Icons stay the default; words are what a game whose look is lettering
-chooses. Done when Starship's help lines are filled by the kit and its check of RK179
-holds on the kit's proof.
 
 ### §PW395 Prompts that follow each player's own device
 

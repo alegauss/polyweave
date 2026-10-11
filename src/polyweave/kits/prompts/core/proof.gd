@@ -45,6 +45,41 @@ func _initialize() -> void:
 	var south_switch := "%s/switch/south_64.png" % prompts.icons_root
 	if not FileAccess.file_exists(south_xbox) or not FileAccess.file_exists(south_switch):
 		failed.append("the south button's icons are missing")
+	# A help line in words (§PW394), on actions of the proof's own so it holds in any
+	# game: each family names a pad's button as the pad prints it, a key as the string
+	# table says it, and a second player's copy is their own.
+	var own := &"pw_prompts_proof"
+	var second := Prompts.action_of(own, 1)
+	for made in [own, second]:
+		InputMap.add_action(made)
+	var space := InputEventKey.new()
+	space.physical_keycode = KEY_SPACE
+	var south := InputEventJoypadButton.new()
+	south.button_index = JOY_BUTTON_A
+	var east := InputEventJoypadButton.new()
+	east.button_index = JOY_BUTTON_B
+	InputMap.action_add_event(own, space)
+	InputMap.action_add_event(own, south)
+	InputMap.action_add_event(second, east)
+	var words := {"xbox": "PRESS A", "playstation": "PRESS CROSS", "switch": "PRESS B"}
+	for family in words:
+		var line: String = prompts.fill("PRESS {%s}" % own, 0, family)
+		if line != words[family]:
+			failed.append("a south button on %s reads %s" % [family, line])
+	var spoken := Translation.new()
+	spoken.locale = TranslationServer.get_locale()
+	spoken.add_message("KEYNAME_SPACE", "BARRA")
+	TranslationServer.add_translation(spoken)
+	if prompts.named(own, 0, "keyboard") != "BARRA":
+		failed.append("a key's name ignores the string table: %s"
+			% prompts.named(own, 0, "keyboard"))
+	TranslationServer.remove_translation(spoken)
+	if prompts.named(own, 1, "xbox") != "B":
+		failed.append("the second player's binding reads %s" % prompts.named(own, 1, "xbox"))
+	for made in [own, second]:
+		InputMap.erase_action(made)
+	if prompts.fill("no marks here") != "no marks here":
+		failed.append("a line with no marks was changed")
 	prompts.free()
 	if failed.is_empty():
 		print("KIT PROVED")

@@ -176,6 +176,16 @@ every family it is bound for, a pad's name to its family, and a key after a pad 
 keyboard's icons. The kit reads a game's `project.godot` as Godot writes it, a value
 over several lines included.
 
+A game whose help lines are lettering has them in words (§PW394): `named(action, player,
+family)` answers a binding as the player holding it reads it, a pad's face buttons,
+shoulders and triggers in their family's glyphs (A, CROSS, B on a Switch's south), and a
+key, a stick's direction or the d-pad through the game's string table under `KEYNAME_`
+and `PAD_` rows, the name itself where it has none. `fill(text, player)` replaces each
+`{action}` mark and `{move}`, the four `moves` read as one (WASD on keys, the stick alone
+where all four are its directions). A second player's binding is read from their own
+copy, `p2_<action>`, in the family of the pad the players kit seated them on. Its proof
+holds this on actions of its own, so it holds in any game.
+
 **remap** (§PW345, requires prompts): rebinding the controls, extracted from Starship's
 bindings. `PolyweaveBindings` stores a binding as codes a settings file holds
 (`key:<physical keycode>`, `mouse:<n>`, `button:<n>`, `axis:<n>:<-1 or 1>`); keys and

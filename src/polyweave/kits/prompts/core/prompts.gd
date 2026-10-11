@@ -129,6 +129,106 @@ func icon(action: StringName, in_family := "") -> Texture2D:
 	return ImageTexture.create_from_image(image) if image != null else null
 
 
+## What a family's face buttons, shoulders, triggers and menu buttons are called, by
+## where each sits, as the pad prints them (§PW394). A Switch pad's south button is B.
+const GLYPHS := {
+	"xbox": {"south": "A", "east": "B", "west": "X", "north": "Y", "lb": "LB",
+		"rb": "RB", "lt": "LT", "rt": "RT", "select": "VIEW", "start": "MENU"},
+	"playstation": {"south": "CROSS", "east": "CIRCLE", "west": "SQUARE",
+		"north": "TRIANGLE", "lb": "L1", "rb": "R1", "lt": "L2", "rt": "R2",
+		"select": "CREATE", "start": "OPTIONS"},
+	"switch": {"south": "B", "east": "A", "west": "Y", "north": "X", "lb": "L",
+		"rb": "R", "lt": "ZL", "rt": "ZR", "select": "MINUS", "start": "PLUS"},
+}
+## What every pad calls its sticks, their clicks and its d-pad, read through the
+## game's string table under PAD_ (a stick's direction is PAD_LS_LEFT, say).
+const SPOKEN := {
+	"ls": "LS", "rs": "RS", "dpad_up": "D-UP", "dpad_down": "D-DOWN",
+	"dpad_left": "D-LEFT", "dpad_right": "D-RIGHT",
+}
+## The four moves, in the order a help line reads them, which `{move}` names as one.
+var moves: Array[String] = ["move_up", "move_left", "move_down", "move_right"]
+
+
+## A player's own action: the first player's is the action itself, every other's the
+## copy the players kit gives them, p2_jump and so on.
+static func action_of(action: StringName, player := 0) -> StringName:
+	return action if player == 0 else StringName("p%d_%s" % [player + 1, action])
+
+
+## The family the player holds: the first player's is the one in use; another's is
+## the pad the players kit seated them on, read by its name.
+func family_for(player := 0) -> String:
+	if player == 0 or not ResourceLoader.exists(
+			"res://addons/polyweave/players/players.gd"):
+		return family
+	var seats: Node = load("res://addons/polyweave/players/players.gd").shared()
+	var pad: int = seats.pads.get(player, -1)
+	return family_of(Input.get_joy_name(pad)) if pad >= 0 else family
+
+
+## A name as the game's string table says it under `prefix`, or the name itself where
+## the table has no row for it.
+static func said(prefix: String, name: String) -> String:
+	var key := prefix + name.to_upper().replace("-", "_").replace(" ", "_")
+	var text := TranslationServer.translate(key)
+	return name if String(text) == key else String(text)
+
+
+## An action's binding in words, as the player holding it reads it (§PW394): a pad's
+## buttons in its family's glyphs, a key and a stick through the string table.
+func named(action: StringName, player := 0, in_family := "") -> String:
+	var wanted := in_family if in_family != "" else family_for(player)
+	var event := event_for(action_of(action, player), wanted)
+	if event == null:
+		return String(action).to_upper()
+	if event is InputEventKey:
+		var code: int = event.physical_keycode if event.physical_keycode else event.keycode
+		return said("KEYNAME_", OS.get_keycode_string(code).to_upper())
+	if event is InputEventMouseButton:
+		return said("KEYNAME_", button_of(event).to_upper().replace("_", " "))
+	var button := button_of(event)
+	var glyphs: Dictionary = GLYPHS.get(wanted, GLYPHS["xbox"])
+	if glyphs.has(button):
+		return glyphs[button]
+	if event is InputEventJoypadMotion and button in ["l_stick", "r_stick"]:
+		var stick := "LS" if button == "l_stick" else "RS"
+		var axis: int = event.axis
+		var vertical := axis == JOY_AXIS_LEFT_Y or axis == JOY_AXIS_RIGHT_Y
+		var way := ("DOWN" if event.axis_value > 0 else "UP") if vertical \
+			else ("RIGHT" if event.axis_value > 0 else "LEFT")
+		return said("PAD_", "%s %s" % [stick, way])
+	return said("PAD_", SPOKEN.get(button, button.to_upper()))
+
+
+## The four moves as one prompt: WASD on keys, the stick alone where all four are one
+## stick's directions, or each in turn.
+func move_named(player := 0, in_family := "") -> String:
+	var four := []
+	for one in moves:
+		four.append(named(one, player, in_family))
+	var stick: String = four[0].get_slice(" ", 0)
+	if four.all(func(n: String) -> bool: return " " in n and n.get_slice(" ", 0) == stick):
+		return stick
+	if four.all(func(n: String) -> bool: return n.length() == 1):
+		return "".join(four)
+	return " ".join(four)
+
+
+## `text` with each `{action}` replaced by what player `player` presses for it and
+## `{move}` by the four moves, so a help line holds marks and never a fixed button.
+func fill(text: String, player := 0, in_family := "") -> String:
+	if not "{" in text:
+		return text
+	if "{move}" in text:
+		text = text.replace("{move}", move_named(player, in_family))
+	var mark := RegEx.create_from_string("\\{([A-Za-z0-9_]+)\\}")
+	for found in mark.search_all(text):
+		text = text.replace(found.get_string(0),
+			named(StringName(found.get_string(1)), player, in_family))
+	return text
+
+
 ## Text for a RichTextLabel with each `[action=jump]` drawn as that action's icon.
 func bbcode(text: String, size := 32) -> String:
 	var tag := RegEx.create_from_string("\\[action=([A-Za-z0-9_]+)\\]")
