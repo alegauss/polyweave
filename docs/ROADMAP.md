@@ -20,6 +20,8 @@
 - 📋 **PW59** (deps: PW53 ⏸, PW54 ✅, PW55 ✅, PW56 ⏳, PW57, PW58 ✅) **nothing says how much of Cottony still does its own version of what the plugin does** — Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion. → §PW59
 - ⏳ **PW56** (deps: PW57) **twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent** — The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question. → §PW56
 - 🛠 **PW372** (deps: Spinhold RK215) **a camera move cannot be declared as a clip or played by the game, so a cutscene's shots are numbers in the project** — No shot is yet captured onto a sitting for a person to accept, and Starship's opening still reads its own JSON. → §PW372
+- 📋 **PW408** (deps: —) **vfx.build draws no star, twinkle or heart, so a cute game's particles fall back to a flake or are drawn in game code** — Spinhold's Quilt twinkles shipped as flakes, and its hearts and tufts are still meshes built in GDScript. → §PW408
+- 📋 **PW409** (deps: —) **describe lists vfx.build's arguments but not the keys a declaration holds, so an effect is written from vfx.py** — Writing two Quilt effects meant reading KEYS, KINDS, EMISSIONS and SHAPES in the source. → §PW409
 
 ## Block I — Voxel models from a declaration
 

@@ -286,6 +286,45 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
+### §PW408 Particle shapes a cute game repeats
+
+Where: spinhold RK206, the Quilt's gold twinkles shed by the Sunline burst,
+art/vfx/quilt.vfx.toml effect `quilt_twinkles`, built with `python -m polyweave
+vfx.build --source art/vfx/quilt.vfx.toml --out game/vfx`.
+
+The look wanted is Cottony's twinkle: a four-pointed star, two long thin points crossed
+with two short ones. `shape` takes square, dot, ring, flake (SHAPES in vfx.py) or a
+picture's path, and none of them is a star. The effect ships with `shape = "flake"`,
+which reads as a soft square sparkle, not a twinkle. The first draft of the effect drew
+the star as a SurfaceTool mesh inside game/world/stuffing.gd, which is exactly the
+artefact code the owner's rule sends to polyweave; it was removed for the declared
+effect.
+
+The same gap stands behind Stuffing's hearts and tufts (a heart mesh and a squashed
+sphere built in GDScript): the brand's particles are shapes the declaration cannot name.
+
+What polyweave should do: grow SHAPES with the shapes a cute game's particles repeat (a
+four-point `twinkle`, a five-point `star`, a `heart`), each drawn as the others are into
+the scene's texture, so a declaration names the look and the project draws nothing. A
+`mesh` draw pass for a shape that needs depth (a puffy tuft) would close the rest.
+
+### §PW409 The vfx declaration's vocabulary in describe
+
+Where: spinhold RK206, writing art/vfx/quilt.vfx.toml for two new effects.
+
+`python -m polyweave describe` lists vfx.build's parameters (source, effect, out, root)
+and nothing of what a declaration may hold. To learn that `emission = "box"` takes
+half-`extents`, that `ribbon` is a trail through each particle's path, that `gravity`,
+`one_shot` and `explosiveness` exist and which `shape` names are allowed, the agent read
+KEYS, KINDS, EMISSIONS and SHAPES in src/polyweave/vfx.py and its module docstring. An
+existing project file (trails.vfx.toml) showed only the keys it happened to use.
+
+What polyweave should do: put the declaration's vocabulary where the agent asks, as
+PW155 did for the measurement vocabulary. `describe vfx.build` (or a `schema.read` of
+the vfx declaration) lists each key with its type, default, range and one line on what
+it does, plus the allowed kinds, emissions, blends and shapes, so an effect is written
+without opening the source.
+
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once
