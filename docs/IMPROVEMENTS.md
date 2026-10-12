@@ -325,6 +325,33 @@ the vfx declaration) lists each key with its type, default, range and one line o
 it does, plus the allowed kinds, emissions, blends and shapes, so an effect is written
 without opening the source.
 
+### §PW410 Refusals that hide the service's reason
+
+Where: spinhold RK218, the pilot's voice, on an ElevenLabs account on the free tier.
+
+`python -m polyweave voice.design --entity pilot --out art/review/pilot_voice` printed
+only
+
+    fetch.service-error: the service answered 403
+      do: read the detail; a 401 is a key the service does not accept, or an account out
+      of credits, and a 422 words it would not use
+
+with no detail to read. Run again with `--json`, the refusal carried it:
+`{"detail":{"type":"authorization_error","code":"feature_not_available","message":
+"Creating a voice through the API is only available on a paid plan."}}`. The remedy
+names 401 and 422 and says nothing of a 403.
+
+Two gaps:
+
+1. The text rendering of a refusal drops its `detail`, the one field the remedy points
+   at. Print it (or its `message`) under the remedy, as the JSON already carries it.
+2. A plan that cannot reach a feature is knowable before a spend: ElevenLabs'
+   `/v1/user/subscription` (free) answers the tier. `voice.design` and `purchase.quote`
+   could read it and refuse with a code of its own (`fetch.plan-lacks`) naming the plan
+   that has the feature. The same read could note that a free tier's takes carry no
+   commercial licence, which the take's record and `provenance.credits` should say,
+   since a game shipping them commercially would be in breach.
+
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once
