@@ -20,7 +20,6 @@
 - 📋 **PW59** (deps: PW53 ⏸, PW54 ✅, PW55 ✅, PW56 ⏳, PW57, PW58 ✅) **nothing says how much of Cottony still does its own version of what the plugin does** — Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion. → §PW59
 - ⏳ **PW56** (deps: PW57) **twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent** — The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question. → §PW56
 - 🛠 **PW372** (deps: Spinhold RK215) **a camera move cannot be declared as a clip or played by the game, so a cutscene's shots are numbers in the project** — No shot is yet captured onto a sitting for a person to accept, and Starship's opening still reads its own JSON. → §PW372
-- 📋 **PW409** (deps: —) **describe lists vfx.build's arguments but not the keys a declaration holds, so an effect is written from vfx.py** — Writing two Quilt effects meant reading KEYS, KINDS, EMISSIONS and SHAPES in the source. → §PW409
 - 📋 **PW410** (deps: —) **a 403 from ElevenLabs prints with no detail, and a free plan's missing feature is found only by spending** — Spinhold's pilot voice design failed on a free plan, and the reason showed only under --json. → §PW410
 - 📋 **PW427** (deps: —) **vfx.build draws every particle as a flat quad, so a puffy tuft with depth is still a mesh built in game code** — Spinhold's Stuffing tufts are a squashed sphere built in GDScript, so the effect's look is split between a declaration and a script. → §PW427
 
@@ -29,6 +28,8 @@
 ## Block J — A bar a person sets once
 
 ## Block K — Reached without reading the source
+
+- 📋 **PW430** (deps: —) **an MCP caller has no describe, so what a vfx declaration may hold is read only on the command line** — describe vfx.build answers the declaration's keys, and the MCP tools list carries only the summary and the parameters. → §PW430
 
 ## Block L — What a run leaves as evidence
 

@@ -224,6 +224,23 @@ def test_a_picture_can_be_a_particle_s_shape(tmp_path):
     assert 'albedo_texture = ExtResource("picture")' in built
 
 
+def test_describe_says_what_a_declaration_holds():
+    """§PW409: writing two Quilt effects meant reading KEYS and SHAPES in vfx.py."""
+    from polyweave import describe
+
+    said = describe.describe("vfx.build")["declares"]
+    assert set(said["keys"]) == set(vfx.KEYS) == set(vfx.ABOUT)
+    assert said["keys"]["amount"]["required"] is True
+    assert said["keys"]["blend"] == {
+        "type": "str", "required": False, "default": "add",
+        "choices": ["add", "mix"], "about": vfx.ABOUT["blend"]}
+    assert "heart" in said["keys"]["shape"]["choices"]
+    assert said["keys"]["emission"]["choices"] == list(vfx.EMISSIONS)
+    assert "[effect.<name>.<part>]" in said["file"]
+    # The listing of every operation stays as short as it was.
+    assert all("declares" not in one for one in describe.describe())
+
+
 CUTE = """\
 [effect.twinkles]
 amount = 8

@@ -154,6 +154,7 @@
 - ✅ **PW372 (camera clip declared and built)** **a camera move cannot be declared as a clip or played by the game, so a cutscene's shots are numbers in the project** — clip.camera builds a *.camera.toml of shots into a Camera3D scene the game seeks by time, cutting with a mark, in its anchors' frame, and records it.
 - ✅ **PW373** **game.shot answers success and a path when the save failed, and never makes the folder it is given** — game.shot and a batch's shot make the folder they are given, and a save that wrote no file is refused as driver.shot-not-written with the engine's error (design recorded in `docs/specs/driving.md`).
 - ✅ **PW408** **vfx.build draws no star, twinkle or heart, so a cute game's particles fall back to a flake or are drawn in game code** — vfx.build draws a twinkle, a star and a heart as a picture inside the scene, so a cute game's particles are declared and nothing is imported (design recorded in `docs/specs/vfx.md`).
+- ✅ **PW409** **describe lists vfx.build's arguments but not the keys a declaration holds, so an effect is written from vfx.py** — describe vfx.build answers declares, each key a *.vfx.toml holds with its type, default, choices and sentence, so no one reads vfx.py (design recorded in `docs/specs/tool-surface.md`).
 
 ## Block I — Voxel models from a declaration
 

@@ -96,6 +96,41 @@ KEYS: dict[str, tuple[type | tuple, Any]] = {
     "gap": (float, 0.3),
 }
 
+#: What each key means, as `describe vfx.build` says it (§PW409): a key here and not in
+#: KEYS, or there and not here, fails a test, so the two cannot drift.
+ABOUT: dict[str, str] = {
+    "kind": "what is drawn: particles, a ribbon through each particle's path, or a "
+            "path_ribbon through the path the emitter flew",
+    "amount": "the particles alive at once, the effect's budget; a path_ribbon's "
+              "points; a whole number, at least 1",
+    "lifetime": "seconds a particle, or a path_ribbon's point, lives; above 0",
+    "explosiveness": "0 starts the particles evenly over a life, 1 all at once",
+    "randomness": "how unevenly they start, 0 to 1",
+    "one_shot": "true emits once and stops, as a burst",
+    "emission": "where they start: a point, a sphere of radius, or a box of extents",
+    "radius": "the emitting sphere's radius, in metres",
+    "direction": "the way they set off, as [x, y, z]",
+    "spread": "degrees either side of direction, 0 to 180",
+    "speed": "metres a second at the start, as [least, most]",
+    "gravity": "the pull on every particle, metres a second squared, as [x, y, z]",
+    "size": "a quad's side, or a ribbon's width, in metres",
+    "size_over_life": "scales evenly across the life, at least two, none below 0",
+    "colour_over_life": "colours evenly across the life, #rrggbb or #rrggbbaa, at "
+                        "least two",
+    "blend": "add lights what is behind, mix paints over it",
+    "trail": "seconds a ribbon's trail lasts behind each particle",
+    "damping": "metres a second of speed lost each second, a number or [least, most]",
+    "angle": "a particle's turn at birth, in degrees, a number or [least, most]",
+    "angular_velocity": "its spin, degrees a second, a number or [least, most]",
+    "extents": "the emitting box's half-sizes, in metres, as [x, y, z]",
+    "shape": "the picture on each quad: square draws none, dot, ring and flake are "
+             "gradients, twinkle, star and heart are drawn; or a picture's path "
+             "under the project",
+    "facing": "the direction a path_ribbon's width lies along, as [x, y, z]",
+    "step": "seconds between a path_ribbon's points",
+    "gap": "metres the emitter moves before a path_ribbon adds a point anyway",
+}
+
 #: Every effect measure a predicate may bound, and what it says.
 EFFECTS: dict[str, str] = {
     "lifetime": "seconds a particle lives",
@@ -689,7 +724,26 @@ def shipped_folder(config, where: Path, out: str | None, address: str | None,
     return where.parent
 
 
-@operation("vfx.build")
+def _vocabulary() -> dict:
+    """What a *.vfx.toml may hold, for `describe vfx.build` (§PW409)."""
+    choices = {"kind": KINDS, "emission": EMISSIONS, "blend": BLENDS, "shape": NAMED}
+    keys = {}
+    for key, (kind, default) in KEYS.items():
+        keys[key] = {
+            "type": kind.__name__,
+            "required": default is None,
+            "default": default,
+            **({"choices": list(choices[key])} if key in choices else {}),
+            "about": ABOUT[key],
+        }
+    return {
+        "file": "a *.vfx.toml of [effect.<name>] tables, or an effect made of parts "
+                "as [effect.<name>.<part>], each part an effect of its own",
+        "keys": keys,
+    }
+
+
+@operation("vfx.build", declares=_vocabulary)
 def build(
     source: Annotated[str, Param("the *.vfx.toml, relative to the project")],
     effect: Annotated[str, Param("one effect; left out, every one")] = None,

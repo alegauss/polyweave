@@ -286,23 +286,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW409 The vfx declaration's vocabulary in describe
-
-Where: spinhold RK206, writing art/vfx/quilt.vfx.toml for two new effects.
-
-`python -m polyweave describe` lists vfx.build's parameters (source, effect, out, root)
-and nothing of what a declaration may hold. To learn that `emission = "box"` takes
-half-`extents`, that `ribbon` is a trail through each particle's path, that `gravity`,
-`one_shot` and `explosiveness` exist and which `shape` names are allowed, the agent read
-KEYS, KINDS, EMISSIONS and SHAPES in src/polyweave/vfx.py and its module docstring. An
-existing project file (trails.vfx.toml) showed only the keys it happened to use.
-
-What polyweave should do: put the declaration's vocabulary where the agent asks, as
-PW155 did for the measurement vocabulary. `describe vfx.build` (or a `schema.read` of
-the vfx declaration) lists each key with its type, default, range and one line on what
-it does, plus the allowed kinds, emissions, blends and shapes, so an effect is written
-without opening the source.
-
 ### §PW410 Refusals that hide the service's reason
 
 Where: spinhold RK218, the pilot's voice, on an ElevenLabs account on the free tier.
@@ -358,6 +341,26 @@ as it flies) and whether `angle` then means a turn about the view axis or all th
 ## Block J — A bar a person sets once
 
 ## Block K — Reached without reading the source
+
+### §PW430 A declaration's vocabulary over MCP
+
+Where: PW409 gave `describe vfx.build` a `declares` answer, the keys a *.vfx.toml may
+hold with each one's type, default, choices and sentence. It is reached through `python
+-m polyweave describe vfx.build` and through `describe.describe()` in Python.
+
+The MCP server (src/polyweave/server.py) lists every operation as a tool whose
+description is the summary and whose inputSchema is the parameter set. It has no tool
+for `describe`, `capabilities` or `explain`, so an agent that drives polyweave through
+the MCP tools sees `source: the *.vfx.toml` and nothing of what that file may hold. It
+falls back to the shell, or to reading vfx.py, which is what PW409 was filed against.
+
+What polyweave should do: put the declaration where the MCP caller looks. Either a
+`describe` tool beside the operations, answering `describe(name)` as the CLI does
+(declares included), or the vocabulary carried in the inputSchema itself, as the
+description of the parameter that names the file. The first keeps tools/list short and
+serves every later `declares` an operation grows; the second needs no extra call but
+costs every listing the vocabulary's tokens, which PW129 bounds. The proof: over MCP, an
+agent learns that `shape` takes `heart` without a shell or a source read.
 
 ## Block L — What a run leaves as evidence
 

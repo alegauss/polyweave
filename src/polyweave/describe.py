@@ -66,6 +66,9 @@ class Operation:
     parameters: tuple[dict, ...]
     #: It draws on a paid service's balance (§PW308): read, never kept in a list.
     spends: bool = False
+    #: What the file it builds from may hold, asked of the module when described
+    #: (§PW409): an effect written from `describe`, not from the source.
+    declares: Callable[[], dict] | None = None
 
     def as_dict(self) -> dict:
         return {
@@ -189,13 +192,15 @@ def operation(
     kind: str | None = None,
     injects: Sequence[str] = (),
     spends: bool = False,
+    declares: Callable[[], dict] | None = None,
 ) -> Callable:
     """Register `fn` as an operation a caller can discover and describe.
 
     `produces` is what §2 asserts about its output; `kind` is the job kind where the
     work is asynchronous. `injects` names the parameters the harness supplies, which a
     caller never passes and never needs described. `spends` marks one that draws on a
-    paid service's balance (§PW308).
+    paid service's balance (§PW308). `declares` answers what the file it builds from may
+    hold, which `describe(name)` adds as `declares` (§PW409).
     """
 
     def register(fn: Callable) -> Callable:
@@ -221,6 +226,7 @@ def operation(
             injects=tuple(injects),
             parameters=tuple(_parameters(name, fn, tuple(injects))),
             spends=spends,
+            declares=declares,
         )
         return fn
 
@@ -308,13 +314,15 @@ def describe(name: str | None = None) -> dict | list[dict]:
 
     The registry is loaded first (§PW124): registration is an import's side effect, so
     a fresh process asking `capabilities()` used to list whatever happened to have been
-    imported, which could be nothing.
+    imported, which could be nothing. One operation asked for by name also says what
+    the file it builds from may hold, where it declares that (§PW409); the listing of
+    every operation leaves it out, since it is read when an operation is chosen.
     """
     load()
     if name is None:
         return [_REGISTRY[n].as_dict() for n in operations()]
     try:
-        return _REGISTRY[name].as_dict()
+        registered = _REGISTRY[name]
     except KeyError:
         raise PolyweaveError(
             "op.unknown",
@@ -324,6 +332,10 @@ def describe(name: str | None = None) -> dict | list[dict]:
             given=name,
             allowed=_REGISTRY,
         ) from None
+    said = registered.as_dict()
+    if registered.declares is not None:
+        said["declares"] = registered.declares()
+    return said
 
 
 def validate(name: str, args: dict) -> dict:

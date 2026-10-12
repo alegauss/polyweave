@@ -217,6 +217,11 @@ both answers.
   cannot drift because the sentence is **part of the parameter**, carried in its annotation:
   an operation whose parameter has none is refused where it is registered, and deleting a
   parameter deletes its description with it.
+- **An operation that builds from a file says what the file holds.** Where a parameter
+  names a declaration (`vfx.build`'s `*.vfx.toml`), `describe(operation)` adds
+  `declares`: the file's shape and each key with its type, default, range or choices and
+  one sentence, read from the same tables the build checks against, so an effect is
+  written without opening the module (§PW409).
 - **A declared range is enforced, or it is a comment.** The same declaration that `describe`
   reports is what refuses an out-of-range argument (`op.out-of-range`), so the two cannot
   disagree about what is allowed.
