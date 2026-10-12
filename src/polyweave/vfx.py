@@ -19,13 +19,16 @@ declared in a `*.vfx.toml` instead, and `vfx.build` writes it as a Godot scene:
     damping = [6.0, 10.0]         # metres a second lost each second, or one number
     angle = [0, 360]              # a particle's turn at birth, in degrees
     angular_velocity = [-240, 240]  # its spin, degrees a second
-    shape = "dot"                 # square, dot, ring, flake, or a picture's path
+    shape = "dot"                 # square, dot, ring, flake, twinkle, star, heart,
+                                  # or a picture's path
     randomness = 0.3              # how unevenly they start, 0 to 1 (§PW285)
 
 `emission` is a point, a sphere of `radius` or a box of half-`extents` (§PW281), and a
 `shape` other than a square is a texture on each quad: a soft dot, a ring or a flake
-drawn from a gradient, as Starship's accepted trails draw them, or a picture of the
-project's own.
+drawn from a gradient, as Starship's accepted trails draw them; a four-point twinkle, a
+five-point star or a heart, which a cute game's particles repeat and no gradient draws,
+written into the scene as its own small picture (§PW408); or a picture of the project's
+own.
 
 A `path_ribbon` is a ribbon of light behind a moving emitter, as a ship's engine leaves
 (§PW281): a Node3D the game puts where the engine is, whose own script keeps the points
@@ -138,6 +141,60 @@ SHAPES: dict[str, tuple[tuple[tuple[float, float], ...], bool]] = {
     "flake": (((0.0, 1.0), (0.7, 1.0), (0.75, 0.0)), False),
 }
 
+#: The side, in pixels, of a drawn shape's texture, and the samples across a pixel.
+DRAWN_SIDE, _SAMPLES = 64, 4
+
+
+def _twinkle(u: float, v: float) -> float:
+    """Cottony's twinkle: four thin spikes, the upright pair longer, by a soft core."""
+    r, turn = math.hypot(u, v), math.atan2(v, u)
+    reach = 0.6 * math.cos(turn) ** 2 + 0.92 * math.sin(turn) ** 2
+    # Thin toward the tip, or it reads as a plus sign.
+    spike = 1.0 if r <= 0.06 + reach * abs(math.cos(2 * turn)) ** 14 else 0.0
+    return max(spike, 0.55 * math.exp(-((r / 0.2) ** 2)))
+
+
+#: A five-point star's corners, point up, its inner corners half its outer reach.
+_STAR = [(r * math.cos(math.pi / 2 + i * math.pi / 5),
+          r * math.sin(math.pi / 2 + i * math.pi / 5))
+         for i, r in enumerate([0.92, 0.46] * 5)]
+
+
+def _star(u: float, v: float) -> float:
+    inside = False
+    for (x1, y1), (x2, y2) in zip(_STAR, _STAR[1:] + _STAR[:1], strict=True):
+        if (y1 > v) != (y2 > v) and u < x1 + (v - y1) * (x2 - x1) / (y2 - y1):
+            inside = not inside
+    return 1.0 if inside else 0.0
+
+
+def _heart(u: float, v: float) -> float:
+    x, y = u * 1.3, v * 1.3 + 0.12
+    return 1.0 if (x * x + y * y - 1) ** 3 - x * x * y ** 3 <= 0 else 0.0
+
+
+#: A particle's shape no gradient can draw, as the alpha it has at each point of a
+#: square from -1 to 1, y up: drawn into a texture inside the scene (§PW408).
+DRAWN = {"twinkle": _twinkle, "star": _star, "heart": _heart}
+
+#: Every shape a declaration can name, a picture's path aside.
+NAMED = ("square", *SHAPES, *DRAWN)
+
+
+def _drawn_alpha(shape: str, side: int = DRAWN_SIDE) -> list[int]:
+    """A drawn shape's alpha, row by row from the top, each pixel the mean of its
+    samples so the edge is smooth."""
+    at, n = DRAWN[shape], _SAMPLES
+    alpha = []
+    for row in range(side):
+        for col in range(side):
+            total = sum(at(2 * (col + (i + 0.5) / n) / side - 1,
+                           1 - 2 * (row + (j + 0.5) / n) / side)
+                        for i in range(n) for j in range(n))
+            alpha.append(round(255 * total / (n * n)))
+    return alpha
+
+
 #: A shape that names a picture instead, by its file's suffix.
 PICTURES = (".png", ".webp", ".jpg", ".jpeg", ".svg")
 BLENDS = ("add", "mix")
@@ -178,14 +235,14 @@ def _range(name: str, key: str, value: Any, *, least: float | None = 0.0) -> lis
 def _shape(name: str, value: Any, root: Path | None) -> str:
     if not isinstance(value, str) or not value:
         raise _bad(name, f"sets shape to {value!r}",
-                   f"name one of square, {', '.join(SHAPES)}, or a picture's path")
-    if value == "square" or value in SHAPES:
+                   f"name one of {', '.join(NAMED)}, or a picture's path")
+    if value in NAMED:
         return value
     if Path(value).suffix.lower() not in PICTURES:
         raise _bad(name, f"has shape {value!r}",
-                   f"name one of square, {', '.join(SHAPES)}, or a picture "
+                   f"name one of {', '.join(NAMED)}, or a picture "
                    f"({', '.join(PICTURES)}) under the project",
-                   given=value, allowed=["square", *SHAPES])
+                   given=value, allowed=list(NAMED))
     picture = value.removeprefix("res://")
     if root is not None and not (root / picture).is_file():
         raise _bad(name, f"has shape {value!r}, and there is no picture there",
@@ -366,6 +423,16 @@ def _shaped(effect: dict) -> tuple[str, str, str]:
     shape = effect["shape"]
     if shape == "square":
         return "", "", ""
+    if shape in DRAWN:
+        # White, with the shape in its alpha, inside the scene: nothing to import.
+        pixels = ", ".join(f"255, {a}" for a in _drawn_alpha(shape))
+        own = ('[sub_resource type="Image" id="drawn"]\n'
+               f'data = {{\n"data": PackedByteArray({pixels}),\n'
+               f'"format": "LumAlpha8",\n"height": {DRAWN_SIDE},\n"mipmaps": false,\n'
+               f'"width": {DRAWN_SIDE}\n}}\n\n'
+               '[sub_resource type="ImageTexture" id="shape"]\n'
+               'image = SubResource("drawn")\n\n')
+        return "", own, 'albedo_texture = SubResource("shape")\n'
     if shape not in SHAPES:
         external = f'[ext_resource type="Texture2D" path="res://{shape}" id="picture"]'
         return f"{external}\n\n", "", 'albedo_texture = ExtResource("picture")\n'

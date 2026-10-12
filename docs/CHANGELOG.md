@@ -153,6 +153,7 @@
 - ✅ **PW388** **a verdict given with asset= opens an after run, so that asset's baseline is refused for good** — A verdict given with asset= now opens a run marked made: false, which neither refuses a baseline nor counts as a cost; older verdict runs read the same, so Spinhold's five reopen.
 - ✅ **PW372 (camera clip declared and built)** **a camera move cannot be declared as a clip or played by the game, so a cutscene's shots are numbers in the project** — clip.camera builds a *.camera.toml of shots into a Camera3D scene the game seeks by time, cutting with a mark, in its anchors' frame, and records it.
 - ✅ **PW373** **game.shot answers success and a path when the save failed, and never makes the folder it is given** — game.shot and a batch's shot make the folder they are given, and a save that wrote no file is refused as driver.shot-not-written with the engine's error (design recorded in `docs/specs/driving.md`).
+- ✅ **PW408** **vfx.build draws no star, twinkle or heart, so a cute game's particles fall back to a flake or are drawn in game code** — vfx.build draws a twinkle, a star and a heart as a picture inside the scene, so a cute game's particles are declared and nothing is imported (design recorded in `docs/specs/vfx.md`).
 
 ## Block I — Voxel models from a declaration
 

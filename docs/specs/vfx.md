@@ -28,7 +28,8 @@ gravity          = [0, 0, 0]
 damping          = [0, 0]        # speed lost a second, a number or least and most
 angle            = [0, 0]        # a particle's turn at birth, degrees
 angular_velocity = [0, 0]        # its spin, degrees a second
-shape            = "square"      # square, dot, ring, flake, or a picture's path
+shape            = "square"      # square, dot, ring, flake, twinkle, star, heart,
+                                 # or a picture's path
 size             = 0.2           # a quad's side, or a ribbon's width, in metres
 size_over_life   = [1.0, 0.0]    # scales, evenly across the life
 colour_over_life = ["#ffd24aff", "#ff4a1a00"]   # #rrggbb or #rrggbbaa, evenly
@@ -47,7 +48,10 @@ The five keys after `gravity` are what Starship's accepted trails drew with (§P
 sparks brake at 6 to 10 and stay by the engine, its confetti spins, its sun band throws
 from a tall box. A `shape` other than `square` is a texture on each quad, drawn from a
 white gradient as the trails drew theirs: `dot` a soft radial dot, `ring` a radial ring,
-`flake` a strip that is opaque for 70% of its width. A path ending in a picture's suffix
+`flake` a strip that is opaque for 70% of its width. `twinkle` (four thin spikes, the
+upright pair longer, round a soft core), `star` (five points, inner corners at half the
+reach) and `heart` are drawn instead, white with the shape in the alpha, into a 64-pixel
+image inside the scene, so the game imports nothing (§PW408). A path ending in a picture's suffix
 names the project's own picture instead, refused where no file is there. `damping` is
 never below 0, and a box needs at least one extent above 0.
 

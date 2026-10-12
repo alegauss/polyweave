@@ -224,10 +224,63 @@ def test_a_picture_can_be_a_particle_s_shape(tmp_path):
     assert 'albedo_texture = ExtResource("picture")' in built
 
 
+CUTE = """\
+[effect.twinkles]
+amount = 8
+lifetime = 0.6
+shape = "twinkle"
+
+[effect.stars]
+amount = 8
+lifetime = 0.6
+shape = "star"
+
+[effect.hearts]
+amount = 8
+lifetime = 0.6
+shape = "heart"
+"""
+
+
+def test_a_twinkle_a_star_and_a_heart_are_drawn_inside_the_scene(tmp_path):
+    """§PW408: Spinhold's Quilt twinkles shipped as flakes, its hearts as GDScript."""
+    vfx.build(effects(tmp_path, CUTE), root=str(tmp_path))
+    for name in ("twinkles", "stars", "hearts"):
+        built = (tmp_path / "vfx" / f"{name}.tscn").read_text("utf-8")
+        assert '[sub_resource type="ImageTexture" id="shape"]' in built, name
+        assert '"format": "LumAlpha8"' in built
+        assert 'albedo_texture = SubResource("shape")' in built
+        assert "ext_resource" not in built  # nothing for the game to import
+        assert built.startswith("[gd_scene load_steps=10 ")
+
+
+def _at(alpha: list[int], u: float, v: float) -> int:
+    side = vfx.DRAWN_SIDE
+    return alpha[int((1 - v) / 2 * side) * side + int((u + 1) / 2 * side)]
+
+
+def test_each_drawn_shape_is_where_its_name_says():
+    twinkle, star, heart = (vfx._drawn_alpha(s)
+                            for s in ("twinkle", "star", "heart"))
+    # The twinkle's upright spike reaches further than its level one, and the
+    # diagonals between them are empty.
+    assert _at(twinkle, 0, 0.8) == 255 and _at(twinkle, 0.8, 0) == 0
+    assert _at(twinkle, 0.5, 0) == 255 and _at(twinkle, 0.5, 0.5) == 0
+    # The star points up, and the notch under its top point is empty.
+    assert _at(star, 0, 0.7) == 255 and _at(star, 0, -0.85) == 0
+    assert _at(star, 0.3, 0.6) == 0 and _at(star, 0, 0) == 255
+    # The heart has two lobes over a dip, and a point below.
+    assert _at(heart, -0.45, 0.55) == 255 and _at(heart, 0.45, 0.55) == 255
+    assert _at(heart, 0, 0.8) == 0 and _at(heart, 0, -0.8) == 255
+    # Every edge is smoothed, not stepped.
+    for alpha in (twinkle, star, heart):
+        assert any(0 < a < 255 for a in alpha)
+
+
 @pytest.mark.parametrize(
     "extra",
     ["damping = -1", "damping = [1, 2, 3]", 'emission = "box"',
-     'emission = "box"\nextents = [0.1, -1, 0.1]', 'shape = "star"',
+     'emission = "box"\nextents = [0.1, -1, 0.1]', 'shape = "comet"',
      'shape = "art/missing.png"', "angle = \"wide\""],
 )
 def test_a_trail_key_that_means_nothing_is_refused(tmp_path, extra):
@@ -472,6 +525,37 @@ def test_the_engine_loads_an_accepted_trail_s_keys(tmp_path):
     assert "vfx: confetti damping=6.0..10.0 spin=240.0 emits=0" in said, said
     assert "shape=GradientTexture2D random=0.3" in said
     assert "vfx: band damping=2.0..2.0 spin=0.0 emits=3 box=(0.1, 1.0, 0.1)" in said
+
+
+LOADS_CUTE = """extends SceneTree
+
+func _initialize() -> void:
+\tfor name in ["twinkles", "stars", "hearts"]:
+\t\tvar node: GPUParticles3D = load("res://vfx/%s.tscn" % name).instantiate()
+\t\tvar look: StandardMaterial3D = node.draw_pass_1.material
+\t\tvar image: Image = look.albedo_texture.get_image()
+\t\tprint("vfx: %s shape=%s size=%dx%d middle=%.2f corner=%.2f" % [
+\t\t\tname, look.albedo_texture.get_class(), image.get_width(), image.get_height(),
+\t\t\timage.get_pixel(32, 32).a, image.get_pixel(0, 0).a])
+\t\tnode.free()
+\tprint("vfx: loaded")
+\tquit()
+"""
+
+
+def test_the_engine_draws_a_twinkle_a_star_and_a_heart(tmp_path):
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    vfx.build(effects(tmp_path, CUTE), root=str(tmp_path))
+    (tmp_path / "project.godot").write_text(
+        'config_version=5\n\n[application]\nconfig/name="vfx"\n', encoding="utf-8")
+    (tmp_path / "loads.gd").write_text(LOADS_CUTE, encoding="utf-8")
+    ran = engine.run("loads.gd", expect=r"^vfx: loaded", root=tmp_path, headless=True)
+    assert ran["ok"] is True, ran
+    said = Path(ran["log"]).read_text("utf-8")
+    for name in ("twinkles", "stars", "hearts"):
+        assert f"vfx: {name} shape=ImageTexture size=64x64 middle=1.00 corner=0.00" \
+            in said, said
 
 
 FLIES = """extends SceneTree
