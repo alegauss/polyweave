@@ -37,6 +37,14 @@ draws a strip `size` wide across `facing`, coloured and narrowed by its age alon
 `colour_over_life` and `size_over_life`. The script is inside the scene, so the game
 still holds no code of its own.
 
+A `sheet` is a wall or beam of light, not a particle system (§PW417): one quad `size`
+wide and `height` high, its colour across it from the centre line out (`across`, and
+`behind` for the trailing side where it differs), its ends faded, a `flicker`, and an
+afterimage of `amount` copies `gap` apart trailing behind. Its shader is generated into
+the scene, `colour_over_life` tints it as it ages over `lifetime`, and the game fades
+one instance with `set_instance_shader_parameter("fade", x)` or plays it again with
+`restart()`, so a bomb's walls are declared and not a shader in game code.
+
 An effect can be made of parts, one look the game places once (§PW284): a trail is the
 ribbon the engine leaves and the particles it throws, each a sub-table,
 
@@ -94,16 +102,23 @@ KEYS: dict[str, tuple[type | tuple, Any]] = {
     "facing": (list, [0.0, 1.0, 0.0]),
     "step": (float, 1 / 60),
     "gap": (float, 0.3),
+    "height": (float, 1.0),
+    "across": (list, ["#ffffffff", "#ffffff00"]),
+    "behind": (list, []),
+    "ends": (float, 0.2),
+    "flicker": (float, 0.0),
+    "flicker_rate": (float, 8.0),
+    "billboard": (str, "none"),
 }
 
 #: What each key means, as `describe vfx.build` says it (§PW409): a key here and not in
 #: KEYS, or there and not here, fails a test, so the two cannot drift.
 ABOUT: dict[str, str] = {
-    "kind": "what is drawn: particles, a ribbon through each particle's path, or a "
-            "path_ribbon through the path the emitter flew",
+    "kind": "what is drawn: particles, a ribbon through each particle's path, a "
+            "path_ribbon through the path the emitter flew, or a sheet of light",
     "amount": "the particles alive at once, the effect's budget; a path_ribbon's "
-              "points; a whole number, at least 1",
-    "lifetime": "seconds a particle, or a path_ribbon's point, lives; above 0",
+              "points; a sheet's copies, itself and its afterimage; at least 1",
+    "lifetime": "seconds a particle, a path_ribbon's point or a sheet lives; above 0",
     "explosiveness": "0 starts the particles evenly over a life, 1 all at once",
     "randomness": "how unevenly they start, 0 to 1",
     "one_shot": "true emits once and stops, as a burst",
@@ -113,10 +128,10 @@ ABOUT: dict[str, str] = {
     "spread": "degrees either side of direction, 0 to 180",
     "speed": "metres a second at the start, as [least, most]",
     "gravity": "the pull on every particle, metres a second squared, as [x, y, z]",
-    "size": "a quad's side, or a ribbon's width, in metres",
+    "size": "a quad's side, a ribbon's width or a sheet's width, in metres",
     "size_over_life": "scales evenly across the life, at least two, none below 0",
     "colour_over_life": "colours evenly across the life, #rrggbb or #rrggbbaa, at "
-                        "least two",
+                        "least two; a sheet is tinted by it as it ages",
     "blend": "add lights what is behind, mix paints over it",
     "trail": "seconds a ribbon's trail lasts behind each particle",
     "damping": "metres a second of speed lost each second, a number or [least, most]",
@@ -128,7 +143,19 @@ ABOUT: dict[str, str] = {
              "under the project",
     "facing": "the direction a path_ribbon's width lies along, as [x, y, z]",
     "step": "seconds between a path_ribbon's points",
-    "gap": "metres the emitter moves before a path_ribbon adds a point anyway",
+    "gap": "metres the emitter moves before a path_ribbon adds a point anyway; "
+           "metres between a sheet's afterimage copies, trailing behind it",
+    "height": "a sheet's height, in metres, centred on its origin",
+    "across": "a sheet's colours from its centre line out to either edge, "
+              "#rrggbbaa, at least two: a hot core, a band, a halo",
+    "behind": "the same out to its trailing edge, where it differs; empty is "
+              "across mirrored",
+    "ends": "the share of a sheet's height, at each end, over which it fades out, "
+            "0 to 0.5",
+    "flicker": "how much a sheet's light wavers, 0 steady to 1",
+    "flicker_rate": "how many times a second a sheet wavers",
+    "billboard": "none keeps a sheet where the game turns it; y turns it about its "
+                 "upright to face the camera",
 }
 
 #: Every effect measure a predicate may bound, and what it says.
@@ -165,8 +192,9 @@ def measures_of(path: Path, root: Path) -> dict:
     return record.get("measurements") or {}
 
 
-KINDS = ("particles", "ribbon", "path_ribbon")
+KINDS = ("particles", "ribbon", "path_ribbon", "sheet")
 EMISSIONS = ("point", "sphere", "box")
+BILLBOARDS = ("none", "y")
 
 #: A particle's shape, as the gradient its texture is drawn from: stops of white at each
 #: alpha, and whether it fills out from the middle. A square draws no texture at all.
@@ -311,7 +339,8 @@ def checked(name: str, table: Any, root: Path | None = None) -> dict:
             raise _bad(name, f"states no {key}",
                        f"write {key}: every effect has a budget and a life")
     own = {key: table.get(key, default) for key, (_, default) in KEYS.items()}
-    for key, choices in (("kind", KINDS), ("emission", EMISSIONS), ("blend", BLENDS)):
+    for key, choices in (("kind", KINDS), ("emission", EMISSIONS), ("blend", BLENDS),
+                         ("billboard", BILLBOARDS)):
         if own[key] not in choices:
             raise _bad(name, f"has {key} {own[key]!r}",
                        f"name one of {', '.join(choices)}",
@@ -379,7 +408,32 @@ def checked(name: str, table: Any, root: Path | None = None) -> dict:
     for key in ("lifetime", "explosiveness", "randomness", "radius", "spread", "size",
                 "trail"):
         own[key] = float(own[key])
+    _sheet_keys(name, own)
     return own
+
+
+def _sheet_keys(name: str, own: dict) -> None:
+    """A sheet's own keys, checked and made numbers in place (§PW417)."""
+    for key in ("height", "ends", "flicker", "flicker_rate"):
+        if not _number(own[key]) or own[key] < 0:
+            raise _bad(name, f"sets {key} to {own[key]!r}",
+                       f"write {key} as a number no less than 0")
+        own[key] = float(own[key])
+    if own["ends"] > 0.5 or own["flicker"] > 1:
+        raise _bad(name, "fades more than half its height at each end, or flickers "
+                   "past 1", "ends runs 0 to 0.5 and flicker 0 to 1")
+    for key, least in (("across", 2), ("behind", 0)):
+        stops = own[key]
+        if not isinstance(stops, list) or (stops and len(stops) < 2) \
+                or len(stops) < least:
+            raise _bad(name, f"sets {key} to {stops!r}",
+                       f"write {key} as at least two colours, from the centre line "
+                       "out" + (", or leave it empty" if not least else ""))
+        own[key] = [_colour(name, stop) for stop in stops]
+    if own["kind"] == "sheet" and (own["height"] <= 0 or own["size"] <= 0):
+        raise _bad(name, f"is a sheet {own['size']:g} wide and {own['height']:g} high",
+                   "a sheet is wider and higher than nothing: write size and height "
+                   "above 0, in metres")
 
 
 def declared(name: str, table: Any, root: Path | None = None) -> dict:
@@ -416,6 +470,11 @@ def measured_whole(effect: dict) -> dict:
     }
 
 
+def _luminous(stop: tuple[float, float, float, float]) -> float:
+    r, g, b, a = stop
+    return (0.2126 * r + 0.7152 * g + 0.0722 * b) * a
+
+
 def measured(effect: dict) -> dict:
     """What an effect measures, from its declaration alone."""
     life = effect["lifetime"]
@@ -432,10 +491,14 @@ def measured(effect: dict) -> dict:
     if effect["kind"] == "path_ribbon":
         # It stays where the emitter was: its reach is the half-width it spreads.
         reach = effect["size"] / 2
-    brightness = max(
-        (0.2126 * r + 0.7152 * g + 0.0722 * b) * a
-        for r, g, b, a in effect["colour_over_life"]
-    )
+    brightness = max(_luminous(stop) for stop in effect["colour_over_life"])
+    if effect["kind"] == "sheet":
+        # It moves only as the game carries it: its reach is how far it spreads, its
+        # afterimage included, and its light its profile's brightest under its life's.
+        trailing = effect["size"] / 2 + effect["gap"] * (effect["amount"] - 1)
+        reach = max(effect["height"] / 2, trailing)
+        brightness *= max(_luminous(stop)
+                          for stop in effect["across"] + effect["behind"])
     return {
         "lifetime": round(life, 4),
         "reach": round(reach, 4),
@@ -569,6 +632,146 @@ def _path_ribbon(name: str, effect: dict, colours: str, sizes: str) -> str:
     )
 
 
+#: A sheet of light's shader (§PW417): its profile across from two gradients, its
+#: afterimage as copies of that profile trailing behind, its ends faded, a flicker, and
+#: its life's tint. `aged` and `fade` are per instance, so two walls age apart and the
+#: game fades one without touching the other.
+_SHEET_LIGHT = """shader_type spatial;
+render_mode unshaded, %(blend)s, cull_disabled, depth_draw_never, shadows_disabled;
+
+uniform sampler2D across : source_color, repeat_disable;
+uniform sampler2D behind : source_color, repeat_disable;
+uniform sampler2D life : source_color, repeat_disable;
+uniform float half_width = 0.5;
+uniform float half_height = 0.5;
+uniform float ends = 0.2;
+uniform float flicker = 0.0;
+uniform float flicker_rate = 8.0;
+uniform int copies = 1;
+uniform float gap = 0.3;
+instance uniform float aged = 0.0;
+instance uniform float fade = 1.0;
+
+varying vec2 at;
+
+void vertex() {
+\tat = VERTEX.xy;
+%(billboard)s}
+
+vec4 profile(float x) {
+\tfloat u = clamp(abs(x) / half_width, 0.0, 1.0);
+\tvec4 c = x >= 0.0 ? texture(across, vec2(u, 0.5)) : texture(behind, vec2(u, 0.5));
+\treturn c * step(abs(x), half_width);
+}
+
+void fragment() {
+\tvec3 light = vec3(0.0);
+\tfloat alpha = 0.0;
+\tfor (int k = 0; k < copies; k++) {
+\t\tfloat weight = pow(0.55, float(k));
+\t\tvec4 c = profile(at.x + gap * float(k));
+\t\tlight += c.rgb * c.a * weight;
+\t\talpha += c.a * weight;
+\t}
+\tfloat fall = 1.0 - smoothstep(1.0 - 2.0 * ends, 1.0, abs(at.y) / half_height);
+\tfloat waver = 1.0 - flicker * (0.5 + 0.5 * sin(TIME * flicker_rate * 6.2831853
+\t\t+ at.y * 0.9));
+\tvec4 tint = texture(life, vec2(clamp(aged, 0.0, 1.0), 0.5));
+\tALBEDO = (alpha > 0.0 ? light / alpha : vec3(0.0)) * tint.rgb;
+\tALPHA = clamp(alpha, 0.0, 1.0) * fall * waver * tint.a * fade;
+}
+"""
+
+#: Turned about its upright to face the camera, as a StandardMaterial3D's Y billboard.
+_FACES_Y = """\tMODELVIEW_MATRIX = VIEW_MATRIX * mat4(
+\t\tvec4(normalize(cross(vec3(0.0, 1.0, 0.0), MAIN_CAM_INV_VIEW_MATRIX[2].xyz)), 0.0),
+\t\tvec4(0.0, 1.0, 0.0, 0.0),
+\t\tvec4(normalize(cross(MAIN_CAM_INV_VIEW_MATRIX[0].xyz, vec3(0.0, 1.0, 0.0))), 0.0),
+\t\tMODEL_MATRIX[3]);
+\tMODELVIEW_NORMAL_MATRIX = mat3(MODELVIEW_MATRIX);
+"""
+
+#: A sheet's own script: its age, as the share of its life the shader tints it by. A
+#: one-shot sheet hides when its life is out; `restart()` shows it again from the start.
+_AGES = """extends MeshInstance3D
+
+@export var life := 1.0
+@export var one_shot := false
+var age := 0.0
+
+func restart() -> void:
+\tage = 0.0
+\tvisible = true
+
+func _process(delta: float) -> void:
+\tage += delta
+\tif one_shot and age >= life:
+\t\tvisible = false
+\tvar share := minf(age / life, 1.0) if one_shot else fmod(age, life) / life
+\tset_instance_shader_parameter("aged", share)
+"""
+
+
+def _quoted(source: str) -> str:
+    """Source text as a .tscn string holds it."""
+    return source.replace("\\", "\\\\").replace('"', '\\"')
+
+
+def _stops(id_: str, stops: list) -> str:
+    """Colours evenly spread, as a gradient and the texture a shader samples."""
+    offsets = [i / (len(stops) - 1) for i in range(len(stops))]
+    return (f'[sub_resource type="Gradient" id="{id_}_stops"]\n'
+            f"offsets = PackedFloat32Array({_floats(offsets)})\n"
+            f"colors = PackedColorArray({_floats(c for s in stops for c in s)})\n\n"
+            f'[sub_resource type="GradientTexture1D" id="{id_}"]\n'
+            f'gradient = SubResource("{id_}_stops")\n\n')
+
+
+def _sheet_scene(name: str, effect: dict, colours: str) -> str:
+    """A sheet of light's scene: one quad, its shader, and the script that ages it."""
+    half, trailing = effect["size"] / 2, effect["gap"] * (effect["amount"] - 1)
+    behind = "behind" if effect["behind"] else "across"
+    light = _SHEET_LIGHT % {
+        "blend": "blend_add" if effect["blend"] == "add" else "blend_mix",
+        "billboard": _FACES_Y if effect["billboard"] == "y" else "",
+    }
+    return (
+        f"[gd_scene load_steps={9 + 2 * bool(effect['behind'])} format=3]\n\n"
+        + colours
+        + '[sub_resource type="GradientTexture1D" id="ramp"]\n'
+        'gradient = SubResource("colours")\n\n'
+        + _stops("across", effect["across"])
+        + (_stops("behind", effect["behind"]) if effect["behind"] else "")
+        + '[sub_resource type="Shader" id="light"]\n'
+        f'code = "{_quoted(light)}"\n\n'
+        '[sub_resource type="ShaderMaterial" id="look"]\n'
+        'shader = SubResource("light")\n'
+        'shader_parameter/across = SubResource("across")\n'
+        f'shader_parameter/behind = SubResource("{behind}")\n'
+        'shader_parameter/life = SubResource("ramp")\n'
+        f"shader_parameter/half_width = {half:.6g}\n"
+        f"shader_parameter/half_height = {effect['height'] / 2:.6g}\n"
+        f"shader_parameter/ends = {effect['ends']:.6g}\n"
+        f"shader_parameter/flicker = {effect['flicker']:.6g}\n"
+        f"shader_parameter/flicker_rate = {effect['flicker_rate']:.6g}\n"
+        f"shader_parameter/copies = {effect['amount']}\n"
+        f"shader_parameter/gap = {effect['gap']:.6g}\n\n"
+        # Its front, the centre line, at the origin; the afterimage trails behind it.
+        '[sub_resource type="QuadMesh" id="draw"]\n'
+        'material = SubResource("look")\n'
+        f"size = Vector2({2 * half + trailing:.6g}, {effect['height']:.6g})\n"
+        f"center_offset = Vector3({-trailing / 2:.6g}, 0, 0)\n\n"
+        '[sub_resource type="GDScript" id="ages"]\n'
+        f'script/source = "{_quoted(_AGES)}"\n\n'
+        f'[node name="{name}" type="MeshInstance3D"]\n'
+        "cast_shadow = 0\n"
+        'mesh = SubResource("draw")\n'
+        'script = SubResource("ages")\n'
+        f"life = {effect['lifetime']:.6g}\n"
+        f"one_shot = {'true' if effect['one_shot'] else 'false'}\n"
+    )
+
+
 def scene(name: str, effect: dict) -> str:
     """The effect as a Godot 4 scene: the particles node and all it draws with."""
     stops = effect["colour_over_life"]
@@ -590,6 +793,8 @@ def scene(name: str, effect: dict) -> str:
     )
     if effect["kind"] == "path_ribbon":
         return _path_ribbon(name, effect, colours, curve)
+    if effect["kind"] == "sheet":
+        return _sheet_scene(name, effect, colours)
     ribbon = effect["kind"] == "ribbon"
     draw = (
         f'[sub_resource type="RibbonTrailMesh" id="draw"]\n'
@@ -726,7 +931,8 @@ def shipped_folder(config, where: Path, out: str | None, address: str | None,
 
 def _vocabulary() -> dict:
     """What a *.vfx.toml may hold, for `describe vfx.build` (§PW409)."""
-    choices = {"kind": KINDS, "emission": EMISSIONS, "blend": BLENDS, "shape": NAMED}
+    choices = {"kind": KINDS, "emission": EMISSIONS, "blend": BLENDS, "shape": NAMED,
+               "billboard": BILLBOARDS}
     keys = {}
     for key, (kind, default) in KEYS.items():
         keys[key] = {
@@ -752,7 +958,7 @@ def build(
     ] = None,
     root: Annotated[str, Param("the project the effects belong to")] = ".",
 ) -> dict:
-    """Build declared particle and ribbon effects into Godot scenes, each recorded.
+    """Build declared particle, ribbon and sheet effects into Godot scenes, recorded.
 
     Each lands as <name>.tscn the game instances as it is; an effect made of parts is
     one scene with each part under a Node3D, never beside a source the export leaves
@@ -848,6 +1054,10 @@ func _process(_delta: float) -> bool:
 def _watched_as(effect: dict) -> dict:
     """The one effect a whole is framed as: its farthest-reaching part, living as long
     as the longest, still only where every part is a one-shot burst."""
+    if effect["kind"] == "sheet":
+        # Seen face on, standing still: it lies across the way it runs, so a camera
+        # beside that way would see its edge.
+        return {**effect, "direction": [1.0, 0.0, 0.0], "one_shot": True}
     if effect["kind"] != "parts":
         return effect
     parts = list(effect["parts"].values())
@@ -862,17 +1072,25 @@ def _framing(effect: dict, fps: int = 60) -> dict:
     """Where the camera stands to see the whole of an effect's reach from its side, and
     the circle the emitter is carried round in its view: a trail reads only in motion
     (§PW281), and a one-shot burst is watched standing still."""
-    reach = max(measured(effect)["reach"], 0.5, effect["size"] * 6)
+    # A particle is a speck in its spray; a sheet's own size is already its reach.
+    floor = 0.0 if effect["kind"] == "sheet" else effect["size"] * 6
+    reach = max(measured(effect)["reach"], 0.5, floor)
     d = effect["direction"]
     norm = math.sqrt(sum(v * v for v in d)) or 1.0
     d = [v / norm for v in d]
     centre = [v * reach / 2 for v in d]
+    if effect["kind"] == "sheet":
+        # Its quad, afterimage and all, centred where it is drawn, not ahead of it.
+        centre = [-effect["gap"] * (effect["amount"] - 1) / 2, 0.0, 0.0]
     # From across the direction, upright where the effect is not itself vertical.
     up = [0.0, 1.0, 0.0] if abs(d[1]) < 0.9 else [0.0, 0.0, 1.0]
     side = [d[1] * up[2] - d[2] * up[1], d[2] * up[0] - d[0] * up[2],
             d[0] * up[1] - d[1] * up[0]]
     size = math.sqrt(sum(v * v for v in side)) or 1.0
-    eye = [c + s / size * reach * 0.9 for c, s in zip(centre, side, strict=True)]
+    # A spray thins out toward its reach; a sheet is solid to its edge, so it stands
+    # back far enough to see it whole.
+    back = 1.6 if effect["kind"] == "sheet" else 0.9
+    eye = [c + s / size * reach * back for c, s in zip(centre, side, strict=True)]
     # The view's other axis: the circle lies across the camera, in its frame.
     across = [side[1] * d[2] - side[2] * d[1], side[2] * d[0] - side[0] * d[2],
               side[0] * d[1] - side[1] * d[0]]

@@ -2150,7 +2150,7 @@ export interface VerdictSittingArgs {
   about?: string
 }
 
-/** Build declared particle and ribbon effects into Godot scenes, each recorded. */
+/** Build declared particle, ribbon and sheet effects into Godot scenes, recorded. */
 export interface VfxBuildArgs {
   /** the *.vfx.toml, relative to the project */
   source: string

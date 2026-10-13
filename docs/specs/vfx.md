@@ -37,7 +37,15 @@ blend            = "add"         # add or mix
 trail            = 0.3           # ribbon only: seconds of path each ribbon keeps
 facing           = [0, 1, 0]     # path_ribbon only: the way its width lies
 step             = 0.0166667     # path_ribbon only: seconds between its points
-gap              = 0.3           # path_ribbon only: or metres, whichever comes first
+gap              = 0.3           # path_ribbon only: or metres, whichever comes first;
+                                 # sheet: metres between its afterimage's copies
+height           = 1.0           # sheet only: metres, centred on its origin
+across           = ["#ffffffff", "#ffffff00"]   # sheet: centre line out to the edge
+behind           = []            # sheet: the same to its trailing edge; empty mirrors
+ends             = 0.2           # sheet: share of its height faded at each end, ≤ 0.5
+flicker          = 0.0           # sheet: how much its light wavers, 0 to 1
+flicker_rate     = 8.0           # sheet: waverings a second
+billboard        = "none"        # sheet: none, or y to turn it to the camera
 ```
 
 A key it does not have is refused with its nearest name, and so is a value outside what
@@ -97,6 +105,21 @@ triangle strip `size` wide across `facing`, each point's colour and width read o
 `colour_over_life` and `size_over_life` at its age. So it narrows and fades behind the
 emitter and stays where the emitter was, and the game still holds no code of its own.
 Its `reach` is its half-width, since it travels nowhere by itself.
+
+A `sheet` is a wall or beam of light, a bomb's wall or a shield (§PW417): one
+`MeshInstance3D` quad `size` wide and `height` high, standing in its local X and Y with
+its front, the centre line, at the origin, and `+x` the way it runs. Its shader is
+generated into the scene: the colour at each point across is read off `across` from the
+centre line out (`behind` for `-x`, where it differs), `amount - 1` copies of that
+profile trail `gap` apart behind it at 0.55 the alpha of the one before (`amount = 1`
+is no afterimage), its ends fade over `ends` of its height, and `flicker` wavers it
+`flicker_rate` times a second. A script in the scene ages it: `colour_over_life` tints
+it across `lifetime`, looping unless `one_shot`, which hides it when its life is out and
+`restart()` shows again. `fade` is an instance parameter, so the game fades one wall
+with `set_instance_shader_parameter("fade", x)` and leaves the other. Its `reach` is its
+half-height or its trailing extent, and its `brightness` its profile's brightest stop
+under its life's. `vfx.preview` films it face on, standing still, from far enough back to
+see it whole.
 
 The answer gives each effect's `file` and `kind` and what it measures, worked out from the
 declaration since each is arithmetic:

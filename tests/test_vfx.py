@@ -241,6 +241,79 @@ def test_describe_says_what_a_declaration_holds():
     assert all("declares" not in one for one in describe.describe())
 
 
+WALL = """\
+[effect.wall]
+kind = "sheet"
+amount = 4
+lifetime = 1.0
+size = 2.0
+height = 6.0
+gap = 0.5
+across = ["#ffffffff", "#ffd24acc", "#ff4a1a00"]
+behind = ["#ffffffff", "#ff4a1a66", "#ff4a1a00"]
+ends = 0.25
+flicker = 0.2
+billboard = "y"
+colour_over_life = ["#ffffffff", "#ffffff00"]
+"""
+
+
+def test_a_sheet_of_light_is_one_quad_with_its_own_shader(tmp_path):
+    """§PW417: Spinhold's bomb walls are a QuadMesh and a shader built in bomb.gd."""
+    made = vfx.build(effects(tmp_path, WALL), root=str(tmp_path))["effects"]["wall"]
+    built = (tmp_path / "vfx" / "wall.tscn").read_text("utf-8")
+    assert '[node name="wall" type="MeshInstance3D"]' in built
+    assert '[sub_resource type="Shader" id="light"]' in built
+    assert "MAIN_CAM_INV_VIEW_MATRIX" in built  # turned to the camera about y
+    assert "blend_add" in built
+    # Its front at the origin, its afterimage of three more copies trailing behind.
+    assert "size = Vector2(3.5, 6)" in built
+    assert "center_offset = Vector3(-0.75, 0, 0)" in built
+    assert "shader_parameter/copies = 4" in built
+    assert 'shader_parameter/behind = SubResource("behind")' in built
+    assert built.startswith("[gd_scene load_steps=11 ")
+    # It reaches its height's half or its afterimage, and is as bright as its core.
+    assert made["reach"] == pytest.approx(3.0)
+    assert made["brightness"] == pytest.approx(1.0)
+    assert made["kind"] == "sheet"
+
+
+def test_a_sheet_with_no_behind_mirrors_its_profile(tmp_path):
+    vfx.build(effects(tmp_path, '[effect.beam]\nkind = "sheet"\namount = 1\n'
+                                "lifetime = 0.5\n"), root=str(tmp_path))
+    built = (tmp_path / "vfx" / "beam.tscn").read_text("utf-8")
+    assert 'shader_parameter/behind = SubResource("across")' in built
+    assert "MAIN_CAM_INV_VIEW_MATRIX" not in built
+    assert built.startswith("[gd_scene load_steps=9 ")
+
+
+def test_a_sheet_is_watched_face_on_and_whole():
+    import tomllib
+
+    wall = vfx._watched_as(vfx.declared("wall", tomllib.loads(WALL)["effect"]["wall"]))
+    framed = vfx._framing(wall)
+    centre = [float(v) for v in framed["centre"].split(", ")]
+    eye = [float(v) for v in framed["eye"].split(", ")]
+    assert centre == [-0.75, 0.0, 0.0]  # the middle of the sheet and its afterimage
+    assert eye[0] == centre[0] and eye[1] == 0  # straight in front of its face
+    # Far enough back that its 6 m stand inside a 75 degree view, standing still.
+    assert eye[2] * 0.767 > 3.0
+    assert framed["round"] == "0"
+
+
+@pytest.mark.parametrize(
+    "extra",
+    ["height = 0", "ends = 0.6", "flicker = 2", 'billboard = "x"',
+     'across = ["#ffffff"]', 'behind = ["#ffffff"]', "size = 0"],
+)
+def test_a_sheet_that_means_nothing_is_refused(tmp_path, extra):
+    source = effects(tmp_path, f'[effect.a]\nkind = "sheet"\namount = 1\n'
+                               f"lifetime = 1.0\n{extra}\n")
+    with pytest.raises(PolyweaveError) as refused:
+        vfx.build(source, root=str(tmp_path))
+    assert refused.value.code == "vfx.bad-effect"
+
+
 CUTE = """\
 [effect.twinkles]
 amount = 8
@@ -573,6 +646,56 @@ def test_the_engine_draws_a_twinkle_a_star_and_a_heart(tmp_path):
     for name in ("twinkles", "stars", "hearts"):
         assert f"vfx: {name} shape=ImageTexture size=64x64 middle=1.00 corner=0.00" \
             in said, said
+
+
+LIGHTS = """extends SceneTree
+
+var frames := 0
+var wall: MeshInstance3D
+
+func _initialize() -> void:
+\tvar camera := Camera3D.new()
+\tcamera.position = Vector3(0, 0, 4)
+\troot.add_child(camera)
+\twall = load("res://vfx/wall.tscn").instantiate()
+\troot.add_child(wall)
+
+func _shown() -> String:
+\tvar seen := root.get_texture().get_image()
+\tvar middle := seen.get_pixel(seen.get_width() / 2, seen.get_height() / 2)
+\tvar corner := seen.get_pixel(2, 2)
+\treturn "middle=%.2f corner=%.2f" % [middle.get_luminance(), corner.get_luminance()]
+
+func _process(_delta: float) -> bool:
+\tframes += 1
+\tif frames == 4:
+\t\tprint("vfx: lit " + _shown())
+\t\twall.set_instance_shader_parameter("fade", 0.0)
+\tif frames == 8:
+\t\tprint("vfx: faded " + _shown())
+\t\treturn true
+\treturn false
+"""
+
+
+def test_the_engine_draws_a_sheet_of_light_and_fades_one(tmp_path):
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    vfx.build(effects(tmp_path, WALL.replace("flicker = 0.2", "flicker = 0.0")
+                      .replace('"#ffffff00"]\n', '"#ffffffff"]\n')),
+              root=str(tmp_path))
+    (tmp_path / "project.godot").write_text(
+        'config_version=5\n\n[application]\nconfig/name="vfx"\n', encoding="utf-8")
+    (tmp_path / "lights.gd").write_text(LIGHTS, encoding="utf-8")
+    ran = engine.run("lights.gd", expect=r"^vfx: faded", root=tmp_path)
+    assert ran["ok"] is True, ran
+    said = Path(ran["log"]).read_text("utf-8")
+    lit = re.search(r"vfx: lit middle=([\d.]+) corner=([\d.]+)", said)
+    faded = re.search(r"vfx: faded middle=([\d.]+) corner=([\d.]+)", said)
+    assert lit and faded, said
+    assert float(lit[1]) > 0.8 > float(lit[2])  # its white core, over the backdrop
+    # The game faded this one out: its middle is the backdrop again.
+    assert float(faded[1]) == pytest.approx(float(faded[2]), abs=0.02)
 
 
 FLIES = """extends SceneTree
