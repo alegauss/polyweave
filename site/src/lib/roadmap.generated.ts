@@ -82,7 +82,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW410",
     block: "H",
     symptom: "a 403 from ElevenLabs prints with no detail, and a free plan's missing feature is found only by spending",
-    why: "Spinhold's pilot voice design failed on a free plan, and the reason showed only under --json.",
+    why: "The remedy still names no 403, and voice.design learns a free plan lacks the feature only by calling it.",
     deps: [],
   },
   {

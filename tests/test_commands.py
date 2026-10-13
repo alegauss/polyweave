@@ -73,6 +73,40 @@ def test_a_refusal_prints_its_code_and_exits_one(tmp_path, capsys):
     assert "do: " in printed.err
 
 
+#: What ElevenLabs answered Spinhold's pilot voice design on a free plan (§PW410).
+FORBIDDEN = json.dumps({"detail": {
+    "type": "authorization_error", "code": "feature_not_available",
+    "message": "Creating a voice through the API is only available on a paid plan."}})
+
+
+def test_a_refusal_s_text_says_what_the_service_said(tmp_path, capsys, monkeypatch):
+    """§PW410: the 403 said why only under --json."""
+    def refuses(_stated):
+        raise PolyweaveError("fetch.service-error", "the service answered 403",
+                             "read the detail", detail=FORBIDDEN)
+
+    monkeypatch.setattr(commands, "answer_for", refuses)
+    status, printed = run(["accept.check", "--spec", "a.toml", "--subject", "a.png"],
+                          capsys)
+    assert status == 1
+    assert ("  detail: Creating a voice through the API is only available on a paid "
+            "plan.") in printed.err
+
+
+@pytest.mark.parametrize(("detail", "line"), [
+    (None, None),
+    ("  ", None),
+    ("art/vfx/log.txt", "art/vfx/log.txt"),
+    ('{"error": "no such voice"}', '{"error": "no such voice"}'),
+    ('{"errors": [{"message": "bad prompt"}]}', "bad prompt"),
+    ("Traceback (most recent call last):\n  File x\nValueError: no",
+     "ValueError: no (the last of 3 lines; --json has all)"),
+    ("x" * 500, "x" * commands.DETAIL_LINE),
+])
+def test_a_detail_is_one_line_of_text(detail, line):
+    assert commands.detail_line(detail) == line
+
+
 def test_a_required_parameter_left_out_is_argparse_refusing(capsys):
     with pytest.raises(SystemExit):
         cli.main(["accept.check", "--spec", "star.accept.toml"])
