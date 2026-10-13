@@ -45,7 +45,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "R", title: "Levels measured before a person plays them", open: 6 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
-  { block: "U", title: "A window on everything a project governs", open: 2 },
+  { block: "U", title: "A window on everything a project governs", open: 1 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 7 },
 ];
 
@@ -279,13 +279,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "U",
     symptom: "no revision has been asked, made and judged from the window on a real game, so its gaps are guesses",
     why: "The owner asks the window to change a picture and a sound, and judges both there.",
-    deps: [],
-  },
-  {
-    id: "PW438",
-    block: "U",
-    symptom: "npm start fails from any VS Code terminal with a missing-export error, since ELECTRON_RUN_AS_NODE runs Electron as Node",
-    why: "The owner's first step of PW311, opening the window, failed with an error that never names the variable; the live test hides it.",
     deps: [],
   },
   {

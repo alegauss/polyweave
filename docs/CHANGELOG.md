@@ -439,6 +439,7 @@
 - ✅ **PW401** **the window's decision screen cannot mark where a picture is wrong or compare two versions of it** — The window's decision screen marks a picture in its own pixels, sent as masks, and compares old and new four ways through review.compare (design recorded in `gui/README.md`).
 - ✅ **PW402** **the window's decision screen shows no gate lanes, turntables, canon boards or pending table** — The window's decision screen draws gate lanes, turntables, canon boards and the pending table, and writes promotions, admissions and withdrawals via review.answer (design recorded in `gui/README.md`).
 - ✅ **PW403** **the browser's review page and the window's decision screen would be two implementations of one screen** — python -m polyweave review serves the window's Decide screen over a browser desk, built into review_page/screen with a stamp; the iframe and page.js are gone (design recorded in `gui/README.md`).
+- ✅ **PW438** **npm start fails from any VS Code terminal with a missing-export error, since ELECTRON_RUN_AS_NODE runs Electron as Node** — npm start opens the window through a launcher that drops ELECTRON_RUN_AS_NODE, so it starts from any VS Code terminal (design recorded in `gui/README.md`).
 
 ## Block V — Parts every game repeats, installed already proved
 

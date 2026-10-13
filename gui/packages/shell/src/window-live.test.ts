@@ -310,6 +310,28 @@ describe.skipIf(!existsSync(MAIN))('the window', () => {
     }
   })
 
+  it('opens through npm start even where the editor runs Electron as Node', async () => {
+    // §PW438: VS Code exports ELECTRON_RUN_AS_NODE=1, and the window failed to start.
+    const launch = join(import.meta.dirname, '..', 'launch.mjs')
+    const drew = await new Promise<Record<string, unknown>>((resolve, reject) => {
+      const env = {
+        ...process.env,
+        ELECTRON_RUN_AS_NODE: '1',
+        [SMOKE_VAR]: JSON.stringify({ root, depth: 1, language: 'en' }),
+      }
+      const child = spawn(process.execPath, [launch, MAIN], { env, windowsHide: true })
+      let out = ''
+      child.stdout.on('data', (chunk: Buffer) => {
+        out += chunk.toString('utf8')
+        const said = /^rendered: (.*)$/m.exec(out)
+        if (said) resolve(JSON.parse(said[1]!) as Record<string, unknown>)
+      })
+      child.stderr.on('data', (chunk: Buffer) => (out += chunk.toString('utf8')))
+      child.on('exit', (code) => reject(new Error(`launch exited ${code} without drawing:\n${out}`)))
+    })
+    expect(drew['project']).toBe(join(root, 'starship'))
+  })
+
   it('plays a loop looped', async () => {
     const sound = await opened(root, 'en', 'audio/calm.wav')
     expect(sound['viewer']).toBe('sound')

@@ -930,24 +930,6 @@ It is not a test run. A change of plan that the owner asks for mid-way ("undo, t
 other palette") is part of what is being proved, because a revision a person refines
 several times is the case this block exists for.
 
-### §PW438 The window started from an editor's terminal
-
-Where: PW311, starting the window on Spinhold from a Claude Code session inside VS Code,
-2026-10-13. `npm start` in `gui/` built both packages and then failed: `SyntaxError: The
-requested module 'electron' does not provide an export named 'BrowserWindow'`. VS Code
-exports `ELECTRON_RUN_AS_NODE=1` to every process it starts, so `electron .` ran
-`main.js` as plain Node, where `electron` is the path to a binary and has no exports.
-The error names a missing export and not the variable, so nothing points at the cause.
-
-`shell/src/window-live.test.ts` already deletes the variable from the environment it
-hands Electron, which is why the gate never sees it. The live window, the one a person
-opens, has no such guard. It started once the variable was removed by hand.
-
-Build: `npm start` starts Electron through a small launcher in `shell` that removes
-`ELECTRON_RUN_AS_NODE` from the child's environment, the way the live test does, and the
-README's quick start says nothing about it because nothing has to be done. A test runs
-the launcher with the variable set and sees the window's smoke mode answer.
-
 ## Block V — Parts every game repeats, installed already proved
 
 ### §PW368 Declared states and transitions

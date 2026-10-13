@@ -14,6 +14,11 @@ npm test          # every package's tests, the live window included
 `python tools/gate.py`, at the repository root, runs the typecheck, the build and these
 tests after pytest, so one gate covers both halves.
 
+`npm start` opens Electron through `packages/shell/launch.mjs`, which takes
+`ELECTRON_RUN_AS_NODE` out of its environment (§PW438). VS Code exports it to every
+terminal it starts, and Electron given it runs the window as plain Node, failing on a
+missing export that never names the variable.
+
 ## Three packages
 
 The layout is roadkeep's window's, whose choices were paid for once already.
