@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 13 },
+  { block: "H", title: "Proof on a real game", open: 14 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 1 },
   { block: "K", title: "Reached without reading the source", open: 2 },
@@ -45,7 +45,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "R", title: "Levels measured before a person plays them", open: 6 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
-  { block: "U", title: "A window on everything a project governs", open: 1 },
+  { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 7 },
 ];
 
@@ -170,6 +170,13 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW82"],
   },
   {
+    id: "PW453",
+    block: "H",
+    symptom: "picture.vector draws an SVG with live text as a PNG with no letters, and answers as if nothing were lost",
+    why: "ThorVG in Godot drops every text element, so a banner or logo loses its words in silence and the only way to know is to look at the picture and read vector.py.",
+    deps: [],
+  },
+  {
     id: "PW451",
     block: "J",
     symptom: "a canon holds approved pictures only, so a new 3D enemy is never checked against the meshes already approved beside it",
@@ -252,13 +259,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "A playtest's trace of spawns, kills and hits cannot be measured or laid against the wave it played",
     why: "A declared wave says what it asks of a player; only a trace says where players struggle, and Starship's balance needs both.",
     deps: ["PW205"],
-  },
-  {
-    id: "PW311",
-    block: "U",
-    symptom: "no revision has been asked, made and judged from the window on a real game, so its gaps are guesses",
-    why: "The owner asks the window to change a picture and a sound, and judges both there.",
-    deps: [],
   },
   {
     id: "PW370",
@@ -347,4 +347,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW53", "PW78", "PW79", "PW80", "PW81", "PW82", "PW192", "PW201", "PW368"];
+export const generatedPaused: string[] = ["PW53", "PW78", "PW79", "PW80", "PW81", "PW82", "PW192", "PW201", "PW311", "PW368"];

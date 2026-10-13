@@ -80,8 +80,6 @@
 
 ## Block U — A window on everything a project governs
 
-- 🛠 **PW311** (deps: PW307 ✅, PW308 ✅, PW309 ✅, PW310 ✅) **no revision has been asked, made and judged from the window on a real game, so its gaps are guesses** — The owner asks the window to change a picture and a sound, and judges both there. → §PW311
-
 ## Block V — Parts every game repeats, installed already proved
 
 - 🛠 **PW370** (deps: PW345 ✅, PW357 ✅, PW394 ✅, PW395 ✅, PW396 ✅, PW397 ✅, Spinhold RK216) **Starship keeps its own bindings and co-op code after the input kits were extracted from it** — A kit proved only in a fixture has not met a game, and the game it came from is the cheapest first consumer. → §PW370
