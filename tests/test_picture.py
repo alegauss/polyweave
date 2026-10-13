@@ -118,8 +118,12 @@ def test_the_transparent_endpoint_is_the_default_and_the_prompt_field_is_the_mod
     entry = buy(tmp_path, out="refs/b.png", model="3.0", transparent=False, seed=7)
     assert entry["credits"] == 0.06
     endpoint, _, payload = service.sent[1]
-    assert endpoint == "https://api.ideogram.ai/v1/ideogram-v3/async/generate"
+    # 3.0 has no asynchronous route: sent there it answered 404 (§PW437).
+    assert endpoint == "https://api.ideogram.ai/v1/ideogram-v3/generate"
     assert payload == {"prompt": "a plush booster", "seed": 7}
+    buy(tmp_path, out="refs/c.png", model="3.0")
+    endpoint, _, _ = service.sent[2]
+    assert endpoint == "https://api.ideogram.ai/v1/ideogram-v3/generate-transparent"
 
 
 def test_a_spend_past_the_ceiling_never_reaches_the_service(tmp_path, service):

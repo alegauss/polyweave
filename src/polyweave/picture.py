@@ -41,8 +41,14 @@ from .errors import PolyweaveError
 from .files import write_atomic
 
 #: The models this client knows the request shape of. They spell the prompt field
-#: differently, which is the reason the choice is a parameter and not a guess.
-MODELS = {"4.0": ("ideogram-v4", "text_prompt"), "3.0": ("ideogram-v3", "prompt")}
+#: differently, which is the reason the choice is a parameter and not a guess, and only
+#: 4.0 has an asynchronous route: 3.0's `async/generate` answers 404, its synchronous
+#: `generate` and `generate-transparent` the picture in the body (§PW437, probed
+#: 2026-10-13 with an empty request, which draws nothing).
+MODELS = {
+    "4.0": ("ideogram-v4", "text_prompt", True),
+    "3.0": ("ideogram-v3", "prompt", False),
+}
 
 #: What the service allows in flight on an account by default. More than this and it
 #: answers 429, so the client never holds more open than this in one process.
@@ -144,7 +150,7 @@ def buy(
     base, key = _reached(name, about)
     price = _price(name, about.get("prices") or {}, model, rendering_speed)
 
-    path, prompt_field = MODELS[model]
+    path, prompt_field, asynchronous = MODELS[model]
     sent = prompt if json_prompt is None else json.dumps(json_prompt, sort_keys=True)
     payload: dict = {prompt_field if json_prompt is None else "json_prompt": sent}
     for field, value in (
@@ -171,10 +177,12 @@ def buy(
 
     purchase.allow(price, root=root, service=name)
 
-    # The asynchronous route (§PW178): the answer is a generation id at once, and the
-    # connection is not held while the picture is drawn. The id is the purchase's task
-    # id, which the synchronous answer never carried.
-    endpoint = f"{base.rstrip('/')}/v1/{path}/async/generate"
+    # The asynchronous route where the model has one (§PW178): the answer is a
+    # generation id at once, and the connection is not held while the picture is drawn.
+    # The id is the purchase's task id, which the synchronous answer never carried. 3.0
+    # has none, and sent there every 3.0 picture failed with a 404 (§PW437).
+    route = "async/generate" if asynchronous else "generate"
+    endpoint = f"{base.rstrip('/')}/v1/{path}/{route}"
     if transparent:
         endpoint += "-transparent"
     answer = _answered(endpoint, key, payload)

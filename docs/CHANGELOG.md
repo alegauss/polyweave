@@ -289,6 +289,7 @@
 - ✅ **PW210** **a scene script's expected line anchored with ^ never matches below the log's first line** — A script's expected line is matched in line mode, so an anchored pattern finds the line wherever in the log the script printed it.
 - ✅ **PW209** **a variation is held to its parent pixel for pixel, which a service that redraws the whole picture can never meet** — picture.against_parent measures what was kept as the outline framed alike and the look's drift, floored by accepted variations; pixels only where a service preserves.
 - ✅ **PW266** **the review page admits a picture to a canon only from a gate lane, so a family never gated cannot start** — [style] candidates lists pictures a person may admit to a canon from the review page with no gate run, and a board under two pictures says it judges nothing.
+- ✅ **PW437** **a 3.0 picture is sent to an async generate route Ideogram lists for 4.0 only, so a 3.0 call may fail unexplained** — A 3.0 picture goes to Ideogram's synchronous generate route, the one it answers, and 4.0 keeps its asynchronous one (design recorded in `docs/specs/fetching.md`).
 
 ## Block O — A person sees and answers
 

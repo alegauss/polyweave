@@ -727,30 +727,9 @@ beside references, since how the two combine is undocumented, and keep a request
 the 50 MB cap. Record each reference's digest on the picture's record, so a regeneration
 sends the same pictures.
 
-§PW437 first: 3.0's route is sent to an async path the service lists for 4.0 only. Read
-the live price before the first paid call, since nobody has confirmed whether a style
-reference costs more.
-
-### §PW437 Each model's own route
-
-Found while checking whether PW180 could resume (2026-10-13). `picture.buy` builds
-`{base}/v1/{path}/async/generate` for every model (picture.py, the route PW178 added),
-so a `model="3.0"` call goes to `/v1/ideogram-v3/async/generate`. Ideogram's v1 index
-(developer.ideogram.ai/v1/llms.txt) lists an asynchronous route for 4.0 only; 3.0 has
-`POST /v1/ideogram-v3/generate`, which answers the picture in its body. Not confirmed
-against the live service: no paid 3.0 call was made to check it.
-
-If the route is missing, every 3.0 picture fails at the transport and nothing names the
-cause. That matters beyond 3.0 itself, since 3.0 is the only model that takes
-`style_reference_images`, so PW180 can only ever be built on it.
-
-Build: the route belongs to the model, beside its prompt field in `MODELS`, so each
-entry says whether it is asynchronous (4.0) or answers in the body (3.0). The poll runs
-only for the asynchronous one, and the purchase's task id for 3.0 falls back to the
-answer's own id or the bytes' digest, as `sound.speak` already does. Before changing it,
-make one cheap 3.0 call under a small ceiling, or read the service's 404, so the fix is
-for what the service does rather than what its index says. A test replaces the transport
-and checks each model's route.
+3.0's route is fixed (PW437, `docs/specs/fetching.md`): it goes to the synchronous
+`generate`, the async path answering 404. Read the live price before the first paid
+call, since nobody has confirmed whether a style reference costs more.
 
 ### §PW450 Buying a picture from Scenario
 

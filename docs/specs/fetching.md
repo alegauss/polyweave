@@ -283,8 +283,11 @@ placement's pooled ΔE must sit within `[tolerance] delta_e`, or the reframe red
 was asked to keep. The answer names the `placed` scale and offset. What the drawn-in border
 should look like stays the person's.
 
-**The request goes to the asynchronous route** (§PW178): `/v1/ideogram-v4/async/generate`,
-or `.../async/generate-transparent`. The answer is a `generation_id` at once, so no
+**A 4.0 request goes to the asynchronous route** (§PW178): `/v1/ideogram-v4/async/generate`,
+or `.../async/generate-transparent`. 3.0 has none, its `async/generate` answering 404, so
+it goes to `/v1/ideogram-v3/generate` or `.../generate-transparent`, which answer the
+picture in the body, and its `task_id` is the answer's `created` and seed (§PW437, probed
+with an empty request, which draws nothing). The answer is a `generation_id` at once, so no
 connection is held while the picture is drawn. `GET /v1/generations/{id}` is asked every two
 seconds until its `status` is `completed` or `failed`, for at most five minutes, so a poll
 never answered ends rather than holding one of the account's ten slots. The id is the
