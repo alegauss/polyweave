@@ -291,7 +291,8 @@ both answers.
   JSON, a string as the text given, and `any` as JSON where it reads as JSON and text
   where it does not. **A list survives any shell** (§PW247): Windows PowerShell 5.1
   strips the inner quotes of a single-quoted argument it hands a native program, so a
-  JSON list never arrives, and a list flag may also be given once per item
+  JSON list never arrives, and a list flag may also take its items after it
+  (`--keys HOLD GO`, §PW414), be given once per item
   (`--args=--boss --args=--frames=420`, the `=` because an item may start with `--`) or
   name a JSON file (`--args @args.json`), read past a UTF-8 byte order mark, since that
   shell's own `Set-Content -Encoding utf8` always writes one (§PW334), as is every JSON or

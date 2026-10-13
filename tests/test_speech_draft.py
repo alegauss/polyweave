@@ -13,6 +13,7 @@ import pytest
 from polyweave import provenance, purchase, sound, sound_buy
 from polyweave.errors import PolyweaveError
 from test_sound import tone, written
+from test_speech import unheard
 from test_voice_lines import TABLE, VOICED, WORLD
 
 
@@ -22,7 +23,7 @@ def local(tmp_path, monkeypatch):
     (tmp_path / "text").mkdir()
     (tmp_path / "text" / "strings.csv").write_text(TABLE, encoding="utf-8")
     (tmp_path / "game.world.toml").write_text(WORLD, encoding="utf-8")
-    monkeypatch.setattr(sound, "_transcribed", lambda path, vocabulary=(): None)
+    monkeypatch.setattr(sound, "_transcribed", unheard)
     engine = {"name": "espeak-ng", "path": "x", "voice": "en"}
     monkeypatch.setattr(sound_buy, "_engine", lambda config: engine)
     spoken = []

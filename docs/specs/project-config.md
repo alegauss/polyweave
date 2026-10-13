@@ -193,6 +193,7 @@ tail_silence = 0.4                 # and after the last
 rate         = [8.0, 20.0]         # characters of the line per second spoken
 loudness     = [-24.0, -14.0]      # dBFS, where the project's effects sit
 trim         = true                # cut a bought take's silence to the bounds above
+interjections = ["uhuu", "vamo"]   # said however a transcription spells them (PW414)
 draft_engine = "piper"             # the free rung: piper or espeak-ng (PW324)
 draft_model  = "tools/voices/pt_BR-faber-medium.onnx"  # piper's downloaded model
 draft_voice  = "pt-br"             # espeak-ng's voice

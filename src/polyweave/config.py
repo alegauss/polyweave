@@ -331,6 +331,9 @@ DEFAULTS: dict[str, Any] = {
         # Cut a bought take's silence down to the two bounds above as it lands, the
         # service's own bytes kept on its record by their digest.
         "trim": False,
+        # The game's interjections ("uhuu", "vamo"): a transcription spells them its own
+        # way ("woohoo", "vamos"), so a take is never failed for how one was heard.
+        "interjections": [],
         # The free rung a line is drafted on before a character is billed (§PW324):
         # "piper" with `draft_model` (a downloaded .onnx), or "espeak-ng" with
         # `draft_voice` (such as "pt-br"). Empty takes the first one installed.

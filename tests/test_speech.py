@@ -14,6 +14,11 @@ from polyweave import sound
 from test_sound import RATE, tone, written
 
 
+def unheard(path, vocabulary=(), language=None):
+    """The transcription where faster-whisper is not installed."""
+    return None
+
+
 def take(where, lead=0.5, spoken=1.0, tail=0.8, amplitude=0.5):
     quiet = np.zeros
     samples = np.concatenate([
@@ -24,7 +29,7 @@ def take(where, lead=0.5, spoken=1.0, tail=0.8, amplitude=0.5):
 
 
 def test_a_take_says_its_silences_and_its_rate(tmp_path, monkeypatch):
-    monkeypatch.setattr(sound, "_transcribed", lambda path, vocabulary=(): None)
+    monkeypatch.setattr(sound, "_transcribed", unheard)
     found = sound.speech(take(tmp_path / "t.wav"), "Hold fast")
     assert found["lead_silence"] == pytest.approx(0.5, abs=0.03)
     assert found["tail_silence"] == pytest.approx(0.8, abs=0.03)
@@ -34,7 +39,7 @@ def test_a_take_says_its_silences_and_its_rate(tmp_path, monkeypatch):
 
 
 def test_the_projects_bounds_name_what_a_take_fails(tmp_path, monkeypatch):
-    monkeypatch.setattr(sound, "_transcribed", lambda path, vocabulary=(): None)
+    monkeypatch.setattr(sound, "_transcribed", unheard)
     (tmp_path / "polyweave.toml").write_text(
         "[voice]\nlead_silence = 0.25\ntail_silence = 1.0\nrate = [10.0, 20.0]\n",
         encoding="utf-8",
@@ -45,7 +50,7 @@ def test_the_projects_bounds_name_what_a_take_fails(tmp_path, monkeypatch):
 
 
 def test_no_bound_is_no_finding(tmp_path, monkeypatch):
-    monkeypatch.setattr(sound, "_transcribed", lambda path, vocabulary=(): None)
+    monkeypatch.setattr(sound, "_transcribed", unheard)
     take(tmp_path / "t.wav", lead=2.0)
     assert sound.spoken("t.wav", text="Go", root=str(tmp_path))["failed"] == []
 
@@ -55,7 +60,7 @@ def test_a_misread_name_is_named_and_the_worlds_names_are_expected(
 ):
     asked = {}
 
-    def heard(path, vocabulary=()):
+    def heard(path, vocabulary=(), language=None):
         asked["vocabulary"] = list(vocabulary)
         return "Hold fast, Captain Aida."
 
@@ -69,8 +74,45 @@ def test_a_misread_name_is_named_and_the_worlds_names_are_expected(
     assert asked["vocabulary"] == ["Captain Ada"]
 
 
+def test_an_accent_the_transcription_left_off_is_the_same_word():
+    """§PW414: "Lá" heard as "la" failed a take that said its line."""
+    assert sound._differs("Lá vem ele!", "La vem ele.")["matches"]
+
+
+def test_an_interjection_is_said_however_it_was_spelled():
+    said = sound._differs("Uhuu, vamo lá!", "Woohoo, vamos la!", ("uhuu", "vamo"))
+    assert said["matches"]
+    # A word that is no interjection is still held to the line.
+    said = sound._differs("Uhuu, capataz!", "Woohoo, kapatais!", ("uhuu",))
+    assert said["missing"] == ["capataz"] and said["extra"] == ["kapatais"]
+
+
+def test_a_take_is_transcribed_in_the_language_its_record_names(
+    tmp_path, monkeypatch
+):
+    from polyweave import provenance
+
+    asked = {}
+
+    def heard(path, vocabulary=(), language=None):
+        asked["language"] = language
+        return "Aguente firme"
+
+    monkeypatch.setattr(sound, "_transcribed", heard)
+    (tmp_path / "polyweave.toml").write_text(
+        '[voice]\ninterjections = ["uhuu"]\n', encoding="utf-8")
+    where = take(tmp_path / "t.wav")
+    provenance.write(provenance.build(
+        "sound", where, root=tmp_path,
+        extra={"details": {"line": {"key": "HOLD", "locale": "pt_BR"}}},
+    ), tmp_path)
+    said = sound.spoken("t.wav", text="Aguente firme", root=str(tmp_path))
+    assert asked["language"] == "pt" and said["said"]["language"] == "pt"
+    assert sound.expected(where, sound.load(tmp_path))["interjections"] == ("uhuu",)
+
+
 def test_a_sitting_shows_a_takes_speech_and_marks_one_that_fails(tmp_path, monkeypatch):
-    monkeypatch.setattr(sound, "_transcribed", lambda path, vocabulary=(): None)
+    monkeypatch.setattr(sound, "_transcribed", unheard)
     (tmp_path / "polyweave.toml").write_text(
         "[voice]\nlead_silence = 0.25\n", encoding="utf-8")
     take(tmp_path / "late.wav")
@@ -109,7 +151,7 @@ def test_a_bought_take_lands_with_its_silence_cut_to_the_bound(tmp_path, monkeyp
     )
     monkeypatch.setenv("POLYWEAVE_TEST_E", "sk-sound")
     monkeypatch.setattr(sound_buy, "_used", lambda base, key: None)
-    monkeypatch.setattr(sound, "_transcribed", lambda path, vocabulary=(): None)
+    monkeypatch.setattr(sound, "_transcribed", unheard)
     monkeypatch.setattr(sound_buy, "_post", Service(sent).post)
     found = sound_buy.speak(text="Hold fast", voice="v1", out="vo/hold.wav",
                             root=str(tmp_path))

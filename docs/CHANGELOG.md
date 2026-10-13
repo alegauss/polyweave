@@ -162,6 +162,7 @@
 - ✅ **PW411** **accepting a voice preview on the review page fails with Failed to fetch, so no voice can ever be chosen** — A voice preview is accepted on the page, and a page route that raises answers a 500 with op.crashed and where, never a dropped link (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW412** **voice.lines sends no language with a line, so Portuguese takes are read in English** — voice.lines sends each line's column language as language_code to the models that hold to one, so a Portuguese take is read in Portuguese (design recorded in `src/polyweave/sound_buy.py`).
 - ✅ **PW413** **an entity has one voice for every language, so a voice designed in English reads Portuguese with an accent** — An entity may have a voice per locale, designed, chosen and spoken in that column alone, and each take records its locale, so digests are per tongue (design recorded in `docs/specs/world.md`).
+- ✅ **PW414** **sound.speech fails takes that say the line, a JSON-only keys list and an unpriced quote hide what a set costs** — A take is transcribed in its column's language, accents folded and interjections said however spelled; --keys A B parses; unvoiced rows priced (design recorded in `docs/specs/effects.md`).
 
 ## Block I — Voxel models from a declaration
 

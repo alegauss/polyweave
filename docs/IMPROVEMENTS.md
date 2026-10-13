@@ -286,26 +286,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW414 Speech checks and quotes that mislead
-
-Where: spinhold RK218, the pilot's Portuguese and English takes from `voice.lines`.
-
-Three frictions, each met voicing thirteen short lines:
-
-1. `sound.speech`'s `said` fails takes that say the line. "Lá" heard as "la" is a miss
-   (no accent folding), and an interjection's spelling ("uhuu" heard as "woohoo", "vamo"
-   as "vamos") is a miss. Fold diacritics before comparing, and let a line's
-   interjections, or a project list of them, count as said whatever the spelling.
-   Worse, the recogniser is not told the take's language: a Portuguese take is
-   transcribed as English ("Isso, isso aí! Capataz" heard as "this this is the
-   kapatais"), so every Portuguese line reads as failed. The record carries the line's
-   locale; pass it to the recogniser.
-2. `voice.lines --keys A B C` is refused by the CLI as unrecognised arguments; only a
-   JSON list (`--keys '["A","B"]'`) works, and neither `describe` nor the refusal says so.
-3. Before a speaker has a voice id, the quote prices nothing (`characters: 0`), so the
-   cost of a set is unknown until a voice is bought and chosen. Price the unvoiced rows
-   too, marked as such.
-
 ### §PW415 A page per sitting
 
 Where: spinhold, approving the pilot's voice and lines on `python -m polyweave review`.

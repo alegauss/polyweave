@@ -209,7 +209,12 @@ words from the take's record where `text` is unset) answers:
   line's words it `missing` and those it heard `extra`, the world's names passed as the
   words to expect, since an invented name is what a service misreads. It runs locally
   because paying a service to check a take is spending on the agent's own judgement;
-  where it is not installed `said` is null and `unheard` says why.
+  where it is not installed `said` is null and `unheard` says why. The transcription is
+  held to the language of the column the take's record names (`details.line.locale`,
+  `pt_BR` as `pt`, said back as `said.language`), since left to guess it heard a
+  Portuguese take as English. Words are compared with their accents folded, and a
+  word of the line among `[voice] interjections` is said however it was heard, with
+  its own share of the words heard in its place (§PW414).
 
 `failed` names each measure outside the project's `[voice]` bound: `lead_silence` and
 `tail_silence` as maxima, `rate` and `loudness` as `[low, high]` bands, and `said` where

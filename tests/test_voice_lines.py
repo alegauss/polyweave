@@ -57,6 +57,9 @@ def test_the_plan_prices_every_line_and_sends_nothing(tmp_path, project):
     # Bo has no voice, so his line is reported and not voiced in a default.
     unvoiced = {(o["key"], o["code"]) for o in plan["unvoiced"]}
     assert unvoiced == {("GO", "world.no-voice")}
+    # Priced all the same, so the set's cost is known before Bo has a voice (§PW414).
+    assert plan["unvoiced_characters"] == len("Go home") + len("Vai pra casa")
+    assert plan["unvoiced_price"] == pytest.approx(19 * 0.001)
     assert project.sent == []
     assert purchase.read(tmp_path) == []
 

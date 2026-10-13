@@ -213,7 +213,9 @@ ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
 #: 4,072 with render.bake's `spec`, the one way to render the build a spec's subject
 #: names without the caller reading its records for the path (§PW298).
-HELP_VERB = 4_100
+#: 4,227 once a list flag takes the items after it, each list usage gaining its
+#: `[LIST ...]`: `--keys A B C` had been refused as unrecognised (§PW414).
+HELP_VERB = 4_300
 #: The top-level `--help`, naming every verb: 11,346. One more verb line is ~150.
 #: 11,792 once measure.digest is a verb (§PW141), 11,933 with cost.read (§PW143),
 #: 12,066 with motion.bake (§PW160), 12,216 with sound.measure (§PW113), 12,385

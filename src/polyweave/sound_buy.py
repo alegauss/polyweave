@@ -336,7 +336,7 @@ def _trim(played: bytes, target: Path, bounds: dict) -> tuple[bytes, dict | None
 def _speech(target: Path, words: str, config) -> dict:
     """What a spoken take measures against its line, or why it cannot be measured."""
     try:
-        found = sound.speech(target, words, sound._names(config.root))
+        found = sound.speech(target, words, **sound.expected(target, config))
     except PolyweaveError as refused:
         return {"unmeasured": refused.message}
     return {**found, "failed": sound.held(found, config.table("voice"))}
@@ -616,8 +616,12 @@ def lines(
             # Each column in the voice its locale has, the shared one where it has none
             # of its own (§PW413).
             voice = voice_in(entities.get(who) or {}, one)
+            price = picture._priced(name, prices, model, None, len(text))["price"]
             if not voice.get("id"):
-                unvoiced.append({**at, "code": "world.no-voice"})
+                # Priced all the same, so a set's cost is known before a voice is
+                # bought for it (§PW414).
+                unvoiced.append({**at, "code": "world.no-voice",
+                                 "characters": len(text), "price": price})
                 continue
             out = config.get("words.voiced").format(
                 locale=one, key=re.sub(r"[^\w.-]+", "_", row["key"])
@@ -626,7 +630,6 @@ def lines(
             if _still(here / out, line, voice_digest(entities[who], one), model, here):
                 current.append({**at, "out": out})
                 continue
-            price = picture._priced(name, prices, model, None, len(text))["price"]
             plan.append({**at, "out": out, "text": text, "characters": len(text),
                          "price": price, "line": line,
                          **({"draft": True} if _draft(here / out, here) else {})})
@@ -638,6 +641,9 @@ def lines(
         "unvoiced": unvoiced,
         "characters": sum(one["characters"] for one in plan),
         "price": total,
+        # What the rows still waiting on a voice will cost once they have one.
+        "unvoiced_characters": sum(one["characters"] for one in unvoiced),
+        "unvoiced_price": round(sum(one["price"] for one in unvoiced), 6),
         "left": left["left"],
         "unit": left["unit"],
         "spent": False,

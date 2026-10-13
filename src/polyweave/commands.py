@@ -152,6 +152,7 @@ def _from_file(text: str, declared: dict) -> Any:
 
 #: How a list flag may be written where a shell eats JSON's quotes (§PW247).
 LIST_FORMS = (
+    "the items after the flag (--keys A B C), "
     "the flag once per item (--args=--scene=x --args=--frames=45), "
     "a JSON file (--args @args.json), or a JSON list where the shell keeps its quotes"
 )
@@ -177,6 +178,9 @@ def _listed(given: Any, declared: dict) -> list:
     the forms that survive a shell, rather than taken as one strange item.
     """
     values = given if isinstance(given, list) else [given]
+    # Each flag given is its own list of the items after it (`--keys A B --keys C`).
+    values = [one for flag in values
+              for one in (flag if isinstance(flag, list) else [flag])]
     if len(values) > 1:
         return [_item(one) for one in values]
     text = values[0]
@@ -229,6 +233,8 @@ def add_operations(commands: Any) -> None:
                 required=p["required"],
                 default=argparse.SUPPRESS,
                 action="append" if listed else "store",
+                # `--keys A B C` was refused as unrecognised arguments (§PW414).
+                **({"nargs": "+"} if listed else {}),
                 metavar=p["type"].upper(),
                 help=about,
             )

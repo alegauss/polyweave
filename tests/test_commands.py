@@ -214,6 +214,18 @@ def test_a_list_the_shell_mangled_is_refused_naming_the_forms_that_survive():
     assert "@args.json" in refused.value.remedy
 
 
+def test_a_list_flag_takes_the_items_after_it():
+    """§PW414: `--keys A B C` was refused as unrecognised arguments."""
+    import argparse
+
+    commands_ = argparse.ArgumentParser().add_subparsers(dest="command")
+    commands.add_operations(commands_)
+    lines = commands_.choices["voice.lines"]
+    given = lines.parse_args(["--keys", "HOLD", "GO", "--keys", "START"]).keys
+    assert commands.parsed(given, {"name": "keys", "type": "list"}) == [
+        "HOLD", "GO", "START"]
+
+
 def test_a_repeated_flag_reaches_the_operation_through_the_parser():
     """What argparse hands over when the shell passes --args=… twice."""
     import argparse

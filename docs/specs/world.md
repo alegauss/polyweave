@@ -136,7 +136,8 @@ own). `voice.lines` takes an optional `speaker`, `locale` and `keys`, and withou
 `spend` sends nothing: it answers each row it would voice with its characters and price,
 the total and what the ceiling leaves, the takes still `current` (their record's line,
 voice and model digests match), and the rows whose speaker has no voice id as
-`unvoiced`, `world.no-voice`, never spoken in a default. With `spend`, the same
+`unvoiced`, `world.no-voice`, never spoken in a default but priced all the same, with
+`unvoiced_characters` and `unvoiced_price` their sum (§PW414). With `spend`, the same
 selection is spoken in each speaker's voice and delivery until the ceiling stops it, a
 model that can be held to a language (`eleven_v3`, the v2.5 turbo and flash) told the
 column's as `language_code` (§PW412);

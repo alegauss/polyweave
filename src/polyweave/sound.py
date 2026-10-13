@@ -473,7 +473,8 @@ def sitting(
         spoken_fails = []
         if member.get("line"):
             heard["line"] = str(member["line"])
-            found = speech(here / heard["new"], heard["line"], _names(here))
+            found = speech(here / heard["new"], heard["line"],
+                           **expected(here / heard["new"], config))
             spoken_fails = held(found, config.table("voice"))
             heard["speech"] = {**found, "failed": spoken_fails}
         # Held to its spec where it has one; otherwise nothing but the ear judges it.
@@ -598,12 +599,16 @@ def _span(path: str | Path) -> tuple[float, float, float]:
     return first, last, len(mono) / rate
 
 
-def speech(path: str | Path, text: str, vocabulary=()) -> dict:
+def speech(
+    path: str | Path, text: str, vocabulary=(), language=None, interjections=()
+) -> dict:
     """What a spoken take measures against its line (§PW323).
 
     The silence before the first word and after the last, the line's characters per
     second spoken, its loudness, and `said`: the words a local transcription heard that
-    the line does not have, or misses, where faster-whisper is installed.
+    the line does not have, or misses, where faster-whisper is installed. The
+    transcription is held to the take's `language` where it is known, and a word of
+    the line among `interjections` counts as said however it was spelled (§PW414).
     """
     first, last, duration = _span(path)
     letters = len(re.sub(r"\s+", "", text))
@@ -614,20 +619,24 @@ def speech(path: str | Path, text: str, vocabulary=()) -> dict:
         "loudness": measure(path)["loudness"],
         "duration": round(duration, 3),
     }
-    heard = _transcribed(Path(path), vocabulary)
+    heard = _transcribed(Path(path), vocabulary, language)
     if heard is None:
         found["said"] = None
         found["unheard"] = "faster-whisper is not installed; the words go unchecked"
     else:
-        found["said"] = _differs(text, heard)
+        found["said"] = _differs(text, heard, interjections)
+        if language:
+            found["said"]["language"] = language
     return found
 
 
-def _transcribed(path: Path, vocabulary=()) -> str | None:
+def _transcribed(path: Path, vocabulary=(), language=None) -> str | None:
     """What a local speech-to-text model hears, or None where there is none.
 
     Local on purpose: paying a service to check a take would be spending on the
-    agent's own judgement. The world's names are passed as the words to expect.
+    agent's own judgement. The world's names are passed as the words to expect, and
+    the take's language where it is known: left to guess, the model transcribed a
+    Portuguese take as English and failed every word (§PW414).
     """
     try:
         from faster_whisper import WhisperModel
@@ -635,27 +644,70 @@ def _transcribed(path: Path, vocabulary=()) -> str | None:
         return None
     model = WhisperModel("base", device="cpu", compute_type="int8")
     parts, _ = model.transcribe(
-        str(path), initial_prompt=", ".join(vocabulary) or None
+        str(path), initial_prompt=", ".join(vocabulary) or None, language=language
     )
     return " ".join(part.text for part in parts).strip()
 
 
-def _differs(line: str, heard: str) -> dict:
-    """The words of the line a transcription missed, and those it heard instead."""
+def _folded(word: str) -> str:
+    """A word with its accents taken off, so "lá" heard as "la" is the same word."""
+    import unicodedata
+
+    apart = unicodedata.normalize("NFKD", word.lower())
+    return "".join(c for c in apart if not unicodedata.combining(c))
+
+
+def _differs(line: str, heard: str, interjections=()) -> dict:
+    """The words of the line a transcription missed, and those it heard instead.
+
+    Compared with accents folded, and a stretch of the line made only of the game's
+    interjections is said whatever the transcription spelled there (§PW414).
+    """
     import difflib
 
     def words(text: str) -> list[str]:
         return re.findall(r"[\w']+", text.lower())
 
+    exclaimed = {_folded(one) for one in interjections}
     wanted, got = words(line), words(heard)
+    plain_wanted, plain_got = [_folded(w) for w in wanted], [_folded(w) for w in got]
     missing, extra = [], []
-    for op, a, b, c, d in difflib.SequenceMatcher(a=wanted, b=got).get_opcodes():
-        if op in ("delete", "replace"):
-            missing += wanted[a:b]
-        if op in ("insert", "replace"):
-            extra += got[c:d]
+    matcher = difflib.SequenceMatcher(a=plain_wanted, b=plain_got, autojunk=False)
+    for op, a, b, c, d in matcher.get_opcodes():
+        if op == "equal":
+            continue
+        # Each word of the line's stretch owns its share of what was heard in its
+        # place, so an interjection forgives its own share and nothing else.
+        size, heard_size = b - a, d - c
+        forgiven = set()
+        for i in range(size):
+            if plain_wanted[a + i] in exclaimed:
+                forgiven |= set(range(round(i * heard_size / size),
+                                      round((i + 1) * heard_size / size)))
+        missing += [w for i, w in enumerate(wanted[a:b])
+                    if plain_wanted[a + i] not in exclaimed]
+        extra += [w for i, w in enumerate(got[c:d])
+                  if i not in forgiven]
     return {"heard": heard, "missing": missing, "extra": extra,
             "matches": not missing and not extra}
+
+
+def expected(where: Path, config) -> dict:
+    """What a take's words are checked with: the world's names, the language its
+    record says it was read in, and the project's interjections (§PW414)."""
+    from . import provenance
+    from .sound_buy import language_of
+
+    try:
+        record = provenance.read(str(where), root=config.root)
+    except PolyweaveError:
+        record = {}
+    locale = ((record.get("details") or {}).get("line") or {}).get("locale")
+    return {
+        "vocabulary": _names(config.root),
+        "language": language_of(locale) if locale else None,
+        "interjections": tuple(config.get("voice.interjections") or ()),
+    }
 
 
 def held(found: dict, bounds: dict) -> list[dict]:
@@ -703,7 +755,7 @@ def spoken(
             f"{take} names no line to hold it to",
             "pass text, the words the take should say",
         )
-    found = speech(where, text, _names(here))
+    found = speech(where, text, **expected(where, config))
     return {"take": take, "text": text, **found,
             "failed": held(found, config.table("voice"))}
 
