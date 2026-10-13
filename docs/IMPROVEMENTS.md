@@ -286,33 +286,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW410 Refusals that hide the service's reason
-
-Where: spinhold RK218, the pilot's voice, on an ElevenLabs account on the free tier.
-
-`python -m polyweave voice.design --entity pilot --out art/review/pilot_voice` printed
-only
-
-    fetch.service-error: the service answered 403
-      do: read the detail; a 401 is a key the service does not accept, or an account out
-      of credits, and a 422 words it would not use
-
-with no detail to read. Run again with `--json`, the refusal carried it:
-`{"detail":{"type":"authorization_error","code":"feature_not_available","message":
-"Creating a voice through the API is only available on a paid plan."}}`. The remedy
-names 401 and 422 and says nothing of a 403.
-
-Two gaps:
-
-1. The text rendering of a refusal drops its `detail`, the one field the remedy points
-   at. Print it (or its `message`) under the remedy, as the JSON already carries it.
-2. A plan that cannot reach a feature is knowable before a spend: ElevenLabs'
-   `/v1/user/subscription` (free) answers the tier. `voice.design` and `purchase.quote`
-   could read it and refuse with a code of its own (`fetch.plan-lacks`) naming the plan
-   that has the feature. The same read could note that a free tier's takes carry no
-   commercial licence, which the take's record and `provenance.credits` should say,
-   since a game shipping them commercially would be in breach.
-
 ### §PW427 Particles drawn as a mesh
 
 Where: spinhold's Stuffing effect, game/world/stuffing.gd, whose tufts are a squashed
@@ -335,6 +308,27 @@ is. The measures stay as they are.
 
 Open choice: whether a meshed particle keeps the billboard (it should not: a puff turns
 as it flies) and whether `angle` then means a turn about the view axis or all three.
+
+### §PW435 A free tier's licence in a take's record
+
+Where: spinhold RK218, the pilot's voice on an ElevenLabs account on the free tier.
+PW410 made a 403 from the speech service `fetch.plan-lacks`, in the service's words, and
+printed a refusal's detail in its text. What it left: ElevenLabs' free tier allows takes
+for non-commercial use only, and nothing in a take's record says which tier made it.
+
+A game that ships commercially with a free-tier take is in breach, and the record is the
+one place that could have said so. `provenance.credits` lists who made each shipped
+file; it cannot warn about a licence the record never held.
+
+What polyweave should do: read `/v1/user/subscription` (free; `sound_buy._used` already
+reads it for `character_count`) and keep its `tier` in each take's record, under the
+engine beside the model, for `sound.buy`, `sound.speak`, `voice.design` and
+`voice.lines`. `provenance.credits` then names any shipped sound whose tier is `free` as
+not licensed for commercial use, with the file and the tier, and a project can make that
+a gate. A reading that fails records no tier, never a guess, as `_used` does.
+
+The proof: a take bought on a stubbed free subscription carries `tier = "free"`, and
+credits over a project shipping it says so; a paid tier says nothing.
 
 ## Block I — Voxel models from a declaration
 

@@ -806,6 +806,25 @@ def _local_speech(engine: dict, text: str, wav: Path) -> None:
         )
 
 
+def _plan_lacks(said: str) -> PolyweaveError:
+    """A 403: the account's plan lacks the feature, in the service's own words (§PW410).
+
+    ElevenLabs answers voice design on a free plan with a 403 whose message says so,
+    and the refusal used to be a service error whose remedy named only 401 and 422.
+    """
+    from .commands import detail_line
+
+    why = detail_line(said)
+    return PolyweaveError(
+        "fetch.plan-lacks",
+        "the account's plan does not include this"
+        + (f": {why}" if why else " (the service answered 403)"),
+        "move the account to a plan that has it, or ask for what the plan has; "
+        "nothing was ledgered, and a refused call is not charged",
+        detail=said,
+    )
+
+
 def _asked(url: str, key: str, payload: dict) -> dict:
     """One JSON request with the service's key header, answered with JSON."""
     request = urllib.request.Request(  # noqa: S310
@@ -819,12 +838,15 @@ def _asked(url: str, key: str, payload: dict) -> dict:
         with urllib.request.urlopen(request, timeout=TIMEOUT) as answer:  # noqa: S310
             said = json.loads(answer.read() or b"{}")
     except urllib.error.HTTPError as refused:
+        said = refused.read()[:400].decode("utf-8", "replace")
+        if refused.code == 403:
+            raise _plan_lacks(said) from refused
         raise PolyweaveError(
             "fetch.service-error",
             f"the service answered {refused.code}",
             "read the detail; a 401 is a key the service does not accept, or an "
             "account out of credits, and a 422 words it would not use",
-            detail=refused.read()[:400].decode("utf-8", "replace"),
+            detail=said,
         ) from refused
     except urllib.error.URLError as exc:
         raise PolyweaveError(
@@ -894,6 +916,8 @@ def _post(url: str, key: str, payload: dict) -> tuple[bytes, str]:
                 "wait, then ask again",
                 detail=said,
             ) from refused
+        if refused.code == 403:
+            raise _plan_lacks(said) from refused
         raise PolyweaveError(
             "fetch.service-error",
             f"the service answered {refused.code}",

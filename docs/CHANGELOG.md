@@ -155,7 +155,7 @@
 - ✅ **PW373** **game.shot answers success and a path when the save failed, and never makes the folder it is given** — game.shot and a batch's shot make the folder they are given, and a save that wrote no file is refused as driver.shot-not-written with the engine's error (design recorded in `docs/specs/driving.md`).
 - ✅ **PW408** **vfx.build draws no star, twinkle or heart, so a cute game's particles fall back to a flake or are drawn in game code** — vfx.build draws a twinkle, a star and a heart as a picture inside the scene, so a cute game's particles are declared and nothing is imported (design recorded in `docs/specs/vfx.md`).
 - ✅ **PW409** **describe lists vfx.build's arguments but not the keys a declaration holds, so an effect is written from vfx.py** — describe vfx.build answers declares, each key a *.vfx.toml holds with its type, default, choices and sentence, so no one reads vfx.py (design recorded in `docs/specs/tool-surface.md`).
-- ✅ **PW410 (the refusal's text prints its detail)** **a 403 from ElevenLabs prints with no detail, and a free plan's missing feature is found only by spending** — A refusal's text prints its detail as one line, a service's own message where it sent JSON, so a 403's reason shows without --json.
+- ✅ **PW410** **a 403 from ElevenLabs prints with no detail, and a free plan's missing feature is found only by spending** — A refusal's text prints its detail, and a 403 from the speech service is fetch.plan-lacks in the service's words, costing nothing (design recorded in `docs/specs/fetching.md`).
 
 ## Block I — Voxel models from a declaration
 

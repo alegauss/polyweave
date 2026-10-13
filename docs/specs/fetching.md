@@ -179,6 +179,11 @@ its `character_count` is read before and after the call, and the spend is the di
 times the rate, a measurement (`measured: true`, the quote kept as `expected_credits`). A
 reading that fails leaves the quote standing, and the entry says it was quoted.
 
+**A plan that lacks a feature is said so** (§PW410). A 403 from the speech service is
+`fetch.plan-lacks`, not `fetch.service-error`: the account's plan does not include what
+was asked (voice design is paid plans only), the service's own message is the refusal's
+`message`, and nothing is ledgered, since a refused call is not charged.
+
 ### A picture its record can make again
 
 Ideogram 4.0 rewrites a text prompt before it draws, and its answer returns the prompt it

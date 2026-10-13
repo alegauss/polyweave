@@ -748,6 +748,13 @@ CODES: dict[str, Code] = {
         when="a 429, from calls made elsewhere on the same account",
         doors=("wait for the calls already out to finish, then ask again",),
     ),
+    "fetch.plan-lacks": Code(
+        means="the account's plan does not include what was asked of the service",
+        when="a 403 from the speech service, such as voice design asked of a free "
+        "plan; a refused call is not charged",
+        doors=("move the account to a plan that has the feature, at the service",
+               "or choose a voice the plan can use, from the service's library"),
+    ),
     "fetch.service-error": Code(
         means="the service answered with something other than what was asked for",
         when="an unreachable host, a 401 for a key it refuses, a 400 for a payload it "

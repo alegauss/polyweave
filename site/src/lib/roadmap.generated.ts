@@ -79,17 +79,17 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW410",
-    block: "H",
-    symptom: "a 403 from ElevenLabs prints with no detail, and a free plan's missing feature is found only by spending",
-    why: "The remedy still names no 403, and voice.design learns a free plan lacks the feature only by calling it.",
-    deps: [],
-  },
-  {
     id: "PW427",
     block: "H",
     symptom: "vfx.build draws every particle as a flat quad, so a puffy tuft with depth is still a mesh built in game code",
     why: "Spinhold's Stuffing tufts are a squashed sphere built in GDScript, so the effect's look is split between a declaration and a script.",
+    deps: [],
+  },
+  {
+    id: "PW435",
+    block: "H",
+    symptom: "a take made on a free ElevenLabs plan is recorded like any other, so a game can ship one commercially unwarned",
+    why: "PW410 named the 403 a free plan answers; the free tier's non-commercial licence is still in no record and no credits.",
     deps: [],
   },
   {

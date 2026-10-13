@@ -154,6 +154,26 @@ def test_a_refusal_from_the_service_is_a_code(monkeypatch, status, code):
     assert caught.value.code == code
 
 
+#: What ElevenLabs answered Spinhold's pilot voice design on a free plan (§PW410).
+FREE_PLAN = (b'{"detail":{"type":"authorization_error","code":"feature_not_available",'
+             b'"message":"Creating a voice through the API is only available on a '
+             b'paid plan."}}')
+
+
+@pytest.mark.parametrize("sent", [sound_buy._post, sound_buy._asked])
+def test_a_403_says_the_plan_lacks_the_feature(monkeypatch, sent):
+    """§PW410: the 403 was a service error whose remedy named only 401 and 422."""
+    def refuse(request, timeout):
+        raise urllib.error.HTTPError(request.full_url, 403, "no", {},
+                                     io.BytesIO(FREE_PLAN))
+
+    monkeypatch.setattr(urllib.request, "urlopen", refuse)
+    with pytest.raises(PolyweaveError) as caught:
+        sent("https://api.elevenlabs.io/v1/text-to-voice/design", "k", {})
+    assert caught.value.code == "fetch.plan-lacks"
+    assert "only available on a paid plan" in caught.value.message
+    assert "nothing was ledgered" in caught.value.remedy
+
 
 BY_CHARACTER = PROJECT.replace(
     '"eleven_text_to_sound_v2" = 0.05',
