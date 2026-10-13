@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 18 },
+  { block: "H", title: "Proof on a real game", open: 17 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 1 },
   { block: "K", title: "Reached without reading the source", open: 2 },
@@ -195,13 +195,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "a render's material replaces the mesh's own, so a roughness cannot be laid over a textured mesh without losing it",
     why: "Cottony's mushroom bakes glazed with its painted cap kept, so its port exports a glazed copy of the mesh the record never names.",
-    deps: [],
-  },
-  {
-    id: "PW442",
-    block: "H",
-    symptom: "a search whose best rig sits on its axes' bounds reports never passing, not that the range may cut the answer off",
-    why: "Cottony's props search ended on the edge of exposure three times and read as unreachable; the passing rig was just outside the range.",
     deps: [],
   },
   {

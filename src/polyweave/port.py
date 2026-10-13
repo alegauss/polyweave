@@ -249,6 +249,9 @@ def port(
             for name, answer in found.get("members", {}).items()
         },
         **({"conflict": found["conflict"]} if found.get("conflict") else {}),
+        # Where a search ran: why it stopped, and any axis its best sits on the edge of.
+        **({"stopped": found["stopped"]} if found.get("stopped") else {}),
+        **({"at_bound": found["at_bound"]} if found.get("at_bound") else {}),
         "baked": baked,
         "says": (
             f"every member passed; baked {len(baked)} for a person to look at"

@@ -320,6 +320,13 @@ def search(
     # answer and not on whichever sample came last (§PW452): two of Cottony's props were
     # laid on a sitting failing beside a search that said they passed. A renderer serves
     # this from its cache, and it is not charged to the budget.
+    edges = at_bound(best["params"], permitted, points)
+    if edges and not best["passed"]:
+        # A best on the edge of its box is a box that may be too small (§PW442): three
+        # of Cottony's searches read as unreachable with the answer just outside one.
+        named = ", ".join(f"{one['axis']} ({one['side']})" for one in edges)
+        stopped += f"; the best sits on the edge of {named}, so widen it there " \
+                   "before reading a failure as unreachable"
     settled = bool(trace) and trace[-1]["params"] != best["params"]
     if settled:
         if evaluate_all is not None:
@@ -346,11 +353,32 @@ def search(
         # How far inside its tightest bound the answer sits, and which bound that is.
         "headroom": best["result"].get("headroom"),
         "tightest": best["result"].get("tightest"),
+        # Each axis the best sits on the edge of, which may cut a failing answer off;
+        # said only where there is one, since most answers sit inside their box.
+        **({"at_bound": edges} if edges else {}),
         # Whether the answer was evaluated again after the last sample, so its picture
         # is the one left in place.
         "settled": settled,
         "trace": trace,
     }
+
+
+def at_bound(values: dict, permitted: dict, points: int = POINTS) -> list[dict]:
+    """Each axis whose value lies within one first-pass grid step of its min or max.
+
+    A range declared with one value has no inside, so it has no edge to report.
+    """
+    edges = []
+    for axis, value in sorted(values.items()):
+        low, high = float(permitted[axis]["min"]), float(permitted[axis]["max"])
+        if high <= low:
+            continue
+        step = permitted[axis].get("step") or (high - low) / max(points - 1, 1)
+        for side, bound in (("min", low), ("max", high)):
+            if abs(float(value) - bound) <= float(step) / 2 + 1e-9:
+                edges.append({"axis": axis, "side": side, "value": value,
+                              "bound": bound})
+    return edges
 
 
 def family(
@@ -396,6 +424,9 @@ def family(
     }
     if not found["passed"]:
         found["conflict"] = _conflict(seen)
+        if found["conflict"] and found.get("at_bound"):
+            # `never` is never within these ranges, and the best sits on their edge.
+            found["conflict"]["at_bound"] = found["at_bound"]
     return found
 
 

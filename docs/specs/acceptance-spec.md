@@ -472,6 +472,14 @@ The seed and the search's own configuration — the budget, the ranges, the rung
 stopped — sit beside the samples, because a result nobody can reproduce is one nobody can
 check.
 
+**A best on the edge of its box says so** (§PW442). `at_bound` names each axis whose best
+value lies within half a first-pass grid step of its min or max, with the side and the
+bound, and a failing search adds to `stopped` that the edge should be widened before a
+failure is read as unreachable. A family's `conflict` carries the same edges beside its
+`never`, which holds only within the ranges searched, and `port.run` answers `stopped` and
+`at_bound` as well. Three of Cottony's prop searches failed with the answer just past the
+exposure axis's minimum, and read as a missing rig feature until one render outside it.
+
 **The picture left in place is the answer's** (§PW452). An evaluator writes each sample
 over the same `out`, and that file is what a sitting lays out before anything is baked.
 So where the last sample is not the best, the search evaluates the best once more after

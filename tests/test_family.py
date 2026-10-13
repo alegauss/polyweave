@@ -88,8 +88,10 @@ def test_a_predicate_no_sample_ever_held_is_named():
         budget=20,
         points=5,
     )
+    # The best sits on the edge of x, so `never` holds only inside this range (§PW442).
     assert found["conflict"] == {
         "between": None,
         "closest_to": {},
         "never": ["dim:facet"],
+        "at_bound": [{"axis": "x", "side": "max", "value": 1.0, "bound": 1.0}],
     }

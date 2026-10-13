@@ -609,25 +609,6 @@ as they do now. A test renders a textured mesh with only a roughness laid over i
 sees its texture's colours survive. Cottony's glazed copy is then deleted and the search
 passes the roughness.
 
-### §PW442 A best rig on the edge of its range
-
-Where: PW77, porting Cottony's five map props with `port.run`, 2026-10-13. Three family
-searches (about 240 renders) found no rig where every member passed, and reported each
-built prop's colour as `never` passing. Every one ended with its best values on a bound
-of its own axes: ambient 10 and key 0 in the first, exposure 0 (the axis's minimum) in
-the last. A single render outside those ranges, at exposure -0.25, read the bush #83C99E
-against the shipped #86CDA1, inside the bar. The answer was outside the box the family
-file drew, and nothing in the answer said the box might be the problem; `never` reads as
-"this cannot be reached", which sent the work after a missing rig feature first.
-
-Build: `search.search` and `search.family` answer `at_bound`, each axis whose best value
-(or, for a conflict, whose `closest_to` value) sits within one grid step of its min or
-max, with the side and the value, and `stopped` says "the best sits on the edge of
-exposure; widen it before reading never as unreachable". `never` is said only of what
-failed everywhere in a range none of whose best values sit on an edge. A test searches a
-spec whose passing value lies just past an axis's max and reads the axis back in
-`at_bound`.
-
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once

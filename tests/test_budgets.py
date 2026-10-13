@@ -260,7 +260,9 @@ HELP_VERB = 4_700
 #: 29,686 with capture.again (§PW418).
 HELP_TOP = 30_100
 #: A search's answer over its default budget of 24 samples: 3,739.
-SEARCH = 4_000
+#: 4,019 where it fails with its best on an edge, which `at_bound` and `stopped` now
+#: say, so a range that cut the answer off is not read as unreachable (§PW442).
+SEARCH = 4_200
 
 
 def _size(value) -> int:

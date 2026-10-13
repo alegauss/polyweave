@@ -114,6 +114,22 @@ def test_the_last_picture_the_evaluator_draws_is_the_answer():
     assert evaluate.calls[-1] == found["best"]
 
 
+def test_a_best_on_the_edge_of_its_range_says_the_range_may_cut_it_off():
+    """§PW442: Cottony's props read as unreachable with the answer just past exposure's
+    edge, and nothing said the box might be the problem."""
+    found = search.search(a_spec(), peaking_at(5.0, width=8.0), budget=12, points=3)
+    assert not found["passed"]
+    assert found["at_bound"] == [
+        {"axis": "light", "side": "max", "value": 4.0, "bound": 4.0}
+    ]
+    assert "edge of light (max)" in found["stopped"]
+
+
+def test_a_best_inside_its_range_names_no_edge():
+    found = search.search(a_spec(), peaking_at(2.0), budget=12, points=3)
+    assert "at_bound" not in found
+
+
 def test_a_family_leaves_every_members_picture_at_the_answer():
     drawn = {}
 
