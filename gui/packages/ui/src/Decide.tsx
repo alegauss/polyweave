@@ -14,13 +14,16 @@ import {
   holding,
   inPixels,
   last,
+  listed,
   measuredOf,
   ordered,
   progress,
   say,
+  sittingOf,
   spanned,
   status,
   title,
+  unanswered,
   unready,
   visual,
   type Board,
@@ -28,6 +31,7 @@ import {
   type Desk,
   type Difference,
   type Laid,
+  type Listed,
   type Mark,
   type Member,
   type Sitting,
@@ -633,6 +637,65 @@ function Card({
   )
 }
 
+/**
+ * Accept every card of a sitting no one has answered yet, as the person asks with one
+ * press and a confirmation (§PW415): each is the same `review.answer` a card sends, one at
+ * a time, so every verdict is kept as a single one would be. A card already answered, a
+ * redo included, is never touched.
+ */
+function AcceptRest({
+  desk,
+  words,
+  sitting,
+  state,
+  onAnswered,
+}: {
+  desk: Desk
+  words: Words
+  sitting: Sitting
+  state: State
+  onAnswered: () => void
+}) {
+  const [running, setRunning] = useState<{ done: number; n: number } | null>(null)
+  const [message, setMessage] = useState<string | null>(null)
+  const rest = unanswered(sitting, state.answers)
+  const offers = choices(words, sitting).some(([word]) => word === 'accept')
+  if (!offers || (rest.length === 0 && !running)) return null
+  const go = async () => {
+    if (!window.confirm(say(words, 'accept_rest_confirm', { n: rest.length }))) return
+    setMessage(null)
+    let done = 0
+    setRunning({ done, n: rest.length })
+    try {
+      for (const family of rest) {
+        await desk.answer({
+          sitting: sitting.manifest,
+          family,
+          choice: 'accept',
+          why: say(words, 'accept_rest_why'),
+        })
+        done += 1
+        setRunning({ done, n: rest.length })
+      }
+    } catch (refused) {
+      setMessage((refused as Error).message)
+    } finally {
+      setRunning(null)
+      onAnswered()
+    }
+  }
+  return (
+    <div data-accept-rest className="flex flex-col gap-1">
+      <Button type="button" onClick={() => void go()} disabled={Boolean(running)} className="self-start">
+        {running
+          ? say(words, 'accept_rest_running', running)
+          : say(words, 'accept_rest', { n: rest.length })}
+      </Button>
+      {message && <p className="text-sm text-rose-700">{message}</p>}
+    </div>
+  )
+}
+
 /** A sitting: its title and what it is for, how to decide, then a card per family. */
 function SittingView(props: {
   desk: Desk
@@ -686,11 +749,42 @@ function SittingView(props: {
             <Legend entries={sitting.legend} />
           </details>
         )}
+        <AcceptRest {...props} />
       </div>
       {Object.keys(sitting.families).map((name) => (
         <Card key={name} {...props} name={name} />
       ))}
     </section>
+  )
+}
+
+/** One sitting's row on the index: its name, its folder, how much is answered, a way in. */
+function Row({ words, one, onOpen }: { words: Words; one: Listed; onOpen: (manifest: string) => void }) {
+  const kind = words.kinds[one.kind ?? 'look'] ?? {}
+  const waiting = one.total - one.done
+  return (
+    <li data-listed={one.manifest}>
+      <button
+        type="button"
+        onClick={() => onOpen(one.manifest)}
+        className="flex w-full flex-col gap-1 rounded-md border p-3 text-left hover:bg-muted"
+      >
+        <span className="flex items-baseline justify-between gap-3">
+          <span className="font-medium">{one.title ?? kind.title ?? say(words, 'heading')}</span>
+          {waiting > 0 && (
+            <span data-waiting className="rounded bg-primary px-2 text-xs text-primary-foreground">
+              {say(words, 'index_waiting', { n: waiting })}
+            </span>
+          )}
+        </span>
+        <span className="font-mono text-xs text-muted-foreground">{one.folder}</span>
+        <span className="text-xs text-muted-foreground">
+          {say(words, one.total === 1 ? 'sitting_count_one' : 'sitting_count', { total: one.total, done: one.done })}
+          {' · '}
+          {say(words, 'laid_out', { at: when(words, one.at) })}
+        </span>
+      </button>
+    </li>
   )
 }
 
@@ -702,10 +796,16 @@ export function Decide({
   onDrawn,
   onBoards,
   member,
+  sitting,
+  onSitting,
 }: {
   desk: Desk
   /** A file whose card the screen opens on, as `?member=` does in a browser (§PW305). */
   member?: string | null
+  /** The sitting shown alone, by its manifest; the index of sittings where none (§PW415). */
+  sitting?: string | null
+  /** Told which sitting was opened, or null for the index, so a browser keeps it in the URL. */
+  onSitting?: (manifest: string | null) => void
   /** An answer a smoke run gives here, once its card is drawn. */
   scripted?: Scripted
   /** A gate's refused picture a smoke run promotes (§PW402). */
@@ -719,6 +819,14 @@ export function Decide({
   const [words, setWords] = useState<Words | null>(null)
   const [state, setState] = useState<State | null>(null)
   const [failed, setFailed] = useState<string | null>(null)
+  // The sitting open now: the one asked for, else the index (§PW415).
+  const [chosen, setChosen] = useState<string | null>(sitting ?? null)
+  useEffect(() => setChosen(sitting ?? null), [sitting])
+  const open = (manifest: string | null) => {
+    setChosen(manifest)
+    onSitting?.(manifest)
+    window.scrollTo?.(0, 0)
+  }
   const read = () =>
     desk.state().then(setState, (refused: Error) => setFailed(refused.message))
   // The cards where a decision is being made: a choice picked, a word typed, a box drawn.
@@ -746,18 +854,43 @@ export function Decide({
 
   if (failed) return <p className="text-rose-700">{failed}</p>
   if (!words || !state) return <div className="h-40 w-full animate-pulse rounded bg-muted" />
-  const { open, done } = ordered(state)
   const along = progress(state)
   const focused = member ? holding(state, member) : null
   const shared = { desk, words, state, scripted, onAnswered: () => void read(), onHold, focused }
+  // A file asked for opens the sitting that judges it, and a smoke run's answer the newest
+  // sitting with its family, open first and still after the answer finishes it, so
+  // neither waits on a person choosing from the index.
+  const sorted = ordered(state)
+  const scriptedIn = scripted
+    ? [...sorted.open, ...sorted.done].find((one) => scripted.family in one.families)?.manifest
+    : undefined
+  const showing = chosen ?? focused?.split('#')[0] ?? scriptedIn ?? null
+  const stale = state.stale && (
+    // A server older than the package cannot record an answer, and says so above all.
+    <p data-stale role="alert" className="rounded-md bg-rose-100 p-3 text-sm text-rose-900">
+      {say(words, 'stale')}
+    </p>
+  )
+  if (showing) {
+    const one = sittingOf(state, showing)
+    return (
+      <div data-decide data-showing={showing} lang={words.language} className="flex flex-col gap-6">
+        {stale}
+        <button type="button" data-back onClick={() => open(null)} className="self-start text-sm underline">
+          {say(words, 'index_back')}
+        </button>
+        {one ? (
+          <SittingView {...shared} sitting={one} />
+        ) : (
+          <p className="text-muted-foreground">{say(words, 'index_gone')}</p>
+        )}
+      </div>
+    )
+  }
+  const { open: waiting, done } = listed(state)
   return (
     <div data-decide lang={words.language} className="flex flex-col gap-6">
-      {state.stale && (
-        // A server older than the package cannot record an answer, and says so above all.
-        <p data-stale role="alert" className="rounded-md bg-rose-100 p-3 text-sm text-rose-900">
-          {say(words, 'stale')}
-        </p>
-      )}
+      {stale}
       {along && (
         <div className="flex flex-col gap-1">
           <div className="h-2 w-full overflow-hidden rounded bg-muted">
@@ -768,19 +901,25 @@ export function Decide({
           </p>
         </div>
       )}
-      {open.length === 0 && <p className="text-muted-foreground">{say(words, 'empty')}</p>}
-      {open.map((sitting) => (
-        <SittingView key={sitting.manifest} {...shared} sitting={sitting} />
-      ))}
+      {waiting.length === 0 && <p className="text-muted-foreground">{say(words, 'empty')}</p>}
+      {waiting.length > 0 && (
+        <section data-index className="flex flex-col gap-2">
+          <h2 className="text-xl font-semibold">{say(words, 'index_heading')}</h2>
+          <ul className="flex flex-col gap-2">
+            {waiting.map((one) => (
+              <Row key={one.manifest} words={words} one={one} onOpen={open} />
+            ))}
+          </ul>
+        </section>
+      )}
       {done.length > 0 && (
-        <details
-          open={Boolean(focused && done.some((one) => focused.startsWith(`${one.manifest}#`)))}
-          className="flex flex-col gap-4"
-        >
+        <details className="flex flex-col gap-2">
           <summary className="cursor-pointer text-sm">{say(words, 'older', { n: done.length })}</summary>
-          {done.map((sitting) => (
-            <SittingView key={sitting.manifest} {...shared} sitting={sitting} />
-          ))}
+          <ul className="mt-2 flex flex-col gap-2">
+            {done.map((one) => (
+              <Row key={one.manifest} words={words} one={one} onOpen={open} />
+            ))}
+          </ul>
         </details>
       )}
       <Advanced

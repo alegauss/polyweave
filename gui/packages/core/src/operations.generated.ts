@@ -2214,6 +2214,8 @@ export interface VoiceDesignArgs {
   out?: string
   /** the service's model, priced in [service]; default "eleven_multilingual_ttv_v2" */
   model?: string
+  /** a locale's own voice, from its table; the shared if unset */
+  locale?: string
   /** the *.world.toml, where the project has several */
   world?: string
   /** the [service.<name>] to use; needed only where there are several */
@@ -2242,7 +2244,7 @@ export interface VoiceLinesArgs {
   root?: string
 }
 
-/** Hold every line of the string table, in every locale, to the world's names and rules; each finding names the key, the locale and the rule. */
+/** Hold every line of the string table, and of the copy [words] copy names, in every locale, to the world's names and rules; each finding names its line and rule. */
 export interface WordsCheckArgs {
   /** the *.world.toml; needed only where the project holds several */
   world?: string

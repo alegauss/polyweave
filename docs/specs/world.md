@@ -48,7 +48,12 @@ unshown = ["nemesis"]     # entities whose name is never shown
   `description` of how it should sound and a `sample` line, `chosen_from` (the preview
   it was chosen from), all text, and its delivery,
   `stability`, `similarity` and `style` from 0 to 1 and `speed` from 0.7 to 1.2. It is
-  what every line the entity speaks is spoken in (§PW321).
+  what every line the entity speaks is spoken in (§PW321). A locale may have a voice of
+  its own, `[entity.<id>.voice.pt_BR]` with the same keys, laid over the shared voice for
+  that column's lines alone (§PW413): a voice designed in English reads Portuguese with
+  an English mouth. `voice.design --locale` designs from it and `voice.choose` keeps the
+  chosen id there; a take records the locale its voice was read for, so a new voice for
+  one language leaves the other's takes current.
 - `[rules]` is optional, and each of its keys is too. `tone` is a list of sentences no
   check applies: it is what a person judges a line by.
 - Any other table, entity field or rule is refused, as an unknown config key is: a field
@@ -132,7 +137,9 @@ own). `voice.lines` takes an optional `speaker`, `locale` and `keys`, and withou
 the total and what the ceiling leaves, the takes still `current` (their record's line,
 voice and model digests match), and the rows whose speaker has no voice id as
 `unvoiced`, `world.no-voice`, never spoken in a default. With `spend`, the same
-selection is spoken in each speaker's voice and delivery until the ceiling stops it;
+selection is spoken in each speaker's voice and delivery until the ceiling stops it, a
+model that can be held to a language (`eleven_v3`, the v2.5 turbo and flash) told the
+column's as `language_code` (§PW412);
 the rest is `not_voiced`, with `stopped_by` saying why. A sound sitting lays the new
 takes out ordered by speaker, so a person hears a character's lines together.
 

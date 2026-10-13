@@ -106,6 +106,10 @@ DELIVERY = {
     "speed": (0.7, 1.2),
 }
 
+#: A locale a voice may be its own in (§PW413): `[entity.<id>.voice.pt_BR]` holds the
+#: same keys as the voice, over it for that column's lines alone.
+VOICE_LOCALE = re.compile(r"^[a-z]{2,3}(?:_[A-Z]{2})?$")
+
 #: Every key `[rules]` may carry.
 RULE_KEYS = ("longest_line", "silent", "unshown", "tone")
 
@@ -382,9 +386,16 @@ def _look(look, table: str, faults: _Findings) -> None:
         )
 
 
-def _voice(voice, table: str, faults: _Findings) -> None:
-    """An entity's voice: the service's id, words about it, and its delivery."""
-    where = f"{table}.voice"
+def _voice(voice, table: str, faults: _Findings, locale: str = "") -> None:
+    """An entity's voice: the service's id, words about it, and its delivery, and a
+    locale's own voice under it in the same shape (§PW413)."""
+    where = f"{table}.voice" + (f".{locale}" if locale else "")
+    if not locale and isinstance(voice, dict):
+        for key in [k for k, v in voice.items() if isinstance(v, dict)]:
+            if VOICE_LOCALE.match(key):
+                _voice(voice[key], table, faults, locale=key)
+        voice = {k: v for k, v in voice.items()
+                 if not (isinstance(v, dict) and VOICE_LOCALE.match(k))}
     if not isinstance(voice, dict):
         faults.add(
             PolyweaveError(
@@ -401,7 +412,9 @@ def _voice(voice, table: str, faults: _Findings) -> None:
             PolyweaveError(
                 "world.unknown-key",
                 f"[{where}] declares {key}, which a voice does not have",
-                f"use one of {', '.join(known)}",
+                f"use one of {', '.join(known)}"
+                + ("" if locale else ", or a locale's own voice as a table, such as "
+                   f"[{where}.pt_BR]"),
                 given=key,
                 allowed=known,
             ),
@@ -531,21 +544,38 @@ def look_digest(entity: dict) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
-def voice_digest(entity: dict) -> str:
+def voice_in(entity: dict, locale: str | None = None) -> dict:
+    """The voice an entity speaks `locale` in (§PW413): its own words and delivery, with
+    that locale's table over them where the world gives one, and no locale's table in
+    it. Without a locale, the voice every column shares."""
+    voice = entity.get("voice") or {}
+    own = {k: v for k, v in voice.items() if not isinstance(v, dict)}
+    if locale and isinstance(voice.get(locale), dict):
+        own.update(voice[locale])
+    return own
+
+
+def voice_digest(entity: dict, locale: str | None = None) -> str:
     """What a spoken line of an entity was spoken in, as one hash (§PW321).
 
     The voice table alone: an edit to the entity's look does not call its lines stale,
-    and a new voice or delivery does.
+    and a new voice or delivery does. With a locale, the voice that column is spoken in
+    (§PW413), so a new Portuguese voice leaves the English takes current.
     """
-    text = json.dumps(entity.get("voice") or {}, sort_keys=True, ensure_ascii=False)
+    drawn = voice_in(entity, locale) if locale else entity.get("voice") or {}
+    text = json.dumps(drawn, sort_keys=True, ensure_ascii=False)
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
-def still_drawn(world: str | Path, ident: str, digest: str, of: str = "look") -> bool:
+def still_drawn(
+    world: str | Path, ident: str, digest: str, of: str = "look",
+    locale: str | None = None,
+) -> bool:
     """Whether the world file still describes this entity as the digest recorded it.
 
-    `of` is what was drawn from it: its look, or for a spoken line its voice. A world
-    that no longer parses, or no longer holds the entity, does not.
+    `of` is what was drawn from it: its look, or for a spoken line its voice, in
+    `locale`'s where the record names one. A world that no longer parses, or no longer
+    holds the entity, does not.
     """
     try:
         entities, _, faults = _parse(Path(world))
@@ -553,24 +583,27 @@ def still_drawn(world: str | Path, ident: str, digest: str, of: str = "look") ->
         return False
     if faults.found or ident not in entities:
         return False
-    digested = voice_digest if of == "voice" else look_digest
-    return digested(entities[ident]) == digest
+    if of == "voice":
+        return voice_digest(entities[ident], locale) == digest
+    return look_digest(entities[ident]) == digest
 
 
 def keep_voice(
-    entity: str, voice: str, chosen_from: str, world: str | None, root: str | Path
+    entity: str, voice: str, chosen_from: str, world: str | None, root: str | Path,
+    locale: str | None = None,
 ) -> str:
     """Write a chosen voice's id under the entity's `voice` table, and nothing else.
 
     Line by line, so the person's comments and order survive: the `id` and
-    `chosen_from` lines are replaced or added under `[entity.<id>.voice]`, which is
-    added where the world has none. A voice written inline cannot be edited this way
-    and is refused. The file is read back and must say what was written.
+    `chosen_from` lines are replaced or added under `[entity.<id>.voice]`, or under
+    `[entity.<id>.voice.<locale>]` for a locale's own voice (§PW413), which is added
+    where the world has none. A voice written inline cannot be edited this way and is
+    refused. The file is read back and must say what was written.
     """
     source = find(world, root)
     original = read_text_retrying(source)
     lines = original.splitlines()
-    header = f"[entity.{entity}.voice]"
+    header = f"[entity.{entity}.voice" + (f".{locale}]" if locale else "]")
     at = next((i for i, line in enumerate(lines) if line.strip() == header), None)
     own = {"id": voice, "chosen_from": chosen_from}
     if at is None:
@@ -595,7 +628,7 @@ def keep_voice(
     written = "\n".join(lines) + "\n"
     source.write_text(written, encoding="utf-8", newline="")
     entities, _, faults = _parse(source)
-    if faults.found or (entities.get(entity, {}).get("voice") or {}).get("id") != voice:
+    if faults.found or voice_in(entities.get(entity, {}), locale).get("id") != voice:
         source.write_text(original, encoding="utf-8", newline="")
         raise PolyweaveError(
             "world.bad-value",
@@ -619,15 +652,17 @@ def _block(lines: list[str], header: str) -> str:
 
 
 def voiced(
-    entity: str, world: str | None = None, root: str | Path = "."
+    entity: str, world: str | None = None, root: str | Path = ".",
+    locale: str | None = None,
 ) -> tuple[dict, dict]:
     """What a line of an entity is spoken in, and the record of where it came from.
 
     Refused where the entity has no voice id, rather than spoken in some other voice:
-    a character is known by the voice of every line (§PW321).
+    a character is known by the voice of every line (§PW321). With a locale, the voice
+    that language is spoken in (§PW413).
     """
     source, found = brief(entity, world, root)
-    voice = found.get("voice") or {}
+    voice = voice_in(found, locale)
     if not voice.get("id"):
         raise PolyweaveError(
             "world.no-voice",
@@ -640,8 +675,9 @@ def voiced(
     record = {
         "id": entity,
         "world": provenance.relative(source, Path(root).resolve()),
-        "sha256": voice_digest(found),
+        "sha256": voice_digest(found, locale),
         "of": "voice",
+        **({"locale": locale} if locale else {}),
     }
     return record, voice
 

@@ -109,6 +109,16 @@ DELIVERY = {
     "speed": "speed",
 }
 
+#: The models the service lets a call hold to one language, by `language_code`; any
+#: other answers the field with an error (§PW412).
+LANGUAGE_HELD = ("eleven_v3", "eleven_turbo_v2_5", "eleven_flash_v2_5")
+
+
+def language_of(locale: str) -> str:
+    """The ISO 639-1 code a table's column speaks: `pt_BR` is `pt`, `en` is `en`."""
+    return re.split(r"[_-]", str(locale), maxsplit=1)[0].lower()
+
+
 _UNIT = Param("0 to 1; the voice's own if unset", lo=0.0, hi=1.0)
 
 
@@ -351,6 +361,9 @@ def design(
     model: Annotated[str, Param("the service's model, priced in [service]")] = (
         "eleven_multilingual_ttv_v2"
     ),
+    locale: Annotated[
+        str, Param("a locale's own voice, from its table; the shared if unset")
+    ] = None,
     world: Annotated[str, Param("the *.world.toml, where the project has several")] = (
         None
     ),
@@ -362,9 +375,12 @@ def design(
     Sends the world's `description` of the voice, speaking its `sample`, to the
     service's voice design, priced and ledgered as any purchase. Each preview lands as a
     sound with its record, and a sitting plays them; the person's verdict, not the
-    agent's, is what `voice.choose` saves (§PW321).
+    agent's, is what `voice.choose` saves (§PW321). With `locale`, the words come from
+    that locale's own table, `[entity.<id>.voice.<locale>]`, and the chosen preview is
+    kept there (§PW413): a voice designed in English speaks Portuguese with an English
+    mouth, so a language can have a voice born in it.
     """
-    from .world import brief
+    from .world import brief, voice_in
 
     if not entity:
         raise PolyweaveError(
@@ -373,12 +389,13 @@ def design(
             "pass entity, one the world describes a voice for",
         )
     source, found = brief(entity, world, root)
-    voice = found.get("voice") or {}
+    voice = voice_in(found, locale)
+    table = f"[entity.{entity}.voice" + (f".{locale}]" if locale else "]")
     if not voice.get("description"):
         raise PolyweaveError(
             "world.no-voice",
             f"{entity} has no words about a voice to design it from",
-            f'write description = "..." under [entity.{entity}.voice]',
+            f'write description = "..." under {table}',
             given=entity,
         )
     sample = sample or voice.get("sample")
@@ -386,11 +403,12 @@ def design(
         raise PolyweaveError(
             "fetch.missing-field",
             f"no line to hear {entity}'s voice on",
-            f'pass sample, or write sample = "..." under [entity.{entity}.voice]',
+            f'pass sample, or write sample = "..." under {table}',
         )
     config = load(root)
     here = config.root
-    folder = config.path("paths.work", out or f"voices/{entity}")
+    named = f"{entity}_{locale}" if locale else entity
+    folder = config.path("paths.work", out or f"voices/{named}")
     name = config.service(service, model=model)
     about = config.services()[name]
     base, key = picture._reached(name, about)
@@ -422,11 +440,12 @@ def design(
         "id": entity,
         "world": provenance.relative(source, here),
         "description": voice["description"],
+        **({"locale": locale} if locale else {}),
     }
     heard = []
     for index, preview in enumerate(previews, start=1):
         body = base64.b64decode(preview["audio_base_64"])
-        target = folder / f"{entity}_{index}.mp3"
+        target = folder / f"{named}_{index}.mp3"
         # One call answers every preview, so each carries its share of the price.
         entry = purchase.capture(
             body,
@@ -449,12 +468,14 @@ def design(
     )
     return {
         "entity": entity,
+        **({"locale": locale} if locale else {}),
         "description": voice["description"],
         "sample": sample,
         "previews": [one["new"] for one in heard],
         "sitting": laid["sitting"],
-        "says": f"{len(heard)} previews of {entity}'s voice for a person to hear; "
-        "voice.choose saves the one they accept",
+        "says": f"{len(heard)} previews of {entity}'s voice"
+        + (f" in {locale}" if locale else "")
+        + " for a person to hear; voice.choose saves the one they accept",
     }
 
 
@@ -520,12 +541,14 @@ def choose(
         )
     from .world import keep_voice
 
+    # A preview designed for a locale's own voice is kept in its table (§PW413).
     kept = keep_voice(
         drawn["id"], saved["voice_id"], provenance.relative(where, here),
-        world or drawn.get("world"), here,
+        world or drawn.get("world"), here, locale=drawn.get("locale"),
     )
     return {"entity": drawn["id"], "voice": saved["voice_id"], "world": kept,
-            "from": provenance.relative(where, here)}
+            "from": provenance.relative(where, here),
+            **({"locale": drawn["locale"]} if drawn.get("locale") else {})}
 
 
 @operation("voice.lines", kind="fetch", injects=("report",), spends=True)
@@ -555,7 +578,7 @@ def lines(
     voiced, and a sitting lays the new takes out by speaker for a person to hear.
     """
     from . import words
-    from .world import declared, voice_digest
+    from .world import declared, voice_digest, voice_in
 
     config = load(root)
     here = config.root
@@ -585,12 +608,14 @@ def lines(
             continue
         if keys and row["key"] not in keys:
             continue
-        voice = (entities.get(who) or {}).get("voice") or {}
         for one in [locale] if locale else locales:
             text = (row["cells"].get(one) or "").strip()
             if not text:
                 continue
             at = {"key": row["key"], "locale": one, "speaker": who}
+            # Each column in the voice its locale has, the shared one where it has none
+            # of its own (§PW413).
+            voice = voice_in(entities.get(who) or {}, one)
             if not voice.get("id"):
                 unvoiced.append({**at, "code": "world.no-voice"})
                 continue
@@ -598,7 +623,7 @@ def lines(
                 locale=one, key=re.sub(r"[^\w.-]+", "_", row["key"])
             )
             line = {"key": row["key"], "locale": one, "sha256": words.said_digest(text)}
-            if _still(here / out, line, voice_digest(entities[who]), model, here):
+            if _still(here / out, line, voice_digest(entities[who], one), model, here):
                 current.append({**at, "out": out})
                 continue
             price = picture._priced(name, prices, model, None, len(text))["price"]
@@ -624,8 +649,9 @@ def lines(
     for index, one in enumerate(plan):
         drawn_from, own = (
             {"id": one["speaker"], "world": provenance.relative(world_file, here),
-             "sha256": voice_digest(entities[one["speaker"]]), "of": "voice"},
-            entities[one["speaker"]]["voice"],
+             "sha256": voice_digest(entities[one["speaker"]], one["locale"]),
+             "of": "voice", "locale": one["locale"]},
+            voice_in(entities[one["speaker"]], one["locale"]),
         )
         delivery = {
             DELIVERY[k]: float(own[k]) for k in DELIVERY if own.get(k) is not None
@@ -633,6 +659,11 @@ def lines(
         request: dict = {"text": one["text"], "model_id": model}
         if delivery:
             request["voice_settings"] = delivery
+        # The column says the line's language, so a model that can be held to one is
+        # told it: left to guess, a voice designed in English read Portuguese with an
+        # English mouth (§PW412). The others refuse the field, so it is never sent them.
+        if model in LANGUAGE_HELD:
+            request["language_code"] = language_of(one["locale"])
         route = SPEAK.format(voice=urllib.parse.quote(own["id"], safe=""))
         try:
             took = _bought(

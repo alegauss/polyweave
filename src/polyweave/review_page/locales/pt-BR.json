@@ -98,7 +98,15 @@
     "sheet": "Ver a folha técnica",
     "how": "Como decidir",
     "sitting_count": "{total} itens, {done} revisados",
-    "sitting_count_one": "{total} item, {done} revisado"
+    "sitting_count_one": "{total} item, {done} revisado",
+    "index_heading": "Sessões esperando por você",
+    "index_waiting": "{n} para responder",
+    "index_back": "← Todas as sessões",
+    "index_gone": "Esta sessão não está mais no disco.",
+    "accept_rest": "Aceitar os {n} pendentes",
+    "accept_rest_confirm": "Aceitar os {n} itens desta sessão que ainda não têm resposta? Os que você já respondeu ficam como estão.",
+    "accept_rest_why": "Aceito em lote na página de revisão.",
+    "accept_rest_running": "Aceitando {done} de {n}…"
   },
   "kinds": {
     "look": {

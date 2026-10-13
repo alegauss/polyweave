@@ -1121,7 +1121,8 @@ def _same_entity(record: dict, one: dict, source: Path) -> bool:
         return False
     from .world import still_drawn
 
-    return still_drawn(source, drawn["id"], drawn["sha256"], drawn.get("of", "look"))
+    return still_drawn(source, drawn["id"], drawn["sha256"], drawn.get("of", "look"),
+                       drawn.get("locale"))
 
 
 def _stamp() -> str:

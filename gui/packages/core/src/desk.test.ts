@@ -9,15 +9,18 @@ import {
   inPixels,
   lanes,
   last,
+  listed,
   measuredOf,
   narrower,
   ordered,
   progress,
   say,
+  sittingOf,
   spanned,
   status,
   title,
   turned,
+  unanswered,
   unready,
   visual,
   type Sitting,
@@ -75,6 +78,30 @@ describe('the decision screen', () => {
     expect(progress(state)).toEqual({ done: 1, total: 2 })
     expect(status(last(state.sittings[1]!, 'b', state.answers))).toBe('look')
     expect(status(last(state.sittings[1]!, 'c', state.answers))).toBe('wait')
+  })
+
+  it('lists each sitting as a page of its own, with how much of it is answered', () => {
+    // Every card of every sitting on one page grew past a hundred items in a project
+    // that sat often, and a person could not find what waited on them (§PW415).
+    const state: State = {
+      language: 'pt-BR',
+      pending: { assets: [] },
+      sittings: [sitting('art/review/old/sitting.json', ['a']), sitting('art/review/new/sitting.json', ['b', 'c'])],
+      answers: [
+        { sitting: 'art/review/old/sitting.json', family: 'a', choice: 'accept' },
+        { sitting: 'art/review/new/sitting.json', family: 'b', choice: 'accept' },
+      ],
+    }
+    const { open, done } = listed(state)
+    expect(open).toEqual([
+      expect.objectContaining({ manifest: 'art/review/new/sitting.json', folder: 'art/review/new', done: 1, total: 2 }),
+    ])
+    expect(done.map((one) => one.folder)).toEqual(['art/review/old'])
+    expect(sittingOf(state, 'art/review/old/sitting.json')?.families).toHaveProperty('a')
+    expect(sittingOf(state, 'gone/sitting.json')).toBeUndefined()
+    // Accepting the rest answers only what no one answered, a redo included.
+    expect(unanswered(state.sittings[1]!, state.answers)).toEqual(['c'])
+    expect(unanswered(state.sittings[0]!, state.answers)).toEqual([])
   })
 
   it('shows a line, then films, then the pictures, then the sheet', () => {

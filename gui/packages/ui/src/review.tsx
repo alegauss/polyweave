@@ -67,13 +67,26 @@ function Page() {
   }, [])
   // `?member=<path>` opens on the card a file is judged in (§PW305), as the window does.
   const member = new URLSearchParams(location.search).get('member')
+  // `?sitting=<manifest>` is one sitting's own page, and no `sitting` the index of them
+  // (§PW415), so a link to a sitting opens it alone and the back button leaves it.
+  const [sitting, setSitting] = useState(() => new URLSearchParams(location.search).get('sitting'))
+  useEffect(() => {
+    const back = () => setSitting(new URLSearchParams(location.search).get('sitting'))
+    addEventListener('popstate', back)
+    return () => removeEventListener('popstate', back)
+  }, [])
+  const opened = (manifest: string | null) => {
+    setSitting(manifest)
+    const query = manifest ? `?sitting=${encodeURIComponent(manifest)}` : location.pathname
+    history.pushState(null, '', query)
+  }
   return (
     <main className="mx-auto flex max-w-5xl flex-col gap-4 p-4 sm:p-8">
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold">{words ? say(words, 'heading') : ''}</h1>
         {project && <p className="text-sm text-muted-foreground">{project}</p>}
       </header>
-      <Decide desk={desk} member={member} />
+      <Decide desk={desk} member={member} sitting={sitting} onSitting={opened} />
     </main>
   )
 }

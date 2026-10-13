@@ -169,6 +169,8 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.world:described": ("internal", "an entity's look as a prompt"),
     "polyweave.world:look_digest": ("internal", "what a purchase records it drew"),
     "polyweave.world:still_drawn": ("internal", "provenance.outdated, per entity"),
+    "polyweave.world:voice_in": ("internal", "a locale's voice over the shared one"),
+    "polyweave.sound_buy:language_of": ("internal", "voice.lines' language_code"),
     "polyweave.world:voice_digest": ("internal", "what a spoken line records"),
     "polyweave.world:voiced": ("internal", "sound.speak's entity, read once"),
     "polyweave.world:keep_voice": ("internal", "voice.choose's one write"),

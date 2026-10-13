@@ -98,7 +98,15 @@
     "sheet": "See the tool's sheet",
     "how": "How to decide",
     "sitting_count": "{total} items, {done} reviewed",
-    "sitting_count_one": "{total} item, {done} reviewed"
+    "sitting_count_one": "{total} item, {done} reviewed",
+    "index_heading": "Sittings waiting for you",
+    "index_waiting": "{n} to answer",
+    "index_back": "← All sittings",
+    "index_gone": "This sitting is no longer on disk.",
+    "accept_rest": "Accept the {n} not yet answered",
+    "accept_rest_confirm": "Accept all {n} items of this sitting that have no answer yet? Items you already answered are left as they are.",
+    "accept_rest_why": "Accepted with the rest on the review page.",
+    "accept_rest_running": "Accepting {done} of {n}…"
   },
   "kinds": {
     "look": {

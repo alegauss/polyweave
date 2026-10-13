@@ -78,6 +78,48 @@ def test_spent_lines_land_once_and_a_changed_row_is_offered_again(tmp_path, proj
     assert sound_buy.lines(locale="en", root=str(tmp_path))["voice"][0]["key"] == "HOLD"
 
 
+def test_a_model_that_can_be_held_to_a_language_is_told_the_column(tmp_path, project):
+    """Left to guess, an English-designed voice read Portuguese with an English mouth
+    (§PW412): a model that takes `language_code` is told the column's, one that refuses
+    it is never sent it."""
+    (tmp_path / "polyweave.toml").write_text(VOICED.replace(
+        '"eleven_multilingual_v2" = { per = "character", rate = 0.001 }',
+        '"eleven_multilingual_v2" = { per = "character", rate = 0.001 }, '
+        '"eleven_v3" = { per = "character", rate = 0.001 }'), encoding="utf-8")
+    sound_buy.lines(spend=True, model="eleven_v3", root=str(tmp_path))
+    sent = {payload["text"]: payload for _, _, payload in project.sent}
+    assert sent["Aguente firme"]["language_code"] == "pt"
+    assert sent["Hold fast"]["language_code"] == "en"
+    project.sent.clear()
+    (tmp_path / "text" / "strings.csv").write_text(
+        TABLE.replace("Hold fast", "Hold it"), "utf-8")
+    sound_buy.lines(locale="en", spend=True, root=str(tmp_path))
+    assert "language_code" not in project.sent[0][2]
+
+
+def test_each_column_is_spoken_in_its_own_locale_voice(tmp_path, project):
+    """A locale's own voice speaks its column, the shared one the rest, and a new voice
+    for one language leaves the other's takes current (§PW413)."""
+    world_file = tmp_path / "game.world.toml"
+    world_file.write_text(WORLD.replace(
+        '[entity.ada.voice]\nid = "ada-voice"\n',
+        '[entity.ada.voice]\nid = "ada-voice"\n\n'
+        '[entity.ada.voice.pt_BR]\nid = "ada-br"\n'),
+        encoding="utf-8")
+    sound_buy.lines(spend=True, root=str(tmp_path))
+    routes = {payload["text"]: url for url, _, payload in project.sent}
+    assert "/text-to-speech/ada-voice?" in routes["Hold fast"]
+    assert "/text-to-speech/ada-br?" in routes["Aguente firme"]
+    world_file.write_text(world_file.read_text("utf-8").replace("ada-br", "ada-br-2"),
+                          encoding="utf-8")
+    again = sound_buy.lines(root=str(tmp_path))
+    offered = [(one["key"], one["locale"]) for one in again["voice"]]
+    assert offered == [("HOLD", "pt_BR")]
+    assert [one["locale"] for one in again["current"]] == ["en"]
+    stale = provenance.outdated(root=str(tmp_path))["outdated"]
+    assert [one["artefact"] for one in stale] == ["audio/voice/pt_BR/HOLD.mp3"]
+
+
 def test_the_ceiling_stops_the_set_and_names_what_was_not_voiced(tmp_path, project):
     (tmp_path / "polyweave.toml").write_text(
         VOICED.replace("amount = 1.0", "amount = 0.01"), encoding="utf-8")

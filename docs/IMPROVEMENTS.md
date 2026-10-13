@@ -286,6 +286,264 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
+### §PW411 A voice preview the page could not accept
+
+Where: spinhold RK218, the pilot's voice previews from `voice.design`, laid out by its
+sitting and served by `python -m polyweave review`.
+
+Accepting `pilot_3` on the page answered "Failed to fetch". The server's log held the
+traceback: `verdict.judge` read the member's `line` as a line of the string table
+(`words.judged`) and failed on `member["text"]` with a KeyError. A sound sitting's
+speech preview carries `line` too, but there it is the words the take says, so a person
+could not accept any voice preview, and `voice.choose`, which refuses a preview with no
+person's accept on its bytes, could never be reached through the page.
+
+Fixed in this line's commit: a member carrying `sound` is never judged as a line of
+text, and its verdict is kept as the sound's. `tests/test_voice_design.py` now accepts a
+preview through `verdict.judge` as the page does; the earlier tests wrote the verdict
+into the record by hand and never crossed this path.
+
+Left for this line: the page shows a bare "Failed to fetch" for any exception the server
+raises. It should answer the refusal (or a 500 carrying the error's message), so a
+person sees why and the agent is told without reading the server's log.
+
+### §PW412 A line's language sent with it
+
+Where: spinhold RK218, `voice.lines --speaker pilot` over the string table's `en` and
+`pt_BR` columns. Twelve of the thirteen Portuguese takes failed `sound.speech`'s `said`
+("pulso" heard as "pozo", "limpando o anel" as "limbund"): the request carried the text
+and the voice but no language, so the model guessed, and guessed English.
+
+The column already says the line's language. `voice.lines` now sends `language_code`
+(`pt_BR` as `pt`) to the models that can be held to one (`eleven_v3`, the v2.5 turbo and
+flash) and never to the others, which answer the field with an error.
+`tests/test_voice_lines.py` holds both halves.
+
+### §PW413 A voice of its own for each locale
+
+Where: spinhold RK218. The pilot's voice was designed from an English sample, and even
+held to Portuguese by `language_code` it read Portuguese with an English accent; the
+owner heard it at once. An entity had one voice for every column, so a language could
+not have a voice born in it.
+
+Built: `[entity.<id>.voice.<locale>]`, the voice's own keys for one locale, laid over
+the shared voice for that column alone (`world.voice_in`). `voice.design --locale`
+designs from that table and records the locale; `voice.choose` keeps the chosen id in
+it; `voice.lines` speaks each column in its locale's voice; a take records the locale,
+so the digest is per language and a new Portuguese voice leaves the English takes
+current. `world.validate` reads a locale table as a voice. Tests in test_voice_design.py
+and test_voice_lines.py; world.md documents the table.
+
+### §PW414 Speech checks and quotes that mislead
+
+Where: spinhold RK218, the pilot's Portuguese and English takes from `voice.lines`.
+
+Three frictions, each met voicing thirteen short lines:
+
+1. `sound.speech`'s `said` fails takes that say the line. "Lá" heard as "la" is a miss
+   (no accent folding), and an interjection's spelling ("uhuu" heard as "woohoo", "vamo"
+   as "vamos") is a miss. Fold diacritics before comparing, and let a line's
+   interjections, or a project list of them, count as said whatever the spelling.
+   Worse, the recogniser is not told the take's language: a Portuguese take is
+   transcribed as English ("Isso, isso aí! Capataz" heard as "this this is the
+   kapatais"), so every Portuguese line reads as failed. The record carries the line's
+   locale; pass it to the recogniser.
+2. `voice.lines --keys A B C` is refused by the CLI as unrecognised arguments; only a
+   JSON list (`--keys '["A","B"]'`) works, and neither `describe` nor the refusal says so.
+3. Before a speaker has a voice id, the quote prices nothing (`characters: 0`), so the
+   cost of a set is unknown until a voice is bought and chosen. Price the unvoiced rows
+   too, marked as such.
+
+### §PW415 A page per sitting
+
+Where: spinhold, approving the pilot's voice and lines on `python -m polyweave review`.
+The page drew every card of every open sitting on one page: 198 items in four sittings,
+the pilot's four pending takes lost among 166 old line cards. The owner could not find
+what waited on them, and asked for a page per sitting.
+
+Built: the page opens on an index of sittings, newest first, each a row with its title,
+its folder, "N to answer", how much is answered and when it was laid out; finished ones
+fold under "older sittings". A row opens that sitting alone, `?sitting=<manifest>` in
+the browser, so a link to one sitting is a link to it and the back button returns to the
+index. `?member=` still opens the sitting that judges a file, and a smoke run's answer
+the sitting holding its family. The window draws the same screen. `listed()` and
+`sittingOf()` in @pw/core, tested in desk.test.ts; the index words in both catalogs.
+
+### §PW416 Where voice.lines lays its sitting
+
+Where: spinhold RK218, `voice.lines --speaker pilot --spend true`.
+
+The takes' sitting landed at `<project>/voices/lines/`, a folder at the project's root
+beside `game/` and `art/`, where Godot imported its PNG sheets as game assets. The
+project keeps sittings under `art/review/` (which carries a `.gdignore`), and
+`voice.design` takes `out` for that; `voice.lines` has no `out`, and its default
+resolves against the root rather than the work area.
+
+The workaround: the folder was moved to `art/review/pilot_lines/` by hand and the paths
+rewritten in its `sitting.json`, `.polyweave/sittings.json` and
+`.polyweave/answers.jsonl`; missing the last left 23 answers pointing at a sitting that
+no longer existed, and the index showed it unanswered.
+
+What polyweave should do: give `voice.lines` an `out`, default it to a project setting
+for sittings (or the work area, never the root), and offer a way to move a sitting that
+carries its answers with it.
+
+### §PW420 A voxel build renders whole
+
+Found in spinhold, RK192 (the Hod, a new voxel enemy). Its declaration
+(art/voxels/carrier.toml, `hollow = 1`) builds cleanly: `polyweave build ... --preview`
+draws a whole, solid model in its four views (assets/voxels/carrier.voxels.png). Its
+acceptance spec renders the build to hold `silhouette_aspect`:
+
+    python -m polyweave render.bake --out art/renders/carrier.png
+        --model assets/voxels/carrier.glb --rung preview
+
+The render shows the model shattered: scattered cubes with holes through it, faces
+missing, nothing like the build's own preview. The Gleaner's build
+(assets/voxels/keeper.glb) renders the same way, so it is the render of a voxel build's
+glb, not one model. The silhouette predicate still passed (the bounding outline holds),
+but the picture a person is shown on the review page would be this broken one, and a
+luma or coverage bound measured from it would be wrong.
+
+Expected: a voxel build's render at any rung looks like the build's own preview, every
+skin face drawn and lit (the glb's faces culled from the wrong side, or a hollowed
+model's inner cells exported without their faces, are the likely causes).
+
+Workaround: none. The spec holds the owner's premise alone, and the look waits for a
+person on the build's own preview.
+
+### §PW421 A built ribbon frees whole
+
+Found in spinhold, RK195 (a check suite that leaks nothing). The path ribbon scene
+`vfx.build` writes (`kind = "path_ribbon"`, src/polyweave/vfx.py `_FOLLOWS`) carries an
+inline script whose members are initialised where they are declared:
+
+    var strip := ImmediateMesh.new()
+    var drawn := MeshInstance3D.new()
+
+and `drawn` enters the tree only in `_ready`, by `add_child(drawn)`. A ribbon instanced
+and freed without ever entering the tree (a check reading its nodes, a preview, a pool
+that builds ahead) never runs `_ready`, so `drawn` is never its child and outlives it:
+an orphan MeshInstance3D and a leaked render instance per ribbon. spinhold's
+check_trails built its seven trails that way and left seven of them at exit.
+
+Workaround: spinhold's check adds each built effect to the tree before freeing it.
+
+What polyweave should do: make `drawn` (and `strip`) in `_ready`, or free `drawn` in
+`_notification(NOTIFICATION_PREDELETE)` when it has no parent, so a built effect frees
+whole however it is used. A test can instance a built path ribbon, free it, and count
+orphan nodes.
+
+### §PW422 A score's reference, recorded
+
+Found in spinhold, RK207 (the Quilt's music). The design asked that the Quilt's cue be
+written against Cottony's calm loop (another project's docs/design/audio/music_calm.ogg)
+and that "the cue's provenance names Cottony's loop as its reference". The score
+(art/audio/quilt.music.toml) can say so only in a comment: `[music]` has no key for a
+reference, and `music.render` takes `source`, `out`, `root` and `formats`, so the record
+beside game/audio/music/quilt.wav names the score alone. A person comparing the cue to
+what it answers, or a later session, cannot find the reference from the record.
+
+Workaround: the score's header comment names the loop; nothing records it.
+
+What polyweave should do: let a score declare `reference = "<path>"` (a file under the
+project, brought in with `provenance.borrow` when it is another project's) and have
+`music.render` record it as an input with the role `reference`, as a fitted model's
+record names its mesh. `verdict.sitting` and the review page could then play the
+reference beside the cue, so a person judges the one against the other.
+
+### §PW423 A cue's kit in its record
+
+Found in spinhold, RK207. The phase music scores play a chip kit, `[kit.chip] effects =
+"art/audio/drums.sfx.toml"`, which music.render synthesises and places on every drum
+note. RK207 added a kick (`bd`) to that kit. The records beside game/audio/music/
+phase_*.wav name the score (`role: score`), the engine and the patches, but not the
+kit's .sfx.toml, so editing the kit changes what a re-render sounds like while every
+record still reads current. A hat retuned in the kit would change three cues silently.
+
+Then, checking that, `python -m polyweave provenance.outdated` stopped with a traceback:
+
+    File "src/polyweave/provenance.py", line 1124, in _same_entity
+      return still_drawn(source, drawn["id"], drawn["sha256"], ...)
+    KeyError: 'sha256'
+
+(polyweave's working tree had uncommitted changes to provenance.py at the time, so this
+may be work in progress.)
+
+What polyweave should do: record each kit's .sfx.toml as an input of the render (`role:
+kit`), so `provenance.outdated` names every cue a kit edit leaves behind; and have
+`outdated` refuse a record missing a field with a code naming the record, never a
+traceback.
+
+### §PW424 A preview laid where sittings go
+
+Where: spinhold, RK222 (one review sitting for the day's pieces), 2026-10-12.
+
+The call: `vfx.preview --source art/vfx/bomb.vfx.toml --out art/review/rk222-bomb-vfx`,
+so the bomb's motion would sit in art/review/ beside the day's other sittings.
+
+What came back: `vfx.unshipped`, "art/vfx/bomb.vfx.toml sits where the game's export
+leaves it out (art holds a .gdignore), so a scene built beside it would not ship",
+remedy "pass out, a folder the game ships or set [paths] vfx in polyweave.toml". But
+`out` was passed, and the only folders that satisfy it are shipped ones such as
+game/vfx/, where the effect scenes already live (vfx.build wrote them there for RK219).
+Passing that would lay a review sitting, its sheets and its sitting.json inside the
+shipped game.
+
+Expected: a preview is a sitting for a person, so its `out` is where the sitting goes
+and may be under art/review/ like every other sitting. The scenes it films are either
+the built ones (game/vfx/, found from the declaration's records) or built into the work
+area (.polyweave/), never into `out`. The refusal should name which of those two it
+needs.
+
+Workaround: no preview. The bomb's family in spinhold's rk222-day sitting is in-game
+stills from dev/shot.gd --hold=bomb at several frames, which show its life only as far
+as those frames do.
+
+What polyweave should do: split where the sitting is laid from where a scene is built,
+take the built scenes from their provenance when they exist, and accept any `out` for
+the sitting.
+
+### §PW425 The replaced sound as a sitting's old
+
+Where: spinhold, RK71 (the phase music in layers), 2026-10-12.
+
+`music.render --source art/audio/phase_1.music.toml --out game/audio/music/phase_1`
+rewrote game/audio/music/phase_1.wav in place, as it should. The person then has to hear
+the new mix beside the one it replaces, so `sound.sitting` was given an `old` for each
+track. But the old file no longer exists on disk: it lives only in git, and in this
+project as a Git LFS pointer, so `git show HEAD:<path>` gives 132 bytes of pointer.
+
+Workaround: for each track, by hand, `git show HEAD:game/audio/music/phase_N.wav | git
+lfs smudge > .polyweave/shots/rk71/phase_N.old.wav`, then those paths as `old`. Three
+commands per render, and nothing records where the old file came from.
+
+What polyweave should do: let `old` name a committed version (`HEAD:<path>`, or "the
+version this render replaced"), resolved through git and LFS into the work area,
+recorded in the sitting; or have music.render and sound.synth keep the file they
+overwrite in the work area and offer it as the sitting's `old` by default.
+
+### §PW426 A score derived from another
+
+Where: spinhold, RK71 (the phase music in layers), 2026-10-12.
+
+The game's three phase scores (art/audio/phase_1..3.music.toml) are one piece in three
+keys: the Waist's is the Bow's a tone up, the Stern's a tone down, with their own tempo,
+title and a drum line or two of their own. Adding a lead and a high layer meant writing
+the same new patterns three times, transposed by hand note by note (`e5` to `f#5` to
+`d5`, `c6` to `d6` to `bb5`), and copying every patch, kit and track block into each
+file.
+
+Workaround: a throwaway script (the session's scratchpad, derive_scores.py) that read
+the Bow's score and rewrote the other two by regex, with the transposed patterns typed
+in. A wrong hand transposition is a wrong note no validator catches.
+
+What polyweave should do: let a score derive from another (`extends =
+"phase_1.music.toml"` with `transpose = 2`, `bpm`, `title` and the patterns or tracks it
+overrides), compiled as a whole score so `music.validate` and the render see the result;
+or a `transpose` modifier in the mini-notation per pattern. Either way one edit to the
+Bow's lead reaches all three.
+
 ### §PW427 Particles drawn as a mesh
 
 Where: spinhold's Stuffing effect, game/world/stuffing.gd, whose tufts are a squashed
@@ -308,6 +566,24 @@ is. The measures stay as they are.
 
 Open choice: whether a meshed particle keeps the billboard (it should not: a puff turns
 as it flies) and whether `angle` then means a turn about the view axis or all three.
+
+### §PW429 A teaser cut from captures
+
+Where: spinhold, RK223 (the store page's 30-second teaser), 2026-10-12.
+
+`capture.movie` writes every frame between two marks a script prints, into a folder. A
+store teaser is several such stretches from different runs, cut together at stated
+lengths, with the game's music under them, encoded at 1920 by 1080 in a format Steam
+takes (H.264 MP4), and opening on play within three seconds. Nothing in polyweave takes
+the sequences that far: there is no operation to declare a cut list (which sequence,
+from which frame, for how long, with what transition), lay audio under it, encode it,
+measure it (length, the first frame with play) and record it. The project would have to
+drive ffmpeg itself, which the owner's rule puts in polyweave.
+
+What polyweave should do: a declared edit (`*.cut.toml`: clips from capture.movie
+sequences or kept runs, their in and out frames, the sound beneath) built into a video
+with its record, held to an acceptance spec (duration, resolution, time to first
+motion), and laid in a sitting for a person. Spinhold's RK223 waits on it.
 
 ### §PW435 A free tier's licence in a take's record
 
@@ -639,3 +915,106 @@ needs a door into them (PW398, docs/specs/kit.md: `adopted()` and `ADOPTED`). Th
 own side is Cottony's RK151. Done when Cottony carries neither file, its own save test
 is replaced by the kit's acceptance, a save written by the current release loads after
 the swap, and its gate passes.
+
+### §PW428 A drawn pad in the remap kit
+
+Every game that rebinds a pad wants the screen Spinhold designed as RK148: the pad in
+use drawn large in its layout, a line from each button, trigger, stick direction and
+menu button to the action it holds or "free". A real press lights it on the picture;
+choosing a button and pressing fire binds through the kit's own swap rule. With the
+players kit, a tab per seated player. The owner chose (2026-10-12) to build it in the
+kit.
+
+What to build: a `pad_screen.gd` and scene in the remap kit, opened from its controls
+tab row beside the remap screen. Its picture per layout is declared art: an SVG per
+layout drawn to PNG by picture.vector, each button at a declared spot (a table the
+screen reads, so drawing and screen cannot drift), with an acceptance spec (hue_spread,
+alpha_coverage, silhouette_aspect) and the pictures laid in a sitting for a person. The
+pads are detailed: shell, shading, wells, lit rims in the layout's colours, no maker's
+marks. A first Xbox drawing in that frame (1000 x 667) is at spinhold's
+.polyweave/pad/pad_xbox.svg (work area, uncommitted). Spinhold's game/ui/pad_screen.gd
+(commit ab85f69) is the logic to extract: the slots, the leaders, lighting a press,
+choosing and binding.
+
+The proof: a rebind on the picture takes and swaps, a press lights its spot, each layout
+draws, and the spots table matches each SVG's buttons.
+
+### §PW431 Every button named, in every family
+
+Where: spinhold, RK216 (moving the game onto the prompts, remap and players kits),
+2026-10-12, read against prompts 0.3.0.
+
+1. No "generic" family. `family_of` reads any pad that is not PlayStation or Switch as
+   xbox, so an unknown pad is labelled A/B/X/Y although its buttons may say anything.
+   Spinhold names such a pad's face buttons by direction (SOUTH, EAST, WEST, NORTH through
+   the string table's PAD_SOUTH...) and its menu buttons SELECT/START.
+2. Nothing names a raw code. `named(action, player, family)` takes an action; a screen
+   that shows a pad's every button (Spinhold's pad screen, PW428) needs the name of
+   `button:3` or `axis:2:-1` in a family, bound or not. Spinhold has `named(code, layout)`
+   and `describe(codes, layout)` (a binding's codes joined, for the Controls tab row).
+3. The clicks are spoken LS/RS where Spinhold says L3/R3 and has GUIDE; `said` translates
+   any name with no guard, where Spinhold leaves a one-letter glyph (A, B) untranslated.
+
+What polyweave should do: a generic family whose glyphs are the compass names, a
+`named_code(code, family)` and `describe(codes, family)`, and the clicks' names a family
+declares. Spinhold's game/core/bindings.gd (named, said, table_key, GLYPHS) is the
+reference; check_button_prompts and check_every_line_from_the_table hold its behaviour.
+
+### §PW432 A remap menu a game can ship
+
+Where: spinhold, RK216, read against remap 0.3.0 (core/remap_menu.gd).
+
+1. The remap menu binds on press. Spinhold's Controls tab listens until the input is
+   released (`AXIS_RELEASE`, options.gd 185-253), so a stick pushed past the threshold
+   binds the direction it ended on rather than the first one it crossed, and holding the
+   cancel button cancels instead of binding it. The kit has `AXIS_PRESS` and no release.
+2. Its words are hard-coded English ("Press a key", "Reset"...), so a game in pt-BR shows
+   English on its Controls tab; Spinhold's go through the string table (tr) and its
+   words.check.
+3. It has no player-facing label or order per action: the list is ProjectSettings' order
+   and the raw action names. Spinhold declares `Bindings.LABELS` (action -> table key) and
+   shows actions in that order.
+
+What polyweave should do: a capture that listens through release with a hold to cancel,
+every string a key the game's table translates (with English defaults), and a declared
+label and order per action in the game's declaration (res://polyweave_remap.gd).
+check_rebind in Spinhold's dev/check.gd holds the behaviour to match.
+
+### §PW433 A game's own pad options in the remap kit
+
+Where: spinhold, RK216, read against remap 0.3.0 (core/bindings.gd).
+
+1. The remap kit keeps its own file (user://polyweave_bindings.cfg) with a fixed [pad]
+   section of deadzone and invert_vertical. Spinhold's controls live in its one settings
+   store (user://settings.cfg, section controls) beside every other options tab, validated
+   and reset per section, and include a pad option the kit has no slot for: `twin_stick`
+   (fire with the right stick's direction). FROM adopts the bindings once but drops
+   twin_stick, and afterwards the game's Options screen and the kit write two files.
+2. The deadzone differs: the kit defaults to 0.5 and clamps 0.05 to 0.95, Spinhold to
+   0.25 within 0.05 to 0.6, so an adopted value can land outside the game's range.
+3. `invert_vertical` is an instance field, where the ship reads it every frame; a game
+   needs the kit's store reachable without holding an instance.
+
+What polyweave should do: let a game declare extra pad options (name, type, default,
+range) the kit keeps and adopts, declare the deadzone's default and range, offer a
+static `shared()` store, or let the game hand the kit its own settings section to keep
+the bindings in.
+
+### §PW434 A help line the prompts kit keeps filled
+
+Where: spinhold, RK216, read against prompts 0.3.0 (core/prompts.gd).
+
+A help line names buttons ("{fire_right} take  {bomb} back"), and it must be filled
+again whenever the player's device changes, a binding changes, or the language changes.
+Spinhold's Prompts autoload does it with `watch(label, key, player)` (a label filled
+from a table key and kept filled) and `follow(redraw)` (a callable run on every change),
+and it refills on NOTIFICATION_TRANSLATION_CHANGED. Thirteen screens use them (codex,
+status, shop, route, options, title, menus, ship select, records, pad screen, draft).
+
+The prompts kit only signals `family_changed` and `player_changed`; each screen would
+have to connect, keep its own key and refill by hand, and a language change refills
+nothing.
+
+What polyweave should do: `watch(label, key, player)` and `follow(callable)` on the
+prompts service, refilled on a family change, a rebind and a translation change, so a
+screen states once what it shows.

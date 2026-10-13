@@ -330,6 +330,48 @@ export function progress(state: State): { done: number; total: number } | null {
   }
 }
 
+/** A sitting as the index lists it (§PW415): where it lives, what it is called, how much of
+ * it is answered, and when it was laid out. */
+export interface Listed {
+  manifest: string
+  /** The folder it was laid out in, which tells two sittings of one kind apart. */
+  folder: string
+  title?: string
+  kind?: string
+  at: string
+  done: number
+  total: number
+}
+
+const listing = (state: State) => (sitting: Sitting): Listed => ({
+  manifest: sitting.manifest,
+  folder: sitting.manifest.replaceAll('\\', '/').split('/').slice(0, -1).join('/') || sitting.manifest,
+  title: sitting.title,
+  kind: sitting.kind,
+  at: sitting.at,
+  done: answered(sitting, state.answers),
+  total: Object.keys(sitting.families).length,
+})
+
+/** The index of sittings, each one page of its own, newest first: those with something
+ * to answer, then those finished. A person opens one at a time instead of every card of
+ * every sitting stacked on one page (§PW415). */
+export function listed(state: State): { open: Listed[]; done: Listed[] } {
+  const { open, done } = ordered(state)
+  return { open: open.map(listing(state)), done: done.map(listing(state)) }
+}
+
+/** The families of a sitting no answer has reached yet, in the order it laid them out:
+ * what "accept the rest" would answer, never one a person already answered (§PW415). */
+export function unanswered(sitting: Sitting, answers: Recorded[]): string[] {
+  return Object.keys(sitting.families).filter((name) => !last(sitting, name, answers))
+}
+
+/** The sitting a manifest names, or undefined where it is gone. */
+export function sittingOf(state: State, manifest: string): Sitting | undefined {
+  return state.sittings.find((one) => one.manifest === manifest)
+}
+
 /** What a card shows, the first a family has: a line, films, the pictures, the sheet. */
 export type Visual =
   | { kind: 'line'; lines: Member[] }

@@ -404,11 +404,13 @@ def judge(
                 root=here,
             )
         kept_line = None
-        if member.get("line"):
+        if member.get("line") and not member.get("sound"):
             from . import words
 
             # A line laid out by words.sheet: the verdict is kept in the lines canon,
-            # and this is the only door into it (§PW199).
+            # and this is the only door into it (§PW199). A sound's `line` is the words
+            # a spoken take says, heard and not read, so its verdict is the sound's
+            # below and never a line's (§PW411).
             kept_line = words.judged(
                 member,
                 accepted=accepted,

@@ -104,6 +104,22 @@ def test_the_accepted_preview_is_saved_and_written_into_the_world(tmp_path, serv
     assert voice["stability"] == 0.4
 
 
+def test_a_preview_accepted_on_the_review_page_is_kept_as_a_sound(tmp_path, service):
+    """The page judges a preview's sitting member, whose `line` is the words it says:
+    that is a sound heard, not a line of the string table read (§PW411)."""
+    import json
+
+    from polyweave import verdict
+
+    found = sound_buy.design(entity="bo", root=str(tmp_path))
+    sitting = json.loads((tmp_path / found["sitting"]).read_text("utf-8"))
+    members = next(iter(sitting["families"].values()))["members"]
+    assert members[0].get("line") and members[0].get("sound")
+    verdict.judge(members, "accept", "that's him", root=str(tmp_path))
+    kept = sound_buy.choose(members[0]["new"], root=str(tmp_path))
+    assert kept["voice"] == "saved-bo"
+
+
 def test_an_entity_with_no_voice_table_gets_one(tmp_path, service):
     from polyweave.world import keep_voice
 
@@ -112,6 +128,29 @@ def test_an_entity_with_no_voice_table_gets_one(tmp_path, service):
     keep_voice("ada", "v-ada", "voices/ada_1.mp3", None, tmp_path)
     voice = world.read(entity="ada", root=str(tmp_path))["entity"]["voice"]
     assert voice == {"id": "v-ada", "chosen_from": "voices/ada_1.mp3"}
+
+
+def test_a_locale_has_a_voice_born_in_it(tmp_path, service):
+    """A voice designed in English read Portuguese with an English mouth (§PW413): a
+    locale's own table is designed from, and the chosen preview is kept in it alone."""
+    (tmp_path / "game.world.toml").write_text(
+        WORLD + '\n[entity.bo.voice.pt_BR]\n'
+        'description = "um capataz cansado, paulista"\n'
+        'sample = "Acabou o turno. Vai pra casa."\n', encoding="utf-8")
+    found = sound_buy.design(entity="bo", locale="pt_BR", root=str(tmp_path))
+    assert service.sent[0][1]["voice_description"] == "um capataz cansado, paulista"
+    assert service.sent[0][1]["text"] == "Acabou o turno. Vai pra casa."
+    assert all("bo_pt_BR_" in one for one in found["previews"])
+    accepted(tmp_path, found["previews"][0])
+    kept = sound_buy.choose(found["previews"][0], root=str(tmp_path))
+    assert kept["locale"] == "pt_BR"
+    bo = world.read(entity="bo", root=str(tmp_path))["entity"]
+    assert bo["voice"]["pt_BR"]["id"] == "saved-bo"
+    assert "id" not in {k for k, v in bo["voice"].items() if not isinstance(v, dict)}
+    # The shared delivery carries into the locale's voice; its own words win there.
+    spoken = world.voice_in(bo, "pt_BR")
+    assert spoken["id"] == "saved-bo" and spoken["stability"] == 0.4
+    assert world.voice_in(bo, "en").get("id") is None
 
 
 def test_a_voice_with_no_words_cannot_be_designed(tmp_path, service):
