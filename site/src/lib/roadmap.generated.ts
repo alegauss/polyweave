@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 17 },
+  { block: "H", title: "Proof on a real game", open: 19 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 1 },
@@ -45,7 +45,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "R", title: "Levels measured before a person plays them", open: 6 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
-  { block: "U", title: "A window on everything a project governs", open: 1 },
+  { block: "U", title: "A window on everything a project governs", open: 2 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 7 },
 ];
 
@@ -167,6 +167,20 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "the map's five candy props match a drawn sprite that exists only as medians in a comment",
     why: "The four built props need a bar a person agrees to, then one rig searched across all five before they bake through the plugin.",
+    deps: ["PW441"],
+  },
+  {
+    id: "PW440",
+    block: "H",
+    symptom: "a render's material replaces the mesh's own, so a roughness cannot be laid over a textured mesh without losing it",
+    why: "Cottony's mushroom bakes glazed with its painted cap kept, so its port exports a glazed copy of the mesh the record never names.",
+    deps: [],
+  },
+  {
+    id: "PW441",
+    block: "H",
+    symptom: "a render's world light has a strength and no colour, so a rig lit by a warm world cannot be reproduced",
+    why: "Cottony's props are lit by a warm world; ported, no rig over 90 renders kept their median and their cream highlights at once.",
     deps: [],
   },
   {
@@ -237,6 +251,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "U",
     symptom: "no revision has been asked, made and judged from the window on a real game, so its gaps are guesses",
     why: "The owner asks the window to change a picture and a sound, and judges both there.",
+    deps: [],
+  },
+  {
+    id: "PW438",
+    block: "U",
+    symptom: "npm start fails from any VS Code terminal with a missing-export error, since ELECTRON_RUN_AS_NODE runs Electron as Node",
+    why: "The owner's first step of PW311, opening the window, failed with an error that never names the variable; the live test hides it.",
     deps: [],
   },
   {

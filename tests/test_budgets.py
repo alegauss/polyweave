@@ -215,7 +215,9 @@ ERROR = 1_400
 #: names without the caller reading its records for the path (§PW298).
 #: 4,227 once a list flag takes the items after it, each list usage gaining its
 #: `[LIST ...]`: `--keys A B C` had been refused as unrecognised (§PW414).
-HELP_VERB = 4_300
+#: 4,460 with render.bake's `after`, the project's own passes over a render, which is
+#: the only way its gloss or shadow reaches the record and the cache key (§PW439).
+HELP_VERB = 4_500
 #: The top-level `--help`, naming every verb: 11,346. One more verb line is ~150.
 #: 11,792 once measure.digest is a verb (§PW141), 11,933 with cost.read (§PW143),
 #: 12,066 with motion.bake (§PW160), 12,216 with sound.measure (§PW113), 12,385

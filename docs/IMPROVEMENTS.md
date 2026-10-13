@@ -526,6 +526,49 @@ sitting.
 Test: lay out a sitting, answer two families, move it, and see the index count both as
 answered at the new path, with `verdict.answers` carrying them into a run.
 
+### §PW440 A surface laid over a mesh's own
+
+Where: PW77, porting Cottony's mushroom off `tools/art/bake_model.py`, 2026-10-13. The
+mushroom is a fetched mesh whose colour is its texture, and `bake_model` renders it
+glazed: `glaze(0.22)` sets the Principled roughness on every material the mesh already
+wears, so the candy reads glossy and the painted cap keeps its spots.
+
+`render.bake(material=)` cannot say that. `blender.apply_material` clears the mesh's
+materials and puts one new one on, so `{"roughness": 0.22}` alone renders the mushroom
+untextured in the default grey, and leaving `material` out renders it at the texture's
+own roughness, a matte candy. Cottony's port works round it by exporting a glazed copy
+of the mesh before the search (`tools/art/export_props.py`), which is a second mesh file
+whose only difference is one number the record never names.
+
+Build: a `material` given with `over = true` (or a separate `surface` argument) sets the
+named inputs on each material the mesh already has, keeping its textures and its slots,
+where the plain form still replaces them. The inputs go in the cache key and the record
+as they do now. A test renders a textured mesh with only a roughness laid over it and
+sees its texture's colours survive. Cottony's glazed copy is then deleted and the search
+passes the roughness.
+
+### §PW441 A colour for the world light
+
+Where: PW77, porting Cottony's map props, 2026-10-13. `bake_model.py` lights every prop
+with a warm world, colour (1.0, 0.97, 0.93), doing most of the work beside a soft key
+and fill, so a prop's cream bolls read cream and its hues sit a little warm. The
+plugin's rig sets the world's strength (`ambient`) and never its colour, so the world
+stays whatever Blender's new world holds, a neutral grey.
+
+Measured: `port.run` over the five props with key, fill, ambient and exposure as axes,
+90 renders. Every built prop's median came out the right hue and about 8% dark (bush
+#7DC29C against the shipped #86CDA1), and no rig fixed it: brightening it moved the
+median onto its bar and pushed the 99th percentile past its ceiling, the bolls and the
+gloss window going white where the shipped ones are cream. The conflict the search
+reported, a hot window against a median tone, is a white light being asked to make a
+warm picture.
+
+Build: the rig gains `ambient_colour`, a hex colour for the world, `#FFFFFF` by default
+so every existing render keeps its key, set on the Background node beside its strength,
+carried in `as_params` so it is in the cache key and the record, and accepted as a
+search axis only as a fixed value. A test renders a white sphere under a warm world and
+reads its median as warm.
+
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once
@@ -801,6 +844,24 @@ before handing the window over, and every friction filed as its own line in this
 It is not a test run. A change of plan that the owner asks for mid-way ("undo, try the
 other palette") is part of what is being proved, because a revision a person refines
 several times is the case this block exists for.
+
+### §PW438 The window started from an editor's terminal
+
+Where: PW311, starting the window on Spinhold from a Claude Code session inside VS Code,
+2026-10-13. `npm start` in `gui/` built both packages and then failed: `SyntaxError: The
+requested module 'electron' does not provide an export named 'BrowserWindow'`. VS Code
+exports `ELECTRON_RUN_AS_NODE=1` to every process it starts, so `electron .` ran
+`main.js` as plain Node, where `electron` is the path to a binary and has no exports.
+The error names a missing export and not the variable, so nothing points at the cause.
+
+`shell/src/window-live.test.ts` already deletes the variable from the environment it
+hands Electron, which is why the gate never sees it. The live window, the one a person
+opens, has no such guard. It started once the variable was removed by hand.
+
+Build: `npm start` starts Electron through a small launcher in `shell` that removes
+`ELECTRON_RUN_AS_NODE` from the child's environment, the way the live test does, and the
+README's quick start says nothing about it because nothing has to be done. A test runs
+the launcher with the variable set and sees the window's smoke mode answer.
 
 ## Block V — Parts every game repeats, installed already proved
 

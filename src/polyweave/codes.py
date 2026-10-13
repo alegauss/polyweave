@@ -520,6 +520,17 @@ CODES: dict[str, Code] = {
         when="no model was named, the file is not there, or it imported empty",
         doors=("pass the model", "ask a question the sphere rung carries"),
     ),
+    "render.no-pass": Code(
+        means="a pass named in `after` is not a function in a file under the project",
+        when="the path is wrong, outside the project, or the function is not in it",
+        doors=("name it as path/to/file.py:function, under the project",),
+    ),
+    "render.pass-failed": Code(
+        means="a project's own pass raised while painting the render",
+        when="the pass's code assumed a picture, an argument or a module it lacks",
+        doors=("read the detail for where it raised, and fix the pass",
+               "drop it from after to see the render without it"),
+    ),
     "render.unknown-format": Code(
         means="the mesh file is not in a format this reads",
         when="an .obj or another format where a .blend, glTF or FBX was expected",

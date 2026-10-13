@@ -234,6 +234,10 @@ def bake(
         bool,
         Param("take the shading a service painted into the mesh's texture back out"),
     ] = False,
+    after: Annotated[
+        list,
+        Param("the project's passes over the picture: file.py:fn or {pass, args}"),
+    ] = (),
     covers: Annotated[
         list,
         Param(
@@ -318,6 +322,12 @@ def bake(
     if size:
         # A size asked for is a different picture from the rung's, so it is in the key.
         params["size"] = int(size)
+    # A project's own passes are part of the picture (§PW439): each one's source digest
+    # and arguments are in the key and the record, so a changed pass renders again and
+    # reads outdated.
+    passes = _passes(after, where=Path(root).resolve())
+    if passes:
+        params["after"] = [one["said"] for one in passes]
     scale = None
     # The size the picture comes out at: the rung's square, unless a world rectangle was
     # declared, in which case the declaration decides both axes (§PW47). Before this, a
@@ -446,6 +456,8 @@ def bake(
         samples=chosen["samples"],
         seed=chosen["seed"],
     )
+    for one in passes:
+        _painted(one, out_path)
 
     floor_alpha = tolerances.alpha_floor
     asserted = post.check(
@@ -535,6 +547,78 @@ def bake(
         answer["image"] = measure.inline_image(out_path)
     _counted(answer)
     return answer
+
+
+def _passes(after, *, where: Path) -> list[dict]:
+    """Each pass `after` names, resolved to its function, digest and arguments.
+
+    A pass is the project's code, never the plugin's (its look is the project's own), so
+    it is a file under the project and a function in it, called with the written
+    picture's path and its arguments.
+    """
+    import hashlib
+    import importlib.util
+
+    resolved = []
+    for index, given in enumerate(after or ()):
+        named = given if isinstance(given, str) else (given or {}).get("pass", "")
+        arguments = {} if isinstance(given, str) else {
+            k: v for k, v in given.items() if k != "pass"}
+        file, _, function = str(named).rpartition(":")
+        source = (where / file).resolve() if file else None
+        if source is None or not source.is_relative_to(where) or not source.is_file():
+            raise PolyweaveError(
+                "render.no-pass",
+                f"after[{index}] names {named!r}, which is not a file under the "
+                "project and a function in it",
+                "name it as path/to/file.py:function, under the project",
+                given=str(named),
+            )
+        loaded = importlib.util.spec_from_file_location(
+            f"polyweave_pass_{hashlib.sha256(str(source).encode()).hexdigest()[:12]}",
+            source,
+        )
+        module = importlib.util.module_from_spec(loaded)
+        try:
+            loaded.loader.exec_module(module)
+        except Exception as broken:  # noqa: BLE001 - the project's code, said as its own
+            raise _pass_failed(named, broken) from broken
+        fn = getattr(module, function, None)
+        if not callable(fn):
+            raise PolyweaveError(
+                "render.no-pass",
+                f"after[{index}]: {file} has no function {function!r}",
+                "name a function the file defines, as path/to/file.py:function",
+                given=str(named),
+            )
+        digest = hashlib.sha256(source.read_bytes()).hexdigest()
+        resolved.append({
+            "fn": fn,
+            "arguments": arguments,
+            "said": {"pass": f"{source.relative_to(where).as_posix()}:{function}",
+                     "sha256": digest, **arguments},
+        })
+    return resolved
+
+
+def _painted(one: dict, out_path: Path) -> None:
+    """Run one pass over the written picture, its failure said as the project's."""
+    try:
+        one["fn"](out_path, **one["arguments"])
+    except Exception as broken:  # noqa: BLE001 - the project's code, said as its own
+        raise _pass_failed(one["said"]["pass"], broken) from broken
+
+
+def _pass_failed(named, broken: BaseException) -> PolyweaveError:
+    import traceback
+
+    where = traceback.extract_tb(broken.__traceback__)[-1]
+    return PolyweaveError(
+        "render.pass-failed",
+        f"the pass {named} raised {type(broken).__name__}: {broken}",
+        "fix the pass, or drop it from after to see the render without it",
+        detail=f"{Path(where.filename).name}:{where.lineno} in {where.name}",
+    )
 
 
 def _counted(answer: dict) -> None:

@@ -220,11 +220,23 @@ not a translation of eight values but a re-fit of two**, and the fit is worth do
 a render rather than by reading the old constants across — this vocabulary derives them from
 a different starting point and will not land on Cottony's eight exactly.
 
+**`gloss` and `shadow` are passes too, and stay Cottony's** (§PW439). After Blender draws
+a prop, `bake_model` paints the drawn candy specular window (`wet`) and a soft drop shadow
+(`ground`) from the render's own silhouette, and the mushroom's bar was measured on the
+result. The look is Cottony's, so the code stays in Cottony; what the plugin gives it is
+the seam. `render.bake(after=[...])` runs a project's own passes over the written picture,
+each named `path/file.py:function` under the project with its arguments, and each pass's
+source digest and arguments are in the cache key and the record's `params.after`, so a
+changed pass renders again and `provenance.outdated` sees it. A missing pass is
+`render.no-pass`, one that raises `render.pass-failed`. A search carries `after` in its
+`fixed` like any other render argument.
+
 ### What is left of PW36
 
-The port itself. It edits a repository this one does not own, and **§PW35 requires a baseline
-recorded before anything moves** — a before side taken after the port is refused, and rightly.
-So the audit lands here and the adoption waits on a person starting the ledger.
+The port itself, one family at a time. It edits a repository this one does not own, and
+**§PW35 requires a baseline recorded before anything moves**. As of 2026-10-13 Cottony's
+`polyweave.loop.json` holds a before side for all six families, and the stars have moved
+(§PW76). What remains is each later family's port, each on a person's look, down to PW82.
 
 ## A family is stated, not scripted
 

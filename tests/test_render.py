@@ -269,6 +269,72 @@ def test_the_same_render_twice_has_the_same_key(project):
     ) == provenance.cache_key(provenance.read("k2.png", root=project))
 
 
+PASS = '''
+from PIL import Image
+
+
+def whiten(path, share=1.0):
+    """Every visible pixel moved toward white by `share`, as a gloss would."""
+    with Image.open(path) as raw:
+        picture = raw.convert("RGBA")
+    picture.putdata([
+        (*(round(c + (255 - c) * share) for c in px[:3]), px[3])
+        for px in picture.getdata()
+    ])
+    picture.save(path)
+
+
+def broken(path):
+    raise ValueError("no picture today")
+'''
+
+
+def test_a_projects_own_pass_paints_the_render_and_is_in_its_record(project):
+    """§PW439: Cottony's gloss and drop shadow were painted outside the record."""
+    from PIL import Image
+
+    (project / "passes.py").write_text(PASS, encoding="utf-8")
+    render.bake(Reported(), out="plain.png", rung="sphere", root=project)
+    render.bake(Reported(), out="white.png", rung="sphere", root=project,
+                after=[{"pass": "passes.py:whiten", "share": 0.5}])
+
+    def darkest(name):
+        with Image.open(project / name) as drawn:
+            return min(min(px[:3]) for px in drawn.convert("RGBA").getdata() if px[3])
+
+    assert darkest("white.png") >= 127 > darkest("plain.png")
+    said = provenance.read("white.png", root=project)["params"]["after"]
+    assert said[0]["pass"] == "passes.py:whiten" and said[0]["share"] == 0.5
+    assert len(said[0]["sha256"]) == 64
+    keys = {provenance.cache_key(provenance.read(one, root=project))
+            for one in ("plain.png", "white.png")}
+    assert len(keys) == 2
+
+
+def test_a_changed_pass_is_a_different_picture(project):
+    (project / "passes.py").write_text(PASS, encoding="utf-8")
+    lighter = [{"pass": "passes.py:whiten", "share": 0.3}]
+    render.bake(Reported(), out="p1.png", rung="sphere", root=project, after=lighter)
+    (project / "passes.py").write_text(PASS + "\n# edited\n", encoding="utf-8")
+    again = render.bake(Reported(), out="p2.png", rung="sphere", root=project,
+                        after=lighter)
+    assert again["cached"] is False
+
+
+def test_a_pass_that_is_not_there_or_raises_is_said_as_the_projects(project):
+    (project / "passes.py").write_text(PASS, encoding="utf-8")
+    for named in ("passes.py:missing", "nowhere.py:whiten", "../outside.py:whiten"):
+        with pytest.raises(PolyweaveError) as refused:
+            render.bake(Reported(), out="x.png", rung="sphere", root=project,
+                        after=[named])
+        assert refused.value.code == "render.no-pass"
+    with pytest.raises(PolyweaveError) as refused:
+        render.bake(Reported(), out="x.png", rung="sphere", root=project,
+                    after=["passes.py:broken"])
+    assert refused.value.code == "render.pass-failed"
+    assert "ValueError" in refused.value.message
+
+
 def test_a_rig_that_moved_has_a_different_key(project):
     render.bake(Reported(), out="m1.png", rung="sphere", azimuth=10.0, root=project)
     render.bake(Reported(), out="m2.png", rung="sphere", azimuth=80.0, root=project)

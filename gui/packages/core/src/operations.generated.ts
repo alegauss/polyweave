@@ -1624,6 +1624,8 @@ export interface RenderBakeArgs {
   allow_uniform?: boolean
   /** take the shading a service painted into the mesh's texture back out; default false */
   scrub?: boolean
+  /** the project's passes over the picture: file.py:fn or {pass, args}; default [] */
+  after?: unknown[]
   /** the world rectangle this picture stands for: [width, height] centred on the subject, or [x0, y0, x1, y1] where it stands, seen from the front; default [] */
   covers?: unknown[]
   /** the scale it is baked at; the project's own where this is left out; default 0.0 */
