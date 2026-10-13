@@ -12,6 +12,7 @@ this is the one place that difference exists.
 from __future__ import annotations
 
 import contextlib
+import math
 from pathlib import Path
 from typing import Any
 
@@ -150,8 +151,23 @@ def _appended(bpy: Any, where: Path) -> list:
     return meshes
 
 
+#: The triangles below which a preview keeps the mesh whole (§PW420). The rung exists to
+#: make a fetched mesh of hundreds of thousands cheap; a voxel build of ten thousand
+#: renders fast as it is, and collapsing one tore its cubes apart.
+DECIMATE_FLOOR = 50_000
+
+#: The angle under which neighbouring faces are one plane and merged before anything
+#: collapses: it changes no shape, and a voxel build is almost all such faces.
+PLANAR_LIMIT = math.radians(1.0)
+
+
 def decimate(obj: Any, ratio: float) -> Any:
-    """Fewer faces for the same silhouette, which is what a preview rung is."""
+    """Fewer faces for the same silhouette, which is what a preview rung is.
+
+    A mesh under `DECIMATE_FLOOR` triangles is kept whole. Above it, coplanar faces are
+    merged first, which keeps every outline, and only what is still over the target is
+    collapsed: collapse alone shattered Spinhold's voxel builds into cubes (§PW420).
+    """
     bpy = require()
     if not 0.0 < ratio <= 1.0:
         raise PolyweaveError(
@@ -159,10 +175,20 @@ def decimate(obj: Any, ratio: float) -> Any:
             f"a decimation ratio is a fraction of one, and {ratio!r} is not",
             "pass a ratio above 0 and at most 1",
         )
-    if ratio == 1.0:
+    whole = triangles(obj)
+    if ratio == 1.0 or whole <= DECIMATE_FLOOR:
+        return obj
+    target = whole * ratio
+    planar = obj.modifiers.new("polyweave-planar", "DECIMATE")
+    planar.decimate_type = "DISSOLVE"
+    planar.angle_limit = PLANAR_LIMIT
+    with bpy.context.temp_override(object=obj):
+        bpy.ops.object.modifier_apply(modifier=planar.name)
+    left = triangles(obj)
+    if left <= target:
         return obj
     modifier = obj.modifiers.new("polyweave-decimate", "DECIMATE")
-    modifier.ratio = ratio
+    modifier.ratio = target / left
     with bpy.context.temp_override(object=obj):
         bpy.ops.object.modifier_apply(modifier=modifier.name)
     return obj

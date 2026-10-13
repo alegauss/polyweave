@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 16 },
+  { block: "H", title: "Proof on a real game", open: 15 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 1 },
   { block: "K", title: "Reached without reading the source", open: 2 },
@@ -104,13 +104,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "a camera move cannot be declared as a clip or played by the game, so a cutscene's shots are numbers in the project",
     why: "No shot is yet captured onto a sitting for a person to accept, and Starship's opening still reads its own JSON.",
-    deps: [],
-  },
-  {
-    id: "PW420",
-    block: "H",
-    symptom: "render.bake draws a voxel build's glb shattered, cubes scattered with holes, unlike the build's own preview",
-    why: "A voxel enemy cannot be shown or measured on a render, so its spec and its sitting fall back to a person's eye.",
     deps: [],
   },
   {

@@ -16,6 +16,14 @@ keeps happening is that nothing makes the cheap path the default.
 | `preview` | the real mesh decimated, at the preview size and the preview sample count |
 | `final` | the real mesh whole, at the final size and the final sample count |
 
+**A preview reduces a mesh without breaking it** (§PW420). A mesh of up to 50,000
+triangles renders whole, since the rung exists to make a fetched mesh of hundreds of
+thousands cheap. Above that, coplanar faces are merged first (1°), which changes no
+outline and takes most of a voxel build, and only what is still over a quarter of the
+triangles is collapsed. Collapse alone shattered Spinhold's voxel builds into loose cubes
+with holes through them. How the mesh was reduced is in the preview's cache key and its
+record's `params.decimate`, so no preview cached before this is served for it.
+
 **The meaning is the plugin's; the choice is the project's.** `[render] rungs` says which
 are enabled and `[render] preview_size`, `final_size` and `samples` say how big each is. A
 name outside these three is refused (`render.unknown-rung`) rather than treated as a fourth

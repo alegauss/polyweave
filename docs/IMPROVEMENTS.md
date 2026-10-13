@@ -348,30 +348,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW420 A voxel build renders whole
-
-Found in spinhold, RK192 (the Hod, a new voxel enemy). Its declaration
-(art/voxels/carrier.toml, `hollow = 1`) builds cleanly: `polyweave build ... --preview`
-draws a whole, solid model in its four views (assets/voxels/carrier.voxels.png). Its
-acceptance spec renders the build to hold `silhouette_aspect`:
-
-    python -m polyweave render.bake --out art/renders/carrier.png
-        --model assets/voxels/carrier.glb --rung preview
-
-The render shows the model shattered: scattered cubes with holes through it, faces
-missing, nothing like the build's own preview. The Gleaner's build
-(assets/voxels/keeper.glb) renders the same way, so it is the render of a voxel build's
-glb, not one model. The silhouette predicate still passed (the bounding outline holds),
-but the picture a person is shown on the review page would be this broken one, and a
-luma or coverage bound measured from it would be wrong.
-
-Expected: a voxel build's render at any rung looks like the build's own preview, every
-skin face drawn and lit (the glb's faces culled from the wrong side, or a hollowed
-model's inner cells exported without their faces, are the likely causes).
-
-Workaround: none. The spec holds the owner's premise alone, and the look waits for a
-person on the build's own preview.
-
 ### §PW421 A built ribbon frees whole
 
 Found in spinhold, RK195 (a check suite that leaks nothing). The path ribbon scene

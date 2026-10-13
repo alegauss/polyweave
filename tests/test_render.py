@@ -413,6 +413,53 @@ def test_a_surface_laid_over_a_mesh_with_no_shader_is_refused(project, mesh):
     assert refused.value.code == "render.no-material"
 
 
+def _object(build):
+    import bpy
+
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    build(bpy)
+    bpy.ops.object.select_all(action="SELECT")
+    bpy.context.view_layer.objects.active = bpy.context.selected_objects[0]
+    if len(bpy.context.selected_objects) > 1:
+        bpy.ops.object.join()
+    return bpy.context.active_object
+
+
+def test_a_light_mesh_is_kept_whole_at_the_preview_rung():
+    """§PW420: collapsing a voxel build of ten thousand triangles shattered it."""
+    from polyweave.render import blender
+
+    def cubes(bpy):
+        for x in range(4):
+            bpy.ops.mesh.primitive_cube_add(size=1.0, location=(x * 1.0, 0.0, 0.0))
+
+    voxels = _object(cubes)
+    before = blender.triangles(voxels)
+    blender.decimate(voxels, 0.25)
+    assert blender.triangles(voxels) == before
+
+
+def test_a_heavy_flat_mesh_is_reduced_without_changing_its_shape():
+    from polyweave.render import blender
+
+    def plane(bpy):
+        bpy.ops.mesh.primitive_grid_add(
+            x_subdivisions=200, y_subdivisions=200, size=2.0)
+
+    flat = _object(plane)
+    assert blender.triangles(flat) > blender.DECIMATE_FLOOR
+    corners = sorted(tuple(round(c, 4) for c in v) for v in flat.bound_box)
+    blender.decimate(flat, 0.25)
+    assert blender.triangles(flat) < 1000  # merged as one plane, not collapsed
+    assert sorted(tuple(round(c, 4) for c in v) for v in flat.bound_box) == corners
+
+
+def test_a_preview_is_keyed_by_how_it_reduced_the_mesh(project, mesh):
+    render.bake(Reported(), out="pv.png", rung="preview", model=mesh, root=project)
+    said = provenance.read("pv.png", root=project)["params"]["decimate"]
+    assert said == {"ratio": 0.25, "floor": 50_000, "planar": True}
+
+
 def test_a_rig_that_moved_has_a_different_key(project):
     render.bake(Reported(), out="m1.png", rung="sphere", azimuth=10.0, root=project)
     render.bake(Reported(), out="m2.png", rung="sphere", azimuth=80.0, root=project)

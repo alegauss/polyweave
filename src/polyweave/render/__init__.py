@@ -367,6 +367,14 @@ def bake(
     # read from the project file, so changing `preview_size` changed the picture and not
     # the key, and the old size was served as a hit.
     params["frame"] = [int(frame[0]), int(frame[1])]
+    if chosen["decimate"] < 1.0:
+        # How a preview reduces the mesh is in its key (§PW420): one cached under the
+        # collapse that shattered voxel builds is never served for the planar-first one.
+        params["decimate"] = {
+            "ratio": chosen["decimate"],
+            "floor": blender.DECIMATE_FLOOR,
+            "planar": True,
+        }
     if model:
         mesh = Path(model) if Path(model).is_absolute() else where / model
         if not mesh.is_file():
