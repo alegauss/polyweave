@@ -37,9 +37,9 @@
 - 📋 **PW435** (deps: —) **a take made on a free ElevenLabs plan is recorded like any other, so a game can ship one commercially unwarned** — PW410 named the 403 a free plan answers; the free tier's non-commercial licence is still in no record and no credits. → §PW435
 - 📋 **PW436** (deps: —) **a sitting laid out in the wrong folder cannot be moved, and a hand move leaves its answers on the old path** — Spinhold moved its pilot lines sitting by hand, missed answers.jsonl, and 23 answers pointed at a sitting that was gone. → §PW436
 - 🛠 **PW36** (deps: PW5 ✅, PW82 ⏸) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82. → §PW36
-- 🛠 **PW77** (deps: PW76 ✅, PW439 ✅, PW441 ✅) **the map's five candy props match a drawn sprite that exists only as medians in a comment** — The four built props need a bar a person agrees to, then one rig searched across all five before they bake through the plugin. → §PW77
 - 📋 **PW440** (deps: —) **a render's material replaces the mesh's own, so a roughness cannot be laid over a textured mesh without losing it** — Cottony's mushroom bakes glazed with its painted cap kept, so its port exports a glazed copy of the mesh the record never names. → §PW440
 - 📋 **PW442** (deps: —) **a search whose best rig sits on its axes' bounds reports never passing, not that the range may cut the answer off** — Cottony's props search ended on the edge of exposure three times and read as unreachable; the passing rig was just outside the range. → §PW442
+- 📋 **PW452** (deps: —) **after port.run searches, each member's out holds the last sample tried, not the rig it answers with** — Cottony's props were laid on a sitting from their out, and two showed failing renders beside an answer saying all five passed. → §PW452
 
 ## Block I — Voxel models from a declaration
 
@@ -114,18 +114,6 @@
   twelve are done: the four captures and cascade.gd go through engine and capture, and a
   mismatch fails the run. Left are the seven under tools/perf/ that have no driver, and
   run_tests.py, which is a third copy of the lookup and is PW70.
-
-## Done when — PW77
-
-- **Each of the five props has an acceptance spec a person agreed to**
-  docs/design/accept/scenery_<name>.accept.toml exists for bush, tree, flower and yarn
-  as it does for the mushroom, and the shipped sprite passes each.
-- **One searched rig passes all five props and they bake through it** bake_model.py no
-  longer renders the five, and polyweave.loop.json holds an after run for map_props with
-  a person's verdict.
-- **The props' before side is recorded ahead of the port** Cottony's polyweave.loop.json
-  holds a before run for map_props at 2153a09, from a re-bake that reproduces the
-  committed sprites.
 
 ## Done when — PW78
 

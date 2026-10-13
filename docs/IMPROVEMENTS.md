@@ -215,28 +215,6 @@ of this block names, and the gate may report a fraction below one for as long as
 what is left and why. Two of those are already answered in `docs/specs/adoption.md`: the
 fetch ledger replays, and the motion Cottony has is two frames and no clip.
 
-### §PW77 A bar that was measured and then left in a comment
-
-The map's props are the family with the best-recorded target in the project and no way
-to act on it. `scenery_mushroom` carries this, verbatim: tuned against the drawn sprite
-on its cap and stem medians, 223,118,87 and 215,197,173 against 225,127,83 and
-214,198,174. Somebody measured the thing the render had to match, wrote it down, and the
-only reader is a person.
-
-That makes them the right second family. The work is not finding a bar — it is moving
-one that already exists into something a search can aim at, which is a smaller step than
-inventing the bar and the port at once.
-
-Four of the five are built from the outlines make_assets.py draws them with, so they
-carry the stars' property of costing nothing to re-render. The fifth, the mushroom, is
-fetched, and it is here rather than with the boosters because it shares the other four's
-settings exactly: one exposure, one gloss, one shadow, differing only in how much of the
-canvas each drawing spans. A port that holds across a built prop and a fetched one at
-the same numbers is worth more than one that only holds across four siblings.
-
-What it must not lose is the reason the numbers exist: each prop lands on a sheet beside
-drawn siblings, and reading as the odd one out is the failure.
-
 ### §PW78 Framing that answers to a number the game already holds
 
 The board tray and the booster tray are the two assets whose framing is not a matter of
@@ -649,6 +627,26 @@ exposure; widen it before reading never as unreachable". `never` is said only of
 failed everywhere in a range none of whose best values sit on an edge. A test searches a
 spec whose passing value lies just past an axis's max and reads the axis back in
 `at_bound`.
+
+### §PW452 A family's out is its answer's picture
+
+Where: PW77, porting Cottony's five map props, 2026-10-13. `port.run --fresh` searched
+the family and answered every member passed at key 22.5, fill 10, ambient 1 and exposure
+-0.25, with nothing baked because no member names `bake`. Each member's `out` was then
+laid on a sitting for the owner, and two of the five failed there: bush and tree held
+the last sample the search had rendered, not the rig it answered with. The sheet said
+they missed their colour and tone, beside an answer that said they passed. Running
+`port.run` again without `--fresh` rendered the kept rig over them and the sitting
+agreed.
+
+A family's `out` is what a person is shown before anything is baked, so it is the one
+picture that has to be the answer's.
+
+Build: once a search ends, `port` renders every member's `out` at the values it answers
+with (a cache hit for each, since every sample is cached) whether or not it bakes, and
+says so in the answer. `search.search` does the same for its single `out`. A test runs a
+family search whose last sample differs from its best and reads each `out`'s record
+params back as the best values.
 
 ## Block I — Voxel models from a declaration
 

@@ -191,13 +191,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW82"],
   },
   {
-    id: "PW77",
-    block: "H",
-    symptom: "the map's five candy props match a drawn sprite that exists only as medians in a comment",
-    why: "The four built props need a bar a person agrees to, then one rig searched across all five before they bake through the plugin.",
-    deps: [],
-  },
-  {
     id: "PW440",
     block: "H",
     symptom: "a render's material replaces the mesh's own, so a roughness cannot be laid over a textured mesh without losing it",
@@ -209,6 +202,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "a search whose best rig sits on its axes' bounds reports never passing, not that the range may cut the answer off",
     why: "Cottony's props search ended on the edge of exposure three times and read as unreachable; the passing rig was just outside the range.",
+    deps: [],
+  },
+  {
+    id: "PW452",
+    block: "H",
+    symptom: "after port.run searches, each member's out holds the last sample tried, not the rig it answers with",
+    why: "Cottony's props were laid on a sitting from their out, and two showed failing renders beside an answer saying all five passed.",
     deps: [],
   },
   {

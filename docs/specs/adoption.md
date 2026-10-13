@@ -244,7 +244,14 @@ render taken without it changes key.
 The port itself, one family at a time. It edits a repository this one does not own, and
 **§PW35 requires a baseline recorded before anything moves**. As of 2026-10-13 Cottony's
 `polyweave.loop.json` holds a before side for all six families, and the stars have moved
-(§PW76). What remains is each later family's port, each on a person's look, down to PW82.
+(§PW76). The map's five props moved next (PW77, Cottony 201ffab): one family file,
+`tools/art/props.toml`, searched one rig against five specs read off the shipped sprites,
+the mushroom's from its drawing, with the gloss and shadow as Cottony's own passes and a
+warm white world (§PW439, §PW441). Two lessons from it are in its specs: a body colour is
+read at the median pixel (`pixel_delta_e_p50`), never the mean, which the cream bolls
+pulled until the shipped sprites failed their own bar; and a flower of three colours is
+read in a rectangle on one petal. What remains is each later family's port, each on a
+person's look, down to PW82.
 
 ## A family is stated, not scripted
 
