@@ -31,6 +31,8 @@
 - 📋 **PW429** (deps: —) **captured sequences cannot be cut together, scored and encoded, so a store teaser needs ffmpeg driven by hand** — A game's trailer is its most watched asset, and without an edit it cannot come from the captures polyweave already records. → §PW429
 - 📋 **PW435** (deps: —) **a take made on a free ElevenLabs plan is recorded like any other, so a game can ship one commercially unwarned** — PW410 named the 403 a free plan answers; the free tier's non-commercial licence is still in no record and no credits. → §PW435
 - 📋 **PW436** (deps: —) **a sitting laid out in the wrong folder cannot be moved, and a hand move leaves its answers on the old path** — Spinhold moved its pilot lines sitting by hand, missed answers.jsonl, and 23 answers pointed at a sitting that was gone. → §PW436
+- 🛠 **PW36** (deps: PW5 ✅, PW82 ⏸) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82. → §PW36
+- 📋 **PW77** (deps: PW76 ✅) **the map's five candy props match a drawn sprite that exists only as medians in a comment** — The four built props need a bar a person agrees to, then one rig searched across all five before they bake through the plugin. → §PW77
 
 ## Block I — Voxel models from a declaration
 

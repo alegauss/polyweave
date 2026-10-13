@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 15 },
+  { block: "H", title: "Proof on a real game", open: 17 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 1 },
@@ -153,6 +153,20 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "a sitting laid out in the wrong folder cannot be moved, and a hand move leaves its answers on the old path",
     why: "Spinhold moved its pilot lines sitting by hand, missed answers.jsonl, and 23 answers pointed at a sitting that was gone.",
+    deps: [],
+  },
+  {
+    id: "PW36",
+    block: "H",
+    symptom: "a real project cannot adopt the plugin without carrying its own paths and palette into it",
+    why: "Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82.",
+    deps: ["PW82"],
+  },
+  {
+    id: "PW77",
+    block: "H",
+    symptom: "the map's five candy props match a drawn sprite that exists only as medians in a comment",
+    why: "The four built props need a bar a person agrees to, then one rig searched across all five before they bake through the plugin.",
     deps: [],
   },
   {
@@ -298,4 +312,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW36", "PW53", "PW77", "PW78", "PW79", "PW80", "PW81", "PW82", "PW180", "PW192", "PW201", "PW311", "PW368"];
+export const generatedPaused: string[] = ["PW53", "PW78", "PW79", "PW80", "PW81", "PW82", "PW180", "PW192", "PW201", "PW311", "PW368"];
