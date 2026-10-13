@@ -167,6 +167,11 @@ written against, a file under the project; another project's comes in first with
 session, finds what it was held against from the record. A reference with no file is
 `music.no-reference`, named before any engine is looked for.
 
+**A cue's kit is in its record** (§PW423). Each `[kit.<name>]` a track plays is an input
+with the role `kit`, its `.sfx.toml` by digest, since a hit retuned there changes the cue
+on its next render; left out, a kit edit left every cue that plays it reading current.
+`provenance.outdated` names each such cue once the kit moves.
+
 ## Layers
 
 Game music changes with play, so one theme can be written at several intensities: each

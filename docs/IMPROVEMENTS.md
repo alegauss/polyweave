@@ -348,29 +348,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW423 A cue's kit in its record
-
-Found in spinhold, RK207. The phase music scores play a chip kit, `[kit.chip] effects =
-"art/audio/drums.sfx.toml"`, which music.render synthesises and places on every drum
-note. RK207 added a kick (`bd`) to that kit. The records beside game/audio/music/
-phase_*.wav name the score (`role: score`), the engine and the patches, but not the
-kit's .sfx.toml, so editing the kit changes what a re-render sounds like while every
-record still reads current. A hat retuned in the kit would change three cues silently.
-
-Then, checking that, `python -m polyweave provenance.outdated` stopped with a traceback:
-
-    File "src/polyweave/provenance.py", line 1124, in _same_entity
-      return still_drawn(source, drawn["id"], drawn["sha256"], ...)
-    KeyError: 'sha256'
-
-(polyweave's working tree had uncommitted changes to provenance.py at the time, so this
-may be work in progress.)
-
-What polyweave should do: record each kit's .sfx.toml as an input of the render (`role:
-kit`), so `provenance.outdated` names every cue a kit edit leaves behind; and have
-`outdated` refuse a record missing a field with a code naming the record, never a
-traceback.
-
 ### §PW424 A preview laid where sittings go
 
 Where: spinhold, RK222 (one review sitting for the day's pieces), 2026-10-12.

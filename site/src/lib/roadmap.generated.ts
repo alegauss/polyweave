@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 14 },
+  { block: "H", title: "Proof on a real game", open: 13 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 1 },
   { block: "K", title: "Reached without reading the source", open: 2 },
@@ -104,13 +104,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "a camera move cannot be declared as a clip or played by the game, so a cutscene's shots are numbers in the project",
     why: "No shot is yet captured onto a sitting for a person to accept, and Starship's opening still reads its own JSON.",
-    deps: [],
-  },
-  {
-    id: "PW423",
-    block: "H",
-    symptom: "a rendered cue's record leaves out its drum kit, so a kit edit leaves every cue reading current",
-    why: "Retuning one hat changes several tracks on their next render while provenance.outdated says nothing, and outdated itself can crash.",
     deps: [],
   },
   {

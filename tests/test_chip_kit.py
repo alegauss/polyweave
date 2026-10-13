@@ -153,7 +153,15 @@ def test_a_chip_score_renders_with_no_soundfont_and_records_sfxr(tmp_path):
     assert found["measured"]["loudness"] == pytest.approx(music_render.LOUDNESS, abs=2)
     named = [i["name"] for i in found["instruments"]]
     assert "sfxr (DrPetter), ported" in named
-    assert provenance.read(str(tmp_path / "music" / "cue.wav.prov.json"), tmp_path)
+    record = provenance.read(str(tmp_path / "music" / "cue.wav.prov.json"), tmp_path)
+    # The kit is an input, so retuning a hit leaves the cue outdated (§PW423).
+    kits = [one["path"] for one in record["inputs"] if one["role"] == "kit"]
+    assert len(kits) == 1
+    assert provenance.outdated(root=str(tmp_path))["outdated"] == []
+    kit = tmp_path / kits[0]
+    kit.write_text(kit.read_text(encoding="utf-8") + "\n# retuned\n", encoding="utf-8")
+    stale = provenance.outdated(root=str(tmp_path))["outdated"]
+    assert {one["artefact"] for one in stale} >= {"music/cue.wav"}
 
 
 class Quiet:

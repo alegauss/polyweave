@@ -114,6 +114,23 @@ def test_only_what_was_drawn_from_the_changed_entity_is_outdated(tmp_path, world
     assert [a["entity"] for a in found] == ["mason"]
 
 
+def test_a_record_naming_its_entity_without_a_digest_reads_outdated_not_a_crash(
+    tmp_path, world
+):
+    """§PW423: provenance.outdated stopped with a KeyError on one such record."""
+    import json
+
+    _bought(tmp_path, entity="mason")
+    sidecar = tmp_path / "refs" / "mason.png.prov.json"
+    record = json.loads(sidecar.read_text(encoding="utf-8"))
+    del record["details"]["entity"]["sha256"]
+    sidecar.write_text(json.dumps(record), encoding="utf-8")
+    (tmp_path / "game.world.toml").write_text(
+        WORLD.replace("Captain Ada", "Admiral Ada"), "utf-8")
+    stale = provenance.outdated(root=tmp_path)["outdated"]
+    assert [s["artefact"] for s in stale] == ["refs/mason.png"]
+
+
 def test_a_mesh_of_an_entity_is_bought_from_the_world_s_words(tmp_path, monkeypatch):
     (tmp_path / "polyweave.toml").write_text(MESHY + STYLE, encoding="utf-8")
     (tmp_path / "game.world.toml").write_text(WORLD, encoding="utf-8")

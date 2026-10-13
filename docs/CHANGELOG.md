@@ -173,6 +173,7 @@
 - ✅ **PW420** **render.bake draws a voxel build's glb shattered, cubes scattered with holes, unlike the build's own preview** — A voxel build renders whole at every rung: a preview keeps a light mesh whole and merges coplanar faces before anything collapses (design recorded in `docs/specs/rungs.md`).
 - ✅ **PW421** **a built path ribbon freed before it entered the tree leaves its mesh node behind, an orphan and a leaked render instance** — A built path ribbon makes its mesh node in _ready, so one freed before it entered the tree leaves no orphan behind (design recorded in `docs/specs/vfx.md`).
 - ✅ **PW422** **a music score cannot name the track it was written against, so a rendered cue's record never says whose loop it answers** — A score names the track it was written against in [music] reference, and every rendered file records it as an input with role reference (design recorded in `docs/specs/music.md`).
+- ✅ **PW423** **a rendered cue's record leaves out its drum kit, so a kit edit leaves every cue reading current** — A cue's record names each chip kit it plays, so a kit edit reads outdated, and a thin record reads outdated instead of crashing the read (design recorded in `docs/specs/music.md`).
 
 ## Block I — Voxel models from a declaration
 

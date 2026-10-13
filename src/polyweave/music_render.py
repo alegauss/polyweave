@@ -384,6 +384,11 @@ def render(
                 given=ext["reference"],
             )
         inputs.append(provenance.source("reference", heard, here))
+    # Each kit a track plays, since a hit retuned there changes the cue on its next
+    # render: left out, a kit edit left every cue reading current (§PW423).
+    for name, kit in sorted((ext.get("kits") or {}).items()):
+        if any(t["instrument"] == f"chip:{name}" for t in ext["tracks"].values()):
+            inputs.append(provenance.source("kit", here / kit["effects"], here))
     report.stage("building", note="finding the engines this score plays through")
     found = engines(here, model)
     # Settled before anything plays: a library nobody declared a licence for is refused

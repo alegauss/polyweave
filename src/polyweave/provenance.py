@@ -1088,7 +1088,7 @@ def outdated(root: Annotated[str, ROOT] = ".") -> dict:
         if moved:
             stale.append(
                 {
-                    "artefact": record["artefact"]["path"],
+                    "artefact": (record.get("artefact") or {}).get("path"),
                     "made_by": _made_by(record),
                     "moved": moved,
                 }
@@ -1113,11 +1113,18 @@ def _same_entity(record: dict, one: dict, source: Path) -> bool:
     """
     line = (record.get("details") or {}).get("line")
     if one.get("role") == "words" and line and source.is_file():
+        if not all(line.get(k) for k in ("key", "locale", "sha256")):
+            return False  # nothing to prove it unchanged by, so it reads outdated
         from .words import still_said
 
         return still_said(source, line["key"], line["locale"], line["sha256"])
     drawn = _entity(record)
     if one.get("role") != "world" or not drawn or not source.is_file():
+        return False
+    if not (drawn.get("id") and drawn.get("sha256")):
+        # A record naming its entity without the digest it was drawn at cannot say the
+        # entity is unchanged, so it reads outdated rather than stopping the read with a
+        # KeyError, as one of Spinhold's did (§PW423).
         return False
     from .world import still_drawn
 
