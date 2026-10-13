@@ -140,6 +140,7 @@ canon    = "docs/design/canon"     # pictures a person approved; only a verdict 
 candidates = ["art/studies/*.png"] # what a person may admit from the page, ungated
 palette  = ["#f2c14e", "#3a2e39"]  # as values, never names
 skeleton = { medium = "flat vector", lighting = "soft" }   # every structured prompt's start
+references = ["ada.png"]           # canon pictures sent as style references, on 3.0 (PW180)
 cell     = [64, 64]                # the grid a picture is put on when it arrives
 margin   = 2
 anchor   = "centre"                # or "base", for what stands on the ground
@@ -359,6 +360,18 @@ has since left.
 structured prompt over the family's skeleton. The skeleton's keys win over the prompt's, and
 the family's palette is the palette. A text prompt is refused (`style.needs-structure`),
 because it has nowhere to carry either. `style.read` returns a family's style and its canon.
+
+**Canon pictures can go as style references** (§PW180). `references` names pictures the
+family's canon holds, by file name, and every picture of the family sends them as repeated
+`style_reference_images`. Only Ideogram 3.0 takes a reference (4.0's generate, async and
+remix take none, checked 2026-10-13), and only beside a text prompt, so a family with
+references is drawn on 3.0 from a text prompt with its skeleton and palette written into
+the words (`Style: <key> <value>; ... Palette: #rrggbb, ...`), in a fixed order. A 4.0 call
+for it is `style.references-need-3` and a structured one `style.references-take-text`,
+never sent without the pictures. A name the canon lacks is `style.no-reference`, more than
+the service's 50 MB together `style.references-too-large`, and each reference's digest is
+on the picture's record under `details.references`, so a second call sends the same ones.
+The owner chose 3.0 for this on 2026-10-13, over waiting for a model that takes both.
 
 **The canon grows only by a person's verdict.** A `verdict.judge` member carrying `canon`, the
 family's name, joins that family's canon when the verdict accepts the look. The picture and

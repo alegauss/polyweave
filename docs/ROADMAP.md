@@ -58,7 +58,6 @@
 
 ## Block N — Pictures held to a canon
 
-- 📋 **PW180** (deps: PW166 ✅, PW437 ✅) **no canon picture is ever sent as a style reference, so a family's look reaches the service only as words** — A reference picture holds line weight and proportion no palette or style block states; the owner chose 3.0, the one model that takes one. → §PW180
 - 📋 **PW450** (deps: —) **no picture can be bought from a model trained on the project's own art, so its style reaches a service only as words** — Scenario leads its market on style consistency through models trained on a team's art, which is what a canon of approved pictures could feed. → §PW450
 
 ## Block O — A person sees and answers

@@ -707,30 +707,6 @@ its renders, spend and rounds, each traceable to a file.
 
 ## Block N — Pictures held to a canon
 
-### §PW180 Canon pictures as style references
-
-PW166 declared a style as a palette and a skeleton, and a canon a person grows. Its
-design also named `references`: which canon pictures go to the service as style
-references, and one character reference per recurring character. That part did not land,
-because no model takes a reference picture together with a structured prompt.
-
-Checked 2026-10-13 against developer.ideogram.ai: 4.0 generate, async and remix take no
-reference; 3.0 generate and remix take `style_reference_images` and one
-`character_reference_images`, as uploaded files, with a text prompt only.
-
-**Decided 2026-10-13 by the owner: build it on 3.0.** Add `references` to
-`[style.<family>]`, naming canon pictures by file name. A family with references
-generates on 3.0, its palette and skeleton written into the text prompt, and a 4.0 call
-for it is refused rather than sent without them. Send the pictures as repeated file
-fields: `_send` maps one field to one file, so it needs a list. Leave out `style_codes`
-beside references, since how the two combine is undocumented, and keep a request under
-the 50 MB cap. Record each reference's digest on the picture's record, so a regeneration
-sends the same pictures.
-
-3.0's route is fixed (PW437, `docs/specs/fetching.md`): it goes to the synchronous
-`generate`, the async path answering 404. Read the live price before the first paid
-call, since nobody has confirmed whether a style reference costs more.
-
 ### §PW450 Buying a picture from Scenario
 
 Block N holds pictures to a canon: a family's approved members, its palette and its

@@ -37,6 +37,7 @@ import numpy as np
 from . import __version__, provenance, purchase, schema, style
 from .config import load
 from .describe import Param, operation
+from .doors import Blank, door
 from .errors import PolyweaveError
 from .files import write_atomic
 
@@ -132,10 +133,35 @@ def buy(
         drawn_from, family, prompt, json_prompt = from_world(
             entity, world, root, family, prompt, json_prompt, structured=model == "4.0"
         )
-    _one_prompt(prompt, json_prompt, model)
     config = load(root)
     held_to = style.in_force(config, family)
-    if held_to is not None:
+    referenced: list[dict] = []
+    if held_to is not None and held_to[1].get("references"):
+        # The canon's pictures go with the words (§PW180). Only 3.0 takes a reference,
+        # and only beside text, so the skeleton and palette are written into the words
+        # and a call that would drop the pictures is refused rather than sent.
+        if model != "3.0":
+            raise PolyweaveError(
+                "style.references-need-3",
+                f"the {held_to[0]} style sends {len(held_to[1]['references'])} canon "
+                f"picture(s) as references, and {model} takes none",
+                "ask model 3.0, or empty references to draw from the words alone",
+                call=door("picture.buy", out=out, model="3.0", family=held_to[0],
+                          prompt=prompt or Blank("the picture, in words")),
+            )
+        if json_prompt is not None:
+            raise PolyweaveError(
+                "style.references-take-text",
+                f"the {held_to[0]} style's references go with a text prompt, and this "
+                f"call gave a structured one",
+                "pass prompt as text; the family's skeleton and palette are written "
+                "into it",
+            )
+        _one_prompt(prompt, json_prompt, model)
+        referenced = style.references(*held_to)
+        prompt = style.worded(prompt, held_to[1])
+    elif held_to is not None:
+        _one_prompt(prompt, json_prompt, model)
         if json_prompt is None:
             raise PolyweaveError(
                 "style.needs-structure",
@@ -145,6 +171,8 @@ def buy(
                 "skeleton and its palette is the family's",
             )
         json_prompt = style.compose(json_prompt, held_to[1])
+    else:
+        _one_prompt(prompt, json_prompt, model)
     name = config.service(service, model=model)
     about = config.services()[name]
     base, key = _reached(name, about)
@@ -185,7 +213,11 @@ def buy(
     endpoint = f"{base.rstrip('/')}/v1/{path}/{route}"
     if transparent:
         endpoint += "-transparent"
-    answer = _answered(endpoint, key, payload)
+    # Each reference as its own repeated field, which is how the service reads a list.
+    answer = _answered(endpoint, key, payload, [
+        ("style_reference_images", (one["picture"], one["bytes"], "image/png"))
+        for one in referenced
+    ] or None)
     if answer.get("generation_id") and not answer.get("data"):
         answer = _polled(base, key, answer["generation_id"], report)
     drawn = (answer.get("data") or [{}])[0]
@@ -233,6 +265,10 @@ def buy(
             "seed": drawn.get("seed"),
             "json_prompt": json_prompt,
             "family": held_to[0] if held_to else None,
+            # The canon pictures sent as style references, by digest, so a second call
+            # sends the same ones (§PW180).
+            **({"references": [{"picture": one["picture"], "sha256": one["sha256"]}
+                               for one in referenced]} if referenced else {}),
             # What the service says it drew from. On a text prompt to 4.0 this is not
             # what was sent, and it is the only account of the picture that is true.
             "returned_prompt": drawn.get("prompt"),
@@ -962,7 +998,7 @@ def _reached(name: str, about: dict) -> tuple[str, str]:
 
 
 def _answered(
-    endpoint: str, key: str, payload: dict, files: dict | None = None
+    endpoint: str, key: str, payload: dict, files: dict | list | None = None
 ) -> dict:
     """Send one request and read its answer, turning a refusal into a code."""
     status, body = _send(endpoint, key, payload, files)
@@ -1001,11 +1037,12 @@ def _answered(
 
 
 def _send(
-    endpoint: str, key: str, payload: dict, files: dict | None = None
+    endpoint: str, key: str, payload: dict, files: dict | list | None = None
 ) -> tuple[int, bytes]:
     """POST the payload as a form, holding no more calls open than the account may.
 
-    `files` maps a field to `(filename, bytes, content type)`, for a picture sent up.
+    `files` maps a field to `(filename, bytes, content type)`, for a picture sent up,
+    or is a list of `(field, (filename, bytes, type))` where a field repeats (§PW180).
     """
     boundary = uuid.uuid4().hex
     parts: list[bytes] = []
@@ -1014,7 +1051,8 @@ def _send(
             f'--{boundary}\r\nContent-Disposition: form-data; name="{field}"\r\n\r\n'
             f"{value}\r\n".encode()
         )
-    for field, (filename, content, kind) in (files or {}).items():
+    sent_up = files.items() if isinstance(files, dict) else (files or ())
+    for field, (filename, content, kind) in sent_up:
         parts.append(
             f'--{boundary}\r\nContent-Disposition: form-data; name="{field}"; '
             f'filename="{filename}"\r\nContent-Type: {kind}\r\n\r\n'.encode()

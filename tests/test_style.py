@@ -124,6 +124,79 @@ def test_a_text_prompt_has_nowhere_to_carry_a_style(tmp_path, service):
     assert service == []
 
 
+# -- canon pictures as style references (§PW180) ---------------------------------------
+
+
+@pytest.fixture
+def referenced(tmp_path, monkeypatch):
+    """A family that sends two canon pictures as style references, on 3.0."""
+    project(
+        tmp_path,
+        '[service]\nbase = "https://api.ideogram.ai"\nkey_env = "POLYWEAVE_TEST_I"\n'
+        'prices = { "4.0" = 0.08, "3.0" = 0.06 }\n\n'
+        '[budget]\ncredits = 60\nexpires = "2099-12-31"\n\n'
+        '[style.characters]\ncanon = "art/canon/characters"\n'
+        'palette = ["#f2c14e", "#3a2e39"]\n'
+        'skeleton = { medium = "flat vector", lighting = "soft" }\n'
+        'references = ["ada.png", "bo.png"]\n',
+    )
+    canon = tmp_path / "art" / "canon" / "characters"
+    canon.mkdir(parents=True)
+    for name, byte in (("ada.png", 200), ("bo.png", 90)):
+        Image.new("RGBA", (8, 8), (byte, byte, byte, 255)).save(canon / name)
+    monkeypatch.setenv("POLYWEAVE_TEST_I", "sk")
+    sent = []
+
+    def send(endpoint, key, payload, files=None):
+        sent.append({"endpoint": endpoint, "payload": payload, "files": files})
+        answer = {"created": "x", "data": [{"seed": 1, "url": "https://p/x.png"}]}
+        return 200, json.dumps(answer).encode()
+
+    monkeypatch.setattr(picture, "_send", send)
+    monkeypatch.setattr(picture, "_download", lambda link: b"\x89PNG" + b"\0" * 60)
+    return sent
+
+
+def test_a_family_with_references_sends_its_canon_pictures_on_3(tmp_path, referenced):
+    entry = picture.buy(out="p.png", prompt="Ada waving", model="3.0",
+                        family="characters", root=tmp_path)
+    [call] = referenced
+    assert call["endpoint"].endswith("/v1/ideogram-v3/generate-transparent")
+    assert [(f, name) for f, (name, _, _) in call["files"]] == [
+        ("style_reference_images", "ada.png"), ("style_reference_images", "bo.png")]
+    # A text prompt carries the skeleton and the palette in words.
+    assert call["payload"]["prompt"] == (
+        "Ada waving. Style: lighting soft; medium flat vector. "
+        "Palette: #f2c14e, #3a2e39.")
+    record = json.loads((tmp_path / "p.png.prov.json").read_text(encoding="utf-8"))
+    held = record["details"]["references"]
+    assert [one["picture"] for one in held] == ["ada.png", "bo.png"]
+    assert all(len(one["sha256"]) == 64 for one in held)
+    assert entry["credits"] == 0.06
+
+
+def test_a_family_with_references_is_refused_where_they_would_be_dropped(
+    tmp_path, referenced
+):
+    error = refused(picture.buy, out="p.png", prompt="Ada", family="characters",
+                    root=tmp_path)
+    assert error.code == "style.references-need-3"
+    assert error.call["arguments"]["model"] == "3.0"
+    error = refused(picture.buy, out="p.png", json_prompt=STRUCTURED, model="3.0",
+                    family="characters", root=tmp_path)
+    assert error.code == "style.references-take-text"
+    assert referenced == []
+
+
+def test_a_reference_the_canon_does_not_hold_is_named(tmp_path, referenced):
+    (tmp_path / "art" / "canon" / "characters" / "bo.png").unlink()
+    error = refused(picture.buy, out="p.png", prompt="Ada", model="3.0",
+                    family="characters", root=tmp_path)
+    assert error.code == "style.no-reference"
+    assert "bo.png" in error.message
+    assert referenced == []
+
+
 # -- the canon grows only by a person's verdict --------------------------------------
 
 

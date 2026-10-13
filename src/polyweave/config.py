@@ -232,6 +232,10 @@ DEFAULTS: dict[str, Any] = {
         # The style block every structured prompt starts from, as the service spells
         # it: medium, lighting, aesthetics. It wins over a prompt that says otherwise.
         "skeleton": {},
+        # Canon pictures, by file name, sent with every picture of the family as style
+        # references (§PW180). Only Ideogram 3.0 takes one, with a text prompt, so a
+        # family that names any draws on 3.0 with its skeleton and palette in the words.
+        "references": [],
         # The grid a picture of this family is put on when it arrives (§PW171): the
         # cell in pixels as [width, height], empty to leave the size alone; the margin
         # inside it; where the subject sits, `centre` for an icon and `base` for what

@@ -38,7 +38,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "K", title: "Reached without reading the source", open: 2 },
   { block: "L", title: "What a run leaves as evidence", open: 1 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
-  { block: "N", title: "Pictures held to a canon", open: 2 },
+  { block: "N", title: "Pictures held to a canon", open: 1 },
   { block: "O", title: "A person sees and answers", open: 1 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
   { block: "Q", title: "Words held to the world", open: 0 },
@@ -223,13 +223,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "L",
     symptom: "nothing totals what the records already hold per asset, so polyweave's own effect on a game cannot be stated as a number",
     why: "The site may claim no measured result, and the renders, spend, rounds and refusals that would back one sit unread in the ledger and traces.",
-    deps: [],
-  },
-  {
-    id: "PW180",
-    block: "N",
-    symptom: "no canon picture is ever sent as a style reference, so a family's look reaches the service only as words",
-    why: "A reference picture holds line weight and proportion no palette or style block states; the owner chose 3.0, the one model that takes one.",
     deps: [],
   },
   {

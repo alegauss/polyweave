@@ -62,6 +62,60 @@ def compose(json_prompt: dict, style: dict) -> dict:
     return composed
 
 
+#: What the service takes in one request, every reference's bytes together.
+REFERENCES_MAX = 50 * 1024 * 1024
+
+
+def worded(prompt: str, style: dict) -> str:
+    """A text prompt carrying the family's skeleton and palette, for a model that takes
+    no structured prompt (§PW180). Said after the call's own words, in a fixed order, so
+    the same family words every call the same way."""
+    said = [prompt.rstrip(". ")]
+    skeleton = style.get("skeleton") or {}
+    if skeleton:
+        held = sorted(skeleton.items())
+        said.append("Style: " + "; ".join(f"{k} {v}" for k, v in held))
+    if style.get("palette"):
+        said.append("Palette: " + ", ".join(style["palette"]))
+    return ". ".join(said) + "."
+
+
+def references(name: str, style: dict) -> list[dict]:
+    """The canon pictures a family sends as style references, read and digested.
+
+    Each is `{"picture", "bytes", "sha256"}`; the digest goes on the picture's record so
+    a regeneration sends the same pictures (§PW180).
+    """
+    import hashlib
+
+    named = list(style.get("references") or ())
+    canon = Path(style["canon"]) if style.get("canon") else None
+    found, total = [], 0
+    for picture in named:
+        where = canon / picture if canon else None
+        if where is None or not where.is_file():
+            raise PolyweaveError(
+                "style.no-reference",
+                f"the {name} style names {picture!r} as a reference, and its canon "
+                f"does not hold it",
+                "name a picture the canon holds, or admit it to the canon first",
+                given=picture,
+                allowed=[e["picture"] for e in admitted(style)],
+            )
+        content = where.read_bytes()
+        total += len(content)
+        found.append({"picture": picture, "bytes": content,
+                      "sha256": hashlib.sha256(content).hexdigest()})
+    if total > REFERENCES_MAX:
+        raise PolyweaveError(
+            "style.references-too-large",
+            f"the {name} style's references are {total / 1e6:.1f} MB together, and the "
+            f"service takes {REFERENCES_MAX / 1e6:.0f} MB in one request",
+            "name fewer or smaller canon pictures in references",
+        )
+    return found
+
+
 @operation("style.read")
 def read(
     family: Annotated[str, Param("the asset family; needed only among several")] = None,

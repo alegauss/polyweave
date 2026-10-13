@@ -520,6 +520,27 @@ CODES: dict[str, Code] = {
         when="no model was named, the file is not there, or it imported empty",
         doors=("pass the model", "ask a question the sphere rung carries"),
     ),
+    "style.references-need-3": Code(
+        means="a family with style references was asked for on a model that takes none",
+        when="[style.<family>] names references and the call asked 4.0",
+        doors=("ask model 3.0, the one that takes a reference picture",
+               "empty references to draw on 4.0 from the words alone"),
+    ),
+    "style.references-take-text": Code(
+        means="style references go with a text prompt, and the call gave structure",
+        when="a family with references was asked for with json_prompt",
+        doors=("pass prompt as text; the skeleton and palette are written into it",),
+    ),
+    "style.no-reference": Code(
+        means="a style reference names a picture the family's canon does not hold",
+        when="references lists a file name that is not in the canon directory",
+        doors=("name a picture the canon holds", "admit it to the canon first"),
+    ),
+    "style.references-too-large": Code(
+        means="the reference pictures are more than the service takes in one request",
+        when="their bytes together pass the 50 MB the service allows",
+        doors=("name fewer or smaller canon pictures in references",),
+    ),
     "render.no-pass": Code(
         means="a pass named in `after` is not a function in a file under the project",
         when="the path is wrong, outside the project, or the function is not in it",
