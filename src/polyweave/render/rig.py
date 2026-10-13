@@ -47,6 +47,7 @@ UNITS: dict[str, str] = {
     "rim": WATTS,
     "light_distance": "× the subject's radius",
     "ambient": "the world's own value, not a multiplier",
+    "ambient_colour": "#RRGGBB, sRGB",
     "exposure": "stops",
 }
 
@@ -84,6 +85,9 @@ class Rig:
 
     #: The world, and what the film does with what reaches it.
     ambient: float = 0.25
+    #: The world's colour as #RRGGBB, or "" for the one Blender gives a new world, which
+    #: every render before §PW441 was lit by and so keeps its key.
+    ambient_colour: str = ""
     exposure: float = 0.0
     transparent: bool = True
 
@@ -196,8 +200,12 @@ def _on_sphere(centre, distance: float, azimuth: float, elevation: float):
 
 
 def as_params(rig: Rig) -> dict:
-    """The rig as the provenance record carries it, floats and nothing else."""
+    """The rig as the provenance record carries it, floats and nothing else.
+
+    The world's colour only where one was given, so no key taken before §PW441 moves.
+    """
     return {
+        **({"ambient_colour": rig.ambient_colour} if rig.ambient_colour else {}),
         "azimuth": rig.azimuth,
         "elevation": rig.elevation,
         "margin": rig.margin,

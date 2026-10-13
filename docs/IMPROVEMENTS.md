@@ -547,28 +547,6 @@ as they do now. A test renders a textured mesh with only a roughness laid over i
 sees its texture's colours survive. Cottony's glazed copy is then deleted and the search
 passes the roughness.
 
-### §PW441 A colour for the world light
-
-Where: PW77, porting Cottony's map props, 2026-10-13. `bake_model.py` lights every prop
-with a warm world, colour (1.0, 0.97, 0.93), doing most of the work beside a soft key
-and fill, so a prop's cream bolls read cream and its hues sit a little warm. The
-plugin's rig sets the world's strength (`ambient`) and never its colour, so the world
-stays whatever Blender's new world holds, a neutral grey.
-
-Measured: `port.run` over the five props with key, fill, ambient and exposure as axes,
-90 renders. Every built prop's median came out the right hue and about 8% dark (bush
-#7DC29C against the shipped #86CDA1), and no rig fixed it: brightening it moved the
-median onto its bar and pushed the 99th percentile past its ceiling, the bolls and the
-gloss window going white where the shipped ones are cream. The conflict the search
-reported, a hot window against a median tone, is a white light being asked to make a
-warm picture.
-
-Build: the rig gains `ambient_colour`, a hex colour for the world, `#FFFFFF` by default
-so every existing render keeps its key, set on the Background node beside its strength,
-carried in `as_params` so it is in the cache key and the record, and accepted as a
-search axis only as a fixed value. A test renders a white sphere under a warm world and
-reads its median as warm.
-
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once

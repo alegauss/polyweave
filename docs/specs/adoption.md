@@ -231,6 +231,14 @@ changed pass renders again and `provenance.outdated` sees it. A missing pass is
 `render.no-pass`, one that raises `render.pass-failed`. A search carries `after` in its
 `fixed` like any other render argument.
 
+**The world's colour, not only its strength** (§PW441). `bake_model` lights a prop with
+a warm white world, linear (1.0, 0.97, 0.93) at 0.82 of its light, beside a soft key and
+fill. The plugin's `ambient` is the world's strength over the colour Blender gives a new
+world, about 0.05 grey, so ten times the number lights like Cottony's 0.9, and the hue
+could not be said at all. `render.bake(ambient_colour="#FFFCF7")` sets it, as sRGB like
+every hex colour here, and is in the key and the record only where it is given, so no
+render taken without it changes key.
+
 ### What is left of PW36
 
 The port itself, one family at a time. It edits a repository this one does not own, and

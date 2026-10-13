@@ -1616,6 +1616,8 @@ export interface RenderBakeArgs {
   light_distance?: number
   /** world lighting; from 0 to 10; default 0.25 */
   ambient?: number
+  /** the world light's colour, #RRGGBB; Blender's own if unset */
+  ambient_colour?: string
   /** film exposure; from -10 to 10; in stops; default 0.0 */
   exposure?: number
   /** leave the background empty; default true */

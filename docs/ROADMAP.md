@@ -32,9 +32,8 @@
 - 📋 **PW435** (deps: —) **a take made on a free ElevenLabs plan is recorded like any other, so a game can ship one commercially unwarned** — PW410 named the 403 a free plan answers; the free tier's non-commercial licence is still in no record and no credits. → §PW435
 - 📋 **PW436** (deps: —) **a sitting laid out in the wrong folder cannot be moved, and a hand move leaves its answers on the old path** — Spinhold moved its pilot lines sitting by hand, missed answers.jsonl, and 23 answers pointed at a sitting that was gone. → §PW436
 - 🛠 **PW36** (deps: PW5 ✅, PW82 ⏸) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82. → §PW36
-- 🛠 **PW77** (deps: PW76 ✅, PW439 ✅, PW441) **the map's five candy props match a drawn sprite that exists only as medians in a comment** — The four built props need a bar a person agrees to, then one rig searched across all five before they bake through the plugin. → §PW77
+- 🛠 **PW77** (deps: PW76 ✅, PW439 ✅, PW441 ✅) **the map's five candy props match a drawn sprite that exists only as medians in a comment** — The four built props need a bar a person agrees to, then one rig searched across all five before they bake through the plugin. → §PW77
 - 📋 **PW440** (deps: —) **a render's material replaces the mesh's own, so a roughness cannot be laid over a textured mesh without losing it** — Cottony's mushroom bakes glazed with its painted cap kept, so its port exports a glazed copy of the mesh the record never names. → §PW440
-- 📋 **PW441** (deps: —) **a render's world light has a strength and no colour, so a rig lit by a warm world cannot be reproduced** — Cottony's props are lit by a warm world; ported, no rig over 90 renders kept their median and their cream highlights at once. → §PW441
 
 ## Block I — Voxel models from a declaration
 

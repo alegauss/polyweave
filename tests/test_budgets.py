@@ -217,7 +217,8 @@ ERROR = 1_400
 #: `[LIST ...]`: `--keys A B C` had been refused as unrecognised (§PW414).
 #: 4,460 with render.bake's `after`, the project's own passes over a render, which is
 #: the only way its gloss or shadow reaches the record and the cache key (§PW439).
-HELP_VERB = 4_500
+#: 4,628 with its `ambient_colour`, the world light's colour (§PW441).
+HELP_VERB = 4_700
 #: The top-level `--help`, naming every verb: 11,346. One more verb line is ~150.
 #: 11,792 once measure.digest is a verb (§PW141), 11,933 with cost.read (§PW143),
 #: 12,066 with motion.bake (§PW160), 12,216 with sound.measure (§PW113), 12,385

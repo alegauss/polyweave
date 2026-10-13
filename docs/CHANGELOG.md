@@ -166,6 +166,7 @@
 - ✅ **PW415** **the review page stacks every card of every sitting on one page, so a person cannot find what waits on them** — The review page opens on an index of sittings, newest first, each counting what waits, and a row opens that sitting alone at its own link (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW416** **voice.lines lays its sitting out at the project root with no out, where the engine imports its sheets** — voice.lines takes an out, and it and voice.design lay a sitting in the work area by default, never at the root where an engine imports its sheets (design recorded in `docs/specs/world.md`).
 - ✅ **PW439** **a project's 2D passes painted on a render, a gloss window and a drop shadow, are absent from its record and cache key** — render.bake runs a project's own passes over its picture through after, each pass's digest and arguments in its cache key and record (design recorded in `docs/specs/adoption.md`).
+- ✅ **PW441** **a render's world light has a strength and no colour, so a rig lit by a warm world cannot be reproduced** — render.bake takes ambient_colour, the world light's colour as sRGB hex, in the key and record only where given (design recorded in `docs/specs/adoption.md`).
 
 ## Block I — Voxel models from a declaration
 

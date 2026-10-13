@@ -335,6 +335,35 @@ def test_a_pass_that_is_not_there_or_raises_is_said_as_the_projects(project):
     assert "ValueError" in refused.value.message
 
 
+def test_a_warm_world_lights_the_subject_warm(project):
+    """§PW441: Cottony's props are lit by a warm world, which had no colour here."""
+    from PIL import Image
+
+    white = {"base_color": "#FFFFFF", "roughness": 0.5}
+    lit = {"key": 0.0, "fill": 0.0, "rim": 0.0, "ambient": 1.0}
+    render.bake(Reported(), out="grey.png", rung="sphere", material=white, root=project,
+                ambient_colour="#FFFFFF", **lit)
+    render.bake(Reported(), out="warm.png", rung="sphere", material=white, root=project,
+                ambient_colour="#FFB070", **lit)
+
+    def median(name):
+        with Image.open(project / name) as drawn:
+            seen = np.asarray(drawn.convert("RGBA")).reshape(-1, 4)
+        return np.median(seen[seen[:, 3] > 128][:, :3], axis=0)
+
+    r, _, b = median("warm.png")
+    assert r > b + 40
+    grey = median("grey.png")
+    assert abs(grey[0] - grey[2]) < 4
+    said = provenance.read("warm.png", root=project)["params"]
+    assert said["ambient_colour"] == "#FFB070"
+
+
+def test_a_render_with_no_world_colour_keeps_the_key_it_had(project):
+    render.bake(Reported(), out="plain.png", rung="sphere", root=project)
+    assert "ambient_colour" not in provenance.read("plain.png", root=project)["params"]
+
+
 def test_a_rig_that_moved_has_a_different_key(project):
     render.bake(Reported(), out="m1.png", rung="sphere", azimuth=10.0, root=project)
     render.bake(Reported(), out="m2.png", rung="sphere", azimuth=80.0, root=project)

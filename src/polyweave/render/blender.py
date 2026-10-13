@@ -303,6 +303,9 @@ def place(scene: Any, rig: Rig, subject: Any, *, covers: Any = None) -> dict:
     background = scene.world.node_tree.nodes.get("Background")
     if background is not None:
         background.inputs["Strength"].default_value = rig.ambient
+        if rig.ambient_colour:
+            # How Cottony's props are lit (§PW441), linear as a socket reads it.
+            background.inputs["Color"].default_value = _colour(rig.ambient_colour)
     scene.view_settings.exposure = rig.exposure
     _standard_colour(scene)
     return camera

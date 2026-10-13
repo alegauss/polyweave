@@ -223,6 +223,9 @@ def bake(
         float, Param("how far the lights sit, in subject radii", lo=1.0, hi=20.0)
     ] = 3.0,
     ambient: Annotated[float, Param("world lighting", lo=0.0, hi=10.0)] = 0.25,
+    ambient_colour: Annotated[
+        str, Param("the world light's colour, #RRGGBB; Blender's own if unset")
+    ] = "",
     exposure: Annotated[
         float, Param("film exposure", lo=-10.0, hi=10.0, unit="stops")
     ] = 0.0,
@@ -309,6 +312,7 @@ def bake(
         rim=rim,
         light_distance=light_distance,
         ambient=ambient,
+        ambient_colour=ambient_colour,
         exposure=exposure,
         transparent=transparent,
     )
