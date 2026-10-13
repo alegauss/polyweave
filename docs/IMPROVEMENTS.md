@@ -286,21 +286,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW415 A page per sitting
-
-Where: spinhold, approving the pilot's voice and lines on `python -m polyweave review`.
-The page drew every card of every open sitting on one page: 198 items in four sittings,
-the pilot's four pending takes lost among 166 old line cards. The owner could not find
-what waited on them, and asked for a page per sitting.
-
-Built: the page opens on an index of sittings, newest first, each a row with its title,
-its folder, "N to answer", how much is answered and when it was laid out; finished ones
-fold under "older sittings". A row opens that sitting alone, `?sitting=<manifest>` in
-the browser, so a link to one sitting is a link to it and the back button returns to the
-index. `?member=` still opens the sitting that judges a file, and a smoke run's answer
-the sitting holding its family. The window draws the same screen. `listed()` and
-`sittingOf()` in @pw/core, tested in desk.test.ts; the index words in both catalogs.
-
 ### §PW416 Where voice.lines lays its sitting
 
 Where: spinhold RK218, `voice.lines --speaker pilot --spend true`.

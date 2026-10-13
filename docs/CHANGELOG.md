@@ -163,6 +163,7 @@
 - ✅ **PW412** **voice.lines sends no language with a line, so Portuguese takes are read in English** — voice.lines sends each line's column language as language_code to the models that hold to one, so a Portuguese take is read in Portuguese (design recorded in `src/polyweave/sound_buy.py`).
 - ✅ **PW413** **an entity has one voice for every language, so a voice designed in English reads Portuguese with an accent** — An entity may have a voice per locale, designed, chosen and spoken in that column alone, and each take records its locale, so digests are per tongue (design recorded in `docs/specs/world.md`).
 - ✅ **PW414** **sound.speech fails takes that say the line, a JSON-only keys list and an unpriced quote hide what a set costs** — A take is transcribed in its column's language, accents folded and interjections said however spelled; --keys A B parses; unvoiced rows priced (design recorded in `docs/specs/effects.md`).
+- ✅ **PW415** **the review page stacks every card of every sitting on one page, so a person cannot find what waits on them** — The review page opens on an index of sittings, newest first, each counting what waits, and a row opens that sitting alone at its own link (design recorded in `docs/specs/acceptance-spec.md`).
 
 ## Block I — Voxel models from a declaration
 

@@ -164,8 +164,12 @@ own `about` under the summary, and one per family. The words come from one catal
 language, `review_page/locales/<language>.json`, chosen by `[review] language` (`en`,
 `pt-BR`; any other is `config.bad-language`); the page reads its own words from the same
 catalog, so no sentence a person reads is kept in code, and a language is a file. The
-page is laid out for the person deciding: the newest sitting's summary and how to decide,
-then one card per family with the picture (or the films, looping side by side), the
+page is laid out for the person deciding. It opens on an index of sittings, newest
+first, each row its title, folder, how many wait on an answer, how much is answered and
+when it was laid out, the finished ones folded under the earlier sittings (§PW415). A
+row opens that sitting alone at `?sitting=<manifest>`, so a link to a sitting is a link
+to it and the browser's back returns to the index; `?member=` opens the sitting that
+judges a file. A sitting shows its summary and how to decide, then one card per family with the picture (or the films, looping side by side), the
 choices as buttons that say what each leads to, and progress across the sitting. Marks
 and the technical details fold under each card, older sittings and the gates, turntables,
 canons and asset table under one fold. A redo asks for a sentence; an accept may add none, and the page then records the
