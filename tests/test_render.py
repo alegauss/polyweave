@@ -439,18 +439,21 @@ def test_a_light_mesh_is_kept_whole_at_the_preview_rung():
     assert blender.triangles(voxels) == before
 
 
-def test_a_heavy_flat_mesh_is_reduced_without_changing_its_shape():
+def test_a_heavy_flat_mesh_is_reduced_without_changing_its_shape(monkeypatch):
     from polyweave.render import blender
 
+    # A floor this low makes a small grid "heavy": a 200x200 one at the real floor
+    # took ten minutes to merge, the same proof as this one.
+    monkeypatch.setattr(blender, "DECIMATE_FLOOR", 500)
+
     def plane(bpy):
-        bpy.ops.mesh.primitive_grid_add(
-            x_subdivisions=200, y_subdivisions=200, size=2.0)
+        bpy.ops.mesh.primitive_grid_add(x_subdivisions=30, y_subdivisions=30, size=2.0)
 
     flat = _object(plane)
     assert blender.triangles(flat) > blender.DECIMATE_FLOOR
     corners = sorted(tuple(round(c, 4) for c in v) for v in flat.bound_box)
     blender.decimate(flat, 0.25)
-    assert blender.triangles(flat) < 1000  # merged as one plane, not collapsed
+    assert blender.triangles(flat) < 100  # merged as one plane, not collapsed
     assert sorted(tuple(round(c, 4) for c in v) for v in flat.bound_box) == corners
 
 

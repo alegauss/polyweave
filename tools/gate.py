@@ -22,6 +22,10 @@ that instead, as it says an engine is absent.
 
 The exit code is pytest's own, or 1 where pytest passed and the window did not. A
 gate piped into `grep` reports `grep`'s; this does not.
+
+Pytest runs across every core (`-n auto`) where pytest-xdist is installed and the
+arguments choose no other `-n`: the gate went from half an hour to under fifteen
+minutes on a 28-thread desk, every test in a process of its own as before.
 """
 
 from __future__ import annotations
@@ -204,6 +208,15 @@ def summary(stamp: dict) -> str:
     )
 
 
+def parallel(argv: list[str]) -> list[str]:
+    """The arguments with `-n auto` in front, where xdist is here and none is chosen."""
+    chosen = any(one.startswith(("-n", "--numprocesses")) for one in argv)
+    off = "no:xdist" in argv
+    if chosen or off or importlib.util.find_spec("xdist") is None:
+        return list(argv)
+    return ["-n", "auto", *argv]
+
+
 def main(argv: list[str]) -> int:
     try:
         held = lock()
@@ -216,7 +229,8 @@ def main(argv: list[str]) -> int:
         report.unlink(missing_ok=True)
         with log.open("w", encoding="utf-8") as out:
             done = subprocess.run(
-                [sys.executable, "-m", "pytest", f"--junitxml={report}", *argv],
+                [sys.executable, "-m", "pytest", f"--junitxml={report}",
+                 *parallel(argv)],
                 cwd=ROOT,
                 stdout=out,
                 stderr=subprocess.STDOUT,

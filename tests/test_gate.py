@@ -84,13 +84,26 @@ def test_a_red_run_keeps_its_log_aside_and_its_exit_code(gate, tmp_path):
     (tmp_path / "test_red.py").write_text(
         "def test_red():\n    assert False\n", encoding="utf-8"
     )
-    code = gate.main(["-q", "-p", "no:cacheprovider", str(tmp_path / "test_red.py")])
+    code = gate.main(["-q", "-n", "0", "-p", "no:cacheprovider",
+                      str(tmp_path / "test_red.py")])
     assert code == 1
     stamp = json.loads((gate.HERE / "stamp.json").read_text(encoding="utf-8"))
     assert stamp["exit"] == 1
     assert stamp["failed"] == 1
     assert (tmp_path / stamp["red_log"]).is_file()
     assert not (gate.HERE / "lock").exists()
+
+
+def test_pytest_runs_on_every_core_unless_the_call_chose_otherwise(gate, monkeypatch):
+    """Half an hour on one core was most of every task's wait."""
+    monkeypatch.setattr(gate.importlib.util, "find_spec",
+                        lambda name: object() if name == "xdist" else None)
+    assert gate.parallel(["-q"]) == ["-n", "auto", "-q"]
+    assert gate.parallel(["-n", "4"]) == ["-n", "4"]
+    assert gate.parallel(["-n0"]) == ["-n0"]
+    assert gate.parallel(["-p", "no:xdist"]) == ["-p", "no:xdist"]
+    monkeypatch.setattr(gate.importlib.util, "find_spec", lambda name: None)
+    assert gate.parallel(["-q"]) == ["-q"]
 
 
 def test_the_window_is_said_skipped_with_the_reason_where_it_cannot_run(gate, tmp_path):
