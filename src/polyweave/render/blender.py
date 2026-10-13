@@ -173,6 +173,46 @@ def triangles(obj: Any) -> int:
     return sum(len(polygon.vertices) - 2 for polygon in obj.data.polygons)
 
 
+def lay_over(obj: Any, inputs: dict) -> Any:
+    """Set shader inputs on every material the subject already wears (§PW440).
+
+    The replacing form puts one new material on and loses a fetched mesh's texture: a
+    painted mushroom came out untextured grey for one roughness. Laid over, each
+    Principled BSDF keeps its textures and slots and takes the named inputs, a map that
+    drove one of them unhooked first, since a linked socket ignores its own value.
+    """
+    shaders = [
+        node
+        for slot in obj.material_slots
+        if slot.material is not None and slot.material.use_nodes
+        for node in slot.material.node_tree.nodes
+        if node.type == "BSDF_PRINCIPLED"
+    ]
+    if not shaders:
+        raise PolyweaveError(
+            "render.no-material",
+            "a surface was laid over the mesh's own, and it wears no Principled BSDF",
+            "give the mesh a material, or pass the material without over to put one on",
+        )
+    unknown = sorted(k for k in inputs if _socket(shaders[0], k) is None)
+    if unknown:
+        raise PolyweaveError(
+            "render.unknown-material-field",
+            f"a material has no {', '.join(unknown)}",
+            f"use one of {', '.join(_socket_names(shaders[0]))}",
+            given=unknown[0],
+            allowed=_socket_names(shaders[0]),
+        )
+    for bsdf in shaders:
+        tree = bsdf.id_data
+        for key, value in inputs.items():
+            socket = _socket(bsdf, key)
+            for link in list(socket.links):
+                tree.links.remove(link)
+            socket.default_value = _coerce(value, socket)
+    return obj
+
+
 def apply_material(obj: Any, material: dict | None, *, groups: Any = None) -> Any:
     """Put a surface on the subject, so a sphere and a mesh carry the same one.
 

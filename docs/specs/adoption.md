@@ -239,6 +239,15 @@ could not be said at all. `render.bake(ambient_colour="#FFFCF7")` sets it, as sR
 every hex colour here, and is in the key and the record only where it is given, so no
 render taken without it changes key.
 
+**A surface laid over a mesh's own** (§PW440). `bake_model`'s `glaze` sets one roughness
+on every material a fetched mesh wears and keeps its painted texture. `render.bake`'s
+`material` replaces them with one new material, so the same roughness rendered Cottony's
+mushroom flat grey. With `over = true` the inputs are set on each Principled BSDF the
+mesh already has, a map that drove one of them unhooked first, its textures and slots
+kept; the sphere rung, which has no material of its own, takes the plain form. A mesh
+with no Principled BSDF to lay over is `render.no-material`. The flag is part of
+`material`, so it is in the key and the record with the inputs.
+
 ### What is left of PW36
 
 The port itself, one family at a time. It edits a repository this one does not own, and

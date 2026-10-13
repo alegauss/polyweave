@@ -37,7 +37,6 @@
 - 📋 **PW435** (deps: —) **a take made on a free ElevenLabs plan is recorded like any other, so a game can ship one commercially unwarned** — PW410 named the 403 a free plan answers; the free tier's non-commercial licence is still in no record and no credits. → §PW435
 - 📋 **PW436** (deps: —) **a sitting laid out in the wrong folder cannot be moved, and a hand move leaves its answers on the old path** — Spinhold moved its pilot lines sitting by hand, missed answers.jsonl, and 23 answers pointed at a sitting that was gone. → §PW436
 - 🛠 **PW36** (deps: PW5 ✅, PW82 ⏸) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82. → §PW36
-- 📋 **PW440** (deps: —) **a render's material replaces the mesh's own, so a roughness cannot be laid over a textured mesh without losing it** — Cottony's mushroom bakes glazed with its painted cap kept, so its port exports a glazed copy of the mesh the record never names. → §PW440
 
 ## Block I — Voxel models from a declaration
 

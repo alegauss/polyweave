@@ -1588,7 +1588,7 @@ export interface RenderBakeArgs {
   asking?: unknown[]
   /** the lowest rung a verdict on this asset may be taken at */
   floor?: "sphere" | "preview" | "final"
-  /** Principled BSDF inputs to put on the subject */
+  /** Principled BSDF inputs; with over = true, set on the mesh's own */
   material?: Record<string, unknown>
   /** which measurements to take of the render, in the same call; default [] */
   measures?: unknown[]

@@ -364,6 +364,55 @@ def test_a_render_with_no_world_colour_keeps_the_key_it_had(project):
     assert "ambient_colour" not in provenance.read("plain.png", root=project)["params"]
 
 
+@pytest.fixture
+def painted(project):
+    """A mesh whose colour is its own material, as a fetched mesh's texture is."""
+    import bpy
+
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    bpy.ops.mesh.primitive_uv_sphere_add(radius=1.0)
+    ball = bpy.context.active_object
+    paint = bpy.data.materials.new("paint")
+    paint.use_nodes = True
+    shader = paint.node_tree.nodes["Principled BSDF"]
+    shader.inputs["Base Color"].default_value = (0.8, 0.05, 0.05, 1.0)
+    shader.inputs["Roughness"].default_value = 0.9
+    ball.data.materials.append(paint)
+    out = project / "assets" / "painted.glb"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    bpy.ops.export_scene.gltf(filepath=str(out), export_format="GLB")
+    return "assets/painted.glb"
+
+
+def test_a_roughness_laid_over_a_mesh_keeps_its_own_colour(project, painted):
+    """§PW440: the replacing form rendered Cottony's painted mushroom flat grey."""
+    from PIL import Image
+
+    def median(name):
+        with Image.open(project / name) as drawn:
+            seen = np.asarray(drawn.convert("RGBA")).reshape(-1, 4)
+        return np.median(seen[seen[:, 3] > 128][:, :3], axis=0)
+
+    glazed = {"over": True, "roughness": 0.2}
+    render.bake(Reported(), out="laid.png", rung="final", model=painted,
+                material=glazed, root=project)
+    render.bake(Reported(), out="put.png", rung="final", model=painted,
+                material={"roughness": 0.2}, root=project)
+    red, green, _ = median("laid.png")
+    assert red > green + 60  # its own red, kept
+    put = median("put.png")
+    assert abs(put[0] - put[1]) < 20  # the replacing form's default grey
+    said = provenance.read("laid.png", root=project)["params"]["material"]
+    assert said == glazed
+
+
+def test_a_surface_laid_over_a_mesh_with_no_shader_is_refused(project, mesh):
+    with pytest.raises(PolyweaveError) as refused:
+        render.bake(Reported(), out="x.png", rung="final", model=mesh,
+                    material={"over": True, "roughness": 0.2}, root=project)
+    assert refused.value.code == "render.no-material"
+
+
 def test_a_rig_that_moved_has_a_different_key(project):
     render.bake(Reported(), out="m1.png", rung="sphere", azimuth=10.0, root=project)
     render.bake(Reported(), out="m2.png", rung="sphere", azimuth=80.0, root=project)

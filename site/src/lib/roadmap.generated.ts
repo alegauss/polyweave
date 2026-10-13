@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 17 },
+  { block: "H", title: "Proof on a real game", open: 16 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 1 },
   { block: "K", title: "Reached without reading the source", open: 2 },
@@ -189,13 +189,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "a real project cannot adopt the plugin without carrying its own paths and palette into it",
     why: "Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82.",
     deps: ["PW82"],
-  },
-  {
-    id: "PW440",
-    block: "H",
-    symptom: "a render's material replaces the mesh's own, so a roughness cannot be laid over a textured mesh without losing it",
-    why: "Cottony's mushroom bakes glazed with its painted cap kept, so its port exports a glazed copy of the mesh the record never names.",
-    deps: [],
   },
   {
     id: "PW451",

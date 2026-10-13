@@ -182,7 +182,7 @@ def bake(
         Param("the lowest rung a verdict on this asset may be taken at", choices=RUNGS),
     ] = "",
     material: Annotated[
-        dict, Param("Principled BSDF inputs to put on the subject")
+        dict, Param("Principled BSDF inputs; with over = true, set on the mesh's own")
     ] = None,
     measures: Annotated[
         list, Param("which measurements to take of the render, in the same call")
@@ -446,7 +446,14 @@ def bake(
             scrubbed = blender.scrub_textures(subject)
     # In the declaration's words as well as the shader's, so `colour = "#FFC43F"` means
     # here what it means in a geometry file (§PW83). The key above is over the request.
-    blender.apply_material(subject, blender.as_inputs(material) if material else None)
+    # `over = true` lays the inputs on the mesh's own materials, keeping its textures
+    # (§PW440); the sphere has none of its own, so there it is the plain form.
+    laid = bool(material and material.get("over"))
+    inputs = {k: v for k, v in (material or {}).items() if k != "over"}
+    if laid and chosen["subject"] != "primitive":
+        blender.lay_over(subject, blender.as_inputs(inputs))
+    else:
+        blender.apply_material(subject, blender.as_inputs(inputs) if inputs else None)
     blender.place(scene, rig, subject, covers=list(covers) or None)
 
     report.stage(

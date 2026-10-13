@@ -169,6 +169,7 @@
 - ✅ **PW441** **a render's world light has a strength and no colour, so a rig lit by a warm world cannot be reproduced** — render.bake takes ambient_colour, the world light's colour as sRGB hex, in the key and record only where given (design recorded in `docs/specs/adoption.md`).
 - ✅ **PW452** **after port.run searches, each member's out holds the last sample tried, not the rig it answers with** — A search ends by evaluating its answer again where the last sample was not it, so every member's out is the rig it names (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW442** **a search whose best rig sits on its axes' bounds reports never passing, not that the range may cut the answer off** — A search names each axis its best sits on the edge of, and a failing one says to widen it before reading never as unreachable (design recorded in `docs/specs/acceptance-spec.md`).
+- ✅ **PW440** **a render's material replaces the mesh's own, so a roughness cannot be laid over a textured mesh without losing it** — A material given with over = true is set on the mesh's own shaders, its texture kept, so Cottony's mushroom bakes glazed with no copy (design recorded in `docs/specs/adoption.md`).
 
 ## Block I — Voxel models from a declaration
 

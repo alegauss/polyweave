@@ -588,27 +588,6 @@ sitting.
 Test: lay out a sitting, answer two families, move it, and see the index count both as
 answered at the new path, with `verdict.answers` carrying them into a run.
 
-### §PW440 A surface laid over a mesh's own
-
-Where: PW77, porting Cottony's mushroom off `tools/art/bake_model.py`, 2026-10-13. The
-mushroom is a fetched mesh whose colour is its texture, and `bake_model` renders it
-glazed: `glaze(0.22)` sets the Principled roughness on every material the mesh already
-wears, so the candy reads glossy and the painted cap keeps its spots.
-
-`render.bake(material=)` cannot say that. `blender.apply_material` clears the mesh's
-materials and puts one new one on, so `{"roughness": 0.22}` alone renders the mushroom
-untextured in the default grey, and leaving `material` out renders it at the texture's
-own roughness, a matte candy. Cottony's port works round it by exporting a glazed copy
-of the mesh before the search (`tools/art/export_props.py`), which is a second mesh file
-whose only difference is one number the record never names.
-
-Build: a `material` given with `over = true` (or a separate `surface` argument) sets the
-named inputs on each material the mesh already has, keeping its textures and its slots,
-where the plain form still replaces them. The inputs go in the cache key and the record
-as they do now. A test renders a textured mesh with only a roughness laid over it and
-sees its texture's colours survive. Cottony's glazed copy is then deleted and the search
-passes the roughness.
-
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once
