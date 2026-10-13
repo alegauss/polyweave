@@ -8,6 +8,90 @@
 
 ## Block D — Fetching from a paid service without surprise
 
+### §PW445 Buying a mesh from Tripo
+
+Block D generalised Cottony's Meshy client into a paid-service layer with a ceiling, a
+quote, a ledger and a silhouette gate in front of the spend. That layer is the product;
+the single service behind it is an accident of the first consumer. The landing page
+names the models a person picks, and in 3D the choice is one.
+
+Tripo is the generator reviews in 2026 name for speed, a mesh in seconds rather than
+minutes, which suits a search that may want several candidates before a person looks. It
+is an adapter, nothing more: the request, the quote, the poll and the download behind
+the same `mesh.buy` surface, the same ceiling and ledger, and the same provenance record
+naming the service, model, seed and cost.
+
+The plan matters. Tripo's free tier is non-commercial, so the adapter records the plan
+the key belongs to and the licence it grants, which the licence line filed beside this
+one then checks before a release.
+
+Evidence that it landed: `mesh.buy` with the service set to Tripo quotes, buys within
+the ceiling, ingests and records one mesh, with a test against a recorded response so CI
+spends nothing.
+
+### §PW446 Buying a mesh from Rodin
+
+Rodin, from Hyper3D, is the generator reviews in 2026 single out for topology: quads
+where others return triangle soup, which makes a mesh cheaper to rig, decimate and
+texture. For a part that will be animated, that is the property worth paying for, and it
+is the one the engine-ready bar would otherwise have to fix after the fact.
+
+Like the Tripo line, this is an adapter behind the existing `mesh.buy` surface and
+nothing else: the same ceiling, quote, ledger, silhouette gate and provenance record,
+with the service, model, seed, cost and plan named. The choice between Meshy, Tripo and
+Rodin stays configuration in `polyweave.toml`, per project or per asset, never an
+agent's own spend decision.
+
+Evidence that it landed: `mesh.buy` with the service set to Rodin quotes, buys within
+the ceiling, ingests and records one mesh, with a test against a recorded response so CI
+spends nothing.
+
+### §PW447 A bought mesh that arrives ready for the engine
+
+`normalise.ingest` already brings an arriving mesh into the project's frame: the way
+round from the drawing, the size along a stated axis, the origin at the base or the
+centre. `cost` already counts triangles, materials, draw calls and texture bytes. What
+does not exist is the step between them: a declared bar for what an engine-ready mesh
+is, checked on arrival and, where the fix is mechanical, applied in Blender before the
+mesh reaches a sitting.
+
+Reviews of generators in 2026 name this as the open problem of the category: Meshy,
+Tripo and Rodin each return meshes that need a manual cleanup pass before they are
+scene-ready. A generator cannot close it, because it does not know the project's budget.
+polyweave does, because the project declares it.
+
+The bar is declared per asset or per family in the acceptance spec, using measures from
+the closed vocabulary: a triangle ceiling, a material count, holes and non-manifold
+edges, and texel density where a texture is present. A miss that Blender can fix without
+judgement, such as a decimate to a ceiling or merged duplicate vertices, is fixed and
+recorded; one that needs judgement is refused with the measure that failed. Nothing
+about this re-implements a generator.
+
+Evidence that it landed: a Meshy mesh over its declared ceiling arrives under it with
+the change in its record, and one with holes is refused before any sitting is drawn.
+
+### §PW448 The licence a plan grants, for every service
+
+A generator's licence depends on the plan the key belongs to, not on the service.
+Tripo's free tier is non-commercial; ElevenLabs' free plan is too, which PW435 filed for
+that one service. With the Tripo and Rodin adapters filed beside this line, the pattern
+repeats per service, and solving it per service means each new adapter can forget it.
+
+The record already carries a licence field, and credits and the release check are
+written from it. What it does not carry is whether the plan that paid for the artefact
+grants commercial use, so a credits file can be complete and the game still not entitled
+to ship the part.
+
+This line makes the plan's licence a field every paid-service adapter must fill, read
+from the service where it says and declared in `polyweave.toml` where it does not, and
+makes the release check refuse an artefact whose plan forbids commercial use when the
+project says it sells. It subsumes PW435 for the general case; PW435 stays as the
+ElevenLabs instance and may ship first.
+
+Evidence that it landed: an artefact recorded under a non-commercial plan fails
+`game.release_check` for a commercial project, naming the artefact, the service and the
+plan.
+
 ## Block E — One world with the engine
 
 ## Block F — Motion
@@ -547,9 +631,50 @@ as they do now. A test renders a textured mesh with only a roughness laid over i
 sees its texture's colours survive. Cottony's glazed copy is then deleted and the search
 passes the roughness.
 
+### §PW442 A best rig on the edge of its range
+
+Where: PW77, porting Cottony's five map props with `port.run`, 2026-10-13. Three family
+searches (about 240 renders) found no rig where every member passed, and reported each
+built prop's colour as `never` passing. Every one ended with its best values on a bound
+of its own axes: ambient 10 and key 0 in the first, exposure 0 (the axis's minimum) in
+the last. A single render outside those ranges, at exposure -0.25, read the bush #83C99E
+against the shipped #86CDA1, inside the bar. The answer was outside the box the family
+file drew, and nothing in the answer said the box might be the problem; `never` reads as
+"this cannot be reached", which sent the work after a missing rig feature first.
+
+Build: `search.search` and `search.family` answer `at_bound`, each axis whose best value
+(or, for a conflict, whose `closest_to` value) sits within one grid step of its min or
+max, with the side and the value, and `stopped` says "the best sits on the edge of
+exposure; widen it before reading never as unreachable". `never` is said only of what
+failed everywhere in a range none of whose best values sit on an edge. A test searches a
+spec whose passing value lies just past an axis's max and reads the axis back in
+`at_bound`.
+
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once
+
+### §PW451 A canon for a family of meshes
+
+Style consistency in the market means 2D: Scenario's trained models and Ideogram's style
+references both hold pictures together. Nothing found in 2026 reviews measures
+consistency across 3D assets, and a generator cannot, because it never sees more than
+the one mesh it is making.
+
+polyweave already has the parts. A canon is joined only by a person's verdict through
+`verdict.judge`, `style.drift` measures a picture against one, and every mesh has a
+render rig and the closed measurement vocabulary. What is missing is a canon whose
+members are meshes, measured through their renders at the family's own rig: palette at a
+percentile, proportion of the bounding box, silhouette weight at the size a player sees
+it, and material properties the render exposes.
+
+A new member is then held to the family as well as to its own spec, and a drift is
+reported with the member it drifts from, so the person judging it sees the neighbour
+rather than a number. Joining stays the verdict's alone, exactly as for pictures.
+
+Evidence that it landed: Spinhold's enemies form one family, a new enemy with a
+deliberately off palette is reported drifting from a named member, and one accepted by a
+person joins the canon with that verdict in its record.
 
 ## Block K — Reached without reading the source
 
@@ -573,7 +698,51 @@ serves every later `declares` an operation grows; the second needs no extra call
 costs every listing the vocabulary's tokens, which PW129 bounds. The proof: over MCP, an
 agent learns that `shape` takes `heart` without a shell or a source read.
 
+### §PW449 Driven from a second MCP client
+
+The server is MCP and nothing in the protocol ties it to Claude Code, but everything
+that teaches an agent to use it arrives with the Claude Code plugin: the skill, and the
+hook that guards derived files. Another client, such as Cursor or Codex, gets the tools
+list and nothing else. Whether an agent there gets a call right the first time, which is
+the project's one test of a feature, has never been tried.
+
+MCP directories in 2026 compare Blender, Godot and Unity servers side by side, and they
+are where a developer looks for one. Being listed there is free reach, but only honest
+once the surface has been driven from a client without the skill.
+
+The run is the line: set the server up in one other client, ask it for one asset end to
+end, and file what it got wrong as friction. Two findings are expected and are the
+reason to do it before any listing. Whatever the skill alone teaches has to move into
+tool descriptions or `describe`. And every promise that relies on the skill or a hook,
+rather than the server, is named; PW443 is the first of those.
+
+Evidence that it landed: a second client builds, checks and offers one asset for a
+verdict, and each gap it met is a filed line.
+
 ## Block L — What a run leaves as evidence
+
+### §PW444 What the records say polyweave did
+
+The market for AI game tooling runs on vendor claims with no independent benchmark
+behind them. polyweave's argument is the opposite, which is why
+`site/scripts/lint.test.mjs` refuses any copy claiming a measured result: no recorded
+run has produced one yet.
+
+The data for one already exists. Every loop run, gate run, purchase, verdict and render
+leaves a file under `.polyweave/` or a provenance sidecar beside the artefact.
+`loop.spent` and `loop.runs` each answer one slice of it. Nothing answers the whole per
+asset: how many renders and rounds a part took to pass, what it spent, how many
+candidates a gate refused before a person saw any, how many verdicts it needed, and how
+that compares with the hand path it replaced where a port recorded the before side.
+
+This line is a read, never an estimate. Every figure is derived from a record and names
+the record it came from, and a figure no record supports is absent rather than guessed,
+so the report can be quoted by the site without the lint rule being loosened on faith.
+It feeds the Block H proof on Cottony and Spinhold; it does not depend on that proof
+finishing, since a partial report is still a true one.
+
+Evidence that it landed: the report run on Cottony names, for at least one ported asset,
+its renders, spend and rounds, each traceable to a file.
 
 ## Block M — What a game needs beyond the look
 
@@ -624,7 +793,52 @@ make one cheap 3.0 call under a small ceiling, or read the service's 404, so the
 for what the service does rather than what its index says. A test replaces the transport
 and checks each model's route.
 
+### §PW450 Buying a picture from Scenario
+
+Block N holds pictures to a canon: a family's approved members, its palette and its
+style block. The services behind it today are FLUX and Ideogram, which take the style as
+words, and PW180 sends one canon picture as a style reference on Ideogram 3.0. Scenario
+takes a different route: a model trained on a team's own art, which reviews in 2026 name
+as the strongest answer to style consistency for game art.
+
+A canon is exactly the training set such a model wants, already chosen by a person's
+verdicts. This line is an adapter behind the existing `picture.buy` surface: the same
+ceiling, quote, ledger and provenance, and a record naming the trained model and which
+canon members trained it, so a model trained before a member joined reads as outdated.
+
+Training spends money, so it is a purchase like any other, quoted and bounded by the
+ceiling, and never started on the agent's own judgement. The pictures it returns are
+held to the canon and the gate like any service's; being trained on the style earns no
+pass.
+
+Evidence that it landed: one family's canon trains a Scenario model within the ceiling,
+a picture bought from it passes or fails the family's gate, and its record names the
+model and the members.
+
 ## Block O — A person sees and answers
+
+### §PW443 A verdict only a person can give
+
+The non-goal "An agent accepting or rejecting its own look" is the product's sharpest
+promise, and the site states it outright: Claude Code cannot approve its own work. In
+the code it is a convention. `verdict.judge` validates the choice, the sentence's
+presence and the predicates named, and then records whatever `why` it was handed as the
+person's words. Nothing distinguishes a sentence a person said from one the agent
+composed.
+
+The page path is different: `verdict.answer` appends what the page wrote, and the page
+is operated by a person. So the person's channel already exists; what is missing is that
+the agent's channel cannot impersonate it.
+
+The shape of the fix is the design's to choose, and two constraints bind it. It must
+hold inside the server, because a Claude Code hook is not present for another MCP
+client. And it must not need a GUI for the in-conversation case PW332 made one call: a
+verdict said in chat still has to land, so the door has to tell a relayed sentence from
+an invented one by something other than trust, such as a token the page or a person-only
+surface issues.
+
+Evidence that it landed: an agent-only call that tries to accept a look is refused with
+a remedy naming the person's channel, and a test proves it.
 
 ## Block P — Music and sound a game can ship
 
