@@ -1222,7 +1222,17 @@ def preview(
 
     config = load(root)
     here = config.root
-    built = build(source, effect=effect, root=root)["effects"]
+    try:
+        built = build(source, effect=effect, root=root)["effects"]
+    except PolyweaveError as refused:
+        if refused.code != "vfx.unshipped":
+            raise
+        # A preview films the scene and ships nothing, so a declaration the export
+        # leaves out is built into the work area, and `out` is only where the sitting
+        # goes: refused here, Spinhold's bomb could not be watched in art/review/
+        # beside the day's other sittings (§PW424).
+        scenes = provenance.relative(config.path("paths.work") / "vfx" / "scenes", here)
+        built = build(source, effect=effect, out=scenes, root=root)["effects"]
     _, tables = _source(source, config)
     fps = int(config.get("engine.fixed_fps"))
     folder = config.path("paths.work", out)

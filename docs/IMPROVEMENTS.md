@@ -348,35 +348,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW424 A preview laid where sittings go
-
-Where: spinhold, RK222 (one review sitting for the day's pieces), 2026-10-12.
-
-The call: `vfx.preview --source art/vfx/bomb.vfx.toml --out art/review/rk222-bomb-vfx`,
-so the bomb's motion would sit in art/review/ beside the day's other sittings.
-
-What came back: `vfx.unshipped`, "art/vfx/bomb.vfx.toml sits where the game's export
-leaves it out (art holds a .gdignore), so a scene built beside it would not ship",
-remedy "pass out, a folder the game ships or set [paths] vfx in polyweave.toml". But
-`out` was passed, and the only folders that satisfy it are shipped ones such as
-game/vfx/, where the effect scenes already live (vfx.build wrote them there for RK219).
-Passing that would lay a review sitting, its sheets and its sitting.json inside the
-shipped game.
-
-Expected: a preview is a sitting for a person, so its `out` is where the sitting goes
-and may be under art/review/ like every other sitting. The scenes it films are either
-the built ones (game/vfx/, found from the declaration's records) or built into the work
-area (.polyweave/), never into `out`. The refusal should name which of those two it
-needs.
-
-Workaround: no preview. The bomb's family in spinhold's rk222-day sitting is in-game
-stills from dev/shot.gd --hold=bomb at several frames, which show its life only as far
-as those frames do.
-
-What polyweave should do: split where the sitting is laid from where a scene is built,
-take the built scenes from their provenance when they exist, and accept any `out` for
-the sitting.
-
 ### §PW425 The replaced sound as a sitting's old
 
 Where: spinhold, RK71 (the phase music in layers), 2026-10-12.

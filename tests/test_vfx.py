@@ -556,6 +556,30 @@ def test_an_effect_is_watched_over_its_life_as_a_sitting(tmp_path):
         assert drawn.max() > 120
 
 
+def test_an_effect_the_export_leaves_out_is_watched_in_a_sitting_under_art(tmp_path):
+    """§PW424: spinhold's bomb, declared under art/, could not be previewed into
+    art/review/ beside the day's other sittings."""
+    from polyweave import offscreen
+
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    try:
+        offscreen.route_for(tmp_path)
+    except PolyweaveError:
+        pytest.skip("no route draws real pixels here")
+    source = effects(tmp_path)
+    (tmp_path / "vfx" / ".gdignore").write_text("", encoding="utf-8")
+    (tmp_path / "project.godot").write_text(
+        'config_version=5\n\n[application]\nconfig/name="vfx"\n', encoding="utf-8")
+    laid = vfx.preview(source, out="art/review/fx", effect="sparks", stills=4,
+                       root=str(tmp_path))
+    assert laid["sitting"] == "art/review/fx/sitting.json"
+    # Filmed from a scene built where nothing ships, never beside the declaration.
+    assert laid["effects"]["sparks"]["scene"].startswith(".polyweave/vfx/scenes/")
+    assert not (tmp_path / "vfx" / "sparks.tscn").exists()
+    assert laid["effects"]["sparks"]["frames"] > 60
+
+
 LOADS = """extends SceneTree
 
 func _initialize() -> void:
