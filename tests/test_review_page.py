@@ -145,6 +145,24 @@ def test_an_answer_for_a_sitting_never_laid_out_is_refused(page):
     assert status == 400 and said["code"] == "loop.unknown-sitting"
 
 
+def test_a_raise_is_answered_as_the_defect_and_never_a_dropped_connection(
+    page, monkeypatch
+):
+    # §PW411: a KeyError in verdict.judge left the page with "Failed to fetch".
+    base, _ = page
+
+    def broken(*_):
+        raise KeyError("text")
+
+    monkeypatch.setattr(review, "answer", broken)
+    status, said = post(base + "/api/judge", judged(choice="accept"))
+    assert status == 500 and said["code"] == "op.crashed"
+    assert "KeyError" in said["message"] and said["remedy"]
+    assert said["detail"].startswith("test_review_page.py:")
+    # The server is still there for the next call.
+    assert get(base + "/api/state")[0] == 200
+
+
 def test_a_server_older_than_its_code_refuses_to_judge(tmp_path, monkeypatch):
     # §PW294: the page is read from disk on every request, the Python is not.
     code = tmp_path / "code"

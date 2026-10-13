@@ -286,27 +286,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW411 A voice preview the page could not accept
-
-Where: spinhold RK218, the pilot's voice previews from `voice.design`, laid out by its
-sitting and served by `python -m polyweave review`.
-
-Accepting `pilot_3` on the page answered "Failed to fetch". The server's log held the
-traceback: `verdict.judge` read the member's `line` as a line of the string table
-(`words.judged`) and failed on `member["text"]` with a KeyError. A sound sitting's
-speech preview carries `line` too, but there it is the words the take says, so a person
-could not accept any voice preview, and `voice.choose`, which refuses a preview with no
-person's accept on its bytes, could never be reached through the page.
-
-Fixed in this line's commit: a member carrying `sound` is never judged as a line of
-text, and its verdict is kept as the sound's. `tests/test_voice_design.py` now accepts a
-preview through `verdict.judge` as the page does; the earlier tests wrote the verdict
-into the record by hand and never crossed this path.
-
-Left for this line: the page shows a bare "Failed to fetch" for any exception the server
-raises. It should answer the refusal (or a 500 carrying the error's message), so a
-person sees why and the agent is told without reading the server's log.
-
 ### §PW412 A line's language sent with it
 
 Where: spinhold RK218, `voice.lines --speaker pilot` over the string table's `en` and

@@ -32,9 +32,9 @@ import importlib.util
 import json
 import shutil
 import sys
-from pathlib import Path
 from typing import Any
 
+from . import errors
 from .errors import PolyweaveError
 
 PROTOCOL = "2025-06-18"
@@ -238,15 +238,11 @@ def call(name: str, arguments: dict | None) -> dict:
     except Exception as crashed:  # noqa: BLE001 - one bad call must not end the server
         # A raise here used to close the connection, and every other tool with it for
         # the rest of the caller's turn (§PW261). It is a defect, and said as one.
-        import traceback
-
-        where = traceback.extract_tb(crashed.__traceback__)[-1]
-        return _content({"refused": PolyweaveError(
-            "op.crashed",
-            f"{name} raised {type(crashed).__name__}: {crashed}",
+        return _content({"refused": errors.crashed(
+            name,
+            crashed,
             "this is a defect in polyweave, not in the call; the other tools still "
             "answer, and the detail says where it raised",
-            detail=f"{Path(where.filename).name}:{where.lineno} in {where.name}",
         ).as_dict()}, error=True)
     return _content(answer, error=False)
 

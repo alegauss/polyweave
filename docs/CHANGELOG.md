@@ -159,6 +159,7 @@
 - ✅ **PW417** **vfx.build declares only particle systems, so a sheet or wall of light with a hot core and halo is a shader in game code** — vfx.build has a sheet kind: a quad and a generated shader with a profile across, faded ends, flicker and an afterimage, faded per instance (design recorded in `docs/specs/vfx.md`).
 - ✅ **PW418** **a capture's record leaves out the script's own arguments, so a recorded picture cannot be taken again** — A capture's record keeps the script's args and how it was called, and capture.again takes it again with only the environment changed (design recorded in `docs/specs/engine.md`).
 - ✅ **PW419** **words.check reads only the string table, so a store page or site copy is never held to the world's names** — words.check holds the Markdown, HTML or text files [words] copy names, each in its locale, to the world's names, a finding per file and line (design recorded in `docs/specs/project-config.md`).
+- ✅ **PW411** **accepting a voice preview on the review page fails with Failed to fetch, so no voice can ever be chosen** — A voice preview is accepted on the page, and a page route that raises answers a 500 with op.crashed and where, never a dropped link (design recorded in `docs/specs/acceptance-spec.md`).
 
 ## Block I — Voxel models from a declaration
 

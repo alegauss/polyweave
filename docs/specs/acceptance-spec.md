@@ -187,7 +187,9 @@ from the sitting's own manifest rather than from the page, and the person's choi
 sentence. A sitting or family the project never laid out is `loop.unknown-sitting`. The
 post must carry `X-Polyweave: 1`, a header a browser will not send across origins without a
 preflight this server never answers, so another site open in the same browser cannot post
-a verdict.
+a verdict. Anything a route raises where it should have refused is answered as a 500
+carrying `op.crashed`, with where it raised in `detail` and the traceback on the server's
+terminal, so the page shows the defect rather than a dropped connection (§PW411).
 
 **Every answer is an event on disk** (§PW173). The page's call appends one line to
 `[paths] work`/`answers.jsonl`: when, which sitting and family, the choice, the sentence, and

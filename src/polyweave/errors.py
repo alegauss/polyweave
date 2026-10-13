@@ -17,6 +17,7 @@ import difflib
 import re
 import traceback
 from collections.abc import Iterable, Iterator
+from pathlib import Path
 from typing import Any
 
 from . import codes as _codes
@@ -206,6 +207,18 @@ def codes(area: str | None = None) -> list[str]:
             allowed=_codes.AREAS,
         )
     return _codes.in_area(area)
+
+
+def crashed(name: str, exc: BaseException, remedy: str) -> PolyweaveError:
+    """What raised where it should have refused, said as the defect it is (§PW261):
+    the exception in the message and the frame it left from in `detail`."""
+    where = traceback.extract_tb(exc.__traceback__)[-1]
+    return PolyweaveError(
+        "op.crashed",
+        f"{name} raised {type(exc).__name__}: {exc}",
+        remedy,
+        detail=f"{Path(where.filename).name}:{where.lineno} in {where.name}",
+    )
 
 
 @contextlib.contextmanager

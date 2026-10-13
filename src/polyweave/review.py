@@ -35,7 +35,7 @@ import numpy as np
 from . import loop, verdict
 from .config import load
 from .describe import Param, operation
-from .errors import PolyweaveError
+from .errors import PolyweaveError, crashed
 from .files import read_text_retrying
 
 #: Where the page's own files are, beside this module.
@@ -578,6 +578,31 @@ def server(root=".", port: int = 0) -> ThreadingHTTPServer:
             return
 
         def do_GET(self):  # noqa: N802 - the name the standard library calls
+            self._answering(self._get)
+
+        def do_POST(self):  # noqa: N802
+            self._answering(self._post)
+
+        def _answering(self, route):
+            # A raise used to drop the connection, and the page could only say "Failed
+            # to fetch" (§PW411). It answers the defect instead, which the page shows.
+            try:
+                route()
+            except Exception as broken:  # noqa: BLE001 - the page must hear something
+                import traceback
+
+                traceback.print_exc()  # the server's terminal keeps the whole of it
+                path = urlparse(self.path).path
+                refused = crashed(
+                    f"{self.command} {path}",
+                    broken,
+                    "this is a defect in polyweave, not in the answer; the page still "
+                    "answers, the detail says where it raised, and the server's "
+                    "terminal holds the traceback",
+                )
+                self._json(refused.as_dict(), HTTPStatus.INTERNAL_SERVER_ERROR)
+
+        def _get(self):
             asked = urlparse(self.path)
             if asked.path in ("/", "/index.html"):
                 return self._file(SCREEN / "index.html")
@@ -616,7 +641,7 @@ def server(root=".", port: int = 0) -> ThreadingHTTPServer:
                     return self._file(target)
             return self._json({"code": "not-found"}, HTTPStatus.NOT_FOUND)
 
-        def do_POST(self):  # noqa: N802
+        def _post(self):
             # Read before answering, refusals included: a reply sent while the client
             # is still writing its body gets the connection reset under it.
             length = int(self.headers.get("Content-Length") or 0)
