@@ -416,9 +416,71 @@ SOUND_CHOICES = {
 }
 
 LISTENED = (
-    "each member: name and new, and optionally old (the sound it replaces), loop, "
-    "spec, its *.accept.toml, and line, the words a spoken take should say"
+    "each member: name and new, and optionally old (the sound it replaces, or a "
+    "committed one as HEAD:<path>), loop, spec, its *.accept.toml, and line, the "
+    "words a spoken take should say"
 )
+
+#: `<revision>:<path>`, a committed file; two characters at least before the colon, so
+#: a Windows drive (`C:/...`) is never read as one.
+_COMMITTED = re.compile(r"^(?P<rev>[\w.~^/@{}-]{2,}):(?P<path>[^:].*)$")
+
+#: What a Git LFS pointer starts with, where the file itself is kept elsewhere.
+_LFS = b"version https://git-lfs"
+
+
+def _committed(given: str) -> tuple[str, str] | None:
+    """The revision and the path an `old` names, where it names a committed version."""
+    found = _COMMITTED.match(given)
+    return (found["rev"], found["path"]) if found else None
+
+
+def _checked_out(rev: str, path: str, here: Path, work: Path) -> tuple[str, dict]:
+    """A committed version of a sound, written into the work area to be heard (§PW425).
+
+    A render rewrites its file in place, so the version a person compares against lives
+    only in git, and in a project that keeps audio in LFS as a pointer: spinhold took
+    three commands a track to get one back. Answers where it landed and where it came
+    from, the commit it resolved to, for the sitting to say.
+    """
+    import hashlib
+    import subprocess
+
+    def git(*args: str, given: bytes | None = None) -> subprocess.CompletedProcess:
+        return subprocess.run(["git", *args], cwd=here, input=given,
+                              capture_output=True, check=False)
+
+    shown = git("show", f"{rev}:{path}")
+    commit = git("rev-parse", "--verify", f"{rev}^{{commit}}")
+    if shown.returncode or commit.returncode:
+        raise PolyweaveError(
+            "sound.no-source",
+            f"git has no {path} at {rev}",
+            "name a revision and a path the repository holds, as HEAD:<path>",
+            detail=(shown.stderr or commit.stderr).decode("utf-8", "replace")[:300],
+            given=f"{rev}:{path}",
+        )
+    body = shown.stdout
+    if body.startswith(_LFS):
+        smudged = git("lfs", "smudge", path, given=body)
+        if smudged.returncode or not smudged.stdout:
+            raise PolyweaveError(
+                "sound.no-source",
+                f"{path} at {rev} is a Git LFS pointer, and git lfs could not fetch it",
+                "install Git LFS and fetch the object (git lfs fetch), then ask again",
+                detail=smudged.stderr.decode("utf-8", "replace")[:300],
+            )
+        body = smudged.stdout
+    sha = commit.stdout.decode().strip()
+    landed = work / "sound" / "old" / sha[:12] / path
+    landed.parent.mkdir(parents=True, exist_ok=True)
+    landed.write_bytes(body)
+    from .provenance import relative
+
+    return relative(landed, here), {
+        "rev": rev, "commit": sha, "path": path,
+        "sha256": hashlib.sha256(body).hexdigest(),
+    }
 
 
 @operation("sound.sitting")
@@ -454,6 +516,12 @@ def sitting(
         heard = {"name": str(member["name"]), "sound": True}
         for key in ("new", "old", "spec"):
             if member.get(key):
+                committed = _committed(str(member[key])) if key == "old" else None
+                if committed:
+                    # The version a render overwrote, out of git and LFS (§PW425).
+                    heard["old"], heard["old_from"] = _checked_out(
+                        *committed, here, config.path("paths.work"))
+                    continue
                 heard[key] = relative(config.path("paths.work", member[key]), here)
         if "new" not in heard:
             raise PolyweaveError(

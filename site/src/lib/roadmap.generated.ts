@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 12 },
+  { block: "H", title: "Proof on a real game", open: 13 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 1 },
   { block: "K", title: "Reached without reading the source", open: 2 },
@@ -107,13 +107,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW425",
-    block: "H",
-    symptom: "sound.sitting cannot hear the sound a render overwrote, so its old needs a hand git and LFS extract",
-    why: "Every re-render a person must compare costs commands per file, and the old file's origin goes unrecorded.",
-    deps: [],
-  },
-  {
     id: "PW426",
     block: "H",
     symptom: "a score cannot be another score transposed, so a piece in three keys is three files kept in step by hand",
@@ -160,6 +153,20 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "picture.vector draws an SVG with live text as a PNG with no letters, and answers as if nothing were lost",
     why: "ThorVG in Godot drops every text element, so a banner or logo loses its words in silence and the only way to know is to look at the picture and read vector.py.",
+    deps: [],
+  },
+  {
+    id: "PW454",
+    block: "H",
+    symptom: "provenance.generated leaves an older purchase's service unnamed, so a disclosure cannot say which generator made a file",
+    why: "Spinhold's five Meshy meshes and four Ideogram studies came back unnamed, and naming the service is the one thing the answer is for.",
+    deps: [],
+  },
+  {
+    id: "PW455",
+    block: "H",
+    symptom: "provenance.generated cannot tell what a Godot build ships, so it counts excluded files and buries art among code",
+    why: "Spinhold's honest answer was 26 voice lines, and reaching it meant reading export_presets.cfg by hand and sifting 380 unrecorded files.",
     deps: [],
   },
   {

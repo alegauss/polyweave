@@ -348,25 +348,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW425 The replaced sound as a sitting's old
-
-Where: spinhold, RK71 (the phase music in layers), 2026-10-12.
-
-`music.render --source art/audio/phase_1.music.toml --out game/audio/music/phase_1`
-rewrote game/audio/music/phase_1.wav in place, as it should. The person then has to hear
-the new mix beside the one it replaces, so `sound.sitting` was given an `old` for each
-track. But the old file no longer exists on disk: it lives only in git, and in this
-project as a Git LFS pointer, so `git show HEAD:<path>` gives 132 bytes of pointer.
-
-Workaround: for each track, by hand, `git show HEAD:game/audio/music/phase_N.wav | git
-lfs smudge > .polyweave/shots/rk71/phase_N.old.wav`, then those paths as `old`. Three
-commands per render, and nothing records where the old file came from.
-
-What polyweave should do: let `old` name a committed version (`HEAD:<path>`, or "the
-version this render replaced"), resolved through git and LFS into the work area,
-recorded in the sitting; or have music.render and sound.synth keep the file they
-overwrite in the work area and offer it as the sitting's `old` by default.
-
 ### §PW426 A score derived from another
 
 Where: spinhold, RK71 (the phase music in layers), 2026-10-12.
@@ -494,6 +475,47 @@ What polyweave should do:
 2. Better: outline the text itself before ThorVG draws it, resolving `font-family` and
    `font-weight` to a font file `polyweave.toml` names (or the system's), with the font
    recorded among the provenance inputs and a missing font refused by name.
+
+### §PW454 An unnamed service in a generated answer
+
+Met in Spinhold (2026-10-13), drafting its Steam AI disclosure:
+`provenance.generated(root="D:/Git/viglet/spinhold", paths=["game", "assets"])`.
+
+Five shipped meshes (`assets/models/drone.glb`, `gunship`, `keeper`, `seeker`, `ship`)
+came back with `"service": "service"`. Their purchase records were written by polyweave
+0.1.0, which put `engine: {"name": "service"}` and no service name, although each sits
+under `tools/art/meshy/` and carries a Meshy `task_id`. Four adopted Ideogram studies in
+`art/brand/reference/` came back with `"service": ""`; their `task_id` is
+`ideogram:<id>` and their prompt says they were made on ideogram.ai.
+
+The one question this answer exists for is "made by which service", so a reader building
+a disclosure from it has to open each record by hand.
+
+What polyweave should do: where a `fetch` record names no service, resolve it from what
+the record does carry (a `task_id` prefix, the project's `[service.<name>]` whose output
+folder holds the file) and say it was inferred; where nothing resolves it, answer
+`service: null` with a `why` and the remedy that rewrites the record, never the literal
+`"service"` or an empty string.
+
+### §PW455 What a Godot build ships
+
+Met in Spinhold (2026-10-13), drafting its Steam AI disclosure. Called with no `paths`,
+`provenance.generated` walks every recorded artefact, 156 of them generated, most being
+work files under `.polyweave/` that never ship. Called with `paths=["game", "assets"]`,
+it still counts `assets/models/*.glb` as shipped Meshy purchases, while
+`export_presets.cfg` says `exclude_filter="assets/models/*, art/*, tools/*"`: the build
+carries none of them. The honest answer for the build was the 26 ElevenLabs voice lines
+alone, and getting there took reading the export preset by hand.
+
+The same call lists 380 `unrecorded` files, nearly all GDScript, scenes, shaders and
+`.tres` resources, which no generator touches. Three brand PNGs under `game/ui/brand/`
+are among them, and they are the only ones a disclosure needs to look at.
+
+What polyweave should do: in a Godot project, take what ships from the export preset (a
+`preset` parameter, the first one by default) when `paths` is not given, applying its
+include and exclude filters; and split `unrecorded` into the files a generator could
+have made (pictures, audio, meshes, fonts) and code and engine resources, so the files
+that need a person's word are the short list.
 
 ## Block I — Voxel models from a declaration
 

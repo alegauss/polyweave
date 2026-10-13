@@ -175,6 +175,7 @@
 - ✅ **PW422** **a music score cannot name the track it was written against, so a rendered cue's record never says whose loop it answers** — A score names the track it was written against in [music] reference, and every rendered file records it as an input with role reference (design recorded in `docs/specs/music.md`).
 - ✅ **PW423** **a rendered cue's record leaves out its drum kit, so a kit edit leaves every cue reading current** — A cue's record names each chip kit it plays, so a kit edit reads outdated, and a thin record reads outdated instead of crashing the read (design recorded in `docs/specs/music.md`).
 - ✅ **PW424** **vfx.preview refuses an out under art/, so an effect's sitting cannot sit in art/review/ with the others** — vfx.preview lays its sitting wherever out says, art/review/ included, building what it films into the work area when the export leaves the source out (design recorded in `docs/specs/vfx.md`).
+- ✅ **PW425** **sound.sitting cannot hear the sound a render overwrote, so its old needs a hand git and LFS extract** — A sound sitting's old may name a committed version, HEAD:<path>, read through git and LFS into the work area with its origin recorded (design recorded in `docs/specs/acceptance-spec.md`).
 
 ## Block I — Voxel models from a declaration
 

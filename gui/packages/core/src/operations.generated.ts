@@ -1932,7 +1932,7 @@ export interface SoundMeasureArgs {
 
 /** Put sounds on the review page, each new one beside the one it replaces. */
 export interface SoundSittingArgs {
-  /** each member: name and new, and optionally old (the sound it replaces), loop, spec, its *.accept.toml, and line, the words a spoken take should say */
+  /** each member: name and new, and optionally old (the sound it replaces, or a committed one as HEAD:<path>), loop, spec, its *.accept.toml, and line, the words a spoken take should say */
   members: unknown[]
   /** the folder the sitting is laid out in */
   out: string

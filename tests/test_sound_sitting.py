@@ -97,6 +97,52 @@ def test_a_sound_with_no_record_keeps_the_verdict_in_the_ledger_and_says_so(tmp_
     assert "no record" in said["members"][0]["heard"]["why_unrecorded"]
 
 
+def _git(tmp_path, *args):
+    import subprocess
+
+    subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", *args],
+                   cwd=tmp_path, check=True, capture_output=True)
+
+
+def test_the_sound_a_render_overwrote_is_heard_from_git(tmp_path):
+    """§PW425: the old take lived only in git, three commands a track to hear it."""
+    _project(tmp_path)
+    _git(tmp_path, "init", "-q")
+    _git(tmp_path, "add", "audio/bomb.wav")
+    _git(tmp_path, "commit", "-q", "-m", "the bomb as it shipped")
+    committed = (tmp_path / "audio" / "bomb.wav").read_bytes()
+    _tone(tmp_path / "audio" / "bomb.wav", seconds=0.4)  # the render, in place
+    laid = sound.sitting(
+        [{"name": "bomb", "new": "audio/bomb.wav", "old": "HEAD:audio/bomb.wav"}],
+        out="review/sounds", root=str(tmp_path),
+    )
+    member = json.loads((tmp_path / laid["sitting"]).read_text("utf-8"))[
+        "families"]["bomb"]["members"][0]
+    assert (tmp_path / member["old"]).read_bytes() == committed
+    assert member["old"].startswith(".polyweave/sound/old/")
+    assert member["old_from"]["rev"] == "HEAD"
+    assert member["old_from"]["path"] == "audio/bomb.wav"
+    assert len(member["old_from"]["commit"]) == 40
+
+
+def test_a_committed_old_git_does_not_hold_is_refused(tmp_path):
+    _project(tmp_path)
+    _git(tmp_path, "init", "-q")
+    with pytest.raises(PolyweaveError) as refused:
+        sound.sitting(
+            [{"name": "bomb", "new": "audio/bomb.wav", "old": "HEAD:audio/bomb.wav"}],
+            out="review/sounds", root=str(tmp_path),
+        )
+    assert refused.value.code == "sound.no-source"
+    assert "HEAD" in refused.value.message
+
+
+def test_a_windows_path_is_never_read_as_a_revision():
+    assert sound._committed("C:/game/audio/bomb.wav") is None
+    assert sound._committed("before/bomb.wav") is None
+    assert sound._committed("HEAD~2:audio/bomb.wav") == ("HEAD~2", "audio/bomb.wav")
+
+
 def test_a_member_with_no_file_to_hear_is_refused(tmp_path):
     _project(tmp_path)
     with pytest.raises(PolyweaveError) as refused:
