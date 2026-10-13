@@ -472,6 +472,16 @@ The seed and the search's own configuration — the budget, the ranges, the rung
 stopped — sit beside the samples, because a result nobody can reproduce is one nobody can
 check.
 
+**The picture left in place is the answer's** (§PW452). An evaluator writes each sample
+over the same `out`, and that file is what a sitting lays out before anything is baked.
+So where the last sample is not the best, the search evaluates the best once more after
+it, a cache hit for a renderer and not charged to the budget, and says `settled`. In a
+search that rebuilds a shape that last evaluation is a build of the answer's shape, and
+it is counted in `rebuilds` like any other. A
+family search does the same through its joint evaluator, so every member's `out` holds
+the rig the answer names: two of Cottony's props were shown failing beside an answer
+that said all five passed.
+
 ## Any picture, not only a bake
 
 Nothing in this format is 3D (§PW113). A predicate is a measure over a region of pixels,

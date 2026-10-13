@@ -316,11 +316,25 @@ def search(
             "the search evaluated nothing",
             "give it a budget of at least one render",
         )
+    # The evaluator writes its picture where a person is shown it, so it ends on the
+    # answer and not on whichever sample came last (§PW452): two of Cottony's props were
+    # laid on a sitting failing beside a search that said they passed. A renderer serves
+    # this from its cache, and it is not charged to the budget.
+    settled = bool(trace) and trace[-1]["params"] != best["params"]
+    if settled:
+        if evaluate_all is not None:
+            evaluate_all([dict(best["params"])])
+        else:
+            evaluate(dict(best["params"]))
     return {
         "asset": spec.asset,
         "searched": names,
         "rebuilding": sorted(set(rebuilding) & set(names)),
-        "rebuilds": rebuilds_in(trace, set(rebuilding) & set(names)),
+        # The settling evaluation is a rebuild too, where the answer is another shape.
+        "rebuilds": rebuilds_in(
+            [*trace, *([{"params": best["params"]}] if settled else [])],
+            set(rebuilding) & set(names),
+        ),
         "budget": budget,
         "spent": spent,
         "stopped": stopped,
@@ -332,6 +346,9 @@ def search(
         # How far inside its tightest bound the answer sits, and which bound that is.
         "headroom": best["result"].get("headroom"),
         "tightest": best["result"].get("tightest"),
+        # Whether the answer was evaluated again after the last sample, so its picture
+        # is the one left in place.
+        "settled": settled,
         "trace": trace,
     }
 

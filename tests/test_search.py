@@ -93,14 +93,38 @@ def test_it_never_spends_more_than_its_budget():
         evaluate = peaking_at(3.0)
         found = search.search(a_spec(), evaluate, budget=budget)
         assert found["spent"] <= budget
-        assert len(evaluate.calls) == found["spent"]
+        # The answer evaluated once more, after the last sample, is not a sample.
+        assert len(evaluate.calls) == found["spent"] + found["settled"]
 
 
 def test_it_never_pays_for_the_same_sample_twice():
     evaluate = peaking_at(3.0)
-    search.search(a_spec(), evaluate, budget=40, points=3)
-    seen = [tuple(sorted(c.items())) for c in evaluate.calls]
+    found = search.search(a_spec(), evaluate, budget=40, points=3)
+    sampled = evaluate.calls[:found["spent"]]
+    seen = [tuple(sorted(c.items())) for c in sampled]
     assert len(seen) == len(set(seen))
+
+
+def test_the_last_picture_the_evaluator_draws_is_the_answer():
+    """§PW452: a family's out held its last sample, and showed it failing."""
+    evaluate = peaking_at(1.0)
+    found = search.search(a_spec(), evaluate, budget=9, points=3, passes=1)
+    assert found["trace"][-1]["params"] != found["best"]
+    assert found["settled"] is True
+    assert evaluate.calls[-1] == found["best"]
+
+
+def test_a_family_leaves_every_members_picture_at_the_answer():
+    drawn = {}
+
+    def member(name):
+        def evaluate(values):
+            drawn[name] = dict(values)
+            return peaking_at(1.0)(values)
+        return {"name": name, "spec": a_spec(), "evaluate": evaluate}
+
+    found = search.family([member("a"), member("b")], budget=9, points=3, passes=1)
+    assert drawn == {"a": found["best"], "b": found["best"]}
 
 
 def test_a_search_that_has_its_answer_stops_paying():
@@ -266,7 +290,9 @@ def test_a_batch_never_exceeds_what_the_budget_still_affords():
     every = batched(2.7)
     found = search.search(a_spec(), evaluate_all=every, budget=5, points=4, passes=3)
     assert found["spent"] <= 5
-    assert sum(len(p) for p in every.passes) <= 5
+    # The answer handed over again at the end (§PW452) is its own batch, not a sample.
+    paid = every.passes[:-1] if found["settled"] else every.passes
+    assert sum(len(p) for p in paid) <= 5
 
 
 def test_a_batch_holds_no_sample_twice():

@@ -164,8 +164,15 @@ def test_it_builds_once_per_shape_and_not_once_per_sample(tmp_path):
     """The whole cost argument, counted rather than claimed."""
     found, built = searching(tmp_path)
     assert found["built"] < found["naive_builds"]
-    assert found["built"] == len(set(built))
-    assert len(built) == found["built"], "no shape was built twice"
+    assert len(built) == found["built"]
+    sampled = while_sampling(found, built)
+    assert len(sampled) == len(set(sampled)), "no shape was built twice"
+
+
+def while_sampling(found, built):
+    """The builds the samples paid for, without the answer's own at the end (§PW452),
+    which builds its shape again where the last sample stood on another."""
+    return built[:-1] if found["settled"] and len(set(built[-2:])) == 2 else built
 
 
 def test_the_answer_says_how_many_rebuilds_it_paid_for(tmp_path):
@@ -175,8 +182,9 @@ def test_the_answer_says_how_many_rebuilds_it_paid_for(tmp_path):
 
 
 def test_the_rig_is_swept_over_each_shape_before_the_next(tmp_path):
-    _, built = searching(tmp_path)
-    assert built == sorted(built), "one pass through the shapes, in order"
+    found, built = searching(tmp_path)
+    sampled = while_sampling(found, built)
+    assert sampled == sorted(sampled), "one pass through the shapes, in order"
 
 
 # -- a value that makes an invalid mesh ------------------------------------------------

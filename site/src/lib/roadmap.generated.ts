@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 19 },
+  { block: "H", title: "Proof on a real game", open: 18 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 1 },
   { block: "K", title: "Reached without reading the source", open: 2 },
@@ -202,13 +202,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "a search whose best rig sits on its axes' bounds reports never passing, not that the range may cut the answer off",
     why: "Cottony's props search ended on the edge of exposure three times and read as unreachable; the passing rig was just outside the range.",
-    deps: [],
-  },
-  {
-    id: "PW452",
-    block: "H",
-    symptom: "after port.run searches, each member's out holds the last sample tried, not the rig it answers with",
-    why: "Cottony's props were laid on a sitting from their out, and two showed failing renders beside an answer saying all five passed.",
     deps: [],
   },
   {

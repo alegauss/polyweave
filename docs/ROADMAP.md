@@ -38,8 +38,7 @@
 - 📋 **PW436** (deps: —) **a sitting laid out in the wrong folder cannot be moved, and a hand move leaves its answers on the old path** — Spinhold moved its pilot lines sitting by hand, missed answers.jsonl, and 23 answers pointed at a sitting that was gone. → §PW436
 - 🛠 **PW36** (deps: PW5 ✅, PW82 ⏸) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82. → §PW36
 - 📋 **PW440** (deps: —) **a render's material replaces the mesh's own, so a roughness cannot be laid over a textured mesh without losing it** — Cottony's mushroom bakes glazed with its painted cap kept, so its port exports a glazed copy of the mesh the record never names. → §PW440
-- 📋 **PW442** (deps: —) **a search whose best rig sits on its axes' bounds reports never passing, not that the range may cut the answer off** — Cottony's props search ended on the edge of exposure three times and read as unreachable; the passing rig was just outside the range. → §PW442
-- 📋 **PW452** (deps: —) **after port.run searches, each member's out holds the last sample tried, not the rig it answers with** — Cottony's props were laid on a sitting from their out, and two showed failing renders beside an answer saying all five passed. → §PW452
+- 🛠 **PW442** (deps: —) **a search whose best rig sits on its axes' bounds reports never passing, not that the range may cut the answer off** — Cottony's props search ended on the edge of exposure three times and read as unreachable; the passing rig was just outside the range. → §PW442
 
 ## Block I — Voxel models from a declaration
 
