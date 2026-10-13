@@ -113,7 +113,9 @@ from polyweave.errors import PolyweaveError
 #: 134,436 with review.words (§PW400), reference.objects' samples (§PW404) and
 #: reference.compare's declared wave (§PW406).
 #: 135,074 with reference.register and capture.run's internal refusal (§PW407).
-DESCRIBE = 135_700
+#: 135,968 with capture.again (§PW418), vfx.build's sheet (§PW417) and voice.design's
+#: locale (§PW413).
+DESCRIBE = 136_700
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -203,7 +205,9 @@ DESCRIBE = 135_700
 #: 146,910 with review.words, reference.objects' samples and reference.compare's wave
 #: (§PW400, §PW404, §PW406).
 #: 147,627 with reference.register and its three codes (§PW407).
-CAPABILITIES = 148_400
+#: 148,563 with capture.again and its code (§PW418), fetch.plan-lacks (§PW410) and
+#: voice.design's locale (§PW413).
+CAPABILITIES = 149_300
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
@@ -248,7 +252,8 @@ HELP_VERB = 4_100
 #: 28,236 with revision.outside and the three reference reads (§PW378-§PW380).
 #: 28,940 with reference.events, .compare, .transcription and .transcribed
 #: (§PW381-§PW383).
-HELP_TOP = 29_600
+#: 29,686 with capture.again (§PW418).
+HELP_TOP = 30_100
 #: A search's answer over its default budget of 24 samples: 3,739.
 SEARCH = 4_000
 

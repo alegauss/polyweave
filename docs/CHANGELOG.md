@@ -157,6 +157,7 @@
 - ✅ **PW409** **describe lists vfx.build's arguments but not the keys a declaration holds, so an effect is written from vfx.py** — describe vfx.build answers declares, each key a *.vfx.toml holds with its type, default, choices and sentence, so no one reads vfx.py (design recorded in `docs/specs/tool-surface.md`).
 - ✅ **PW410** **a 403 from ElevenLabs prints with no detail, and a free plan's missing feature is found only by spending** — A refusal's text prints its detail, and a 403 from the speech service is fetch.plan-lacks in the service's words, costing nothing (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW417** **vfx.build declares only particle systems, so a sheet or wall of light with a hot core and halo is a shader in game code** — vfx.build has a sheet kind: a quad and a generated shader with a profile across, faded ends, flicker and an afterimage, faded per instance (design recorded in `docs/specs/vfx.md`).
+- ✅ **PW418** **a capture's record leaves out the script's own arguments, so a recorded picture cannot be taken again** — A capture's record keeps the script's args and how it was called, and capture.again takes it again with only the environment changed (design recorded in `docs/specs/engine.md`).
 
 ## Block I — Voxel models from a declaration
 

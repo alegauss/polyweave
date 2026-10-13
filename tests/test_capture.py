@@ -223,6 +223,46 @@ def test_the_operation_passes_the_scripts_own_arguments(tmp_path, monkeypatch):
     assert found["environment"]["holds"] is True
 
 
+def test_a_recorded_picture_is_taken_again_in_another_locale(tmp_path, monkeypatch):
+    """§PW418: Spinhold's store screenshots kept no args, so pt_BR was guesswork."""
+    script = project(tmp_path, '[capture]\ndeclared = ["locale"]\nlocale = "en_US"\n')
+    shot = tmp_path / "x.png"
+    shot.write_bytes(b"\x89PNG\r\n")
+    calls = []
+
+    def take(script, *, expect, root, args, **how):
+        calls.append({"args": args, **how})
+        said = next(one for one in args if one.startswith("locale="))
+        return taking(f"environment: {said}\ncaptured: res://x.png 24 x 24\n",
+                      artefacts=[shot])(script, expect=expect, root=root, args=args)
+
+    monkeypatch.setattr(capture.offscreen, "capture", take)
+    capture.taken(str(script), expect=SHOT, root=str(tmp_path), frames=700,
+                  args=["--frames=700", "--hold=move_right,fire_right",
+                        f"--out={tmp_path / 'art' / 'bow.png'}"])
+    record = json.loads((tmp_path / "x.png.prov.json").read_text("utf-8"))
+    assert record["params"]["args"] == [
+        "--frames=700", "--hold=move_right,fire_right", "--out=art/bow.png"]
+    assert record["call"] == {"expect": SHOT, "frames": 700}
+
+    found = capture.taken_again("x.png", environment={"locale": "pt_BR"},
+                                root=str(tmp_path))
+    assert found["ok"] is True, found
+    assert calls[-1]["args"] == ("--", "--frames=700", "--hold=move_right,fire_right",
+                                 "--out=art/bow.png", "locale=pt_BR")
+    assert calls[-1]["frames"] == 700
+    again = json.loads((tmp_path / "x.png.prov.json").read_text("utf-8"))
+    assert again["params"]["locale"] == "pt_BR"
+
+
+def test_a_picture_with_no_record_of_its_call_is_refused(tmp_path):
+    project(tmp_path)
+    (tmp_path / "x.png").write_bytes(b"\x89PNG\r\n")
+    with pytest.raises(PolyweaveError) as refused:
+        capture.taken_again("x.png", root=str(tmp_path))
+    assert refused.value.code == "capture.unrecorded"
+
+
 def taking_each(*outputs):
     """A capture whose log is the next of `outputs` each time it runs."""
     left = list(outputs)

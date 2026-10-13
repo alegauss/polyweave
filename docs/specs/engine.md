@@ -357,6 +357,16 @@ reason naming the group, and `require` refuses it as `capture.not-visible`.
 alongside the route it was drawn by and the script that drew it, so a screenshot that
 differs later is compared against what it was taken under rather than against a memory.
 
+**A recorded picture can be taken again** (§PW418). The record's `params` hold the
+script's own arguments as `args`, in order, a path under the project made relative, and
+its `call` holds the rest of how it was taken: `expect`, and `until_visible`, `tries`,
+`frames` and `timeout` where they were set. `capture.again(picture, environment=)` reads
+them and runs `capture.run` once more with only the environment changed, the
+recorded settings under the ones passed, so a store screenshot is taken again in pt_BR
+from its record alone. Where the picture lands is the script's to say; a picture whose
+record has no `call` (a record of another kind, or one written before) is
+`capture.unrecorded`.
+
 **A capture records what the game loaded** (§PW118). After Cottony's stars moved, all four
 of its captures reported the same settings making a different picture, "so something this
 picture depends on is not declared". That was true and no help: four sprites had moved, and

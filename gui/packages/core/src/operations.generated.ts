@@ -62,6 +62,18 @@ export interface CalibrateRunArgs {
   root?: string
 }
 
+/** Take a recorded picture again from its record, only the environment changed. */
+export interface CaptureAgainArgs {
+  /** a picture capture.run recorded, under the project */
+  picture: string
+  /** settings that change, such as {"locale": "pt_BR"}; the rest are the record's */
+  environment?: Record<string, unknown>
+  /** the project the engine runs; default "." */
+  root?: string
+  /** refuse, as require does, rather than report a failed run; default false */
+  strict?: boolean
+}
+
 /** The settings this project says a picture depends on. */
 export interface CaptureDeclaredArgs {
   /** the project whose [capture] declared is read; default "." */
@@ -2292,6 +2304,7 @@ export interface Operations {
   "asset.brief": AssetBriefArgs
   "calibrate.apply": CalibrateApplyArgs
   "calibrate.run": CalibrateRunArgs
+  "capture.again": CaptureAgainArgs
   "capture.declared": CaptureDeclaredArgs
   "capture.movie": CaptureMovieArgs
   "capture.run": CaptureRunArgs
@@ -2486,6 +2499,7 @@ export const OPERATIONS = [
   "asset.brief",
   "calibrate.apply",
   "calibrate.run",
+  "capture.again",
   "capture.declared",
   "capture.movie",
   "capture.run",

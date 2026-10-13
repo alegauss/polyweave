@@ -255,6 +255,13 @@ def _once(
     args = given + (() if "--" in given else ("--",)) + as_args(asked)
     until = str(how.pop("until_visible", "") or "")
     tries = max(1, int(how.pop("tries", 3)))
+    # How the call was made, so its record can take the picture again (§PW418).
+    own = list(given[given.index("--") + 1:]) if "--" in given else []
+    call = {
+        "expect": expect if isinstance(expect, str) else expect.pattern,
+        **({"until_visible": until, "tries": tries} if until else {}),
+        **{key: how[key] for key in ("frames", "timeout") if how.get(key)},
+    }
     # Taken again until the script says its subject was on screen (§PW242): a moment in
     # play spawns differently each run, and a fixed frame count cannot wait on that.
     attempt = 0
@@ -316,7 +323,8 @@ def _once(
             _record(
                 one,
                 asked,
-                {**found, "regions": answer["regions"], "inputs": read["inputs"]},
+                {**found, "regions": answer["regions"], "inputs": read["inputs"],
+                 "args": own, "call": call},
                 root,
             )
             for one in found["artefacts"]
@@ -527,16 +535,21 @@ def _record(
     The comparison against the last record happens here rather than in `run`, because
     writing this one is what overwrites the evidence it is compared against.
     """
+    here = load(root).root
+    own = [_relative_arg(str(one), here) for one in found.get("args") or ()]
     written = provenance.build(
         "capture",
         artefact,
         engine={"route": found.get("route", ""), "about": found.get("about", "")},
         inputs=found.get("inputs") or (),
-        params=dict(asked),
+        # The script's own arguments are part of what drew it (§PW418): the same
+        # environment with another --frames is another picture.
+        params={**dict(asked), **({"args": own} if own else {})},
         elapsed_s=found.get("seconds"),
         extra={
             "script": found["script"],
             "frames": found.get("frames"),
+            **({"call": found["call"]} if found.get("call") else {}),
             **({"regions": found["regions"]} if found.get("regions") else {}),
             **({"tries": found["tries"]} if found.get("tries") else {}),
         },
@@ -544,6 +557,17 @@ def _record(
     )
     verdict = provenance.reproduced(written, root=root)
     return provenance.write(written, root=root), verdict
+
+
+def _relative_arg(arg: str, here: Path) -> str:
+    """A script argument with any absolute path under the project made relative, so a
+    record taken on one machine is taken again on another."""
+    flag, eq, value = arg.partition("=") if "=" in arg else ("", "", arg)
+    path = Path(value)
+    if path.is_absolute():
+        with contextlib.suppress(ValueError):
+            value = path.resolve().relative_to(here.resolve()).as_posix()
+    return f"{flag}{eq}{value}"
 
 
 def keeps(root: str | Path = ".") -> bool:
@@ -882,3 +906,58 @@ def taken(
         **({"timeout": float(timeout)} if timeout else {}),
     }
     return require(script, **how) if strict else run(script, **how)
+
+
+@operation("capture.again", kind="capture")
+def taken_again(
+    picture: Annotated[str, Param("a picture capture.run recorded, under the project")],
+    *,
+    environment: Annotated[
+        dict, Param("settings that change, such as {\"locale\": \"pt_BR\"}; the rest "
+                    "are the record's")
+    ] = None,
+    root: Annotated[str, Param("the project the engine runs")] = ".",
+    strict: Annotated[
+        bool, Param("refuse, as require does, rather than report a failed run")
+    ] = False,
+) -> dict:
+    """Take a recorded picture again from its record, only the environment changed.
+
+    The record keeps the script, its own arguments and how the call was made (§PW418),
+    so a store screenshot is taken again in another locale without reframing it by
+    guesswork. Where the script writes its picture is the script's: one that writes
+    per locale lands beside it, and one that does not writes over it.
+    """
+    here = load(root).root
+    try:
+        record = provenance.read(picture, root=str(here))
+    except PolyweaveError as missing:
+        raise PolyweaveError(
+            "capture.unrecorded",
+            f"{picture} has no record to take it again from",
+            "take it with capture.run, which records the call beside the picture",
+            detail=missing.message,
+        ) from missing
+    call = record.get("call") or {}
+    if record.get("kind") != "capture" or not call.get("expect"):
+        raise PolyweaveError(
+            "capture.unrecorded",
+            f"{picture}'s record does not say how it was taken: a "
+            f"{record.get('kind')} record, or a capture from before §PW418",
+            "take it once more with capture.run; its record then says how",
+            given=picture,
+        )
+    params = dict(record.get("params") or {})
+    own = params.pop("args", [])
+    return taken(
+        record["script"],
+        expect=call["expect"],
+        root=root,
+        environment={**params, **(environment or {})},
+        strict=strict,
+        args=own,
+        until_visible=call.get("until_visible", ""),
+        tries=call.get("tries", 3),
+        frames=call.get("frames"),
+        timeout=call.get("timeout"),
+    )

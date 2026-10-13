@@ -2147,6 +2147,13 @@ CODES: dict[str, Code] = {
         "and no [engine] fixed_fps",
         doors=("pass fps", "capture with capture.movie, whose sequence.json says it"),
     ),
+    "capture.unrecorded": Code(
+        means="a picture capture.again was asked to take again has no record of how "
+        "it was taken",
+        when="no record beside it, a record of another kind, or a capture recorded "
+        "before its call was kept",
+        doors=("take it once with capture.run, whose record then says how",),
+    ),
     "capture.override-held": Code(
         means="a movie or an outsized picture writes an override.cfg, and the project "
         "has one",
