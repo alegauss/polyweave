@@ -348,24 +348,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW422 A score's reference, recorded
-
-Found in spinhold, RK207 (the Quilt's music). The design asked that the Quilt's cue be
-written against Cottony's calm loop (another project's docs/design/audio/music_calm.ogg)
-and that "the cue's provenance names Cottony's loop as its reference". The score
-(art/audio/quilt.music.toml) can say so only in a comment: `[music]` has no key for a
-reference, and `music.render` takes `source`, `out`, `root` and `formats`, so the record
-beside game/audio/music/quilt.wav names the score alone. A person comparing the cue to
-what it answers, or a later session, cannot find the reference from the record.
-
-Workaround: the score's header comment names the loop; nothing records it.
-
-What polyweave should do: let a score declare `reference = "<path>"` (a file under the
-project, brought in with `provenance.borrow` when it is another project's) and have
-`music.render` record it as an input with the role `reference`, as a fitted model's
-record names its mesh. `verdict.sitting` and the review page could then play the
-reference beside the cue, so a person judges the one against the other.
-
 ### §PW423 A cue's kit in its record
 
 Found in spinhold, RK207. The phase music scores play a chip kit, `[kit.chip] effects =

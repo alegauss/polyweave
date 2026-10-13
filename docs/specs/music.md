@@ -21,6 +21,7 @@ form  = ["A", "B", "A", "C"] # the sections in the order they play
 loop  = true                 # false for a stinger that plays once
 loop_from = "A"              # where the loop comes back in; the first section by default
 room  = 0.55                 # the reverb's size, 0 to 1
+reference = "refs/calm.ogg"  # the track it was written against, under the project (PW422)
 
 [section.A]
 bars = 8
@@ -158,6 +159,13 @@ there is no ffmpeg. An OGG that was asked for is refused without ffmpeg
 (`sound.no-encoder`) rather than dropped, and anything else is `music.bad-format`. The WAV
 is still what is measured, so an OGG alone leaves none behind. Each file written gets its
 record and the answer names them in `formats`.
+
+**A score names what it answers** (§PW422). `[music] reference` is the track it was
+written against, a file under the project; another project's comes in first with
+`provenance.borrow`. Every file the render writes records it as an input with the role
+`reference`, beside the score and the SoundFont, so whoever judges the cue, or a later
+session, finds what it was held against from the record. A reference with no file is
+`music.no-reference`, named before any engine is looked for.
 
 ## Layers
 

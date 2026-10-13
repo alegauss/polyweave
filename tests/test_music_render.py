@@ -120,6 +120,38 @@ def fluid_paths(credit: str = "") -> str:
     )
 
 
+def test_a_score_carries_the_track_it_was_written_against():
+    """§PW422: the Quilt's cue could name Cottony's calm loop only in a comment."""
+    from polyweave import music
+
+    score = GM.replace('form = ["A"]', 'form = ["A"]\nreference = "refs/calm.ogg"')
+    model, problems = music.compile_source(score, "cue")
+    assert problems == []
+    assert model["extensions"][music.EXTENSION]["reference"] == "refs/calm.ogg"
+
+
+def test_a_reference_that_is_not_there_is_named_before_anything_plays(tmp_path):
+    score = GM.replace('form = ["A"]', 'form = ["A"]\nreference = "refs/calm.ogg"')
+    with pytest.raises(PolyweaveError) as refused:
+        music_render.render(Reported(), project(tmp_path, score), root=str(tmp_path))
+    assert refused.value.code == "music.no-reference"
+    assert "refs/calm.ogg" in refused.value.message
+
+
+@needs_fluid
+def test_a_rendered_cue_names_its_reference_in_its_record(tmp_path):
+    from polyweave import provenance
+
+    score = GM.replace('form = ["A"]', 'form = ["A"]\nreference = "refs/calm.ogg"')
+    source = project(tmp_path, score, fluid_paths())
+    (tmp_path / "refs").mkdir()
+    (tmp_path / "refs" / "calm.ogg").write_bytes(b"OggS")
+    music_render.render(Reported(), source, root=str(tmp_path))
+    record = provenance.read(str(tmp_path / "music" / "cue.wav.prov.json"), tmp_path)
+    roles = {i["role"]: i["path"] for i in record["inputs"]}
+    assert roles["reference"] == "refs/calm.ogg"
+
+
 def test_a_label_is_matched_to_the_nearest_number_in_its_own_unit():
     labels = ["0.0 ms", "3.9 ms", "250.0 ms", "1.00 s", "2.00 s"]
     assert music_render.nearest_label(labels, 5.0) == "3.9 ms"

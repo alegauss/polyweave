@@ -910,6 +910,12 @@ CODES: dict[str, Code] = {
         when="a path to no file, or a source with a syntax error on the line named",
         doors=("name a *.music.toml under the project", "fix the syntax on that line"),
     ),
+    "music.no-reference": Code(
+        means="a score names a reference track that is not a file under the project",
+        when="[music] reference points at a path with nothing there",
+        doors=("name a file under the project",
+               "bring another project's in with provenance.borrow first"),
+    ),
     "music.invalid": Code(
         means="the score has problems, so it compiles to nothing a render may play",
         when="music.to_midi on a source music.validate would not pass",

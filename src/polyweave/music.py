@@ -63,6 +63,9 @@ _MUSIC = {
     "title": (str, REQUIRED), "bpm": (float, REQUIRED), "meter": (list, [4, 4]),
     "key": (str, ""), "form": (list, REQUIRED), "loop": (bool, True),
     "loop_from": (str, ""), "room": (float, 0.55),
+    # The track this score was written against, a file under the project (another
+    # project's comes in by provenance.borrow): its record names it (§PW422).
+    "reference": (str, ""),
 }
 #: A send left unstated is off, which no level in decibels says.
 OFF = None
@@ -657,6 +660,7 @@ def _model(problems: _Problems, music: dict, sections: dict, patterns: dict,
             "room": music["room"],
             "loop": {"startTick": head, "endTick": tick} if music["loop"] else None,
             "tracks": {t["name"]: {k: t[k] for k in _CARRIED} for t in tracks},
+            **({"reference": music["reference"]} if music["reference"] else {}),
         }},
     }
 

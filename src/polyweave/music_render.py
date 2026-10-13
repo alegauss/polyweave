@@ -368,13 +368,27 @@ def render(
     if formats is not None:
         # Wrong wherever it runs, so named before the engines are looked for (§PW282).
         _writable(list(formats))
+    ext = model["extensions"][music.EXTENSION]
+    inputs = [provenance.source("score", where, here)]
+    if ext.get("reference"):
+        # The track it answers, so whoever judges the cue can find it (§PW422); a
+        # missing one is named before any engine is looked for.
+        heard = config.path("paths.work", ext["reference"])
+        if not heard.is_file():
+            raise PolyweaveError(
+                "music.no-reference",
+                f"{source} names {ext['reference']} as its reference, and there is "
+                f"no file there",
+                "name a file under the project; bring another project's in with "
+                "provenance.borrow first",
+                given=ext["reference"],
+            )
+        inputs.append(provenance.source("reference", heard, here))
     report.stage("building", note="finding the engines this score plays through")
     found = engines(here, model)
-    ext = model["extensions"][music.EXTENSION]
     # Settled before anything plays: a library nobody declared a licence for is refused
     # here rather than shipped with a credit missing (§PW191).
     instruments = _instruments(config, ext["tracks"], found)
-    inputs = [provenance.source("score", where, here)]
     if found.get("soundfont"):
         inputs.append(provenance.source("soundfont", found["soundfont"], here))
     per_tick = _seconds_per_tick(model)
