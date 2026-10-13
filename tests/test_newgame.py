@@ -27,7 +27,11 @@ def test_a_folder_that_holds_files_is_refused_for_project_init(tmp_path):
 def test_a_game_with_no_kits_is_made_and_adopted(tmp_path):
     made = newgame.new(str(tmp_path / "bare"), name="Bare", kits=[], git=False)
     here = tmp_path / "bare"
-    assert made["check"]["clean"] is True, made["check"]
+    # A machine with no Godot (CI's) says so, which is the machine's and not the game's.
+    machine = set() if os.environ.get("GODOT") else {"engine.not-found"}
+    wrong = [one for one in made["check"]["findings"]
+             if one["severity"] == "error" and one["code"] not in machine]
+    assert wrong == [], made["check"]
     assert 'config/name="Bare"' in (here / "project.godot").read_text(encoding="utf-8")
     assert "fallback_to_opengl3=true" in (here / "project.godot").read_text(
         encoding="utf-8")
