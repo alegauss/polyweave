@@ -348,28 +348,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW421 A built ribbon frees whole
-
-Found in spinhold, RK195 (a check suite that leaks nothing). The path ribbon scene
-`vfx.build` writes (`kind = "path_ribbon"`, src/polyweave/vfx.py `_FOLLOWS`) carries an
-inline script whose members are initialised where they are declared:
-
-    var strip := ImmediateMesh.new()
-    var drawn := MeshInstance3D.new()
-
-and `drawn` enters the tree only in `_ready`, by `add_child(drawn)`. A ribbon instanced
-and freed without ever entering the tree (a check reading its nodes, a preview, a pool
-that builds ahead) never runs `_ready`, so `drawn` is never its child and outlives it:
-an orphan MeshInstance3D and a leaked render instance per ribbon. spinhold's
-check_trails built its seven trails that way and left seven of them at exit.
-
-Workaround: spinhold's check adds each built effect to the tree before freeing it.
-
-What polyweave should do: make `drawn` (and `strip`) in `_ready`, or free `drawn` in
-`_notification(NOTIFICATION_PREDELETE)` when it has no parent, so a built effect frees
-whole however it is used. A test can instance a built path ribbon, free it, and count
-orphan nodes.
-
 ### §PW422 A score's reference, recorded
 
 Found in spinhold, RK207 (the Quilt's music). The design asked that the Quilt's cue be

@@ -104,7 +104,10 @@ refused at build, since that ceiling would cut the ribbon short. It draws them i
 triangle strip `size` wide across `facing`, each point's colour and width read off
 `colour_over_life` and `size_over_life` at its age. So it narrows and fades behind the
 emitter and stays where the emitter was, and the game still holds no code of its own.
-Its `reach` is its half-width, since it travels nowhere by itself.
+Its `reach` is its half-width, since it travels nowhere by itself. Its mesh node is made
+in `_ready`, where it becomes the ribbon's child, so a ribbon freed before it ever
+entered the tree (a check reading its nodes, a pool built ahead) leaves nothing behind;
+made where it was declared, seven freed ribbons left seven orphan nodes (§PW421).
 
 A `sheet` is a wall or beam of light, a bomb's wall or a shield (§PW417): one
 `MeshInstance3D` quad `size` wide and `height` high, standing in its local X and Y with

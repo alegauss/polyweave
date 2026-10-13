@@ -564,13 +564,16 @@ _FOLLOWS = """extends Node3D
 var points: Array = []
 var since := 0.0
 var strip := ImmediateMesh.new()
-var drawn := MeshInstance3D.new()
+# Made in _ready, where it becomes a child: made where it is declared, a ribbon freed
+# before it entered the tree left it behind, an orphan and a render instance (PW421).
+var drawn: MeshInstance3D
 var offset := Vector3.ZERO
 
 func _ready() -> void:
 \toffset = position
 \ttop_level = true
 \tglobal_transform = Transform3D.IDENTITY
+\tdrawn = MeshInstance3D.new()
 \tdrawn.mesh = strip
 \tdrawn.material_override = look
 \tdrawn.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF

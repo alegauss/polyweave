@@ -171,6 +171,7 @@
 - ✅ **PW442** **a search whose best rig sits on its axes' bounds reports never passing, not that the range may cut the answer off** — A search names each axis its best sits on the edge of, and a failing one says to widen it before reading never as unreachable (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW440** **a render's material replaces the mesh's own, so a roughness cannot be laid over a textured mesh without losing it** — A material given with over = true is set on the mesh's own shaders, its texture kept, so Cottony's mushroom bakes glazed with no copy (design recorded in `docs/specs/adoption.md`).
 - ✅ **PW420** **render.bake draws a voxel build's glb shattered, cubes scattered with holes, unlike the build's own preview** — A voxel build renders whole at every rung: a preview keeps a light mesh whole and merges coplanar faces before anything collapses (design recorded in `docs/specs/rungs.md`).
+- ✅ **PW421** **a built path ribbon freed before it entered the tree leaves its mesh node behind, an orphan and a leaked render instance** — A built path ribbon makes its mesh node in _ready, so one freed before it entered the tree leaves no orphan behind (design recorded in `docs/specs/vfx.md`).
 
 ## Block I — Voxel models from a declaration
 

@@ -740,6 +740,33 @@ def test_a_path_ribbon_draws_a_strip_along_where_its_parent_went(tmp_path):
     assert 0.3 < wide <= 0.6
 
 
+FREED = """extends SceneTree
+
+func _initialize() -> void:
+\tvar before := Performance.get_monitor(Performance.OBJECT_ORPHAN_NODE_COUNT)
+\tfor i in 7:
+\t\tvar wake: Node3D = load("res://vfx/wake.tscn").instantiate()
+\t\twake.free()
+\tvar after := Performance.get_monitor(Performance.OBJECT_ORPHAN_NODE_COUNT)
+\tprint("vfx: orphans=%d" % int(after - before))
+\tquit()
+"""
+
+
+def test_a_path_ribbon_freed_outside_the_tree_leaves_nothing_behind(tmp_path):
+    """§PW421: spinhold's check built seven trails and left seven mesh nodes at exit."""
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    vfx.build(effects(tmp_path, WAKE), root=str(tmp_path))
+    (tmp_path / "project.godot").write_text(
+        'config_version=5\n\n[application]\nconfig/name="vfx"\n', encoding="utf-8")
+    (tmp_path / "freed.gd").write_text(FREED, encoding="utf-8")
+    ran = engine.run("freed.gd", expect=r"^vfx: orphans", root=tmp_path, headless=True)
+    assert ran["ok"] is True, ran
+    said = Path(ran["log"]).read_text("utf-8")
+    assert re.search(r"vfx: orphans=0\b", said), said
+
+
 WHOLE = """extends SceneTree
 
 var engine := Node3D.new()
