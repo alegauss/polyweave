@@ -286,18 +286,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW412 A line's language sent with it
-
-Where: spinhold RK218, `voice.lines --speaker pilot` over the string table's `en` and
-`pt_BR` columns. Twelve of the thirteen Portuguese takes failed `sound.speech`'s `said`
-("pulso" heard as "pozo", "limpando o anel" as "limbund"): the request carried the text
-and the voice but no language, so the model guessed, and guessed English.
-
-The column already says the line's language. `voice.lines` now sends `language_code`
-(`pt_BR` as `pt`) to the models that can be held to one (`eleven_v3`, the v2.5 turbo and
-flash) and never to the others, which answer the field with an error.
-`tests/test_voice_lines.py` holds both halves.
-
 ### §PW413 A voice of its own for each locale
 
 Where: spinhold RK218. The pilot's voice was designed from an English sample, and even
