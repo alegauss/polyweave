@@ -79,13 +79,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW416",
-    block: "H",
-    symptom: "voice.lines lays its sitting out at the project root with no out, where the engine imports its sheets",
-    why: "Spinhold's pilot lines sitting landed in voices/ beside game/, Godot imported it, and moving it by hand orphaned 23 answers.",
-    deps: [],
-  },
-  {
     id: "PW420",
     block: "H",
     symptom: "render.bake draws a voxel build's glb shattered, cubes scattered with holes, unlike the build's own preview",
@@ -153,6 +146,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "a take made on a free ElevenLabs plan is recorded like any other, so a game can ship one commercially unwarned",
     why: "PW410 named the 403 a free plan answers; the free tier's non-commercial licence is still in no record and no credits.",
+    deps: [],
+  },
+  {
+    id: "PW436",
+    block: "H",
+    symptom: "a sitting laid out in the wrong folder cannot be moved, and a hand move leaves its answers on the old path",
+    why: "Spinhold moved its pilot lines sitting by hand, missed answers.jsonl, and 23 answers pointed at a sitting that was gone.",
     deps: [],
   },
   {

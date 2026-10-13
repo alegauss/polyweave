@@ -286,25 +286,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW416 Where voice.lines lays its sitting
-
-Where: spinhold RK218, `voice.lines --speaker pilot --spend true`.
-
-The takes' sitting landed at `<project>/voices/lines/`, a folder at the project's root
-beside `game/` and `art/`, where Godot imported its PNG sheets as game assets. The
-project keeps sittings under `art/review/` (which carries a `.gdignore`), and
-`voice.design` takes `out` for that; `voice.lines` has no `out`, and its default
-resolves against the root rather than the work area.
-
-The workaround: the folder was moved to `art/review/pilot_lines/` by hand and the paths
-rewritten in its `sitting.json`, `.polyweave/sittings.json` and
-`.polyweave/answers.jsonl`; missing the last left 23 answers pointing at a sitting that
-no longer existed, and the index showed it unanswered.
-
-What polyweave should do: give `voice.lines` an `out`, default it to a project setting
-for sittings (or the work area, never the root), and offer a way to move a sitting that
-carries its answers with it.
-
 ### §PW420 A voxel build renders whole
 
 Found in spinhold, RK192 (the Hod, a new voxel enemy). Its declaration
@@ -522,6 +503,28 @@ a gate. A reading that fails records no tier, never a guess, as `_used` does.
 
 The proof: a take bought on a stubbed free subscription carries `tier = "free"`, and
 credits over a project shipping it says so; a paid tier says nothing.
+
+### §PW436 A sitting moved with its answers
+
+Where: spinhold RK218, met while fixing PW416 (now in `docs/specs/world.md`). The
+pilot's lines sitting landed at the project root; it was moved to
+`art/review/pilot_lines/` by hand, and its paths rewritten in `sitting.json` and
+`.polyweave/sittings.json`. `.polyweave/answers.jsonl` was missed, so 23 answers named a
+sitting that no longer existed and the index showed it unanswered. PW416 stops new
+sittings landing at the root; one already laid out somewhere wrong still has no way to
+move.
+
+Build `verdict.move(sitting, to)`: move the folder under the project, rewrite the paths
+inside its `sitting.json` and its row in `sittings.json`, and refuse a target that
+exists or lies outside the project. `answers.jsonl` stays append-only, since the
+acceptance spec keeps it unedited so two sessions never race on it: the move appends one
+`moved` event, old manifest to new, and `verdict.answers`, the page's state and the
+index read an answer for the old manifest as one for the new. A member's verdict already
+kept in a sound's record needs nothing, since the record names the sound and not the
+sitting.
+
+Test: lay out a sitting, answer two families, move it, and see the index count both as
+answered at the new path, with `verdict.answers` carrying them into a run.
 
 ## Block I — Voxel models from a declaration
 

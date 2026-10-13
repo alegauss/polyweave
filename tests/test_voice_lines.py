@@ -81,6 +81,19 @@ def test_spent_lines_land_once_and_a_changed_row_is_offered_again(tmp_path, proj
     assert sound_buy.lines(locale="en", root=str(tmp_path))["voice"][0]["key"] == "HOLD"
 
 
+def test_the_takes_sitting_is_laid_in_the_work_area_or_out_never_the_root(
+    tmp_path, project
+):
+    """§PW416: it landed in voices/ beside game/, and Godot imported its sheets."""
+    done = sound_buy.lines(locale="en", spend=True, root=str(tmp_path))
+    assert done["sitting"].startswith(".polyweave/voices/lines/")
+    assert not (tmp_path / "voices").exists()
+    (tmp_path / "audio" / "voice" / "en" / "HOLD.mp3").unlink()
+    done = sound_buy.lines(locale="en", spend=True, out="art/review/lines",
+                           root=str(tmp_path))
+    assert done["sitting"].startswith("art/review/lines/")
+
+
 def test_a_model_that_can_be_held_to_a_language_is_told_the_column(tmp_path, project):
     """Left to guess, an English-designed voice read Portuguese with an English mouth
     (§PW412): a model that takes `language_code` is told the column's, one that refuses

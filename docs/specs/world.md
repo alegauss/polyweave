@@ -116,8 +116,9 @@ not.
 **A voice is designed from words and chosen by ear.** `voice.design(entity)` sends the
 voice's `description`, speaking its `sample` (or the call's), to the service's voice
 design (`/v1/text-to-voice/design`), priced by its `prices` row and allowed against the
-ceiling like any purchase. Each preview lands as an MP3 under `voices/<id>/` (or `out`)
-with its record: its share of the price, the preview's service id and the entity. A
+ceiling like any purchase. Each preview lands as an MP3 under `voices/<id>/` in the
+`[paths] work` area, or in `out` under the project, never at the project's root where
+an engine would import the sheets (§PW416), with its record: its share of the price, the preview's service id and the entity. A
 sound sitting lays them out, and a person accepts one on the review page.
 
 `voice.choose(preview)` keeps that one: refused with `world.voice-unchosen` unless the
@@ -142,7 +143,8 @@ selection is spoken in each speaker's voice and delivery until the ceiling stops
 model that can be held to a language (`eleven_v3`, the v2.5 turbo and flash) told the
 column's as `language_code` (§PW412);
 the rest is `not_voiced`, with `stopped_by` saying why. A sound sitting lays the new
-takes out ordered by speaker, so a person hears a character's lines together.
+takes out ordered by speaker, so a person hears a character's lines together, in `out`
+or else `voices/lines/` in the work area.
 
 Each take's record names its row (`details.line`: the key, the locale, the table and the
 SHA-256 of the words spoken) and has the table as an input with the role `words`. So

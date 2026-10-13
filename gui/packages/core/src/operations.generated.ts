@@ -2234,6 +2234,8 @@ export interface VoiceLinesArgs {
   keys?: unknown[]
   /** send them; false answers the plan alone; default false */
   spend?: boolean
+  /** the folder the takes' sitting goes in */
+  out?: string
   /** the service's model, priced in [service]; default "eleven_multilingual_v2" */
   model?: string
   /** the *.world.toml, where the project has several */

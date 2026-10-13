@@ -164,6 +164,7 @@
 - ✅ **PW413** **an entity has one voice for every language, so a voice designed in English reads Portuguese with an accent** — An entity may have a voice per locale, designed, chosen and spoken in that column alone, and each take records its locale, so digests are per tongue (design recorded in `docs/specs/world.md`).
 - ✅ **PW414** **sound.speech fails takes that say the line, a JSON-only keys list and an unpriced quote hide what a set costs** — A take is transcribed in its column's language, accents folded and interjections said however spelled; --keys A B parses; unvoiced rows priced (design recorded in `docs/specs/effects.md`).
 - ✅ **PW415** **the review page stacks every card of every sitting on one page, so a person cannot find what waits on them** — The review page opens on an index of sittings, newest first, each counting what waits, and a row opens that sitting alone at its own link (design recorded in `docs/specs/acceptance-spec.md`).
+- ✅ **PW416** **voice.lines lays its sitting out at the project root with no out, where the engine imports its sheets** — voice.lines takes an out, and it and voice.design lay a sitting in the work area by default, never at the root where an engine imports its sheets (design recorded in `docs/specs/world.md`).
 
 ## Block I — Voxel models from a declaration
 

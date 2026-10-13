@@ -408,7 +408,7 @@ def design(
     config = load(root)
     here = config.root
     named = f"{entity}_{locale}" if locale else entity
-    folder = config.path("paths.work", out or f"voices/{named}")
+    folder = _laid(config, out, named)
     name = config.service(service, model=model)
     about = config.services()[name]
     base, key = picture._reached(name, about)
@@ -561,6 +561,7 @@ def lines(
     ),
     keys: Annotated[list, Param("only these keys of the table")] = None,
     spend: Annotated[bool, Param("send them; false answers the plan alone")] = False,
+    out: Annotated[str, Param("the folder the takes' sitting goes in")] = None,
     model: Annotated[str, Param("the service's model, priced in [service]")] = (
         "eleven_multilingual_v2"
     ),
@@ -623,16 +624,16 @@ def lines(
                 unvoiced.append({**at, "code": "world.no-voice",
                                  "characters": len(text), "price": price})
                 continue
-            out = config.get("words.voiced").format(
+            land = config.get("words.voiced").format(
                 locale=one, key=re.sub(r"[^\w.-]+", "_", row["key"])
             )
             line = {"key": row["key"], "locale": one, "sha256": words.said_digest(text)}
-            if _still(here / out, line, voice_digest(entities[who], one), model, here):
-                current.append({**at, "out": out})
+            if _still(here / land, line, voice_digest(entities[who], one), model, here):
+                current.append({**at, "out": land})
                 continue
-            plan.append({**at, "out": out, "text": text, "characters": len(text),
+            plan.append({**at, "out": land, "text": text, "characters": len(text),
                          "price": price, "line": line,
-                         **({"draft": True} if _draft(here / out, here) else {})})
+                         **({"draft": True} if _draft(here / land, here) else {})})
     total = round(sum(one["price"] for one in plan), 6)
     left = purchase.remaining(str(here), service=name)
     answer = {
@@ -695,7 +696,7 @@ def lines(
              "new": one["out"], "line": one["text"]}
             for one in sorted(voiced, key=lambda one: one["speaker"])
         ]
-        folder = config.path("paths.work", "voices/lines")
+        folder = _laid(config, out, "lines")
         answer["sitting"] = sound.sitting(
             heard, out=provenance.relative(folder, here), root=str(here)
         )["sitting"]
@@ -706,6 +707,15 @@ def lines(
         "not_voiced": stopped,
     })
     return answer
+
+
+def _laid(config, out: str | None, named: str) -> Path:
+    """The folder a voice sitting goes in: `out` under the project, or `voices/<named>`
+    in the work area. Never the project's root, where an engine imports the sheets as
+    the game's own assets (§PW416)."""
+    if out:
+        return config.path("paths.work", out)
+    return config.path("paths.work") / "voices" / named
 
 
 def _draft(where: Path, here: Path) -> bool:
