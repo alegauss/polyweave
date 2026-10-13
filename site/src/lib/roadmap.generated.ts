@@ -38,7 +38,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "K", title: "Reached without reading the source", open: 1 },
   { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
-  { block: "N", title: "Pictures held to a canon", open: 0 },
+  { block: "N", title: "Pictures held to a canon", open: 1 },
   { block: "O", title: "A person sees and answers", open: 0 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
   { block: "Q", title: "Words held to the world", open: 0 },
@@ -160,6 +160,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "K",
     symptom: "an MCP caller has no describe, so what a vfx declaration may hold is read only on the command line",
     why: "describe vfx.build answers the declaration's keys, and the MCP tools list carries only the summary and the parameters.",
+    deps: [],
+  },
+  {
+    id: "PW437",
+    block: "N",
+    symptom: "a 3.0 picture is sent to an async generate route Ideogram lists for 4.0 only, so a 3.0 call may fail unexplained",
+    why: "3.0 is the only model that takes a style reference, so PW180 can only be built on it, and its route was never checked.",
     deps: [],
   },
   {

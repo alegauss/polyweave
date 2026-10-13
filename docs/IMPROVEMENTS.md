@@ -577,7 +577,31 @@ picture's record, so a regeneration sends the same pictures. Until a model takes
 family with references should refuse a structured call rather than drop them.
 
 Check first whether 4.0 has gained a reference field, and learn it by the schema probe,
-since a reference the service ignores is dropped without an error.
+since a reference the service ignores is dropped without an error. Checked 2026-10-13
+against developer.ideogram.ai: 4.0 generate, async and remix still take no reference;
+3.0 generate and remix take `style_reference_images` and one character reference, with a
+text prompt only (§PW437 is 3.0's route).
+
+### §PW437 Each model's own route
+
+Found while checking whether PW180 could resume (2026-10-13). `picture.buy` builds
+`{base}/v1/{path}/async/generate` for every model (picture.py, the route PW178 added),
+so a `model="3.0"` call goes to `/v1/ideogram-v3/async/generate`. Ideogram's v1 index
+(developer.ideogram.ai/v1/llms.txt) lists an asynchronous route for 4.0 only; 3.0 has
+`POST /v1/ideogram-v3/generate`, which answers the picture in its body. Not confirmed
+against the live service: no paid 3.0 call was made to check it.
+
+If the route is missing, every 3.0 picture fails at the transport and nothing names the
+cause. That matters beyond 3.0 itself, since 3.0 is the only model that takes
+`style_reference_images`, so PW180 can only ever be built on it.
+
+Build: the route belongs to the model, beside its prompt field in `MODELS`, so each
+entry says whether it is asynchronous (4.0) or answers in the body (3.0). The poll runs
+only for the asynchronous one, and the purchase's task id for 3.0 falls back to the
+answer's own id or the bytes' digest, as `sound.speak` already does. Before changing it,
+make one cheap 3.0 call under a small ceiling, or read the service's 404, so the fix is
+for what the service does rather than what its index says. A test replaces the transport
+and checks each model's route.
 
 ## Block O — A person sees and answers
 

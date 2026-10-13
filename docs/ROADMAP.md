@@ -46,6 +46,8 @@
 
 ## Block N — Pictures held to a canon
 
+- 📋 **PW437** (deps: —) **a 3.0 picture is sent to an async generate route Ideogram lists for 4.0 only, so a 3.0 call may fail unexplained** — 3.0 is the only model that takes a style reference, so PW180 can only be built on it, and its route was never checked. → §PW437
+
 ## Block O — A person sees and answers
 
 ## Block P — Music and sound a game can ship
