@@ -286,21 +286,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW413 A voice of its own for each locale
-
-Where: spinhold RK218. The pilot's voice was designed from an English sample, and even
-held to Portuguese by `language_code` it read Portuguese with an English accent; the
-owner heard it at once. An entity had one voice for every column, so a language could
-not have a voice born in it.
-
-Built: `[entity.<id>.voice.<locale>]`, the voice's own keys for one locale, laid over
-the shared voice for that column alone (`world.voice_in`). `voice.design --locale`
-designs from that table and records the locale; `voice.choose` keeps the chosen id in
-it; `voice.lines` speaks each column in its locale's voice; a take records the locale,
-so the digest is per language and a new Portuguese voice leaves the English takes
-current. `world.validate` reads a locale table as a voice. Tests in test_voice_design.py
-and test_voice_lines.py; world.md documents the table.
-
 ### §PW414 Speech checks and quotes that mislead
 
 Where: spinhold RK218, the pilot's Portuguese and English takes from `voice.lines`.

@@ -161,6 +161,7 @@
 - ✅ **PW419** **words.check reads only the string table, so a store page or site copy is never held to the world's names** — words.check holds the Markdown, HTML or text files [words] copy names, each in its locale, to the world's names, a finding per file and line (design recorded in `docs/specs/project-config.md`).
 - ✅ **PW411** **accepting a voice preview on the review page fails with Failed to fetch, so no voice can ever be chosen** — A voice preview is accepted on the page, and a page route that raises answers a 500 with op.crashed and where, never a dropped link (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW412** **voice.lines sends no language with a line, so Portuguese takes are read in English** — voice.lines sends each line's column language as language_code to the models that hold to one, so a Portuguese take is read in Portuguese (design recorded in `src/polyweave/sound_buy.py`).
+- ✅ **PW413** **an entity has one voice for every language, so a voice designed in English reads Portuguese with an accent** — An entity may have a voice per locale, designed, chosen and spoken in that column alone, and each take records its locale, so digests are per tongue (design recorded in `docs/specs/world.md`).
 
 ## Block I — Voxel models from a declaration
 
