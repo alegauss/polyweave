@@ -296,6 +296,10 @@ DEFAULTS: dict[str, Any] = {
         # (§PW329), so a word another language writes in capitals is not read as a
         # name there, and an English column cannot lean on it.
         "ordinary_in": {},
+        # The copy a buyer reads before the game, held to the same names (§PW419): a
+        # Markdown or HTML file under the project and the locale it is written in,
+        # `{ "art/store/page.md" = "en", "art/store/page.pt-BR.md" = "pt_BR" }`.
+        "copy": {},
         # Where a person's verdicts on lines are kept, as JSON (§PW199): the approved
         # ones are the lines canon, and only `verdict.judge` writes it.
         "canon": "",

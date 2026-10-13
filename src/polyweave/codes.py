@@ -1177,6 +1177,12 @@ CODES: dict[str, Code] = {
         when="a moved or misspelled [words] table, or a CSV with no header row",
         doors=("write the CSV there", "correct [words] table"),
     ),
+    "words.unreadable-copy": Code(
+        means="a file [words] copy names cannot be read as copy",
+        when="no file at the path, a suffix other than .md, .markdown, .html, .htm or "
+        ".txt, or no locale named for it",
+        doors=("correct the path or its locale in [words] copy",),
+    ),
     "words.unknown-name": Code(
         means="a line names something with a capitalised word the world shows as no "
         "name",

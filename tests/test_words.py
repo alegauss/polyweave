@@ -74,6 +74,78 @@ def test_an_old_name_on_screen_is_reported_with_its_key_and_locale(tmp_path):
     assert _found(tmp_path) == [("words.unknown-name", "HUD", "en", "names")]
 
 
+PAGE = """\
+# The Lattice holds
+
+Join Captain Ada and the keepers of the Lattice.
+
+<!-- a draft line, kept out:
+the Syndicate returns -->
+| Mode | Who |
+|---|---|
+| Campaign | Captain Adah leads |
+
+```
+Syndicate in a code sample is not copy
+```
+
+Read more at [our site](https://example.com/Syndicate) or `Syndicate.exe`.
+"""
+
+SITE = """<html><head><style>.Syndicate {}</style></head>
+<body><h1>The <b>Lattice</b> waits</h1>
+<p>A ring for <em>Rook Vale</em> and the Colonists.</p>
+<script>var Syndicate = 1;</script></body></html>
+"""
+
+
+def test_the_store_page_and_the_site_are_held_to_the_world(tmp_path):
+    """§PW419: Spinhold's store page could call a Holder a colonist and pass."""
+    _project(tmp_path, ["HUD,Captain Ada,Captain Ada,"])
+    with (tmp_path / "polyweave.toml").open("a", encoding="utf-8") as config:
+        config.write('copy = { "store/page.md" = "en", "site/index.html" = "en" }\n')
+    (tmp_path / "store").mkdir()
+    (tmp_path / "store" / "page.md").write_text(PAGE, encoding="utf-8")
+    (tmp_path / "site").mkdir()
+    (tmp_path / "site" / "index.html").write_text(SITE, encoding="utf-8")
+    checked = words.check(root=str(tmp_path))
+    assert checked["copy"] == {"site/index.html": "en", "store/page.md": "en"}
+    found = sorted((f["code"], f["file"], f["row"]) for f in checked["findings"])
+    assert found == [
+        ("words.code-name", "store/page.md", 3),  # the keepers, its code name
+        ("words.hidden-name", "site/index.html", 3),  # Rook Vale, kept unshown
+        ("words.unknown-name", "site/index.html", 3),  # the Colonists
+        ("words.unknown-name", "store/page.md", 9),  # Adah, in a table's cell
+    ]
+    said = " ".join(f["message"] for f in checked["findings"])
+    assert "'Colonists'" in said
+    assert "'Adah', which is no name the world shows; it is near 'ada'" in said
+    assert "Syndicate" not in said  # a comment, code, an address and a script
+
+
+def test_copy_alone_is_checked_where_there_is_no_table(tmp_path):
+    (tmp_path / "polyweave.toml").write_text(
+        '[words]\ncopy = { "page.md" = "en" }\n', encoding="utf-8")
+    (tmp_path / "game.world.toml").write_text(WORLD, encoding="utf-8")
+    (tmp_path / "page.md").write_text("Join Captain Ada.\n", encoding="utf-8")
+    checked = words.check(root=str(tmp_path))
+    assert checked["passed"] is True
+    assert checked["table"] is None
+
+
+@pytest.mark.parametrize("named", ['"page.pdf" = "en"', '"gone.md" = "en"',
+                                   '"page.md" = ""'])
+def test_copy_that_cannot_be_read_is_refused(tmp_path, named):
+    (tmp_path / "polyweave.toml").write_text(
+        f"[words]\ncopy = {{ {named} }}\n", encoding="utf-8")
+    (tmp_path / "game.world.toml").write_text(WORLD, encoding="utf-8")
+    (tmp_path / "page.md").write_text("Hi.\n", encoding="utf-8")
+    (tmp_path / "page.pdf").write_text("Hi.\n", encoding="utf-8")
+    with pytest.raises(PolyweaveError) as refused:
+        words.check(root=str(tmp_path))
+    assert refused.value.code == "words.unreadable-copy"
+
+
 PLURALS = WORLD + """
 [entity.gleaner]
 name = "Gleaner"

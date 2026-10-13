@@ -21,6 +21,12 @@ speaks the line, as an entity id of the world (§PW196).
 - a speaker the world calls silent has no line;
 - a name the world keeps unshown never appears.
 
+The copy a buyer reads before the game is held to the same names (§PW419): `[words]
+copy` maps a Markdown, HTML or text file to the locale it is written in, and each line
+of its prose, code, comments, scripts and addresses left out, is held to the names, the
+code names and the unshown names, each finding naming the file and line. A paragraph
+is not a line on a screen, so the copy is not held to `longest_line`.
+
 What it cannot see is a string still written into a scene. `words.unlisted` reports what
 it can prove instead: every literal `text` in the project's `.tscn` files that is not a
 key of the table, as a count and a list, so moving text into the table has a measure.
@@ -180,15 +186,119 @@ def table(root: str | Path = ".") -> tuple[Path, list[str], list[dict]]:
     return where, locales, rows
 
 
+#: What Markdown wraps prose in and is not prose itself: inline code, a link's or an
+#: image's address (its text kept), a bare address, a tag, and a line's own marker.
+_MD_CODE = re.compile(r"`[^`]*`")
+_MD_LINK = re.compile(r"!?\[([^\]]*)\]\([^)]*\)")
+_ADDRESS = re.compile(r"\b(?:https?://|www\.)\S+", re.I)
+_TAG = re.compile(r"<[^>]+>")
+_MD_MARK = re.compile(r"^\s*(?:#{1,6}\s+|>\s*|[-*+]\s+|\d+[.)]\s+)*")
+_FENCE = re.compile(r"^\s*(?:```|~~~)")
+
+
+def _markdown(text: str) -> list[tuple[int, str]]:
+    """A Markdown file's prose, line by line: fenced code and comments left out, a
+    table's cells read as sentences of their own."""
+    # A comment goes, its line breaks kept so every line keeps its number.
+    text = re.sub(r"<!--.*?-->", lambda one: "\n" * one.group().count("\n"), text,
+                  flags=re.S)
+    lines, fenced = [], False
+    for number, line in enumerate(text.splitlines(), start=1):
+        if _FENCE.match(line):
+            fenced = not fenced
+            continue
+        if fenced:
+            continue
+        prose = _MD_LINK.sub(r"\1", _MD_CODE.sub(" ", line))
+        prose = _TAG.sub(" ", _ADDRESS.sub(" ", _MD_MARK.sub("", prose)))
+        prose = prose.replace("|", ". ")
+        if prose.strip(" .-:"):
+            lines.append((number, prose.strip()))
+    return lines
+
+
+def _html(text: str) -> list[tuple[int, str]]:
+    """An HTML file's text, line by line as the source lays it out, scripts, styles and
+    code left out: text split by inline tags on one line reads as one sentence."""
+    from html.parser import HTMLParser
+
+    by_line: dict[int, list[str]] = {}
+
+    class Reader(HTMLParser):
+        skipped = 0
+
+        def handle_starttag(self, tag, attrs):
+            if tag in ("script", "style", "code", "pre"):
+                self.skipped += 1
+
+        def handle_endtag(self, tag):
+            if tag in ("script", "style", "code", "pre") and self.skipped:
+                self.skipped -= 1
+
+        def handle_data(self, data):
+            if self.skipped:
+                return
+            first = self.getpos()[0]
+            for offset, part in enumerate(data.split("\n")):
+                by_line.setdefault(first + offset, []).append(part)
+
+    reader = Reader(convert_charrefs=True)
+    reader.feed(text)
+    reader.close()
+    joined = ((n, _ADDRESS.sub(" ", " ".join(parts)).strip())
+              for n, parts in sorted(by_line.items()))
+    return [(n, line) for n, line in joined if line]
+
+
+#: How each kind of copy is read for its prose, by suffix.
+_COPY = {".md": _markdown, ".markdown": _markdown, ".html": _html, ".htm": _html,
+         ".txt": lambda text: [(n, line.strip())
+                               for n, line in enumerate(text.splitlines(), start=1)
+                               if line.strip()]}
+
+
+def _copy_lines(root: str | Path = ".") -> list[tuple[str, str, list[tuple[int, str]]]]:
+    """The copy `[words] copy` names: each file, its locale and its prose lines."""
+    config = load(root)
+    named = config.get("words.copy") or {}
+    out = []
+    for path, locale in sorted(named.items()):
+        where = config.path("paths.work", path)
+        reader = _COPY.get(where.suffix.lower())
+        text = read_text_retrying(where) if reader else None
+        if reader is None or text is None or not isinstance(locale, str) or not locale:
+            raise PolyweaveError(
+                "words.unreadable-copy",
+                f"[words] copy names {path} in {locale!r}, and "
+                + ("it is not Markdown, HTML or text" if reader is None
+                   else "there is no file there" if text is None
+                   else "no locale is named for it"),
+                f"name a file ending in {', '.join(_COPY)} under the project, with "
+                "the locale it is written in",
+                given=path,
+            )
+        out.append((provenance.relative(where, config.root), locale,
+                    reader(text.lstrip("﻿"))))
+    return out
+
+
 @operation("words.check")
 def check(
     world: Annotated[str, _WORLD] = None,
     root: Annotated[str, _ROOT] = ".",
 ) -> dict:
-    """Hold every line of the string table, in every locale, to the world's names and
-    rules; each finding names the key, the locale and the rule."""
+    """Hold every line of the string table, and of the copy [words] copy names, in
+    every locale, to the world's names and rules; each finding names its line and rule.
+    """
     config = load(root)
-    where, locales, rows = table(root)
+    copied = _copy_lines(root)
+    try:
+        where, locales, rows = table(root)
+    except PolyweaveError as missing:
+        # A store page is checked in a project that has no table yet (§PW419).
+        if missing.code != "words.no-table" or not copied:
+            raise
+        where, locales, rows = None, [], []
     source, entities, rules = declared(world, root)
     unshown = set(rules.get("unshown") or [])
     silent = set(rules.get("silent") or [])
@@ -214,7 +324,8 @@ def check(
         own = ordinary | {str(w).casefold() for w in by_locale.get(locale, [])}
         return shown, hidden, codes, own
 
-    columns = {locale: held_to(locale) for locale in locales}
+    columns = {locale: held_to(locale)
+               for locale in {*locales, *(one[1] for one in copied)}}
     longest = rules.get("longest_line")
     speaker = config.get("words.speaker")
     findings: list[dict] = []
@@ -227,6 +338,7 @@ def check(
                 "locale": locale,
                 "rule": rule,
                 "row": row["row"],
+                **({"file": row["file"]} if row.get("file") else {}),
             }
         )
 
@@ -263,9 +375,16 @@ def check(
             text = row["cells"].get(locale) or ""
             if text.strip():
                 _held(text, row, locale, found, *columns[locale], longest)
+    # The copy is held to the names, and not to a line's length: a paragraph on a
+    # store page is not a line on a screen (§PW419).
+    for path, locale, lines in copied:
+        for number, text in lines:
+            row = {"key": f"{path}:{number}", "row": number, "file": path}
+            _held(text, row, locale, found, *columns[locale], None)
     judged = verdicts(root)
     return {
-        "table": provenance.relative(where, config.root),
+        "table": provenance.relative(where, config.root) if where else None,
+        **({"copy": {path: locale for path, locale, _ in copied}} if copied else {}),
         "world": provenance.relative(source, Path(root)),
         "locales": locales,
         "rows": len(rows),
