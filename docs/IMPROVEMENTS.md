@@ -563,24 +563,24 @@ agent learns that `shape` takes `heart` without a shell or a source read.
 PW166 declared a style as a palette and a skeleton, and a canon a person grows. Its
 design also named `references`: which canon pictures go to the service as style
 references, and one character reference per recurring character. That part did not land,
-because no model this client sends to takes a reference picture together with a
-structured prompt.
+because no model takes a reference picture together with a structured prompt.
 
-3.0 takes `style_reference_images` and `character_reference_images`, as uploaded files,
-but only with a text prompt, and a text prompt has nowhere to carry the skeleton or the
-palette. The 4.0 generate reference, read when PW166 shipped, lists no reference field.
+Checked 2026-10-13 against developer.ideogram.ai: 4.0 generate, async and remix take no
+reference; 3.0 generate and remix take `style_reference_images` and one
+`character_reference_images`, as uploaded files, with a text prompt only.
 
-**Build it where a model takes both.** Add `references` to `[style.<family>]`, naming
-canon pictures by file name. Send them as repeated file fields: `_send` currently maps
-one field to one file, so it needs a list. Record each reference's digest on the
-picture's record, so a regeneration sends the same pictures. Until a model takes both, a
-family with references should refuse a structured call rather than drop them.
+**Decided 2026-10-13 by the owner: build it on 3.0.** Add `references` to
+`[style.<family>]`, naming canon pictures by file name. A family with references
+generates on 3.0, its palette and skeleton written into the text prompt, and a 4.0 call
+for it is refused rather than sent without them. Send the pictures as repeated file
+fields: `_send` maps one field to one file, so it needs a list. Leave out `style_codes`
+beside references, since how the two combine is undocumented, and keep a request under
+the 50 MB cap. Record each reference's digest on the picture's record, so a regeneration
+sends the same pictures.
 
-Check first whether 4.0 has gained a reference field, and learn it by the schema probe,
-since a reference the service ignores is dropped without an error. Checked 2026-10-13
-against developer.ideogram.ai: 4.0 generate, async and remix still take no reference;
-3.0 generate and remix take `style_reference_images` and one character reference, with a
-text prompt only (§PW437 is 3.0's route).
+§PW437 first: 3.0's route is sent to an async path the service lists for 4.0 only. Read
+the live price before the first paid call, since nobody has confirmed whether a style
+reference costs more.
 
 ### §PW437 Each model's own route
 

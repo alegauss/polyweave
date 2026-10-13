@@ -49,6 +49,7 @@
 ## Block N — Pictures held to a canon
 
 - 📋 **PW437** (deps: —) **a 3.0 picture is sent to an async generate route Ideogram lists for 4.0 only, so a 3.0 call may fail unexplained** — 3.0 is the only model that takes a style reference, so PW180 can only be built on it, and its route was never checked. → §PW437
+- 📋 **PW180** (deps: PW166 ✅, PW437) **no canon picture is ever sent as a style reference, so a family's look reaches the service only as words** — A reference picture holds line weight and proportion no palette or style block states; the owner chose 3.0, the one model that takes one. → §PW180
 
 ## Block O — A person sees and answers
 
@@ -70,6 +71,8 @@
 ## Block T — Adopting polyweave in a project
 
 ## Block U — A window on everything a project governs
+
+- 📋 **PW311** (deps: PW307 ✅, PW308 ✅, PW309 ✅, PW310 ✅) **no revision has been asked, made and judged from the window on a real game, so its gaps are guesses** — The owner asks the window to change a picture and a sound, and judges both there. → §PW311
 
 ## Block V — Parts every game repeats, installed already proved
 

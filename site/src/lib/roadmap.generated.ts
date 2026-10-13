@@ -38,14 +38,14 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "K", title: "Reached without reading the source", open: 1 },
   { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
-  { block: "N", title: "Pictures held to a canon", open: 1 },
+  { block: "N", title: "Pictures held to a canon", open: 2 },
   { block: "O", title: "A person sees and answers", open: 0 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
   { block: "Q", title: "Words held to the world", open: 0 },
   { block: "R", title: "Levels measured before a person plays them", open: 6 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
-  { block: "U", title: "A window on everything a project governs", open: 0 },
+  { block: "U", title: "A window on everything a project governs", open: 1 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 7 },
 ];
 
@@ -184,6 +184,13 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
+    id: "PW180",
+    block: "N",
+    symptom: "no canon picture is ever sent as a style reference, so a family's look reaches the service only as words",
+    why: "A reference picture holds line weight and proportion no palette or style block states; the owner chose 3.0, the one model that takes one.",
+    deps: ["PW437"],
+  },
+  {
     id: "PW202",
     block: "R",
     symptom: "A game's own headless play of a level has no way to report what it measured",
@@ -224,6 +231,13 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "A playtest's trace of spawns, kills and hits cannot be measured or laid against the wave it played",
     why: "A declared wave says what it asks of a player; only a trace says where players struggle, and Starship's balance needs both.",
     deps: ["PW205"],
+  },
+  {
+    id: "PW311",
+    block: "U",
+    symptom: "no revision has been asked, made and judged from the window on a real game, so its gaps are guesses",
+    why: "The owner asks the window to change a picture and a sound, and judges both there.",
+    deps: [],
   },
   {
     id: "PW370",
@@ -312,4 +326,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW53", "PW78", "PW79", "PW80", "PW81", "PW82", "PW180", "PW192", "PW201", "PW311", "PW368"];
+export const generatedPaused: string[] = ["PW53", "PW78", "PW79", "PW80", "PW81", "PW82", "PW192", "PW201", "PW368"];
