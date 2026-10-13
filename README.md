@@ -64,3 +64,19 @@ blocks are built and how many lines are still open.
 Everything it counts is generated from `docs/ROADMAP.md` through roadkeep rather than typed,
 so the page cannot disagree with the file, and `npm test` fails the build if the stated
 status differs from the roadmap's. See [`site/README.md`](site/README.md).
+
+## More tools by alegauss
+
+For Claude Code:
+
+- **[Claude Code Tray](https://alegauss.github.io/claude-tray/)**: your rate-limit usage as a Windows tray icon that turns red before you run out.
+- **[roadkeep](https://alegauss.github.io/roadkeep/)**: keeps ROADMAP, CHANGELOG and IMPROVEMENTS to one format, as a CLI and a Claude Code plugin.
+- **[commitclerk](https://alegauss.github.io/commitclerk/)**: Conventional Commits messages from your staged diff, in a single-file Python CLI.
+
+For Windows developers:
+
+- **[winwright](https://alegauss.github.io/winwright/)**: drives a Windows desktop app from a test and reports what was actually observed.
+- **[FreeWilly](https://alegauss.github.io/freewilly/)**: Docker on Windows without Docker Desktop, with no admin prompt and no telemetry.
+- **[Quickshell](https://alegauss.github.io/quickshell/)**: an SSH client for Windows with sessions, keys, SFTP and tunnels, and without the rest of the suite.
+
+All of them: [alegauss.github.io](https://alegauss.github.io/)
