@@ -968,6 +968,73 @@ figcaption code {
 .matrix td.state-no {
   color: var(--muted-2);
 }
+.matrix.compare td:first-child {
+  color: var(--text);
+  font-weight: 600;
+  min-width: 170px;
+}
+.matrix.compare tr.ours td {
+  background: var(--panel-2);
+  color: var(--text);
+  border-top: 2px solid var(--accent);
+}
+.matrix.compare tr.ours td:first-child {
+  color: var(--accent-strong);
+}
+.matrix.compare .ours-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.matrix.compare tr.ours img {
+  width: 18px;
+  height: 18px;
+}
+#different .table-wrap {
+  margin-bottom: 28px;
+}
+/* On a phone the third column is the one that matters and the first to be cut off, so
+   each row becomes a card with its column names written in. */
+@media (max-width: 640px) {
+  .matrix.compare thead {
+    display: none;
+  }
+  .matrix.compare,
+  .matrix.compare tbody,
+  .matrix.compare tr,
+  .matrix.compare td {
+    display: block;
+    width: 100%;
+  }
+  .matrix.compare tr {
+    border-bottom: 1px solid var(--line);
+    padding: 6px 0;
+  }
+  .matrix.compare tr:last-child {
+    border-bottom: none;
+  }
+  .matrix.compare td {
+    border-bottom: none;
+    padding: 6px 16px;
+  }
+  .matrix.compare tr.ours td {
+    border-top: none;
+  }
+  .matrix.compare tr.ours {
+    background: var(--panel-2);
+    border-top: 2px solid var(--accent);
+  }
+  .matrix.compare td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    color: var(--muted-2);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+}
 .table-note {
   margin-top: 14px;
   color: var(--muted-2);

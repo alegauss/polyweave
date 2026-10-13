@@ -37,11 +37,11 @@ export type IconName =
 export const meta = {
   title: "polyweave — a Claude Code plugin that makes your game's parts",
   description:
-    "polyweave gives Claude Code the hands to drive Blender, Godot and AI generators, the eyes and ears to check every result against the bar you set, and a review page where you approve what ships: 3D models, pictures, sound, music, voices, words, levels and game kits.",
+    "AI generators guess and leave the checking to you. With polyweave, each part of your game starts as a short file saying what correct means; Claude Code drives Blender, Godot and AI generators to make it, measures every result against that file, tunes until it passes, and only then asks you to approve it. 3D models, pictures, sound, music, voices, words, levels and game kits.",
   og: {
     title: "polyweave",
     description:
-      "Claude Code can write your game. Now it can make the rest of it — and you approve every part.",
+      "Claude Code can write your game. Now it can make the rest of it, held to a bar you set, and you approve every part.",
     url: "https://alegauss.github.io/polyweave/",
   },
 } as const;
@@ -56,7 +56,7 @@ export const roadkeepUrl = "https://github.com/alegauss/roadkeep";
 // Section anchors (#x) act on the landing page; the page links are base-absolute so they
 // resolve the same from every route. There is no "Claude Code" item: the whole page is.
 export const navLinks = [
-  { href: "/polyweave/#gains", label: "Why Claude Code" },
+  { href: "/polyweave/#different", label: "Why polyweave" },
   { href: "/polyweave/#how", label: "How it works" },
   { href: "/polyweave/#makes", label: "What it makes" },
   { href: "/polyweave/#review", label: "Review" },
@@ -110,11 +110,11 @@ export const sponsor = {
 export const hero = {
   badge: "A plugin for Claude Code",
   titleLead: "Claude Code can write your game.",
-  titleAccent: "Now it can make the rest of it.",
+  titleAccent: "Now it can make the rest of it, to your bar.",
   sub: [
-    "polyweave sits ",
-    { b: "between Claude Code and the tools that make game content" },
-    ". It drives Blender, Godot and AI generators, checks every result against the bar you set, and puts the best candidates on one page where ",
+    "A generator makes a guess and leaves the checking to you. With polyweave, every part starts as ",
+    { b: "a short file saying what correct means" },
+    ". Claude Code drives Blender, Godot and AI generators to make it, measures each result against that file and tunes until it passes. Only then do the best candidates reach the page where ",
     { b: "you approve what ships" },
     ".",
   ] as Rich,
@@ -127,7 +127,73 @@ export const hero = {
     tools: ["Blender", "Godot", "Meshy", "FLUX", "Ideogram", "ElevenLabs", "sfxr"],
     review: { title: "Your review page", line: "approve · reject · ask for a change" },
   },
-  meta: ["Runs on your machine", "Works with the models you pick", "Spends only what you allow"],
+  meta: ["Checked before you see it", "Runs on your machine", "Spends only what you allow"],
+};
+
+/* ------------------------------------------------------------------ where it sits */
+
+// The market, by kind of tool rather than by brand: a named rival is a claim about someone
+// else's product that goes stale the day they ship. Each row says what that kind gives and
+// what it leaves to you; polyweave's row is the same two columns, so it is judged the same way.
+export const different = {
+  eyebrow: "Why polyweave",
+  heading: "Other tools make a guess. polyweave makes it pass.",
+  intro: [
+    "There is no shortage of tools that make game content. What they share is the step they leave to you: deciding whether the result is right. polyweave ",
+    { b: "drives them rather than replacing them" },
+    ", and takes that step off your plate up to the point where only taste can answer.",
+  ] as Rich,
+  columns: ["Kind of tool", "What it gives you", "What it leaves to you"],
+  rows: [
+    {
+      kind: "AI generators for 3D, pictures, sound and voice",
+      gives: "A part from a prompt, in seconds.",
+      leaves: "Checking it against your drawing and your style, and the cleanup when it misses.",
+    },
+    {
+      kind: "Blender and Godot bridges for agents",
+      gives: "An agent that can work the tool.",
+      leaves: "Knowing when to stop. Nothing says what correct is, so the agent guesses or asks you.",
+    },
+    {
+      kind: "Prompt-to-game builders",
+      gives: "A playable prototype from a sentence.",
+      leaves: "Holding each part to a bar of your own, in your own engine and repository.",
+    },
+    {
+      kind: "Procedural suites with parameter sweeps",
+      gives: "Many variants of one node graph.",
+      leaves: "A person at a screen to run them, and every layer that is not geometry.",
+    },
+  ],
+  ours: {
+    kind: "polyweave",
+    gives: "A file per part saying what correct means, every result measured against it, a search that tunes until it passes, and one record of how each part was made.",
+    leaves: "Only the verdict no measure can give: whether it looks, sounds and plays right.",
+  },
+  pillars: [
+    {
+      icon: "target",
+      title: "Correct is written down",
+      body: [
+        "Each part has a short file of checks with bounds: silhouette, colour, loudness, difficulty. A search aims at it instead of a person eyeballing renders.",
+      ] as Rich,
+    },
+    {
+      icon: "spark",
+      title: "One loop for every layer",
+      body: [
+        "Models, pictures, sound, words and levels share one config, one record and one review page, so a game's parts are judged together, not tool by tool.",
+      ] as Rich,
+    },
+    {
+      icon: "shield",
+      title: "The agent cannot pass itself",
+      body: [
+        "Claude Code measures and tunes, but it cannot approve its own work or spend money on its own judgement. The verdict and the budget stay yours.",
+      ] as Rich,
+    },
+  ] as { icon: IconName; title: string; body: Rich }[],
 };
 
 /* ------------------------------------------------------------------ what Claude Code gains */
@@ -220,7 +286,7 @@ export const steps = {
         { i: "“a coin sound in C”" },
         ", ",
         { i: "“make level 3 a bit harder”" },
-        ".",
+        ". Claude Code writes it down as the bar: a short file saying what correct means.",
       ] as Rich,
     },
     {
@@ -330,9 +396,9 @@ export const session = {
 
 export const middle = {
   eyebrow: "The middle layer",
-  heading: "Many models. One way to use them.",
+  heading: "Many models. One bar for all of them.",
   intro: [
-    "Claude Code talks to polyweave, and polyweave talks to each tool in its own language. Pick the models you like; the rules stay the same.",
+    "Claude Code talks to polyweave, and polyweave talks to each tool in its own language. Pick the models you like; the bar each part must pass stays the same when you switch.",
   ] as Rich,
   groups: [
     { label: "3D", names: ["Blender", "Meshy"] },
