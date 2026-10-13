@@ -18,6 +18,9 @@ import pytest
 from polyweave import frame_cost
 from polyweave.errors import PolyweaveError
 
+# Measures frame times on this machine, so the gate runs it alone after the rest.
+pytestmark = pytest.mark.serial
+
 PERF = "extends SceneTree\n# the timing script, whose body is stood in for\n"
 
 

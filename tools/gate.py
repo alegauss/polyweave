@@ -24,8 +24,10 @@ The exit code is pytest's own, or 1 where pytest passed and the window did not. 
 gate piped into `grep` reports `grep`'s; this does not.
 
 Pytest runs across every core (`-n auto`) where pytest-xdist is installed and the
-arguments choose no other `-n`: the gate went from half an hour to under fifteen
-minutes on a 28-thread desk, every test in a process of its own as before.
+arguments choose no `-n` or `-m`: the gate went from half an hour to under fifteen
+minutes on a 28-thread desk. Tests marked `serial`, the ones that measure time on the
+machine, run alone after the rest, since a frame budget read beside 28 workers measures
+the load and not the code.
 """
 
 from __future__ import annotations
@@ -114,6 +116,18 @@ def counts(report: Path) -> dict:
         else:
             found["passed"] += 1
     return {**found, "skipped_for": skipped_for}
+
+
+def summed(each: list[dict]) -> dict:
+    """Several runs' counts as one, the way the gate reports them."""
+    total = {"passed": 0, "failed": 0, "skipped": 0,
+             "skipped_for": {engine: 0 for engine in ENGINES}}
+    for one in each:
+        for key in ("passed", "failed", "skipped"):
+            total[key] += one[key]
+        for engine, many in one["skipped_for"].items():
+            total["skipped_for"][engine] += many
+    return total
 
 
 def present() -> dict[str, bool]:
@@ -208,13 +222,24 @@ def summary(stamp: dict) -> str:
     )
 
 
-def parallel(argv: list[str]) -> list[str]:
-    """The arguments with `-n auto` in front, where xdist is here and none is chosen."""
-    chosen = any(one.startswith(("-n", "--numprocesses")) for one in argv)
+def runs(argv: list[str]) -> list[list[str]]:
+    """The pytest runs the gate makes: one, or two where it can run on every core.
+
+    With xdist here and no `-n` or `-m` chosen, every test not marked `serial` runs on
+    every core, then the `serial` ones alone: a test that measures frame times reads the
+    machine's load, and Godot's launch proof measured 120 ms frames against its 100 ms
+    budget with 28 workers beside it.
+    """
+    chosen = any(one.startswith(("-n", "--numprocesses", "-m")) for one in argv)
     off = "no:xdist" in argv
     if chosen or off or importlib.util.find_spec("xdist") is None:
-        return list(argv)
-    return ["-n", "auto", *argv]
+        return [list(argv)]
+    return [["-n", "auto", "-m", "not serial", *argv], ["-m", "serial", *argv]]
+
+
+#: pytest's exit code where a run collected nothing, which a serial pass over files
+#: holding no serial test is, and is not a failure.
+NOTHING_COLLECTED = 5
 
 
 def main(argv: list[str]) -> int:
@@ -225,20 +250,27 @@ def main(argv: list[str]) -> int:
         return 3
     try:
         log = HERE / "pytest.log"
-        report = HERE / "junit.xml"
-        report.unlink(missing_ok=True)
+        planned = runs(argv)
+        reports = [HERE / ("junit.xml" if i == 0 else f"junit-{i}.xml")
+                   for i in range(len(planned))]
+        for stale in HERE.glob("junit*.xml"):
+            stale.unlink(missing_ok=True)
+        codes = []
         with log.open("w", encoding="utf-8") as out:
-            done = subprocess.run(
-                [sys.executable, "-m", "pytest", f"--junitxml={report}",
-                 *parallel(argv)],
-                cwd=ROOT,
-                stdout=out,
-                stderr=subprocess.STDOUT,
-                check=False,
-            )
+            for args, report in zip(planned, reports, strict=True):
+                out.flush()
+                codes.append(subprocess.run(
+                    [sys.executable, "-m", "pytest", f"--junitxml={report}", *args],
+                    cwd=ROOT,
+                    stdout=out,
+                    stderr=subprocess.STDOUT,
+                    check=False,
+                ).returncode)
+        ran = [c for c in codes if not (c == NOTHING_COLLECTED and len(codes) > 1)]
+        tested = next((c for c in ran if c), 0) if ran else NOTHING_COLLECTED
         gui = window(HERE / "gui.log")
         proved = kits()
-        failed = (done.returncode or (gui.get("exit", 0) and 1)
+        failed = (tested or (gui.get("exit", 0) and 1)
                   or (proved["failed"] and 1))
         stamp = {
             "commit": commit(),
@@ -248,7 +280,7 @@ def main(argv: list[str]) -> int:
             "at": time.strftime("%Y-%m-%dT%H:%M:%S"),
             "log": log.relative_to(ROOT).as_posix(),
             "present": present(),
-            **counts(report),
+            **summed([counts(report) for report in reports]),
         }
         if failed:
             kept = HERE / f"pytest-red-{time.strftime('%Y%m%d-%H%M%S')}.log"

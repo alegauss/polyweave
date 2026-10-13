@@ -12,6 +12,9 @@ import pytest
 from polyweave import offscreen, perf
 from polyweave.errors import PolyweaveError
 
+# Measures frame times on this machine, so the gate runs it alone after the rest.
+pytestmark = pytest.mark.serial
+
 BUDGET = ('[perf.main]\nscene = "res://main.tscn"\nframes = 60\np95_ms = {p95}\n'
           "p99_ms = 1000\nload_ms = 5000\nmemory_mb = 4096\nnodes = 100\n")
 

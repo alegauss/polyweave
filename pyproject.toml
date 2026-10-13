@@ -33,6 +33,9 @@ packages = ["src/polyweave"]
 testpaths = ["tests"]
 pythonpath = ["src", "tests"]
 addopts = "-q"
+markers = [
+    "serial: measures time on the machine, so the gate runs it alone after the rest",
+]
 
 [tool.ruff]
 line-length = 88
