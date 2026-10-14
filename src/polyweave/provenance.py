@@ -52,6 +52,15 @@ PATHS = ("script", "reference")
 #: its `tier` (§PW435): `provenance.credits` names every file made on one.
 NON_COMMERCIAL = frozenset({"free"})
 
+
+def licensed_to_sell(engine: dict) -> bool:
+    """Whether the plan a record's engine names lets a sold game ship the file: false
+    only where the plan is known to forbid it (§PW448). A record from before plans were
+    kept still says so by its tier (§PW435)."""
+    if "commercial" in engine:
+        return bool(engine["commercial"])
+    return engine.get("tier") not in NON_COMMERCIAL
+
 _CHUNK = 1 << 20
 
 
@@ -801,9 +810,9 @@ def credits(
     for record in _records(where):
         made = record["artefact"]["path"]
         engine = record.get("engine") or {}
-        if engine.get("tier") in NON_COMMERCIAL:
+        if not licensed_to_sell(engine):
             unlicensed.append({"file": made, "service": engine.get("name", ""),
-                               "tier": engine["tier"]})
+                               "tier": engine.get("plan") or engine.get("tier", "")})
         if record.get("credit"):
             entry = owed.setdefault(record["credit"], {
                 "name": record["credit"], "licence": record.get("licence", ""),

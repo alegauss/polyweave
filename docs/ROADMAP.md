@@ -8,8 +8,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-- 🛠 **PW448** (deps: —) **no service's plan licence reaches the record, so a free-tier mesh or picture can ship in a sold game unwarned** — PW435 names the gap for ElevenLabs alone, while Tripo's free tier is non-commercial too and every new adapter adds a plan. → §PW448
-
 ## Block E — One world with the engine
 
 ## Block F — Motion

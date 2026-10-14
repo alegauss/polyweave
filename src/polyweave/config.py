@@ -80,6 +80,9 @@ DEFAULTS: dict[str, Any] = {
     "project": {
         "name": "",  # the root directory's name, filled in on load
         "root": ".",
+        # Whether the game is sold: game.release_check then refuses a part a service's
+        # plan licensed for non-commercial use only (§PW448).
+        "sells": False,
     },
     "paths": {
         "blender": "blender",  # found on PATH unless the project says where
@@ -196,6 +199,10 @@ DEFAULTS: dict[str, Any] = {
         # untouched, pixel for pixel (§PW209). Ideogram's redraw the whole picture, so
         # a variation is held to its parent pixel for pixel only where this is stated.
         "preserves": False,
+        # The plan the key belongs to, where the service does not say it (§PW448):
+        # "free" licenses for non-commercial use only, any other name commercially, and
+        # empty is unstated. Every bought file's record keeps it.
+        "plan": "",
     },
     "budget": {
         # No budget is no spend, never an unlimited one: the absence of a ceiling is

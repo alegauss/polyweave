@@ -28,7 +28,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 0 },
   { block: "B", title: "Seeing the result cheaply", open: 0 },
   { block: "C", title: "The asset compiler", open: 0 },
-  { block: "D", title: "Fetching from a paid service without surprise", open: 1 },
+  { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
@@ -50,13 +50,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW448",
-    block: "D",
-    symptom: "no service's plan licence reaches the record, so a free-tier mesh or picture can ship in a sold game unwarned",
-    why: "PW435 names the gap for ElevenLabs alone, while Tripo's free tier is non-commercial too and every new adapter adds a plan.",
-    deps: [],
-  },
   {
     id: "PW57",
     block: "H",

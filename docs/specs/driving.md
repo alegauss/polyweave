@@ -212,6 +212,7 @@ nothing and never edits a preset; each finding names where it is and what to cha
 |---|---|
 | `game.driver-exported` | a preset in `export_presets.cfg` that would ship `addons/polyweave_driver/`: `all_resources` with no `exclude_filter` covering it, or an `include_filter` pulling it in |
 | `game.driver-autoloaded` | an autoload in `project.godot` naming the driver, which would load it in every run |
+| `game.part-not-licensed` | where `[project] sells`, a file whose record says its plan licensed it for non-commercial use only (§PW448, provenance.md) |
 | `game.driver-in-pack` | an exported `.pck`, given as `pack`, holding the addon's paths |
 | `game.pack-unread` | a pack whose directory is encrypted, so it cannot be looked into — named, not passed |
 

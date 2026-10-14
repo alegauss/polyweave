@@ -8,28 +8,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-### §PW448 The licence a plan grants, for every service
-
-A generator's licence depends on the plan the key belongs to, not on the service.
-Tripo's free tier is non-commercial; ElevenLabs' free plan is too, which PW435 filed for
-that one service. With the Tripo and Rodin adapters filed beside this line, the pattern
-repeats per service, and solving it per service means each new adapter can forget it.
-
-The record already carries a licence field, and credits and the release check are
-written from it. What it does not carry is whether the plan that paid for the artefact
-grants commercial use, so a credits file can be complete and the game still not entitled
-to ship the part.
-
-This line makes the plan's licence a field every paid-service adapter must fill, read
-from the service where it says and declared in `polyweave.toml` where it does not, and
-makes the release check refuse an artefact whose plan forbids commercial use when the
-project says it sells. It subsumes PW435 for the general case; PW435 stays as the
-ElevenLabs instance and may ship first.
-
-Evidence that it landed: an artefact recorded under a non-commercial plan fails
-`game.release_check` for a commercial project, naming the artefact, the service and the
-plan.
-
 ## Block E — One world with the engine
 
 ## Block F — Motion

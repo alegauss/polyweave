@@ -359,8 +359,8 @@ Tripo takes no picture inline. The task is read at `/tasks/<id>` until `data.sta
 `success`, and `data.output.model_url` is the mesh; `failed`, `cancelled`, `banned` and
 `expired` ledger nothing and say Tripo's `error_message`. The balance read either side
 is `/account/balance`'s `data.balance`, a decimal. Tripo's free plan is for
-non-commercial use, and its API answers no plan, so a Tripo record keeps none; the tier
-`provenance.credits` warns on (see provenance.md) is recorded only where a service says it.
+non-commercial use, and its API answers no plan, so a project on it declares
+`plan = "free"` under `[service.tripo]`, which every record keeps (see provenance.md).
 
 ## A picture is put on the project's grid on arrival
 

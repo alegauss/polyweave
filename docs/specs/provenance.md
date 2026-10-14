@@ -86,6 +86,16 @@ lists every file whose record's tier is `free` under `non_commercial`, with its
 `service` and `tier`, and `says` to make them again on a paid plan before a game that
 sells ships them; with none, neither key is in the answer.
 
+**Every paid service's plan is kept the same way** (§PW448). `purchase.capture`, which
+every buy goes through, writes `plan` and `commercial` into the record's `engine`. The
+plan is the tier the adapter read off the service where it could, and otherwise the
+`plan` the project declares under that service's table. `commercial` is false for
+`free` and true for any other name, and both keys are left out where the plan is
+unstated, never guessed. `credits` reads `commercial` before the tier, so a record from
+before this still warns. Where `[project] sells` is true, `game.release_check` reports
+each file whose record says `commercial = false` as `game.part-not-licensed`, naming the
+file, the service and the plan.
+
 **What a build ships that a generator made is one read** (§PW248). Steam's content survey
 asks whether a game ships generated content, and the honest answer is the lineage of every
 shipped file. `provenance.generated` takes the paths a build ships, files or folders of

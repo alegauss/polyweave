@@ -28,6 +28,8 @@ otherwise inherit sample counts for rungs it does not have.
 [project]
 name = "cottony"
 root = "."                      # everything below is relative to this
+sells = false                   # true: game.release_check refuses a part a plan
+                                # licensed for non-commercial use only (§PW448)
 
 [paths]
 blender  = "C:/Program Files/Blender Foundation/Blender 4.2/blender.exe"
@@ -92,6 +94,8 @@ key_env = "MESHY_API_KEY"      # the NAME of the variable, never the value
 schema  = "polyweave.service.toml"
 prices  = {}                   # a quoted price per output, for a service with no balance
 preserves = false              # true only where an edit leaves the unmasked pixels alone
+plan    = ""                   # the key's plan where the service does not report it:
+                               # "free" is non-commercial, any other name commercial
 
 [budget]
 credits = 60

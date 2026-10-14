@@ -1145,10 +1145,33 @@ def release_checked(
     A listener that runs any method it is asked to is a way into a game, so its
     absence from a release is checked rather than assumed. It reads and spends nothing,
     and never edits a preset: each finding names the preset and the line to change.
+    Where `[project] sells`, a file whose record says a service's plan licensed it for
+    non-commercial use only is a finding too, naming file, service and plan (§PW448).
     """
-    here = load(root).root
+    config = load(root)
+    here = config.root
     driver = DRIVER.removeprefix("res://")
     findings: list[dict] = []
+    if config.table("project")["sells"]:
+        # A part whose plan licensed it for non-commercial use only is not the game's
+        # to sell, however complete its credits are (§PW448).
+        from . import provenance
+
+        for record in provenance._records(here):
+            engine = record.get("engine") or {}
+            if provenance.licensed_to_sell(engine):
+                continue
+            plan = engine.get("plan") or engine.get("tier", "")
+            service = engine.get("name", "")
+            findings.append({
+                "code": "game.part-not-licensed",
+                "preset": "",
+                "at": record["artefact"]["path"],
+                "why": f"{service} made it on the {plan} plan, which licenses it for "
+                "non-commercial use only, and the project sells",
+                "fix": "make it again on a paid plan, or set [project] sells = false "
+                "if the game is given away",
+            })
     presets_file = here / "export_presets.cfg"
     # A project that installed no driver has none a preset could ship: the one
     # polyweave carries runs from outside it (§PW216), so only an installed copy needs

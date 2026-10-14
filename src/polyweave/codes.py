@@ -1414,6 +1414,12 @@ CODES: dict[str, Code] = {
         "launched with --script",
         doors=("remove the autoload from project.godot",),
     ),
+    "game.part-not-licensed": Code(
+        means="a file in a sold game was made on a plan licensing it non-commercially",
+        when="game.release_check where [project] sells and a record's plan is free, "
+        "as the service said or [service] plan declared (§PW448)",
+        doors=("make it again on a paid plan", "set [project] sells = false"),
+    ),
     "game.driver-in-pack": Code(
         means="an exported pack holds the driver's files",
         when="a pack exported before the preset excluded the addon",

@@ -312,7 +312,16 @@ def capture(
     The entry names the service it was bought from, resolved before anything lands, so
     a spend is always charged to the ceiling it was allowed against.
     """
-    service = load(root).service(service)
+    project = load(root)
+    service = project.service(service)
+    # The plan that paid for it, which is what licenses it (§PW448): read off the
+    # service where the adapter could, as ElevenLabs' tier, and declared where not. Kept
+    # here rather than by each adapter, so a new one cannot forget it.
+    engine = dict(engine or {"name": "service"})
+    plan = engine.get("tier") or project.services()[service].get("plan", "")
+    if plan:
+        engine["plan"] = plan
+        engine["commercial"] = plan not in provenance.NON_COMMERCIAL
     if bought not in BOUGHT:
         raise PolyweaveError(
             "fetch.unknown-purchase",
@@ -384,7 +393,7 @@ def capture(
     record = provenance.build(
         "fetch",
         landed,
-        engine=engine or {"name": "service"},
+        engine=engine,
         inputs=(
             [provenance.source("reference", reference, root=here)]
             if reference is not None
