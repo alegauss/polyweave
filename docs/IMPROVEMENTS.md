@@ -8,27 +8,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-### §PW445 Buying a mesh from Tripo
-
-Block D generalised Cottony's Meshy client into a paid-service layer with a ceiling, a
-quote, a ledger and a silhouette gate in front of the spend. That layer is the product;
-the single service behind it is an accident of the first consumer. The landing page
-names the models a person picks, and in 3D the choice is one.
-
-Tripo is the generator reviews in 2026 name for speed, a mesh in seconds rather than
-minutes, which suits a search that may want several candidates before a person looks. It
-is an adapter, nothing more: the request, the quote, the poll and the download behind
-the same `mesh.buy` surface, the same ceiling and ledger, and the same provenance record
-naming the service, model, seed and cost.
-
-The plan matters. Tripo's free tier is non-commercial, so the adapter records the plan
-the key belongs to and the licence it grants, which the licence line filed beside this
-one then checks before a release.
-
-Evidence that it landed: `mesh.buy` with the service set to Tripo quotes, buys within
-the ceiling, ingests and records one mesh, with a test against a recorded response so CI
-spends nothing.
-
 ### §PW446 Buying a mesh from Rodin
 
 Rodin, from Hyper3D, is the generator reviews in 2026 single out for topology: quads

@@ -37,6 +37,13 @@ from .errors import PolyweaveError
 #: The two routes, and where each is asked after.
 ROUTES = {"text": "/openapi/v2/text-to-3d", "image": "/openapi/v1/image-to-3d"}
 
+#: Tripo's (§PW445), on its v3 API, whose base is `https://openapi.tripo3d.com/v3`: a
+#: picture is sent up first for a token, a task is asked after at /tasks/<id>, and the
+#: balance is the account's. A service whose base is on tripo3d is spoken to this way.
+TRIPO_ROUTES = {"text": "/generation/text-to-model",
+                "image": "/generation/image-to-model"}
+TRIPO_HOST = "tripo3d"
+
 #: How often a task is asked after, and for how long, before the call gives up on it.
 POLL_EVERY = 5.0
 POLL_TIMEOUT = 900
@@ -54,7 +61,7 @@ def buy(
         str, Param("a picture picture.gate passed, to model from instead of words")
     ] = None,
     model: Annotated[
-        str, Param("the service's model, e.g. meshy-6-lite")
+        str, Param("the service's model: meshy-6-lite, or Tripo's v2.5-20250123")
     ] = "meshy-6-lite",
     polycount: Annotated[int, Param("the triangles to aim at", lo=100)] = 8000,
     entity: Annotated[str, picture.ENTITY] = None,
@@ -100,35 +107,57 @@ def buy(
     price = picture._price(name, about.get("prices") or {}, model, None)
 
     route = "text" if prompt is not None else "image"
-    request: dict = {
-        "ai_model": model,
-        "topology": "triangle",
-        "target_polycount": int(polycount),
-        "should_remesh": True,
-    }
+    tripo = TRIPO_HOST in base
     source = None
-    if route == "text":
-        request.update(mode="preview", prompt=prompt)
-    else:
+    if route == "image":
         source = here / picture_path
         _gated(source, here)
-        encoded = base64.b64encode(picture.sent_bytes(source)).decode("ascii")
-        request.update(
-            image_url=f"data:{picture._mime(source)};base64,{encoded}",
-            should_texture=False,
-        )
+    if tripo:
+        request: dict = {"model_version": model, "texture": False,
+                         "face_limit": int(polycount)}
+        if route == "text":
+            request["prompt"] = prompt
+    else:
+        request = {
+            "ai_model": model,
+            "topology": "triangle",
+            "target_polycount": int(polycount),
+            "should_remesh": True,
+        }
+        if route == "text":
+            request.update(mode="preview", prompt=prompt)
+        else:
+            encoded = base64.b64encode(picture.sent_bytes(source)).decode("ascii")
+            request.update(
+                image_url=f"data:{picture._mime(source)};base64,{encoded}",
+                should_texture=False,
+            )
 
     purchase.allow(price, root=here, service=name)
-    before = _balance(base, key)
-    task = _json("POST", base + ROUTES[route], key, request).get("result")
+    if tripo:
+        before = _tripo_balance(base, key)
+        if source is not None:
+            # Tripo takes no picture inline: it is sent up first, once the spend is
+            # allowed, and named by the token it answers.
+            request["file"] = {"type": source.suffix.lower().lstrip(".") or "png",
+                               "file_token": _uploaded(base, key, source)}
+        made = _json("POST", base + TRIPO_ROUTES[route], key, request)
+        task = (made.get("data") or {}).get("task_id")
+    else:
+        before = _balance(base, key)
+        task = _json("POST", base + ROUTES[route], key, request).get("result")
     if not task:
         raise PolyweaveError(
             "fetch.service-error",
             "the service accepted the request and returned no task id",
             "read the service's answer; nothing was ledgered",
         )
-    finished = _polled(base + ROUTES[route], key, task, report)
-    link = (finished.get("model_urls") or {}).get("glb")
+    if tripo:
+        finished = _tripo_polled(base, key, task, report)
+        link = (finished.get("output") or {}).get("model_url")
+    else:
+        finished = _polled(base + ROUTES[route], key, task, report)
+        link = (finished.get("model_urls") or {}).get("glb")
     if not link:
         raise PolyweaveError(
             "fetch.nothing-arrived",
@@ -139,7 +168,7 @@ def buy(
     if report is not None:
         report.stage("downloading", progress=0.9, note="taking delivery of the mesh")
     body = picture._download(link)
-    after = _balance(base, key)
+    after = _tripo_balance(base, key) if tripo else _balance(base, key)
     return purchase.capture(
         body,
         out=out,
@@ -261,6 +290,86 @@ def _json(method: str, url: str, key: str, payload: dict | None = None) -> dict:
 def _balance(base: str, key: str) -> float:
     """The account's credits now; read either side of a task, it is what it cost."""
     return float(_json("GET", base + "/openapi/v1/balance", key).get("balance", 0.0))
+
+
+def _tripo_balance(base: str, key: str) -> float:
+    """Tripo's credits now, a decimal (§PW445)."""
+    said = _json("GET", base + "/account/balance", key).get("data") or {}
+    return float(said.get("balance", 0.0))
+
+
+def _uploaded(base: str, key: str, source: Path) -> str:
+    """The token Tripo names a picture by once it holds it, sent up as a form."""
+    import uuid
+
+    boundary = uuid.uuid4().hex
+    body = (
+        f'--{boundary}\r\nContent-Disposition: form-data; name="file"; '
+        f'filename="{source.name}"\r\nContent-Type: {picture._mime(source)}\r\n\r\n'
+    ).encode() + picture.sent_bytes(source) + f"\r\n--{boundary}--\r\n".encode()
+    request = urllib.request.Request(  # noqa: S310 - the base is the project's own
+        base + "/files", data=body, method="POST",
+        headers={"Authorization": f"Bearer {key}", "User-Agent": picture.AGENT,
+                 "Content-Type": f"multipart/form-data; boundary={boundary}"},
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=TIMEOUT) as answer:  # noqa: S310
+            said = json.loads(answer.read() or b"{}")
+    except urllib.error.HTTPError as refused:
+        raise PolyweaveError(
+            "fetch.service-error",
+            f"the service answered {refused.code} to the picture sent up",
+            "read the detail; nothing was spent or ledgered",
+            detail=refused.read()[:400].decode("utf-8", "replace"),
+        ) from refused
+    except urllib.error.URLError as exc:
+        raise PolyweaveError(
+            "fetch.service-error",
+            f"the service could not be reached at {base}",
+            "check the base under [service] and the network",
+            detail=str(exc.reason),
+        ) from exc
+    token = (said.get("data") or {}).get("file_token")
+    if not token:
+        raise PolyweaveError(
+            "fetch.service-error",
+            "the service took the picture and named no token for it",
+            "read the detail; nothing was spent or ledgered",
+            detail=json.dumps(said)[:400],
+        )
+    return token
+
+
+def _tripo_polled(base: str, key: str, task: str, report) -> dict:
+    """Ask after one Tripo task until it succeeds, fails or runs out of time."""
+    started = time.monotonic()
+    while True:
+        found = _json("GET", f"{base}/tasks/{task}", key).get("data") or {}
+        state = str(found.get("status", "")).lower()
+        if state == "success":
+            return found
+        if state in ("failed", "cancelled", "banned", "expired"):
+            raise PolyweaveError(
+                "fetch.service-error",
+                f"task {task} {state}: "
+                f"{found.get('error_message') or 'no reason given'}",
+                "reword the request or ask again; nothing was ledgered, and the "
+                "balance readings will show whether the service charged",
+                detail=json.dumps(found)[:400],
+            )
+        if time.monotonic() - started > POLL_TIMEOUT:
+            raise PolyweaveError(
+                "fetch.service-error",
+                f"task {task} was still {state} after {POLL_TIMEOUT}s",
+                f"ask after it later by its id, {task}; nothing was ledgered",
+            )
+        if report is not None:
+            report.stage(
+                "building",
+                progress=min(0.8, float(found.get("progress") or 0) / 100.0),
+                note=f"task {task} is {state}",
+            )
+        time.sleep(POLL_EVERY)
 
 
 def _reason(found: dict) -> str:

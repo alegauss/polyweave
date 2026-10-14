@@ -8,7 +8,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-- 📋 **PW445** (deps: —) **Meshy is the only 3D generator a mesh can be bought from, so a project that prefers Tripo writes its own client** — The site says pick the models you like, and Tripo, one of the three leading generators, is fastest to iterate on. → §PW445
 - 📋 **PW446** (deps: —) **no mesh can be bought from Rodin, so a part that needs clean topology has only Meshy's to start from** — Reviews name Rodin for the cleanest topology, which is the property the engine-ready bar filed beside this line would otherwise have to repair. → §PW446
 - 📋 **PW447** (deps: —) **a bought mesh is oriented and scaled, but nothing holds its triangles, materials or holes to a bar before a sitting** — The market's own reviews say generated meshes still need a cleanup pass before a scene, and here that pass is still found by hand. → §PW447
 - 📋 **PW448** (deps: —) **no service's plan licence reaches the record, so a free-tier mesh or picture can ship in a sold game unwarned** — PW435 names the gap for ElevenLabs alone, while Tripo's free tier is non-commercial too and every new adapter adds a plan. → §PW448

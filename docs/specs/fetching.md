@@ -329,6 +329,20 @@ silhouette settled on the picture first. A 402 from the service is `fetch.over-b
 the account itself, a 429 `fetch.rate-limited`, and a failed or cancelled task ledgers
 nothing.
 
+**Tripo is the second mesh service** (§PW445), behind the same call, ceiling, gate and
+ledger. A service whose `base` is on `tripo3d` (`https://openapi.tripo3d.com/v3`, its v3
+API; v2 is being retired) is spoken to as Tripo: `model` is its `model_version`, such as
+`v2.5-20250123` or `P1-20260311`, each with its own `prices` row; `polycount` is its
+`face_limit`; texture is off. Words go to `/generation/text-to-model`. A picture is
+gated first as for Meshy, and once the spend is allowed it is sent up to `/files` as a
+form and named in `/generation/image-to-model` by the `file_token` it answers, since
+Tripo takes no picture inline. The task is read at `/tasks/<id>` until `data.status` is
+`success`, and `data.output.model_url` is the mesh; `failed`, `cancelled`, `banned` and
+`expired` ledger nothing and say Tripo's `error_message`. The balance read either side
+is `/account/balance`'s `data.balance`, a decimal. Tripo's free plan is for
+non-commercial use, and its API answers no plan, so a Tripo record keeps none; the tier
+`provenance.credits` warns on (see provenance.md) is recorded only where a service says it.
+
 ## A picture is put on the project's grid on arrival
 
 A picture service returns an image at a size, margin and position it chose, and an icon or

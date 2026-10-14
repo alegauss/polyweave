@@ -28,7 +28,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 0 },
   { block: "B", title: "Seeing the result cheaply", open: 0 },
   { block: "C", title: "The asset compiler", open: 0 },
-  { block: "D", title: "Fetching from a paid service without surprise", open: 4 },
+  { block: "D", title: "Fetching from a paid service without surprise", open: 3 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
@@ -50,13 +50,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW445",
-    block: "D",
-    symptom: "Meshy is the only 3D generator a mesh can be bought from, so a project that prefers Tripo writes its own client",
-    why: "The site says pick the models you like, and Tripo, one of the three leading generators, is fastest to iterate on.",
-    deps: [],
-  },
   {
     id: "PW446",
     block: "D",
