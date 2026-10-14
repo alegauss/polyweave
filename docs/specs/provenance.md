@@ -116,6 +116,19 @@ the file's path named for one. Whichever answers is given as `inferred` (`ledger
 the record to add `"service"` to, never a placeholder or an empty string. Spinhold's
 five Meshy meshes and four Ideogram studies resolve through its ledger.
 
+**What a Godot build ships is read off its export preset** (§PW455). Called without
+`paths` in a Godot project, `generated` reads the files the export `preset` ships, the
+first preset in `export_presets.cfg` where none is named. That preset's include and
+exclude filters are applied, folders holding a `.gdignore` and dot folders are skipped,
+and a preset exporting selected resources ships its `export_files`, their dependencies
+not followed. Files the editor imports as no resource (`.md`, `.toml` and the like) ship
+only where the include filter names them. The answer names the `preset`, and a project
+with no presets, or no preset by the name given, is refused as `prov.no-preset` with the
+ones there. `unrecorded` lists only the pictures, sounds, meshes, fonts and videos with
+no record, the files a person has to vouch for, and `unrecorded_code` the rest. On
+Spinhold the build's answer is its 26 voice lines, with three brand pictures and two
+fonts unrecorded.
+
 It costs nothing to write and it is the only thing that makes a difference explicable weeks
 later. It is also what lets a regression be bisected: a render that got worse is compared
 against the record of the last one that was right, and the fields that differ are the suspect

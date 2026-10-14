@@ -187,6 +187,7 @@
 - ✅ **PW436** **a sitting laid out in the wrong folder cannot be moved, and a hand move leaves its answers on the old path** — verdict.move moves a sitting, rewrites its manifest and index, and appends a moved line so earlier answers read at the new path (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW457** **a purchase ledger kept as a table by name reads as its bare names, so every total over it is wrong or crashes** — purchase.ledger reads a lock keyed by name as adopted entries with their credits, refuses any other shape, and refuses to write the lock (design recorded in `docs/specs/adoption.md`).
 - ✅ **PW454** **provenance.generated leaves an older purchase's service unnamed, so a disclosure cannot say which generator made a file** — provenance.generated reads an unnamed purchase's service off its ledger entry, task id or folder, and else answers null with a fix (design recorded in `docs/specs/provenance.md`).
+- ✅ **PW455** **provenance.generated cannot tell what a Godot build ships, so it counts excluded files and buries art among code** — Without paths a Godot project's provenance.generated reads what its export preset ships, and unrecorded lists only media apart from code (design recorded in `docs/specs/provenance.md`).
 
 ## Block I — Voxel models from a declaration
 

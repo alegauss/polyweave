@@ -906,6 +906,9 @@ def generated(
     paths: Annotated[
         list, Param("the files a build ships, or folders of them, under the project")
     ] = (),
+    preset: Annotated[
+        str, Param("a Godot project's export preset to read what ships off; the first")
+    ] = "",
     root: Annotated[str, ROOT] = ".",
 ) -> dict:
     """Which files a build ships a paid generator made, and through what (§PW248).
@@ -914,12 +917,19 @@ def generated(
     answer needs every shipped file's lineage: bought from a service directly, or made
     from something that was, through the records' inputs. `generated` lists each such
     file with the chain back to the purchase, the service and what was bought;
-    `authored` the files whose lineage reaches no purchase; `unrecorded` the files with
-    no record at all, which no one can vouch for either way. Without paths, every
-    recorded artefact under the project is read.
+    `authored` the files whose lineage reaches no purchase; `unrecorded` the pictures,
+    sounds, meshes, fonts and videos with no record, which no one can vouch for either
+    way, and `unrecorded_code` the rest, which no generator made (§PW455). Without
+    paths, a Godot project answers for what its export `preset` ships, and any other
+    for every recorded artefact under it.
     """
     where = Path(root).resolve()
     files: list[str] = []
+    shipping = None
+    if not paths and (where / "project.godot").is_file():
+        from .driving import shipped
+
+        shipping, paths = shipped(where, preset)
     for one in paths or ():
         target = Path(one)
         target = target if target.is_absolute() else where / target
@@ -957,8 +967,18 @@ def generated(
                 "direct": len(chain) == 1,
             }
         )
-    return {"generated": made, "authored": authored, "unrecorded": unrecorded,
-            "drafts": drafts}
+    media = [one for one in unrecorded if one.lower().endswith(MEDIA)]
+    answer = {"generated": made, "authored": authored, "unrecorded": media,
+              "unrecorded_code": [one for one in unrecorded if one not in media],
+              "drafts": drafts}
+    return {"preset": shipping, **answer} if shipping else answer
+
+
+#: What a generator could have made, so an unrecorded one needs a person's word.
+MEDIA = (".png", ".jpg", ".jpeg", ".webp", ".svg", ".bmp", ".tga", ".exr", ".hdr",
+         ".ktx", ".dds", ".wav", ".ogg", ".mp3", ".flac", ".opus", ".glb", ".gltf",
+         ".obj", ".fbx", ".blend", ".dae", ".ttf", ".otf", ".woff", ".woff2", ".fnt",
+         ".ogv", ".webm", ".mp4")
 
 
 #: What a record written before services were named put where the name goes.

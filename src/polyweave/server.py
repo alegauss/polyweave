@@ -129,7 +129,8 @@ TOOL_BUDGET = 4500
 #: 122,300 at 121,866 for the describe tool, a declaration's keys over MCP (§PW430).
 #: 122,900 at 122,410 for verdict.move, a sitting moved with its answers (§PW436).
 #: 123,000 at 122,961 for normalise.ingest's ready, a mesh held to a bar (§PW447).
-LIST_BUDGET = 123000
+#: 123,100 at 123,090 for provenance.generated's preset, a build's files (§PW455).
+LIST_BUDGET = 123100
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

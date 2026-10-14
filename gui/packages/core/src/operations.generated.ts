@@ -1324,6 +1324,8 @@ export interface ProvenanceDependentsArgs {
 export interface ProvenanceGeneratedArgs {
   /** the files a build ships, or folders of them, under the project; default [] */
   paths?: unknown[]
+  /** a Godot project's export preset to read what ships off; the first */
+  preset?: string
   /** the project the records are under; default "." */
   root?: string
 }

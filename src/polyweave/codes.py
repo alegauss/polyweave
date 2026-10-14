@@ -2018,6 +2018,12 @@ CODES: dict[str, Code] = {
         when="a record is built for something outside render, mesh, capture and fetch",
         doors=("name one of the declared kinds",),
     ),
+    "prov.no-preset": Code(
+        means="what a Godot build ships cannot be read off an export preset",
+        when="provenance.generated with no paths, in a Godot project with no "
+        "export_presets.cfg or no preset by the name given (§PW455)",
+        doors=("name one of the project's presets", "pass the paths a build ships"),
+    ),
     "prov.missing-artefact": Code(
         means="there is nothing at the path the record would describe",
         when="a record is built before the artefact is written, or beside the wrong "

@@ -1105,6 +1105,54 @@ def _matches(patterns: list[str], path: str) -> bool:
     )
 
 
+#: Files a Godot export carries only where an include_filter names them, since the
+#: editor imports them as no resource (§PW455).
+_NOT_RESOURCES = (".md", ".txt", ".py", ".toml", ".ps1", ".sh", ".bat", ".cmd",
+                  ".yml", ".yaml", ".prov.json", ".import", ".uid")
+
+
+def shipped(here: Path, preset: str = "") -> tuple[str, list[str]]:
+    """The files one export preset ships, the first where none is named (§PW455).
+
+    Its include and exclude filters are applied as Godot does, a folder holding a
+    .gdignore is never imported, and a preset exporting selected resources ships its
+    `export_files` (their dependencies are not followed). Paths are the project's own.
+    """
+    presets_file = here / "export_presets.cfg"
+    found = (_presets(presets_file.read_text(encoding="utf-8"))
+             if presets_file.is_file() else [])
+    names = [one["keys"].get("name", (f"preset.{one['index']}", 0))[0] for one in found]
+    if not found or (preset and preset not in names):
+        raise PolyweaveError(
+            "prov.no-preset",
+            f"{here.name} declares no export preset named {preset!r}" if found
+            else f"{here.name} has no export_presets.cfg to read what a build ships",
+            f"name one of {', '.join(names)}" if found
+            else "add an export preset in the editor, or pass the paths a build ships",
+            given=preset or None,
+            allowed=names,
+        )
+    keys = found[names.index(preset) if preset else 0]["keys"]
+    mode = keys.get("export_filter", ("all_resources", 0))[0]
+    include = _patterns(keys.get("include_filter", ("", 0))[0])
+    exclude = _patterns(keys.get("exclude_filter", ("", 0))[0])
+    chosen = set(re.findall(r'res://([^"]+)', keys.get("export_files", ("", 0))[0]))
+    files: list[str] = []
+    for folder, dirs, names_in in os.walk(here):
+        dirs[:] = sorted(d for d in dirs if not d.startswith(".")
+                         and not (Path(folder) / d / ".gdignore").exists())
+        for name in sorted(names_in):
+            posix = (Path(folder) / name).relative_to(here).as_posix()
+            if _matches(exclude, posix):
+                continue
+            if _matches(include, posix) or (
+                not name.endswith(_NOT_RESOURCES)
+                and (mode == "all_resources" or posix in chosen)
+            ):
+                files.append(posix)
+    return names[names.index(preset) if preset else 0], files
+
+
 def left_out(here: Path, path: Path) -> str:
     """Why a Godot export would leave `path` out of the game, or "" where it ships.
 
