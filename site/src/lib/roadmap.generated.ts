@@ -110,7 +110,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW427",
     block: "H",
     symptom: "vfx.build draws every particle as a flat quad, so a puffy tuft with depth is still a mesh built in game code",
-    why: "Spinhold's Stuffing tufts are a squashed sphere built in GDScript, so the effect's look is split between a declaration and a script.",
+    why: "A mesh of the project's own, a .tres under the project, cannot yet be a particle's draw pass.",
     deps: [],
   },
   {

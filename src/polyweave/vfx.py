@@ -109,7 +109,13 @@ KEYS: dict[str, tuple[type | tuple, Any]] = {
     "flicker": (float, 0.0),
     "flicker_rate": (float, 8.0),
     "billboard": (str, "none"),
+    "mesh": (str, ""),
+    "squash": (list, [1.0, 1.0, 1.0]),
 }
+
+#: The solids a particle may be drawn as instead of a quad (§PW427): primitives the
+#: engine ships, so nothing is built in game code.
+MESHES = ("sphere", "capsule", "box")
 
 #: What each key means, as `describe vfx.build` says it (§PW409): a key here and not in
 #: KEYS, or there and not here, fails a test, so the two cannot drift.
@@ -156,6 +162,10 @@ ABOUT: dict[str, str] = {
     "flicker_rate": "how many times a second a sheet wavers",
     "billboard": "none keeps a sheet where the game turns it; y turns it about its "
                  "upright to face the camera",
+    "mesh": "draw each particle as a solid instead of a quad: sphere, capsule or box, "
+            "size across, shaded so its light reads and turning as it flies",
+    "squash": "a mesh's scale on [x, y, z], such as [1, 0.6, 1] for a flattened puff; "
+              "a sphere's or capsule's x and z are one",
 }
 
 #: Every effect measure a predicate may bound, and what it says.
@@ -375,6 +385,22 @@ def checked(name: str, table: Any, root: Path | None = None) -> dict:
         raise _bad(name, f"emits from a box of extents {own['extents']!r}",
                    "write extents as the box's three half-sizes, none below 0, in "
                    "metres, such as [0.1, 1.0, 0.1]")
+    if own["mesh"] and own["mesh"] not in MESHES:
+        raise _bad(name, f"has mesh {own['mesh']!r}",
+                   f"name one of {', '.join(MESHES)}",
+                   given=str(own["mesh"]), allowed=list(MESHES))
+    pictured = table.get("shape")
+    if own["mesh"] and (own["kind"] != "particles" or pictured):
+        raise _bad(name, f"draws a {own['mesh']} and is a {own['kind']}"
+                   + (f" with shape {pictured!r}" if pictured else ""),
+                   "give mesh to particles alone, and leave shape out: a solid "
+                   "carries no picture")
+    own["squash"] = _vector(name, "squash", own["squash"], 3)
+    if min(own["squash"]) <= 0 or (own["mesh"] in ("sphere", "capsule")
+                                   and own["squash"][0] != own["squash"][2]):
+        raise _bad(name, f"squashes by {own['squash']!r}",
+                   "write squash as three scales above 0; a sphere's or capsule's x "
+                   "and z are one, since it is round about its upright")
     own["shape"] = _shape(name, own["shape"], root)
     own["facing"] = _vector(name, "facing", own["facing"], 3)
     for key in ("step", "gap"):
@@ -799,10 +825,11 @@ def scene(name: str, effect: dict) -> str:
     if effect["kind"] == "sheet":
         return _sheet_scene(name, effect, colours)
     ribbon = effect["kind"] == "ribbon"
+    solid = effect.get("mesh") or ""
     draw = (
         f'[sub_resource type="RibbonTrailMesh" id="draw"]\n'
         f'material = SubResource("look")\nshape = 0\nsize = {effect["size"]:.6g}\n'
-        if ribbon else
+        if ribbon else _solid(effect) if solid else
         f'[sub_resource type="QuadMesh" id="draw"]\nmaterial = SubResource("look")\n'
         f'size = Vector2({effect["size"]:.6g}, {effect["size"]:.6g})\n'
     )
@@ -834,8 +861,12 @@ def scene(name: str, effect: dict) -> str:
         'scale_curve = SubResource("scale")\ncolor_ramp = SubResource("ramp")\n\n'
         '[sub_resource type="StandardMaterial3D" id="look"]\n'
         f"transparency = 1\nblend_mode = {1 if effect['blend'] == 'add' else 0}\n"
-        "shading_mode = 0\nvertex_color_use_as_albedo = true\n" + textured
-        + ("use_particle_trails = true\n" if ribbon else "billboard_mode = 3\n")
+        # A solid is shaded, so its light reads, and turns as it flies, never faced to
+        # the camera: a puff reads as soft only where it has depth (§PW427).
+        + ("" if solid else "shading_mode = 0\n")
+        + "vertex_color_use_as_albedo = true\n" + textured
+        + ("use_particle_trails = true\n" if ribbon
+           else "" if solid else "billboard_mode = 3\n")
         + "\n" + draw + "\n"
         f'[node name="{name}" type="GPUParticles3D"]\n'
         f"amount = {effect['amount']}\nlifetime = {effect['lifetime']:.6g}\n"
@@ -847,6 +878,23 @@ def scene(name: str, effect: dict) -> str:
         + 'process_material = SubResource("process")\n'
         'draw_pass_1 = SubResource("draw")\n'
     )
+
+
+def _solid(effect: dict) -> str:
+    """A particle's mesh as a primitive the engine ships, `size` across, squashed.
+
+    A sphere's and a capsule's x and z are one scale, since each is round about its
+    upright, and a box takes all three.
+    """
+    size = float(effect["size"])
+    wide, tall, deep = (size * s for s in effect["squash"])
+    head = f'[sub_resource type="{effect["mesh"].capitalize()}Mesh" id="draw"]\n' \
+        'material = SubResource("look")\n'
+    if effect["mesh"] == "box":
+        return head + f"size = Vector3({wide:.6g}, {tall:.6g}, {deep:.6g})\n"
+    if effect["mesh"] == "sphere":
+        return head + f"radius = {wide / 2:.6g}\nheight = {tall:.6g}\n"
+    return head + f"radius = {wide / 4:.6g}\nheight = {tall:.6g}\n"
 
 
 #: Where one section of a scene begins, so a part's scene can be taken apart.
@@ -935,7 +983,7 @@ def shipped_folder(config, where: Path, out: str | None, address: str | None,
 def _vocabulary() -> dict:
     """What a *.vfx.toml may hold, for `describe vfx.build` (§PW409)."""
     choices = {"kind": KINDS, "emission": EMISSIONS, "blend": BLENDS, "shape": NAMED,
-               "billboard": BILLBOARDS}
+               "billboard": BILLBOARDS, "mesh": MESHES}
     keys = {}
     for key, (kind, default) in KEYS.items():
         keys[key] = {

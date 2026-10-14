@@ -46,11 +46,21 @@ ends             = 0.2           # sheet: share of its height faded at each end,
 flicker          = 0.0           # sheet: how much its light wavers, 0 to 1
 flicker_rate     = 8.0           # sheet: waverings a second
 billboard        = "none"        # sheet: none, or y to turn it to the camera
+mesh             = ""            # particles: sphere, capsule or box drawn instead of a quad
+squash           = [1, 1, 1]     # mesh only: its scale on x, y, z; round ones keep x = z
 ```
 
 A key it does not have is refused with its nearest name, and so is a value outside what
 the comment says (`vfx.bad-effect`); a missing file, one that is not TOML or one with no
 `[effect.<name>]` is `vfx.no-source`.
+
+**A particle can be a solid** (§PW427). `mesh` draws each particle as a sphere, capsule or
+box the engine ships, `size` across and scaled by `squash`, instead of a quad: shaded, so
+its light reads from one side, and with no billboard, so it turns as it flies. That is
+what a soft tuft or a pebble needs, and Spinhold built one in GDScript because a quad
+could not say it. `colour_over_life` still tints it. A solid carries no picture, so
+`shape` beside it is refused, as is a `mesh` on a ribbon or a sheet, and a sphere's or
+capsule's `squash` keeps x and z one, since each is round about its upright.
 
 The five keys after `gravity` are what Starship's accepted trails drew with (§PW281): its
 sparks brake at 6 to 10 and stay by the engine, its confetti spins, its sun band throws

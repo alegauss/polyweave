@@ -580,6 +580,61 @@ def test_an_effect_the_export_leaves_out_is_watched_in_a_sitting_under_art(tmp_p
     assert laid["effects"]["sparks"]["frames"] > 60
 
 
+TUFTS = """\
+[effect.tufts]
+amount = 12
+lifetime = 0.9
+speed = [1.0, 2.0]
+size = 0.3
+mesh = "sphere"
+squash = [1.0, 0.6, 1.0]
+colour_over_life = ["#f6efe6ff", "#f6efe600"]
+"""
+
+
+def test_a_particle_may_be_a_squashed_solid_and_not_a_quad(tmp_path):
+    """§PW427: spinhold's Stuffing tufts were a squashed sphere built in GDScript."""
+    vfx.build(effects(tmp_path, TUFTS), root=str(tmp_path))
+    text = (tmp_path / "vfx" / "tufts.tscn").read_text("utf-8")
+    assert '[sub_resource type="SphereMesh" id="draw"]' in text
+    assert "radius = 0.15" in text and "height = 0.18" in text
+    # Shaded so its light reads, turning as it flies: no billboard, no unshaded.
+    assert "billboard_mode" not in text and "shading_mode = 0" not in text
+
+
+@pytest.mark.parametrize("change, said", [
+    ('mesh = "sphere"', 'mesh = "cone"'),
+    ('squash = [1.0, 0.6, 1.0]', 'squash = [1.0, 0.6, 0.5]'),
+    ('mesh = "sphere"', 'mesh = "sphere"\nshape = "dot"'),
+])
+def test_a_mesh_a_particle_cannot_be_is_refused(tmp_path, change, said):
+    with pytest.raises(PolyweaveError) as refused:
+        vfx.build(effects(tmp_path, TUFTS.replace(change, said)), root=str(tmp_path))
+    assert refused.value.code == "vfx.bad-effect"
+
+
+SOLIDS = """extends SceneTree
+
+func _initialize() -> void:
+\tvar node: GPUParticles3D = load("res://vfx/tufts.tscn").instantiate()
+\tprint("vfx: mesh=%s" % node.draw_pass_1.get_class())
+\tnode.free()
+\tquit()
+"""
+
+
+def test_the_engine_loads_a_particle_drawn_as_a_solid(tmp_path):
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    vfx.build(effects(tmp_path, TUFTS), root=str(tmp_path))
+    (tmp_path / "project.godot").write_text(
+        'config_version=5\n\n[application]\nconfig/name="vfx"\n', encoding="utf-8")
+    (tmp_path / "solids.gd").write_text(SOLIDS, encoding="utf-8")
+    ran = engine.run("solids.gd", expect=r"^vfx: mesh", root=tmp_path, headless=True)
+    assert ran["ok"] is True, ran
+    assert "vfx: mesh=SphereMesh" in Path(ran["log"]).read_text("utf-8")
+
+
 LOADS = """extends SceneTree
 
 func _initialize() -> void:

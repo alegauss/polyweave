@@ -25,7 +25,7 @@
 - 📋 **PW59** (deps: PW53 ⏸, PW54 ✅, PW55 ✅, PW56 ⏳, PW57, PW58 ✅) **nothing says how much of Cottony still does its own version of what the plugin does** — Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion. → §PW59
 - ⏳ **PW56** (deps: PW57) **twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent** — The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question. → §PW56
 - 🛠 **PW372** (deps: Spinhold RK215) **a camera move cannot be declared as a clip or played by the game, so a cutscene's shots are numbers in the project** — No shot is yet captured onto a sitting for a person to accept, and Starship's opening still reads its own JSON. → §PW372
-- 📋 **PW427** (deps: —) **vfx.build draws every particle as a flat quad, so a puffy tuft with depth is still a mesh built in game code** — Spinhold's Stuffing tufts are a squashed sphere built in GDScript, so the effect's look is split between a declaration and a script. → §PW427
+- ⏳ **PW427** (deps: —) **vfx.build draws every particle as a flat quad, so a puffy tuft with depth is still a mesh built in game code** — A mesh of the project's own, a .tres under the project, cannot yet be a particle's draw pass. → §PW427
 - 📋 **PW429** (deps: —) **captured sequences cannot be cut together, scored and encoded, so a store teaser needs ffmpeg driven by hand** — A game's trailer is its most watched asset, and without an edit it cannot come from the captures polyweave already records. → §PW429
 - 📋 **PW435** (deps: —) **a take made on a free ElevenLabs plan is recorded like any other, so a game can ship one commercially unwarned** — PW410 named the 403 a free plan answers; the free tier's non-commercial licence is still in no record and no credits. → §PW435
 - 📋 **PW436** (deps: —) **a sitting laid out in the wrong folder cannot be moved, and a hand move leaves its answers on the old path** — Spinhold moved its pilot lines sitting by hand, missed answers.jsonl, and 23 answers pointed at a sitting that was gone. → §PW436
@@ -170,6 +170,12 @@
   game/ui/opening_shots.json is replaced by a *.camera.toml built with clip.camera, and
   opening.gd seeks the built scene, mapping places on the ring through its place
   Callable.
+
+## Done when — PW427
+
+- **A particle can be drawn as a mesh of the project's own** A mesh key naming a .tres
+  under the project is written as the particle's draw pass, and one with nothing there
+  is refused, checked by a Godot test that loads the built scene.
 
 ## Non-goals
 
