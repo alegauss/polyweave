@@ -1,8 +1,8 @@
 {
   "artefact": {
-    "bytes": 119608,
+    "bytes": 109841,
     "path": "src/polyweave/kits/remap/core/pads/playstation.png",
-    "sha256": "8ef865bb4fdb86fe87b370fbc99d25c90ed10808538b50702734c887742e3b26"
+    "sha256": "50130157fe33a72639d822947fca0f918a29ba8d397bef5c0061ecdc6231b35b"
   },
   "elapsed_s": null,
   "engine": {
@@ -13,7 +13,7 @@
     {
       "path": "src/polyweave/kits/remap/pads/playstation.svg",
       "role": "vector",
-      "sha256": "758c3bf77f2945941f1abbac2b8bd5a17f5a83ca83a96054fd7f0bbf11d0e676"
+      "sha256": "a51ff2af127016ac980d9f1470ed52d6ffc171a272e0a7b7d86eb23741708ae4"
     }
   ],
   "kind": "picture",
@@ -22,7 +22,7 @@
     "made_by": "picture.vector",
     "width": 1000
   },
-  "produced_at": "2026-10-14T15:56:13Z",
+  "produced_at": "2026-10-14T16:14:59Z",
   "producer": {
     "tool": "polyweave",
     "version": "0.1.0"

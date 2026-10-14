@@ -1,0 +1,13 @@
+{
+  "bought": null,
+  "drift": {},
+  "failed": [],
+  "lettering_unchecked": [],
+  "passed": true,
+  "picture": "pads/playstation_top.png",
+  "prompt": null,
+  "sha256": "c883b151197a9f3974aafec51955beff3966b92a0b3f5392cebcdd44a0478fa5",
+  "silhouette_iou": 1.0,
+  "style_judged": false,
+  "unchecked": []
+}

@@ -1,0 +1,17 @@
+# The plugin's own art: what its kits carry that a person judges, made through
+# polyweave like any game's (§PW428). Its purchases, records and verdicts live here,
+# apart from the code.
+
+[service.meshy]
+base    = "https://api.meshy.ai"
+key_env = "MESHY_API_KEY"
+# Image to 3D, mesh only, per Meshy's pricing page on 2026-10-14; the balance read
+# either side of a task is what the ledger records.
+prices  = { "meshy-7.1" = 20 }
+
+[budget.meshy]
+# The owner's decision on 2026-10-14: the three pads of the remap kit in 3D, two
+# tries each at most.
+amount  = 180
+unit    = "credits"
+expires = "2026-12-31"

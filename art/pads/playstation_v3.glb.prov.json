@@ -1,0 +1,49 @@
+{
+  "artefact": {
+    "bytes": 1160908,
+    "path": "pads/playstation_v3.glb",
+    "sha256": "5431bcaf43f5d2d146af557ea4efb11399c349dc4d61c725a0888ccb09b60975"
+  },
+  "balance_after": 829.0,
+  "balance_before": 849.0,
+  "bought": "mesh",
+  "credits": 20.0,
+  "details": {
+    "entity": null,
+    "model": "meshy-7.1",
+    "polycount": 30000,
+    "route": "views",
+    "views": [
+      "pads/playstation_side.png",
+      "pads/playstation_top.png"
+    ]
+  },
+  "elapsed_s": null,
+  "engine": {
+    "model": "meshy-7.1",
+    "name": "meshy"
+  },
+  "expected_credits": 20.0,
+  "inputs": [
+    {
+      "path": "pads/playstation.png",
+      "role": "reference",
+      "sha256": "9c79495300516031e6faa40bb12fd0ed12f8f88f64fbd6175e078d9e4321fd33"
+    }
+  ],
+  "kind": "fetch",
+  "measurements": {
+    "bytes": 1160908,
+    "sha256": "5431bcaf43f5d2d146af557ea4efb11399c349dc4d61c725a0888ccb09b60975"
+  },
+  "params": {},
+  "produced_at": "2026-10-14T16:09:56Z",
+  "producer": {
+    "tool": "polyweave",
+    "version": "0.1.0"
+  },
+  "prompt": null,
+  "reference": "pads/playstation.png",
+  "service": "meshy",
+  "task_id": "meshy:01a13b2c-fb99-721a-9587-f1091eab13d2"
+}

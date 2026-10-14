@@ -1,0 +1,45 @@
+{
+  "artefact": {
+    "bytes": 1154244,
+    "path": "pads/playstation.glb",
+    "sha256": "8d4319303b8b8e3b36c40184a9738fe8bf7f9c4f72c695d43fcd8e4507dc7711"
+  },
+  "balance_after": 869.0,
+  "balance_before": 889.0,
+  "bought": "mesh",
+  "credits": 20.0,
+  "details": {
+    "entity": null,
+    "model": "meshy-7.1",
+    "polycount": 30000,
+    "route": "image"
+  },
+  "elapsed_s": null,
+  "engine": {
+    "model": "meshy-7.1",
+    "name": "meshy"
+  },
+  "expected_credits": 20.0,
+  "inputs": [
+    {
+      "path": "pads/playstation.png",
+      "role": "reference",
+      "sha256": "9f1051a1d54eead5bf764ec056d34892fa77e012706d5ca10b7e58bc5a451cb7"
+    }
+  ],
+  "kind": "fetch",
+  "measurements": {
+    "bytes": 1154244,
+    "sha256": "8d4319303b8b8e3b36c40184a9738fe8bf7f9c4f72c695d43fcd8e4507dc7711"
+  },
+  "params": {},
+  "produced_at": "2026-10-14T16:03:19Z",
+  "producer": {
+    "tool": "polyweave",
+    "version": "0.1.0"
+  },
+  "prompt": null,
+  "reference": "pads/playstation.png",
+  "service": "meshy",
+  "task_id": "meshy:01a13b26-66fb-7165-8e91-de536b316408"
+}

@@ -1,176 +1,104 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 667" width="1000" height="667">
-  <!-- The remap kit's PlayStation-layout pad (§PW428), drawn after the current pad's own
-       shape: a black body whose wide top and thick grips splay outward, two white wings
-       wrapping each side and shoulder, a white touchpad across the top with its light bar
-       either side, the d-pad as four arrows and the face buttons as their symbols on the
-       wings, the sticks level in the black middle, in a 1000 x 667 frame. The "spots"
-       group at the end draws nothing: it is where each place sits, and
-       core/pads/playstation.json is held to it. No maker's mark. -->
-  <defs>
-    <linearGradient id="wing" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#fbfbfc"/>
-      <stop offset="0.6" stop-color="#e3e5e9"/>
-      <stop offset="1" stop-color="#c3c7ce"/>
-    </linearGradient>
-    <linearGradient id="core" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#2a2d33"/>
-      <stop offset="1" stop-color="#101216"/>
-    </linearGradient>
-    <linearGradient id="pad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#ffffff"/>
-      <stop offset="1" stop-color="#dfe2e7"/>
-    </linearGradient>
-    <linearGradient id="trigger" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#3a3e46"/>
-      <stop offset="1" stop-color="#15171b"/>
-    </linearGradient>
-    <linearGradient id="bumper" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#ffffff"/>
-      <stop offset="1" stop-color="#cfd3d9"/>
-    </linearGradient>
-    <linearGradient id="bar" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#4f9bff" stop-opacity="0"/>
-      <stop offset="0.5" stop-color="#6fb0ff"/>
-      <stop offset="1" stop-color="#4f9bff" stop-opacity="0"/>
-    </linearGradient>
-    <radialGradient id="cap" cx="0.42" cy="0.35" r="0.7">
-      <stop offset="0" stop-color="#4c5059"/>
-      <stop offset="0.6" stop-color="#22252b"/>
-      <stop offset="1" stop-color="#0c0d10"/>
-    </radialGradient>
-    <radialGradient id="well" cx="0.5" cy="0.45" r="0.6">
-      <stop offset="0" stop-color="#08090b"/>
-      <stop offset="1" stop-color="#1b1d22"/>
-    </radialGradient>
-    <radialGradient id="face" cx="0.4" cy="0.35" r="0.7">
-      <stop offset="0" stop-color="#f4f5f7"/>
-      <stop offset="1" stop-color="#c8ccd3"/>
-    </radialGradient>
-    <radialGradient id="gloss" cx="0.35" cy="0.3" r="0.6">
-      <stop offset="0" stop-color="#ffffff" stop-opacity="0.45"/>
-      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
-    </radialGradient>
-    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="7"/>
-    </filter>
-  </defs>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="20 80 880 587" width="1000" height="667">
+  <!-- The remap kit's PlayStation-layout pad (§PW428), in line, a little from above and
+       in front as the console's own button screen draws it, its proportions measured
+       off that screen: L2 and R2 stand on top as rounded tabs over L1 and R1, the
+       touchpad narrows toward the sticks, the d-pad and face buttons sit level with
+       it, the sticks below and inward, and the grips run long. Thin light lines over a
+       faint fill, for a dark ground. The "spots" group at the end draws nothing: it is
+       where each place sits, and core/pads/playstation.json is held to it. No maker's
+       mark. -->
+  <g fill="none" stroke="#e8ecf2" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round">
 
-  <!-- L2 and R2, dark, behind the shoulders -->
-  <path d="M 178 72 Q 250 46 322 66 L 330 140 L 172 150 Z" fill="url(#trigger)" stroke="#4a4f58" stroke-width="3"/>
-  <path d="M 822 72 Q 750 46 678 66 L 670 140 L 828 150 Z" fill="url(#trigger)" stroke="#4a4f58" stroke-width="3"/>
-  <!-- L1 and R1, white, on the shoulders -->
-  <path d="M 160 150 Q 240 108 330 128 L 334 152 Q 240 138 170 172 Z" fill="url(#bumper)" stroke="#9aa0aa" stroke-width="2"/>
-  <path d="M 840 150 Q 760 108 670 128 L 666 152 Q 760 138 830 172 Z" fill="url(#bumper)" stroke="#9aa0aa" stroke-width="2"/>
+    <!-- L2 and R2, rounded tabs standing on the shoulders -->
+    <path d="M 142 206 C 138 150 160 112 204 110 C 245 110 263 140 262 202" fill="#ffffff" fill-opacity="0.05"/>
+    <path d="M 152 160 C 190 150 230 150 258 160" stroke-width="1.8" opacity="0.7"/>
+    <path d="M 788 206 C 792 150 770 112 726 110 C 685 110 667 140 668 202" fill="#ffffff" fill-opacity="0.05"/>
+    <path d="M 778 160 C 740 150 700 150 672 160" stroke-width="1.8" opacity="0.7"/>
 
-  <!-- the body: a wide top, grips that splay out and round off, a shallow U between -->
-  <path id="body" d="M 290 150 C 360 132 640 132 710 150 C 790 150 862 172 892 252 C 932 362 978 520 952 602 C 932 662 852 672 815 632 C 780 594 752 548 692 532 C 600 512 400 512 308 532 C 248 548 220 594 185 632 C 148 672 68 662 48 602 C 22 520 68 362 108 252 C 138 172 210 150 290 150 Z" fill="#000" opacity="0.45" filter="url(#soft)" transform="translate(0 10)"/>
-  <path d="M 290 150 C 360 132 640 132 710 150 C 790 150 862 172 892 252 C 932 362 978 520 952 602 C 932 662 852 672 815 632 C 780 594 752 548 692 532 C 600 512 400 512 308 532 C 248 548 220 594 185 632 C 148 672 68 662 48 602 C 22 520 68 362 108 252 C 138 172 210 150 290 150 Z" fill="url(#core)" stroke="#05060a" stroke-width="3"/>
+    <!-- L1 and R1, bands below them along the shoulders -->
+    <path d="M 132 212 C 160 192 240 190 268 202 L 270 236 C 240 228 166 230 140 246 Z" fill="#ffffff" fill-opacity="0.05"/>
+    <path d="M 798 212 C 770 192 690 190 662 202 L 660 236 C 690 228 764 230 790 246 Z" fill="#ffffff" fill-opacity="0.05"/>
 
-  <!-- the white wings, each wrapping a shoulder and the outside of its grip -->
-  <path d="M 290 150 C 210 150 138 172 108 252 C 68 362 22 520 48 602 C 68 662 148 672 185 632 C 214 600 236 566 262 546 C 290 470 318 372 336 300 C 346 252 344 196 336 150 C 320 146 304 148 290 150 Z" fill="url(#wing)" stroke="#9ea4ad" stroke-width="2.5"/>
-  <path d="M 710 150 C 790 150 862 172 892 252 C 932 362 978 520 952 602 C 932 662 852 672 815 632 C 786 600 764 566 738 546 C 710 470 682 372 664 300 C 654 252 656 196 664 150 C 680 146 696 148 710 150 Z" fill="url(#wing)" stroke="#9ea4ad" stroke-width="2.5"/>
-  <!-- the wings' sheen along the top -->
-  <path d="M 140 230 C 170 180 230 166 300 168" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" opacity="0.7"/>
-  <path d="M 860 230 C 830 180 770 166 700 168" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" opacity="0.7"/>
+    <!-- the body: its top edge, the grips running long and splaying out, the U between -->
+    <path d="M 465 172 C 550 170 630 172 690 180 C 730 190 765 210 790 240 C 825 290 850 360 864 430 C 875 490 872 560 848 595 C 830 620 780 620 758 598 C 730 568 700 535 650 528 C 590 522 530 545 465 545 C 400 545 340 522 280 528 C 230 535 200 568 172 598 C 150 620 100 620 82 595 C 58 560 55 490 66 430 C 80 360 105 290 140 240 C 165 210 200 190 240 180 C 300 172 380 170 465 172 Z" fill="#ffffff" fill-opacity="0.05"/>
+    <!-- the strip along the top, and its slot in the middle -->
+    <path d="M 272 194 C 380 186 550 186 658 194" stroke-width="1.8" opacity="0.7"/>
+    <rect x="440" y="179" width="50" height="9" rx="4.5" stroke-width="1.8"/>
+    <!-- where each white wing meets the black core, from the touchpad down to the grip -->
+    <path d="M 286 206 C 282 300 272 420 252 524" stroke-width="1.8" opacity="0.7"/>
+    <path d="M 644 206 C 648 300 658 420 678 524" stroke-width="1.8" opacity="0.7"/>
 
-  <!-- the touchpad across the top, white, with the light bar either side -->
-  <path d="M 362 146 C 420 138 580 138 638 146 L 642 286 C 642 300 632 308 618 308 L 382 308 C 368 308 358 300 358 286 Z" fill="url(#pad)" stroke="#a7adb6" stroke-width="2.5"/>
-  <path d="M 372 160 C 430 152 570 152 628 160" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
-  <path d="M 349 166 L 347 292" stroke="url(#bar)" stroke-width="6" stroke-linecap="round"/>
-  <path d="M 651 166 L 653 292" stroke="url(#bar)" stroke-width="6" stroke-linecap="round"/>
+    <!-- the touchpad, narrowing toward the sticks, the light bar's slit either side -->
+    <path d="M 300 214 L 630 214 Q 642 214 640 226 L 616 390 Q 613 402 601 402 L 329 402 Q 317 402 314 390 L 290 226 Q 288 214 300 214 Z" fill="#ffffff" fill-opacity="0.05"/>
+    <path d="M 280 230 L 300 380" stroke-width="1.8" opacity="0.8"/>
+    <path d="M 650 230 L 630 380" stroke-width="1.8" opacity="0.8"/>
 
-  <!-- create and options, at the touchpad's top corners -->
-  <rect x="318" y="146" width="16" height="30" rx="7" fill="#1c1f25" stroke="#6c727c" stroke-width="2"/>
-  <path d="M 326 170 L 326 155 M 322 159 L 326 155 L 330 159" fill="none" stroke="#e6e9ee" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-  <rect x="666" y="146" width="16" height="30" rx="7" fill="#1c1f25" stroke="#6c727c" stroke-width="2"/>
-  <g stroke="#e6e9ee" stroke-width="2" stroke-linecap="round">
-    <path d="M 670 154 L 678 154"/><path d="M 670 161 L 678 161"/><path d="M 670 168 L 678 168"/>
-  </g>
+    <!-- create and options -->
+    <rect x="258" y="268" width="14" height="32" rx="7" stroke-width="2"/>
+    <rect x="658" y="268" width="14" height="32" rx="7" stroke-width="2"/>
 
-  <!-- the d-pad on the left wing: four arrow keys round a shallow dish -->
-  <circle cx="250" cy="270" r="78" fill="#d3d7dd" opacity="0.3"/>
-  <g fill="url(#face)" stroke="#8d939c" stroke-width="2.5" stroke-linejoin="round">
-    <path d="M 232 196 L 268 196 L 268 238 L 250 254 L 232 238 Z"/>
-    <path d="M 232 344 L 268 344 L 268 302 L 250 286 L 232 302 Z"/>
-    <path d="M 176 252 L 176 288 L 218 288 L 234 270 L 218 252 Z"/>
-    <path d="M 324 252 L 324 288 L 282 288 L 266 270 L 282 252 Z"/>
-  </g>
-  <g fill="#8d939c">
-    <path d="M 250 208 L 243 220 L 257 220 Z"/><path d="M 250 332 L 243 320 L 257 320 Z"/>
-    <path d="M 188 270 L 200 263 L 200 277 Z"/><path d="M 312 270 L 300 263 L 300 277 Z"/>
-  </g>
+    <!-- the d-pad: four arrow keys -->
+    <path d="M 180 322 L 220 322 L 220 352 L 200 366 L 180 352 Z"/>
+    <path d="M 180 422 L 220 422 L 220 392 L 200 378 L 180 392 Z"/>
+    <path d="M 150 352 L 150 392 L 180 392 L 194 372 L 180 352 Z"/>
+    <path d="M 250 352 L 250 392 L 220 392 L 206 372 L 220 352 Z"/>
+    <g stroke-width="0" fill="#e8ecf2">
+      <path d="M 200 330 L 195 338 L 205 338 Z"/><path d="M 200 414 L 195 406 L 205 406 Z"/>
+      <path d="M 158 372 L 166 367 L 166 377 Z"/><path d="M 242 372 L 234 367 L 234 377 Z"/>
+    </g>
 
-  <!-- the face buttons on the right wing: each its symbol, in the pad's own grey -->
-  <circle cx="750" cy="270" r="96" fill="#d3d7dd" opacity="0.3"/>
-  <g stroke="#8d939c" stroke-width="2.5">
-    <circle cx="750" cy="212" r="27" fill="url(#face)"/>
-    <circle cx="692" cy="270" r="27" fill="url(#face)"/>
-    <circle cx="808" cy="270" r="27" fill="url(#face)"/>
-    <circle cx="750" cy="328" r="27" fill="url(#face)"/>
-  </g>
-  <g fill="none" stroke="#6f7680" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round">
-    <path d="M 750 199 L 763 221 L 737 221 Z"/>
-    <rect x="682" y="260" width="20" height="20"/>
-    <circle cx="808" cy="270" r="11"/>
-    <path d="M 740 318 L 760 338 M 760 318 L 740 338"/>
-  </g>
+    <!-- the face buttons and their symbols -->
+    <circle cx="735" cy="312" r="27"/>
+    <circle cx="665" cy="372" r="27"/>
+    <circle cx="805" cy="372" r="27"/>
+    <circle cx="735" cy="432" r="27"/>
+    <path d="M 735 299 L 747 320 L 723 320 Z" stroke-width="2.2"/>
+    <rect x="654" y="361" width="22" height="22" stroke-width="2.2"/>
+    <circle cx="805" cy="372" r="11" stroke-width="2.2"/>
+    <path d="M 725 422 L 745 442 M 745 422 L 725 442" stroke-width="2.2"/>
 
-  <!-- the sticks, level in the black middle -->
-  <circle cx="390" cy="410" r="62" fill="url(#well)" stroke="#2c3037" stroke-width="3"/>
-  <circle cx="390" cy="410" r="45" fill="url(#cap)" stroke="#050608" stroke-width="3"/>
-  <circle cx="390" cy="410" r="33" fill="none" stroke="#3a3f47" stroke-width="5" stroke-dasharray="4 5"/>
-  <circle cx="390" cy="410" r="21" fill="#17191d"/>
-  <circle cx="390" cy="410" r="45" fill="url(#gloss)" opacity="0.6"/>
-  <g fill="#8f97a3">
-    <path d="M 390 340 L 383 350 L 397 350 Z"/><path d="M 390 480 L 383 470 L 397 470 Z"/>
-    <path d="M 320 410 L 330 403 L 330 417 Z"/><path d="M 460 410 L 450 403 L 450 417 Z"/>
-  </g>
-  <circle cx="610" cy="410" r="62" fill="url(#well)" stroke="#2c3037" stroke-width="3"/>
-  <circle cx="610" cy="410" r="45" fill="url(#cap)" stroke="#050608" stroke-width="3"/>
-  <circle cx="610" cy="410" r="33" fill="none" stroke="#3a3f47" stroke-width="5" stroke-dasharray="4 5"/>
-  <circle cx="610" cy="410" r="21" fill="#17191d"/>
-  <circle cx="610" cy="410" r="45" fill="url(#gloss)" opacity="0.6"/>
-  <g fill="#8f97a3">
-    <path d="M 610 340 L 603 350 L 617 350 Z"/><path d="M 610 480 L 603 470 L 617 470 Z"/>
-    <path d="M 540 410 L 550 403 L 550 417 Z"/><path d="M 680 410 L 670 403 L 670 417 Z"/>
-  </g>
+    <!-- the sticks, standing up: the ring they sit in, the cap and its dish -->
+    <ellipse cx="332" cy="474" rx="62" ry="52" stroke-width="2" opacity="0.8"/>
+    <ellipse cx="330" cy="488" rx="42" ry="35" fill="#ffffff" fill-opacity="0.06"/>
+    <ellipse cx="330" cy="488" rx="27" ry="22" stroke-width="1.8" opacity="0.7"/>
+    <ellipse cx="598" cy="474" rx="62" ry="52" stroke-width="2" opacity="0.8"/>
+    <ellipse cx="600" cy="488" rx="42" ry="35" fill="#ffffff" fill-opacity="0.06"/>
+    <ellipse cx="600" cy="488" rx="27" ry="22" stroke-width="1.8" opacity="0.7"/>
 
-  <!-- the home button and the mute button between the sticks: neither is a place -->
-  <circle cx="500" cy="402" r="17" fill="#15171b" stroke="#5c626c" stroke-width="2"/>
-  <circle cx="500" cy="402" r="7" fill="none" stroke="#9aa1ab" stroke-width="2"/>
-  <rect x="484" y="440" width="32" height="10" rx="5" fill="#15171b" stroke="#5c626c" stroke-width="1.5"/>
-  <path d="M 490 445 L 510 445" stroke="#ff9a6a" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
-  <!-- the speaker grille under the touchpad -->
-  <g fill="#3a3e46">
-    <circle cx="480" cy="330" r="2.2"/><circle cx="490" cy="330" r="2.2"/><circle cx="500" cy="330" r="2.2"/><circle cx="510" cy="330" r="2.2"/><circle cx="520" cy="330" r="2.2"/>
-    <circle cx="485" cy="338" r="2.2"/><circle cx="495" cy="338" r="2.2"/><circle cx="505" cy="338" r="2.2"/><circle cx="515" cy="338" r="2.2"/>
+    <!-- the speaker, the home button and the mute button between the sticks -->
+    <g stroke-width="0" fill="#e8ecf2" opacity="0.8">
+      <circle cx="441" cy="414" r="2.4"/><circle cx="453" cy="414" r="2.4"/><circle cx="465" cy="414" r="2.4"/><circle cx="477" cy="414" r="2.4"/><circle cx="489" cy="414" r="2.4"/>
+      <circle cx="447" cy="424" r="2.4"/><circle cx="459" cy="424" r="2.4"/><circle cx="471" cy="424" r="2.4"/><circle cx="483" cy="424" r="2.4"/>
+    </g>
+    <circle cx="465" cy="456" r="12" stroke-width="2"/>
+    <rect x="449" y="490" width="32" height="10" rx="5" stroke-width="2"/>
   </g>
 
   <!-- where each place sits, as the screen's spots table says it -->
   <g id="spots" fill="none">
-    <circle data-code="axis:4:1" cx="250" cy="90" r="0"/>
-    <circle data-code="button:9" cx="250" cy="136" r="0"/>
-    <circle data-code="button:11" cx="250" cy="220" r="0"/>
-    <circle data-code="button:13" cx="200" cy="270" r="0"/>
-    <circle data-code="button:14" cx="300" cy="270" r="0"/>
-    <circle data-code="button:12" cx="250" cy="320" r="0"/>
-    <circle data-code="button:4" cx="326" cy="161" r="0"/>
-    <circle data-code="axis:1:-1" cx="390" cy="345" r="0"/>
-    <circle data-code="axis:0:-1" cx="325" cy="410" r="0"/>
-    <circle data-code="button:7" cx="390" cy="410" r="0"/>
-    <circle data-code="axis:0:1" cx="455" cy="410" r="0"/>
-    <circle data-code="axis:1:1" cx="390" cy="475" r="0"/>
-    <circle data-code="button:6" cx="674" cy="161" r="0"/>
-    <circle data-code="axis:5:1" cx="750" cy="90" r="0"/>
-    <circle data-code="button:10" cx="750" cy="136" r="0"/>
-    <circle data-code="button:3" cx="750" cy="212" r="0"/>
-    <circle data-code="button:2" cx="692" cy="270" r="0"/>
-    <circle data-code="button:1" cx="808" cy="270" r="0"/>
-    <circle data-code="button:0" cx="750" cy="328" r="0"/>
-    <circle data-code="axis:3:-1" cx="610" cy="345" r="0"/>
-    <circle data-code="axis:2:-1" cx="545" cy="410" r="0"/>
-    <circle data-code="button:8" cx="610" cy="410" r="0"/>
-    <circle data-code="axis:2:1" cx="675" cy="410" r="0"/>
-    <circle data-code="axis:3:1" cx="610" cy="475" r="0"/>
+    <circle data-code="axis:4:1" cx="202" cy="140" r="0"/>
+    <circle data-code="button:9" cx="205" cy="220" r="0"/>
+    <circle data-code="button:11" cx="200" cy="338" r="0"/>
+    <circle data-code="button:13" cx="166" cy="372" r="0"/>
+    <circle data-code="button:14" cx="234" cy="372" r="0"/>
+    <circle data-code="button:12" cx="200" cy="406" r="0"/>
+    <circle data-code="button:4" cx="265" cy="284" r="0"/>
+    <circle data-code="axis:1:-1" cx="330" cy="436" r="0"/>
+    <circle data-code="axis:0:-1" cx="282" cy="484" r="0"/>
+    <circle data-code="button:7" cx="330" cy="488" r="0"/>
+    <circle data-code="axis:0:1" cx="378" cy="484" r="0"/>
+    <circle data-code="axis:1:1" cx="330" cy="526" r="0"/>
+    <circle data-code="button:6" cx="665" cy="284" r="0"/>
+    <circle data-code="axis:5:1" cx="728" cy="140" r="0"/>
+    <circle data-code="button:10" cx="725" cy="220" r="0"/>
+    <circle data-code="button:3" cx="735" cy="312" r="0"/>
+    <circle data-code="button:2" cx="665" cy="372" r="0"/>
+    <circle data-code="button:1" cx="805" cy="372" r="0"/>
+    <circle data-code="button:0" cx="735" cy="432" r="0"/>
+    <circle data-code="axis:3:-1" cx="600" cy="436" r="0"/>
+    <circle data-code="axis:2:-1" cx="552" cy="484" r="0"/>
+    <circle data-code="button:8" cx="600" cy="488" r="0"/>
+    <circle data-code="axis:2:1" cx="648" cy="484" r="0"/>
+    <circle data-code="axis:3:1" cx="600" cy="526" r="0"/>
   </g>
 </svg>

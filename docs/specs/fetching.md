@@ -329,6 +329,14 @@ silhouette settled on the picture first. A 402 from the service is `fetch.over-b
 the account itself, a 429 `fetch.rate-limited`, and a failed or cancelled task ledgers
 nothing.
 
+**A mesh can be bought from several views** (§PW428). `views` names up to three more
+pictures of the same thing beside `picture_path`, a side and a top say, each gated as
+the front is; Meshy is sent them in one `/openapi/v1/multi-image-to-3d` task, the front
+first as its primary view, so depth the front cannot show, a stick standing off the
+face or a trigger behind a shoulder, is drawn rather than guessed. The record keeps the
+`views` it was bought from. Views without a front, more than three, or views to Tripo
+are `fetch.bad-choice`.
+
 **Tripo is the second mesh service** (§PW445), behind the same call, ceiling, gate and
 ledger. A service whose `base` is on `tripo3d` (`https://openapi.tripo3d.com/v3`, its v3
 API; v2 is being retired) is spoken to as Tripo: `model` is its `model_version`, such as

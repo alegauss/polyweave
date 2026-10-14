@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-30 -20 1060 707" width="1000" height="667">
+  <!-- The PlayStation-layout pad seen from its left side, the face to the right, at the
+       front view's height: the side Meshy is given beside the front (§PW428), so it
+       knows the sticks stand up from the face and L2 sits flush behind L1 on the back
+       of the shoulder. No maker's mark. -->
+  <defs>
+    <linearGradient id="wing" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#c9cdd4"/>
+      <stop offset="0.5" stop-color="#f3f4f6"/>
+      <stop offset="1" stop-color="#dfe2e7"/>
+    </linearGradient>
+    <linearGradient id="dark" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#16181c"/>
+      <stop offset="1" stop-color="#3a3e46"/>
+    </linearGradient>
+  </defs>
+
+  <!-- the body in profile: the top flat, the face at the right, the grip curving down
+       and back to its round end -->
+  <path d="M 400 150 C 470 136 640 134 688 148 C 706 156 712 200 712 260 L 712 330 C 712 420 690 520 650 590 C 625 640 590 668 545 666 C 495 664 462 632 438 585 C 405 520 380 440 372 360 C 364 280 370 190 400 150 Z" fill="url(#wing)" stroke="#8d939c" stroke-width="3"/>
+  <!-- the black core showing along the front, under the face -->
+  <path d="M 700 300 C 712 330 712 420 690 500 C 672 560 650 600 630 625 C 660 560 684 470 690 380 C 692 340 694 315 700 300 Z" fill="url(#dark)"/>
+  <!-- the seam where the white wing meets the black core -->
+  <path d="M 690 160 C 650 260 640 420 610 640" fill="none" stroke="#a7adb6" stroke-width="2"/>
+
+  <!-- L1 on the top of the shoulder, toward the front -->
+  <path d="M 560 136 C 600 124 660 124 690 136 L 688 152 C 650 144 600 144 562 150 Z" fill="#eceef1" stroke="#8d939c" stroke-width="2.5"/>
+  <!-- L2 behind it, flush with the shell, curving down the back of the shoulder -->
+  <path d="M 556 140 C 520 134 470 140 432 160 C 410 172 398 196 396 226 C 412 214 432 200 456 190 C 490 176 526 168 560 156 Z" fill="url(#dark)" stroke="#0b0c0f" stroke-width="2.5"/>
+
+  <!-- the d-pad's edge, just proud of the face -->
+  <rect x="712" y="244" width="8" height="52" rx="3" fill="#d6dae0" stroke="#8d939c" stroke-width="2"/>
+  <!-- the left stick, standing out from the face: its well, its shaft, its cap -->
+  <rect x="706" y="372" width="10" height="76" rx="4" fill="#20232a"/>
+  <rect x="716" y="398" width="34" height="24" fill="#2a2d33" stroke="#0b0c0f" stroke-width="2"/>
+  <path d="M 748 362 C 756 362 764 366 766 374 L 768 446 C 766 454 756 458 748 458 L 744 458 L 744 362 Z" fill="url(#dark)" stroke="#0b0c0f" stroke-width="2.5"/>
+  <path d="M 766 380 L 766 440" stroke="#5a606b" stroke-width="3" stroke-dasharray="3 4"/>
+</svg>

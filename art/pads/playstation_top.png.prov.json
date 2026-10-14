@@ -1,0 +1,30 @@
+{
+  "artefact": {
+    "bytes": 35614,
+    "path": "pads/playstation_top.png",
+    "sha256": "c883b151197a9f3974aafec51955beff3966b92a0b3f5392cebcdd44a0478fa5"
+  },
+  "elapsed_s": null,
+  "engine": {
+    "name": "picture.vector",
+    "rasteriser": "godot thorvg"
+  },
+  "inputs": [
+    {
+      "path": "pads/playstation_top.svg",
+      "role": "vector",
+      "sha256": "659d89a55242595b657d2129d3d84a49d71d8ebf39d46a66b7fbffb68b07580a"
+    }
+  ],
+  "kind": "picture",
+  "measurements": {},
+  "params": {
+    "made_by": "picture.vector",
+    "width": 1000
+  },
+  "produced_at": "2026-10-14T16:09:12Z",
+  "producer": {
+    "tool": "polyweave",
+    "version": "0.1.0"
+  }
+}

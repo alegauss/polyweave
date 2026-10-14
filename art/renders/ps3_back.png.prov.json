@@ -1,0 +1,93 @@
+{
+  "artefact": {
+    "bytes": 230614,
+    "path": "renders/ps3_back.png",
+    "sha256": "ceb88fefab5c4a9bab14311dc933948c000c47bc5932b9ae6c5bcadca8ca74fc"
+  },
+  "digest": {
+    "look_digest": "9ccf020742b62391",
+    "palette": [
+      81.281,
+      -0.0274,
+      0.0204
+    ],
+    "quantum": 0.02,
+    "shape_digest": "0eda9cd42c10c680"
+  },
+  "elapsed_s": 5.65,
+  "engine": {
+    "bindings": "bpy 5.2.1",
+    "display_device": "sRGB",
+    "name": "cycles",
+    "version": "5.2.1 LTS",
+    "view_transform": "Standard"
+  },
+  "inputs": [
+    {
+      "path": "pads/playstation_v3.glb",
+      "role": "mesh",
+      "sha256": "5431bcaf43f5d2d146af557ea4efb11399c349dc4d61c725a0888ccb09b60975"
+    }
+  ],
+  "kind": "render",
+  "measurements": {
+    "alpha_coverage": 1.0,
+    "had_alpha": true,
+    "luma_mean": 0.651777,
+    "luma_p1": 0.03495,
+    "luma_p50": 0.637597,
+    "luma_p99": 1.0,
+    "luma_std": 0.302384,
+    "saturation_mean": 0.003876,
+    "saturation_p1": 0.0,
+    "saturation_p50": 0.0,
+    "saturation_p99": 0.058824,
+    "saturation_std": 0.034822,
+    "size": [
+      768,
+      768
+    ],
+    "subject_extent": 0.679688
+  },
+  "params": {
+    "ambient": 0.25,
+    "azimuth": 180,
+    "decimate": {
+      "floor": 50000,
+      "planar": true,
+      "ratio": 0.25
+    },
+    "elevation": 35,
+    "exposure": 0.0,
+    "fill": 120.0,
+    "focal_mm": 50.0,
+    "frame": [
+      768,
+      768
+    ],
+    "key": 400.0,
+    "light_distance": 3.0,
+    "lights": "per radius\u00b2",
+    "margin": 1.1,
+    "rim": 200.0,
+    "size": 768,
+    "transparent": true
+  },
+  "produced_at": "2026-10-14T16:10:37Z",
+  "producer": {
+    "tool": "polyweave",
+    "version": "0.1.0"
+  },
+  "rung": "preview",
+  "samples": 64,
+  "seed": 0,
+  "tolerances": {
+    "alpha_floor": 0.02,
+    "background_delta_e": 12.0,
+    "delta_e": 2.0,
+    "render_noise": 0.02,
+    "silhouette_iou": 0.97,
+    "subject_coverage": 0.12,
+    "subject_extent": 0.05
+  }
+}

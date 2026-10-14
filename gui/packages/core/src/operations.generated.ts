@@ -978,6 +978,8 @@ export interface MeshBuyArgs {
   prompt?: string
   /** a picture picture.gate passed, to model from instead of words */
   picture_path?: string
+  /** other views of the same thing, each gated too: a side, a top; default [] */
+  views?: unknown[]
   /** the service's model: meshy-6-lite, or Tripo's v2.5-20250123; default "meshy-6-lite" */
   model?: string
   /** the triangles to aim at; from 100 to …; default 8000 */

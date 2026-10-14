@@ -35,7 +35,11 @@ from .describe import Param, operation
 from .errors import PolyweaveError
 
 #: The two routes, and where each is asked after.
-ROUTES = {"text": "/openapi/v2/text-to-3d", "image": "/openapi/v1/image-to-3d"}
+ROUTES = {"text": "/openapi/v2/text-to-3d", "image": "/openapi/v1/image-to-3d",
+          "views": "/openapi/v1/multi-image-to-3d"}
+
+#: The most pictures one Meshy task takes: the front and three other views.
+MOST_VIEWS = 3
 
 #: Tripo's (§PW445), on its v3 API, whose base is `https://openapi.tripo3d.com/v3`: a
 #: picture is sent up first for a token, a task is asked after at /tasks/<id>, and the
@@ -60,6 +64,9 @@ def buy(
     picture_path: Annotated[
         str, Param("a picture picture.gate passed, to model from instead of words")
     ] = None,
+    views: Annotated[
+        list, Param("other views of the same thing, each gated too: a side, a top")
+    ] = (),
     model: Annotated[
         str, Param("the service's model: meshy-6-lite, or Tripo's v2.5-20250123")
     ] = "meshy-6-lite",
@@ -106,12 +113,25 @@ def buy(
     base, key = _reached(name, about)
     price = picture._price(name, about.get("prices") or {}, model, None)
 
-    route = "text" if prompt is not None else "image"
+    route = "text" if prompt is not None else "views" if views else "image"
     tripo = TRIPO_HOST in base
     source = None
-    if route == "image":
+    if views and (picture_path is None or tripo or len(views) > MOST_VIEWS):
+        raise PolyweaveError(
+            "fetch.bad-choice",
+            "other views are sent with a front picture, to Meshy, three at most"
+            if not tripo else "Tripo is sent one picture here, and views were given",
+            "pass picture_path as the front and at most three views beside it"
+            if not tripo else "buy from the Meshy service, or leave views out",
+            given="views",
+        )
+    seen = []
+    if route != "text":
         source = here / picture_path
         _gated(source, here)
+        for one in views:
+            _gated(here / one, here)
+            seen.append(here / one)
     if tripo:
         request: dict = {"model_version": model, "texture": False,
                          "face_limit": int(polycount)}
@@ -126,12 +146,12 @@ def buy(
         }
         if route == "text":
             request.update(mode="preview", prompt=prompt)
+        elif route == "views":
+            # The front first, which Meshy takes as the primary view.
+            request.update(image_urls=[_data_uri(one) for one in (source, *seen)],
+                           should_texture=False)
         else:
-            encoded = base64.b64encode(picture.sent_bytes(source)).decode("ascii")
-            request.update(
-                image_url=f"data:{picture._mime(source)};base64,{encoded}",
-                should_texture=False,
-            )
+            request.update(image_url=_data_uri(source), should_texture=False)
 
     purchase.allow(price, root=here, service=name)
     if tripo:
@@ -183,6 +203,7 @@ def buy(
         service=name,
         details={
             "route": route,
+            **({"views": list(views)} if views else {}),
             "model": model,
             "polycount": int(polycount),
             "entity": drawn_from,
@@ -239,6 +260,11 @@ def _promoted(source: Path, here: Path) -> bool:
         if any(m.get("person_accepted") for m in answer.get("members") or ()):
             return True
     return False
+
+
+def _data_uri(source: Path) -> str:
+    encoded = base64.b64encode(picture.sent_bytes(source)).decode("ascii")
+    return f"data:{picture._mime(source)};base64,{encoded}"
 
 
 def _reached(name: str, about: dict) -> tuple[str, str]:

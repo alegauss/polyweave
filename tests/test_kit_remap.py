@@ -24,14 +24,14 @@ def test_each_pad_s_spots_table_is_where_its_drawing_puts_each_place(layout):
 
     kit = kits.KITS / "remap"
     root = ET.parse(kit / "pads" / f"{layout}.svg").getroot()
-    _, _, width, height = (float(v) for v in root.get("viewBox").split())
+    left, top, width, height = (float(v) for v in root.get("viewBox").split())
     group = next(g for g in root.iter() if g.get("id") == "spots")
     drawn = [
         {
             "code": spot.get("data-code"),
-            "at": [round(float(spot.get("cx")) / width, 3),
-                   round(float(spot.get("cy")) / height, 3)],
-            "side": -1 if float(spot.get("cx")) < width / 2 else 1,
+            "at": [round((float(spot.get("cx")) - left) / width, 3),
+                   round((float(spot.get("cy")) - top) / height, 3)],
+            "side": -1 if float(spot.get("cx")) - left < width / 2 else 1,
         }
         for spot in group
     ]

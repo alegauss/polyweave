@@ -95,6 +95,31 @@ def test_a_mesh_from_a_gated_picture_sends_it_and_names_it(tmp_path, meshy):
     assert entry["reference"] == "mote.png"
 
 
+def test_views_beside_the_front_go_in_one_task_each_gated(tmp_path, meshy):
+    def drawn(name, box):
+        image = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
+        ImageDraw.Draw(image).ellipse(box, fill=(200, 60, 60, 255))
+        image.save(tmp_path / name)
+
+    drawn("outline.png", (14, 44, 114, 84))
+    drawn("front.png", (15, 44, 115, 84))
+    drawn("side_outline.png", (40, 30, 88, 98))
+    drawn("side.png", (40, 30, 88, 98))
+    picture.gate(["front.png"], "outline.png", root=tmp_path)
+    assert refused(out="m.glb", picture_path="front.png", views=["side.png"],
+                   root=tmp_path).code == "fetch.picture-ungated"
+    picture.gate(["side.png"], "side_outline.png", root=tmp_path)
+    entry = mesh_buy.buy(out="m/pad.glb", picture_path="front.png",
+                         views=["side.png"], root=tmp_path)
+    url, payload = meshy.sent[0]
+    assert url == "https://api.meshy.ai/openapi/v1/multi-image-to-3d"
+    assert len(payload["image_urls"]) == 2 and "image_url" not in payload
+    assert payload["should_texture"] is False
+    assert entry["reference"] == "front.png"
+    assert refused(out="m.glb", prompt="a pad", views=["side.png"],
+                   root=tmp_path).code == "fetch.bad-choice"
+
+
 def test_a_picture_changed_since_the_gate_is_refused(tmp_path, meshy):
     def drawn(name, box):
         image = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
