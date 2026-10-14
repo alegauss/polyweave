@@ -1,0 +1,6 @@
+# Renders made to look at a mesh are inspection, not art the kits carry: what a kit
+# carries is drawn into its own folder under src/polyweave/kits.
+renders/
+# Models borrowed from Sketchfab are tens of megabytes each; their .prov.json records
+# keep the source, licence, credit and hash to fetch them again.
+*_sketchfab.glb
