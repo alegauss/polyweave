@@ -153,6 +153,14 @@ CODES: dict[str, Code] = {
         when="a normalisation of an empty or nearly empty mesh",
         doors=("check that the file imported",),
     ),
+    "mesh.not-ready": Code(
+        means="a mesh misses its engine-ready bar on a bound only a person can fix",
+        when="normalise.ingest with ready= whose spec bounds holes, non-manifold "
+        "edges, materials or texture bytes the written mesh exceeds, after its seams "
+        "were welded and its triangles reduced to the ceiling (§PW447)",
+        doors=("repair the mesh by hand", "buy it again",
+               "move the bound if a person accepts the mesh as it is"),
+    ),
     "mesh.bad-frame": Code(
         means="a mesh was asked to be sized on an axis or held from an origin that "
         "does not exist",

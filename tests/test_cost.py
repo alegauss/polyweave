@@ -97,6 +97,9 @@ def test_a_mesh_says_what_it_costs(tmp_path):
         "materials": 2,
         "draw_calls": 2,
         "texture_bytes": 64,
+        # Its accessors carry no vertex data, so its topology reads as nothing missing.
+        "holes": 0,
+        "non_manifold": 0,
     }
 
 

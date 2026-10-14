@@ -56,6 +56,7 @@
 - ✅ **PW264** **mesh.buy asks which paid service to use even when only one of the declared services sells meshes** — A buy naming no service takes the one whose prices row carries its model, so mesh.buy in Starship reaches Meshy; it asks only when none or several do.
 - ✅ **PW445** **Meshy is the only 3D generator a mesh can be bought from, so a project that prefers Tripo writes its own client** — mesh.buy speaks Tripo's v3 API for a service based on tripo3d: same ceiling, gate, balance readings and ledger (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW446** **no mesh can be bought from Rodin, so a part that needs clean topology has only Meshy's to start from** — mesh.buy speaks Rodin's v2 API for a service on hyper3d or deemos: a quad mesh behind the same ceiling, gate and ledger, its cost quoted (design recorded in `docs/specs/fetching.md`).
+- ✅ **PW447** **a bought mesh is oriented and scaled, but nothing holds its triangles, materials or holes to a bar before a sitting** — normalise.ingest(ready=spec) welds seams, cuts to the triangle ceiling and refuses a missed bound such as holes as mesh.not-ready (design recorded in `docs/specs/acceptance-spec.md`).
 
 ## Block E — One world with the engine
 

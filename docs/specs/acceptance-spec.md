@@ -551,12 +551,24 @@ max     = 1200
 A cost is read off the file the game draws and never off pixels, so it asks nothing of
 the ladder and reports no rung. `of` names the file. Where it is left out the cost is read
 off the mesh the picture's own record names as its input. A `.glb` answers `triangles`,
-`materials`, `draw_calls` (one per primitive) and `texture_bytes` (every embedded image
-as uncompressed RGBA8, without mipmaps). A `.voxels.json` answers `cells`,
+`materials`, `draw_calls` (one per primitive), `texture_bytes` (every embedded image
+as uncompressed RGBA8, without mipmaps), `holes` (edges a single triangle uses once
+vertices at one place are welded, so a UV seam is not a hole) and `non_manifold` (edges
+more than two triangles share). A `.voxels.json` answers `cells`,
 `cells_drawn` (the skin), `triangles` (twelve per drawn cube), `materials` and
 `draw_calls`, and a `.png` answers `texture_bytes`. A cost a file cannot answer is
 refused (`spec.no-cost-source`) with the ones it can. `cost.read` gives all of a file's
 costs, which is where a first bar is measured.
+
+The same predicates are a bought mesh's engine-ready bar (§PW447).
+`normalise.ingest(ready="<spec>.accept.toml")` welds the mesh's coincident vertices and,
+where the spec bounds `triangles` with a `max`, reduces the mesh to it (a planar dissolve,
+then a collapse). It then reads every cost the spec bounds off the written file. Those two
+fixes are recorded under `ready.fixed` in the result and in the record's params:
+`welded_vertices`, and `triangles` as `[before, after]`. A bound the fixes cannot meet,
+such as holes, materials or texture bytes, is refused as `mesh.not-ready`, with its
+`detail` a JSON object naming each failed measure. That refusal comes before any sitting
+is drawn of the mesh.
 
 ## What this file deliberately cannot say
 

@@ -1058,6 +1058,8 @@ export interface NormaliseIngestArgs {
   alpha_floor?: number
   /** the project the paths resolve against; default "." */
   root?: string
+  /** an acceptance spec whose cost bounds are the engine-ready bar */
+  ready?: string
 }
 
 /** Which routes draw on this machine, proved rather than assumed. */

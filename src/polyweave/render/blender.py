@@ -168,7 +168,7 @@ def decimate(obj: Any, ratio: float) -> Any:
     merged first, which keeps every outline, and only what is still over the target is
     collapsed: collapse alone shattered Spinhold's voxel builds into cubes (§PW420).
     """
-    bpy = require()
+    require()
     if not 0.0 < ratio <= 1.0:
         raise PolyweaveError(
             "render.bad-ratio",
@@ -178,7 +178,13 @@ def decimate(obj: Any, ratio: float) -> Any:
     whole = triangles(obj)
     if ratio == 1.0 or whole <= DECIMATE_FLOOR:
         return obj
-    target = whole * ratio
+    return reduce_to(obj, whole * ratio)
+
+
+def reduce_to(obj: Any, target: float) -> Any:
+    """The mesh at `target` triangles or under: coplanar faces merged first, which keeps
+    every outline, and only what is still over collapsed (§PW420, §PW447)."""
+    bpy = require()
     planar = obj.modifiers.new("polyweave-planar", "DECIMATE")
     planar.decimate_type = "DISSOLVE"
     planar.angle_limit = PLANAR_LIMIT
@@ -192,6 +198,22 @@ def decimate(obj: Any, ratio: float) -> Any:
     with bpy.context.temp_override(object=obj):
         bpy.ops.object.modifier_apply(modifier=modifier.name)
     return obj
+
+
+def merge_close(obj: Any, distance: float = 1e-5) -> int:
+    """Weld vertices closer than `distance`, which a generator leaves along its seams,
+    and answer how many went (§PW447). Nothing about the shape moves."""
+    import bmesh
+
+    mesh = obj.data
+    before = len(mesh.vertices)
+    held = bmesh.new()
+    held.from_mesh(mesh)
+    bmesh.ops.remove_doubles(held, verts=held.verts, dist=distance)
+    held.to_mesh(mesh)
+    held.free()
+    mesh.update()
+    return before - len(mesh.vertices)
 
 
 def triangles(obj: Any) -> int:

@@ -8,30 +8,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-### §PW447 A bought mesh that arrives ready for the engine
-
-`normalise.ingest` already brings an arriving mesh into the project's frame: the way
-round from the drawing, the size along a stated axis, the origin at the base or the
-centre. `cost` already counts triangles, materials, draw calls and texture bytes. What
-does not exist is the step between them: a declared bar for what an engine-ready mesh
-is, checked on arrival and, where the fix is mechanical, applied in Blender before the
-mesh reaches a sitting.
-
-Reviews of generators in 2026 name this as the open problem of the category: Meshy,
-Tripo and Rodin each return meshes that need a manual cleanup pass before they are
-scene-ready. A generator cannot close it, because it does not know the project's budget.
-polyweave does, because the project declares it.
-
-The bar is declared per asset or per family in the acceptance spec, using measures from
-the closed vocabulary: a triangle ceiling, a material count, holes and non-manifold
-edges, and texel density where a texture is present. A miss that Blender can fix without
-judgement, such as a decimate to a ceiling or merged duplicate vertices, is fixed and
-recorded; one that needs judgement is refused with the measure that failed. Nothing
-about this re-implements a generator.
-
-Evidence that it landed: a Meshy mesh over its declared ceiling arrives under it with
-the change in its record, and one with holes is refused before any sitting is drawn.
-
 ### §PW448 The licence a plan grants, for every service
 
 A generator's licence depends on the plan the key belongs to, not on the service.

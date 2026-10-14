@@ -8,8 +8,7 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-- 📋 **PW447** (deps: —) **a bought mesh is oriented and scaled, but nothing holds its triangles, materials or holes to a bar before a sitting** — The market's own reviews say generated meshes still need a cleanup pass before a scene, and here that pass is still found by hand. → §PW447
-- 📋 **PW448** (deps: —) **no service's plan licence reaches the record, so a free-tier mesh or picture can ship in a sold game unwarned** — PW435 names the gap for ElevenLabs alone, while Tripo's free tier is non-commercial too and every new adapter adds a plan. → §PW448
+- 🛠 **PW448** (deps: —) **no service's plan licence reaches the record, so a free-tier mesh or picture can ship in a sold game unwarned** — PW435 names the gap for ElevenLabs alone, while Tripo's free tier is non-commercial too and every new adapter adds a plan. → §PW448
 
 ## Block E — One world with the engine
 

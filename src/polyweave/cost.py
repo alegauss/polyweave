@@ -35,11 +35,14 @@ COSTS: dict[str, str] = {
     "texture_bytes": "texture memory, uncompressed RGBA8 without mipmaps",
     "cells": "a voxel model's filled cells",
     "cells_drawn": "a voxel model's cells with a face on the outside",
+    "holes": "edges one triangle uses once the seams are welded: the rims of holes",
+    "non_manifold": "edges more than two triangles share, which no clean surface has",
 }
 
 #: What each kind of file can answer.
 ANSWERS = {
-    ".glb": ("triangles", "materials", "draw_calls", "texture_bytes"),
+    ".glb": ("triangles", "materials", "draw_calls", "texture_bytes", "holes",
+             "non_manifold"),
     ".json": ("cells", "cells_drawn", "triangles", "materials", "draw_calls"),
     ".png": ("texture_bytes",),
 }
@@ -137,7 +140,67 @@ def _glb(where: Path) -> dict:
         "texture_bytes": sum(
             _image_bytes(one, gltf, binary) for one in gltf.get("images", [])
         ),
+        **_topology(gltf, binary),
     }
+
+
+#: glTF's component types, as numpy reads them.
+_COMPONENTS = {5121: "<u1", 5123: "<u2", 5125: "<u4", 5126: "<f4"}
+_WIDTHS = {"SCALAR": 1, "VEC2": 2, "VEC3": 3, "VEC4": 4}
+
+
+def _accessor(gltf: dict, binary: bytes, index: int):
+    """One accessor's values as an array, rows by element (§PW447)."""
+    import numpy as np
+
+    accessor = gltf["accessors"][index]
+    view = gltf["bufferViews"][accessor["bufferView"]]
+    kind = np.dtype(_COMPONENTS[accessor["componentType"]])
+    width = _WIDTHS[accessor["type"]]
+    start = view.get("byteOffset", 0) + accessor.get("byteOffset", 0)
+    stride = view.get("byteStride") or kind.itemsize * width
+    count = accessor["count"]
+    if stride == kind.itemsize * width:
+        flat = np.frombuffer(binary, dtype=kind, count=count * width, offset=start)
+        return flat.reshape(count, width)
+    rows = [np.frombuffer(binary, dtype=kind, count=width, offset=start + i * stride)
+            for i in range(count)]
+    return np.array(rows)
+
+
+def _topology(gltf: dict, binary: bytes) -> dict:
+    """The rims of holes and the edges more than two triangles share, over every
+    triangle primitive, with vertices at one place welded first: a glTF splits a vertex
+    at each UV seam, and an unwelded seam would read as a hole (§PW447)."""
+    import numpy as np
+
+    edges = []
+    offset = 0
+    for mesh in gltf.get("meshes", []):
+        for primitive in mesh.get("primitives", []):
+            if primitive.get("mode", _TRIANGLES) != _TRIANGLES:
+                continue
+            at = primitive["attributes"].get("POSITION")
+            if at is None or "bufferView" not in gltf["accessors"][at]:
+                continue
+            points = _accessor(gltf, binary, at).astype(np.float64)
+            keys = np.round(points, 5)
+            _, welded = np.unique(keys, axis=0, return_inverse=True)
+            welded = welded.reshape(-1) + offset
+            offset = int(welded.max()) + 1 if len(welded) else offset
+            if "indices" in primitive:
+                corners = _accessor(gltf, binary, primitive["indices"]).reshape(-1)
+            else:
+                corners = np.arange(len(points))
+            faces = welded[corners[: len(corners) // 3 * 3]].reshape(-1, 3)
+            for a, b in ((0, 1), (1, 2), (2, 0)):
+                edges.append(np.sort(faces[:, [a, b]], axis=1))
+    if not edges:
+        return {"holes": 0, "non_manifold": 0}
+    every = np.concatenate(edges)
+    every = every[every[:, 0] != every[:, 1]]
+    _, uses = np.unique(every, axis=0, return_counts=True)
+    return {"holes": int((uses == 1).sum()), "non_manifold": int((uses > 2).sum())}
 
 
 def _image_bytes(image: dict, gltf: dict, binary: bytes) -> int:

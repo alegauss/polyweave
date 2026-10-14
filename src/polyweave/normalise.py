@@ -26,6 +26,7 @@ pose is still a parameter — it just starts from a known frame.
 from __future__ import annotations
 
 import itertools
+import json
 import math
 from pathlib import Path
 from typing import Annotated, Any
@@ -642,7 +643,10 @@ def write_mesh(found: dict, out: str | Path, *, materials: dict | None = None) -
 _TO_BLENDER = np.array([[1.0, 0.0, 0.0], [0.0, 0.0, -1.0], [0.0, 1.0, 0.0]])
 
 
-def write_normalised(source: str | Path, found: dict, out: str | Path) -> Path:
+def write_normalised(
+    source: str | Path, found: dict, out: str | Path, *, ceiling: int | None = None,
+    fixed: dict | None = None,
+) -> Path:
     """The file that arrived, moved by the normalisation and written whole.
 
     **What a service painted comes with it** (§PW90). `read_mesh` hands the maths the
@@ -652,6 +656,11 @@ def write_normalised(source: str | Path, found: dict, out: str | Path) -> Path:
     place instead, by the same rotation, scale and offset the maths found, and exported
     as it is. Its UVs, its materials and the images they read go out untouched, because
     nothing here rebuilt them.
+
+    With `ceiling` (§PW447), what needs no judgement is fixed on the way: vertices a
+    generator left at one place along its seams are welded, and a mesh over the
+    ceiling's triangles is reduced to it, its outlines kept. What changed is put in
+    `fixed`, so the record can say it.
     """
     from .render import blender
 
@@ -667,6 +676,15 @@ def write_normalised(source: str | Path, found: dict, out: str | Path) -> Path:
     obj.data.transform(Matrix(moved.tolist()) @ obj.matrix_world)
     obj.matrix_world = Matrix.Identity(4)
     obj.data.update()
+    if ceiling is not None:
+        said = fixed if fixed is not None else {}
+        welded = blender.merge_close(obj)
+        if welded:
+            said["welded_vertices"] = welded
+        before = blender.triangles(obj)
+        if before > ceiling:
+            blender.reduce_to(obj, ceiling)
+            said["triangles"] = [before, blender.triangles(obj)]
 
     where = Path(out)
     where.parent.mkdir(parents=True, exist_ok=True)
@@ -707,8 +725,15 @@ def ingest(
     origin: str = "base",
     alpha_floor: float | None = None,
     root: str | Path = ".",
+    ready: str | Path | None = None,
 ) -> dict:
     """Put an arriving mesh in the project's frame, once, and write it there.
+
+    `ready` names an acceptance spec whose cost predicates are the bar an engine-ready
+    mesh is held to (§PW447): what needs no judgement is fixed on the way, seams welded
+    and triangles reduced to the spec's ceiling, and anything the spec still bounds and
+    the written mesh misses, holes, materials or texture bytes, is refused before a
+    sitting is drawn of it.
 
     `against` is the drawing that asked for the shape and settles which way is forward.
     Without one the mesh keeps the way round it arrived, unless `rotation` states it —
@@ -746,9 +771,13 @@ def ingest(
     # numbers it did not use would claim it had.
     found = {**(found if against is not None else {}), **placed}
 
+    bar = _bar(ready, root) if ready is not None else None
+    fixed: dict = {}
     written = write_normalised(
-        source, found, out or source.with_name(f"{source.stem}.normalised.glb")
+        source, found, out or source.with_name(f"{source.stem}.normalised.glb"),
+        ceiling=bar["ceiling"] if bar else None, fixed=fixed,
     )
+    held = _held_to(bar, written) if bar else None
     record = {
         "source": str(source),
         "mesh": str(written),
@@ -765,8 +794,49 @@ def ingest(
     for key in ("against", "silhouette_iou", "tried", "lean"):
         if key in found:
             record[key] = found[key]
+    if bar:
+        record["ready"] = {"spec": str(ready), "fixed": fixed, "costs": held["costs"]}
     record["provenance"] = str(_record_derivation(record, found, root, bars))
+    if held and held["failed"]:
+        raise PolyweaveError(
+            "mesh.not-ready",
+            f"{Path(written).name} misses its engine-ready bar on "
+            f"{', '.join(one['measure'] for one in held['failed'])}, which needs a "
+            "person's judgement to fix",
+            "repair the mesh by hand, buy it again, or move the bound in the spec if "
+            "the person accepts it as it is; nothing was laid out for a sitting",
+            detail=json.dumps({"failed": held["failed"], "fixed": fixed,
+                               "mesh": str(written)}),
+            given=held["failed"][0]["measure"],
+        )
     return record
+
+
+def _bar(spec: str | Path, root: str | Path) -> dict:
+    """An acceptance spec's cost predicates, and the triangle ceiling among them."""
+    from . import accept, cost
+
+    here = Path(root)
+    read = accept.read(str(spec), here)
+    costs = [p for p in read.predicates if cost.is_cost(p.measure)]
+    ceilings = [float(p.maximum) for p in costs
+                if p.measure == "triangles" and p.maximum is not None]
+    return {"predicates": costs,
+            "ceiling": int(min(ceilings)) if ceilings else None}
+
+
+def _held_to(bar: dict, mesh: Path) -> dict:
+    """The written mesh's costs, and each cost predicate it still misses."""
+    from . import accept, cost
+
+    costs = cost.read(mesh)
+    failed = [
+        {"id": p.id, "measure": p.measure, "value": costs.get(p.measure),
+         "min": p.minimum, "max": p.maximum}
+        for p in bar["predicates"]
+        if p.measure in costs and not accept._passes(float(costs[p.measure]), p)
+    ]
+    return {"costs": costs, "failed": failed}
 
 
 def _record_derivation(
@@ -807,6 +877,7 @@ def _record_derivation(
             "size_on": record["size_on"],
             "origin": record["origin"],
             **{k: found[k] for k in ("against", "tried", "lean") if k in found},
+            **({"ready": record["ready"]} if "ready" in record else {}),
         },
         measurements={
             "size": record["size"],
@@ -833,6 +904,9 @@ def ingested(
     origin: Annotated[str, Param("where its origin goes", choices=ORIGINS)] = "base",
     alpha_floor: Annotated[float, Param("the drawing's alpha floor, if any")] = None,
     root: Annotated[str, Param("the project the paths resolve against")] = ".",
+    ready: Annotated[
+        str, Param("an acceptance spec whose cost bounds are the engine-ready bar")
+    ] = None,
 ) -> dict:
     """A mesh brought to the conventions: upright, centred, sized, and recorded."""
     return ingest(
@@ -844,4 +918,5 @@ def ingested(
         origin=origin,
         alpha_floor=alpha_floor,
         root=root,
+        ready=ready,
     )
