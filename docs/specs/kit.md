@@ -218,6 +218,19 @@ section are taken, with a `deadzone` and `invert_vertical` where it kept them, w
 the kit's file at once and said in `said`. The older file is left as it was, and is not
 read again once the kit has its own.
 
+The pad can be bound on its picture (§PW428, 0.4.0). The remap screen's `pad` button
+opens `pad_screen.gd`, a layer over it binding through the same store: every place on
+the pad in use, named in its layout's glyphs where it sits, with a leader line to the
+action it holds or "free". A real press lights its place; `ui_up` and `ui_down` pick a
+place, `ui_accept` chooses an action for it, `ui_left` and `ui_right` go through them,
+and `ui_accept` again binds it with the same swap; `ui_cancel` backs out, then closes.
+Where each place sits is a layout's spots table, `pads/<layout>.json` in the core:
+`{"slots": [{"code", "at": [x, y], "side"}]}`, `at` from 0 to 1 across the pad and
+`side` -1 or 1 for the side its label stands on. `pads/<layout>.svg` is drawn behind the
+places where there is one, and a layout with no table stands on the Xbox one, named in
+its own glyphs. The proof checks every layout names each of its places, a press lights
+one, and a rebind on the picture swaps.
+
 **menus** (§PW346, requires prompts): a main menu, a pause menu and a yes-or-no confirm
 a pad can drive. `PolyweaveMenu` makes a button per item, named by the item and
 labelled `tr(item)`, links focus top to bottom and round again, and follows the family

@@ -32,6 +32,9 @@ def test_the_remap_kit_lands_after_prompts_and_proves_in_its_fixture(tmp_path):
     assert [s["status"] for s in said["proved"]["scripts"]] == [expected, expected]
     assert (game / "addons" / "polyweave" / "remap" / "bindings.gd").is_file()
     assert (game / "kits" / "remap" / "remap_menu.tscn").is_file()
+    # The pad screen and its layout's spots table land with the core (§PW428).
+    assert (game / "addons" / "polyweave" / "remap" / "pad_screen.gd").is_file()
+    assert (game / "addons" / "polyweave" / "remap" / "pads" / "xbox.json").is_file()
 
 
 @pytest.mark.skipif(not os.environ.get("GODOT"), reason="no $GODOT on this machine")

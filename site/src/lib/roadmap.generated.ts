@@ -257,7 +257,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW428",
     block: "V",
     symptom: "the remap kit has no screen that draws the pad and rebinds on the picture, so each game draws its own",
-    why: "A player learns a pad by seeing it, and every game that rebinds a pad would otherwise rebuild this screen and its art.",
+    why: "Each layout's pad picture as SVG via picture.vector, PlayStation and Switch spots tables, and a sitting for the owner to accept the art.",
     deps: [],
   },
   {

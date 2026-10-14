@@ -2,7 +2,8 @@ extends VBoxContainer
 ## A remap screen (polyweave kit "remap", §PW345): a row per rebindable action, its key
 ## and its pad binding drawn as the prompts kit's icons. Pressing a binding listens for
 ## the next key, button or stick; a clash is swapped and said; Escape stops listening.
-## Under the rows, the stick's deadzone, its inverted vertical and a reset to defaults.
+## Under the rows, the stick's deadzone, its inverted vertical, a reset to defaults and
+## the pad drawn as a picture to bind on (§PW428).
 
 const Bindings := preload("res://addons/polyweave/remap/bindings.gd")
 const Prompts := preload("res://addons/polyweave/prompts/prompts.gd")
@@ -46,7 +47,20 @@ func _ready() -> void:
 		_said.text = "every binding is back to the game's own"
 		_draw_rows())
 	add_child(reset)
+	var pad := Button.new()
+	pad.text = "pad"
+	pad.pressed.connect(open_pad)
+	add_child(pad)
 	_draw_rows()
+
+
+## the pad as a picture over the screen, binding through the same store (§PW428)
+func open_pad() -> CanvasLayer:
+	var screen: CanvasLayer = load("res://addons/polyweave/remap/pad_screen.gd").new()
+	screen.bindings = bindings
+	screen.closed.connect(_draw_rows)
+	get_tree().root.add_child(screen)
+	return screen
 
 
 ## one of the kit's own icons, imported or straight from the file, or null

@@ -3,7 +3,8 @@ extends SceneTree
 ## swapped and never shared, a key leaves the pad's half alone, what was kept comes back
 ## after a restart, and a reset goes back to project.godot. It works on three actions
 ## of its own, declared as project.godot would declare them, so it holds in any game
-## whatever actions the game has (§PW392). Prints KIT PROVED, or KIT FAILED with why.
+## whatever actions the game has (§PW392), and the pad screen binds on the picture
+## (§PW428). Prints KIT PROVED, or KIT FAILED with why.
 
 const Bindings := preload("res://addons/polyweave/remap/bindings.gd")
 const KEPT := "user://polyweave_bindings_proof.cfg"
@@ -166,9 +167,52 @@ func _process(_delta: float) -> bool:
 	if not on_pad.has("button:3") or on_pad.has("button:0") or on_pad.has("key:%d" % KEY_Q):
 		failed.append("the screen listening on the pad bound jump to %s" % [on_pad])
 	menu.bindings.reset()
+	_pad_screen(menu.open_pad())
+	menu.bindings.reset()
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(KEPT))
 	if failed.is_empty():
 		print("KIT PROVED")
 	else:
 		print("KIT FAILED: " + "; ".join(failed))
 	return true
+
+
+## The pad screen (§PW428): every layout names each of its places, a real press lights
+## its place, a rebind on the picture takes and swaps, and cancel closes it.
+func _pad_screen(screen: CanvasLayer) -> void:
+	var failed := _failed
+	if not screen.is_node_ready():
+		failed.append("the pad screen did not open")
+		return
+	for layout in screen.LAYOUTS:
+		var slots: Array = screen.spots(layout)
+		var codes := {}
+		for slot: Dictionary in slots:
+			codes[slot["code"]] = true
+			if Bindings.decode(slot["code"]) == null or screen.glyph(slot["code"], layout) == "":
+				failed.append("the %s pad has a place no glyph names: %s" % [layout, slot["code"]])
+		if slots.is_empty() or codes.size() != slots.size():
+			failed.append("the %s pad's places are missing or repeated" % layout)
+	var north := InputEventJoypadButton.new()
+	north.button_index = JOY_BUTTON_Y
+	north.pressed = true
+	screen._input(north)
+	if not screen.lit("button:3"):
+		failed.append("pressing Y did not light its place on the pad")
+	var south := -1
+	for i in screen.slots.size():
+		if screen.slots[i]["code"] == "button:0":
+			south = i
+	screen.picked = south
+	screen.press("ui_accept")
+	if screen.choosing != J:
+		failed.append("choosing on jump's button offered %s, not jump" % screen.choosing)
+	screen.press("ui_right")
+	screen.press("ui_accept")
+	var now: Dictionary = screen.bindings.current()
+	if not (now[F] as Array).has("button:0") or (now[J] as Array).has("button:0") \
+			or not (now[J] as Array).has("axis:5:1"):
+		failed.append("binding fire on the picture did not swap with jump: %s" % [now])
+	screen.press("ui_cancel")
+	if not screen.is_queued_for_deletion():
+		failed.append("cancel did not close the pad screen")
