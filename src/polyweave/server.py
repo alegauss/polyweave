@@ -127,7 +127,8 @@ TOOL_BUDGET = 4500
 #: 121,200 at 120,533 for capture.again, a picture taken again from its record (§PW418).
 #: 121,800 at 121,478 for video.cut, a teaser cut from captured runs (§PW429).
 #: 122,300 at 121,866 for the describe tool, a declaration's keys over MCP (§PW430).
-LIST_BUDGET = 122300
+#: 122,900 at 122,410 for verdict.move, a sitting moved with its answers (§PW436).
+LIST_BUDGET = 122900
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

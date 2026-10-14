@@ -348,28 +348,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW436 A sitting moved with its answers
-
-Where: spinhold RK218, met while fixing PW416 (now in `docs/specs/world.md`). The
-pilot's lines sitting landed at the project root; it was moved to
-`art/review/pilot_lines/` by hand, and its paths rewritten in `sitting.json` and
-`.polyweave/sittings.json`. `.polyweave/answers.jsonl` was missed, so 23 answers named a
-sitting that no longer existed and the index showed it unanswered. PW416 stops new
-sittings landing at the root; one already laid out somewhere wrong still has no way to
-move.
-
-Build `verdict.move(sitting, to)`: move the folder under the project, rewrite the paths
-inside its `sitting.json` and its row in `sittings.json`, and refuse a target that
-exists or lies outside the project. `answers.jsonl` stays append-only, since the
-acceptance spec keeps it unedited so two sessions never race on it: the move appends one
-`moved` event, old manifest to new, and `verdict.answers`, the page's state and the
-index read an answer for the old manifest as one for the new. A member's verdict already
-kept in a sound's record needs nothing, since the record names the sound and not the
-sitting.
-
-Test: lay out a sitting, answer two families, move it, and see the index count both as
-answered at the new path, with `verdict.answers` carrying them into a run.
-
 ### §PW453 Live text in a vector picture
 
 Met while making a dev.to cover for polyweave itself (2026-10-13): an SVG of 1000×420

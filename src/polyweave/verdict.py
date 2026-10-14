@@ -537,6 +537,125 @@ def record_answer(
     return line
 
 
+def kept_answers(root) -> list[dict]:
+    """Every answer kept, each naming its sitting where it is now (§PW436).
+
+    The file is append-only, so a sitting moved is a `moved` line from its old manifest
+    to its new one, never a rewrite: an answer kept before the move is read as one for
+    the sitting where it went, through any number of moves.
+    """
+    import json
+
+    from .config import load
+    from .files import read_text_retrying
+
+    path = load(root).path("paths.work") / ANSWERS
+    lines = [json.loads(line)
+             for line in (read_text_retrying(path) or "").splitlines() if line.strip()]
+    went = {one["moved"]["from"]: one["moved"]["to"] for one in lines if "moved" in one}
+
+    def now(sitting: str) -> str:
+        seen = set()
+        while sitting in went and sitting not in seen:
+            seen.add(sitting)
+            sitting = went[sitting]
+        return sitting
+
+    return [{**one, "sitting": now(one["sitting"])} if "sitting" in one else one
+            for one in lines if "moved" not in one]
+
+
+@operation("verdict.move")
+def move(
+    sitting: Annotated[
+        str, Param("the sitting, as its manifest or the folder the page lists it in")
+    ],
+    to: Annotated[str, Param("the folder it moves to, under the project, not there")],
+    *,
+    root: Annotated[str, Param("the project the sitting belongs to")] = ".",
+) -> dict:
+    """Move a sitting laid out in the wrong folder, its answers with it (§PW436).
+
+    The folder moves; the paths inside its manifest and its row in the index are
+    rewritten; and one `moved` line is appended to the answers, which stay append-only,
+    so every answer given before reads as one for the sitting where it is now. A target
+    that exists, lies outside the project or inside the sitting itself is refused.
+    """
+    import json
+    import shutil
+
+    from . import review
+    from .config import load
+    from .files import read_text_retrying, write_atomic
+    from .provenance import relative
+
+    config = load(root)
+    here = config.root
+    listed = sitting.replace("\\", "/").rstrip("/")
+    if not listed.endswith(MANIFEST):
+        listed = f"{listed}/{MANIFEST}"
+    offered = {one["manifest"] for one in review.sittings(here)}
+    if listed not in offered:
+        raise PolyweaveError(
+            "loop.unknown-sitting",
+            f"{sitting!r} is not a sitting this project laid out",
+            "name a sitting the review page lists",
+            given=sitting,
+            allowed=sorted(offered),
+        )
+    old = (here / listed).parent
+    target = (here / to).resolve() if not Path(to).is_absolute() else Path(to).resolve()
+    try:
+        target.relative_to(here.resolve())
+    except ValueError:
+        raise PolyweaveError(
+            "verdict.bad-move", f"{to} is outside the project",
+            "move it to a folder under the project, such as art/review/<name>",
+            given=to) from None
+    if target.exists():
+        raise PolyweaveError(
+            "verdict.bad-move", f"{relative(target, here)} is already there",
+            "name a folder that does not exist yet", given=to)
+    if target.is_relative_to(old.resolve()):
+        raise PolyweaveError(
+            "verdict.bad-move", f"{to} is inside the sitting it would move",
+            "name a folder beside it, not within it", given=to)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.move(str(old), str(target))
+    was, now = relative(old, here), relative(target, here)
+
+    def moved(value):
+        if isinstance(value, str):
+            inside = value == was or value.startswith(was + "/")
+            return now + value[len(was):] if inside else value
+        if isinstance(value, list):
+            return [moved(one) for one in value]
+        if isinstance(value, dict):
+            return {key: moved(one) for key, one in value.items()}
+        return value
+
+    manifest = target / MANIFEST
+    write_atomic(manifest, json.dumps(
+        moved(json.loads(manifest.read_text(encoding="utf-8"))), indent=2) + "\n")
+    landed = relative(manifest, here)
+    index = config.path("paths.work") / "sittings.json"
+    held = json.loads(read_text_retrying(index) or "[]")
+    write_atomic(index, json.dumps(
+        [landed if one == listed else one for one in held], indent=2) + "\n")
+    from datetime import UTC, datetime
+
+    answers_path = config.path("paths.work") / ANSWERS
+    answers_path.parent.mkdir(parents=True, exist_ok=True)
+    with answers_path.open("a", encoding="utf-8") as appended:
+        appended.write(json.dumps({
+            "at": datetime.now(tz=UTC).isoformat(timespec="microseconds"),
+            "moved": {"from": listed, "to": landed}}, sort_keys=True) + "\n")
+    carried = sum(1 for one in kept_answers(here) if one.get("sitting") == landed)
+    return {"from": listed, "to": landed, "answers": carried,
+            "says": f"moved to {now}; {carried} answer(s) given there before read as "
+            "this sitting's"}
+
+
 @operation("verdict.answers")
 def answers(
     since: Annotated[
@@ -555,17 +674,10 @@ def answers(
     `since`, because a file two sessions both edit is a file they race on. The file is
     `[paths] work/answers.jsonl`, which a background wait can watch instead of polling.
     """
-    import json
-
     from .config import load
-    from .files import read_text_retrying
 
     path = load(root).path("paths.work") / ANSWERS
-    held = [
-        json.loads(line)
-        for line in (read_text_retrying(path) or "").splitlines()
-        if line.strip()
-    ]
+    held = kept_answers(root)
     fresh = [one for one in held if one["at"] > str(since)]
     if run is not None:
         for one in fresh:
@@ -605,11 +717,9 @@ def answer(
     the ledger, the spec and `verdict.answers` take it as they take a click. A family
     already answered is skipped and named, not judged twice.
     """
-    import json
 
     from . import review
     from .config import load
-    from .files import read_text_retrying
 
     if not str(why).strip():
         # The page keeps a silent click as one; a sentence carried from chat has words.
@@ -640,14 +750,9 @@ def answer(
             given=family,
             allowed=sorted(families),
         )
-    path = config.path("paths.work") / ANSWERS
     done = {
         one["family"]
-        for one in (
-            json.loads(line)
-            for line in (read_text_retrying(path) or "").splitlines()
-            if line.strip()
-        )
+        for one in kept_answers(config.root)
         if one.get("sitting") == listed
     }
     answered, skipped = [], []

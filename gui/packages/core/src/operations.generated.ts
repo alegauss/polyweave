@@ -2130,6 +2130,16 @@ export interface VerdictJudgeArgs {
   when?: string
 }
 
+/** Move a sitting laid out in the wrong folder, its answers with it (§PW436). */
+export interface VerdictMoveArgs {
+  /** the sitting, as its manifest or the folder the page lists it in */
+  sitting: string
+  /** the folder it moves to, under the project, not there */
+  to: string
+  /** the project the sitting belongs to; default "." */
+  root?: string
+}
+
 /** A refused picture a person accepted after all, from wherever they said it. */
 export interface VerdictPromoteArgs {
   /** the gate run the picture was refused in, by its id */
@@ -2490,6 +2500,7 @@ export interface Operations {
   "verdict.answer": VerdictAnswerArgs
   "verdict.answers": VerdictAnswersArgs
   "verdict.judge": VerdictJudgeArgs
+  "verdict.move": VerdictMoveArgs
   "verdict.promote": VerdictPromoteArgs
   "verdict.sheet": VerdictSheetArgs
   "verdict.sitting": VerdictSittingArgs
@@ -2686,6 +2697,7 @@ export const OPERATIONS = [
   "verdict.answer",
   "verdict.answers",
   "verdict.judge",
+  "verdict.move",
   "verdict.promote",
   "verdict.sheet",
   "verdict.sitting",

@@ -80,6 +80,7 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.flashes:is_flash": ("internal", "whether a spec bounds a run's flashes"),
     "polyweave.flashes:count": ("internal", "each kind's worst second over frames"),
     "polyweave.flashes:measured": ("internal", "what a flashes bound reads"),
+    "polyweave.verdict:kept_answers": ("internal", "every answer, at its sitting now"),
     "polyweave.video:is_video": ("internal", "whether a spec's measure is a video's"),
     "polyweave.video:measured": ("internal", "what a video bound reads, off the MP4"),
     "polyweave.video:read": ("internal", "a cut's clips, checked; video.cut"),

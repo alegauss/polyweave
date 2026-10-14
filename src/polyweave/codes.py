@@ -1000,6 +1000,12 @@ CODES: dict[str, Code] = {
         when="a member that is a number or a list, or a table with no name or no new",
         doors=("write each member as a table, or as the picture's path",),
     ),
+    "verdict.bad-move": Code(
+        means="a sitting cannot move where it was asked to",
+        when="verdict.move to a folder that already exists, lies outside the project, "
+        "or lies inside the sitting itself (§PW436)",
+        doors=("name a folder under the project that does not exist yet",),
+    ),
     # -- review: the page a person answers on, and its server ---------------------
     "review.stale-server": Code(
         means="the review server runs older code than the plugin it was started from",

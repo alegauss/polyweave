@@ -218,6 +218,17 @@ A family already answered in `answers.jsonl` is skipped and named, never judged 
 refuses an empty sentence where the page keeps a silent accept as one, since a verdict
 carried from chat has the person's words, kept as given.
 
+**A sitting laid out in the wrong folder moves with its answers** (§PW436).
+`verdict.move(sitting, to)` moves the folder under the project, rewrites every path inside
+its `sitting.json` that pointed into the old folder, and replaces its row in
+`sittings.json`. `answers.jsonl` stays append-only: the move appends one line, `{"at",
+"moved": {"from": <old manifest>, "to": <new>}}`, and every read of the answers
+(`verdict.answers`, `verdict.answer`, the page and the window, which read through them)
+takes an answer for the old manifest as one for the new, through any number of moves. A
+`to` that exists, lies outside the project or inside the sitting is `verdict.bad-move`,
+and a sitting the project never laid out is `loop.unknown-sitting`; nothing moves on
+either.
+
 **A mark says where** (§PW174). On the page a person may drag boxes over any member's own
 picture, in that picture's pixels. The API also takes a loose `outline` of points. With the
 answer they become a mask the picture's size, black where marked, in `[paths]
