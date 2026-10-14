@@ -78,6 +78,14 @@ file the credits kit's screen reads; with `check` as well it writes nothing and 
 `fresh`, false where the file is missing or the records moved since, with `missing`
 naming each credit owed and absent from it (§PW350).
 
+A take bought from the speech service keeps the account's `tier` in its `engine`, beside
+the `model` (§PW435): `sound.buy`, `sound.speak`, `voice.design` and `voice.lines` read
+it from the subscription, a free call, and a reading that fails records no tier, never a
+guess. A free tier licenses a take for non-commercial use only, so `provenance.credits`
+lists every file whose record's tier is `free` under `non_commercial`, with its
+`service` and `tier`, and `says` to make them again on a paid plan before a game that
+sells ships them; with none, neither key is in the answer.
+
 **What a build ships that a generator made is one read** (§PW248). Steam's content survey
 asks whether a game ships generated content, and the honest answer is the lineage of every
 shipped file. `provenance.generated` takes the paths a build ships, files or folders of

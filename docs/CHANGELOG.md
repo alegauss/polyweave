@@ -179,6 +179,7 @@
 - ✅ **PW426** **a score cannot be another score transposed, so a piece in three keys is three files kept in step by hand** — A score extends another beside it, overriding by name and transposing its pitched notes, compiled as one, so an edit to the base reaches every key (design recorded in `docs/specs/music.md`).
 - ✅ **PW427** **vfx.build draws every particle as a flat quad, so a puffy tuft with depth is still a mesh built in game code** — A particle may be drawn as the engine's solids or as a .tres mesh of the project's own, so a puff with depth is declared, not built in code (design recorded in `docs/specs/vfx.md`).
 - ✅ **PW429** **captured sequences cannot be cut together, scored and encoded, so a store teaser needs ffmpeg driven by hand** — video.cut builds a *.cut.toml of captured runs into a scored MP4, measured for length, size and first motion, which a spec bounds (design recorded in `docs/specs/video.md`).
+- ✅ **PW435** **a take made on a free ElevenLabs plan is recorded like any other, so a game can ship one commercially unwarned** — Each speech take keeps the account's tier in its record, and provenance.credits names every free-tier file as non-commercial only (design recorded in `docs/specs/provenance.md`).
 
 ## Block I — Voxel models from a declaration
 

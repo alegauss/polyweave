@@ -20,6 +20,15 @@ def store(tmp_path):
             made.cancel(view["job"])
 
 
+@pytest.fixture(autouse=True)
+def no_subscription_read(monkeypatch):
+    """The speech service's subscription is never read from a test: a test that buys
+    replaces the transport, and a tier it wants is stubbed on `sound_buy._tier`."""
+    from polyweave import sound_buy
+
+    monkeypatch.setattr(sound_buy, "_tier", lambda base, key: None)
+
+
 @pytest.fixture
 def target_path():
     """The worker's extra import path, so it can reach `support.jobtargets`."""

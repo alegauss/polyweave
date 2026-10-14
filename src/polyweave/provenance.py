@@ -48,6 +48,10 @@ PLACES = 6
 #: comes out right as long as it arrives as a path rather than as a string.
 PATHS = ("script", "reference")
 
+#: The tiers a service licenses for non-commercial use only, as a record's engine keeps
+#: its `tier` (§PW435): `provenance.credits` names every file made on one.
+NON_COMMERCIAL = frozenset({"free"})
+
 _CHUNK = 1 << 20
 
 
@@ -780,7 +784,9 @@ def credits(
     a `credit` of its own, as a borrowed file can (§PW350): `owed` lists each credit a
     licence requires, with the files it is owed for; `notes` what a person should know
     of the rest, such as a library whose author cannot vouch for every sample; `people`
-    the names and roles the project declares under `[kit.credits] people`.
+    the names and roles the project declares under `[kit.credits] people`. A file a
+    service made on its free tier, whose record keeps the tier, is listed under
+    `non_commercial`, since that tier licenses it for nothing a game sells (§PW435).
 
     With `out`, the answer is written there with its `digest`, for the credits kit's
     screen to read, so the screen lists what the records hold and nothing else. With
@@ -791,8 +797,13 @@ def credits(
     where = Path(root).resolve()
     owed: dict[str, dict] = {}
     notes: dict[str, dict] = {}
+    unlicensed: list[dict] = []
     for record in _records(where):
         made = record["artefact"]["path"]
+        engine = record.get("engine") or {}
+        if engine.get("tier") in NON_COMMERCIAL:
+            unlicensed.append({"file": made, "service": engine.get("name", ""),
+                               "tier": engine["tier"]})
         if record.get("credit"):
             entry = owed.setdefault(record["credit"], {
                 "name": record["credit"], "licence": record.get("licence", ""),
@@ -813,6 +824,14 @@ def credits(
                 entry["files"].append(made)
     answer = {"owed": list(owed.values()), "notes": list(notes.values()),
               "people": _people(where)}
+    if unlicensed:
+        # Said only where there is one, so a credits file written before this read the
+        # same (§PW435).
+        answer["non_commercial"] = unlicensed
+        answer["says"] = (
+            f"{len(unlicensed)} file(s) were made on a service's free tier, licensed "
+            "for non-commercial use only: make them again on a paid plan before a game "
+            "that sells ships them")
     digest = hashlib.sha256(
         json.dumps(answer, sort_keys=True, separators=(",", ":")).encode("utf-8")
     ).hexdigest()

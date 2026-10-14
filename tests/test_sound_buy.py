@@ -97,6 +97,38 @@ def test_a_model_with_no_price_row_is_refused_before_sending(tmp_path, service):
     assert service.sent == []
 
 
+def test_a_take_on_a_free_tier_keeps_its_tier_and_credits_says_so(
+    tmp_path, service, monkeypatch
+):
+    """§PW435: the free tier licenses a take for non-commercial use only, and the
+    record is the one place that can say so later."""
+    from polyweave import provenance
+
+    monkeypatch.setattr(sound_buy, "_tier", lambda base, key: "free")
+    sound_buy.buy(prompt="rain", out="sfx/rain.mp3", root=str(tmp_path))
+    record = provenance.read("sfx/rain.mp3", tmp_path)
+    assert record["engine"]["tier"] == "free"
+    said = provenance.credits(root=str(tmp_path))
+    assert said["non_commercial"] == [
+        {"file": "sfx/rain.mp3", "service": "elevenlabs", "tier": "free"}]
+    assert "non-commercial" in said["says"]
+
+    monkeypatch.setattr(sound_buy, "_tier", lambda base, key: "creator")
+    sound_buy.buy(prompt="rain", out="sfx/rain.mp3", root=str(tmp_path))
+    assert provenance.read("sfx/rain.mp3", tmp_path)["engine"]["tier"] == "creator"
+    assert "non_commercial" not in provenance.credits(root=str(tmp_path))
+
+
+def test_a_tier_the_service_will_not_say_is_recorded_as_nothing(tmp_path, monkeypatch):
+    monkeypatch.setattr(sound_buy, "_subscription", lambda base, key: None)
+    assert sound_buy._used("b", "k") is None
+    monkeypatch.undo()
+    monkeypatch.setattr(sound_buy, "_subscription",
+                        lambda base, key: {"tier": "Free", "character_count": 12})
+    assert sound_buy._used("b", "k") == 12
+    assert sound_buy._made_with("e", "m", None) == {"name": "e", "model": "m"}
+
+
 def test_no_budget_is_no_spend(tmp_path, service):
     closed = PROJECT.split("[budget.elevenlabs]")[0]
     (tmp_path / "polyweave.toml").write_text(closed, encoding="utf-8")

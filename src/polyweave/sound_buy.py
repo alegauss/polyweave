@@ -251,6 +251,7 @@ def _bought(
 
     purchase.allow_priced(priced, root=here, service=name)
     by_character = priced["per"] == "character"
+    tier = _tier(base, key)
     before = _used(base, key) if by_character else None
     if report is not None:
         report.stage("building", progress=0.2, note="asking the service for the sound")
@@ -283,7 +284,7 @@ def _bought(
         reported=reported,
         prompt=words,
         bought="sound",
-        engine={"name": name, "model": model},
+        engine=_made_with(name, model, tier),
         service=name,
         details={**details, "format": target.suffix[1:]},
         inputs=inputs,
@@ -416,6 +417,7 @@ def design(
         name, about.get("prices") or {}, model, None, len(sample)
     )
     purchase.allow_priced(priced, root=here, service=name)
+    tier = _tier(base, key)
     before = _used(base, key) if priced["per"] == "character" else None
     if report is not None:
         report.stage("building", progress=0.2, note="asking the service for voices")
@@ -455,7 +457,7 @@ def design(
             reported=None if spent is None else round(spent / len(previews), 6),
             prompt=sample,
             bought="sound",
-            engine={"name": name, "model": model},
+            engine=_made_with(name, model, tier),
             service=name,
             details={"voice_preview": preview.get("generated_voice_id"),
                      "entity": drawn_from, "format": "mp3"},
@@ -981,12 +983,8 @@ def _post(url: str, key: str, payload: dict) -> tuple[bytes, str]:
         ) from exc
 
 
-def _used(base: str, key: str) -> int | None:
-    """The characters the account has used, or None where the service will not say.
-
-    Read before and after a call priced by the character, so its spend is measured; a
-    reading that fails leaves the quoted price standing, never a guess (§PW320).
-    """
+def _subscription(base: str, key: str) -> dict | None:
+    """What the account's subscription says, or None where the service will not say."""
     request = urllib.request.Request(  # noqa: S310
         f"{base}{USAGE}",
         headers={"xi-api-key": key, "Accept": "application/json",
@@ -997,8 +995,28 @@ def _used(base: str, key: str) -> int | None:
             said = json.loads(answer.read())
     except (urllib.error.URLError, OSError, ValueError):
         return None
-    count = said.get("character_count") if isinstance(said, dict) else None
+    return said if isinstance(said, dict) else None
+
+
+def _used(base: str, key: str) -> int | None:
+    """The characters the account has used, or None where the service will not say.
+
+    Read before and after a call priced by the character, so its spend is measured; a
+    reading that fails leaves the quoted price standing, never a guess (§PW320).
+    """
+    count = (_subscription(base, key) or {}).get("character_count")
     return count if isinstance(count, int) and not isinstance(count, bool) else None
+
+
+def _tier(base: str, key: str) -> str | None:
+    """The account's tier, kept in each take's record so a free one's licence is never
+    forgotten (§PW435); None where the service will not say, never a guess."""
+    tier = (_subscription(base, key) or {}).get("tier")
+    return tier.lower() if isinstance(tier, str) and tier.strip() else None
+
+
+def _made_with(name: str, model: str, tier: str | None) -> dict:
+    return {"name": name, "model": model, **({"tier": tier} if tier else {})}
 
 
 #: How ffmpeg writes each format a cue may declare.

@@ -348,27 +348,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW435 A free tier's licence in a take's record
-
-Where: spinhold RK218, the pilot's voice on an ElevenLabs account on the free tier.
-PW410 made a 403 from the speech service `fetch.plan-lacks`, in the service's words, and
-printed a refusal's detail in its text. What it left: ElevenLabs' free tier allows takes
-for non-commercial use only, and nothing in a take's record says which tier made it.
-
-A game that ships commercially with a free-tier take is in breach, and the record is the
-one place that could have said so. `provenance.credits` lists who made each shipped
-file; it cannot warn about a licence the record never held.
-
-What polyweave should do: read `/v1/user/subscription` (free; `sound_buy._used` already
-reads it for `character_count`) and keep its `tier` in each take's record, under the
-engine beside the model, for `sound.buy`, `sound.speak`, `voice.design` and
-`voice.lines`. `provenance.credits` then names any shipped sound whose tier is `free` as
-not licensed for commercial use, with the file and the tier, and a project can make that
-a gate. A reading that fails records no tier, never a guess, as `_used` does.
-
-The proof: a take bought on a stubbed free subscription carries `tier = "free"`, and
-credits over a project shipping it says so; a paid tier says nothing.
-
 ### §PW436 A sitting moved with its answers
 
 Where: spinhold RK218, met while fixing PW416 (now in `docs/specs/world.md`). The
