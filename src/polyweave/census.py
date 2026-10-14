@@ -198,6 +198,11 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.icons:legibility": ("internal", "what icons.build holds a set to"),
     "polyweave.words:still_said": ("internal", "provenance.outdated, per row"),
     "polyweave.picture:from_world": ("internal", "entity= on picture and mesh.buy"),
+    "polyweave.scenario:serves": ("internal", "whether a service is Scenario (§PW450)"),
+    "polyweave.scenario:trained_model": (
+        "internal", "the model a family's canon trained (§PW450)"),
+    "polyweave.scenario:bought": (
+        "internal", "picture.buy on Scenario, from the trained model (§PW450)"),
     "polyweave.words:table": ("internal", "the string table, inside words.check"),
     "polyweave.words:held": ("internal", "every verdict on a line, oldest first"),
     "polyweave.words:verdicts": ("internal", "the latest verdict on each line"),

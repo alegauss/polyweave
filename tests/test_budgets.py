@@ -119,7 +119,8 @@ from polyweave.errors import PolyweaveError
 #: 137,615 with verdict.move, a sitting moved with its answers (§PW436).
 #: 138,229 with normalise.ingest's ready, a bought mesh held to a bar (§PW447).
 #: 138,376 with provenance.generated's preset, what a Godot build ships (§PW455).
-DESCRIBE = 138_400
+#: 139,142 with style.train, a canon trained into a Scenario model (§PW450).
+DESCRIBE = 139_200
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -216,7 +217,8 @@ DESCRIBE = 138_400
 #: 151,324 with fetch.ledger-by-name, a lock read but never rewritten (§PW457).
 #: 151,489 with prov.no-preset, a build with no export preset to read (§PW455).
 #: 151,516 with compose.text-unoutlined, live text the engine would lose (§PW453).
-CAPABILITIES = 151_600
+#: 152,344 with style.train and its two refusals (§PW450).
+CAPABILITIES = 152_400
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

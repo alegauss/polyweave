@@ -130,7 +130,8 @@ TOOL_BUDGET = 4500
 #: 122,900 at 122,410 for verdict.move, a sitting moved with its answers (§PW436).
 #: 123,000 at 122,961 for normalise.ingest's ready, a mesh held to a bar (§PW447).
 #: 123,100 at 123,090 for provenance.generated's preset, a build's files (§PW455).
-LIST_BUDGET = 123100
+#: 123,800 at 123,739 for style.train, a canon trained into a model (§PW450).
+LIST_BUDGET = 123800
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

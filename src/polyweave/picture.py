@@ -113,6 +113,9 @@ def buy(
     With `entity`, the description is the world's (§PW198): its look opens the prompt,
     the call's own words add detail, its traits close it, its style family is the one
     in force, and the record names the entity and a hash of what it was drawn from.
+
+    On a Scenario service the picture is drawn from the model `style.train` trained on
+    the family's canon, from a text prompt; `model` is then the trained one (§PW450).
     """
     if model not in MODELS:
         raise PolyweaveError(
@@ -128,6 +131,13 @@ def buy(
             "a picture was asked for with nowhere to write it",
             "pass out, a path under the project",
         )
+    from . import scenario
+
+    if scenario.serves(load(root), service):
+        # A Scenario service draws from the model the family's canon trained (§PW450).
+        return scenario.bought(report, out=out, prompt=prompt, family=family,
+                               aspect_ratio=aspect_ratio, seed=seed, service=service,
+                               root=root)
     drawn_from = None
     if entity is not None:
         drawn_from, family, prompt, json_prompt = from_world(

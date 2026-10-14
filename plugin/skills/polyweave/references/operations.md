@@ -27,7 +27,7 @@
 | Music | `music.validate`, `music.to_midi`, `music.render`, `sound.synth`, `sound.buy`, `sound.speak` (paid) |
 | Visual effects | `vfx.build`, `vfx.preview`, `panel.build` (a menu panel), `panel.capture`, `icons.build` |
 | A teaser | `video.cut` (captures to MP4) |
-| A project's look | `style.read`, `style.drift` (before a person looks) |
+| A project's look | `style.read`, `style.drift` (before a person looks), `style.train` |
 | Buy a drawing | `picture.buy`, `picture.gate`, `picture.letters`, `picture.describe`, `picture.vary`, `picture.against_parent`, `picture.fit`, `picture.collect` |
 | Before buying a mesh | `reference.pick`, `reference.prepare`, `reference.register`, `reference.frames`, `reference.objects`, `reference.regions`, `reference.minimap`, `reference.events`, `reference.compare`, `reference.transcription`, `reference.transcribed`, `shape.check`, `shape.silhouette`, `shape.turntable` |
 | Paid meshes | `mesh.buy`, `purchase.remaining`, `purchase.quote`, `purchase.allow`, `purchase.held`, `schema.validate`, `schema.read`, `schema.proved` |

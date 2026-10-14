@@ -362,7 +362,29 @@ is `/account/balance`'s `data.balance`, a decimal. Tripo's free plan is for
 non-commercial use, and its API answers no plan, so a project on it declares
 `plan = "free"` under `[service.tripo]`, which every record keeps (see provenance.md).
 
-## A picture is put on the project's grid on arrival
+**A picture can come from a model trained on the canon** (§PW450). A service whose `base`
+is on `scenario.com` (`https://api.cloud.scenario.com`, its v1 API) is Scenario. Its key
+variable holds `key:secret`, which goes as `Basic` authorisation.
+
+`style.train(family, kind=)` trains a model on one family's canon. It is quoted from the
+`prices` row `<kind>:train` (`flux.2-dev-lora` by default) and allowed against the
+ceiling before anything is sent, and it is refused under five canon pictures
+(`style.too-few-to-train`). The model is made at `POST /models`. Each canon picture is
+sent to `/models/<id>/training-images` as a data URI, `PUT /models/<id>/train` starts
+training, and `/models/<id>` is asked after until it is `trained`. The model is kept as
+`<canon>/scenario.model.json`, naming the members that trained it, and is ledgered as
+bought `model` with the canon pictures as its inputs. A training that fails or outlasts
+three hours is owed, because it was charged when it started.
+
+`picture.buy` naming a Scenario service draws from that model with a text prompt at
+`/generate/custom/<model>`. The `prices` row is the model's kind. The job is asked after
+at `/jobs/<id>` until `success`, its first asset is read at `/assets/<id>` for its
+`url`, and the picture lands as any bought picture does. Its record names the model and
+its members, and has the model file as a `model` input, so a retrained model makes it
+outdated. A member admitted after training is listed under `outdated` in the answer and
+the record. Drawing before training is `style.untrained`, with the door to train. The
+pictures are held to the canon and the gate like any service's.
+
 
 A picture service returns an image at a size, margin and position it chose, and an icon or
 a flat sprite needs the project's (§PW171). That fix is mechanical, so `picture.fit` makes it

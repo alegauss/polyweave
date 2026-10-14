@@ -2050,6 +2050,18 @@ export interface StyleReadArgs {
   root?: string
 }
 
+/** Train a Scenario model on one family's canon, against the ceiling (§PW450). */
+export interface StyleTrainArgs {
+  /** the family whose canon trains the model */
+  family?: string
+  /** the kind of model trained; default "flux.2-dev-lora" */
+  kind?: "flux.2-dev-lora" | "flux.1-lora"
+  /** the [service.<name>] to use; needed only where there are several */
+  service?: string
+  /** the project whose ledger this is; default "." */
+  root?: string
+}
+
 /** Every row of every declared table held to its schema, and each typed script. */
 export interface TablesCheckArgs {
   /** the project whose tables these are; default "." */
@@ -2504,6 +2516,7 @@ export interface Operations {
   "store.capsules": StoreCapsulesArgs
   "style.drift": StyleDriftArgs
   "style.read": StyleReadArgs
+  "style.train": StyleTrainArgs
   "tables.check": TablesCheckArgs
   "texture.worth_scrubbing": TextureWorthScrubbingArgs
   "trace.read": TraceReadArgs
@@ -2532,7 +2545,7 @@ export interface Operations {
 }
 
 /** The operations whose every argument may be left out. */
-export type Bare = "accept.verify" | "capture.declared" | "engine.check" | "engine.find" | "engine.perf" | "engine.states" | "game.crash_read" | "game.export_smoke" | "game.open" | "game.release_check" | "game.test" | "kit.list" | "kit.prove" | "loop.assets" | "loop.bounds" | "loop.pending" | "loop.report" | "loop.runs" | "measure.available" | "measure.pressure" | "mesh.buy" | "offscreen.routes" | "picture.buy" | "project.check" | "project.init" | "project.inventory" | "provenance.credits" | "provenance.generated" | "provenance.outdated" | "provenance.unrecorded" | "provenance.verify" | "purchase.held" | "purchase.ledger" | "purchase.remaining" | "purchase.spent" | "render.plan" | "review.canon" | "review.state" | "review.words" | "revision.open" | "schema.read" | "sound.buy" | "sound.declared" | "sound.speak" | "style.read" | "tables.check" | "units.engine_scale" | "verdict.answers" | "voice.design" | "voice.lines" | "words.check" | "words.glyphs" | "words.unlisted" | "world.read" | "world.validate"
+export type Bare = "accept.verify" | "capture.declared" | "engine.check" | "engine.find" | "engine.perf" | "engine.states" | "game.crash_read" | "game.export_smoke" | "game.open" | "game.release_check" | "game.test" | "kit.list" | "kit.prove" | "loop.assets" | "loop.bounds" | "loop.pending" | "loop.report" | "loop.runs" | "measure.available" | "measure.pressure" | "mesh.buy" | "offscreen.routes" | "picture.buy" | "project.check" | "project.init" | "project.inventory" | "provenance.credits" | "provenance.generated" | "provenance.outdated" | "provenance.unrecorded" | "provenance.verify" | "purchase.held" | "purchase.ledger" | "purchase.remaining" | "purchase.spent" | "render.plan" | "review.canon" | "review.state" | "review.words" | "revision.open" | "schema.read" | "sound.buy" | "sound.declared" | "sound.speak" | "style.read" | "style.train" | "tables.check" | "units.engine_scale" | "verdict.answers" | "voice.design" | "voice.lines" | "words.check" | "words.glyphs" | "words.unlisted" | "world.read" | "world.validate"
 
 /** Every operation `describe` listed when this file was written. */
 export const OPERATIONS = [
@@ -2702,6 +2715,7 @@ export const OPERATIONS = [
   "store.capsules",
   "style.drift",
   "style.read",
+  "style.train",
   "tables.check",
   "texture.worth_scrubbing",
   "trace.read",

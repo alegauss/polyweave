@@ -34,7 +34,7 @@
 
 ## Block N — Pictures held to a canon
 
-- 📋 **PW450** (deps: —) **no picture can be bought from a model trained on the project's own art, so its style reaches a service only as words** — Scenario leads its market on style consistency through models trained on a team's art, which is what a canon of approved pictures could feed. → §PW450
+- ⏳ **PW450** (deps: —) **no picture can be bought from a model trained on the project's own art, so its style reaches a service only as words** — A real training run on one family's canon, which needs a Scenario key and the owner's ceiling. → §PW450
 
 ## Block O — A person sees and answers
 
@@ -144,6 +144,13 @@
   game/ui/opening_shots.json is replaced by a *.camera.toml built with clip.camera, and
   opening.gd seeks the built scene, mapping places on the ring through its place
   Callable.
+
+## Done when — PW450
+
+- **One family's canon trains a real Scenario model within the ceiling** With the
+  owner's Scenario key and a [budget.scenario] ceiling, style.train trains on a canon of
+  five or more, and a picture bought from the model passes or fails the family's gate
+  with its record naming the model and its members.
 
 ## Non-goals
 

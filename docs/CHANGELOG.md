@@ -314,6 +314,7 @@
 - ✅ **PW266** **the review page admits a picture to a canon only from a gate lane, so a family never gated cannot start** — [style] candidates lists pictures a person may admit to a canon from the review page with no gate run, and a board under two pictures says it judges nothing.
 - ✅ **PW437** **a 3.0 picture is sent to an async generate route Ideogram lists for 4.0 only, so a 3.0 call may fail unexplained** — A 3.0 picture goes to Ideogram's synchronous generate route, the one it answers, and 4.0 keeps its asynchronous one (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW180** **no canon picture is ever sent as a style reference, so a family's look reaches the service only as words** — A family's canon pictures named in references go with every picture as style references on 3.0, the skeleton and palette in its words (design recorded in `docs/specs/project-config.md`).
+- ✅ **PW450 (the adapter)** **no picture can be bought from a model trained on the project's own art, so its style reaches a service only as words** — style.train trains a Scenario model on a family's canon against the ceiling, and picture.buy draws from it, naming the model and its members.
 
 ## Block O — A person sees and answers
 

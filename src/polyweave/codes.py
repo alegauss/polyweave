@@ -879,6 +879,16 @@ CODES: dict[str, Code] = {
         when="a verdict naming a canon family whose [style] declares no canon",
         doors=("set canon under the family's [style]",),
     ),
+    "style.too-few-to-train": Code(
+        means="a family's canon holds fewer pictures than Scenario trains on",
+        when="style.train on a canon of fewer than five approved pictures (§PW450)",
+        doors=("admit more pictures to the canon by verdict",),
+    ),
+    "style.untrained": Code(
+        means="a family's canon has trained no model to draw a picture from",
+        when="picture.buy on a Scenario service before style.train (§PW450)",
+        doors=("train one with style.train",),
+    ),
     "style.bad-rig": Code(
         means="a family's rig names a setting the render does not take",
         when="style.drift or the canon board on a mesh, where [style] rig sets a key "

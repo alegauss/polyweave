@@ -42,7 +42,7 @@ from .errors import PolyweaveError
 from .files import read_text_retrying, write_atomic
 
 #: What a project may buy. `kind` in the record stays `fetch` for all of them.
-BOUGHT = ("mesh", "texture", "image", "description", "sound")
+BOUGHT = ("mesh", "texture", "image", "description", "sound", "model")
 
 
 def owing(root: str | Path = ".") -> Path:
