@@ -29,6 +29,7 @@
 - 📋 **PW453** (deps: —) **picture.vector draws an SVG with live text as a PNG with no letters, and answers as if nothing were lost** — ThorVG in Godot drops every text element, so a banner or logo loses its words in silence and the only way to know is to look at the picture and read vector.py. → §PW453
 - 📋 **PW454** (deps: —) **provenance.generated leaves an older purchase's service unnamed, so a disclosure cannot say which generator made a file** — Spinhold's five Meshy meshes and four Ideogram studies came back unnamed, and naming the service is the one thing the answer is for. → §PW454
 - 📋 **PW455** (deps: —) **provenance.generated cannot tell what a Godot build ships, so it counts excluded files and buries art among code** — Spinhold's honest answer was 26 voice lines, and reaching it meant reading export_presets.cfg by hand and sifting 380 unrecorded files. → §PW455
+- 📋 **PW457** (deps: —) **a purchase ledger kept as a table by name reads as its bare names, so every total over it is wrong or crashes** — Cottony points [paths] purchases at its Meshy lock, a dict, and purchase.read answers five strings where entries were meant. → §PW457
 
 ## Block I — Voxel models from a declaration
 
@@ -41,8 +42,6 @@
 - 📋 **PW449** (deps: —) **no MCP client but Claude Code has ever driven polyweave, so whether its surface is usable without the skill is unknown** — MCP directories compare Blender and Godot servers across clients, and a surface proven in one host cannot be listed there honestly. → §PW449
 
 ## Block L — What a run leaves as evidence
-
-- 📋 **PW444** (deps: —) **nothing totals what the records already hold per asset, so polyweave's own effect on a game cannot be stated as a number** — The site may claim no measured result, and the renders, spend, rounds and refusals that would back one sit unread in the ledger and traces. → §PW444
 
 ## Block M — What a game needs beyond the look
 
@@ -75,7 +74,6 @@
 
 - 🛠 **PW370** (deps: PW345 ✅, PW357 ✅, PW394 ✅, PW395 ✅, PW396 ✅, PW397 ✅, Spinhold RK216) **Starship keeps its own bindings and co-op code after the input kits were extracted from it** — A kit proved only in a fixture has not met a game, and the game it came from is the cheapest first consumer. → §PW370
 - 🛠 **PW371** (deps: PW347 ✅, PW348 ✅, PW398 ✅, Cottony RK151) **Cottony keeps its own settings and save code where the kits provide them** — The second game is what shows a kit is not one project's code moved into a folder. → §PW371
-- 📋 **PW456** (deps: —) **picture.vector draws an SVG's text as nothing and says nothing, so lettered buttons come out blank** — The rasteriser has no fonts, and only looking at the PNG showed the remap pads' face letters missing. → §PW456
 
 ## Done when — PW36
 

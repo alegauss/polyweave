@@ -32,7 +32,9 @@ SKILL_BUDGET = 3_400
 #: (§PW377), the rows having been trimmed for clip.camera and verdict.answer already.
 #: 4,400 at 4,213 once the reference row names its five reads of a video
 #: (§PW379-§PW382).
-REFERENCE_BUDGET = 4_400
+#: 4,600 at 4,413 once rows name video.cut, verdict.move and loop.report (§PW429,
+#: §PW436, §PW444), each the one way to its task.
+REFERENCE_BUDGET = 4_600
 
 
 def test_the_manifest_and_the_marketplace_name_the_plugin():

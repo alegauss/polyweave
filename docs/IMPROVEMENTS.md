@@ -412,6 +412,30 @@ include and exclude filters; and split `unrecorded` into the files a generator c
 have made (pictures, audio, meshes, fonts) and code and engine resources, so the files
 that need a person's word are the short list.
 
+### §PW457 A ledger kept by name
+
+Met building loop.report (PW444, now in docs/specs/adoption.md) on Cottony. Its
+polyweave.toml sets `purchases = "tools/art/3d/meshy.lock.json"`, "the ledger that is
+already there", and that file is a JSON object keyed by asset name, each value a
+purchase with `consumed_credits`, `credits_measured`, `mesh`, `image`, `request` and the
+rest. `purchase.read` does `list(json.loads(text))`, which turns that object into its
+five keys, so every reader over it gets strings: `loop.report` had to skip them as
+unread, and `purchase.spent`, `purchase.remaining` and `purchase.reconcile` would take
+`.get` on a string.
+
+What to build: `purchase.read` takes either shape. A list is entries, as now. An object
+keyed by name is read as one entry per key, the key kept as `name`, its credits taken
+from the fields the adopting project's ledger uses (`consumed_credits`, measured where
+`credits_measured` says), and marked `adopted` so `purchase.spent` keeps counting it as
+an adopted entry, which it already leaves out of a ceiling. A shape neither is refused
+as `fetch.ledger-malformed` with the remedy naming both, never silently read as its
+keys. Writing stays the list shape; an adopted object is converted only by
+`purchase.adopt`.
+
+The proof: Cottony's lock read through `purchase.read` answers five entries with their
+credits, `loop.report` counts none unread, and a ledger that is a bare string is
+refused.
+
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once
@@ -462,29 +486,6 @@ Evidence that it landed: a second client builds, checks and offers one asset for
 verdict, and each gap it met is a filed line.
 
 ## Block L — What a run leaves as evidence
-
-### §PW444 What the records say polyweave did
-
-The market for AI game tooling runs on vendor claims with no independent benchmark
-behind them. polyweave's argument is the opposite, which is why
-`site/scripts/lint.test.mjs` refuses any copy claiming a measured result: no recorded
-run has produced one yet.
-
-The data for one already exists. Every loop run, gate run, purchase, verdict and render
-leaves a file under `.polyweave/` or a provenance sidecar beside the artefact.
-`loop.spent` and `loop.runs` each answer one slice of it. Nothing answers the whole per
-asset: how many renders and rounds a part took to pass, what it spent, how many
-candidates a gate refused before a person saw any, how many verdicts it needed, and how
-that compares with the hand path it replaced where a port recorded the before side.
-
-This line is a read, never an estimate. Every figure is derived from a record and names
-the record it came from, and a figure no record supports is absent rather than guessed,
-so the report can be quoted by the site without the lint rule being loosened on faith.
-It feeds the Block H proof on Cottony and Spinhold; it does not depend on that proof
-finishing, since a partial report is still a true one.
-
-Evidence that it landed: the report run on Cottony names, for at least one ported asset,
-its renders, spend and rounds, each traceable to a file.
 
 ## Block M — What a game needs beyond the look
 
@@ -814,21 +815,3 @@ choosing and binding.
 
 The proof: a rebind on the picture takes and swaps, a press lights its spot, each layout
 draws, and the spots table matches each SVG's buttons.
-
-### §PW456 picture.vector says what it cannot draw
-
-Drawing the remap kit's pads (§PW428), the Xbox and Switch face buttons came out as
-empty rings: Godot's ThorVG rasteriser draws no `<text>`, and picture.vector answered ok
-with nothing about it. Only reading the PNG back showed it, and the fix was to rewrite
-each letter as a stroked path by hand.
-
-What to build: picture.vector reads the SVG it already parses for the elements its
-rasteriser leaves out — `<text>`, `<tspan>`, `<textPath>`, and any other the engine is
-known to skip — and answers them under `undrawn`, each with its id or its place and the
-text it held, so the agent knows before looking. Where `undrawn` is not empty the
-answer's `says` names the remedy: turn the text into paths (an editor's "object to
-path", or a letter drawn as strokes), since the engine has no font to draw it with. It
-does not refuse: a decorative caption may be meant to fall away.
-
-The proof: an SVG with a `<text>` letter is drawn, the answer names it under `undrawn`
-with its characters, and an SVG without one answers an empty list.

@@ -94,6 +94,19 @@ that made the asset, adds a verdict run's `overruled` and `results` to its side,
 counts it as `judged_only`. A side with only verdict runs is `loop.nothing-to-compare`.
 Spinhold had five assets closed to measurement this way, each by a single yes.
 
+**What the records say, in one read** (§PW444). `loop.report(root)` totals what the
+project already keeps, and never estimates. Per asset, each way it was made has `made`,
+the costs of the runs that made it with their `rounds`, and `verdicts`, how many were
+given, accepted, and overruled (the person's call not the tool's); `compare` is there
+only where both ways made it, as `loop.compare` reads them. `totals` sums every run
+that made something. `bought` totals the purchase ledger per service, credits quoted
+and reported, with `unread` counting entries in a shape it does not read; `gate` counts
+the candidates the picture gate looked at and refused before a person saw any. Each
+section names the file it was read from under `from`, and a section no record supports
+is absent, so the report can be quoted as it stands. Run on Cottony, it shows the stars
+taking 28 renders and 8.6 s the polyweave way against 4 and 3.3 s by hand, the same
+number this section's first claim had to answer.
+
 ## The claim is about the second change, not the first bake
 
 Binds **PW114**. The stars' first comparison said the work was not reduced: 8.6 s the new

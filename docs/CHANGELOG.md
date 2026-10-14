@@ -264,6 +264,7 @@
 - ✅ **PW140** **a build is reported cached after the plugin that built it changed, because its stamp hashes the inputs alone** — A build records each output's provenance and its stamp is that record's key, so a new plugin version or --preview rebuilds (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW248** **a project cannot ask which files it ships were made by a generator, directly or through their inputs** — provenance.generated names every shipped file whose lineage reaches a purchase, with its chain and service, beside the authored and unrecorded ones (design recorded in `docs/specs/provenance.md`).
 - ✅ **PW269** **compose.place writes its picture with no record, so a composed capsule cannot say which pictures it came from** — compose.place and compose.sheet write a record naming the pictures they were made from, so provenance_dependents on a key art finds what was composed from it.
+- ✅ **PW444** **nothing totals what the records already hold per asset, so polyweave's own effect on a game cannot be stated as a number** — loop.report totals each asset's runs, verdicts, purchases and gate refusals from the records, each naming its file (design recorded in `docs/specs/adoption.md`).
 
 ## Block M — What a game needs beyond the look
 
@@ -499,3 +500,4 @@
 - ✅ **PW432** **the remap menu binds on press, in English words, with no label or order per action** — Remap 0.5.0 binds on release, cancels on a held press, says its words through the game's table, and shows each declared label in order (design recorded in `docs/specs/kit.md`).
 - ✅ **PW433** **the remap kit keeps its own file with a fixed pad section, so a game's extra pad options and ranges are lost** — Remap 0.6.0 keeps bindings in the game's own settings section, holds a declared deadzone range, keeps the game's pad options, and shares one store (design recorded in `docs/specs/kit.md`).
 - ✅ **PW434** **the prompts kit cannot keep a label filled, so each screen refills its help on a device, rebind or language change** — Prompts 0.5.0 keeps a watched label filled and runs followers on a device, binding or language change; remap tells it of every rebind (design recorded in `docs/specs/kit.md`).
+- 🗑 **PW456** **picture.vector draws an SVG's text as nothing and says nothing, so lettered buttons come out blank** — superseded by PW453: PW453 had already filed the same silent loss of an SVG's text in picture.vector.

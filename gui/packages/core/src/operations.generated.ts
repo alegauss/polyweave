@@ -790,6 +790,12 @@ export interface LoopPendingArgs {
   root?: string
 }
 
+/** What the records say polyweave did here, per asset and in total (§PW444). */
+export interface LoopReportArgs {
+  /** the project whose ledger this is; default "." */
+  root?: string
+}
+
 /** Every run recorded, oldest first. */
 export interface LoopRunsArgs {
   /** the project whose ledger this is; default "." */
@@ -2392,6 +2398,7 @@ export interface Operations {
   "loop.finish": LoopFinishArgs
   "loop.judged": LoopJudgedArgs
   "loop.pending": LoopPendingArgs
+  "loop.report": LoopReportArgs
   "loop.runs": LoopRunsArgs
   "loop.spent": LoopSpentArgs
   "loop.start": LoopStartArgs
@@ -2519,7 +2526,7 @@ export interface Operations {
 }
 
 /** The operations whose every argument may be left out. */
-export type Bare = "accept.verify" | "capture.declared" | "engine.check" | "engine.find" | "engine.perf" | "engine.states" | "game.crash_read" | "game.export_smoke" | "game.open" | "game.release_check" | "game.test" | "kit.list" | "kit.prove" | "loop.assets" | "loop.bounds" | "loop.pending" | "loop.runs" | "measure.available" | "measure.pressure" | "mesh.buy" | "offscreen.routes" | "picture.buy" | "project.check" | "project.init" | "project.inventory" | "provenance.credits" | "provenance.generated" | "provenance.outdated" | "provenance.unrecorded" | "provenance.verify" | "purchase.held" | "purchase.ledger" | "purchase.remaining" | "purchase.spent" | "render.plan" | "review.canon" | "review.state" | "review.words" | "revision.open" | "schema.read" | "sound.buy" | "sound.declared" | "sound.speak" | "style.read" | "tables.check" | "units.engine_scale" | "verdict.answers" | "voice.design" | "voice.lines" | "words.check" | "words.glyphs" | "words.unlisted" | "world.read" | "world.validate"
+export type Bare = "accept.verify" | "capture.declared" | "engine.check" | "engine.find" | "engine.perf" | "engine.states" | "game.crash_read" | "game.export_smoke" | "game.open" | "game.release_check" | "game.test" | "kit.list" | "kit.prove" | "loop.assets" | "loop.bounds" | "loop.pending" | "loop.report" | "loop.runs" | "measure.available" | "measure.pressure" | "mesh.buy" | "offscreen.routes" | "picture.buy" | "project.check" | "project.init" | "project.inventory" | "provenance.credits" | "provenance.generated" | "provenance.outdated" | "provenance.unrecorded" | "provenance.verify" | "purchase.held" | "purchase.ledger" | "purchase.remaining" | "purchase.spent" | "render.plan" | "review.canon" | "review.state" | "review.words" | "revision.open" | "schema.read" | "sound.buy" | "sound.declared" | "sound.speak" | "style.read" | "tables.check" | "units.engine_scale" | "verdict.answers" | "voice.design" | "voice.lines" | "words.check" | "words.glyphs" | "words.unlisted" | "world.read" | "world.validate"
 
 /** Every operation `describe` listed when this file was written. */
 export const OPERATIONS = [
@@ -2589,6 +2596,7 @@ export const OPERATIONS = [
   "loop.finish",
   "loop.judged",
   "loop.pending",
+  "loop.report",
   "loop.runs",
   "loop.spent",
   "loop.start",

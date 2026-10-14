@@ -32,11 +32,11 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 8 },
+  { block: "H", title: "Proof on a real game", open: 9 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 1 },
   { block: "K", title: "Reached without reading the source", open: 1 },
-  { block: "L", title: "What a run leaves as evidence", open: 1 },
+  { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 1 },
   { block: "O", title: "A person sees and answers", open: 0 },
@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 3 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 2 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -135,6 +135,13 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
+    id: "PW457",
+    block: "H",
+    symptom: "a purchase ledger kept as a table by name reads as its bare names, so every total over it is wrong or crashes",
+    why: "Cottony points [paths] purchases at its Meshy lock, a dict, and purchase.read answers five strings where entries were meant.",
+    deps: [],
+  },
+  {
     id: "PW451",
     block: "J",
     symptom: "a canon holds approved pictures only, so a new 3D enemy is never checked against the meshes already approved beside it",
@@ -146,13 +153,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "K",
     symptom: "no MCP client but Claude Code has ever driven polyweave, so whether its surface is usable without the skill is unknown",
     why: "MCP directories compare Blender and Godot servers across clients, and a surface proven in one host cannot be listed there honestly.",
-    deps: [],
-  },
-  {
-    id: "PW444",
-    block: "L",
-    symptom: "nothing totals what the records already hold per asset, so polyweave's own effect on a game cannot be stated as a number",
-    why: "The site may claim no measured result, and the renders, spend, rounds and refusals that would back one sit unread in the ledger and traces.",
     deps: [],
   },
   {
@@ -216,13 +216,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "V",
     symptom: "Cottony keeps its own settings and save code where the kits provide them",
     why: "The second game is what shows a kit is not one project's code moved into a folder.",
-    deps: [],
-  },
-  {
-    id: "PW456",
-    block: "V",
-    symptom: "picture.vector draws an SVG's text as nothing and says nothing, so lettered buttons come out blank",
-    why: "The rasteriser has no fonts, and only looking at the PNG showed the remap pads' face letters missing.",
     deps: [],
   },
 ];
