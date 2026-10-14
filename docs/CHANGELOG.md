@@ -177,7 +177,7 @@
 - ✅ **PW424** **vfx.preview refuses an out under art/, so an effect's sitting cannot sit in art/review/ with the others** — vfx.preview lays its sitting wherever out says, art/review/ included, building what it films into the work area when the export leaves the source out (design recorded in `docs/specs/vfx.md`).
 - ✅ **PW425** **sound.sitting cannot hear the sound a render overwrote, so its old needs a hand git and LFS extract** — A sound sitting's old may name a committed version, HEAD:<path>, read through git and LFS into the work area with its origin recorded (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW426** **a score cannot be another score transposed, so a piece in three keys is three files kept in step by hand** — A score extends another beside it, overriding by name and transposing its pitched notes, compiled as one, so an edit to the base reaches every key (design recorded in `docs/specs/music.md`).
-- ✅ **PW427 (the engine's own solids)** **vfx.build draws every particle as a flat quad, so a puffy tuft with depth is still a mesh built in game code** — A particle may be drawn as a sphere, capsule or box, squashed, shaded and turning as it flies, instead of a camera-facing quad.
+- ✅ **PW427** **vfx.build draws every particle as a flat quad, so a puffy tuft with depth is still a mesh built in game code** — A particle may be drawn as the engine's solids or as a .tres mesh of the project's own, so a puff with depth is declared, not built in code (design recorded in `docs/specs/vfx.md`).
 
 ## Block I — Voxel models from a declaration
 

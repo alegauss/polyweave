@@ -385,9 +385,22 @@ def checked(name: str, table: Any, root: Path | None = None) -> dict:
         raise _bad(name, f"emits from a box of extents {own['extents']!r}",
                    "write extents as the box's three half-sizes, none below 0, in "
                    "metres, such as [0.1, 1.0, 0.1]")
-    if own["mesh"] and own["mesh"] not in MESHES:
+    owned = str(own["mesh"]).lower().endswith((".tres", ".res"))
+    if owned:
+        # A mesh of the project's own, as a picture shape is (§PW427): under the
+        # project, and there, or refused before a scene names what will not load.
+        found = (root / own["mesh"]).resolve() if root else None
+        if found is None or not found.is_relative_to(root.resolve()) \
+                or not found.is_file():
+            raise _bad(name, f"draws mesh {own['mesh']!r}, and there is no mesh there",
+                       "name a .tres or .res mesh under the project, or one of "
+                       + ", ".join(MESHES))
+        if table.get("squash"):
+            raise _bad(name, "squashes a mesh of the project's own",
+                       "shape the mesh itself; squash scales the engine's solids only")
+    elif own["mesh"] and own["mesh"] not in MESHES:
         raise _bad(name, f"has mesh {own['mesh']!r}",
-                   f"name one of {', '.join(MESHES)}",
+                   f"name one of {', '.join(MESHES)}, or a .tres mesh's path",
                    given=str(own["mesh"]), allowed=list(MESHES))
     pictured = table.get("shape")
     if own["mesh"] and (own["kind"] != "particles" or pictured):
@@ -826,18 +839,22 @@ def scene(name: str, effect: dict) -> str:
         return _sheet_scene(name, effect, colours)
     ribbon = effect["kind"] == "ribbon"
     solid = effect.get("mesh") or ""
+    owned = solid.lower().endswith((".tres", ".res"))
     draw = (
         f'[sub_resource type="RibbonTrailMesh" id="draw"]\n'
         f'material = SubResource("look")\nshape = 0\nsize = {effect["size"]:.6g}\n'
-        if ribbon else _solid(effect) if solid else
+        if ribbon else "" if owned else _solid(effect) if solid else
         f'[sub_resource type="QuadMesh" id="draw"]\nmaterial = SubResource("look")\n'
         f'size = Vector2({effect["size"]:.6g}, {effect["size"]:.6g})\n'
     )
+    # A mesh of the project's own is drawn as it is, its own materials and all.
+    mesh = (f'[ext_resource type="Mesh" path="res://{solid}" id="mesh"]\n\n'
+            if owned else "")
     picture, shaped, textured = _shaped(effect)
     steps = 8 + bool(picture) + 2 * bool(shaped)
     return (
         f'[gd_scene load_steps={steps} format=3]\n\n'
-        + picture + shaped + colours +
+        + mesh + picture + shaped + colours +
         '[sub_resource type="GradientTexture1D" id="ramp"]\n'
         'gradient = SubResource("colours")\n\n'
         + curve +
@@ -876,7 +893,8 @@ def scene(name: str, effect: dict) -> str:
         + (f"trail_enabled = true\ntrail_lifetime = {effect['trail']:.6g}\n"
            if ribbon else "")
         + 'process_material = SubResource("process")\n'
-        'draw_pass_1 = SubResource("draw")\n'
+        + ('draw_pass_1 = ExtResource("mesh")\n' if owned
+           else 'draw_pass_1 = SubResource("draw")\n')
     )
 
 

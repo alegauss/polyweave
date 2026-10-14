@@ -348,29 +348,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW427 Particles drawn as a mesh
-
-Where: spinhold's Stuffing effect, game/world/stuffing.gd, whose tufts are a squashed
-sphere built in GDScript and thrown as particles. PW408 gave vfx.build a twinkle, a star
-and a heart, each a picture on a quad that faces the camera, and a tuft is none of
-those: it reads as soft only where it has depth and catches the light from one side.
-
-Every particle vfx.build writes draws a QuadMesh (or a RibbonTrailMesh for a ribbon),
-and `shape` only chooses the texture on it. A declaration has no way to say "throw small
-round puffs", so the game builds the mesh itself and the effect's look is split between
-a declaration and a script.
-
-What polyweave should do: let a particle's draw pass be a mesh as well as a quad. A
-`mesh` key naming one of a few primitives the engine already ships (a sphere, a capsule,
-a box), with a `squash` of three scales, writes a SphereMesh (or the others) as
-`draw_pass_1`, shaded rather than unshaded so its light reads, with `colour_over_life`
-still on the vertex colour. A mesh of the project's own (a .glb or a .tres under the
-project) is the same key with a path, refused where nothing is there, as a picture shape
-is. The measures stay as they are.
-
-Open choice: whether a meshed particle keeps the billboard (it should not: a puff turns
-as it flies) and whether `angle` then means a turn about the view axis or all three.
-
 ### §PW429 A teaser cut from captures
 
 Where: spinhold, RK223 (the store page's 30-second teaser), 2026-10-12.

@@ -613,6 +613,54 @@ def test_a_mesh_a_particle_cannot_be_is_refused(tmp_path, change, said):
     assert refused.value.code == "vfx.bad-effect"
 
 
+OWN_MESH = """[gd_resource type="CapsuleMesh" format=3]
+
+[resource]
+radius = 0.1
+height = 0.4
+"""
+
+
+PUFFS = (TUFTS.replace('mesh = "sphere"', 'mesh = "vfx/puff.tres"')
+         .replace("squash = [1.0, 0.6, 1.0]\n", ""))
+
+
+def test_a_particle_may_be_a_mesh_of_the_projects_own(tmp_path):
+    source = effects(tmp_path, PUFFS)
+    (tmp_path / "vfx" / "puff.tres").write_text(OWN_MESH, encoding="utf-8")
+    vfx.build(source, root=str(tmp_path))
+    text = (tmp_path / "vfx" / "tufts.tscn").read_text("utf-8")
+    assert '[ext_resource type="Mesh" path="res://vfx/puff.tres" id="mesh"]' in text
+    assert 'draw_pass_1 = ExtResource("mesh")' in text
+    assert "billboard_mode" not in text
+
+
+@pytest.mark.parametrize("body", [
+    TUFTS.replace('mesh = "sphere"', 'mesh = "vfx/gone.tres"'),
+    TUFTS.replace('mesh = "sphere"', 'mesh = "vfx/puff.tres"'),  # squashed
+])
+def test_a_mesh_of_the_projects_own_that_cannot_be_drawn_is_refused(tmp_path, body):
+    source = effects(tmp_path, body)
+    (tmp_path / "vfx" / "puff.tres").write_text(OWN_MESH, encoding="utf-8")
+    with pytest.raises(PolyweaveError) as refused:
+        vfx.build(source, root=str(tmp_path))
+    assert refused.value.code == "vfx.bad-effect"
+
+
+def test_the_engine_loads_a_particle_drawn_as_the_projects_mesh(tmp_path):
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    source = effects(tmp_path, PUFFS)
+    (tmp_path / "vfx" / "puff.tres").write_text(OWN_MESH, encoding="utf-8")
+    vfx.build(source, root=str(tmp_path))
+    (tmp_path / "project.godot").write_text(
+        'config_version=5\n\n[application]\nconfig/name="vfx"\n', encoding="utf-8")
+    (tmp_path / "solids.gd").write_text(SOLIDS, encoding="utf-8")
+    ran = engine.run("solids.gd", expect=r"^vfx: mesh", root=tmp_path, headless=True)
+    assert ran["ok"] is True, ran
+    assert "vfx: mesh=CapsuleMesh" in Path(ran["log"]).read_text("utf-8")
+
+
 SOLIDS = """extends SceneTree
 
 func _initialize() -> void:
