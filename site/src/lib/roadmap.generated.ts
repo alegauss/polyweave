@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 4 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 3 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -237,13 +237,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "V",
     symptom: "Cottony keeps its own settings and save code where the kits provide them",
     why: "The second game is what shows a kit is not one project's code moved into a folder.",
-    deps: [],
-  },
-  {
-    id: "PW434",
-    block: "V",
-    symptom: "the prompts kit cannot keep a label filled, so each screen refills its help on a device, rebind or language change",
-    why: "Thirteen screens in one game would each reconnect signals by hand, and a language change refills none of them.",
     deps: [],
   },
   {

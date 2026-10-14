@@ -209,6 +209,15 @@ a button or axis no family names reads `BUTTON <n>` or `AXIS <n>+` through the t
 `SPACE / ENTER   |   A`, `-` for a half with nothing. A name with no word of two letters
 in it (A, F1, L3) is never looked up in the table, so a glyph is never translated.
 
+A screen states once what it shows (§PW434, 0.5.0). `watch(label, key, player)` fills
+anything with a `text` (a Label, a RichTextLabel, a Button) from the table row `key`
+through `fill`, and keeps it filled; `follow(callable)` runs a redraw. Both are run again
+on every change a help line depends on: a player's device moving, a binding changing,
+which the remap kit says with `PolyweavePrompts.rebound()` on every rebind, reset and
+load, and the language changing (`NOTIFICATION_TRANSLATION_CHANGED`). A game that
+changes a binding by hand calls `refresh()`. A label freed, or a callable whose object
+is, is let go.
+
 **remap** (§PW345, requires prompts): rebinding the controls, extracted from Starship's
 bindings. `PolyweaveBindings` stores a binding as codes a settings file holds
 (`key:<physical keycode>`, `mouse:<n>`, `button:<n>`, `axis:<n>:<-1 or 1>`); keys and

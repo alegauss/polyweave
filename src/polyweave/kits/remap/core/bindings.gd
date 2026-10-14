@@ -15,6 +15,8 @@ const FILE := "user://polyweave_bindings.cfg"
 ## "controls"]` names the file and section a game kept its players' bindings in before
 ## the kit, so the first launch with the kit takes them instead of resetting them.
 const PROJECT := "res://polyweave_remap.gd"
+## the prompts kit this one requires, told on every change so its labels refill (§PW434)
+const Prompts := preload("res://addons/polyweave/prompts/prompts.gd")
 ## how far a stick or trigger must move to be read as a binding, and back to be let go
 const AXIS_PRESS := 0.6
 const AXIS_RELEASE := 0.25
@@ -274,6 +276,7 @@ func rebind(action: String, event: InputEvent) -> bool:
 	for each in after:
 		apply(each, after[each])
 	save()
+	Prompts.rebound()
 	return true
 
 
@@ -282,6 +285,7 @@ func reset() -> void:
 	for action in actions:
 		apply(action, _defaults[action])
 	save()
+	Prompts.rebound()
 
 
 func set_deadzone(value: float) -> void:
@@ -329,8 +333,10 @@ func load_kept() -> void:
 	if file.load(_path) != OK:
 		if section == "":
 			_adopt()
+		Prompts.rebound()
 		return
 	_read(file, _sections())
+	Prompts.rebound()
 
 
 func _read(file: ConfigFile, into: Array) -> int:

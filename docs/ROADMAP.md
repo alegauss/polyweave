@@ -79,7 +79,6 @@
 
 - 🛠 **PW370** (deps: PW345 ✅, PW357 ✅, PW394 ✅, PW395 ✅, PW396 ✅, PW397 ✅, Spinhold RK216) **Starship keeps its own bindings and co-op code after the input kits were extracted from it** — A kit proved only in a fixture has not met a game, and the game it came from is the cheapest first consumer. → §PW370
 - 🛠 **PW371** (deps: PW347 ✅, PW348 ✅, PW398 ✅, Cottony RK151) **Cottony keeps its own settings and save code where the kits provide them** — The second game is what shows a kit is not one project's code moved into a folder. → §PW371
-- 📋 **PW434** (deps: —) **the prompts kit cannot keep a label filled, so each screen refills its help on a device, rebind or language change** — Thirteen screens in one game would each reconnect signals by hand, and a language change refills none of them. → §PW434
 - 📋 **PW456** (deps: —) **picture.vector draws an SVG's text as nothing and says nothing, so lettered buttons come out blank** — The rasteriser has no fonts, and only looking at the PNG showed the remap pads' face letters missing. → §PW456
 
 ## Done when — PW36

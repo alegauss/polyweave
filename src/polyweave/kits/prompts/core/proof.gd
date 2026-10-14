@@ -155,6 +155,59 @@ func _initialize() -> void:
 	if Prompts.said("PAD_", "A") != "A":
 		failed.append("a one-letter glyph was translated")
 	TranslationServer.remove_translation(table)
+	# A label kept filled (§PW434): filled from its table row, and filled again when the
+	# player's device moves, a binding changes and the language changes; a follower runs
+	# on each, and a label freed is let go.
+	var watched := &"pw_prompts_watch"
+	InputMap.add_action(watched)
+	var watch_key := InputEventKey.new()
+	watch_key.physical_keycode = KEY_SPACE
+	var watch_pad := InputEventJoypadButton.new()
+	watch_pad.button_index = JOY_BUTTON_A
+	InputMap.action_add_event(watched, watch_key)
+	InputMap.action_add_event(watched, watch_pad)
+	var help := Translation.new()
+	help.locale = TranslationServer.get_locale()
+	help.add_message("PW_HELP", "PRESS {pw_prompts_watch}")
+	TranslationServer.add_translation(help)
+	prompts.seats = null
+	prompts.families = {0: "xbox"}
+	prompts.family = "xbox"
+	var shown := Label.new()
+	var runs := [0]
+	prompts.follow(func() -> void: runs[0] += 1)
+	prompts.watch(shown, "PW_HELP")
+	if shown.text != "PRESS A":
+		failed.append("a watched label first read %s" % shown.text)
+	var typed := InputEventKey.new()
+	typed.physical_keycode = KEY_ENTER
+	typed.pressed = true
+	prompts.note(typed)
+	if shown.text != "PRESS SPACE":
+		failed.append("a watched label did not follow the keyboard: %s" % shown.text)
+	InputMap.action_erase_event(watched, watch_key)
+	var other_key := InputEventKey.new()
+	other_key.physical_keycode = KEY_Q
+	InputMap.action_add_event(watched, other_key)
+	prompts.refresh()
+	if shown.text != "PRESS Q":
+		failed.append("a watched label did not follow a rebind: %s" % shown.text)
+	TranslationServer.remove_translation(help)
+	var spoken_help := Translation.new()
+	spoken_help.locale = TranslationServer.get_locale()
+	spoken_help.add_message("PW_HELP", "APERTE {pw_prompts_watch}")
+	TranslationServer.add_translation(spoken_help)
+	prompts._notification(NOTIFICATION_TRANSLATION_CHANGED)
+	if shown.text != "APERTE Q":
+		failed.append("a watched label did not follow the language: %s" % shown.text)
+	if runs[0] < 3:
+		failed.append("a follower ran %d times over three changes" % runs[0])
+	shown.free()
+	prompts.refresh()
+	if not prompts._watched.is_empty():
+		failed.append("a freed label was kept watched")
+	TranslationServer.remove_translation(spoken_help)
+	InputMap.erase_action(watched)
 	prompts.free()
 	if failed.is_empty():
 		print("KIT PROVED")

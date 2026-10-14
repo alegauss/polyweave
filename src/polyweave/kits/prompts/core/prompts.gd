@@ -65,12 +65,58 @@ var families := {}
 var devices := {}
 
 
+## Labels kept filled, each [weakref to it, its table key, its player] (§PW434), and the
+## callables run on every change, so a screen states once what it shows.
+var _watched: Array = []
+var _followers: Array[Callable] = []
+
+
 func _ready() -> void:
 	Input.joy_connection_changed.connect(unplugged)
 
 
 func _input(event: InputEvent) -> void:
 	note(event)
+
+
+## Fill `label`'s text from the table row `key` through `fill`, for `player`, and keep
+## it filled: again when that player's device moves, a binding changes or the language
+## does. Anything with a `text` serves, a Label, a RichTextLabel or a Button; one freed
+## is let go.
+func watch(label: Object, key: String, player := 0) -> void:
+	_watched = _watched.filter(func(one: Array) -> bool: return one[0].get_ref() != label)
+	_watched.append([weakref(label), key, player])
+	label.set("text", fill(String(TranslationServer.translate(key)), player))
+
+
+## Run `redraw` on every change `watch` refills on; one whose object is freed is let go.
+func follow(redraw: Callable) -> void:
+	if not _followers.has(redraw):
+		_followers.append(redraw)
+
+
+## Refill every watched label and run every follower: what a device, binding or
+## language change does, and what a game calls after changing bindings by hand.
+func refresh() -> void:
+	_watched = _watched.filter(func(one: Array) -> bool: return one[0].get_ref() != null)
+	for one in _watched:
+		var label: Object = one[0].get_ref()
+		label.set("text", fill(String(TranslationServer.translate(one[1])), one[2]))
+	_followers = _followers.filter(func(redraw: Callable) -> bool: return redraw.is_valid())
+	for redraw in _followers:
+		redraw.call()
+
+
+## A binding changed somewhere: the shared service refills, where there is one. The
+## remap kit calls this on every rebind, reset and load.
+static func rebound() -> void:
+	if _shared != null and is_instance_valid(_shared):
+		_shared.refresh()
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_TRANSLATION_CHANGED:
+		refresh()
 
 
 func _seats() -> Object:
@@ -121,6 +167,7 @@ func _moved(player: int, now: String) -> void:
 		family = now
 		family_changed.emit(family)
 	player_changed.emit(player, now)
+	refresh()
 
 
 ## A pad came or went (§PW395): each player whose prompts followed it moves to another

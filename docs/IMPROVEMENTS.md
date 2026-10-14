@@ -858,25 +858,6 @@ choosing and binding.
 The proof: a rebind on the picture takes and swaps, a press lights its spot, each layout
 draws, and the spots table matches each SVG's buttons.
 
-### §PW434 A help line the prompts kit keeps filled
-
-Where: spinhold, RK216, read against prompts 0.3.0 (core/prompts.gd).
-
-A help line names buttons ("{fire_right} take  {bomb} back"), and it must be filled
-again whenever the player's device changes, a binding changes, or the language changes.
-Spinhold's Prompts autoload does it with `watch(label, key, player)` (a label filled
-from a table key and kept filled) and `follow(redraw)` (a callable run on every change),
-and it refills on NOTIFICATION_TRANSLATION_CHANGED. Thirteen screens use them (codex,
-status, shop, route, options, title, menus, ship select, records, pad screen, draft).
-
-The prompts kit only signals `family_changed` and `player_changed`; each screen would
-have to connect, keep its own key and refill by hand, and a language change refills
-nothing.
-
-What polyweave should do: `watch(label, key, player)` and `follow(callable)` on the
-prompts service, refilled on a family change, a rebind and a translation change, so a
-screen states once what it shows.
-
 ### §PW456 picture.vector says what it cannot draw
 
 Drawing the remap kit's pads (§PW428), the Xbox and Switch face buttons came out as

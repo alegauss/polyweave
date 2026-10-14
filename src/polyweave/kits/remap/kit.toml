@@ -1,5 +1,5 @@
 name = "remap"
-version = "0.6.0"
+version = "0.6.1"
 summary = "rebinding on the keys and the pad apart, a clash swapped, kept across restarts, reset to the game's own"
 requires = ["prompts"]
 tab = "controls"
@@ -29,3 +29,4 @@ script = "core/proof.gd"
 "0.4.2" = "the pad screen names its places through the prompts kit, a generic pad by where its buttons sit"
 "0.5.0" = "the remap screen binds on release and cancels on a held press, says its words through the game's table, and shows each action's declared label in the declared order"
 "0.6.0" = "the bindings kept in the game's own settings file and section, the deadzone's default and range and pad options of the game's own declared, and one shared store"
+"0.6.1" = "every rebind, reset and load tells the prompts kit, so its watched labels refill"
