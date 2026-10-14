@@ -37,6 +37,8 @@
 
 ## Block O — A person sees and answers
 
+- ⏸ **PW443** (deps: —) **verdict.judge takes any sentence its caller passes as the person's, so an agent can write the verdict on its own work** — set aside (Waits on the owner's choice of channel.): Only the skill keeps an agent off the door; an MCP client without it can accept its own look. → §PW443
+
 ## Block P — Music and sound a game can ship
 
 - ⏸ **PW192** (deps: PW188 ✅, PW189 ✅, PW190 ✅, PW191 ✅) **Cottony still makes its audio outside polyweave** — set aside (a person hearing Cottony's replacement audio first): The block is proven only when its first consumer's music and effects are declared, made and accepted here. → §PW192

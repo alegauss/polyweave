@@ -52,8 +52,6 @@
 
 ## Block O — A person sees and answers
 
-- 📋 **PW443** (deps: —) **verdict.judge takes any sentence its caller passes as the person's, so an agent can write the verdict on its own work** — Only the skill's instruction keeps an agent off the door, and any MCP client without that skill can accept its own look. → §PW443
-
 ## Block P — Music and sound a game can ship
 
 ## Block Q — Words held to the world

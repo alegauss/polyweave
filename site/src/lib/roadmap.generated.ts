@@ -39,7 +39,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "L", title: "What a run leaves as evidence", open: 1 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 1 },
-  { block: "O", title: "A person sees and answers", open: 1 },
+  { block: "O", title: "A person sees and answers", open: 0 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
   { block: "Q", title: "Words held to the world", open: 0 },
   { block: "R", title: "Levels measured before a person plays them", open: 6 },
@@ -163,13 +163,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW443",
-    block: "O",
-    symptom: "verdict.judge takes any sentence its caller passes as the person's, so an agent can write the verdict on its own work",
-    why: "Only the skill's instruction keeps an agent off the door, and any MCP client without that skill can accept its own look.",
-    deps: [],
-  },
-  {
     id: "PW202",
     block: "R",
     symptom: "A game's own headless play of a level has no way to report what it measured",
@@ -270,4 +263,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW53", "PW78", "PW79", "PW80", "PW81", "PW82", "PW192", "PW201", "PW311", "PW368", "PW428"];
+export const generatedPaused: string[] = ["PW53", "PW78", "PW79", "PW80", "PW81", "PW82", "PW443", "PW192", "PW201", "PW311", "PW368", "PW428"];
