@@ -85,7 +85,8 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.video:measured": ("internal", "what a video bound reads, off the MP4"),
     "polyweave.video:read": ("internal", "a cut's clips, checked; video.cut"),
     "polyweave.store:thinnest": ("internal", "a logo's thinnest stroke at a scale"),
-    "polyweave.svgtext:texts": ("internal", "every <text> in an SVG (§PW453)"),
+    "polyweave.cost:bounds": ("internal", "a .glb's stored extent (§PW451)"),
+    "polyweave.svgtext:texts":("internal", "every <text> in an SVG (§PW453)"),
     "polyweave.svgtext:outlined": (
         "internal", "an SVG's live text replaced by glyph outlines (§PW453)"),
     "polyweave.verdict:members_of": ("internal", "a sheet's members, checked first"),

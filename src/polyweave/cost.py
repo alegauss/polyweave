@@ -100,7 +100,31 @@ def take(name: str, path: str | Path) -> int:
     return found[name]
 
 
-def _glb(where: Path) -> dict:
+def bounds(path: str | Path) -> tuple[list[float], list[float]]:
+    """A .glb's extent off its position accessors' own min and max, the mesh as
+    stored with no node transform applied (§PW451)."""
+    gltf, _ = _parsed(Path(path))
+    low, high = [float("inf")] * 3, [float("-inf")] * 3
+    accessors = gltf.get("accessors", [])
+    for mesh in gltf.get("meshes", []):
+        for primitive in mesh.get("primitives", []):
+            at = primitive.get("attributes", {}).get("POSITION")
+            if at is None or "min" not in accessors[at]:
+                continue
+            for axis in range(3):
+                low[axis] = min(low[axis], float(accessors[at]["min"][axis]))
+                high[axis] = max(high[axis], float(accessors[at]["max"][axis]))
+    if low[0] == float("inf"):
+        raise PolyweaveError(
+            "spec.no-cost-source",
+            f"{Path(path).name} has no positions with a stated extent",
+            "export the mesh again; a glTF exporter writes each position's min and max",
+        )
+    return low, high
+
+
+def _parsed(where: Path) -> tuple[dict, bytes]:
+    """A binary glTF's JSON and its binary chunk."""
     data = where.read_bytes()
     magic, _, length = struct.unpack_from("<III", data, 0)
     if magic != _GLB_MAGIC or length > len(data):
@@ -120,6 +144,11 @@ def _glb(where: Path) -> dict:
         elif kind == _BIN_CHUNK:
             binary = chunk
         at += 8 + size
+    return gltf, binary
+
+
+def _glb(where: Path) -> dict:
+    gltf, binary = _parsed(where)
     accessors = gltf.get("accessors", [])
     triangles = calls = 0
     used: set = set()

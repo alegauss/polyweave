@@ -879,6 +879,12 @@ CODES: dict[str, Code] = {
         when="a verdict naming a canon family whose [style] declares no canon",
         doors=("set canon under the family's [style]",),
     ),
+    "style.bad-rig": Code(
+        means="a family's rig names a setting the render does not take",
+        when="style.drift or the canon board on a mesh, where [style] rig sets a key "
+        "render.bake has no parameter for (§PW451)",
+        doors=("set only render.bake's camera and light settings, rung and seen",),
+    ),
     # -- sound: the audio a game declares it needs -----------------------------
     "sound.family-unnamed": Code(
         means="the project declares several sound families and the call named none",

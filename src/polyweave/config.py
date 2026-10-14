@@ -262,6 +262,10 @@ DEFAULTS: dict[str, Any] = {
         # and `pinned`, the source palette's digest when it was last looked at, makes
         # a source that moved since say so.
         "borrow": {},
+        # A family of meshes is measured through renders at one rig (§PW451):
+        # render.bake's camera and light settings (azimuth, elevation, margin, key,
+        # rung...) and `seen`, the width in pixels a player sees one at.
+        "rig": {},
     },
     "sound": {
         # What a game needs to hear, declared by the game (§PW185): each family is a
@@ -954,7 +958,8 @@ def _check(declared: dict, source: Path) -> None:
 
 
 #: Settings of one service whose value is itself a table, so not a named service.
-_TABLE_SETTINGS = ("prices", "skeleton", "regions", "blips", "palette_source", "borrow")
+_TABLE_SETTINGS = ("prices", "skeleton", "regions", "blips", "palette_source", "borrow",
+                   "rig")
 
 
 def _sells(about: dict, model: str) -> bool:

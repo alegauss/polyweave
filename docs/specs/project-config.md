@@ -151,6 +151,7 @@ anchor   = "centre"                # or "base", for what stands on the ground
 filter   = "smooth"                # or "pixel": never smoothed, quantised to the palette
 palette_source = { file = "tools/art/palette.py", names = ["PIPING", "CARD"] }  # a palette kept in code
 borrow   = { root = "../cottony", family = "", lightness = -0.1, saturation = 0.0, pinned = "" }  # another project's, shifted
+rig      = { azimuth = 35.0, elevation = 25.0, seen = 64 }  # a mesh family's render (PW451)
 
 [sound]                            # or [sound.<family>], one table per family
 kind     = "loop"                  # loop, stinger or effect
@@ -394,6 +395,30 @@ pictures has no spread, so its report is `judged: false` and says so, rather tha
 floor. A refusal says which way each measure went (warmer, thicker lines, light turned 40
 degrees), because the next prompt is corrected from that. `not_checked` names what a number
 cannot see, such as whether it is still the same character, and that stays the person's.
+
+**A family's members may be meshes** (§PW451). A `.glb` joins a canon the same way, through
+a `verdict.judge` member whose `new` is the mesh, and only that way. `style.drift` given a
+`.glb` holds it to the family's meshes alone, never to its pictures. Each mesh is rendered
+at the family's `rig`, which takes render.bake's camera and light settings (`azimuth`,
+`elevation`, `margin`, `focal_mm`, `key`, `fill`, `rim`, `light_distance`, `ambient`,
+`ambient_colour`, `exposure`, `rung`, preview by default) and `seen`, the width in pixels
+a player sees one at (64 by default). Any other key is `style.bad-rig`. The render, kept
+under the work folder by the mesh's digest and the rig, is measured as a picture is. To
+that is added the mesh's own measures:
+
+- `height_to_width` and `depth_to_width`, its bounding box's proportions as stored;
+- `silhouette_fill`, the share of the render drawn at the `seen` width;
+- `materials`, how many it uses;
+- `hue_degrees`, the saturation-weighted mean hue, so a family that declares no palette
+  still hears that a member was painted another colour.
+
+The floor is again the canon's spread. `neighbour` names the canon member nearest the
+candidate, each measure's gap counted in its own floor, with that member's render, so the
+person judging a drift sees the mesh it drifts from beside it. The answer carries the
+candidate's own `render`. One render cannot say how a mesh reads from another side, and
+`not_checked` says so. On Spinhold, with the drone, keeper and seeker admitted by verdict,
+the gunship passes beside the seeker. The same gunship painted blue is refused as drifting
+from the seeker: its hue turned 100 degrees, and it is more saturated and darker.
 
 ## What a game needs to hear
 

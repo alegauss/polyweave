@@ -225,6 +225,7 @@
 - ✅ **PW111** **no command checks committed artefacts against their specs, so a spec binds only while a search runs** — A spec may name its artefact, and `python -m polyweave verify` checks each one as committed, with no render, and exits non-zero on a failure (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW112** **a spec is checked against the bake and never against what the engine draws on screen** — A capture script names where it drew each asset, a spec's screen points at one, and verify checks it there and says when screen and bake disagree (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW113** **the acceptance spec is only ever aimed at a 3D bake, though nothing in its format is 3D** — The owner put sound in scope: a spec bounds a WAV's seam step and spectral change, loudness, peak and length, checked and verified like a picture (design recorded in `docs/specs/acceptance-spec.md`).
+- ✅ **PW451** **a canon holds approved pictures only, so a new 3D enemy is never checked against the meshes already approved beside it** — A .glb joins a canon by verdict, and style.drift holds it to the family's meshes through renders at its rig, naming the nearest (design recorded in `docs/specs/project-config.md`).
 
 ## Block K — Reached without reading the source
 

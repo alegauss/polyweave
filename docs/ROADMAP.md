@@ -26,8 +26,6 @@
 
 ## Block J — A bar a person sets once
 
-- 📋 **PW451** (deps: —) **a canon holds approved pictures only, so a new 3D enemy is never checked against the meshes already approved beside it** — Generators see one asset at a time, so a family of meshes drifting in palette, proportion or material is what no tool on the market measures. → §PW451
-
 ## Block K — Reached without reading the source
 
 - 📋 **PW449** (deps: —) **no MCP client but Claude Code has ever driven polyweave, so whether its surface is usable without the skill is unknown** — MCP directories compare Blender and Godot servers across clients, and a surface proven in one host cannot be listed there honestly. → §PW449

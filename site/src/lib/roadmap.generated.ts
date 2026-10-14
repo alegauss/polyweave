@@ -34,7 +34,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "G", title: "Geometry as a declaration", open: 0 },
   { block: "H", title: "Proof on a real game", open: 5 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
-  { block: "J", title: "A bar a person sets once", open: 1 },
+  { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 1 },
   { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
@@ -84,13 +84,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "a real project cannot adopt the plugin without carrying its own paths and palette into it",
     why: "Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82.",
     deps: ["PW82"],
-  },
-  {
-    id: "PW451",
-    block: "J",
-    symptom: "a canon holds approved pictures only, so a new 3D enemy is never checked against the meshes already approved beside it",
-    why: "Generators see one asset at a time, so a family of meshes drifting in palette, proportion or material is what no tool on the market measures.",
-    deps: [],
   },
   {
     id: "PW449",

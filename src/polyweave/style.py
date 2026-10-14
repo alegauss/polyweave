@@ -201,6 +201,136 @@ NOT_CHECKED = (
     "the silhouette against a declared outline",
 )
 
+#: What one render of a mesh cannot say.
+NOT_CHECKED_MESH = ("how it reads from any side but the rig's",)
+
+#: What a canon member may be besides a picture: a mesh, measured through a render at
+#: the family's rig (§PW451).
+MESHES = (".glb",)
+
+#: The render settings a family's rig may set, as render.bake takes them.
+RIG = ("azimuth", "elevation", "margin", "focal_mm", "key", "fill", "rim",
+       "light_distance", "ambient", "ambient_colour", "exposure", "rung")
+
+
+def is_mesh(path: str | Path) -> bool:
+    return Path(path).suffix.lower() in MESHES
+
+
+def measured(path: Path, declared: dict, config: Config) -> dict:
+    """A canon member's or a candidate's features: a picture's off its pixels, a mesh's
+    off its render at the family's rig and off the mesh itself (§PW451)."""
+    from .image import load as load_image
+
+    palette = list(declared.get("palette") or [])
+    floor_alpha = config.tolerances().alpha_floor
+    if not is_mesh(path):
+        return features(load_image(path), palette, floor_alpha)
+    from PIL import Image
+
+    from . import cost
+
+    rig = dict(declared.get("rig") or {})
+    seen = int(rig.pop("seen", 64))
+    picture = _rendered(path, rig, config)
+    found = features(load_image(picture), palette, floor_alpha)
+    low, high = cost.bounds(path)
+    width = max(high[0] - low[0], 1e-9)
+    found["height_to_width"] = round((high[1] - low[1]) / width, 4)
+    found["depth_to_width"] = round((high[2] - low[2]) / width, 4)
+    found["materials"] = cost.read(path)["materials"]
+    with Image.open(picture) as drawn:
+        small = drawn.convert("RGBA").resize(
+            (seen, max(1, round(seen * drawn.height / drawn.width))),
+            Image.Resampling.BOX)
+    found["silhouette_fill"] = round(float((np.asarray(small)[..., 3] > 127).mean()), 4)
+    found["hue_degrees"] = _hue(load_image(picture), floor_alpha)
+    found["render"] = provenance.relative(picture, config.root)
+    return found
+
+
+def _hue(image, alpha_floor: float) -> float | None:
+    """The subject's hue, a circular mean weighted by saturation, so a family with no
+    declared palette still says when a member is painted another colour (§PW451)."""
+    from .measure import _hsl
+
+    mask = image.subject(alpha_floor)
+    rgb = image.rgba[..., :3].astype(np.float64)[mask] / 255.0
+    turns, saturation, _ = _hsl(rgb)
+    if float(saturation.sum()) < 1e-6:
+        return None  # grey: no hue to drift from
+    angle = turns * 2.0 * np.pi
+    mean = np.arctan2((np.sin(angle) * saturation).sum(),
+                      (np.cos(angle) * saturation).sum())
+    return round(float(np.degrees(mean)) % 360.0, 2)
+
+
+#: The measures that go round, so a gap is the short way between two angles.
+CIRCULAR = ("light_degrees", "hue_degrees")
+
+
+class _Quiet:
+    """A drift reports its own answer; each render has nobody to tell."""
+
+    def stage(self, stage, *, progress=None, note=None):
+        return None
+
+    def progress(self, value, *, note=None):
+        return None
+
+    def note(self, text):
+        return None
+
+
+def _rendered(mesh: Path, rig: dict, config: Config) -> Path:
+    """A mesh drawn at its family's rig, under the work folder, paid for once."""
+    import hashlib
+
+    from . import render
+
+    unknown = sorted(set(rig) - set(RIG))
+    if unknown:
+        raise PolyweaveError(
+            "style.bad-rig",
+            f"a family's rig sets {', '.join(unknown)}, which render.bake has no "
+            "parameter for",
+            f"set only {', '.join(RIG)} and seen",
+            given=unknown[0],
+            allowed=(*RIG, "seen"),
+        )
+    rig = {"rung": "preview", **rig}
+    digest = provenance.sha256_of(mesh)[0][:16]
+    said = hashlib.sha256(json.dumps(rig, sort_keys=True).encode()).hexdigest()[:8]
+    out = config.path("paths.work") / "canon" / f"{digest}-{said}.png"
+    if not out.is_file():
+        out.parent.mkdir(parents=True, exist_ok=True)
+        render.bake(_Quiet(), out=str(out), model=str(mesh), inline=False,
+                    root=str(config.root), **rig)
+    return out
+
+
+def _neighbour(mine: dict, members: list[dict], canon: list[dict], measures: dict,
+               declared: dict, config: Config) -> dict:
+    """The canon member nearest the candidate, each measure's gap counted in its own
+    floor, so the person judging it sees the member it would sit beside."""
+    def distance(other: dict) -> float:
+        total = 0.0
+        for key, said in measures.items():
+            if said.get("floor") and other.get(key) is not None:
+                gap = _gap(mine[key], other[key], key in CIRCULAR)
+                total += abs(gap) / said["floor"]
+        return total
+
+    nearest = min(range(len(canon)), key=lambda i: distance(canon[i]))
+    member = members[nearest]
+    found = {"member": member["picture"],
+             "path": provenance.relative(Path(declared["canon"]) / member["picture"],
+                                         config.root)}
+    if canon[nearest].get("render"):
+        found["render"] = canon[nearest]["render"]
+    return found
+
+
 #: The least span of lightness, in L*, between a subject's darkest and lightest tones
 #: for its darker half to be read as ink. Outlines in a flat drawing are its darkest
 #: pixels, and a fixed share of the subject would not find them: a thin outline is
@@ -223,24 +353,24 @@ def drift(
     which a difference means nothing. A canon of fewer than two pictures has no spread,
     and the report says so rather than inventing a floor. A picture that passes is not
     thereby right; `not_checked` says what only a person can see.
-    """
-    from .image import load as load_image
 
+    A `.glb` is held to the family's meshes (§PW451): each is rendered at the family's
+    `rig` and measured there, with its bounding box's proportions, its silhouette's
+    weight at the `seen` width and its materials. `neighbour` names the member nearest
+    it, with its render, so a drift is judged beside the mesh it drifts from.
+    """
     config = load(root)
     name, declared = config.style(family)
-    floor_alpha = config.tolerances().alpha_floor
-    palette = list(declared.get("palette") or [])
-    mine = features(load_image(config.root / picture), palette, floor_alpha)
-    canon = [
-        features(
-            load_image(Path(declared["canon"]) / e["picture"]), palette, floor_alpha
-        )
-        for e in admitted(declared)
-    ]
+    mesh = is_mesh(picture)
+    mine = measured(config.root / picture, declared, config)
+    # A family's meshes are held to its meshes, and its pictures to its pictures.
+    members = [e for e in admitted(declared) if is_mesh(e["picture"]) == mesh]
+    canon = [measured(Path(declared["canon"]) / e["picture"], declared, config)
+             for e in members]
     measures = {
         key: _against(key, value, [c[key] for c in canon if c.get(key) is not None])
         for key, value in mine.items()
-        if value is not None and key != "warmth"
+        if value is not None and key not in ("warmth", "render")
     }
     palette_drift = measures.get("palette_delta_e_p95") or {}
     if palette_drift.get("drifted"):
@@ -261,7 +391,11 @@ def drift(
         "passed": (not drifted) if judged else None,
         "drifted": drifted,
         "measures": measures,
-        "not_checked": list(NOT_CHECKED),
+        # The member a person compares it with, beside the numbers (§PW451).
+        **({"neighbour": _neighbour(mine, members, canon, measures, declared, config)}
+           if judged else {}),
+        **({"render": mine["render"]} if mesh else {}),
+        "not_checked": list(NOT_CHECKED + (NOT_CHECKED_MESH if mesh else ())),
         # A palette borrowed from another project whose source moved since it was
         # pinned: the canon was judged against colours the source has left (§PW387).
         **({"source_moved": declared["borrowed"]}
@@ -374,6 +508,10 @@ _WAYS = {
     "line_weight": ("thicker lines", "thinner lines"),
     "fringe_width": ("a softer edge", "a harder edge"),
     "halo_delta_e": ("a stronger halo", "less halo"),
+    "height_to_width": ("taller", "squatter"),
+    "depth_to_width": ("deeper", "flatter"),
+    "silhouette_fill": ("a heavier silhouette", "a lighter silhouette"),
+    "materials": ("more materials", "fewer materials"),
 }
 
 
@@ -381,7 +519,7 @@ def _against(key: str, value: float, canon: list[float]) -> dict:
     """One measure held to the canon's spread, and which way it went if it drifted."""
     if len(canon) < 2:
         return {"value": value, "canon": canon, "floor": None, "drifted": False}
-    circular = key == "light_degrees"
+    circular = key in CIRCULAR
     middle = float(np.median(canon))
     floor = max(abs(_gap(c, middle, circular)) for c in canon)
     gap = _gap(value, middle, circular)
@@ -397,7 +535,8 @@ def _against(key: str, value: float, canon: list[float]) -> dict:
     if drifted:
         if circular:
             turn = "anticlockwise" if gap > 0 else "clockwise"
-            found["which_way"] = f"light turned {abs(gap):.0f} degrees {turn}"
+            what = "hue" if key == "hue_degrees" else "light"
+            found["which_way"] = f"{what} turned {abs(gap):.0f} degrees {turn}"
         else:
             found["which_way"] = _WAYS[key][0 if gap > 0 else 1]
             if key == "line_weight" and middle > 0:
@@ -422,14 +561,14 @@ def _floors(features_of: list[dict]) -> dict[str, float | None]:
     keys = sorted({k for one in features_of for k, v in one.items() if v is not None})
     found: dict[str, float | None] = {}
     for key in keys:
-        if key == "warmth":
+        if key in ("warmth", "render"):
             continue
         values = [one[key] for one in features_of if one.get(key) is not None]
         if len(values) < 2:
             found[key] = None
             continue
         middle = float(np.median(values))
-        circular = key == "light_degrees"
+        circular = key in CIRCULAR
         found[key] = round(max(abs(_gap(v, middle, circular)) for v in values), 4)
     return found
 
@@ -440,19 +579,12 @@ def board(family: str | None = None, root=".") -> dict:
     `without` gives every floor as it would be with each picture taken out, so an
     outlier widening every tolerance shows as exactly that before anyone removes it.
     """
-    from .image import load as load_image
-
     config = load(root)
     name, declared = config.style(family)
     held = admitted(declared)
-    floor_alpha = config.tolerances().alpha_floor
     palette = list(declared.get("palette") or [])
-    measured = [
-        features(
-            load_image(Path(declared["canon"]) / e["picture"]), palette, floor_alpha
-        )
-        for e in held
-    ]
+    each = [measured(Path(declared["canon"]) / e["picture"], declared, config)
+            for e in held]
     here = config.root
     return {
         "family": name,
@@ -470,9 +602,9 @@ def board(family: str | None = None, root=".") -> dict:
         ],
         "palette": palette,
         "skeleton": declared.get("skeleton") or {},
-        "floors": _floors(measured),
+        "floors": _floors(each),
         "without": {
-            e["picture"]: _floors(measured[:i] + measured[i + 1 :])
+            e["picture"]: _floors(each[:i] + each[i + 1 :])
             for i, e in enumerate(held)
         },
         "candidates": candidates(declared, held, here),

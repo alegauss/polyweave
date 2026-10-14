@@ -268,28 +268,6 @@ Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
 ## Block J — A bar a person sets once
 
-### §PW451 A canon for a family of meshes
-
-Style consistency in the market means 2D: Scenario's trained models and Ideogram's style
-references both hold pictures together. Nothing found in 2026 reviews measures
-consistency across 3D assets, and a generator cannot, because it never sees more than
-the one mesh it is making.
-
-polyweave already has the parts. A canon is joined only by a person's verdict through
-`verdict.judge`, `style.drift` measures a picture against one, and every mesh has a
-render rig and the closed measurement vocabulary. What is missing is a canon whose
-members are meshes, measured through their renders at the family's own rig: palette at a
-percentile, proportion of the bounding box, silhouette weight at the size a player sees
-it, and material properties the render exposes.
-
-A new member is then held to the family as well as to its own spec, and a drift is
-reported with the member it drifts from, so the person judging it sees the neighbour
-rather than a number. Joining stays the verdict's alone, exactly as for pictures.
-
-Evidence that it landed: Spinhold's enemies form one family, a new enemy with a
-deliberately off palette is reported drifting from a named member, and one accepted by a
-person joins the canon with that verdict in its record.
-
 ## Block K — Reached without reading the source
 
 ### §PW449 Driven from a second MCP client
