@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 6 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 5 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -237,13 +237,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "V",
     symptom: "Cottony keeps its own settings and save code where the kits provide them",
     why: "The second game is what shows a kit is not one project's code moved into a folder.",
-    deps: [],
-  },
-  {
-    id: "PW432",
-    block: "V",
-    symptom: "the remap menu binds on press, in English words, with no label or order per action",
-    why: "A stick binds the first direction it crosses, a game in another language shows English, and actions read as code names.",
     deps: [],
   },
   {

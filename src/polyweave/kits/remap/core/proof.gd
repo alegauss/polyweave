@@ -163,9 +163,50 @@ func _process(_delta: float) -> bool:
 	north.button_index = JOY_BUTTON_Y
 	north.pressed = true
 	menu._input(north)
+	if (menu.bindings.current()[J] as Array).has("button:3"):
+		failed.append("the screen bound on the press, before it was let go")
+	var let_go := north.duplicate()
+	let_go.pressed = false
+	menu._input(let_go)
 	var on_pad := menu.bindings.current()[J] as Array
 	if not on_pad.has("button:3") or on_pad.has("button:0") or on_pad.has("key:%d" % KEY_Q):
 		failed.append("the screen listening on the pad bound jump to %s" % [on_pad])
+	# A stick binds the way it was pushed, once it comes back (§PW432).
+	menu._listen(F, true)
+	for value in [-0.9, -0.4, 0.1]:
+		var stick := InputEventJoypadMotion.new()
+		stick.axis = JOY_AXIS_LEFT_X
+		stick.axis_value = value
+		menu._input(stick)
+	if not (menu.bindings.current()[F] as Array).has("axis:0:-1"):
+		failed.append("a stick pushed left bound fire to %s" % [menu.bindings.current()[F]])
+	# A press held past hold_to_cancel cancels, and binds nothing when let go.
+	var before: Array = menu.bindings.current()[P]
+	menu._listen(P, true)
+	var held := InputEventJoypadButton.new()
+	held.button_index = JOY_BUTTON_X
+	held.pressed = true
+	menu._input(held)
+	menu._process(menu.hold_to_cancel + 0.1)
+	var held_go := held.duplicate()
+	held_go.pressed = false
+	menu._input(held_go)
+	if menu.bindings.current()[P] != before or menu._listening != "":
+		failed.append("a held press bound pause to %s" % [menu.bindings.current()[P]])
+	# Its words and each action's label come from the game's table, English where it
+	# has no row.
+	var table := Translation.new()
+	table.locale = TranslationServer.get_locale()
+	table.add_message("REMAP_RESET", "Restaurar")
+	table.add_message("PROOF_JUMP", "Pular")
+	TranslationServer.add_translation(table)
+	menu.bindings.labels = {J: "PROOF_JUMP"}
+	if menu.said("reset") != "Restaurar" or menu.said("pad") != "Pad":
+		failed.append("the screen's words ignore the table: %s, %s"
+			% [menu.said("reset"), menu.said("pad")])
+	if menu.bindings.label(J) != "Pular" or menu.bindings.label(F) != F:
+		failed.append("an action's label reads %s" % menu.bindings.label(J))
+	TranslationServer.remove_translation(table)
 	menu.bindings.reset()
 	_pad_screen(menu.open_pad())
 	menu.bindings.reset()

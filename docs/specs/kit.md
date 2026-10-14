@@ -233,6 +233,17 @@ section are taken, with a `deadzone` and `invert_vertical` where it kept them, w
 the kit's file at once and said in `said`. The older file is left as it was, and is not
 read again once the kit has its own.
 
+The remap screen is one a game can ship (§PW432, 0.5.0). It listens through the
+release: a press on the half asked is held on to and binds when it is let go, a stick
+once it is back under `AXIS_RELEASE` (0.25), so it binds the way it was pushed; a press
+held `hold_to_cancel` seconds (1) cancels instead, as does nothing pressed in
+`listen_seconds` (5) and Escape. Every word it shows is asked of the game's string table
+as `REMAP_<NAME>` (`REMAP_RESET`, `REMAP_PRESS_KEY` and the rest, the `%s` marks filled
+with the action's label), English where the table has no row. The declaration may say
+`const LABELS := {"jump": "ACTION_JUMP", ...}`: each action's row in the table, and the
+order the screen shows them in, which is then the actions too where the screen names
+none; an action with no label reads as its own name.
+
 The pad can be bound on its picture (§PW428, 0.4.0). The remap screen's `pad` button
 opens `pad_screen.gd`, a layer over it binding through the same store: every place on
 the pad in use, named in its layout's glyphs where it sits, with a leader line to the

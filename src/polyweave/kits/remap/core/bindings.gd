@@ -15,8 +15,9 @@ const FILE := "user://polyweave_bindings.cfg"
 ## "controls"]` names the file and section a game kept its players' bindings in before
 ## the kit, so the first launch with the kit takes them instead of resetting them.
 const PROJECT := "res://polyweave_remap.gd"
-## how far a stick or trigger must move to be read as a binding
+## how far a stick or trigger must move to be read as a binding, and back to be let go
 const AXIS_PRESS := 0.6
+const AXIS_RELEASE := 0.25
 
 ## the actions a player may rebind; every project action but the ui_ ones where unset
 var actions: Array = []
@@ -28,16 +29,31 @@ var _path := FILE
 var from: Array = []
 ## what the last load had to say: bindings taken from an older file
 var said: Array[String] = []
+## each action's row in the game's string table, in the order the screen shows them,
+## as the declaration's `const LABELS := {"jump": "ACTION_JUMP", ...}` says (§PW432)
+var labels: Dictionary = {}
 
 
 func _init(rebindable: Array = [], path := FILE, project := PROJECT) -> void:
 	_path = path
-	actions = rebindable if not rebindable.is_empty() else _project_actions()
-	for action in actions:
-		_defaults[action] = defaults(action)
 	if ResourceLoader.exists(project):
 		var declared: Dictionary = (load(project) as GDScript).get_script_constant_map()
 		from = Array(declared.get("FROM", []))
+		labels = Dictionary(declared.get("LABELS", {}))
+	actions = rebindable if not rebindable.is_empty() else (
+		labels.keys() if not labels.is_empty() else _project_actions())
+	for action in actions:
+		_defaults[action] = defaults(action)
+
+
+## what the player reads for an action: its declared row in the game's string table, or
+## its own name where it has none
+func label(action: String) -> String:
+	var key: String = labels.get(action, "")
+	if key == "":
+		return action
+	var text := String(TranslationServer.translate(key))
+	return action if text == key else text
 
 
 static func _project_actions() -> Array:
@@ -103,6 +119,28 @@ static func decode(code: String) -> InputEvent:
 			motion.device = -1
 			return motion
 	return null
+
+
+## whether `event` presses something a binding could hold: a key, a mouse or pad button
+## down, or a stick or trigger past `AXIS_PRESS`
+static func is_press(event: InputEvent) -> bool:
+	if event is InputEventJoypadMotion:
+		return absf((event as InputEventJoypadMotion).axis_value) >= AXIS_PRESS
+	return (event is InputEventKey or event is InputEventMouseButton
+		or event is InputEventJoypadButton) and event.is_pressed() and not event.is_echo()
+
+
+## whether `event` lets go of what `code` pressed: the same key or button up, or its
+## stick or trigger back under `AXIS_RELEASE`
+static func is_release(event: InputEvent, code: String) -> bool:
+	if event is InputEventJoypadMotion:
+		var motion := event as InputEventJoypadMotion
+		return code.begins_with("axis:%d:" % motion.axis) \
+			and absf(motion.axis_value) <= AXIS_RELEASE
+	if not (event is InputEventKey or event is InputEventMouseButton
+			or event is InputEventJoypadButton) or event.is_pressed():
+		return false
+	return encode(event) == code
 
 
 ## a key and a mouse button are the keyboard's half; a pad's button and axis, the pad's

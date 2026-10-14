@@ -858,26 +858,6 @@ choosing and binding.
 The proof: a rebind on the picture takes and swaps, a press lights its spot, each layout
 draws, and the spots table matches each SVG's buttons.
 
-### §PW432 A remap menu a game can ship
-
-Where: spinhold, RK216, read against remap 0.3.0 (core/remap_menu.gd).
-
-1. The remap menu binds on press. Spinhold's Controls tab listens until the input is
-   released (`AXIS_RELEASE`, options.gd 185-253), so a stick pushed past the threshold
-   binds the direction it ended on rather than the first one it crossed, and holding the
-   cancel button cancels instead of binding it. The kit has `AXIS_PRESS` and no release.
-2. Its words are hard-coded English ("Press a key", "Reset"...), so a game in pt-BR shows
-   English on its Controls tab; Spinhold's go through the string table (tr) and its
-   words.check.
-3. It has no player-facing label or order per action: the list is ProjectSettings' order
-   and the raw action names. Spinhold declares `Bindings.LABELS` (action -> table key) and
-   shows actions in that order.
-
-What polyweave should do: a capture that listens through release with a hold to cancel,
-every string a key the game's table translates (with English defaults), and a declared
-label and order per action in the game's declaration (res://polyweave_remap.gd).
-check_rebind in Spinhold's dev/check.gd holds the behaviour to match.
-
 ### §PW433 A game's own pad options in the remap kit
 
 Where: spinhold, RK216, read against remap 0.3.0 (core/bindings.gd).
