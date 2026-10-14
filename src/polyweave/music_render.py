@@ -354,7 +354,7 @@ def render(
             "name a *.music.toml relative to the project root",
         )
     text = where.read_text(encoding="utf-8")
-    model, problems = music.compile_source(text, where.stem)
+    model, problems = music.compile_source(text, where.stem, where)
     if model is not None:
         problems = music.kit_problems(model, here)
         model = None if problems else model

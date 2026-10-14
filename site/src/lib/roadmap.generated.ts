@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 13 },
+  { block: "H", title: "Proof on a real game", open: 12 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 1 },
   { block: "K", title: "Reached without reading the source", open: 2 },
@@ -104,13 +104,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "a camera move cannot be declared as a clip or played by the game, so a cutscene's shots are numbers in the project",
     why: "No shot is yet captured onto a sitting for a person to accept, and Starship's opening still reads its own JSON.",
-    deps: [],
-  },
-  {
-    id: "PW426",
-    block: "H",
-    symptom: "a score cannot be another score transposed, so a piece in three keys is three files kept in step by hand",
-    why: "One change to a shared melody becomes three hand transpositions, where a wrong note passes every check.",
     deps: [],
   },
   {

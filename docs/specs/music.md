@@ -22,6 +22,8 @@ loop  = true                 # false for a stinger that plays once
 loop_from = "A"              # where the loop comes back in; the first section by default
 room  = 0.55                 # the reverb's size, 0 to 1
 reference = "refs/calm.ogg"  # the track it was written against, under the project (PW422)
+extends   = "bow.music.toml" # a score beside this one it is made from (PW426)
+transpose = 2                # semitones its pitched notes move from the one it extends
 
 [section.A]
 bars = 8
@@ -64,6 +66,16 @@ the render sets them (`music.unknown-parameter`, with the nearest name).
 
 **Every key is refused unless it is one of these**, with the nearest name offered, and
 `title`, `bpm`, `form`, and each track's `name`, `instrument` and `play` are required.
+
+**A score can be made from another** (§PW426). `extends` names a score beside this one;
+its `[music]` keys, sections, patterns, patches and kits hold where this score does not
+name them, a `[[track]]` of the same name is replaced and a new one is added after the
+base's, and the whole compiles as one score, so `music.validate`, `music.to_midi` and the
+render see the result. `transpose` moves every pitched note by whole semitones, drums
+and chip kits left as they hit; two scores extending in a chain add their transpositions.
+So one piece in three keys is one score and two that extend it, and an edit to the base
+reaches all three. A base that is not there is `music.missing`, a chain that comes back
+round, a fractional transposition or a note pushed out of MIDI's range `music.bad-value`.
 
 ## The notation
 

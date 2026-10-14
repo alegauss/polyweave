@@ -348,27 +348,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW426 A score derived from another
-
-Where: spinhold, RK71 (the phase music in layers), 2026-10-12.
-
-The game's three phase scores (art/audio/phase_1..3.music.toml) are one piece in three
-keys: the Waist's is the Bow's a tone up, the Stern's a tone down, with their own tempo,
-title and a drum line or two of their own. Adding a lead and a high layer meant writing
-the same new patterns three times, transposed by hand note by note (`e5` to `f#5` to
-`d5`, `c6` to `d6` to `bb5`), and copying every patch, kit and track block into each
-file.
-
-Workaround: a throwaway script (the session's scratchpad, derive_scores.py) that read
-the Bow's score and rewrote the other two by regex, with the transposed patterns typed
-in. A wrong hand transposition is a wrong note no validator catches.
-
-What polyweave should do: let a score derive from another (`extends =
-"phase_1.music.toml"` with `transpose = 2`, `bpm`, `title` and the patterns or tracks it
-overrides), compiled as a whole score so `music.validate` and the render see the result;
-or a `transpose` modifier in the mini-notation per pattern. Either way one edit to the
-Bow's lead reaches all three.
-
 ### §PW427 Particles drawn as a mesh
 
 Where: spinhold's Stuffing effect, game/world/stuffing.gd, whose tufts are a squashed

@@ -66,6 +66,83 @@ def lines_of(problems: list[dict]) -> dict[str, int | None]:
     return {p["code"]: p["line"] for p in problems}
 
 
+# -- a score made from another (§PW426) ------------------------------------------------
+
+UP_A_TONE = """\
+[music]
+extends = "bow.music.toml"
+title = "Waist"
+bpm = 132
+transpose = 2
+
+[pattern]
+lead_b = "d5 _ _ ~"
+
+[[track]]
+name = "pad"
+instrument = "gm:89"
+play = { A = "bass" }
+"""
+
+
+def derived(tmp_path, text=UP_A_TONE, base=SCORE):
+    (tmp_path / "bow.music.toml").write_text(base, encoding="utf-8")
+    (tmp_path / "waist.music.toml").write_text(text, encoding="utf-8")
+    return music.compile_source(text, "waist", tmp_path / "waist.music.toml")
+
+
+def test_a_score_made_from_another_moves_its_pitched_notes_and_not_its_drums(tmp_path):
+    """Spinhold's three phase scores were one piece in three keys, kept by hand."""
+    model, problems = derived(tmp_path)
+    assert problems == []
+    base = compiled()
+    ext = model["extensions"][music.EXTENSION]
+    assert model["metadata"]["title"] == "Waist" and ext["bpm"] == 132
+
+    def notes(of, part):
+        return sorted(n["pitch"] for n in of["notes"] if n["part"] == part)
+
+    assert notes(model, "bass") == [p + 2 for p in notes(base, "bass")]
+    assert notes(model, "drums") == notes(base, "drums")
+    # A pattern named here wins over the base's, and a new track joins the base's.
+    assert 74 + 2 in notes(model, "lead")  # d5 written here, then moved a tone
+    # The lead is not the base's moved a tone: lead_b is this score's own.
+    assert notes(model, "lead") != [p + 2 for p in notes(base, "lead")]
+    assert [p["id"] for p in model["parts"]] == ["lead", "bass", "drums", "pad"]
+
+
+def test_one_edit_to_the_base_reaches_the_score_made_from_it(tmp_path):
+    first, _ = derived(tmp_path)
+    second, _ = derived(tmp_path, base=SCORE.replace('bass = "<[c2 c3]*4',
+                                                     'bass = "<[d2 c3]*4'))
+    pitches = [sorted(n["pitch"] for n in m["notes"] if n["part"] == "bass")
+               for m in (first, second)]
+    assert pitches[0] != pitches[1]
+
+
+def test_a_score_extending_one_that_is_not_there_is_named(tmp_path):
+    (tmp_path / "waist.music.toml").write_text(UP_A_TONE, encoding="utf-8")
+    model, problems = music.compile_source(UP_A_TONE, "waist",
+                                           tmp_path / "waist.music.toml")
+    assert model is None
+    assert problems[0]["code"] == "music.missing"
+    assert "bow.music.toml" in problems[0]["message"]
+
+
+def test_two_scores_extending_each_other_are_refused(tmp_path):
+    loop = UP_A_TONE.replace("bow.music.toml", "waist.music.toml")
+    model, problems = derived(tmp_path, text=loop)
+    assert model is None
+    assert "comes back round" in problems[0]["message"]
+
+
+def test_a_transposition_is_whole_semitones(tmp_path):
+    model, problems = derived(tmp_path, text=UP_A_TONE.replace("transpose = 2",
+                                                               "transpose = 0.5"))
+    assert model is None
+    assert "whole semitones" in problems[0]["message"]
+
+
 def test_a_score_compiles_to_a_piano_shaped_model():
     model = compiled()
     assert model["formatVersion"] == 1

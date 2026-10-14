@@ -66,6 +66,10 @@ _MUSIC = {
     # The track this score was written against, a file under the project (another
     # project's comes in by provenance.borrow): its record names it (§PW422).
     "reference": (str, ""),
+    # Another score, beside this one, this one is made from: its sections, patterns,
+    # patches, kits and tracks, each overridden here by name, its pitched notes moved by
+    # `transpose` semitones (§PW426). One edit to the base reaches every key.
+    "extends": (str, ""), "transpose": (float, 0),
 }
 #: A send left unstated is off, which no level in decibels says.
 OFF = None
@@ -347,11 +351,13 @@ def _strict(
     return out
 
 
-def compile_source(text: str, name: str = "score") -> tuple[dict | None, list[dict]]:
+def compile_source(text: str, name: str = "score",
+                   where: Path | None = None) -> tuple[dict | None, list[dict]]:
     """The note model a source compiles to, and every problem found on the way.
 
     The model is None whenever there is a problem: a half-compiled score is one a
-    render would play wrong without saying so.
+    render would play wrong without saying so. `where` is the score's own file, which a
+    score that `extends` another needs to find it.
     """
     problems = _Problems(text)
     try:
@@ -362,6 +368,9 @@ def compile_source(text: str, name: str = "score") -> tuple[dict | None, list[di
             "music.unreadable", int(found.group(1)) if found else None,
             f"the source is not TOML: {exc}", "fix the syntax on that line",
         )
+        return None, problems.found
+    raw = _extended(problems, raw, where, seen=())
+    if problems.found:
         return None, problems.found
     for table in raw:
         if table not in _TABLES:
@@ -393,7 +402,87 @@ def compile_source(text: str, name: str = "score") -> tuple[dict | None, list[di
     model = _model(problems, music, sections, patterns, tracks, meter, name)
     model["extensions"][EXTENSION]["patches"] = patches
     model["extensions"][EXTENSION]["kits"] = kits
+    _transposed(problems, model, music, tracks)
     return (None if problems.found else model), problems.found
+
+
+def _extended(problems: _Problems, raw: dict, where: Path | None, seen: tuple) -> dict:
+    """A score with the one it `extends` laid under it, each table overridden by name.
+
+    `[music]` keys, sections, patterns, patches and kits are the derived score's where
+    it names them and the base's where it does not; a track is replaced by one of the
+    same name and added where its name is new. The two transpositions add up, so a
+    score made from one made from another lands where both say.
+    """
+    music = raw.get("music") if isinstance(raw.get("music"), dict) else {}
+    named = music.get("extends")
+    if not named:
+        return raw
+    line = problems.line("extends", problems.header("music") or 0)
+    if where is None:
+        problems.add("music.bad-value", line, f"extends {named!r} has nowhere to look",
+                     "compile the score from its file, as music.validate does")
+        return raw
+    base = (where.parent / named).resolve()
+    if base in seen or base == where.resolve():
+        problems.add("music.bad-value", line, f"extends {named} comes back round to "
+                     f"{where.name}", "have each score extend one that does not")
+        return raw
+    if not base.is_file():
+        problems.add("music.missing", line, f"extends {named}, and there is no score "
+                     "there", "name a *.music.toml beside this one, relative to it")
+        return raw
+    try:
+        under = tomllib.loads(base.read_text(encoding="utf-8-sig"))
+    except tomllib.TOMLDecodeError as exc:
+        problems.add("music.unreadable", line, f"{named} is not TOML: {exc}",
+                     f"fix {named}, the score this one extends")
+        return raw
+    under = _extended(problems, under, base, (*seen, where.resolve()))
+    merged: dict = {}
+    for table in _TABLES:
+        mine, theirs = raw.get(table), under.get(table)
+        if table == "track":
+            kept = {t.get("name"): t for t in theirs or () if isinstance(t, dict)}
+            order = [t.get("name") for t in theirs or () if isinstance(t, dict)]
+            for one in mine or ():
+                if isinstance(one, dict) and one.get("name") not in kept:
+                    order.append(one.get("name"))
+                kept[one.get("name") if isinstance(one, dict) else None] = one
+            if kept:
+                merged[table] = [kept[n] for n in order]
+        elif isinstance(mine, dict) or isinstance(theirs, dict):
+            merged[table] = {**(theirs or {}), **(mine or {})}
+    for table in set(raw) - set(_TABLES):
+        merged[table] = raw[table]  # an unknown table is still named as one
+    base_music = dict(under.get("music") or {})
+    shift = float(base_music.get("transpose") or 0) + float(music.get("transpose") or 0)
+    merged["music"] = {**base_music, **music, "transpose": shift}
+    merged["music"].pop("extends", None)
+    return merged
+
+
+def _transposed(problems: _Problems, model: dict, music: dict, tracks: list) -> None:
+    """Every pitched note moved by the score's `transpose`, drums left as they hit."""
+    shift = music.get("transpose") or 0
+    if not shift:
+        return
+    if float(shift) != int(shift):
+        problems.add("music.bad-value", problems.line("transpose"),
+                     f"transpose is {shift!r}, and a key moves by whole semitones",
+                     "write a whole number of semitones, such as 2 or -2")
+        return
+    unpitched = {t["name"] for t in tracks
+                 if t["drums"] or str(t["instrument"]).startswith(("drums:", "chip:"))}
+    for note in model["notes"]:
+        if note["part"] not in unpitched:
+            note["pitch"] += int(shift)
+            if not 0 <= note["pitch"] <= 127:
+                problems.add("music.bad-value", problems.line("transpose"),
+                             f"transposed, a {note['part']} note leaves MIDI's range "
+                             f"at {note['pitch']}",
+                             "transpose by less, or the other way")
+                return
 
 
 def _patches(problems: _Problems, stated: Any) -> dict[str, dict]:
@@ -889,7 +978,8 @@ def validate(
     answers its length in seconds, its notes per track and its loop in ticks.
     """
     base, where = _score(source, root)
-    model, problems = compile_source(where.read_text(encoding="utf-8-sig"), where.stem)
+    model, problems = compile_source(where.read_text(encoding="utf-8-sig"), where.stem,
+                                     where)
     if model is not None:
         problems = kit_problems(model, base)
         model = None if problems else model
@@ -911,7 +1001,8 @@ def to_midi(
 ) -> dict:
     """Write a valid score as a Standard MIDI File a DAW opens, one track per part."""
     base, where = _score(source, root)
-    model, problems = compile_source(where.read_text(encoding="utf-8-sig"), where.stem)
+    model, problems = compile_source(where.read_text(encoding="utf-8-sig"), where.stem,
+                                     where)
     if model is None:
         first = problems[0]
         raise PolyweaveError(
