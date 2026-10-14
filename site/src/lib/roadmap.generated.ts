@@ -35,7 +35,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "H", title: "Proof on a real game", open: 5 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
-  { block: "K", title: "Reached without reading the source", open: 1 },
+  { block: "K", title: "Reached without reading the source", open: 0 },
   { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 1 },
@@ -84,13 +84,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "a real project cannot adopt the plugin without carrying its own paths and palette into it",
     why: "Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82.",
     deps: ["PW82"],
-  },
-  {
-    id: "PW449",
-    block: "K",
-    symptom: "no MCP client but Claude Code has ever driven polyweave, so whether its surface is usable without the skill is unknown",
-    why: "MCP directories compare Blender and Godot servers across clients, and a surface proven in one host cannot be listed there honestly.",
-    deps: [],
   },
   {
     id: "PW450",
@@ -193,4 +186,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW53", "PW78", "PW79", "PW80", "PW81", "PW82", "PW443", "PW192", "PW201", "PW311", "PW368"];
+export const generatedPaused: string[] = ["PW53", "PW78", "PW79", "PW80", "PW81", "PW82", "PW449", "PW443", "PW192", "PW201", "PW311", "PW368"];

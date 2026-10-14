@@ -29,6 +29,8 @@
 
 ## Block K — Reached without reading the source
 
+- ⏸ **PW449** (deps: —) **no MCP client but Claude Code has ever driven polyweave, so whether its surface is usable without the skill is unknown** — set aside (No second MCP client is installed, and running one needs the owner's account.): MCP directories compare servers across clients. → §PW449
+
 ## Block L — What a run leaves as evidence
 
 ## Block M — What a game needs beyond the look
