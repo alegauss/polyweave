@@ -264,29 +264,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW453 Live text in a vector picture
-
-Met while making a dev.to cover for polyweave itself (2026-10-13): an SVG of 1000×420
-with eighteen `<text>` runs, drawn with `picture.vector(source="devto-cover.svg",
-out="devto-cover.png", width=2000)`. The answer was an ordinary success, and the PNG had
-the background, the mark and the chips' outlines, and not one letter.
-
-`store._drawn_svg` loads the SVG through Godot's `Image.load_svg_from_string`, and
-ThorVG as Godot builds it does not draw `<text>`. The call says none of that, so
-learning it took looking at the picture and reading `vector.py`. `store.capsules` uses
-the same path, so a logo whose lettering is live text loses it there too.
-
-Workaround, in the session's scratchpad, not committed: a fontTools script replacing
-each `<text>` with its glyph outlines before the call.
-
-What polyweave should do:
-
-1. Never lose text silently. Before rasterising, find `<text>`, `<tspan>` and
-   `<textPath>` and refuse with a typed code naming each run and a remedy.
-2. Better: outline the text itself before ThorVG draws it, resolving `font-family` and
-   `font-weight` to a font file `polyweave.toml` names (or the system's), with the font
-   recorded among the provenance inputs and a missing font refused by name.
-
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once

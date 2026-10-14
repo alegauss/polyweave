@@ -70,6 +70,20 @@ ring and the letters, and the store's PNG came from a rasterisation nothing reco
 same ThorVG run, blur filters and masks included, and writes a record whose `vector`
 input is the SVG. So `provenance.outdated` names the PNG once the SVG changes.
 
+**Live text is outlined before ThorVG draws it** (§PW453). ThorVG, as Godot builds it,
+draws no `<text>`, so a banner came out with every letter missing and the call answered
+a success. Before any drawing, in `picture.vector` and in `store.capsules` alike, each
+`<text>` and its `<tspan>`s are replaced by their glyph outlines, set by the glyphs'
+advances, with `text-anchor` and `letter-spacing` applied and no kerning. The font is
+the one the run's `font-family` (inherited from the groups around it), `font-weight` and
+`font-style` resolve to, looked for first among `[words] fonts` and then among the
+system's fonts. A generic family such as `sans-serif` stands for the usual faces
+(Arial, DejaVu Sans and the like). A span keeps its own fill and stroke. Each font file
+used is a `font` input of the picture's record. Text along a `<textPath>`, a family no
+font has, a character the font lacks, or fontTools not installed (`pip install
+polyweave[text]`) is refused as `compose.text-unoutlined` by name, never drawn blank.
+An SVG with no text never imports fontTools.
+
 **A part that moves is drawn as its own layer.** `layers` maps a name to one top-level
 element of the drawing: `#id`, or its place counted from 1, because exported SVGs often
 leave their groups without ids. Each layer is written beside `out` as

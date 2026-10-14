@@ -2360,6 +2360,14 @@ CODES: dict[str, Code] = {
         "stating neither a pixel width nor a viewBox (§PW315)",
         doors=("name an .svg under the project", "give its svg element a viewBox"),
     ),
+    "compose.text-unoutlined": Code(
+        means="an SVG's live text cannot be outlined, and the engine draws it blank",
+        when="picture.vector or store.capsules on an SVG with text along a path, a "
+        "font-family no declared or installed font has, a character its font lacks, "
+        "or no fontTools (§PW453)",
+        doors=("add the font to [words] fonts", "pip install fonttools",
+               "convert the text to outlines in the editor"),
+    ),
     "compose.no-layer": Code(
         means="a layer names an element the SVG does not have",
         when="picture.vector given a layer whose #id or place matches no top-level "

@@ -66,7 +66,8 @@ def _store(store: str, root: Path) -> dict:
     return declared
 
 
-def _opened(path: Path, role: str, root: Path | None = None):
+def _opened(path: Path, role: str, root: Path | None = None,
+            used: list | None = None):
     from PIL import Image
 
     if not path.is_file():
@@ -76,7 +77,7 @@ def _opened(path: Path, role: str, root: Path | None = None):
             f"name the {role} as a path under the project",
         )
     if path.suffix.lower() == ".svg":
-        return _drawn_svg(path, {"native": 1.0}, root or path.parent)["native"]
+        return _drawn_svg(path, {"native": 1.0}, root or path.parent, used)["native"]
     with Image.open(path) as picture:
         return picture.convert("RGBA")
 
@@ -102,18 +103,21 @@ func _initialize() -> void:
 """
 
 
-def _drawn_svg(svg: Path, scales: dict[str, float], root: Path) -> dict:
+def _drawn_svg(svg: Path, scales: dict[str, float], root: Path,
+               used: list | None = None) -> dict:
     """A vector logo drawn at each scale asked, by the engine's own SVG rasteriser.
 
     Godot draws SVG through ThorVG, which a headless run does in milliseconds, so a
     vector logo is drawn at the size each capsule shows it and its strokes measured
     there, where a raster scaled down from one export measures the export (§PW275).
+    ThorVG draws no text, so live text is outlined first (§PW453), and the font files
+    that drew it are added to `used` for the picture's record.
     """
     import tempfile
 
     from PIL import Image
 
-    from . import engine
+    from . import engine, svgtext, vector
 
     try:
         binary = engine.find(root)
@@ -127,6 +131,13 @@ def _drawn_svg(svg: Path, scales: dict[str, float], root: Path) -> dict:
         ) from missing
     with tempfile.TemporaryDirectory(prefix="polyweave-svg-") as held:
         work = Path(held)
+        tree = vector._read(svg)
+        if svgtext.texts(tree.getroot()):
+            fonts = svgtext.outlined(tree, _declared_fonts(root))
+            svg = work / "outlined.svg"
+            tree.write(svg, encoding="utf-8", xml_declaration=True)
+            if used is not None:
+                used += [one for one in fonts if one not in used]
         (work / "polyweave.toml").write_text("", encoding="utf-8")
         (work / "project.godot").write_text(
             'config_version=5\n\n[application]\nconfig/name="svg"\n', encoding="utf-8"
@@ -152,6 +163,18 @@ def _drawn_svg(svg: Path, scales: dict[str, float], root: Path) -> dict:
             with Image.open(out) as picture:
                 drawn[name] = picture.convert("RGBA")
         return drawn
+
+
+def _declared_fonts(root: Path) -> list[Path]:
+    """The font files `[words] fonts` names, which a text run is outlined in first."""
+    from .config import load
+
+    try:
+        config = load(root)
+    except PolyweaveError:
+        return []
+    return [config.root / one["path"] for one in config.get("words.fonts") or ()
+            if isinstance(one, dict) and one.get("path")]
 
 
 def _logo_size(shape: dict, logo) -> tuple[int, int] | None:
@@ -247,7 +270,8 @@ def capsules(
                 "cut the capsules from the game's own key art and logo",
                 given=str(given),
             )
-    art, mark = _opened(art_path, "key art"), _opened(logo_path, "logo", here)
+    fonts: list[Path] = []
+    art, mark = _opened(art_path, "key art"), _opened(logo_path, "logo", here, fonts)
     vector = logo_path.suffix.lower() == ".svg"
     _large_enough(declared, art, None if vector else mark)
     # A vector logo is drawn again at each capsule's own size, in one engine run, and
@@ -260,7 +284,8 @@ def capsules(
     folder.mkdir(parents=True, exist_ok=True)
     floor = float(declared.get("min_stroke", 2.0))
     inputs = [provenance.source("key art", art_path, here),
-              provenance.source("logo", logo_path, here)]
+              provenance.source("logo", logo_path, here),
+              *(provenance.source("font", one, here) for one in fonts)]
     made, failed = {}, []
     for name, shape in declared["shape"].items():
         size = tuple(shape["size"])

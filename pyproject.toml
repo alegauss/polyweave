@@ -25,6 +25,9 @@ blender = ["bpy>=4.2"]
 # Rendering a score (§PW187) loads Surge XT and runs the mix through Pedalboard. Optional
 # like Blender: music.render refuses by name without it, and nothing else imports it.
 audio = ["pedalboard>=0.9"]
+# Outlining an SVG's live text before the engine draws it (§PW453). Optional the same
+# way: an SVG with no text never imports it, and one with text refuses by name.
+text = ["fonttools>=4.40"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/polyweave"]

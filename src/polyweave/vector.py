@@ -111,7 +111,9 @@ def vector(
     """Draw a vector to a PNG at a width, filters and masks included, with its record.
 
     Each layer is written beside `out` as `<out>.<layer>.png`, on the whole picture's
-    canvas and origin, so the layers stack back into it.
+    canvas and origin, so the layers stack back into it. Live text is outlined first in
+    the font its family names, from `[words] fonts` or the system's, and that font is
+    recorded; a run that cannot be is refused, never drawn blank (§PW453).
     """
     import tempfile
 
@@ -136,7 +138,8 @@ def vector(
     target = here / out if not Path(out).is_absolute() else Path(out)
     target.parent.mkdir(parents=True, exist_ok=True)
 
-    pictures = {"": store._drawn_svg(svg, {"whole": scale}, here)["whole"]}
+    fonts: list[Path] = []
+    pictures = {"": store._drawn_svg(svg, {"whole": scale}, here, fonts)["whole"]}
     with tempfile.TemporaryDirectory(prefix="polyweave-layer-") as held:
         for name, index in picked.items():
             # Every other drawing element hidden, defs kept, so the canvas, the origin
@@ -148,7 +151,11 @@ def vector(
                     element.set("display", "none")
             alone = Path(held) / f"{name}.svg"
             tree.write(alone, encoding="utf-8", xml_declaration=True)
-            pictures[name] = store._drawn_svg(alone, {"alone": scale}, here)["alone"]
+            pictures[name] = store._drawn_svg(alone, {"alone": scale}, here,
+                                              fonts)["alone"]
+    # The fonts live text was outlined in are inputs like the SVG (§PW453).
+    inputs = [provenance.source("vector", svg, here),
+              *(provenance.source("font", one, here) for one in fonts)]
 
     written: dict[str, dict] = {}
     for name, picture in pictures.items():
@@ -162,7 +169,7 @@ def vector(
                 "picture",
                 where,
                 engine={"name": "picture.vector", "rasteriser": "godot thorvg"},
-                inputs=[provenance.source("vector", svg, here)],
+                inputs=inputs,
                 params=params,
                 root=here,
             ),

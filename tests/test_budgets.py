@@ -215,7 +215,8 @@ DESCRIBE = 138_400
 #: 150,642 with verdict.move and verdict.bad-move (§PW436).
 #: 151,324 with fetch.ledger-by-name, a lock read but never rewritten (§PW457).
 #: 151,489 with prov.no-preset, a build with no export preset to read (§PW455).
-CAPABILITIES = 151_500
+#: 151,516 with compose.text-unoutlined, live text the engine would lose (§PW453).
+CAPABILITIES = 151_600
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

@@ -188,6 +188,7 @@
 - ✅ **PW457** **a purchase ledger kept as a table by name reads as its bare names, so every total over it is wrong or crashes** — purchase.ledger reads a lock keyed by name as adopted entries with their credits, refuses any other shape, and refuses to write the lock (design recorded in `docs/specs/adoption.md`).
 - ✅ **PW454** **provenance.generated leaves an older purchase's service unnamed, so a disclosure cannot say which generator made a file** — provenance.generated reads an unnamed purchase's service off its ledger entry, task id or folder, and else answers null with a fix (design recorded in `docs/specs/provenance.md`).
 - ✅ **PW455** **provenance.generated cannot tell what a Godot build ships, so it counts excluded files and buries art among code** — Without paths a Godot project's provenance.generated reads what its export preset ships, and unrecorded lists only media apart from code (design recorded in `docs/specs/provenance.md`).
+- ✅ **PW453** **picture.vector draws an SVG with live text as a PNG with no letters, and answers as if nothing were lost** — picture.vector and store.capsules outline live text in its resolved font before ThorVG draws, record the font, and refuse a run they cannot outline (design recorded in `docs/specs/store.md`).
 
 ## Block I — Voxel models from a declaration
 
