@@ -287,27 +287,6 @@ What polyweave should do:
    `font-weight` to a font file `polyweave.toml` names (or the system's), with the font
    recorded among the provenance inputs and a missing font refused by name.
 
-### §PW454 An unnamed service in a generated answer
-
-Met in Spinhold (2026-10-13), drafting its Steam AI disclosure:
-`provenance.generated(root="D:/Git/viglet/spinhold", paths=["game", "assets"])`.
-
-Five shipped meshes (`assets/models/drone.glb`, `gunship`, `keeper`, `seeker`, `ship`)
-came back with `"service": "service"`. Their purchase records were written by polyweave
-0.1.0, which put `engine: {"name": "service"}` and no service name, although each sits
-under `tools/art/meshy/` and carries a Meshy `task_id`. Four adopted Ideogram studies in
-`art/brand/reference/` came back with `"service": ""`; their `task_id` is
-`ideogram:<id>` and their prompt says they were made on ideogram.ai.
-
-The one question this answer exists for is "made by which service", so a reader building
-a disclosure from it has to open each record by hand.
-
-What polyweave should do: where a `fetch` record names no service, resolve it from what
-the record does carry (a `task_id` prefix, the project's `[service.<name>]` whose output
-folder holds the file) and say it was inferred; where nothing resolves it, answer
-`service: null` with a `why` and the remedy that rewrites the record, never the literal
-`"service"` or an empty string.
-
 ### §PW455 What a Godot build ships
 
 Met in Spinhold (2026-10-13), drafting its Steam AI disclosure. Called with no `paths`,

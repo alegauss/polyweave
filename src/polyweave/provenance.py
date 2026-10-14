@@ -933,6 +933,7 @@ def generated(
     authored: list[str] = []
     unrecorded: list[str] = []
     drafts: list[str] = []
+    known = _known(where)
     for path in dict.fromkeys(files):
         if not sidecar(path, where).is_file():
             unrecorded.append(path)
@@ -951,14 +952,59 @@ def generated(
             {
                 "path": path,
                 "chain": chain,
-                "service": bought.get("service")
-                or (bought.get("engine") or {}).get("name", ""),
+                **_service_of(bought, chain[-1], where, known),
                 "bought": bought.get("bought", ""),
                 "direct": len(chain) == 1,
             }
         )
     return {"generated": made, "authored": authored, "unrecorded": unrecorded,
             "drafts": drafts}
+
+
+#: What a record written before services were named put where the name goes.
+_UNNAMED = frozenset({"", "service"})
+
+
+def _known(where: Path) -> tuple[list[str], dict[str, str]]:
+    """The services the project declares, and each ledger entry's service by file."""
+    from . import purchase
+    from .config import load
+
+    try:
+        declared = sorted(load(where).services())
+    except PolyweaveError:
+        declared = []
+    try:
+        ledger = {e.get("artefact"): e.get("service") for e in purchase.read(where)
+                  if e.get("service")}
+    except PolyweaveError:
+        ledger = {}
+    return declared, ledger
+
+
+def _service_of(record: dict, path: str, where: Path, known: tuple) -> dict:
+    """Which service a purchase's record says made it, or what it can be read off
+    (§PW454): the ledger entry for the file, a `<service>:` task id, or a folder named
+    for a declared service, each answered with how it was `inferred`. Where nothing
+    says, the service is null with why and the remedy, never a placeholder."""
+    named = record.get("service") or (record.get("engine") or {}).get("name", "")
+    if named not in _UNNAMED:
+        return {"service": named}
+    declared, ledger = known
+    if ledger.get(path):
+        return {"service": ledger[path], "inferred": "ledger"}
+    prefix = str(record.get("task_id") or "").partition(":")[0]
+    if prefix in declared and ":" in str(record.get("task_id")):
+        return {"service": prefix, "inferred": "task_id"}
+    folders = [part for part in Path(path).parts[:-1] if part in declared]
+    if folders:
+        return {"service": folders[-1], "inferred": "folder"}
+    return {
+        "service": None,
+        "why": f"the record of {path} names no service, and neither the ledger, its "
+        "task id nor its folder says which made it",
+        "fix": f'add "service": "<name>" to {relative(sidecar(path, where), where)}',
+    }
 
 
 def _sidecar_params(path: str, where: Path) -> dict | None:

@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 8 },
+  { block: "H", title: "Proof on a real game", open: 7 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 1 },
   { block: "K", title: "Reached without reading the source", open: 1 },
@@ -90,13 +90,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "picture.vector draws an SVG with live text as a PNG with no letters, and answers as if nothing were lost",
     why: "ThorVG in Godot drops every text element, so a banner or logo loses its words in silence and the only way to know is to look at the picture and read vector.py.",
-    deps: [],
-  },
-  {
-    id: "PW454",
-    block: "H",
-    symptom: "provenance.generated leaves an older purchase's service unnamed, so a disclosure cannot say which generator made a file",
-    why: "Spinhold's five Meshy meshes and four Ideogram studies came back unnamed, and naming the service is the one thing the answer is for.",
     deps: [],
   },
   {

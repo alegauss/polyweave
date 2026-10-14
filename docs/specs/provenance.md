@@ -107,6 +107,15 @@ whose lineage reaches no purchase, ending at inputs a person made; and `unrecord
 files with no record at all, which no one can vouch for either way. A lineage that loops
 ends where it closes.
 
+**The service is named, or said to be unknown** (§PW454). A purchase recorded before
+records named their service carries `engine: {"name": "service"}` or nothing. Where that
+is so, the service is read, in order, off the ledger entry for the purchased file, off a
+`task_id` of the form `<service>:<id>` naming a declared service, and off a folder in
+the file's path named for one. Whichever answers is given as `inferred` (`ledger`,
+`task_id` or `folder`). Where none does, `service` is null, with `why` and a `fix` naming
+the record to add `"service"` to, never a placeholder or an empty string. Spinhold's
+five Meshy meshes and four Ideogram studies resolve through its ledger.
+
 It costs nothing to write and it is the only thing that makes a difference explicable weeks
 later. It is also what lets a regression be bisected: a render that got worse is compared
 against the record of the last one that was right, and the fields that differ are the suspect
