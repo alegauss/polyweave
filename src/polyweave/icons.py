@@ -20,7 +20,8 @@ draw them by hand, so a set is a declaration, `*.icons.toml`:
     shape  = "circle"          # circle, rounded, pill, trigger, keycap, dpad, stick
     fill   = "#3BA935"
     symbol = "A"               # text, or a glyph: cross, ring, square, triangle,
-    symbol_colour = "#FFFFFF"  # up, down, left, right, menu (three bars), view
+    symbol_colour = "#FFFFFF"  # up, down, left, right, menu (three bars), view, or
+                               # north, south, east, west (four dots, that one filled)
 
     [icon.dpad_up]
     shape = "dpad"
@@ -48,7 +49,12 @@ from .errors import PolyweaveError
 #: What an icon may be shaped as, and what a glyph symbol may be.
 SHAPES = ("circle", "rounded", "pill", "trigger", "keycap", "dpad", "stick")
 GLYPHS = ("cross", "ring", "square", "triangle", "up", "down", "left", "right", "menu",
-          "view")
+          "view", "north", "south", "east", "west")
+
+#: The compass glyphs: four buttons in a diamond, the one named filled, as a pad that
+#: prints nothing on its face buttons is told which one to press (§PW431).
+_COMPASS = {"north": (0.5, 0.18), "south": (0.5, 0.82), "west": (0.18, 0.5),
+            "east": (0.82, 0.5)}
 
 #: How many times over an icon is drawn before it is brought down to its size.
 _OVER = 4
@@ -159,6 +165,16 @@ def _glyph(draw, glyph: str, box, colour, width: int) -> None:
     elif glyph == "menu":
         for y in (top + (bottom - top) * f for f in (0.2, 0.5, 0.8)):
             draw.line((left, y, right, y), fill=colour, width=width)
+    elif glyph in _COMPASS:
+        side = right - left
+        radius = side * 0.16
+        for named, (x, y) in _COMPASS.items():
+            px, py = left + side * x, top + (bottom - top) * y
+            dot = (px - radius, py - radius, px + radius, py + radius)
+            if named == glyph:
+                draw.ellipse(dot, fill=colour)
+            else:
+                draw.ellipse(dot, outline=colour, width=max(1, width // 2))
     elif glyph == "view":
         step = (right - left) * 0.3
         draw.rectangle((left, top, right - step, bottom - step), outline=colour,
@@ -233,7 +249,8 @@ def draw(icon: dict, size: int):
     pen = ImageDraw.Draw(symbol)
     said = str(icon.get("symbol") or icon.get("direction") or "")
     if said:
-        box_side = big * (0.42 if icon["shape"] != "pill" else 0.3)
+        box_side = big * (0.62 if said in _COMPASS
+                          else 0.42 if icon["shape"] != "pill" else 0.3)
         box = ((big - box_side) / 2, (big - box_side) / 2,
                (big + box_side) / 2, (big + box_side) / 2)
         if arm is not None:

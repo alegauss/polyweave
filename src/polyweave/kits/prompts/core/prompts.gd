@@ -10,7 +10,9 @@ extends Node
 signal family_changed(family: String)
 
 const HERE := "res://addons/polyweave/prompts/prompts.gd"
-const FAMILIES: Array[String] = ["xbox", "playstation", "switch", "keyboard"]
+## `generic` is a pad nobody can name (§PW431): its face buttons are called by where they
+## sit, since what they print is anyone's guess.
+const FAMILIES: Array[String] = ["xbox", "playstation", "switch", "generic", "keyboard"]
 
 ## Where each family's icons are, as `<root>/<family>/<button>_64.png`. A game may point
 ## it at another set, such as a platform holder's own glyphs, which polyweave never
@@ -22,6 +24,7 @@ var family := "keyboard"
 const BUTTONS := {
 	JOY_BUTTON_A: "south", JOY_BUTTON_B: "east", JOY_BUTTON_X: "west",
 	JOY_BUTTON_Y: "north", JOY_BUTTON_BACK: "select", JOY_BUTTON_START: "start",
+	JOY_BUTTON_GUIDE: "guide",
 	JOY_BUTTON_LEFT_STICK: "ls", JOY_BUTTON_RIGHT_STICK: "rs",
 	JOY_BUTTON_LEFT_SHOULDER: "lb", JOY_BUTTON_RIGHT_SHOULDER: "rb",
 	JOY_BUTTON_DPAD_UP: "dpad_up", JOY_BUTTON_DPAD_DOWN: "dpad_down",
@@ -137,7 +140,8 @@ func unplugged(pad: int, connected: bool, connected_now: Array = []) -> void:
 		_moved(player, "keyboard" if next < 0 else family_of(Input.get_joy_name(next)))
 
 
-## A pad's family from the name the system gives it; a pad no one names is an Xbox one.
+## A pad's family from the name the system gives it: a pad it gives no name is an Xbox
+## one, as most are, and one named but not known is generic (§PW431).
 static func family_of(joy_name: String) -> String:
 	var said := joy_name.to_lower()
 	for word in ["playstation", "dualshock", "dualsense", "ps3", "ps4", "ps5", "sony"]:
@@ -146,7 +150,10 @@ static func family_of(joy_name: String) -> String:
 	for word in ["nintendo", "switch", "pro controller", "joy-con", "joycon"]:
 		if word in said:
 			return "switch"
-	return "xbox"
+	for word in ["xbox", "xinput", "microsoft", "x-box"]:
+		if word in said:
+			return "xbox"
+	return "generic" if said.strip_edges() != "" else "xbox"
 
 
 ## The icon name an event is drawn as, or "" where no icon draws it.
@@ -199,20 +206,28 @@ func icon(action: StringName, in_family := "") -> Texture2D:
 
 ## What a family's face buttons, shoulders, triggers and menu buttons are called, by
 ## where each sits, as the pad prints them (§PW394). A Switch pad's south button is B.
+## The clicks are the family's own too (§PW431): L3 and R3 on a PlayStation pad and a
+## generic one, LS and RS elsewhere. A generic pad's face buttons are its compass names,
+## read through the string table as PAD_SOUTH and the rest.
 const GLYPHS := {
 	"xbox": {"south": "A", "east": "B", "west": "X", "north": "Y", "lb": "LB",
-		"rb": "RB", "lt": "LT", "rt": "RT", "select": "VIEW", "start": "MENU"},
+		"rb": "RB", "lt": "LT", "rt": "RT", "select": "VIEW", "start": "MENU",
+		"ls": "LS", "rs": "RS"},
 	"playstation": {"south": "CROSS", "east": "CIRCLE", "west": "SQUARE",
 		"north": "TRIANGLE", "lb": "L1", "rb": "R1", "lt": "L2", "rt": "R2",
-		"select": "CREATE", "start": "OPTIONS"},
+		"select": "CREATE", "start": "OPTIONS", "ls": "L3", "rs": "R3"},
 	"switch": {"south": "B", "east": "A", "west": "Y", "north": "X", "lb": "L",
-		"rb": "R", "lt": "ZL", "rt": "ZR", "select": "MINUS", "start": "PLUS"},
+		"rb": "R", "lt": "ZL", "rt": "ZR", "select": "MINUS", "start": "PLUS",
+		"ls": "LS", "rs": "RS"},
+	"generic": {"south": "SOUTH", "east": "EAST", "west": "WEST", "north": "NORTH",
+		"lb": "L1", "rb": "R1", "lt": "L2", "rt": "R2", "select": "SELECT",
+		"start": "START", "ls": "L3", "rs": "R3"},
 }
-## What every pad calls its sticks, their clicks and its d-pad, read through the
-## game's string table under PAD_ (a stick's direction is PAD_LS_LEFT, say).
+## What every pad calls its d-pad and its guide button, read through the game's string
+## table under PAD_ (a stick's direction is PAD_LS_LEFT, say).
 const SPOKEN := {
-	"ls": "LS", "rs": "RS", "dpad_up": "D-UP", "dpad_down": "D-DOWN",
-	"dpad_left": "D-LEFT", "dpad_right": "D-RIGHT",
+	"dpad_up": "D-UP", "dpad_down": "D-DOWN", "dpad_left": "D-LEFT",
+	"dpad_right": "D-RIGHT", "guide": "GUIDE",
 }
 ## The four moves, in the order a help line reads them, which `{move}` names as one.
 var moves: Array[String] = ["move_up", "move_left", "move_down", "move_right"]
@@ -238,8 +253,11 @@ func family_for(player := 0) -> String:
 
 
 ## A name as the game's string table says it under `prefix`, or the name itself where
-## the table has no row for it.
+## the table has no row for it, or where it holds no word to translate: a letter, a
+## digit, F1 or L3 reads as it is (§PW431).
 static func said(prefix: String, name: String) -> String:
+	if RegEx.create_from_string("[A-Za-z]{2,}").search(name) == null:
+		return name
 	var key := prefix + name.to_upper().replace("-", "_").replace(" ", "_")
 	var text := TranslationServer.translate(key)
 	return name if String(text) == key else String(text)
@@ -252,15 +270,22 @@ func named(action: StringName, player := 0, in_family := "") -> String:
 	var event := event_for(action_of(action, player), wanted)
 	if event == null:
 		return String(action).to_upper()
+	return event_named(event, wanted)
+
+
+## One input in words in a family, bound or not: a key and a stick's direction through
+## the string table, a pad's button in the family's glyphs, a generic pad's by where it
+## sits, through the table too.
+static func event_named(event: InputEvent, in_family: String) -> String:
 	if event is InputEventKey:
 		var code: int = event.physical_keycode if event.physical_keycode else event.keycode
 		return said("KEYNAME_", OS.get_keycode_string(code).to_upper())
 	if event is InputEventMouseButton:
 		return said("KEYNAME_", button_of(event).to_upper().replace("_", " "))
 	var button := button_of(event)
-	var glyphs: Dictionary = GLYPHS.get(wanted, GLYPHS["xbox"])
+	var glyphs: Dictionary = GLYPHS.get(in_family, GLYPHS["xbox"])
 	if glyphs.has(button):
-		return glyphs[button]
+		return said("PAD_", glyphs[button]) if in_family == "generic" else glyphs[button]
 	if event is InputEventJoypadMotion and button in ["l_stick", "r_stick"]:
 		var stick := "LS" if button == "l_stick" else "RS"
 		var axis: int = event.axis
@@ -268,7 +293,60 @@ func named(action: StringName, player := 0, in_family := "") -> String:
 		var way := ("DOWN" if event.axis_value > 0 else "UP") if vertical \
 			else ("RIGHT" if event.axis_value > 0 else "LEFT")
 		return said("PAD_", "%s %s" % [stick, way])
+	if button == "" and event is InputEventJoypadButton:
+		return said("PAD_", "BUTTON %d" % event.button_index)
+	if button == "" and event is InputEventJoypadMotion:
+		return said("PAD_", "AXIS %d%s" % [event.axis, "+" if event.axis_value > 0 else "-"])
 	return said("PAD_", SPOKEN.get(button, button.to_upper()))
+
+
+## The input a stored code stands for, as the remap kit writes it: `key:<keycode>`,
+## `mouse:<n>`, `button:<n>` or `axis:<n>:<-1 or 1>`; null for anything else.
+static func event_of(code: String) -> InputEvent:
+	var parts := code.split(":")
+	if parts.size() < 2 or not parts[1].is_valid_int():
+		return null
+	match parts[0]:
+		"key":
+			var key := InputEventKey.new()
+			key.physical_keycode = int(parts[1]) as Key
+			return key
+		"mouse":
+			var mouse := InputEventMouseButton.new()
+			mouse.button_index = int(parts[1]) as MouseButton
+			return mouse
+		"button":
+			var button := InputEventJoypadButton.new()
+			button.button_index = int(parts[1]) as JoyButton
+			return button
+		"axis":
+			if parts.size() < 3:
+				return null
+			var motion := InputEventJoypadMotion.new()
+			motion.axis = int(parts[1]) as JoyAxis
+			motion.axis_value = float(parts[2])
+			return motion
+	return null
+
+
+## A stored code in words in a family, bound or not (§PW431): what a screen showing a
+## pad's every button labels each with. The code itself where it is no code.
+static func named_code(code: String, in_family := "xbox") -> String:
+	var event := event_of(code)
+	return event_named(event, in_family) if event != null else code
+
+
+## A binding's codes in words, the keys' then the pad's in `in_family`, as a controls
+## row reads it: `SPACE / ENTER   |   A`, `-` for a half with nothing bound.
+static func describe(codes: Array, in_family := "xbox") -> String:
+	var keys := PackedStringArray()
+	var pad := PackedStringArray()
+	for code: String in codes:
+		if code.begins_with("key:") or code.begins_with("mouse:"):
+			keys.append(named_code(code, "keyboard"))
+		else:
+			pad.append(named_code(code, in_family))
+	return "%s   |   %s" % [" / ".join(keys) if keys else "-", " / ".join(pad) if pad else "-"]
 
 
 ## The four moves as one prompt: WASD on keys, the stick alone where all four are one

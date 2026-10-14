@@ -35,6 +35,8 @@ func _initialize() -> void:
 		"PS4 Controller": "playstation",
 		"Nintendo Switch Pro Controller": "switch",
 		"Xbox Series Controller": "xbox",
+		"XInput Gamepad": "xbox",
+		"8BitDo Pro 2": "generic",
 		"": "xbox",
 	}
 	for joy_name in named:
@@ -122,6 +124,37 @@ func _initialize() -> void:
 		failed.append("with no pad free the prompts did not go to the keyboard")
 	if prompts.fill("no marks here") != "no marks here":
 		failed.append("a line with no marks was changed")
+	# Every button named, bound or not, in every family (§PW431): a code as the remap kit
+	# stores it, a generic pad's face by where it sits and through the string table, the
+	# clicks as each family prints them, and a name with no word in it left as it is.
+	var codes := {
+		["button:3", "xbox"]: "Y", ["button:3", "playstation"]: "TRIANGLE",
+		["button:3", "switch"]: "X", ["button:0", "generic"]: "SOUTH",
+		["button:7", "playstation"]: "L3", ["button:7", "xbox"]: "LS",
+		["button:6", "generic"]: "START", ["axis:5:1", "switch"]: "ZR",
+		["axis:2:-1", "xbox"]: "RS LEFT", ["button:12", "xbox"]: "D-DOWN",
+		["button:5", "xbox"]: "GUIDE", ["key:%d" % KEY_SPACE, "xbox"]: "SPACE",
+	}
+	for asked in codes:
+		var reads: String = Prompts.named_code(asked[0], asked[1])
+		if reads != codes[asked]:
+			failed.append("%s on %s reads %s, not %s" % [asked[0], asked[1], reads,
+				codes[asked]])
+	var row: String = Prompts.describe(["key:%d" % KEY_SPACE, "button:1"], "playstation")
+	if row != "SPACE   |   CIRCLE":
+		failed.append("a binding's codes read %s" % row)
+	if Prompts.describe(["button:1"]) != "-   |   B":
+		failed.append("a binding with no key does not say so: %s" % Prompts.describe(["button:1"]))
+	var table := Translation.new()
+	table.locale = TranslationServer.get_locale()
+	table.add_message("PAD_SOUTH", "SUL")
+	table.add_message("PAD_A", "never")
+	TranslationServer.add_translation(table)
+	if Prompts.named_code("button:0", "generic") != "SUL":
+		failed.append("a generic pad's south button ignores the string table")
+	if Prompts.said("PAD_", "A") != "A":
+		failed.append("a one-letter glyph was translated")
+	TranslationServer.remove_translation(table)
 	prompts.free()
 	if failed.is_empty():
 		print("KIT PROVED")

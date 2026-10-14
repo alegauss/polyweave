@@ -163,7 +163,7 @@ that belongs in the kit is filed against polyweave and ships as a new version he
 
 **prompts** (§PW344): button prompts for the pad in the player's hands. A service,
 `PolyweavePrompts.shared()`, knows the family in use (`xbox`, `playstation`, `switch`,
-`keyboard`) from `Input.get_joy_name` and the last event, switches the moment the player
+`generic`, `keyboard`) from `Input.get_joy_name` and the last event, switches the moment the player
 picks up another device (`family_changed`), and answers an action's binding as an icon:
 `icon(action)`, a `PromptIcon` node for menus, and `bbcode(text)` turning
 `[action=jump]` into the icon for a RichTextLabel. A pad's icons are named by where the
@@ -193,6 +193,21 @@ every pad is theirs, and once two play a pad nobody holds moves nothing. `family
 stays the first player's, and `player_changed(player, family)` says any player's. A pad
 unplugged hands its player's prompts to another pad still in and held by nobody, or to
 the keyboard.
+
+Every button is named, in every family (§PW431, 0.4.0). A pad the system names but no
+word places (not PlayStation, Switch or Xbox) is `generic`, and one it gives no name is
+still Xbox. A generic pad's face buttons are called by where they sit, `SOUTH`, `EAST`,
+`WEST`, `NORTH`, through the string table as `PAD_SOUTH` and the rest; its shoulders,
+triggers and menu buttons are L1, R1, L2, R2, SELECT and START, and its icons draw the
+four face buttons as a diamond with the one to press filled (`icons.build`'s compass
+glyphs). The stick clicks are each family's own: L3 and R3 on PlayStation and generic,
+LS and RS on Xbox and Switch; the guide button is `PAD_GUIDE`. `named_code(code,
+family)` names a code as the remap kit stores it, bound or not, which a screen showing a
+pad's every button labels it with; `event_named(event, family)` is the same for an input;
+a button or axis no family names reads `BUTTON <n>` or `AXIS <n>+` through the table.
+`describe(codes, family)` reads a binding's codes as one row, the keys' then the pad's,
+`SPACE / ENTER   |   A`, `-` for a half with nothing. A name with no word of two letters
+in it (A, F1, L3) is never looked up in the table, so a glyph is never translated.
 
 **remap** (§PW345, requires prompts): rebinding the controls, extracted from Starship's
 bindings. `PolyweaveBindings` stores a binding as codes a settings file holds

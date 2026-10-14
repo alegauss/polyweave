@@ -1,5 +1,5 @@
 name = "remap"
-version = "0.4.1"
+version = "0.4.2"
 summary = "rebinding on the keys and the pad apart, a clash swapped, kept across restarts, reset to the game's own"
 requires = ["prompts"]
 tab = "controls"
@@ -26,3 +26,4 @@ script = "core/proof.gd"
 "0.3.0" = "a game's older bindings file, declared as FROM, taken once on the first launch with the kit"
 "0.4.0" = "the pad drawn as a picture from a layout's spots table, a press lighting its place, a rebind on the picture swapped as on the remap screen"
 "0.4.1" = "the Xbox, PlayStation and Switch pads drawn behind the places, each spots table held to its drawing"
+"0.4.2" = "the pad screen names its places through the prompts kit, a generic pad by where its buttons sit"

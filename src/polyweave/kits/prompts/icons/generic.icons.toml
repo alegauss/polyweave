@@ -1,0 +1,84 @@
+# The generic family's prompts (§PW431), for a pad nobody can name: its face buttons may
+# print anything, so each is drawn as the four in a diamond with the one to press
+# filled, and its shoulders, triggers and clicks carry the numbers most pads print.
+name = "generic"
+sizes = [64]
+
+[style]
+fill = "#3A3D44"
+
+[icon.south]
+shape = "circle"
+symbol = "south"
+
+[icon.east]
+shape = "circle"
+symbol = "east"
+
+[icon.west]
+shape = "circle"
+symbol = "west"
+
+[icon.north]
+shape = "circle"
+symbol = "north"
+
+[icon.lb]
+shape = "pill"
+symbol = "L1"
+
+[icon.rb]
+shape = "pill"
+symbol = "R1"
+
+[icon.lt]
+shape = "trigger"
+symbol = "L2"
+
+[icon.rt]
+shape = "trigger"
+symbol = "R2"
+
+[icon.ls]
+shape = "stick"
+symbol = "L3"
+
+[icon.rs]
+shape = "stick"
+symbol = "R3"
+
+[icon.l_stick]
+shape = "stick"
+symbol = "L"
+
+[icon.r_stick]
+shape = "stick"
+symbol = "R"
+
+[icon.start]
+shape = "circle"
+symbol = "menu"
+
+[icon.select]
+shape = "circle"
+symbol = "view"
+
+[icon.dpad_up]
+shape = "dpad"
+direction = "up"
+
+[icon.dpad_down]
+shape = "dpad"
+direction = "down"
+
+[icon.dpad_left]
+shape = "dpad"
+direction = "left"
+
+[icon.dpad_right]
+shape = "dpad"
+direction = "right"
+
+[accept]
+symbol_contrast_min = 3.0
+background_contrast_min = 1.5

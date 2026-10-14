@@ -858,27 +858,6 @@ choosing and binding.
 The proof: a rebind on the picture takes and swaps, a press lights its spot, each layout
 draws, and the spots table matches each SVG's buttons.
 
-### §PW431 Every button named, in every family
-
-Where: spinhold, RK216 (moving the game onto the prompts, remap and players kits),
-2026-10-12, read against prompts 0.3.0.
-
-1. No "generic" family. `family_of` reads any pad that is not PlayStation or Switch as
-   xbox, so an unknown pad is labelled A/B/X/Y although its buttons may say anything.
-   Spinhold names such a pad's face buttons by direction (SOUTH, EAST, WEST, NORTH through
-   the string table's PAD_SOUTH...) and its menu buttons SELECT/START.
-2. Nothing names a raw code. `named(action, player, family)` takes an action; a screen
-   that shows a pad's every button (Spinhold's pad screen, PW428) needs the name of
-   `button:3` or `axis:2:-1` in a family, bound or not. Spinhold has `named(code, layout)`
-   and `describe(codes, layout)` (a binding's codes joined, for the Controls tab row).
-3. The clicks are spoken LS/RS where Spinhold says L3/R3 and has GUIDE; `said` translates
-   any name with no guard, where Spinhold leaves a one-letter glyph (A, B) untranslated.
-
-What polyweave should do: a generic family whose glyphs are the compass names, a
-`named_code(code, family)` and `describe(codes, family)`, and the clicks' names a family
-declares. Spinhold's game/core/bindings.gd (named, said, table_key, GLYPHS) is the
-reference; check_button_prompts and check_every_line_from_the_table hold its behaviour.
-
 ### §PW432 A remap menu a game can ship
 
 Where: spinhold, RK216, read against remap 0.3.0 (core/remap_menu.gd).

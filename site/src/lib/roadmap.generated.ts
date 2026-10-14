@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 7 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 6 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -237,13 +237,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "V",
     symptom: "Cottony keeps its own settings and save code where the kits provide them",
     why: "The second game is what shows a kit is not one project's code moved into a folder.",
-    deps: [],
-  },
-  {
-    id: "PW431",
-    block: "V",
-    symptom: "the prompts kit has no generic family and cannot name a raw button code, so a pad screen cannot label every button",
-    why: "An unknown pad is told it has Xbox letters, and a screen showing a pad's every button has no name for one nobody bound.",
     deps: [],
   },
   {

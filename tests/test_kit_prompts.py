@@ -19,7 +19,7 @@ def test_the_prompts_kit_keeps_the_contract():
     found = kits.every()["prompts"]
     assert found["proves"]["script"] == "core/proof.gd"
     assert set(found["declares"]["families"]) == {
-        "xbox", "playstation", "switch", "keyboard"}
+        "xbox", "playstation", "switch", "generic", "keyboard"}
 
 
 def test_every_family_draws_every_position_a_pad_has():

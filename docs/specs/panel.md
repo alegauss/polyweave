@@ -106,8 +106,10 @@ draw them by hand, so a set of small icons is a declaration, `*.icons.toml`: `na
 `keycap`, `dpad`, `stick`), a `fill`, a `symbol` with its `symbol_colour`, and the
 style's `outline`, `outline_width` (a share of the size), `rim` and `shade`, any of which
 it may override. A symbol is text, or a glyph: `cross`, `ring`, `square`, `triangle`, the
-four arrows, `menu` (three bars) and `view`. A `dpad` with a `direction` lights that arm
-and puts its arrow in it.
+four arrows, `menu` (three bars) and `view`, or a compass point, `north`, `south`,
+`east` or `west`: four dots in a diamond, that one filled, drawn wider than a letter so
+the dots read at 64 pixels (§PW431). A `dpad` with a `direction` lights that arm and puts
+its arrow in it.
 
 `icons.build(source)` draws each icon four times over and brings it down, so a 32-pixel
 icon keeps smooth edges: the dark outline that reads over a bright scene, the fill

@@ -68,7 +68,8 @@ func _ready() -> void:
 		bindings.load_kept()
 	if layout == "":
 		var family: String = Prompts.shared().family
-		layout = family if family in LAYOUTS else "xbox"
+		# a generic pad keeps its own names over the Xbox places, with no picture
+		layout = family if family != "keyboard" else "xbox"
 	slots = spots(layout)
 	var shade := ColorRect.new()
 	shade.color = Color(0, 0.01, 0.04, 0.92)
@@ -140,22 +141,9 @@ static func picture(of_layout: String) -> Texture2D:
 	return ImageTexture.create_from_image(image) if image != null else null
 
 
-## what a place is called on a layout's pad: its glyph, a stick's direction, a d-pad's
+## what a place is called on a layout's pad, as the prompts kit names a code (§PW431)
 static func glyph(code: String, of_layout: String) -> String:
-	var event := Bindings.decode(code)
-	if event == null:
-		return ""
-	var button := Prompts.button_of(event)
-	var glyphs: Dictionary = Prompts.GLYPHS.get(of_layout, Prompts.GLYPHS["xbox"])
-	if glyphs.has(button):
-		return glyphs[button]
-	if event is InputEventJoypadMotion and button in ["l_stick", "r_stick"]:
-		var axis: int = event.axis
-		var vertical := axis == JOY_AXIS_LEFT_Y or axis == JOY_AXIS_RIGHT_Y
-		var way := ("DOWN" if event.axis_value > 0 else "UP") if vertical \
-			else ("RIGHT" if event.axis_value > 0 else "LEFT")
-		return Prompts.said("PAD_", "%s %s" % ["LS" if button == "l_stick" else "RS", way])
-	return Prompts.said("PAD_", Prompts.SPOKEN.get(button, button.to_upper()))
+	return Prompts.named_code(code, of_layout) if Bindings.decode(code) != null else ""
 
 
 ## the action `code` is bound to, or "" where it is free
