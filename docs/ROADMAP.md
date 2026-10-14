@@ -157,13 +157,6 @@
   opening.gd seeks the built scene, mapping places on the ring through its place
   Callable.
 
-## Done when — PW428
-
-- **Every layout's pad is drawn and accepted** pads/xbox.svg, playstation.svg and
-  switch.svg land in the remap kit through picture.vector, each layout has a spots table
-  whose places sit on its picture's buttons, and the owner accepted the three at a
-  sitting.
-
 ## Non-goals
 
 - **A graphical editor** The caller here is an agent in a terminal, so a surface only a

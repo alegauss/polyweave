@@ -771,26 +771,3 @@ needs a door into them (PW398, docs/specs/kit.md: `adopted()` and `ADOPTED`). Th
 own side is Cottony's RK151. Done when Cottony carries neither file, its own save test
 is replaced by the kit's acceptance, a save written by the current release loads after
 the swap, and its gate passes.
-
-### §PW428 A drawn pad in the remap kit
-
-Every game that rebinds a pad wants the screen Spinhold designed as RK148: the pad in
-use drawn large in its layout, a line from each button, trigger, stick direction and
-menu button to the action it holds or "free". A real press lights it on the picture;
-choosing a button and pressing fire binds through the kit's own swap rule. With the
-players kit, a tab per seated player. The owner chose (2026-10-12) to build it in the
-kit.
-
-What to build: a `pad_screen.gd` and scene in the remap kit, opened from its controls
-tab row beside the remap screen. Its picture per layout is declared art: an SVG per
-layout drawn to PNG by picture.vector, each button at a declared spot (a table the
-screen reads, so drawing and screen cannot drift), with an acceptance spec (hue_spread,
-alpha_coverage, silhouette_aspect) and the pictures laid in a sitting for a person. The
-pads are detailed: shell, shading, wells, lit rims in the layout's colours, no maker's
-marks. A first Xbox drawing in that frame (1000 x 667) is at spinhold's
-.polyweave/pad/pad_xbox.svg (work area, uncommitted). Spinhold's game/ui/pad_screen.gd
-(commit ab85f69) is the logic to extract: the slots, the leaders, lighting a press,
-choosing and binding.
-
-The proof: a rebind on the picture takes and swaps, a press lights its spot, each layout
-draws, and the spots table matches each SVG's buttons.

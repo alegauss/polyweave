@@ -60,4 +60,3 @@
 ## Block V — Parts every game repeats, installed already proved
 
 - ⏸ **PW368** (deps: —) **a game's states and transitions live only in code, so a state nothing reaches or nothing leaves is found by playing** — set aside (Waits for Cottony's state code.): A declared skeleton waits for a second game's state code. → §PW368
-- ⏸ **PW428** (deps: —) **the remap kit has no screen that draws the pad and rebinds on the picture, so each game draws its own** — set aside (Waits on the owner.): Three pads are drawn and held to their spots tables; left is the owner's verdict at the sitting in .polyweave/pads/sitting. → §PW428
