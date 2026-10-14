@@ -1,0 +1,33 @@
+{
+  "artefact": {
+    "bytes": 48777356,
+    "path": "pads/dualsense_sketchfab.glb",
+    "sha256": "4117c7a8cb47eebb1bc6e68edccc603c044b9104ce6ba1aa42f51448afdc2940"
+  },
+  "borrowed": {
+    "commit": null,
+    "path": "C:/Users/alexa/Downloads/playstation_5_dualsense.glb",
+    "project": null
+  },
+  "credit": "\"Playstation 5 Dualsense\" by AHarmlessPotato (https://sketchfab.com/3d-models/none-878c1f882808477ab81c2fe86d5a3936), licensed under CC BY 4.0",
+  "elapsed_s": null,
+  "engine": {
+    "name": "provenance.borrow"
+  },
+  "inputs": [
+    {
+      "path": "C:/Users/alexa/Downloads/playstation_5_dualsense.glb",
+      "role": "borrowed",
+      "sha256": "4117c7a8cb47eebb1bc6e68edccc603c044b9104ce6ba1aa42f51448afdc2940"
+    }
+  ],
+  "kind": "borrow",
+  "licence": "CC-BY-4.0",
+  "measurements": {},
+  "params": {},
+  "produced_at": "2026-10-14T16:24:40Z",
+  "producer": {
+    "tool": "polyweave",
+    "version": "0.1.0"
+  }
+}

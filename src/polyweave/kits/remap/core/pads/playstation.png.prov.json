@@ -1,28 +1,35 @@
 {
   "artefact": {
-    "bytes": 109841,
+    "bytes": 445234,
     "path": "src/polyweave/kits/remap/core/pads/playstation.png",
-    "sha256": "50130157fe33a72639d822947fca0f918a29ba8d397bef5c0061ecdc6231b35b"
+    "sha256": "a3a7749b84702acf218ca45e78a04969c00d327c6760b03c855ee10b69db4ff0"
   },
+  "credit": "\"Playstation 5 Dualsense\" by AHarmlessPotato (https://sketchfab.com/3d-models/none-878c1f882808477ab81c2fe86d5a3936), licensed under CC BY 4.0",
   "elapsed_s": null,
   "engine": {
-    "name": "picture.vector",
-    "rasteriser": "godot thorvg"
+    "name": "render.bake",
+    "renderer": "blender"
   },
   "inputs": [
     {
-      "path": "src/polyweave/kits/remap/pads/playstation.svg",
-      "role": "vector",
-      "sha256": "a51ff2af127016ac980d9f1470ed52d6ffc171a272e0a7b7d86eb23741708ae4"
+      "path": "art/renders/kit_playstation.png",
+      "role": "render",
+      "sha256": "98984e7857d8c9f29076f0f4a5ad386e0f3bece3cfa03e16d531784b99c55f17"
     }
   ],
   "kind": "picture",
+  "licence": "CC-BY-4.0",
   "measurements": {},
   "params": {
-    "made_by": "picture.vector",
-    "width": 1000
+    "azimuth": 180,
+    "elevation": 25,
+    "framed": [
+      1000,
+      667
+    ],
+    "made_by": "render.bake"
   },
-  "produced_at": "2026-10-14T16:14:59Z",
+  "produced_at": "2026-10-14T16:47:29Z",
   "producer": {
     "tool": "polyweave",
     "version": "0.1.0"

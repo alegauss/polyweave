@@ -13,10 +13,14 @@ max = 0.85
 [[predicate]]
 id = "a-pad-s-shape"
 measure = "silhouette_aspect"   # height over width: a pad is wider than tall
-min = 0.6
+# 0.55, not the 0.6 first guessed off drawings: the DualSense rendered from its model
+# measures 0.592, and a real pad is the reference now (2026-10-14).
+min = 0.55
 max = 0.85
 
 [[predicate]]
 id = "few-colours"
 measure = "hue_spread"
-max = 0.5
+# 0.6, not 0.5: the Xbox pad's own A, B, X and Y are green, red, blue and yellow, and
+# its render measures 0.53 with them; a pad wearing every hue still fails (2026-10-14).
+max = 0.6

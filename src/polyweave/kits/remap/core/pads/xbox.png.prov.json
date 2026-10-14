@@ -1,28 +1,35 @@
 {
   "artefact": {
-    "bytes": 151714,
+    "bytes": 304200,
     "path": "src/polyweave/kits/remap/core/pads/xbox.png",
-    "sha256": "722b074bd51b79255736796d7b4032508683704819b2c8480069abc3208b1355"
+    "sha256": "d052d920ba2dcffa89f1a299525fe498b9117ca92286c173e33e843a7be0efbc"
   },
+  "credit": "\"Xbox Inalambric Controller (White)\" by oscar.lopez.riviello (https://sketchfab.com/3d-models/none-f18a70fc10414ef5a39b55de68f12823), licensed under CC BY 4.0",
   "elapsed_s": null,
   "engine": {
-    "name": "picture.vector",
-    "rasteriser": "godot thorvg"
+    "name": "render.bake",
+    "renderer": "blender"
   },
   "inputs": [
     {
-      "path": "src/polyweave/kits/remap/pads/xbox.svg",
-      "role": "vector",
-      "sha256": "572fd27aa78d178a7e170472fcdb0b271e3fa8cf4ddee1b78a341362454afa67"
+      "path": "art/renders/kit_xbox.png",
+      "role": "render",
+      "sha256": "9e5e1d0e9d3859d4f8284253fb0d781877fd46df52d2fdda7d6539c7cb1b54cf"
     }
   ],
   "kind": "picture",
+  "licence": "CC-BY-4.0",
   "measurements": {},
   "params": {
-    "made_by": "picture.vector",
-    "width": 1000
+    "azimuth": 0,
+    "elevation": 50,
+    "framed": [
+      1000,
+      667
+    ],
+    "made_by": "render.bake"
   },
-  "produced_at": "2026-10-14T12:00:53Z",
+  "produced_at": "2026-10-14T16:47:29Z",
   "producer": {
     "tool": "polyweave",
     "version": "0.1.0"

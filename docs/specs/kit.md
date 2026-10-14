@@ -279,13 +279,21 @@ Where each place sits is a layout's spots table, `pads/<layout>.json` in the cor
 `side` -1 or 1 for the side its label stands on. A layout with no table stands on the
 Xbox one, named in its own glyphs.
 
-The pad behind the places is `pads/<layout>.png` in the core (0.4.1), drawn by
-`picture.vector` from the kit's own `pads/<layout>.svg` for xbox, playstation and switch:
-a 1000 x 667 frame, no maker's marks, letters as paths since the rasteriser draws no
-text. Each drawing ends in a `spots` group of zero-radius circles, one per place with its
-code in `data-code`, which draws nothing; the table is that group divided by the frame,
-`side` from which half the place sits in, and a test holds the two equal, so the drawing
-and the screen cannot drift. `pads/pads.accept.toml` holds each picture to filling its
+The pad behind the places is `pads/<layout>.png` in the core, a 1000 x 667 frame seen a
+little from above, as a console's own button screen shows its pad. The PlayStation and
+Xbox pads are renders of models borrowed from Sketchfab under CC BY 4.0 ("Playstation 5
+Dualsense" by AHarmlessPotato, "Xbox Inalambric Controller (White)" by
+oscar.lopez.riviello), each framed from `render.bake` at the tilt that makes the two
+read alike (25 and 50 degrees, their models lying differently), its record carrying the
+`credit` and `licence`, so `provenance.credits` in a game that installs the kit owes
+them. The Switch pad is drawn in line by `picture.vector` from `pads/switch.svg`, its
+proportions measured off the console's own button-mapping screen, letters as paths
+since the rasteriser draws no text, since no free model of the Pro Controller rendered
+whole. Each `pads/<layout>.svg` holds a `spots` group of zero-radius circles, one per
+place with its code in `data-code`, drawing nothing; for a render it is all the file
+holds. The table is that group measured from the frame's corner, `side` from which half
+the place sits in, and a test holds the two equal, so the picture and the screen cannot
+drift. `pads/pads.accept.toml` holds each picture to filling its
 frame, a pad's proportions and few hues. Over a picture each place is a ring, lit by a
 press and bold when picked, its glyph standing in its label beside the action; with no
 picture the glyph stands where the place sits. The screen's own words are `PAD_TITLE`,

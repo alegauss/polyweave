@@ -1,104 +1,34 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="20 80 880 587" width="1000" height="667">
-  <!-- The remap kit's PlayStation-layout pad (§PW428), in line, a little from above and
-       in front as the console's own button screen draws it, its proportions measured
-       off that screen: L2 and R2 stand on top as rounded tabs over L1 and R1, the
-       touchpad narrows toward the sticks, the d-pad and face buttons sit level with
-       it, the sticks below and inward, and the grips run long. Thin light lines over a
-       faint fill, for a dark ground. The "spots" group at the end draws nothing: it is
-       where each place sits, and core/pads/playstation.json is held to it. No maker's
-       mark. -->
-  <g fill="none" stroke="#e8ecf2" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round">
-
-    <!-- L2 and R2, rounded tabs standing on the shoulders -->
-    <path d="M 142 206 C 138 150 160 112 204 110 C 245 110 263 140 262 202" fill="#ffffff" fill-opacity="0.05"/>
-    <path d="M 152 160 C 190 150 230 150 258 160" stroke-width="1.8" opacity="0.7"/>
-    <path d="M 788 206 C 792 150 770 112 726 110 C 685 110 667 140 668 202" fill="#ffffff" fill-opacity="0.05"/>
-    <path d="M 778 160 C 740 150 700 150 672 160" stroke-width="1.8" opacity="0.7"/>
-
-    <!-- L1 and R1, bands below them along the shoulders -->
-    <path d="M 132 212 C 160 192 240 190 268 202 L 270 236 C 240 228 166 230 140 246 Z" fill="#ffffff" fill-opacity="0.05"/>
-    <path d="M 798 212 C 770 192 690 190 662 202 L 660 236 C 690 228 764 230 790 246 Z" fill="#ffffff" fill-opacity="0.05"/>
-
-    <!-- the body: its top edge, the grips running long and splaying out, the U between -->
-    <path d="M 465 172 C 550 170 630 172 690 180 C 730 190 765 210 790 240 C 825 290 850 360 864 430 C 875 490 872 560 848 595 C 830 620 780 620 758 598 C 730 568 700 535 650 528 C 590 522 530 545 465 545 C 400 545 340 522 280 528 C 230 535 200 568 172 598 C 150 620 100 620 82 595 C 58 560 55 490 66 430 C 80 360 105 290 140 240 C 165 210 200 190 240 180 C 300 172 380 170 465 172 Z" fill="#ffffff" fill-opacity="0.05"/>
-    <!-- the strip along the top, and its slot in the middle -->
-    <path d="M 272 194 C 380 186 550 186 658 194" stroke-width="1.8" opacity="0.7"/>
-    <rect x="440" y="179" width="50" height="9" rx="4.5" stroke-width="1.8"/>
-    <!-- where each white wing meets the black core, from the touchpad down to the grip -->
-    <path d="M 286 206 C 282 300 272 420 252 524" stroke-width="1.8" opacity="0.7"/>
-    <path d="M 644 206 C 648 300 658 420 678 524" stroke-width="1.8" opacity="0.7"/>
-
-    <!-- the touchpad, narrowing toward the sticks, the light bar's slit either side -->
-    <path d="M 300 214 L 630 214 Q 642 214 640 226 L 616 390 Q 613 402 601 402 L 329 402 Q 317 402 314 390 L 290 226 Q 288 214 300 214 Z" fill="#ffffff" fill-opacity="0.05"/>
-    <path d="M 280 230 L 300 380" stroke-width="1.8" opacity="0.8"/>
-    <path d="M 650 230 L 630 380" stroke-width="1.8" opacity="0.8"/>
-
-    <!-- create and options -->
-    <rect x="258" y="268" width="14" height="32" rx="7" stroke-width="2"/>
-    <rect x="658" y="268" width="14" height="32" rx="7" stroke-width="2"/>
-
-    <!-- the d-pad: four arrow keys -->
-    <path d="M 180 322 L 220 322 L 220 352 L 200 366 L 180 352 Z"/>
-    <path d="M 180 422 L 220 422 L 220 392 L 200 378 L 180 392 Z"/>
-    <path d="M 150 352 L 150 392 L 180 392 L 194 372 L 180 352 Z"/>
-    <path d="M 250 352 L 250 392 L 220 392 L 206 372 L 220 352 Z"/>
-    <g stroke-width="0" fill="#e8ecf2">
-      <path d="M 200 330 L 195 338 L 205 338 Z"/><path d="M 200 414 L 195 406 L 205 406 Z"/>
-      <path d="M 158 372 L 166 367 L 166 377 Z"/><path d="M 242 372 L 234 367 L 234 377 Z"/>
-    </g>
-
-    <!-- the face buttons and their symbols -->
-    <circle cx="735" cy="312" r="27"/>
-    <circle cx="665" cy="372" r="27"/>
-    <circle cx="805" cy="372" r="27"/>
-    <circle cx="735" cy="432" r="27"/>
-    <path d="M 735 299 L 747 320 L 723 320 Z" stroke-width="2.2"/>
-    <rect x="654" y="361" width="22" height="22" stroke-width="2.2"/>
-    <circle cx="805" cy="372" r="11" stroke-width="2.2"/>
-    <path d="M 725 422 L 745 442 M 745 422 L 725 442" stroke-width="2.2"/>
-
-    <!-- the sticks, standing up: the ring they sit in, the cap and its dish -->
-    <ellipse cx="332" cy="474" rx="62" ry="52" stroke-width="2" opacity="0.8"/>
-    <ellipse cx="330" cy="488" rx="42" ry="35" fill="#ffffff" fill-opacity="0.06"/>
-    <ellipse cx="330" cy="488" rx="27" ry="22" stroke-width="1.8" opacity="0.7"/>
-    <ellipse cx="598" cy="474" rx="62" ry="52" stroke-width="2" opacity="0.8"/>
-    <ellipse cx="600" cy="488" rx="42" ry="35" fill="#ffffff" fill-opacity="0.06"/>
-    <ellipse cx="600" cy="488" rx="27" ry="22" stroke-width="1.8" opacity="0.7"/>
-
-    <!-- the speaker, the home button and the mute button between the sticks -->
-    <g stroke-width="0" fill="#e8ecf2" opacity="0.8">
-      <circle cx="441" cy="414" r="2.4"/><circle cx="453" cy="414" r="2.4"/><circle cx="465" cy="414" r="2.4"/><circle cx="477" cy="414" r="2.4"/><circle cx="489" cy="414" r="2.4"/>
-      <circle cx="447" cy="424" r="2.4"/><circle cx="459" cy="424" r="2.4"/><circle cx="471" cy="424" r="2.4"/><circle cx="483" cy="424" r="2.4"/>
-    </g>
-    <circle cx="465" cy="456" r="12" stroke-width="2"/>
-    <rect x="449" y="490" width="32" height="10" rx="5" stroke-width="2"/>
-  </g>
-
-  <!-- where each place sits, as the screen's spots table says it -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 667" width="1000" height="667">
+  <!-- The remap kit's playstation pad (§PW428) is a render of "Playstation 5 Dualsense" by AHarmlessPotato,
+       borrowed from Sketchfab under CC BY 4.0, made by render.bake from a
+       little above, as a console's own button screen shows a pad, framed at 1000 x 667:
+       core/pads/playstation.png, whose record carries the credit. This file draws
+       nothing: its spots group is where each place sits on that picture, and
+       core/pads/playstation.json is held to it. -->
   <g id="spots" fill="none">
-    <circle data-code="axis:4:1" cx="202" cy="140" r="0"/>
-    <circle data-code="button:9" cx="205" cy="220" r="0"/>
-    <circle data-code="button:11" cx="200" cy="338" r="0"/>
-    <circle data-code="button:13" cx="166" cy="372" r="0"/>
-    <circle data-code="button:14" cx="234" cy="372" r="0"/>
-    <circle data-code="button:12" cx="200" cy="406" r="0"/>
-    <circle data-code="button:4" cx="265" cy="284" r="0"/>
-    <circle data-code="axis:1:-1" cx="330" cy="436" r="0"/>
-    <circle data-code="axis:0:-1" cx="282" cy="484" r="0"/>
-    <circle data-code="button:7" cx="330" cy="488" r="0"/>
-    <circle data-code="axis:0:1" cx="378" cy="484" r="0"/>
-    <circle data-code="axis:1:1" cx="330" cy="526" r="0"/>
-    <circle data-code="button:6" cx="665" cy="284" r="0"/>
-    <circle data-code="axis:5:1" cx="728" cy="140" r="0"/>
-    <circle data-code="button:10" cx="725" cy="220" r="0"/>
-    <circle data-code="button:3" cx="735" cy="312" r="0"/>
-    <circle data-code="button:2" cx="665" cy="372" r="0"/>
-    <circle data-code="button:1" cx="805" cy="372" r="0"/>
-    <circle data-code="button:0" cx="735" cy="432" r="0"/>
-    <circle data-code="axis:3:-1" cx="600" cy="436" r="0"/>
-    <circle data-code="axis:2:-1" cx="552" cy="484" r="0"/>
-    <circle data-code="button:8" cx="600" cy="488" r="0"/>
-    <circle data-code="axis:2:1" cx="648" cy="484" r="0"/>
-    <circle data-code="axis:3:1" cx="600" cy="526" r="0"/>
+    <circle data-code="axis:4:1" cx="170" cy="95" r="0"/>
+    <circle data-code="button:9" cx="175" cy="140" r="0"/>
+    <circle data-code="button:4" cx="243" cy="200" r="0"/>
+    <circle data-code="button:11" cx="165" cy="255" r="0"/>
+    <circle data-code="button:13" cx="105" cy="310" r="0"/>
+    <circle data-code="button:14" cx="225" cy="312" r="0"/>
+    <circle data-code="button:12" cx="172" cy="362" r="0"/>
+    <circle data-code="axis:1:-1" cx="330" cy="400" r="0"/>
+    <circle data-code="axis:0:-1" cx="275" cy="452" r="0"/>
+    <circle data-code="button:7" cx="330" cy="452" r="0"/>
+    <circle data-code="axis:0:1" cx="385" cy="452" r="0"/>
+    <circle data-code="axis:1:1" cx="330" cy="502" r="0"/>
+    <circle data-code="axis:5:1" cx="835" cy="95" r="0"/>
+    <circle data-code="button:10" cx="830" cy="140" r="0"/>
+    <circle data-code="button:6" cx="760" cy="195" r="0"/>
+    <circle data-code="button:3" cx="840" cy="238" r="0"/>
+    <circle data-code="button:2" cx="755" cy="312" r="0"/>
+    <circle data-code="button:1" cx="910" cy="313" r="0"/>
+    <circle data-code="button:0" cx="825" cy="383" r="0"/>
+    <circle data-code="axis:3:-1" cx="668" cy="400" r="0"/>
+    <circle data-code="axis:2:-1" cx="613" cy="452" r="0"/>
+    <circle data-code="button:8" cx="668" cy="452" r="0"/>
+    <circle data-code="axis:2:1" cx="723" cy="452" r="0"/>
+    <circle data-code="axis:3:1" cx="668" cy="502" r="0"/>
   </g>
 </svg>

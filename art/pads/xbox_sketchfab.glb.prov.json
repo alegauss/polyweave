@@ -1,0 +1,33 @@
+{
+  "artefact": {
+    "bytes": 1800284,
+    "path": "pads/xbox_sketchfab.glb",
+    "sha256": "021721f0b18f85d2aea6ee0a5a1aedba9b994d8c925d6c399c8e5a2e97a97d08"
+  },
+  "borrowed": {
+    "commit": null,
+    "path": "C:/Users/alexa/Downloads/xbox_inalambric_controller_white.glb",
+    "project": null
+  },
+  "credit": "\"Xbox Inalambric Controller (White)\" by oscar.lopez.riviello (https://sketchfab.com/3d-models/none-f18a70fc10414ef5a39b55de68f12823), licensed under CC BY 4.0",
+  "elapsed_s": null,
+  "engine": {
+    "name": "provenance.borrow"
+  },
+  "inputs": [
+    {
+      "path": "C:/Users/alexa/Downloads/xbox_inalambric_controller_white.glb",
+      "role": "borrowed",
+      "sha256": "021721f0b18f85d2aea6ee0a5a1aedba9b994d8c925d6c399c8e5a2e97a97d08"
+    }
+  ],
+  "kind": "borrow",
+  "licence": "CC-BY-4.0",
+  "measurements": {},
+  "params": {},
+  "produced_at": "2026-10-14T16:25:12Z",
+  "producer": {
+    "tool": "polyweave",
+    "version": "0.1.0"
+  }
+}
