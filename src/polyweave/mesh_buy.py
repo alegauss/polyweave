@@ -48,6 +48,14 @@ TRIPO_ROUTES = {"text": "/generation/text-to-model",
                 "image": "/generation/image-to-model"}
 TRIPO_HOST = "tripo3d"
 
+#: Rodin's (§PW446), Hyper3D's v2 API: a task is sent as a form, its jobs asked after by
+#: the subscription key it answers, and its files listed by the task's uuid. A service
+#: whose base is on hyper3d or deemos is spoken to this way. Rodin publishes no balance,
+#: so its cost is the project's quoted price, recorded as not measured.
+RODIN_HOSTS = ("hyper3d", "deemos")
+RODIN_ROUTES = {"make": "/api/v2/rodin", "status": "/api/v2/status",
+                "download": "/api/v2/download"}
+
 #: How often a task is asked after, and for how long, before the call gives up on it.
 POLL_EVERY = 5.0
 POLL_TIMEOUT = 900
@@ -115,6 +123,11 @@ def buy(
 
     route = "text" if prompt is not None else "views" if views else "image"
     tripo = TRIPO_HOST in base
+    rodin = any(host in base for host in RODIN_HOSTS)
+    if rodin:
+        return _rodin(report, out=out, prompt=prompt, picture_path=picture_path,
+                      views=views, model=model, polycount=polycount, name=name,
+                      base=base, key=key, price=price, here=here, drawn_from=drawn_from)
     source = None
     if views and (picture_path is None or tripo or len(views) > MOST_VIEWS):
         raise PolyweaveError(
@@ -316,6 +329,123 @@ def _json(method: str, url: str, key: str, payload: dict | None = None) -> dict:
 def _balance(base: str, key: str) -> float:
     """The account's credits now; read either side of a task, it is what it cost."""
     return float(_json("GET", base + "/openapi/v1/balance", key).get("balance", 0.0))
+
+
+def _rodin(report, *, out, prompt, picture_path, views, model, polycount, name, base,
+           key, price, here, drawn_from) -> dict:
+    """One Rodin task (§PW446): gated pictures or words sent as a form for a quad mesh,
+    its jobs asked after until done, and its .glb taken delivery of."""
+    pictures = [] if picture_path is None else [here / picture_path,
+                                                *(here / one for one in views)]
+    for one in pictures:
+        _gated(one, here)
+    fields = {"tier": model, "mesh_mode": "Quad", "quality_override": int(polycount),
+              "geometry_file_format": "glb", "material": "Shaded"}
+    if prompt is not None:
+        fields["prompt"] = prompt
+    purchase.allow(price, root=here, service=name)
+    made = _form(base + RODIN_ROUTES["make"], key, fields,
+                 [("images", one) for one in pictures])
+    task = made.get("uuid")
+    subscription = (made.get("jobs") or {}).get("subscription_key")
+    if not task or not subscription:
+        raise PolyweaveError(
+            "fetch.service-error",
+            "the service accepted the request and returned no task or subscription key",
+            "read the detail; nothing was ledgered",
+            detail=json.dumps(made)[:400],
+        )
+    started = time.monotonic()
+    while True:
+        jobs = _json("POST", base + RODIN_ROUTES["status"], key,
+                     {"subscription_key": subscription}).get("jobs") or []
+        states = [str(job.get("status")) for job in jobs]
+        if "Failed" in states:
+            raise PolyweaveError(
+                "fetch.service-error", f"task {task} failed",
+                "reword the request or ask again; nothing was ledgered",
+                detail=json.dumps(jobs)[:400])
+        if states and all(state == "Done" for state in states):
+            break
+        if time.monotonic() - started > POLL_TIMEOUT:
+            raise PolyweaveError(
+                "fetch.service-error",
+                f"task {task} was still {states} after {POLL_TIMEOUT}s",
+                f"ask after it later by its id, {task}; nothing was ledgered")
+        if report is not None:
+            done = sum(1 for state in states if state == "Done")
+            share = done / max(1, len(states))
+            report.stage("building", progress=min(0.8, 0.2 + 0.6 * share),
+                         note=f"task {task}: {', '.join(states) or 'queued'}")
+        time.sleep(POLL_EVERY)
+    files = _json("POST", base + RODIN_ROUTES["download"], key,
+                  {"task_uuid": task}).get("list") or []
+    link = next((one.get("url") for one in files
+                 if str(one.get("name", "")).lower().endswith(".glb")), None)
+    if not link:
+        raise PolyweaveError(
+            "fetch.nothing-arrived",
+            f"task {task} finished with no .glb to take delivery of",
+            "look at the task on the service; nothing was ledgered",
+            detail=json.dumps(files)[:400])
+    if report is not None:
+        report.stage("downloading", progress=0.9, note="taking delivery of the mesh")
+    return purchase.capture(
+        picture._download(link),
+        out=out,
+        task_id=f"{name}:{task}",
+        credits=price,
+        prompt=prompt,
+        reference=picture_path,
+        bought="mesh",
+        engine={"name": name, "model": model},
+        service=name,
+        details={
+            "route": "text" if prompt is not None else "views" if views else "image",
+            **({"views": list(views)} if views else {}), "model": model,
+            "polycount": int(polycount), "mesh_mode": "Quad", "entity": drawn_from,
+        },
+        inputs=[provenance.source("world", drawn_from["world"], root=here)]
+        if drawn_from else None,
+        root=here,
+    )
+
+
+def _form(url: str, key: str, fields: dict, files: list) -> dict:
+    """One multipart POST with the bearer key: `files` as [(field, path)], a refusal
+    turned into a code as `_json` turns one."""
+    import uuid
+
+    boundary = uuid.uuid4().hex
+    parts = [
+        f'--{boundary}\r\nContent-Disposition: form-data; name="{field}"\r\n\r\n'
+        f"{value}\r\n".encode() for field, value in fields.items()
+    ]
+    for field, path in files:
+        parts.append(
+            f'--{boundary}\r\nContent-Disposition: form-data; name="{field}"; '
+            f'filename="{path.name}"\r\nContent-Type: {picture._mime(path)}\r\n\r\n'
+            .encode() + picture.sent_bytes(path) + b"\r\n")
+    parts.append(f"--{boundary}--\r\n".encode())
+    request = urllib.request.Request(  # noqa: S310 - the base is the project's own
+        url, data=b"".join(parts), method="POST",
+        headers={"Authorization": f"Bearer {key}", "User-Agent": picture.AGENT,
+                 "Content-Type": f"multipart/form-data; boundary={boundary}"},
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=TIMEOUT) as answer:  # noqa: S310
+            return json.loads(answer.read() or b"{}")
+    except urllib.error.HTTPError as refused:
+        raise PolyweaveError(
+            "fetch.service-error", f"the service answered {refused.code} to {url}",
+            "read the detail; a 401 is a key the service does not accept",
+            detail=refused.read()[:400].decode("utf-8", "replace"),
+        ) from refused
+    except urllib.error.URLError as exc:
+        raise PolyweaveError(
+            "fetch.service-error", f"the service could not be reached at {url}",
+            "check the base under [service] and the network", detail=str(exc.reason),
+        ) from exc
 
 
 def _tripo_balance(base: str, key: str) -> float:

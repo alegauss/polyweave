@@ -8,23 +8,6 @@
 
 ## Block D — Fetching from a paid service without surprise
 
-### §PW446 Buying a mesh from Rodin
-
-Rodin, from Hyper3D, is the generator reviews in 2026 single out for topology: quads
-where others return triangle soup, which makes a mesh cheaper to rig, decimate and
-texture. For a part that will be animated, that is the property worth paying for, and it
-is the one the engine-ready bar would otherwise have to fix after the fact.
-
-Like the Tripo line, this is an adapter behind the existing `mesh.buy` surface and
-nothing else: the same ceiling, quote, ledger, silhouette gate and provenance record,
-with the service, model, seed, cost and plan named. The choice between Meshy, Tripo and
-Rodin stays configuration in `polyweave.toml`, per project or per asset, never an
-agent's own spend decision.
-
-Evidence that it landed: `mesh.buy` with the service set to Rodin quotes, buys within
-the ceiling, ingests and records one mesh, with a test against a recorded response so CI
-spends nothing.
-
 ### §PW447 A bought mesh that arrives ready for the engine
 
 `normalise.ingest` already brings an arriving mesh into the project's frame: the way

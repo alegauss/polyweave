@@ -329,6 +329,17 @@ silhouette settled on the picture first. A 402 from the service is `fetch.over-b
 the account itself, a 429 `fetch.rate-limited`, and a failed or cancelled task ledgers
 nothing.
 
+**Rodin is the third mesh service** (§PW446), for a part that needs clean topology: a
+service whose `base` is on `hyper3d` or `deemos` (Hyper3D's v2 API) is spoken to as
+Rodin. `model` is its `tier` (`Gen-2` and the like, each with its own `prices` row) and
+`polycount` its `quality_override`; the mesh is asked as quads (`mesh_mode = "Quad"`),
+`.glb`. The task is posted as a form to `/api/v2/rodin`, words as `prompt` and gated
+pictures, views included, each as an `images` file; its jobs are asked after at
+`/api/v2/status` by the `subscription_key` it answers until all are `Done` (one
+`Failed` ledgers nothing), and `/api/v2/download` lists its files by the task's `uuid`,
+of which the `.glb` is taken. Rodin publishes no balance to read, so the ledger records
+the project's quoted price with `measured: false`, as a service with no balance does.
+
 **A mesh can be bought from several views** (§PW428). `views` names up to three more
 pictures of the same thing beside `picture_path`, a side and a top say, each gated as
 the front is; Meshy is sent them in one `/openapi/v1/multi-image-to-3d` task, the front

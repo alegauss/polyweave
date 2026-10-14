@@ -28,7 +28,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 0 },
   { block: "B", title: "Seeing the result cheaply", open: 0 },
   { block: "C", title: "The asset compiler", open: 0 },
-  { block: "D", title: "Fetching from a paid service without surprise", open: 3 },
+  { block: "D", title: "Fetching from a paid service without surprise", open: 2 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
@@ -50,13 +50,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW446",
-    block: "D",
-    symptom: "no mesh can be bought from Rodin, so a part that needs clean topology has only Meshy's to start from",
-    why: "Reviews name Rodin for the cleanest topology, which is the property the engine-ready bar filed beside this line would otherwise have to repair.",
-    deps: [],
-  },
   {
     id: "PW447",
     block: "D",
