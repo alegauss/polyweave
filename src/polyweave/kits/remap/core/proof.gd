@@ -137,6 +137,45 @@ func _initialize() -> void:
 	later.reset()
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(older_path))
 
+	# The game's own store (§PW433): the bindings and the pad's settings kept in its one
+	# file and section beside its other sections, a deadzone held to the game's range,
+	# and options of its own, kept, held to their range and read back.
+	var settings_path := "user://polyweave_bindings_proof_store.cfg"
+	var settings := ConfigFile.new()
+	settings.set_value("video", "fullscreen", true)
+	settings.set_value("controls", "sensitivity", 9.0)
+	settings.save(settings_path)
+	var store := Bindings.new(actions, settings_path)
+	store.section = "controls"
+	store.deadzone_least = 0.05
+	store.deadzone_most = 0.6
+	store.declare_options({"twin_stick": [true], "sensitivity": [1.0, 0.5, 2.0]})
+	store.load_kept()
+	if not is_equal_approx(float(store.option("sensitivity")), 2.0):
+		failed.append("a kept option outside its range read %s" % store.option("sensitivity"))
+	store.set_deadzone(0.9)
+	store.set_option("twin_stick", false)
+	if not is_equal_approx(store.deadzone, 0.6):
+		failed.append("the deadzone left the game's range: %s" % store.deadzone)
+	if store.set_option("never_declared", 1):
+		failed.append("an option nobody declared was kept")
+	var reread := ConfigFile.new()
+	reread.load(settings_path)
+	if reread.get_value("video", "fullscreen", false) != true \
+			or reread.get_value("controls", "twin_stick", true) != false \
+			or not reread.has_section_key("controls", J):
+		failed.append("the game's file did not keep its own and the kit's together")
+	var again_store := Bindings.new(actions, settings_path)
+	again_store.section = "controls"
+	again_store.declare_options({"twin_stick": [true], "sensitivity": [1.0, 0.5, 2.0]})
+	again_store.load_kept()
+	if again_store.option("twin_stick") != false:
+		failed.append("an option did not come back from the game's file")
+	again_store.reset()
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(settings_path))
+	if Bindings.shared() != Bindings.shared():
+		failed.append("the shared store is not one store")
+
 	_fire_key = fire_key
 	_menu = load("res://addons/polyweave/remap/remap_menu.gd").new()
 	_menu.actions.assign(actions)

@@ -22,9 +22,19 @@ const AXIS_RELEASE := 0.25
 ## the actions a player may rebind; every project action but the ui_ ones where unset
 var actions: Array = []
 var deadzone := 0.5
+## the least and most the deadzone may be, the declaration's DEADZONE where it says
+var deadzone_least := 0.05
+var deadzone_most := 0.95
 var invert_vertical := false
+## a game's own pad options and their values now, as OPTIONS declares them (§PW433)
+var options := {}
+## each option's declaration: [default] for a switch, [default, least, most] for a number
+var declared_options := {}
 var _defaults := {}
 var _path := FILE
+## the section of the game's own settings file the bindings and pad options are kept
+## in, its other sections left as they are; "" keeps the kit's own file, sectioned
+var section := ""
 ## where the game kept its bindings before the kit, [file, section], or empty
 var from: Array = []
 ## what the last load had to say: bindings taken from an older file
@@ -33,17 +43,76 @@ var said: Array[String] = []
 ## as the declaration's `const LABELS := {"jump": "ACTION_JUMP", ...}` says (§PW432)
 var labels: Dictionary = {}
 
+static var _shared: RefCounted
 
+
+## The game's one store, made and loaded the first time it is asked, so a script reads
+## `invert_vertical` or an option every frame without holding a store of its own.
+static func shared() -> RefCounted:
+	if _shared == null:
+		_shared = load("res://addons/polyweave/remap/bindings.gd").new()
+		_shared.load_kept()
+	return _shared
+
+
+## The declaration (§PW397, §PW432, §PW433) may say, beside FROM and LABELS:
+## `const STORE := ["user://settings.cfg", "controls"]`, the game's own file and section
+## to keep everything in; `const DEADZONE := [0.25, 0.05, 0.6]`, its default and range;
+## `const OPTIONS := {"twin_stick": [true], "sensitivity": [1.0, 0.5, 2.0]}`, pad
+## options of its own. A path handed in, as a proof hands one, keeps the kit's file.
 func _init(rebindable: Array = [], path := FILE, project := PROJECT) -> void:
 	_path = path
 	if ResourceLoader.exists(project):
 		var declared: Dictionary = (load(project) as GDScript).get_script_constant_map()
 		from = Array(declared.get("FROM", []))
 		labels = Dictionary(declared.get("LABELS", {}))
+		var store := Array(declared.get("STORE", []))
+		if store.size() == 2 and path == FILE:
+			_path = str(store[0])
+			section = str(store[1])
+		var zone := Array(declared.get("DEADZONE", []))
+		if zone.size() == 3:
+			deadzone_least = float(zone[1])
+			deadzone_most = float(zone[2])
+			deadzone = clampf(float(zone[0]), deadzone_least, deadzone_most)
+		declare_options(Dictionary(declared.get("OPTIONS", {})))
 	actions = rebindable if not rebindable.is_empty() else (
 		labels.keys() if not labels.is_empty() else _project_actions())
 	for action in actions:
 		_defaults[action] = defaults(action)
+
+
+## take a game's own pad options, each at its default
+func declare_options(declared: Dictionary) -> void:
+	declared_options = declared
+	options.clear()
+	for name in declared:
+		options[name] = (declared[name] as Array)[0]
+
+
+## an option's value, its declared default where it was never set
+func option(name: String) -> Variant:
+	return options.get(name, null)
+
+
+## set a declared option, a number held to its range, and keep it; false for a name
+## the game never declared
+func set_option(name: String, value: Variant) -> bool:
+	if not declared_options.has(name):
+		return false
+	options[name] = _held(name, value)
+	save()
+	return true
+
+
+func _held(name: String, value: Variant) -> Variant:
+	var declared: Array = declared_options[name]
+	if declared[0] is bool:
+		return bool(value)
+	var number := float(value)
+	if declared.size() >= 3:
+		number = clampf(number, float(declared[1]), float(declared[2]))
+	return int(number) if declared[0] is int else number
 
 
 ## what the player reads for an action: its declared row in the game's string table, or
@@ -216,7 +285,7 @@ func reset() -> void:
 
 
 func set_deadzone(value: float) -> void:
-	deadzone = clampf(value, 0.05, 0.95)
+	deadzone = clampf(value, deadzone_least, deadzone_most)
 	for action in actions:
 		if InputMap.has_action(action):
 			InputMap.action_set_deadzone(action, deadzone)
@@ -228,56 +297,87 @@ func set_invert_vertical(value: bool) -> void:
 	save()
 
 
+## the sections the bindings and the pad's settings are kept under: the game's one
+## section where it named one, else the kit's file's two
+func _sections() -> Array:
+	return [section, section] if section != "" else ["bindings", "pad"]
+
+
+## keep every binding, the deadzone, the inverted vertical and the game's options; in
+## the game's own file, every other section and key in it is kept as it was
 func save() -> void:
 	var file := ConfigFile.new()
+	if section != "":
+		file.load(_path)
+	var into := _sections()
 	var now := current()
 	for action in now:
-		file.set_value("bindings", action, now[action])
-	file.set_value("pad", "deadzone", deadzone)
-	file.set_value("pad", "invert_vertical", invert_vertical)
+		file.set_value(into[0], action, now[action])
+	file.set_value(into[1], "deadzone", deadzone)
+	file.set_value(into[1], "invert_vertical", invert_vertical)
+	for name in options:
+		file.set_value(into[1], name, options[name])
 	file.save(_path)
 
 
-## what was kept, put back in force; a code that no longer reads is left out. With no
-## file of the kit's own yet, the bindings the game kept before are taken (§PW397).
+## what was kept, put back in force; a code that no longer reads is left out, and a
+## deadzone or option outside its range is brought into it. With no file of the kit's
+## own yet, the bindings the game kept before are taken (§PW397).
 func load_kept() -> void:
 	said.clear()
 	var file := ConfigFile.new()
 	if file.load(_path) != OK:
-		_adopt()
+		if section == "":
+			_adopt()
 		return
-	deadzone = float(file.get_value("pad", "deadzone", deadzone))
-	invert_vertical = bool(file.get_value("pad", "invert_vertical", invert_vertical))
+	_read(file, _sections())
+
+
+func _read(file: ConfigFile, into: Array) -> int:
+	if file.has_section_key(into[1], "deadzone"):
+		set_deadzone_quietly(float(file.get_value(into[1], "deadzone")))
+	invert_vertical = bool(file.get_value(into[1], "invert_vertical", invert_vertical))
+	for name in declared_options:
+		if file.has_section_key(into[1], name):
+			options[name] = _held(name, file.get_value(into[1], name))
+	var took := 0
 	for action in actions:
-		var codes: Variant = file.get_value("bindings", action, null)
+		var codes: Variant = file.get_value(into[0], action, null)
 		if codes is Array:
-			apply(action, (codes as Array).filter(func(c: Variant) -> bool:
-				return c is String and decode(c) != null))
+			var kept := (codes as Array).filter(func(c: Variant) -> bool:
+				return c is String and decode(c) != null)
+			if not kept.is_empty() or section == "":
+				apply(action, kept)
+				took += 1
+	return took
+
+
+## the deadzone held to its range and put in the InputMap, without keeping it yet
+func set_deadzone_quietly(value: float) -> void:
+	deadzone = clampf(value, deadzone_least, deadzone_most)
+	for action in actions:
+		if InputMap.has_action(action):
+			InputMap.action_set_deadzone(action, deadzone)
 
 
 ## the bindings the game kept before the kit, under each action's name in the declared
-## section, with a deadzone and inverted vertical where it kept them; written to the
-## kit's own file at once, the older file left as it was, and said
+## section, with a deadzone, inverted vertical and declared options where it kept them,
+## each held to its range; written to the kit's own file at once, the older file left
+## as it was, and said
 func _adopt() -> void:
 	if from.size() != 2:
 		return
 	var older := ConfigFile.new()
 	if older.load(str(from[0])) != OK:
 		return
-	var section := str(from[1])
+	var kept_in := str(from[1])
 	var took := 0
 	for action in actions:
-		var codes: Variant = older.get_value(section, action, null)
-		if codes is Array:
-			var kept := (codes as Array).filter(func(c: Variant) -> bool:
-				return c is String and decode(c) != null)
-			if not kept.is_empty():
-				apply(action, kept)
-				took += 1
-	if older.has_section_key(section, "deadzone"):
-		set_deadzone(float(older.get_value(section, "deadzone")))
-	if older.has_section_key(section, "invert_vertical"):
-		invert_vertical = bool(older.get_value(section, "invert_vertical"))
+		var codes: Variant = older.get_value(kept_in, action, null)
+		if codes is Array and not (codes as Array).filter(func(c: Variant) -> bool:
+				return c is String and decode(c) != null).is_empty():
+			took += 1
+	_read(older, [kept_in, kept_in])
 	save()
 	said.append("took %d bindings from %s [%s], which stays as it was"
-		% [took, from[0], section])
+		% [took, from[0], kept_in])

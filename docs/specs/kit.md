@@ -244,6 +244,21 @@ with the action's label), English where the table has no row. The declaration ma
 order the screen shows them in, which is then the actions too where the screen names
 none; an action with no label reads as its own name.
 
+A game keeps one settings store, and the kit keeps to it (§PW433, 0.6.0). The
+declaration may say `const STORE := ["user://settings.cfg", "controls"]`: every binding
+under its action's name, the deadzone, the inverted vertical and the game's own options
+are kept in that file's section, the file read first so its other sections and keys
+stay as they were, and no file of the kit's own is written (FROM is then not needed).
+`const DEADZONE := [0.25, 0.05, 0.6]` is the deadzone's default, least and most, which
+the screen's slider spans and a kept or adopted value is held to. `const OPTIONS :=
+{"twin_stick": [true], "sensitivity": [1.0, 0.5, 2.0]}` declares pad options of the
+game's own, a switch for a default that is true or false and a number with its range,
+which the store keeps, adopts from FROM, reads back held to the range, and the screen
+shows as a switch or a slider named `REMAP_<NAME>`; `option(name)` reads one,
+`set_option(name, value)` keeps one and refuses a name nobody declared.
+`PolyweaveBindings.shared()` is the game's one store, made and loaded on first ask, so a
+script reads `invert_vertical` or an option every frame without holding one.
+
 The pad can be bound on its picture (§PW428, 0.4.0). The remap screen's `pad` button
 opens `pad_screen.gd`, a layer over it binding through the same store: every place on
 the pad in use, named in its layout's glyphs where it sits, with a leader line to the

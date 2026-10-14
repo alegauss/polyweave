@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 5 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 4 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -237,13 +237,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "V",
     symptom: "Cottony keeps its own settings and save code where the kits provide them",
     why: "The second game is what shows a kit is not one project's code moved into a folder.",
-    deps: [],
-  },
-  {
-    id: "PW433",
-    block: "V",
-    symptom: "the remap kit keeps its own file with a fixed pad section, so a game's extra pad options and ranges are lost",
-    why: "A game with one settings store ends up writing two, and an option like twin-stick fire has nowhere to live.",
     deps: [],
   },
   {

@@ -62,8 +62,8 @@ func _ready() -> void:
 	_said = Label.new()
 	add_child(_said)
 	var deadzone := HSlider.new()
-	deadzone.min_value = 0.05
-	deadzone.max_value = 0.95
+	deadzone.min_value = bindings.deadzone_least
+	deadzone.max_value = bindings.deadzone_most
 	deadzone.step = 0.05
 	deadzone.value = bindings.deadzone
 	deadzone.value_changed.connect(bindings.set_deadzone)
@@ -72,6 +72,25 @@ func _ready() -> void:
 	invert.button_pressed = bindings.invert_vertical
 	invert.toggled.connect(bindings.set_invert_vertical)
 	_row(said("invert"), invert)
+	# the game's own pad options (§PW433): a switch for a true or false, a slider over
+	# a number's range, each named through the table as REMAP_<NAME>
+	for name: String in bindings.declared_options:
+		var declared: Array = bindings.declared_options[name]
+		var set_to := func(value: Variant) -> void: bindings.set_option(name, value)
+		if declared[0] is bool:
+			var switch := CheckButton.new()
+			switch.button_pressed = bool(bindings.option(name))
+			switch.toggled.connect(set_to)
+			_row(said(name), switch)
+		elif declared.size() >= 3:
+			var slider := HSlider.new()
+			slider.min_value = float(declared[1])
+			slider.max_value = float(declared[2])
+			slider.step = 1.0 if declared[0] is int \
+				else (slider.max_value - slider.min_value) / 20.0
+			slider.value = float(bindings.option(name))
+			slider.value_changed.connect(set_to)
+			_row(said(name), slider)
 	var reset := Button.new()
 	reset.text = said("reset")
 	reset.icon = _own("reset")

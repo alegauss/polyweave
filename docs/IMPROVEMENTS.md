@@ -858,26 +858,6 @@ choosing and binding.
 The proof: a rebind on the picture takes and swaps, a press lights its spot, each layout
 draws, and the spots table matches each SVG's buttons.
 
-### §PW433 A game's own pad options in the remap kit
-
-Where: spinhold, RK216, read against remap 0.3.0 (core/bindings.gd).
-
-1. The remap kit keeps its own file (user://polyweave_bindings.cfg) with a fixed [pad]
-   section of deadzone and invert_vertical. Spinhold's controls live in its one settings
-   store (user://settings.cfg, section controls) beside every other options tab, validated
-   and reset per section, and include a pad option the kit has no slot for: `twin_stick`
-   (fire with the right stick's direction). FROM adopts the bindings once but drops
-   twin_stick, and afterwards the game's Options screen and the kit write two files.
-2. The deadzone differs: the kit defaults to 0.5 and clamps 0.05 to 0.95, Spinhold to
-   0.25 within 0.05 to 0.6, so an adopted value can land outside the game's range.
-3. `invert_vertical` is an instance field, where the ship reads it every frame; a game
-   needs the kit's store reachable without holding an instance.
-
-What polyweave should do: let a game declare extra pad options (name, type, default,
-range) the kit keeps and adopts, declare the deadzone's default and range, offer a
-static `shared()` store, or let the game hand the kit its own settings section to keep
-the bindings in.
-
 ### §PW434 A help line the prompts kit keeps filled
 
 Where: spinhold, RK216, read against prompts 0.3.0 (core/prompts.gd).
