@@ -1,0 +1,167 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 667" width="1000" height="667">
+  <!-- The remap kit's PlayStation-layout pad (§PW428): a pale shell with a dark face, the
+       d-pad as four arrows up left, the sticks level and low, a touchpad between them, and
+       the face buttons as their symbols in their colours, in a 1000 x 667 frame. The
+       "spots" group at the end draws nothing: it is where each place sits, and
+       core/pads/playstation.json is held to it. No maker's mark. -->
+  <defs>
+    <linearGradient id="shell" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f3f4f7"/>
+      <stop offset="0.55" stop-color="#d5d8de"/>
+      <stop offset="1" stop-color="#a9aeb7"/>
+    </linearGradient>
+    <linearGradient id="face" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2d313a"/>
+      <stop offset="1" stop-color="#15181d"/>
+    </linearGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#7d838d"/>
+    </linearGradient>
+    <linearGradient id="trigger" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e6e8ec"/>
+      <stop offset="1" stop-color="#9ca2ab"/>
+    </linearGradient>
+    <linearGradient id="bumper" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a3f48"/>
+      <stop offset="1" stop-color="#1b1e23"/>
+    </linearGradient>
+    <linearGradient id="pad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a3f48"/>
+      <stop offset="1" stop-color="#20242a"/>
+    </linearGradient>
+    <radialGradient id="well" cx="0.5" cy="0.45" r="0.6">
+      <stop offset="0" stop-color="#090b0e"/>
+      <stop offset="0.8" stop-color="#14171c"/>
+      <stop offset="1" stop-color="#2b3038"/>
+    </radialGradient>
+    <radialGradient id="cap" cx="0.42" cy="0.35" r="0.7">
+      <stop offset="0" stop-color="#5a606b"/>
+      <stop offset="0.6" stop-color="#2a2e36"/>
+      <stop offset="1" stop-color="#121418"/>
+    </radialGradient>
+    <radialGradient id="gloss" cx="0.35" cy="0.3" r="0.6">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="bar" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#3f8cff" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#5fa8ff"/>
+      <stop offset="1" stop-color="#3f8cff" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6"/>
+    </filter>
+  </defs>
+
+  <!-- L2 and R2, behind the shell -->
+  <path d="M 186 22 Q 250 6 314 22 L 330 120 L 170 120 Z" fill="url(#trigger)" stroke="#8a909a" stroke-width="3"/>
+  <path d="M 686 22 Q 750 6 814 22 L 830 120 L 670 120 Z" fill="url(#trigger)" stroke="#8a909a" stroke-width="3"/>
+  <path d="M 202 34 Q 250 22 298 34" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+  <path d="M 702 34 Q 750 22 798 34" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+
+  <!-- shadow and shell: grips that flare out and down -->
+  <path d="M 290 142 L 710 142 C 810 136 872 170 896 270 C 930 400 966 540 912 632 C 878 682 800 680 762 626 C 722 572 690 548 640 544 L 360 544 C 310 548 278 572 238 626 C 200 680 122 682 88 632 C 34 540 70 400 104 270 C 128 170 190 136 290 142 Z" fill="#000" opacity="0.4" filter="url(#soft)"/>
+  <path d="M 290 130 L 710 130 C 810 124 872 158 896 258 C 930 388 966 528 912 620 C 878 670 800 668 762 614 C 722 560 690 536 640 532 L 360 532 C 310 536 278 560 238 614 C 200 668 122 670 88 620 C 34 528 70 388 104 258 C 128 158 190 124 290 130 Z" fill="url(#shell)" stroke="url(#rim)" stroke-width="4"/>
+  <!-- the dark face the controls sit in -->
+  <path d="M 300 150 L 700 150 C 790 146 846 176 864 262 C 880 340 870 410 820 470 C 760 520 700 506 640 506 L 360 506 C 300 506 240 520 180 470 C 130 410 120 340 136 262 C 154 176 210 146 300 150 Z" fill="url(#face)" stroke="#0d0f12" stroke-width="3"/>
+
+  <!-- L1 and R1 -->
+  <path d="M 176 114 Q 250 84 324 106 L 322 126 Q 250 108 180 134 Z" fill="url(#bumper)" stroke="#5a606b" stroke-width="2"/>
+  <path d="M 824 114 Q 750 84 676 106 L 678 126 Q 750 108 820 134 Z" fill="url(#bumper)" stroke="#5a606b" stroke-width="2"/>
+
+  <!-- the touchpad, with its light bar along each edge -->
+  <rect x="380" y="150" width="240" height="132" rx="18" fill="url(#pad)" stroke="#0d0f12" stroke-width="3"/>
+  <rect x="388" y="156" width="224" height="40" rx="14" fill="#ffffff" opacity="0.06"/>
+  <path d="M 372 168 L 372 268" stroke="url(#bar)" stroke-width="5" stroke-linecap="round"/>
+  <path d="M 628 168 L 628 268" stroke="url(#bar)" stroke-width="5" stroke-linecap="round"/>
+
+  <!-- create and options, either side of the touchpad -->
+  <rect x="320" y="158" width="20" height="30" rx="8" fill="#1c1f25" stroke="#8a909a" stroke-width="2"/>
+  <path d="M 330 182 L 330 165 M 325 170 L 330 165 L 335 170" fill="none" stroke="#d6dbe3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="660" y="158" width="20" height="30" rx="8" fill="#1c1f25" stroke="#8a909a" stroke-width="2"/>
+  <g stroke="#d6dbe3" stroke-width="2" stroke-linecap="round">
+    <path d="M 665 167 L 675 167"/><path d="M 665 173 L 675 173"/><path d="M 665 179 L 675 179"/>
+  </g>
+
+  <!-- the d-pad, four arrows round a hollow -->
+  <circle cx="250" cy="250" r="86" fill="url(#well)" stroke="#3b414b" stroke-width="3"/>
+  <g fill="#2c3139" stroke="#0b0d10" stroke-width="3" stroke-linejoin="round">
+    <path d="M 230 186 L 270 186 L 270 222 L 250 240 L 230 222 Z"/>
+    <path d="M 230 314 L 270 314 L 270 278 L 250 260 L 230 278 Z"/>
+    <path d="M 186 230 L 186 270 L 222 270 L 240 250 L 222 230 Z"/>
+    <path d="M 314 230 L 314 270 L 278 270 L 260 250 L 278 230 Z"/>
+  </g>
+  <g fill="#c4cad4">
+    <path d="M 250 194 L 242 206 L 258 206 Z"/><path d="M 250 306 L 242 294 L 258 294 Z"/>
+    <path d="M 194 250 L 206 242 L 206 258 Z"/><path d="M 306 250 L 294 242 L 294 258 Z"/>
+  </g>
+
+  <!-- face buttons: triangle green, circle red, cross blue, square pink -->
+  <circle cx="750" cy="250" r="96" fill="url(#well)" stroke="#3b414b" stroke-width="3"/>
+  <circle cx="750" cy="190" r="27" fill="#1a1d22" stroke="#4a505b" stroke-width="3"/>
+  <circle cx="750" cy="190" r="27" fill="url(#gloss)"/>
+  <path d="M 750 176 L 764 200 L 736 200 Z" fill="none" stroke="#3ed08f" stroke-width="4" stroke-linejoin="round"/>
+  <circle cx="810" cy="250" r="27" fill="#1a1d22" stroke="#4a505b" stroke-width="3"/>
+  <circle cx="810" cy="250" r="27" fill="url(#gloss)"/>
+  <circle cx="810" cy="250" r="12" fill="none" stroke="#ff5c5c" stroke-width="4"/>
+  <circle cx="750" cy="310" r="27" fill="#1a1d22" stroke="#4a505b" stroke-width="3"/>
+  <circle cx="750" cy="310" r="27" fill="url(#gloss)"/>
+  <path d="M 739 299 L 761 321 M 761 299 L 739 321" stroke="#78b0ff" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="690" cy="250" r="27" fill="#1a1d22" stroke="#4a505b" stroke-width="3"/>
+  <circle cx="690" cy="250" r="27" fill="url(#gloss)"/>
+  <rect x="679" y="239" width="22" height="22" fill="none" stroke="#f08ad6" stroke-width="4" stroke-linejoin="round"/>
+
+  <!-- the sticks, level and low -->
+  <circle cx="380" cy="420" r="64" fill="url(#well)" stroke="#3b414b" stroke-width="3"/>
+  <circle cx="380" cy="420" r="46" fill="url(#cap)" stroke="#0b0d10" stroke-width="3"/>
+  <circle cx="380" cy="420" r="34" fill="none" stroke="#474d58" stroke-width="5" stroke-dasharray="4 5"/>
+  <circle cx="380" cy="420" r="22" fill="#1b1e24"/>
+  <circle cx="380" cy="420" r="46" fill="url(#gloss)"/>
+  <g fill="#a6b0c0">
+    <path d="M 380 349 L 373 359 L 387 359 Z"/><path d="M 380 491 L 373 481 L 387 481 Z"/>
+    <path d="M 309 420 L 319 413 L 319 427 Z"/><path d="M 451 420 L 441 413 L 441 427 Z"/>
+  </g>
+  <circle cx="620" cy="420" r="64" fill="url(#well)" stroke="#3b414b" stroke-width="3"/>
+  <circle cx="620" cy="420" r="46" fill="url(#cap)" stroke="#0b0d10" stroke-width="3"/>
+  <circle cx="620" cy="420" r="34" fill="none" stroke="#474d58" stroke-width="5" stroke-dasharray="4 5"/>
+  <circle cx="620" cy="420" r="22" fill="#1b1e24"/>
+  <circle cx="620" cy="420" r="46" fill="url(#gloss)"/>
+  <g fill="#a6b0c0">
+    <path d="M 620 349 L 613 359 L 627 359 Z"/><path d="M 620 491 L 613 481 L 627 481 Z"/>
+    <path d="M 549 420 L 559 413 L 559 427 Z"/><path d="M 691 420 L 681 413 L 681 427 Z"/>
+  </g>
+
+  <!-- the home button and the mute light between the sticks: neither is a place to bind -->
+  <circle cx="500" cy="360" r="16" fill="#1c1f25" stroke="#8a909a" stroke-width="2"/>
+  <circle cx="500" cy="360" r="6" fill="none" stroke="#d6dbe3" stroke-width="2"/>
+  <rect x="488" y="396" width="24" height="8" rx="4" fill="#ff8a5c" opacity="0.7"/>
+
+  <!-- where each place sits, as the screen's spots table says it -->
+  <g id="spots" fill="none">
+    <circle data-code="axis:4:1" cx="250" cy="55" r="0"/>
+    <circle data-code="button:9" cx="250" cy="104" r="0"/>
+    <circle data-code="button:11" cx="250" cy="204" r="0"/>
+    <circle data-code="button:13" cx="204" cy="250" r="0"/>
+    <circle data-code="button:14" cx="296" cy="250" r="0"/>
+    <circle data-code="button:12" cx="250" cy="296" r="0"/>
+    <circle data-code="button:4" cx="330" cy="173" r="0"/>
+    <circle data-code="axis:1:-1" cx="380" cy="354" r="0"/>
+    <circle data-code="axis:0:-1" cx="314" cy="420" r="0"/>
+    <circle data-code="button:7" cx="380" cy="420" r="0"/>
+    <circle data-code="axis:0:1" cx="446" cy="420" r="0"/>
+    <circle data-code="axis:1:1" cx="380" cy="486" r="0"/>
+    <circle data-code="button:6" cx="670" cy="173" r="0"/>
+    <circle data-code="axis:5:1" cx="750" cy="55" r="0"/>
+    <circle data-code="button:10" cx="750" cy="104" r="0"/>
+    <circle data-code="button:3" cx="750" cy="190" r="0"/>
+    <circle data-code="button:2" cx="690" cy="250" r="0"/>
+    <circle data-code="button:1" cx="810" cy="250" r="0"/>
+    <circle data-code="button:0" cx="750" cy="310" r="0"/>
+    <circle data-code="axis:3:-1" cx="620" cy="354" r="0"/>
+    <circle data-code="axis:2:-1" cx="554" cy="420" r="0"/>
+    <circle data-code="button:8" cx="620" cy="420" r="0"/>
+    <circle data-code="axis:2:1" cx="686" cy="420" r="0"/>
+    <circle data-code="axis:3:1" cx="620" cy="486" r="0"/>
+  </g>
+</svg>

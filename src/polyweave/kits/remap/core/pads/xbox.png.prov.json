@@ -1,0 +1,30 @@
+{
+  "artefact": {
+    "bytes": 151714,
+    "path": "src/polyweave/kits/remap/core/pads/xbox.png",
+    "sha256": "722b074bd51b79255736796d7b4032508683704819b2c8480069abc3208b1355"
+  },
+  "elapsed_s": null,
+  "engine": {
+    "name": "picture.vector",
+    "rasteriser": "godot thorvg"
+  },
+  "inputs": [
+    {
+      "path": "src/polyweave/kits/remap/pads/xbox.svg",
+      "role": "vector",
+      "sha256": "572fd27aa78d178a7e170472fcdb0b271e3fa8cf4ddee1b78a341362454afa67"
+    }
+  ],
+  "kind": "picture",
+  "measurements": {},
+  "params": {
+    "made_by": "picture.vector",
+    "width": 1000
+  },
+  "produced_at": "2026-10-14T12:00:53Z",
+  "producer": {
+    "tool": "polyweave",
+    "version": "0.1.0"
+  }
+}

@@ -13,8 +13,10 @@ extends CanvasLayer
 ## Where each place sits is a layout's spots table, `pads/<layout>.json` beside this
 ## script, read as {"slots": [{"code", "at": [x, y] from 0 to 1 across the pad, "side":
 ## -1 or 1, the side its label stands on}]} in the order up and down go through them.
-## `pads/<layout>.svg`, where there is one, is drawn behind the places; a layout with no
-## table of its own stands on the Xbox one, named in its own glyphs.
+## `pads/<layout>.png`, drawn by picture.vector from the kit's `pads/<layout>.svg` whose
+## spots group the table is held to, is the pad behind the places: over it each place is
+## a ring and its glyph stands in its label. A layout with no table of its own stands on
+## the Xbox one, named in its own glyphs.
 
 signal closed
 
@@ -26,6 +28,12 @@ const DIM := Color(0.55, 0.65, 0.8)
 const LIT := Color(1, 0.85, 0.3)
 const PRESSED := Color(0.4, 1.0, 0.9)
 const FREE := Color(0.4, 0.45, 0.55)
+## what the screen says where the game's string table has no PAD_ row for it
+const WORDS := {
+	"title": "Pad", "free": "free",
+	"help": "up and down pick a place, accept chooses what it does, cancel leaves",
+	"choose": "left and right go through the actions, accept binds, cancel backs out",
+}
 
 ## seconds a pressed button stays lit
 @export var lit_for := 0.5
@@ -44,6 +52,9 @@ var choosing := ""
 var _lit := {}
 var _board: Control
 var _picture: TextureRect
+## where each place sits on the screen now, the leaders' far ends
+var _spots: Array[Vector2] = []
+var _over: Control
 var _labels: Array[Label] = []
 var _marks: Array[Label] = []
 var _help: Label
@@ -64,7 +75,7 @@ func _ready() -> void:
 	shade.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(shade)
 	var heading := Label.new()
-	heading.text = Prompts.said("PAD_", "title")
+	heading.text = said("title")
 	heading.set_anchors_preset(Control.PRESET_TOP_WIDE)
 	heading.offset_top = 40
 	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -72,13 +83,19 @@ func _ready() -> void:
 	add_child(heading)
 	_board = Control.new()
 	_board.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_board.draw.connect(_draw_leaders)
 	add_child(_board)
 	_picture = TextureRect.new()
 	_picture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_picture.texture = picture(layout)
 	_board.add_child(_picture)
+	# the leaders and rings are drawn over the picture, under the words
+	_over = Control.new()
+	_over.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_over.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_over.draw.connect(_draw_leaders)
+	_board.add_child(_over)
 	for slot: Dictionary in slots:
+		_spots.append(Vector2.ZERO)
 		var mark := Label.new()
 		mark.add_theme_font_size_override("font_size", 20)
 		mark.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -111,17 +128,16 @@ static func spots(of_layout: String) -> Array:
 	return []
 
 
-## a layout's picture of the pad, or null where it has none yet
+## a layout's picture of the pad, imported or straight from the file, or null where it
+## has none
 static func picture(of_layout: String) -> Texture2D:
-	var path := "%s/%s.svg" % [PADS, of_layout]
+	var path := "%s/%s.png" % [PADS, of_layout]
 	if ResourceLoader.exists(path):
 		return load(path)
 	if not FileAccess.file_exists(path):
 		return null
-	var image := Image.new()
-	if image.load_svg_from_string(FileAccess.get_file_as_string(path)) != OK:
-		return null
-	return ImageTexture.create_from_image(image)
+	var image := Image.load_from_file(ProjectSettings.globalize_path(path))
+	return ImageTexture.create_from_image(image) if image != null else null
 
 
 ## what a place is called on a layout's pad: its glyph, a stick's direction, a d-pad's
@@ -160,7 +176,15 @@ func lit(code: String) -> bool:
 func held_text(index: int) -> String:
 	var code: String = slots[index]["code"]
 	var action := choosing if index == picked and choosing != "" else holder(code)
-	return Prompts.said("ACTION_", action) if action != "" else Prompts.said("PAD_", "free")
+	return Prompts.said("ACTION_", action) if action != "" else said("free")
+
+
+## a word of the screen's own, as the game's string table says it under PAD_, else its
+## English one
+static func said(name: String) -> String:
+	var key := "PAD_" + name.to_upper()
+	var text := String(TranslationServer.translate(key))
+	return WORDS.get(name, name) if text == key else text
 
 
 func show_pad() -> void:
@@ -184,21 +208,27 @@ func show_pad() -> void:
 		var side := int(slots[i]["side"])
 		var mark := _marks[i]
 		mark.text = glyph(code, layout)
+		mark.visible = _picture.texture == null
+		_spots[i] = pad.position + pad.size * _at(i)
 		mark.size = Vector2(130, 30)
-		mark.position = pad.position + pad.size * _at(i) - mark.size * 0.5
+		mark.position = _spots[i] - mark.size * 0.5
 		var tint := PRESSED if lit(code) else (LIT if i == picked else DIM)
 		mark.add_theme_color_override("font_color", tint)
 		var label := _labels[i]
 		label.text = held_text(i)
+		var free := label.text == said("free")
+		if not mark.visible:
+			# the glyph stands beside the action, on the side nearer the pad
+			label.text = "%s  %s" % ([label.text, mark.text] if side < 0
+				else [mark.text, label.text])
 		label.size = Vector2(size.x * 0.2, 30)
 		label.position = Vector2(
 			pad.position.x - label.size.x - 60 if side < 0 else pad.end.x + 60,
 			float(row[i]) - 15)
-		var free := label.text == Prompts.said("PAD_", "free")
-		label.add_theme_color_override("font_color",
-			LIT if i == picked else (FREE if free else DIM))
-	_help.text = Prompts.said("PAD_", "choose" if choosing != "" else "help")
-	_board.queue_redraw()
+		label.add_theme_color_override("font_color", PRESSED if lit(code)
+			else (LIT if i == picked else (FREE if free else DIM)))
+	_help.text = said("choose" if choosing != "" else "help")
+	_over.queue_redraw()
 
 
 func _at(index: int) -> Vector2:
@@ -206,17 +236,26 @@ func _at(index: int) -> Vector2:
 	return Vector2(float(at[0]), float(at[1]))
 
 
-## a line from each label to the place it names
+## a line from each label to the place it names; over the picture, a ring on the place
 func _draw_leaders() -> void:
+	var drawn := _picture.texture != null
 	for i in slots.size():
 		var side := float(slots[i]["side"])
 		var label := _labels[i]
-		var mark := _marks[i]
 		var from := Vector2(label.position.x + label.size.x + 8, label.position.y + 15) \
 			if side < 0 else Vector2(label.position.x - 8, label.position.y + 15)
-		var to := mark.position + mark.size * 0.5 + Vector2(-45 * side, 0)
-		var tint := LIT if i == picked else Color(0.3, 0.45, 0.7, 0.6)
-		_board.draw_line(from, to, tint, 2.0 if i == picked else 1.0)
+		var spot := _spots[i]
+		# over the picture the line stops at the ring; over nothing, short of the glyph
+		var to := spot + (spot.direction_to(from) * 14.0 if drawn
+			else Vector2(-45 * side, 0))
+		var pressed := lit(slots[i]["code"])
+		var tint := PRESSED if pressed else (LIT if i == picked
+			else Color(0.3, 0.45, 0.7, 0.6))
+		var bold := i == picked or pressed
+		_over.draw_line(from, to, tint, 2.0 if bold else 1.0, true)
+		if drawn:
+			_over.draw_arc(spot, 14, 0, TAU, 32, tint if bold
+				else Color(tint, 0.35), 3.0 if bold else 1.5, true)
 
 
 func _process(delta: float) -> void:

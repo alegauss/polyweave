@@ -1,0 +1,30 @@
+{
+  "artefact": {
+    "bytes": 140614,
+    "path": "src/polyweave/kits/remap/core/pads/switch.png",
+    "sha256": "f1358566f8ab000ee905e20fdc78d000ccd030c0382fef4b76834e345da15199"
+  },
+  "elapsed_s": null,
+  "engine": {
+    "name": "picture.vector",
+    "rasteriser": "godot thorvg"
+  },
+  "inputs": [
+    {
+      "path": "src/polyweave/kits/remap/pads/switch.svg",
+      "role": "vector",
+      "sha256": "9c49244d5541b73fb8d6bf7ab412237b270d40ce2b53243307f482139fac8e52"
+    }
+  ],
+  "kind": "picture",
+  "measurements": {},
+  "params": {
+    "made_by": "picture.vector",
+    "width": 1000
+  },
+  "produced_at": "2026-10-14T12:00:55Z",
+  "producer": {
+    "tool": "polyweave",
+    "version": "0.1.0"
+  }
+}

@@ -975,3 +975,21 @@ nothing.
 What polyweave should do: `watch(label, key, player)` and `follow(callable)` on the
 prompts service, refilled on a family change, a rebind and a translation change, so a
 screen states once what it shows.
+
+### §PW456 picture.vector says what it cannot draw
+
+Drawing the remap kit's pads (§PW428), the Xbox and Switch face buttons came out as
+empty rings: Godot's ThorVG rasteriser draws no `<text>`, and picture.vector answered ok
+with nothing about it. Only reading the PNG back showed it, and the fix was to rewrite
+each letter as a stroked path by hand.
+
+What to build: picture.vector reads the SVG it already parses for the elements its
+rasteriser leaves out — `<text>`, `<tspan>`, `<textPath>`, and any other the engine is
+known to skip — and answers them under `undrawn`, each with its id or its place and the
+text it held, so the agent knows before looking. Where `undrawn` is not empty the
+answer's `says` names the remedy: turn the text into paths (an editor's "object to
+path", or a letter drawn as strokes), since the engine has no font to draw it with. It
+does not refuse: a decorative caption may be meant to fall away.
+
+The proof: an SVG with a `<text>` letter is drawn, the answer names it under `undrawn`
+with its characters, and an SVG without one answers an empty list.

@@ -1,0 +1,22 @@
+# What every remap pad picture holds (§PW428), checked against core/pads/<layout>.png:
+# the pad fills most of its 1000 x 667 frame, stands wider than tall as a pad does, and
+# keeps its layout's colours to a few, so the screen's lit rings read over it.
+asset = "remap-pad"
+
+[[predicate]]
+id = "fills-its-frame"
+measure = "alpha_coverage"
+region = "frame"
+min = 0.55
+max = 0.85
+
+[[predicate]]
+id = "a-pad-s-shape"
+measure = "silhouette_aspect"   # height over width: a pad is wider than tall
+min = 0.6
+max = 0.85
+
+[[predicate]]
+id = "few-colours"
+measure = "hue_spread"
+max = 0.5

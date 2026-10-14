@@ -254,13 +254,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW428",
-    block: "V",
-    symptom: "the remap kit has no screen that draws the pad and rebinds on the picture, so each game draws its own",
-    why: "Each layout's pad picture as SVG via picture.vector, PlayStation and Switch spots tables, and a sitting for the owner to accept the art.",
-    deps: [],
-  },
-  {
     id: "PW431",
     block: "V",
     symptom: "the prompts kit has no generic family and cannot name a raw button code, so a pad screen cannot label every button",
@@ -286,6 +279,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "V",
     symptom: "the prompts kit cannot keep a label filled, so each screen refills its help on a device, rebind or language change",
     why: "Thirteen screens in one game would each reconnect signals by hand, and a language change refills none of them.",
+    deps: [],
+  },
+  {
+    id: "PW456",
+    block: "V",
+    symptom: "picture.vector draws an SVG's text as nothing and says nothing, so lettered buttons come out blank",
+    why: "The rasteriser has no fonts, and only looking at the PNG showed the remap pads' face letters missing.",
     deps: [],
   },
 ];
@@ -326,4 +326,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW53", "PW78", "PW79", "PW80", "PW81", "PW82", "PW192", "PW201", "PW311", "PW368"];
+export const generatedPaused: string[] = ["PW53", "PW78", "PW79", "PW80", "PW81", "PW82", "PW192", "PW201", "PW311", "PW368", "PW428"];

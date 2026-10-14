@@ -226,10 +226,22 @@ place, `ui_accept` chooses an action for it, `ui_left` and `ui_right` go through
 and `ui_accept` again binds it with the same swap; `ui_cancel` backs out, then closes.
 Where each place sits is a layout's spots table, `pads/<layout>.json` in the core:
 `{"slots": [{"code", "at": [x, y], "side"}]}`, `at` from 0 to 1 across the pad and
-`side` -1 or 1 for the side its label stands on. `pads/<layout>.svg` is drawn behind the
-places where there is one, and a layout with no table stands on the Xbox one, named in
-its own glyphs. The proof checks every layout names each of its places, a press lights
-one, and a rebind on the picture swaps.
+`side` -1 or 1 for the side its label stands on. A layout with no table stands on the
+Xbox one, named in its own glyphs.
+
+The pad behind the places is `pads/<layout>.png` in the core (0.4.1), drawn by
+`picture.vector` from the kit's own `pads/<layout>.svg` for xbox, playstation and switch:
+a 1000 x 667 frame, no maker's marks, letters as paths since the rasteriser draws no
+text. Each drawing ends in a `spots` group of zero-radius circles, one per place with its
+code in `data-code`, which draws nothing; the table is that group divided by the frame,
+`side` from which half the place sits in, and a test holds the two equal, so the drawing
+and the screen cannot drift. `pads/pads.accept.toml` holds each picture to filling its
+frame, a pad's proportions and few hues. Over a picture each place is a ring, lit by a
+press and bold when picked, its glyph standing in its label beside the action; with no
+picture the glyph stands where the place sits. The screen's own words are `PAD_TITLE`,
+`PAD_FREE`, `PAD_HELP` and `PAD_CHOOSE` in the game's string table, English where it has
+none. The proof checks every layout names each of its places and has its picture, a
+press lights one, and a rebind on the picture swaps.
 
 **menus** (§PW346, requires prompts): a main menu, a pause menu and a yes-or-no confirm
 a pad can drive. `PolyweaveMenu` makes a button per item, named by the item and

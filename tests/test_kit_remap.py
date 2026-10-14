@@ -15,6 +15,38 @@ import pytest
 from polyweave import kits
 
 
+@pytest.mark.parametrize("layout", ["xbox", "playstation", "switch"])
+def test_each_pad_s_spots_table_is_where_its_drawing_puts_each_place(layout):
+    """The screen reads core/pads/<layout>.json and the picture is drawn from
+    pads/<layout>.svg, so the table is held to the drawing's spots group (§PW428)."""
+    import json
+    import xml.etree.ElementTree as ET
+
+    kit = kits.KITS / "remap"
+    root = ET.parse(kit / "pads" / f"{layout}.svg").getroot()
+    _, _, width, height = (float(v) for v in root.get("viewBox").split())
+    group = next(g for g in root.iter() if g.get("id") == "spots")
+    drawn = [
+        {
+            "code": spot.get("data-code"),
+            "at": [round(float(spot.get("cx")) / width, 3),
+                   round(float(spot.get("cy")) / height, 3)],
+            "side": -1 if float(spot.get("cx")) < width / 2 else 1,
+        }
+        for spot in group
+    ]
+    table = json.loads((kit / "core" / "pads" / f"{layout}.json").read_text("utf-8"))
+    assert table["slots"] == drawn
+    # what picture.vector drew from it holds to the kit's spec for a pad
+    from polyweave import accept
+
+    said = accept.checked(
+        str(kit / "pads" / "pads.accept.toml"),
+        str(kit / "core" / "pads" / f"{layout}.png"),
+    )
+    assert said["passed"], said["failed"]
+
+
 def test_the_remap_kit_needs_the_prompts_kit():
     found = kits.every()["remap"]
     assert found["requires"] == ["prompts"]

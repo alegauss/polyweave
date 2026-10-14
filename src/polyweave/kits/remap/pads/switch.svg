@@ -1,0 +1,163 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 667" width="1000" height="667">
+  <!-- The remap kit's Switch-layout pad (§PW428): a smoked shell, offset sticks, the face
+       buttons lettered X on top, Y left, A right and B below, minus and plus, in a
+       1000 x 667 frame. The "spots" group at the end draws nothing: it is where each place
+       sits, and core/pads/switch.json is held to it. No maker's mark. -->
+  <defs>
+    <linearGradient id="shell" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5a5f68"/>
+      <stop offset="0.5" stop-color="#363a42"/>
+      <stop offset="1" stop-color="#1e2127"/>
+    </linearGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#c4c9d2"/>
+      <stop offset="1" stop-color="#3a3e46"/>
+    </linearGradient>
+    <linearGradient id="trigger" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#454952"/>
+      <stop offset="1" stop-color="#202328"/>
+    </linearGradient>
+    <linearGradient id="bumper" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7a7f89"/>
+      <stop offset="1" stop-color="#383c44"/>
+    </linearGradient>
+    <radialGradient id="well" cx="0.5" cy="0.45" r="0.6">
+      <stop offset="0" stop-color="#0d0f12"/>
+      <stop offset="0.8" stop-color="#181b20"/>
+      <stop offset="1" stop-color="#33373f"/>
+    </radialGradient>
+    <radialGradient id="cap" cx="0.42" cy="0.35" r="0.7">
+      <stop offset="0" stop-color="#6a6f78"/>
+      <stop offset="0.6" stop-color="#33373e"/>
+      <stop offset="1" stop-color="#17191d"/>
+    </radialGradient>
+    <radialGradient id="gloss" cx="0.35" cy="0.3" r="0.6">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="sheen" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.2"/>
+      <stop offset="0.5" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6"/>
+    </filter>
+  </defs>
+
+  <!-- ZL and ZR, behind the shell -->
+  <path d="M 182 20 Q 250 8 318 20 L 330 120 L 170 120 Z" fill="url(#trigger)" stroke="#6a6f78" stroke-width="3"/>
+  <path d="M 682 20 Q 750 8 818 20 L 830 120 L 670 120 Z" fill="url(#trigger)" stroke="#6a6f78" stroke-width="3"/>
+  <path d="M 198 32 Q 250 22 302 32" fill="none" stroke="#8d929b" stroke-width="3" stroke-linecap="round"/>
+  <path d="M 698 32 Q 750 22 802 32" fill="none" stroke="#8d929b" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- shadow and shell: squarer shoulders, longer grips -->
+  <path d="M 290 142 L 710 142 C 820 136 880 170 905 280 C 930 400 948 540 895 630 C 862 680 790 676 752 624 C 716 574 676 536 616 530 L 384 530 C 324 536 284 574 248 624 C 210 676 138 680 105 630 C 52 540 70 400 95 280 C 120 170 180 136 290 142 Z" fill="#000" opacity="0.45" filter="url(#soft)"/>
+  <path d="M 290 130 L 710 130 C 820 124 880 158 905 268 C 930 388 948 528 895 618 C 862 668 790 664 752 612 C 716 562 676 524 616 518 L 384 518 C 324 524 284 562 248 612 C 210 664 138 668 105 618 C 52 528 70 388 95 268 C 120 158 180 124 290 130 Z" fill="url(#shell)" stroke="url(#rim)" stroke-width="4"/>
+  <path d="M 290 138 L 710 138 C 800 132 858 160 884 252 C 700 232 300 232 116 252 C 142 160 200 132 290 138 Z" fill="url(#sheen)"/>
+  <!-- the smoked face shows the frame beneath: two faint struts -->
+  <g stroke="#4b5059" stroke-width="2" opacity="0.6" fill="none">
+    <path d="M 160 300 C 260 280 420 300 470 330"/><path d="M 840 300 C 740 280 580 300 530 330"/>
+  </g>
+  <!-- grip texture -->
+  <g stroke="#14161a" stroke-width="3" stroke-linecap="round" opacity="0.7">
+    <path d="M 108 470 L 158 602"/><path d="M 128 455 L 183 602"/><path d="M 148 440 L 208 597"/>
+    <path d="M 892 470 L 842 602"/><path d="M 872 455 L 817 602"/><path d="M 852 440 L 792 597"/>
+  </g>
+
+  <!-- L and R -->
+  <path d="M 172 112 Q 250 82 328 104 L 326 124 Q 250 106 176 132 Z" fill="url(#bumper)" stroke="#aab0ba" stroke-width="2"/>
+  <path d="M 828 112 Q 750 82 672 104 L 674 124 Q 750 106 824 132 Z" fill="url(#bumper)" stroke="#aab0ba" stroke-width="2"/>
+
+  <!-- minus and plus -->
+  <circle cx="420" cy="190" r="16" fill="#1c1f24" stroke="#9aa0aa" stroke-width="2"/>
+  <path d="M 410 190 L 430 190" stroke="#e6e9ee" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="580" cy="190" r="16" fill="#1c1f24" stroke="#9aa0aa" stroke-width="2"/>
+  <path d="M 570 190 L 590 190 M 580 180 L 580 200" stroke="#e6e9ee" stroke-width="4" stroke-linecap="round"/>
+  <!-- capture, a square, and home, a ring: neither is a place to bind -->
+  <rect x="430" y="240" width="22" height="22" rx="4" fill="#1c1f24" stroke="#9aa0aa" stroke-width="2"/>
+  <circle cx="441" cy="251" r="6" fill="#30343b"/>
+  <circle cx="560" cy="251" r="15" fill="#1c1f24" stroke="#9aa0aa" stroke-width="2"/>
+  <path d="M 552 253 L 560 245 L 568 253 L 568 259 L 552 259 Z" fill="none" stroke="#e6e9ee" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- left stick -->
+  <circle cx="250" cy="250" r="64" fill="url(#well)" stroke="#454a53" stroke-width="3"/>
+  <circle cx="250" cy="250" r="46" fill="url(#cap)" stroke="#0c0e10" stroke-width="3"/>
+  <circle cx="250" cy="250" r="34" fill="none" stroke="#565b64" stroke-width="5" stroke-dasharray="4 5"/>
+  <circle cx="250" cy="250" r="22" fill="#24272d"/>
+  <circle cx="250" cy="250" r="46" fill="url(#gloss)"/>
+  <g fill="#b4bac4">
+    <path d="M 250 179 L 243 189 L 257 189 Z"/><path d="M 250 321 L 243 311 L 257 311 Z"/>
+    <path d="M 179 250 L 189 243 L 189 257 Z"/><path d="M 321 250 L 311 243 L 311 257 Z"/>
+  </g>
+
+  <!-- right stick -->
+  <circle cx="630" cy="400" r="64" fill="url(#well)" stroke="#454a53" stroke-width="3"/>
+  <circle cx="630" cy="400" r="46" fill="url(#cap)" stroke="#0c0e10" stroke-width="3"/>
+  <circle cx="630" cy="400" r="34" fill="none" stroke="#565b64" stroke-width="5" stroke-dasharray="4 5"/>
+  <circle cx="630" cy="400" r="22" fill="#24272d"/>
+  <circle cx="630" cy="400" r="46" fill="url(#gloss)"/>
+  <g fill="#b4bac4">
+    <path d="M 630 329 L 623 339 L 637 339 Z"/><path d="M 630 471 L 623 461 L 637 461 Z"/>
+    <path d="M 559 400 L 569 393 L 569 407 Z"/><path d="M 701 400 L 691 393 L 691 407 Z"/>
+  </g>
+
+  <!-- d-pad, one cross -->
+  <circle cx="370" cy="400" r="72" fill="url(#well)" stroke="#454a53" stroke-width="3"/>
+  <path d="M 352 340 L 388 340 L 388 382 L 430 382 L 430 418 L 388 418 L 388 460 L 352 460 L 352 418 L 310 418 L 310 382 L 352 382 Z" fill="#30343b" stroke="#0c0e10" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M 352 340 L 388 340 L 388 382 L 430 382" fill="none" stroke="#7b818b" stroke-width="2"/>
+  <circle cx="370" cy="400" r="9" fill="#17191d"/>
+  <g fill="#c8cdd6">
+    <path d="M 370 348 L 362 360 L 378 360 Z"/><path d="M 370 452 L 362 440 L 378 440 Z"/>
+    <path d="M 318 400 L 330 392 L 330 408 Z"/><path d="M 422 400 L 410 392 L 410 408 Z"/>
+  </g>
+
+  <!-- face buttons, all one grey, lettered X top, Y left, A right, B below -->
+  <circle cx="750" cy="250" r="96" fill="url(#well)" stroke="#454a53" stroke-width="3"/>
+  <g>
+    <circle cx="750" cy="190" r="27" fill="#2a2d33" stroke="#aeb4be" stroke-width="4"/>
+    <circle cx="750" cy="190" r="27" fill="url(#gloss)"/>
+    <path transform="translate(750 190)" d="M -9 -10 L 9 10 M 9 -10 L -9 10" fill="none" stroke="#eef1f5" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="690" cy="250" r="27" fill="#2a2d33" stroke="#aeb4be" stroke-width="4"/>
+    <circle cx="690" cy="250" r="27" fill="url(#gloss)"/>
+    <path transform="translate(690 250)" d="M -9 -10 L 0 0 L 9 -10 M 0 0 L 0 11" fill="none" stroke="#eef1f5" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="810" cy="250" r="27" fill="#2a2d33" stroke="#aeb4be" stroke-width="4"/>
+    <circle cx="810" cy="250" r="27" fill="url(#gloss)"/>
+    <path transform="translate(810 250)" d="M -10 11 L 0 -11 L 10 11 M -6 3 L 6 3" fill="none" stroke="#eef1f5" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="750" cy="310" r="27" fill="#2a2d33" stroke="#aeb4be" stroke-width="4"/>
+    <circle cx="750" cy="310" r="27" fill="url(#gloss)"/>
+    <path transform="translate(750 310)" d="M -7 -11 L -7 11 L 3 11 Q 10 11 10 5.5 Q 10 0 3 0 L -7 0 M 3 0 Q 9 0 9 -5.5 Q 9 -11 2 -11 L -7 -11" fill="none" stroke="#eef1f5" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- the player lights along the bottom edge of the face -->
+  <g fill="#7ff0a0" opacity="0.85">
+    <circle cx="476" cy="500" r="3"/><circle cx="492" cy="500" r="3" opacity="0.3"/><circle cx="508" cy="500" r="3" opacity="0.3"/><circle cx="524" cy="500" r="3" opacity="0.3"/>
+  </g>
+
+  <!-- where each place sits, as the screen's spots table says it -->
+  <g id="spots" fill="none">
+    <circle data-code="axis:4:1" cx="250" cy="55" r="0"/>
+    <circle data-code="button:9" cx="250" cy="102" r="0"/>
+    <circle data-code="axis:1:-1" cx="250" cy="184" r="0"/>
+    <circle data-code="axis:0:-1" cx="184" cy="250" r="0"/>
+    <circle data-code="button:7" cx="250" cy="250" r="0"/>
+    <circle data-code="axis:0:1" cx="316" cy="250" r="0"/>
+    <circle data-code="axis:1:1" cx="250" cy="316" r="0"/>
+    <circle data-code="button:11" cx="370" cy="356" r="0"/>
+    <circle data-code="button:13" cx="326" cy="400" r="0"/>
+    <circle data-code="button:14" cx="414" cy="400" r="0"/>
+    <circle data-code="button:12" cx="370" cy="444" r="0"/>
+    <circle data-code="button:4" cx="420" cy="190" r="0"/>
+    <circle data-code="button:6" cx="580" cy="190" r="0"/>
+    <circle data-code="axis:5:1" cx="750" cy="55" r="0"/>
+    <circle data-code="button:10" cx="750" cy="102" r="0"/>
+    <circle data-code="button:3" cx="750" cy="190" r="0"/>
+    <circle data-code="button:2" cx="690" cy="250" r="0"/>
+    <circle data-code="button:1" cx="810" cy="250" r="0"/>
+    <circle data-code="button:0" cx="750" cy="310" r="0"/>
+    <circle data-code="axis:3:-1" cx="630" cy="334" r="0"/>
+    <circle data-code="axis:2:-1" cx="564" cy="400" r="0"/>
+    <circle data-code="button:8" cx="630" cy="400" r="0"/>
+    <circle data-code="axis:2:1" cx="696" cy="400" r="0"/>
+    <circle data-code="axis:3:1" cx="630" cy="466" r="0"/>
+  </g>
+</svg>

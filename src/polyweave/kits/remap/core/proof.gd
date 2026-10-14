@@ -193,6 +193,8 @@ func _pad_screen(screen: CanvasLayer) -> void:
 				failed.append("the %s pad has a place no glyph names: %s" % [layout, slot["code"]])
 		if slots.is_empty() or codes.size() != slots.size():
 			failed.append("the %s pad's places are missing or repeated" % layout)
+		if screen.picture(layout) == null:
+			failed.append("the %s pad has no picture" % layout)
 	var north := InputEventJoypadButton.new()
 	north.button_index = JOY_BUTTON_Y
 	north.pressed = true
