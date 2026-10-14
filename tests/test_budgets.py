@@ -115,7 +115,8 @@ from polyweave.errors import PolyweaveError
 #: 135,074 with reference.register and capture.run's internal refusal (§PW407).
 #: 135,968 with capture.again (§PW418), vfx.build's sheet (§PW417) and voice.design's
 #: locale (§PW413).
-DESCRIBE = 136_700
+#: 137,026 with video.cut, a teaser cut from captured runs (§PW429).
+DESCRIBE = 137_600
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -207,7 +208,8 @@ DESCRIBE = 136_700
 #: 147,627 with reference.register and its three codes (§PW407).
 #: 148,563 with capture.again and its code (§PW418), fetch.plan-lacks (§PW410) and
 #: voice.design's locale (§PW413).
-CAPABILITIES = 149_300
+#: 150,033 with video.cut, a teaser cut from captured runs, and its area (§PW429).
+CAPABILITIES = 150_600
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

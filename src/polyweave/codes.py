@@ -63,6 +63,7 @@ AREAS: dict[str, str] = {
     "review": "the local page a person answers a sitting on, and the server behind it",
     "kits": "a part every game repeats, made once in the plugin, proved and installed",
     "tables": "a game's data tables, held to the schema of one row",
+    "video": "a teaser cut together from captured runs, scored and encoded",
 }
 
 CODES: dict[str, Code] = {
@@ -903,6 +904,45 @@ CODES: dict[str, Code] = {
         when="an effect for a cue whose family declares ogg, on a machine without "
         "ffmpeg",
         doors=("put ffmpeg on PATH", "declare the family's format as wav"),
+    ),
+    # -- video: a teaser cut from captured runs (§PW429) -------------------------
+    "video.no-source": Code(
+        means="the cut named is not there, or is not TOML",
+        when="video.cut given a path with no file, or a file that does not parse",
+        doors=("name a *.cut.toml under the project", "fix the line the detail names"),
+    ),
+    "video.bad-cut": Code(
+        means="a cut declares something it cannot hold",
+        when="a key the cut does not take, a size not two even numbers, no clip, a "
+        "clip with no run or length, a first clip fading in, a fade as long as a clip "
+        "it joins, a fade_out the whole teaser, music not there, or an out not an .mp4",
+        doors=("fix the key the refusal names",),
+    ),
+    "video.no-sequence": Code(
+        means="a clip names a folder capture.movie did not write",
+        when="a clip's from holds no sequence.json",
+        doors=("capture the run with capture.movie and name the folder it wrote",),
+    ),
+    "video.short-sequence": Code(
+        means="a clip asks more of a run than it holds",
+        when="start plus length past the run's frames at its rate",
+        doors=("shorten the clip", "start it earlier", "capture a longer run"),
+    ),
+    "video.no-ffmpeg": Code(
+        means="ffmpeg or ffprobe is not on PATH",
+        when="video.cut, or a video bound in a spec, on a machine without ffmpeg",
+        doors=("install ffmpeg and put it on PATH",),
+    ),
+    "video.encode-failed": Code(
+        means="ffmpeg did not write the teaser",
+        when="ffmpeg exits with an error; the detail is what it said",
+        doors=("read the detail",),
+    ),
+    "video.unreadable": Code(
+        means="a video is not there, or is not one ffprobe reads",
+        when="a video bound in a spec on a path with no file, or a file that is not a "
+        "video",
+        doors=("cut it again with video.cut",),
     ),
     # -- music: a score as a source, compiled and checked ----------------------
     "music.unreadable": Code(

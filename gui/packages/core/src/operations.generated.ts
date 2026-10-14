@@ -2196,6 +2196,16 @@ export interface VfxPreviewArgs {
   root?: string
 }
 
+/** Cut captured runs together, score and encode them as one MP4, and measure it. */
+export interface VideoCutArgs {
+  /** the *.cut.toml, as a path under the project */
+  source: string
+  /** where the MP4 is written; the cut's own out otherwise */
+  out?: string
+  /** the project the paths resolve against; default "." */
+  root?: string
+}
+
 /** Keep the preview a person accepted as its entity's voice, written in the world. */
 export interface VoiceChooseArgs {
   /** the preview a person accepted, as a path */
@@ -2485,6 +2495,7 @@ export interface Operations {
   "verdict.sitting": VerdictSittingArgs
   "vfx.build": VfxBuildArgs
   "vfx.preview": VfxPreviewArgs
+  "video.cut": VideoCutArgs
   "voice.choose": VoiceChooseArgs
   "voice.design": VoiceDesignArgs
   "voice.lines": VoiceLinesArgs
@@ -2680,6 +2691,7 @@ export const OPERATIONS = [
   "verdict.sitting",
   "vfx.build",
   "vfx.preview",
+  "video.cut",
   "voice.choose",
   "voice.design",
   "voice.lines",

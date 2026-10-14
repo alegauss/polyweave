@@ -349,6 +349,14 @@ flash in a scene nobody captured is not found. A spec bounds `flashes` and
 that holds fewer than two frames is `capture.no-frames`, and frames with no rate are
 `capture.no-rate`.
 
+## A video
+
+A teaser `video.cut` wrote is measured off the MP4 itself (§PW429; [video.md](video.md)):
+`video_seconds`, `video_width`, `video_height`, `video_fps`, and `first_motion`, the
+seconds before one frame first differs from the one before it. A predicate on one reads
+the subject or the file `of` names; no video there is `video.unreadable`, and no ffmpeg
+on PATH is `video.no-ffmpeg`.
+
 ## A visual effect
 
 An effect `vfx.build` made is measured off its declaration, which its record keeps

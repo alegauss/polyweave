@@ -125,7 +125,8 @@ TOOL_BUDGET = 4500
 #: 119,700 at 119,148 for reference.compare's declared wave (§PW406).
 #: 120,400 at 119,749 for reference.register, a reference read by name (§PW407).
 #: 121,200 at 120,533 for capture.again, a picture taken again from its record (§PW418).
-LIST_BUDGET = 121200
+#: 121,800 at 121,478 for video.cut, a teaser cut from captured runs (§PW429).
+LIST_BUDGET = 121800
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

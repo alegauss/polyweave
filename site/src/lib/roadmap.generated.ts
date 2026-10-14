@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 11 },
+  { block: "H", title: "Proof on a real game", open: 10 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 1 },
   { block: "K", title: "Reached without reading the source", open: 2 },
@@ -104,13 +104,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "a camera move cannot be declared as a clip or played by the game, so a cutscene's shots are numbers in the project",
     why: "No shot is yet captured onto a sitting for a person to accept, and Starship's opening still reads its own JSON.",
-    deps: [],
-  },
-  {
-    id: "PW429",
-    block: "H",
-    symptom: "captured sequences cannot be cut together, scored and encoded, so a store teaser needs ffmpeg driven by hand",
-    why: "A game's trailer is its most watched asset, and without an edit it cannot come from the captures polyweave already records.",
     deps: [],
   },
   {

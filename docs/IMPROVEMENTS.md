@@ -348,24 +348,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW429 A teaser cut from captures
-
-Where: spinhold, RK223 (the store page's 30-second teaser), 2026-10-12.
-
-`capture.movie` writes every frame between two marks a script prints, into a folder. A
-store teaser is several such stretches from different runs, cut together at stated
-lengths, with the game's music under them, encoded at 1920 by 1080 in a format Steam
-takes (H.264 MP4), and opening on play within three seconds. Nothing in polyweave takes
-the sequences that far: there is no operation to declare a cut list (which sequence,
-from which frame, for how long, with what transition), lay audio under it, encode it,
-measure it (length, the first frame with play) and record it. The project would have to
-drive ffmpeg itself, which the owner's rule puts in polyweave.
-
-What polyweave should do: a declared edit (`*.cut.toml`: clips from capture.movie
-sequences or kept runs, their in and out frames, the sound beneath) built into a video
-with its record, held to an acceptance spec (duration, resolution, time to first
-motion), and laid in a sitting for a person. Spinhold's RK223 waits on it.
-
 ### §PW435 A free tier's licence in a take's record
 
 Where: spinhold RK218, the pilot's voice on an ElevenLabs account on the free tier.

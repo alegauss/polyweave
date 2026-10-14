@@ -32,6 +32,7 @@ needed.
 | [music.md](music.md) | A score written as a source in mini-notation, the note model it compiles to, and MIDI | PW186–PW188 |
 | [effects.md](effects.md) | Retro effects as sfxr parameters and a seed, and realistic ones bought under a ceiling, each at the cue a game declares | PW189, PW190 |
 | [store.md](store.md) | A store's capsule set cut from one key art and a logo, with the store's shapes as data | PW268 |
+| [video.md](video.md) | A teaser cut together from captured runs, scored, encoded as an MP4 and measured | PW429 |
 | [vfx.md](vfx.md) | A particle or ribbon effect declared as data and built into the scene the engine plays, with what it measures | PW259 |
 | [driving.md](driving.md) | A running game held still between an agent's calls, and the commands that move and read it | PW211–PW217 |
 | [panel.md](panel.md) | A menu panel's frame declared once and built to nine-patch textures and styleboxes, by state | PW316 |
