@@ -483,26 +483,6 @@ person joins the canon with that verdict in its record.
 
 ## Block K — Reached without reading the source
 
-### §PW430 A declaration's vocabulary over MCP
-
-Where: PW409 gave `describe vfx.build` a `declares` answer, the keys a *.vfx.toml may
-hold with each one's type, default, choices and sentence. It is reached through `python
--m polyweave describe vfx.build` and through `describe.describe()` in Python.
-
-The MCP server (src/polyweave/server.py) lists every operation as a tool whose
-description is the summary and whose inputSchema is the parameter set. It has no tool
-for `describe`, `capabilities` or `explain`, so an agent that drives polyweave through
-the MCP tools sees `source: the *.vfx.toml` and nothing of what that file may hold. It
-falls back to the shell, or to reading vfx.py, which is what PW409 was filed against.
-
-What polyweave should do: put the declaration where the MCP caller looks. Either a
-`describe` tool beside the operations, answering `describe(name)` as the CLI does
-(declares included), or the vocabulary carried in the inputSchema itself, as the
-description of the parameter that names the file. The first keeps tools/list short and
-serves every later `declares` an operation grows; the second needs no extra call but
-costs every listing the vocabulary's tokens, which PW129 bounds. The proof: over MCP, an
-agent learns that `shape` takes `heart` without a shell or a source read.
-
 ### §PW449 Driven from a second MCP client
 
 The server is MCP and nothing in the protocol ties it to Claude Code, but everything

@@ -126,7 +126,8 @@ TOOL_BUDGET = 4500
 #: 120,400 at 119,749 for reference.register, a reference read by name (§PW407).
 #: 121,200 at 120,533 for capture.again, a picture taken again from its record (§PW418).
 #: 121,800 at 121,478 for video.cut, a teaser cut from captured runs (§PW429).
-LIST_BUDGET = 121800
+#: 122,300 at 121,866 for the describe tool, a declaration's keys over MCP (§PW430).
+LIST_BUDGET = 122300
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {
@@ -197,8 +198,31 @@ def blender_here() -> bool:
     return importlib.util.find_spec("bpy") is not None or bool(shutil.which("blender"))
 
 
+#: The one tool that is not an operation (§PW430): `describe(name)` as the command line
+#: answers it, so a caller over MCP reads what a declaration may hold, which the tools
+#: list leaves out to stay inside its budget, without a shell or a source read.
+DESCRIBE = {
+    "name": "describe",
+    "description": "One operation in full: its parameters, and where it builds from a "
+    "file (vfx.build's *.vfx.toml), every key that file may hold.",
+    "inputSchema": {
+        "type": "object",
+        "properties": {
+            "operation": {
+                "type": "string",
+                "description": "the operation, dotted (vfx.build) or as its tool "
+                "(vfx_build)",
+            },
+        },
+        "required": ["operation"],
+        "additionalProperties": False,
+    },
+}
+
+
 def tools(*, blender: bool | None = None) -> list[dict]:
-    """Every operation as a tool, leaving out the ones that need an absent Blender."""
+    """Every operation as a tool, leaving out the ones that need an absent Blender,
+    and `describe` beside them."""
     from . import describe as D
 
     reachable = blender_here() if blender is None else blender
@@ -210,7 +234,24 @@ def tools(*, blender: bool | None = None) -> list[dict]:
         }
         for found in D.describe()
         if reachable or not needs_blender(found)
-    ]
+    ] + [DESCRIBE]
+
+
+def _described(arguments: dict) -> Any:
+    """`describe(name)`, a tool's name taken for its operation's."""
+    from . import describe as D
+
+    unknown = sorted(set(arguments) - {"operation"})
+    if unknown or not isinstance(arguments.get("operation"), str):
+        raise PolyweaveError(
+            "op.unknown-argument" if unknown else "op.missing-argument",
+            "describe takes one argument, operation, the name of one",
+            'pass {"operation": "vfx.build"}',
+            given=unknown[0] if unknown else "operation",
+        )
+    asked = arguments["operation"]
+    by_tool = {tool_name(op): op for op in D.operations()}
+    return D.describe(by_tool.get(asked, asked))
 
 
 def call(name: str, arguments: dict | None) -> dict:
@@ -220,6 +261,8 @@ def call(name: str, arguments: dict | None) -> dict:
 
     by_tool = {tool_name(op): op for op in D.operations()}
     try:
+        if name == DESCRIBE["name"]:
+            return _content(_described(dict(arguments or {})), error=False)
         if name not in by_tool:
             raise PolyweaveError(
                 "op.unknown",

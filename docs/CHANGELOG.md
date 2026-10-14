@@ -249,6 +249,7 @@
 - ✅ **PW337** **a dict parameter is refused as an @file, so PowerShell cannot pass one to the CLI at all** — A dict flag takes @file.json as a list does, read past a byte order mark, and a dict that does not read names that form, so PowerShell can pass one (design recorded in `docs/specs/tool-surface.md`).
 - ✅ **PW376** **provenance.verify reports the work area's snapshots of old commits as the project's drift** — provenance.verify reads only the project's own records, leaving out any checkout below the root and naming it in other_trees (design recorded in `docs/specs/provenance.md`).
 - ✅ **PW386** **measure.take asks for contrast_min and refuses it for want of targets, yet takes no targets parameter** — measure.take takes targets, ring, radius and behind, so contrast measures are asked beside the others; the refusal names the doors for targets (design recorded in `docs/specs/measurements.md`).
+- ✅ **PW430** **an MCP caller has no describe, so what a vfx declaration may hold is read only on the command line** — The MCP server lists a describe tool answering describe(name) with declares, so a *.vfx.toml's keys are read over MCP with no shell (design recorded in `docs/specs/tool-surface.md`).
 
 ## Block L — What a run leaves as evidence
 

@@ -18,7 +18,9 @@ def listed(blender=True):
 
 def test_every_operation_is_a_tool_named_as_a_client_takes():
     tools = listed()
-    assert set(tools) == {server.tool_name(op) for op in describe.operations()}
+    assert set(tools) == {server.tool_name(op) for op in describe.operations()} | {
+        "describe"
+    }
     allowed = set("abcdefghijklmnopqrstuvwxyz0123456789_-")
     assert all(set(name) <= allowed for name in tools)
 
@@ -64,6 +66,25 @@ def test_a_call_answers_with_what_json_prints(tmp_path):
     assert found["isError"] is False
     assert json.loads(found["content"][0]["text"])["passed"] is True
     assert found["structuredContent"]["passed"] is True
+
+
+def test_over_mcp_an_agent_learns_what_a_declaration_may_hold():
+    """§PW430: the keys of a *.vfx.toml, `shape` taking `heart` among them, reached by
+    the describe tool with no shell and no source read."""
+    for asked in ("vfx.build", "vfx_build"):
+        found = server.call("describe", {"operation": asked})
+        assert found["isError"] is False
+        said = found["structuredContent"]
+        assert said["operation"] == "vfx.build"
+        assert "heart" in json.dumps(said["declares"])
+    plain = server.call("describe", {"operation": "accept.check"})["structuredContent"]
+    assert "declares" not in plain and plain["parameters"]
+    for arguments, code in (({}, "op.missing-argument"),
+                            ({"operation": "vfx.build", "x": 1}, "op.unknown-argument"),
+                            ({"operation": "nope"}, "op.unknown")):
+        refused = server.call("describe", arguments)
+        assert refused["isError"] is True
+        assert refused["structuredContent"]["refused"]["code"] == code
 
 
 def test_a_refused_call_is_an_error_result_naming_its_code():

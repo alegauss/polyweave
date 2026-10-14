@@ -35,7 +35,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "H", title: "Proof on a real game", open: 10 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 1 },
-  { block: "K", title: "Reached without reading the source", open: 2 },
+  { block: "K", title: "Reached without reading the source", open: 1 },
   { block: "L", title: "What a run leaves as evidence", open: 1 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 1 },
@@ -153,13 +153,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "J",
     symptom: "a canon holds approved pictures only, so a new 3D enemy is never checked against the meshes already approved beside it",
     why: "Generators see one asset at a time, so a family of meshes drifting in palette, proportion or material is what no tool on the market measures.",
-    deps: [],
-  },
-  {
-    id: "PW430",
-    block: "K",
-    symptom: "an MCP caller has no describe, so what a vfx declaration may hold is read only on the command line",
-    why: "describe vfx.build answers the declaration's keys, and the MCP tools list carries only the summary and the parameters.",
     deps: [],
   },
   {

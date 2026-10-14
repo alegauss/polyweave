@@ -40,7 +40,6 @@
 
 ## Block K — Reached without reading the source
 
-- 📋 **PW430** (deps: —) **an MCP caller has no describe, so what a vfx declaration may hold is read only on the command line** — describe vfx.build answers the declaration's keys, and the MCP tools list carries only the summary and the parameters. → §PW430
 - 📋 **PW449** (deps: —) **no MCP client but Claude Code has ever driven polyweave, so whether its surface is usable without the skill is unknown** — MCP directories compare Blender and Godot servers across clients, and a surface proven in one host cannot be listed there honestly. → §PW449
 
 ## Block L — What a run leaves as evidence

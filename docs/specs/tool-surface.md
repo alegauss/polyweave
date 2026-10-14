@@ -316,7 +316,11 @@ both answers.
   and `additionalProperties: false`. A call answers with the data `--json` prints, and a
   refusal is an error result carrying the code. So is anything else an operation raises,
   as `op.crashed` with where it raised in `detail` (§PW261): it is a defect, and the server
-  answers the next call. Anything the work prints goes to stderr,
+  answers the next call. One tool is not an operation: `describe`, taking `operation`
+  dotted or as its tool's name, answers `describe(name)` as the command line does,
+  `declares` included, so what a `*.vfx.toml` may hold is read over MCP with no shell
+  (§PW430); the list carries no declaration itself, which would cost every session its
+  tokens. Anything the work prints goes to stderr,
   since stdout is the protocol. A tool whose work needs Blender is listed only where
   `bpy` imports or a binary is on `PATH`. Two budgets hold from the first day,
   `TOOL_BUDGET` for one tool and `LIST_BUDGET` for the list, set from what was measured
