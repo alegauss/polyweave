@@ -1,8 +1,8 @@
 {
   "artefact": {
-    "bytes": 140614,
+    "bytes": 98437,
     "path": "src/polyweave/kits/remap/core/pads/switch.png",
-    "sha256": "f1358566f8ab000ee905e20fdc78d000ccd030c0382fef4b76834e345da15199"
+    "sha256": "dbef021b11577b9262341b2f1f2fa12404397a556b2b990109c95acc6933f8c2"
   },
   "elapsed_s": null,
   "engine": {
@@ -13,7 +13,7 @@
     {
       "path": "src/polyweave/kits/remap/pads/switch.svg",
       "role": "vector",
-      "sha256": "9c49244d5541b73fb8d6bf7ab412237b270d40ce2b53243307f482139fac8e52"
+      "sha256": "51abd24b484e7eb292f3d007fb36b4440883ede1add3349dfcd439d56ea6628e"
     }
   ],
   "kind": "picture",
@@ -22,7 +22,7 @@
     "made_by": "picture.vector",
     "width": 1000
   },
-  "produced_at": "2026-10-14T12:00:55Z",
+  "produced_at": "2026-10-14T16:37:09Z",
   "producer": {
     "tool": "polyweave",
     "version": "0.1.0"
