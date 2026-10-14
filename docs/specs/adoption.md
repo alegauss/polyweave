@@ -100,7 +100,7 @@ the costs of the runs that made it with their `rounds`, and `verdicts`, how many
 given, accepted, and overruled (the person's call not the tool's); `compare` is there
 only where both ways made it, as `loop.compare` reads them. `totals` sums every run
 that made something. `bought` totals the purchase ledger per service, credits quoted
-and reported, with `unread` counting entries in a shape it does not read; `gate` counts
+and reported, a lock keyed by name included (§PW457); `gate` counts
 the candidates the picture gate looked at and refused before a person saw any. Each
 section names the file it was read from under `from`, and a section no record supports
 is absent, so the report can be quoted as it stands. Run on Cottony, it shows the stars
@@ -362,6 +362,17 @@ this project had one here, and charging them to the budget a person set for toda
 refuse the next call over money already gone. They stay in the ledger, because `held` is the
 question about assets and every one of them is an asset — so `held` reports the full
 `credits` and `against_ceiling` separately.
+
+**A lock can be the ledger as it stands** (§PW457). Where `[paths] purchases` names a JSON
+object keyed by asset name, as Cottony's does, `purchase.ledger` reads it as one entry per
+key. The key is kept as `name`, and the fields are mapped as in the table above. `credits`
+is the measured figure where `credits_measured` is there and `consumed_credits` where it
+is not, with `measured` saying which. Each entry is `adopted`, so no ceiling is charged
+for it. Any other shape is refused as `fetch.ledger-malformed`, never read as its keys,
+and so is an object whose values are not purchases. Such a lock is read but never
+rewritten. `purchase.allow`, `capture` and every other write refuse with
+`fetch.ledger-by-name` before anything is spent, and `purchase.adopt` is the one call
+that converts it to the ledger's list shape.
 
 A live fetch stays a person's call and is not what this covers.
 

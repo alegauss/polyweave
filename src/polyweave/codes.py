@@ -804,8 +804,17 @@ CODES: dict[str, Code] = {
     ),
     "fetch.ledger-malformed": Code(
         means="the purchase ledger is not readable",
-        when="a ledger edited by hand, or truncated",
+        when="a ledger edited by hand, or truncated, or neither a list of entries nor "
+        "a lock keyed by name (§PW457)",
         doors=("restore it from version control, where it belongs",),
+    ),
+    "fetch.ledger-by-name": Code(
+        means="the ledger is an adopting project's lock keyed by name, read but never "
+        "rewritten",
+        when="a buy, or anything else that writes the ledger, while [paths] purchases "
+        "names such a lock (§PW457)",
+        doors=("point [paths] purchases at a new ledger",
+               "purchase.adopt the lock's entries into it"),
     ),
     "fetch.background-fused": Code(
         means="the subject cannot be told apart from what it is standing on",

@@ -212,7 +212,8 @@ DESCRIBE = 138_300
 #: voice.design's locale (§PW413).
 #: 150,033 with video.cut, a teaser cut from captured runs, and its area (§PW429).
 #: 150,642 with verdict.move and verdict.bad-move (§PW436).
-CAPABILITIES = 151_300
+#: 151,324 with fetch.ledger-by-name, a lock read but never rewritten (§PW457).
+CAPABILITIES = 151_400
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

@@ -328,30 +328,6 @@ include and exclude filters; and split `unrecorded` into the files a generator c
 have made (pictures, audio, meshes, fonts) and code and engine resources, so the files
 that need a person's word are the short list.
 
-### §PW457 A ledger kept by name
-
-Met building loop.report (PW444, now in docs/specs/adoption.md) on Cottony. Its
-polyweave.toml sets `purchases = "tools/art/3d/meshy.lock.json"`, "the ledger that is
-already there", and that file is a JSON object keyed by asset name, each value a
-purchase with `consumed_credits`, `credits_measured`, `mesh`, `image`, `request` and the
-rest. `purchase.read` does `list(json.loads(text))`, which turns that object into its
-five keys, so every reader over it gets strings: `loop.report` had to skip them as
-unread, and `purchase.spent`, `purchase.remaining` and `purchase.reconcile` would take
-`.get` on a string.
-
-What to build: `purchase.read` takes either shape. A list is entries, as now. An object
-keyed by name is read as one entry per key, the key kept as `name`, its credits taken
-from the fields the adopting project's ledger uses (`consumed_credits`, measured where
-`credits_measured` says), and marked `adopted` so `purchase.spent` keeps counting it as
-an adopted entry, which it already leaves out of a ceiling. A shape neither is refused
-as `fetch.ledger-malformed` with the remedy naming both, never silently read as its
-keys. Writing stays the list shape; an adopted object is converted only by
-`purchase.adopt`.
-
-The proof: Cottony's lock read through `purchase.read` answers five entries with their
-credits, `loop.report` counts none unread, and a ledger that is a bare string is
-refused.
-
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once

@@ -185,6 +185,7 @@
 - ✅ **PW429** **captured sequences cannot be cut together, scored and encoded, so a store teaser needs ffmpeg driven by hand** — video.cut builds a *.cut.toml of captured runs into a scored MP4, measured for length, size and first motion, which a spec bounds (design recorded in `docs/specs/video.md`).
 - ✅ **PW435** **a take made on a free ElevenLabs plan is recorded like any other, so a game can ship one commercially unwarned** — Each speech take keeps the account's tier in its record, and provenance.credits names every free-tier file as non-commercial only (design recorded in `docs/specs/provenance.md`).
 - ✅ **PW436** **a sitting laid out in the wrong folder cannot be moved, and a hand move leaves its answers on the old path** — verdict.move moves a sitting, rewrites its manifest and index, and appends a moved line so earlier answers read at the new path (design recorded in `docs/specs/acceptance-spec.md`).
+- ✅ **PW457** **a purchase ledger kept as a table by name reads as its bare names, so every total over it is wrong or crashes** — purchase.ledger reads a lock keyed by name as adopted entries with their credits, refuses any other shape, and refuses to write the lock (design recorded in `docs/specs/adoption.md`).
 
 ## Block I — Voxel models from a declaration
 

@@ -779,11 +779,8 @@ def report(root: Annotated[str, ROOT] = ".") -> dict:
             }
         assets.append(entry)
     bought: dict[str, dict] = {}
-    held = purchase.read(root)
-    unread = sum(1 for one in held if not isinstance(one, dict))
-    for one in held:
-        if not isinstance(one, dict):
-            continue  # a ledger in a shape this does not read is counted, not guessed
+    # A lock keyed by name reads as entries too; another shape is refused (§PW457).
+    for one in purchase.read(root):
         service = one.get("service") or "unnamed"
         row = bought.setdefault(service, {"service": service, "purchases": 0,
                                           "credits": 0.0, "reported": 0.0})
@@ -796,10 +793,9 @@ def report(root: Annotated[str, ROOT] = ".") -> dict:
         "assets": assets,
         "totals": {**_totals([one for one in runs if was_made(one)]), "from": ledger},
     }
-    if bought or unread:
+    if bought:
         answer["bought"] = {"services": list(bought.values()),
-                            "from": relative(purchase.where(root), here),
-                            **({"unread": unread} if unread else {})}
+                            "from": relative(purchase.where(root), here)}
     if looked:
         answer["gate"] = {
             "candidates": len(looked),

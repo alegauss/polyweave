@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 9 },
+  { block: "H", title: "Proof on a real game", open: 8 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 1 },
   { block: "K", title: "Reached without reading the source", open: 1 },
@@ -104,13 +104,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "provenance.generated cannot tell what a Godot build ships, so it counts excluded files and buries art among code",
     why: "Spinhold's honest answer was 26 voice lines, and reaching it meant reading export_presets.cfg by hand and sifting 380 unrecorded files.",
-    deps: [],
-  },
-  {
-    id: "PW457",
-    block: "H",
-    symptom: "a purchase ledger kept as a table by name reads as its bare names, so every total over it is wrong or crashes",
-    why: "Cottony points [paths] purchases at its Meshy lock, a dict, and purchase.read answers five strings where entries were meant.",
     deps: [],
   },
   {

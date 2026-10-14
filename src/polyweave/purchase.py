@@ -239,6 +239,7 @@ def allow(
     Where the project declares several services, one has to be named: guessing which
     balance to draw on is the one mistake a ceiling exists to prevent.
     """
+    _writable(root)
     left = remaining(root, today, service)
     table = left["table"]
     key = "credits" if table == "[budget]" else "amount"
@@ -312,6 +313,7 @@ def capture(
     The entry names the service it was bought from, resolved before anything lands, so
     a spend is always charged to the ceiling it was allowed against.
     """
+    _writable(root)
     project = load(root)
     service = project.service(service)
     # The plan that paid for it, which is what licenses it (§PW448): read off the
@@ -670,6 +672,7 @@ def _adopted(entry: dict, length: int, root: Path) -> dict:
 def append(entry: dict, *, root: str | Path = ".") -> Path:
     """Add one entry, rewriting the whole file so a reader never sees half a line."""
     path = where(root)
+    _writable(root)
     held = read(root)
     held.append(entry)
     write_atomic(path, json.dumps(held, indent=2, sort_keys=True) + "\n")
@@ -680,13 +683,37 @@ def append(entry: dict, *, root: str | Path = ".") -> Path:
 def read(
     root: Annotated[str, Param("the project whose ledger this is")] = ".",
 ) -> list[dict]:
-    """Everything this project has bought, oldest first."""
+    """Everything this project has bought, oldest first.
+
+    A ledger is a list of entries, or an adopting project's own lock kept as a table by
+    name (§PW457), read as one adopted entry per name, which no ceiling is charged for.
+    """
     path = where(root)
+    held = _held(path)
+    if held is None:
+        return []
+    if isinstance(held, list) and all(isinstance(one, dict) for one in held):
+        return held
+    if isinstance(held, dict) and all(
+        isinstance(one, dict) for one in held.values()
+    ):
+        return [_by_name(name, one) for name, one in held.items()]
+    raise PolyweaveError(
+        "fetch.ledger-malformed",
+        f"{path} is neither a list of entries nor a table of purchases keyed by name",
+        "restore it from version control; a ledger is a list of entries, or a lock "
+        "keyed by name whose values are purchases",
+        detail=type(held).__name__,
+    )
+
+
+def _held(path: Path) -> Any:
+    """The ledger file's JSON, or None where there is none."""
     text = read_text_retrying(path)
     if text is None:
-        return []
+        return None
     try:
-        held = json.loads(text)
+        return json.loads(text)
     except json.JSONDecodeError as exc:
         raise PolyweaveError(
             "fetch.ledger-malformed",
@@ -695,7 +722,52 @@ def read(
             "belongs",
             detail=str(exc),
         ) from exc
-    return list(held)
+
+
+def _by_name(name: str, one: dict) -> dict:
+    """One purchase of a lock keyed by name, in the ledger's shape (§PW457): the key
+    kept as `name`, the credits the measured ones where the lock says it measured
+    them."""
+    measured = one.get("credits_measured")
+    quoted = one.get("consumed_credits", one.get("credits", 0))
+    credits = float(measured if measured is not None else quoted)
+    stamp = one.get("finished_at") or one.get("created_at")
+    at = one.get("at")
+    if at is None and isinstance(stamp, int | float):
+        moment = datetime.fromtimestamp(stamp / 1000 if stamp > 1e11 else stamp, tz=UTC)
+        at = moment.isoformat(timespec="seconds").replace("+00:00", "Z")
+    request = one.get("request") or {}
+    return {
+        "name": name,
+        "artefact": one.get("artefact") or one.get("mesh") or "",
+        "sha256": one.get("sha256") or one.get("mesh_sha256") or "",
+        "bytes": one.get("bytes") or one.get("mesh_bytes"),
+        "task_id": one.get("task_id", ""),
+        "service": one.get("service"),
+        "credits": credits,
+        "expected_credits": float(one.get("consumed_credits", credits)),
+        "measured": measured is not None,
+        "bought": one.get("bought", "mesh"),
+        "prompt": one.get("prompt") or request.get("texture_prompt")
+        or request.get("prompt"),
+        "reference": one.get("reference") or one.get("image"),
+        "at": at,
+        "adopted": True,
+    }
+
+
+def _writable(root: str | Path) -> None:
+    """Refuse a write to a lock kept by name before anything is spent (§PW457): the
+    lock is the adopting project's own, and only `purchase.adopt` converts it."""
+    path = where(root)
+    if isinstance(_held(path), dict):
+        raise PolyweaveError(
+            "fetch.ledger-by-name",
+            f"{path.name} is a lock keyed by name, which polyweave reads but never "
+            "rewrites, so nothing bought now could be written down",
+            "point [paths] purchases at a ledger of polyweave's own and purchase.adopt "
+            "the lock's entries into it",
+        )
 
 
 @operation("purchase.spent")
