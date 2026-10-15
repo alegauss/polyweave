@@ -287,7 +287,12 @@ one on a letter, plus `edge_p99`, the steepest lightness step inside the mark, h
 as today's, since type fails by going soft. A mark is drawn at its own size on the screen,
 so it bakes with `on_grid = false`, its rectangle at its own pixels a unit. The search
 passed on the edge of every range with a harsher light; the props' rig inside them passed
-at a third of the colour error, and it is the one given (PW461). What remains is each later
+at a third of the colour error, and it is the one given (PW461). The boosters followed
+(PW80, Cottony e296d6f): the hammer and the wand through `normalise.ingest` against the
+drawings they were fetched from, which leaned the hammer the 22 degrees `bake_model` had
+rolled it by hand, and the ball built by its own code, all at the props' rig. The owner saw
+the shipped wand star ringed by the service's dashes, which `bake_model`'s scrub had left;
+polyweave's scrub was rebuilt to take them (fetching.md). What remains is each later
 family's port, each on a person's look, down to PW82.
 
 ## A family is stated, not scripted

@@ -93,6 +93,50 @@ def test_a_scrubbed_texel_keeps_its_own_hue():
     assert np.argmax(now) == np.argmax(was), "and it is still orange"
 
 
+def test_a_mark_with_no_light_left_takes_the_colour_round_it():
+    """§PW80: a near-black dash lifted by a gain came back the hue of its own noise."""
+    before = flat(side=64)
+    before[:, :, :3] = [0.85, 0.65, 0.10]  # the wand star's yellow
+    before[30:34, 8:56, :3] = [0.03, 0.02, 0.01]  # a dash painted in near-black
+    after, found = texture.scrub(before, grow=1)
+    assert found["fraction"] > 0.0
+    assert np.allclose(after[30:34, 8:56, :3], [0.85, 0.65, 0.10], atol=0.02)
+
+
+def test_the_rim_of_a_stroke_goes_with_it():
+    """Antialiased, a stroke's edge is below the bar and darker than the ground."""
+    before = flat(side=64)
+    before[:, :, :3] = [0.85, 0.65, 0.10]
+    before[31:33, 8:56, :3] = [0.03, 0.02, 0.01]
+    before[30, 8:56, :3] = before[33, 8:56, :3] = [0.75, 0.57, 0.09]  # the rim
+    after, _ = texture.scrub(before, grow=1)
+    assert np.allclose(after[30, 8:56, :3], [0.85, 0.65, 0.10], atol=0.02)
+
+
+def test_a_darker_shade_of_the_grounds_hue_is_a_mark():
+    """§PW80: the hammer's seam is purple on pink, dark in colour more than in light."""
+    before = flat(side=64)
+    before[:, :, :3] = [0.94, 0.41, 0.65]  # the hammer's pink
+    before[30:36, 8:56, :3] = [0.75, 0.33, 0.55]  # a soft purple dash
+    assert texture.marks(before)["shaded"][32, 30]
+    after, _ = texture.scrub(before, grow=1)
+    assert np.allclose(after[32, 30, :3], [0.94, 0.41, 0.65], atol=0.03)
+
+
+def test_another_colours_island_is_not_a_shade():
+    """A UV sheet packs the brown handle by the pink head; brown is not dark pink."""
+    before = flat(side=64)
+    before[:, :, :3] = [0.94, 0.41, 0.65]
+    before[:, 40:, :3] = [0.60, 0.36, 0.15]
+    assert not texture.marks(before)["shaded"].any()
+
+
+def test_the_reach_follows_the_size_of_the_sheet():
+    """A window of 21 texels on a 4096 sheet sat inside the wand's dashes (§PW80)."""
+    assert texture.marks(flat(side=64))["reach"] == texture.REACH
+    assert texture.scaled(texture.REACH, (4096, 4096)) == 40
+
+
 def test_scrubbing_a_clean_texture_changes_nothing():
     before = noisy()
     after, found = texture.scrub(before)

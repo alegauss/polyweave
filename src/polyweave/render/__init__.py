@@ -326,7 +326,17 @@ def bake(
     # (§PW49). What the scrub then measured goes in the answer, not here — those are its
     # outputs and the request is what a key is over.
     if scrub:
-        params["scrub"] = True
+        # The scrub's own source too: the rule changed under an unchanged `scrub: true`
+        # and the cache served the wand star's dashes back after they were gone (§PW80).
+        import hashlib
+
+        from .. import texture
+
+        params["scrub"] = {
+            "sha256": hashlib.sha256(
+                Path(texture.__file__).read_bytes()
+            ).hexdigest()[:16]
+        }
     if size:
         # A size asked for is a different picture from the rung's, so it is in the key.
         params["size"] = int(size)

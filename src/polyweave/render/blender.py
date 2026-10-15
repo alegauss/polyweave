@@ -694,7 +694,7 @@ def scrub_textures(
             )
             cleaned, found = T.scrub(
                 pixels,
-                reach=T.REACH if reach is None else int(reach),
+                reach=None if reach is None else int(reach),
                 strictness=T.STRICTNESS if strictness is None else float(strictness),
             )
             image.pixels = cleaned.reshape(-1).tolist()

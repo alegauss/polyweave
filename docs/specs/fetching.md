@@ -457,6 +457,27 @@ and both broke — a whole-sheet sigma flagged 7.8% because a UV sheet is mostly
 space, and a high percentile flagged nothing on a texture whose marks *were* its own tail.
 So the bar is a measured floor of 0.10 that the texture may raise and never lower.
 
+**The window follows the sheet, and a mark is a colour too** (§PW80). The surroundings are
+10 texels per 1024 of the sheet, never fewer than 10: at a fixed 10 the window on a 4096
+sheet was 21 texels, Cottony's wand star is dashed in strokes 20 to 40 wide, and the
+window's mean was the stroke, so the dashes rendered round the star. A mark is also a
+darker shade of its ground's own hue, read in CIELAB against the local median colour: at
+least 4 L* darker and 6 delta E away, within 25 degrees of the ground's hue, on a ground
+with chroma over 15. The hammer's seam is purple on pink, dark in colour more than in light,
+and the hue bound keeps another colour's island out, since a UV sheet packs the brown handle
+beside the pink head. A shade, and a mark under a quarter of its ground's light, takes the
+mean colour of the unmarked texels nearest it, since a gain only multiplies its noise; the
+rest keep their hue under a gain. Every mark's mask grows 2 texels per 1024 first, so the
+antialiased rim of a stroke goes with it rather than staying as an outline. The scrub's own
+source digest is in the cache key, since a changed rule under an unchanged `scrub: true`
+served the old dashes back.
+
+The hammer still shows a row of faint dots along its head's edge after all of this, the
+same row its shipped sprite carried along the top. They are in the texture (a one-colour
+texture renders clean) and are no darker, greyer or other-hued than the pink around them by
+any bar measured here; the ported hammer is turned slightly differently by the ingest, so
+more of the head's side faces the camera. The owner accepted it so (2026-10-15).
+
 **It runs only where it shows, and only when asked.** Rendering the hammer both ways puts
 the scrub 0.0085 apart at the preview rung against a measured noise floor of 0.0315, and
 0.0452 apart at the final rung against 0.0187 — invisible on the cheap rung and 2.5× the

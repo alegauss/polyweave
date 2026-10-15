@@ -131,28 +131,6 @@ of this block names, and the gate may report a fraction below one for as long as
 what is left and why. Two of those are already answered in `docs/specs/adoption.md`: the
 fetch ledger replays, and the motion Cottony has is two frames and no clip.
 
-### §PW80 What a fetched object arrives wearing
-
-The boosters are the first family whose hand-tuning is not about light at all. The
-hammer and the wand came back from the service, and each needed three separate
-corrections that no exposure search would have found.
-
-The service painted edges it saw: a dashed dark line round the hammer's head, a dark rim
-on the wand's star, both of which rule 2 forbids on candy and neither of which a prompt
-saying so prevented. `scrub` takes them back out of the texture before rendering. The
-hammer also returned standing upright where the drawing leans it, so it carries a roll
-of -22 degrees, and leaning it widens its box, so its fill had to go up to 0.72 to keep
-the drawing's size. Each of those three is a consequence of the one before it.
-
-The shuffle ball is here because it is the counter-example: it is built rather than
-fetched, after the service returned a ring instead of a ball. Having both in one task is
-the point — what a fetched object needs and what a built one does not is the comparison
-this family exists to make.
-
-The risk being carried is that a correction found for one object is a correction fitted
-to one object. A port worth having states what the correction is for, not the number it
-landed on.
-
 ### §PW81 The five that are looked at, and go last
 
 The friends and the mascot carry more hand-found numbers than the other seventeen
@@ -306,6 +284,28 @@ What polyweave should do: after a pass, keep searching for the rig with the most
 headroom across every predicate, normalised by each bound's width, not stop on the first
 that clears; and say when the answer sits on an axis's edge even when it passed, since a
 rig on the edge of every range is a sign the ranges, not the look, chose it.
+
+### §PW463 A stale server restarts itself
+
+Met on Cottony's boosters sitting (PW80), 2026-10-15. The review server was started at
+the marks' sitting; the agent then changed polyweave's scrub and render cache key and
+laid out the boosters' sitting on the same server. The owner pressed Accept and the page
+answered `review.stale-server: polyweave changed after this review server started, so it
+would judge with older code than the specs it reads`, with "stop the server and start it
+again". A refresh of the page gave the same, since the server is what is stale. The
+owner cannot restart a server the agent started in its own shell, so the answer waited
+on the agent.
+
+PW294 made the server notice; it still hands the person a remedy only the agent can
+carry out. `review.staleness` already compares the package's newest `.py` against the
+start time.
+
+What polyweave should do: a stale server restarts itself instead of refusing. On seeing
+the package newer than its start, it answers the request with a retry status, starts a
+fresh `polyweave review` on the same root and port once its own socket is closed, and
+the page retries the answer it was sending, telling the person it is reloading. Evidence
+it landed: a test that edits a module's mtime under a running server, posts an answer,
+and finds it recorded by a server started after the edit, with no refusal shown.
 
 ## Block I — Voxel models from a declaration
 
