@@ -70,6 +70,17 @@ _MUSIC = {
     # patches, kits and tracks, each overridden here by name, its pitched notes moved by
     # `transpose` semitones (§PW426). One edit to the base reaches every key.
     "extends": (str, ""), "transpose": (float, 0),
+    # A stinger's peak in dBFS, for a game's sound effects (§PW192). Unset, the master
+    # levels to -18 dBFS RMS, which puts a game's quietest effect as loud as its
+    # loudest and squeezes a pop's click under the compressor; set, the master keeps
+    # the effect's own dynamics, peaks it here and ends it where it falls silent.
+    # Cottony's pick plays on every touch at a third of a pop's level.
+    "peak": (float, None),
+    # Where a peaked effect ends, in seconds, its ring faded out there. Unset, it ends
+    # where it falls 30 dB under its peak; set, it lasts as long as it was designed to:
+    # Cottony's pops are short because they stack, and its cascade rings longer each
+    # step down the chain, which no one silence threshold keeps (§PW192).
+    "length": (float, None),
 }
 #: A send left unstated is off, which no level in decibels says.
 OFF = None
@@ -84,7 +95,7 @@ _TRACK = {
 _RANGES = {
     "bpm": (20, 400), "velocity": (1, 127), "groove": (0, 1), "wobble": (0, 64),
     "gate": (0.05, 4), "room": (0, 1), "gain": (-60, 24), "pan": (-1, 1),
-    "reverb": (-60, 12), "delay": (-60, 12),
+    "reverb": (-60, 12), "delay": (-60, 12), "peak": (-40, -1), "length": (0.05, 10),
 }
 _TABLES = ("music", "section", "pattern", "track", "patch", "kit")
 
@@ -670,6 +681,18 @@ def _sections(problems: _Problems, stated: Any, music: dict) -> dict[str, int]:
             f"loop_from is {music['loop_from']!r}, which the form never plays",
             f"name one of {', '.join(map(str, form))}",
         )
+    if music["peak"] is not None and music["loop"]:
+        problems.add(
+            "music.bad-value", problems.line("peak"),
+            "peak masters a stinger by its peak, and this score loops",
+            "set loop = false for a sound effect, or leave peak out to level by RMS",
+        )
+    if music["length"] is not None and music["peak"] is None:
+        problems.add(
+            "music.bad-value", problems.line("length"),
+            "length ends a peaked effect, and this score states no peak",
+            "set peak for a sound effect, or leave length out",
+        )
     return found
 
 
@@ -747,6 +770,8 @@ def _model(problems: _Problems, music: dict, sections: dict, patterns: dict,
         "extensions": {EXTENSION: {
             "bpm": music["bpm"],
             "room": music["room"],
+            "peak": music["peak"],
+            "length": music["length"],
             "loop": {"startTick": head, "endTick": tick} if music["loop"] else None,
             "tracks": {t["name"]: {k: t[k] for k in _CARRIED} for t in tracks},
             **({"reference": music["reference"]} if music["reference"] else {}),

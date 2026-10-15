@@ -287,6 +287,40 @@ def mix(stems: dict[str, np.ndarray], tracks: dict, room: float,
             + delay(echo.T.astype(np.float32), RATE).T)
 
 
+#: Where a peaked effect ends: the last moment it is within this many dB of its peak.
+#: Cottony's synthesised effects ended 26 to 30 dB down, short because they stack (a
+#: rainbow clears forty pops at once); a SoundFont marimba rings to -60 dB at 2.3 s.
+SILENT = -30.0
+#: The fade an effect ends on, so a ring cut short does not stop on a click.
+FADE = 0.02
+
+
+def _peaked(audio: np.ndarray, peak: float, length: float | None = None) -> np.ndarray:
+    """A sound effect mastered by its peak, dynamics kept, ended where it goes quiet.
+
+    No compressor and no limiter, since a pop is its click and squeezing it is what made
+    every effect sound alike; a 30 Hz high-pass, the peak set to `peak` dBFS, the tail
+    cut where it last sits within SILENT of that peak, and a FADE on the end (§PW192).
+    """
+    from pedalboard import HighpassFilter, Pedalboard
+
+    cleaned = Pedalboard([HighpassFilter(30)])(audio.T.astype(np.float32), RATE).T
+    top = float(np.max(np.abs(cleaned))) or 1.0
+    out = cleaned / top * 10 ** (peak / 20.0)
+    if length is not None:
+        end = min(len(out), int(round(length * RATE)))
+    else:
+        level = np.max(np.abs(out), axis=1)
+        loud = np.flatnonzero(level > 10 ** ((peak + SILENT) / 20.0))
+        end = len(out)
+        if loud.size:
+            end = min(end, int(loud[-1]) + 1 + int(RATE * FADE))
+    out = out[:end].astype(np.float64)
+    fade = min(len(out), int(RATE * FADE))
+    out[len(out) - fade:] *= np.linspace(1.0, 0.0, fade)[:, None]
+    return out
+
+
 def master(audio: np.ndarray, cyclic: bool) -> np.ndarray:
     """Compress, level and limit; a loop is run as a loop, so its seam sees its tail."""
     from pedalboard import Compressor, Gain, HighpassFilter, Limiter, Pedalboard
@@ -418,7 +452,10 @@ def render(
     spb = per_tick * model["timing"]["ticksPerQuarter"]
     loop = ext["loop"]
     body, cyclic = _folded(mix(stems, ext["tracks"], ext["room"], spb), loop, per_tick)
-    final = master(body, cyclic=cyclic)
+    if ext.get("peak") is not None and not loop:
+        final = _peaked(body, ext["peak"], ext.get("length"))
+    else:
+        final = master(body, cyclic=cyclic)
 
     signature = model["timing"]["timeSignatures"][0]
     bar = signature["numerator"] * 4 / signature["denominator"] * spb

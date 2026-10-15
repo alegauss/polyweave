@@ -132,7 +132,8 @@ TOOL_BUDGET = 4500
 #: 123,100 at 123,090 for provenance.generated's preset, a build's files (§PW455).
 #: 123,800 at 123,739 for style.train, a canon trained into a model (§PW450).
 #: 123,900 at 123,864 for render.bake's on_grid, a mark at its own scale (§PW79).
-LIST_BUDGET = 123900
+#: 124,600 at 124,509 for sound.loop, a recorded track cut into a loop (§PW192).
+LIST_BUDGET = 124600
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

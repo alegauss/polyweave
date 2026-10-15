@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 11 },
+  { block: "H", title: "Proof on a real game", open: 12 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 1 },
@@ -40,7 +40,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 1 },
   { block: "O", title: "A person sees and answers", open: 1 },
-  { block: "P", title: "Music and sound a game can ship", open: 0 },
+  { block: "P", title: "Music and sound a game can ship", open: 1 },
   { block: "Q", title: "Words held to the world", open: 0 },
   { block: "R", title: "Levels measured before a person plays them", open: 6 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
@@ -128,6 +128,13 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
+    id: "PW81",
+    block: "H",
+    symptom: "the two friends, their lean frames and the mascot take eleven constants apiece and nothing declares one",
+    why: "These move last by design, once the families that rehearse them have moved, and the look of the most-seen sprites is a person's call.",
+    deps: [],
+  },
+  {
     id: "PW449",
     block: "K",
     symptom: "no MCP client but Claude Code has ever driven polyweave, so whether its surface is usable without the skill is unknown",
@@ -146,6 +153,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "O",
     symptom: "verdict.judge takes any sentence its caller passes as the person's, so an agent can write the verdict on its own work",
     why: "Only the skill keeps an agent off the door; an MCP client without it can accept its own look.",
+    deps: [],
+  },
+  {
+    id: "PW464",
+    block: "P",
+    symptom: "sound.sitting takes no about, so a sound sitting cannot say what changed or what to listen for",
+    why: "The owner judges sounds on a page that cannot say the timbre moved, and the agent edits the manifest by hand.",
     deps: [],
   },
   {
@@ -242,4 +256,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW81", "PW82", "PW192", "PW201", "PW311", "PW368"];
+export const generatedPaused: string[] = ["PW82", "PW201", "PW311", "PW368"];

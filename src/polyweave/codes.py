@@ -921,6 +921,21 @@ CODES: dict[str, Code] = {
         when="one cue name in two families that share a folder and a format",
         doors=("rename one cue", "give one family its own folder"),
     ),
+    "sound.no-ffmpeg": Code(
+        means="cutting a loop needs ffmpeg to decode the track and encode the loop",
+        when="sound.loop on a machine with no ffmpeg on PATH",
+        doors=("put ffmpeg on PATH, with libvorbis for an Ogg loop",),
+    ),
+    "sound.no-loop-point": Code(
+        means="no bar in the track's second half comes back to its opening's level",
+        when="sound.loop on a track cut short, or one that never returns to its intro",
+        doors=("give the whole track, intro to outro",),
+    ),
+    "sound.loop-gap": Code(
+        means="the loop came back from its encoder a different length than it was cut",
+        when="an encoder that pads or trims, which is a gap or an overlap at the seam",
+        doors=("write the loop as .wav", "use an encoder that keeps the length"),
+    ),
     "sound.unknown-cue": Code(
         means="no [sound] family declares a cue of that name",
         when="a sound bought for a cue that was never added to a family's cues",

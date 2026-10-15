@@ -367,6 +367,7 @@
 - ✅ **PW323** **nothing measures a spoken take, so a clipped, padded or misread line reaches the person's verdict as a candidate** — A spoken take is held to its line and [voice] bounds before a person hears it, and with trim on, lands with its silence cut to the bound (design recorded in `docs/specs/effects.md`).
 - ✅ **PW324** **a spoken line can only be heard after paying for it, so its wording and timing in the game cannot be tried for free** — sound.speak rung=draft speaks a line free on the project's local engine, as a draft voice.lines offers again and provenance sets apart (design recorded in `docs/specs/effects.md`).
 - ✅ **PW333** **an sfx effect cannot be declared at a note, so putting a menu sound in a key means working out base_freq by hand** — An sfx effect is declared at a note, with an arp and a slide by note and time compiled to sfxr's numbers, and sound.measure answers the pitch (design recorded in `docs/specs/effects.md`).
+- ✅ **PW192** **Cottony still makes its audio outside polyweave** — Cottony's effects render through polyweave as General MIDI scores held to specs, its music loops by sound.loop, both accepted by the owner (design in `docs/specs/music.md`).
 
 ## Block Q — Words held to the world
 

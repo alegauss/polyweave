@@ -316,6 +316,79 @@ def test_a_rendered_loop_is_held_to_the_bar_its_record_names(tmp_path):
     assert again["seam_grid"] == pytest.approx(0.0, abs=1e-3)
 
 
+EFFECT = """\
+[music]
+title = "pop"
+bpm = 240
+meter = [1, 4]
+form = ["A"]
+loop = false
+peak = -6.0
+length = 0.22
+
+[section.A]
+bars = 1
+
+[pattern]
+note = "a4"
+
+[[track]]
+name = "mallet"
+instrument = "gm:12"
+play = { A = "note" }
+"""
+
+
+def test_an_effect_carries_its_peak_and_its_length():
+    """§PW192: Cottony's pick plays at a third of a pop's level, and a pop is short."""
+    from polyweave import music
+
+    model, problems = music.compile_source(EFFECT, "pop")
+    assert problems == []
+    carried = model["extensions"][music.EXTENSION]
+    assert (carried["peak"], carried["length"]) == (-6.0, 0.22)
+
+
+@pytest.mark.parametrize(
+    ("change", "named"),
+    [
+        (("loop = false", "loop = true"), "peak"),
+        (("peak = -6.0\n", ""), "length"),
+    ],
+)
+def test_a_peak_on_a_loop_or_a_length_with_no_peak_is_refused(change, named):
+    from polyweave import music
+
+    model, problems = music.compile_source(EFFECT.replace(*change), "pop")
+    assert model is None
+    assert [p["code"] for p in problems] == ["music.bad-value"]
+    assert named in problems[0]["message"]
+
+
+@pytest.mark.skipif(not PEDALBOARD, reason="audio engine absent: Pedalboard")
+def test_a_peaked_effect_keeps_its_peak_and_ends_where_it_goes_quiet():
+    import numpy as np
+
+    rate = music_render.RATE
+    t = np.arange(rate * 3) / rate
+    ring = np.sin(2 * np.pi * 440 * t) * np.exp(-t / 0.2)
+    stereo = np.stack([ring, ring], axis=1) * 0.3
+    done = music_render._peaked(stereo, -6.0)
+    assert 20 * np.log10(np.abs(done).max()) == pytest.approx(-6.0, abs=0.1)
+    # e^(-t/0.2) falls 30 dB at 0.69 s, which is where the effect ends, faded
+    assert len(done) / rate == pytest.approx(0.69 + music_render.FADE, abs=0.03)
+    assert abs(done[-1]).max() == pytest.approx(0.0, abs=1e-9)
+    assert len(music_render._peaked(stereo, -6.0, 0.22)) == round(0.22 * rate)
+
+
+@needs_fluid
+def test_an_effect_renders_at_its_peak_and_its_length(tmp_path):
+    found = music_render.render(Reported(), project(tmp_path, EFFECT, fluid_paths()),
+                                root=str(tmp_path), formats=["wav"])
+    assert found["measured"]["peak"] == pytest.approx(-6.0, abs=0.1)
+    assert found["measured"]["duration"] == pytest.approx(0.22, abs=0.005)
+
+
 @needs_fluid
 def test_a_stinger_keeps_its_tail_and_has_no_seam(tmp_path):
     score = GM.replace('form = ["A"]', 'form = ["A"]\nloop = false')

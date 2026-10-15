@@ -121,7 +121,8 @@ from polyweave.errors import PolyweaveError
 #: 138,376 with provenance.generated's preset, what a Godot build ships (§PW455).
 #: 139,142 with style.train, a canon trained into a Scenario model (§PW450).
 #: 139,285 with render.bake's on_grid, a mark drawn at its own scale (§PW79).
-DESCRIBE = 139_300
+#: 139,982 with sound.loop, a recorded track cut into a game's loop (§PW192).
+DESCRIBE = 140_000
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -220,7 +221,8 @@ DESCRIBE = 139_300
 #: 151,516 with compose.text-unoutlined, live text the engine would lose (§PW453).
 #: 152,344 with style.train and its two refusals (§PW450).
 #: 152,540 with render.bake's on_grid and render.no-scale, a mark's own scale (§PW79).
-CAPABILITIES = 152_600
+#: 153,297 with sound.loop and its three refusals, a recorded track's loop (§PW192).
+CAPABILITIES = 153_300
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

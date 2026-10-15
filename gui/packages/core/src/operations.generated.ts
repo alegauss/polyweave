@@ -1936,6 +1936,18 @@ export interface SoundDeclaredArgs {
   root?: string
 }
 
+/** Cut a recorded track into a loop on its beat grid and prove its seam. */
+export interface SoundLoopArgs {
+  /** the recorded track, intro to outro, in the project */
+  track: string
+  /** the loop to write, .ogg or .wav, under the project */
+  out: string
+  /** the project the paths resolve against; default "." */
+  root?: string
+  /** the Vorbis quality of an Ogg loop; from 0 to 10; default 5 */
+  quality?: number
+}
+
 /** A sound's seam, loudness, peak and length: what a sound predicate bounds. */
 export interface SoundMeasureArgs {
   /** the sound, as a path under the project */
@@ -2509,6 +2521,7 @@ export interface Operations {
   "skeleton.shared": SkeletonSharedArgs
   "sound.buy": SoundBuyArgs
   "sound.declared": SoundDeclaredArgs
+  "sound.loop": SoundLoopArgs
   "sound.measure": SoundMeasureArgs
   "sound.sitting": SoundSittingArgs
   "sound.speak": SoundSpeakArgs
@@ -2708,6 +2721,7 @@ export const OPERATIONS = [
   "skeleton.shared",
   "sound.buy",
   "sound.declared",
+  "sound.loop",
   "sound.measure",
   "sound.sitting",
   "sound.speak",

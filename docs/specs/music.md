@@ -157,6 +157,16 @@ more than the notes do: every stem is levelled to -20 dBFS at the 95th percentil
 of the score's `room` and a dotted-eighth delay; the master is a 30 Hz high-pass, a 2.5:1
 compressor and a limiter, levelled to -18 dBFS RMS under a -1 dBFS peak.
 
+**A sound effect is mastered by its peak** (§PW192). `peak` in `[music]`, in dBFS, takes a
+stinger (`loop = false`) off that chain: a 30 Hz high-pass, the peak set there, no
+compressor and no limiter, so a pop keeps the click that makes it one. Levelled by RMS,
+every effect was as loud as every other, and Cottony's pick plays on every touch at a
+third of a pop's level. `length`, in seconds, ends the effect there with a 20 ms fade,
+since a game's effects are as long as they were designed to be: a pop is short because
+pops stack, and a cascade rings longer each step down the chain. Without `length` it
+ends where it falls 30 dB under its peak. A `peak` on a loop, or a `length` with no
+`peak`, is `music.bad-value`.
+
 **A loop is rendered as a loop.** Four seconds past the end are rendered and folded back
 onto the loop's start, so a release or a reverb rings across the seam; where the loop
 starts the piece, the master runs over it as a cycle, so the compressor at the start has
@@ -199,3 +209,18 @@ layers add back up to the mix the game hears with every layer in: on the test sc
 correlate with it at 0.997, where one static gain for every layer reached 0.906 and drifted
 wherever the compressor moved. The whole mix is the file an acceptance spec bounds for the
 layers' summed loudness; each layer file is measured in the answer like any other.
+
+## A recorded track
+
+Not every game's music is a score. Cottony's is a recorded track generated from a prompt,
+and a generated track arrives with an ending rather than a loop. `sound.loop` cuts it
+(§PW192), as Cottony's own `loop_music.py` did before it moved here: the beat grid is
+read off the spectral flux, the cut is the bar in the second half whose opening matches
+the track's in level and in spectrum, refined by waveform correlation, and what followed
+the cut is crossfaded into the head over one beat. The loop is decoded again and its
+wrap measured against the track's own 99th-percentile step and 90th-percentile spectral
+change; above either, the answer says the seam stands out (`passed: false`) rather than
+hiding it. On Cottony's track it cut 57 bars at 124.00 BPM and measured the same as the
+loop the game shipped. A track that never comes back to its opening's level is
+`sound.no-loop-point`, an encoder that changes the length `sound.loop-gap`, and no
+ffmpeg `sound.no-ffmpeg`.

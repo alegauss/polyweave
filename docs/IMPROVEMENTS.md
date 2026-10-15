@@ -391,12 +391,21 @@ a remedy naming the person's channel, and a test proves it.
 
 ## Block P — Music and sound a game can ship
 
-### §PW192 Cottony's audio made through polyweave
+### §PW464 A sound sitting says what to listen for
 
-The block is proven when its first consumer uses it. Cottony's music and effects are
-declared in its `polyweave.toml`, made by `music.render` and `sound.synth`, and held to
-`*.accept.toml` bounds, and its own audio scripts are removed. Anything Cottony needs
-that a second game would not becomes configuration.
+Met laying out Cottony's effects for the owner (PW192). `verdict.sitting` takes an
+`about`, the paragraph under the summary that says what changed and what to listen for;
+the owner's standing rule is that a sitting is understood by looking, not guessing.
+`sound.sitting` takes `members`, `out` and `root` only, so the effects' sitting showed
+the kind's generic summary and nothing about the one thing the owner had to judge: the
+timbre moved from Python synthesis to a SoundFont, and with it the loudness heard (the
+glockenspiel effects 5 to 12 dB lower in RMS at the same peak, the pops 6 dB fuller).
+
+The workaround: the paragraph was written into `.polyweave/review/sfx/sitting.json` by
+hand after the sitting was laid out, which the next `sound.sitting` overwrites.
+
+What polyweave should do: `sound.sitting` takes `about` as `verdict.sitting` does, kept
+in the manifest under the summary, so a sound sitting carries its context the same way.
 
 ## Block Q — Words held to the world
 

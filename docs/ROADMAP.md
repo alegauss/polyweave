@@ -27,6 +27,7 @@
 - 📋 **PW460** (deps: —) **the review page lets a person accept a family whose spec fails, and the bound stays, so the bake refuses it** — The accept and the spec disagree, and the agent decides by hand what the person meant by moving a bound. → §PW460
 - 📋 **PW461** (deps: —) **a family search hands back a passing rig on every range's edge while one inside them has three times the headroom** — The answer is the harshest light that clears the bars, and the agent pins a better rig by hand. → §PW461
 - 📋 **PW463** (deps: —) **a review server that sees polyweave changed refuses the answer, and only the agent that started it can restart it** — The owner answers on a page that tells them to restart a server they never started, and their verdict waits. → §PW463
+- 📋 **PW81** (deps: PW80 ✅) **the two friends, their lean frames and the mascot take eleven constants apiece and nothing declares one** — These move last by design, once the families that rehearse them have moved, and the look of the most-seen sprites is a person's call. → §PW81
 
 ## Block I — Voxel models from a declaration
 
@@ -49,6 +50,8 @@
 - 📋 **PW443** (deps: —) **verdict.judge takes any sentence its caller passes as the person's, so an agent can write the verdict on its own work** — Only the skill keeps an agent off the door; an MCP client without it can accept its own look. → §PW443
 
 ## Block P — Music and sound a game can ship
+
+- 📋 **PW464** (deps: —) **sound.sitting takes no about, so a sound sitting cannot say what changed or what to listen for** — The owner judges sounds on a page that cannot say the timbre moved, and the agent edits the manifest by hand. → §PW464
 
 ## Block Q — Words held to the world
 
