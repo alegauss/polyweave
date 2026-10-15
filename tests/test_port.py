@@ -126,13 +126,48 @@ def test_a_declared_member_is_built_first(tmp_path):
     built = []
 
     def build(source, **how):
-        built.append(source)
-        return {"status": "built", "outputs": [str(root / "shapes" / "star.glb")]}
+        built.append((source, how["out"]))
+        return {"status": "built",
+                "outputs": [str(root / how["out"] / "star.glb")]}
 
     baker = Baker(root)
     port.port(root / "family.toml", root=root, bake=baker, build=build)
-    assert built == ["shapes/star.toml", "shapes/star.toml"]
-    assert baker.calls[0]["model"] == "shapes/star.glb"
+    # Into the work area, never beside the declaration, which in a game is inside the
+    # engine's import tree (§PW458).
+    assert built == [("shapes/star.toml", ".polyweave/stars")] * 2
+    assert baker.calls[0]["model"] == ".polyweave/stars/star.glb"
+
+
+def test_a_declared_member_s_mesh_names_where_it_is_built(tmp_path):
+    root = project(tmp_path)
+    text = (root / "family.toml").read_text(encoding="utf-8")
+    (root / "family.toml").write_text(
+        text.replace('model = "assets/star.glb"',
+                     'declaration = "shapes/star.toml"\nmesh = "build/meshes"'),
+        encoding="utf-8",
+    )
+    folders = []
+
+    def build(source, **how):
+        folders.append(how["out"])
+        return {"status": "built",
+                "outputs": [str(root / how["out"] / "star.glb")]}
+
+    port.port(root / "family.toml", root=root, bake=Baker(root), build=build)
+    assert folders == ["build/meshes", "build/meshes"]
+
+
+def test_a_mesh_folder_beside_a_model_is_refused(tmp_path):
+    root = project(tmp_path)
+    text = (root / "family.toml").read_text(encoding="utf-8")
+    (root / "family.toml").write_text(
+        text.replace('model = "assets/star.glb"\nfixes',
+                     'model = "assets/star.glb"\nmesh = "x"\nfixes', 1),
+        encoding="utf-8",
+    )
+    with pytest.raises(PolyweaveError) as refused:
+        port.read(root / "family.toml")
+    assert "no declaration" in refused.value.message
 
 
 @pytest.mark.parametrize(

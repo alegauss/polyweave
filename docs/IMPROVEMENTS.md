@@ -101,28 +101,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW458 A port's built mesh belongs to the work area
-
-Met porting Cottony's trays (PW78). A family member given as a `declaration`
-(`declaration = "tools/art/board_tray.toml"`) is built by `port.port` through
-`cli.build_one(member["declaration"], root=here, force=False)`, with no `out`, so the
-mesh lands in the declaration's own folder: `tools/art/board_tray.glb`, its
-`.build.json` and its `.glb.prov.json`. In Cottony that folder is inside Godot's
-`res://` and has no `.gdignore`, so the next headless test run imported both meshes and
-extracted the booster tray's embedded texture as
-`tools/art/booster_tray_booster_tray.png` beside them. A member has no key to say where
-its build goes: `MEMBER_KEYS` is name, spec, model, declaration, fixes, out, bake.
-
-The workaround is in Cottony 6d6b76e: four `.gitignore` lines for `tools/art/*.glb` and
-its stamp and record, and the `.import` files and the extracted texture deleted by hand.
-The props did not meet this because their meshes were written by a script into
-`.polyweave/props/` and given as `model`.
-
-What polyweave should do: build a member's declaration into the work area by default
-(`<work>/<family>/<name>.glb`, as the search's renders already go to `out`), or take a
-member key (`mesh`) naming where, so a port never writes into the engine's import tree
-unasked. The bake's provenance then cites that path.
-
 ### §PW459 A sitting has an address
 
 Met handing Cottony's trays sitting to the owner (PW78). Before a page goes to the owner

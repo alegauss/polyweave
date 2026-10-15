@@ -310,7 +310,10 @@ skeleton from a TOML file that states only what differs. It gives the `family`, 
 (`searched` over `[search.<axis>]` ranges, or `given` as a `[given]` table), a `budget`,
 and one `[[member]]` per asset. A member has its `spec`, a `model` or a `declaration` built
 first, what its render `fixes`, where the search renders it (`out`) and where it is
-`bake`d. The axes belong to the family, so every member's spec is searched over them
+`bake`d. A declaration is built into `[paths] work/<family>/`, or into the folder its
+`mesh` names, never beside the declaration: in a game that folder is inside the engine's
+import tree, and Godot imported Cottony's trays there the first time a test ran (§PW458).
+A `mesh` on a member with a `model` is refused, since nothing is built. The axes belong to the family, so every member's spec is searched over them
 together, through `search.family`. Nothing is baked unless every member passes. The bakes
 run at the final rung and are checked there. With a run open, every render counts itself
 into it, finals included. Anything else in the file is `search.bad-family`. The verdict on

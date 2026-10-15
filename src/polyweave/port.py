@@ -22,6 +22,10 @@ states only what differs, and `port` runs the skeleton:
     out   = ".polyweave/stars/star_dim.png"
     bake  = "sprites/star_dim.png"
 
+A member given as a `declaration` is built into `[paths] work/<family>/`, or into the
+folder its `mesh` names, and never beside the declaration, which in a game sits inside
+the engine's import tree (§PW458).
+
 One rig is searched against every member at once (`search.family`), every bake counts
 itself into the ledger run when one is open (`loop.recording`), and nothing is baked
 unless every member passes. Whether the look is right stays a person's verdict.
@@ -53,7 +57,7 @@ RIGS = ("searched", "given")
 
 #: What a family file and each of its members may say.
 FAMILY_KEYS = ("family", "rig", "budget", "search", "given", "start", "member")
-MEMBER_KEYS = ("name", "spec", "model", "declaration", "fixes", "out", "bake")
+MEMBER_KEYS = ("name", "spec", "model", "declaration", "mesh", "fixes", "out", "bake")
 
 #: What the rig a search found is kept as, beside the family file (§PW144).
 KEPT = ".rig.json"
@@ -145,6 +149,12 @@ def read(path: str | Path, root: str | Path = ".") -> dict:
                 ),
                 "give each member a name, a spec, an out, and a model or a declaration",
             )
+        if "mesh" in one and "declaration" not in one:
+            _refuse(
+                f"member {one['name']!r} names a mesh folder and no declaration to "
+                "build into it",
+                "mesh only beside declaration; a model is already built",
+            )
     return {**declared, "rig": rig, "path": where}
 
 
@@ -184,8 +194,9 @@ def port(
         name: {"min": value, "max": value} for name, value in family["given"].items()
     }
     members, specs = [], {}
+    named = family.get("family") or family["path"].stem
     for one in family["member"]:
-        model = one.get("model") or _built(making, one, here)
+        model = one.get("model") or _built(making, one, here, _folder(one, named, here))
         spec = replace(accept.read(one["spec"], here), search=dict(axes))
         specs[one["name"]] = (spec, model, one)
         fixed = {**(one.get("fixes") or {}), "model": model}
@@ -286,9 +297,24 @@ def _at(members: list[dict], values: dict) -> dict:
     return {"members": answers, "passed": all(a["passed"] for a in answers.values())}
 
 
-def _built(making: Callable, member: dict, here: Path) -> str:
+def _folder(member: dict, family: str, here: Path) -> str:
+    """Where a declared member is built: its `mesh`, else `<work>/<family>` (§PW458).
+
+    Never the declaration's own folder, which in a game is inside the engine's import
+    tree: Cottony's trays were imported by Godot, texture extracted beside them, the
+    first time a headless test ran after a port.
+    """
+    from .config import load
+
+    if member.get("mesh"):
+        return str(member["mesh"])
+    work = load(here).path("paths.work") / family
+    return work.relative_to(here).as_posix() if work.is_relative_to(here) else str(work)
+
+
+def _built(making: Callable, member: dict, here: Path, folder: str) -> str:
     """A declared member's mesh, built the way `python -m polyweave build` builds it."""
-    answer = making(member["declaration"], root=here, force=False)
+    answer = making(member["declaration"], out=folder, root=here, force=False)
     if answer.get("status") == "refused":
         raise PolyweaveError.from_dict(answer["refusal"])
     meshes = [p for p in answer.get("outputs", ()) if str(p).endswith(".glb")]
