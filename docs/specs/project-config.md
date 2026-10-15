@@ -75,6 +75,11 @@ max_bytes = 8_000_000_000
 # the path and against the bare name, so `*.png` excuses an extension everywhere
 handmade = ["docs/design/art/brand/*"]
 
+[adoption.own]
+# the project's own files that do what a polyweave call does, kept on purpose, each with
+# why: project.adoption reports them, and project.check fails on any file not named here
+"tools/art/make_assets.py" = "drawn 2D generation, which polyweave does not do"
+
 [review]
 language = "en"                # the review page and its sittings: en or pt-BR, one
                                # catalog each in review_page/locales/
@@ -515,6 +520,20 @@ on it:
 | `adopt.key-unset` | error | a service's `key_env` not set, checked by name and never read |
 | `adopt.budget-lapsed` | error once expired, warning where none is written | a service that can spend nothing |
 | `adopt.unrecorded` | error | produced files with no provenance record |
+| `adopt.own-surface` | error | a file of the project's own that starts Godot, drives Blender, calls a generative service or holds a picture to a statistic and exits on it, not named under `[adoption] own` |
+
+**What the project still does itself is a read of its own** (§PW59). `project.adoption`
+reads every `.py` under the root, outside the work area and hidden or dependency
+folders, for the four surfaces by what the code does: `subprocess` with Godot's own
+flags (`engine`), `import bpy` (`render`), a generative service's API host (`fetch`),
+and a picture opened, a percentile, quantile or median taken and the script exiting
+(`measure`). Per surface it answers `own` and `kept`, the second with each file's
+reason, and `adopted` counts the surfaces with neither, so a file kept on purpose still
+says what is left. A side-by-side sheet has no signature a test would not share, and
+the answer names it under `unread`. A kept path that no longer exists is `stale`. It
+answers `clean`, false while `own` holds anything, and the command exits non-zero then,
+so a project whose `project.check` is not clean yet for other reasons can still gate on
+this one.
 
 What `init --write --agent` writes checks clean, and so does an adoption written by hand
 (Starship's, with the plugin enabled and its own AGENTS.md), with one warning.

@@ -1246,6 +1246,12 @@ export interface PortRunArgs {
   fresh?: boolean
 }
 
+/** What the project's own code still does that a polyweave call already does. */
+export interface ProjectAdoptionArgs {
+  /** the adopted project whose own code is read; default "." */
+  root?: string
+}
+
 /** Every gap between this tree and a working adoption, each with its remedy. */
 export interface ProjectCheckArgs {
   /** the adopted project; default "." */
@@ -2461,6 +2467,7 @@ export interface Operations {
   "picture.vary": PictureVaryArgs
   "picture.vector": PictureVectorArgs
   "port.run": PortRunArgs
+  "project.adoption": ProjectAdoptionArgs
   "project.check": ProjectCheckArgs
   "project.init": ProjectInitArgs
   "project.inventory": ProjectInventoryArgs
@@ -2560,7 +2567,7 @@ export interface Operations {
 }
 
 /** The operations whose every argument may be left out. */
-export type Bare = "accept.verify" | "capture.declared" | "engine.check" | "engine.find" | "engine.perf" | "engine.states" | "game.crash_read" | "game.export_smoke" | "game.open" | "game.release_check" | "game.test" | "kit.list" | "kit.prove" | "loop.assets" | "loop.bounds" | "loop.pending" | "loop.report" | "loop.runs" | "measure.available" | "measure.pressure" | "mesh.buy" | "offscreen.routes" | "picture.buy" | "project.check" | "project.init" | "project.inventory" | "provenance.credits" | "provenance.generated" | "provenance.outdated" | "provenance.unrecorded" | "provenance.verify" | "purchase.held" | "purchase.ledger" | "purchase.remaining" | "purchase.spent" | "render.plan" | "review.canon" | "review.state" | "review.words" | "revision.open" | "schema.read" | "sound.buy" | "sound.declared" | "sound.speak" | "style.read" | "style.train" | "tables.check" | "units.engine_scale" | "verdict.answers" | "voice.design" | "voice.lines" | "words.check" | "words.glyphs" | "words.unlisted" | "world.read" | "world.validate"
+export type Bare = "accept.verify" | "capture.declared" | "engine.check" | "engine.find" | "engine.perf" | "engine.states" | "game.crash_read" | "game.export_smoke" | "game.open" | "game.release_check" | "game.test" | "kit.list" | "kit.prove" | "loop.assets" | "loop.bounds" | "loop.pending" | "loop.report" | "loop.runs" | "measure.available" | "measure.pressure" | "mesh.buy" | "offscreen.routes" | "picture.buy" | "project.adoption" | "project.check" | "project.init" | "project.inventory" | "provenance.credits" | "provenance.generated" | "provenance.outdated" | "provenance.unrecorded" | "provenance.verify" | "purchase.held" | "purchase.ledger" | "purchase.remaining" | "purchase.spent" | "render.plan" | "review.canon" | "review.state" | "review.words" | "revision.open" | "schema.read" | "sound.buy" | "sound.declared" | "sound.speak" | "style.read" | "style.train" | "tables.check" | "units.engine_scale" | "verdict.answers" | "voice.design" | "voice.lines" | "words.check" | "words.glyphs" | "words.unlisted" | "world.read" | "world.validate"
 
 /** Every operation `describe` listed when this file was written. */
 export const OPERATIONS = [
@@ -2661,6 +2668,7 @@ export const OPERATIONS = [
   "picture.vary",
   "picture.vector",
   "port.run",
+  "project.adoption",
   "project.check",
   "project.init",
   "project.inventory",

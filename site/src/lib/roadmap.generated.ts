@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 11 },
+  { block: "H", title: "Proof on a real game", open: 10 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 1 },
@@ -50,13 +50,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW59",
-    block: "H",
-    symptom: "nothing says how much of Cottony still does its own version of what the plugin does",
-    why: "Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion.",
-    deps: [],
-  },
   {
     id: "PW372",
     block: "H",

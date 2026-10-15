@@ -122,7 +122,8 @@ from polyweave.errors import PolyweaveError
 #: 139,142 with style.train, a canon trained into a Scenario model (§PW450).
 #: 139,285 with render.bake's on_grid, a mark drawn at its own scale (§PW79).
 #: 139,982 with sound.loop, a recorded track cut into a game's loop (§PW192).
-DESCRIBE = 140_000
+#: 140,300 with project.adoption, what a project still does itself (§PW59).
+DESCRIBE = 140_400
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -223,7 +224,8 @@ DESCRIBE = 140_000
 #: 152,540 with render.bake's on_grid and render.no-scale, a mark's own scale (§PW79).
 #: 153,297 with sound.loop and its three refusals, a recorded track's loop (§PW192).
 #: 153,315 with saturation_hsv, a whole screen's vivid tail (§PW57).
-CAPABILITIES = 153_400
+#: 153,654 with project.adoption and adopt.own-surface (§PW59).
+CAPABILITIES = 153_700
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

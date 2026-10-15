@@ -112,6 +112,7 @@ MODULES: tuple[str, ...] = (
     "polyweave.pressure",
     "polyweave.flashes",
     "polyweave.integrity",
+    "polyweave.adoption",
     "polyweave.testing",
     "polyweave.tables",
     "polyweave.perf",

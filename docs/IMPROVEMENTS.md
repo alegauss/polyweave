@@ -55,30 +55,6 @@ a property of a set of marks, which the script argues at length, and porting it 
 either a measure that counts marks forming a ring on a subject, or a person deciding it
 stays a test.
 
-### §PW59 Adopted is an opinion until something fails when it is not
-
-Today the number is zero. A search for `polyweave` across `D:\Git\viglet\cottony`
-returns nothing, against 8,839 lines under `tools/`. Every line in this block moves that
-number and none of them defends it.
-
-That matters because the failure mode is not a port that never happens; it is a port
-that comes back. A helper reintroduced under deadline, a floor copied into a sixth check
-script, a thirteenth GDScript runner written because twelve were there to copy from —
-each is one commit, each looks reasonable in review, and nothing fails.
-
-So this block closes with a gate in Cottony rather than a claim in this repository. It
-names the surfaces the plugin owns — the rig, the geometry, the fetch, the engine run,
-the measurement, the sheet — and fails when one of them is re-implemented beside a call
-that already exists.
-
-**The denominator has to be stated or the number is a slogan.**
-`tools/art/make_assets.py` is 2,406 lines of drawn 2D generation and is not in it: this
-plugin is geometry, surface and motion in three dimensions, and a flat PNG generator is
-Cottony's own work. The palette and the fonts are the same. What counts is what the rest
-of this block names, and the gate may report a fraction below one for as long as it says
-what is left and why. Two of those are already answered in `docs/specs/adoption.md`: the
-fetch ledger replays, and the motion Cottony has is two frames and no clip.
-
 ### §PW82 The rig has to actually go
 
 This is the task PW53's objection was about. Setting it aside said that one asset moving

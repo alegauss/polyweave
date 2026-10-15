@@ -1302,6 +1302,14 @@ CODES: dict[str, Code] = {
         "where only the work area should hold it (§PW407)",
         doors=("remove it from git and keep it in the work area",),
     ),
+    "adopt.own-surface": Code(
+        means="the project's own code does what a polyweave call already does: starts "
+        "the engine, drives Blender, calls a service or measures a picture (§PW59)",
+        when="a runner, rig, client or check written beside the call, or one ported "
+        "and written again",
+        doors=("move it onto the call the finding names",
+               "keep it under [adoption] own with the reason"),
+    ),
     # -- words: the text a player reads ---------------------------------------
     "words.no-table": Code(
         means="polyweave.toml names no string table, so there is no text to check",

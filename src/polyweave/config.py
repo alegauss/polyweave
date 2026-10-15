@@ -162,6 +162,12 @@ DEFAULTS: dict[str, Any] = {
         # has to stay worth reading for the one week in a year when a mesh goes missing.
         "handmade": [],
     },
+    "adoption": {
+        # The project's own files that do what a polyweave call does, kept on purpose,
+        # each with the reason (§PW59): `"tools/art/make_assets.py" = "drawn 2D art"`.
+        # project.adoption reports them and project.check fails on the rest.
+        "own": {},
+    },
     "review": {
         # The language a sitting and the review page are read in (§PW287): en, pt-BR.
         "language": "en",

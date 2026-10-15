@@ -488,7 +488,24 @@ def check(root: Annotated[str, Param("the adopted project")] = ".") -> dict:
             )
         )
     _godot(here, said)
+    _own(here, said)
     return _checked(found)
+
+
+def _own(here: Path, said) -> None:
+    """Each file doing what a polyweave call does, unless kept on purpose (§PW59)."""
+    from .adoption import adoption
+
+    for name, surface in adoption(str(here))["surfaces"].items():
+        for file in surface["own"]:
+            said(
+                PolyweaveError(
+                    "adopt.own-surface",
+                    f"{file} {surface['does']} ({name})",
+                    f"use {surface['use']}, or keep it under [adoption] own with the "
+                    "reason",
+                )
+            )
 
 
 def _godot(here: Path, said) -> None:
