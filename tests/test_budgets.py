@@ -124,7 +124,8 @@ from polyweave.errors import PolyweaveError
 #: 139,982 with sound.loop, a recorded track cut into a game's loop (§PW192).
 #: 140,300 with project.adoption, what a project still does itself (§PW59).
 #: 140,823 with the code an accept needs, on judge, answer and promote (§PW443).
-DESCRIBE = 140_900
+#: 140,987 with sound.sitting's about, what changed and what to listen for (§PW464).
+DESCRIBE = 141_000
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -227,7 +228,8 @@ DESCRIBE = 140_900
 #: 153,315 with saturation_hsv, a whole screen's vivid tail (§PW57).
 #: 153,654 with project.adoption and adopt.own-surface (§PW59).
 #: 154,203 with an accept's code and verdict.not-the-person (§PW443).
-CAPABILITIES = 154_300
+#: 154,388 with sound.sitting's about and review.restarting (§PW464, §PW463).
+CAPABILITIES = 154_400
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

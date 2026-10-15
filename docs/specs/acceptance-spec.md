@@ -196,9 +196,11 @@ canons and asset table under one fold. A redo asks for a sentence; an accept may
 catalog's `accepted_silent` in the project's language, which is what happened, since
 `verdict.judge` still refuses an empty sentence from every caller (§PW288).
 
-**Sounds are heard, not looked at** (§PW256). `sound.sitting(members, out=)` lays out each
-sound as its own family, so a verdict is given per sound: a member names its `new` file and
-optionally the `old` one it replaces, `loop`, and a `spec`. Since a render rewrites its
+**Sounds are heard, not looked at** (§PW256). `sound.sitting(members, out=, about=)` lays
+out each sound as its own family, so a verdict is given per sound: a member names its `new`
+file and optionally the `old` one it replaces, `loop`, and a `spec`. `about` is kept under
+the summary as `verdict.sitting` keeps it, so the sitting says what changed and what to
+listen for, such as a timbre moved to a SoundFont (§PW464). Since a render rewrites its
 file in place, `old` may name a committed version, `HEAD:<path>` or any `<rev>:<path>`
 (§PW425): it is read with `git show`, passed through `git lfs smudge` where it is an LFS
 pointer, written under the work area's `sound/old/`, and the member says where it came

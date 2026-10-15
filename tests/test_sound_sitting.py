@@ -77,6 +77,22 @@ def test_a_verdict_given_on_the_page_lands_in_the_sounds_record(tmp_path):
     assert provenance.verify(str(tmp_path))["changed"] == []
 
 
+def test_a_sound_sitting_says_what_changed_under_its_summary(tmp_path):
+    """§PW464: Cottony's effects moved to a SoundFont and the page could not say so."""
+    _project(tmp_path)
+    said = "O timbre agora vem do SoundFont; os pops soam 6 dB mais cheios."
+    laid = sound.sitting(
+        [{"name": "bomb", "new": "audio/bomb.wav", "old": "before/bomb.wav"}],
+        out="review/sounds", root=str(tmp_path), about=said,
+    )
+    manifest = json.loads((tmp_path / laid["sitting"]).read_text("utf-8"))
+    assert said in manifest["about"]
+    plain = sound.sitting([{"name": "bomb", "new": "audio/bomb.wav"}],
+                          out="review/plain", root=str(tmp_path))
+    assert said not in json.loads((tmp_path / plain["sitting"]).read_text("utf-8"))[
+        "about"]
+
+
 def test_a_declared_loop_is_played_looped_and_measured_at_its_seam(tmp_path):
     _project(tmp_path, '[sound.music]\nkind = "loop"\ncues = ["theme"]\n')
     _tone(tmp_path / "assets" / "audio" / "theme.wav", seconds=1.0)

@@ -38,8 +38,6 @@
 
 ## Block P — Music and sound a game can ship
 
-- 📋 **PW464** (deps: —) **sound.sitting takes no about, so a sound sitting cannot say what changed or what to listen for** — The owner judges sounds on a page that cannot say the timbre moved, and the agent edits the manifest by hand. → §PW464
-
 ## Block Q — Words held to the world
 
 ## Block R — Levels measured before a person plays them

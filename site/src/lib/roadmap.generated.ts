@@ -40,7 +40,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 0 },
   { block: "O", title: "A person sees and answers", open: 0 },
-  { block: "P", title: "Music and sound a game can ship", open: 1 },
+  { block: "P", title: "Music and sound a game can ship", open: 0 },
   { block: "Q", title: "Words held to the world", open: 0 },
   { block: "R", title: "Levels measured before a person plays them", open: 6 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
@@ -83,13 +83,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "a game's engine scripts and the line each prints are a table in a Python driver the game writes itself",
     why: "Cottony keeps three drivers that only map scripts to patterns around engine.run and capture.run, and a second game would write the same three.",
-    deps: [],
-  },
-  {
-    id: "PW464",
-    block: "P",
-    symptom: "sound.sitting takes no about, so a sound sitting cannot say what changed or what to listen for",
-    why: "The owner judges sounds on a page that cannot say the timbre moved, and the agent edits the manifest by hand.",
     deps: [],
   },
   {

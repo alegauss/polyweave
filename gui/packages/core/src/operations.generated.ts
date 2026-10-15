@@ -1970,6 +1970,8 @@ export interface SoundSittingArgs {
   out: string
   /** the project the paths resolve against; default "." */
   root?: string
+  /** what the person should know, under the summary: what changed and what to listen for */
+  about?: string
 }
 
 /** Speak one line aloud in a named voice, at a cue's file, against the ceiling. */

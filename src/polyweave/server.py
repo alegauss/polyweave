@@ -135,7 +135,8 @@ TOOL_BUDGET = 4500
 #: 124,600 at 124,509 for sound.loop, a recorded track cut into a loop (§PW192).
 #: 124,900 at 124,819 for project.adoption, what a project still does itself (§PW59).
 #: 125,300 at 125,288 for the code an accept needs on three verdict tools (§PW443).
-LIST_BUDGET = 125300
+#: 125,500 at 125,434 for sound.sitting's about, what to listen for (§PW464).
+LIST_BUDGET = 125500
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

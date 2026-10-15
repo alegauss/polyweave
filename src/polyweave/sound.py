@@ -489,6 +489,10 @@ def sitting(
     *,
     out: Annotated[str, Param("the folder the sitting is laid out in")],
     root: Annotated[str, Param("the project the paths resolve against")] = ".",
+    about: Annotated[
+        str, Param("what the person should know, under the summary: what changed and "
+                   "what to listen for")
+    ] = "",
 ) -> dict:
     """Put sounds on the review page, each new one beside the one it replaces.
 
@@ -497,7 +501,8 @@ def sitting(
     sound.measure says of both drawn on its sheet. The answer lands through
     verdict.judge, which keeps it in the new sound's record; verdict.answers resumes
     from it. A loop is a member whose cue a `[sound]` family of kind loop declares, or
-    one that says `loop`.
+    one that says `loop`. `about` is kept under the summary, as `verdict.sitting` keeps
+    it (§PW464), so the sitting says what changed rather than the kind's words alone.
     """
     from . import verdict
     from .provenance import relative
@@ -560,7 +565,7 @@ def sitting(
                          + [_spoke(one) for one in spoken_fails]}],
         }
     if families:
-        verdict._manifest(folder, families, sheets, here, kind="sound")
+        verdict._manifest(folder, families, sheets, here, kind="sound", about=about)
     return {
         "sitting": relative(folder / verdict.MANIFEST, here) if families else None,
         "sounds": list(families),
