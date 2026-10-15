@@ -469,6 +469,41 @@ def test_a_shape_the_drawing_cannot_tell_apart_is_said_so(tmp_path):
     assert caught.value.code == "mesh.ambiguous-forward"
 
 
+def test_a_cube_s_frame_does_not_depend_on_what_the_machine_s_svd_returns(
+    tmp_path, monkeypatch
+):
+    """§PW468: CI's runner returned a turned basis for a cube, and nothing tied."""
+    real = np.linalg.svd
+    turn = np.array([[0.8, -0.6, 0.0], [0.6, 0.8, 0.0], [0.0, 0.0, 1.0]])
+
+    def turned(matrix, full_matrices=True):
+        u, spread, directions = real(matrix, full_matrices=full_matrices)
+        return u, spread, turn @ directions  # every basis of a tied subspace is valid
+
+    monkeypatch.setattr(np.linalg, "svd", turned)
+    points, _ = normalise.as_mesh(cube(1.0, 1.0, 1.0))
+    assert np.allclose(np.abs(normalise.axes(points)), np.eye(3))
+    square = draw(tmp_path / "square.png", 40, 40)
+    with pytest.raises(PolyweaveError) as caught:
+        normalise.orient(cube(1.0, 1.0, 1.0), against=square, alpha_floor=0.0)
+    assert caught.value.code == "mesh.ambiguous-forward"
+
+
+def test_a_lathe_turned_mesh_keeps_its_own_long_axis_and_settles_the_rest(monkeypatch):
+    real = np.linalg.svd
+    turn = np.array([[1.0, 0.0, 0.0], [0.0, 0.8, -0.6], [0.0, 0.6, 0.8]])
+
+    def turned(matrix, full_matrices=True):
+        u, spread, directions = real(matrix, full_matrices=full_matrices)
+        return u, spread, turn @ directions
+
+    monkeypatch.setattr(np.linalg, "svd", turned)
+    points, _ = normalise.as_mesh(cube(1.0, 4.0, 1.0))  # long in y, square across
+    frame = np.abs(normalise.axes(points))
+    assert np.allclose(frame[0], [0.0, 1.0, 0.0])
+    assert np.allclose(frame[1:], [[1.0, 0.0, 0.0], [0.0, 0.0, 1.0]])
+
+
 # -- on arrival ------------------------------------------------------------------------
 
 

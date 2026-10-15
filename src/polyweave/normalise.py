@@ -72,10 +72,49 @@ def axes(vertices: np.ndarray) -> np.ndarray:
             "the mesh is flat or collinear, so its axes fix no orientation",
             "orient it against a reference drawing, or state the rotation",
         )
-    frame = np.array(directions)
+    frame = _settled(np.array(directions), spread)
     if np.linalg.det(frame) < 0:  # keep it a rotation rather than a reflection
         frame[2] = -frame[2]
     return frame
+
+
+#: How close two spreads are before their directions stop being the mesh's (§PW468).
+TIED = 1e-6
+
+
+def _settled(frame: np.ndarray, spread: np.ndarray) -> np.ndarray:
+    """The frame with every tied subspace given the mesh's own axes (§PW468).
+
+    Where two or three spreads are equal, as on a cube or anything turned on a lathe,
+    any orthonormal basis of their subspace is an answer, and which one the SVD returns
+    depends on the BLAS kernel the CPU picks: on CI's runner a cube came back turned,
+    and its twenty-four ways round stopped tying. So that subspace takes the mesh's own
+    axes, each the one lying most in it, projected and orthonormalised, and every
+    machine agrees.
+    """
+    settled = frame.copy()
+    start = 0
+    while start < 3:
+        end = start + 1
+        while end < 3 and spread[start] - spread[end] <= TIED * float(spread[0]):
+            end += 1
+        if end - start > 1:
+            span = frame[start:end]
+            chosen: list[np.ndarray] = []
+            while len(chosen) < end - start:
+                # The world axis that lies most in what is left of the subspace, so
+                # none is a sliver of noise normalised up to a direction.
+                left = []
+                for world in np.eye(3):
+                    vector = span.T @ (span @ world)
+                    for kept in chosen:
+                        vector = vector - (vector @ kept) * kept
+                    left.append(vector)
+                best = max(left, key=lambda v: float(np.linalg.norm(v)))
+                chosen.append(best / float(np.linalg.norm(best)))
+            settled[start:end] = chosen
+        start = end
+    return settled
 
 
 def rotations(frame: np.ndarray) -> list[np.ndarray]:
