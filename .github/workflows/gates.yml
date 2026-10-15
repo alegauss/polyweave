@@ -80,6 +80,11 @@ jobs:
         run: python -m pip install -e ..
       - name: install
         run: npm ci
+      # Electron 44 has no install script: it fetches its binary the first time it is
+      # required, so after npm ci there is no dist/ yet and nothing for the step below
+      # to make setuid. Its own install.js fetches it now.
+      - name: fetch Electron's binary
+        run: node node_modules/electron/install.js
       # Electron on Linux refuses to start unless its sandbox helper is root's and setuid,
       # which npm ci cannot make it; every live test failed on that, not on the window.
       - name: let Electron's sandbox run
