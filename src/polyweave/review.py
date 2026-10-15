@@ -360,12 +360,15 @@ def answer(root, body: dict) -> dict:
 
         why = review_text.catalog(review_text.language(config.root))["page"][
             "accepted_silent"]
+    # Where the sitting names the ledger's asset, the verdict lands there too, in a run
+    # opened and closed for it, as one given in conversation does (§PW465).
     said = verdict.judge(
         members,
         choice,
         why,
         root=str(config.root),
         named=list(body.get("named") or ()),
+        asset=offered[listed].get("asset") or None,
     )
     marks = [_mark(member, drawn, config) for member, drawn in shapes]
     # An event on disk, so the agent that offered the sitting resumes on it without

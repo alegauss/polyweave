@@ -336,6 +336,9 @@ def judged(
     check: Annotated[dict, Param("what accept.check said of the result")] = None,
     named: Annotated[list, Param("the predicates the person blamed")] = (),
     root: Annotated[str, ROOT] = ".",
+    member: Annotated[
+        str, Param("the asset this verdict is about, where the run is a family's")
+    ] = "",
 ) -> dict:
     """One result, as the tool called it and as a person called it.
 
@@ -352,6 +355,9 @@ def judged(
         "person_accepted": bool(person_accepted),
         "why": str(why),
         "at": time.time(),
+        # A family's run holds a verdict per member, and `pending` reads a member as
+        # judged by it (§PW465).
+        **({"member": str(member)} if member else {}),
     }
     if check is not None:
         verdict["predicates"] = [
@@ -584,13 +590,18 @@ def pending(root: Annotated[str, ROOT] = ".") -> dict:
         row(name)["spec"] = provenance.relative(found, here)
 
     judged_at: dict[str, float] = {}
+    specced = {name for name, one in rows.items() if one["spec"]}
     for run in read(root):
         one = row(run["asset"])
         one[run["way"]] = one[run["way"]] or was_made(run)
         for verdict in run.get("verdicts", ()):
-            judged_at[run["asset"]] = max(
-                judged_at.get(run["asset"], 0.0), float(verdict.get("at", 0.0))
-            )
+            at = float(verdict.get("at", 0.0))
+            # A family's run judges its members (§PW465): Cottony's ports open one
+            # run per family and its specs are one per member, so a verdict counts for
+            # the member it names, written as a field or as `judge`'s `<member>: `.
+            about = verdict.get("member") or str(verdict.get("why", "")).split(": ")[0]
+            for name in {run["asset"], *({about} & specced)}:
+                judged_at[name] = max(judged_at.get(name, 0.0), at)
 
     made = _candidates(settings.path("paths.renders"), set(rows), here)
     for name, one in rows.items():

@@ -203,12 +203,18 @@ def sitting(
     out: Annotated[str, Param("the folder every family's sheet is written into")],
     root: Annotated[str, Param("the project the paths resolve against")] = ".",
     about: Annotated[str, Param("what the person should know, under the summary")] = "",
+    asset: Annotated[
+        str, Param("the loop ledger's asset the sitting answers for, as port.run's "
+                   "family is named")
+    ] = "",
 ) -> dict:
     """Every pending family's sheet in one folder, so a person looks once (§PW110).
 
     `loop.pending` says which assets wait; the caller groups them into families with
     their members, and this lays each out as `<out>/<family>.png`. The answers come
-    back as one `judge` call per family.
+    back as one `judge` call per family. With `asset`, an answer given on the page is
+    a verdict in the ledger for that asset too, as one given in conversation is
+    (§PW465).
     """
     if not isinstance(families, dict):
         raise PolyweaveError(
@@ -227,7 +233,7 @@ def sitting(
     # (§PW338).
     held = any(one["checked"] for laid in sheets.values() for one in laid["members"])
     listed = _manifest(folder, families, sheets, root, about=about,
-                       kind="look" if held else "unheld")
+                       kind="look" if held else "unheld", asset=asset)
     return {
         "sheets": sheets,
         "manifest": listed,
@@ -256,6 +262,7 @@ MANIFEST = "sitting.json"
 def _manifest(
     folder: Path, families: dict, sheets: dict, root, kind: str = "look",
     about: str = "", abouts: dict | None = None, tone: list | None = None,
+    asset: str = "",
 ) -> str:
     """The sitting as data, and its place in the project's index of sittings.
 
@@ -282,6 +289,8 @@ def _manifest(
         "at": datetime.now(tz=UTC).isoformat(timespec="seconds"),
         **review_text.told(kind, review_text.language(here), about),
         **({"tone": list(tone)} if tone else {}),
+        # The ledger's asset the page's answers are recorded against (§PW465).
+        **({"asset": str(asset)} if asset else {}),
         "families": {
             name: {
                 "members": list(members),
@@ -410,6 +419,7 @@ def judge(
                 check=found,
                 named=mine,
                 root=str(here),
+                member=member["name"],
             )
         rewritten: list[str] = []
         if choice == "number" and not found["passed"]:
@@ -720,6 +730,7 @@ def answers(
                     why=f"{member['name']}: {one['why']}",
                     check=member.get("check"),
                     named=member.get("named") or (),
+                    member=member["name"],
                 )
     return {
         "answers": fresh,

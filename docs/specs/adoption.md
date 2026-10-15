@@ -48,6 +48,16 @@ go to `verdict.sitting(families, out=)`, which writes every sheet as `<out>/<fam
 so a person looks once. The answers come back as one `judge` call per family. The list
 decides nothing and reorders nothing.
 
+**A family's run judges its members, and the page's verdict reaches it** (§PW465). A
+port opens one run per family (`trays`) while specs are one per member (`board_tray`),
+so a verdict now keeps the `member` it is about, and `pending` reads a member as judged
+by any run's verdict naming it, as a field or as the `<member>: ` that `judge` has always
+put before the sentence. `verdict.sitting(..., asset=)` names the ledger's asset a
+sitting answers for, and an answer on the review page then lands as a verdict in a run
+opened and closed for that asset, as a verdict given in conversation does. Before this,
+four of Cottony's six ported families were accepted on the page and the ledger held
+nothing for them.
+
 ## A baseline cannot be written afterwards
 
 The baseline is what the existing pipeline costs today, recorded **before anything is

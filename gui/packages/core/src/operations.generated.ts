@@ -782,6 +782,8 @@ export interface LoopJudgedArgs {
   named?: unknown[]
   /** the project whose ledger this is; default "." */
   root?: string
+  /** the asset this verdict is about, where the run is a family's */
+  member?: string
 }
 
 /** Which assets wait on a person's look, and where every asset stands (§PW110). */
@@ -2226,6 +2228,8 @@ export interface VerdictSittingArgs {
   root?: string
   /** what the person should know, under the summary */
   about?: string
+  /** the loop ledger's asset the sitting answers for, as port.run's family is named */
+  asset?: string
 }
 
 /** Build declared particle, ribbon and sheet effects into Godot scenes, recorded. */

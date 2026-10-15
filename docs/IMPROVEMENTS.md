@@ -101,31 +101,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW465 The page's verdict is the one the ledger never sees
-
-`review.answer` calls `verdict.judge` with neither `run` nor `asset`, so the answer
-comes back saying "not recorded: no run was open" to a page nobody reads that field on.
-The person's word is kept as an answer event and never as a run.
-
-Measured on Cottony after PW77 to PW81: `polyweave.loop.json` holds a before side for
-all six families and an after side only for the stars and the boosters, the two judged
-from a conversation. The props, trays, marks and friends were accepted on the page and
-the ledger has nothing for them, so `loop.compare` refuses them and `loop.report` leaves
-them out.
-
-A second mismatch hides the first. `loop.pending` keys rows by spec, one per member
-(`friend_cloud`), while the ports open runs per family (`friends_and_mascot`). So a
-family's verdict, recorded or not, never marks its members judged, and every member of
-every accepted family reads `waiting: true`.
-
-What to build: a sitting family carries the ledger asset it answers for (the family name
-`port.run` uses), and `review.answer` passes it as `asset=`, so the page's verdict opens
-and closes a run the way a verdict in a conversation does, with `made: false` as
-`docs/specs/adoption.md` describes. `loop.pending` then reads a member as judged when a
-run for its family carries a verdict naming it, since `judge` already prefixes each
-verdict's `why` with the member's name. Open choice: whether the family-to-member
-mapping lives in the run (a `members` list) or is read back off the family TOML.
-
 ### §PW466 Three Python scripts still start Godot themselves
 
 PW56 moved Cottony's twelve GDScript runners onto polyweave: four captures through

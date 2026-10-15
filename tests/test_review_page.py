@@ -698,6 +698,39 @@ def test_a_family_never_gated_starts_from_its_candidates(page):
     assert status == 400 and said["code"] == "style.not-a-candidate"
 
 
+# -- the page's verdict reaches the ledger (§PW465) ----------------------------------
+
+
+def test_an_answer_on_the_page_lands_in_the_ledger_for_the_sitting_s_asset(tmp_path):
+    from polyweave import loop
+
+    (tmp_path / "polyweave.toml").write_text('[paths]\nspecs = "accept"\n', "utf-8")
+    laid = verdict.sitting({"bandejas": [member(tmp_path, "board_tray", 120)]},
+                           out="review/trays", root=tmp_path, asset="trays")
+    review.answer(tmp_path, {"sitting": laid["manifest"], "family": "bandejas",
+                             "choice": "look", "why": "o creme mudou"})
+    runs = loop.read(str(tmp_path))
+    assert [(r["asset"], r["way"]) for r in runs] == [("trays", "after")]
+    kept = runs[0]["verdicts"][0]
+    assert kept["member"] == "board_tray" and kept["person_accepted"] is False
+    rows = {one["asset"]: one for one in loop.pending(str(tmp_path))["assets"]}
+    assert rows["board_tray"]["judged"] is not None
+
+
+def test_a_family_s_older_verdict_counts_for_the_member_it_names(tmp_path):
+    """Cottony's stars were judged in a family run before verdicts named a member."""
+    from polyweave import loop
+
+    (tmp_path / "polyweave.toml").write_text('[paths]\nspecs = "accept"\n', "utf-8")
+    member(tmp_path, "star_dim", 120)
+    run = loop.start("stars", "after", root=str(tmp_path))
+    loop.judged(run, tool_passed=True, person_accepted=True,
+                why="star_dim: same star at size", root=str(tmp_path))
+    loop.finish(run, root=str(tmp_path))
+    rows = {one["asset"]: one for one in loop.pending(str(tmp_path))["assets"]}
+    assert rows["star_dim"]["judged"] is not None
+
+
 # -- a stale server hands over rather than refusing (§PW463) -------------------------
 
 

@@ -199,6 +199,7 @@
 - ✅ **PW460** **the review page lets a person accept a family whose spec fails, and the bound stays, so the bake refuses it** — A failing card offers adjust-the-bound in place of accept, and accept-all skips it, so a yes on the page moves the bound the bake checks (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW461** **a family search hands back a passing rig on every range's edge while one inside them has three times the headroom** — Each pass tries its window's middle first, so a rig inside the ranges wins on headroom, and a pass on an edge says so (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW463** **a review server that sees polyweave changed refuses the answer, and only the agent that started it can restart it** — A review server on old code starts a fresh one on its port and the page resends, so the answer lands with no restart by hand (design recorded in `docs/specs/acceptance-spec.md`).
+- ✅ **PW465** **an accept on the review page never reaches the loop ledger, so loop.pending reads an accepted family as still waiting** — A page answer on a sitting naming its ledger asset is a ledger verdict, and a family run's verdict marks the member it names judged (design recorded in `docs/specs/adoption.md`).
 
 ## Block I — Voxel models from a declaration
 
