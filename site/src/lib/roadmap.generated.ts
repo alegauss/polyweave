@@ -38,7 +38,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "K", title: "Reached without reading the source", open: 0 },
   { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
-  { block: "N", title: "Pictures held to a canon", open: 1 },
+  { block: "N", title: "Pictures held to a canon", open: 0 },
   { block: "O", title: "A person sees and answers", open: 0 },
   { block: "P", title: "Music and sound a game can ship", open: 1 },
   { block: "Q", title: "Words held to the world", open: 0 },
@@ -118,13 +118,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "a game's engine scripts and the line each prints are a table in a Python driver the game writes itself",
     why: "Cottony keeps three drivers that only map scripts to patterns around engine.run and capture.run, and a second game would write the same three.",
-    deps: [],
-  },
-  {
-    id: "PW450",
-    block: "N",
-    symptom: "no picture can be bought from a model trained on the project's own art, so its style reaches a service only as words",
-    why: "A real training run on one family's canon, which needs a Scenario key and the owner's ceiling.",
     deps: [],
   },
   {
@@ -228,4 +221,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW82", "PW57", "PW449", "PW201", "PW311", "PW368"];
+export const generatedPaused: string[] = ["PW82", "PW57", "PW449", "PW450", "PW201", "PW311", "PW368"];

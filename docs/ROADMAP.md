@@ -39,8 +39,6 @@
 
 ## Block N — Pictures held to a canon
 
-- ⏳ **PW450** (deps: —) **no picture can be bought from a model trained on the project's own art, so its style reaches a service only as words** — A real training run on one family's canon, which needs a Scenario key and the owner's ceiling. → §PW450
-
 ## Block O — A person sees and answers
 
 ## Block P — Music and sound a game can ship
