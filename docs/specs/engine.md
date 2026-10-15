@@ -159,6 +159,14 @@ the one way above — the asset's own where it states one, the engine's where it
 both axes follow from it. A rectangle landing between two pixels is still refused, because a
 sprite on half a pixel cannot sit on the grid whatever else is right.
 
+**A mark drawn on the screen is on no grid** (§PW79). Cottony's wordmark is 960 px wide on
+the title and its logo 720 in the board's corner, whatever a board cell is, so held to the
+engine's 112 px a unit neither could be framed at all. `on_grid = false` takes the
+picture's own `pixels_per_unit` instead of comparing it, and refuses a rectangle without
+one (`render.no-scale`); the size still follows from the rectangle, and a fractional pixel
+is still refused. It is in the key, since the same rectangle at another scale is another
+picture.
+
 **A declared rectangle is rendered orthographically.** Mapping a world rectangle onto pixels
 at one scale *is* an orthographic projection: under the rig's perspective camera a unit at
 the front of the subject covers more pixels than one at the back, so `pixels_per_unit` would

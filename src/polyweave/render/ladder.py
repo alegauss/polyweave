@@ -51,6 +51,8 @@ ANSWERS_AT = {
     "distance": "final",
     "changed_fraction": "final",
     "luma_bands": "final",
+    # A gradient is per pixel, so it is the size and the samples of the render (§PW79).
+    "edge": "final",
     # Whether a shot reads over what is behind it is a question of the picture drawn,
     # a game's capture or a final render, and no sphere stands in for it (§PW272).
     "contrast_min": "final",

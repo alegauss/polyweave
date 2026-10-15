@@ -131,27 +131,6 @@ of this block names, and the gate may report a fraction below one for as long as
 what is left and why. Two of those are already answered in `docs/specs/adoption.md`: the
 fetch ledger replays, and the motion Cottony has is two frames and no clip.
 
-### §PW79 The simplest rig with the hardest bar
-
-The brand marks are the one family where the rig is nearly nothing and the criterion is
-nearly everything. Two blends produce three sprites — the Cottony logo is baked twice,
-large for the title and small for the board's corner, because a sprite for each beats
-one scaled for both — and the whole of the hand-tuning is `light`, at 1.0 and 1.18.
-
-They are deliberately not first. A family with one constant looks like the easy port,
-and it is, right up to the point of saying what a correct render is. A wordmark is type:
-it either reads or it does not, and the failure is not a median drifting but a letter
-losing its edge. Taking it early would have meant inventing an acceptance vocabulary
-under the pressure of the first port.
-
-The owner set the bar on 2026-10-15: today's sprites, as for the trays. Colour, tone and
-place are read off each shipped mark, and a measure holds the letters to an edge at
-least as crisp as today's. That last one is the part no earlier family needed, and the
-search aims at it like any other bound.
-
-The marks also leave markings off — a rope round the silhouette of a word is not a thing
-this style has.
-
 ### §PW80 What a fetched object arrives wearing
 
 The boosters are the first family whose hand-tuning is not about light at all. The
@@ -305,6 +284,28 @@ limite" in its place with the failing predicate named, or an accept carries the 
 bounds to the measured values as `number` does, recorded as the person's decision. The
 `look` kind's own words say accept means "the spec agrees", so today the page lets a
 person say something the spec contradicts.
+
+### §PW461 A pass is not the best pass
+
+Met porting Cottony's brand marks (PW79). `port.run --family
+tools/art/viglet_badge.family.toml` searched key 5 to 40, ambient 0.5 to 1.5, fill 0 to
+20 and exposure -1 to 0.5 against `viglet_games_badge.accept.toml` (budget 30) and
+answered `passed: true` at key 40, ambient 0.5, fill 0, exposure +0.5 (every axis on an
+edge), with "the spec passed, and a further pass found no more headroom". Its disc sat
+1.13 delta E from the target and its piping's p99 at 0.732 against a max of 0.73 on the
+way there. The Cottony marks' search passed at key 40 and fill 20, two edges, with "the
+budget ran out".
+
+By hand, the props' rig (key 22.5, ambient 1, fill 10), inside every range, passed the
+badge at exposure -0.3 with the disc at 0.38 delta E and the edge at today's 0.135, and
+both Cottony marks at -0.1 at 0.3 to 0.7 delta E. PW104's headroom pass missed it, and a
+harsher light than the shipped one came back. The workaround is a `given` rig in both
+family files.
+
+What polyweave should do: after a pass, keep searching for the rig with the most
+headroom across every predicate, normalised by each bound's width, not stop on the first
+that clears; and say when the answer sits on an axis's edge even when it passed, since a
+rig on the edge of every range is a sign the ranges, not the look, chose it.
 
 ## Block I — Voxel models from a declaration
 

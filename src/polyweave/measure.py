@@ -231,6 +231,38 @@ def _luma_bands(
     return int(np.unique(np.round(luma * 255).astype(np.uint8)).size)
 
 
+@_distributes("edge")
+def _edge(
+    image: Image, mask: np.ndarray, *, alpha_floor: float = 0.0, **_: Any
+) -> np.ndarray:
+    """How steeply lightness changes from one pixel to the next, inside the subject.
+
+    A wordmark is type, and type fails by a letter losing its edge rather than by a
+    median drifting (§PW79): Cottony's cream letters on their red panel read because the
+    step between them is a pixel or two wide. So this is the gradient of CIELAB
+    lightness, over 100 so a step from black to white across two pixels is 0.5, and
+    `edge_p99` is the crispness of the strongest edges in the region. A blur, a lower
+    sample count or a smaller render all pull it down.
+
+    Only pixels whose every neighbour is inside the subject are counted. The step to
+    transparent at the outline is the antialiasing of the silhouette, the same in any
+    render at that size, and the colour under a transparent pixel is undefined.
+    """
+    rgb = image.rgba[:, :, :3].astype(np.float64) / 255.0
+    lightness = to_lab(rgb)[..., 0] / 100.0
+    across = np.zeros_like(lightness)
+    down = np.zeros_like(lightness)
+    across[:, 1:-1] = (lightness[:, 2:] - lightness[:, :-2]) / 2.0
+    down[1:-1, :] = (lightness[2:, :] - lightness[:-2, :]) / 2.0
+    inside = image.subject(alpha_floor)
+    whole = inside.copy()
+    whole[0, :] = whole[-1, :] = whole[:, 0] = whole[:, -1] = False
+    for dy in (-1, 0, 1):
+        for dx in (-1, 0, 1):
+            whole &= np.roll(inside, (dy, dx), axis=(0, 1))
+    return np.hypot(across, down)[whole & mask]
+
+
 # -- comparing two renders -----------------------------------------------------------
 
 #: D65, the white point sRGB is defined against.

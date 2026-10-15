@@ -34,6 +34,7 @@ difference sat at the 99th percentile.
 |---|---|---|
 | `saturation_{p1,p50,p99,mean,std}` | 0–1 | HSL saturation over the region |
 | `luma_{p1,p50,p99,mean,std}` | 0–1 | Relative luminance, sRGB-weighted |
+| `edge_{p1,p50,p99,mean,std}` | 0–1 | Gradient of CIELAB lightness between neighbours, inside the subject |
 | `hue_spread` | 0–1 | Circular standard deviation of hue, weighted by saturation |
 | `alpha_coverage` | 0–1 | Fraction of the region with alpha above the floor |
 
@@ -51,6 +52,15 @@ deviation is unbounded and this table declares a 0–1 range, and a measure that
 its own declared range is not usable in a bound. It is weighted by saturation because the
 hue of a grey pixel is arbitrary, and an image of mostly grey would otherwise report a
 spread it does not have.
+
+**`edge` is how a letter keeps its edge** (§PW79). A wordmark fails by its type going
+soft, not by a median drifting, so the bar on a mark is `edge_p99`: the steepest
+lightness steps in the region, which a blur, fewer samples or a smaller render all
+lower. The gradient is of CIELAB L over 100, by central differences, so black to white
+across two pixels is 0.5. Only pixels whose eight neighbours are all in the subject are
+counted: the step to transparent is the silhouette's antialiasing, and the colour under
+a transparent pixel is undefined. It is taken at the final rung, since a gradient is per
+pixel and a preview is a smaller picture.
 
 A region holding no pixels is refused (`spec.empty-region`) rather than answered with zero:
 a statistic over nothing is not a statistic.

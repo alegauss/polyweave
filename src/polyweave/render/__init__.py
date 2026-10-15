@@ -252,6 +252,10 @@ def bake(
         float,
         Param("the scale it is baked at; the project's own where this is left out"),
     ] = 0.0,
+    on_grid: Annotated[
+        bool,
+        Param("false for a logo or HUD piece, at its own pixels_per_unit"),
+    ] = True,
     seed: Annotated[
         int, Param("the path tracer's seed; the project's where this is negative")
     ] = -1,
@@ -346,7 +350,25 @@ def bake(
         declared = {"covers": list(covers)}
         if pixels_per_unit:
             declared["pixels_per_unit"] = float(pixels_per_unit)
-        scale = units.require(declared, root=root)
+        if on_grid:
+            scale = units.require(declared, root=root)
+        else:
+            # A mark drawn on the screen at its own size is on no grid (§PW79): the
+            # engine's scale says nothing about it, so its own is required instead of
+            # compared, and a rectangle between two pixels is still refused.
+            if not pixels_per_unit:
+                raise PolyweaveError(
+                    "render.no-scale",
+                    "a picture off the game's grid has no engine scale to fall back on",
+                    "pass pixels_per_unit, the pixels one unit of the model spans in "
+                    "the picture",
+                )
+            scale = {
+                "covers": [float(v) for v in covers],
+                "pixels_per_unit": float(pixels_per_unit),
+                "size": list(units.for_size(list(covers), float(pixels_per_unit))),
+            }
+            params["on_grid"] = False
         if units.placed(covers) is not None and (azimuth or elevation):
             # A rectangle with a place is a place in the picture plane, which is only
             # the world's X and Y looking straight on (§PW78). Turned, its corners

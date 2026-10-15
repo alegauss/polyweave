@@ -296,6 +296,36 @@ def test_a_rectangle_landing_between_two_pixels_is_still_refused(tmp_path):
     assert not (tmp_path / "tray.png").exists(), "nothing was rendered to find this"
 
 
+def test_a_mark_off_the_grid_is_drawn_at_its_own_scale(tmp_path):
+    """§PW79: Cottony's wordmark is 960 px wide on the title whatever a board cell is,
+    so a picture off the game's grid takes its own scale and is not held to 112."""
+    pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
+    render = baking(
+        tmp_path, "samples = { sphere = 4 }\n\n[units]\npixels_per_unit = 112.0\n"
+    )
+    found = render.bake(
+        Quiet(), out="mark.png", rung="sphere", covers=[2.0, 1.0],
+        pixels_per_unit=48.0, on_grid=False, root=tmp_path,
+    )
+    assert found["asserted"]["size"] == [96, 48]
+    assert found["pixels_per_unit"] == 48.0
+
+
+def test_off_the_grid_a_scale_is_required_and_whole_pixels_still_are(tmp_path):
+    render = baking(tmp_path, "[units]\npixels_per_unit = 112.0\n")
+    for asked, code in (
+        ({}, "render.no-scale"),
+        ({"pixels_per_unit": 48.0, "covers": [2.0, 1.01]}, "units.not-whole"),
+    ):
+        with pytest.raises(PolyweaveError) as caught:
+            render.bake(
+                Quiet(), out="mark.png", rung="sphere", on_grid=False,
+                root=tmp_path, **{"covers": [2.0, 1.0], **asked},
+            )
+        assert caught.value.code == code
+    assert not (tmp_path / "mark.png").exists(), "nothing was rendered to find this"
+
+
 def test_a_bake_that_declares_nothing_is_not_asked_about_scale(tmp_path):
     """Most renders are a preview of a thing, not a sprite on somebody's grid."""
     render = baking(tmp_path, "[units]\npixels_per_unit = 64.0\n")

@@ -25,7 +25,7 @@
 - 📋 **PW458** (deps: —) **port.run builds a member's declaration beside the declaration, so in a game's tree the engine imports the mesh** — A port writes into the project's import tree unasked, and the agent ignores and deletes what the engine pulled in by hand. → §PW458
 - 📋 **PW459** (deps: —) **the review page opens a sitting only by a click, so no URL shows the agent or the owner one sitting** — The page is checked before handover by a headless screenshot, and that screenshot can only show the list. → §PW459
 - 📋 **PW460** (deps: —) **the review page lets a person accept a family whose spec fails, and the bound stays, so the bake refuses it** — The accept and the spec disagree, and the agent decides by hand what the person meant by moving a bound. → §PW460
-- 📋 **PW79** (deps: PW78 ✅) **the three brand marks are exposed by a hand-found light and nothing states what the type should read as** — What the type must read as is a person's bar, written once the earlier families' bars are agreed, before a search can aim at it. → §PW79
+- 📋 **PW461** (deps: —) **a family search hands back a passing rig on every range's edge while one inside them has three times the headroom** — The answer is the harshest light that clears the bars, and the agent pins a better rig by hand. → §PW461
 
 ## Block I — Voxel models from a declaration
 
@@ -85,15 +85,6 @@
   twelve are done: the four captures and cascade.gd go through engine and capture, and a
   mismatch fails the run. Left are the seven under tools/perf/ that have no driver, and
   run_tests.py, which is a third copy of the lookup and is PW70.
-
-## Done when — PW79
-
-- **Each mark has a spec that says what its type must read as** docs/design/accept/
-  holds a spec for viglet_games_badge, cottony_wordmark and cottony_logo that a person
-  agreed to, and the shipped sprites pass it.
-- **The marks bake through the plugin and a person judged them** bake_model.py no longer
-  renders the three marks, and polyweave.loop.json holds an after run for brand_marks
-  beside the before run at 53a9610.
 
 ## Done when — PW80
 

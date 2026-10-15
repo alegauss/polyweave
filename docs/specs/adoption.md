@@ -280,8 +280,15 @@ shipped sprites are 0.16 apart, so no one rig held both, as `bake_model` never l
 with one. The booster tray's cushion wears its own drawing as a texture (a material's
 `image`), and its colour sits 4.7 ΔE from the shipped median at every exposure, the
 drawing's hue rather than the light; the owner accepted it beside the shipped sprite and
-the bar moved to it. What remains is each later family's port, each on a person's look,
-down to PW82.
+the bar moved to it. The three brand marks came after (PW79, Cottony e555597), from their
+`.blend` files as they are, in two families since `bake_model` lit the two blends 1.18 to
+1.0. Their bar is the owner's: today's sprites, colour read in a rectangle on the panel and
+one on a letter, plus `edge_p99`, the steepest lightness step inside the mark, held as crisp
+as today's, since type fails by going soft. A mark is drawn at its own size on the screen,
+so it bakes with `on_grid = false`, its rectangle at its own pixels a unit. The search
+passed on the edge of every range with a harsher light; the props' rig inside them passed
+at a third of the colour error, and it is the one given (PW461). What remains is each later
+family's port, each on a person's look, down to PW82.
 
 ## A family is stated, not scripted
 

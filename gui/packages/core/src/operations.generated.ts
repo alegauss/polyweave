@@ -1644,6 +1644,8 @@ export interface RenderBakeArgs {
   covers?: unknown[]
   /** the scale it is baked at; the project's own where this is left out; default 0.0 */
   pixels_per_unit?: number
+  /** false for a logo or HUD piece, at its own pixels_per_unit; default true */
+  on_grid?: boolean
   /** the path tracer's seed; the project's where this is negative; default -1 */
   seed?: number
   /** samples per pixel; the rung's where this is zero; from 0 to …; default 0 */

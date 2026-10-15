@@ -131,7 +131,8 @@ TOOL_BUDGET = 4500
 #: 123,000 at 122,961 for normalise.ingest's ready, a mesh held to a bar (§PW447).
 #: 123,100 at 123,090 for provenance.generated's preset, a build's files (§PW455).
 #: 123,800 at 123,739 for style.train, a canon trained into a model (§PW450).
-LIST_BUDGET = 123800
+#: 123,900 at 123,864 for render.bake's on_grid, a mark at its own scale (§PW79).
+LIST_BUDGET = 123900
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

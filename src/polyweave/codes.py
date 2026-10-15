@@ -586,6 +586,11 @@ CODES: dict[str, Code] = {
         when="a misspelled Principled BSDF socket, refused rather than dropped",
         doors=("name a socket the shader declares",),
     ),
+    "render.no-scale": Code(
+        means="a picture off the game's grid was given a rectangle and no scale",
+        when="render.bake with on_grid=false and covers, without pixels_per_unit",
+        doors=("pass pixels_per_unit, the scale the picture is drawn at",),
+    ),
     "render.missing-picture": Code(
         means="a material wears a picture that is not on disk",
         when="a declared material's `image` names a path nothing is at",

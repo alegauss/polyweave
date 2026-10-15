@@ -120,7 +120,8 @@ from polyweave.errors import PolyweaveError
 #: 138,229 with normalise.ingest's ready, a bought mesh held to a bar (§PW447).
 #: 138,376 with provenance.generated's preset, what a Godot build ships (§PW455).
 #: 139,142 with style.train, a canon trained into a Scenario model (§PW450).
-DESCRIBE = 139_200
+#: 139,285 with render.bake's on_grid, a mark drawn at its own scale (§PW79).
+DESCRIBE = 139_300
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -218,7 +219,8 @@ DESCRIBE = 139_200
 #: 151,489 with prov.no-preset, a build with no export preset to read (§PW455).
 #: 151,516 with compose.text-unoutlined, live text the engine would lose (§PW453).
 #: 152,344 with style.train and its two refusals (§PW450).
-CAPABILITIES = 152_400
+#: 152,540 with render.bake's on_grid and render.no-scale, a mark's own scale (§PW79).
+CAPABILITIES = 152_600
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
@@ -229,7 +231,9 @@ ERROR = 1_400
 #: 4,460 with render.bake's `after`, the project's own passes over a render, which is
 #: the only way its gloss or shadow reaches the record and the cache key (§PW439).
 #: 4,628 with its `ambient_colour`, the world light's colour (§PW441).
-HELP_VERB = 4_700
+#: 4,833 with its `on_grid`, a logo or a HUD piece at its own scale, which no rectangle
+#: at the engine's scale can frame (§PW79).
+HELP_VERB = 4_900
 #: The top-level `--help`, naming every verb: 11,346. One more verb line is ~150.
 #: 11,792 once measure.digest is a verb (§PW141), 11,933 with cost.read (§PW143),
 #: 12,066 with motion.bake (§PW160), 12,216 with sound.measure (§PW113), 12,385

@@ -49,7 +49,7 @@ A caller that names a rung gets that one.
 |---|---|
 | `saturation_*`, `luma_*`, `hue_spread`, `region_colour`, `delta_e` | `sphere` |
 | `silhouette_*`, `alpha_coverage` | `preview` |
-| `distance`, `changed_fraction`, `luma_bands` | `final` |
+| `distance`, `changed_fraction`, `luma_bands`, `edge` | `final` |
 
 A surface reads on a primitive. A silhouette is the shape itself and needs the real mesh,
 but not the samples. A comparison between two renders, or a count of what survives a

@@ -114,10 +114,10 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW79",
+    id: "PW461",
     block: "H",
-    symptom: "the three brand marks are exposed by a hand-found light and nothing states what the type should read as",
-    why: "What the type must read as is a person's bar, written once the earlier families' bars are agreed, before a search can aim at it.",
+    symptom: "a family search hands back a passing rig on every range's edge while one inside them has three times the headroom",
+    why: "The answer is the harshest light that clears the bars, and the agent pins a better rig by hand.",
     deps: [],
   },
   {
