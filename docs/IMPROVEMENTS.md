@@ -101,28 +101,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW461 A pass is not the best pass
-
-Met porting Cottony's brand marks (PW79). `port.run --family
-tools/art/viglet_badge.family.toml` searched key 5 to 40, ambient 0.5 to 1.5, fill 0 to
-20 and exposure -1 to 0.5 against `viglet_games_badge.accept.toml` (budget 30) and
-answered `passed: true` at key 40, ambient 0.5, fill 0, exposure +0.5 (every axis on an
-edge), with "the spec passed, and a further pass found no more headroom". Its disc sat
-1.13 delta E from the target and its piping's p99 at 0.732 against a max of 0.73 on the
-way there. The Cottony marks' search passed at key 40 and fill 20, two edges, with "the
-budget ran out".
-
-By hand, the props' rig (key 22.5, ambient 1, fill 10), inside every range, passed the
-badge at exposure -0.3 with the disc at 0.38 delta E and the edge at today's 0.135, and
-both Cottony marks at -0.1 at 0.3 to 0.7 delta E. PW104's headroom pass missed it, and a
-harsher light than the shipped one came back. The workaround is a `given` rig in both
-family files.
-
-What polyweave should do: after a pass, keep searching for the rig with the most
-headroom across every predicate, normalised by each bound's width, not stop on the first
-that clears; and say when the answer sits on an axis's edge even when it passed, since a
-rig on the edge of every range is a sign the ranges, not the look, chose it.
-
 ### §PW463 A stale server restarts itself
 
 Met on Cottony's boosters sitting (PW80), 2026-10-15. The review server was started at

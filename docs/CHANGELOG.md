@@ -197,6 +197,7 @@
 - ✅ **PW458** **port.run builds a member's declaration beside the declaration, so in a game's tree the engine imports the mesh** — port.run builds a declared member into the work area, or the folder its mesh key names, so a port never writes into the engine's import tree (design recorded in `docs/specs/adoption.md`).
 - ✅ **PW459** **the review page opens a sitting only by a click, so no URL shows the agent or the owner one sitting** — verdict.sitting answers the address the page opens a sitting at, and review prints a link to each one waiting, so a screenshot lands on it (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW460** **the review page lets a person accept a family whose spec fails, and the bound stays, so the bake refuses it** — A failing card offers adjust-the-bound in place of accept, and accept-all skips it, so a yes on the page moves the bound the bake checks (design recorded in `docs/specs/acceptance-spec.md`).
+- ✅ **PW461** **a family search hands back a passing rig on every range's edge while one inside them has three times the headroom** — Each pass tries its window's middle first, so a rig inside the ranges wins on headroom, and a pass on an edge says so (design recorded in `docs/specs/acceptance-spec.md`).
 
 ## Block I — Voxel models from a declaration
 

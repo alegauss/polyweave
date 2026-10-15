@@ -137,6 +137,19 @@ def turnable(draw: Callable, *wanted: dict, also: dict = ()) -> list[str]:
     )
 
 
+def _centre(windows: dict, steps: dict, names: Sequence[str]) -> tuple:
+    """The middle of every window, snapped to its step where it has one (§PW461)."""
+    middle = []
+    for name in names:
+        low, high = windows[name]
+        value = (low + high) / 2.0
+        step = steps.get(name)
+        if step:
+            value = low + round((value - low) / float(step)) * float(step)
+        middle.append(round(value, 10))
+    return tuple(middle)
+
+
 def _points_per_axis(axes: int, budget: int, points: int) -> int:
     """As fine a grid as the budget affords, and never coarser than two."""
     if axes <= 0:
@@ -241,13 +254,20 @@ def search(
         # the whole of it over possible: deduplicated against what has been seen and cut
         # to what the budget still affords (§PW45).
         wanted: list[tuple[tuple, dict]] = []
-        for combination in itertools.product(*axes):
+        # A grid of two points an axis is only the corners, every one on an edge, so
+        # the window's middle is always in the pass (§PW461): Cottony's badge passed at
+        # a corner with a third of the headroom a rig inside every range had. It is
+        # chosen first and then put in the grid's own order, so a shape is still built
+        # once a pass (§PW32).
+        middle = _centre(windows, steps, names)
+        for combination in [middle, *itertools.product(*axes)]:
             if spent + len(wanted) >= budget:
                 break
             key = tuple(round(v, 10) for v in combination)
             if key in seen or any(key == k for k, _ in wanted):
                 continue
             wanted.append((key, dict(zip(names, combination, strict=True))))
+        wanted.sort(key=lambda one: one[0])
 
         results = (
             evaluate_all([v for _, v in wanted])
@@ -321,12 +341,16 @@ def search(
     # laid on a sitting failing beside a search that said they passed. A renderer serves
     # this from its cache, and it is not charged to the budget.
     edges = at_bound(best["params"], permitted, points)
+    named = ", ".join(f"{one['axis']} ({one['side']})" for one in edges)
     if edges and not best["passed"]:
         # A best on the edge of its box is a box that may be too small (§PW442): three
         # of Cottony's searches read as unreachable with the answer just outside one.
-        named = ", ".join(f"{one['axis']} ({one['side']})" for one in edges)
         stopped += f"; the best sits on the edge of {named}, so widen it there " \
                    "before reading a failure as unreachable"
+    elif edges:
+        # A pass on the edge is the range's choice as much as the look's (§PW461).
+        stopped += f"; it passes on the edge of {named}, where the range rather than " \
+                   "the look may have chosen it"
     settled = bool(trace) and trace[-1]["params"] != best["params"]
     if settled:
         if evaluate_all is not None:

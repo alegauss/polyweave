@@ -267,6 +267,44 @@ def test_a_search_turns_a_real_rig_number(tmp_path):
 # -- a pass at a time rather than a sample at a time (§PW45) ---------------------------
 
 
+def test_a_pass_inside_every_range_beats_one_on_every_edge():
+    """§PW461: four axes on a budget of 30 is a grid of corners, every one on an edge.
+
+    Cottony's badge passed at key 40, ambient 0.5, fill 0 and exposure +0.5, with a
+    third of the headroom the props' rig inside every range had.
+    """
+    axes = {"key": (5.0, 40.0), "ambient": (0.5, 1.5), "fill": (0.0, 20.0),
+            "exposure": (-1.0, 0.5)}
+    inside = {"key": 22.5, "ambient": 1.0, "fill": 10.0, "exposure": -0.3}
+
+    def evaluate(values):
+        # Everything passes; the room is widest at the props' rig and thins out
+        # towards every edge.
+        far = max(abs(values[k] - inside[k]) / (high - low)
+                  for k, (low, high) in axes.items())
+        return {"passed": True, "score": 1.0, "headroom": 0.6 - far, "predicates": []}
+
+    spec = accept.Spec(
+        asset="badge", rung=None, predicates=(),
+        search={k: {"min": low, "max": high} for k, (low, high) in axes.items()},
+    )
+    found = search.search(spec, evaluate, budget=30)
+    assert found["passed"]
+    assert found["headroom"] > 0.4, found["best"]
+    assert "at_bound" not in found
+
+
+def test_a_pass_on_an_edge_says_the_range_may_have_chosen_it():
+    def evaluate(values):
+        return {"passed": True, "score": 1.0, "headroom": values["light"],
+                "predicates": []}
+
+    found = search.search(a_spec(), evaluate, budget=12)
+    assert found["passed"]
+    assert found["at_bound"][0]["side"] == "max"
+    assert "where the range rather than the look may have chosen it" in found["stopped"]
+
+
 def batched(target, *, name="light", width=4.0):
     """The same objective, handed a whole pass and answering with a list."""
     one = peaking_at(target, name=name, width=width)
@@ -284,9 +322,12 @@ def batched(target, *, name="light", width=4.0):
 def test_a_whole_pass_is_handed_over_at_once():
     """Four samples were meant to be four handles, not four waits."""
     every = batched(2.7)
-    search.search(a_spec(), evaluate_all=every, budget=24, points=3, passes=3)
+    found = search.search(a_spec(), evaluate_all=every, budget=24, points=3, passes=3)
     assert every.passes, "it was called"
-    assert all(len(p) > 1 for p in every.passes), "with a pass, not a sample"
+    # The answer evaluated again on its own, where the last sample was not it (§PW452),
+    # is a settling and not a pass.
+    passes = every.passes[:-1] if found["settled"] else every.passes
+    assert all(len(p) > 1 for p in passes), "with a pass, not a sample"
     assert sum(len(p) for p in every.passes) == len(every.calls)
 
 

@@ -471,6 +471,14 @@ rather than measuring a neighbourhood from the best value, because a best value 
 centre of its range is the common case and its neighbourhood would be the range it started
 as.
 
+**Every pass tries its window's middle** (§PW461). A budget spread over several axes can
+afford two points an axis, and a grid of two is only the corners, every one on an edge:
+Cottony's badge passed at a corner of four ranges with a third of the headroom a rig
+inside all of them had, and the search then narrowed around that corner. So each pass
+evaluates the centre of its window first, snapped to the step, at one render of the
+budget, and a pass still wins on headroom. An answer that passes on an axis's edge says
+so in `stopped`, since the range may have chosen it rather than the look.
+
 **A search that has its answer stops paying.** Once the spec passes with nothing left to
 gain, the renders after it buy nothing, and the answer says which of those things ended it.
 
