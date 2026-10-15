@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 12 },
+  { block: "H", title: "Proof on a real game", open: 11 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 1 },
@@ -125,13 +125,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "a review server that sees polyweave changed refuses the answer, and only the agent that started it can restart it",
     why: "The owner answers on a page that tells them to restart a server they never started, and their verdict waits.",
-    deps: [],
-  },
-  {
-    id: "PW81",
-    block: "H",
-    symptom: "the two friends, their lean frames and the mascot take eleven constants apiece and nothing declares one",
-    why: "These move last by design, once the families that rehearse them have moved, and the look of the most-seen sprites is a person's call.",
     deps: [],
   },
   {

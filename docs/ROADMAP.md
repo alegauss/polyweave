@@ -27,7 +27,6 @@
 - 📋 **PW460** (deps: —) **the review page lets a person accept a family whose spec fails, and the bound stays, so the bake refuses it** — The accept and the spec disagree, and the agent decides by hand what the person meant by moving a bound. → §PW460
 - 📋 **PW461** (deps: —) **a family search hands back a passing rig on every range's edge while one inside them has three times the headroom** — The answer is the harshest light that clears the bars, and the agent pins a better rig by hand. → §PW461
 - 📋 **PW463** (deps: —) **a review server that sees polyweave changed refuses the answer, and only the agent that started it can restart it** — The owner answers on a page that tells them to restart a server they never started, and their verdict waits. → §PW463
-- 📋 **PW81** (deps: PW80 ✅) **the two friends, their lean frames and the mascot take eleven constants apiece and nothing declares one** — These move last by design, once the families that rehearse them have moved, and the look of the most-seen sprites is a person's call. → §PW81
 
 ## Block I — Voxel models from a declaration
 
@@ -89,15 +88,6 @@
   twelve are done: the four captures and cascade.gd go through engine and capture, and a
   mismatch fails the run. Left are the seven under tools/perf/ that have no driver, and
   run_tests.py, which is a third copy of the lookup and is PW70.
-
-## Done when — PW81
-
-- **The five earlier families have baked through the plugin first** PW76 to PW80 are
-  shipped whole, each with a person's verdict on its after side, so this family starts
-  from a rig and a search that have held elsewhere.
-- **The five bake through the plugin or stay hand-tuned by decision** Either
-  bake_model.py no longer renders the friends and the mascot and a person judged them,
-  or a person decided they stay, and polyweave.loop.json says which.
 
 ## Done when — Block N
 

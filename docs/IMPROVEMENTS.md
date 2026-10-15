@@ -131,29 +131,6 @@ of this block names, and the gate may report a fraction below one for as long as
 what is left and why. Two of those are already answered in `docs/specs/adoption.md`: the
 fetch ledger replays, and the motion Cottony has is two frames and no clip.
 
-### §PW81 The five that are looked at, and go last
-
-The friends and the mascot carry more hand-found numbers than the other seventeen
-sprites together, and they are also the ones a player looks at. Both facts point the
-same way: last.
-
-Nothing here is only an exposure. The mesh is dressed in cloth drawn in Python and
-projected from the camera, because the service's own texture did not read as cotton. The
-face is composited on afterwards, because a sculpted face comes back as dents that shade
-and never read as eyes. The mascot needs its sculpted face taken back out first at 0.9,
-where 1.0 flattens the cheek's own light; it arrives in 34,391 pieces, so a dust
-threshold of 0.01 keeps the head and the lower body while dropping the tongue inside its
-open mouth. Its face centre was solved rather than chosen: measured at 0.444 of the
-height, then moved up by 0.09 so the mesh's cavity becomes the inside of the mouth we
-draw.
-
-The lean frames are the same mesh squashed to 0.93 and re-rendered rather than scaled,
-so the light stays where the light is while the body moves under it.
-
-Every earlier family in this list is a rehearsal for this one. If the search cannot hold
-here, the honest outcome is that these five stay hand-tuned and the rig shrinks around
-them rather than disappearing.
-
 ### §PW82 The rig has to actually go
 
 This is the task PW53's objection was about. Setting it aside said that one asset moving

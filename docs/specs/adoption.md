@@ -292,8 +292,14 @@ at a third of the colour error, and it is the one given (PW461). The boosters fo
 drawings they were fetched from, which leaned the hammer the 22 degrees `bake_model` had
 rolled it by hand, and the ball built by its own code, all at the props' rig. The owner saw
 the shipped wand star ringed by the service's dashes, which `bake_model`'s scrub had left;
-polyweave's scrub was rebuilt to take them (fetching.md). What remains is each later
-family's port, each on a person's look, down to PW82.
+polyweave's scrub was rebuilt to take them (fetching.md). The friends and the mascot went
+last (PW81, Cottony 22e78f6), as planned: their mesh work, the dust, the squash of each
+lean frame and the cloth projected from the front, stays Cottony's own in
+`export_friends.py`, run before the port, and the face is a pass over the render
+(`passes.py:face`), as `wet` and `ground` are. The family's search ran out flat, its
+best at the least key; a key-heavy grid found the form, the ambient setting the median
+tone and the key the spread, and that rig is the one given. What remains is PW82, taking
+`bake_model.py` out now that nothing renders through it.
 
 ## A family is stated, not scripted
 
