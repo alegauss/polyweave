@@ -97,6 +97,7 @@
     "breaks": "Regras que ela quebra",
     "sheet": "Ver a folha técnica",
     "how": "Como decidir",
+    "restarting": "O polyweave foi atualizado, então o servidor desta página está reiniciando. Sua resposta está guardada e será enviada assim que ele voltar.",
     "chat_code": "Prefere aceitar pela conversa? Diga ao agente este código: {code}",
     "lanes_code": "Para aceitar um destes pela conversa, diga ao agente este código: {code}",
     "sitting_count": "{total} itens, {done} revisados",

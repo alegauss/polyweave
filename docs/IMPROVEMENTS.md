@@ -101,31 +101,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW463 A stale server restarts itself
-
-Met on Cottony's boosters sitting (PW80), 2026-10-15. The review server was started at
-the marks' sitting; the agent then changed polyweave's scrub and render cache key and
-laid out the boosters' sitting on the same server. The owner pressed Accept and the page
-answered `review.stale-server: polyweave changed after this review server started, so it
-would judge with older code than the specs it reads`, with "stop the server and start it
-again". A refresh of the page gave the same, since the server is what is stale. The
-owner cannot restart a server the agent started in its own shell, so the answer waited
-on the agent.
-
-PW294 made the server notice; it still hands the person a remedy only the agent can
-carry out. `review.staleness` already compares the package's newest `.py` against the
-start time.
-
-What polyweave should do: a stale server restarts itself instead of refusing. On seeing
-the package newer than its start, it answers the request with a retry status, starts a
-fresh `polyweave review` on the same root and port once its own socket is closed, and
-the page retries the answer it was sending, telling the person it is reloading. Evidence
-it landed: a test that edits a module's mtime under a running server, posts an answer,
-and finds it recorded by a server started after the edit, with no refusal shown.
-
-Also (PW59): a config table newer than the server's code crashed every read instead of
-showing staleness. Check staleness first.
-
 ### §PW465 The page's verdict is the one the ledger never sees
 
 `review.answer` calls `verdict.judge` with neither `run` nor `asset`, so the answer

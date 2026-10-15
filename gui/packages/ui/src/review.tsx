@@ -12,9 +12,41 @@ import { say, type Desk, type Words } from '@pw/core'
 
 import { Decide } from './Decide'
 
+/** Told while the server hands over to a fresh one on new code (§PW463). */
+let restarting: (on: boolean) => void = () => {}
+
+const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+/** A fetch, sent again while the server says it is starting again on new code: the
+ * person's answer then lands on the fresh server instead of being refused (§PW463). */
+async function reached(path: string, init?: RequestInit): Promise<Response> {
+  let handed = false
+  for (let tries = 0; ; tries += 1) {
+    let answer: Response | null = null
+    try {
+      answer = await fetch(path, { cache: 'no-store', ...init })
+    } catch (lost) {
+      // Between the old server closing and the new one listening nothing answers, and
+      // that is waited out only once the old one said it was handing over.
+      if (!handed || tries >= 30) throw lost
+    }
+    if (answer?.status === 503) {
+      const said = (await answer.clone().json().catch(() => ({}))) as { code?: string }
+      handed = said.code === 'review.restarting'
+    }
+    if (answer && !(answer.status === 503 && handed)) {
+      restarting(false)
+      return answer
+    }
+    if (tries >= 30) return answer!
+    restarting(true)
+    await pause(1000)
+  }
+}
+
 /** A route's JSON, or its refusal thrown as the code, the message and the remedy. */
 async function asked<T>(path: string, init?: RequestInit): Promise<T> {
-  const answer = await fetch(path, { cache: 'no-store', ...init })
+  const answer = await reached(path, init)
   const body = (await answer.json()) as T & { code?: string; message?: string; remedy?: string }
   if (!answer.ok) {
     throw new Error(`${body.code ?? answer.status}: ${body.message ?? ''}${body.remedy ? `\n${body.remedy}` : ''}`)
@@ -57,6 +89,10 @@ const desk: Desk = {
 function Page() {
   const [words, setWords] = useState<Words | null>(null)
   const [project, setProject] = useState('')
+  const [reloading, setReloading] = useState(false)
+  useEffect(() => {
+    restarting = setReloading
+  }, [])
   useEffect(() => {
     void desk.words().then((found) => {
       setWords(found)
@@ -85,6 +121,9 @@ function Page() {
       <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold">{words ? say(words, 'heading') : ''}</h1>
         {project && <p className="text-sm text-muted-foreground">{project}</p>}
+        {reloading && words && (
+          <p data-restarting className="text-sm text-amber-700">{say(words, 'restarting')}</p>
+        )}
       </header>
       <Decide desk={desk} member={member} sitting={sitting} onSitting={opened} />
     </main>

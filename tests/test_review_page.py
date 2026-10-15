@@ -696,3 +696,84 @@ def test_a_family_never_gated_starts_from_its_candidates(page):
     status, said = post(base + "/api/judge", {
         "canon": "brand", "admit": "studies/other.png", "why": "x"})
     assert status == 400 and said["code"] == "style.not-a-candidate"
+
+
+# -- a stale server hands over rather than refusing (§PW463) -------------------------
+
+
+def _stale(monkeypatch):
+    monkeypatch.setattr(
+        review, "staleness", lambda code, started: {"code": "review.stale-server"})
+
+
+def test_a_stale_server_answers_restarting_and_hands_over_once(tmp_path, monkeypatch):
+    (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
+    verdict.sitting({"stars": [member(tmp_path, "star_dim", 200)]}, out="review",
+                    root=tmp_path)
+    handed = []
+    serving = review.server(tmp_path, on_stale=lambda: handed.append(1))
+    threading.Thread(target=serving.serve_forever, daemon=True).start()
+    base = "http://{}:{}".format(*serving.server_address[:2])
+    try:
+        _stale(monkeypatch)
+        for _ in range(2):
+            with pytest.raises(urllib.error.HTTPError) as caught:
+                get(base + "/api/state")
+            assert caught.value.code == 503
+            assert json.loads(caught.value.read())["code"] == "review.restarting"
+        status, said = post(base + "/api/judge", judged())
+        assert (status, said["code"]) == (503, "review.restarting")
+        assert handed == [1]
+        assert not (tmp_path / ".polyweave" / "answers.jsonl").exists()
+    finally:
+        serving.shutdown()
+        serving.server_close()
+
+
+def test_run_starts_a_fresh_server_on_the_same_root_and_port(tmp_path, monkeypatch):
+    import socket
+
+    (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
+    with socket.socket() as probe:
+        probe.bind(("127.0.0.1", 0))
+        port = probe.getsockname()[1]
+    started = []
+
+    class Fresh:
+        def __init__(self, argv):
+            started.append(argv)
+
+        def wait(self):
+            return 0
+
+    ran = threading.Thread(target=review.run, args=(str(tmp_path), port),
+                           kwargs={"spawn": Fresh}, daemon=True)
+    ran.start()
+    base = f"http://127.0.0.1:{port}"
+    for _ in range(50):
+        try:
+            get(base + "/api/state")
+            break
+        except OSError:
+            threading.Event().wait(0.1)
+    _stale(monkeypatch)
+    with pytest.raises(urllib.error.HTTPError):
+        get(base + "/api/state")
+    ran.join(timeout=10)
+    assert not ran.is_alive()
+    argv = started[0]
+    assert argv[1:4] == ["-m", "polyweave", "review"]
+    assert argv[argv.index("--root") + 1] == str(tmp_path)
+    assert argv[argv.index("--port") + 1] == str(port)
+
+
+def test_a_config_newer_than_the_server_says_stale_rather_than_crashing(
+    page, monkeypatch
+):
+    base, where = page
+    (where / "polyweave.toml").write_text("[from_the_future]\nx = 1\n", "utf-8")
+    _stale(monkeypatch)
+    with pytest.raises(urllib.error.HTTPError) as caught:
+        get(base + "/api/state")
+    assert caught.value.code == 409
+    assert json.loads(caught.value.read())["code"] == "review.stale-server"

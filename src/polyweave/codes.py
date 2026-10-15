@@ -1079,6 +1079,12 @@ CODES: dict[str, Code] = {
         "measure added since would be refused by the server's own copy (§PW294)",
         doors=("stop the server and start it again: python -m polyweave review",),
     ),
+    "review.restarting": Code(
+        means="the review server saw polyweave change and is starting again on the new "
+        "code, on the same port (§PW463)",
+        when="polyweave changed while `python -m polyweave review` was serving",
+        doors=("send the same request again in a moment; the page does so itself",),
+    ),
     # -- vfx: an effect declared as data and built for the engine -----------------
     "vfx.no-source": Code(
         means="there is no effects file, or it holds no [effect.<name>] tables",

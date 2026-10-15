@@ -97,6 +97,7 @@
     "breaks": "Rules it breaks",
     "sheet": "See the tool's sheet",
     "how": "How to decide",
+    "restarting": "polyweave was updated, so this page's server is starting again. Your answer is kept and sent as soon as it is back.",
     "chat_code": "Accepting in the conversation instead? Tell the agent this code: {code}",
     "lanes_code": "To accept one of these in the conversation, tell the agent this code: {code}",
     "sitting_count": "{total} items, {done} reviewed",

@@ -572,8 +572,24 @@ def answered(
     return answer(load(root).root, body)
 
 
-def server(root=".", port: int = 0) -> ThreadingHTTPServer:
-    """The page's server for one project, bound and not yet serving."""
+#: What a stale server answers while it hands over to a fresh one (§PW463); the page
+#: waits and sends the same request again.
+RESTARTING = PolyweaveError(
+    "review.restarting",
+    "polyweave changed under this review server, and it is starting again on the new "
+    "code",
+    "send the same request again in a moment; the page does so by itself",
+).as_dict()
+
+
+def server(root=".", port: int = 0, on_stale=None) -> ThreadingHTTPServer:
+    """The page's server for one project, bound and not yet serving.
+
+    `on_stale` is called once the package changes under it, and every request is then
+    answered `review.restarting` rather than refused (§PW463): `run` passes one that
+    starts a fresh server on the same root and port. Without it, a stale server says so
+    and the person is told to restart it.
+    """
     here = load(root).root
     code = CODE
     started = newest(code)
@@ -589,7 +605,19 @@ def server(root=".", port: int = 0) -> ThreadingHTTPServer:
                     issued[key] = person.issue(here, key)
             return dict(issued)
 
+    handing_over = threading.Event()
+
     class Handler(BaseHTTPRequestHandler):
+        def _restarting(self) -> bool:
+            """Answer `review.restarting` and hand over once the code moved (§PW463)."""
+            if on_stale is None or not staleness(code, started):
+                return False
+            if not handing_over.is_set():
+                handing_over.set()
+                on_stale()
+            self._json(RESTARTING, HTTPStatus.SERVICE_UNAVAILABLE)
+            return True
+
         def log_message(self, *_):  # the terminal is the agent's, not a request log
             return
 
@@ -634,11 +662,20 @@ def server(root=".", port: int = 0) -> ThreadingHTTPServer:
                 if speaks in review_text.languages():
                     return self._file(review_text.LOCALES / f"{speaks}.json")
                 return self._json({"code": "not-found"}, HTTPStatus.NOT_FOUND)
+            if asked.path.startswith("/api/") and self._restarting():
+                return None
             if asked.path == "/api/state":
+                # Staleness before the config: a table newer than this code crashed
+                # every read instead of saying so (§PW463).
+                stale = staleness(code, started)
+                try:
+                    shown = state(here)
+                except PolyweaveError:
+                    if stale:
+                        return self._json(stale, HTTPStatus.CONFLICT)
+                    raise
                 # The page shows a banner naming the restart.
-                shown = state(here)
-                return self._json({**shown, "stale": staleness(code, started),
-                                   "codes": codes(shown)})
+                return self._json({**shown, "stale": stale, "codes": codes(shown)})
             if asked.path == "/api/canon":
                 try:
                     return self._json(canon(here)["boards"])
@@ -669,6 +706,8 @@ def server(root=".", port: int = 0) -> ThreadingHTTPServer:
                 or self.headers.get(ASKED) != "1"
             ):
                 return self._json({"code": "refused"}, HTTPStatus.FORBIDDEN)
+            if self._restarting():
+                return None
             stale = staleness(code, started)
             if stale:
                 # Never an answer judged by code older than the specs it reads.
@@ -715,9 +754,25 @@ def waiting_at(root, base: str) -> list[str]:
     return lines
 
 
-def run(root=".", port: int = 0) -> int:
-    """Serve the page until interrupted, having said where it is."""
-    serving = server(root, port)
+def run(root=".", port: int = 0, spawn=None) -> int:
+    """Serve the page until interrupted, having said where it is.
+
+    Once polyweave changes under it, it starts a fresh server on the same root and port
+    and waits on that one (§PW463), so the person's answer lands on current code without
+    anyone restarting a server they never started, and whatever holds this process
+    still holds the page. `spawn` is `subprocess.Popen`, which a test stands in for.
+    """
+    import subprocess
+    import sys
+
+    stale = threading.Event()
+
+    def hand_over():
+        stale.set()
+        # Not from the request's own thread, which shutdown would wait on forever.
+        threading.Thread(target=serving.shutdown, daemon=True).start()
+
+    serving = server(root, port, on_stale=hand_over)
     host, bound = serving.server_address[:2]
     base = f"http://{host}:{bound}"
     print(f"polyweave review: {base}/  (Ctrl+C stops it)", flush=True)
@@ -730,5 +785,17 @@ def run(root=".", port: int = 0) -> int:
     except KeyboardInterrupt:
         pass
     finally:
-        serving.server_close()
-    return 0
+        serving.server_close()  # waits for the answers in flight, then frees the port
+    if not stale.is_set():
+        return 0
+    print("polyweave review: polyweave changed; starting again on the new code",
+          flush=True)
+    fresh = (spawn or subprocess.Popen)(
+        [sys.executable, "-m", "polyweave", "review", "--root", str(root),
+         "--port", str(bound)]
+    )
+    try:
+        return int(fresh.wait() or 0)
+    except KeyboardInterrupt:
+        fresh.terminate()
+        return 0

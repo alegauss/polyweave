@@ -198,6 +198,7 @@
 - ✅ **PW459** **the review page opens a sitting only by a click, so no URL shows the agent or the owner one sitting** — verdict.sitting answers the address the page opens a sitting at, and review prints a link to each one waiting, so a screenshot lands on it (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW460** **the review page lets a person accept a family whose spec fails, and the bound stays, so the bake refuses it** — A failing card offers adjust-the-bound in place of accept, and accept-all skips it, so a yes on the page moves the bound the bake checks (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW461** **a family search hands back a passing rig on every range's edge while one inside them has three times the headroom** — Each pass tries its window's middle first, so a rig inside the ranges wins on headroom, and a pass on an edge says so (design recorded in `docs/specs/acceptance-spec.md`).
+- ✅ **PW463** **a review server that sees polyweave changed refuses the answer, and only the agent that started it can restart it** — A review server on old code starts a fresh one on its port and the page resends, so the answer lands with no restart by hand (design recorded in `docs/specs/acceptance-spec.md`).
 
 ## Block I — Voxel models from a declaration
 

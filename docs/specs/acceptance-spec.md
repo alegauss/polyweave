@@ -177,7 +177,19 @@ spec fails offers no accept where the kind has `number`: accept means the spec a
 and an accept there left the failed bound standing, so the bake refused what the person
 had just accepted. Their yes on that card is `number`, which moves the bound as theirs,
 and accepting every card still waiting skips the failing ones (§PW460). A tool call may
-still accept a failing member, which `loop.bounds` reads as a bound too tight. A sitting shows its summary and how to decide, then one card per family with the picture (or the films, looping side by side), the
+still accept a failing member, which `loop.bounds` reads as a bound too tight.
+
+**A server on old code starts again by itself** (§PW463). The server compares the
+package's newest `.py` with its own start, and used to refuse every answer once they
+differed (`review.stale-server`), telling the person to restart a server an agent had
+started in its own shell. Served by `python -m polyweave review`, it now answers
+`review.restarting` (503) instead, closes its socket once the answers in flight are
+written, and starts a fresh server on the same root and port, which it waits on, so
+whatever held the first still holds the page. The page sends the same request again
+every second until the fresh server answers, saying meanwhile that it is reloading, so
+the person's answer lands on current code. Staleness is checked before the project's
+config is read: a table newer than the old code used to crash every read. A server built
+in process with no handover, as a test builds one, still refuses with the remedy. A sitting shows its summary and how to decide, then one card per family with the picture (or the films, looping side by side), the
 choices as buttons that say what each leads to, and progress across the sitting. Marks
 and the technical details fold under each card, older sittings and the gates, turntables,
 canons and asset table under one fold. A redo asks for a sentence; an accept may add none, and the page then records the
