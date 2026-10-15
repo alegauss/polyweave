@@ -3,6 +3,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  acceptable,
   choices,
   drawn,
   figures,
@@ -60,6 +61,16 @@ describe('the decision screen', () => {
     ])
     one.families['icon']!.said = [{ name: 'icon', passed: false, failed: ['edge drifted'] }]
     expect(choices(WORDS, one, one.families['icon']).map(([word]) => word)).toContain('number')
+  })
+
+  it('offers no accept on a card whose spec fails, and leaves it out of accepting the rest', () => {
+    // §PW460: an accept there left the bound standing, and the bake refused the family.
+    const one = sitting('a', ['icon', 'mark'])
+    one.families['icon']!.said = [{ name: 'icon', passed: false, failed: ['reads-cream'] }]
+    expect(choices(WORDS, one, one.families['icon']).map(([word]) => word)).toEqual(['look', 'number'])
+    expect(choices(WORDS, one, one.families['mark']).map(([word]) => word)).toEqual(['accept', 'look'])
+    expect(acceptable(one, 'icon')).toBe(false)
+    expect(acceptable(one, 'mark')).toBe(true)
   })
 
   it('opens the newest sittings with something to answer, folds the finished, and counts', () => {

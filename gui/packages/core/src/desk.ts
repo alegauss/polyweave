@@ -287,11 +287,24 @@ export function choiceOf(words: Words, word: string, raw: Choice | string, kind 
 /** Whether any member of a family failed what it was held to. */
 const failing = (laid: Laid) => (laid.said ?? []).some((one) => (one.failed ?? []).length > 0)
 
-/** The choices a card offers: "number" only where something failed. */
+/** Whether a family's card may be accepted as it stands: nothing failed, or the kind has
+ * no "number" to say the bound is wrong with (§PW460). */
+export function acceptable(sitting: Sitting, family: string): boolean {
+  const laid = sitting.families[family]
+  return !laid || !failing(laid) || !('number' in (sitting.choices ?? {}))
+}
+
+/** The choices a card offers: "number" only where something failed, and "accept" only
+ * where nothing did (§PW460). Accept means the spec agrees, so on a failing card the
+ * person's yes is "number", which moves the failed bound to what was measured, as theirs;
+ * an accept there left the bound standing and the bake refusing what they accepted. The
+ * sitting's own "how to decide" lists every choice its cards offer. */
 export function choices(words: Words, sitting: Sitting, laid?: Laid): [string, Choice][] {
   const failed = laid ? failing(laid) : Object.values(sitting.families).some(failing)
+  const numbered = 'number' in (sitting.choices ?? {})
   return Object.entries(sitting.choices ?? {})
     .filter(([word]) => word !== 'number' || failed)
+    .filter(([word]) => !(laid && failed && numbered && word === 'accept'))
     .map(([word, raw]) => [word, choiceOf(words, word, raw, sitting.kind)])
 }
 

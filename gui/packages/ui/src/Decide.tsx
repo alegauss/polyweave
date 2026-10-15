@@ -9,6 +9,7 @@ import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
 
 import {
   answered,
+  acceptable,
   choices,
   drawn,
   holding,
@@ -658,7 +659,8 @@ function AcceptRest({
 }) {
   const [running, setRunning] = useState<{ done: number; n: number } | null>(null)
   const [message, setMessage] = useState<string | null>(null)
-  const rest = unanswered(sitting, state.answers)
+  // A failing card is answered on its own, with "number" (§PW460).
+  const rest = unanswered(sitting, state.answers).filter((family) => acceptable(sitting, family))
   const offers = choices(words, sitting).some(([word]) => word === 'accept')
   if (!offers || (rest.length === 0 && !running)) return null
   const go = async () => {

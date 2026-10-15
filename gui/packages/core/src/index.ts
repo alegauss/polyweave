@@ -3,6 +3,7 @@ export type { Bridge, Opened, Shown, Smoke } from './bridge'
 export { Broken, Client, Refused } from './client'
 export type { Refusal, Server, Transport } from './client'
 export {
+  acceptable,
   answered,
   choiceOf,
   choices,

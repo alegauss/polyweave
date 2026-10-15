@@ -172,7 +172,12 @@ to it and the browser's back returns to the index; `?member=` opens the sitting 
 judges a file. `verdict.sitting` answers that address as `page`, with the `manifest`,
 and `python -m polyweave review` prints a full link for every sitting with a family
 still unanswered, so the person is sent straight to it and the screenshot taken before
-handing over shows the sitting rather than the index (§PW459). A sitting shows its summary and how to decide, then one card per family with the picture (or the films, looping side by side), the
+handing over shows the sitting rather than the index (§PW459). A card where a member's
+spec fails offers no accept where the kind has `number`: accept means the spec agrees,
+and an accept there left the failed bound standing, so the bake refused what the person
+had just accepted. Their yes on that card is `number`, which moves the bound as theirs,
+and accepting every card still waiting skips the failing ones (§PW460). A tool call may
+still accept a failing member, which `loop.bounds` reads as a bound too tight. A sitting shows its summary and how to decide, then one card per family with the picture (or the films, looping side by side), the
 choices as buttons that say what each leads to, and progress across the sitting. Marks
 and the technical details fold under each card, older sittings and the gates, turntables,
 canons and asset table under one fold. A redo asks for a sentence; an accept may add none, and the page then records the

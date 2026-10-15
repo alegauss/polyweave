@@ -101,29 +101,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW460 An accept the spec contradicts
-
-Met porting Cottony's trays (PW78). The sitting `.polyweave/review/trays` held one
-family, `bandejas`, whose booster tray failed one predicate: `reads-cream`,
-`pixel_delta_e_p50` 4.708 against `max = 3.0`. The `about` asked for "Ajustar o limite"
-if the cream looked right. The owner chose "Aceitar" on the page. `verdict.answers` then
-says `choice: accept`, `person_accepted: true`, `tool_passed: false`, `rewritten: []`,
-and the spec still holds 3.0, so `port.run --family tools/art/booster_tray.family.toml`
-answered "not every member passed, so nothing was baked" for an asset the owner had just
-accepted.
-
-The workaround: the bound moved to 4.75 by hand in
-`docs/design/accept/booster_tray.accept.toml`, with a comment citing the acceptance and
-its date (Cottony 6d6b76e). That is the agent deciding what an accept on a failing spec
-means.
-
-What polyweave should do: an accept on a family where a member's spec fails cannot leave
-the two disagreeing. Either the page does not offer "Aceitar" there, offering "Ajustar o
-limite" in its place with the failing predicate named, or an accept carries the failing
-bounds to the measured values as `number` does, recorded as the person's decision. The
-`look` kind's own words say accept means "the spec agrees", so today the page lets a
-person say something the spec contradicts.
-
 ### §PW461 A pass is not the best pass
 
 Met porting Cottony's brand marks (PW79). `port.run --family
