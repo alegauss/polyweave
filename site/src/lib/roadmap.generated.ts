@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 10 },
+  { block: "H", title: "Proof on a real game", open: 11 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 1 },
@@ -55,13 +55,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "nothing says how much of Cottony still does its own version of what the plugin does",
     why: "Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion.",
-    deps: ["PW56"],
-  },
-  {
-    id: "PW56",
-    block: "H",
-    symptom: "twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent",
-    why: "The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question.",
     deps: [],
   },
   {
@@ -118,6 +111,20 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "an accept on the review page never reaches the loop ledger, so loop.pending reads an accepted family as still waiting",
     why: "Four of Cottony's six ported families have no after side and no verdict in the ledger, so compare refuses them and the report omits them.",
+    deps: [],
+  },
+  {
+    id: "PW466",
+    block: "H",
+    symptom: "Cottony's tests, boot check and export check still start Godot through subprocess, each with its own lookup",
+    why: "They never read [paths] godot and bound each run their own way, which is the procedure PW56 took out of the twelve GDScript runners.",
+    deps: [],
+  },
+  {
+    id: "PW467",
+    block: "H",
+    symptom: "a game's engine scripts and the line each prints are a table in a Python driver the game writes itself",
+    why: "Cottony keeps three drivers that only map scripts to patterns around engine.run and capture.run, and a second game would write the same three.",
     deps: [],
   },
   {

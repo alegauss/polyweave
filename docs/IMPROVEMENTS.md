@@ -31,34 +31,6 @@ one does, and the pieces that are better left alone stay where they are. What th
 delivers is the adoption plus a written list of everything that had to be configured,
 which is the plugin's real interface, discovered rather than designed.
 
-### §PW56 Twelve runners, twelve ways to start Godot, and no check on what applied
-
-`tools/capture_screens.py` drives four scripts under `tools/capture/`;
-`tools/measure_frames.py` drives one. The other seven under `tools/perf/` have none —
-started by hand, from a command line written in a docstring. Both drivers open a real
-window, because `--headless` draws nothing; both distrust Godot's exit code; both bound
-the run by a wall clock; and both fail a run whose line never came. That procedure is
-written twice, and a third time in `run_tests.py`.
-
-Block E is that, generalised and then taken further. `offscreen.py` probes which
-offscreen route actually works on this machine instead of assuming one; `engine.py` and
-`capture.py` run a script and compare the settings that were asked for against the ones
-that applied; `units.py` checks a declared `pixels_per_unit` against the engine's own
-number, which here is `const CELL := 112` in `scripts/board.gd`.
-
-That comparison is the part Cottony has no equivalent of at all. `docs/specs/engine.md`
-is about the settings a picture was taken under, and today a capture that ran at the
-wrong resolution, the wrong locale or the wrong renderer prints its line, writes its
-file and passes. The site publishes it.
-
-**Replacing Blender, Godot or the generative service** is a non-goal, and this line
-stays inside it: Godot still runs the scene. What changes is who starts it, and what is
-checked once it has.
-
-Godot 4.7.1 is installed and the probe answers the machine: `window-offscreen` and
-`window-minimised` work, `virtual-display` cannot on Windows, and `headless` drew
-nothing. The route exists, so what is left is Cottony's tree.
-
 ### §PW57 One floor of five is a target now, and one more is a floor
 
 A threshold inside a gate can only answer after the render is spent. The same number in
@@ -284,6 +256,52 @@ and closes a run the way a verdict in a conversation does, with `made: false` as
 run for its family carries a verdict naming it, since `judge` already prefixes each
 verdict's `why` with the member's name. Open choice: whether the family-to-member
 mapping lives in the run (a `members` list) or is read back off the family TOML.
+
+### §PW466 Three Python scripts still start Godot themselves
+
+PW56 moved Cottony's twelve GDScript runners onto polyweave: four captures through
+`tools/capture_screens.py`, the cascade through `tools/measure_frames.py`, and seven
+perf scripts through `tools/run_perf.py`. Three Python scripts still start Godot through
+`subprocess`, each finding it through `GODOT` then PATH and never `[paths] godot`, each
+with its own timeout:
+
+- `tools/run_tests.py` runs every GDScript test with `--quit-after` and a wall clock,
+  and fails a run whose summary never came. polyweave's `game.test` is that procedure.
+- `tools/check_export.py` exports a preset and reads the pack. `game.export_smoke`
+  builds each preset and launches it, and `game.release_check` already reads the pack
+  for the driver from inside this script.
+- `tools/check_boot.py` boots the main scene and fails on a dirty shutdown. Nothing in
+  polyweave boots a scene with no script and reads the shutdown, so this one is either
+  `engine.run` with a short script or a gap to file against polyweave.
+
+Both workflows run these, so the move has to keep CI's verdicts: run each before and
+after against the same tree and compare what failed. CI also pins polyweave (Cottony
+RK153), so the pin has to carry the operations first.
+
+### §PW467 A run is declared, not scripted
+
+Met moving Cottony's perf scripts (PW56). Cottony now keeps three Python drivers whose
+only project knowledge is a table: `tools/capture_screens.py` (each capture's locale and
+the `captured:` pattern), `tools/measure_frames.py` (one script, one pattern, a ratio)
+and `tools/run_perf.py` (seven scripts, the line each prints when it worked, which
+`(?P<wrote>)` group is a file, and which one is a screen taken in the declared
+environment). Everything else in them is calling `engine.run` or `capture.run` and
+printing OK or FAIL. A second game will write the same three files.
+
+What polyweave should do: let `polyweave.toml` declare a run, with a script, an `expect`
+pattern, `produces`, whether it is a `capture` (taken in `[capture] declared`) and any
+settings it overrides, such as a locale:
+
+    [run.board3d_beside]
+    script  = "tools/perf/board3d_beside.gd"
+    expect  = 'captured: res://(?P<wrote>\S+) (?P<width>\d+) x (?P<height>\d+)'
+    capture = true
+
+Then one operation runs one declared run, some of them or all, and answers each with the
+verdict `engine.run` already gives. A run not declared is refused with the names that
+are. `measure_frames.py`'s ratio stays the project's, because that is a verdict on a
+number and not on a run, unless `engine.perf`'s budgets already cover it, which is worth
+checking first.
 
 ## Block I — Voxel models from a declaration
 

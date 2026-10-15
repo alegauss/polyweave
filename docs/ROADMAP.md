@@ -16,8 +16,7 @@
 
 ## Block H — Proof on a real game
 
-- 📋 **PW59** (deps: PW53 ✅, PW54 ✅, PW55 ✅, PW56 ⏳, PW57 ✅, PW58 ✅) **nothing says how much of Cottony still does its own version of what the plugin does** — Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion. → §PW59
-- ⏳ **PW56** (deps: PW57 ✅) **twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent** — The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question. → §PW56
+- 📋 **PW59** (deps: PW53 ✅, PW54 ✅, PW55 ✅, PW56 ✅, PW57 ✅, PW58 ✅) **nothing says how much of Cottony still does its own version of what the plugin does** — Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion. → §PW59
 - 🛠 **PW372** (deps: Spinhold RK215) **a camera move cannot be declared as a clip or played by the game, so a cutscene's shots are numbers in the project** — No shot is yet captured onto a sitting for a person to accept, and Starship's opening still reads its own JSON. → §PW372
 - 🛠 **PW36** (deps: PW5 ✅, PW82 ⏸) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82. → §PW36
 - 📋 **PW458** (deps: —) **port.run builds a member's declaration beside the declaration, so in a game's tree the engine imports the mesh** — A port writes into the project's import tree unasked, and the agent ignores and deletes what the engine pulled in by hand. → §PW458
@@ -26,6 +25,8 @@
 - 📋 **PW461** (deps: —) **a family search hands back a passing rig on every range's edge while one inside them has three times the headroom** — The answer is the harshest light that clears the bars, and the agent pins a better rig by hand. → §PW461
 - 📋 **PW463** (deps: —) **a review server that sees polyweave changed refuses the answer, and only the agent that started it can restart it** — The owner answers on a page that tells them to restart a server they never started, and their verdict waits. → §PW463
 - 📋 **PW465** (deps: —) **an accept on the review page never reaches the loop ledger, so loop.pending reads an accepted family as still waiting** — Four of Cottony's six ported families have no after side and no verdict in the ledger, so compare refuses them and the report omits them. → §PW465
+- 📋 **PW466** (deps: —) **Cottony's tests, boot check and export check still start Godot through subprocess, each with its own lookup** — They never read [paths] godot and bound each run their own way, which is the procedure PW56 took out of the twelve GDScript runners. → §PW466
+- 📋 **PW467** (deps: —) **a game's engine scripts and the line each prints are a table in a Python driver the game writes itself** — Cottony keeps three drivers that only map scripts to patterns around engine.run and capture.run, and a second game would write the same three. → §PW467
 
 ## Block I — Voxel models from a declaration
 
@@ -81,13 +82,6 @@
   passes, against a before-side baseline recorded before that piece moved. A piece left
   behind is named, with what it needed.
 
-## Done when — PW56
-
-- **Every script that starts Godot here does it one way, and says what applied** Five of
-  twelve are done: the four captures and cascade.gd go through engine and capture, and a
-  mismatch fails the run. Left are the seven under tools/perf/ that have no driver, and
-  run_tests.py, which is a third copy of the lookup and is PW70.
-
 ## Done when — Block N
 
 - **Two games keep two canons with no style compiled in** Cottony and Spinhole each
@@ -133,6 +127,13 @@
   ink on the faced kinds, no pale ring of marks round a rim, and the kinds' silhouettes
   kept apart is either a predicate in a Cottony acceptance spec over the committed piece
   sheet, or recorded as a test a person chose to keep.
+
+## Done when — PW466
+
+- **Every script that starts Godot in Cottony does it one way, and says what applied**
+  No tool under Cottony's tools/ calls subprocess on Godot: tests, boot and export each
+  go through a polyweave operation, and CI's verdicts are the same before and after on
+  one tree.
 
 ## Non-goals
 
