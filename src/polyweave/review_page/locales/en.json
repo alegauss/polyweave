@@ -97,6 +97,8 @@
     "breaks": "Rules it breaks",
     "sheet": "See the tool's sheet",
     "how": "How to decide",
+    "chat_code": "Accepting in the conversation instead? Tell the agent this code: {code}",
+    "lanes_code": "To accept one of these in the conversation, tell the agent this code: {code}",
     "sitting_count": "{total} items, {done} reviewed",
     "sitting_count_one": "{total} item, {done} reviewed",
     "index_heading": "Sittings waiting for you",

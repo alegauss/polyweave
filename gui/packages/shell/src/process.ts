@@ -21,8 +21,11 @@ export function served(engine: Engine, project: string): Served {
     cwd: project,
     stdio: ['pipe', 'pipe', 'pipe'],
     windowsHide: true,
-    // Python's own output encoding, so a path with an accent survives the pipe.
-    env: { ...process.env, PYTHONIOENCODING: 'utf-8', PYTHONUTF8: '1' },
+    // Python's own output encoding, so a path with an accent survives the pipe. And this
+    // server is the person's own surface (§PW443): the window's screen is what a person
+    // answers on, so an accept it sends needs no code. Set here and never on
+    // process.env, so the agents the window runs, which inherit that, never carry it.
+    env: { ...process.env, PYTHONIOENCODING: 'utf-8', PYTHONUTF8: '1', POLYWEAVE_PERSON: 'window' },
   })
   const listeners: ((line: string) => void)[] = []
   let partial = ''

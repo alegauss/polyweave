@@ -141,6 +141,9 @@ export interface State {
   pending: { assets: Waiting[] }
   sittings: Sitting[]
   answers: Recorded[]
+  /** The codes a person says to accept from a conversation, by sitting manifest and
+   * `page` for the gate and canon lanes (§PW443). Only the page's server sends them. */
+  codes?: Record<string, string>
   gates?: Gate[]
   turntables?: Turntable[]
   /** The page's server, older than the package it runs, cannot record an answer (§PW294). */

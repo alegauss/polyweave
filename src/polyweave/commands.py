@@ -313,6 +313,8 @@ def answer_for(stated: argparse.Namespace) -> Any:
         if hasattr(stated, name)
     }
     args = D.validate(stated.command, given)
+    if registered.guard is not None:
+        registered.guard(args)
     if getattr(stated, "job", False):
         from .jobs import JobStore
 

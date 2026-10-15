@@ -218,6 +218,22 @@ A family already answered in `answers.jsonl` is skipped and named, never judged 
 refuses an empty sentence where the page keeps a silent accept as one, since a verdict
 carried from chat has the person's words, kept as given.
 
+**Only a person accepts a look** (§PW443). Called as a tool, through the MCP server or
+the command line, `verdict.judge`, `verdict.answer`, `verdict.promote` and
+`review.answer` refuse an `accept` or a `number` that does not carry `code`, the short
+code the review page shows (`verdict.not-the-person`). The code for a sitting is shown
+under its "how to decide", and the one above the gate and canon lanes covers those.
+`verdict.judge` takes the code of any sitting that lays out every member it names. The
+page's server issues a code when it first shows a sitting, holds it in that process and
+writes only its SHA-256 to `[paths] work/person-codes.json`, so no file and no
+operation's answer, `review.state` included, carries one. A restarted server issues new
+codes. The page's own write goes straight to the answer and needs none, and so does a
+server the desktop window started for the person, which it marks with
+`POLYWEAVE_PERSON=window` in that process's environment alone. A rejection (`look`)
+needs no code. The check is a guard on the operation, run before the call by both
+dispatchers, so it holds for any MCP client without a hook, and a Python caller in
+process is the plugin's own code and is not asked.
+
 **A sitting laid out in the wrong folder moves with its answers** (§PW436).
 `verdict.move(sitting, to)` moves the folder under the project, rewrites every path inside
 its `sitting.json` that pointed into the old folder, and replaces its row in

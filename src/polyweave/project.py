@@ -377,7 +377,8 @@ def agent_section(config) -> str:
         "bounds and where each came from, and the last verdict.",
         f"- **A look is a person's to accept.** Show it with {_op('verdict.sitting')} "
         f"and `python -m polyweave review`, and carry their words with "
-        f"{_op('verdict.judge')}. Never loosen a bound a person set.",
+        f"{_op('verdict.judge')}; an accept needs the code the page shows, which only "
+        "the person can give you. Never loosen a bound a person set.",
         f"- **Nothing spends money on your judgement.** {_op('picture.buy')} and "
         f"{_op('mesh.buy')} draw on {budgets} in `polyweave.toml`, which a person "
         f"sets; check {_op('purchase.remaining')} first and never raise one yourself.",

@@ -45,8 +45,6 @@
 
 ## Block O — A person sees and answers
 
-- 📋 **PW443** (deps: —) **verdict.judge takes any sentence its caller passes as the person's, so an agent can write the verdict on its own work** — Only the skill keeps an agent off the door; an MCP client without it can accept its own look. → §PW443
-
 ## Block P — Music and sound a game can ship
 
 - 📋 **PW464** (deps: —) **sound.sitting takes no about, so a sound sitting cannot say what changed or what to listen for** — The owner judges sounds on a page that cannot say the timbre moved, and the agent edits the manifest by hand. → §PW464

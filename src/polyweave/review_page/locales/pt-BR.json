@@ -97,6 +97,8 @@
     "breaks": "Regras que ela quebra",
     "sheet": "Ver a folha técnica",
     "how": "Como decidir",
+    "chat_code": "Prefere aceitar pela conversa? Diga ao agente este código: {code}",
+    "lanes_code": "Para aceitar um destes pela conversa, diga ao agente este código: {code}",
     "sitting_count": "{total} itens, {done} revisados",
     "sitting_count_one": "{total} item, {done} revisado",
     "index_heading": "Sessões esperando por você",

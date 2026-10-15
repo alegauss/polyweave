@@ -134,7 +134,8 @@ TOOL_BUDGET = 4500
 #: 123,900 at 123,864 for render.bake's on_grid, a mark at its own scale (§PW79).
 #: 124,600 at 124,509 for sound.loop, a recorded track cut into a loop (§PW192).
 #: 124,900 at 124,819 for project.adoption, what a project still does itself (§PW59).
-LIST_BUDGET = 124900
+#: 125,300 at 125,288 for the code an accept needs on three verdict tools (§PW443).
+LIST_BUDGET = 125300
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {
@@ -280,6 +281,8 @@ def call(name: str, arguments: dict | None) -> dict:
             )
         registered = D._REGISTRY[by_tool[name]]
         args = D.validate(registered.name, dict(arguments or {}))
+        if registered.guard is not None:
+            registered.guard(args)
         injected = {one: Quiet() for one in registered.injects}
         # stdout is the protocol, so whatever the work prints goes to stderr instead.
         with contextlib.redirect_stdout(sys.stderr):

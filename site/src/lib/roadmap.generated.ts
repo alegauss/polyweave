@@ -39,7 +39,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 1 },
-  { block: "O", title: "A person sees and answers", open: 1 },
+  { block: "O", title: "A person sees and answers", open: 0 },
   { block: "P", title: "Music and sound a game can ship", open: 1 },
   { block: "Q", title: "Words held to the world", open: 0 },
   { block: "R", title: "Levels measured before a person plays them", open: 6 },
@@ -132,13 +132,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "N",
     symptom: "no picture can be bought from a model trained on the project's own art, so its style reaches a service only as words",
     why: "A real training run on one family's canon, which needs a Scenario key and the owner's ceiling.",
-    deps: [],
-  },
-  {
-    id: "PW443",
-    block: "O",
-    symptom: "verdict.judge takes any sentence its caller passes as the person's, so an agent can write the verdict on its own work",
-    why: "Only the skill keeps an agent off the door; an MCP client without it can accept its own look.",
     deps: [],
   },
   {

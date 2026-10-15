@@ -710,6 +710,8 @@ function SittingView(props: {
   const { words, sitting, state } = props
   const kind = words.kinds[sitting.kind ?? 'look'] ?? {}
   const total = Object.keys(sitting.families).length
+  // The code a person says to accept this sitting from a conversation (§PW443).
+  const code = state.codes?.[sitting.manifest]
   return (
     <section data-sitting={sitting.manifest} className="flex flex-col gap-3">
       <div className="flex flex-col gap-1">
@@ -748,6 +750,11 @@ function SittingView(props: {
             <summary className="cursor-pointer">{say(words, 'legend')}</summary>
             <Legend entries={sitting.legend} />
           </details>
+        )}
+        {code && (
+          <p data-code className="text-sm text-muted-foreground">
+            {say(words, 'chat_code', { code })}
+          </p>
         )}
         <AcceptRest {...props} />
       </div>

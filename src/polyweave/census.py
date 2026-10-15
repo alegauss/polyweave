@@ -77,6 +77,7 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.testing:read": ("internal", "one test run's counts and failures"),
     "polyweave.integrity:scan": ("internal", "the tree read as text"),
     "polyweave.adoption:scan": ("internal", "each surface's files; project.adoption"),
+    "polyweave.person": ("internal", "the codes and guards an accept is checked by"),
     "polyweave.integrity:parsed": ("internal", "every script parsed after an import"),
     "polyweave.flashes:is_flash": ("internal", "whether a spec bounds a run's flashes"),
     "polyweave.flashes:count": ("internal", "each kind's worst second over frames"),

@@ -329,6 +329,11 @@ export function Advanced({
     <details data-advanced open={Boolean(promote || canon)} className="flex flex-col gap-4">
       <summary className="cursor-pointer text-sm font-medium">{say(words, 'advanced')}</summary>
       <div className="flex flex-col gap-4 pt-2">
+        {state.codes?.page && (
+          <p data-code className="text-sm text-muted-foreground">
+            {say(words, 'lanes_code', { code: state.codes.page })}
+          </p>
+        )}
         {gates.map((run, at) => (
           <GateRun key={run.id} desk={desk} words={words} run={run} promote={at === 0 ? promote : undefined} onWritten={onWritten} />
         ))}

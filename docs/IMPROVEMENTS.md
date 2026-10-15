@@ -208,6 +208,9 @@ the page retries the answer it was sending, telling the person it is reloading. 
 it landed: a test that edits a module's mtime under a running server, posts an answer,
 and finds it recorded by a server started after the edit, with no refusal shown.
 
+Also (PW59): a config table newer than the server's code crashed every read instead of
+showing staleness. Check staleness first.
+
 ### §PW465 The page's verdict is the one the ledger never sees
 
 `review.answer` calls `verdict.judge` with neither `run` nor `asset`, so the answer
@@ -336,30 +339,6 @@ a picture bought from it passes or fails the family's gate, and its record names
 model and the members.
 
 ## Block O — A person sees and answers
-
-### §PW443 A verdict only a person can give
-
-The non-goal "An agent accepting or rejecting its own look" is the product's sharpest
-promise, and the site states it outright: Claude Code cannot approve its own work. In
-the code it is a convention. `verdict.judge` validates the choice, the sentence's
-presence and the predicates named, and then records whatever `why` it was handed as the
-person's words. Nothing distinguishes a sentence a person said from one the agent
-composed.
-
-The page path is different: `verdict.answer` appends what the page wrote, and the page
-is operated by a person. So the person's channel already exists; what is missing is that
-the agent's channel cannot impersonate it.
-
-The owner chose on 2026-10-15: an accept lands from the page, or from chat carrying a
-short code the page shows for that sitting, and from nothing else. Two constraints bind
-the design. It must hold inside the server, because a Claude Code hook is not present
-for another MCP client. And it must not need a GUI for the in-conversation case PW332
-made one call: a verdict said in chat still has to land, so the door has to tell a
-relayed sentence from an invented one by something other than trust, such as a token the
-page or a person-only surface issues.
-
-Evidence that it landed: an agent-only call that tries to accept a look is refused with
-a remedy naming the person's channel, and a test proves it.
 
 ## Block P — Music and sound a game can ship
 

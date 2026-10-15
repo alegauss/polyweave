@@ -69,6 +69,9 @@ class Operation:
     #: What the file it builds from may hold, asked of the module when described
     #: (§PW409): an effect written from `describe`, not from the source.
     declares: Callable[[], dict] | None = None
+    #: Checked by the MCP server and the command line before the call, with its
+    #: validated arguments, and never by a caller in process (§PW443).
+    guard: Callable[[dict], None] | None = None
 
     def as_dict(self) -> dict:
         return {
@@ -197,6 +200,7 @@ def operation(
     injects: Sequence[str] = (),
     spends: bool = False,
     declares: Callable[[], dict] | None = None,
+    guard: Callable[[dict], None] | None = None,
 ) -> Callable:
     """Register `fn` as an operation a caller can discover and describe.
 
@@ -204,7 +208,8 @@ def operation(
     work is asynchronous. `injects` names the parameters the harness supplies, which a
     caller never passes and never needs described. `spends` marks one that draws on a
     paid service's balance (§PW308). `declares` answers what the file it builds from may
-    hold, which `describe(name)` adds as `declares` (§PW409).
+    hold, which `describe(name)` adds as `declares` (§PW409). `guard` refuses a call
+    from outside the process before it runs (§PW443).
     """
 
     def register(fn: Callable) -> Callable:
@@ -231,6 +236,7 @@ def operation(
             parameters=tuple(_parameters(name, fn, tuple(injects))),
             spends=spends,
             declares=declares,
+            guard=guard,
         )
         return fn
 

@@ -2142,6 +2142,8 @@ export interface VerdictAnswerArgs {
   family?: string
   /** the project the sitting belongs to; default "." */
   root?: string
+  /** the code the review page shows for the sitting, as the person said it; an accept from conversation needs it */
+  code?: string
 }
 
 /** The answers a person gave on the review page since a time, to resume from. */
@@ -2172,6 +2174,8 @@ export interface VerdictJudgeArgs {
   named?: unknown[]
   /** the date of the verdict; today where empty */
   when?: string
+  /** the code the review page shows for the sitting, as the person said it; an accept from conversation needs it */
+  code?: string
 }
 
 /** Move a sitting laid out in the wrong folder, its answers with it (§PW436). */
@@ -2196,6 +2200,8 @@ export interface VerdictPromoteArgs {
   canon?: string
   /** the project the paths resolve against; default "." */
   root?: string
+  /** the code the review page shows above its lanes, as the person said it */
+  code?: string
 }
 
 /** The family on one picture: old beside new at the size shown, and what failed. */

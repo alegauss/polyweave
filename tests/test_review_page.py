@@ -239,7 +239,12 @@ def test_the_state_operation_is_what_the_page_reads(page):
     _, body, _ = get(base + "/api/state")
     served = json.loads(body)
     assert served.pop("stale") is None
+    # The codes a person says to accept from chat are the page's alone (§PW443): the
+    # operation an agent can call answers everything else and never them.
+    codes = served.pop("codes")
+    assert set(codes) == {one["manifest"] for one in served["sittings"]} | {"page"}
     assert review.state(str(where)) == served
+    assert "codes" not in review.state(str(where))
 
 
 def test_the_words_operation_is_the_catalog_the_page_fetches(page):

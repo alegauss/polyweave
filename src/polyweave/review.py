@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import json
 import mimetypes
+import threading
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -32,7 +33,7 @@ from urllib.parse import parse_qs, urlparse
 
 import numpy as np
 
-from . import loop, verdict
+from . import loop, person, verdict
 from .config import load
 from .describe import Param, operation
 from .errors import PolyweaveError, crashed
@@ -550,7 +551,7 @@ def compare(
     return difference(here, old, new)
 
 
-@operation("review.answer")
+@operation("review.answer", guard=person.page_answer)
 def answered(
     body: Annotated[
         dict,
@@ -560,7 +561,11 @@ def answered(
     root: Annotated[str, Param("the project the sitting belongs to")] = ".",
 ) -> dict:
     """The page's one write, marks turned into masks and then verdict.judge, refused
-    where this process runs older code than the package on disk."""
+    where this process runs older code than the package on disk.
+
+    Called as a tool rather than by the page, an accept needs the body's `code`, the
+    one the page shows for the sitting or above its lanes (§PW443).
+    """
     stale = staleness(CODE, _LOADED)
     if stale:
         raise PolyweaveError(stale["code"], stale["message"], stale["remedy"])
@@ -572,6 +577,17 @@ def server(root=".", port: int = 0) -> ThreadingHTTPServer:
     here = load(root).root
     code = CODE
     started = newest(code)
+    # The codes a person may say in conversation to accept what this page shows
+    # (§PW443): issued here, held in this process alone, and on disk only as digests.
+    issued: dict[str, str] = {}
+    issuing = threading.Lock()  # two tabs loading at once would issue twice
+
+    def codes(shown: dict) -> dict:
+        with issuing:
+            for key in [one["manifest"] for one in shown["sittings"]] + [person.PAGE]:
+                if key not in issued:
+                    issued[key] = person.issue(here, key)
+            return dict(issued)
 
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, *_):  # the terminal is the agent's, not a request log
@@ -620,7 +636,9 @@ def server(root=".", port: int = 0) -> ThreadingHTTPServer:
                 return self._json({"code": "not-found"}, HTTPStatus.NOT_FOUND)
             if asked.path == "/api/state":
                 # The page shows a banner naming the restart.
-                return self._json({**state(here), "stale": staleness(code, started)})
+                shown = state(here)
+                return self._json({**shown, "stale": staleness(code, started),
+                                   "codes": codes(shown)})
             if asked.path == "/api/canon":
                 try:
                     return self._json(canon(here)["boards"])

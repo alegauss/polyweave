@@ -1058,6 +1058,14 @@ CODES: dict[str, Code] = {
         when="a member that is a number or a list, or a table with no name or no new",
         doors=("write each member as a table, or as the picture's path",),
     ),
+    "verdict.not-the-person": Code(
+        means="a tool call accepts a look without the code the review page shows, so "
+        "nothing says a person gave it (§PW443)",
+        when="an agent accepting its own work, or relaying a person's yes without the "
+        "code the page shows for that sitting",
+        doors=("the person answers on the review page",
+               "the person says the page's code for the sitting, passed as code"),
+    ),
     "verdict.bad-move": Code(
         means="a sitting cannot move where it was asked to",
         when="verdict.move to a folder that already exists, lies outside the project, "

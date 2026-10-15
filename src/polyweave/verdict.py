@@ -21,7 +21,7 @@ from datetime import date as Date
 from pathlib import Path
 from typing import Annotated, Any
 
-from . import accept, calibrate, loop, style
+from . import accept, calibrate, loop, person, style
 from .describe import Param, operation
 from .doors import Blank, door
 from .errors import PolyweaveError
@@ -286,7 +286,14 @@ def _manifest(
     )
 
 
-@operation("verdict.judge")
+#: What `code` is, on each door that can accept a look (§PW443).
+CODE = (
+    "the code the review page shows for the sitting, as the person said it; an accept "
+    "from conversation needs it"
+)
+
+
+@operation("verdict.judge", guard=person.judging)
 def judge(
     members: Annotated[list, Param(MEMBERS)],
     choice: Annotated[
@@ -301,11 +308,14 @@ def judge(
     ] = None,
     named: Annotated[list, Param("the predicates the person blamed, for look")] = (),
     when: Annotated[str, Param("the date of the verdict; today where empty")] = "",
+    code: Annotated[str, Param(CODE)] = "",
 ) -> dict:
     """What a person said of a family, carried into the ledger and the spec.
 
     With no `run`, `asset` opens one for that asset, records the verdict and closes
     it, so a verdict given in a conversation lands in the ledger in one call (§PW332).
+    Called as a tool, an `accept` or `number` needs `code`, the one the review page
+    shows for a sitting laying out these members (§PW443): only a person accepts a look.
 
     `choice` is one of `CHOICES` and `why` their sentence. Each member's verdict goes
     into `run` (an open `loop.start`) with its check, and `named` — the predicates the
@@ -476,7 +486,7 @@ def judge(
     }
 
 
-@operation("verdict.promote")
+@operation("verdict.promote", guard=person.promoting)
 def promote(
     gate: Annotated[str, Param("the gate run the picture was refused in, by its id")],
     picture: Annotated[str, Param("the refused picture, as the gate run lists it")],
@@ -486,6 +496,10 @@ def promote(
         str, Param("a style family it joins too, if the person said so")
     ] = None,
     root: Annotated[str, Param("the project the paths resolve against")] = ".",
+    code: Annotated[
+        str, Param("the code the review page shows above its lanes, as the person "
+                   "said it")
+    ] = "",
 ) -> dict:
     """A refused picture a person accepted after all, from wherever they said it.
 
@@ -493,7 +507,8 @@ def promote(
     in conversation (§PW265): a `judge` whose record says the tool refused what the
     person accepted, appended to the answers, which is what `mesh.buy` reads before it
     models from the picture. A gate or picture the project has no record of is refused
-    with the ones it has.
+    with the ones it has. Called as a tool it needs `code`, the one the page shows above
+    its lanes (§PW443).
     """
     from . import review
 
@@ -698,7 +713,7 @@ def answers(
     }
 
 
-@operation("verdict.answer")
+@operation("verdict.answer", guard=person.answering)
 def answer(
     sitting: Annotated[
         str, Param("the sitting, as its manifest or the folder the page lists it in")
@@ -710,12 +725,14 @@ def answer(
     *,
     family: Annotated[str, Param("one family; every family where empty")] = "",
     root: Annotated[str, Param("the project the sitting belongs to")] = ".",
+    code: Annotated[str, Param(CODE)] = "",
 ) -> dict:
     """A verdict a person gave in conversation, answering a sitting by name (§PW375).
 
     The page's own write, run for the family named or every family of the sitting, so
     the ledger, the spec and `verdict.answers` take it as they take a click. A family
-    already answered is skipped and named, not judged twice.
+    already answered is skipped and named, not judged twice. Called as a tool, an
+    `accept` or `number` needs `code`, the one the page shows for the sitting (§PW443).
     """
 
     from . import review
