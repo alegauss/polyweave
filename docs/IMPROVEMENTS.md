@@ -131,27 +131,6 @@ of this block names, and the gate may report a fraction below one for as long as
 what is left and why. Two of those are already answered in `docs/specs/adoption.md`: the
 fetch ledger replays, and the motion Cottony has is two frames and no clip.
 
-### §PW78 Framing that answers to a number the game already holds
-
-The board tray and the booster tray are the two assets whose framing is not a matter of
-taste. `board.gd` addresses a cell at `CELL := 112`, so the render has to put its wells
-on that grid or the game draws pieces a few pixels off their homes. The bake answers
-with `plate`: a world rectangle given outright, which replaces the fitting that `fill`
-and `size` do and sets one unit to one pixel.
-
-That is a different kind of hand-tuning from the stars' exposure, and it is why these
-two come after the families where the only loose thing was light. An exposure that is
-slightly wrong makes a picture somebody may accept. A plate that is slightly wrong makes
-a board that does not line up, and the failure is structural rather than a matter of
-looking right.
-
-Both are built rather than fetched — the booster tray is a cushion inflated from the
-lobed card drawn beside it, the board tray a grid that could not come from a service. So
-the geometry is already a declaration and what has to move is the framing contract.
-
-The thing to keep is that the number comes from the game, not from the render. A port
-that lets the picture choose its own rectangle has lost the point.
-
 ### §PW79 The simplest rig with the hardest bar
 
 The brand marks are the one family where the rig is nearly nothing and the criterion is
@@ -263,6 +242,69 @@ time, recorded as kind `camera` (docs/specs/motion.md, "A camera clip"). Not an
 Animation track: an anchor placed at run time, on a ring that is not Cartesian, cannot
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
+
+### §PW458 A port's built mesh belongs to the work area
+
+Met porting Cottony's trays (PW78). A family member given as a `declaration`
+(`declaration = "tools/art/board_tray.toml"`) is built by `port.port` through
+`cli.build_one(member["declaration"], root=here, force=False)`, with no `out`, so the
+mesh lands in the declaration's own folder: `tools/art/board_tray.glb`, its
+`.build.json` and its `.glb.prov.json`. In Cottony that folder is inside Godot's
+`res://` and has no `.gdignore`, so the next headless test run imported both meshes and
+extracted the booster tray's embedded texture as
+`tools/art/booster_tray_booster_tray.png` beside them. A member has no key to say where
+its build goes: `MEMBER_KEYS` is name, spec, model, declaration, fixes, out, bake.
+
+The workaround is in Cottony 6d6b76e: four `.gitignore` lines for `tools/art/*.glb` and
+its stamp and record, and the `.import` files and the extracted texture deleted by hand.
+The props did not meet this because their meshes were written by a script into
+`.polyweave/props/` and given as `model`.
+
+What polyweave should do: build a member's declaration into the work area by default
+(`<work>/<family>/<name>.glb`, as the search's renders already go to `out`), or take a
+member key (`mesh`) naming where, so a port never writes into the engine's import tree
+unasked. The bake's provenance then cites that path.
+
+### §PW459 A sitting has an address
+
+Met handing Cottony's trays sitting to the owner (PW78). Before a page goes to the owner
+it is screenshotted and looked at (headless Edge, `--virtual-time-budget=4000`). `python
+-m polyweave review --root . --port 8765` serves the list of sittings at `/`, and the
+sitting itself opens only by a click: no hash, query or path opens one sitting, so the
+screenshot showed the list card ("Imagens para aprovar, 1 para responder") and none of
+what the owner would judge.
+
+The workaround: the sheet PNG `verdict.sitting` wrote
+(`.polyweave/review/trays/bandejas.png`) was read instead. That checks the pictures but
+not the page: the `about`, the choices' words or the layout.
+
+What polyweave should do: give each sitting a URL the page opens straight at (for
+instance `/#sitting=<manifest>` or `/sitting/<folder>`), and have `verdict.sitting` and
+`review` print it, so the agent screenshots exactly what the person will see and the
+person gets a link to it.
+
+### §PW460 An accept the spec contradicts
+
+Met porting Cottony's trays (PW78). The sitting `.polyweave/review/trays` held one
+family, `bandejas`, whose booster tray failed one predicate: `reads-cream`,
+`pixel_delta_e_p50` 4.708 against `max = 3.0`. The `about` asked for "Ajustar o limite"
+if the cream looked right. The owner chose "Aceitar" on the page. `verdict.answers` then
+says `choice: accept`, `person_accepted: true`, `tool_passed: false`, `rewritten: []`,
+and the spec still holds 3.0, so `port.run --family tools/art/booster_tray.family.toml`
+answered "not every member passed, so nothing was baked" for an asset the owner had just
+accepted.
+
+The workaround: the bound moved to 4.75 by hand in
+`docs/design/accept/booster_tray.accept.toml`, with a comment citing the acceptance and
+its date (Cottony 6d6b76e). That is the agent deciding what an accept on a failing spec
+means.
+
+What polyweave should do: an accept on a family where a member's spec fails cannot leave
+the two disagreeing. Either the page does not offer "Aceitar" there, offering "Ajustar o
+limite" in its place with the failing predicate named, or an accept carries the failing
+bounds to the measured values as `number` does, recorded as the person's decision. The
+`look` kind's own words say accept means "the spec agrees", so today the page lets a
+person say something the spec contradicts.
 
 ## Block I — Voxel models from a declaration
 

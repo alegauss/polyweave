@@ -272,8 +272,16 @@ the mushroom's from its drawing, with the gloss and shadow as Cottony's own pass
 warm white world (§PW439, §PW441). Two lessons from it are in its specs: a body colour is
 read at the median pixel (`pixel_delta_e_p50`), never the mean, which the cream bolls
 pulled until the shipped sprites failed their own bar; and a flower of three colours is
-read in a rectangle on one petal. What remains is each later family's port, each on a
-person's look, down to PW82.
+read in a rectangle on one petal. The two trays moved next (PW78, Cottony 6d6b76e), each
+built from its declaration and framed by the game's own numbers (`covers` in board cells at
+the 112 px `board.gd` addresses a cell by), and each in **a family of its own**: across
+every rig probed the board rendered 0.04 to 0.05 brighter than the booster tray where the
+shipped sprites are 0.16 apart, so no one rig held both, as `bake_model` never lit them
+with one. The booster tray's cushion wears its own drawing as a texture (a material's
+`image`), and its colour sits 4.7 ΔE from the shipped median at every exposure, the
+drawing's hue rather than the light; the owner accepted it beside the shipped sprite and
+the bar moved to it. What remains is each later family's port, each on a person's look,
+down to PW82.
 
 ## A family is stated, not scripted
 

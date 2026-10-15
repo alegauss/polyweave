@@ -586,6 +586,11 @@ CODES: dict[str, Code] = {
         when="a misspelled Principled BSDF socket, refused rather than dropped",
         doors=("name a socket the shader declares",),
     ),
+    "render.missing-picture": Code(
+        means="a material wears a picture that is not on disk",
+        when="a declared material's `image` names a path nothing is at",
+        doors=("name the picture as a path under the project",),
+    ),
     # -- compose: an asset where it will be seen ------------------------------
     "compose.no-tiles": Code(
         means="a contact sheet was asked for with nothing to put on it",

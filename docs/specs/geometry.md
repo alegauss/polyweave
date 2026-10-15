@@ -509,6 +509,13 @@ each axis. `planar_uv` takes a `[x, y, width, height]` instead where the drawing
 is larger than the shape in it. It is not applied to a prism's walls: a plane projected
 onto a face perpendicular to it smears.
 
+**A material can wear that picture** (§PW78). `image = "<path under the project>"` in a
+`[materials.<name>]` table makes the picture its base colour through those coordinates,
+in place of the one `colour`. The `.glb` carries it as the material's base colour
+texture. Cottony's booster tray needed it: inflated from its drawing and given a colour
+alone, the cushion rendered as a flat cream lozenge, without the rope and thread drawn
+on the card. A picture that is not there is `render.missing-picture`, named.
+
 A `transform` carries them, since it reorders nothing. A `union` carries them **only
 where every operand has them** — filling a part that has none with zeros would place that
 part's picture wrongly rather than leave it unplaced. `post.check("mesh", …)` refuses an

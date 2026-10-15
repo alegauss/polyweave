@@ -178,6 +178,10 @@ def decimate(obj: Any, ratio: float) -> Any:
     whole = triangles(obj)
     if ratio == 1.0 or whole <= DECIMATE_FLOOR:
         return obj
+    # A glTF splits a vertex at every seam of its texture coordinates, and a collapse
+    # shrinks each piece on its own: a stuffed cushion came back from the preview rung
+    # in stripes of holes, which the search measured as a different colour (§PW78).
+    merge_close(obj)
     return reduce_to(obj, whole * ratio)
 
 
@@ -300,8 +304,15 @@ def apply_material(obj: Any, material: dict | None, *, groups: Any = None) -> An
 
 
 def _material(inputs: dict, named: str) -> Any:
-    """One Principled BSDF with those inputs on it, refusing a socket it has not got."""
+    """One Principled BSDF with those inputs on it, refusing a socket it has not got.
+
+    `image`, a picture's path, is its base colour through the mesh's texture
+    coordinates instead of one colour (§PW78): a stuffed panel wears the drawing it was
+    inflated from, rope and thread included, as the drawn card does.
+    """
     bpy = require()
+    inputs = dict(inputs)
+    image = inputs.pop("image", None)
     made = bpy.data.materials.new(named)
     made.use_nodes = True
     bsdf = made.node_tree.nodes.get("Principled BSDF")
@@ -323,6 +334,17 @@ def _material(inputs: dict, named: str) -> Any:
     for key, value in inputs.items():
         socket = _socket(bsdf, key)
         socket.default_value = _coerce(value, socket)
+    if image:
+        if not Path(image).is_file():
+            raise PolyweaveError(
+                "render.missing-picture",
+                f"material {named} wears the picture {image}, and nothing is there",
+                "name the picture as a path under the project",
+                given=str(image),
+            )
+        texture = made.node_tree.nodes.new("ShaderNodeTexImage")
+        texture.image = bpy.data.images.load(str(image), check_existing=True)
+        made.node_tree.links.new(texture.outputs["Color"], _socket(bsdf, "base_color"))
     return made
 
 

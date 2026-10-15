@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 5 },
+  { block: "H", title: "Proof on a real game", open: 9 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
@@ -84,6 +84,34 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "a real project cannot adopt the plugin without carrying its own paths and palette into it",
     why: "Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82.",
     deps: ["PW82"],
+  },
+  {
+    id: "PW53",
+    block: "H",
+    symptom: "Cottony lights twelve models through fourteen constants of its own, and the search never sees one of them",
+    why: "One asset moving leaves bake_model.py standing for the other eleven, so the rig the plugin exists to remove is still the thing that runs.",
+    deps: [],
+  },
+  {
+    id: "PW458",
+    block: "H",
+    symptom: "port.run builds a member's declaration beside the declaration, so in a game's tree the engine imports the mesh",
+    why: "A port writes into the project's import tree unasked, and the agent ignores and deletes what the engine pulled in by hand.",
+    deps: [],
+  },
+  {
+    id: "PW459",
+    block: "H",
+    symptom: "the review page opens a sitting only by a click, so no URL shows the agent or the owner one sitting",
+    why: "The page is checked before handover by a headless screenshot, and that screenshot can only show the list.",
+    deps: [],
+  },
+  {
+    id: "PW460",
+    block: "H",
+    symptom: "the review page lets a person accept a family whose spec fails, and the bound stays, so the bake refuses it",
+    why: "The accept and the spec disagree, and the agent decides by hand what the person meant by moving a bound.",
+    deps: [],
   },
   {
     id: "PW450",
@@ -186,4 +214,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW53", "PW78", "PW79", "PW80", "PW81", "PW82", "PW449", "PW443", "PW192", "PW201", "PW311", "PW368"];
+export const generatedPaused: string[] = ["PW79", "PW80", "PW81", "PW82", "PW449", "PW443", "PW192", "PW201", "PW311", "PW368"];

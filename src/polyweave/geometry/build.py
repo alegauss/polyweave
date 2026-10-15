@@ -404,7 +404,14 @@ def write(
     where = Path(out)
     if not where.is_absolute():
         where = Path(root).resolve() / where
-    written = write_mesh(made["output"], where, materials=document["materials"])
+    # A material's `image` is a path under the project, as every path a declaration
+    # names is, resolved here where the root is known (§PW78).
+    materials = {
+        name: {**one, "image": str(Path(root).resolve() / one["image"])}
+        if isinstance(one, dict) and one.get("image") else one
+        for name, one in (document["materials"] or {}).items()
+    }
+    written = write_mesh(made["output"], where, materials=materials)
     return {**made, "artefact": str(written)}
 
 
