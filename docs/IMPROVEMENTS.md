@@ -31,31 +31,6 @@ one does, and the pieces that are better left alone stay where they are. What th
 delivers is the adoption plus a written list of everything that had to be configured,
 which is the plugin's real interface, discovered rather than designed.
 
-### §PW53 The rig is the thing being replaced, so it cannot be the thing still running
-
-§PW36 moves one asset and stops there, which is the right size for a first port and the
-wrong size for a claim. `tools/art/bake_model.py` is 1023 lines, and its `MODELS` table
-holds twelve entries carrying up to fourteen rig parameters each — `fill`, `light`,
-`turn`, `ambient`, `key`, `form`, `roughness`, `shadow`, `gloss`, `square`, `scrub`,
-`roll`, `plate`, `dust` — every one of them found by hand at about two minutes a sample.
-That table is the cost this plugin was written to remove.
-
-One asset ported proves a picture can be made. Eleven left behind prove nobody chose the
-plugin over the rig, and the rig is what still runs on a build.
-
-The work is a translation rather than a move, which is why it is one line per asset.
-§PW36's audit already found the sharp edge: `light` is a whole-rig multiplier and `form`
-is the key's share of it, and neither is a parameter the renderer has. An axis with no
-knob is refused before a render is spent, but the conversion stays a person's:
-`exposure` is in stops, and a wrong one is a different picture rather than an error.
-
-So each model's constants become an acceptance spec, the spec is what `search` aims at,
-and the ledger `docs/specs/adoption.md` defines takes the before side for that asset
-before it moves. A comparison with one side recorded is refused, and rightly.
-
-Set aside: it needs a person three times over. The trap a hand conversion walks into is
-in `docs/specs/adoption.md`.
-
 ### §PW56 Twelve runners, twelve ways to start Godot, and no check on what applied
 
 `tools/capture_screens.py` drives four scripts under `tools/capture/`;
@@ -283,6 +258,31 @@ fresh `polyweave review` on the same root and port once its own socket is closed
 the page retries the answer it was sending, telling the person it is reloading. Evidence
 it landed: a test that edits a module's mtime under a running server, posts an answer,
 and finds it recorded by a server started after the edit, with no refusal shown.
+
+### §PW465 The page's verdict is the one the ledger never sees
+
+`review.answer` calls `verdict.judge` with neither `run` nor `asset`, so the answer
+comes back saying "not recorded: no run was open" to a page nobody reads that field on.
+The person's word is kept as an answer event and never as a run.
+
+Measured on Cottony after PW77 to PW81: `polyweave.loop.json` holds a before side for
+all six families and an after side only for the stars and the boosters, the two judged
+from a conversation. The props, trays, marks and friends were accepted on the page and
+the ledger has nothing for them, so `loop.compare` refuses them and `loop.report` leaves
+them out.
+
+A second mismatch hides the first. `loop.pending` keys rows by spec, one per member
+(`friend_cloud`), while the ports open runs per family (`friends_and_mascot`). So a
+family's verdict, recorded or not, never marks its members judged, and every member of
+every accepted family reads `waiting: true`.
+
+What to build: a sitting family carries the ledger asset it answers for (the family name
+`port.run` uses), and `review.answer` passes it as `asset=`, so the page's verdict opens
+and closes a run the way a verdict in a conversation does, with `made: false` as
+`docs/specs/adoption.md` describes. `loop.pending` then reads a member as judged when a
+run for its family carries a verdict naming it, since `judge` already prefixes each
+verdict's `why` with the member's name. Open choice: whether the family-to-member
+mapping lives in the run (a `members` list) or is read back off the family TOML.
 
 ## Block I — Voxel models from a declaration
 

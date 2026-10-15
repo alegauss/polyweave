@@ -190,6 +190,7 @@
 - ✅ **PW455** **provenance.generated cannot tell what a Godot build ships, so it counts excluded files and buries art among code** — Without paths a Godot project's provenance.generated reads what its export preset ships, and unrecorded lists only media apart from code (design recorded in `docs/specs/provenance.md`).
 - ✅ **PW453** **picture.vector draws an SVG with live text as a PNG with no letters, and answers as if nothing were lost** — picture.vector and store.capsules outline live text in its resolved font before ThorVG draws, record the font, and refuse a run they cannot outline (design recorded in `docs/specs/store.md`).
 - ✅ **PW462** **scrub reads a painted mark as darker in luma only, so the hammer's soft purple seam on pink survives it** — The scrub reads a mark as a darker shade of its ground's hue in Lab too, at a reach that follows the sheet (design in `docs/specs/fetching.md`).
+- ✅ **PW53** **Cottony lights twelve models through fourteen constants of its own, and the search never sees one of them** — Every model Cottony's rig lit bakes through polyweave against its own spec, family by family from PW76 to PW81, and bake_model.py's MODELS is empty (design recorded in `docs/specs/adoption.md`).
 
 ## Block I — Voxel models from a declaration
 

@@ -16,17 +16,17 @@
 
 ## Block H — Proof on a real game
 
-- 📋 **PW57** (deps: PW53 📋) **every Cottony look gate restates its own floor, so no asset has a bar a search can aim at** — Five check scripts measure after the render is spent, which is a verdict and never a target, and a threshold moved in one of them is invisible to the rest. → §PW57
-- 📋 **PW59** (deps: PW53 📋, PW54 ✅, PW55 ✅, PW56 ⏳, PW57, PW58 ✅) **nothing says how much of Cottony still does its own version of what the plugin does** — Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion. → §PW59
+- 📋 **PW57** (deps: PW53 ✅) **every Cottony look gate restates its own floor, so no asset has a bar a search can aim at** — Five check scripts measure after the render is spent, which is a verdict and never a target, and a threshold moved in one of them is invisible to the rest. → §PW57
+- 📋 **PW59** (deps: PW53 ✅, PW54 ✅, PW55 ✅, PW56 ⏳, PW57, PW58 ✅) **nothing says how much of Cottony still does its own version of what the plugin does** — Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion. → §PW59
 - ⏳ **PW56** (deps: PW57) **twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent** — The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question. → §PW56
 - 🛠 **PW372** (deps: Spinhold RK215) **a camera move cannot be declared as a clip or played by the game, so a cutscene's shots are numbers in the project** — No shot is yet captured onto a sitting for a person to accept, and Starship's opening still reads its own JSON. → §PW372
 - 🛠 **PW36** (deps: PW5 ✅, PW82 ⏸) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82. → §PW36
-- 📋 **PW53** (deps: —) **Cottony lights twelve models through fourteen constants of its own, and the search never sees one of them** — One asset moving leaves bake_model.py standing for the other eleven, so the rig the plugin exists to remove is still the thing that runs. → §PW53
 - 📋 **PW458** (deps: —) **port.run builds a member's declaration beside the declaration, so in a game's tree the engine imports the mesh** — A port writes into the project's import tree unasked, and the agent ignores and deletes what the engine pulled in by hand. → §PW458
 - 📋 **PW459** (deps: —) **the review page opens a sitting only by a click, so no URL shows the agent or the owner one sitting** — The page is checked before handover by a headless screenshot, and that screenshot can only show the list. → §PW459
 - 📋 **PW460** (deps: —) **the review page lets a person accept a family whose spec fails, and the bound stays, so the bake refuses it** — The accept and the spec disagree, and the agent decides by hand what the person meant by moving a bound. → §PW460
 - 📋 **PW461** (deps: —) **a family search hands back a passing rig on every range's edge while one inside them has three times the headroom** — The answer is the harshest light that clears the bars, and the agent pins a better rig by hand. → §PW461
 - 📋 **PW463** (deps: —) **a review server that sees polyweave changed refuses the answer, and only the agent that started it can restart it** — The owner answers on a page that tells them to restart a server they never started, and their verdict waits. → §PW463
+- 📋 **PW465** (deps: —) **an accept on the review page never reaches the loop ledger, so loop.pending reads an accepted family as still waiting** — Four of Cottony's six ported families have no after side and no verdict in the ledger, so compare refuses them and the report omits them. → §PW465
 
 ## Block I — Voxel models from a declaration
 

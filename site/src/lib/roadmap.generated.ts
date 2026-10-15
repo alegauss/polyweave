@@ -55,14 +55,14 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "every Cottony look gate restates its own floor, so no asset has a bar a search can aim at",
     why: "Five check scripts measure after the render is spent, which is a verdict and never a target, and a threshold moved in one of them is invisible to the rest.",
-    deps: ["PW53"],
+    deps: [],
   },
   {
     id: "PW59",
     block: "H",
     symptom: "nothing says how much of Cottony still does its own version of what the plugin does",
     why: "Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion.",
-    deps: ["PW53", "PW56", "PW57"],
+    deps: ["PW56", "PW57"],
   },
   {
     id: "PW56",
@@ -84,13 +84,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "a real project cannot adopt the plugin without carrying its own paths and palette into it",
     why: "Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82.",
     deps: ["PW82"],
-  },
-  {
-    id: "PW53",
-    block: "H",
-    symptom: "Cottony lights twelve models through fourteen constants of its own, and the search never sees one of them",
-    why: "One asset moving leaves bake_model.py standing for the other eleven, so the rig the plugin exists to remove is still the thing that runs.",
-    deps: [],
   },
   {
     id: "PW458",
@@ -125,6 +118,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "a review server that sees polyweave changed refuses the answer, and only the agent that started it can restart it",
     why: "The owner answers on a page that tells them to restart a server they never started, and their verdict waits.",
+    deps: [],
+  },
+  {
+    id: "PW465",
+    block: "H",
+    symptom: "an accept on the review page never reaches the loop ledger, so loop.pending reads an accepted family as still waiting",
+    why: "Four of Cottony's six ported families have no after side and no verdict in the ledger, so compare refuses them and the report omits them.",
     deps: [],
   },
   {
