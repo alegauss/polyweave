@@ -32,14 +32,14 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 9 },
+  { block: "H", title: "Proof on a real game", open: 10 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
-  { block: "K", title: "Reached without reading the source", open: 0 },
+  { block: "K", title: "Reached without reading the source", open: 1 },
   { block: "L", title: "What a run leaves as evidence", open: 0 },
   { block: "M", title: "What a game needs beyond the look", open: 0 },
   { block: "N", title: "Pictures held to a canon", open: 1 },
-  { block: "O", title: "A person sees and answers", open: 0 },
+  { block: "O", title: "A person sees and answers", open: 1 },
   { block: "P", title: "Music and sound a game can ship", open: 0 },
   { block: "Q", title: "Words held to the world", open: 0 },
   { block: "R", title: "Levels measured before a person plays them", open: 6 },
@@ -114,10 +114,31 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
+    id: "PW79",
+    block: "H",
+    symptom: "the three brand marks are exposed by a hand-found light and nothing states what the type should read as",
+    why: "What the type must read as is a person's bar, written once the earlier families' bars are agreed, before a search can aim at it.",
+    deps: [],
+  },
+  {
+    id: "PW449",
+    block: "K",
+    symptom: "no MCP client but Claude Code has ever driven polyweave, so whether its surface is usable without the skill is unknown",
+    why: "MCP directories compare servers across clients.",
+    deps: [],
+  },
+  {
     id: "PW450",
     block: "N",
     symptom: "no picture can be bought from a model trained on the project's own art, so its style reaches a service only as words",
     why: "A real training run on one family's canon, which needs a Scenario key and the owner's ceiling.",
+    deps: [],
+  },
+  {
+    id: "PW443",
+    block: "O",
+    symptom: "verdict.judge takes any sentence its caller passes as the person's, so an agent can write the verdict on its own work",
+    why: "Only the skill keeps an agent off the door; an MCP client without it can accept its own look.",
     deps: [],
   },
   {
@@ -214,4 +235,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW79", "PW80", "PW81", "PW82", "PW449", "PW443", "PW192", "PW201", "PW311", "PW368"];
+export const generatedPaused: string[] = ["PW80", "PW81", "PW82", "PW192", "PW201", "PW311", "PW368"];

@@ -16,7 +16,6 @@
 
 ## Block H — Proof on a real game
 
-- ⏸ **PW79** (deps: PW78 ✅) **the three brand marks are exposed by a hand-found light and nothing states what the type should read as** — set aside (a person's judgement): What the type must read as is a person's bar, written once the earlier families' bars are agreed, before a search can aim at it. → §PW79
 - ⏸ **PW80** (deps: PW79 ✅, PW90 ✅, PW91 ✅) **the three booster objects each needed a scrub, a roll and a fill found by hand after the service returned them** — set aside (a person's judgement): The boosters' previews need a person's look before bake_model.py stops rendering them and the after side is recorded. → §PW80
 - ⏸ **PW81** (deps: PW80 ✅) **the two friends, their lean frames and the mascot take eleven constants apiece and nothing declares one** — set aside (a person's judgement): These move last by design, once the families that rehearse them have moved, and the look of the most-seen sprites is a person's call. → §PW81
 - ⏸ **PW82** (deps: PW81 ✅) **nothing takes bake_model.py out once its assets have moved, so the rig outlives its own replacement** — set aside (a person's judgement): Each family porting leaves the file smaller and still running, and two live paths to one sprite is the state this whole sequence exists to end. → §PW82
@@ -27,8 +26,6 @@
 
 ## Block K — Reached without reading the source
 
-- ⏸ **PW449** (deps: —) **no MCP client but Claude Code has ever driven polyweave, so whether its surface is usable without the skill is unknown** — set aside (No second MCP client is installed, and running one needs the owner's account.): MCP directories compare servers across clients. → §PW449
-
 ## Block L — What a run leaves as evidence
 
 ## Block M — What a game needs beyond the look
@@ -36,8 +33,6 @@
 ## Block N — Pictures held to a canon
 
 ## Block O — A person sees and answers
-
-- ⏸ **PW443** (deps: —) **verdict.judge takes any sentence its caller passes as the person's, so an agent can write the verdict on its own work** — set aside (Waits on the owner's choice of channel.): Only the skill keeps an agent off the door; an MCP client without it can accept its own look. → §PW443
 
 ## Block P — Music and sound a game can ship
 

@@ -141,13 +141,13 @@ one scaled for both — and the whole of the hand-tuning is `light`, at 1.0 and 
 They are deliberately not first. A family with one constant looks like the easy port,
 and it is, right up to the point of saying what a correct render is. A wordmark is type:
 it either reads or it does not, and the failure is not a median drifting but a letter
-losing its edge. Every other family in this list can be stated as a colour and a
-contrast against something drawn; this one cannot, and taking it early would mean
-inventing an acceptance vocabulary under the pressure of the first port.
+losing its edge. Taking it early would have meant inventing an acceptance vocabulary
+under the pressure of the first port.
 
-By the time the stars, the props and the trays have moved, three bars exist that were
-written to be read rather than admired, and the question here is narrower: what does a
-search aim at when the subject is a shape that must stay legible.
+The owner set the bar on 2026-10-15: today's sprites, as for the trays. Colour, tone and
+place are read off each shipped mark, and a measure holds the letters to an edge at
+least as crisp as today's. That last one is the part no earlier family needed, and the
+search aims at it like any other bound.
 
 The marks also leave markings off — a rope round the silhouette of a word is not a thing
 this style has.
@@ -324,11 +324,12 @@ MCP directories in 2026 compare Blender, Godot and Unity servers side by side, a
 are where a developer looks for one. Being listed there is free reach, but only honest
 once the surface has been driven from a client without the skill.
 
-The run is the line: set the server up in one other client, ask it for one asset end to
-end, and file what it got wrong as friction. Two findings are expected and are the
-reason to do it before any listing. Whatever the skill alone teaches has to move into
-tool descriptions or `describe`. And every promise that relies on the skill or a hook,
-rather than the server, is named; PW443 is the first of those.
+The run is the line: set the server up in Claude Desktop, the client the owner has
+(2026-10-15), ask it for one asset end to end, and file what it got wrong as friction.
+Two findings are expected and are the reason to do it before any listing. Whatever the
+skill alone teaches has to move into tool descriptions or `describe`. And every promise
+that relies on the skill or a hook, rather than the server, is named; PW443 is the first
+of those.
 
 Evidence that it landed: a second client builds, checks and offers one asset for a
 verdict, and each gap it met is a filed line.
@@ -376,12 +377,13 @@ The page path is different: `verdict.answer` appends what the page wrote, and th
 is operated by a person. So the person's channel already exists; what is missing is that
 the agent's channel cannot impersonate it.
 
-The shape of the fix is the design's to choose, and two constraints bind it. It must
-hold inside the server, because a Claude Code hook is not present for another MCP
-client. And it must not need a GUI for the in-conversation case PW332 made one call: a
-verdict said in chat still has to land, so the door has to tell a relayed sentence from
-an invented one by something other than trust, such as a token the page or a person-only
-surface issues.
+The owner chose on 2026-10-15: an accept lands from the page, or from chat carrying a
+short code the page shows for that sitting, and from nothing else. Two constraints bind
+the design. It must hold inside the server, because a Claude Code hook is not present
+for another MCP client. And it must not need a GUI for the in-conversation case PW332
+made one call: a verdict said in chat still has to land, so the door has to tell a
+relayed sentence from an invented one by something other than trust, such as a token the
+page or a person-only surface issues.
 
 Evidence that it landed: an agent-only call that tries to accept a look is refused with
 a remedy naming the person's channel, and a test proves it.
