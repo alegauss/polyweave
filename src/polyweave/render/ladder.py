@@ -38,6 +38,7 @@ CARRIES = {
 #: needs all of it.
 ANSWERS_AT = {
     "saturation": "sphere",
+    "saturation_hsv": "sphere",
     "luma": "sphere",
     "hue_spread": "sphere",
     "region_colour": "sphere",

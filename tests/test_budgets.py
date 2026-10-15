@@ -222,7 +222,8 @@ DESCRIBE = 140_000
 #: 152,344 with style.train and its two refusals (§PW450).
 #: 152,540 with render.bake's on_grid and render.no-scale, a mark's own scale (§PW79).
 #: 153,297 with sound.loop and its three refusals, a recorded track's loop (§PW192).
-CAPABILITIES = 153_300
+#: 153,315 with saturation_hsv, a whole screen's vivid tail (§PW57).
+CAPABILITIES = 153_400
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

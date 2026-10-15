@@ -59,28 +59,29 @@ Godot 4.7.1 is installed and the probe answers the machine: `window-offscreen` a
 `window-minimised` work, `virtual-display` cannot on Windows, and `headless` drew
 nothing. The route exists, so what is left is Cottony's tree.
 
-### §PW57 Five floors in five files, and not one of them is a target
+### §PW57 One floor of five is a target now, and one more is a floor
 
-`check_vivid.py`, `check_palette.py`, `check_markings.py`, `check_plush.py` and
-`check_pieces.py` are about a thousand lines of measurement, each holding its own floor.
-The best of them makes the argument this plugin adopted: `check_vivid.py` exists because
-"washed out" was asserted, measured, and found true only at the tail — mean saturation
-0.31 against the concept art's 0.32, and the 99th percentile 0.68 against 0.88. A look
-is a distribution, and the interesting part is usually not its middle.
+A threshold inside a gate can only answer after the render is spent. The same number in
+an acceptance spec is what `search` moves towards, so the bar stops being a verdict and
+becomes the target. That was the reason for this line, and the vivid floor is now that:
+`docs/design/accept/board_drawn.accept.toml` and `board_mesh.accept.toml` in Cottony,
+read by `saturation_hsv_p99`, with `check_vivid.py` reduced to running them. It needed a
+measure: at a whole screen's tail HSL saturation reads 1.0 on every picture, so the
+claim in `docs/specs/acceptance-spec.md` that it needed nothing new was wrong.
 
-`measure.py` closed that vocabulary and `accept.py` turns a bar into a file. The
-difference is not tidiness and it is not line count. **A threshold inside a gate can
-only answer after the render is spent.** The same number in an acceptance spec is what
-`search` moves towards, so the bar stops being a verdict and becomes the target, which
-is the whole loop this plugin is.
+Reading the other four corrected the count. Only one more is a floor on a picture.
+`check_palette.py` checks that `pieces.gd` mirrors `palette.py`. `check_plush.py` and
+`check_markings.py` draw a synthetic body through Cottony's own 2D code and assert
+ratios between two materials drawn in one run. They are unit tests of drawing code, no
+asset is under them, and no search turns their parameters. They stay where they are.
 
-A second cost is being paid quietly. Five floors in five files are five numbers that
-move independently, and `check_vivid.py` already records what that costs: for as long as
-only one of the two boards was read, the mesh board sat at 0.776 with nothing saying so.
-
-The end state is one spec per asset, the gates reduced to running them, and the
-percentile argument surviving as a measurement name rather than as a paragraph in a
-script.
+What is left is `check_pieces.py`, which holds the committed sheet
+`docs/design/screenshot-pieces3d.png` to three rules: ink on the faced kinds, no pale
+ring of marks round a rim (rope or thread), and the kinds' radial silhouettes kept
+apart. None of the three is a measure in `docs/specs/measurements.md`. The ring rule is
+a property of a set of marks, which the script argues at length, and porting it is
+either a measure that counts marks forming a ring on a subject, or a person deciding it
+stays a test.
 
 ### §PW59 Adopted is an opinion until something fails when it is not
 

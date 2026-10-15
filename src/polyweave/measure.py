@@ -162,6 +162,21 @@ def _saturation(image: Image, mask: np.ndarray, **_: Any) -> np.ndarray:
     return _hsl(rgb)[1]
 
 
+@_distributes("saturation_hsv")
+def _saturation_hsv(image: Image, mask: np.ndarray, **_: Any) -> np.ndarray:
+    """HSV saturation, the span over the brightest channel (§PW57).
+
+    HSL's divides by a span that shrinks to nothing near white and black, so a cream
+    highlight and a deep shadow both read 1.0 and a whole board's tail does too:
+    Cottony's two boards and the art they were cut from all score 0.99 or more at the
+    99th percentile, where this reads 0.83 against 0.88.
+    """
+    rgb = image.rgba[mask][:, :3].astype(np.float64) / 255.0
+    high = rgb.max(axis=-1)
+    span = high - rgb.min(axis=-1)
+    return np.where(high > 0, span / np.maximum(high, 1e-12), 0.0)
+
+
 @_distributes("luma")
 def _luma(image: Image, mask: np.ndarray, **_: Any) -> np.ndarray:
     """Relative luminance, sRGB-weighted, on linear values because light adds."""

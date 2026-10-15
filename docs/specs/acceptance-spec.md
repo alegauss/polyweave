@@ -514,7 +514,9 @@ sprite, a board screenshot or a sheet some other generator made can be held to a
 this same file, with `artefact` naming it. Where its maker has parameters, a search can
 turn them through `search.search` with its own evaluator. The renderer stays 3D; the bar
 does not have to. Cottony's `check_vivid.py`, a board held at its 99th-percentile
-saturation, is a spec with one predicate. It needs nothing new.
+saturation, is a spec with one predicate over the board's rectangle. That needed one
+measure, `saturation_hsv` (§PW57): at a whole screen's tail HSL saturation reads 1.0
+on every picture, the washed-out board included.
 
 **Sound is held to the same file** (§PW113), which the owner decided. A spec whose
 `artefact` is a `.wav` (or an `.ogg`, `.flac`, `.mp3` or `.opus` where ffmpeg is on

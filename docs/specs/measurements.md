@@ -33,6 +33,7 @@ difference sat at the 99th percentile.
 | Measure | Range | What it is |
 |---|---|---|
 | `saturation_{p1,p50,p99,mean,std}` | 0–1 | HSL saturation over the region |
+| `saturation_hsv_{p1,p50,p99,mean,std}` | 0–1 | HSV saturation over the region: the channels' span over the brightest |
 | `luma_{p1,p50,p99,mean,std}` | 0–1 | Relative luminance, sRGB-weighted |
 | `edge_{p1,p50,p99,mean,std}` | 0–1 | Gradient of CIELAB lightness between neighbours, inside the subject |
 | `hue_spread` | 0–1 | Circular standard deviation of hue, weighted by saturation |
@@ -52,6 +53,14 @@ deviation is unbounded and this table declares a 0–1 range, and a measure that
 its own declared range is not usable in a bound. It is weighted by saturation because the
 hue of a grey pixel is arbitrary, and an image of mostly grey would otherwise report a
 spread it does not have.
+
+**`saturation_hsv` is the tail a whole screen is held at** (§PW57). HSL divides the span
+by one less the distance from mid-lightness, so a pale cream and a deep shadow both reach
+1.0, and on a picture with any of either the 99th percentile is 1.0 whatever else is in
+it: Cottony's boards and the art they were cut from all read 0.99 or more. HSV divides by
+the brightest channel instead, which is what `check_vivid.py` measured, and reads the same
+three at 0.83, 0.83 and 0.88. `saturation` stays for a subject's own pixels, where neither
+extreme dominates.
 
 **`edge` is how a letter keeps its edge** (§PW79). A wordmark fails by its type going
 soft, not by a median drifting, so the bar on a mark is `edge_p99`: the steepest

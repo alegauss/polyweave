@@ -16,9 +16,9 @@
 
 ## Block H — Proof on a real game
 
-- 📋 **PW57** (deps: PW53 ✅) **every Cottony look gate restates its own floor, so no asset has a bar a search can aim at** — Five check scripts measure after the render is spent, which is a verdict and never a target, and a threshold moved in one of them is invisible to the rest. → §PW57
-- 📋 **PW59** (deps: PW53 ✅, PW54 ✅, PW55 ✅, PW56 ⏳, PW57, PW58 ✅) **nothing says how much of Cottony still does its own version of what the plugin does** — Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion. → §PW59
-- ⏳ **PW56** (deps: PW57) **twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent** — The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question. → §PW56
+- ⏳ **PW57** (deps: PW53 ✅) **every Cottony look gate restates its own floor, so no asset has a bar a search can aim at** — check_pieces.py still holds the piece sheet to rings and silhouette gaps no measure names, so a search cannot aim at them. → §PW57
+- 📋 **PW59** (deps: PW53 ✅, PW54 ✅, PW55 ✅, PW56 ⏳, PW57 ⏳, PW58 ✅) **nothing says how much of Cottony still does its own version of what the plugin does** — Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion. → §PW59
+- ⏳ **PW56** (deps: PW57 ⏳) **twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent** — The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question. → §PW56
 - 🛠 **PW372** (deps: Spinhold RK215) **a camera move cannot be declared as a clip or played by the game, so a cutscene's shots are numbers in the project** — No shot is yet captured onto a sitting for a person to accept, and Starship's opening still reads its own JSON. → §PW372
 - 🛠 **PW36** (deps: PW5 ✅, PW82 ⏸) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82. → §PW36
 - 📋 **PW458** (deps: —) **port.run builds a member's declaration beside the declaration, so in a game's tree the engine imports the mesh** — A port writes into the project's import tree unasked, and the agent ignores and deletes what the engine pulled in by hand. → §PW458
@@ -127,6 +127,13 @@
   owner's Scenario key and a [budget.scenario] ceiling, style.train trains on a canon of
   five or more, and a picture bought from the model passes or fails the family's gate
   with its record naming the model and its members.
+
+## Done when — PW57
+
+- **check_pieces.py's three rules are specs, or a person keeps them as a test** Each of
+  ink on the faced kinds, no pale ring of marks round a rim, and the kinds' silhouettes
+  kept apart is either a predicate in a Cottony acceptance spec over the committed piece
+  sheet, or recorded as a test a person chose to keep.
 
 ## Non-goals
 

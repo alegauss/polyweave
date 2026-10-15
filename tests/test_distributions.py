@@ -111,6 +111,33 @@ def test_saturation_is_zero_for_grey_and_one_for_a_pure_hue(tmp_path):
     assert values_of(measure.measure(pure, ["saturation"]), "saturation_mean") == 1.0
 
 
+def test_hsv_saturation_holds_a_tail_that_hsl_saturates(tmp_path):
+    """Cream and shadow read 1.0 in HSL, so a board's p99 there says nothing (§PW57)."""
+    cream, shadow = (255, 250, 240), (40, 20, 20)
+    washed = picture(
+        tmp_path, "washed.png", [(3000, cream), (900, shadow), (100, (230, 120, 120))]
+    )
+    vivid = picture(
+        tmp_path, "vivid.png", [(3000, cream), (900, shadow), (100, (230, 20, 20))]
+    )
+
+    def p99(path, name):
+        return values_of(measure.measure(path, [name], region="frame"), f"{name}_p99")
+
+    assert p99(washed, "saturation") == p99(vivid, "saturation") == 1.0
+    assert p99(vivid, "saturation_hsv") - p99(washed, "saturation_hsv") > 0.3
+
+
+def test_hsv_saturation_is_the_span_over_the_brightest_channel(tmp_path):
+    path = picture(tmp_path, "p.png", [(64, (200, 100, 50))])
+    taken = values_of(measure.measure(path, ["saturation_hsv"]), "saturation_hsv_mean")
+    assert taken == pytest.approx(0.75)
+    black = picture(tmp_path, "black.png", [(64, (0, 0, 0))])
+    assert values_of(
+        measure.measure(black, ["saturation_hsv"]), "saturation_hsv_mean"
+    ) == 0.0
+
+
 def test_luma_weights_green_above_red_above_blue(tmp_path):
     def luma(rgb):
         path = picture(tmp_path, f"{rgb}.png", [(64, rgb)])

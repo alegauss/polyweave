@@ -191,6 +191,7 @@
 - ✅ **PW453** **picture.vector draws an SVG with live text as a PNG with no letters, and answers as if nothing were lost** — picture.vector and store.capsules outline live text in its resolved font before ThorVG draws, record the font, and refuse a run they cannot outline (design recorded in `docs/specs/store.md`).
 - ✅ **PW462** **scrub reads a painted mark as darker in luma only, so the hammer's soft purple seam on pink survives it** — The scrub reads a mark as a darker shade of its ground's hue in Lab too, at a reach that follows the sheet (design in `docs/specs/fetching.md`).
 - ✅ **PW53** **Cottony lights twelve models through fourteen constants of its own, and the search never sees one of them** — Every model Cottony's rig lit bakes through polyweave against its own spec, family by family from PW76 to PW81, and bake_model.py's MODELS is empty (design recorded in `docs/specs/adoption.md`).
+- ✅ **PW57 (the vivid floor)** **every Cottony look gate restates its own floor, so no asset has a bar a search can aim at** — Cottony's vivid floor is two acceptance specs a search can aim at, read by a new saturation_hsv measure, and check_vivid.py only runs them.
 
 ## Block I — Voxel models from a declaration
 

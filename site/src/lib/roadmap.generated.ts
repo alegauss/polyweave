@@ -54,7 +54,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW57",
     block: "H",
     symptom: "every Cottony look gate restates its own floor, so no asset has a bar a search can aim at",
-    why: "Five check scripts measure after the render is spent, which is a verdict and never a target, and a threshold moved in one of them is invisible to the rest.",
+    why: "check_pieces.py still holds the piece sheet to rings and silhouette gaps no measure names, so a search cannot aim at them.",
     deps: [],
   },
   {
