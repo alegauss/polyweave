@@ -101,24 +101,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW459 A sitting has an address
-
-Met handing Cottony's trays sitting to the owner (PW78). Before a page goes to the owner
-it is screenshotted and looked at (headless Edge, `--virtual-time-budget=4000`). `python
--m polyweave review --root . --port 8765` serves the list of sittings at `/`, and the
-sitting itself opens only by a click: no hash, query or path opens one sitting, so the
-screenshot showed the list card ("Imagens para aprovar, 1 para responder") and none of
-what the owner would judge.
-
-The workaround: the sheet PNG `verdict.sitting` wrote
-(`.polyweave/review/trays/bandejas.png`) was read instead. That checks the pictures but
-not the page: the `about`, the choices' words or the layout.
-
-What polyweave should do: give each sitting a URL the page opens straight at (for
-instance `/#sitting=<manifest>` or `/sitting/<folder>`), and have `verdict.sitting` and
-`review` print it, so the agent screenshots exactly what the person will see and the
-person gets a link to it.
-
 ### §PW460 An accept the spec contradicts
 
 Met porting Cottony's trays (PW78). The sitting `.polyweave/review/trays` held one

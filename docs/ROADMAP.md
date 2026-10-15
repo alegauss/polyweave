@@ -18,7 +18,6 @@
 
 - 🛠 **PW372** (deps: Spinhold RK215) **a camera move cannot be declared as a clip or played by the game, so a cutscene's shots are numbers in the project** — No shot is yet captured onto a sitting for a person to accept, and Starship's opening still reads its own JSON. → §PW372
 - 🛠 **PW36** (deps: PW5 ✅, PW82 ⏸) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82. → §PW36
-- 📋 **PW459** (deps: —) **the review page opens a sitting only by a click, so no URL shows the agent or the owner one sitting** — The page is checked before handover by a headless screenshot, and that screenshot can only show the list. → §PW459
 - 📋 **PW460** (deps: —) **the review page lets a person accept a family whose spec fails, and the bound stays, so the bake refuses it** — The accept and the spec disagree, and the agent decides by hand what the person meant by moving a bound. → §PW460
 - 📋 **PW461** (deps: —) **a family search hands back a passing rig on every range's edge while one inside them has three times the headroom** — The answer is the harshest light that clears the bars, and the agent pins a better rig by hand. → §PW461
 - 📋 **PW463** (deps: —) **a review server that sees polyweave changed refuses the answer, and only the agent that started it can restart it** — The owner answers on a page that tells them to restart a server they never started, and their verdict waits. → §PW463

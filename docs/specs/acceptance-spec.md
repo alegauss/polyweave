@@ -169,7 +169,10 @@ first, each row its title, folder, how many wait on an answer, how much is answe
 when it was laid out, the finished ones folded under the earlier sittings (§PW415). A
 row opens that sitting alone at `?sitting=<manifest>`, so a link to a sitting is a link
 to it and the browser's back returns to the index; `?member=` opens the sitting that
-judges a file. A sitting shows its summary and how to decide, then one card per family with the picture (or the films, looping side by side), the
+judges a file. `verdict.sitting` answers that address as `page`, with the `manifest`,
+and `python -m polyweave review` prints a full link for every sitting with a family
+still unanswered, so the person is sent straight to it and the screenshot taken before
+handing over shows the sitting rather than the index (§PW459). A sitting shows its summary and how to decide, then one card per family with the picture (or the films, looping side by side), the
 choices as buttons that say what each leads to, and progress across the sitting. Marks
 and the technical details fold under each card, older sittings and the gates, turntables,
 canons and asset table under one fold. A redo asks for a sentence; an accept may add none, and the page then records the

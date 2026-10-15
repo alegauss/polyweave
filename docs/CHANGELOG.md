@@ -195,6 +195,7 @@
 - ✅ **PW57 (the vivid floor)** **every Cottony look gate restates its own floor, so no asset has a bar a search can aim at** — Cottony's vivid floor is two acceptance specs a search can aim at, read by a new saturation_hsv measure, and check_vivid.py only runs them.
 - ✅ **PW59** **nothing says how much of Cottony still does its own version of what the plugin does** — project.adoption reads a project's code for the four surfaces polyweave owns, and Cottony's CI fails on a file doing one it keeps with no reason (design recorded in `docs/specs/project-config.md`).
 - ✅ **PW458** **port.run builds a member's declaration beside the declaration, so in a game's tree the engine imports the mesh** — port.run builds a declared member into the work area, or the folder its mesh key names, so a port never writes into the engine's import tree (design recorded in `docs/specs/adoption.md`).
+- ✅ **PW459** **the review page opens a sitting only by a click, so no URL shows the agent or the owner one sitting** — verdict.sitting answers the address the page opens a sitting at, and review prints a link to each one waiting, so a screenshot lands on it (design recorded in `docs/specs/acceptance-spec.md`).
 
 ## Block I — Voxel models from a declaration
 

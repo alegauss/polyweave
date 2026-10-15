@@ -137,6 +137,21 @@ def test_the_command_line_holds_the_same_door(project, capsys):
     assert "verdict.not-the-person" in capsys.readouterr().err
 
 
+def test_a_sitting_says_the_address_the_page_opens_it_at(tmp_path):
+    """§PW459: a link to one sitting, which a screenshot and a person can both open."""
+    (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
+    said = verdict.sitting({"stars": [member(tmp_path, "star_dim", 120)]},
+                           out="art/review/title", root=tmp_path)
+    assert said["manifest"] == SITTING
+    assert said["page"] == "/?sitting=art%2Freview%2Ftitle%2Fsitting.json"
+    assert said["page"] in said["says"]
+    lines = review.waiting_at(tmp_path, "http://127.0.0.1:8765")
+    assert lines == [f"  1 to answer: http://127.0.0.1:8765{said['page']}"]
+    review.answer(tmp_path, {"sitting": SITTING, "family": "stars",
+                             "choice": "accept", "why": "certo"})
+    assert review.waiting_at(tmp_path, "http://127.0.0.1:8765") == []
+
+
 def test_only_a_digest_of_a_code_is_on_disk(project):
     code = person.issue(project, SITTING)
     kept = (project / ".polyweave" / person.DIGESTS).read_text("utf-8")

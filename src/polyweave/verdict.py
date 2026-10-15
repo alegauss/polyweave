@@ -226,13 +226,26 @@ def sitting(
     # A sitting nothing holds is put to the person in words that claim no spec
     # (§PW338).
     held = any(one["checked"] for laid in sheets.values() for one in laid["members"])
-    _manifest(folder, families, sheets, root, about=about,
-              kind="look" if held else "unheld")
+    listed = _manifest(folder, families, sheets, root, about=about,
+                       kind="look" if held else "unheld")
     return {
         "sheets": sheets,
+        "manifest": listed,
+        # Where the review page opens this sitting alone (§PW459), after the address
+        # `python -m polyweave review` prints: what a person is linked to, and what a
+        # screenshot before handing over should show.
+        "page": address(listed),
         "says": f"{len(sheets)} famil{'y' if len(sheets) == 1 else 'ies'} to look at "
-        f"in one sitting, each answered with judge(<members>, <choice>, <why>)",
+        f"in one sitting, at {address(listed)} on the review page, each answered with "
+        "judge(<members>, <choice>, <why>)",
     }
+
+
+def address(manifest: str) -> str:
+    """The path the review page opens one sitting at, by its manifest (§PW459)."""
+    from urllib.parse import quote
+
+    return f"/?sitting={quote(manifest, safe='')}"
 
 
 #: What a sitting leaves beside its sheets, so the page can put it in front of a person
@@ -243,8 +256,10 @@ MANIFEST = "sitting.json"
 def _manifest(
     folder: Path, families: dict, sheets: dict, root, kind: str = "look",
     about: str = "", abouts: dict | None = None, tone: list | None = None,
-) -> None:
+) -> str:
     """The sitting as data, and its place in the project's index of sittings.
+
+    Answers the manifest as the index lists it, which is what the page opens it by.
 
     `kind` is what is judged, a look, a line, an effect or a sound, and says the words
     the page offers (§PW199): each choice with what it means and what it leads to, and
@@ -284,6 +299,7 @@ def _manifest(
     write_atomic(
         index, json.dumps([*[h for h in held if h != mine], mine], indent=2) + "\n"
     )
+    return mine
 
 
 #: What `code` is, on each door that can accept a look (§PW443).

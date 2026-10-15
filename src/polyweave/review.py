@@ -701,11 +701,30 @@ def server(root=".", port: int = 0) -> ThreadingHTTPServer:
     return ThreadingHTTPServer((HOST, int(port)), Handler)
 
 
+def waiting_at(root, base: str) -> list[str]:
+    """One line per sitting with a family nobody answered, newest last, with its URL."""
+    answered = {(one.get("sitting"), one.get("family"))
+                for one in verdict.kept_answers(root)}
+    lines = []
+    for one in sittings(root):
+        left = [name for name in one.get("families") or {}
+                if (one["manifest"], name) not in answered]
+        if left:
+            at = verdict.address(one["manifest"])
+            lines.append(f"  {len(left)} to answer: {base}{at}")
+    return lines
+
+
 def run(root=".", port: int = 0) -> int:
     """Serve the page until interrupted, having said where it is."""
     serving = server(root, port)
     host, bound = serving.server_address[:2]
-    print(f"polyweave review: http://{host}:{bound}/  (Ctrl+C stops it)", flush=True)
+    base = f"http://{host}:{bound}"
+    print(f"polyweave review: {base}/  (Ctrl+C stops it)", flush=True)
+    # Each sitting still waiting, at the address that opens it alone (§PW459), so the
+    # person is linked straight to it and a screenshot shows what they will judge.
+    for line in waiting_at(root, base):
+        print(line, flush=True)
     try:
         serving.serve_forever()
     except KeyboardInterrupt:
