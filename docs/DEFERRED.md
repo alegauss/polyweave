@@ -17,6 +17,7 @@
 ## Block H — Proof on a real game
 
 - ⏸ **PW82** (deps: PW81 ✅) **nothing takes bake_model.py out once its assets have moved, so the rig outlives its own replacement** — set aside (a person's judgement): Each family porting leaves the file smaller and still running, and two live paths to one sprite is the state this whole sequence exists to end. → §PW82
+- ⏸ **PW57** (deps: PW53 ✅) **every Cottony look gate restates its own floor, so no asset has a bar a search can aim at** — set aside (The owner decides: new measures, or a kept test.): check_pieces.py's rings and silhouette gaps have no measure a search could aim at. → §PW57
 
 ## Block I — Voxel models from a declaration
 

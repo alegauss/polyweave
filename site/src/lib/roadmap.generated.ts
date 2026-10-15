@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 11 },
+  { block: "H", title: "Proof on a real game", open: 10 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 1 },
@@ -51,25 +51,18 @@ export const generatedBlocks: GeneratedBlock[] = [
 
 export const generatedTasks: GeneratedTask[] = [
   {
-    id: "PW57",
-    block: "H",
-    symptom: "every Cottony look gate restates its own floor, so no asset has a bar a search can aim at",
-    why: "check_pieces.py still holds the piece sheet to rings and silhouette gaps no measure names, so a search cannot aim at them.",
-    deps: [],
-  },
-  {
     id: "PW59",
     block: "H",
     symptom: "nothing says how much of Cottony still does its own version of what the plugin does",
     why: "Adoption is asserted per asset, so a hand-rolled rig, gate or runner can come back without anything failing, and 100% stays an opinion.",
-    deps: ["PW56", "PW57"],
+    deps: ["PW56"],
   },
   {
     id: "PW56",
     block: "H",
     symptom: "twelve GDScript runners in Cottony each start Godot their own way, and a settings mismatch is silent",
     why: "The seven perf scripts started by hand have no driver, and five of them are gates whose verdict shape is §PW57's question.",
-    deps: ["PW57"],
+    deps: [],
   },
   {
     id: "PW372",
@@ -249,4 +242,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW82", "PW201", "PW311", "PW368"];
+export const generatedPaused: string[] = ["PW82", "PW57", "PW201", "PW311", "PW368"];
