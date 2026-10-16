@@ -1498,9 +1498,17 @@ CODES: dict[str, Code] = {
         doors=("exclude the addon from the preset and export again",),
     ),
     "game.pack-unread": Code(
-        means="the pack's directory is encrypted, so the check cannot see inside it",
-        when="a release exported with directory encryption on",
+        means="the pack cannot be read: its directory is encrypted, it is no Godot "
+        "pack, or its format is older than 4",
+        when="a release exported with directory encryption on, or a file that is not "
+        "a .pck",
         doors=("rely on the preset check", "export without directory encryption"),
+    ),
+    "game.pack-unwritten": Code(
+        means="game.pack's export wrote no pack (§PW470)",
+        when="a preset name export_presets.cfg does not hold, or an export Godot "
+        "abandoned",
+        doors=("check the preset's name", "read what Godot printed in the detail"),
     ),
     "game.no-pack": Code(
         means="there is no exported pack at the path given",

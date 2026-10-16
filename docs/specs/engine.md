@@ -47,6 +47,16 @@ at exit. It is `clean` only with none of the first two and no leak other than th
 dummy driver can hold what a real one frees. The exit code is reported and not read,
 and the command exits non-zero when it is not clean.
 
+**What a pack carries is listed** (§PW470). `game.pack(preset, ceiling_mb=)` exports
+the preset with `--export-pack`, which needs no export template and so runs in CI, into
+the work area's `pack/<preset>.pck`, kept for `game.release_check` to read. It reads
+the pack's own file table (format 4, at the end of the pack) and answers each file's
+`path` and `bytes`, with `source` for an asset carried under `.godot/imported/`, the
+file it was imported from, and `over` where the pack outweighs the ceiling. The exit
+code is not read: a pack not written is `game.pack-unwritten` with what Godot printed,
+and a pack that is encrypted, older than format 4 or no pack is `game.pack-unread`.
+Which files belong in it is the game's to say.
+
 **The error pattern is the engine's**, not the project's, and is the one thing compiled in:
 `SCRIPT ERROR`, `Parse Error`, `Compile Error`, and `String formatting error`, which prints
 without the word SCRIPT and still aborts the block it is in. A caller may widen it; nothing

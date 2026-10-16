@@ -101,48 +101,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW466 Three Python scripts still start Godot themselves
-
-PW56 moved Cottony's twelve GDScript runners onto polyweave: four captures through
-`tools/capture_screens.py`, the cascade through `tools/measure_frames.py`, and seven
-perf scripts through `tools/run_perf.py`. Three Python scripts still start Godot through
-`subprocess`, each finding it through `GODOT` then PATH and never `[paths] godot`, each
-with its own timeout:
-
-- `tools/run_tests.py` runs every GDScript test with `--quit-after` and a wall clock,
-  and fails a run whose summary never came. polyweave's `game.test` is that procedure.
-- `tools/check_export.py` exports a preset and reads the pack. `game.export_smoke`
-  builds each preset and launches it, and `game.release_check` already reads the pack
-  for the driver from inside this script.
-- `tools/check_boot.py` boots the main scene and fails on a dirty shutdown. Nothing in
-  polyweave boots a scene with no script and reads the shutdown, so this one is either
-  `engine.run` with a short script or a gap to file against polyweave.
-
-Both workflows run these, so the move has to keep CI's verdicts: run each before and
-after against the same tree and compare what failed. CI also pins polyweave (Cottony
-RK153), so the pin has to carry the operations first.
-
-### §PW470 What a pack carries, listed
-
-Met moving Cottony's Godot runners (PW466). `tools/check_export.py` exports a pack with
-`--export-pack`, which needs no export template and so runs in CI, then reads the pack's
-own file table and fails when a file the game loads is missing, a file nothing loads is
-present, or the pack is over a ceiling. It exists because an unfiltered export shipped
-fourteen megabytes of reference mockups beside a five megabyte game, and Godot exits 0
-on a filter that drops half the game.
-
-polyweave reads around this without doing it: `provenance.generated` reads the preset's
-filters (PW455), `game.release_check` reads a given pack for the driver, and
-`game.export_smoke` builds and launches each preset, which needs templates. Nothing
-exports a pack and lists it, so Cottony keeps a `subprocess` call, a binary parser for
-the pack's table and its own Godot lookup.
-
-What polyweave should do: `game.pack(preset, root)` exports the preset as a pack into
-the work area, bounded like every run, and answers its files with their sizes, imported
-assets mapped back to their sources, and the total. Whether a file belongs in it stays
-the project's: `provenance.generated` already says what the preset should ship, so the
-answer can name the difference both ways, and a size ceiling is a declared bound.
-
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once

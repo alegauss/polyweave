@@ -139,7 +139,8 @@ TOOL_BUDGET = 4500
 #: 125,700 at 125,699 for a sitting's ledger asset and a verdict's member (§PW465).
 #: 126,200 at 126,135 for engine.run_declared, a game's runs declared (§PW467).
 #: 126,500 at 126,428 for game.boot, the main scene booted and read (§PW469).
-LIST_BUDGET = 126500
+#: 127,000 at 126,952 for game.pack, an exported pack listed (§PW470).
+LIST_BUDGET = 127000
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

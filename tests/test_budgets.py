@@ -128,7 +128,8 @@ from polyweave.errors import PolyweaveError
 #: 141,288 with a sitting's ledger asset and a verdict's member (§PW465).
 #: 141,752 with engine.run_declared, a game's runs declared (§PW467).
 #: 142,053 with game.boot, the main scene booted and read (§PW469).
-DESCRIBE = 142_100
+#: 142,641 with game.pack, an exported pack listed (§PW470).
+DESCRIBE = 142_700
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -235,7 +236,8 @@ DESCRIBE = 142_100
 #: 154,689 with a sitting's ledger asset and a verdict's member (§PW465).
 #: 155,193 with engine.run_declared and its two refusals (§PW467).
 #: 155,494 with game.boot and [engine] leaks (§PW469).
-CAPABILITIES = 155_500
+#: 156,105 with game.pack and game.pack-unwritten (§PW470).
+CAPABILITIES = 156_200
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
@@ -291,7 +293,8 @@ HELP_VERB = 4_900
 #: 30,148 with video.cut, verdict.move and loop.report (§PW429, §PW436, §PW444).
 #: 30,784 with project.adoption and engine.run_declared (§PW59, §PW467).
 #: 30,929 with game.boot (§PW469).
-HELP_TOP = 31_000
+#: 31,060 with game.pack (§PW470).
+HELP_TOP = 31_100
 #: A search's answer over its default budget of 24 samples: 3,739.
 #: 4,019 where it fails with its best on an edge, which `at_bound` and `stopped` now
 #: say, so a range that cut the answer off is not read as unreachable (§PW442).

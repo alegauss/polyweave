@@ -79,6 +79,8 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.adoption:scan": ("internal", "each surface's files; project.adoption"),
     "polyweave.person": ("internal", "the codes and guards an accept is checked by"),
     "polyweave.runs:declared": ("internal", "each [run.<name>], checked"),
+    "polyweave.pack:files_in": ("internal", "a pack's file table; game.pack"),
+    "polyweave.pack:source_of": ("internal", "an imported file's source; game.pack"),
     "polyweave.verdict:address": ("internal", "a sitting's page path; verdict.sitting"),
     "polyweave.review:waiting_at": ("internal", "each waiting sitting's link; review"),
     "polyweave.integrity:parsed": ("internal", "every script parsed after an import"),

@@ -468,6 +468,16 @@ export interface GameOpenArgs {
   locale?: string
 }
 
+/** Export a preset as a pack and list what landed in it (§PW470). */
+export interface GamePackArgs {
+  /** the export preset, by its name in export_presets.cfg */
+  preset: string
+  /** the Godot project to export; default "." */
+  root?: string
+  /** the most the pack may weigh; nothing is held to one if unset; in MB */
+  ceiling_mb?: number
+}
+
 /** The nodes a path, group or class finds, with their properties, the game held. */
 export interface GameQueryArgs {
   /** the session game.open answered */
@@ -2434,6 +2444,7 @@ export interface Operations {
   "game.input": GameInputArgs
   "game.keep": GameKeepArgs
   "game.open": GameOpenArgs
+  "game.pack": GamePackArgs
   "game.query": GameQueryArgs
   "game.record_flow": GameRecordFlowArgs
   "game.rekey": GameRekeyArgs
@@ -2637,6 +2648,7 @@ export const OPERATIONS = [
   "game.input",
   "game.keep",
   "game.open",
+  "game.pack",
   "game.query",
   "game.record_flow",
   "game.rekey",
