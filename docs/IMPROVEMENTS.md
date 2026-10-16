@@ -108,7 +108,8 @@ painting, `docs/design/screen1.png`, is 1024x1536 (2:3) and a capture is 1080x19
 (9:16). `distance` compares two renders of one size, `accept.check_screen` holds an
 asset to its own spec, and `reference.compare` is for video.
 
-What is missing is a declared correspondence and a comparison across it:
+Landed: the concept file, rectangles only, and reference.concept's per-region numbers
+and sheets (docs/specs/measurements.md). Still missing, of what was asked:
 
 - a reference file naming regions in the painting and the same regions in a capture,
   each a rectangle (or a quad, for a region the layout moved or scaled), so the layout

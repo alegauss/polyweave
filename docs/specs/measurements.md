@@ -163,6 +163,35 @@ disagree about it entirely. Comparing raw channels over a transparent background
 the renderer's scratch memory and nothing else — measured here as the difference between a
 useless metric and one that separates noise from change by a factor of fifty.
 
+## A capture against its concept painting
+
+Two renders of one size compare pixel for pixel; a capture and the painting it copies do
+not, being different sizes and aspects with the layout moved between them (§PW477). A
+`*.concept.toml` declares the correspondence once: `painting = "<path>"`, and a
+`[region.<name>]` each with `painting` and `capture` rectangles, `[x, y, width, height]`
+in each picture's own pixels, refused where one runs off its picture.
+
+`reference.concept(concept, capture, out=, size=)` cuts each region from both and
+resamples them, averaging down, to `size` on the long side in the painting's shape, never
+larger than the smaller cut so neither is enlarged. These are fields of its answer, not
+measures a spec names. Per region:
+
+- `palette_delta_e`: CIEDE2000 between five-colour k-means palettes, centres matched in
+  the cheapest order and weighted by the painting's shares;
+- `saturation_p90_ratio`: the capture's 90th-percentile saturation over the painting's;
+- `luma_p50_ratio` and `luma_p90_ratio`: the same for luma at the median and the 90th
+  percentile;
+- `edge_density`: each side's mean luma step between neighbours, and their ratio;
+- `structure`: structural similarity at a 64-pixel long side over 8-pixel windows, so
+  brushwork falls inside a window and a layout's masses do not.
+
+A ratio is the capture's over the painting's, and none where the painting's is zero.
+`edge_density` is a mean step rather than a count of pixels past a threshold, because
+resampling spreads an edge over more pixels and keeps the sum of its steps. With `out`,
+each region gets `<capture>.<region>.concept.png`: painting, capture and their per-pixel
+Lab distance in grey, recorded with the painting as `reference` and the capture as
+`capture`. A concept file or capture that cannot be read is `capture.bad-concept`.
+
 ## At display size
 
 | Measure | Range | What it is |

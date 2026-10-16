@@ -1989,6 +1989,16 @@ CODES: dict[str, Code] = {
         doors=("name one the answer lists",
                "declare [reference.<name>] with its size and regions"),
     ),
+    "capture.bad-concept": Code(
+        means="a capture cannot be held to its concept painting as declared",
+        when="a *.concept.toml missing or not TOML, naming no painting file or no "
+        "region, a region without both rectangles, a rectangle that runs off its "
+        "picture, or a capture that is not there (§PW477)",
+        doors=(
+            "write each [region.<name>] with painting and capture as [x, y, w, h]",
+            "measure each rectangle on the picture it names",
+        ),
+    ),
     "capture.unknown-region": Code(
         means="the region named is not the reference's, or it declares no minimap",
         when="a region name the [reference.<name>] regions do not carry, or a minimap "

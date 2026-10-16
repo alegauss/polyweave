@@ -1510,6 +1510,20 @@ export interface ReferenceCompareArgs {
   root?: string
 }
 
+/** Hold a capture to its concept painting region by region, across a layout change. */
+export interface ReferenceConceptArgs {
+  /** the *.concept.toml naming painting and regions */
+  concept: string
+  /** the capture held to it, a path under the project */
+  capture: string
+  /** the folder each region's sheet is written to; none if unset */
+  out?: string
+  /** the long side both regions are resampled to; from 16 to 1024; in px; default 256 */
+  size?: number
+  /** the project the paths resolve against; default "." */
+  root?: string
+}
+
 /** A timeline of a reference video's events, to split it into stretches at. */
 export interface ReferenceEventsArgs {
   /** the folder reference.frames wrote, or its frames.json */
@@ -2548,6 +2562,7 @@ export interface Operations {
   "purchase.remaining": PurchaseRemainingArgs
   "purchase.spent": PurchaseSpentArgs
   "reference.compare": ReferenceCompareArgs
+  "reference.concept": ReferenceConceptArgs
   "reference.events": ReferenceEventsArgs
   "reference.frames": ReferenceFramesArgs
   "reference.minimap": ReferenceMinimapArgs
@@ -2753,6 +2768,7 @@ export const OPERATIONS = [
   "purchase.remaining",
   "purchase.spent",
   "reference.compare",
+  "reference.concept",
   "reference.events",
   "reference.frames",
   "reference.minimap",

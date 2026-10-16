@@ -68,7 +68,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW477",
     block: "H",
     symptom: "a capture cannot be held to the concept painting it copies, region by region, at another size and aspect",
-    why: "Reaching a concept art is the goal of a whole art pass, and with nothing to measure it every step is judged by eye.",
+    why: "Where a region's box lands against the painting's, quads for a moved region, and each number as a spec predicate and a search objective are still to come.",
     deps: [],
   },
   {

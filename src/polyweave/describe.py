@@ -159,6 +159,7 @@ MODULES: tuple[str, ...] = (
     "polyweave.reference_register",
     "polyweave.reference_compare",
     "polyweave.reference_transcription",
+    "polyweave.reference_concept",
     "polyweave.normalise",
     "polyweave.compose",
     "polyweave.store",
