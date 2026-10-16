@@ -212,6 +212,29 @@ bound it crossed (`max` or `min`) and how far past it, the way `accept.check` al
 prints them, plus the path of the render it was measured on, so the check never has to
 be re-run to learn what the run already knew.
 
+### §PW476 picture.vector cannot sweep an attribute over frames
+
+Spinhold's title turns the logo's dashed orbit round the O (RK150). The orbit is an SVG
+ellipse with `stroke-dasharray="15 8"`; turning it means drawing the same layer at
+several `stroke-dashoffset` values through one dash and gap, then playing them in a
+loop.
+
+`picture.vector --source art/brand/spinhold-wordmark-clear.svg --width W --layers {...}`
+draws one still per call. No parameter sweeps an attribute over frames, so Spinhold grew
+its generator instead: `tools/art/make_brand.py` now writes eight extra SVGs,
+`art/brand/orbit/spinhold-orbit-<k>.svg`, each the orbit alone at offset k*23/8, and the
+project calls `picture.vector` once per file. Eight sources, eight records, and nothing
+in any record says the eight are one loop or which attribute moved.
+
+What polyweave should do: `picture.vector` (or a sibling, `picture.vector_frames`) takes
+`sweep = {element: "#orbit-back", attribute: "stroke-dashoffset", from: 0, to: 23,
+frames: 8}` (several elements may share one sweep), draws each frame of each named
+layer, and writes one record naming the single source, the sweep and the frame files in
+order, optionally packed into one strip so the engine binds one texture. A loop whose
+last frame equals its first should be refused or trimmed, since a duplicate frame
+stutters. Spinhold's eight phase SVGs and the make_brand `phase` argument are then
+removed.
+
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once
