@@ -68,7 +68,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW472",
     block: "H",
     symptom: "a panel's outline is a box with cut corners, so a pill, a rounded card or a lobed banner cannot be declared",
-    why: "Every panel in a soft style is drawn against an outline the game computes, which the panel kit was built to stop.",
+    why: "A pill past the nine-patch, a lobed or star outline from the geometry vocabulary, and a piping rim are still to be declared.",
     deps: [],
   },
   {

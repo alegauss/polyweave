@@ -13,6 +13,7 @@ size = [96, 64]                 # the texture, in pixels
 margin = 16                     # the nine-patch margin, or [left, top, right, bottom]
 fill = "#0a1a2acc"              # #rrggbb, or #rrggbbaa with its alpha
 cut = 4                         # each corner cut off at 45 degrees, in pixels
+# radius = 4                    # or each corner rounded, in pixels; never both
 edge = { width = 2, colour = "#3fe0ff" }
 brackets = { length = 10, width = 3, colour = "#ff4fd8" }
 scan = { pitch = 3, colour = "#3fe0ff26" }
@@ -30,9 +31,12 @@ what it names, key by key within a part, so a focused edge keeps its width and c
 its colour.
 
 **A corner has to fit inside the margin.** A nine-patch stretches everything between the
-margins, so a cut or a bracket that reaches past the smallest margin would be bent the
-first time the panel is drawn larger than its texture. That is refused rather than drawn,
-naming how far the corner reaches. A margin that leaves no middle is refused as well.
+margins, so a cut, a radius or a bracket that reaches past the smallest margin would be
+bent the first time the panel is drawn larger than its texture. That is refused rather
+than drawn, naming how far the corner reaches. A corner is cut or rounded, and a panel
+declaring both is refused; brackets start where either ends. On the shader route a
+radius is clamped to half the Control's smaller side, so a Control no taller than twice
+the radius is drawn as a pill. A margin that leaves no middle is refused as well.
 Every key is checked, and one nothing reads is refused with the nearest one that exists.
 All of these are `compose.bad-panel`.
 

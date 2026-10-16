@@ -73,9 +73,37 @@ def test_the_parts_land_where_they_are_declared(tmp_path):
     assert len({tuple(p) for p in middle}) == 2
 
 
+def test_a_rounded_corner_is_drawn_round_with_its_rim_and_brackets(tmp_path):
+    """§PW472: a soft style's card is rounded, not cut."""
+    panel.build(panels(tmp_path, HOLO.replace("cut = 4", "radius = 6")),
+                root=str(tmp_path))
+    normal = pixels(tmp_path, "ui/holo.normal.png")
+    # Outside the arc at the corner, on it a pixel in, and inside it further round.
+    assert normal[0, 0, 3] == 0
+    assert 0 < normal[1, 1, 3] < 128
+    assert normal[3, 3, 3] >= 0xCC
+    # The rim runs straight down the side, past the corner's square.
+    assert tuple(normal[32, 0, :3]) == (0x3F, 0xE0, 0xFF)
+    # The bracket starts past the arc, not past a cut.
+    assert tuple(normal[1, 7, :3]) == (0xFF, 0x4F, 0xD8)
+    assert tuple(normal[1, 5, :3]) != (0xFF, 0x4F, 0xD8)
+
+
+def test_a_rounded_corner_reaches_the_shader(tmp_path):
+    body = HOLO.replace("cut = 4", "radius = 6")
+    made = panel.build(panels(tmp_path, body), shader=True, root=str(tmp_path))
+    material = (tmp_path / made["panels"]["holo"]["normal"]["material"]).read_text(
+        "utf-8")
+    assert "shader_parameter/radius = 6.0" in material
+    assert "shader_parameter/cut = 0.0" in material
+    assert "uniform float radius" in (tmp_path / "ui/holo.gdshader").read_text("utf-8")
+
+
 @pytest.mark.parametrize(
     ("change", "said"),
     [
+        (("cut = 4", "cut = 4\nradius = 4"), "either cut or rounded"),
+        (("cut = 4", "radius = 10"), "stretching would bend it"),
         (("length = 10", "length = 20"), "stretching would bend it"),
         (("margin = 16", "margin = 50"), "leave no middle"),
         (('fill = "#0a1a2acc"', 'fill = "teal"'), "not a colour"),

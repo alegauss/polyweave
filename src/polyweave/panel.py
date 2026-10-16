@@ -12,6 +12,7 @@ A `*.panel.toml` declares the frame's parts instead:
     margin = 16                     # nine-patch margin, or [left, top, right, bottom]
     fill = "#0a1a2acc"
     cut = 6                         # each corner cut off at 45 degrees
+    # radius = 6                    # or rounded, never both
     edge = { width = 2, colour = "#3fe0ff" }
     brackets = { length = 12, width = 3, colour = "#ff4fd8" }
     scan = { pitch = 3, colour = "#3fe0ff26" }
@@ -45,6 +46,7 @@ PARTS = {
     "margin": None,
     "fill": None,
     "cut": None,
+    "radius": None,
     "edge": ("width", "colour"),
     "brackets": ("length", "width", "colour"),
     "scan": ("pitch", "colour"),
@@ -134,6 +136,11 @@ def _checked(name: str, state: str, panel: dict) -> dict:
         raise _bad(name, f"margins {margins} leave no middle in {width}x{height}",
                    "make the panel larger, or the margins smaller")
     cut = _whole(name, "cut", panel.get("cut", 0))
+    radius = _whole(name, "radius", panel.get("radius", 0))
+    if cut and radius:
+        raise _bad(name,
+                   f"in state {state}, it has both cut = {cut} and radius = {radius}",
+                   "a corner is either cut or rounded: keep one of the two")
     edge = panel.get("edge") or {}
     brackets = panel.get("brackets") or {}
     scan = panel.get("scan") or {}
@@ -142,6 +149,7 @@ def _checked(name: str, state: str, panel: dict) -> dict:
         "margin": (left, top, right, bottom),
         "fill": _colour(name, "fill", panel.get("fill", "#00000000")),
         "cut": cut,
+        "radius": radius,
         "edge": {"width": _whole(name, "edge.width", edge.get("width", 0)),
                  "colour": _colour(name, "edge.colour",
                                    edge.get("colour", "#00000000"))},
@@ -156,14 +164,16 @@ def _checked(name: str, state: str, panel: dict) -> dict:
             "width": _whole(name, "tick.width", tick.get("width", 1), 1),
             "colour": _colour(name, "tick.colour", tick.get("colour")),
         }
-    reach = cut + out["edge"]["width"]
+    # Only one of the two is ever set, and either is how far the corner's shape goes.
+    corner = cut + radius
+    reach = corner + out["edge"]["width"]
     if brackets:
         out["brackets"] = {
             "length": _whole(name, "brackets.length", brackets.get("length", 0), 1),
             "width": _whole(name, "brackets.width", brackets.get("width", 1), 1),
             "colour": _colour(name, "brackets.colour", brackets.get("colour")),
         }
-        reach = max(reach, cut + out["brackets"]["length"], out["brackets"]["width"])
+        reach = max(reach, corner + out["brackets"]["length"], out["brackets"]["width"])
     if scan:
         out["scan"] = {
             "pitch": _whole(name, "scan.pitch", scan.get("pitch", 0), 2),
@@ -175,8 +185,8 @@ def _checked(name: str, state: str, panel: dict) -> dict:
             name,
             f"in state {state}, its corner reaches {reach} px and the smallest margin "
             f"is {min(left, top, right, bottom)} px, so stretching would bend it",
-            "make the margin at least as wide as the cut plus the bracket, or shorten "
-            "the bracket",
+            "make the margin at least as wide as the cut or radius plus the bracket, "
+            "or shorten the bracket",
         )
     return out
 
@@ -188,6 +198,8 @@ def _drawn(panel: dict):
     width, height = panel["size"]
     big = (width * SUPER, height * SUPER)
     cut = panel["cut"] * SUPER
+    radius = panel["radius"] * SUPER
+    corner = cut + radius
 
     def outline(inset: float) -> list[tuple[float, float]]:
         x0, y0, x1, y1 = inset, inset, big[0] - inset, big[1] - inset
@@ -197,7 +209,11 @@ def _drawn(panel: dict):
 
     edge = panel["edge"]["width"] * SUPER
     shape = Image.new("L", big, 0)
-    ImageDraw.Draw(shape).polygon(outline(0), fill=255)
+    if radius:
+        ImageDraw.Draw(shape).rounded_rectangle(
+            (0, 0, big[0] - 1, big[1] - 1), radius=radius, fill=255)
+    else:
+        ImageDraw.Draw(shape).polygon(outline(0), fill=255)
     picture = Image.new("RGBA", big, (0, 0, 0, 0))
     fill = Image.new("RGBA", big, panel["fill"])
     picture.paste(fill, (0, 0), shape)
@@ -212,22 +228,29 @@ def _drawn(panel: dict):
         picture = Image.alpha_composite(picture, clipped)
     if edge:
         rim = Image.new("RGBA", big, (0, 0, 0, 0))
-        points = outline(edge / 2)
-        ImageDraw.Draw(rim).line([*points, points[0]], fill=panel["edge"]["colour"],
-                                 width=edge, joint="curve")
+        if radius:
+            # Drawn inward from the outline, so the rim follows the fill's own curve.
+            ImageDraw.Draw(rim).rounded_rectangle(
+                (0, 0, big[0] - 1, big[1] - 1), radius=radius,
+                outline=panel["edge"]["colour"], width=edge)
+        else:
+            points = outline(edge / 2)
+            ImageDraw.Draw(rim).line([*points, points[0]],
+                                     fill=panel["edge"]["colour"], width=edge,
+                                     joint="curve")
         picture = Image.alpha_composite(picture, rim)
     if panel["brackets"]:
         marks = Image.new("RGBA", big, (0, 0, 0, 0))
         pen = ImageDraw.Draw(marks)
         thick = panel["brackets"]["width"] * SUPER
-        reach = cut + panel["brackets"]["length"] * SUPER
+        reach = corner + panel["brackets"]["length"] * SUPER
         colour = panel["brackets"]["colour"]
         for x, y, dx, dy in ((0, 0, 1, 1), (big[0], 0, -1, 1),
                              (0, big[1], 1, -1), (big[0], big[1], -1, -1)):
-            # Along the top or bottom edge and down or up the side, past the cut.
-            pen.rectangle(_box(x + dx * cut, y, x + dx * reach, y + dy * thick),
+            # Along the top or bottom edge and down or up the side, past the corner.
+            pen.rectangle(_box(x + dx * corner, y, x + dx * reach, y + dy * thick),
                           fill=colour)
-            pen.rectangle(_box(x, y + dy * cut, x + dx * thick, y + dy * reach),
+            pen.rectangle(_box(x, y + dy * corner, x + dx * thick, y + dy * reach),
                           fill=colour)
         picture = Image.alpha_composite(picture, marks)
     return picture.resize(panel["size"], Image.Resampling.BOX)
@@ -259,6 +282,7 @@ _PANEL_SHADER = """shader_type canvas_item;
 
 uniform vec4 fill : source_color;
 uniform float cut = 0.0;
+uniform float radius = 0.0;
 uniform float edge_width = 0.0;
 uniform vec4 edge_colour : source_color;
 uniform float bracket_length = 0.0;
@@ -290,6 +314,13 @@ void fragment() {
 \tvec2 d = min(p, size - p);
 \tfloat diagonal = (d.x + d.y - cut) * 0.70710678;
 \tfloat dist = min(min(d.x, d.y), diagonal);
+\t// A rounded corner: within its square, the distance is to the arc. Clamped to half
+\t// the smaller side, so a radius past it draws a pill at any size.
+\tfloat r = min(radius, min(size.x, size.y) * 0.5);
+\tif (r > 0.0 && d.x < r && d.y < r) {
+\t\tdist = r - length(vec2(r) - d);
+\t}
+\tfloat corner = cut + r;
 \tif (dist < 0.0) {
 \t\tCOLOR = vec4(0.0);
 \t} else {
@@ -300,8 +331,8 @@ void fragment() {
 \t\tif (dist < edge_width) {
 \t\t\tc = over(c, edge_colour);
 \t\t}
-\t\tbool along = d.y < bracket_width && d.x >= cut && d.x < cut + bracket_length;
-\t\tbool down = d.x < bracket_width && d.y >= cut && d.y < cut + bracket_length;
+\t\tbool along = d.y < bracket_width && d.x >= corner && d.x < corner + bracket_length;
+\t\tbool down = d.x < bracket_width && d.y >= corner && d.y < corner + bracket_length;
 \t\tif (bracket_length > 0.0 && (along || down)) {
 \t\t\tc = over(c, bracket_colour);
 \t\t}
@@ -392,7 +423,7 @@ def _uniforms(panel: dict) -> dict:
     scan = panel["scan"] or {"pitch": 0, "colour": none}
     tick = panel["tick"] or {"length": 0, "width": 0, "colour": none}
     return {
-        "fill": panel["fill"], "cut": panel["cut"],
+        "fill": panel["fill"], "cut": panel["cut"], "radius": panel["radius"],
         "edge_width": panel["edge"]["width"], "edge_colour": panel["edge"]["colour"],
         "bracket_length": brackets["length"], "bracket_width": brackets["width"],
         "bracket_colour": brackets["colour"],
