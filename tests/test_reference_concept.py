@@ -91,6 +91,56 @@ def test_a_region_that_sits_low_says_so_as_geometry(project):
     assert geometry["scale"] == 1.0
 
 
+SPEC = """\
+asset = "screen"
+
+[[predicate]]
+id      = "board-holds-its-stripes"
+measure = "concept_structure"
+concept = "design/screen.concept.toml"
+region  = "board"
+min     = 0.8
+
+[[predicate]]
+id      = "board-sits-where-painted"
+measure = "concept_offset"
+concept = "design/screen.concept.toml"
+region  = "board"
+max     = 6
+"""
+
+
+def test_a_spec_holds_a_capture_to_a_region_of_the_painting(project):
+    """§PW477: a predicate a search can aim at the painting with."""
+    from polyweave import accept
+
+    (project / "screen.accept.toml").write_text(SPEC, encoding="utf-8")
+    spec = accept.read("screen.accept.toml", project)
+    scene((300, 450), (220, 80, 120), (60, 140, 200)).save(project / "shots" / "a.png")
+    held = accept.check(spec, project / "shots" / "a.png", root=project)
+    assert held["passed"], held["failed"]
+    scene((300, 450), (220, 80, 120), (60, 140, 200), stripes=False, low=30).save(
+        project / "shots" / "b.png")
+    drifted = accept.check(spec, project / "shots" / "b.png", root=project)
+    assert set(drifted["failed"]) == {"board-holds-its-stripes",
+                                      "board-sits-where-painted"}
+    # A margin below one on each, which is what a search climbs.
+    assert all(p["margin"] < 1 for p in drifted["predicates"])
+
+
+def test_a_concept_predicate_naming_no_region_it_declares_is_refused(project):
+    from polyweave import accept
+
+    body = SPEC.replace('region  = "board"\nmin', 'region  = "footer"\nmin')
+    (project / "screen.accept.toml").write_text(body, encoding="utf-8")
+    scene((300, 450), (220, 80, 120), (60, 140, 200)).save(project / "shots" / "a.png")
+    with pytest.raises(PolyweaveError) as refused:
+        accept.check(accept.read("screen.accept.toml", project),
+                     project / "shots" / "a.png", root=project)
+    assert refused.value.code == "capture.bad-concept"
+    assert set(refused.value.as_dict()["allowed"]) == {"header", "board"}
+
+
 @pytest.mark.parametrize(
     ("change", "said"),
     [

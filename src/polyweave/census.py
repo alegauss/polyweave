@@ -89,6 +89,10 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.flashes:measured": ("internal", "what a flashes bound reads"),
     "polyweave.verdict:kept_answers": ("internal", "every answer, at its sitting now"),
     "polyweave.video:is_video": ("internal", "whether a spec's measure is a video's"),
+    "polyweave.reference_concept:is_concept": (
+        "internal", "whether a spec's measure is a concept region's"),
+    "polyweave.reference_concept:concept_value": (
+        "internal", "one concept measure, which accept.check reads for a predicate"),
     "polyweave.video:measured": ("internal", "what a video bound reads, off the MP4"),
     "polyweave.video:read": ("internal", "a cut's clips, checked; video.cut"),
     "polyweave.store:thinnest": ("internal", "a logo's thinnest stroke at a scale"),

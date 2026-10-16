@@ -244,6 +244,85 @@ def _sheet(one, two):
     return sheet
 
 
+def _compared(drawn, taken, name: str, region: Any, size: int) -> tuple:
+    """One region's numbers, the two cuts they were read on, and the two boxes."""
+    from PIL import Image as Pil
+
+    if not isinstance(region, dict) or set(region) - {"painting", "capture"}:
+        raise _bad(f"region {name} must hold painting and capture rectangles only",
+                   "write painting = [x, y, w, h] and capture = [x, y, w, h]")
+    mine = _box(name, "painting", region.get("painting"), drawn.size)
+    theirs = _box(name, "capture", region.get("capture"), taken.size)
+    w, h = mine[2] - mine[0], mine[3] - mine[1]
+    # Never larger than the smaller of the two cuts: an upsampled side's edges soften,
+    # and edge density would measure the resampling rather than the art.
+    long = min(size, max(w, h), max(theirs[2] - theirs[0], theirs[3] - theirs[1]))
+    scale = long / max(w, h)
+    shape = (max(2, round(w * scale)), max(2, round(h * scale)))
+    # Averaged down, never sharpened: a sharpening filter's ringing is edge too.
+    one = drawn.crop(mine).resize(shape, Pil.Resampling.BOX)
+    two = taken.crop(theirs).resize(shape, Pil.Resampling.BOX)
+    measured = _measured(one, two)
+    coarse = 48 / max(shape)
+    small = (max(4, round(shape[0] * coarse)), max(4, round(shape[1] * coarse)))
+    measured["geometry"] = _aligned(one.resize(small, Pil.Resampling.BOX), taken,
+                                    theirs)
+    return measured, one, two, mine, theirs
+
+
+#: What a spec's predicate may bound about a concept region (§PW477), each read off
+#: the region its `region` names in the file its `concept` names.
+CONCEPTS: dict[str, str] = {
+    "concept_palette_delta_e": "CIEDE2000 between the region's palettes",
+    "concept_saturation_ratio": "the capture's p90 saturation over the painting's",
+    "concept_luma_ratio": "the capture's median luma over the painting's",
+    "concept_luma_p90_ratio": "the capture's p90 luma over the painting's",
+    "concept_edge_ratio": "the capture's edge density over the painting's",
+    "concept_structure": "coarse structural similarity, -1 to 1",
+    "concept_offset": "how far the region sits from its declared box, in pixels",
+    "concept_scale": "the scale the region sits at against its declared box",
+}
+
+
+def is_concept(name: str) -> bool:
+    return name in CONCEPTS
+
+
+def concept_value(measure: str, *, concept: Any, region: Any, subject: Path,
+                  here: Path, size: int = 256) -> float:
+    """One concept measure of a capture, for a spec's predicate to bound."""
+    from PIL import Image as Pil
+
+    if not concept or not region:
+        raise _bad(f"{measure} reads a region of a concept file, and the predicate "
+                   "names no concept or no region",
+                   'give it concept = "<*.concept.toml>" and region = "<its region>"')
+    painting, regions = _read(str(concept), here)
+    if str(region) not in regions:
+        raise _bad(f"{concept} has no region {region!r}", "name one it declares",
+                   given=str(region), allowed=sorted(regions))
+    with Pil.open(painting) as opened:
+        drawn = opened.convert("RGB")
+    with Pil.open(subject) as opened:
+        taken = opened.convert("RGB")
+    found = _compared(drawn, taken, str(region), regions[str(region)], size)[0]
+    value = {
+        "concept_palette_delta_e": found["palette_delta_e"],
+        "concept_saturation_ratio": found["saturation_p90_ratio"],
+        "concept_luma_ratio": found["luma_p50_ratio"],
+        "concept_luma_p90_ratio": found["luma_p90_ratio"],
+        "concept_edge_ratio": found["edge_density"]["ratio"],
+        "concept_structure": found["structure"],
+        "concept_offset": round(math.hypot(*found["geometry"]["offset"]), 2),
+        "concept_scale": found["geometry"]["scale"],
+    }[measure]
+    if value is None:
+        raise _bad(f"{measure} of region {region} has no value: the painting's is "
+                   "zero, so the capture's cannot be a share of it",
+                   "bound another of the region's measures")
+    return float(value)
+
+
 @operation("reference.concept")
 def concept(
     concept: Annotated[str, Param("the *.concept.toml naming painting and regions")],
@@ -286,25 +365,8 @@ def concept(
         folder.mkdir(parents=True, exist_ok=True)
     answer: dict[str, dict] = {}
     for name, region in regions.items():
-        if not isinstance(region, dict) or set(region) - {"painting", "capture"}:
-            raise _bad(f"region {name} must hold painting and capture rectangles only",
-                       "write painting = [x, y, w, h] and capture = [x, y, w, h]")
-        mine = _box(name, "painting", region.get("painting"), drawn.size)
-        theirs = _box(name, "capture", region.get("capture"), taken.size)
-        w, h = mine[2] - mine[0], mine[3] - mine[1]
-        # Never larger than the smaller of the two cuts: an upsampled side's edges
-        # soften, and edge density would measure the resampling rather than the art.
-        long = min(size, max(w, h), max(theirs[2] - theirs[0], theirs[3] - theirs[1]))
-        scale = long / max(w, h)
-        shape = (max(2, round(w * scale)), max(2, round(h * scale)))
-        # Averaged down, never sharpened: a sharpening filter's ringing is edge too.
-        one = drawn.crop(mine).resize(shape, Pil.Resampling.BOX)
-        two = taken.crop(theirs).resize(shape, Pil.Resampling.BOX)
-        answer[name] = _measured(one, two)
-        coarse = 48 / max(shape)
-        small = (max(4, round(shape[0] * coarse)), max(4, round(shape[1] * coarse)))
-        answer[name]["geometry"] = _aligned(one.resize(small, Pil.Resampling.BOX),
-                                            taken, theirs)
+        answer[name], one, two, mine, theirs = _compared(drawn, taken, name, region,
+                                                         size)
         if folder:
             where = folder / f"{Path(capture).stem}.{name}.concept.png"
             _sheet(one, two).save(where)

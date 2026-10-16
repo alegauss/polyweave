@@ -24,6 +24,7 @@ from typing import Annotated, Any
 
 from . import cost, flashes, sound, vfx, video
 from . import measure as M
+from . import reference_concept as concepts
 from .describe import Param, operation
 from .errors import PolyweaveError
 from .render.ladder import RUNGS, check_rung, lowest_rung
@@ -38,6 +39,7 @@ FIELDS = ("id", "measure", "region", "weight", "of", *BOUNDS)
 #: Arguments a predicate may pass through to the measure it names.
 ARGUMENTS = (
     "target", "against", "display", "delta", "targets", "ring", "radius", "behind",
+    "concept",
 )
 
 
@@ -266,7 +268,8 @@ def _predicate(entry: dict, index: int) -> Predicate:
             f"name one of {', '.join(sorted(M.COMPUTES))}, or a cost: "
             f"{', '.join(cost.COSTS)}, or a sound: {', '.join(sound.SOUNDS)}, or an "
             f"effect: {', '.join(vfx.EFFECTS)}, or a run's flashes: "
-            f"{', '.join(flashes.FLASHES)}, or a video: {', '.join(video.VIDEOS)}",
+            f"{', '.join(flashes.FLASHES)}, or a video: {', '.join(video.VIDEOS)}, "
+            f"or a concept region: {', '.join(concepts.CONCEPTS)}",
         )
     unknown = sorted(set(entry) - set(FIELDS) - set(ARGUMENTS))
     if unknown:
@@ -468,6 +471,9 @@ def check(
         if video.is_video(p.measure):
             results.append(_watched(p, subject, root, heard))
             continue
+        if concepts.is_concept(p.measure):
+            results.append(_conceived(p, subject, root))
+            continue
         arguments = dict(p.arguments)
         for key in ("against", "target", "targets", "behind"):
             # A log of targets is a path under the project, as a picture compared is.
@@ -546,7 +552,33 @@ def _off_picture(name: str) -> bool:
     """A measure read off a file rather than one picture: a cost, a sound, an effect or
     the flashes of a captured run."""
     return (cost.is_cost(name) or sound.is_sound(name) or vfx.is_effect(name)
-            or flashes.is_flash(name) or video.is_video(name))
+            or flashes.is_flash(name) or video.is_video(name)
+            or concepts.is_concept(name))
+
+
+def _conceived(p: Predicate, subject: Any, root: str | Path) -> dict:
+    """A concept region's measure of the capture checked (§PW477): `region` names the
+    region of the concept file `concept` names, so a search aims at the painting."""
+    here = Path(root)
+    where = Path(p.of) if p.of else Path(subject)
+    where = where if where.is_absolute() else here / where
+    value = concepts.concept_value(p.measure, concept=p.arguments.get("concept"),
+                                   region=p.region, subject=where, here=here)
+    return {
+        "id": p.id,
+        "measure": p.measure,
+        "of": str(where),
+        "region": p.region,
+        "rung": None,
+        "value": value,
+        "min": p.minimum,
+        "max": p.maximum,
+        "weight": p.weight,
+        "passed": _passes(value, p),
+        "margin": margin(value, p.minimum, p.maximum),
+        "headroom": headroom(value, p.minimum, p.maximum),
+        **_bound(p, value),
+    }
 
 
 def _watched(p: Predicate, subject: Any, root: str | Path, seen: dict) -> dict:

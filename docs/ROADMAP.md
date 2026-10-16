@@ -18,7 +18,6 @@
 
 - 🛠 **PW372** (deps: Spinhold RK215) **a camera move cannot be declared as a clip or played by the game, so a cutscene's shots are numbers in the project** — No shot is yet captured onto a sitting for a person to accept, and Starship's opening still reads its own JSON. → §PW372
 - 🛠 **PW36** (deps: PW5 ✅, PW82 ⏸) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82. → §PW36
-- 🛠 **PW477** (deps: —) **a capture cannot be held to the concept painting it copies, region by region, at another size and aspect** — Each region's numbers as an accept predicate, and so as what a search aims at, are still to come. → §PW477
 - 📋 **PW478** (deps: —) **picture.vector answers a layer that drew nothing like any other, so an empty layer is found only by opening it** — A duplicate id in the SVG gave Spinhold a fully transparent halo layer and a halo-less whole, with an answer that looked fine. → §PW478
 - 📋 **PW479** (deps: —) **a panel cannot declare a lit bevel, an inner hairline, a moving sweep, inset brackets or a glow by state** — Spinhold's accepted holo panel would lose those details moving to panel.build, so it stays a hand-written shader no spec holds. → §PW479
 - 📋 **PW481** (deps: —) **verdict.sitting crashes on an old picture named HEAD:<path>, a form sound.sitting reads from git** — Comparing a replaced render with the committed one means saving the old picture by hand first. → §PW481
@@ -124,15 +123,6 @@
   ink on the faced kinds, no pale ring of marks round a rim, and the kinds' silhouettes
   kept apart is either a predicate in a Cottony acceptance spec over the committed piece
   sheet, or recorded as a test a person chose to keep.
-
-## Done when — PW477
-
-- **A region that sits low says so as geometry, not as colour** reference.concept
-  answers each region's offset and scale against the painting's, found by aligning the
-  two, so a header 40 px low reads as a move.
-- **A spec and a search aim at a region of the painting** An accept spec bounds a
-  concept region's numbers as predicates, and port.run searches a rig towards them
-  rather than towards a shipped sprite.
 
 ## Non-goals
 

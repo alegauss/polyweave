@@ -200,6 +200,16 @@ each region gets `<capture>.<region>.concept.png`: painting, capture and their p
 Lab distance in grey, recorded with the painting as `reference` and the capture as
 `capture`. A concept file or capture that cannot be read is `capture.bad-concept`.
 
+**A spec bounds a region of the painting**, so a search can aim a rig at it rather than
+at a shipped sprite. A predicate names one of `concept_palette_delta_e`,
+`concept_saturation_ratio` (the p90 ratio), `concept_luma_ratio` (the median's),
+`concept_luma_p90_ratio`, `concept_edge_ratio`, `concept_structure`, `concept_offset`
+(the geometry's offset as one distance, in the capture's pixels) or `concept_scale`,
+with `concept = "<*.concept.toml>"` and `region` naming one of the file's regions; it is
+read off the subject, or the picture `of` names. Each predicate's margin is what
+`search.sweep` and `port.run` climb, as with any measure. A region the file does not
+declare, or a ratio whose painting side is zero, is `capture.bad-concept`.
+
 ## At display size
 
 | Measure | Range | What it is |

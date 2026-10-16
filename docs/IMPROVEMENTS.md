@@ -101,28 +101,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW477 A capture held to its concept painting
-
-Found in Cottony on 2026-10-16, asked to reach its concept art pixel for pixel. The
-painting, `docs/design/screen1.png`, is 1024x1536 (2:3) and a capture is 1080x1920
-(9:16). `distance` compares two renders of one size, `accept.check_screen` holds an
-asset to its own spec, and `reference.compare` is for video.
-
-Landed: the concept file, rectangles only, and reference.concept's per-region numbers
-and sheets (docs/specs/measurements.md). Still missing, of what was asked:
-
-- a reference file naming regions in the painting and the same regions in a capture,
-  each a rectangle (or a quad, for a region the layout moved or scaled), so the layout
-  difference is stated once rather than measured into every number;
-- per region, after both are resampled to one size: CIEDE2000 between the two palettes
-  (k-means centres matched), saturation and luma percentiles as ratios, edge density, and
-  a structural similarity at a coarse scale that ignores brushwork;
-- where each region's bounding box lands against the painting's, so a header that sits
-  40 px low says so as geometry and not as colour;
-- a sheet per region, painting beside capture with the difference map, for a person;
-- every number usable as a spec predicate and as a search objective, so `port.run` can
-  aim a rig at a region of the painting rather than at a shipped sprite.
-
 ### §PW478 picture.vector is silent on an empty layer
 
 In Spinhold (RK150) the brand generator gave the halo group `id="halo"`, the same id as
