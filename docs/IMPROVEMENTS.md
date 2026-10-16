@@ -124,6 +124,72 @@ the engine banner), which is where a perf script states its verdict. The frame-b
 hint belongs only where the exit was 0 and nothing was printed, which is the silent
 `--quit-after` case PW251 named.
 
+### §PW472 A panel outlined by more than cut corners
+
+Found in Cottony on 2026-10-16. `panel.build` outlines a panel as a rectangle whose
+corners are cut at 45 degrees, which is Starship's holo frame. Cottony's UI kit is none
+of that: a pill button (`button_wide`, radius half its height), rounded dialog cards, a
+banner whose top edge is a row of lobes (`hud_banner`), petal badges (`badge_level`,
+`badge_moves`) and a lobed booster tray. Each is drawn in `tools/art/make_assets.py` by
+`stitched_card` or `blob_card`, against an outline computed there.
+
+What a declaration should be able to say:
+
+- `radius` beside `cut`, a rounded corner, up to a pill;
+- an outline from polyweave's own vocabulary, the one `geometry` already resolves
+  (`shape = "lobed"`, `star`, `points`, an image to trace), for a panel that is not a box;
+- a `piping` part: a raised rim of its own colour around the fill, the way stuffed
+  fabric is finished, which Cottony draws in white on everything.
+
+A non-rectangular outline cannot be a nine-patch, so it builds at its declared size, or
+on the shader route as a signed distance the Control samples at its own size, and says
+which it did. A corner larger than the margin is refused as a cut is today.
+
+### §PW473 A panel filled with a material
+
+Found in Cottony on 2026-10-16. A panel's `fill` is one colour, with alpha. Cottony's
+cards and buttons are stuffed felt: a body lit from the upper left that falls into its
+own hue towards the lower right (never mixed towards grey), a grain across it, a little
+gloss, and a weave on the pale ones. That is `plush()` in `tools/art/plush.py`, about
+150 lines with `shade`, `gloss`, `weave`, `texture` and `seed`, and a candy variant that
+is smooth and glossy. `tools/check_plush.py` holds the two materials apart. None of it
+can be declared, so the look lives in game code and is held only by that game's own
+check.
+
+A `material` on a panel's fill: a named finish (felt, candy, flat) with its numbers, the
+light direction, and a seed, drawn the same at build and on the shader route. The same
+part on the piping. A spec then holds a built state the way it holds a render: its
+saturation percentile, that its shade keeps the hue, and its contrast with the text over
+it.
+
+Constraint from the non-goals: no palette compiled in. The finishes are numbers a
+project declares, and Cottony's are one declaration, not defaults.
+
+### §PW474 A seam a panel or a picture is sewn with
+
+Found in Cottony on 2026-10-16. Its owner read every stitch as a road marking: a flat
+dashed stroke at 75% opacity. Cottony fixed it in game code, `sewn()` in
+`tools/art/plush.py`, called from `make_assets.py` and from `markings.py`, which
+stitches a baked render's silhouette. `panel.build` has no part for it.
+
+What reads as sewn, measured by the owner's eye on the PLAY button:
+
+- an opaque, round thread, lit along its upper side and shaded along the lower, with a
+  faint twist of plies across it;
+- a soft shadow each stitch lays on the cloth, darkened from the cloth's own colour so it
+  never goes grey;
+- a needle hole past either end of every stitch, where the thread goes under;
+- a seeded jitter of angle and offset, so it is regular without being ruled.
+
+A `seam` part on a panel: `inset`, `dash`, `gap`, `width`, `thread`, and the four
+effects above each as a number with 0 meaning off. On the shader route it is drawn by
+arc length at the Control's real size, so a panel grown to fit a longer translation
+keeps its stitch pitch; a nine-patch would stretch the stitches in its middle, which
+should be refused or said, as `tick` is.
+
+The same seam laid along a picture's alpha silhouette (a `picture` pass, inset from the
+edge and clipped to the body), so a baked prop and a drawn panel are sewn by one needle.
+
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once
