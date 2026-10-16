@@ -101,26 +101,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW473 A panel filled with a material
-
-Found in Cottony on 2026-10-16. A panel's `fill` is one colour, with alpha. Cottony's
-cards and buttons are stuffed felt: a body lit from the upper left that falls into its
-own hue towards the lower right (never mixed towards grey), a grain across it, a little
-gloss, and a weave on the pale ones. That is `plush()` in `tools/art/plush.py`, about
-150 lines with `shade`, `gloss`, `weave`, `texture` and `seed`, and a candy variant that
-is smooth and glossy. `tools/check_plush.py` holds the two materials apart. None of it
-can be declared, so the look lives in game code and is held only by that game's own
-check.
-
-A `material` on a panel's fill: a named finish (felt, candy, flat) with its numbers, the
-light direction, and a seed, drawn the same at build and on the shader route. The same
-part on the piping. A spec then holds a built state the way it holds a render: its
-saturation percentile, that its shade keeps the hue, and its contrast with the text over
-it.
-
-Constraint from the non-goals: no palette compiled in. The finishes are numbers a
-project declares, and Cottony's are one declaration, not defaults.
-
 ### §PW474 A seam a panel or a picture is sewn with
 
 Found in Cottony on 2026-10-16. Its owner read every stitch as a road marking: a flat
@@ -383,6 +363,31 @@ What polyweave should do: record in a capture's provenance the hashes of the pro
 files the run read (Godot can list loaded resources, or the capture can hash what
 `res://` paths it opened), and say "a dependency changed: <path>" when one did, keeping
 SAME SETTINGS, DIFFERENT PICTURE for the case where nothing it read moved.
+
+### §PW489 A shader that failed to compile fails the run
+
+Found in polyweave on 2026-10-16, building PW473. A uniform named `lift` was redeclared
+as a local in the panel shader, and Godot printed
+
+    SHADER ERROR: Redefinition of 'lift'.
+    ERROR: Shader compilation failed.
+
+on every film. `panel.capture` still answered with every still, each one the plain white
+`ColorRect` the material failed to draw on, and nothing in the answer said the shader
+never compiled. Only a pixel assertion in a test noticed.
+
+`engine.ERRORS` (`src/polyweave/engine.py`) reads `SCRIPT ERROR`, `Parse Error`,
+`Compile Error` and `String formatting error`, and not `SHADER ERROR`, so
+`capture.movie` takes a run whose shader failed as a clean one. Every caller that films
+a shader is exposed: `panel.capture`, `vfx.preview`, and any `capture.movie` of a scene
+with a `.gdshader` in it.
+
+Add `SHADER ERROR` (and the `Shader compilation failed` line that follows it) to
+`ERRORS`, so the run's verdict is `script-error` with the shader's path and line, which
+the engine prints as `at: (null) (res://ui/card.gdshader:142)`. `panel.capture` already
+refuses a film whose `ok` is false as `compose.unfilmed`, so the refusal then names the
+shader's error rather than handing back white stills. A test: a panel whose shader is
+broken on purpose is refused, not filmed.
 
 ## Block I — Voxel models from a declaration
 

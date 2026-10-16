@@ -65,13 +65,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW82"],
   },
   {
-    id: "PW473",
-    block: "H",
-    symptom: "a panel's fill is one flat colour, so a felt or candy body with light, shade and grain cannot be declared",
-    why: "A soft style's look is its material, and while that lives in game code no spec holds it and no second game can reuse it.",
-    deps: [],
-  },
-  {
     id: "PW474",
     block: "H",
     symptom: "a panel cannot carry a sewn seam, so a craft-styled game draws its stitches in its own code",
@@ -153,6 +146,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "a capture warns same settings, different picture when only a sprite the scene draws changed, as if it were noise",
     why: "PW71's warning cannot tell a re-taken picture's changed asset from real non-determinism, so it cries wolf on every legitimate re-take.",
+    deps: [],
+  },
+  {
+    id: "PW489",
+    block: "H",
+    symptom: "a capture whose shader failed to compile answers ok, so panel.capture hands back stills of the bare white rect",
+    why: "The engine runner never reads SHADER ERROR, so a broken shader is found only by a pixel assertion, if one exists.",
     deps: [],
   },
   {

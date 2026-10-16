@@ -204,6 +204,7 @@ def _checked(name: str, state: str, panel: dict, root: Path | str = ".") -> dict
         "tick": None,
     }
     out["piping"] = _piping(name, panel.get("piping") or {})
+    out["material"] = _finish(name, panel.get("material") or {})
     tick = panel.get("tick") or {}
     if tick:
         out["tick"] = {
@@ -272,6 +273,113 @@ def _piping(name: str, piping: dict) -> dict | None:
     }
 
 
+#: A material's numbers and what each is when left out: all of them off, so a material
+#: names no finish of its own and a project's felt or candy is its declaration (§PW473).
+FINISH = {
+    "light": (0.36, 0.30),  # where the light falls, in shares of the panel's box
+    "lift": 0.0,            # how far the lit top is lightened, 0 to 1
+    "shade": 0.0,           # how far the foot falls into its own hue, 0 to 1
+    "core": 0.0,            # how strongly the light's spot glows, 0 to 1
+    "vivid": 0.0,           # 0 lightens what is lit (felt), 1 saturates it (candy)
+    "gloss": 0.0,           # a soft white highlight at the light, 0 to 1
+    "grain": 0.0,           # fibre grain across the body, 0 to 1
+    "grain_size": 2.0,      # the grain's cell, in the panel's pixels
+    "weave": 0.0,           # a woven cross-hatch, 0 to 1
+    "weave_pitch": 6.0,     # the weave's period, in the panel's pixels
+    "seed": 0,              # which grain
+}
+PARTS["material"] = tuple(FINISH)
+
+
+def _finish(name: str, table: dict) -> dict | None:
+    """A fill's material, every number checked, each left out at its default."""
+    if not table:
+        return None
+    def number(value: Any) -> bool:
+        return isinstance(value, int | float) and not isinstance(value, bool)
+
+    out = dict(FINISH)
+    for key, value in table.items():
+        at = f"material.{key}"
+        if key == "seed":
+            out[key] = _whole(name, at, value)
+        elif key == "light":
+            if not (isinstance(value, list) and len(value) == 2
+                    and all(number(v) for v in value)):
+                raise _bad(name, f"{at} is {value!r}",
+                           "write light = [x, y], each a share of the panel, 0 to 1")
+            out[key] = (float(value[0]), float(value[1]))
+        else:
+            sized = key.endswith(("_size", "_pitch"))
+            low, high = (1, math.inf) if sized else (0, 1)
+            if not number(value) or not low <= value <= high:
+                said = "pixels from 1" if sized else "from 0 to 1"
+                raise _bad(name, f"{at} is {value!r}", f"write {key} as {said}")
+            out[key] = float(value)
+    return out
+
+
+def _hash(x: np.ndarray, y: np.ndarray, seed: int) -> np.ndarray:
+    """A lattice point's value from 0 to 1, in the integer sum the shader does too."""
+    with np.errstate(over="ignore"):
+        h = (x.astype(np.uint32) * np.uint32(374761393)
+             + y.astype(np.uint32) * np.uint32(668265263)
+             + np.uint32(seed) * np.uint32(2246822519))
+        h = (h ^ (h >> np.uint32(13))) * np.uint32(1274126177)
+        h = h ^ (h >> np.uint32(16))
+    return (h & np.uint32(0xFFFFFF)).astype(np.float64) / 16777216.0
+
+
+def _finished(fill: tuple, finish: dict, big: tuple[int, int]) -> np.ndarray:
+    """The fill as a material, drawn `big` and lit the way the shader lights it."""
+    width, height = big[0] / SUPER, big[1] / SUPER
+    px = (np.arange(big[0]) + 0.5) / SUPER
+    py = (np.arange(big[1]) + 0.5) / SUPER
+    x, y = np.meshgrid(px, py)
+    u, v = x / width, y / height
+    base = np.array(fill[:3], dtype=float) / 255.0
+    warm = np.array([1.0, 0.985, 0.95])
+
+    def lit(amount: float) -> np.ndarray:
+        # Felt lightens towards a warm white; candy saturates instead, or the lit part
+        # is the one with the least colour in it.
+        lum = float(base @ [0.2126, 0.7152, 0.0722])
+        pale = base + (warm - base) * amount
+        vivid = np.clip(lum + (base - lum) * (1.0 + amount * 2.5), 0.0, 1.0)
+        return pale + (vivid - pale) * finish["vivid"]
+
+    top, glow = lit(finish["lift"]), lit(min(finish["lift"] * 1.8, 1.0))
+    foot = base * (1.0 - 0.66 * finish["shade"])  # its own hue, never grey
+    ramp = np.clip((v + 0.12) / 1.22, 0.0, 1.0)[..., None]
+    rgb = top + (foot - top) * ramp
+    lx, ly = finish["light"]
+    spot = np.hypot(u - lx, v - ly)
+    core = (np.clip(1.0 - spot / 0.92, 0.0, 1.0) ** 1.7 * finish["core"])[..., None]
+    rgb = rgb + (glow - rgb) * core
+    oval = np.hypot((u - lx) / 0.26, (v - ly) / 0.17)
+    shine = 1.0 - np.clip((oval - 0.6) / 0.4, 0, 1)
+    shine = (shine * shine * (3.0 - 2.0 * shine) * finish["gloss"] * 0.55)[..., None]
+    rgb = rgb + (np.array([1.0, 0.995, 0.97]) - rgb) * shine
+    if finish["grain"]:
+        qx, qy = x / finish["grain_size"], y / finish["grain_size"]
+        ix, iy = np.floor(qx), np.floor(qy)
+        fx, fy = qx - ix, qy - iy
+        sx, sy = fx * fx * (3 - 2 * fx), fy * fy * (3 - 2 * fy)
+        seed = finish["seed"]
+        a, b = _hash(ix, iy, seed), _hash(ix + 1, iy, seed)
+        c, d = _hash(ix, iy + 1, seed), _hash(ix + 1, iy + 1, seed)
+        top_row, low_row = a + (b - a) * sx, c + (d - c) * sx
+        noise = (top_row + (low_row - top_row) * sy) * 2.0 - 1.0
+        rgb = rgb * (1.0 + noise * 0.1 * finish["grain"])[..., None]
+    if finish["weave"]:
+        pitch = finish["weave_pitch"]
+        warp = np.sin(x / pitch * math.pi) * np.sin(y / pitch * math.pi)
+        rgb = rgb * (1.0 + warp * 0.035 * finish["weave"])[..., None]
+    alpha = np.full(rgb.shape[:2] + (1,), fill[3] / 255.0)
+    return np.round(np.clip(np.concatenate([rgb, alpha], axis=2), 0, 1) * 255).astype(
+        np.uint8)
+
+
 def _drawn(panel: dict):
     """One state drawn large and brought down, so its diagonals are smooth."""
     from PIL import Image, ImageDraw
@@ -305,7 +413,10 @@ def _drawn(panel: dict):
     shape = Image.new("L", big, 0)
     inside(ImageDraw.Draw(shape), 0, 255)
     picture = Image.new("RGBA", big, (0, 0, 0, 0))
-    fill = Image.new("RGBA", big, panel["fill"])
+    if panel["material"]:
+        fill = Image.fromarray(_finished(panel["fill"], panel["material"], big), "RGBA")
+    else:
+        fill = Image.new("RGBA", big, panel["fill"])
     picture.paste(fill, (0, 0), shape)
     if panel["scan"]:
         lines = Image.new("RGBA", big, (0, 0, 0, 0))
@@ -420,6 +531,18 @@ uniform float tick_length = 0.0;
 uniform float tick_width = 0.0;
 uniform vec4 tick_colour : source_color;
 uniform float pixel_scale = 1.0;
+// The fill's material (§PW473), every number 0 drawing it flat.
+uniform vec2 light_at = vec2(0.36, 0.30);
+uniform float lift = 0.0;
+uniform float shade = 0.0;
+uniform float core = 0.0;
+uniform float vivid = 0.0;
+uniform float gloss = 0.0;
+uniform float grain = 0.0;
+uniform float grain_size = 2.0;
+uniform float weave = 0.0;
+uniform float weave_pitch = 6.0;
+uniform float seed = 0.0;
 // An outline of its own, in shares of the Control's size; none while the count is 0.
 uniform float outline_count = 0.0;
 uniform vec2 outline_points[128];
@@ -448,6 +571,50 @@ float inside_outline(vec2 p, vec2 size) {
 \t\tlast = a;
 \t}
 \treturn side * sqrt(nearest);
+}
+
+// A lattice point's value from 0 to 1, the same integer sum panel.build does.
+float lattice(vec2 at) {
+\tuint h = uint(at.x) * 374761393u + uint(at.y) * 668265263u + uint(seed) * 2246822519u;
+\th = (h ^ (h >> 13u)) * 1274126177u;
+\th = h ^ (h >> 16u);
+\treturn float(h & 16777215u) / 16777216.0;
+}
+
+vec3 lit(vec3 base, float amount) {
+\tfloat lum = dot(base, vec3(0.2126, 0.7152, 0.0722));
+\tvec3 pale = mix(base, vec3(1.0, 0.985, 0.95), amount);
+\tvec3 bright = clamp(lum + (base - lum) * (1.0 + amount * 2.5), 0.0, 1.0);
+\treturn mix(pale, bright, vivid);
+}
+
+// The fill lit as its material, at p in the Control's pixels over size.
+vec3 finished(vec3 base, vec2 p, vec2 size) {
+\tvec2 uv = p / size;
+\tvec3 top = lit(base, lift);
+\tvec3 glow = lit(base, min(lift * 1.8, 1.0));
+\tvec3 foot = base * (1.0 - 0.66 * shade);
+\tvec3 rgb = mix(top, foot, clamp((uv.y + 0.12) / 1.22, 0.0, 1.0));
+\tfloat spot = length(uv - light_at);
+\trgb = mix(rgb, glow, pow(clamp(1.0 - spot / 0.92, 0.0, 1.0), 1.7) * core);
+\tfloat oval = length((uv - light_at) / vec2(0.26, 0.17));
+\tfloat shine = 1.0 - clamp((oval - 0.6) / 0.4, 0.0, 1.0);
+\tshine = shine * shine * (3.0 - 2.0 * shine);
+\trgb = mix(rgb, vec3(1.0, 0.995, 0.97), shine * gloss * 0.55);
+\tif (grain > 0.0) {
+\t\tvec2 q = p / grain_size;
+\t\tvec2 i = floor(q);
+\t\tvec2 f = q - i;
+\t\tvec2 s = f * f * (3.0 - 2.0 * f);
+\t\tfloat upper = mix(lattice(i), lattice(i + vec2(1.0, 0.0)), s.x);
+\t\tfloat lower = mix(lattice(i + vec2(0.0, 1.0)), lattice(i + vec2(1.0, 1.0)), s.x);
+\t\trgb *= 1.0 + (mix(upper, lower, s.y) * 2.0 - 1.0) * 0.1 * grain;
+\t}
+\tif (weave > 0.0) {
+\t\tfloat warp = sin(p.x / weave_pitch * PI) * sin(p.y / weave_pitch * PI);
+\t\trgb *= 1.0 + warp * 0.035 * weave;
+\t}
+\treturn clamp(rgb, 0.0, 1.0);
 }
 
 vec4 over(vec4 below, vec4 above) {
@@ -482,15 +649,15 @@ void fragment() {
 \tif (dist < 0.0) {
 \t\tCOLOR = vec4(0.0);
 \t} else {
-\t\tvec4 c = fill;
+\t\tvec4 c = vec4(finished(fill.rgb, p, size), fill.a);
 \t\tif (scan_pitch > 0.0 && mod(floor(p.y), scan_pitch) < 1.0) {
 \t\t\tc = over(c, scan_colour);
 \t\t}
 \t\tif (dist < piping_width) {
 \t\t\t// Lit along the tube's crown, darkened in its own hue at the flanks.
-\t\t\tfloat lift = piping_raise * (2.0 * sin(3.14159265 * dist / piping_width) - 1.0);
-\t\t\tvec3 tube = lift > 0.0 ? mix(piping_colour.rgb, vec3(1.0), lift)
-\t\t\t\t: piping_colour.rgb * (1.0 + lift);
+\t\t\tfloat crown = piping_raise * (2.0 * sin(PI * dist / piping_width) - 1.0);
+\t\t\tvec3 tube = crown > 0.0 ? mix(piping_colour.rgb, vec3(1.0), crown)
+\t\t\t\t: piping_colour.rgb * (1.0 + crown);
 \t\t\tc = over(c, vec4(tube, piping_colour.a));
 \t\t}
 \t\tif (dist < edge_width) {
@@ -595,6 +762,9 @@ def _uniforms(panel: dict) -> dict:
     if panel["outline"]:
         shaped = {"outline_count": len(panel["outline"]),
                   "outline_points": panel["outline"]}
+    if panel["material"]:
+        shaped.update({k: v for k, v in panel["material"].items() if k != "light"})
+        shaped["light_at"] = list(panel["material"]["light"])
     return {
         **shaped,
         "fill": panel["fill"], "cut": panel["cut"],

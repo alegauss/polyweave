@@ -206,6 +206,7 @@
 - ✅ **PW470** **nothing exports a pack and lists what landed in it, so a project parses Godot's pack table itself** — game.pack exports a preset as a pack and lists its files, imports mapped to sources, so Cottony's export check parses no pack itself (design recorded in `docs/specs/engine.md`).
 - ✅ **PW471** **engine.run_declared blames the frame budget when the script exited 1 on its own after printing why it failed** — A script that exits non-zero on its own is reported with its exit code and its last three lines after the engine banner; the frame-budget hint is kept for silent runs.
 - ✅ **PW472** **a panel's outline is a box with cut corners, so a pill, a rounded card or a lobed banner cannot be declared** — A panel is cut, rounded, a pill or any geometry outline; a pill stretches lengthwise, an outline builds at its size or on the shader at any size (design recorded in `docs/specs/panel.md`).
+- ✅ **PW473** **a panel's fill is one flat colour, so a felt or candy body with light, shade and grain cannot be declared** — A panel's fill takes a material of declared numbers, lit top to foot in its own hue with core, gloss, vivid, grain and weave, same on build and shader (design recorded in `docs/specs/panel.md`).
 
 ## Block I — Voxel models from a declaration
 

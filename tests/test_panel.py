@@ -185,6 +185,94 @@ def test_a_pill_stretches_only_along_its_length(tmp_path):
     assert "shader_parameter/radius = 10000.0" in material
 
 
+FELT = """\
+[panel.card]
+size = [96, 64]
+margin = 16
+radius = 12
+fill = "#d04060"
+[panel.card.material]
+lift = 0.18
+shade = 0.34
+core = 0.3
+grain = 0.6
+grain_size = 2
+seed = 3
+"""
+
+
+def hue_share(rgb) -> tuple[float, float]:
+    """The colour's green and blue as shares of its red: equal shares, one hue."""
+    r, g, b = (float(c) for c in rgb)
+    return g / r, b / r
+
+
+def test_a_felt_fill_is_lit_on_top_and_falls_into_its_own_hue(tmp_path):
+    """§PW473: the material a soft style's body is, declared rather than coded."""
+    panel.build(panels(tmp_path, FELT), root=str(tmp_path))
+    drawn = pixels(tmp_path, "ui/card.normal.png")
+    top = drawn[14:18, 40:56, :3].reshape(-1, 3).mean(axis=0)
+    foot = drawn[52:56, 40:56, :3].reshape(-1, 3).mean(axis=0)
+    assert top.sum() > foot.sum() + 60
+    # Shade alone: the foot is the fill darkened channel by channel, never towards grey.
+    shaded = FELT.replace("lift = 0.18", "lift = 0").replace("core = 0.3", "core = 0")
+    panel.build(panels(tmp_path, shaded.replace("grain = 0.6", "grain = 0")),
+                root=str(tmp_path))
+    foot = pixels(tmp_path, "ui/card.normal.png")[56, 48, :3]
+    assert foot.sum() < 0xD0 + 0x40 + 0x60 - 60
+    assert hue_share(foot) == pytest.approx(hue_share((0xD0, 0x40, 0x60)), abs=0.03)
+    panel.build(panels(tmp_path, FELT), root=str(tmp_path))
+    # The grain varies pixel to pixel, and the seed decides how.
+    row = drawn[32, 30:70, :3].sum(axis=1)
+    assert len(set(row.tolist())) > 10
+    panel.build(panels(tmp_path, FELT.replace("seed = 3", "seed = 4")),
+                root=str(tmp_path))
+    assert (pixels(tmp_path, "ui/card.normal.png") != drawn).any()
+
+
+def test_a_candy_fill_is_lit_vivid_rather_than_pale(tmp_path):
+    def lit(vivid: float):
+        body = FELT.replace("grain = 0.6", "grain = 0").replace(
+            "core = 0.3", f"core = 1\nvivid = {vivid}")
+        panel.build(panels(tmp_path, body), root=str(tmp_path))
+        r, g, b = (int(c) for c in pixels(tmp_path, "ui/card.normal.png")[19, 35, :3])
+        return max(r, g, b) - min(r, g, b)
+
+    assert lit(1) > lit(0) + 20
+
+
+def test_a_material_left_out_or_all_zero_is_the_flat_fill(tmp_path):
+    flat = FELT.split("[panel.card.material]")[0] + "[panel.card.material]\nseed = 9\n"
+    panel.build(panels(tmp_path, flat), root=str(tmp_path))
+    drawn = pixels(tmp_path, "ui/card.normal.png")
+    assert tuple(drawn[32, 48, :3]) == (0xD0, 0x40, 0x60)
+
+
+def test_a_material_reaches_the_shader(tmp_path):
+    made = panel.build(panels(tmp_path, FELT), shader=True, root=str(tmp_path))
+    material = (tmp_path / made["panels"]["card"]["normal"]["material"]).read_text(
+        "utf-8")
+    assert "shader_parameter/shade = 0.34" in material
+    assert "shader_parameter/light_at = Vector2(0.36, 0.3)" in material
+    assert "shader_parameter/seed = 3.0" in material
+
+
+@pytest.mark.parametrize(
+    ("change", "said"),
+    [
+        (("shade = 0.34", "shade = 2"), "from 0 to 1"),
+        (("grain_size = 2", "grain_size = 0"), "pixels from 1"),
+        (("lift = 0.18", "light = 0.5"), "light = [x, y]"),
+        (("lift = 0.18", "lifts = 0.18"), "did you mean 'lift'"),
+    ],
+)
+def test_a_material_that_means_nothing_is_refused(tmp_path, change, said):
+    with pytest.raises(PolyweaveError) as refused:
+        panel.build(panels(tmp_path, FELT.replace(*change)), root=str(tmp_path))
+    assert refused.value.code == "compose.bad-panel"
+    assert said in refused.value.message + refused.value.remedy
+
+
 @pytest.mark.parametrize(
     ("body", "said"),
     [
@@ -288,7 +376,7 @@ def test_the_engine_films_each_state_and_each_wipe_step(tmp_path):
         offscreen.route_for(tmp_path)
     except PolyweaveError:
         pytest.skip("no route draws real pixels here")
-    source = panels(tmp_path, HOLO + WIPES + "\n" + BADGE)
+    source = panels(tmp_path, HOLO + WIPES + "\n" + BADGE + "\n" + FELT)
     (tmp_path / "project.godot").write_text(
         'config_version=5\n\n[application]\nconfig/name="panel"\n', encoding="utf-8")
     taken = panel.capture(source, out="ui", steps=3, root=str(tmp_path))["stills"]
@@ -309,6 +397,12 @@ def test_the_engine_films_each_state_and_each_wipe_step(tmp_path):
     assert at(taken["badge"]["normal"], 160, 90) == (0xE8, 0xA0, 0xB4)
     assert at(taken["badge"]["normal"], badge_x + 2, badge_y + 2) == at(
         taken["holo"]["normal"], 2, 2)
+    # §PW473: the engine lights the felt as panel.build did, top and foot alike.
+    card_x, card_y = (320 - 96 * 2) // 2, (180 - 64 * 2) // 2
+    built = pixels(tmp_path, "ui/card.normal.png")
+    for x, y in ((48, 16), (48, 54)):
+        filmed = at(taken["card"]["normal"], card_x + x * 2 + 1, card_y + y * 2 + 1)
+        assert sum(filmed) == pytest.approx(int(built[y, x, :3].sum()), abs=36)
     # The sweep covers nothing at the start and everything at the end.
     assert at(taken["sweep"]["00"], 160, 90) != (5, 7, 12)
     assert at(taken["sweep"]["02"], 160, 90) == (5, 7, 12)

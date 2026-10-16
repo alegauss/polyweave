@@ -54,6 +54,26 @@ size, up to 128 points. Cut, radius and outline are one choice each, brackets si
 box's corners and are refused beside an outline, and an outline the geometry refuses is
 refused here with its reason.
 
+A `material` lights the fill as a body instead of one flat colour: the felt or candy a
+soft style is made of. Every number defaults to 0, which is the flat fill, so a material
+names no finish of its own and a project's felt is its own declaration:
+
+```toml
+material = { lift = 0.18, shade = 0.34, core = 0.3, grain = 0.6, grain_size = 2, seed = 3 }
+```
+
+`light` is where the light falls, `[x, y]` in shares of the panel's box (default
+`[0.36, 0.30]`, upper left). From the top down the body runs from the fill lightened by
+`lift` to the fill darkened by `shade`, channel by channel so the foot keeps its hue and
+never goes grey. `core` glows a spot at the light, and `gloss` lays a soft white
+highlight there. `vivid` turns what is lit from paler (0, felt) to more saturated (1,
+candy). `grain` is a fibre grain of `grain_size` pixels drawn from `seed`, and `weave` a
+cross-hatch of `weave_pitch` pixels. Each is 0 to 1 but the two sizes, which are pixels
+from 1. The build and the shader do the same sum, the grain from the same integer hash,
+so the engine draws the felt the built picture shows; on a nine-patch the grain in the
+middle stretches with it, and on the shader it holds its size. A piping is lit by its
+own `raise`, not by the material.
+
 A `piping` is the raised rim stuffed fabric is finished with: a band `width` pixels in
 from the outline, in its own `colour`, shaded across its width like a tube. `raise`, from
 0 (flat) to 1, is how far its crown is lit towards white and its flanks darkened in their
