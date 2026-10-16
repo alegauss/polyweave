@@ -57,6 +57,12 @@ PARTS = {
     "brackets": ("length", "width", "colour", "inset"),
     "scan": ("pitch", "colour"),
     "tick": ("length", "width", "colour", "from", "to"),
+    # A state's amounts (§PW479): the marks' glow, the glass lifted, the whole drained.
+    "glow": None,
+    "glass_lift": None,
+    "drain": None,
+    "tint": None,
+    "sweep": ("colour", "strength", "speed", "width", "slant"),
     "states": None,
 }
 
@@ -210,6 +216,7 @@ def _checked(name: str, state: str, panel: dict, root: Path | str = ".") -> dict
     out["material"] = _finish(name, panel.get("material") or {})
     out["seam"] = _seam(name, panel.get("seam") or {})
     out["tick"] = _tick(name, panel.get("tick") or {})
+    out.update(_amounts(name, panel))
     # Only one of the two is ever set, and either is how far the corner's shape goes.
     corner = cut + radius
     reach = corner + max(out["edge"]["width"],
@@ -300,6 +307,38 @@ def _tick(name: str, table: dict) -> dict | None:
         "colour": _colour(name, "tick.colour", table.get("colour")),
         "from": start if placed else None,
     }
+
+
+def _amounts(name: str, panel: dict) -> dict:
+    """What a state changes by an amount rather than by a colour: the glow of the
+    edge, brackets and tick, the glass lifted, the whole drained to grey; and the tint
+    a game sets per instance, and the glass's moving sweep."""
+    out = {"glow": _ranged(name, panel, "glow", 1.0, (0.0, 4.0)),
+           "glass_lift": _ranged(name, panel, "glass_lift", 0.0, (0.0, 2.0)),
+           "drain": _ranged(name, panel, "drain", 0.0, (0.0, 1.0)),
+           "tint": _colour(name, "tint", panel.get("tint", "#ffffff")),
+           "sweep": None}
+    sweep = panel.get("sweep") or {}
+    if sweep:
+        out["sweep"] = {
+            "colour": _colour(name, "sweep.colour", sweep.get("colour")),
+            "strength": _ranged(name, sweep, "strength", 0.05, (0.0, 1.0), "sweep."),
+            "speed": _ranged(name, sweep, "speed", 0.06, (0.0, 4.0), "sweep."),
+            "width": _ranged(name, sweep, "width", 0.08, (0.001, 1.0), "sweep."),
+            "slant": _ranged(name, sweep, "slant", 0.35, (-4.0, 4.0), "sweep."),
+        }
+    return out
+
+
+def _ranged(name: str, table: dict, key: str, default: float,
+            span: tuple[float, float], at: str = "") -> float:
+    """A number from a table, left out at its default, refused outside its span."""
+    value = table.get(key, default)
+    low, high = span
+    if not _number(value) or not low <= value <= high:
+        raise _bad(name, f"{at}{key} is {value!r}",
+                   f"write {at}{key} from {low:g} to {high:g}")
+    return float(value)
 
 
 def _stretch(ring: list | None, pill: bool, width: int, height: int) -> str:
@@ -579,8 +618,40 @@ def _finished(fill: tuple, finish: dict, big: tuple[int, int]) -> np.ndarray:
         np.uint8)
 
 
+def _scaled(colour: tuple, by: float, tint: tuple = (255, 255, 255, 255)) -> tuple:
+    """A colour's light multiplied, and tinted channel by channel, its alpha kept."""
+    pairs = zip(colour[:3], tint[:3], strict=True)
+    return (*(min(255, round(c * by * t / 255)) for c, t in pairs), colour[3])
+
+
 def _drawn(panel: dict):
-    """One state drawn large and brought down, so its diagonals are smooth."""
+    """One state drawn large and brought down, so its diagonals are smooth, with its
+    amounts applied as the shader applies them (§PW479)."""
+    from PIL import Image
+
+    glow = panel["glow"]
+    # The edge's glow joins its light, so it is clipped once, after both, as the shader
+    # does; clipped first, a lilac edge glowing went grey.
+    top, foot = panel["edge"]["lit"]
+    state = {**panel,
+             "fill": _scaled(panel["fill"], 1.0 + panel["glass_lift"]),
+             "edge": {**panel["edge"], "lit": (top * glow, foot * glow)}}
+    if panel["brackets"]:
+        state["brackets"] = {**panel["brackets"], "colour": _scaled(
+            panel["brackets"]["colour"], glow, panel["tint"])}
+    picture = _drawn_plain(state)
+    if panel["drain"]:
+        # Drained towards a dim grey, and a little transparent, as disabled reads.
+        rgba = np.asarray(picture, dtype=float)
+        grey = rgba[..., :3] @ np.array([0.299, 0.587, 0.114]) * 0.55
+        rgba[..., :3] += (grey[..., None] - rgba[..., :3]) * panel["drain"]
+        rgba[..., 3] *= 1.0 - 0.3 * panel["drain"]
+        picture = Image.fromarray(rgba.round().astype(np.uint8), "RGBA")
+    return picture
+
+
+def _drawn_plain(panel: dict):
+    """One state's parts drawn large and brought down, its colours as given."""
     from PIL import Image, ImageDraw
 
     width, height = panel["size"]
@@ -767,6 +838,17 @@ uniform vec4 hairline_colour : source_color;
 uniform float hairline_strength = 1.0;
 uniform float bracket_inset = 0.0;
 uniform float tick_from = -1.0;
+// A state's amounts and a game's own (§PW479): set on one Control, its material being
+// local to its scene.
+uniform float glow = 1.0;
+uniform float glass_lift = 0.0;
+uniform float drain = 0.0;
+uniform vec4 tint : source_color = vec4(1.0);
+uniform vec4 sweep_colour : source_color;
+uniform float sweep_strength = 0.0;
+uniform float sweep_speed = 0.06;
+uniform float sweep_width = 0.08;
+uniform float sweep_slant = 0.35;
 uniform float piping_width = 0.0;
 uniform vec4 piping_colour : source_color;
 uniform float piping_raise = 0.0;
@@ -960,11 +1042,11 @@ vec3 lit(vec3 base, float amount) {
 vec3 finished(vec3 base, vec2 p, vec2 size) {
 \tvec2 uv = p / size;
 \tvec3 top = lit(base, lift);
-\tvec3 glow = lit(base, min(lift * 1.8, 1.0));
+\tvec3 core_lit = lit(base, min(lift * 1.8, 1.0));
 \tvec3 foot = base * (1.0 - 0.66 * shade);
 \tvec3 rgb = mix(top, foot, clamp((uv.y + 0.12) / 1.22, 0.0, 1.0));
 \tfloat spot = length(uv - light_at);
-\trgb = mix(rgb, glow, pow(clamp(1.0 - spot / 0.92, 0.0, 1.0), 1.7) * core);
+\trgb = mix(rgb, core_lit, pow(clamp(1.0 - spot / 0.92, 0.0, 1.0), 1.7) * core);
 \tfloat oval = length((uv - light_at) / vec2(0.26, 0.17));
 \tfloat shine = 1.0 - clamp((oval - 0.6) / 0.4, 0.0, 1.0);
 \tshine = shine * shine * (3.0 - 2.0 * shine);
@@ -1009,9 +1091,17 @@ void fragment() {
 \tif (dist < 0.0) {
 \t\tCOLOR = vec4(0.0);
 \t} else {
-\t\tvec4 c = vec4(finished(fill.rgb, p, size), fill.a);
+\t\tvec4 c = vec4(clamp(finished(fill.rgb, p, size) * (1.0 + glass_lift), 0.0, 1.0),
+\t\t\tfill.a);
 \t\tif (scan_pitch > 0.0 && mod(floor(p.y), scan_pitch) < 1.0) {
 \t\t\tc = over(c, scan_colour);
+\t\t}
+\t\tif (sweep_strength > 0.0) {
+\t\t\t// A faint diagonal light crossing the glass, round and round on TIME.
+\t\t\tvec2 uv = p / size;
+\t\t\tfloat band = (uv.x + uv.y * sweep_slant) - fract(TIME * sweep_speed) * 1.8 + 0.4;
+\t\t\tfloat shine = smoothstep(sweep_width, 0.0, abs(band)) * sweep_strength;
+\t\t\tc.rgb = clamp(c.rgb + sweep_colour.rgb * shine, 0.0, 1.0);
 \t\t}
 \t\tif (dist < piping_width) {
 \t\t\t// Lit along the tube's crown, darkened in its own hue at the flanks.
@@ -1058,7 +1148,7 @@ void fragment() {
 \t\tif (dist < edge_width) {
 \t\t\t// Lit from above, falling to shadow at the foot.
 \t\t\tfloat fall = mix(edge_top, edge_foot, p.y / size.y);
-\t\t\tc = over(c, vec4(clamp(edge_colour.rgb * fall, 0.0, 1.0), edge_colour.a));
+\t\t\tc = over(c, vec4(clamp(edge_colour.rgb * fall * glow, 0.0, 1.0), edge_colour.a));
 \t\t}
 \t\t// Set in from the corner on both axes, or on the outer edge past the corner.
 \t\tfloat start = bracket_inset > 0.0 ? bracket_inset : corner;
@@ -1068,13 +1158,18 @@ void fragment() {
 \t\tbool down = d.x >= off && d.x < off + bracket_width && d.y >= start
 \t\t\t&& d.y < start + bracket_length;
 \t\tif (bracket_length > 0.0 && (along || down)) {
-\t\t\tc = over(c, bracket_colour);
+\t\t\tvec3 marked = clamp(bracket_colour.rgb * tint.rgb * glow, 0.0, 1.0);
+\t\t\tc = over(c, vec4(marked, bracket_colour.a));
 \t\t}
 \t\tbool placed = tick_from >= 0.0 && p.x >= tick_from && p.x < tick_from + tick_length;
 \t\tbool centred = tick_from < 0.0 && abs(p.x - size.x * 0.5) < tick_length * 0.5;
 \t\tif (tick_length > 0.0 && p.y < tick_width && (placed || centred)) {
-\t\t\tc = over(c, tick_colour);
+\t\t\tc = over(c, vec4(clamp(tick_colour.rgb * glow, 0.0, 1.0), tick_colour.a));
 \t\t}
+\t\t// Drained towards a dim grey, and a little transparent, as disabled reads.
+\t\tfloat grey = dot(c.rgb, vec3(0.299, 0.587, 0.114)) * 0.55;
+\t\tc.rgb = mix(c.rgb, vec3(grey), drain);
+\t\tc.a *= 1.0 - 0.3 * drain;
 \t\tCOLOR = c;
 \t}
 }
@@ -1129,6 +1224,7 @@ _MATERIAL = """[gd_resource type="ShaderMaterial" load_steps=2 format=3]
 [ext_resource type="Shader" path="%(shader)s" id="1"]
 
 [resource]
+resource_local_to_scene = true
 shader = ExtResource("1")
 %(parameters)s
 """
@@ -1178,6 +1274,10 @@ def _uniforms(panel: dict) -> dict:
         shaped["bracket_inset"] = panel["brackets"]["inset"]
     if panel["tick"] and panel["tick"]["from"] is not None:
         shaped["tick_from"] = panel["tick"]["from"]
+    shaped.update(glow=panel["glow"], glass_lift=panel["glass_lift"],
+                  drain=panel["drain"], tint=panel["tint"])
+    if panel["sweep"]:
+        shaped.update({f"sweep_{k}": v for k, v in panel["sweep"].items()})
     return {
         **shaped,
         "fill": panel["fill"], "cut": panel["cut"],
@@ -1324,9 +1424,11 @@ def build(
                     "vertical": 2 if own["scan"] else 0,
                 }, encoding="utf-8", newline="\n")
                 made[name][state]["stylebox"] = provenance.relative(style, config.root)
-            if own["tick"] and not shader:
-                # Said, not dropped silently: mid-edge, a nine-patch would stretch it.
-                made[name][state]["not_drawn"] = ["tick"]
+            # Said, not dropped silently: mid-edge, a nine-patch would stretch a tick,
+            # and a still cannot move a sweep.
+            unseen = [part for part in ("tick", "sweep") if own[part]]
+            if unseen and not shader:
+                made[name][state]["not_drawn"] = unseen
             if own["seam"] and own["stretch"] != "none":
                 # Its stitches run the whole edge, so a grown nine-patch draws longer
                 # ones in its middle: true only at the size it was built.

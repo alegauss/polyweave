@@ -433,6 +433,70 @@ def test_a_holo_panels_bevel_hairline_and_set_in_brackets(tmp_path):
         assert f"shader_parameter/{said}" in material
 
 
+STATED = LILAC + """\
+sweep = { colour = "#baa6ff", strength = 0.05 }
+
+[panel.glass.states.focus]
+glow = 1.9
+
+[panel.glass.states.pressed]
+glass_lift = 0.35
+
+[panel.glass.states.disabled]
+drain = 1.0
+"""
+
+
+def test_a_state_glows_lifts_or_drains_by_an_amount(tmp_path):
+    """§PW479: focus, pressed and disabled as amounts, not only colours."""
+    made = panel.build(panels(tmp_path, STATED), root=str(tmp_path))
+    normal = pixels(tmp_path, "ui/glass.normal.png")
+    focus = pixels(tmp_path, "ui/glass.focus.png")
+    pressed = pixels(tmp_path, "ui/glass.pressed.png")
+    disabled = pixels(tmp_path, "ui/glass.disabled.png")
+    # Focus brightens the marks, not the glass.
+    assert focus[13, 18, :3].sum() >= normal[13, 18, :3].sum()
+    assert focus[40, 9, :3].sum() == normal[40, 9, :3].sum()
+    assert focus[78, 60, :3].sum() > normal[78, 60, :3].sum() * 1.5
+    # Pressed lifts the glass.
+    assert pressed[40, 60, :3].sum() > normal[40, 60, :3].sum()
+    # Disabled drains to grey and fades a little.
+    r, g, b, a = disabled[13, 18]
+    assert max(r, g, b) - min(r, g, b) <= 2
+    assert a < normal[13, 18, 3]
+    # A still cannot move the glass's sweep, and says so.
+    assert made["panels"]["glass"]["normal"]["not_drawn"] == ["tick", "sweep"]
+
+
+def test_a_game_sets_tint_and_cut_on_one_panel_of_many(tmp_path):
+    body = STATED.replace('margin = 30', 'margin = 30\ntint = "#ff8080"')
+    made = panel.build(panels(tmp_path, body), shader=True, root=str(tmp_path))
+    focus = (tmp_path / made["panels"]["glass"]["focus"]["material"]).read_text("utf-8")
+    # Local to its scene: each Control gets its own copy to set tint or cut on.
+    assert "resource_local_to_scene = true" in focus
+    for said in ("glow = 1.9", "tint = Color(1, 0.501961, 0.501961, 1)",
+                 "sweep_strength = 0.05", "cut = 12.0", "bracket_length = 12.0"):
+        assert f"shader_parameter/{said}" in focus
+    program = (tmp_path / "ui/glass.gdshader").read_text("utf-8")
+    assert "TIME * sweep_speed" in program
+    drawn = pixels(tmp_path, "ui/glass.normal.png")
+    assert tuple(drawn[13, 18, :3]) == (0x40, 0x74, 0x80)
+
+
+@pytest.mark.parametrize(
+    ("change", "said"),
+    [
+        (("glow = 1.9", "glow = 9"), "glow from 0 to 4"),
+        (("strength = 0.05", "strength = 5"), "sweep.strength from 0 to 1"),
+    ],
+)
+def test_an_amount_out_of_range_is_refused(tmp_path, change, said):
+    with pytest.raises(PolyweaveError) as refused:
+        panel.build(panels(tmp_path, STATED.replace(*change)), root=str(tmp_path))
+    assert refused.value.code == "compose.bad-panel"
+    assert said in refused.value.message + refused.value.remedy
+
+
 @pytest.mark.parametrize(
     ("change", "said"),
     [
@@ -569,7 +633,7 @@ def test_the_engine_films_each_state_and_each_wipe_step(tmp_path):
     except PolyweaveError:
         pytest.skip("no route draws real pixels here")
     source = panels(tmp_path, HOLO + WIPES + "\n" + BADGE + "\n" + FELT + "\n" + SEWN
-                    + "\n" + LILAC)
+                    + "\n" + STATED)
     (tmp_path / "project.godot").write_text(
         'config_version=5\n\n[application]\nconfig/name="panel"\n', encoding="utf-8")
     taken = panel.capture(source, out="ui", steps=3, root=str(tmp_path))["stills"]

@@ -93,6 +93,18 @@ reach. `tick.from` and `tick.to` place the accent along the top edge, in pixels 
 left, in place of a centred `length`. All four are drawn the same on the nine-patch and
 on the shader, but for the tick, which only the shader draws.
 
+**States change by amounts, not only colours.** Three keys of a panel, which a state
+overrides like any other: `glow` (0 to 4, default 1) multiplies the edge, the brackets
+and the tick, after the edge's `lit`, so a glowing bevel keeps its hue; `glass_lift` (0
+to 2) brightens the glass by that share; `drain` (0 to 1) mixes the whole towards a dim
+grey and fades it by up to 30%. Spinhold's focus is `glow = 1.9`, pressed
+`glass_lift = 0.35` and disabled `drain = 1`. A `sweep = { colour, strength, speed,
+width, slant }` is a faint diagonal light crossing the glass on `TIME`, which only the
+shader draws, so the nine-patch says `not_drawn: ["sweep"]`. `tint` multiplies the
+brackets' colour, and every material is local to its scene, so a game sets `tint`,
+`cut` or `bracket_length` on one Control (`set_shader_parameter`) without touching the
+others.
+
 A `seam` sews the panel, where a flat dashed stroke only paints a line on it:
 
 ```toml

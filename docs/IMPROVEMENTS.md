@@ -101,31 +101,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW479 A panel's bevel, hairline, sweep and state glow
-
-Found in Spinhold on 2026-10-16 (RK184). The menu kit's holo panel is
-`game/ui/kit/holo_panel.gdshader`, written by hand; the owner accepted its look on
-2026-10-07 and every menu stands on it. Declaring it as `[panel.holo]` and running
-`panel.build --shader true` drew the cut, the edge, the brackets, the scan lines and a
-tick, but not what the owner accepted:
-
-- **A lit bevel**: the edge is lilac lit from above and falling to shadow below, not one
-  colour.
-- **An inner hairline** a few pixels inside the edge, its own colour and strength.
-- **A moving sweep**: a faint diagonal light crossing the glass on `TIME`.
-- **Brackets set in** from the cut (half the cut plus 6 px), not on the outer edge.
-- **A tick off centre**: from `cut + 18` to `cut + 90` on the top edge.
-- **States as amounts, not only colours**: focus multiplies the edge, brackets and tick
-  by a glow; pressed lifts the glass; disabled drains to grey. A state today only swaps
-  a part's keys.
-- **A tint uniform** a game sets per instance (the brackets' colour says what a card
-  holds), and per-instance overrides of `cut` and `bracket_length` for low rows.
-
-The glass's fall from top to foot belongs to PW473's `material`.
-
-What polyweave should do: these as parts and keys of a panel declaration, drawn alike at
-build and on the shader route, so Spinhold swaps its shader without losing a detail.
-
 ### §PW481 A sitting's old picture read from git
 
 Found in Spinhold on 2026-10-16 (RK143). Moving the gunship's spec onto its voxel build
