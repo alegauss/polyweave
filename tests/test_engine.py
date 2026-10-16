@@ -91,6 +91,41 @@ def test_a_silent_run_names_the_budget_it_may_have_hit(tmp_path):
     assert "frame budget of 6000 may have ended it" in found["why"]
 
 
+def test_a_script_that_exited_non_zero_says_what_it_printed(tmp_path):
+    """§PW471: a script's own quit(1) was blamed on a budget it never came near."""
+    script = project(tmp_path)
+    found = engine.run(
+        script,
+        expect=SUMMARY,
+        root=tmp_path,
+        launch=says(
+            "Godot Engine v4.7.1.stable.official\n\n"
+            "measuring star\n"
+            "hue matches\n"
+            "value matches\n\n"
+            "form is 0.68 of the bake's, outside 0.70 to 1.40\n",
+            code=1,
+        ),
+    )
+    assert found["verdict"] == "no-signal"
+    assert "exited with code 1 on its own" in found["why"]
+    assert "form is 0.68 of the bake's" in found["why"]
+    assert "measuring star" not in found["why"]
+    assert "frame budget" not in found["why"]
+
+
+def test_a_script_that_exited_non_zero_in_silence_says_so(tmp_path):
+    script = project(tmp_path)
+    found = engine.run(
+        script,
+        expect=SUMMARY,
+        root=tmp_path,
+        launch=says("Godot Engine v4.7.1.stable.official\n\n", code=1),
+    )
+    assert "exited with code 1 on its own and printed nothing" in found["why"]
+    assert "Godot Engine" not in found["why"]
+
+
 def test_a_script_error_is_a_failure_however_it_exited(tmp_path):
     """And zero after a script error is the other way round."""
     script = project(tmp_path)

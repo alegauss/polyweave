@@ -312,18 +312,7 @@ def _verdict(**about: Any) -> dict:
         # The budget ends a run in silence (Godot prints nothing at --quit-after and
         # exits 0), so it is named whenever it could be why (§PW251): certainly where
         # the script's own frame count reached it, possibly where it said nothing.
-        budget = about["budget"]
-        if result["bounded"]:
-            why = (
-                f"the frame budget of {budget} ended the run before the script printed "
-                "its line; pass a larger frames"
-            )
-        else:
-            why = (
-                "the script never printed the line that says it worked; if its moment "
-                f"comes late, the frame budget of {budget} may have ended it first, "
-                "and a larger frames lets it run on"
-            )
+        why = _silent(output, about["code"], about["budget"], result["bounded"])
         return {**result, "verdict": "no-signal", "why": why}
     if missing:
         return {
@@ -332,6 +321,41 @@ def _verdict(**about: Any) -> dict:
             "why": f"it said it wrote {', '.join(missing)}, which is not there",
         }
     return {**result, "ok": True, "verdict": "ok"}
+
+
+def _silent(output: str, code: int | None, budget: int, bounded: bool) -> str:
+    """Why a run never printed its line, as far as the run can tell."""
+    if bounded:
+        return (
+            f"the frame budget of {budget} ended the run before the script printed "
+            "its line; pass a larger frames"
+        )
+    if code:
+        # A script that quit non-zero on its own said why on its way out, and the
+        # budget never exits that way (§PW471).
+        last = _last_said(output)
+        if not last:
+            return f"the script exited with code {code} on its own and printed nothing"
+        return (
+            f"the script exited with code {code} on its own, and its last lines were: "
+            + " | ".join(last)
+        )
+    return (
+        "the script never printed the line that says it worked; if its moment "
+        f"comes late, the frame budget of {budget} may have ended it first, "
+        "and a larger frames lets it run on"
+    )
+
+
+def _last_said(output: str, count: int = 3) -> list[str]:
+    """The script's own last non-blank lines, the engine's banner left out."""
+    lines = output.splitlines()
+    for at, line in enumerate(lines):
+        if line.startswith("Godot Engine v"):
+            lines = lines[at + 1 :]
+            break
+    said = [line.strip() for line in lines if line.strip()]
+    return said[-count:]
 
 
 #: Which code each verdict closes with, so a gate never invents one.

@@ -101,29 +101,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW471 A script that failed says so, and the answer says what it said
-
-Found in Cottony on 2026-10-16, working its RK152. `python -m polyweave
-engine.run_declared --runs material_match` ran `tools/perf/material_match.gd`, which
-measures a star against its bake, prints each band it failed and calls `quit(1)`. The
-answer was:
-
-    runs.material_match.why: the script never printed the line that says it worked; if its
-    moment comes late, the frame budget of 6000 may have ended it first, and a larger
-    frames lets it run on
-
-The run took 4.95 s and exited 1, nowhere near the budget. The real reason was three
-lines from the end of `.polyweave/engine/material_match.log` ("form is 0.68 of the
-bake's, outside 0.70 to 1.40"), and the only way to it was opening the log by hand.
-
-`engine.py`'s no-signal branch reads `bounded` but never `exit_code`: a script that
-ended itself non-zero is reported the same as one the budget may have cut. Where
-`exit_code` is non-zero and `bounded` is false, the why should say the script exited
-with that code on its own, and quote its last few non-blank output lines (the ones after
-the engine banner), which is where a perf script states its verdict. The frame-budget
-hint belongs only where the exit was 0 and nothing was printed, which is the silent
-`--quit-after` case PW251 named.
-
 ### §PW472 A panel outlined by more than cut corners
 
 Found in Cottony on 2026-10-16. `panel.build` outlines a panel as a rectangle whose

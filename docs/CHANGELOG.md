@@ -204,6 +204,7 @@
 - ✅ **PW467** **a game's engine scripts and the line each prints are a table in a Python driver the game writes itself** — A game declares its engine runs as [run.<name>] and engine.run_declared runs them, so Cottony's perf driver is gone for a table in its config (design recorded in `docs/specs/engine.md`).
 - ✅ **PW469** **nothing boots a game's main scene and reads its shutdown, so a project's boot check starts Godot itself** — game.boot boots a game's main scene and reads its shutdown against the leak [engine] leaks forgives, so Cottony's boot check starts no Godot itself (design recorded in `docs/specs/engine.md`).
 - ✅ **PW470** **nothing exports a pack and lists what landed in it, so a project parses Godot's pack table itself** — game.pack exports a preset as a pack and lists its files, imports mapped to sources, so Cottony's export check parses no pack itself (design recorded in `docs/specs/engine.md`).
+- ✅ **PW471** **engine.run_declared blames the frame budget when the script exited 1 on its own after printing why it failed** — A script that exits non-zero on its own is reported with its exit code and its last three lines after the engine banner; the frame-budget hint is kept for silent runs.
 
 ## Block I — Voxel models from a declaration
 
