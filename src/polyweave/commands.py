@@ -447,7 +447,7 @@ def run(stated: argparse.Namespace) -> int:
     # An adoption check is a gate a project can put in its own (§PW220), and so are the
     # integrity check, the game's tests and what the project still does itself (§PW358,
     # §PW362, §PW59).
-    gates = ("init", "project.check", "engine.check", "project.adoption")
+    gates = ("init", "project.check", "engine.check", "project.adoption", "game.boot")
     if stated.command in gates and answer.get("clean") is False:
         return 1
     if stated.command in ("game.test", "engine.run_declared") and answer.get(

@@ -122,26 +122,6 @@ Both workflows run these, so the move has to keep CI's verdicts: run each before
 after against the same tree and compare what failed. CI also pins polyweave (Cottony
 RK153), so the pin has to carry the operations first.
 
-### §PW469 A boot is a run with no script
-
-Met moving Cottony's Godot runners (PW466). `tools/check_boot.py` is a project's
-simplest check that the game works at all: `godot --headless --quit --path .` boots the
-main scene and shuts down, and the output is the verdict. A parse error, a script error,
-a missing main scene or a leak at exit fails it, whatever Godot returned.
-
-polyweave runs only scripts: `engine.run` and `capture.run` start a `--script` and wait
-for a line it prints, so a boot of the main scene with no script has no door, and
-Cottony keeps its own `subprocess` call with its own lookup of `GODOT`, never `[paths]
-godot`, and its own timeout.
-
-What polyweave should do: `game.boot(root)` boots the main scene headless and quits,
-bounded like every run, and answers what it printed sorted the way `engine.run` sorts a
-run's errors: script and parse errors, a main scene that is missing or failed to load,
-and the leaks Godot reports at exit, as counts. What a project forgives belongs to the
-project, such as Cottony's music loop that leaks four objects and two resources only
-under the dummy audio driver, so it is a declared expectation (`[engine] leaks = [4, 2]`
-or the like), not a pattern in the plugin.
-
 ### §PW470 What a pack carries, listed
 
 Met moving Cottony's Godot runners (PW466). `tools/check_export.py` exports a pack with

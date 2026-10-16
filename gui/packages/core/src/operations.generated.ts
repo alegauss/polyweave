@@ -368,6 +368,12 @@ export interface GameBatchArgs {
   root?: string
 }
 
+/** Boot the game's main scene headless, quit, and say what it printed (§PW469). */
+export interface GameBootArgs {
+  /** the Godot project to boot; default "." */
+  root?: string
+}
+
 /** Call a method the game exposes for setup, and answer what it returned. */
 export interface GameCallArgs {
   /** the session game.open answered */
@@ -2420,6 +2426,7 @@ export interface Operations {
   "engine.states": EngineStatesArgs
   "engine.sweep": EngineSweepArgs
   "game.batch": GameBatchArgs
+  "game.boot": GameBootArgs
   "game.call": GameCallArgs
   "game.close": GameCloseArgs
   "game.crash_read": GameCrashReadArgs
@@ -2588,7 +2595,7 @@ export interface Operations {
 }
 
 /** The operations whose every argument may be left out. */
-export type Bare = "accept.verify" | "capture.declared" | "engine.check" | "engine.find" | "engine.perf" | "engine.run_declared" | "engine.states" | "game.crash_read" | "game.export_smoke" | "game.open" | "game.release_check" | "game.test" | "kit.list" | "kit.prove" | "loop.assets" | "loop.bounds" | "loop.pending" | "loop.report" | "loop.runs" | "measure.available" | "measure.pressure" | "mesh.buy" | "offscreen.routes" | "picture.buy" | "project.adoption" | "project.check" | "project.init" | "project.inventory" | "provenance.credits" | "provenance.generated" | "provenance.outdated" | "provenance.unrecorded" | "provenance.verify" | "purchase.held" | "purchase.ledger" | "purchase.remaining" | "purchase.spent" | "render.plan" | "review.canon" | "review.state" | "review.words" | "revision.open" | "schema.read" | "sound.buy" | "sound.declared" | "sound.speak" | "style.read" | "style.train" | "tables.check" | "units.engine_scale" | "verdict.answers" | "voice.design" | "voice.lines" | "words.check" | "words.glyphs" | "words.unlisted" | "world.read" | "world.validate"
+export type Bare = "accept.verify" | "capture.declared" | "engine.check" | "engine.find" | "engine.perf" | "engine.run_declared" | "engine.states" | "game.boot" | "game.crash_read" | "game.export_smoke" | "game.open" | "game.release_check" | "game.test" | "kit.list" | "kit.prove" | "loop.assets" | "loop.bounds" | "loop.pending" | "loop.report" | "loop.runs" | "measure.available" | "measure.pressure" | "mesh.buy" | "offscreen.routes" | "picture.buy" | "project.adoption" | "project.check" | "project.init" | "project.inventory" | "provenance.credits" | "provenance.generated" | "provenance.outdated" | "provenance.unrecorded" | "provenance.verify" | "purchase.held" | "purchase.ledger" | "purchase.remaining" | "purchase.spent" | "render.plan" | "review.canon" | "review.state" | "review.words" | "revision.open" | "schema.read" | "sound.buy" | "sound.declared" | "sound.speak" | "style.read" | "style.train" | "tables.check" | "units.engine_scale" | "verdict.answers" | "voice.design" | "voice.lines" | "words.check" | "words.glyphs" | "words.unlisted" | "world.read" | "world.validate"
 
 /** Every operation `describe` listed when this file was written. */
 export const OPERATIONS = [
@@ -2622,6 +2629,7 @@ export const OPERATIONS = [
   "engine.states",
   "engine.sweep",
   "game.batch",
+  "game.boot",
   "game.call",
   "game.close",
   "game.crash_read",

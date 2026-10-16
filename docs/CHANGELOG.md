@@ -202,6 +202,7 @@
 - ✅ **PW465** **an accept on the review page never reaches the loop ledger, so loop.pending reads an accepted family as still waiting** — A page answer on a sitting naming its ledger asset is a ledger verdict, and a family run's verdict marks the member it names judged (design recorded in `docs/specs/adoption.md`).
 - ✅ **PW466 (the tests)** **Cottony's tests, boot check and export check still start Godot through subprocess, each with its own lookup** — Cottony's Godot tests run through polyweave's game.test, with the same verdicts on its tree, so run_tests.py starts no Godot of its own.
 - ✅ **PW467** **a game's engine scripts and the line each prints are a table in a Python driver the game writes itself** — A game declares its engine runs as [run.<name>] and engine.run_declared runs them, so Cottony's perf driver is gone for a table in its config (design recorded in `docs/specs/engine.md`).
+- ✅ **PW469** **nothing boots a game's main scene and reads its shutdown, so a project's boot check starts Godot itself** — game.boot boots a game's main scene and reads its shutdown against the leak [engine] leaks forgives, so Cottony's boot check starts no Godot itself (design recorded in `docs/specs/engine.md`).
 
 ## Block I — Voxel models from a declaration
 

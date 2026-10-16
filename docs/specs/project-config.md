@@ -88,6 +88,7 @@ language = "en"                # the review page and its sittings: en or pt-BR, 
 fixed_fps = 60
 frames    = 6000               # the frame budget a scene script is bounded by
 timeout   = 180                # and the wall clock, for a run that never reaches a frame
+leaks     = [4, 2]             # the leak at exit game.boot forgives: [objects, resources]
 quiet     = true               # a capture's window starts minimised, out of sight
 
 [driving]

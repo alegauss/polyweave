@@ -175,3 +175,74 @@ def test(
            + (f":{failures[0]['line']}" if failures[0]["line"] else "")
            + f": {failures[0]['said']}"),
     }
+
+
+# -- the game booted and shut down, read (§PW469) -------------------------------------
+
+#: What fails a boot whatever Godot returned: the engine's own error lines, and a main
+#: scene that is missing or would not load.
+_FATAL = re.compile(r"SCRIPT ERROR|Parse Error|Compile Error|String formatting error|"
+                    r"Failed to load|no main scene", re.IGNORECASE)
+
+#: The two lines Godot prints about what it could not free at exit.
+_LEAKED = re.compile(r"WARNING: (\d+) ObjectDB instances were leaked at exit")
+_IN_USE = re.compile(r"ERROR: (\d+) resources still in use at exit")
+
+#: Lines the engine prints on the way in and out that say nothing about the game.
+_NOISE = re.compile(
+    r"^\s*(at: |Hint: |WARNING: \d+ ObjectDB|ERROR: \d+ resources|Godot Engine v|"
+    r"OpenGL API |Vulkan API |--- Debug adapter|$)"
+)
+
+
+@operation("game.boot")
+def boot(root: Annotated[str, Param("the Godot project to boot")] = ".") -> dict:
+    """Boot the game's main scene headless, quit, and say what it printed (§PW469).
+
+    The simplest check that a game works at all, and the one with no script for
+    `engine.run` to wait on. Bounded by `[engine] timeout`, its exit code distrusted:
+    `clean` is false on a script, parse or compile error, a main scene missing or not
+    loaded, any other line the game printed, or a leak at exit other than the one
+    `[engine] leaks` forgives, as `[objects, resources]` (Cottony's music loop leaks
+    `[4, 2]` under the dummy audio driver alone).
+    """
+    from . import engine
+
+    config = load(root)
+    here = config.root
+    if not (here / "project.godot").is_file():
+        raise PolyweaveError(
+            "engine.no-project",
+            f"there is no project.godot at {here}, so there is no game to boot",
+            "boot from the Godot project's own folder",
+        )
+    godot = engine.find(here)
+    timeout = float(config.get("engine.timeout"))
+    try:
+        output, code = engine._launch([godot, "--headless", "--quit", "--path",
+                                       str(here)], cwd=here, timeout=timeout)
+    except subprocess.TimeoutExpired:
+        return {"clean": False, "fatal": [], "said": [], "leaked": None,
+                "says": f"the game did not shut down within {timeout:g} s"}
+    lines = output.splitlines()
+    fatal = [line.strip() for line in lines if _FATAL.search(line)]
+    leaked, in_use = _LEAKED.search(output), _IN_USE.search(output)
+    leaks = ([int(leaked.group(1)) if leaked else 0, int(in_use.group(1)) if in_use
+              else 0] if leaked or in_use else None)
+    forgiven = [int(one) for one in config.get("engine.leaks") or ()]
+    unforgiven = leaks is not None and leaks != forgiven
+    said = [line.rstrip() for line in lines
+            if line.strip() and not _NOISE.match(line) and not _FATAL.search(line)]
+    clean = not fatal and not unforgiven and not said
+    if fatal:
+        says = f"the game did not boot clean: {fatal[0]}"
+    elif unforgiven:
+        says = (f"it leaked {leaks[0]} object(s) and {leaks[1]} resource(s) at exit, "
+                f"where [engine] leaks forgives {forgiven or 'none'}")
+    elif said:
+        says = f"the game booted and shut down, and said: {said[0]}"
+    else:
+        says = "the game boots and shuts down clean" + (
+            " (bar the leak [engine] leaks forgives)" if leaks else "")
+    return {"clean": clean, "fatal": fatal[:10], "said": said[:10], "leaked": leaks,
+            "forgiven": forgiven, "exit_code": code, "says": says}

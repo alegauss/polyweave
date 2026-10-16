@@ -38,6 +38,15 @@ runs the named ones, or every one, each answered `ok`, `why`, `found`, `seconds`
 `passed` is false, and the command exits non-zero, while any failed. A name nothing
 declares is `engine.unknown-run`. A verdict on a number a run printed stays the game's.
 
+**A boot is a run with no script** (§PW469). `game.boot(root)` boots the main scene
+headless and quits, bounded by `[engine] timeout`, and reads what it printed: `fatal`
+for a script, parse or compile error or a main scene missing or not loaded, `said` for
+any other line the game printed, and `leaked`, the objects and resources Godot reports
+at exit. It is `clean` only with none of the first two and no leak other than the one
+`[engine] leaks` forgives as `[objects, resources]`, named exactly, since a headless
+dummy driver can hold what a real one frees. The exit code is reported and not read,
+and the command exits non-zero when it is not clean.
+
 **The error pattern is the engine's**, not the project's, and is the one thing compiled in:
 `SCRIPT ERROR`, `Parse Error`, `Compile Error`, and `String formatting error`, which prints
 without the word SCRIPT and still aborts the block it is in. A caller may widen it; nothing

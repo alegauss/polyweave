@@ -181,6 +181,9 @@ DEFAULTS: dict[str, Any] = {
         "timeout": 180,
         # A capture's window starts minimised and unfocused, out of sight (§PW296).
         "quiet": True,
+        # The leak at exit game.boot forgives, as [objects, resources] (§PW469): one the
+        # engine's headless dummy driver causes and the game cannot, named exactly.
+        "leaks": [],
     },
     # Each scene's performance budget, `[perf.<name>]` (§PW365): its scene, the frames
     # measured, and the most each measure may reach; engine.perf reads them.
