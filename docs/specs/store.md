@@ -85,6 +85,16 @@ layer. A sweep naming an id the drawing lacks, a key it does not take, a bound t
 not a number or frames outside 2 to 256 is `compose.bad-sweep`, listing the ids there
 are.
 
+**A layer that draws nothing is refused** (§PW478). Spinhold's halo group shared the id
+`halo` with its own blur filter, and the layer came back fully transparent with an
+answer like any other's. Before drawing, every id a layer selector, a sweep or a
+`url(#id)` or `href="#id"` reference leans on has to name one element, and a `filter`,
+`mask` or `clip-path` has to land on an element of that kind; either failing is
+`compose.ambiguous-id`, naming the elements. A duplicate id nothing leans on is said in
+`duplicate_ids` instead. After drawing, a layer (or the whole) whose every pixel is
+transparent in every frame is `compose.empty-layer`, naming its selector; a sweep's
+frames that drew nothing while others drew are listed in `empty_frames`.
+
 **Live text is outlined before ThorVG draws it** (§PW453). ThorVG, as Godot builds it,
 draws no `<text>`, so a banner came out with every letter missing and the call answered
 a success. Before any drawing, in `picture.vector` and in `store.capsules` alike, each

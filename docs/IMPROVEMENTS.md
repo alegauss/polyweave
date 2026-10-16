@@ -101,21 +101,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW478 picture.vector is silent on an empty layer
-
-In Spinhold (RK150) the brand generator gave the halo group `id="halo"`, the same id as
-the blur filter it uses (`filter="url(#halo)"`). `picture.vector --layers {"halo":
-"#halo"}` answered with the layer's file and size like any other, and the PNG was fully
-transparent: alpha extrema (0, 0), no bounding box. It was found only by opening the
-file with PIL. The whole picture also lost its halo without a word.
-
-What polyweave should do: after drawing a layer, measure its alpha; a layer with no
-pixel drawn is refused (or at least flagged in the answer) with a code naming the
-selector. Where the SVG carries a duplicate id, say so and name both elements, since a
-`url(#id)` or `#id` selector then means whichever the rasteriser finds first. The same
-check belongs on the whole picture: an element referencing a filter, mask or clip that
-resolves to a non-filter element is a defect worth naming.
-
 ### §PW479 A panel's bevel, hairline, sweep and state glow
 
 Found in Spinhold on 2026-10-16 (RK184). The menu kit's holo panel is

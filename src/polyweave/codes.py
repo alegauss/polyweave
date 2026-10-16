@@ -2429,6 +2429,23 @@ CODES: dict[str, Code] = {
         "size out of range, or no icon at all (§PW331)",
         doors=("declare each icon with a shape the refusal lists",),
     ),
+    "compose.empty-layer": Code(
+        means="a vector's layer, or the whole picture, drew no pixel at all",
+        when="picture.vector where every pixel of a layer came out transparent in "
+        "every frame: the element is invisible, empty, or leans on a filter or mask "
+        "that is not one (§PW478)",
+        doors=(
+            "check the element draws on its own",
+            "check what it points at is the element meant",
+        ),
+    ),
+    "compose.ambiguous-id": Code(
+        means="an id in a vector means more than one element, or the wrong kind",
+        when="picture.vector where a selector, a sweep or a url(#id) reference names "
+        "an id two elements share, or a filter, mask or clip-path resolves to an "
+        "element of another kind (§PW478)",
+        doors=("give each element its own id", "point the reference at the one meant"),
+    ),
     "compose.bad-sweep": Code(
         means="a vector's sweep cannot be drawn",
         when="picture.vector given a sweep naming an element no id in the SVG has, a "

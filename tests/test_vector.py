@@ -110,6 +110,61 @@ def test_a_layer_swept_over_frames_is_one_loop_with_one_source(logo):
         "frames"] == ring["frames"]
 
 
+HALO = """<svg xmlns="http://www.w3.org/2000/svg" width="100" height="50"
+  viewBox="0 0 100 50">
+  <defs>
+    <filter id="halo"><feGaussianBlur stdDeviation="4"/></filter>
+  </defs>
+  <g id="halo" filter="url(#halo)"><circle cx="25" cy="25" r="12" fill="#ff00ff"/></g>
+  <g id="ring"><circle cx="70" cy="25" r="15" fill="#00ffff"/></g>
+  <g id="hidden" opacity="0"><rect x="5" y="40" width="20" height="5"/></g>
+</svg>
+"""
+
+
+def test_an_id_two_elements_share_is_refused_naming_both(logo):
+    """§PW478: Spinhold's halo group and its blur filter were both #halo."""
+    (logo / "brand" / "halo.svg").write_text(HALO, encoding="utf-8")
+    with pytest.raises(PolyweaveError) as refused:
+        vector.vector("brand/halo.svg", "out/halo.png", 200, layers={"ring": "#ring"},
+                      root=str(logo))
+    assert refused.value.code == "compose.ambiguous-id"
+    assert '<filter id="halo">' in refused.value.message
+    assert '<g id="halo">' in refused.value.message
+
+
+def test_a_filter_that_points_at_no_filter_is_refused(logo):
+    body = HALO.replace('<filter id="halo">', '<filter id="soft">').replace(
+        'filter="url(#halo)"', 'filter="url(#ring)"')
+    (logo / "brand" / "halo.svg").write_text(body, encoding="utf-8")
+    with pytest.raises(PolyweaveError) as refused:
+        vector.vector("brand/halo.svg", "out/halo.png", 200, root=str(logo))
+    assert refused.value.code == "compose.ambiguous-id"
+    assert "not a filter" in refused.value.message
+
+
+def test_a_layer_that_draws_nothing_is_refused(logo):
+    needs_godot()
+    body = HALO.replace('<filter id="halo">', '<filter id="soft">').replace(
+        'url(#halo)', 'url(#soft)')
+    (logo / "brand" / "halo.svg").write_text(body, encoding="utf-8")
+    with pytest.raises(PolyweaveError) as refused:
+        vector.vector("brand/halo.svg", "out/halo.png", 200,
+                      layers={"ring": "#ring", "hidden": "#hidden"}, root=str(logo))
+    assert refused.value.code == "compose.empty-layer"
+    assert "layer hidden (#hidden)" in refused.value.message
+
+
+def test_a_sweep_frame_that_draws_nothing_is_said(logo):
+    needs_godot()
+    made = vector.vector(
+        "brand/logo.svg", "out/logo.png", 200, layers={"ring": "#ring"},
+        sweep={"element": "#ring", "attribute": "opacity", "from": 0.0, "to": 1.0,
+               "frames": 4},
+        whole=False, root=str(logo))
+    assert made["empty_frames"] == {"ring": [0]}
+
+
 def test_a_missing_vector_is_refused(logo):
     with pytest.raises(PolyweaveError) as refused:
         vector.vector("brand/none.svg", "out/logo.png", 400, root=str(logo))

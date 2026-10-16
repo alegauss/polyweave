@@ -93,6 +93,57 @@ def _chosen(selector: Any, drawn: list[ET.Element], svg: Path, name: str) -> int
     )
 
 
+#: What a reference by attribute has to land on, or the drawing silently loses it.
+_POINTS_AT = {"filter": "filter", "mask": "mask", "clip-path": "clipPath"}
+
+_URL = re.compile(r"url\(\s*#([^)\s]+)")
+
+
+def _described(element: ET.Element) -> str:
+    return f"<{_tag(element)} id=\"{element.get('id')}\">"
+
+
+def _ids_checked(root: ET.Element, svg: Path, named: set[str]) -> list[dict]:
+    """Every id a selector or a reference leans on, held to one element of the right
+    kind (§PW478); the duplicate ids nothing leans on, returned to be said."""
+    by_id: dict[str, list[ET.Element]] = {}
+    for element in root.iter():
+        if element.get("id"):
+            by_id.setdefault(element.get("id"), []).append(element)
+    leaned = set(named)
+    for element in root.iter():
+        for attribute, value in element.attrib.items():
+            local = attribute.rsplit("}", 1)[-1]
+            found = _URL.findall(value)
+            if local == "href" and value.startswith("#"):
+                found.append(value[1:])
+            leaned.update(found)
+            wanted = _POINTS_AT.get(local)
+            for target in found if wanted else ():
+                landed = by_id.get(target, [])
+                if len(landed) == 1 and _tag(landed[0]) != wanted:
+                    raise PolyweaveError(
+                        "compose.ambiguous-id",
+                        f"{svg.name}: {_described(element)} takes its {local} from "
+                        f"#{target}, which is {_described(landed[0])}, not a {wanted}, "
+                        f"so the {local} is drawn as nothing",
+                        f"give the {wanted} its own id and point {local} at it",
+                        given=target,
+                    )
+    twice = {name: found for name, found in by_id.items() if len(found) > 1}
+    for name in sorted(set(twice) & leaned):
+        raise PolyweaveError(
+            "compose.ambiguous-id",
+            f"{svg.name} gives id {name!r} to {len(twice[name])} elements "
+            f"({', '.join(_described(e) for e in twice[name])}), so #{name} means "
+            "whichever the rasteriser meets first",
+            "give each element its own id",
+            given=name,
+        )
+    return [{"id": name, "elements": [_described(e) for e in found]}
+            for name, found in sorted(twice.items())]
+
+
 def _swept(sweep: Any, root: ET.Element, svg: Path) -> dict | None:
     """A sweep checked whole, its elements found by id anywhere in the drawing."""
     if not sweep:
@@ -193,6 +244,11 @@ def vector(
                              "whole is false and no layer is named, so nothing would "
                              "be drawn", "name a layer, or draw whole")
     moved = _swept(sweep, tree.getroot(), svg)
+    selected = {str(s).lstrip("#") for s in (layers or {}).values()
+                if str(s).startswith("#")}
+    if moved:
+        selected.update(e.lstrip("#") for e in moved["element"])
+    doubled = _ids_checked(tree.getroot(), svg, selected)
     target = here / out if not Path(out).is_absolute() else Path(out)
     target.parent.mkdir(parents=True, exist_ok=True)
     fonts: list[Path] = []
@@ -200,6 +256,7 @@ def vector(
     pictures, values = _frames(tree, svg, names, picked, moved,
                                lambda alone: store._drawn_svg(
                                    alone, {"alone": scale}, here, fonts)["alone"])
+    empty = _emptiness(pictures, layers or {})
     # The fonts live text was outlined in are inputs like the SVG (§PW453).
     inputs = [provenance.source("vector", svg, here),
               *(provenance.source("font", one, here) for one in fonts)]
@@ -246,7 +303,33 @@ def vector(
     }
     if moved:
         answer["sweep"] = {**said, "values": values}
+    if empty:
+        answer["empty_frames"] = empty
+    if doubled:
+        # Said, not refused: nothing leans on these, so nothing is drawn wrong yet.
+        answer["duplicate_ids"] = doubled
     return answer
+
+
+def _emptiness(pictures: dict[str, list], layers: dict) -> dict[str, list[int]]:
+    """A layer that drew no pixel in any frame is refused, naming what chose it
+    (§PW478); a sweep's frames that drew nothing, where others did, are returned."""
+    empty: dict[str, list[int]] = {}
+    for name, frames in pictures.items():
+        blank = [k for k, p in enumerate(frames)
+                 if p.convert("RGBA").getextrema()[3][1] == 0]
+        if len(blank) == len(frames):
+            chose = f"layer {name} ({layers[name]})" if name else "the whole picture"
+            raise PolyweaveError(
+                "compose.empty-layer",
+                f"{chose} drew no pixel: every one of its pixels is transparent",
+                "check the element it names is drawn and visible on its own, and that "
+                "what it points at (a filter, a mask, a clip) is the element meant",
+                given=str(layers.get(name, "whole")),
+            )
+        if blank:
+            empty[name or "whole"] = blank
+    return empty
 
 
 def _frames(tree: ET.ElementTree, svg: Path, names: list[str], picked: dict,

@@ -243,7 +243,8 @@ DESCRIBE = 144_800
 #: 156,862 with picture.sew and compose.bad-seam (§PW474).
 #: 157,369 with picture.vector's sweep and compose.bad-sweep (§PW476).
 #: 158,273 with reference.concept and capture.bad-concept (§PW477).
-CAPABILITIES = 158_300
+#: 158,320 with compose.empty-layer and compose.ambiguous-id (§PW478).
+CAPABILITIES = 158_400
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
