@@ -18,6 +18,7 @@
 
 - 🛠 **PW372** (deps: Spinhold RK215) **a camera move cannot be declared as a clip or played by the game, so a cutscene's shots are numbers in the project** — No shot is yet captured onto a sitting for a person to accept, and Starship's opening still reads its own JSON. → §PW372
 - 🛠 **PW36** (deps: PW5 ✅, PW82 ⏸) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82. → §PW36
+- 📋 **PW471** (deps: —) **engine.run_declared blames the frame budget when the script exited 1 on its own after printing why it failed** — The reason is in the log's last lines and the answer points away from it, so every failed perf run means opening the log by hand. → §PW471
 
 ## Block I — Voxel models from a declaration
 
