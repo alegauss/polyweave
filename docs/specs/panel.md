@@ -39,6 +39,21 @@ declaring both is refused; brackets start where either ends. On the shader route
 radius is clamped to half the Control's smaller side, so a Control no taller than twice
 the radius is drawn as a pill.
 
+`radius = "pill"` rounds each end whole, at half the smaller side. A pill's ends survive
+a nine-patch only along its length, so it is built with `stretch: "width"` (or
+`"height"`, for a tall one), its corner held against that axis's margins alone; on the
+shader route its radius is past any size, so it is a pill whatever the Control is.
+
+A panel that is no box at all takes an `outline` from the geometry vocabulary
+(`docs/specs/geometry.md`): a generator (`{ shape = "lobed", lobes = 6, radius = 10,
+depth = 2 }`, `star`, `circle`, `rounded_square`), `points`, or an `image` to trace, with
+`offset` and `radial` as there. The outline is stretched over the panel's box. It cannot
+be a nine-patch, so it is drawn at its declared size with no stylebox and says
+`stretch: "none"`; on the shader route it is a distance field over the Control's own
+size, up to 128 points. Cut, radius and outline are one choice each, brackets sit on a
+box's corners and are refused beside an outline, and an outline the geometry refuses is
+refused here with its reason.
+
 A `piping` is the raised rim stuffed fabric is finished with: a band `width` pixels in
 from the outline, in its own `colour`, shaded across its width like a tube. `raise`, from
 0 (flat) to 1, is how far its crown is lit towards white and its flanks darkened in their

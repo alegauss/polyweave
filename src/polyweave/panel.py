@@ -37,6 +37,8 @@ import tomllib
 from pathlib import Path
 from typing import Annotated, Any
 
+import numpy as np
+
 from .config import load
 from .describe import Param, operation
 from .errors import PolyweaveError
@@ -48,6 +50,7 @@ PARTS = {
     "fill": None,
     "cut": None,
     "radius": None,
+    "outline": None,
     "edge": ("width", "colour"),
     "piping": ("width", "colour", "raise"),
     "brackets": ("length", "width", "colour"),
@@ -61,6 +64,9 @@ STATES = ("normal", "hover", "focus", "pressed", "disabled")
 
 #: How many times larger a panel is drawn before it is brought down, for clean edges.
 SUPER = 4
+
+#: The most points an outline may have: the shader holds them in a fixed array.
+OUTLINE_MOST = 128
 
 _COLOUR = re.compile(r"#([0-9a-fA-F]{6})([0-9a-fA-F]{2})?")
 
@@ -106,7 +112,7 @@ def _merged(base: dict, over: dict) -> dict:
     return out
 
 
-def declared(name: str, table: Any) -> dict[str, dict]:
+def declared(name: str, table: Any, root: Path | str = ".") -> dict[str, dict]:
     """Every state of one panel, each checked whole, refused unless it can be drawn."""
     table = _keys(name, f"[panel.{name}]", table, list(PARTS))
     for part, keys in PARTS.items():
@@ -114,21 +120,61 @@ def declared(name: str, table: Any) -> dict[str, dict]:
             _keys(name, part, table[part], list(keys))
     states = _keys(name, "states", table.get("states") or {}, list(STATES))
     base = {k: v for k, v in table.items() if k != "states"}
-    out = {"normal": _checked(name, "normal", base)}
+    out = {"normal": _checked(name, "normal", base, root)}
     for state, over in states.items():
         if state == "normal":
             continue
         _keys(name, f"states.{state}", over, [p for p in PARTS if p != "states"])
-        out[state] = _checked(name, state, _merged(base, over))
+        out[state] = _checked(name, state, _merged(base, over), root)
     return out
 
 
-def _checked(name: str, state: str, panel: dict) -> dict:
+def _outlined(name: str, state: str, panel: dict, size: tuple[int, int],
+              root: Path | str) -> tuple[int, int, bool, list | None]:
+    """How the panel is outlined: cut, rounded, a pill, or an outline of its own."""
+    cut = _whole(name, "cut", panel.get("cut", 0))
+    stated = panel.get("radius", 0)
+    pill = stated == "pill"
+    if isinstance(stated, str) and not pill:
+        raise _bad(name, f"radius is {stated!r}",
+                   'write radius as a whole number from 0, or "pill"')
+    radius = min(size) // 2 if pill else _whole(name, "radius", stated)
+    ring = _fitted(name, panel["outline"], root) if "outline" in panel else None
+    given = [k for k, v in (("cut", cut), ("radius", radius), ("outline", ring)) if v]
+    if len(given) > 1:
+        raise _bad(name, f"in state {state}, {' and '.join(given)} each shape it",
+                   "a panel is cut, rounded or outlined: keep one of them")
+    return cut, radius, pill, ring
+
+
+def _fitted(name: str, stated: Any, root: Path | str) -> list[tuple[float, float]]:
+    """A geometry outline, stretched over the panel's box, in shares of its size."""
+    from .geometry import outline as geometry
+
+    try:
+        ring = geometry.resolve(stated, root=root)
+    except PolyweaveError as exc:
+        raise _bad(name, f"outline: {exc.message}", exc.remedy) from exc
+    ring = ring * np.array([1.0, -1.0])  # an outline counts y up, a picture down
+    low, span = ring.min(axis=0), np.ptp(ring, axis=0)
+    if (span <= 1e-9).any():
+        raise _bad(name, "outline is flat, with no width or no height",
+                   "give it a shape that encloses something")
+    if len(ring) > OUTLINE_MOST:
+        raise _bad(name, f"outline has {len(ring)} points and the shader takes "
+                   f"{OUTLINE_MOST}", "ask the shape for fewer steps, or trace with a "
+                   "larger tolerance")
+    return [(float(x), float(y)) for x, y in (ring - low) / span]
+
+
+def _checked(name: str, state: str, panel: dict, root: Path | str = ".") -> dict:
     size = panel.get("size")
     if not (isinstance(size, list) and len(size) == 2):
         raise _bad(name, "has no size", "write size = [width, height] in pixels")
     width, height = (_whole(name, "size", v, 8) for v in size)
-    margin = panel.get("margin", 0)
+    cut, radius, pill, ring = _outlined(name, state, panel, (width, height), root)
+    # An outline is drawn at its size and never stretched, so its margin means nothing.
+    margin = panel.get("margin", 1 if ring else 0)
     margins = [margin] * 4 if not isinstance(margin, list) else margin
     if len(margins) != 4:
         raise _bad(name, f"margin is {margin!r}",
@@ -137,12 +183,6 @@ def _checked(name: str, state: str, panel: dict) -> dict:
     if left + right >= width or top + bottom >= height:
         raise _bad(name, f"margins {margins} leave no middle in {width}x{height}",
                    "make the panel larger, or the margins smaller")
-    cut = _whole(name, "cut", panel.get("cut", 0))
-    radius = _whole(name, "radius", panel.get("radius", 0))
-    if cut and radius:
-        raise _bad(name,
-                   f"in state {state}, it has both cut = {cut} and radius = {radius}",
-                   "a corner is either cut or rounded: keep one of the two")
     edge = panel.get("edge") or {}
     brackets = panel.get("brackets") or {}
     scan = panel.get("scan") or {}
@@ -152,6 +192,9 @@ def _checked(name: str, state: str, panel: dict) -> dict:
         "fill": _colour(name, "fill", panel.get("fill", "#00000000")),
         "cut": cut,
         "radius": radius,
+        "pill": pill,
+        "outline": ring,
+        "stretch": _stretch(ring, pill, width, height),
         "edge": {"width": _whole(name, "edge.width", edge.get("width", 0)),
                  "colour": _colour(name, "edge.colour",
                                    edge.get("colour", "#00000000"))},
@@ -172,6 +215,10 @@ def _checked(name: str, state: str, panel: dict) -> dict:
     corner = cut + radius
     reach = corner + max(out["edge"]["width"],
                          out["piping"]["width"] if out["piping"] else 0)
+    if brackets and ring:
+        raise _bad(name, f"in state {state}, it has brackets and an outline",
+                   "brackets sit on a box's corners: drop them, or outline the panel "
+                   "with cut or radius")
     if brackets:
         out["brackets"] = {
             "length": _whole(name, "brackets.length", brackets.get("length", 0), 1),
@@ -184,16 +231,29 @@ def _checked(name: str, state: str, panel: dict) -> dict:
             "pitch": _whole(name, "scan.pitch", scan.get("pitch", 0), 2),
             "colour": _colour(name, "scan.colour", scan.get("colour")),
         }
-    # A corner's parts are only drawn true where the nine-patch never stretches them.
-    if reach > min(left, top, right, bottom):
+    # A corner's parts are only drawn true where the nine-patch never stretches them,
+    # which for a pill is only across its length.
+    held = {"none": (), "width": (left, right), "height": (top, bottom),
+            "both": (left, top, right, bottom)}[out["stretch"]]
+    if held and reach > min(held):
         raise _bad(
             name,
             f"in state {state}, its corner reaches {reach} px and the smallest margin "
-            f"is {min(left, top, right, bottom)} px, so stretching would bend it",
+            f"is {min(held)} px, so stretching would bend it",
             "make the margin at least as wide as the cut or radius plus the bracket, "
             "or shorten the bracket",
         )
     return out
+
+
+def _stretch(ring: list | None, pill: bool, width: int, height: int) -> str:
+    """Which way a nine-patch may grow it: a pill keeps its round ends only along its
+    length, and an outline of its own is no nine-patch at all."""
+    if ring:
+        return "none"
+    if pill:
+        return "width" if width >= height else "height"
+    return "both"
 
 
 def _piping(name: str, piping: dict) -> dict | None:
@@ -228,9 +288,13 @@ def _drawn(panel: dict):
         return [(x0 + c, y0), (x1 - c, y0), (x1, y0 + c), (x1, y1 - c),
                 (x1 - c, y1), (x0 + c, y1), (x0, y1 - c), (x0, y0 + c)]
 
-    def inside(pen, inset: int, fill) -> None:
+    ring = np.asarray(panel["outline"]) * big if panel["outline"] else None
+
+    def inside(pen, inset: float, fill) -> None:
         """The outline drawn `inset` big pixels in, filled."""
-        if radius:
+        if ring is not None:
+            pen.polygon([tuple(p) for p in _inset(ring, inset)], fill=fill)
+        elif radius:
             far = (big[0] - 1 - inset, big[1] - 1 - inset)
             pen.rounded_rectangle((inset, inset, *far), radius=max(0, radius - inset),
                                   fill=fill)
@@ -257,9 +321,9 @@ def _drawn(panel: dict):
         rings = Image.new("RGBA", big, (0, 0, 0, 0))
         pen = ImageDraw.Draw(rings)
         across = panel["piping"]["width"] * SUPER
-        for ring in range(across):
-            inside(pen, ring, _tube(panel["piping"]["colour"], panel["piping"]["raise"],
-                                    (ring + 0.5) / across))
+        for step in range(across):
+            inside(pen, step, _tube(panel["piping"]["colour"], panel["piping"]["raise"],
+                                    (step + 0.5) / across))
         hole = Image.new("L", big, 0)
         inside(ImageDraw.Draw(hole), across, 255)
         rings.paste((0, 0, 0, 0), (0, 0), hole)
@@ -272,7 +336,8 @@ def _drawn(panel: dict):
                 (0, 0, big[0] - 1, big[1] - 1), radius=radius,
                 outline=panel["edge"]["colour"], width=edge)
         else:
-            points = outline(edge / 2)
+            points = ([tuple(p) for p in _inset(ring, edge / 2)] if ring is not None
+                      else outline(edge / 2))
             ImageDraw.Draw(rim).line([*points, points[0]],
                                      fill=panel["edge"]["colour"], width=edge,
                                      joint="curve")
@@ -292,6 +357,16 @@ def _drawn(panel: dict):
                           fill=colour)
         picture = Image.alpha_composite(picture, marks)
     return picture.resize(panel["size"], Image.Resampling.BOX)
+
+
+def _inset(ring: np.ndarray, by: float) -> np.ndarray:
+    """An outline moved `by` inward, whichever way round its points were written."""
+    from .geometry import outline as geometry
+
+    if by <= 0:
+        return ring
+    one, two = geometry.offset(ring, by), geometry.offset(ring, -by)
+    return one if geometry.area(one) < geometry.area(two) else two
 
 
 def _tube(colour: tuple, rise: float, across: float) -> tuple[int, int, int, int]:
@@ -345,6 +420,35 @@ uniform float tick_length = 0.0;
 uniform float tick_width = 0.0;
 uniform vec4 tick_colour : source_color;
 uniform float pixel_scale = 1.0;
+// An outline of its own, in shares of the Control's size; none while the count is 0.
+uniform float outline_count = 0.0;
+uniform vec2 outline_points[128];
+
+// How far p is inside the outline stretched over size, negative outside.
+float inside_outline(vec2 p, vec2 size) {
+\tint count = int(outline_count);
+\tvec2 last = outline_points[count - 1] * size;
+\tfloat nearest = 1e20;
+\tfloat side = -1.0;
+\tfor (int i = 0; i < 128; i++) {
+\t\tif (i >= count) {
+\t\t\tbreak;
+\t\t}
+\t\tvec2 a = outline_points[i] * size;
+\t\tvec2 e = last - a;
+\t\tvec2 w = p - a;
+\t\tvec2 b = w - e * clamp(dot(w, e) / max(dot(e, e), 1e-9), 0.0, 1.0);
+\t\tnearest = min(nearest, dot(b, b));
+\t\tbool up = p.y >= a.y;
+\t\tbool down = p.y < last.y;
+\t\tbool left = e.x * w.y > e.y * w.x;
+\t\tif ((up && down && left) || (!up && !down && !left)) {
+\t\t\tside = -side;
+\t\t}
+\t\tlast = a;
+\t}
+\treturn side * sqrt(nearest);
+}
 
 vec4 over(vec4 below, vec4 above) {
 \tfloat a = above.a + below.a * (1.0 - above.a);
@@ -370,6 +474,9 @@ void fragment() {
 \tfloat r = min(radius, min(size.x, size.y) * 0.5);
 \tif (r > 0.0 && d.x < r && d.y < r) {
 \t\tdist = r - length(vec2(r) - d);
+\t}
+\tif (outline_count > 0.0) {
+\t\tdist = inside_outline(p, size);
 \t}
 \tfloat corner = cut + r;
 \tif (dist < 0.0) {
@@ -459,6 +566,9 @@ shader = ExtResource("1")
 
 def _gd(value: Any) -> str:
     """A value as a .tres writes it: a colour from 0-255 parts, a vector, a number."""
+    if isinstance(value, list) and value and isinstance(value[0], tuple):
+        flat = (f"{float(part):.6g}" for point in value for part in point)
+        return f"PackedVector2Array({', '.join(flat)})"
     if isinstance(value, tuple) and len(value) == 4:
         return f"Color({', '.join(f'{part / 255:.6g}' for part in value)})"
     if isinstance(value, list | tuple):
@@ -481,8 +591,15 @@ def _uniforms(panel: dict) -> dict:
     brackets = panel["brackets"] or {"length": 0, "width": 0, "colour": none}
     scan = panel["scan"] or {"pitch": 0, "colour": none}
     tick = panel["tick"] or {"length": 0, "width": 0, "colour": none}
+    shaped = {}
+    if panel["outline"]:
+        shaped = {"outline_count": len(panel["outline"]),
+                  "outline_points": panel["outline"]}
     return {
-        "fill": panel["fill"], "cut": panel["cut"], "radius": panel["radius"],
+        **shaped,
+        "fill": panel["fill"], "cut": panel["cut"],
+        # A pill's radius is past any size, so the shader's clamp rounds whole ends.
+        "radius": 1e4 if panel["pill"] else panel["radius"],
         "edge_width": panel["edge"]["width"], "edge_colour": panel["edge"]["colour"],
         "piping_width": piping["width"], "piping_colour": piping["colour"],
         "piping_raise": piping["raise"],
@@ -563,10 +680,11 @@ def build(
     """Build declared menu panels and screen wipes for the engine, each recorded.
 
     A panel's states land as <name>.<state>.png nine-patches with their records and
-    <name>.<state>.tres styleboxes. With `shader`, a panel is also <name>.gdshader and
-    a <name>.<state>.material.tres a state, which draws the accent tick a nine-patch
-    would stretch. A wipe is always <name>.gdshader and <name>.material.tres, its
-    `progress` uniform covering the screen from 0 to 1.
+    <name>.<state>.tres styleboxes; one with an `outline` of its own is no nine-patch,
+    so it has no stylebox and says `stretch: none`. With `shader`, a panel is also
+    <name>.gdshader and a <name>.<state>.material.tres a state, which draws the accent
+    tick a nine-patch would stretch. A wipe is always <name>.gdshader and
+    <name>.material.tres, its `progress` uniform covering the screen from 0 to 1.
     """
     from . import provenance
 
@@ -579,7 +697,8 @@ def build(
             given=panel, allowed=sorted(panels),
         )
     chosen = {panel: panels[panel]} if panel else panels
-    states = {name: declared(name, table) for name, table in chosen.items()}
+    states = {name: declared(name, table, config.root)
+              for name, table in chosen.items()}
     wiped = {} if panel else {name: wipe(name, table) for name, table in wipes.items()}
     folder = config.path("paths.work", out) if out else where.parent
     folder.mkdir(parents=True, exist_ok=True)
@@ -607,19 +726,21 @@ def build(
             left, top, right, bottom = own["margin"]
             recorded(target, "picture",
                      {"panel": name, "state": state, "margin": list(own["margin"])})
-            style = target.with_suffix(".tres")
-            style.write_text(_STYLEBOX % {
-                "texture": res(target),
-                "left": left, "top": top, "right": right, "bottom": bottom,
-                # Scan lines tile, so their pitch holds whatever height the panel is.
-                "vertical": 2 if own["scan"] else 0,
-            }, encoding="utf-8", newline="\n")
             made[name][state] = {
                 "file": provenance.relative(target, config.root),
-                "stylebox": provenance.relative(style, config.root),
                 "size": list(own["size"]),
                 "margin": list(own["margin"]),
+                "stretch": own["stretch"],
             }
+            if own["stretch"] != "none":
+                style = target.with_suffix(".tres")
+                style.write_text(_STYLEBOX % {
+                    "texture": res(target),
+                    "left": left, "top": top, "right": right, "bottom": bottom,
+                    # Scan lines tile, so their pitch holds whatever height it is.
+                    "vertical": 2 if own["scan"] else 0,
+                }, encoding="utf-8", newline="\n")
+                made[name][state]["stylebox"] = provenance.relative(style, config.root)
             if own["tick"] and not shader:
                 # Said, not dropped silently: mid-edge, a nine-patch would stretch it.
                 made[name][state]["not_drawn"] = ["tick"]

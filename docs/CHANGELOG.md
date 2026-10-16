@@ -205,7 +205,7 @@
 - ✅ **PW469** **nothing boots a game's main scene and reads its shutdown, so a project's boot check starts Godot itself** — game.boot boots a game's main scene and reads its shutdown against the leak [engine] leaks forgives, so Cottony's boot check starts no Godot itself (design recorded in `docs/specs/engine.md`).
 - ✅ **PW470** **nothing exports a pack and lists what landed in it, so a project parses Godot's pack table itself** — game.pack exports a preset as a pack and lists its files, imports mapped to sources, so Cottony's export check parses no pack itself (design recorded in `docs/specs/engine.md`).
 - ✅ **PW471** **engine.run_declared blames the frame budget when the script exited 1 on its own after printing why it failed** — A script that exits non-zero on its own is reported with its exit code and its last three lines after the engine banner; the frame-budget hint is kept for silent runs.
-- ✅ **PW472 (radius corner and piping)** **a panel's outline is a box with cut corners, so a pill, a rounded card or a lobed banner cannot be declared** — A panel declares a radius beside cut and a piping rim shaded like a tube, both drawn on the nine-patch and the shader; a radius past the margin is refused.
+- ✅ **PW472** **a panel's outline is a box with cut corners, so a pill, a rounded card or a lobed banner cannot be declared** — A panel is cut, rounded, a pill or any geometry outline; a pill stretches lengthwise, an outline builds at its size or on the shader at any size (design recorded in `docs/specs/panel.md`).
 
 ## Block I — Voxel models from a declaration
 

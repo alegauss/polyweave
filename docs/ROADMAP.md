@@ -18,7 +18,6 @@
 
 - 🛠 **PW372** (deps: Spinhold RK215) **a camera move cannot be declared as a clip or played by the game, so a cutscene's shots are numbers in the project** — No shot is yet captured onto a sitting for a person to accept, and Starship's opening still reads its own JSON. → §PW372
 - 🛠 **PW36** (deps: PW5 ✅, PW82 ⏸) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82. → §PW36
-- 🛠 **PW472** (deps: —) **a panel's outline is a box with cut corners, so a pill, a rounded card or a lobed banner cannot be declared** — A pill past the nine-patch and a lobed, star or traced outline from the geometry vocabulary are still to be declared. → §PW472
 - 📋 **PW473** (deps: —) **a panel's fill is one flat colour, so a felt or candy body with light, shade and grain cannot be declared** — A soft style's look is its material, and while that lives in game code no spec holds it and no second game can reuse it. → §PW473
 - 📋 **PW474** (deps: —) **a panel cannot carry a sewn seam, so a craft-styled game draws its stitches in its own code** — Cottony's stitches read as a road marking until it wrote shading, shadow and needle holes itself, and the next craft game writes them again. → §PW474
 - 📋 **PW475** (deps: —) **port.run names a failed predicate but not what it measured, so the margin takes a second accept.check by hand** — Whether a member missed by a hair or by a mile decides what happens next, and the run already knew it. → §PW475
@@ -127,15 +126,6 @@
   ink on the faced kinds, no pale ring of marks round a rim, and the kinds' silhouettes
   kept apart is either a predicate in a Cottony acceptance spec over the committed piece
   sheet, or recorded as a test a person chose to keep.
-
-## Done when — PW472
-
-- **A panel outlined by a lobed, star or traced shape builds** A *.panel.toml naming a
-  geometry outline (shape = "lobed") builds at its declared size or on the shader route,
-  and the answer says which.
-- **A pill and a piping rim are declared, not computed by the game** A pill button
-  builds from its declaration without the margin refusal, and a piping part draws a
-  raised rim of its own colour around the fill.
 
 ## Non-goals
 

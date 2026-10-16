@@ -129,10 +129,84 @@ def test_a_piping_reaches_the_shader(tmp_path):
     assert "shader_parameter/piping_raise = 0.5" in material
 
 
+BADGE = """\
+[panel.badge]
+size = [64, 64]
+fill = "#e8a0b4"
+outline = { shape = "lobed", lobes = 6, radius = 10, depth = 2 }
+piping = { width = 3, colour = "#ffffff" }
+"""
+
+PILL = """\
+[panel.button]
+size = [96, 24]
+margin = [16, 4, 16, 4]
+fill = "#e8a0b4"
+radius = "pill"
+edge = { width = 2, colour = "#ffffff" }
+"""
+
+
+def test_an_outline_of_its_own_is_drawn_at_its_size_with_no_stylebox(tmp_path):
+    """§PW472: a petal badge is no box, so it is no nine-patch either."""
+    made = panel.build(panels(tmp_path, BADGE), root=str(tmp_path))
+    normal = made["panels"]["badge"]["normal"]
+    assert normal["stretch"] == "none"
+    assert "stylebox" not in normal
+    assert not (tmp_path / "ui/badge.normal.tres").exists()
+    drawn = pixels(tmp_path, normal["file"])
+    # Filled at the middle, empty at the box's corners, piped white at its rim.
+    assert tuple(drawn[32, 32, :3]) == (0xE8, 0xA0, 0xB4)
+    assert drawn[0, 0, 3] == 0
+    assert drawn[63, 63, 3] == 0
+    # The lobes reach the box's sides and dip between them.
+    assert drawn[32, 1, 3] > 0
+    assert drawn[:, :, 3].astype(bool).sum() < 64 * 64 * 0.9
+
+
+def test_an_outline_reaches_the_shader_as_points(tmp_path):
+    made = panel.build(panels(tmp_path, BADGE), shader=True, root=str(tmp_path))
+    material = (tmp_path / made["panels"]["badge"]["normal"]["material"]).read_text(
+        "utf-8")
+    assert "shader_parameter/outline_count = 64.0" in material
+    assert "shader_parameter/outline_points = PackedVector2Array(" in material
+
+
+def test_a_pill_stretches_only_along_its_length(tmp_path):
+    made = panel.build(panels(tmp_path, PILL), shader=True, root=str(tmp_path))
+    normal = made["panels"]["button"]["normal"]
+    assert normal["stretch"] == "width"
+    drawn = pixels(tmp_path, normal["file"])
+    # Round at both ends, a straight run between.
+    assert drawn[0, 2, 3] == 0
+    assert drawn[12, 0, 3] > 0
+    assert tuple(drawn[0, 48, :3]) == (0xFF, 0xFF, 0xFF)
+    material = (tmp_path / normal["material"]).read_text("utf-8")
+    assert "shader_parameter/radius = 10000.0" in material
+
+
+@pytest.mark.parametrize(
+    ("body", "said"),
+    [
+        (BADGE.replace("outline", 'radius = 4\noutline'), "keep one of them"),
+        (BADGE + 'brackets = { length = 4, colour = "#ffffff" }\n', "brackets sit"),
+        (BADGE.replace('"lobed"', '"blob"'), "outline: there is no outline"),
+        (BADGE.replace("lobes = 6, ", "lobes = 6, steps = 400, "), "fewer steps"),
+        (PILL.replace('"pill"', '"round"'), 'or "pill"'),
+        (PILL.replace("[16, 4, 16, 4]", "[8, 4, 8, 4]"), "stretching would bend it"),
+    ],
+)
+def test_an_outline_or_a_pill_that_cannot_be_drawn_is_refused(tmp_path, body, said):
+    with pytest.raises(PolyweaveError) as refused:
+        panel.build(panels(tmp_path, body), root=str(tmp_path))
+    assert refused.value.code == "compose.bad-panel"
+    assert said in refused.value.message + refused.value.remedy
+
+
 @pytest.mark.parametrize(
     ("change", "said"),
     [
-        (("cut = 4", "cut = 4\nradius = 4"), "either cut or rounded"),
+        (("cut = 4", "cut = 4\nradius = 4"), "keep one of them"),
         (("cut = 4", "cut = 4\npiping = { width = 2, colour = \"#fff\" }"),
          "not a colour"),
         (("cut = 4", "cut = 4\npiping = { width = 2, colour = \"#ffffff\", "
@@ -214,7 +288,7 @@ def test_the_engine_films_each_state_and_each_wipe_step(tmp_path):
         offscreen.route_for(tmp_path)
     except PolyweaveError:
         pytest.skip("no route draws real pixels here")
-    source = panels(tmp_path, HOLO + WIPES)
+    source = panels(tmp_path, HOLO + WIPES + "\n" + BADGE)
     (tmp_path / "project.godot").write_text(
         'config_version=5\n\n[application]\nconfig/name="panel"\n', encoding="utf-8")
     taken = panel.capture(source, out="ui", steps=3, root=str(tmp_path))["stills"]
@@ -229,6 +303,12 @@ def test_the_engine_films_each_state_and_each_wipe_step(tmp_path):
     edge_x, edge_y = (320 - 96 * 2) // 2 + 1, 180 // 2
     assert at(taken["holo"]["focus"], edge_x, edge_y) == (255, 255, 255)
     assert at(taken["holo"]["normal"], edge_x, edge_y) != (255, 255, 255)
+    # §PW472: the badge's own outline, drawn by the shader: filled at its middle, the
+    # grey screen at its box's corner.
+    badge_x, badge_y = (320 - 64 * 2) // 2, (180 - 64 * 2) // 2
+    assert at(taken["badge"]["normal"], 160, 90) == (0xE8, 0xA0, 0xB4)
+    assert at(taken["badge"]["normal"], badge_x + 2, badge_y + 2) == at(
+        taken["holo"]["normal"], 2, 2)
     # The sweep covers nothing at the start and everything at the end.
     assert at(taken["sweep"]["00"], 160, 90) != (5, 7, 12)
     assert at(taken["sweep"]["02"], 160, 90) == (5, 7, 12)

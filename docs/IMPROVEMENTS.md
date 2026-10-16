@@ -101,26 +101,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW472 A panel outlined by more than cut corners
-
-Found in Cottony on 2026-10-16. `panel.build` outlines a panel as a rectangle whose
-corners are cut at 45 degrees, which is Starship's holo frame. Cottony's UI kit is none
-of that: a pill button (`button_wide`, radius half its height), rounded dialog cards, a
-banner whose top edge is a row of lobes (`hud_banner`), petal badges (`badge_level`,
-`badge_moves`) and a lobed booster tray. Each is drawn in `tools/art/make_assets.py` by
-`stitched_card` or `blob_card`, against an outline computed there.
-
-What a declaration should be able to say:
-
-- a pill: `radius` beside `cut` has landed (docs/specs/panel.md), refused past the margin, so a pill exists only on the shader route at a short Control and a declared one is still missing;
-- an outline from polyweave's own vocabulary, the one `geometry` already resolves
-  (`shape = "lobed"`, `star`, `points`, an image to trace), for a panel that is not a box;
-- a `piping` part has landed (docs/specs/panel.md): width, colour and raise, drawn as a tube.
-
-A non-rectangular outline cannot be a nine-patch, so it builds at its declared size, or
-on the shader route as a signed distance the Control samples at its own size, and says
-which it did. A corner larger than the margin is refused as a cut is today.
-
 ### §PW473 A panel filled with a material
 
 Found in Cottony on 2026-10-16. A panel's `fill` is one colour, with alpha. Cottony's
