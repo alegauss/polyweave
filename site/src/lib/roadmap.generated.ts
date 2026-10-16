@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 14 },
+  { block: "H", title: "Proof on a real game", open: 13 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
@@ -63,13 +63,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "a real project cannot adopt the plugin without carrying its own paths and palette into it",
     why: "Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82.",
     deps: ["PW82"],
-  },
-  {
-    id: "PW476",
-    block: "H",
-    symptom: "picture.vector draws one still, so a vector layer that loops through an attribute needs a hand-made source per frame",
-    why: "A turning orbit or a pulsing stroke becomes eight SVGs and eight records that never say they are one loop.",
-    deps: [],
   },
   {
     id: "PW477",

@@ -130,7 +130,8 @@ from polyweave.errors import PolyweaveError
 #: 142,053 with game.boot, the main scene booted and read (§PW469).
 #: 142,641 with game.pack, an exported pack listed (§PW470).
 #: 143,378 with picture.sew, a picture's silhouette sewn (§PW474).
-DESCRIBE = 143_400
+#: 143,864 with picture.vector's sweep, strip and whole, one loop from one source.
+DESCRIBE = 143_900
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -239,7 +240,8 @@ DESCRIBE = 143_400
 #: 155,494 with game.boot and [engine] leaks (§PW469).
 #: 156,105 with game.pack and game.pack-unwritten (§PW470).
 #: 156,862 with picture.sew and compose.bad-seam (§PW474).
-CAPABILITIES = 156_900
+#: 157,369 with picture.vector's sweep and compose.bad-sweep (§PW476).
+CAPABILITIES = 157_400
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

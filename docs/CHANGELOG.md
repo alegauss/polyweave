@@ -209,6 +209,7 @@
 - ✅ **PW473** **a panel's fill is one flat colour, so a felt or candy body with light, shade and grain cannot be declared** — A panel's fill takes a material of declared numbers, lit top to foot in its own hue with core, gloss, vivid, grain and weave, same on build and shader (design recorded in `docs/specs/panel.md`).
 - ✅ **PW474** **a panel cannot carry a sewn seam, so a craft-styled game draws its stitches in its own code** — A seam sews a panel on build and shader, and picture.sew lays it inside a picture's worn silhouette, its shadow and holes darkened from the picture beneath (design recorded in `docs/specs/panel.md`).
 - ✅ **PW475** **port.run names a failed predicate but not what it measured, so the margin takes a second accept.check by hand** — A failed port.run member carries missed: each failed predicate's value, bound, limit and how far past, and the render it was measured on (design recorded in `docs/specs/acceptance-spec.md`).
+- ✅ **PW476** **picture.vector draws one still, so a vector layer that loops through an attribute needs a hand-made source per frame** — picture.vector sweeps one attribute over frames from one source, each frame recorded with the sweep, packs a strip, and can skip the whole (design recorded in `docs/specs/store.md`).
 
 ## Block I — Voxel models from a declaration
 

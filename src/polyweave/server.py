@@ -141,7 +141,8 @@ TOOL_BUDGET = 4500
 #: 126,500 at 126,428 for game.boot, the main scene booted and read (§PW469).
 #: 127,000 at 126,952 for game.pack, an exported pack listed (§PW470).
 #: 127,700 at 127,617 for picture.sew, a picture's silhouette sewn (§PW474).
-LIST_BUDGET = 127700
+#: 128,100 at 128,031 for picture.vector's sweep, a loop from one source (§PW476).
+LIST_BUDGET = 128100
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

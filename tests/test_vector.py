@@ -50,6 +50,66 @@ def test_a_layer_naming_nothing_is_refused_with_the_choices(logo):
     assert set(refused.value.as_dict()["allowed"]) == {"1", "2", "3", "#ring"}
 
 
+@pytest.mark.parametrize(
+    ("sweep", "said"),
+    [
+        ({"element": "#orbit", "attribute": "r", "from": 0, "to": 1, "frames": 4},
+         "no element #orbit"),
+        ({"element": "#ring", "attribute": "r", "from": 0, "to": 1}, "no frames"),
+        ({"element": "#ring", "attribute": "r", "from": 0, "to": 1, "frames": 1},
+         "2 to 256"),
+        ({"element": "#ring", "attribute": "r", "from": "a", "to": 1, "frames": 4},
+         "as numbers"),
+    ],
+)
+def test_a_sweep_that_cannot_be_drawn_is_refused(logo, sweep, said):
+    with pytest.raises(PolyweaveError) as refused:
+        vector.vector("brand/logo.svg", "out/logo.png", 400, sweep=sweep,
+                      root=str(logo))
+    assert refused.value.code == "compose.bad-sweep"
+    assert said in refused.value.message + refused.value.remedy
+
+
+def test_nothing_to_draw_is_refused(logo):
+    with pytest.raises(PolyweaveError) as refused:
+        vector.vector("brand/logo.svg", "out/logo.png", 400, whole=False,
+                      root=str(logo))
+    assert refused.value.code == "compose.no-layer"
+
+
+def test_a_layer_swept_over_frames_is_one_loop_with_one_source(logo):
+    """§PW476: a turning ring is one source and one sweep, not eight hand-made SVGs."""
+    needs_godot()
+    made = vector.vector(
+        "brand/logo.svg", "out/logo.png", 200, layers={"ring": "#ring"},
+        sweep={"element": "#ring", "attribute": "opacity", "from": 1.0, "to": 0.0,
+               "frames": 4},
+        strip=True, whole=False, root=str(logo),
+    )
+    # Layers alone: the whole picture the game never draws is not written.
+    assert "whole" not in made
+    assert not (logo / "out" / "logo.png").exists()
+    ring = made["layers"]["ring"]
+    assert ring["frames"] == [f"out/logo.ring.{k:02d}.png" for k in range(4)]
+    # The end is left out, so the fourth frame steps back into the first.
+    assert made["sweep"]["values"] == [1.0, 0.75, 0.5, 0.25]
+    record = provenance.read(str(logo / ring["frames"][2]), root=logo)
+    assert record["inputs"][0]["path"] == "brand/logo.svg"
+    assert record["params"]["frame"] == 2
+    assert record["params"]["sweep"]["attribute"] == "opacity"
+
+    def alpha(name):
+        with Image.open(logo / name) as opened:
+            return np.asarray(opened.convert("RGBA"))[..., 3].astype(float)
+
+    peaks = [alpha(name).max() for name in ring["frames"]]
+    assert peaks == sorted(peaks, reverse=True) and peaks[0] > peaks[-1] + 100
+    strip = alpha(ring["strip"])
+    assert strip.shape == (100, 800)
+    assert provenance.read(str(logo / ring["strip"]), root=logo)["params"][
+        "frames"] == ring["frames"]
+
+
 def test_a_missing_vector_is_refused(logo):
     with pytest.raises(PolyweaveError) as refused:
         vector.vector("brand/none.svg", "out/logo.png", 400, root=str(logo))

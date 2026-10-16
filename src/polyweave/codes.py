@@ -2419,6 +2419,16 @@ CODES: dict[str, Code] = {
         "size out of range, or no icon at all (§PW331)",
         doors=("declare each icon with a shape the refusal lists",),
     ),
+    "compose.bad-sweep": Code(
+        means="a vector's sweep cannot be drawn",
+        when="picture.vector given a sweep naming an element no id in the SVG has, a "
+        "key it does not take, a from or to that is not a number, or frames outside 2 "
+        "to 256 (§PW476)",
+        doors=(
+            "name each element by an id the drawing holds; the refusal lists them",
+            "write exactly element, attribute, from, to and frames",
+        ),
+    ),
     "compose.bad-seam": Code(
         means="a picture cannot be sewn with the seam asked for",
         when="picture.sew given a seam with no thread, a key nothing reads, a number "

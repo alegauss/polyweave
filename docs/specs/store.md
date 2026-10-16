@@ -70,6 +70,21 @@ ring and the letters, and the store's PNG came from a rasterisation nothing reco
 same ThorVG run, blur filters and masks included, and writes a record whose `vector`
 input is the SVG. So `provenance.outdated` names the PNG once the SVG changes.
 
+**A layer that moves is one source and one sweep** (§PW476). Spinhold turns its logo's
+dashed orbit by drawing it at several `stroke-dashoffset` values, and had grown eight SVGs
+and eight records that never said they were one loop. `sweep = {element, attribute,
+from, to, frames}` sets that attribute on each named element (an `#id` anywhere in the
+drawing, or a list of them) at `frames` even steps from `from` towards `to`, the end left
+out so the last frame steps back into the first, and draws every layer, and the whole
+unless `whole = false`, once a frame as `<out>[.<layer>].<frame>.png`. Each frame's record
+names the one SVG, the sweep, the frame and its value; the answer lists the frames in
+order and the values. `strip = true` also packs each layer's frames left to right into
+`<out>[.<layer>].strip.png`, whose record lists the frames it holds. `whole = false`
+leaves out the whole picture a game never draws, with or without a sweep, and needs a
+layer. A sweep naming an id the drawing lacks, a key it does not take, a bound that is
+not a number or frames outside 2 to 256 is `compose.bad-sweep`, listing the ids there
+are.
+
 **Live text is outlined before ThorVG draws it** (§PW453). ThorVG, as Godot builds it,
 draws no `<text>`, so a banner came out with every letter missing and the call answered
 a success. Before any drawing, in `picture.vector` and in `store.capsules` alike, each

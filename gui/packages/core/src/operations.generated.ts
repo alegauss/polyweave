@@ -1268,6 +1268,12 @@ export interface PictureVectorArgs {
   width: number
   /** each layer's name to the element it draws alone: #id, or its place among the top-level elements from 1 */
   layers?: Record<string, unknown>
+  /** one attribute moved over frames: element (#id, or a list), attribute, from, to (left out, so the loop closes), frames */
+  sweep?: Record<string, unknown>
+  /** with a sweep, also pack each layer's frames into one strip; default false */
+  strip?: boolean
+  /** write the whole picture too; false writes the layers alone; default true */
+  whole?: boolean
   /** the project the paths resolve against; default "." */
   root?: string
 }
