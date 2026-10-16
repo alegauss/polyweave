@@ -107,6 +107,32 @@ def test_nothing_is_baked_when_a_member_cannot_pass(tmp_path):
     assert "nothing was baked" in found["says"]
 
 
+def test_a_failed_member_says_what_it_measured_and_by_how_much(tmp_path):
+    """§PW475: a hair or a mile, without a second accept.check by hand."""
+    root = project(tmp_path, rig="given", given=0.0, dim="max = 0.1")
+    found = port.port(root / "family.toml", root=root, bake=Baker(root))
+    dim = found["members"]["star_dim"]
+    assert dim["failed"] == ["tone"]
+    (miss,) = dim["missed"]
+    assert miss["id"] == "tone"
+    assert miss["bound"] == "max"
+    assert miss["limit"] == 0.1
+    assert miss["value"] > 0.1
+    assert miss["by"] == pytest.approx(miss["value"] - 0.1, abs=1e-6)
+    assert miss["share"] == pytest.approx(miss["by"] / 0.1, abs=1e-5)
+    assert dim["render"] == "work/star_dim.png"
+    # A member that passed carries nothing more than it did.
+    assert set(found["members"]["star_gold"]) == {"passed", "failed"}
+
+
+def test_a_searched_member_that_failed_says_by_how_much_too(tmp_path):
+    root = project(tmp_path, dim="max = 0.01")
+    found = port.port(root / "family.toml", root=root, bake=Baker(root))
+    dim = found["members"]["star_dim"]
+    assert dim["missed"]
+    assert all(m["bound"] == "max" and m["by"] > 0 for m in dim["missed"])
+
+
 def test_a_given_rig_is_rendered_once_per_member(tmp_path):
     root = project(tmp_path, rig="given", given=-0.5)
     baker = Baker(root)

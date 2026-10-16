@@ -542,6 +542,14 @@ failure is read as unreachable. A family's `conflict` carries the same edges bes
 `at_bound` as well. Three of Cottony's prop searches failed with the answer just past the
 exposure axis's minimum, and read as a missing rig feature until one render outside it.
 
+**A failed member says by how much** (§PW475). Beside the ids in `failed`, a member of
+`port.run` that did not pass carries `missed`, one entry per failed predicate with its
+`value`, the `bound` side it crossed (`min` or `max`), that bound's `limit`, how far
+past it the value fell (`by`) and that distance as a share of the limit (`share`), and
+`render`, the picture they were measured on. A hair is a look for a person to take or
+refuse, a mile is a defect, and telling them apart had taken a second `accept.check` by
+hand.
+
 **The picture left in place is the answer's** (§PW452). An evaluator writes each sample
 over the same `out`, and that file is what a sitting lays out before anything is baked.
 So where the last sample is not the best, the search evaluates the best once more after

@@ -208,6 +208,7 @@
 - ✅ **PW472** **a panel's outline is a box with cut corners, so a pill, a rounded card or a lobed banner cannot be declared** — A panel is cut, rounded, a pill or any geometry outline; a pill stretches lengthwise, an outline builds at its size or on the shader at any size (design recorded in `docs/specs/panel.md`).
 - ✅ **PW473** **a panel's fill is one flat colour, so a felt or candy body with light, shade and grain cannot be declared** — A panel's fill takes a material of declared numbers, lit top to foot in its own hue with core, gloss, vivid, grain and weave, same on build and shader (design recorded in `docs/specs/panel.md`).
 - ✅ **PW474** **a panel cannot carry a sewn seam, so a craft-styled game draws its stitches in its own code** — A seam sews a panel on build and shader, and picture.sew lays it inside a picture's worn silhouette, its shadow and holes darkened from the picture beneath (design recorded in `docs/specs/panel.md`).
+- ✅ **PW475** **port.run names a failed predicate but not what it measured, so the margin takes a second accept.check by hand** — A failed port.run member carries missed: each failed predicate's value, bound, limit and how far past, and the render it was measured on (design recorded in `docs/specs/acceptance-spec.md`).
 
 ## Block I — Voxel models from a declaration
 

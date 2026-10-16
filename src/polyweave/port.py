@@ -256,6 +256,10 @@ def port(
             name: {
                 "passed": answer.get("passed"),
                 "failed": answer.get("failed", []),
+                # By how much, and on what, so the check is never run again by hand to
+                # tell a hair a person may take from a mile that is a defect (§PW475).
+                **({"missed": _missed(answer), "render": specs[name][2]["out"]}
+                   if answer.get("failed") and name in specs else {}),
             }
             for name, answer in found.get("members", {}).items()
         },
@@ -289,6 +293,24 @@ def ported(
 def _named(where: Path, here: Path) -> str:
     inside = where.is_relative_to(here)
     return where.relative_to(here).as_posix() if inside else str(where)
+
+
+def _missed(answer: dict) -> list[dict]:
+    """Each failed predicate's measured value, the bound it crossed and how far past."""
+    out = []
+    for one in answer.get("predicates", ()):
+        if one.get("passed"):
+            continue
+        side = (one.get("bound") or {}).get("side")
+        limit = one.get("max") if side == "max" else one.get("min")
+        value = one.get("value")
+        miss = {"id": one.get("id"), "value": value, "bound": side, "limit": limit}
+        if isinstance(value, int | float) and isinstance(limit, int | float):
+            miss["by"] = round(abs(float(value) - float(limit)), 6)
+            if limit:
+                miss["share"] = round(miss["by"] / abs(float(limit)), 6)
+        out.append(miss)
+    return out
 
 
 def _at(members: list[dict], values: dict) -> dict:
