@@ -51,11 +51,12 @@ PARTS = {
     "cut": None,
     "radius": None,
     "outline": None,
-    "edge": ("width", "colour"),
+    "edge": ("width", "colour", "lit"),
+    "hairline": ("inset", "width", "colour", "strength"),
     "piping": ("width", "colour", "raise"),
-    "brackets": ("length", "width", "colour"),
+    "brackets": ("length", "width", "colour", "inset"),
     "scan": ("pitch", "colour"),
-    "tick": ("length", "width", "colour"),
+    "tick": ("length", "width", "colour", "from", "to"),
     "states": None,
 }
 
@@ -197,7 +198,9 @@ def _checked(name: str, state: str, panel: dict, root: Path | str = ".") -> dict
         "stretch": _stretch(ring, pill, width, height),
         "edge": {"width": _whole(name, "edge.width", edge.get("width", 0)),
                  "colour": _colour(name, "edge.colour",
-                                   edge.get("colour", "#00000000"))},
+                                   edge.get("colour", "#00000000")),
+                 "lit": _lit(name, edge.get("lit", [1.0, 1.0]))},
+        "hairline": _hairline(name, panel.get("hairline") or {}),
         "piping": None,
         "brackets": None,
         "scan": None,
@@ -206,13 +209,7 @@ def _checked(name: str, state: str, panel: dict, root: Path | str = ".") -> dict
     out["piping"] = _piping(name, panel.get("piping") or {})
     out["material"] = _finish(name, panel.get("material") or {})
     out["seam"] = _seam(name, panel.get("seam") or {})
-    tick = panel.get("tick") or {}
-    if tick:
-        out["tick"] = {
-            "length": _whole(name, "tick.length", tick.get("length", 0), 1),
-            "width": _whole(name, "tick.width", tick.get("width", 1), 1),
-            "colour": _colour(name, "tick.colour", tick.get("colour")),
-        }
+    out["tick"] = _tick(name, panel.get("tick") or {})
     # Only one of the two is ever set, and either is how far the corner's shape goes.
     corner = cut + radius
     reach = corner + max(out["edge"]["width"],
@@ -226,8 +223,14 @@ def _checked(name: str, state: str, panel: dict, root: Path | str = ".") -> dict
             "length": _whole(name, "brackets.length", brackets.get("length", 0), 1),
             "width": _whole(name, "brackets.width", brackets.get("width", 1), 1),
             "colour": _colour(name, "brackets.colour", brackets.get("colour")),
+            "inset": _whole(name, "brackets.inset", brackets.get("inset", 0)),
         }
-        reach = max(reach, corner + out["brackets"]["length"], out["brackets"]["width"])
+        # Set in, a bracket starts at its inset on both axes, not past the corner.
+        start = out["brackets"]["inset"] or corner
+        reach = max(reach, start + out["brackets"]["length"],
+                    out["brackets"]["inset"] + out["brackets"]["width"])
+    if out["hairline"]:
+        reach = max(reach, corner + out["hairline"]["inset"] + out["hairline"]["width"])
     if scan:
         out["scan"] = {
             "pitch": _whole(name, "scan.pitch", scan.get("pitch", 0), 2),
@@ -246,6 +249,57 @@ def _checked(name: str, state: str, panel: dict, root: Path | str = ".") -> dict
             "or shorten the bracket",
         )
     return out
+
+
+def _number(value: Any) -> bool:
+    return isinstance(value, int | float) and not isinstance(value, bool)
+
+
+def _lit(name: str, value: Any) -> tuple[float, float]:
+    """An edge lit from above: its colour times `top` at the top, `foot` at the foot."""
+    if not (isinstance(value, list) and len(value) == 2
+            and all(_number(v) and v >= 0 for v in value)):
+        raise _bad(name, f"edge.lit is {value!r}",
+                   "write lit = [top, foot], how bright the edge is at each, 1 being "
+                   "its colour")
+    return float(value[0]), float(value[1])
+
+
+def _hairline(name: str, table: dict) -> dict | None:
+    """A thin line of its own colour a few pixels inside the outline (§PW479)."""
+    if not table:
+        return None
+    strength = table.get("strength", 1.0)
+    if not _number(strength) or not 0 <= strength <= 1:
+        raise _bad(name, f"hairline.strength is {strength!r}",
+                   "write hairline.strength from 0 to 1")
+    return {
+        "inset": _whole(name, "hairline.inset", table.get("inset", 0)),
+        "width": _whole(name, "hairline.width", table.get("width", 1), 1),
+        "colour": _colour(name, "hairline.colour", table.get("colour")),
+        "strength": float(strength),
+    }
+
+
+def _tick(name: str, table: dict) -> dict | None:
+    """The accent mark on the top edge: centred at `length`, or from `from` to `to`."""
+    if not table:
+        return None
+    placed = "from" in table or "to" in table
+    if placed:
+        start = _whole(name, "tick.from", table.get("from"))
+        end = _whole(name, "tick.to", table.get("to"), 1)
+        if end <= start:
+            raise _bad(name, f"tick runs from {start} to {end}",
+                       "write to past from, in pixels along the top edge")
+    length = end - start if placed else _whole(name, "tick.length",
+                                                table.get("length", 0), 1)
+    return {
+        "length": length,
+        "width": _whole(name, "tick.width", table.get("width", 1), 1),
+        "colour": _colour(name, "tick.colour", table.get("colour")),
+        "from": start if placed else None,
+    }
 
 
 def _stretch(ring: list | None, pill: bool, width: int, height: int) -> str:
@@ -598,6 +652,16 @@ def _drawn(panel: dict):
         clipped = Image.new("RGBA", big, (0, 0, 0, 0))
         clipped.paste(sewn, (0, 0), shape)
         picture = Image.alpha_composite(picture, clipped)
+    if panel["hairline"]:
+        line = panel["hairline"]
+        middle, half = line["inset"] * SUPER, line["width"] * SUPER / 2
+        hair = Image.new("RGBA", big, (0, 0, 0, 0))
+        inside(ImageDraw.Draw(hair), max(0, round(middle - half)),
+               (*line["colour"][:3], round(line["colour"][3] * line["strength"])))
+        hole = Image.new("L", big, 0)
+        inside(ImageDraw.Draw(hole), round(middle + half), 255)
+        hair.paste((0, 0, 0, 0), (0, 0), hole)
+        picture = Image.alpha_composite(picture, hair)
     if edge:
         rim = Image.new("RGBA", big, (0, 0, 0, 0))
         if radius:
@@ -611,20 +675,29 @@ def _drawn(panel: dict):
             ImageDraw.Draw(rim).line([*points, points[0]],
                                      fill=panel["edge"]["colour"], width=edge,
                                      joint="curve")
+        top, foot = panel["edge"]["lit"]
+        if (top, foot) != (1.0, 1.0):
+            # Lit from above: brighter at the top, falling to shadow at the foot.
+            lit = np.asarray(rim, dtype=float)
+            fall = np.linspace(top, foot, big[1])[:, None, None]
+            lit[..., :3] = np.clip(lit[..., :3] * fall, 0, 255)
+            rim = Image.fromarray(lit.round().astype(np.uint8), "RGBA")
         picture = Image.alpha_composite(picture, rim)
     if panel["brackets"]:
         marks = Image.new("RGBA", big, (0, 0, 0, 0))
         pen = ImageDraw.Draw(marks)
         thick = panel["brackets"]["width"] * SUPER
-        reach = corner + panel["brackets"]["length"] * SUPER
+        # Set in from the corner on both axes, or on the outer edge past the corner.
+        off = panel["brackets"]["inset"] * SUPER
+        start = off or corner
+        reach = start + panel["brackets"]["length"] * SUPER
         colour = panel["brackets"]["colour"]
         for x, y, dx, dy in ((0, 0, 1, 1), (big[0], 0, -1, 1),
                              (0, big[1], 1, -1), (big[0], big[1], -1, -1)):
-            # Along the top or bottom edge and down or up the side, past the corner.
-            pen.rectangle(_box(x + dx * corner, y, x + dx * reach, y + dy * thick),
-                          fill=colour)
-            pen.rectangle(_box(x, y + dy * corner, x + dx * thick, y + dy * reach),
-                          fill=colour)
+            pen.rectangle(_box(x + dx * start, y + dy * off, x + dx * reach,
+                               y + dy * (off + thick)), fill=colour)
+            pen.rectangle(_box(x + dx * off, y + dy * start, x + dx * (off + thick),
+                               y + dy * reach), fill=colour)
         picture = Image.alpha_composite(picture, marks)
     return picture.resize(panel["size"], Image.Resampling.BOX)
 
@@ -686,6 +759,14 @@ uniform float cut = 0.0;
 uniform float radius = 0.0;
 uniform float edge_width = 0.0;
 uniform vec4 edge_colour : source_color;
+uniform float edge_top = 1.0;
+uniform float edge_foot = 1.0;
+uniform float hairline_inset = 0.0;
+uniform float hairline_width = 0.0;
+uniform vec4 hairline_colour : source_color;
+uniform float hairline_strength = 1.0;
+uniform float bracket_inset = 0.0;
+uniform float tick_from = -1.0;
 uniform float piping_width = 0.0;
 uniform vec4 piping_colour : source_color;
 uniform float piping_raise = 0.0;
@@ -971,16 +1052,27 @@ void fragment() {
 \t\t\t\tc = over(c, vec4(thread, body * seam_thread.a));
 \t\t\t}
 \t\t}
-\t\tif (dist < edge_width) {
-\t\t\tc = over(c, edge_colour);
+\t\tif (hairline_width > 0.0 && abs(dist - hairline_inset) < hairline_width * 0.5) {
+\t\t\tc = over(c, vec4(hairline_colour.rgb, hairline_colour.a * hairline_strength));
 \t\t}
-\t\tbool along = d.y < bracket_width && d.x >= corner && d.x < corner + bracket_length;
-\t\tbool down = d.x < bracket_width && d.y >= corner && d.y < corner + bracket_length;
+\t\tif (dist < edge_width) {
+\t\t\t// Lit from above, falling to shadow at the foot.
+\t\t\tfloat fall = mix(edge_top, edge_foot, p.y / size.y);
+\t\t\tc = over(c, vec4(clamp(edge_colour.rgb * fall, 0.0, 1.0), edge_colour.a));
+\t\t}
+\t\t// Set in from the corner on both axes, or on the outer edge past the corner.
+\t\tfloat start = bracket_inset > 0.0 ? bracket_inset : corner;
+\t\tfloat off = bracket_inset;
+\t\tbool along = d.y >= off && d.y < off + bracket_width && d.x >= start
+\t\t\t&& d.x < start + bracket_length;
+\t\tbool down = d.x >= off && d.x < off + bracket_width && d.y >= start
+\t\t\t&& d.y < start + bracket_length;
 \t\tif (bracket_length > 0.0 && (along || down)) {
 \t\t\tc = over(c, bracket_colour);
 \t\t}
-\t\tfloat centred = abs(p.x - size.x * 0.5);
-\t\tif (tick_length > 0.0 && p.y < tick_width && centred < tick_length * 0.5) {
+\t\tbool placed = tick_from >= 0.0 && p.x >= tick_from && p.x < tick_from + tick_length;
+\t\tbool centred = tick_from < 0.0 && abs(p.x - size.x * 0.5) < tick_length * 0.5;
+\t\tif (tick_length > 0.0 && p.y < tick_width && (placed || centred)) {
 \t\t\tc = over(c, tick_colour);
 \t\t}
 \t\tCOLOR = c;
@@ -1078,6 +1170,14 @@ def _uniforms(panel: dict) -> dict:
         shaped["light_at"] = list(panel["material"]["light"])
     if panel["seam"]:
         shaped.update({f"seam_{k}": v for k, v in panel["seam"].items()})
+    if panel["hairline"]:
+        shaped.update({f"hairline_{k}": v for k, v in panel["hairline"].items()})
+    if panel["edge"]["lit"] != (1.0, 1.0):
+        shaped["edge_top"], shaped["edge_foot"] = panel["edge"]["lit"]
+    if panel["brackets"] and panel["brackets"]["inset"]:
+        shaped["bracket_inset"] = panel["brackets"]["inset"]
+    if panel["tick"] and panel["tick"]["from"] is not None:
+        shaped["tick_from"] = panel["tick"]["from"]
     return {
         **shaped,
         "fill": panel["fill"], "cut": panel["cut"],

@@ -18,7 +18,7 @@
 
 - 🛠 **PW372** (deps: Spinhold RK215) **a camera move cannot be declared as a clip or played by the game, so a cutscene's shots are numbers in the project** — No shot is yet captured onto a sitting for a person to accept, and Starship's opening still reads its own JSON. → §PW372
 - 🛠 **PW36** (deps: PW5 ✅, PW82 ⏸) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82. → §PW36
-- 📋 **PW479** (deps: —) **a panel cannot declare a lit bevel, an inner hairline, a moving sweep, inset brackets or a glow by state** — Spinhold's accepted holo panel would lose those details moving to panel.build, so it stays a hand-written shader no spec holds. → §PW479
+- ⏳ **PW479** (deps: —) **a panel cannot declare a lit bevel, an inner hairline, a moving sweep, inset brackets or a glow by state** — A moving sweep on the glass, states as amounts (glow, lift, drain), and a tint and cut a game sets per instance are still to be declared. → §PW479
 - 📋 **PW481** (deps: —) **verdict.sitting crashes on an old picture named HEAD:<path>, a form sound.sitting reads from git** — Comparing a replaced render with the committed one means saving the old picture by hand first. → §PW481
 - 📋 **PW482** (deps: —) **voice.design sends a sample shorter than the service accepts and quote cannot price it from the entity** — A short tag's voice came back a 422 after the call, and its price was never shown before it. → §PW482
 - 📋 **PW483** (deps: —) **measure.take reports luma only at p1, p50 and p99, so a spread between other percentiles cannot be measured** — Cottony gates form as (p90 - p10) / p50 and had to compute it on its concept art in its own script. → §PW483
@@ -122,6 +122,15 @@
   ink on the faced kinds, no pale ring of marks round a rim, and the kinds' silhouettes
   kept apart is either a predicate in a Cottony acceptance spec over the committed piece
   sheet, or recorded as a test a person chose to keep.
+
+## Done when — PW479
+
+- **A state glows, lifts or drains by an amount, and the glass sweeps** A state declares
+  glow, lift and drain as numbers the shader applies, and a sweep crosses the glass on
+  TIME, so Spinhold's focus, pressed and disabled are kept.
+- **A game tints one panel and moves its cut without a new material** The shader takes a
+  tint and per-instance cut and bracket length a game sets on one Control, as Spinhold's
+  card brackets say what a card holds.
 
 ## Non-goals
 

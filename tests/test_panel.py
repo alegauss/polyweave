@@ -397,6 +397,58 @@ def test_a_picture_that_cannot_be_sewn_is_refused(tmp_path, seam, said):
     assert said in refused.value.message + refused.value.remedy
 
 
+LILAC = """\
+[panel.glass]
+size = [120, 80]
+margin = 30
+fill = "#080a21d1"
+cut = 12
+edge = { width = 3, colour = "#baa6ff", lit = [1.15, 0.55] }
+hairline = { inset = 9, width = 1, colour = "#baa6ff", strength = 0.35 }
+brackets = { length = 12, width = 3, colour = "#40e8ff", inset = 12 }
+tick = { from = 30, to = 102, width = 3, colour = "#ff3dcc" }
+"""
+
+
+def test_a_holo_panels_bevel_hairline_and_set_in_brackets(tmp_path):
+    """§PW479: what Spinhold's accepted holo shader drew, declared."""
+    made = panel.build(panels(tmp_path, LILAC), shader=True, root=str(tmp_path))
+    drawn = pixels(tmp_path, "ui/glass.normal.png")
+    # The edge lit at the top and falling to shadow at the foot, in its own hue.
+    top, foot = drawn[1, 60, :3], drawn[78, 60, :3]
+    assert top.sum() > foot.sum() * 1.6
+    assert top[2] > top[0] > top[1]
+    assert foot[2] > foot[0] > foot[1]
+    # A faint hairline nine pixels in, between the glass on either side of it.
+    line, glass = drawn[40, 9, :3].sum(), drawn[40, 14, :3].sum()
+    assert line > glass + 30
+    # Brackets set in from the cut on both axes, not on the outer edge.
+    assert tuple(drawn[13, 18, :3]) == (0x40, 0xE8, 0xFF)
+    assert tuple(drawn[1, 18, :3]) != (0x40, 0xE8, 0xFF)
+    material = (tmp_path / made["panels"]["glass"]["normal"]["material"]).read_text(
+        "utf-8")
+    for said in ("edge_top = 1.15", "edge_foot = 0.55", "hairline_inset = 9.0",
+                 "hairline_strength = 0.35", "bracket_inset = 12.0", "tick_from = 30.0",
+                 "tick_length = 72.0"):
+        assert f"shader_parameter/{said}" in material
+
+
+@pytest.mark.parametrize(
+    ("change", "said"),
+    [
+        (("lit = [1.15, 0.55]", "lit = 1.15"), "lit = [top, foot]"),
+        (("strength = 0.35", "strength = 3"), "hairline.strength"),
+        (("from = 30, to = 102", "from = 30, to = 20"), "to past from"),
+        (("inset = 12 }", "inset = 40 }"), "stretching would bend it"),
+    ],
+)
+def test_a_holo_part_that_cannot_be_drawn_is_refused(tmp_path, change, said):
+    with pytest.raises(PolyweaveError) as refused:
+        panel.build(panels(tmp_path, LILAC.replace(*change)), root=str(tmp_path))
+    assert refused.value.code == "compose.bad-panel"
+    assert said in refused.value.message + refused.value.remedy
+
+
 @pytest.mark.parametrize(
     ("change", "said"),
     [
@@ -516,7 +568,8 @@ def test_the_engine_films_each_state_and_each_wipe_step(tmp_path):
         offscreen.route_for(tmp_path)
     except PolyweaveError:
         pytest.skip("no route draws real pixels here")
-    source = panels(tmp_path, HOLO + WIPES + "\n" + BADGE + "\n" + FELT + "\n" + SEWN)
+    source = panels(tmp_path, HOLO + WIPES + "\n" + BADGE + "\n" + FELT + "\n" + SEWN
+                    + "\n" + LILAC)
     (tmp_path / "project.godot").write_text(
         'config_version=5\n\n[application]\nconfig/name="panel"\n', encoding="utf-8")
     taken = panel.capture(source, out="ui", steps=3, root=str(tmp_path))["stills"]

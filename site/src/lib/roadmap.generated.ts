@@ -68,7 +68,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW479",
     block: "H",
     symptom: "a panel cannot declare a lit bevel, an inner hairline, a moving sweep, inset brackets or a glow by state",
-    why: "Spinhold's accepted holo panel would lose those details moving to panel.build, so it stays a hand-written shader no spec holds.",
+    why: "A moving sweep on the glass, states as amounts (glow, lift, drain), and a tint and cut a game sets per instance are still to be declared.",
     deps: [],
   },
   {

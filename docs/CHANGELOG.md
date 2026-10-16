@@ -212,6 +212,7 @@
 - ✅ **PW476** **picture.vector draws one still, so a vector layer that loops through an attribute needs a hand-made source per frame** — picture.vector sweeps one attribute over frames from one source, each frame recorded with the sweep, packs a strip, and can skip the whole (design recorded in `docs/specs/store.md`).
 - ✅ **PW477** **a capture cannot be held to the concept painting it copies, region by region, at another size and aspect** — reference.concept measures, places and sheets each region of a capture against its painting, and a spec bounds any of its numbers as a predicate (design recorded in `docs/specs/measurements.md`).
 - ✅ **PW478** **picture.vector answers a layer that drew nothing like any other, so an empty layer is found only by opening it** — picture.vector refuses a layer that drew nothing, an id a selector or reference shares between elements, and a filter or mask on the wrong kind (design recorded in `docs/specs/store.md`).
+- ✅ **PW479 (bevel, hairline, brackets, tick)** **a panel cannot declare a lit bevel, an inner hairline, a moving sweep, inset brackets or a glow by state** — A panel declares an edge lit top to foot, an inner hairline, brackets set in from the corner and a tick placed along the top, on build and shader alike.
 
 ## Block I — Voxel models from a declaration
 

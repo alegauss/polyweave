@@ -74,6 +74,25 @@ so the engine draws the felt the built picture shows; on a nine-patch the grain 
 middle stretches with it, and on the shader it holds its size. A piping is lit by its
 own `raise`, not by the material.
 
+**A holo frame's details** (§PW479), as Spinhold's accepted holo shader drew them:
+
+```toml
+edge = { width = 3, colour = "#baa6ff", lit = [1.15, 0.55] }
+hairline = { inset = 9, width = 1, colour = "#baa6ff", strength = 0.35 }
+brackets = { length = 12, width = 3, colour = "#40e8ff", inset = 12 }
+tick = { from = 30, to = 102, width = 3, colour = "#ff3dcc" }
+```
+
+`edge.lit = [top, foot]` multiplies the edge's colour by `top` at the panel's top and
+`foot` at its foot, so a bevel is lit from above and falls to shadow in its own hue;
+`[1, 1]`, the default, is one colour. A `hairline` is a line `width` pixels thick
+`inset` pixels inside the outline, its colour laid over the glass at `strength`, 0 to 1.
+`brackets.inset` sets the brackets in from the corner, starting at the inset on both
+axes rather than on the outer edge past the cut; the inset counts towards the corner's
+reach. `tick.from` and `tick.to` place the accent along the top edge, in pixels from the
+left, in place of a centred `length`. All four are drawn the same on the nine-patch and
+on the shader, but for the tick, which only the shader draws.
+
 A `seam` sews the panel, where a flat dashed stroke only paints a line on it:
 
 ```toml
