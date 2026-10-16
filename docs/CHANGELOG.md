@@ -207,7 +207,7 @@
 - ✅ **PW471** **engine.run_declared blames the frame budget when the script exited 1 on its own after printing why it failed** — A script that exits non-zero on its own is reported with its exit code and its last three lines after the engine banner; the frame-budget hint is kept for silent runs.
 - ✅ **PW472** **a panel's outline is a box with cut corners, so a pill, a rounded card or a lobed banner cannot be declared** — A panel is cut, rounded, a pill or any geometry outline; a pill stretches lengthwise, an outline builds at its size or on the shader at any size (design recorded in `docs/specs/panel.md`).
 - ✅ **PW473** **a panel's fill is one flat colour, so a felt or candy body with light, shade and grain cannot be declared** — A panel's fill takes a material of declared numbers, lit top to foot in its own hue with core, gloss, vivid, grain and weave, same on build and shader (design recorded in `docs/specs/panel.md`).
-- ✅ **PW474 (built seam)** **a panel cannot carry a sewn seam, so a craft-styled game draws its stitches in its own code** — A panel declares a seam sewn along its outline with lit thread, shadow, needle holes and seeded jitter, and says where the nine-patch stretches it.
+- ✅ **PW474 (built and shader seam)** **a panel cannot carry a sewn seam, so a craft-styled game draws its stitches in its own code** — A panel declares a seam of lit thread, shadow, needle holes and jitter along its outline, built at its size and sewn by the shader by arc length at any size.
 
 ## Block I — Voxel models from a declaration
 

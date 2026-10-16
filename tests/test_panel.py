@@ -317,9 +317,12 @@ def test_a_seam_is_sewn_along_the_outline_with_its_shadow(tmp_path):
 def test_a_seam_says_where_it_holds_and_where_it_does_not(tmp_path):
     made = panel.build(panels(tmp_path, SEWN), shader=True, root=str(tmp_path))
     normal = made["panels"]["play"]["normal"]
-    # A nine-patch grows the stitches in its middle, and the shader does not draw them.
+    # A nine-patch grows the stitches in its middle; the shader sews at any size.
     assert normal["stretched"] == ["seam"]
-    assert normal["not_in_shader"] == ["seam"]
+    assert "not_in_shader" not in normal
+    material = (tmp_path / normal["material"]).read_text("utf-8")
+    assert "shader_parameter/seam_width = 1.6" in material
+    assert "shader_parameter/seam_thread = Color(1, 0.956863" in material
 
 
 def test_a_seam_with_its_effects_off_is_a_plain_dash_and_the_seed_moves_it(tmp_path):
@@ -455,7 +458,7 @@ def test_the_engine_films_each_state_and_each_wipe_step(tmp_path):
         offscreen.route_for(tmp_path)
     except PolyweaveError:
         pytest.skip("no route draws real pixels here")
-    source = panels(tmp_path, HOLO + WIPES + "\n" + BADGE + "\n" + FELT)
+    source = panels(tmp_path, HOLO + WIPES + "\n" + BADGE + "\n" + FELT + "\n" + SEWN)
     (tmp_path / "project.godot").write_text(
         'config_version=5\n\n[application]\nconfig/name="panel"\n', encoding="utf-8")
     taken = panel.capture(source, out="ui", steps=3, root=str(tmp_path))["stills"]
@@ -482,6 +485,27 @@ def test_the_engine_films_each_state_and_each_wipe_step(tmp_path):
     for x, y in ((48, 16), (48, 54)):
         filmed = at(taken["card"]["normal"], card_x + x * 2 + 1, card_y + y * 2 + 1)
         assert sum(filmed) == pytest.approx(int(built[y, x, :3].sum()), abs=36)
+    # §PW474: the engine sews the top edge with as many stitches as panel.build did.
+    def stitches(picture) -> int:
+        """Stitches across the top edge: bright runs along the band's brightest row."""
+        band = picture[5:10, 24:104, :3].sum(axis=2)
+        row = band[int(np.argmax(band.mean(axis=1)))]
+        bright = row > np.median(row) + (row.max() - np.median(row)) / 2
+        return int(np.sum(bright[1:] & ~bright[:-1]) + bright[0])
+
+    sewn = pixels(tmp_path, "ui/play.normal.png")
+    play_x, play_y = (320 - 128 * 2) // 2, (180 - 48 * 2) // 2
+    built_count = stitches(sewn)
+    with Image.open(tmp_path / taken["play"]["normal"]) as opened:
+        # Brought down to the panel's own pixels, as the build is, so the thread's
+        # plies at twice the size do not split a stitch in two.
+        crop = opened.convert("RGB").crop((play_x, play_y, play_x + 256, play_y + 96))
+        still = np.asarray(crop.resize((128, 48), Image.Resampling.BOX)).astype(int)
+    filmed_count = stitches(still)
+    # 80 pixels of edge at a dash of 5 and a gap of 3 is ten stitches; the build's
+    # finer ones blur at one pixel to the panel's, so it is held more loosely.
+    assert abs(filmed_count - 10) <= 1
+    assert built_count >= 8
     # The sweep covers nothing at the start and everything at the end.
     assert at(taken["sweep"]["00"], 160, 90) != (5, 7, 12)
     assert at(taken["sweep"]["02"], 160, 90) == (5, 7, 12)

@@ -706,6 +706,17 @@ uniform float seed = 0.0;
 // An outline of its own, in shares of the Control's size; none while the count is 0.
 uniform float outline_count = 0.0;
 uniform vec2 outline_points[128];
+// A sewn seam (§PW474); none while its width is 0.
+uniform float seam_inset = 4.0;
+uniform float seam_dash = 4.0;
+uniform float seam_gap = 3.0;
+uniform float seam_width = 0.0;
+uniform vec4 seam_thread : source_color;
+uniform float seam_shading = 1.0;
+uniform float seam_shadow = 1.0;
+uniform float seam_holes = 1.0;
+uniform float seam_jitter = 1.0;
+uniform float seam_seed = 0.0;
 
 // How far p is inside the outline stretched over size, negative outside.
 float inside_outline(vec2 p, vec2 size) {
@@ -734,11 +745,120 @@ float inside_outline(vec2 p, vec2 size) {
 }
 
 // A lattice point's value from 0 to 1, the same integer sum panel.build does.
-float lattice(vec2 at) {
-\tuint h = uint(at.x) * 374761393u + uint(at.y) * 668265263u + uint(seed) * 2246822519u;
+float lattice(vec2 at, float from) {
+\tuint h = uint(at.x) * 374761393u + uint(at.y) * 668265263u + uint(from) * 2246822519u;
 \th = (h ^ (h >> 13u)) * 1274126177u;
 \th = h ^ (h >> 16u);
 \treturn float(h & 16777215u) / 16777216.0;
+}
+
+// How far p is inside the panel's shape, whichever outlines it, negative outside.
+float shape_dist(vec2 p, vec2 size) {
+\tif (outline_count > 0.0) {
+\t\treturn inside_outline(p, size);
+\t}
+\tvec2 d = min(p, size - p);
+\tfloat dist = min(min(d.x, d.y), (d.x + d.y - cut) * 0.70710678);
+\t// A rounded corner: within its square, the distance is to the arc. Clamped to half
+\t// the smaller side, so a radius past it draws a pill at any size.
+\tfloat r = min(radius, min(size.x, size.y) * 0.5);
+\tif (r > 0.0 && d.x < r && d.y < r) {
+\t\tdist = r - length(vec2(r) - d);
+\t}
+\treturn dist;
+}
+
+// How far along the outline's own perimeter p's nearest point is, and that perimeter.
+float outline_along(vec2 p, vec2 size, out float total) {
+\tint count = int(outline_count);
+\tfloat nearest = 1e20;
+\tfloat best = 0.0;
+\ttotal = 0.0;
+\tfor (int i = 0; i < 128; i++) {
+\t\tif (i >= count) {
+\t\t\tbreak;
+\t\t}
+\t\tvec2 a = outline_points[i] * size;
+\t\tvec2 e = outline_points[(i + 1) % count] * size - a;
+\t\tfloat span = length(e);
+\t\tfloat t = clamp(dot(p - a, e) / max(dot(e, e), 1e-9), 0.0, 1.0);
+\t\tvec2 b = p - a - e * t;
+\t\tif (dot(b, b) < nearest) {
+\t\t\tnearest = dot(b, b);
+\t\t\tbest = total + t * span;
+\t\t}
+\t\ttotal += span;
+\t}
+\treturn best;
+}
+
+// How far along the seam's path, the box inset by seam_inset, p's nearest point is,
+// clockwise from the top edge's left end, and that path's length.
+float seam_along(vec2 p, vec2 size, out float total) {
+\tif (outline_count > 0.0) {
+\t\treturn outline_along(p, size, total);
+\t}
+\tfloat w = size.x - 2.0 * seam_inset;
+\tfloat h = size.y - 2.0 * seam_inset;
+\tvec2 q = p - vec2(seam_inset);
+\tfloat r = min(radius, min(size.x, size.y) * 0.5);
+\tfloat k = r > 0.0 ? max(r - seam_inset, 0.0) : max(cut - seam_inset * 0.414, 0.0);
+\tk = min(k, min(w, h) * 0.5);
+\tfloat arc = r > 0.0 ? k * PI * 0.5 : k * 1.41421356;
+\tfloat across = w - 2.0 * k;
+\tfloat down = h - 2.0 * k;
+\ttotal = 2.0 * across + 2.0 * down + 4.0 * arc;
+\tif (k > 0.0 && (q.x < k || q.x > w - k) && (q.y < k || q.y > h - k)) {
+\t\tvec2 centre = vec2(q.x < k ? k : w - k, q.y < k ? k : h - k);
+\t\tvec2 v = q - centre;
+\t\tfloat a = atan(v.y, v.x);
+\t\tif (q.y < k && q.x > w - k) {
+\t\t\treturn across + clamp((a + PI * 0.5) / (PI * 0.5), 0.0, 1.0) * arc;
+\t\t}
+\t\tif (q.y > h - k && q.x > w - k) {
+\t\t\treturn across + arc + down + clamp(a / (PI * 0.5), 0.0, 1.0) * arc;
+\t\t}
+\t\tif (q.y > h - k) {
+\t\t\tfloat t = clamp((a - PI * 0.5) / (PI * 0.5), 0.0, 1.0);
+\t\t\treturn 2.0 * across + 2.0 * arc + down + t * arc;
+\t\t}
+\t\tfloat t = a > 0.0 ? 0.0 : clamp((a + PI) / (PI * 0.5), 0.0, 1.0);
+\t\treturn total - arc + t * arc;
+\t}
+\tfloat top = abs(q.y);
+\tfloat right = abs(w - q.x);
+\tfloat bottom = abs(h - q.y);
+\tfloat left = abs(q.x);
+\tfloat least = min(min(top, right), min(bottom, left));
+\tif (least == top) {
+\t\treturn q.x - k;
+\t}
+\tif (least == right) {
+\t\treturn across + arc + q.y - k;
+\t}
+\tif (least == bottom) {
+\t\treturn across + 2.0 * arc + down + (w - k - q.x);
+\t}
+\treturn 2.0 * across + 3.0 * arc + down + (h - k - q.y);
+}
+
+// A stitch's thread at p as (coverage, offset across it), its holes and its shadow, in
+// the frame of the seam: `along` its path and `off` its path, inward.
+vec3 stitch(float along, float off, float total) {
+\tfloat period = total / max(1.0, round(total / (seam_dash + seam_gap)));
+\tfloat full = seam_dash / (seam_dash + seam_gap) * period;
+\tfloat index = max(floor(along / period), 0.0);
+\tfloat a = along - (index * period + full * 0.5);
+\t// A hand's wander: each stitch a seeded fraction off its line and its angle.
+\tfloat turn = (lattice(vec2(index, 1.0), seam_seed) - 0.5) * 0.1 * seam_jitter;
+\tfloat shove = (lattice(vec2(index, 2.0), seam_seed) - 0.5) * 0.2 * seam_width;
+\tfloat o = off - shove * seam_jitter - a * turn;
+\tfloat half_len = full * (1.0 - 0.14 * seam_holes) * 0.5;
+\tfloat reach = max(abs(a) - max(half_len - seam_width * 0.5, 0.0), 0.0);
+\tfloat body = length(vec2(reach, o)) - seam_width * 0.5;
+\tfloat beyond = abs(a) - half_len - seam_width * 0.45;
+\tfloat hole = length(vec2(beyond, o)) - seam_width * 0.36;
+\treturn vec3(body, o, hole);
 }
 
 vec3 lit(vec3 base, float amount) {
@@ -766,8 +886,9 @@ vec3 finished(vec3 base, vec2 p, vec2 size) {
 \t\tvec2 i = floor(q);
 \t\tvec2 f = q - i;
 \t\tvec2 s = f * f * (3.0 - 2.0 * f);
-\t\tfloat upper = mix(lattice(i), lattice(i + vec2(1.0, 0.0)), s.x);
-\t\tfloat lower = mix(lattice(i + vec2(0.0, 1.0)), lattice(i + vec2(1.0, 1.0)), s.x);
+\t\tfloat upper = mix(lattice(i, seed), lattice(i + vec2(1.0, 0.0), seed), s.x);
+\t\tfloat lower = mix(lattice(i + vec2(0.0, 1.0), seed),
+\t\t\tlattice(i + vec2(1.0, 1.0), seed), s.x);
 \t\trgb *= 1.0 + (mix(upper, lower, s.y) * 2.0 - 1.0) * 0.1 * grain;
 \t}
 \tif (weave > 0.0) {
@@ -794,18 +915,9 @@ void fragment() {
 \tvec2 size = local / max(UV, vec2(1e-4)) / pixel_scale;
 \tvec2 p = local / pixel_scale;
 \tvec2 d = min(p, size - p);
-\tfloat diagonal = (d.x + d.y - cut) * 0.70710678;
-\tfloat dist = min(min(d.x, d.y), diagonal);
-\t// A rounded corner: within its square, the distance is to the arc. Clamped to half
-\t// the smaller side, so a radius past it draws a pill at any size.
-\tfloat r = min(radius, min(size.x, size.y) * 0.5);
-\tif (r > 0.0 && d.x < r && d.y < r) {
-\t\tdist = r - length(vec2(r) - d);
-\t}
-\tif (outline_count > 0.0) {
-\t\tdist = inside_outline(p, size);
-\t}
-\tfloat corner = cut + r;
+\tfloat dist = shape_dist(p, size);
+\tvec2 inward = normalize(vec2(dFdx(dist), dFdy(dist)) + vec2(1e-6));
+\tfloat corner = cut + min(radius, min(size.x, size.y) * 0.5);
 \tif (dist < 0.0) {
 \t\tCOLOR = vec4(0.0);
 \t} else {
@@ -819,6 +931,38 @@ void fragment() {
 \t\t\tvec3 tube = crown > 0.0 ? mix(piping_colour.rgb, vec3(1.0), crown)
 \t\t\t\t: piping_colour.rgb * (1.0 + crown);
 \t\t\tc = over(c, vec4(tube, piping_colour.a));
+\t\t}
+\t\tif (seam_width > 0.0 && abs(dist - seam_inset) < seam_width * 4.0) {
+\t\t\t// Drawn by arc length at the Control's own size, so a panel grown to fit a
+\t\t\t// longer translation keeps its stitch pitch.
+\t\t\tfloat total;
+\t\t\tfloat along = seam_along(p, size, total);
+\t\t\tvec3 cloth = fill.rgb;
+\t\t\tif (seam_shadow > 0.0) {
+\t\t\t\tvec2 cast = p - vec2(0.18, 0.42) * seam_width;
+\t\t\t\tfloat cast_total;
+\t\t\t\tfloat cast_along = seam_along(cast, size, cast_total);
+\t\t\t\tvec3 s = stitch(cast_along, shape_dist(cast, size) - seam_inset, cast_total);
+\t\t\t\tfloat soft = seam_width * 0.35;
+\t\t\t\tfloat fall = 1.0 - smoothstep(-soft, soft, s.x - seam_width * 0.075);
+\t\t\t\tc = over(c, vec4(cloth * (1.0 - 0.66 * 0.75), fall * 0.55 * seam_shadow));
+\t\t\t}
+\t\t\tvec3 s = stitch(along, dist - seam_inset, total);
+\t\t\tif (seam_holes > 0.0) {
+\t\t\t\tfloat pit = clamp(0.5 - s.z, 0.0, 1.0);
+\t\t\t\tc = over(c, vec4(cloth * (1.0 - 0.66), pit * 0.85 * seam_holes));
+\t\t\t}
+\t\t\tfloat body = clamp(0.5 - s.x, 0.0, 1.0);
+\t\t\tif (body > 0.0) {
+\t\t\t\t// Lit along the side the light comes from, shaded on the other, plies across.
+\t\t\t\tfloat facing = dot(inward * s.y, vec2(-0.40, -0.92)) / (seam_width * 0.5);
+\t\t\t\tfloat plies = sin((p.x + p.y) * 2.0 * PI / (seam_width * 1.1));
+\t\t\t\tfloat gain = 1.0 + seam_shading * (0.18 * clamp(facing, 0.0, 1.0)
+\t\t\t\t\t- 0.22 * clamp(-facing, 0.0, 1.0) + 0.05 * plies);
+\t\t\t\tvec3 thread = clamp(seam_thread.rgb * gain, 0.0, 1.0);
+\t\t\t\tthread = mix(thread, vec3(1.0), clamp(facing, 0.0, 1.0) * 0.25 * seam_shading);
+\t\t\t\tc = over(c, vec4(thread, body * seam_thread.a));
+\t\t\t}
 \t\t}
 \t\tif (dist < edge_width) {
 \t\t\tc = over(c, edge_colour);
@@ -925,6 +1069,8 @@ def _uniforms(panel: dict) -> dict:
     if panel["material"]:
         shaped.update({k: v for k, v in panel["material"].items() if k != "light"})
         shaped["light_at"] = list(panel["material"]["light"])
+    if panel["seam"]:
+        shaped.update({f"seam_{k}": v for k, v in panel["seam"].items()})
     return {
         **shaped,
         "fill": panel["fill"], "cut": panel["cut"],
@@ -1078,8 +1224,6 @@ def build(
                 # Its stitches run the whole edge, so a grown nine-patch draws longer
                 # ones in its middle: true only at the size it was built.
                 made[name][state]["stretched"] = ["seam"]
-            if own["seam"] and shader:
-                made[name][state]["not_in_shader"] = ["seam"]
             if shader:
                 material = folder / f"{name}.{state}.material.tres"
                 material.write_text(_material(res(program), _uniforms(own)),

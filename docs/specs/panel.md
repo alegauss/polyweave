@@ -97,9 +97,12 @@ fraction off its angle and its line. A seam with all four at 0 is the plain dash
 read as a road marking. It is clipped to the panel and drawn over the fill and the
 piping, under the edge.
 
-The seam is drawn at the size the panel is built. A nine-patch grows the stitches in its
-middle, so a stretchable state says `stretched: ["seam"]`, and the shader does not sew
-yet, so with `shader` each state says `not_in_shader: ["seam"]`.
+A built seam is drawn at the size the panel is built. A nine-patch grows the stitches in
+its middle, so a stretchable state says `stretched: ["seam"]`. The shader sews by arc
+length along the inset path at the Control's own size, so a panel grown to fit a longer
+translation keeps its stitch pitch, with the same four effects drawn by the same rules,
+though not to the pixel: the build lays its stitches with a seeded random draw, the
+shader with a hash of each stitch's index.
 
 A `piping` is the raised rim stuffed fabric is finished with: a band `width` pixels in
 from the outline, in its own `colour`, shaded across its width like a tube. `raise`, from
