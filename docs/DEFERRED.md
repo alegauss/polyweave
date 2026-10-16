@@ -44,6 +44,7 @@
 ## Block R — Levels measured before a person plays them
 
 - ⏸ **PW201** (deps: —) **Nobody knows if a scripted bot's win rate tracks how hard a level feels to a person** — set aside (Waits on Cottony RK150.): Every later line in this block tunes levels against a simulated player, so a person's verdict on that proxy decides whether the block proceeds or is retired. → §PW201
+- ⏸ **PW480** (deps: —) **reference.objects counts a background of the enemies' own hue as enemies, so a busy reference cannot be counted** — set aside (Needs the owner's eye.): A kind told by its silhouette, the warp-in that marks an enemy going live, and Resogun's own phase counted are still to come. → §PW480
 
 ## Block S — Playing the game, not only rendering it
 

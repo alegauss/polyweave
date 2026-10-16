@@ -608,6 +608,13 @@ fifth of its pixels moved. A city scrolling with the camera drops out and an ene
 through it stays. objects.json keeps `motion` and, per frame, the `scroll` it found in
 the video's pixels, `[across, down]`.
 
+That holds for a scene that scrolls as one. Resogun's does not: its city is a cylinder
+with depth, so near towers and far ones move at different speeds. Read at ten frames a
+second around 0:26, motion took 248 tracks to 238, the scroll it found jumping from
+frame to frame, and aligning each 24-pixel block on its own did no better and lost an
+enemy that sat inside a block. Telling objects from such a scene waits on what else the
+footage gives, a kind's silhouette or the warp-in before an enemy is live.
+
 `reference.sample(frames, at, box, name)` cuts a kind's sample from the frame nearest
 second `at`: the `box` `[left, top, right, bottom]` in the video's pixels lands beside
 the frames as `samples/<name>.png`, recorded with that frame as its input, ready to
