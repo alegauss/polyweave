@@ -22,13 +22,13 @@ capture  = [30, 150, 240, 240]
 """
 
 
-def scene(size, header, board, *, stripes=True):
-    """A screen: a header band, and a board with a pattern in it."""
+def scene(size, header, board, *, stripes=True, low=0):
+    """A screen: a header band, and a board with a pattern in it, `low` pixels down."""
     w, h = size
     picture = Image.new("RGB", size, (40, 30, 60))
     pen = ImageDraw.Draw(picture)
     pen.rectangle((0, 0, w, h * 0.2), fill=header)
-    x0, y0, side = w * 0.1, h * 0.333, w * 0.8
+    x0, y0, side = w * 0.1, h * 0.333 + low, w * 0.8
     pen.rectangle((x0, y0, x0 + side, y0 + side), fill=board)
     if stripes:
         for k in range(4):
@@ -58,6 +58,7 @@ def test_a_faithful_capture_at_another_size_reads_as_the_painting(project):
     assert board["structure"] > 0.8
     assert board["luma_p50_ratio"] == pytest.approx(1.0, abs=0.1)
     assert board["edge_density"]["ratio"] == pytest.approx(1.0, abs=0.35)
+    assert board["geometry"]["moved"] is False
     sheet = project / board["sheet"]
     assert sheet.is_file()
     record = provenance.read(str(sheet), root=project)
@@ -76,6 +77,18 @@ def test_a_capture_that_drifted_says_where_and_how(project):
     assert board["edge_density"]["ratio"] < 0.3
     assert board["structure"] < 0.6
     assert "sheet" not in board
+
+
+def test_a_region_that_sits_low_says_so_as_geometry(project):
+    """§PW477: a board 30 px low is a move, not a colour difference."""
+    scene((300, 450), (220, 80, 120), (60, 140, 200), low=30).save(
+        project / "shots" / "low.png")
+    found = concept("design/screen.concept.toml", "shots/low.png", root=str(project))
+    geometry = found["regions"]["board"]["geometry"]
+    assert geometry["moved"] is True
+    assert geometry["offset"][1] == pytest.approx(30, abs=4)
+    assert abs(geometry["offset"][0]) <= 4
+    assert geometry["scale"] == 1.0
 
 
 @pytest.mark.parametrize(

@@ -68,7 +68,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW477",
     block: "H",
     symptom: "a capture cannot be held to the concept painting it copies, region by region, at another size and aspect",
-    why: "Where a region's box lands against the painting's, quads for a moved region, and each number as a spec predicate and a search objective are still to come.",
+    why: "Each region's numbers as an accept predicate, and so as what a search aims at, are still to come.",
     deps: [],
   },
   {

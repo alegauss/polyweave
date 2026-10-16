@@ -24,6 +24,7 @@ Each region also gets a sheet, painting beside capture beside where they differ.
 from __future__ import annotations
 
 import itertools
+import math
 import tomllib
 from pathlib import Path
 from typing import Annotated, Any
@@ -155,6 +156,56 @@ def _structure(one, two) -> float:
     return round(float(np.mean(scores)), 4)
 
 
+#: How far an alignment looks: the shift as a share of the region's own size each way,
+#: and the scales it tries, both at the coarse size.
+REACH, SCALES = 0.25, (0.8, 0.85, 0.9, 0.95, 1.0, 1.05, 1.1, 1.15, 1.25)
+
+
+def _aligned(painting, taken, box: tuple[int, ...]) -> dict:
+    """Where the painting's region really sits in the capture, near its declared box.
+
+    Both are compared as coarse luma, the capture's box shifted by up to REACH of its
+    size and scaled through SCALES about its centre, and the placement with the least
+    mean difference wins: a header that sits 40 px low answers an offset of 40, as
+    geometry, instead of a colour difference in every number.
+    """
+    from PIL import Image as Pil
+
+    shape = painting.size
+    want = _luma(np.asarray(painting, float) / 255.0)
+    x0, y0, x1, y1 = box
+    w, h = x1 - x0, y1 - y0
+    cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+    # Searched on a copy at twice the coarse size, so a full-size capture costs what a
+    # small one does; offsets are still answered in the capture's own pixels.
+    k = min(1.0, 2 * max(shape) / max(w, h))
+    small = taken.resize((max(1, round(taken.size[0] * k)),
+                          max(1, round(taken.size[1] * k))), Pil.Resampling.BOX)
+
+    def miss(dx: float, dy: float, s: float) -> float:
+        half_w, half_h = w * s / 2, h * s / 2
+        cut = (cx + dx - half_w, cy + dy - half_h, cx + dx + half_w, cy + dy + half_h)
+        if cut[0] < 0 or cut[1] < 0 or cut[2] > taken.size[0] or cut[3] > taken.size[1]:
+            return math.inf
+        got = small.resize(shape, Pil.Resampling.BOX, box=tuple(v * k for v in cut))
+        return float(np.abs(_luma(np.asarray(got, float) / 255.0) - want).mean())
+
+    best = (miss(0, 0, 1.0), 0.0, 0.0, 1.0)
+    step = max(w, h) * REACH / 6
+    for s in SCALES:
+        for dx in np.arange(-6, 7) * step:
+            for dy in np.arange(-6, 7) * step:
+                best = min(best, (miss(dx, dy, s), dx, dy, s))
+    # Then finer, around the best, a pixel at a time.
+    _, bx, by, bs = best
+    for dx in np.arange(-step, step + 1, max(1.0, step / 6)):
+        for dy in np.arange(-step, step + 1, max(1.0, step / 6)):
+            best = min(best, (miss(bx + dx, by + dy, bs), bx + dx, by + dy, bs))
+    _, dx, dy, s = best
+    return {"offset": [round(float(dx), 1), round(float(dy), 1)], "scale": s,
+            "moved": bool(math.hypot(dx, dy) > 0.02 * max(w, h) or abs(s - 1) > 0.03)}
+
+
 def _ratio(capture: float, painting: float) -> float | None:
     return round(capture / painting, 4) if painting > 1e-9 else None
 
@@ -213,9 +264,10 @@ def concept(
     its long side in the painting's shape (or to the smaller cut, never enlarged), and
     measured: `palette_delta_e`, the CIEDE2000
     between the two five-colour palettes; saturation and luma percentiles as ratios of
-    the capture's to the painting's; `edge_density`; and `structure`, a coarse
-    structural similarity that ignores brushwork. With `out`, a recorded sheet per
-    region shows painting, capture and where they differ.
+    the capture's to the painting's; `edge_density`; `structure`, a coarse structural
+    similarity that ignores brushwork; and `geometry`, where the region really sits
+    against its declared box. With `out`, a recorded sheet per region shows painting,
+    capture and where they differ.
     """
     from PIL import Image as Pil
 
@@ -249,6 +301,10 @@ def concept(
         one = drawn.crop(mine).resize(shape, Pil.Resampling.BOX)
         two = taken.crop(theirs).resize(shape, Pil.Resampling.BOX)
         answer[name] = _measured(one, two)
+        coarse = 48 / max(shape)
+        small = (max(4, round(shape[0] * coarse)), max(4, round(shape[1] * coarse)))
+        answer[name]["geometry"] = _aligned(one.resize(small, Pil.Resampling.BOX),
+                                            taken, theirs)
         if folder:
             where = folder / f"{Path(capture).stem}.{name}.concept.png"
             _sheet(one, two).save(where)

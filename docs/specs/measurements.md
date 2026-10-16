@@ -183,7 +183,15 @@ measures a spec names. Per region:
   percentile;
 - `edge_density`: each side's mean luma step between neighbours, and their ratio;
 - `structure`: structural similarity at a 64-pixel long side over 8-pixel windows, so
-  brushwork falls inside a window and a layout's masses do not.
+  brushwork falls inside a window and a layout's masses do not;
+- `geometry`: where the painting's region really sits in the capture, as `offset`
+  `[dx, dy]` in the capture's pixels from the declared box and `scale` about its centre,
+  and `moved` where that is past 2% of the box or 3% of scale. It is found by sliding
+  the capture's box up to a quarter of its size each way and scaling it from 0.8 to 1.25,
+  keeping the placement whose coarse luma differs least from the painting's. A header
+  that sits 40 pixels low answers an offset of 40, as geometry, rather than a colour
+  difference in every other number. The other numbers are still read on the declared
+  box.
 
 A ratio is the capture's over the painting's, and none where the painting's is zero.
 `edge_density` is a mean step rather than a count of pixels past a threshold, because
