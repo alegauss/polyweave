@@ -115,8 +115,7 @@ What a declaration should be able to say:
 - a pill: `radius` beside `cut` has landed (docs/specs/panel.md), refused past the margin, so a pill exists only on the shader route at a short Control and a declared one is still missing;
 - an outline from polyweave's own vocabulary, the one `geometry` already resolves
   (`shape = "lobed"`, `star`, `points`, an image to trace), for a panel that is not a box;
-- a `piping` part: a raised rim of its own colour around the fill, the way stuffed
-  fabric is finished, which Cottony draws in white on everything.
+- a `piping` part has landed (docs/specs/panel.md): width, colour and raise, drawn as a tube.
 
 A non-rectangular outline cannot be a nine-patch, so it builds at its declared size, or
 on the shader route as a signed distance the Control samples at its own size, and says

@@ -68,7 +68,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW472",
     block: "H",
     symptom: "a panel's outline is a box with cut corners, so a pill, a rounded card or a lobed banner cannot be declared",
-    why: "A pill past the nine-patch, a lobed or star outline from the geometry vocabulary, and a piping rim are still to be declared.",
+    why: "A pill past the nine-patch and a lobed, star or traced outline from the geometry vocabulary are still to be declared.",
     deps: [],
   },
   {

@@ -15,6 +15,7 @@ fill = "#0a1a2acc"              # #rrggbb, or #rrggbbaa with its alpha
 cut = 4                         # each corner cut off at 45 degrees, in pixels
 # radius = 4                    # or each corner rounded, in pixels; never both
 edge = { width = 2, colour = "#3fe0ff" }
+# piping = { width = 4, colour = "#ffffff", raise = 0.3 }   # a raised rim, see below
 brackets = { length = 10, width = 3, colour = "#ff4fd8" }
 scan = { pitch = 3, colour = "#3fe0ff26" }
 
@@ -36,7 +37,14 @@ bent the first time the panel is drawn larger than its texture. That is refused 
 than drawn, naming how far the corner reaches. A corner is cut or rounded, and a panel
 declaring both is refused; brackets start where either ends. On the shader route a
 radius is clamped to half the Control's smaller side, so a Control no taller than twice
-the radius is drawn as a pill. A margin that leaves no middle is refused as well.
+the radius is drawn as a pill.
+
+A `piping` is the raised rim stuffed fabric is finished with: a band `width` pixels in
+from the outline, in its own `colour`, shaded across its width like a tube. `raise`, from
+0 (flat) to 1, is how far its crown is lit towards white and its flanks darkened in their
+own hue, never mixed towards grey; it defaults to 0.3. It is drawn over the fill and the
+scan lines and under the edge, follows a cut or a rounded corner, and its width counts
+towards the corner's reach like the edge's. A margin that leaves no middle is refused as well.
 Every key is checked, and one nothing reads is refused with the nearest one that exists.
 All of these are `compose.bad-panel`.
 

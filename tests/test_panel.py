@@ -99,10 +99,46 @@ def test_a_rounded_corner_reaches_the_shader(tmp_path):
     assert "uniform float radius" in (tmp_path / "ui/holo.gdshader").read_text("utf-8")
 
 
+PIPED = HOLO.replace(
+    'edge = { width = 2, colour = "#3fe0ff" }',
+    'piping = { width = 4, colour = "#c03060", raise = 0.5 }',
+).replace('edge = { colour = "#ffffff" }', 'piping = { colour = "#3060c0" }')
+
+
+def test_a_piping_is_a_tube_lit_along_its_crown_in_its_own_hue(tmp_path):
+    """§PW472: the raised rim stuffed fabric is finished with."""
+    panel.build(panels(tmp_path, PIPED), root=str(tmp_path))
+    normal = pixels(tmp_path, "ui/holo.normal.png")
+    focus = pixels(tmp_path, "ui/holo.focus.png")
+    across = normal[32, 0:4, :3]
+    crown, flank = across[1:3].mean(axis=0), across[0]
+    # Lighter on the crown than at the flank, and the flank darker in its own hue.
+    assert crown.sum() > flank.sum()
+    assert flank[0] > flank[1] and flank[0] > flank[2]
+    assert flank[0] < 0xC0
+    # Inside the piping, the fill again; and a state recolours it key by key.
+    assert tuple(normal[32, 6, :3]) != tuple(across[1])
+    assert focus[32, 1, 2] > focus[32, 1, 0]
+
+
+def test_a_piping_reaches_the_shader(tmp_path):
+    made = panel.build(panels(tmp_path, PIPED), shader=True, root=str(tmp_path))
+    material = (tmp_path / made["panels"]["holo"]["focus"]["material"]).read_text(
+        "utf-8")
+    assert "shader_parameter/piping_width = 4.0" in material
+    assert "shader_parameter/piping_raise = 0.5" in material
+
+
 @pytest.mark.parametrize(
     ("change", "said"),
     [
         (("cut = 4", "cut = 4\nradius = 4"), "either cut or rounded"),
+        (("cut = 4", "cut = 4\npiping = { width = 2, colour = \"#fff\" }"),
+         "not a colour"),
+        (("cut = 4", "cut = 4\npiping = { width = 2, colour = \"#ffffff\", "
+          "raise = 2 }"), "piping.raise"),
+        (("cut = 4", "cut = 4\npiping = { width = 14, colour = \"#ffffff\" }"),
+         "stretching would bend it"),
         (("cut = 4", "radius = 10"), "stretching would bend it"),
         (("length = 10", "length = 20"), "stretching would bend it"),
         (("margin = 16", "margin = 50"), "leave no middle"),

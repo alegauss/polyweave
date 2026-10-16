@@ -31,6 +31,7 @@ spec holds its contrast, its edge and its palette.
 from __future__ import annotations
 
 import difflib
+import math
 import re
 import tomllib
 from pathlib import Path
@@ -48,6 +49,7 @@ PARTS = {
     "cut": None,
     "radius": None,
     "edge": ("width", "colour"),
+    "piping": ("width", "colour", "raise"),
     "brackets": ("length", "width", "colour"),
     "scan": ("pitch", "colour"),
     "tick": ("length", "width", "colour"),
@@ -153,10 +155,12 @@ def _checked(name: str, state: str, panel: dict) -> dict:
         "edge": {"width": _whole(name, "edge.width", edge.get("width", 0)),
                  "colour": _colour(name, "edge.colour",
                                    edge.get("colour", "#00000000"))},
+        "piping": None,
         "brackets": None,
         "scan": None,
         "tick": None,
     }
+    out["piping"] = _piping(name, panel.get("piping") or {})
     tick = panel.get("tick") or {}
     if tick:
         out["tick"] = {
@@ -166,7 +170,8 @@ def _checked(name: str, state: str, panel: dict) -> dict:
         }
     # Only one of the two is ever set, and either is how far the corner's shape goes.
     corner = cut + radius
-    reach = corner + out["edge"]["width"]
+    reach = corner + max(out["edge"]["width"],
+                         out["piping"]["width"] if out["piping"] else 0)
     if brackets:
         out["brackets"] = {
             "length": _whole(name, "brackets.length", brackets.get("length", 0), 1),
@@ -191,6 +196,22 @@ def _checked(name: str, state: str, panel: dict) -> dict:
     return out
 
 
+def _piping(name: str, piping: dict) -> dict | None:
+    """A raised rim inside the outline, the way stuffed fabric is finished (§PW472)."""
+    if not piping:
+        return None
+    rise = piping.get("raise", 0.3)
+    number = isinstance(rise, int | float) and not isinstance(rise, bool)
+    if not number or not 0 <= rise <= 1:
+        raise _bad(name, f"piping.raise is {rise!r}",
+                   "write piping.raise from 0, flat, to 1, lit to white")
+    return {
+        "width": _whole(name, "piping.width", piping.get("width", 0), 1),
+        "colour": _colour(name, "piping.colour", piping.get("colour")),
+        "raise": float(rise),
+    }
+
+
 def _drawn(panel: dict):
     """One state drawn large and brought down, so its diagonals are smooth."""
     from PIL import Image, ImageDraw
@@ -207,13 +228,18 @@ def _drawn(panel: dict):
         return [(x0 + c, y0), (x1 - c, y0), (x1, y0 + c), (x1, y1 - c),
                 (x1 - c, y1), (x0 + c, y1), (x0, y1 - c), (x0, y0 + c)]
 
+    def inside(pen, inset: int, fill) -> None:
+        """The outline drawn `inset` big pixels in, filled."""
+        if radius:
+            far = (big[0] - 1 - inset, big[1] - 1 - inset)
+            pen.rounded_rectangle((inset, inset, *far), radius=max(0, radius - inset),
+                                  fill=fill)
+        else:
+            pen.polygon(outline(inset), fill=fill)
+
     edge = panel["edge"]["width"] * SUPER
     shape = Image.new("L", big, 0)
-    if radius:
-        ImageDraw.Draw(shape).rounded_rectangle(
-            (0, 0, big[0] - 1, big[1] - 1), radius=radius, fill=255)
-    else:
-        ImageDraw.Draw(shape).polygon(outline(0), fill=255)
+    inside(ImageDraw.Draw(shape), 0, 255)
     picture = Image.new("RGBA", big, (0, 0, 0, 0))
     fill = Image.new("RGBA", big, panel["fill"])
     picture.paste(fill, (0, 0), shape)
@@ -226,6 +252,18 @@ def _drawn(panel: dict):
         clipped = Image.new("RGBA", big, (0, 0, 0, 0))
         clipped.paste(lines, (0, 0), shape)
         picture = Image.alpha_composite(picture, clipped)
+    if panel["piping"]:
+        # Ring by ring from the outline in, each shaded where it sits across the tube.
+        rings = Image.new("RGBA", big, (0, 0, 0, 0))
+        pen = ImageDraw.Draw(rings)
+        across = panel["piping"]["width"] * SUPER
+        for ring in range(across):
+            inside(pen, ring, _tube(panel["piping"]["colour"], panel["piping"]["raise"],
+                                    (ring + 0.5) / across))
+        hole = Image.new("L", big, 0)
+        inside(ImageDraw.Draw(hole), across, 255)
+        rings.paste((0, 0, 0, 0), (0, 0), hole)
+        picture = Image.alpha_composite(picture, rings)
     if edge:
         rim = Image.new("RGBA", big, (0, 0, 0, 0))
         if radius:
@@ -254,6 +292,16 @@ def _drawn(panel: dict):
                           fill=colour)
         picture = Image.alpha_composite(picture, marks)
     return picture.resize(panel["size"], Image.Resampling.BOX)
+
+
+def _tube(colour: tuple, rise: float, across: float) -> tuple[int, int, int, int]:
+    """A piping's colour `across` its width (0 to 1): lit along its crown, shaded at
+    its flanks, darkened in its own hue rather than towards grey. The shader does the
+    same sum."""
+    lift = rise * (2.0 * math.sin(math.pi * across) - 1.0)
+    rgb = [part + (255 - part) * lift if lift > 0 else part * (1.0 + lift)
+           for part in colour[:3]]
+    return (*(round(part) for part in rgb), colour[3])
 
 
 def _box(x0: float, y0: float, x1: float, y1: float) -> tuple[float, ...]:
@@ -285,6 +333,9 @@ uniform float cut = 0.0;
 uniform float radius = 0.0;
 uniform float edge_width = 0.0;
 uniform vec4 edge_colour : source_color;
+uniform float piping_width = 0.0;
+uniform vec4 piping_colour : source_color;
+uniform float piping_raise = 0.0;
 uniform float bracket_length = 0.0;
 uniform float bracket_width = 0.0;
 uniform vec4 bracket_colour : source_color;
@@ -327,6 +378,13 @@ void fragment() {
 \t\tvec4 c = fill;
 \t\tif (scan_pitch > 0.0 && mod(floor(p.y), scan_pitch) < 1.0) {
 \t\t\tc = over(c, scan_colour);
+\t\t}
+\t\tif (dist < piping_width) {
+\t\t\t// Lit along the tube's crown, darkened in its own hue at the flanks.
+\t\t\tfloat lift = piping_raise * (2.0 * sin(3.14159265 * dist / piping_width) - 1.0);
+\t\t\tvec3 tube = lift > 0.0 ? mix(piping_colour.rgb, vec3(1.0), lift)
+\t\t\t\t: piping_colour.rgb * (1.0 + lift);
+\t\t\tc = over(c, vec4(tube, piping_colour.a));
 \t\t}
 \t\tif (dist < edge_width) {
 \t\t\tc = over(c, edge_colour);
@@ -419,12 +477,15 @@ def _material(shader: str, parameters: dict) -> str:
 def _uniforms(panel: dict) -> dict:
     """One state's look as the panel shader's uniforms."""
     none = (0, 0, 0, 0)
+    piping = panel["piping"] or {"width": 0, "colour": none, "raise": 0}
     brackets = panel["brackets"] or {"length": 0, "width": 0, "colour": none}
     scan = panel["scan"] or {"pitch": 0, "colour": none}
     tick = panel["tick"] or {"length": 0, "width": 0, "colour": none}
     return {
         "fill": panel["fill"], "cut": panel["cut"], "radius": panel["radius"],
         "edge_width": panel["edge"]["width"], "edge_colour": panel["edge"]["colour"],
+        "piping_width": piping["width"], "piping_colour": piping["colour"],
+        "piping_raise": piping["raise"],
         "bracket_length": brackets["length"], "bracket_width": brackets["width"],
         "bracket_colour": brackets["colour"],
         "scan_pitch": scan["pitch"], "scan_colour": scan["colour"],
