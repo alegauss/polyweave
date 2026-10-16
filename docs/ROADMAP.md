@@ -18,7 +18,7 @@
 
 - 🛠 **PW372** (deps: Spinhold RK215) **a camera move cannot be declared as a clip or played by the game, so a cutscene's shots are numbers in the project** — No shot is yet captured onto a sitting for a person to accept, and Starship's opening still reads its own JSON. → §PW372
 - 🛠 **PW36** (deps: PW5 ✅, PW82 ⏸) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82. → §PW36
-- 📋 **PW474** (deps: —) **a panel cannot carry a sewn seam, so a craft-styled game draws its stitches in its own code** — Cottony's stitches read as a road marking until it wrote shading, shadow and needle holes itself, and the next craft game writes them again. → §PW474
+- ⏳ **PW474** (deps: —) **a panel cannot carry a sewn seam, so a craft-styled game draws its stitches in its own code** — The seam on the shader route, drawn by arc length at the Control's size, and along a picture's alpha silhouette, are still to be built. → §PW474
 - 📋 **PW475** (deps: —) **port.run names a failed predicate but not what it measured, so the margin takes a second accept.check by hand** — Whether a member missed by a hair or by a mile decides what happens next, and the run already knew it. → §PW475
 - 📋 **PW476** (deps: —) **picture.vector draws one still, so a vector layer that loops through an attribute needs a hand-made source per frame** — A turning orbit or a pulsing stroke becomes eight SVGs and eight records that never say they are one loop. → §PW476
 - 📋 **PW477** (deps: —) **a capture cannot be held to the concept painting it copies, region by region, at another size and aspect** — Reaching a concept art is the goal of a whole art pass, and with nothing to measure it every step is judged by eye. → §PW477
@@ -126,6 +126,15 @@
   ink on the faced kinds, no pale ring of marks round a rim, and the kinds' silhouettes
   kept apart is either a predicate in a Cottony acceptance spec over the committed piece
   sheet, or recorded as a test a person chose to keep.
+
+## Done when — PW474
+
+- **The shader sews the seam at the Control's own size** panel.build(shader=true) no
+  longer says not_in_shader: ["seam"], and a filmed panel grown wider keeps its stitch
+  pitch.
+- **A picture's silhouette is sewn by the same needle** A picture pass lays the seam
+  inset from a baked render's alpha edge, clipped to the body, with the same four
+  effects as a panel's.
 
 ## Non-goals
 

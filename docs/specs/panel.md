@@ -74,6 +74,33 @@ so the engine draws the felt the built picture shows; on a nine-patch the grain 
 middle stretches with it, and on the shader it holds its size. A piping is lit by its
 own `raise`, not by the material.
 
+A `seam` sews the panel, where a flat dashed stroke only paints a line on it:
+
+```toml
+[panel.play.seam]
+inset = 7          # pixels in from the outline
+dash = 5           # a stitch, in pixels
+gap = 3            # between stitches, in pixels
+width = 1.6        # the thread, in pixels
+thread = "#fff4f0" # its colour, which a seam must name
+seed = 2           # which hand sewed it
+# shading, shadow, holes, jitter: each 0 (off) to 1 (default)
+```
+
+The stitches follow the outline at `inset`, whether cut, rounded, a pill or an outline of
+its own, spaced by arc length so whole stitches close the loop. `shading` lights the
+thread along the side the light comes from and shades the other, with a faint twist of
+plies; `shadow` lays a soft shadow down and right of each stitch, darkened from the fill
+so it never goes grey; `holes` punches a needle hole past either end, where the thread
+goes under, and shortens each stitch to show it; `jitter` sets each stitch a seeded
+fraction off its angle and its line. A seam with all four at 0 is the plain dash that
+read as a road marking. It is clipped to the panel and drawn over the fill and the
+piping, under the edge.
+
+The seam is drawn at the size the panel is built. A nine-patch grows the stitches in its
+middle, so a stretchable state says `stretched: ["seam"]`, and the shader does not sew
+yet, so with `shader` each state says `not_in_shader: ["seam"]`.
+
 A `piping` is the raised rim stuffed fabric is finished with: a band `width` pixels in
 from the outline, in its own `colour`, shaded across its width like a tube. `raise`, from
 0 (flat) to 1, is how far its crown is lit towards white and its flanks darkened in their

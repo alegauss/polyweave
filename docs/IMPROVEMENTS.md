@@ -117,11 +117,10 @@ What reads as sewn, measured by the owner's eye on the PLAY button:
 - a needle hole past either end of every stitch, where the thread goes under;
 - a seeded jitter of angle and offset, so it is regular without being ruled.
 
-A `seam` part on a panel: `inset`, `dash`, `gap`, `width`, `thread`, and the four
-effects above each as a number with 0 meaning off. On the shader route it is drawn by
-arc length at the Control's real size, so a panel grown to fit a longer translation
-keeps its stitch pitch; a nine-patch would stretch the stitches in its middle, which
-should be refused or said, as `tick` is.
+The `seam` part has landed on the build route (docs/specs/panel.md). On the shader route
+it is drawn by arc length at the Control's real size, so a panel grown to fit a longer
+translation keeps its stitch pitch; a nine-patch would stretch the stitches in its
+middle, which should be refused or said, as `tick` is.
 
 The same seam laid along a picture's alpha silhouette (a `picture` pass, inset from the
 edge and clipped to the body), so a baked prop and a drawn panel are sewn by one needle.

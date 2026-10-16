@@ -273,6 +273,85 @@ def test_a_material_that_means_nothing_is_refused(tmp_path, change, said):
     assert said in refused.value.message + refused.value.remedy
 
 
+SEWN = """\
+[panel.play]
+size = [128, 48]
+margin = 20
+radius = 16
+fill = "#e0607a"
+
+[panel.play.seam]
+inset = 7
+dash = 5
+gap = 3
+width = 1.6
+thread = "#fff4f0"
+seed = 2
+"""
+
+
+def seam_band(drawn) -> np.ndarray:
+    """The rows along the top edge the seam is sewn on, past the rounded corners."""
+    return drawn[5:10, 24:104, :3].astype(int)
+
+
+def test_a_seam_is_sewn_along_the_outline_with_its_shadow(tmp_path):
+    """§PW474: thread that reads as sewn, not as a road marking."""
+    made = panel.build(panels(tmp_path, SEWN), root=str(tmp_path))
+    drawn = pixels(tmp_path, made["panels"]["play"]["normal"]["file"])
+    band = seam_band(drawn)
+    # The thread, near its own colour, and gaps of cloth between the stitches.
+    bright = band.sum(axis=2) > 0xE0 + 0x60 + 0x7A + 200
+    assert bright.any(axis=0).sum() > 20
+    assert (~bright.any(axis=0)).sum() > 10
+    # A shadow below the thread, darker than the cloth and in its hue, not grey.
+    cloth = np.array([0xE0, 0x60, 0x7A])
+    below = drawn[4:12, 24:104, :3].astype(int).reshape(-1, 3)
+    dark = below[below.sum(axis=1) < cloth.sum() - 40]
+    assert len(dark)
+    assert (dark[:, 0] > dark[:, 1]).all()
+    # The middle of the panel is cloth, untouched.
+    assert tuple(drawn[24, 64, :3]) == (0xE0, 0x60, 0x7A)
+
+
+def test_a_seam_says_where_it_holds_and_where_it_does_not(tmp_path):
+    made = panel.build(panels(tmp_path, SEWN), shader=True, root=str(tmp_path))
+    normal = made["panels"]["play"]["normal"]
+    # A nine-patch grows the stitches in its middle, and the shader does not draw them.
+    assert normal["stretched"] == ["seam"]
+    assert normal["not_in_shader"] == ["seam"]
+
+
+def test_a_seam_with_its_effects_off_is_a_plain_dash_and_the_seed_moves_it(tmp_path):
+    plain = SEWN + "shading = 0\nshadow = 0\nholes = 0\njitter = 0\n"
+    panel.build(panels(tmp_path, plain), root=str(tmp_path))
+    flat = pixels(tmp_path, "ui/play.normal.png")
+    colours = {tuple(p) for p in seam_band(flat).reshape(-1, 3).tolist()}
+    # Thread, cloth, and the blend of the two at a stitch's soft edge: nothing darker.
+    assert min(sum(c) for c in colours) >= 0xE0 + 0x60 + 0x7A
+    panel.build(panels(tmp_path, SEWN), root=str(tmp_path))
+    two = pixels(tmp_path, "ui/play.normal.png")
+    moved = SEWN.replace("seed = 2", "seed = 5")
+    panel.build(panels(tmp_path, moved), root=str(tmp_path))
+    assert (pixels(tmp_path, "ui/play.normal.png") != two).any()
+
+
+@pytest.mark.parametrize(
+    ("change", "said"),
+    [
+        (('thread = "#fff4f0"\n', ""), "seam has no thread"),
+        (("width = 1.6", "width = 0"), "pixels from 0.5"),
+        (("seed = 2", "shadow = 3"), "from 0, off, to 1"),
+        (("seed = 2", "needle = 1"), "no key 'needle'"),
+    ],
+)
+def test_a_seam_that_cannot_be_sewn_is_refused(tmp_path, change, said):
+    with pytest.raises(PolyweaveError) as refused:
+        panel.build(panels(tmp_path, SEWN.replace(*change)), root=str(tmp_path))
+    assert refused.value.code == "compose.bad-panel"
+    assert said in refused.value.message + refused.value.remedy
+
+
 @pytest.mark.parametrize(
     ("body", "said"),
     [

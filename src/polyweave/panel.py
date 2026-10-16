@@ -205,6 +205,7 @@ def _checked(name: str, state: str, panel: dict, root: Path | str = ".") -> dict
     }
     out["piping"] = _piping(name, panel.get("piping") or {})
     out["material"] = _finish(name, panel.get("material") or {})
+    out["seam"] = _seam(name, panel.get("seam") or {})
     tick = panel.get("tick") or {}
     if tick:
         out["tick"] = {
@@ -290,6 +291,22 @@ FINISH = {
 }
 PARTS["material"] = tuple(FINISH)
 
+#: A seam's numbers. The four effects are each 0 for off and 1 for the look a craft
+#: game's owner read as sewn rather than as a road marking (§PW474).
+SEAM = {
+    "inset": 4,         # how far in from the outline, in pixels
+    "dash": 4.0,        # a stitch's length, in pixels
+    "gap": 3.0,         # the space between stitches, in pixels
+    "width": 1.5,       # the thread's thickness, in pixels
+    "thread": None,     # its colour, which a seam must name
+    "shading": 1.0,     # lit along its upper side, shaded along its lower, with plies
+    "shadow": 1.0,      # the soft shadow each stitch lays on the cloth
+    "holes": 1.0,       # a needle hole past either end, where the thread goes under
+    "jitter": 1.0,      # a seeded wander, regular without being ruled
+    "seed": 0,
+}
+PARTS["seam"] = tuple(SEAM)
+
 
 def _finish(name: str, table: dict) -> dict | None:
     """A fill's material, every number checked, each left out at its default."""
@@ -317,6 +334,127 @@ def _finish(name: str, table: dict) -> dict | None:
                 raise _bad(name, f"{at} is {value!r}", f"write {key} as {said}")
             out[key] = float(value)
     return out
+
+
+def _seam(name: str, table: dict) -> dict | None:
+    """A seam, every number checked, each left out at its default."""
+    if not table:
+        return None
+    out = dict(SEAM)
+    for key, value in table.items():
+        at = f"seam.{key}"
+        number = isinstance(value, int | float) and not isinstance(value, bool)
+        if key == "thread":
+            out[key] = _colour(name, at, value)
+        elif key in ("inset", "seed"):
+            out[key] = _whole(name, at, value)
+        elif key in ("dash", "gap", "width"):
+            if not number or value < 0.5:
+                raise _bad(name, f"{at} is {value!r}",
+                           f"write {key} in pixels from 0.5")
+            out[key] = float(value)
+        else:
+            if not number or not 0 <= value <= 1:
+                raise _bad(name, f"{at} is {value!r}", f"write {key} from 0, off, to 1")
+            out[key] = float(value)
+    if out["thread"] is None:
+        raise _bad(name, "seam has no thread", 'name its colour, thread = "#rrggbb"')
+    return out
+
+
+def _stitches(path: np.ndarray, seam: dict, scale: float) -> list[np.ndarray]:
+    """The seam's stitches along a closed path, evenly spaced by arc length, each a
+    short polyline, with the jitter a hand sews with."""
+    closed = np.vstack([path, path[:1]])
+    lengths = np.hypot(*np.diff(closed, axis=0).T)
+    along = np.concatenate([[0.0], np.cumsum(lengths)])
+    total = float(along[-1])
+    if total <= 0:
+        return []
+    period = (seam["dash"] + seam["gap"]) * scale
+    count = max(1, round(total / period))
+    period = total / count  # whole stitches round the loop, none clipped
+    dash = seam["dash"] / (seam["dash"] + seam["gap"]) * period
+    rng = np.random.default_rng(seam["seed"])
+    width = seam["width"] * scale
+    out = []
+    steps = max(2, int(dash / (3 * SUPER)) + 2)
+    for index in range(count):
+        at = index * period + np.linspace(0.0, dash, steps)
+        stitch = np.stack([np.interp(at, along, closed[:, 0]),
+                           np.interp(at, along, closed[:, 1])], axis=1)
+        middle = stitch.mean(axis=0)
+        ends = stitch[-1] - stitch[0]
+        normal = np.array([-ends[1], ends[0]]) / (float(np.hypot(*ends)) or 1.0)
+        turn = rng.normal(0.0, 0.05) * seam["jitter"]
+        shove = rng.normal(0.0, width * 0.10) * seam["jitter"]
+        c, s = math.cos(turn), math.sin(turn)
+        turned = (stitch - middle) @ np.array([[c, s], [-s, c]])
+        stitch = turned + middle + normal * shove
+        # A touch shorter than its dash, so the needle holes show past its ends.
+        out.append(middle + (stitch - middle) * (1.0 - 0.14 * seam["holes"]))
+    return out
+
+
+def _sewn(seam: dict, stitches: list[np.ndarray], cloth: tuple, big: tuple[int, int]):
+    """Thread sewn through cloth: round and lit, standing off it, going through it."""
+    from PIL import Image, ImageDraw, ImageFilter
+
+    width = seam["width"] * SUPER
+    light = np.array([-0.40, -0.92])  # from the upper left, as the material's is
+
+    def stroke(points_of, thick: float, shift=(0.0, 0.0)) -> Image.Image:
+        mask = Image.new("L", big, 0)
+        pen = ImageDraw.Draw(mask)
+        r = thick / 2
+        for stitch in points_of:
+            moved = [tuple(p + shift) for p in stitch]
+            pen.line(moved, fill=255, width=max(1, round(thick)), joint="curve")
+            for x, y in (moved[0], moved[-1]):
+                pen.ellipse((x - r, y - r, x + r, y + r), fill=255)
+        return mask
+
+    def darker(t: float) -> tuple[int, int, int]:
+        return tuple(round(part * (1.0 - 0.66 * min(t, 1.0))) for part in cloth[:3])
+
+    layer = Image.new("RGBA", big, (0, 0, 0, 0))
+    if seam["shadow"]:
+        cast = stroke(stitches, width * 1.15, (width * 0.18, width * 0.42))
+        cast = cast.filter(ImageFilter.GaussianBlur(width * 0.35))
+        tint = Image.new("RGBA", big, (*darker(0.75), 255))
+        tint.putalpha(cast.point(lambda a: round(a * 0.55 * seam["shadow"])))
+        layer = Image.alpha_composite(layer, tint)
+    if seam["holes"]:
+        pits = Image.new("L", big, 0)
+        pen = ImageDraw.Draw(pits)
+        r = width * 0.36
+        for stitch in stitches:
+            tangent = stitch[-1] - stitch[0]
+            tangent = tangent / (float(np.hypot(*tangent)) or 1.0)
+            for end, sign in ((stitch[0], -1.0), (stitch[-1], 1.0)):
+                x, y = end + tangent * sign * width * 0.45
+                pen.ellipse((x - r, y - r, x + r, y + r), fill=255)
+        tint = Image.new("RGBA", big, (*darker(1.1), 255))
+        tint.putalpha(pits.point(lambda a: round(a * 0.85 * seam["holes"])))
+        layer = Image.alpha_composite(layer, tint)
+    body = stroke(stitches, width)
+    thread = np.zeros((big[1], big[0], 3)) + np.array(seam["thread"][:3], dtype=float)
+    if seam["shading"]:
+        # Lit along the side the light comes from, shaded along the other, plies across.
+        up, down = light * width * 0.22, -light * width * 0.24
+        upper = np.asarray(stroke(stitches, width * 0.5, up)) / 255.0
+        lower = np.asarray(stroke(stitches, width * 0.55, down)) / 255.0
+        yy, xx = np.mgrid[0:big[1], 0:big[0]]
+        plies = np.sin((xx + yy) * (2.0 * math.pi / (width * 1.1)))
+        k = seam["shading"]
+        gain = 1.0 + k * (0.18 * upper - 0.22 * lower * (1 - upper) + 0.05 * plies)
+        thread = thread * gain[..., None]
+        thread = thread + (255.0 - thread) * (upper * 0.25 * k)[..., None]
+    rgba = np.concatenate([np.clip(thread, 0, 255),
+                           np.asarray(body, dtype=float)[..., None]
+                           * seam["thread"][3] / 255.0], axis=2)
+    return Image.alpha_composite(layer, Image.fromarray(rgba.round().astype(np.uint8),
+                                                        "RGBA"))
 
 
 def _hash(x: np.ndarray, y: np.ndarray, seed: int) -> np.ndarray:
@@ -439,6 +577,20 @@ def _drawn(panel: dict):
         inside(ImageDraw.Draw(hole), across, 255)
         rings.paste((0, 0, 0, 0), (0, 0), hole)
         picture = Image.alpha_composite(picture, rings)
+    if panel["seam"]:
+        inset = panel["seam"]["inset"] * SUPER
+        if ring is not None:
+            path = _inset(ring, inset)
+        elif radius:
+            path = _rounded((big[0] - 2 * inset, big[1] - 2 * inset),
+                            max(0, radius - inset)) + inset
+        else:
+            path = np.asarray(outline(inset), dtype=float)
+        stitches = _stitches(path, panel["seam"], SUPER)
+        sewn = _sewn(panel["seam"], stitches, panel["fill"], big)
+        clipped = Image.new("RGBA", big, (0, 0, 0, 0))
+        clipped.paste(sewn, (0, 0), shape)
+        picture = Image.alpha_composite(picture, clipped)
     if edge:
         rim = Image.new("RGBA", big, (0, 0, 0, 0))
         if radius:
@@ -468,6 +620,14 @@ def _drawn(panel: dict):
                           fill=colour)
         picture = Image.alpha_composite(picture, marks)
     return picture.resize(panel["size"], Image.Resampling.BOX)
+
+
+def _rounded(size: tuple[float, float], radius: float) -> np.ndarray:
+    """A rounded rectangle's outline from its top-left corner, clockwise on screen."""
+    from .geometry import outline as geometry
+
+    ring = geometry.rounded_square(list(size), radius, steps=16)
+    return ring + np.array(size) / 2
 
 
 def _inset(ring: np.ndarray, by: float) -> np.ndarray:
@@ -914,6 +1074,12 @@ def build(
             if own["tick"] and not shader:
                 # Said, not dropped silently: mid-edge, a nine-patch would stretch it.
                 made[name][state]["not_drawn"] = ["tick"]
+            if own["seam"] and own["stretch"] != "none":
+                # Its stitches run the whole edge, so a grown nine-patch draws longer
+                # ones in its middle: true only at the size it was built.
+                made[name][state]["stretched"] = ["seam"]
+            if own["seam"] and shader:
+                made[name][state]["not_in_shader"] = ["seam"]
             if shader:
                 material = folder / f"{name}.{state}.material.tres"
                 material.write_text(_material(res(program), _uniforms(own)),

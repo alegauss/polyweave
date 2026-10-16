@@ -68,7 +68,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW474",
     block: "H",
     symptom: "a panel cannot carry a sewn seam, so a craft-styled game draws its stitches in its own code",
-    why: "Cottony's stitches read as a road marking until it wrote shading, shadow and needle holes itself, and the next craft game writes them again.",
+    why: "The seam on the shader route, drawn by arc length at the Control's size, and along a picture's alpha silhouette, are still to be built.",
     deps: [],
   },
   {
