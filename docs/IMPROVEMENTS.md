@@ -147,6 +147,47 @@ are. `measure_frames.py`'s ratio stays the project's, because that is a verdict 
 number and not on a run, unless `engine.perf`'s budgets already cover it, which is worth
 checking first.
 
+### §PW469 A boot is a run with no script
+
+Met moving Cottony's Godot runners (PW466). `tools/check_boot.py` is a project's
+simplest check that the game works at all: `godot --headless --quit --path .` boots the
+main scene and shuts down, and the output is the verdict. A parse error, a script error,
+a missing main scene or a leak at exit fails it, whatever Godot returned.
+
+polyweave runs only scripts: `engine.run` and `capture.run` start a `--script` and wait
+for a line it prints, so a boot of the main scene with no script has no door, and
+Cottony keeps its own `subprocess` call with its own lookup of `GODOT`, never `[paths]
+godot`, and its own timeout.
+
+What polyweave should do: `game.boot(root)` boots the main scene headless and quits,
+bounded like every run, and answers what it printed sorted the way `engine.run` sorts a
+run's errors: script and parse errors, a main scene that is missing or failed to load,
+and the leaks Godot reports at exit, as counts. What a project forgives belongs to the
+project, such as Cottony's music loop that leaks four objects and two resources only
+under the dummy audio driver, so it is a declared expectation (`[engine] leaks = [4, 2]`
+or the like), not a pattern in the plugin.
+
+### §PW470 What a pack carries, listed
+
+Met moving Cottony's Godot runners (PW466). `tools/check_export.py` exports a pack with
+`--export-pack`, which needs no export template and so runs in CI, then reads the pack's
+own file table and fails when a file the game loads is missing, a file nothing loads is
+present, or the pack is over a ceiling. It exists because an unfiltered export shipped
+fourteen megabytes of reference mockups beside a five megabyte game, and Godot exits 0
+on a filter that drops half the game.
+
+polyweave reads around this without doing it: `provenance.generated` reads the preset's
+filters (PW455), `game.release_check` reads a given pack for the driver, and
+`game.export_smoke` builds and launches each preset, which needs templates. Nothing
+exports a pack and lists it, so Cottony keeps a `subprocess` call, a binary parser for
+the pack's table and its own Godot lookup.
+
+What polyweave should do: `game.pack(preset, root)` exports the preset as a pack into
+the work area, bounded like every run, and answers its files with their sizes, imported
+assets mapped back to their sources, and the total. Whether a file belongs in it stays
+the project's: `provenance.generated` already says what the preset should ship, so the
+answer can name the difference both ways, and a size ceiling is a declared bound.
+
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once
