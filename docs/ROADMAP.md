@@ -27,6 +27,12 @@
 - 📋 **PW477** (deps: —) **a capture cannot be held to the concept painting it copies, region by region, at another size and aspect** — Reaching a concept art is the goal of a whole art pass, and with nothing to measure it every step is judged by eye. → §PW477
 - 📋 **PW478** (deps: —) **picture.vector answers a layer that drew nothing like any other, so an empty layer is found only by opening it** — A duplicate id in the SVG gave Spinhold a fully transparent halo layer and a halo-less whole, with an answer that looked fine. → §PW478
 - 📋 **PW479** (deps: —) **a panel cannot declare a lit bevel, an inner hairline, a moving sweep, inset brackets or a glow by state** — Spinhold's accepted holo panel would lose those details moving to panel.build, so it stays a hand-written shader no spec holds. → §PW479
+- 📋 **PW481** (deps: —) **verdict.sitting crashes on an old picture named HEAD:<path>, a form sound.sitting reads from git** — Comparing a replaced render with the committed one means saving the old picture by hand first. → §PW481
+- 📋 **PW482** (deps: —) **voice.design sends a sample shorter than the service accepts and quote cannot price it from the entity** — A short tag's voice came back a 422 after the call, and its price was never shown before it. → §PW482
+- 📋 **PW483** (deps: —) **measure.take reports luma only at p1, p50 and p99, so a spread between other percentiles cannot be measured** — Cottony gates form as (p90 - p10) / p50 and had to compute it on its concept art in its own script. → §PW483
+- 📋 **PW486** (deps: —) **a sitting member that failed a bound shows no accept, so a person who likes the look cannot see how to approve it** — Moving the bound is the acceptance there, but its label reads as a spec tweak, and the Cottony owner asked where the accept had gone. → §PW486
+- 📋 **PW487** (deps: —) **engine.sweep keeps only the matched text of a hit, and a run its frame budget ended reads as one that never printed** — Cottony's level sweep lost every measured number off the line and first read seven budget-killed runs as no-signal. → §PW487
+- 📋 **PW488** (deps: —) **a capture warns same settings, different picture when only a sprite the scene draws changed, as if it were noise** — PW71's warning cannot tell a re-taken picture's changed asset from real non-determinism, so it cries wolf on every legitimate re-take. → §PW488
 
 ## Block I — Voxel models from a declaration
 
@@ -54,6 +60,7 @@
 - 📋 **PW205** (deps: PW202, PW203) **A shooter's waves have no measure of threat, so the level contract is proven on one genre only** — A contract only Cottony's match-3 has exercised may still assume a board, and Starship's check_phase_waves counts enemies without asking how many arrive at once. → §PW205
 - 📋 **PW206** (deps: PW204, PW205) **Cottony's levels are still tuned by a curve nobody measured** — The block is proven only when its first consumer's shipped levels are declared, compiled, probed and accepted here, and make_levels.py has nothing left to do. → §PW206
 - 📋 **PW327** (deps: PW205) **A playtest's trace of spawns, kills and hits cannot be measured or laid against the wave it played** — A declared wave says what it asks of a player; only a trace says where players struggle, and Starship's balance needs both. → §PW327
+- 📋 **PW480** (deps: —) **reference.objects counts a background of the enemies' own hue as enemies, so a busy reference cannot be counted** — Resogun's violet city gave 9595 tracks or none, so the phase cannot be re-read or compared with its rebuild. → §PW480
 
 ## Block S — Playing the game, not only rendering it
 
@@ -65,6 +72,8 @@
 
 - 🛠 **PW370** (deps: PW345 ✅, PW357 ✅, PW394 ✅, PW395 ✅, PW396 ✅, PW397 ✅, Spinhold RK216) **Starship keeps its own bindings and co-op code after the input kits were extracted from it** — A kit proved only in a fixture has not met a game, and the game it came from is the cheapest first consumer. → §PW370
 - 🛠 **PW371** (deps: PW347 ✅, PW348 ✅, PW398 ✅, Cottony RK151) **Cottony keeps its own settings and save code where the kits provide them** — The second game is what shows a kit is not one project's code moved into a folder. → §PW371
+- 📋 **PW484** (deps: —) **the input kits fail to parse in a game that has its own class named Bindings, Spinhold among them** — A kit's local const Bindings resolves to the game's global class, so no proof runs in the game the kits came from. → §PW484
+- 📋 **PW485** (deps: —) **the prompts kit's proof fails in a game running in another language, reading its translated key names as wrong** — A pt-BR machine turns a correct table lookup into a red proof that says the table was ignored. → §PW485
 
 ## Done when — PW36
 

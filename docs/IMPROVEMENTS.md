@@ -299,6 +299,135 @@ The glass's fall from top to foot belongs to PW473's `material`.
 What polyweave should do: these as parts and keys of a panel declaration, drawn alike at
 build and on the shader route, so Spinhold swaps its shader without losing a detail.
 
+### §PW481 A sitting's old picture read from git
+
+Found in Spinhold on 2026-10-16 (RK143). Moving the gunship's spec onto its voxel build
+replaces `art/renders/gunship.png`, so the person compares the new render with the
+committed one. `sound.sitting` takes `old = "HEAD:<path>"` for exactly this. The same
+member passed to `verdict.sitting`:
+
+`families = {"gunship": [{"name": "gunship", "new": "art/renders/gunship.png", "old":
+"HEAD:art/renders/gunship.png", "spec": "art/accept/gunship.accept.toml"}]}`
+
+came back `op.crashed`: OSError 22, Invalid argument, opening
+`D:\Git\viglet\spinhold\HEAD:art\renders\gunship.png` (Image.py:3512 in open). The
+workaround was `git show HEAD:art/renders/gunship.png >
+.polyweave/rk143/gunship-mesh.png` by hand and passing that path.
+
+What polyweave should do: `verdict.sitting` and `verdict.sheet` read `HEAD:<path>` (and
+`<rev>:<path>`) as `sound.sitting` does, from git, never as a file name, and record the
+revision on the sheet. A path that does not exist is refused with a code naming it,
+never a crash.
+
+### §PW482 A voice sample checked before it is sent
+
+Found in Spinhold on 2026-10-16 (RK168). The studio's spoken tag is two words, so the
+entity's voice sample was the tag itself: `[entity.studio_voice.voice] sample = "Viglet
+Games!"`. `voice.design --entity studio_voice` sent it and came back
+`fetch.service-error`, a 422 whose detail says ElevenLabs' voice design wants a text of
+at least 100 characters. `purchase.quote` for the same call refused with
+`fetch.uncounted` ("this call states no count of them"), though the text it would send
+is the entity's own sample, which polyweave reads.
+
+The workaround was a longer sample written into the world file by hand.
+
+What polyweave should do: `voice.design` refuses a sample under the service's minimum
+before sending, naming the length and the minimum (and `world.validate` can say it of a
+declared sample), and `purchase.quote` prices a voice call from the entity's own
+description and sample when no text is passed.
+
+### §PW483 A measure at the percentiles a gate uses
+
+Found in Cottony, RK131 (2026-10-16). Cottony's `tools/perf/material_match.gd` holds a
+piece's **form** as `(p90 - p10) / p50` of luminance inside the silhouette - the spread
+across a surface, which is whether a crown reads. RK131 had to measure the same number
+on the concept painting's stars to re-derive the ceiling.
+
+The call:
+
+    python -m polyweave measure.take --subject docs/design/art/ui/star_gold_big.png --measures luma saturation --region subject --json
+
+came back with `luma_p1`, `luma_p50`, `luma_p99`, `luma_mean` and `luma_std` and nothing
+else. There is no way to ask for p10 and p90, nor for a ratio between percentiles, so
+the measure the project actually gates on cannot be taken by polyweave on any picture. A
+painting with no alpha also needs a mask, which `--region` takes, but cutting one out of
+a flat painting (keep the yellow star, drop the cream well) is another script.
+
+Workaround: Cottony's `tools/measure_form.py`, which segments each star in `screen1.png`
+by colour, erodes to the interior, and computes the spread itself in numpy.
+
+What polyweave should do: let a measure name its percentiles (`luma@10,90`, or a
+`--percentiles` list), and offer `spread` as a computed measure, `(pHi - pLo) / p50`,
+with the percentiles as parameters. Separately, `--region` could take a colour key
+(`{"colour": "#F5C02A", "tolerance": ...}`) and an erosion in pixels, the way
+`reference.objects` already finds kinds by colour, so a painting can be measured object
+by object without a mask file per object.
+
+### §PW486 Accepting a look a bound refused
+
+Found in Cottony, RK149 (2026-10-16). A sitting opened with `verdict.sitting` for one
+member, the mascot, whose new render failed one bound (`median-tone`, 0.762 against a
+min of 0.780). The review page offered two buttons, Refazer and Ajustar o limite, and no
+Aceitar. The owner liked the look and asked where the accept was: the page never says
+that, when a bound fails, moving the bound *is* the acceptance.
+
+The choices are honest - `accept` means the look is right and the spec agrees, which a
+failed member cannot be - but the label `number` carries reads as a tweak to a spec, not
+as the approval of a picture. A person who came to approve sees no approve button.
+
+What polyweave should do: when a member failed a bound, label the `number` choice as an
+acceptance that moves the bound (pt-BR: Aceitar e ajustar o limite; en: Accept and move
+the bound), and say under it which bound moves and to what measured value. Keep `accept`
+hidden for that member, as now. Optionally, show a line under the buttons explaining why
+Accept is absent ("this member failed median-tone; accepting it moves that bound").
+
+### §PW487 A sweep that keeps what its runs printed
+
+Found in Cottony, RK150 (2026-10-16), sweeping the goal count of level 20 with the
+careless spike bot:
+
+    python -m polyweave engine.sweep --script .polyweave/spike/bot.gd --grid @.polyweave/spike/grid.json --pattern "level:" --args=--seeds=200 --args=--bot=careless --args=--levels=20-20 --lanes 4
+
+Two answers misled on the way.
+
+1. Every run came back `no-signal` at about 4 seconds. The cause was the default frame
+   budget of 6000 ending a run that prints its line once at the end; the `why` does name
+   the budget as a possibility, but a run that the budget killed and a run that never
+   printed read the same. `--frames 2000000` fixed it. A run cut off by the budget should
+   say so as its own verdict (`budget`), with the frame it reached.
+
+2. With a hit, `lines` held `["level:"]`, the matched text only, not the line the script
+   printed. Every number the run measured (wins, spare moves) was on that line and
+   dropped. The workaround was a pattern of `level: .*` so the match is the line.
+
+What polyweave should do: keep the whole printed line of each hit in `lines` (or add
+`line` beside the match), and give a budget-ended run its own verdict. With both, a
+parameter sweep reads its measurements straight off the answer.
+
+### §PW488 A capture that knows what it read
+
+Found in Cottony, RK155 (2026-10-16). After re-baking
+`docs/design/art/ui/booster_tray.png`, the three screen captures that draw it were
+re-taken:
+
+    python tools/capture_screens.py tools/capture/board.gd tools/capture/strike.gd tools/capture/card.gd
+
+Each came back OK, and two carried this warning:
+
+    SAME SETTINGS, DIFFERENT PICTURE: screenshot-card.png: the same declared settings produced
+    different bytes ... so something this picture depends on is not declared
+
+The picture changed because a sprite it draws changed, which is the reason it was
+re-taken. The capture's provenance records the script's hash and the declared settings
+(locale, resolution, seed) but not the assets the scene loaded, so a legitimate change
+and a real non-determinism (RK164's strike flash) read the same. The warning is right
+only half the time, and the half it is wrong is the common one.
+
+What polyweave should do: record in a capture's provenance the hashes of the project
+files the run read (Godot can list loaded resources, or the capture can hash what
+`res://` paths it opened), and say "a dependency changed: <path>" when one did, keeping
+SAME SETTINGS, DIFFERENT PICTURE for the case where nothing it read moved.
+
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once
@@ -495,7 +624,9 @@ The census from Block H counts which of Cottony's levels are made this way. The 
 curve is the part to watch: it is still a formula for levels nobody declared, and the
 probe can at least sample it. Probing levels 21 to 200 from the curve and reporting
 where they leave the set spec's bounds says whether the endless tail keeps the promise
-the first twenty make.
+the first twenty make. Cottony's RK150 (2026-10-16) set that bar by hand: the careless
+spike bot, swept with engine.sweep, put level 20 at 64 to 66% wins, against the owner's
+60%.
 
 ### §PW327 Playtest traces measured beside the declared curve
 
@@ -516,6 +647,33 @@ What starship needs from polyweave:
 
 Until it lands, starship keeps the pass in `dev/` as the thinnest workaround, named
 against this line.
+
+### §PW480 Objects told from a scene of their own colour
+
+Found in Spinhold on 2026-10-16 (RK198), re-reading Resogun's phase 1 from the owner's
+capture (`reference.register` as `resogun_p1`, 170 frames from `reference.frames`).
+
+The enemies are violet and blue-violet, and so is the city behind them: a violet ring,
+navy towers, pink-lit edges. `reference.objects` was called three times on
+`.polyweave/references/resogun_p1`, area `[0, 180, 1920, 1080]`:
+
+- pod `#604ba0` tol 0.12, samples (two 76 px crops), match 0.25, and chain `#282670`
+  tol 0.10, one sample: 9595 tracks, the city counted everywhere.
+- pod alone, tol 0.06, match 0.12: 0 tracks.
+- pod alone, tol 0.10, match 0.20: 987 tracks; `objects_004.png` shows most of them on
+  buildings and the ring, while the stack of pods at 0:28.5 is partly missed.
+
+No step between those settles it: hue and an average colour distance to a sample cannot
+tell a lit studded sphere from a lit window of the same hue. Colours were also taken by
+a throwaway PIL snippet, since nothing picks a kind's colour or sample from a point.
+
+What polyweave should do: separate objects from a busy scene by more than colour, using
+what the footage gives: motion against the scrolling background (frame differencing
+after aligning the scene), shape (a sample's silhouette, not its mean colour), and the
+white warp-in each enemy makes a second before it is live. And `reference.sample(frames,
+at, box, name)` to cut a kind's sample and read its colour from a frame. Until then
+Spinhold's RK198 cites frames, not tracks, and its comparison with `phase_poc` waits on
+this line.
 
 ## Block S — Playing the game, not only rendering it
 
@@ -604,3 +762,48 @@ needs a door into them (PW398, docs/specs/kit.md: `adopted()` and `ADOPTED`). Th
 own side is Cottony's RK151. Done when Cottony carries neither file, its own save test
 is replaced by the kit's acceptance, a save written by the current release loads after
 the swap, and its gate passes.
+
+### §PW484 Kit scripts that cannot shadow a game's classes
+
+Found in Spinhold on 2026-10-16 (RK216), the game the input kits were extracted from.
+`kit.install --name players` (prompts 0.5.0, remap 0.6.1, players 0.2.0) installed, then
+every proof failed. Run directly (`godot --headless --path . -s
+res://addons/polyweave/players/proof.gd`):
+
+- `Parse Error: Value of type "PolyweaveBindings" cannot be assigned to a variable of
+  type "Bindings"` and `Invalid argument for "rebind()"`: players.gd says
+  `const Bindings := preload("res://addons/polyweave/remap/bindings.gd")` and types
+  `var _store: Bindings`, but Spinhold has its own `class_name Bindings`
+  (game/core/bindings.gd), and the type annotation resolves to the game's global class.
+- `Unable to iterate on value of type "Callable"` at players/proof.gd:39,
+  `players._store.actions`: the same name, read as the game's static `actions()`.
+- the remap proof timed out after the same parse errors.
+
+A kit cannot assume a word is free in the game it lands in: `Bindings`, `Prompts`,
+`Players`, `Settings` are exactly the names a game that needs these kits already uses.
+
+What polyweave should do: every script in a kit names its own classes by their
+`Polyweave` class_name (or a preload const that cannot shadow, such as `_PwBindings`),
+never a bare common word; `kit.prove` runs each proof in a fixture that also declares
+globals named like the kit's concepts (`Bindings`, `Prompts`, `Players`, `Settings`), so
+a shadowed name fails in polyweave's gate; and `kit.install` reports a parse error with
+its file and line in `proved.first`, not `script-error` or `timed-out`.
+
+### §PW485 A kit's proof reads names in its own locale
+
+Found in Spinhold on 2026-10-16 (RK216). `kit.install --name players` ran the prompts
+kit's proof in the game, and it failed on words, not behaviour:
+
+`KIT FAILED: a key's name ignores the string table: ESPAÇO; button:0 on generic reads
+SUL, not SOUTH; axis:2:-1 on xbox reads RS ESQUERDA, not RS LEFT; button:12 on xbox
+reads D-BAIXO, not D-DOWN; key:32 on xbox reads ESPAÇO, not SPACE; ... a watched label
+did not follow the keyboard: PRESS ESPAÇO`
+
+Spinhold has `KEYNAME_` and `PAD_` rows in Portuguese, and the machine runs in pt-BR, so
+the game's own language code put the locale at pt_BR before the proof read a name. The
+names were read through the table correctly; the proof expected English. "ignores the
+string table" says the opposite of what happened.
+
+What polyweave should do: a kit's proof sets the locale it asserts in (`en`, or reads
+the expected word from the table itself) before it reads a name, and restores it; and a
+finding about a translated name says which locale it was read in.
