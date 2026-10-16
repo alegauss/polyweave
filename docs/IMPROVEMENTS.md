@@ -190,6 +190,28 @@ should be refused or said, as `tick` is.
 The same seam laid along a picture's alpha silhouette (a `picture` pass, inset from the
 edge and clipped to the body), so a baked prop and a drawn panel are sewn by one needle.
 
+### §PW475 A failed member says by how much
+
+Found in Cottony on 2026-10-16, re-baking the booster tray after its drawn face got a
+new seam. `python -m polyweave port.run --family tools/art/booster_tray.family.toml`
+answered:
+
+    passed: false
+    members.booster_tray.failed: ["reads-cream"]
+    says: not every member passed, so nothing was baked
+
+With `--json` the member carries the same list of ids and nothing else. Whether the
+render missed by a hair or by a mile was only found by running, by hand, `accept.check
+--spec docs/design/accept/booster_tray.accept.toml --subject
+.polyweave/trays/booster_tray.port.png --rung final`, which printed `value: 4.952926`
+against `max = 4.75`. That margin is the whole of the next decision: a hair is a look
+for a person to take or refuse on the review page, a mile is a defect.
+
+Each failed predicate in a member's answer should carry its id, the measured value, the
+bound it crossed (`max` or `min`) and how far past it, the way `accept.check` already
+prints them, plus the path of the render it was measured on, so the check never has to
+be re-run to learn what the run already knew.
+
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once

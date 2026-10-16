@@ -22,6 +22,7 @@
 - 📋 **PW472** (deps: —) **a panel's outline is a box with cut corners, so a pill, a rounded card or a lobed banner cannot be declared** — Every panel in a soft style is drawn against an outline the game computes, which the panel kit was built to stop. → §PW472
 - 📋 **PW473** (deps: —) **a panel's fill is one flat colour, so a felt or candy body with light, shade and grain cannot be declared** — A soft style's look is its material, and while that lives in game code no spec holds it and no second game can reuse it. → §PW473
 - 📋 **PW474** (deps: —) **a panel cannot carry a sewn seam, so a craft-styled game draws its stitches in its own code** — Cottony's stitches read as a road marking until it wrote shading, shadow and needle holes itself, and the next craft game writes them again. → §PW474
+- 📋 **PW475** (deps: —) **port.run names a failed predicate but not what it measured, so the margin takes a second accept.check by hand** — Whether a member missed by a hair or by a mile decides what happens next, and the run already knew it. → §PW475
 
 ## Block I — Voxel models from a declaration
 
