@@ -608,6 +608,15 @@ fifth of its pixels moved. A city scrolling with the camera drops out and an ene
 through it stays. objects.json keeps `motion` and, per frame, the `scroll` it found in
 the video's pixels, `[across, down]`.
 
+`reference.sample(frames, at, box, name)` cuts a kind's sample from the frame nearest
+second `at`: the `box` `[left, top, right, bottom]` in the video's pixels lands beside
+the frames as `samples/<name>.png`, recorded with that frame as its input, ready to
+name in a kind's `samples`. It answers the frame it took and the kind's `colour` as
+`#rrggbb`: the median of the crop's pixels that stand more than 0.15 of the widest
+colour distance off the median of its border, the object rather than what is behind it,
+or of the whole crop where nothing stands off. Cut it tight, since a kind's samples are
+matched against an island's own box.
+
 Detections become tracks, joined to the nearest of their kind in the next frame within
 `speed` (a share of the frame's width a second): each track has its first and last
 second, its path, and how it ended: `left` where its last sight was at the frame's edge,

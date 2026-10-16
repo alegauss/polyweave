@@ -133,7 +133,8 @@ from polyweave.errors import PolyweaveError
 #: 143,864 with picture.vector's sweep, strip and whole, one loop from one source.
 #: 144,745 with reference.concept, a capture held to its painting (§PW477).
 #: 144,952 with reference.objects' motion, a scene of the enemies' hue (§PW480).
-DESCRIBE = 145_000
+#: 145,800 with reference.sample, a kind's crop and colour from a frame (§PW480).
+DESCRIBE = 145_900
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -246,7 +247,8 @@ DESCRIBE = 145_000
 #: 158,273 with reference.concept and capture.bad-concept (§PW477).
 #: 158,320 with compose.empty-layer and compose.ambiguous-id (§PW478).
 #: 158,527 with reference.objects' motion (§PW480).
-CAPABILITIES = 158_600
+#: 159,375 with reference.sample (§PW480).
+CAPABILITIES = 159_500
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
@@ -305,7 +307,8 @@ HELP_VERB = 4_900
 #: 31,060 with game.pack (§PW470).
 #: 31,210 with picture.sew (§PW474).
 #: 31,375 with reference.concept (§PW477).
-HELP_TOP = 31_400
+#: 31,531 with reference.sample (§PW480).
+HELP_TOP = 31_600
 #: A search's answer over its default budget of 24 samples: 3,739.
 #: 4,019 where it fails with its best on an edge, which `at_bound` and `stopped` now
 #: say, so a range that cut the answer off is not read as unreachable (§PW442).

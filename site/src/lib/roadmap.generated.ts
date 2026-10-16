@@ -173,7 +173,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW480",
     block: "R",
     symptom: "reference.objects counts a background of the enemies' own hue as enemies, so a busy reference cannot be counted",
-    why: "A kind told by its silhouette rather than its mean colour, the warp-in that marks an enemy going live, and reference.sample cutting a kind's sample are still to come.",
+    why: "A kind told by its silhouette, the warp-in that marks an enemy going live, and Resogun's own phase counted are still to come.",
     deps: [],
   },
   {

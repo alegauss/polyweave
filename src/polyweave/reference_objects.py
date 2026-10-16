@@ -416,6 +416,63 @@ def _sheet(folder: Path, listed: list, tracks: list[dict]) -> list[Path]:
     return made
 
 
+@operation("reference.sample")
+def sample(
+    frames: Annotated[
+        str, Param("the folder reference.frames wrote, or its frames.json")
+    ],
+    at: Annotated[float, Param("the second of the frame to cut from", lo=0.0,
+                               unit="s")],
+    box: Annotated[list, Param("[left, top, right, bottom] pixels of the kind")],
+    name: Annotated[str, Param("the kind's name, which the sample is written as")],
+    root: Annotated[str, Param("the project the frames are under")] = ".",
+) -> dict:
+    """Cut a kind's sample from the frame nearest a second, and read its colour.
+
+    The crop lands beside the frames as samples/<name>.png, recorded with the frame it
+    came from, ready to name in a kind's `samples`. Its colour is the median of the
+    pixels that stand off the crop's own border, the object rather than what is behind
+    it, as #rrggbb for the kind's `colour` (§PW480).
+    """
+    from PIL import Image as Pil
+
+    here = load(root).root
+    manifest, listed = _manifest(frames, here)
+    shown = listed.get("frames", [])
+    if not shown:
+        raise _bad(f"{frames} lists no frames", "read frames with reference.frames")
+    if not (isinstance(box, list) and len(box) == 4 and all(
+            isinstance(v, int | float) for v in box) and box[0] < box[2]
+            and box[1] < box[3]):
+        raise _bad(f"box is {box!r}", "write it as [left, top, right, bottom] pixels")
+    if not re.fullmatch(r"[A-Za-z0-9_-]+", str(name)):
+        raise _bad(f"name is {name!r}", "name the kind with letters, digits, _ or -")
+    nearest = min(shown, key=lambda one: abs(one["ms"] / 1000 - float(at)))
+    with Pil.open(manifest.parent / nearest["file"]) as frame:
+        crop = frame.convert("RGB").crop(tuple(int(v) for v in box))
+    pixels = np.asarray(crop, dtype=np.float64)
+    border = np.concatenate([pixels[0], pixels[-1], pixels[:, 0], pixels[:, -1]])
+    behind = np.median(border, axis=0)
+    apart = np.sqrt(((pixels - behind) ** 2).sum(axis=2))
+    body = pixels[apart > 0.15 * math.sqrt(3) * 255.0]
+    colour = np.median(body if len(body) else pixels.reshape(-1, 3), axis=0)
+    target = manifest.parent / "samples" / f"{name}.png"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    crop.save(target)
+    provenance.write(provenance.build(
+        "capture", target, engine={"name": "reference.sample"},
+        inputs=[provenance.source("frame", manifest.parent / nearest["file"],
+                                  root=here)],
+        params={"at": nearest["ms"] / 1000, "box": [int(v) for v in box],
+                "name": str(name)},
+        root=here,
+    ), root=here)
+    return {"sample": provenance.relative(target, here),
+            "colour": "#" + "".join(f"{round(v):02x}" for v in colour),
+            "frame": nearest["file"], "at": nearest["ms"] / 1000,
+            "body_share": round(len(body) / pixels[..., 0].size, 3)}
+
+
 @operation("reference.objects")
 def objects(
     frames: Annotated[

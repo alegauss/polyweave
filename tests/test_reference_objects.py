@@ -96,6 +96,25 @@ def test_a_city_of_the_enemies_hue_is_left_out_by_its_motion(tmp_path):
     assert track["path"][-1][2] > track["path"][0][2]  # [at, x, y]: it fell
 
 
+def test_a_kinds_sample_is_cut_and_its_colour_read_from_a_frame(tmp_path):
+    """§PW480: no throwaway script picks a kind's colour or its crop."""
+    source = film(tmp_path)
+    # Tight on the square, as a kind's sample is matched against an island's own box.
+    taken = reference_objects.sample(source, 0.4, [634, 364, 647, 377], "mutant",
+                                     root=str(tmp_path))
+    assert taken["sample"] == ".polyweave/references/clip/samples/mutant.png"
+    assert taken["frame"] == "t00000500.png"
+    # The object's colour, not the night behind it.
+    assert taken["colour"] == "#ff3dcb"
+    record = provenance.read(str(tmp_path / taken["sample"]), root=tmp_path)
+    assert record["inputs"][0]["path"].endswith("t00000500.png")
+    # And it is a sample reference.objects takes as it is.
+    kinds = {"mutant": {"colour": taken["colour"], "size": [40, 400],
+                        "samples": [taken["sample"]]}}
+    made = reference_objects.objects(source, kinds, root=str(tmp_path))
+    assert json.loads((tmp_path / made["objects"]).read_text("utf-8"))["tracks"]
+
+
 def test_objects_are_counted_followed_and_grouped(tmp_path):
     made = reference_objects.objects(film(tmp_path), KINDS, root=str(tmp_path))
     written = json.loads((tmp_path / made["objects"]).read_text("utf-8"))

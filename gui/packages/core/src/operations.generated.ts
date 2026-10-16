@@ -1634,6 +1634,20 @@ export interface ReferenceRegisterArgs {
   root?: string
 }
 
+/** Cut a kind's sample from the frame nearest a second, and read its colour. */
+export interface ReferenceSampleArgs {
+  /** the folder reference.frames wrote, or its frames.json */
+  frames: string
+  /** the second of the frame to cut from; from 0 to …; in s */
+  at: number
+  /** [left, top, right, bottom] pixels of the kind */
+  box: unknown[]
+  /** the kind's name, which the sample is written as */
+  name: string
+  /** the project the frames are under; default "." */
+  root?: string
+}
+
 /** Which rows of a transcription a person answered, and what they corrected. */
 export interface ReferenceTranscribedArgs {
   /** the transcription file the sitting was laid out from */
@@ -2573,6 +2587,7 @@ export interface Operations {
   "reference.prepare": ReferencePrepareArgs
   "reference.regions": ReferenceRegionsArgs
   "reference.register": ReferenceRegisterArgs
+  "reference.sample": ReferenceSampleArgs
   "reference.transcribed": ReferenceTranscribedArgs
   "reference.transcription": ReferenceTranscriptionArgs
   "render.bake": RenderBakeArgs
@@ -2779,6 +2794,7 @@ export const OPERATIONS = [
   "reference.prepare",
   "reference.regions",
   "reference.register",
+  "reference.sample",
   "reference.transcribed",
   "reference.transcription",
   "render.bake",
