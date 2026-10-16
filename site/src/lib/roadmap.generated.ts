@@ -65,13 +65,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW82"],
   },
   {
-    id: "PW474",
-    block: "H",
-    symptom: "a panel cannot carry a sewn seam, so a craft-styled game draws its stitches in its own code",
-    why: "The same seam laid along a picture's alpha silhouette, inset from its edge and clipped to its body, is still to be built.",
-    deps: [],
-  },
-  {
     id: "PW475",
     block: "H",
     symptom: "port.run names a failed predicate but not what it measured, so the margin takes a second accept.check by hand",
@@ -153,6 +146,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "a capture whose shader failed to compile answers ok, so panel.capture hands back stills of the bare white rect",
     why: "The engine runner never reads SHADER ERROR, so a broken shader is found only by a pixel assertion, if one exists.",
+    deps: [],
+  },
+  {
+    id: "PW490",
+    block: "H",
+    symptom: "panel.capture films a panel only at its declared size, so how its shader draws it grown is never seen",
+    why: "A seam's pitch, a pill's ends and a grain's size at another width are what the shader route exists for, and no still holds them.",
     deps: [],
   },
   {

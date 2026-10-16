@@ -396,8 +396,11 @@ def _stitches(path: np.ndarray, seam: dict, scale: float) -> list[np.ndarray]:
     return out
 
 
-def _sewn(seam: dict, stitches: list[np.ndarray], cloth: tuple, big: tuple[int, int]):
-    """Thread sewn through cloth: round and lit, standing off it, going through it."""
+def _sewn(seam: dict, stitches: list[np.ndarray], cloth: Any, big: tuple[int, int]):
+    """Thread sewn through cloth: round and lit, standing off it, going through it.
+
+    `cloth` is the colour under the seam, or the picture under it pixel by pixel, which
+    the shadow and the holes are darkened from, so they never go grey."""
     from PIL import Image, ImageDraw, ImageFilter
 
     width = seam["width"] * SUPER
@@ -414,14 +417,18 @@ def _sewn(seam: dict, stitches: list[np.ndarray], cloth: tuple, big: tuple[int, 
                 pen.ellipse((x - r, y - r, x + r, y + r), fill=255)
         return mask
 
-    def darker(t: float) -> tuple[int, int, int]:
-        return tuple(round(part * (1.0 - 0.66 * min(t, 1.0))) for part in cloth[:3])
+    def darker(t: float) -> Image.Image:
+        keep = 1.0 - 0.66 * min(t, 1.0)
+        if isinstance(cloth, np.ndarray):
+            return Image.fromarray((cloth[..., :3] * keep).round().astype(np.uint8),
+                                   "RGB").convert("RGBA")
+        return Image.new("RGBA", big, (*(round(c * keep) for c in cloth[:3]), 255))
 
     layer = Image.new("RGBA", big, (0, 0, 0, 0))
     if seam["shadow"]:
         cast = stroke(stitches, width * 1.15, (width * 0.18, width * 0.42))
         cast = cast.filter(ImageFilter.GaussianBlur(width * 0.35))
-        tint = Image.new("RGBA", big, (*darker(0.75), 255))
+        tint = darker(0.75)
         tint.putalpha(cast.point(lambda a: round(a * 0.55 * seam["shadow"])))
         layer = Image.alpha_composite(layer, tint)
     if seam["holes"]:
@@ -434,7 +441,7 @@ def _sewn(seam: dict, stitches: list[np.ndarray], cloth: tuple, big: tuple[int, 
             for end, sign in ((stitch[0], -1.0), (stitch[-1], 1.0)):
                 x, y = end + tangent * sign * width * 0.45
                 pen.ellipse((x - r, y - r, x + r, y + r), fill=255)
-        tint = Image.new("RGBA", big, (*darker(1.1), 255))
+        tint = darker(1.1)
         tint.putalpha(pits.point(lambda a: round(a * 0.85 * seam["holes"])))
         layer = Image.alpha_composite(layer, tint)
     body = stroke(stitches, width)
@@ -1249,6 +1256,97 @@ def build(
     if swept:
         answer["wipes"] = swept
     return answer
+
+
+def _eroded(mask: np.ndarray, by: int) -> np.ndarray:
+    """A mask worn `by` pixels in from its edge, alternating a square step and a cross
+    step so it wears nearly round rather than square."""
+    out = mask.astype(bool)
+    for step in range(by):
+        padded = np.pad(out, 1, constant_values=False)
+        kept = (padded[:-2, 1:-1] & padded[2:, 1:-1] & padded[1:-1, :-2]
+                & padded[1:-1, 2:] & out)
+        if step % 2:
+            kept &= (padded[:-2, :-2] & padded[:-2, 2:] & padded[2:, :-2]
+                     & padded[2:, 2:])
+        out = kept
+    return out
+
+
+@operation("picture.sew")
+def sew(
+    source: Annotated[str, Param("the picture to sew, relative to the project")],
+    *,
+    out: Annotated[str, Param("the sewn picture's path, relative to the project")],
+    seam: Annotated[
+        dict, Param("the seam, as a panel's: thread, inset, dash, gap, width, shading, "
+                    "shadow, holes, jitter, seed")
+    ],
+    root: Annotated[str, Param("the project the picture belongs to")] = ".",
+) -> dict:
+    """Sew a picture's silhouette with the seam a panel is sewn with, and record it.
+
+    The outline is traced off the picture's alpha at the project's alpha floor, the
+    stitches laid `inset` pixels inside it by arc length, and every effect clipped to
+    the body: the shadow and the holes darkened from the picture under them, pixel by
+    pixel, so a seam on a red prop falls into a deeper red (§PW474).
+    """
+    from PIL import Image
+
+    from . import provenance
+    from .geometry import outline as geometry
+    from .image import load as load_image
+
+    config = load(root)
+    where = config.path("paths.work", source)
+    target = config.path("paths.work", out)
+    try:
+        _keys(source, "seam", seam, list(SEAM))
+        stated = _seam(source, seam) or _seam(source, {"thread": None})
+    except PolyweaveError as exc:
+        raise PolyweaveError("compose.bad-seam",
+                             exc.message.replace(f"panel {source}: ", f"{source}: "),
+                             exc.remedy, **{k: v for k, v in exc.as_dict().items()
+                                            if k in ("given", "allowed")}) from exc
+    picture = load_image(where)
+    floor = float(config.get("tolerance.alpha_floor"))
+    body = np.repeat(np.repeat(picture.subject(floor), SUPER, axis=0), SUPER, axis=1)
+    # Eroded rather than offset: a star's tips would cross an offset outline into loops.
+    inner = _eroded(body, stated["inset"] * SUPER)
+    if not inner.any():
+        raise PolyweaveError("compose.bad-seam",
+                             f"{source}: its silhouette is too small to sew at inset "
+                             f"{stated['inset']}", "sew a larger picture, or a smaller "
+                             "inset")
+    path = geometry.simplify(geometry.trace(inner), SUPER * 0.5) + 0.5
+    with Image.open(where) as opened:
+        drawn = opened.convert("RGBA")
+    size = drawn.size
+    big = (size[0] * SUPER, size[1] * SUPER)
+    stitches = _stitches(path, stated, SUPER)
+    if not stitches:
+        raise PolyweaveError("compose.bad-seam",
+                             f"{source}: its silhouette is too small to sew at inset "
+                             f"{stated['inset']}", "sew a larger picture, or a smaller "
+                             "inset")
+    large = drawn.resize(big, Image.Resampling.BILINEAR)
+    cloth = np.asarray(large, dtype=float)
+    sewn = _sewn(stated, stitches, cloth, big)
+    clipped = Image.new("RGBA", big, (0, 0, 0, 0))
+    clipped.paste(sewn, (0, 0), large.getchannel("A"))
+    result = Image.alpha_composite(drawn, clipped.resize(size, Image.Resampling.BOX))
+    target.parent.mkdir(parents=True, exist_ok=True)
+    result.save(target)
+    provenance.write(provenance.build(
+        "picture", target, engine={"name": "picture.sew"},
+        inputs=[provenance.source("picture", where, config.root)],
+        params={"seam": {k: list(v) if isinstance(v, tuple) else v
+                         for k, v in stated.items()}},
+        root=config.root,
+    ), config.root)
+    return {"file": provenance.relative(target, config.root),
+            "source": provenance.relative(where, config.root),
+            "stitches": len(stitches), "size": list(size)}
 
 
 #: What films one built item: a ColorRect wearing each material in turn, each held for

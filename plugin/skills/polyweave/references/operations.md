@@ -25,7 +25,7 @@
 | Scale against the engine | `units.check`, `units.engine_scale`, `units.read_number` |
 | World | `world.read`, `world.validate`, `voice.design`, `voice.choose`, `voice.lines`, `words.check`, `words.unlisted`, `words.glyphs`, `words.sheet` |
 | Music | `music.validate`, `music.to_midi`, `music.render`, `sound.synth`, `sound.loop` (a recorded track), `sound.buy`, `sound.speak` (paid) |
-| Visual effects | `vfx.build`, `vfx.preview`, `panel.build` (a menu panel), `panel.capture`, `icons.build` |
+| Visual effects | `vfx.build`, `vfx.preview`, `panel.build`, `panel.capture`, `picture.sew`, `icons.build` |
 | A teaser | `video.cut` (captures to MP4) |
 | A project's look | `style.read`, `style.drift` (before a person looks), `style.train` |
 | Buy a drawing | `picture.buy`, `picture.gate`, `picture.letters`, `picture.describe`, `picture.vary`, `picture.against_parent`, `picture.fit`, `picture.collect` |

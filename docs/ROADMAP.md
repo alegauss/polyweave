@@ -18,7 +18,6 @@
 
 - 🛠 **PW372** (deps: Spinhold RK215) **a camera move cannot be declared as a clip or played by the game, so a cutscene's shots are numbers in the project** — No shot is yet captured onto a sitting for a person to accept, and Starship's opening still reads its own JSON. → §PW372
 - 🛠 **PW36** (deps: PW5 ✅, PW82 ⏸) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82. → §PW36
-- ⏳ **PW474** (deps: —) **a panel cannot carry a sewn seam, so a craft-styled game draws its stitches in its own code** — The same seam laid along a picture's alpha silhouette, inset from its edge and clipped to its body, is still to be built. → §PW474
 - 📋 **PW475** (deps: —) **port.run names a failed predicate but not what it measured, so the margin takes a second accept.check by hand** — Whether a member missed by a hair or by a mile decides what happens next, and the run already knew it. → §PW475
 - 📋 **PW476** (deps: —) **picture.vector draws one still, so a vector layer that loops through an attribute needs a hand-made source per frame** — A turning orbit or a pulsing stroke becomes eight SVGs and eight records that never say they are one loop. → §PW476
 - 📋 **PW477** (deps: —) **a capture cannot be held to the concept painting it copies, region by region, at another size and aspect** — Reaching a concept art is the goal of a whole art pass, and with nothing to measure it every step is judged by eye. → §PW477
@@ -31,6 +30,7 @@
 - 📋 **PW487** (deps: —) **engine.sweep keeps only the matched text of a hit, and a run its frame budget ended reads as one that never printed** — Cottony's level sweep lost every measured number off the line and first read seven budget-killed runs as no-signal. → §PW487
 - 📋 **PW488** (deps: —) **a capture warns same settings, different picture when only a sprite the scene draws changed, as if it were noise** — PW71's warning cannot tell a re-taken picture's changed asset from real non-determinism, so it cries wolf on every legitimate re-take. → §PW488
 - 📋 **PW489** (deps: —) **a capture whose shader failed to compile answers ok, so panel.capture hands back stills of the bare white rect** — The engine runner never reads SHADER ERROR, so a broken shader is found only by a pixel assertion, if one exists. → §PW489
+- 📋 **PW490** (deps: —) **panel.capture films a panel only at its declared size, so how its shader draws it grown is never seen** — A seam's pitch, a pill's ends and a grain's size at another width are what the shader route exists for, and no still holds them. → §PW490
 
 ## Block I — Voxel models from a declaration
 
@@ -126,15 +126,6 @@
   ink on the faced kinds, no pale ring of marks round a rim, and the kinds' silhouettes
   kept apart is either a predicate in a Cottony acceptance spec over the committed piece
   sheet, or recorded as a test a person chose to keep.
-
-## Done when — PW474
-
-- **The shader sews the seam at the Control's own size** panel.build(shader=true) no
-  longer says not_in_shader: ["seam"], and a filmed panel grown wider keeps its stitch
-  pitch.
-- **A picture's silhouette is sewn by the same needle** A picture pass lays the seam
-  inset from a baked render's alpha edge, clipped to the body, with the same four
-  effects as a panel's.
 
 ## Non-goals
 

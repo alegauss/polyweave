@@ -339,6 +339,64 @@ def test_a_seam_with_its_effects_off_is_a_plain_dash_and_the_seed_moves_it(tmp_p
     assert (pixels(tmp_path, "ui/play.normal.png") != two).any()
 
 
+def prop(tmp_path) -> str:
+    """A red disc on transparent paper, as a baked render comes out."""
+    from PIL import ImageDraw
+
+    (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
+    picture = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
+    ImageDraw.Draw(picture).ellipse((4, 4, 59, 59), fill=(0xC0, 0x30, 0x40, 255))
+    (tmp_path / "art").mkdir(exist_ok=True)
+    picture.save(tmp_path / "art" / "prop.png")
+    return "art/prop.png"
+
+
+def test_a_pictures_silhouette_is_sewn_with_the_panels_needle(tmp_path):
+    """§PW474: a baked prop and a drawn panel are sewn by one needle."""
+    from polyweave import describe
+
+    made = describe._REGISTRY["picture.sew"].fn(
+        prop(tmp_path), out="art/prop.sewn.png",
+        seam={"thread": "#fff4f0", "inset": 5, "dash": 4, "gap": 3, "width": 1.5},
+        root=str(tmp_path))
+    assert made["file"] == "art/prop.sewn.png"
+    assert made["stitches"] > 15
+    sewn = pixels(tmp_path, made["file"])
+    plain = pixels(tmp_path, "art/prop.png")
+    # Thread along a ring inside the edge, the middle and the paper untouched.
+    ring = sewn[9:12, 24:40, :3].sum(axis=2)
+    assert ring.max() > 0xC0 + 0x30 + 0x40 + 300
+    assert (sewn[32, 32] == plain[32, 32]).all()
+    assert (sewn[0, 0] == plain[0, 0]).all()
+    # The shadow falls in the prop's own red.
+    changed = (sewn[..., :3] != plain[..., :3]).any(axis=2)
+    dark = sewn[changed & (sewn[..., :3].sum(axis=2) < 0xC0 + 0x30 + 0x40 - 30)]
+    assert len(dark)
+    assert (dark[:, 0] > dark[:, 1]).all()
+    record = provenance.read(str(tmp_path / made["file"]), root=tmp_path)
+    assert record["inputs"][0]["path"] == "art/prop.png"
+    assert record["params"]["seam"]["inset"] == 5
+
+
+@pytest.mark.parametrize(
+    ("seam", "said"),
+    [
+        ({"inset": 3}, "seam has no thread"),
+        ({"thread": "#ffffff", "needle": 1}, "no key 'needle'"),
+        ({"thread": "#ffffff", "inset": 40}, "too small to sew"),
+    ],
+)
+def test_a_picture_that_cannot_be_sewn_is_refused(tmp_path, seam, said):
+    from polyweave import describe
+
+    source = prop(tmp_path)
+    with pytest.raises(PolyweaveError) as refused:
+        describe._REGISTRY["picture.sew"].fn(source, out="art/x.png", seam=seam,
+                                             root=str(tmp_path))
+    assert refused.value.code == "compose.bad-seam"
+    assert said in refused.value.message + refused.value.remedy
+
+
 @pytest.mark.parametrize(
     ("change", "said"),
     [

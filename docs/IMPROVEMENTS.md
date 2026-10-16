@@ -101,30 +101,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW474 A seam a panel or a picture is sewn with
-
-Found in Cottony on 2026-10-16. Its owner read every stitch as a road marking: a flat
-dashed stroke at 75% opacity. Cottony fixed it in game code, `sewn()` in
-`tools/art/plush.py`, called from `make_assets.py` and from `markings.py`, which
-stitches a baked render's silhouette. `panel.build` has no part for it.
-
-What reads as sewn, measured by the owner's eye on the PLAY button:
-
-- an opaque, round thread, lit along its upper side and shaded along the lower, with a
-  faint twist of plies across it;
-- a soft shadow each stitch lays on the cloth, darkened from the cloth's own colour so it
-  never goes grey;
-- a needle hole past either end of every stitch, where the thread goes under;
-- a seeded jitter of angle and offset, so it is regular without being ruled.
-
-The `seam` part has landed on the build route (docs/specs/panel.md). On the shader route
-it is drawn by arc length at the Control's real size, so a panel grown to fit a longer
-translation keeps its stitch pitch; a nine-patch would stretch the stitches in its
-middle, which should be refused or said, as `tick` is.
-
-The same seam laid along a picture's alpha silhouette (a `picture` pass, inset from the
-edge and clipped to the body), so a baked prop and a drawn panel are sewn by one needle.
-
 ### §PW475 A failed member says by how much
 
 Found in Cottony on 2026-10-16, re-baking the booster tray after its drawn face got a
@@ -387,6 +363,26 @@ the engine prints as `at: (null) (res://ui/card.gdshader:142)`. `panel.capture` 
 refuses a film whose `ok` is false as `compose.unfilmed`, so the refusal then names the
 shader's error rather than handing back white stills. A test: a panel whose shader is
 broken on purpose is refused, not filmed.
+
+### §PW490 A panel filmed at the sizes it will be drawn
+
+Found in polyweave on 2026-10-16, shipping PW474. The panel shader sews its seam by arc
+length at the Control's own size, which is the whole point of the shader route: a button
+grown to fit a longer translation keeps its stitch pitch, its pill ends and its
+material's grain size. PW474's criterion asked for a filmed panel grown wider to prove
+that, and it could not be written: `panel.capture` sizes the `ColorRect` from the
+state's declared `size` times `scale`, so every still is the panel at the size a
+nine-patch would also draw it at. What the shader does differently is never filmed.
+
+A `sizes` argument on `panel.capture`, a list of `[width, height]` in the panel's
+pixels, filming each state once per size as `<name>.<state>.<w>x<h>.capture.png`,
+recorded with the size in its params. Left out, the declared size alone, as now. The
+screen grows to fit the largest at `scale`, or the call is refused naming the size that
+does not fit.
+
+With it, a test films the sewn panel at its size and at twice its width and holds the
+stitch count to the declared pitch at both, and a spec can hold a translated button's
+look at the width it will really be drawn.
 
 ## Block I — Voxel models from a declaration
 

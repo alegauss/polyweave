@@ -2419,6 +2419,15 @@ CODES: dict[str, Code] = {
         "size out of range, or no icon at all (§PW331)",
         doors=("declare each icon with a shape the refusal lists",),
     ),
+    "compose.bad-seam": Code(
+        means="a picture cannot be sewn with the seam asked for",
+        when="picture.sew given a seam with no thread, a key nothing reads, a number "
+        "out of its range, or a silhouette too small to lay a stitch inside (§PW474)",
+        doors=(
+            "name the thread's colour, and only the keys a panel's seam takes",
+            "sew a larger picture, or a smaller inset",
+        ),
+    ),
     "compose.bad-panel": Code(
         means="a menu panel's declaration cannot be drawn",
         when="a *.panel.toml missing or not TOML, a key nothing reads, a colour or "

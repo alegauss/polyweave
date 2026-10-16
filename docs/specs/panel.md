@@ -104,6 +104,16 @@ translation keeps its stitch pitch, with the same four effects drawn by the same
 though not to the pixel: the build lays its stitches with a seeded random draw, the
 shader with a hash of each stitch's index.
 
+`picture.sew(source, out=, seam=)` lays the same seam along a picture's silhouette, so
+a baked prop and a drawn panel are sewn by one needle. `seam` takes a panel seam's keys.
+The silhouette is the picture's alpha at the project's `[tolerance] alpha_floor`, worn
+`inset` pixels in, nearly round, rather than offset, so a star's tips never cross into
+loops. The stitches follow that inner edge by arc length, and every effect is clipped
+to the body, the shadow and the holes darkened from the picture under them pixel by
+pixel. The sewn picture lands at `out` with a record whose `picture` input is the source,
+and the answer says how many stitches it laid. A seam with no thread, a key no seam
+takes, or a silhouette that wears away before the inset is `compose.bad-seam`.
+
 A `piping` is the raised rim stuffed fabric is finished with: a band `width` pixels in
 from the outline, in its own `colour`, shaded across its width like a tube. `raise`, from
 0 (flat) to 1, is how far its crown is lit towards white and its flanks darkened in their

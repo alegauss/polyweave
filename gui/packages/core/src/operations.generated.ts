@@ -1220,6 +1220,18 @@ export interface PictureLettersArgs {
   root?: string
 }
 
+/** Sew a picture's silhouette with the seam a panel is sewn with, and record it. */
+export interface PictureSewArgs {
+  /** the picture to sew, relative to the project */
+  source: string
+  /** the sewn picture's path, relative to the project */
+  out: string
+  /** the seam, as a panel's: thread, inset, dash, gap, width, shading, shadow, holes, jitter, seed */
+  seam: Record<string, unknown>
+  /** the project the picture belongs to; default "." */
+  root?: string
+}
+
 /** Buy a variation of an approved picture, with its parent on the record. */
 export interface PictureVaryArgs {
   /** the approved picture, under the project */
@@ -2503,6 +2515,7 @@ export interface Operations {
   "picture.fit": PictureFitArgs
   "picture.gate": PictureGateArgs
   "picture.letters": PictureLettersArgs
+  "picture.sew": PictureSewArgs
   "picture.vary": PictureVaryArgs
   "picture.vector": PictureVectorArgs
   "port.run": PortRunArgs
@@ -2707,6 +2720,7 @@ export const OPERATIONS = [
   "picture.fit",
   "picture.gate",
   "picture.letters",
+  "picture.sew",
   "picture.vary",
   "picture.vector",
   "port.run",
