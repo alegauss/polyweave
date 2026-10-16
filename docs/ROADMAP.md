@@ -24,6 +24,9 @@
 - 📋 **PW474** (deps: —) **a panel cannot carry a sewn seam, so a craft-styled game draws its stitches in its own code** — Cottony's stitches read as a road marking until it wrote shading, shadow and needle holes itself, and the next craft game writes them again. → §PW474
 - 📋 **PW475** (deps: —) **port.run names a failed predicate but not what it measured, so the margin takes a second accept.check by hand** — Whether a member missed by a hair or by a mile decides what happens next, and the run already knew it. → §PW475
 - 📋 **PW476** (deps: —) **picture.vector draws one still, so a vector layer that loops through an attribute needs a hand-made source per frame** — A turning orbit or a pulsing stroke becomes eight SVGs and eight records that never say they are one loop. → §PW476
+- 📋 **PW477** (deps: —) **a capture cannot be held to the concept painting it copies, region by region, at another size and aspect** — Reaching a concept art is the goal of a whole art pass, and with nothing to measure it every step is judged by eye. → §PW477
+- 📋 **PW478** (deps: —) **picture.vector answers a layer that drew nothing like any other, so an empty layer is found only by opening it** — A duplicate id in the SVG gave Spinhold a fully transparent halo layer and a halo-less whole, with an answer that looked fine. → §PW478
+- 📋 **PW479** (deps: —) **a panel cannot declare a lit bevel, an inner hairline, a moving sweep, inset brackets or a glow by state** — Spinhold's accepted holo panel would lose those details moving to panel.build, so it stays a hand-written shader no spec holds. → §PW479
 
 ## Block I — Voxel models from a declaration
 

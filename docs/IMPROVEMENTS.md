@@ -226,14 +226,78 @@ its generator instead: `tools/art/make_brand.py` now writes eight extra SVGs,
 project calls `picture.vector` once per file. Eight sources, eight records, and nothing
 in any record says the eight are one loop or which attribute moved.
 
+A second cost: `out` is required and layers land beside it, so every call also writes a
+whole picture the game never draws (Spinhold sets those nine to Godot's `skip` importer
+by hand). Layers-only should be possible.
+
 What polyweave should do: `picture.vector` (or a sibling, `picture.vector_frames`) takes
 `sweep = {element: "#orbit-back", attribute: "stroke-dashoffset", from: 0, to: 23,
 frames: 8}` (several elements may share one sweep), draws each frame of each named
 layer, and writes one record naming the single source, the sweep and the frame files in
-order, optionally packed into one strip so the engine binds one texture. A loop whose
-last frame equals its first should be refused or trimmed, since a duplicate frame
-stutters. Spinhold's eight phase SVGs and the make_brand `phase` argument are then
-removed.
+order, optionally packed into one strip. A loop whose last frame equals its first should
+be refused or trimmed. Spinhold's phase SVGs and the make_brand `phase` argument then
+go.
+
+### §PW477 A capture held to its concept painting
+
+Found in Cottony on 2026-10-16, asked to reach its concept art pixel for pixel. The
+painting, `docs/design/screen1.png`, is 1024x1536 (2:3) and a capture is 1080x1920
+(9:16). `distance` compares two renders of one size, `accept.check_screen` holds an
+asset to its own spec, and `reference.compare` is for video.
+
+What is missing is a declared correspondence and a comparison across it:
+
+- a reference file naming regions in the painting and the same regions in a capture,
+  each a rectangle (or a quad, for a region the layout moved or scaled), so the layout
+  difference is stated once rather than measured into every number;
+- per region, after both are resampled to one size: CIEDE2000 between the two palettes
+  (k-means centres matched), saturation and luma percentiles as ratios, edge density, and
+  a structural similarity at a coarse scale that ignores brushwork;
+- where each region's bounding box lands against the painting's, so a header that sits
+  40 px low says so as geometry and not as colour;
+- a sheet per region, painting beside capture with the difference map, for a person;
+- every number usable as a spec predicate and as a search objective, so `port.run` can
+  aim a rig at a region of the painting rather than at a shipped sprite.
+
+### §PW478 picture.vector is silent on an empty layer
+
+In Spinhold (RK150) the brand generator gave the halo group `id="halo"`, the same id as
+the blur filter it uses (`filter="url(#halo)"`). `picture.vector --layers {"halo":
+"#halo"}` answered with the layer's file and size like any other, and the PNG was fully
+transparent: alpha extrema (0, 0), no bounding box. It was found only by opening the
+file with PIL. The whole picture also lost its halo without a word.
+
+What polyweave should do: after drawing a layer, measure its alpha; a layer with no
+pixel drawn is refused (or at least flagged in the answer) with a code naming the
+selector. Where the SVG carries a duplicate id, say so and name both elements, since a
+`url(#id)` or `#id` selector then means whichever the rasteriser finds first. The same
+check belongs on the whole picture: an element referencing a filter, mask or clip that
+resolves to a non-filter element is a defect worth naming.
+
+### §PW479 A panel's bevel, hairline, sweep and state glow
+
+Found in Spinhold on 2026-10-16 (RK184). The menu kit's holo panel is
+`game/ui/kit/holo_panel.gdshader`, written by hand; the owner accepted its look on
+2026-10-07 and every menu stands on it. Declaring it as `[panel.holo]` and running
+`panel.build --shader true` drew the cut, the edge, the brackets, the scan lines and a
+tick, but not what the owner accepted:
+
+- **A lit bevel**: the edge is lilac lit from above and falling to shadow below, not one
+  colour.
+- **An inner hairline** a few pixels inside the edge, its own colour and strength.
+- **A moving sweep**: a faint diagonal light crossing the glass on `TIME`.
+- **Brackets set in** from the cut (half the cut plus 6 px), not on the outer edge.
+- **A tick off centre**: from `cut + 18` to `cut + 90` on the top edge.
+- **States as amounts, not only colours**: focus multiplies the edge, brackets and tick
+  by a glow; pressed lifts the glass; disabled drains to grey. A state today only swaps
+  a part's keys.
+- **A tint uniform** a game sets per instance (the brackets' colour says what a card
+  holds), and per-instance overrides of `cut` and `bracket_length` for low rows.
+
+The glass's fall from top to foot belongs to PW473's `material`.
+
+What polyweave should do: these as parts and keys of a panel declaration, drawn alike at
+build and on the shader route, so Spinhold swaps its shader without losing a detail.
 
 ## Block I — Voxel models from a declaration
 
