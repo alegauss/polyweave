@@ -26,6 +26,7 @@
 - 📋 **PW488** (deps: —) **a capture warns same settings, different picture when only a sprite the scene draws changed, as if it were noise** — PW71's warning cannot tell a re-taken picture's changed asset from real non-determinism, so it cries wolf on every legitimate re-take. → §PW488
 - 📋 **PW489** (deps: —) **a capture whose shader failed to compile answers ok, so panel.capture hands back stills of the bare white rect** — The engine runner never reads SHADER ERROR, so a broken shader is found only by a pixel assertion, if one exists. → §PW489
 - 📋 **PW490** (deps: —) **panel.capture films a panel only at its declared size, so how its shader draws it grown is never seen** — A seam's pitch, a pill's ends and a grain's size at another width are what the shader route exists for, and no still holds them. → §PW490
+- 📋 **PW491** (deps: —) **four source files cite a line through a mis-encoded section sign, so a search for that citation misses them** — A PowerShell round-trip turned the sign into two characters, and nothing in the gate notices a file that carries one. → §PW491
 
 ## Block I — Voxel models from a declaration
 
@@ -53,7 +54,7 @@
 - 📋 **PW205** (deps: PW202, PW203) **A shooter's waves have no measure of threat, so the level contract is proven on one genre only** — A contract only Cottony's match-3 has exercised may still assume a board, and Starship's check_phase_waves counts enemies without asking how many arrive at once. → §PW205
 - 📋 **PW206** (deps: PW204, PW205) **Cottony's levels are still tuned by a curve nobody measured** — The block is proven only when its first consumer's shipped levels are declared, compiled, probed and accepted here, and make_levels.py has nothing left to do. → §PW206
 - 📋 **PW327** (deps: PW205) **A playtest's trace of spawns, kills and hits cannot be measured or laid against the wave it played** — A declared wave says what it asks of a player; only a trace says where players struggle, and Starship's balance needs both. → §PW327
-- 📋 **PW480** (deps: —) **reference.objects counts a background of the enemies' own hue as enemies, so a busy reference cannot be counted** — Resogun's violet city gave 9595 tracks or none, so the phase cannot be re-read or compared with its rebuild. → §PW480
+- ⏳ **PW480** (deps: —) **reference.objects counts a background of the enemies' own hue as enemies, so a busy reference cannot be counted** — A kind told by its silhouette rather than its mean colour, the warp-in that marks an enemy going live, and reference.sample cutting a kind's sample are still to come. → §PW480
 
 ## Block S — Playing the game, not only rendering it
 
@@ -121,6 +122,15 @@
   ink on the faced kinds, no pale ring of marks round a rim, and the kinds' silhouettes
   kept apart is either a predicate in a Cottony acceptance spec over the committed piece
   sheet, or recorded as a test a person chose to keep.
+
+## Done when — PW480
+
+- **A kind's sample is cut and read from a frame by one call** reference.sample(frames,
+  at, box, name) writes the crop under the project and answers its colour, so no
+  throwaway script picks a kind's colour.
+- **Resogun's phase 1 counts its pods, not its city** On Spinhold's resogun_p1 frames
+  the count per frame follows the pods by eye on the sheets, with silhouette or warp-in
+  where motion alone is not enough.
 
 ## Non-goals
 

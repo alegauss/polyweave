@@ -51,6 +51,10 @@ MATCH = 0.2
 #: is not lost when it leaves its tolerance (§PW404).
 WIDEN = 2.0
 
+#: The share of an island's pixels that must have moved against the scene's scroll for
+#: it to be an object rather than the background (§PW480).
+MOVING = 0.2
+
 _COLOUR = re.compile(r"#([0-9a-fA-F]{6})")
 
 
@@ -164,12 +168,40 @@ def islands(mask: np.ndarray) -> np.ndarray:
     return np.where(mask, labels, -1)
 
 
-def detect(rgb: np.ndarray, kinds: dict[str, dict], scale: float) -> list[dict]:
+def _scrolled(now: np.ndarray, then: np.ndarray) -> tuple[int, int]:
+    """How far the whole scene moved from `then` to `now`, as whole pixels down and
+    across, by phase correlation of their luma: the shift `then` needs to sit on
+    `now`."""
+    a = now[..., :3].astype(np.float64) @ np.array([0.299, 0.587, 0.114])
+    b = then[..., :3].astype(np.float64) @ np.array([0.299, 0.587, 0.114])
+    cross = np.fft.fft2(a - a.mean()) * np.conj(np.fft.fft2(b - b.mean()))
+    peak = np.fft.ifft2(cross / np.maximum(np.abs(cross), 1e-9)).real
+    dy, dx = np.unravel_index(int(np.argmax(peak)), peak.shape)
+    tall, wide = peak.shape
+    return (int(dy - tall) if dy > tall // 2 else int(dy),
+            int(dx - wide) if dx > wide // 2 else int(dx))
+
+
+def _moved(now: np.ndarray, then: np.ndarray,
+           threshold: float) -> tuple[np.ndarray, tuple]:
+    """The pixels that changed by more than `threshold` of the widest colour distance
+    once the scene's own scroll is taken out, and that scroll (§PW480)."""
+    shift = _scrolled(now, then)
+    aligned = np.roll(then[..., :3].astype(np.float64), shift, axis=(0, 1))
+    apart = np.sqrt(((now[..., :3].astype(np.float64) - aligned) ** 2).sum(axis=2))
+    return apart > threshold * math.sqrt(3) * 255.0, shift
+
+
+def detect(rgb: np.ndarray, kinds: dict[str, dict], scale: float,
+           moving: np.ndarray | None = None) -> list[dict]:
     """Every object of every kind in one frame read at `scale` of the video's size,
     each with its centre and area in the video's own pixels.
 
     A kind with samples keeps an island only where the island looks like one of them,
     and an island two such kinds both find goes to the one it looks most like (§PW404).
+    With `moving`, an island is kept only where at least MOVING of its pixels changed
+    against the scene's own scroll (§PW480): a city of the enemies' hue scrolls with the
+    camera, and an enemy does not.
     """
     found = []
     pixels = rgb[..., :3].astype(np.float64)
@@ -185,6 +217,8 @@ def detect(rgb: np.ndarray, kinds: dict[str, dict], scale: float) -> list[dict]:
             if not least <= count <= most:
                 continue
             ys, xs = np.nonzero(labels == label)
+            if moving is not None and moving[ys, xs].mean() < MOVING:
+                continue
             one = {"kind": name, "x": round(float(xs.mean()) / scale, 1),
                    "y": round(float(ys.mean()) / scale, 1),
                    "area": round(float(count) / (scale * scale), 1)}
@@ -409,6 +443,10 @@ def objects(
         float, Param("how far apart, as a share of the frame's width, two tracks "
                      "may be born and be one group", lo=0.0)
     ] = 0.25,
+    motion: Annotated[
+        float, Param("keep only what moved against the scene's scroll by this share of "
+                     "the widest colour distance; 0 is off", lo=0.0, hi=1.0)
+    ] = 0.0,
     root: Annotated[str, Param("the project the frames are under")] = ".",
 ) -> dict:
     """Count and follow what moves in a reference video's frames, by kinds you declare.
@@ -428,19 +466,28 @@ def objects(
     if area is not None and (len(area) != 4 or not area[0] < area[2]
                              or not area[1] < area[3]):
         raise _bad(f"area is {area!r}", "write it as [left, top, right, bottom] pixels")
-    seen, size = [], (0, 0)
+    seen, size, reads = [], (0, 0), []
     for one in listed.get("frames", []):
         with Pil.open(folder / one["file"]) as frame:
             image = frame.convert("RGB")
         size = image.size
-        left, top = 0, 0
         if area:
-            left, top = int(area[0]), int(area[1])
             image = image.crop(tuple(int(v) for v in area))
         scale = min(1.0, READ_WIDTH / max(image.width, 1))
-        read = image.resize((max(1, round(image.width * scale)),
-                             max(1, round(image.height * scale))))
-        found = detect(np.asarray(read), kinds_, scale)
+        shape = (max(1, round(image.width * scale)),
+                 max(1, round(image.height * scale)))
+        reads.append((one, scale, np.asarray(image.resize(shape))))
+    left, top = (int(area[0]), int(area[1])) if area else (0, 0)
+    shifts = []
+    for index, (one, scale, read) in enumerate(reads):
+        moving = None
+        if motion and len(reads) > 1:
+            # Against the frame before, or the one after for the first.
+            other = reads[index - 1 if index else 1][2]
+            moving, shift = _moved(read, other, motion)
+            shifts.append({"at": one["ms"] / 1000, "scroll": [round(shift[1] / scale),
+                                                              round(shift[0] / scale)]})
+        found = detect(read, kinds_, scale, moving)
         for one_found in found:
             one_found["x"] = round(one_found["x"] + left, 1)
             one_found["y"] = round(one_found["y"] + top, 1)
@@ -455,6 +502,8 @@ def objects(
                                               "match") if key in v}
                   for k, v in kinds_.items()},
         "area": list(area) if area else None,
+        "motion": motion,
+        **({"scroll": shifts} if shifts else {}),
         "per_frame": [{"at": at, "count": len(found)} for at, found in seen],
         "tracks": tracks,
         "groups": groups,
@@ -470,7 +519,7 @@ def objects(
             provenance.source("sample", _under(here, one), root=here)
             for kind in kinds_.values() for one in kind.get("samples", [])],
         params={"kinds": written["kinds"], "area": written["area"], "speed": speed,
-                "together": together, "apart": apart},
+                "together": together, "apart": apart, "motion": motion},
         root=here,
     ), here)
     return {

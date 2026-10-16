@@ -275,6 +275,25 @@ With it, a test films the sewn panel at its size and at twice its width and hold
 stitch count to the declared pitch at both, and a spec can hold a translated button's
 look at the width it will really be drawn.
 
+### §PW491 A section sign mis-encoded in a citation
+
+Found in polyweave on 2026-10-16, shipping PW480. Four committed files carry the section
+sign read twice through cp1252 and written back as UTF-8: the bytes `C3 82 C2 A7` (`Â§`)
+where `C2 A7` (`§`) was meant, each in a docstring citing a line, such as
+`src/polyweave/reference_objects.py`'s first line `(Â§PW379)`. The others are
+`tests/test_camera.py`, `tests/test_contrast.py` and `tests/test_reference_objects.py`.
+
+Nothing reads them wrong at run time, but a citation that has to be searched for
+(`section find "§PW379"`, a grep for `§PW379` when a design is repointed) misses them,
+and a reader sees garbage where the reason should be. The cause is a PowerShell
+round-trip: `Get-Content` without `-Encoding UTF8` reads a UTF-8 file as cp1252, and
+`Set-Content -Encoding utf8` writes the result back, also adding a byte-order mark. This
+run did it once to a test file and caught it.
+
+Repair the four (`Â§` to `§`), and add a test over the package and the tests: no source
+file holds the bytes `C3 82 C2 A7`, nor starts with a UTF-8 byte-order mark, naming the
+file and line. The gate then catches the next round-trip in the commit that makes it.
+
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once

@@ -54,6 +54,48 @@ def film(tmp_path, frames=6, every=0.5):
     return ".polyweave/references/clip"
 
 
+def city(tmp_path, frames=5):
+    """A scrolling city of windows in the enemies' own cyan, and one enemy falling
+    through it, as Resogun's violet city sits behind its violet enemies (§PW480)."""
+    import numpy as np
+
+    (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
+    folder = tmp_path / ".polyweave" / "references" / "city"
+    folder.mkdir(parents=True)
+    ground = Image.new("RGB", (1280, 720), (8, 8, 20))
+    draw = ImageDraw.Draw(ground)
+    for x in range(40, 1280, 96):
+        for y in range(80, 720, 112):
+            square(draw, x, y, CYAN)
+    base = np.asarray(ground)
+    listed = []
+    for n in range(frames):
+        # The scene scrolls 16 px a frame, six at the width the frames are read at.
+        image = Image.fromarray(np.roll(base, 16 * n, axis=1))
+        square(ImageDraw.Draw(image), 650, 150 + 40 * n, CYAN)
+        name = f"t{n * 250:08d}.png"
+        image.save(folder / name)
+        listed.append({"ms": n * 250, "file": name})
+    (folder / "frames.json").write_text(json.dumps({"frames": listed}),
+                                        encoding="utf-8")
+    return ".polyweave/references/city"
+
+
+def test_a_city_of_the_enemies_hue_is_left_out_by_its_motion(tmp_path):
+    source = city(tmp_path)
+    kinds = {"pod": {"colour": "#3fe8ff", "size": [40, 400]}}
+    crowded = reference_objects.objects(source, kinds, root=str(tmp_path))
+    counted = json.loads((tmp_path / crowded["objects"]).read_text("utf-8"))
+    assert counted["per_frame"][2]["count"] > 30
+    moving = reference_objects.objects(source, kinds, motion=0.1, root=str(tmp_path))
+    written = json.loads((tmp_path / moving["objects"]).read_text("utf-8"))
+    assert [f["count"] for f in written["per_frame"]] == [1] * 5
+    assert written["scroll"][1]["scroll"] == [16, 0]
+    (track,) = written["tracks"]
+    assert track["kind"] == "pod"
+    assert track["path"][-1][2] > track["path"][0][2]  # [at, x, y]: it fell
+
+
 def test_objects_are_counted_followed_and_grouped(tmp_path):
     made = reference_objects.objects(film(tmp_path), KINDS, root=str(tmp_path))
     written = json.loads((tmp_path / made["objects"]).read_text("utf-8"))

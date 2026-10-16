@@ -1582,6 +1582,8 @@ export interface ReferenceObjectsArgs {
   together?: number
   /** how far apart, as a share of the frame's width, two tracks may be born and be one group; from 0 to …; default 0.25 */
   apart?: number
+  /** keep only what moved against the scene's scroll by this share of the widest colour distance; 0 is off; from 0 to 1; default 0.0 */
+  motion?: number
   /** the project the frames are under; default "." */
   root?: string
 }

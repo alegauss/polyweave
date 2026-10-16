@@ -423,6 +423,7 @@
 - ✅ **PW405** **a reference video's timeline marks no change of music section, and is drawn apart from the frames its ticks fall in** — reference.events marks music sections by a novelty curve over the soundtrack, and draws each event's tick under the thumbnail it falls in (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW406** **a rebuild's comparison with its reference shows no declared pressure, so a spawning fault reads like a choice** — reference.compare takes the declared wave and where it starts, charts its pressure and gives each gap what the wave had alive then (design recorded in `docs/specs/fetching.md`).
 - ✅ **PW407** **a reference video is named by path each call, so a changed file is read silently and capture.run takes internal input** — reference.register keeps a video's digest so a changed file is refused, and capture.run and project.check catch internal footage (design recorded in `docs/specs/fetching.md`).
+- ✅ **PW480 (motion)** **reference.objects counts a background of the enemies' own hue as enemies, so a busy reference cannot be counted** — reference.objects with motion keeps only islands that moved against the scene's own scroll, found by phase correlation, so a city of the enemies' hue drops out.
 
 ## Block S — Playing the game, not only rendering it
 

@@ -598,6 +598,16 @@ as before. The samples and the match are kept with the kinds in objects.json, an
 sample is an input of its record with its digest, so a count can be traced to what it
 was matched against.
 
+A background of the enemies' own hue defeats colour and samples alike: Resogun's violet
+city gave 9,595 tracks or none (§PW480). With `motion` above 0, each frame is compared
+with the one before (the first with the one after) once the scene's own scroll is taken
+out: the whole-pixel shift between the two is found by phase correlation of their luma,
+and the earlier frame rolled by it. A pixel moved where it differs by more than `motion`,
+as a share of the widest colour distance, and an island is kept only where at least a
+fifth of its pixels moved. A city scrolling with the camera drops out and an enemy moving
+through it stays. objects.json keeps `motion` and, per frame, the `scroll` it found in
+the video's pixels, `[across, down]`.
+
 Detections become tracks, joined to the nearest of their kind in the next frame within
 `speed` (a share of the frame's width a second): each track has its first and last
 second, its path, and how it ended: `left` where its last sight was at the frame's edge,

@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 10 },
+  { block: "H", title: "Proof on a real game", open: 11 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
@@ -121,6 +121,13 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
+    id: "PW491",
+    block: "H",
+    symptom: "four source files cite a line through a mis-encoded section sign, so a search for that citation misses them",
+    why: "A PowerShell round-trip turned the sign into two characters, and nothing in the gate notices a file that carries one.",
+    deps: [],
+  },
+  {
     id: "PW202",
     block: "R",
     symptom: "A game's own headless play of a level has no way to report what it measured",
@@ -166,7 +173,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW480",
     block: "R",
     symptom: "reference.objects counts a background of the enemies' own hue as enemies, so a busy reference cannot be counted",
-    why: "Resogun's violet city gave 9595 tracks or none, so the phase cannot be re-read or compared with its rebuild.",
+    why: "A kind told by its silhouette rather than its mean colour, the warp-in that marks an enemy going live, and reference.sample cutting a kind's sample are still to come.",
     deps: [],
   },
   {

@@ -143,7 +143,8 @@ TOOL_BUDGET = 4500
 #: 127,700 at 127,617 for picture.sew, a picture's silhouette sewn (§PW474).
 #: 128,100 at 128,031 for picture.vector's sweep, a loop from one source (§PW476).
 #: 128,900 at 128,822 for reference.concept, a capture held to its painting (§PW477).
-LIST_BUDGET = 128900
+#: 129,100 at 129,020 for reference.objects' motion, past its own hue (§PW480).
+LIST_BUDGET = 129100
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {
