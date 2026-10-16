@@ -2281,6 +2281,16 @@ CODES: dict[str, Code] = {
         when="a game with no tests/*_test.gd and no [kit.tests] scripts (§PW362)",
         doors=("write tests/<name>_test.gd", "declare [kit.tests] scripts"),
     ),
+    "engine.bad-run": Code(
+        means="a [run.<name>] in polyweave.toml cannot be run as written (§PW467)",
+        when="a run with no script or no expect, or a key a run does not take",
+        doors=("give the run a script and the line that means it worked",),
+    ),
+    "engine.unknown-run": Code(
+        means="engine.run_declared was asked for a run the project does not declare",
+        when="a misspelled name, or a run not yet declared as [run.<name>]",
+        doors=("declare it in polyweave.toml", "name a declared run"),
+    ),
     "engine.broken-reference": Code(
         means="a scene, resource or project.godot refers to a file by a UID and a path "
         "that both resolve to nothing",

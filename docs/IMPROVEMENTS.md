@@ -122,31 +122,6 @@ Both workflows run these, so the move has to keep CI's verdicts: run each before
 after against the same tree and compare what failed. CI also pins polyweave (Cottony
 RK153), so the pin has to carry the operations first.
 
-### §PW467 A run is declared, not scripted
-
-Met moving Cottony's perf scripts (PW56). Cottony now keeps three Python drivers whose
-only project knowledge is a table: `tools/capture_screens.py` (each capture's locale and
-the `captured:` pattern), `tools/measure_frames.py` (one script, one pattern, a ratio)
-and `tools/run_perf.py` (seven scripts, the line each prints when it worked, which
-`(?P<wrote>)` group is a file, and which one is a screen taken in the declared
-environment). Everything else in them is calling `engine.run` or `capture.run` and
-printing OK or FAIL. A second game will write the same three files.
-
-What polyweave should do: let `polyweave.toml` declare a run, with a script, an `expect`
-pattern, `produces`, whether it is a `capture` (taken in `[capture] declared`) and any
-settings it overrides, such as a locale:
-
-    [run.board3d_beside]
-    script  = "tools/perf/board3d_beside.gd"
-    expect  = 'captured: res://(?P<wrote>\S+) (?P<width>\d+) x (?P<height>\d+)'
-    capture = true
-
-Then one operation runs one declared run, some of them or all, and answers each with the
-verdict `engine.run` already gives. A run not declared is refused with the names that
-are. `measure_frames.py`'s ratio stays the project's, because that is a verdict on a
-number and not on a run, unless `engine.perf`'s budgets already cover it, which is worth
-checking first.
-
 ### §PW469 A boot is a run with no script
 
 Met moving Cottony's Godot runners (PW466). `tools/check_boot.py` is a project's

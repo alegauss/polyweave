@@ -27,6 +27,17 @@ as `produces` to mean "this group is a path that has to exist". That is what mak
 runner serve a capture, a test and a measurement run — they are the same problem with a
 different line at the end.
 
+**A game declares its runs rather than scripting them** (§PW467). The pattern and the
+paths are a game's table, and a game used to keep that table in a Python driver of its
+own around `engine.run` and `capture.run`. `[run.<name>]` in polyweave.toml takes
+`script` and `expect`, and optionally `produces`, `capture` (taken in `[capture]
+declared` and recorded) with `settings` for what this run takes differently, `args`,
+`frames` and `timeout`; any other key is `engine.bad-run`. `engine.run_declared(runs=)`
+runs the named ones, or every one, each answered `ok`, `why`, `found`, `seconds` and
+`log`, with `reproduced` where a capture's bytes moved under unchanged settings, and
+`passed` is false, and the command exits non-zero, while any failed. A name nothing
+declares is `engine.unknown-run`. A verdict on a number a run printed stays the game's.
+
 **The error pattern is the engine's**, not the project's, and is the one thing compiled in:
 `SCRIPT ERROR`, `Parse Error`, `Compile Error`, and `String formatting error`, which prints
 without the word SCRIPT and still aborts the block it is in. A caller may widen it; nothing

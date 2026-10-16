@@ -201,6 +201,7 @@
 - ✅ **PW463** **a review server that sees polyweave changed refuses the answer, and only the agent that started it can restart it** — A review server on old code starts a fresh one on its port and the page resends, so the answer lands with no restart by hand (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW465** **an accept on the review page never reaches the loop ledger, so loop.pending reads an accepted family as still waiting** — A page answer on a sitting naming its ledger asset is a ledger verdict, and a family run's verdict marks the member it names judged (design recorded in `docs/specs/adoption.md`).
 - ✅ **PW466 (the tests)** **Cottony's tests, boot check and export check still start Godot through subprocess, each with its own lookup** — Cottony's Godot tests run through polyweave's game.test, with the same verdicts on its tree, so run_tests.py starts no Godot of its own.
+- ✅ **PW467** **a game's engine scripts and the line each prints are a table in a Python driver the game writes itself** — A game declares its engine runs as [run.<name>] and engine.run_declared runs them, so Cottony's perf driver is gone for a table in its config (design recorded in `docs/specs/engine.md`).
 
 ## Block I — Voxel models from a declaration
 

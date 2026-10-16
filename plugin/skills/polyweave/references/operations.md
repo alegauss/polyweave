@@ -20,7 +20,7 @@
 | Keep the ledger | `loop.start`, `loop.spent`, `loop.judged`, `loop.finish`, `loop.compare` |
 | Read the ledger | `loop.runs`, `loop.assets`, `loop.changes`, `loop.bounds`, `loop.report` (every asset, from its records) |
 | Provenance | `provenance.read`, `provenance.verify`, `provenance.dependents`, `provenance.outdated`, `provenance.unrecorded`, `provenance.credits`, `provenance.generated`, `provenance.borrow` |
-| The game side | `engine.check`, `engine.states`, `game.test`, `tables.check`, `capture.run`, `capture.again`, `capture.movie`, `capture.declared`, `engine.run`, `engine.sweep`, `engine.cost`, `engine.perf`, `engine.preset_search`, `godot.install` |
+| The game side | `engine.check`, `engine.states`, `game.test`, `tables.check`, `capture.run`, `capture.again`, `capture.movie`, `capture.declared`, `engine.run`, `engine.run_declared`, `engine.sweep`, `engine.cost`, `engine.perf`, `engine.preset_search`, `godot.install` |
 | Drive a game | `game.open`, `game.query`, `game.input`, `game.step`, `game.wait`, `game.call`, `game.set`, `game.shot`, `game.text_fit`, `game.close`, `game.batch`, `game.keep`, `game.record_flow`, `game.crash_read`, `game.rekey`, `game.replay`, `game.release_check`, `game.export_smoke` |
 | Scale against the engine | `units.check`, `units.engine_scale`, `units.read_number` |
 | World | `world.read`, `world.validate`, `voice.design`, `voice.choose`, `voice.lines`, `words.check`, `words.unlisted`, `words.glyphs`, `words.sheet` |

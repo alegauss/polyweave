@@ -320,6 +320,14 @@ export interface EngineRunArgs {
   args?: unknown[]
 }
 
+/** Run a game's declared engine runs, each judged by the line it prints (§PW467). */
+export interface EngineRunDeclaredArgs {
+  /** the [run.<name>] names to run; every one if empty; default [] */
+  runs?: unknown[]
+  /** the project whose polyweave.toml declares them; default "." */
+  root?: string
+}
+
 /** Every state machine the game's scripts write, held to reach and leave each state. */
 export interface EngineStatesArgs {
   /** the Godot project whose scripts are read; default "." */
@@ -2408,6 +2416,7 @@ export interface Operations {
   "engine.perf": EnginePerfArgs
   "engine.preset_search": EnginePresetSearchArgs
   "engine.run": EngineRunArgs
+  "engine.run_declared": EngineRunDeclaredArgs
   "engine.states": EngineStatesArgs
   "engine.sweep": EngineSweepArgs
   "game.batch": GameBatchArgs
@@ -2579,7 +2588,7 @@ export interface Operations {
 }
 
 /** The operations whose every argument may be left out. */
-export type Bare = "accept.verify" | "capture.declared" | "engine.check" | "engine.find" | "engine.perf" | "engine.states" | "game.crash_read" | "game.export_smoke" | "game.open" | "game.release_check" | "game.test" | "kit.list" | "kit.prove" | "loop.assets" | "loop.bounds" | "loop.pending" | "loop.report" | "loop.runs" | "measure.available" | "measure.pressure" | "mesh.buy" | "offscreen.routes" | "picture.buy" | "project.adoption" | "project.check" | "project.init" | "project.inventory" | "provenance.credits" | "provenance.generated" | "provenance.outdated" | "provenance.unrecorded" | "provenance.verify" | "purchase.held" | "purchase.ledger" | "purchase.remaining" | "purchase.spent" | "render.plan" | "review.canon" | "review.state" | "review.words" | "revision.open" | "schema.read" | "sound.buy" | "sound.declared" | "sound.speak" | "style.read" | "style.train" | "tables.check" | "units.engine_scale" | "verdict.answers" | "voice.design" | "voice.lines" | "words.check" | "words.glyphs" | "words.unlisted" | "world.read" | "world.validate"
+export type Bare = "accept.verify" | "capture.declared" | "engine.check" | "engine.find" | "engine.perf" | "engine.run_declared" | "engine.states" | "game.crash_read" | "game.export_smoke" | "game.open" | "game.release_check" | "game.test" | "kit.list" | "kit.prove" | "loop.assets" | "loop.bounds" | "loop.pending" | "loop.report" | "loop.runs" | "measure.available" | "measure.pressure" | "mesh.buy" | "offscreen.routes" | "picture.buy" | "project.adoption" | "project.check" | "project.init" | "project.inventory" | "provenance.credits" | "provenance.generated" | "provenance.outdated" | "provenance.unrecorded" | "provenance.verify" | "purchase.held" | "purchase.ledger" | "purchase.remaining" | "purchase.spent" | "render.plan" | "review.canon" | "review.state" | "review.words" | "revision.open" | "schema.read" | "sound.buy" | "sound.declared" | "sound.speak" | "style.read" | "style.train" | "tables.check" | "units.engine_scale" | "verdict.answers" | "voice.design" | "voice.lines" | "words.check" | "words.glyphs" | "words.unlisted" | "world.read" | "world.validate"
 
 /** Every operation `describe` listed when this file was written. */
 export const OPERATIONS = [
@@ -2609,6 +2618,7 @@ export const OPERATIONS = [
   "engine.perf",
   "engine.preset_search",
   "engine.run",
+  "engine.run_declared",
   "engine.states",
   "engine.sweep",
   "game.batch",

@@ -450,6 +450,7 @@ def run(stated: argparse.Namespace) -> int:
     gates = ("init", "project.check", "engine.check", "project.adoption")
     if stated.command in gates and answer.get("clean") is False:
         return 1
-    if stated.command == "game.test" and answer.get("passed") is False:
+    if stated.command in ("game.test", "engine.run_declared") and answer.get(
+            "passed") is False:
         return 1
     return 0

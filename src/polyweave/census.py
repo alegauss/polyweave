@@ -78,6 +78,7 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.integrity:scan": ("internal", "the tree read as text"),
     "polyweave.adoption:scan": ("internal", "each surface's files; project.adoption"),
     "polyweave.person": ("internal", "the codes and guards an accept is checked by"),
+    "polyweave.runs:declared": ("internal", "each [run.<name>], checked"),
     "polyweave.verdict:address": ("internal", "a sitting's page path; verdict.sitting"),
     "polyweave.review:waiting_at": ("internal", "each waiting sitting's link; review"),
     "polyweave.integrity:parsed": ("internal", "every script parsed after an import"),
