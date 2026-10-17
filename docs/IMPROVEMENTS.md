@@ -215,26 +215,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW490 A panel filmed at the sizes it will be drawn
-
-Found in polyweave on 2026-10-16, shipping PW474. The panel shader sews its seam by arc
-length at the Control's own size, which is the whole point of the shader route: a button
-grown to fit a longer translation keeps its stitch pitch, its pill ends and its
-material's grain size. PW474's criterion asked for a filmed panel grown wider to prove
-that, and it could not be written: `panel.capture` sizes the `ColorRect` from the
-state's declared `size` times `scale`, so every still is the panel at the size a
-nine-patch would also draw it at. What the shader does differently is never filmed.
-
-A `sizes` argument on `panel.capture`, a list of `[width, height]` in the panel's
-pixels, filming each state once per size as `<name>.<state>.<w>x<h>.capture.png`,
-recorded with the size in its params. Left out, the declared size alone, as now. The
-screen grows to fit the largest at `scale`, or the call is refused naming the size that
-does not fit.
-
-With it, a test films the sewn panel at its size and at twice its width and holds the
-stitch count to the declared pitch at both, and a spec can hold a translated button's
-look at the width it will really be drawn.
-
 ### §PW491 A section sign mis-encoded in a citation
 
 Found in polyweave on 2026-10-16, shipping PW480. Four committed files carry the section

@@ -145,7 +145,8 @@ TOOL_BUDGET = 4500
 #: 128,900 at 128,822 for reference.concept, a capture held to its painting (§PW477).
 #: 129,100 at 129,020 for reference.objects' motion, past its own hue (§PW480).
 #: 129,800 at 129,750 for reference.sample, a kind's crop from a frame (§PW480).
-LIST_BUDGET = 129800
+#: 129,900 at 129,857 for panel.capture's sizes, the panel filmed grown (§PW490).
+LIST_BUDGET = 129900
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

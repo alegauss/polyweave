@@ -1120,6 +1120,8 @@ export interface PanelCaptureArgs {
   steps?: number
   /** screen pixels to one of a panel's; from 1 to 8; default 2 */
   scale?: number
+  /** [w, h]s in panel pixels to film each state at; default [] */
+  sizes?: unknown[]
   /** the project the panels belong to; default "." */
   root?: string
 }

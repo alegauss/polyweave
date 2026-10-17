@@ -645,6 +645,60 @@ def test_a_panel_whose_shader_will_not_compile_is_refused_not_filmed(tmp_path,
     assert "error" in refused.value.message
 
 
+@pytest.mark.parametrize(("sizes", "said"), [
+    ([[128]], "not a size"),
+    ([[4, 48]], "not a size"),
+    ([[2000, 48]], "2000x48 at scale 2"),
+])
+def test_a_size_to_film_at_that_is_not_one_is_refused(tmp_path, sizes, said):
+    """§PW490: named before the engine is started, the size that does not fit."""
+    source = panels(tmp_path, SEWN)
+    with pytest.raises(PolyweaveError) as refused:
+        panel.capture(source, out="ui", sizes=sizes, root=str(tmp_path))
+    assert refused.value.code == "compose.bad-panel"
+    assert said in refused.value.message
+
+
+def test_a_panel_filmed_grown_keeps_its_stitch_pitch(tmp_path):
+    """§PW490: the shader route sews by arc length, which only a grown still shows."""
+    import os
+
+    from polyweave import offscreen
+
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    try:
+        offscreen.route_for(tmp_path)
+    except PolyweaveError:
+        pytest.skip("no route draws real pixels here")
+    source = panels(tmp_path, SEWN)
+    (tmp_path / "project.godot").write_text(
+        'config_version=5\n\n[application]\nconfig/name="panel"\n', encoding="utf-8")
+    taken = panel.capture(source, out="ui", sizes=[[128, 48], [256, 48]],
+                          root=str(tmp_path))["stills"]["play"]
+    assert set(taken) == {"normal.128x48", "normal.256x48"}
+
+    def stitches(name: str, width: int) -> int:
+        """Stitches across the top edge, past the corners, in the panel's own pixels."""
+        with Image.open(tmp_path / name) as opened:
+            screen_w = max(320, width * 2 + 16)
+            x, y = (screen_w - width * 2) // 2, (180 - 48 * 2) // 2
+            crop = opened.convert("RGB").crop((x, y, x + width * 2, y + 96))
+            still = np.asarray(crop.resize((width, 48), Image.Resampling.BOX))
+            still = still.astype(int)
+        band = still[5:10, 24:width - 24, :3].sum(axis=2)
+        row = band[int(np.argmax(band.mean(axis=1)))]
+        bright = row > np.median(row) + (row.max() - np.median(row)) / 2
+        return int(np.sum(bright[1:] & ~bright[:-1]) + bright[0])
+
+    # 80 and 208 pixels of edge at a dash of 5 and a gap of 3: ten stitches and 26,
+    # where a nine-patch stretched to twice the width would keep ten and widen them.
+    assert abs(stitches(taken["normal.128x48"], 128) - 10) <= 1
+    assert abs(stitches(taken["normal.256x48"], 256) - 26) <= 1
+    record = provenance.read(str(tmp_path / taken["normal.256x48"]), root=tmp_path)
+    assert record["params"] == {"panel": "play", "state": "normal", "size": [256, 48]}
+
+
 def test_the_engine_films_each_state_and_each_wipe_step(tmp_path):
     import os
 

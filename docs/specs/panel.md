@@ -213,7 +213,15 @@ one number. A kind other than these two is `compose.bad-panel`, naming both.
 progress as `<name>.<step>.capture.png`. Each still has a record naming the declaration
 and the material it shows, so a spec can hold the edge's colour in a state or what a
 wipe covers halfway, and a person can judge them on a sitting. Like every capture it
-needs a display or the offscreen route, and without one it is `compose.unfilmed`.
+needs a display or the offscreen route, and without one it is `compose.unfilmed`. So is
+a film whose shader would not compile (§PW489).
+
+`sizes=[[w, h], …]`, in the panel's pixels, films each state once per size instead of at
+the declared one, as `<name>.<state>.<w>x<h>.capture.png` with the size in the record's
+params (§PW490). That is the shader route's own case: a button grown to fit a longer
+translation keeps its stitch pitch, its pill ends and its grain, where a nine-patch
+would stretch them. The screen grows to hold the largest at `scale`, up to 3840×2160; a
+size past that, or one under 8 pixels, is `compose.bad-panel` before the engine starts.
 
 ## An icon set
 

@@ -1593,6 +1593,29 @@ HOLD = 3
 #: The screen a panel or a wipe is filmed on.
 SCREEN = (320, 180)
 
+#: The largest screen a panel's sizes may grow it to (§PW490).
+SCREEN_MOST = (3840, 2160)
+
+
+def _sizes(sizes, scale: int) -> list[tuple[int, int]]:
+    """The sizes a panel is filmed at, in its pixels, each fitting the largest one."""
+    said = []
+    for size in sizes:
+        whole = isinstance(size, list | tuple) and len(size) == 2 and all(
+            isinstance(v, int) and not isinstance(v, bool) and v >= 8 for v in size)
+        if not whole:
+            raise PolyweaveError(
+                "compose.bad-panel", f"sizes holds {size!r}, which is not a size",
+                "write each as [width, height] in the panel's pixels, from 8")
+        if size[0] * scale > SCREEN_MOST[0] or size[1] * scale > SCREEN_MOST[1]:
+            raise PolyweaveError(
+                "compose.bad-panel",
+                f"the size {size[0]}x{size[1]} at scale {scale} does not fit the "
+                f"largest screen, {SCREEN_MOST[0]}x{SCREEN_MOST[1]}",
+                "give a smaller size or a smaller scale")
+        said.append((size[0], size[1]))
+    return said
+
 
 @operation("panel.capture", kind="capture")
 def capture(
@@ -1605,6 +1628,7 @@ def capture(
     scale: Annotated[
         int, Param("screen pixels to one of a panel's", lo=1, hi=8)
     ] = 2,
+    sizes: Annotated[list, Param("[w, h]s in panel pixels to film each state at")] = (),
     root: Annotated[str, Param("the project the panels belong to")] = ".",
 ) -> dict:
     """Film each panel's shader in each state, and each wipe at each progress step.
@@ -1612,13 +1636,16 @@ def capture(
     The shaders are built first, as `panel.build(shader=true)` builds them, then drawn
     by the engine itself: one still per state as <name>.<state>.capture.png and one per
     step as <wipe>.<step>.capture.png, each recorded, for a spec to hold and a person to
-    judge. Needs a display, as `capture.movie` does.
+    judge. With `sizes`, each state is filmed once per size instead, as
+    <name>.<state>.<w>x<h>.capture.png, which is how the shader draws the panel grown.
+    Needs a display, as `capture.movie` does.
     """
     import shutil
 
     from . import capture as filming
     from . import provenance
 
+    asked = _sizes(sizes, scale)
     config = load(root)
     built = build(source, out=out, shader=True, root=root)
     folder = config.path("paths.work", out)
@@ -1626,34 +1653,36 @@ def capture(
     taken: dict[str, dict] = {}
     films = [
         (name, list(states), [states[s]["material"] for s in states],
-         max(states["normal"]["size"][0] * scale, 1),
-         max(states["normal"]["size"][1] * scale, 1), None)
+         w * scale, h * scale, None, f".{w}x{h}" if asked else "")
         for name, states in built["panels"].items()
+        for w, h in (asked or [tuple(states["normal"]["size"])])
     ] + [
         (name, [f"{k:02d}" for k in range(steps)], [own["material"]] * steps,
-         SCREEN[0], SCREEN[1], steps)
+         SCREEN[0], SCREEN[1], steps, "")
         for name, own in (built.get("wipes") or {}).items()
     ]
-    for name, labels, materials, w, h, wiping in films:
+    for name, labels, materials, w, h, wiping, sized in films:
         start, count = 2, len(labels) * HOLD
-        script = work / f"{name}.film.gd"
+        # A panel grown past the screen grows the screen, up to SCREEN_MOST.
+        screen = (max(SCREEN[0], w + 16), max(SCREEN[1], h + 16)) if sized else SCREEN
+        script = work / f"{name}{sized}.film.gd"
         script.parent.mkdir(parents=True, exist_ok=True)
         progress = (
             f'look.set_shader_parameter("progress", float(index) / {wiping - 1}.0)'
             if wiping else f'look.set_shader_parameter("pixel_scale", {scale}.0)'
         )
         script.write_text(_FILM % {
-            "backdrop": "0.5, 0.5, 0.5, 1", "width": SCREEN[0], "height": SCREEN[1],
-            "x": (SCREEN[0] - w) // 2 if not wiping else 0,
-            "y": (SCREEN[1] - h) // 2 if not wiping else 0, "w": w, "h": h,
+            "backdrop": "0.5, 0.5, 0.5, 1", "width": screen[0], "height": screen[1],
+            "x": (screen[0] - w) // 2 if not wiping else 0,
+            "y": (screen[1] - h) // 2 if not wiping else 0, "w": w, "h": h,
             "materials": ", ".join(f'"res://{m}"' for m in materials),
             "start": start, "stop": start + count - 1, "hold": HOLD,
             "progress": progress,
         }, encoding="utf-8", newline="\n")
         shot = filming.movie(
-            provenance.relative(script, config.root), out=str(work / name),
+            provenance.relative(script, config.root), out=str(work / f"{name}{sized}"),
             root=str(config.root),
-            environment={"resolution": f"{SCREEN[0]}x{SCREEN[1]}"}, record=False,
+            environment={"resolution": f"{screen[0]}x{screen[1]}"}, record=False,
         )
         if not shot["ok"]:
             raise PolyweaveError(
@@ -1663,14 +1692,16 @@ def capture(
                 "is named in the detail",
                 detail=shot.get("log"),
             )
-        taken[name] = {}
+        taken.setdefault(name, {})
         for index, label in enumerate(labels):
-            frame = work / name / f"{index * HOLD + HOLD:04d}.png"
-            still = folder / f"{name}.{label}.capture.png"
+            frame = work / f"{name}{sized}" / f"{index * HOLD + HOLD:04d}.png"
+            still = folder / f"{name}.{label}{sized}.capture.png"
             shutil.copyfile(frame, still)
             params = {"panel" if not wiping else "wipe": name,
                       "state" if not wiping else "progress":
                       label if not wiping else round(index / (wiping - 1), 6)}
+            if sized:
+                params["size"] = [w // scale, h // scale]
             provenance.write(provenance.build(
                 "capture", still, engine={"name": "panel.capture"},
                 inputs=[provenance.source("declaration", config.path(
@@ -1679,6 +1710,6 @@ def capture(
                                       config.root)],
                 params=params, root=config.root,
             ), config.root)
-            taken[name][label] = provenance.relative(still, config.root)
-        shutil.rmtree(work / name, ignore_errors=True)
+            taken[name][label + sized] = provenance.relative(still, config.root)
+        shutil.rmtree(work / f"{name}{sized}", ignore_errors=True)
     return {"source": built["source"], "stills": taken}

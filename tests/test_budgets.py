@@ -134,7 +134,8 @@ from polyweave.errors import PolyweaveError
 #: 144,745 with reference.concept, a capture held to its painting (§PW477).
 #: 144,952 with reference.objects' motion, a scene of the enemies' hue (§PW480).
 #: 145,800 with reference.sample, a kind's crop and colour from a frame (§PW480).
-DESCRIBE = 145_900
+#: 145,927 with panel.capture's sizes, the panel filmed grown (§PW490).
+DESCRIBE = 146_000
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -248,7 +249,8 @@ DESCRIBE = 145_900
 #: 158,320 with compose.empty-layer and compose.ambiguous-id (§PW478).
 #: 158,527 with reference.objects' motion (§PW480).
 #: 159,375 with reference.sample (§PW480).
-CAPABILITIES = 159_500
+#: 159,565 with panel.capture's sizes (§PW490).
+CAPABILITIES = 159_650
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
