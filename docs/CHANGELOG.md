@@ -221,6 +221,7 @@
 - ✅ **PW488** **a capture warns same settings, different picture when only a sprite the scene draws changed, as if it were noise** — A recorded capture runs verbose and reads Godot 4's load lines, so a re-take whose sprite changed names that sprite, not noise (design recorded in `docs/specs/engine.md`).
 - ✅ **PW489** **a capture whose shader failed to compile answers ok, so panel.capture hands back stills of the bare white rect** — A shader that won't compile now fails the run as script-error at the shader's line, so panel.capture refuses the film as compose.unfilmed (design recorded in `engine.md`).
 - ✅ **PW490** **panel.capture films a panel only at its declared size, so how its shader draws it grown is never seen** — panel.capture takes sizes and films each state at each, so a test holds the stitch pitch at twice the width (design recorded in `panel.md`).
+- ✅ **PW491** **four source files cite a line through a mis-encoded section sign, so a search for that citation misses them** — The four signs are repaired, and a test fails on any source holding the twice-read sign or a byte-order mark, naming its file and line.
 
 ## Block I — Voxel models from a declaration
 

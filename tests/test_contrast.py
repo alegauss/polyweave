@@ -1,4 +1,4 @@
-"""How well a target stands out from what lies behind it (Â§PW272).
+"""How well a target stands out from what lies behind it (§PW272).
 
 Starship's shots were measured against the box beside each, twice per shot, in a script
 of the project's own. The pictures here are flat fields with known greys, so each ratio

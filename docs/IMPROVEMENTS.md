@@ -14,7 +14,7 @@
 
 ### §PW496 A struck mesh that squashes and jiggles
 
-Found in Spinhold on 2026-10-17, for the plastic city of §PW491. Spinhold's voxel city
+Found in Spinhold on 2026-10-17, for the plastic city of §PW498. Spinhold's voxel city
 answers a kill with a ripple that lifts its cubes one by one
 (`game/world/voxels.gdshader` reads the recent impacts). A city of smooth plastic pieces
 has no cubes to lift, and the answer that fits the look is a toy's: the piece squashes,
@@ -51,7 +51,7 @@ larger than the smaller part is a build warning.
 
 ### §PW492 An inflate round on both faces
 
-Found in Spinhold on 2026-10-17, for the plastic city of §PW491. Inflatable shapes are
+Found in Spinhold on 2026-10-17, for the plastic city of §PW498. Inflatable shapes are
 half of that look: a heart balloon over the square, a puffed cloud, a bouncy pad, each
 round on its front and on its back. `inflate` is a relief, by its own spec: one face
 lifted off a flat back, which is right for a panel seen front-on and wrong for a body
@@ -66,7 +66,7 @@ the body.
 
 ### §PW493 Solids round on every edge
 
-Found in Spinhold on 2026-10-17, for the plastic city of §PW491. A toy-plastic piece is
+Found in Spinhold on 2026-10-17, for the plastic city of §PW498. A toy-plastic piece is
 round on every edge: a capsule post, a soft box of a house, a pebble of a hill. The
 vocabulary rounds only in two dimensions: `plate` and `rounded_square` round an
 outline's corners in XY and leave the extruded edges square, and `bevel` takes one width
@@ -82,7 +82,7 @@ PW233's primitives do, and a radius past half the smallest side is refused as
 
 ### §PW494 A plastic finish on a material
 
-Found in Spinhold on 2026-10-17, for the plastic city of §PW491. What makes a piece read
+Found in Spinhold on 2026-10-17, for the plastic city of §PW498. What makes a piece read
 as moulded plastic is mostly its finish: a saturated colour, a tight bright highlight
 under a clear coat, a soft rim of light at the silhouette, and light going a little way
 into the body so a pastel glows rather than greys. A geometry material declares a
@@ -98,7 +98,7 @@ pink plastic, clear-coated, glossy`.
 
 ### §PW495 The declared finish as a Godot material
 
-Found in Spinhold on 2026-10-17, for the plastic city of §PW491. When §PW494's finish is
+Found in Spinhold on 2026-10-17, for the plastic city of §PW498. When §PW494's finish is
 accepted on a sitting, the game must draw the same thing. A built model reaches Godot as
 a `.glb`, and the importer keeps what glTF and its own mapping keep: a coat, a rim, a
 subsurface tint or a sheen may come in at other numbers or not at all, and the game's
@@ -114,7 +114,7 @@ same model at one rig says whether the two agree.
 
 ### §PW497 A measure of edge softness
 
-Found in Spinhold on 2026-10-17, for the plastic city of §PW491. A style that is soft
+Found in Spinhold on 2026-10-17, for the plastic city of §PW498. A style that is soft
 toys and moulded plastic is lost by one hard edge: a cube left square among capsules
 reads as a different game. Spinhold already holds every enemy to a shape bound
 (`silhouette_aspect >= 0.6`), refused before a person sees it, and the plastic city
@@ -214,25 +214,6 @@ time, recorded as kind `camera` (docs/specs/motion.md, "A camera clip"). Not an
 Animation track: an anchor placed at run time, on a ring that is not Cartesian, cannot
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
-
-### §PW491 A section sign mis-encoded in a citation
-
-Found in polyweave on 2026-10-16, shipping PW480. Four committed files carry the section
-sign read twice through cp1252 and written back as UTF-8: the bytes `C3 82 C2 A7` (`Â§`)
-where `C2 A7` (`§`) was meant, each in a docstring citing a line, such as
-`src/polyweave/reference_objects.py`'s first line `(Â§PW379)`. The others are
-`tests/test_camera.py`, `tests/test_contrast.py` and `tests/test_reference_objects.py`.
-
-Nothing reads them wrong at run time, but a citation that has to be searched for
-(`section find "§PW379"`, a grep for `§PW379` when a design is repointed) misses them,
-and a reader sees garbage where the reason should be. The cause is a PowerShell
-round-trip: `Get-Content` without `-Encoding UTF8` reads a UTF-8 file as cp1252, and
-`Set-Content -Encoding utf8` writes the result back, also adding a byte-order mark. This
-run did it once to a test file and caught it.
-
-Repair the four (`Â§` to `§`), and add a test over the package and the tests: no source
-file holds the bytes `C3 82 C2 A7`, nor starts with a UTF-8 byte-order mark, naming the
-file and line. The gate then catches the next round-trip in the commit that makes it.
 
 ## Block I — Voxel models from a declaration
 

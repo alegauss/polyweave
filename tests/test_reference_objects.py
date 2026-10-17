@@ -1,4 +1,4 @@
-"""What moves in a reference video's frames, counted and followed (Â§PW379).
+"""What moves in a reference video's frames, counted and followed (§PW379).
 
 Spinhold's agent counted twenty small enemies by eye on every contact sheet, and a
 miscount reached the sheet the owner reviews. These frames are drawn here, so what is in

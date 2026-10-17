@@ -1,4 +1,4 @@
-"""What moves in a reference video's frames, counted and followed (Â§PW379).
+"""What moves in a reference video's frames, counted and followed (§PW379).
 
 Rebuilding Resogun's first phase from a gameplay video (Spinhold, RK178) needs, per
 stretch, the second each group appears, its count, formation and how it ends. Even with

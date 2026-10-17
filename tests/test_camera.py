@@ -1,4 +1,4 @@
-"""A camera move declared as a clip and built into a camera the game plays (Â§PW372).
+"""A camera move declared as a clip and built into a camera the game plays (§PW372).
 
 Starship's opening kept its shots in the game's own JSON, set by eye. The scene built
 here is played by the engine itself where there is one, and has to frame what the
