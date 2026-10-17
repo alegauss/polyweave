@@ -115,6 +115,12 @@ def _says(node: dict, instance: dict, materials: dict | None = None) -> str:
         )
     elif op == "union":
         what = f"{' and '.join(takes)} joined" if takes else "a join"
+    elif op == "blend":
+        # The radius is the one number a blend asks for, so it is said (§PW498).
+        radius = instance.get("radius")
+        stated = isinstance(radius, int | float)
+        fillet = f" by a fillet of {radius:g}" if stated else ""
+        what = f"{' and '.join(takes)} flowing together{fillet}"
     elif op == "bevel":
         what = f"{takes[0]}, with its edges softened" if takes else "a bevel"
     elif op == "transform":
@@ -422,6 +428,7 @@ def report(
             warnings.append(f"{one} was declared and not built")
             continue
         found = check_mesh(mesh)
+        warnings += [f"{one}: {said}" for said in mesh.get("warnings") or ()]
         row = {
             "id": one,
             "op": next(n["op"] for n in document["nodes"] if n["id"] == one),

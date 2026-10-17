@@ -462,7 +462,19 @@ def shape_inside(found: dict, points: np.ndarray, slack: float = 0.0) -> np.ndar
 def primitive(
     kind: str = "cube", size: Any = 1.0, *, steps: int = STEPS, **stated: Any
 ) -> dict:
-    """The primitives a declaration names: a box, a sheet and the round solids."""
+    """The primitives a declaration names: a box, a sheet and the round solids.
+
+    Each carries its own distance field as `field`, which `transform` and `union` carry
+    on, so a `blend` can join it smoothly (§PW498).
+    """
+    made = _primitive_mesh(kind, size, steps, **stated)
+    found = shape({"kind": kind, "size": size, **stated})
+    if found["kind"] != "plane":
+        made["field"] = [{"shape": found, "matrix": np.eye(4)}]
+    return made
+
+
+def _primitive_mesh(kind: str, size: Any, steps: int, **stated: Any) -> dict:
     found = shape({"kind": kind, "size": size, **stated})
     order = found["order"]
     if kind == "cube":
@@ -653,6 +665,13 @@ def transform(
     made = mesh(points + np.asarray(_triple(at), dtype=float), faces, worn.get("uv"))
     if worn.get("groups"):
         made["groups"] = [dict(one) for one in worn["groups"]]
+    if worn.get("field"):
+        # The same move, on the field each part carries (§PW498).
+        moved = np.eye(4)
+        moved[:3, :3] = _turn(rotate) @ np.diag(stretch)
+        moved[:3, 3] = np.asarray(_triple(at), dtype=float)
+        made["field"] = [{**part, "matrix": moved @ np.asarray(part["matrix"])}
+                         for part in worn["field"]]
     return made
 
 
@@ -703,7 +722,12 @@ def union(*subjects: Any) -> dict:
     # All of them or none (§PW68). Filling a part that has no coordinates with zeros
     # would claim a corner of the picture for every face of it.
     uv = None if any(one is None for one in coordinates) else np.vstack(coordinates)
-    return mesh(np.vstack(points), faces, uv)
+    joined = mesh(np.vstack(points), faces, uv)
+    # A field only where every part has one: a join of a prism has no whole field.
+    fields = [one.get("field") if isinstance(one, dict) else None for one in subjects]
+    if all(fields):
+        joined["field"] = [part for field in fields for part in field]
+    return joined
 
 
 #: A mirror's axis, by the letter a document writes or the index it means.

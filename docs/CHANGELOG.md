@@ -110,6 +110,7 @@
 - ✅ **PW494** **a material declares only colour and roughness, so a glossy plastic with clear coat, sheen and soft rim cannot be asked** — A material takes coat, sheen, rim and subsurface, derived onto the Principled BSDF the bake builds, and reads back as "clear-coated, glossy" (design recorded in `geometry.md`).
 - ✅ **PW495 (material half)** **a declared finish reaches the game only through glTF import, so a look a person accepted is rebuilt in a game shader** — A build writes a finish as a Godot .tres, a shader for a sheen, with the bake's numbers; Godot reads them back.
 - ✅ **PW497** **nothing measures how round a model's edges are, so a hard-edged piece in a soft-toy style reaches a person's sitting** — A spec bounds sharp_edge_share and edge_radius_min off a .glb at a stated crease, no render, and a refusal names where the hard edges are (design recorded in `acceptance-spec.md`).
+- ✅ **PW498** **union joins parts at a hard crease, so a body whose parts flow into each other, as moulded plastic, cannot be declared** — A blend op joins primitives by a fillet of radius where they meet, a round union of their fields meshed closed, each face in its part's material (design recorded in `geometry.md`).
 
 ## Block H — Proof on a real game
 

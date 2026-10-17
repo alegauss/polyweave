@@ -180,6 +180,7 @@ counts y upward — an outline that came back mirrored is a sprite extruded back
 | `inflate` | A drawing given volume, as a stuffed cushion is — from an `outline` or from a `drawing` |
 | `carve` | Boolean difference: `into` minus `cutter` |
 | `union` | Boolean union of a list of ids |
+| `blend` | Primitives joined by a fillet of `radius` where they meet and nowhere else — see "Round on every edge" |
 | `bevel` | A bevel applied to an existing node |
 | `transform` | Translate, rotate and scale an existing node |
 | `mirror` | An existing node and its reflection across the plane `axis = plane`, joined |
@@ -209,6 +210,19 @@ the rounded box's distance. A radius of 0 or past half the smallest side is
 A `bevel`, and a `carve`'s, takes `segments` (default 3) and `profile`: `round`, the
 default, or `chamfer`, one flat cut whatever the segments. So an existing node rounds as
 a moulded part does, and not as a chamfer.
+
+**A `blend` makes parts flow into each other** (§PW498), as a tree's crown melts onto
+its trunk: `inputs` (two or more ids) joined by a fillet of `radius` where they meet,
+and left as they were everywhere else. Each part is its distance field, the
+primitive's own formula carried through `transform`, placement and repeats, and the
+round union of the fields is meshed back to triangles by marching tetrahedra on a grid
+`2 × steps` cells across the longest side (`steps` defaults to 32). The body is closed,
+and each face wears the material of the part nearest it, so a trunk in bark under a
+crown in leaf stays two materials. A part with no field, such as a prism, a mesh file
+or a carve, is `geom.bad-solid` naming it, as are a radius of 0 and fewer than two
+parts. A radius larger than the smallest part across is a build warning, since the
+fillet then swallows it. It reads back as `trunk and crown flowing together by a fillet
+of 0.2`, and a voxel document reads it from its mesh.
 
 `inflate` is the operation that gives a drawn panel its volume while keeping the drawn
 silhouette to the pixel. `prism` over an `image` outline is the other half of the same idea:

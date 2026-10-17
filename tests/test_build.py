@@ -89,6 +89,97 @@ def test_a_solid_round_on_every_edge_builds_from_a_declaration(tmp_path, node):
     assert np.subtract(high, low).tolist() == pytest.approx(node["size"], rel=0.01)
 
 
+def tree(radius=0.2, **more) -> dict:
+    """A trunk and a crown, blended: the plastic city's tree (§PW498)."""
+    return {
+        "name": "tree", "version": 1, "params": {},
+        "materials": {"bark": {"colour": "#805030"}, "leaf": {"colour": "#30a040"}},
+        "nodes": [
+            {"id": "trunk", "op": "primitive", "kind": "cylinder",
+             "size": [0.4, 0.4, 2.0], "material": "bark"},
+            {"id": "ball", "op": "primitive", "kind": "sphere", "size": 1.6},
+            {"id": "crown", "op": "transform", "of": "ball", "at": [0, 0, 1.4],
+             "material": "leaf"},
+            {"id": "tree", "op": "blend", "inputs": ["trunk", "crown"],
+             "radius": radius, **more},
+        ],
+        "output": "tree",
+    }
+
+
+def _volume(made) -> float:
+    points = np.asarray(made["vertices"], dtype=float)
+    return sum(float(np.dot(points[f[0]], np.cross(points[f[1]], points[f[2]])))
+               for f in made["faces"]) / 6.0
+
+
+def test_a_blend_is_one_closed_body_wearing_each_part_s_material(tmp_path):
+    """§PW498: a crown that melts onto its trunk with no seam."""
+    from collections import Counter
+
+    found = B.build(tree(), root=tmp_path)
+    made = found["output"]
+    check_mesh(made)
+    uses = Counter()
+    for face in made["faces"]:
+        for a, b in zip(face, face[1:] + face[:1], strict=True):
+            uses[min(a, b), max(a, b)] += 1
+    assert set(uses.values()) == {2}, "closed: every edge two faces share"
+    assert [g["material"] for g in made["groups"]] == ["bark", "leaf"]
+    low, high = check_mesh(made)["bounds"]
+    assert np.subtract(high, low).tolist() == pytest.approx([1.6, 1.6, 3.2], abs=0.05)
+    said = review.describe(tree())["nodes"][-1]["says"]
+    assert "trunk and crown flowing together by a fillet of 0.2" in said
+
+
+def test_a_blend_fills_the_seam_and_leaves_the_rest_as_it_was(tmp_path):
+    sharp = B.build(tree(radius=0.01), root=tmp_path)["output"]
+    round_ = B.build(tree(radius=0.2), root=tmp_path)["output"]
+    # The fillet adds where the trunk meets the crown, and only there.
+    assert _volume(round_) > _volume(sharp) + 0.005
+    points = np.asarray(round_["vertices"], dtype=float)
+    low = points[points[:, 2] < 0.0]
+    assert np.hypot(low[:, 0], low[:, 1]).max() == pytest.approx(0.2, abs=0.03)
+    # At the seam, just under the crown, the trunk has swelled into a fillet where the
+    # near-sharp blend stays the trunk's own width.
+    def widest_at_seam(made) -> float:
+        found = np.asarray(made["vertices"], dtype=float)
+        band = found[(found[:, 2] > 0.5) & (found[:, 2] < 0.58)]
+        return float(np.hypot(band[:, 0], band[:, 1]).max())
+
+    assert widest_at_seam(sharp) == pytest.approx(0.2, abs=0.03)
+    assert widest_at_seam(round_) > widest_at_seam(sharp) + 0.05
+
+
+@pytest.mark.parametrize("change, said", [
+    ({"radius": 0}, "no fillet"),
+    ({"inputs": ["trunk"]}, "fewer than two"),
+])
+def test_a_blend_that_means_nothing_is_refused(tmp_path, change, said):
+    document = tree()
+    document["nodes"][-1].update(change)
+    with pytest.raises(PolyweaveError) as refused:
+        B.build(document, root=tmp_path)
+    assert refused.value.code == "geom.bad-solid"
+    assert said in refused.value.message
+
+
+def test_a_part_with_no_distance_field_is_refused_by_name(tmp_path):
+    document = tree()
+    document["nodes"][0] = {"id": "trunk", "op": "prism", "depth": 2.0,
+                            "outline": {"shape": "circle", "radius": 0.2}}
+    with pytest.raises(PolyweaveError) as refused:
+        B.build(document, root=tmp_path)
+    assert "blends trunk" in refused.value.message
+    assert "primitive" in refused.value.remedy
+
+
+def test_a_fillet_wider_than_a_part_is_warned_about(tmp_path):
+    found = B.build(tree(radius=0.5), root=tmp_path)
+    assert any("larger than its smallest part" in one
+               for one in found["report"]["warnings"])
+
+
 def _bevelled(tmp_path, **how) -> int:
     """How many faces a cube has once its bevel rounds it as `how` says."""
     document = {

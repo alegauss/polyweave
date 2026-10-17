@@ -14,34 +14,16 @@
 
 ## Block G — Geometry as a declaration
 
-### §PW498 A smooth blend between parts
-
-Found in Spinhold on 2026-10-17. The owner asked for a new habitat, a city in the
-moulded plastic look of Fall Guys, with the ship and the enemies left in voxels.
-Spinhold's ring skin and skyline are cubes on a MultiMesh (`game/world/voxels.gd`,
-`scenery.gd`), so the new city needs smooth pieces, and every one of them is parts that
-flow into each other: a tower whose roof pours into its walls, a tree whose crown melts
-onto its trunk, a mascot whose head sits on its body with no seam.
-
-`union` is a boolean, so where two parts meet the join is a crease as sharp as the
-solver leaves it. A bevel after it rounds every edge alike, and a fillet only where the
-parts meet cannot be asked for. Today such a piece is a bought mesh or a `custom` node.
-
-What polyweave should do: a `blend` op taking a list of ids and a `radius`, joining them
-with a smooth fillet of that radius where they meet and nowhere else (a smooth minimum
-over their distance fields, meshed back to triangles), its material groups carried, with
-the non-empty assertion every boolean keeps. Its readback names the radius, and a radius
-larger than the smaller part is a build warning.
-
 ### §PW495 The declared finish as a Godot material
 
-Found in Spinhold on 2026-10-17, for the plastic city of §PW498. When the finish PW494
-shipped (`docs/specs/geometry.md`) is accepted on a sitting, the game must draw the same
-thing. A built model reaches Godot as a `.glb`, and the importer keeps what glTF and its
-own mapping keep: a coat, a rim, a subsurface tint or a sheen may come in at other
-numbers or not at all, and the game's city is drawn on a MultiMesh in its own shader,
-which takes no material from a mesh. Then the accepted look is re-made in game code by
-eye, which is what the project's rule forbids.
+Found in Spinhold on 2026-10-17, for the plastic city of PW498
+(`docs/specs/geometry.md`). When the finish PW494 shipped (`docs/specs/geometry.md`) is
+accepted on a sitting, the game must draw the same thing. A built model reaches Godot as
+a `.glb`, and the importer keeps what glTF and its own mapping keep: a coat, a rim, a
+subsurface tint or a sheen may come in at other numbers or not at all, and the game's
+city is drawn on a MultiMesh in its own shader, which takes no material from a mesh.
+Then the accepted look is re-made in game code by eye, which is what the project's rule
+forbids.
 
 What polyweave should do: write the declared material beside the build as a Godot
 material (a `.tres` StandardMaterial3D, or a generated `.gdshader` where a feature the

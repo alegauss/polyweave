@@ -49,8 +49,9 @@ SUFFIX = ".voxels.json"
 FORMAT = 1
 
 #: The ops with no inside-test of their own, voxelised from the mesh they build. A
-#: `mesh` node is one (§PW100): filled by parity, a closed hull comes out solid.
-TRACED = ("inflate", "crowned", "annulus", "custom", "mesh")
+#: `mesh` node is one (§PW100): filled by parity, a closed hull comes out solid. So is a
+#: `blend` (§PW498), whose fillet only its mesh says.
+TRACED = ("inflate", "crowned", "annulus", "custom", "mesh", "blend")
 
 #: What a painted cell's key is lifted by, so any node carrying a material outranks any
 #: node that does not, whatever their order.

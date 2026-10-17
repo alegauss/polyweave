@@ -153,6 +153,43 @@ def _union(node, instance, built, root):
     return S.union(*(built[one] for one in refers_to(node)))
 
 
+def _blend(node, instance, built, root):
+    # Parts joined by a fillet where they meet (§PW498), each read as its own distance
+    # field, which only a primitive and what moves one carry.
+    from .blend import blend
+
+    takes = refers_to(node)
+    bare = [one for one in takes if not built[one].get("field")]
+    if bare or len(takes) < 2:
+        raise PolyweaveError(
+            "geom.bad-solid",
+            f"{node['id']} blends {', '.join(bare) or 'fewer than two parts'}, and a "
+            "blend joins two or more primitives, or transforms and repeats of them",
+            "make each part a primitive (a rounded_box, capsule, sphere, cylinder, "
+            "cone, frustum, torus or cube), moved by a transform where it needs to be",
+            at=f"nodes.{node['id']}",
+        )
+    radius = float(instance.get("radius", 0.0))
+    if radius <= 0:
+        raise PolyweaveError(
+            "geom.bad-solid",
+            f"{node['id']} blends with a radius of {radius:g}, which is no fillet",
+            "give the blend a radius above 0, in the declaration's units; a union "
+            "joins parts with none",
+            at=f"nodes.{node['id']}.radius",
+        )
+    parts = [part for one in takes for part in built[one]["field"]]
+    points = np.vstack([np.asarray(built[one]["vertices"]) for one in takes])
+    made = blend(parts, radius, points.min(axis=0), points.max(axis=0),
+                 int(instance.get("steps", S.STEPS)))
+    smallest = min(float(np.min(np.ptp(np.asarray(built[one]["vertices"]), axis=0)))
+                   for one in takes)
+    if radius > smallest:
+        made["warnings"] = [f"its radius of {radius:g} is larger than its smallest "
+                            f"part, {smallest:g} across, so the fillet swallows it"]
+    return made
+
+
 def _transform(node, instance, built, root):
     return S.transform(
         built[refers_to(node)[0]],
@@ -278,6 +315,7 @@ BUILDS: dict[str, Callable] = {
     "annulus": _annulus,
     "inflate": _inflate,
     "union": _union,
+    "blend": _blend,
     "transform": _transform,
     "carve": _carve,
     "bevel": _bevel,
@@ -328,6 +366,7 @@ FIELDS: dict[str, tuple[str, ...] | None] = {
         "sides",
     ),
     "union": _TAKES,
+    "blend": (*_TAKES, "radius", "steps"),
     "transform": (*_TAKES, "scale", "rotate"),
     "carve": ("into", "cutter", "bevel", "segments", "profile"),
     "bevel": (*_TAKES, "bevel", "segments", "profile"),
@@ -388,6 +427,10 @@ def build(
         # A repeated node's id names the whole set, which is what makes the tray one
         # boolean rather than sixty-four.
         whole = made[0] if len(made) == 1 else S.union(*made)
+        if node.get("material") and whole.get("field"):
+            # What a node wears goes with its field, so a blend paints each part.
+            whole = {**whole, "field": [{**part, "material": node["material"]}
+                                        for part in whole["field"]]}
         worn = _worn(node, whole, built)
         built[one] = {**whole, "groups": worn} if worn else whole
 
