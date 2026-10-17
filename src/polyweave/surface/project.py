@@ -72,6 +72,11 @@ def init(
     tables = proposed(here)
     target = here / FILENAME
     existing = read_text_retrying(target)
+    # Which layers to turn on, proposed for a new file only: added to a file a project
+    # already runs on, it would switch off layers that file's tables use (§PW509).
+    switched = None if existing is not None else _layers(here, tables)
+    if switched:
+        tables = {"layers": {"on": switched["on"]}, **tables}
     if existing is not None and write and not merge:
         raise PolyweaveError(
             "config.exists",
@@ -114,6 +119,8 @@ def init(
         "missing": missing,
         "says": "written" if wrote else "proposed only; pass write to write it",
     }
+    if switched:
+        answer["layers"] = switched
     if agent:
         from polyweave.kernel.config import load
 
@@ -155,6 +162,60 @@ def proposed(here: Path) -> dict[str, dict]:
             for name, (base, variable) in keyed.items()
         }
     return tables
+
+
+#: What in a tree says a project uses a layer, each with the words the answer gives.
+#: A layer no signal names is left off and said so (§PW509).
+PICTURES = ("*.png", "*.jpg", "*.jpeg", "*.webp")
+AUDIO = ("*.wav", "*.ogg", "*.mp3", "*.flac", "*.opus")
+
+
+def _signals(here: Path, tables: dict) -> dict[str, str]:
+    """Each layer the tree shows the project using, with what showed it."""
+    from polyweave.kernel.layer import call, part
+
+    found: dict[str, str] = {}
+    if (here / "project.godot").is_file():
+        found["engine"] = "a project.godot"
+        found["kits"] = "a project.godot, which a kit installs into"
+    declaring = part("declaration.is")
+    shapes = [one for one in _walk(here, "*.toml")
+              if declaring and not one.name.endswith(".accept.toml")
+              and call(declaring, one)]
+    if shapes or _first(here, "*.glb"):
+        found["geometry"] = "a geometry declaration" if shapes else "a .glb model"
+    if "style" in tables or any(_first(here, one) for one in PICTURES):
+        found["picture"] = "a canon" if "style" in tables else "pictures in the tree"
+    if any(_first(here, one) for one in AUDIO):
+        found["sound"] = "audio files in the tree"
+    if "words" in tables:
+        found["words"] = "the string table Godot imports"
+    if _first(here, "*.vfx.toml"):
+        found["vfx"] = "a *.vfx.toml"
+    if _first(here, "*.clip.toml"):
+        found["motion"] = "a *.clip.toml"
+    if any((here / one).is_dir() for one in ("references", "reference")):
+        found["reference"] = "a references folder"
+    return found
+
+
+def _layers(here: Path, tables: dict) -> dict | None:
+    """The layers to propose turning on, why each, and why the rest stay off; None
+    where nothing in the tree says, which leaves every layer on."""
+    from polyweave.kernel.layer import layers
+
+    because = _signals(here, tables)
+    if not because:
+        return None
+    every = sorted(layers())
+    return {
+        "on": [one for one in every if one in because],
+        "because": dict(sorted(because.items())),
+        "left_off": {
+            one: "nothing in the tree uses it; add it to [layers] on when it does"
+            for one in every if one not in because
+        },
+    }
 
 
 def _name(here: Path) -> str:
@@ -215,6 +276,8 @@ def _value(value) -> str:
         return str(value).lower()
     if isinstance(value, int | float):
         return str(value)
+    if isinstance(value, list | tuple):
+        return "[" + ", ".join(_value(one) for one in value) + "]"
     escaped = str(value).replace("\\", "\\\\").replace('"', '\\"')
     return f'"{escaped}"'
 

@@ -47,7 +47,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 2 },
-  { block: "W", title: "A core that grows by layers", open: 15 },
+  { block: "W", title: "A core that grows by layers", open: 14 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -136,18 +136,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW516"],
   },
   {
-    id: "PW509",
-    block: "W",
-    symptom: "A project gets all 200 operations as tools whatever it makes, so a 2D game's agent loads Blender, voxel and rig tools",
-    why: "project.init does not yet propose [layers] on from what the tree holds, so every project still starts with every layer on.",
-    deps: [],
-  },
-  {
     id: "PW510",
     block: "W",
     symptom: "The tool list's budget has been raised about 30 times in a row, so it stops no growth and names no layer that grew",
     why: "A ceiling that each feature raises by its own size is a log, and the limit that scales is one per layer, held where the layer is written.",
-    deps: ["PW509"],
+    deps: [],
   },
   {
     id: "PW511",
@@ -161,7 +154,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "W",
     symptom: "Nothing proves a new layer can be added without editing the kernel, so the block's whole claim goes unchecked",
     why: "Each seam is tested alone, and only a whole layer added from outside shows they leave a kernel file nobody has to open.",
-    deps: ["PW506", "PW509", "PW510", "PW511"],
+    deps: ["PW506", "PW510", "PW511"],
   },
   {
     id: "PW513",
@@ -217,7 +210,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "W",
     symptom: "A project's polyweave.toml and the Python importing polyweave break on the new layout, with nothing to carry them over",
     why: "The block owes callers no compatibility, so one command must carry a project across, or every adopter pays for the break by hand.",
-    deps: ["PW509", "PW512", "PW515", "PW516"],
+    deps: ["PW512", "PW515", "PW516"],
   },
   {
     id: "PW521",

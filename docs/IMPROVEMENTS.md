@@ -504,31 +504,6 @@ store, and moves to picture.
 Done when the test refuses an undeclared layer import and a cycle, and passes on the
 tree.
 
-### §PW509 A project turns on the layers it uses
-
-`server.tools()` serves every registered operation. The only thing it leaves out is the
-three that need an absent Blender. A project that makes pictures and sound for a 2D game
-is still handed geometry, voxels, skeleton, clip, motion and reference, and in a client
-that loads tools eagerly it pays for all of them on every turn. That is the cost the
-plugin's first principle is judged by, and it is the one that grows fastest.
-
-`polyweave.toml` gains `[layers] on = ["picture", "sound", "words", "engine"]`. The
-server and the command line register and serve only those layers' operations, plus
-`kernel` and `loop`, which every project gets. `project.init` proposes `on` from what it
-finds in the tree: a `project.godot` turns engine on, `*.geom.toml` turns geometry on, a
-`[words]` table turns words on. A layer `uses` another (engine for vfx), so turning one
-on turns that one on too, and `capabilities` reports it. An off layer's table is refused
-naming that layer, not as a typo.
-
-Calling an operation of a layer that is off answers `layer.off`, naming the layer and
-the one line to add. `describe` still lists it, marked off. So an agent can find what
-exists without carrying the whole surface, and it is never told that something exists
-when it does not.
-
-A project without `[layers]` gets every layer, which is the default `migrate` writes
-explicitly. Done when a two-layer fixture project's `tools/list` holds only its layers,
-and the `layer.off` answer is tested.
-
 ### §PW510 A tool budget per layer, and one for a session
 
 `server.LIST_BUDGET` is 129,900 characters. Its comment is a list of about thirty
