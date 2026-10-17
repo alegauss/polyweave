@@ -31,7 +31,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 1 },
-  { block: "G", title: "Geometry as a declaration", open: 4 },
+  { block: "G", title: "Geometry as a declaration", open: 3 },
   { block: "H", title: "Proof on a real game", open: 2 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
@@ -65,18 +65,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW494",
-    block: "G",
-    symptom: "a material declares only colour and roughness, so a glossy plastic with clear coat, sheen and soft rim cannot be asked",
-    why: "Moulded plastic is read off its finish more than its shape, and every bake today renders the plastic city as painted clay.",
-    deps: [],
-  },
-  {
     id: "PW495",
     block: "G",
     symptom: "a declared finish reaches the game only through glTF import, so a look a person accepted is rebuilt in a game shader",
     why: "Spinhold draws its city on a MultiMesh in its own shader, so a plastic finish judged on a sitting would be re-made there by eye.",
-    deps: ["PW494"],
+    deps: [],
   },
   {
     id: "PW497",

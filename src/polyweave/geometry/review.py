@@ -28,7 +28,7 @@ from typing import Annotated, Any
 from ..describe import Param, operation
 from ..errors import PolyweaveError
 from ..post.mesh import check_manifold, check_mesh
-from . import arithmetic, coats, expand, mentions, order, refers_to, uses
+from . import arithmetic, coats, expand, finish, mentions, order, refers_to, uses
 from . import surface as F
 
 #: A repeat above this is worth mentioning, because a document rarely means it.
@@ -147,9 +147,14 @@ def _says(node: dict, instance: dict, materials: dict | None = None) -> str:
         said += f", in {node['material']}"
         # A fuzzy surface is the one material property that changes what the shape
         # looks like rather than only what colour it is, so it is said (§PW50).
-        coat = F.fuzz((materials or {}).get(node["material"]))
+        worn = (materials or {}).get(node["material"])
+        coat = F.fuzz(worn)
         if coat:
             said += f", {F.says(coat)}"
+        # And a finish, which is what moulded plastic is read off (§PW494).
+        finished = finish.says(worn)
+        if finished:
+            said += f", {finished}"
     return said
 
 

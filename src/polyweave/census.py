@@ -252,6 +252,7 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.geometry.solid": ("internal", "the solid ops a build runs"),
     "polyweave.geometry.outline": ("internal", "the outline ops a build runs"),
     "polyweave.geometry.surface": ("internal", "the surface ops a build runs"),
+    "polyweave.geometry.finish": ("internal", "a material's finish, read by the bake"),
     "polyweave.geometry.fracture": ("internal", "an op a build runs"),
     "polyweave.geometry.custom": ("internal", "the way back to code, called by build"),
     "polyweave.geometry.voxel_colour": ("internal", "a voxel build's palette"),

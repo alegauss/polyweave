@@ -383,6 +383,32 @@ What is **not** here is the noise field itself, which is a shader's and not a fo
 declaration fixes the stack the field is drawn onto and the threshold each shell cuts it at,
 which is the half that is reproducible from the two numbers that asked for it.
 
+**A finish is asked for as an intent too** (§PW494), because moulded plastic is read off
+its finish more than its shape:
+
+```toml
+[materials."pink plastic"]
+colour     = "#F27BA8"
+roughness  = 0.35
+coat       = { weight = 1.0, roughness = 0.04 }   # or one number, its weight
+sheen      = 0.2
+rim        = 0.6
+subsurface = { weight = 0.3, depth = 0.05, tint = "#FF8080" }   # or its weight
+```
+
+| Field | What the bake sets |
+|---|---|
+| `coat` | The Principled BSDF's coat weight and coat roughness, 0.03 when left out |
+| `sheen` | Its sheen weight, at a sheen roughness of 0.3 |
+| `subsurface` | Its subsurface weight, `depth` as the subsurface scale (0.05), and `tint` as the radius each colour travels, the tint's channels over its largest |
+| `rim` | A soft light at the silhouette: the view's angle to the surface, cubed and scaled by `rim`, driving the emission in white |
+
+Weights, roughnesses, `sheen` and `rim` run from 0 to 1, and each is an expression over
+the parameters, so a search turns them. A field a coat or a subsurface does not take, a
+number outside its range or a tint that is not `#RRGGBB` is `geom.bad-surface`. The
+finish reads back after the material's name: `in pink plastic, clear-coated, glossy`,
+glossy at a roughness of 0.3 or under (a coat's counts) and matte at 0.7 or over.
+
 ## The escape hatch is a node, not a mode
 
 Any format eventually meets a shape it cannot state, and forcing that shape into the format

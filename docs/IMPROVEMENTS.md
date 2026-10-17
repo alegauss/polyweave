@@ -49,22 +49,6 @@ over their distance fields, meshed back to triangles), its material groups carri
 the non-empty assertion every boolean keeps. Its readback names the radius, and a radius
 larger than the smaller part is a build warning.
 
-### §PW494 A plastic finish on a material
-
-Found in Spinhold on 2026-10-17, for the plastic city of §PW498. What makes a piece read
-as moulded plastic is mostly its finish: a saturated colour, a tight bright highlight
-under a clear coat, a soft rim of light at the silhouette, and light going a little way
-into the body so a pastel glows rather than greys. A geometry material declares a
-`colour` and a `roughness`, so none of that can be asked for and every bake renders the
-city as painted clay.
-
-What polyweave should do: a material taking `coat` (its weight and its own roughness),
-`sheen`, `rim` and `subsurface` (a depth and a tint), each an expression over the params
-so PW32's search reaches them, set on the Principled BSDF the bake builds, so a sitting
-shows the finish a person is asked about. Like PW50, a declaration states what it wants
-in a few numbers and the inputs are derived, and a material reads back in words: `in
-pink plastic, clear-coated, glossy`.
-
 ### §PW495 The declared finish as a Godot material
 
 Found in Spinhold on 2026-10-17, for the plastic city of §PW498. When §PW494's finish is

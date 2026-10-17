@@ -233,6 +233,8 @@ def lay_over(obj: Any, inputs: dict) -> Any:
     Principled BSDF keeps its textures and slots and takes the named inputs, a map that
     drove one of them unhooked first, since a linked socket ignores its own value.
     """
+    inputs = dict(inputs)
+    rim = inputs.pop("rim", None)
     shaders = [
         node
         for slot in obj.material_slots
@@ -262,6 +264,8 @@ def lay_over(obj: Any, inputs: dict) -> Any:
             for link in list(socket.links):
                 tree.links.remove(link)
             socket.default_value = _coerce(value, socket)
+        if rim:
+            _rim(bsdf, rim)
     return obj
 
 
@@ -313,6 +317,7 @@ def _material(inputs: dict, named: str) -> Any:
     bpy = require()
     inputs = dict(inputs)
     image = inputs.pop("image", None)
+    rim = inputs.pop("rim", None)
     made = bpy.data.materials.new(named)
     made.use_nodes = True
     bsdf = made.node_tree.nodes.get("Principled BSDF")
@@ -334,6 +339,8 @@ def _material(inputs: dict, named: str) -> Any:
     for key, value in inputs.items():
         socket = _socket(bsdf, key)
         socket.default_value = _coerce(value, socket)
+    if rim:
+        _rim(bsdf, rim)
     if image:
         if not Path(image).is_file():
             raise PolyweaveError(
@@ -743,9 +750,45 @@ def as_inputs(stated: dict) -> dict:
     """A declaration's material, in the words the shader answers to.
 
     A name the shader already has passes through, so a project that writes `roughness`
-    or `metallic` needs no table entry and a project that writes `colour` gets one.
+    or `metallic` needs no table entry and a project that writes `colour` gets one. A
+    finish, `coat`, `sheen`, `subsurface` and `rim`, is expanded into the sockets it
+    stands for (§PW494), the rim left as a key the material builds.
     """
-    return {NAMED.get(key, key): _colour(value) for key, value in stated.items()}
+    from ..geometry import finish
+
+    return {
+        NAMED.get(key, key): _colour(value)
+        for key, value in finish.inputs(stated).items()
+    }
+
+
+#: How sharply the rim falls off toward the surface that faces the view.
+RIM_FALL = 3.0
+
+
+def _rim(bsdf: Any, strength: float) -> None:
+    """A soft rim of light at the silhouette: emission by the view's angle (§PW494).
+
+    The Layer Weight's facing is nought where the surface looks at the camera and one
+    where it turns away, so raised to a power and scaled it lights the edge alone.
+    """
+    tree = bsdf.id_data
+    nodes, links = tree.nodes, tree.links
+    facing = nodes.new("ShaderNodeLayerWeight")
+    facing.inputs["Blend"].default_value = 0.5
+    fall = nodes.new("ShaderNodeMath")
+    fall.operation = "POWER"
+    fall.inputs[1].default_value = RIM_FALL
+    scaled = nodes.new("ShaderNodeMath")
+    scaled.operation = "MULTIPLY"
+    scaled.inputs[1].default_value = float(strength)
+    links.new(facing.outputs["Facing"], fall.inputs[0])
+    links.new(fall.outputs["Value"], scaled.inputs[0])
+    emission = _socket(bsdf, "emission_strength")
+    for link in list(emission.links):
+        links.remove(link)
+    links.new(scaled.outputs["Value"], emission)
+    _socket(bsdf, "emission_color").default_value = (1.0, 1.0, 1.0, 1.0)
 
 
 def _colour(value: Any) -> Any:
