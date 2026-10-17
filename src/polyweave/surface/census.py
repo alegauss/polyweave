@@ -99,6 +99,11 @@ CORE: dict[str, tuple[str, str]] = {
     "polyweave.services.client": (
         "internal", "every paid service's request, key, price and bytes"),
     "polyweave.services.purchase": ("internal", "what a fetch writes when it has paid"),
+    "polyweave.services.service": (
+        "internal", "the adapter seam and the one buy every purchase goes through"),
+    "polyweave.services.meshy": ("internal", "Meshy's adapter"),
+    "polyweave.services.tripo": ("internal", "Tripo's adapter"),
+    "polyweave.services.rodin": ("internal", "Rodin's adapter"),
     "polyweave.services.schema": (
         "internal", "learning the schema, which sends requests"),
     "polyweave.loop.verdict:record_answer": ("internal", "the page's answer, appended"),

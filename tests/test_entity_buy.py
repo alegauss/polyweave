@@ -10,6 +10,7 @@ from polyweave.kernel import provenance
 from polyweave.kernel.errors import PolyweaveError
 from polyweave.layers.geometry import mesh_buy
 from polyweave.layers.picture import picture
+from polyweave.services import service as S
 from test_mesh_buy import GLB, Meshy
 from test_mesh_buy import PROJECT as MESHY
 from test_picture import PNG, Service
@@ -138,9 +139,9 @@ def test_a_mesh_of_an_entity_is_bought_from_the_world_s_words(tmp_path, monkeypa
     (tmp_path / "game.world.toml").write_text(WORLD, encoding="utf-8")
     monkeypatch.setenv("POLYWEAVE_TEST_M", "msy")
     fake = Meshy()
-    monkeypatch.setattr(mesh_buy, "_json", fake)
-    monkeypatch.setattr(mesh_buy, "POLL_EVERY", 0)
-    monkeypatch.setattr(mesh_buy, "_download", lambda link: GLB)
+    monkeypatch.setattr(S, "call", fake)
+    monkeypatch.setattr(S, "POLL_EVERY", 0)
+    monkeypatch.setattr(S, "download", lambda link: GLB)
     mesh_buy.buy(out="m/mason.glb", entity="mason", root=tmp_path)
     _, payload = fake.sent[0]
     assert payload["prompt"].startswith("a stooped builder in a dust-grey apron.")

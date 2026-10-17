@@ -146,7 +146,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW516",
     block: "W",
     symptom: "Each paid service's HTTP client is written inside the domain that buys from it, so a new service copies a client",
-    why: "Each service is still bought by its own domain code; a Service adapter per provider and one kernel buy() that alone spends are left.",
+    why: "Meshes go through one buy() now (PW526); Ideogram, Scenario and ElevenLabs are still bought by their own domain code.",
     deps: [],
   },
   {

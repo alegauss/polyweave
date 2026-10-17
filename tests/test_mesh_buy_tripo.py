@@ -17,6 +17,8 @@ from polyweave.kernel.errors import PolyweaveError
 from polyweave.layers.geometry import mesh_buy
 from polyweave.layers.picture import picture
 from polyweave.services import purchase
+from polyweave.services import service as S
+from polyweave.services import tripo as tripo_adapter
 
 GLB = b"glTF" + b"\x00" * 60
 PROJECT = (
@@ -52,10 +54,10 @@ def tripo(tmp_path, monkeypatch):
     (tmp_path / C.FILENAME).write_text(PROJECT, encoding="utf-8")
     monkeypatch.setenv("POLYWEAVE_TEST_T", "tsk")
     fake = Tripo()
-    monkeypatch.setattr(mesh_buy, "_json", fake)
-    monkeypatch.setattr(mesh_buy, "_uploaded", lambda base, key, source: "file_1")
-    monkeypatch.setattr(mesh_buy, "POLL_EVERY", 0)
-    monkeypatch.setattr(mesh_buy, "_download", lambda link: GLB)
+    monkeypatch.setattr(S, "call", fake)
+    monkeypatch.setattr(tripo_adapter, "upload", lambda base, key, source: "file_1")
+    monkeypatch.setattr(S, "POLL_EVERY", 0)
+    monkeypatch.setattr(S, "download", lambda link: GLB)
     return fake
 
 
@@ -110,7 +112,7 @@ def test_a_failed_task_is_refused_with_the_service_s_reason(tmp_path, tripo,
             return {"data": {"task_id": "t2"}}
         return {"data": {"status": "failed", "error_message": "prompt rejected"}}
 
-    monkeypatch.setattr(mesh_buy, "_json", failing)
+    monkeypatch.setattr(S, "call", failing)
     with pytest.raises(PolyweaveError) as caught:
         mesh_buy.buy(out="m/x.glb", prompt="a cube", model="v2.5-20250123",
                      root=tmp_path)

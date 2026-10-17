@@ -17,6 +17,7 @@ from polyweave.kernel.errors import PolyweaveError
 from polyweave.layers.geometry import mesh_buy
 from polyweave.layers.picture import picture
 from polyweave.services import purchase
+from polyweave.services import service as S
 
 GLB = b"glTF" + b"\x00" * 60
 PROJECT = (
@@ -50,9 +51,9 @@ def meshy(tmp_path, monkeypatch):
     (tmp_path / C.FILENAME).write_text(PROJECT, encoding="utf-8")
     monkeypatch.setenv("POLYWEAVE_TEST_M", "msy")
     fake = Meshy()
-    monkeypatch.setattr(mesh_buy, "_json", fake)
-    monkeypatch.setattr(mesh_buy, "POLL_EVERY", 0)
-    monkeypatch.setattr(mesh_buy, "_download", lambda link: GLB)
+    monkeypatch.setattr(S, "call", fake)
+    monkeypatch.setattr(S, "POLL_EVERY", 0)
+    monkeypatch.setattr(S, "download", lambda link: GLB)
     return fake
 
 
@@ -150,7 +151,7 @@ def test_a_failed_task_ledgers_nothing(tmp_path, meshy, monkeypatch):
             return {"result": "t"}
         return {"status": "FAILED", "task_error": {"message": "bad prompt"}}
 
-    monkeypatch.setattr(mesh_buy, "_json", failing)
+    monkeypatch.setattr(S, "call", failing)
     error = refused(out="m.glb", prompt="x", root=tmp_path)
     assert "bad prompt" in error.message
     assert purchase.read(tmp_path) == []
@@ -173,7 +174,7 @@ def test_json_is_a_code_on_refusal(monkeypatch):
 
     monkeypatch.setattr("urllib.request.urlopen", refuse)
     with pytest.raises(PolyweaveError) as caught:
-        mesh_buy._json("POST", "https://api.meshy.ai/x", "k", {})
+        S.call("POST", "https://api.meshy.ai/x", "k", {})
     assert caught.value.code == "fetch.over-budget"
     assert json.dumps({}) == "{}"
 

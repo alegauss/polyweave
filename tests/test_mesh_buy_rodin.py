@@ -16,6 +16,7 @@ from polyweave.kernel.errors import PolyweaveError
 from polyweave.layers.geometry import mesh_buy
 from polyweave.layers.picture import picture
 from polyweave.services import purchase
+from polyweave.services import service as S
 
 GLB = b"glTF" + b"\x00" * 60
 PROJECT = (
@@ -52,10 +53,10 @@ def rodin(tmp_path, monkeypatch):
     (tmp_path / C.FILENAME).write_text(PROJECT, encoding="utf-8")
     monkeypatch.setenv("POLYWEAVE_TEST_R", "rk")
     fake = Rodin()
-    monkeypatch.setattr(mesh_buy, "_form", fake.form)
-    monkeypatch.setattr(mesh_buy, "_json", fake.json)
-    monkeypatch.setattr(mesh_buy, "POLL_EVERY", 0)
-    monkeypatch.setattr(mesh_buy, "_download", lambda link: GLB)
+    monkeypatch.setattr(S, "form", fake.form)
+    monkeypatch.setattr(S, "call", fake.json)
+    monkeypatch.setattr(S, "POLL_EVERY", 0)
+    monkeypatch.setattr(S, "download", lambda link: GLB)
     return fake
 
 
