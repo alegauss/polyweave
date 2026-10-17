@@ -107,6 +107,7 @@
 - ✅ **PW492** **inflate swells one face of a drawing, so a body puffed round on both sides, as an inflatable toy is, cannot be declared** — A drawing inflated with sides = 2 is a closed pillow, its rim on the outline and round: 79° across it against a mirrored relief's 124° (design recorded in `geometry.md`).
 - ✅ **PW493** **a solid round on every edge, a capsule or a soft box, has no op, since plate rounds only its outline's corners in XY** — capsule and rounded_box are primitives, closed meshes the voxel test agrees with, and bevel takes segments and a round or chamfer profile (design recorded in `geometry.md`).
 - ✅ **PW494** **a material declares only colour and roughness, so a glossy plastic with clear coat, sheen and soft rim cannot be asked** — A material takes coat, sheen, rim and subsurface, derived onto the Principled BSDF the bake builds, and reads back as "clear-coated, glossy" (design recorded in `geometry.md`).
+- ✅ **PW495 (material half)** **a declared finish reaches the game only through glTF import, so a look a person accepted is rebuilt in a game shader** — A build writes a finish as a Godot .tres, a shader for a sheen, with the bake's numbers; Godot reads them back.
 
 ## Block H — Proof on a real game
 

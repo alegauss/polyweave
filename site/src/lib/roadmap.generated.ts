@@ -68,7 +68,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW495",
     block: "G",
     symptom: "a declared finish reaches the game only through glTF import, so a look a person accepted is rebuilt in a game shader",
-    why: "Spinhold draws its city on a MultiMesh in its own shader, so a plastic finish judged on a sitting would be re-made there by eye.",
+    why: "No capture of the game against the bake of the same model at one rig says yet whether the two agree.",
     deps: [],
   },
   {

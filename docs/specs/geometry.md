@@ -409,6 +409,17 @@ number outside its range or a tint that is not `#RRGGBB` is `geom.bad-surface`. 
 finish reads back after the material's name: `in pink plastic, clear-coated, glossy`,
 glossy at a roughness of 0.3 or under (a coat's counts) and matte at 0.7 or over.
 
+**The game is given what was judged** (§PW495). glTF carries a colour and a roughness and
+drops a finish, so a build writes each material that asks for one beside its mesh, as
+`<name>.<material>.tres` (spaces as underscores), recorded like the mesh. It holds the
+numbers the bake used, Blender's Principled defaults where the declaration says nothing
+(roughness 0.5, metallic 0, colour 0.906 grey) and not Godot's. A StandardMaterial3D
+takes the coat as its clearcoat, the rim as its rim with no tint, and the subsurface as
+its scatter strength, with the tint and depth as its transmittance. A sheen, which it
+has no field for, makes it a ShaderMaterial over a spatial shader written beside it as
+`<name>.<material>.gdshader`, the sheen a lift of the surface's own colour where it
+turns from the view. A material with no finish is left to the glTF.
+
 ## The escape hatch is a node, not a mode
 
 Any format eventually meets a shape it cannot state, and forcing that shape into the format

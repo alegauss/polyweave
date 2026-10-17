@@ -370,7 +370,7 @@ def _member(
         one for one in written["report"]["warnings"] if one not in answer["warnings"]
     ]
     answer["says"] = f"a mesh of {len(written['output']['faces'])} faces"
-    answer["outputs"] = [written["artefact"]]
+    answer["outputs"] = [written["artefact"], *written.get("materials", ())]
     if preview:
         answer["outputs"].append(_silhouette(written["output"], folder, document))
     return answer

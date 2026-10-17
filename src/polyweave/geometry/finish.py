@@ -32,7 +32,7 @@ from typing import Any
 
 from ..errors import PolyweaveError
 
-__all__ = ["ASKS", "asked", "inputs", "says"]
+__all__ = ["ASKS", "asked", "godot", "inputs", "says", "write_godot"]
 
 #: The finish a material may ask for, beside the sockets it already names.
 ASKS = ("coat", "sheen", "rim", "subsurface")
@@ -146,6 +146,152 @@ def inputs(material: dict) -> dict:
     if "rim" in finish:
         out["rim"] = finish["rim"]
     return out
+
+
+#: What Blender's Principled BSDF holds where a material says nothing, so the game is
+#: given the numbers the bake drew with and not Godot's own defaults (§PW495).
+BAKED = {"colour": (0.906, 0.906, 0.906, 1.0), "roughness": 0.5, "metallic": 0.0}
+
+_STANDARD = """[gd_resource type="StandardMaterial3D" format=3]
+
+[resource]
+resource_name = %(name)s
+%(fields)s
+"""
+
+_SHADED = """[gd_resource type="ShaderMaterial" load_steps=2 format=3]
+
+[ext_resource type="Shader" path="%(shader)s" id="1"]
+
+[resource]
+resource_name = %(name)s
+shader = ExtResource("1")
+%(fields)s
+"""
+
+#: A finish StandardMaterial3D has no field for, drawn by a spatial shader: the sheen,
+#: a soft lift of the surface's own colour where it turns from the view.
+_SHADER = """shader_type spatial;
+
+uniform vec4 albedo : source_color = vec4(0.906, 0.906, 0.906, 1.0);
+uniform float roughness : hint_range(0.0, 1.0) = 0.5;
+uniform float metallic : hint_range(0.0, 1.0) = 0.0;
+uniform float clearcoat : hint_range(0.0, 1.0) = 0.0;
+uniform float clearcoat_roughness : hint_range(0.0, 1.0) = 0.03;
+uniform float rim : hint_range(0.0, 1.0) = 0.0;
+uniform float subsurface : hint_range(0.0, 1.0) = 0.0;
+uniform float sheen : hint_range(0.0, 1.0) = 0.0;
+
+void fragment() {
+\tALBEDO = albedo.rgb;
+\tROUGHNESS = roughness;
+\tMETALLIC = metallic;
+\tCLEARCOAT = clearcoat;
+\tCLEARCOAT_ROUGHNESS = clearcoat_roughness;
+\tRIM = rim;
+\tRIM_TINT = 0.0;
+\tSSS_STRENGTH = subsurface;
+\tfloat grazing = 1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0);
+\tEMISSION = albedo.rgb * sheen * pow(grazing, 4.0);
+}
+"""
+
+
+def _rgba(value: Any) -> tuple:
+    """A declared colour as the sRGB parts Godot's Color holds, as a hex already is."""
+    if isinstance(value, str) and value.startswith("#") and len(value) in (7, 9):
+        parts = [int(value[at : at + 2], 16) / 255.0 for at in range(1, len(value), 2)]
+    elif isinstance(value, list | tuple) and len(value) in (3, 4):
+        parts = [float(v) for v in value]
+    else:
+        parts = []
+    if parts:
+        return (*parts[:3], parts[3] if len(parts) == 4 else 1.0)
+    raise PolyweaveError(
+        "geom.bad-surface",
+        f"a material's colour is {value!r}, which a Godot material cannot hold",
+        "write it as #RRGGBB or #RRGGBBAA",
+    )
+
+
+def _color(parts: tuple) -> str:
+    return "Color(" + ", ".join(f"{float(one):.6g}" for one in parts) + ")"
+
+
+def godot(material: dict) -> dict:
+    """The material as Godot loads it, with the numbers the bake used (§PW495).
+
+    A `.tres` StandardMaterial3D for a coat, a rim and a subsurface, which it has fields
+    for; with a sheen, which it has not, a ShaderMaterial over the spatial shader this
+    writes beside it. Answers `material` (the .tres text), `shader` (the .gdshader text
+    or None) and `fields`, what was set, by Godot's names.
+    """
+    finish = asked(material)
+    colour = _rgba(material.get("colour", material.get("color", BAKED["colour"])))
+    rough = float(material.get("roughness", BAKED["roughness"]))
+    metal = float(material.get("metallic", BAKED["metallic"]))
+    coat = finish.get("coat", {})
+    inside = finish.get("subsurface", {})
+    if "sheen" in finish:
+        fields = {
+            "albedo": _color(colour), "roughness": rough, "metallic": metal,
+            "clearcoat": coat.get("weight", 0.0),
+            "clearcoat_roughness": coat.get("roughness", COAT["roughness"]),
+            "rim": finish.get("rim", 0.0), "subsurface": inside.get("weight", 0.0),
+            "sheen": finish["sheen"],
+        }
+        lines = [f"shader_parameter/{k} = {_value(v)}" for k, v in fields.items()]
+        return {"material": lines, "shader": _SHADER, "fields": fields}
+    fields = {"albedo_color": _color(colour), "roughness": rough, "metallic": metal}
+    if coat.get("weight"):
+        fields.update(clearcoat_enabled=True, clearcoat=coat["weight"],
+                      clearcoat_roughness=coat["roughness"])
+    if finish.get("rim"):
+        fields.update(rim_enabled=True, rim=finish["rim"], rim_tint=0.0)
+    if inside.get("weight"):
+        fields.update(subsurf_scatter_enabled=True,
+                      subsurf_scatter_strength=inside["weight"])
+        if inside["tint"]:
+            fields.update(subsurf_scatter_transmittance_enabled=True,
+                          subsurf_scatter_transmittance_color=_color(_rgba(inside["tint"])),
+                          subsurf_scatter_transmittance_depth=inside["depth"])
+    lines = [f"{k} = {_value(v)}" for k, v in fields.items()]
+    return {"material": lines, "shader": None, "fields": fields}
+
+
+def _value(value: Any) -> str:
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, int | float):
+        return f"{float(value):.6g}"
+    return str(value)
+
+
+def write_godot(material: dict, name: str, folder: Any, stem: str, root: Any) -> list:
+    """The Godot material written beside a build, and its shader where it needs one.
+
+    `<stem>.<name>.tres`, the name's spaces as underscores, and with a sheen
+    `<stem>.<name>.gdshader` beside it, named by its res:// path under `root`.
+    """
+    import json
+    from pathlib import Path
+
+    made = godot(material)
+    slug = "".join(c if c.isalnum() or c in "-_" else "_" for c in name)
+    out = Path(folder) / f"{stem}.{slug}.tres"
+    written = []
+    said = json.dumps(name)
+    body = "\n".join(made["material"])
+    if made["shader"] is None:
+        text = _STANDARD % {"name": said, "fields": body}
+    else:
+        shader = out.with_suffix(".gdshader")
+        shader.write_text(made["shader"], encoding="utf-8", newline="\n")
+        written.append(shader)
+        place = shader.resolve().relative_to(Path(root).resolve()).as_posix()
+        text = _SHADED % {"name": said, "shader": f"res://{place}", "fields": body}
+    out.write_text(text, encoding="utf-8", newline="\n")
+    return [out, *written]
 
 
 def says(material: Any) -> str:
