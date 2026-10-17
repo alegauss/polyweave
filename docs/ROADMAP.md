@@ -15,12 +15,12 @@
 ## Block G — Geometry as a declaration
 
 - 📋 **PW498** (deps: —) **union joins parts at a hard crease, so a body whose parts flow into each other, as moulded plastic, cannot be declared** — Spinhold's new plastic city needs towers, trees and mascots whose parts flow together, and each would be a bought mesh or a custom node. → §PW498
-- 📋 **PW497** (deps: —) **nothing measures how round a model's edges are, so a hard-edged piece in a soft-toy style reaches a person's sitting** — One square edge among moulded pieces reads as another game, and Spinhold refuses a shape before a sitting only where a measure exists. → §PW497
 
 ## Block H — Proof on a real game
 
 - 🛠 **PW372** (deps: Spinhold RK215) **a camera move cannot be declared as a clip or played by the game, so a cutscene's shots are numbers in the project** — No shot is yet captured onto a sitting for a person to accept, and Starship's opening still reads its own JSON. → §PW372
 - 🛠 **PW36** (deps: PW5 ✅, PW82 ⏸) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82. → §PW36
+- 📋 **PW523** (deps: —) **the saves kit's proof writes to one fixed user:// folder, so two proofs at once empty each other's slots** — The gate went red once on the saves proof and passed when rerun alone, and a flaky gate teaches the next run to rerun rather than read. → §PW523
 
 ## Block I — Voxel models from a declaration
 
@@ -59,6 +59,33 @@
 
 - 🛠 **PW370** (deps: PW345 ✅, PW357 ✅, PW394 ✅, PW395 ✅, PW396 ✅, PW397 ✅, Spinhold RK216) **Starship keeps its own bindings and co-op code after the input kits were extracted from it** — A kit proved only in a fixture has not met a game, and the game it came from is the cheapest first consumer. → §PW370
 - 🛠 **PW371** (deps: PW347 ✅, PW348 ✅, PW398 ✅, Cottony RK151) **Cottony keeps its own settings and save code where the kits provide them** — The second game is what shows a kit is not one project's code moved into a folder. → §PW371
+
+## Block W — A core that grows by layers
+
+- 📋 **PW499** (deps: —) **The package's 128 modules sit flat, so nothing says which are shared core and which belong to one layer** — Prefixes such as reference_* and sound_* are packages waiting to exist, and a boundary nobody can see is one no test can hold. → §PW499
+- 📋 **PW500** (deps: PW499) **A layer exists only as a line in a hand-kept MODULES tuple, so nothing reads what it contributes or what it needs** — Every later seam needs one place where a layer says what it adds, and a list edited by hand is the reason a new layer touches the kernel. → §PW500
+- 📋 **PW501** (deps: PW500) **A verdict's answer branches on each domain by name, so every layer a person judges edits verdict.py** — verdict imports sixteen modules, among them sound, words, style and reference_transcription, so the one check that only a person can make grows with every medium. → §PW501
+- 📋 **PW502** (deps: PW500) **provenance names words, world, kits and driving and keeps a closed KINDS tuple, so the record format knows every layer** — A record is the kernel's contract, and today a new medium cannot be recorded, or found outdated, without an edit to provenance.py. → §PW502
+- 📋 **PW503** (deps: PW500) **accept.check reaches into sound, vfx, video, flashes, render and reference_concept to measure a subject** — The acceptance spec is the loop's shared contract, and a medium whose subject it cannot measure without an edit to accept.py is a medium that cannot be held to a bar. → §PW503
+- 📋 **PW504** (deps: PW503) **search.sweep can only draw a sample through render.bake, so picture, engine and preset each wrote a search of their own** — The search is the loop's engine, and four searches that each spend, trace and stop in their own way mean a fifth medium writes a fifth. → §PW504
+- 📋 **PW505** (deps: PW500) **asset.brief, the review page and loop.report each import every medium they describe, so one new layer edits all three** — These are the reads an agent and a person start from, and a layer that does not appear in them is one neither of them finds. → §PW505
+- 📋 **PW506** (deps: PW501, PW502, PW503, PW504, PW505) **A kernel or loop module can import a layer and both gates still pass, so the direction the layout states is a hope** — Every inversion in this block is undone by the first quick import, and only a test that fails holds a boundary between commits. → §PW506
+- 📋 **PW507** (deps: PW500) **Every error code lives in one 2,611-line codes.py, touched by 61 of the last 200 commits to the package** — A file every feature edits is where two sessions working at once collide, and it grows with every layer whichever layer it is. → §PW507
+- 📋 **PW508** (deps: PW500) **Every table polyweave.toml may hold is declared in one config.py, so a layer's settings are kernel code** — DEFAULTS, the open, free, named and binary tables and the per-key choices are 1,307 lines no layer owns, and a setting nobody owns is one nobody can remove with its layer. → §PW508
+- 📋 **PW509** (deps: PW500, PW508) **A project gets all 200 operations as tools whatever it makes, so a 2D game's agent loads Blender, voxel and rig tools** — tools/list is about 130,000 characters and growing, so the agent's context scales with what polyweave can do, not with what the project uses. → §PW509
+- 📋 **PW510** (deps: PW509) **The tool list's budget has been raised about 30 times in a row, so it stops no growth and names no layer that grew** — A ceiling that each feature raises by its own size is a log, and the limit that scales is one per layer, held where the layer is written. → §PW510
+- 📋 **PW511** (deps: PW500) **census.py classifies every public function in the package in one map, so each new helper module edits it** — The census is what keeps the surface findable, and a map 46 of the last 200 commits touched is one that grows with the package instead of with its surface. → §PW511
+- 📋 **PW512** (deps: PW506, PW507, PW508, PW509, PW510, PW511) **Nothing proves a new layer can be added without editing the kernel, so the block's whole claim goes unchecked** — Each seam is tested alone, and only a whole layer added from outside shows they leave a kernel file nobody has to open. → §PW512
+- 📋 **PW513** (deps: PW499) **A geometry op is spread over BUILDS, FIELDS, review's elif chain and voxels' bounds and TRACED, four places per op** — A fifteenth op written in four files is how a voxel bound goes missing for one op, and the vocabulary only grows by ops. → §PW513
+- 📋 **PW514** (deps: PW513) **Voxels are a branch inside build.write and a voxel_* module beside each mesh one, so a third form has no place to go** — Triangles and cells are two answers to one declaration, and a form chosen by an if in write is one each new form has to wedge itself beside. → §PW514
+- 📋 **PW515** (deps: PW514) **A material's finish and fuzz are special-cased in the bake and in write, so a toon or metal look is a third case** — The plastic finish already had to be written twice, for Blender's shader and for Godot's, and each new look pays that twice again. → §PW515
+- 📋 **PW516** (deps: PW499) **Each paid service's HTTP client is written inside the domain that buys from it, so a new service copies a client** — mesh_buy, sound_buy and picture each open urllib, poll, time out and read a refusal their own way, and the spend rule is only as strong as the weakest copy. → §PW516
+- 📋 **PW517** (deps: PW503, PW508, PW512) **A project cannot add a measure of its own, so a look only its game needs is a fork, a side script or a PW line** — A project measure keeps the first-call guarantee only when it is described, bounded and recorded exactly as a built-in one is. → §PW517
+- 📋 **PW518** (deps: PW504, PW517) **A project's own generator can run as a job but is no operation, so no agent finds it, describes it or searches over it** — A target named as a file path has only the worker's signature check, so the project's most-used script is the one call the surface cannot describe. → §PW518
+- 📋 **PW519** (deps: PW518) **An extension would hide the gap it fills, so a measure two games both wrote never becomes vocabulary** — Friction filed as PW lines is how this vocabulary grew, and an extension point that silences the friction stops that growth unless it reports what it holds. → §PW519
+- 📋 **PW520** (deps: PW509, PW512, PW515, PW516) **A project's polyweave.toml and the Python importing polyweave break on the new layout, with nothing to carry them over** — The block owes callers no compatibility, so one command must carry a project across, or every adopter pays for the break by hand. → §PW520
+- 📋 **PW521** (deps: PW520, PW518) **Cottony still runs on the flat package and serves every layer, so the block is unproven on its first consumer** — A layering proven only on fixtures can still be wrong where a real game reaches into it, and Cottony reaches deepest, from Python, a rig and its own scripts. → §PW521
+- 📋 **PW522** (deps: PW520) **Spinhold still runs on the flat package, so the 443 records and 30 verdicts most at stake in the break are unchecked** — Spinhold holds the most data a person judged, so it proves whether the break kept the one thing it promised to keep. → §PW522
 
 ## Done when — PW36
 

@@ -100,7 +100,90 @@ def test_a_mesh_says_what_it_costs(tmp_path):
         # Its accessors carry no vertex data, so its topology reads as nothing missing.
         "holes": 0,
         "non_manifold": 0,
+        "sharp_edge_share": 0.0,
+        "edge_radius_min": 0.0,
     }
+
+
+def solid_glb(where: Path, made: dict) -> Path:
+    """A solid's mesh as a .glb of positions and triangle indices, its quads split."""
+    points = np.asarray(made["vertices"], dtype="<f4")
+    corners = [i for face in made["faces"] for k in range(1, len(face) - 1)
+               for i in (face[0], face[k], face[k + 1])]
+    index = np.asarray(corners, dtype="<u4").tobytes()
+    data = points.tobytes() + index
+    gltf = {
+        "asset": {"version": "2.0"},
+        "buffers": [{"byteLength": len(data)}],
+        "bufferViews": [
+            {"buffer": 0, "byteOffset": 0, "byteLength": len(points.tobytes())},
+            {"buffer": 0, "byteOffset": len(points.tobytes()),
+             "byteLength": len(index)},
+        ],
+        "accessors": [
+            {"bufferView": 0, "count": len(points), "componentType": 5126,
+             "type": "VEC3"},
+            {"bufferView": 1, "count": len(corners), "componentType": 5125,
+             "type": "SCALAR"},
+        ],
+        "meshes": [{"primitives": [{"attributes": {"POSITION": 0}, "indices": 1}]}],
+    }
+    text = json.dumps(gltf).encode("utf-8")
+    text += b" " * (-len(text) % 4)
+    data += b"\0" * (-len(data) % 4)
+    body = (struct.pack("<II", len(text), 0x4E4F534A) + text
+            + struct.pack("<II", len(data), 0x004E4942) + data)
+    where.write_bytes(struct.pack("<III", 0x46546C67, 2, 12 + len(body)) + body)
+    return where
+
+
+def test_a_box_is_all_creases_and_a_rounded_one_none():
+    """§PW497: one square edge among moulded pieces reads as another game."""
+    from polyweave.geometry import solid as S
+
+    def read(made, name):
+        return cost.read(solid_glb(Path(name), made))
+
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as folder:
+        box = read(S.primitive("cube", 1.0), f"{folder}/box.glb")
+        soft = read(S.primitive("rounded_box", 1.0, radius=0.2), f"{folder}/soft.glb")
+        ball = read(S.primitive("sphere", 1.0), f"{folder}/ball.glb")
+    # Twelve unit edges turn a quarter; six face diagonals, each root two, turn none.
+    assert box["sharp_edge_share"] == pytest.approx(12 / (12 + 6 * 2**0.5), rel=1e-3)
+    assert box["edge_radius_min"] == 0.0
+    assert soft["sharp_edge_share"] == 0.0
+    # A sphere's round read off its facets to within a percent or two.
+    assert ball["edge_radius_min"] == pytest.approx(0.5, rel=0.02)
+    # A rounded box's corners are meshed in skewed facets, which read tighter than the
+    # radius declared, never below half of it; well clear of a crease's 0 either way.
+    assert 0.1 <= soft["edge_radius_min"] <= 0.2
+
+
+def test_a_spec_refuses_a_hard_edge_and_says_where_it_is(tmp_path):
+    from polyweave.geometry import solid as S
+
+    solid_glb(tmp_path / "box.glb", S.transform(S.primitive("cube", 1.0), at=(5, 0, 0)))
+    found = accept.check(
+        spec(tmp_path, '[[predicate]]\nid = "soft"\nmeasure = "sharp_edge_share"\n'
+                       'of = "box.glb"\nmax = 0.02\n'),
+        picture(tmp_path / "p.png"), root=tmp_path)
+    (one,) = found["predicates"]
+    assert found["passed"] is False
+    assert len(one["sharp_at"]) == 3
+    assert all(4.4 < at[0] < 5.6 for at in one["sharp_at"]), "on the box, at x = 5"
+
+
+def test_a_crease_the_predicate_states_decides_what_is_sharp(tmp_path):
+    from polyweave.geometry import solid as S
+
+    solid_glb(tmp_path / "box.glb", S.primitive("cube", 1.0))
+    found = accept.check(
+        spec(tmp_path, '[[predicate]]\nid = "soft"\nmeasure = "sharp_edge_share"\n'
+                       'of = "box.glb"\nmax = 0.02\ncrease = 95\n'),
+        picture(tmp_path / "p.png"), root=tmp_path)
+    assert found["passed"] is True, "a quarter turn is under a crease of 95 degrees"
 
 
 def test_a_voxel_model_costs_its_skin_and_not_its_volume(tmp_path):

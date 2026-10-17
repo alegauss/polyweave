@@ -49,22 +49,6 @@ standard one lacks is asked for), with the same numbers the bake used and a prov
 record, so the game loads what was judged. A capture of the game against the bake of the
 same model at one rig says whether the two agree.
 
-### §PW497 A measure of edge softness
-
-Found in Spinhold on 2026-10-17, for the plastic city of §PW498. A style that is soft
-toys and moulded plastic is lost by one hard edge: a cube left square among capsules
-reads as a different game. Spinhold already holds every enemy to a shape bound
-(`silhouette_aspect >= 0.6`), refused before a person sees it, and the plastic city
-needs the same for roundness, but nothing measures it: the measures read silhouettes and
-colour, never the edges of a mesh.
-
-What polyweave should do: a geometry measure of edge softness, read off the built mesh
-with no render: the share of edge length whose dihedral angle is sharper than a stated
-crease, and the smallest radius of curvature over the surface in the model's own units.
-An acceptance spec then holds `sharp_edge_share <= 0.02` or `edge_radius_min >= 0.1`,
-and a refusal names where on the model the hard edges are. A style can ask for the bound
-in every model it governs, as Spinhold's Lattice style asks for a tall silhouette.
-
 ## Block H — Proof on a real game
 
 ### §PW36 Cottony adopts it without a fork
@@ -151,6 +135,27 @@ time, recorded as kind `camera` (docs/specs/motion.md, "A camera clip"). Not an
 Animation track: an anchor placed at run time, on a ring that is not Cartesian, cannot
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
+
+### §PW523 The saves proof in a folder of its own run
+
+Found in polyweave on 2026-10-17, shipping PW497. The gate went red once on
+`tests/test_kit_saves.py::test_the_saves_kit_lands_alone_and_proves_in_its_fixture`: the
+proof said "slot 0 could not be saved; slot 1 could not be saved; slot 0 read back {  };
+listed 1 slots of 3". Run alone straight after, the test passed, and the change under
+test touched no kit.
+
+The likely cause, read and not yet reproduced: `kits/saves/core/proof.gd` writes its
+slots to a fixed `user://polyweave_saves_proof` and empties that folder when it is done.
+Godot names the `user://` folder after the project, so every fixture project with the
+same name shares one folder. The gate runs pytest beside its own proof of the nineteen
+kits, and the pytest test proves the same kit, so two proofs can write into one folder
+and one empties it under the other.
+
+What polyweave should do: the saves proof writes under a folder of its own run, such as
+`user://polyweave_saves_proof/<a random token>`, and empties only that, so two proofs at
+once cannot see each other. A test runs two proofs of the saves kit at once in two
+fixtures and holds both to their three slots. Any other kit proof that writes under
+`user://` is checked for the same fixed path.
 
 ## Block I — Voxel models from a declaration
 
@@ -486,3 +491,588 @@ needs a door into them (PW398, docs/specs/kit.md: `adopted()` and `ADOPTED`). Th
 own side is Cottony's RK151. Done when Cottony carries neither file, its own save test
 is replaced by the kit's acceptance, a save written by the current release loads after
 the swap, and its gate passes.
+
+## Block W — A core that grows by layers
+
+### §PW499 Kernel, loop, layers, services and surface as packages
+
+polyweave has 128 modules, 77 of which register operations, and all of them sit side by
+side under `src/polyweave`. A reader can tell `errors` from `reference_concept` only by
+opening both. The fix is a layout that states which way dependencies run, moved in one
+commit, because nothing here owes a caller backward compatibility.
+
+- `kernel/`: errors and doors, the operation registry and `describe`, the config loader, jobs, files, cache, the post-checks and the provenance record format. It knows no domain.
+- `loop/`: accept, the measurement core, search, calibrate, verdict, review, brief and loop.
+- `layers/<name>/`: geometry (with render), picture, sound (sound, sfx, sfxr, music, music_render, voice, the loop cutter), words (words, world, svgtext, review_text), vfx, motion (clip, skeleton, camera), engine (godot, driving, capture, offscreen, perf, states, testing, pack, port), reference (its eight modules), store (store, video, icons, compose) and kits. A measure reading one medium, such as contrast, pressure or flashes, goes with its layer.
+- `services/`: the paid-service clients, the purchase ledger and the budget.
+- `surface/`: server, cli, commands, census and capabilities.
+
+The move only relocates code. Import paths change, `python -m polyweave` and `serve`
+answer as before, and both gates stay green. `MODULES` is edited by hand one last time;
+the manifest line derives it. A module that fits no layer cleanly goes to the layer
+owning its data, and the commit message names each such call.
+
+### §PW500 A layer declares itself in layer.py
+
+Today `describe.MODULES` is a tuple of 77 module names that every new module has to be
+added to. `load()` imports them so the registry fills as a side effect. Nothing records
+which layer an operation belongs to, which tool it needs, or what else the layer adds to
+the shared loop.
+
+Each `layers/<name>/layer.py` declares one `Layer`:
+
+- `name` and a one-line `summary`;
+- `modules`, the modules that register operations;
+- `requires`: a binary (`blender`, `godot`) or an optional extra (`audio`, `text`) without which the layer is present but cannot run, so `capabilities` reports it as unavailable rather than raising an ImportError;
+- empty slots for what later lines contribute: codes, config tables, census entries, judges, staleness checks, record kinds and report sections.
+
+The kernel finds layers by walking `layers/`, never through a list. `describe` gains
+`layer` on each operation, and `capabilities` lists the layers with their state
+(available, or missing what it requires).
+
+Done when `MODULES` is deleted; a test asserts each registered operation belongs to
+exactly one layer, and that a module registering operations without being named by its
+layer is refused by name.
+
+`kernel/` and `loop/` declare no `Layer`. They are what layers plug into, and an
+operation they register (`describe`, `verdict.answer`) belongs to the surface every
+project gets.
+
+### §PW501 A layer registers the judge for what it lays out
+
+`verdict.answer` writes the person's choice and then works through a chain: `if
+member.get("line")` hands it to `words.judged`, `if member.get("transcription")` to
+`reference_transcription.judged`, and further along a sound's take, a style canon and a
+family's members each get their own branch. Every medium a person can judge has added a
+branch, and the module now imports sixteen others, `sound` among them, for
+`_checked_out` and `_committed`.
+
+A `Judge` is a protocol with three parts:
+
+- `claims(member) -> bool`, whether this judge keeps the member's verdict;
+- `judged(member, *, accepted, choice, why, when, root) -> dict`, the write into its own canon, returning what it kept;
+- `about`, one sentence that `describe` shows, saying where that verdict lives.
+
+A layer lists its judges in `Layer.judges`. `verdict.answer` writes the shared record,
+calls each judge that claims the member, and reports each one's return under that
+judge's name. When two judges claim one member, the call is refused, never resolved by
+order. That rule is what keeps a spoken take's `line` the sound's verdict and never a
+line's, which today depends on the order of two `if`s. The words, transcription, sound
+and style branches move into their layers unchanged.
+
+Done when `verdict.py` imports nothing from `layers/`. The existing verdict tests
+(answer, across calls, move, bounds) pass unedited apart from imports, and a test judge
+declared in a fixture layer receives its member with no kernel or loop file touched.
+
+### §PW502 Record kinds, staleness and what ships, contributed by layers
+
+`provenance.py` is meant to describe the record's format, yet it reaches into four
+layers. `KINDS` is a closed tuple of nine (render, mesh, capture, fetch, picture, sound,
+vfx, camera, borrow). `outdated` decides whether a changed source still describes a
+record by calling `words.still_said` when the role is `words` and `world.still_drawn`
+when it is `world`, then appends `kits.behind`. `generated` asks `driving.shipped` what
+a Godot export preset ships.
+
+Three contributions replace those calls:
+
+- `Layer.kinds`: the record kinds the layer writes. The kernel's set is the union, still closed, because a reader branches on it. A kind two layers declare is refused when the manifest loads.
+- `Layer.staleness`: a mapping from a source role to `still(source, record) -> bool`. `outdated` looks up the role and, where no layer claims it, falls back to the hash comparison it already makes.
+- `Layer.ships`: the engine layer's answer to which files a build ships, consulted by `generated` when no paths are given. Kits contribute their `behind` as a section of `outdated` under their own name.
+
+The record format itself does not change in this line. A kind moving from the kernel's
+tuple to a layer keeps its spelling, so no committed record needs migrating yet.
+
+Done when `provenance.py` imports nothing from `layers/`, the provenance, dependents and
+generated tests pass, and a fixture layer's kind and staleness check work with no kernel
+file touched.
+
+### §PW503 A layer measures its own subject for accept
+
+An acceptance spec names a subject (a picture, a render, a capture, a sound, a video, an
+effect) and bounds measures over it. To turn that subject into numbers, `accept.py`
+imports six domain modules: `render` for a mesh's rung, `sound` for loudness, `vfx` and
+`video` for their own records, `flashes` for a captured run, and `reference_concept` for
+a capture against its painting. `measure.py` imports `contrast` in the same way. Each
+medium that could be held to a bar added an import and a branch.
+
+`Layer.subjects` declares a `Subject` for each kind of file the layer can measure:
+
+- `matches(path, spec) -> bool`, whether it measures this subject (by suffix, or by the spec's `subject` kind);
+- `measures`: the closed names it can return, each with its unit and the direction a search should move it, which `measurements.md` keeps as the vocabulary;
+- `measure(path, names, *, region, rung, root) -> dict`.
+
+`accept.check` finds the subject's `Subject` (when two match, it refuses, naming both),
+asks it for the bounded measures, and keeps everything it already does: percentiles,
+anchors, origins, staleness and the report order. The vocabulary stays closed. What
+changes is that the layer that owns a measure also declares it, and the
+`spec.unknown-measure` refusal names which layer would have answered.
+
+Done when `accept.py` and `measure.py` import nothing from `layers/`, every accept test
+passes, and a fixture layer's subject is bounded and checked end to end.
+
+### §PW504 A layer produces a sample, and one search aims every layer
+
+`search.sweep` builds its evaluator from `render.bake`, and `calibrate` reads
+`render.ladder`'s rungs. So the search the loop is built around reaches only a Blender
+render. `picture.fit`, `engine.sweep` and `engine.preset_search` each implemented their
+own sampling, budget, trace and stopping rule, and none of them imports `search.py`. A
+level's parameters, a sound's synth or a vfx's declaration would each be a fifth.
+
+`Layer.producers` declares a `Producer` per thing a search can turn:
+
+- `parameters(spec, root)`: the turnable parameters with their ranges, read from the declaration as `ranges(spec)` does today;
+- `produce(values, *, rung, out, root) -> Path`: one sample, made;
+- `rungs`: the cheap-to-faithful ladder, if the layer has one, which `calibrate` reads in place of `render.ladder`;
+- `cost`: what one sample costs (seconds, or a paid unit the ledger already counts), so `search.worth_parallel` and the budget hold for every producer.
+
+`search.sweep` takes the spec's subject, finds its producer, and keeps its passes,
+budget, trace and verdict-ready return. The geometry render becomes one producer.
+`picture.fit`, `engine.sweep` and `engine.preset_search` are rewritten as producers on
+the one search, with their operation names kept, and their existing tests prove that
+what they return did not change.
+
+Done when `search.py` and `calibrate.py` import nothing from `layers/`, and a fixture
+producer is swept, traced and reported through `search.sweep`.
+
+### §PW505 A layer contributes its part of the brief, the page and the report
+
+Three reads cover every medium, and each one does it by importing all of them.
+`brief.py` imports geometry, music, picture, style, vfx, words, cli and project to say
+where an asset stands. `review.py` imports picture, shape, style and review_text to put
+a candidate on the page. `loop.report` imports picture to count what the picture gate
+refused before a person saw it. They are the most-read surfaces here (the first call an
+agent makes, and the page a person answers on), and each new layer has to reach into all
+three.
+
+Three contributions in `Layer`:
+
+- `brief(asset, root) -> dict | None`: the layer's part of `asset.brief` for an asset it owns, or None when it does not own it. `brief` calls each layer and keeps its order, its budget and its `next` field.
+- `review_parts`: what the page shows for the layer's members (the image, sound or text, and the words the person reads), declared as data the page's locale catalogs already render, so a layer adds strings, not page code.
+- `report(runs, root) -> dict`: the layer's section of `loop.report`, under its name and its `from`.
+
+These are reads, so there is no ordering conflict: two layers that both answer for one
+asset each get a section, and `brief` says that both do.
+
+Done when `brief.py`, `review.py` and `loop.py` import nothing from `layers/`, their
+tests pass, and a fixture layer shows up in all three.
+
+### §PW506 The import direction as a test
+
+After the five inversions, the layout has a direction: `surface` may import anything;
+`layers/` and `services/` may import `loop/` and `kernel/`; `loop/` may import
+`kernel/`; `kernel/` imports only itself. `tests/test_layering.py` checks this the way
+`census` already checks the surface. It parses every module with `ast`, including the
+imports inside functions, which is where most of today's reaches are hidden, and fails
+on any import that points the wrong way, naming the module, the line and the layer it
+reached.
+
+One layer may not import another, either. `layers/vfx` reading `layers/engine` is a
+dependency the manifest must state (`Layer.uses = ("engine",)`), so `capabilities` can
+say vfx is unavailable when engine is, and the test refuses an import to a layer that is
+not declared. A cycle between layers is refused.
+
+The test ships with no allowlist. The edges the five lines did not cover are resolved
+here: `integrity` and `runs` read engine and capture, and `trace` reads compose. Each is
+either moved into the layer whose data it reads or turned into a contribution. Whichever
+way it goes, the commit names it.
+
+Done when the test passes on the tree and fails on a fixture module that imports the
+wrong way, and `python tools/gate.py` runs it with the rest.
+
+### §PW507 A layer declares its own codes
+
+`codes.py` holds 464 codes, each with what it means, when it is raised, and its doors.
+`PolyweaveError` refuses a code the table does not declare, and that guarantee is worth
+keeping. What is not worth keeping is one file that every feature edits: it was touched
+by 61 of the last 200 commits under `src/`, more than any other.
+
+Each layer keeps a `codes.py` of its own, holding only its codes and declared in
+`Layer.codes`. The kernel keeps the codes the kernel and the loop raise (`op.*`,
+`config.*`, `spec.*`, `loop.*`, `job.*`). The table `errors.explain` reads is the union,
+built once when the manifest loads. A code declared twice is refused at that moment,
+naming both layers, and a code's prefix must be its layer's name or a prefix the layer
+declares, so `geom.*` stays readable as geometry's.
+
+`explain` without an argument lists every code and now says which layer owns each one.
+With a code, it gives what it gives today. Nothing a caller reads changes; what changes
+is which file a feature edits.
+
+Done when `codes.py` in the kernel holds only kernel and loop codes, each layer's codes
+sit in that layer, `test_errors` and `test_doors` pass, and a fixture layer's code is
+raised and explained with no kernel file touched.
+
+### §PW508 A layer declares the tables it reads from polyweave.toml
+
+`config.py` resolves a value (the project file, then the environment, then the default),
+refuses an unknown key, and holds the schema of every table in the file. That last job
+is what makes it a hotspot. `DEFAULTS` holds every layer's settings. `_OPEN_TABLES`,
+`_FREE_TABLES`, `_NAMED_TABLES`, `_BINARIES`, `_INSIDE`, `_TABLE_SETTINGS` and
+`_CHOICES` are lists of `[render]`, `[sound]`, `[voxels]`, `[words]` and the other
+tables, kept in one module that 58 of the last 200 commits touched.
+
+The kernel keeps the resolution order, `${NAME}` references, paths that must stay inside
+the tree, and the refusal. A layer declares its tables in `Layer.config` as data: each
+table with its keys, defaults, choices and units; whether it is open, free or named; and
+the binaries it may point outside the tree. Tables the loop owns (`[review]`,
+`[tolerance]`, `[cache]`, `[provenance]`, `[budget]`, `[service]`) stay in the kernel.
+
+`config.unknown-table` changes in one useful way. A table that belongs to a layer the
+project has not enabled is refused with that layer's name, not as a typo, so turning
+layers on (the line after this) is one correction rather than a hunt. `project.init`
+proposes only the tables of the layers it found.
+
+Done when a layer's settings live only in that layer, `test_config` and
+`test_project_init` pass, and a fixture layer's table is read, defaulted and refused
+with no kernel file touched. `project-config.md` says which layer owns each table.
+
+### §PW509 A project turns on the layers it uses
+
+`server.tools()` serves every registered operation. The only thing it leaves out is the
+three that need an absent Blender. A project that makes pictures and sound for a 2D game
+is still handed geometry, voxels, skeleton, clip, motion and reference, and in a client
+that loads tools eagerly it pays for all of them on every turn. That is the cost the
+plugin's first principle is judged by, and it is the one that grows fastest.
+
+`polyweave.toml` gains `[layers] on = ["picture", "sound", "words", "engine"]`. The
+server and the command line register and serve only those layers' operations, plus
+`kernel` and `loop`, which every project gets. `project.init` proposes `on` from what it
+finds in the tree: a `project.godot` turns engine on, `*.geom.toml` turns geometry on, a
+`[words]` table turns words on. A layer `uses` another (engine for vfx), so turning one
+on turns that one on too, and `capabilities` reports it.
+
+Calling an operation of a layer that is off answers `layer.off`, naming the layer and
+the one line to add. `describe` still lists it, marked off. So an agent can find what
+exists without carrying the whole surface, and it is never told that something exists
+when it does not.
+
+A project without `[layers]` gets every layer, which is the default `migrate` writes
+explicitly. Done when a two-layer fixture project's `tools/list` holds only its layers,
+and the `layer.off` answer is tested.
+
+### §PW510 A tool budget per layer, and one for a session
+
+`server.LIST_BUDGET` is 129,900 characters. Its comment is a list of about thirty
+raises, each written as "at N for the operation added", so every feature that crossed
+the line moved the line. The test passes, and nothing it measures has ever been refused.
+`TOOL_BUDGET` caps a single tool at 4,500, and that one does hold.
+
+Each `Layer` declares `tools`, the most its served tools may cost in characters. The
+test measures each layer's share of `tools/list` against its own figure, and a layer
+that crosses its budget fails, naming that layer and its three most expensive tools.
+Raising the figure is still possible, but the edit lands in the layer's own manifest,
+beside the code that grew, where a reviewer sees which layer paid.
+
+The figure that matters to an agent is a session's. `capabilities` reports, for the
+project's `[layers] on`, the total `tools/list` size and its largest contributors. A
+second test builds the heaviest combination a real consumer turns on (Spinhold's, from
+its `polyweave.toml`) and holds it to `SESSION_BUDGET`, which, unlike today's figure, is
+not raised by a line that adds one operation.
+
+`LIST_BUDGET` and its comment are deleted. The history it kept is in git.
+
+Done when every layer declares a budget its tools fit, a fixture layer crossing its own
+fails naming itself, and the session figure is reported and tested.
+
+### §PW511 A layer says which of its modules are internal
+
+`census` sorts every public function into registered, entry, internal or pending. The
+first two are derived from the registry and from `ENTRY`. The last two come from
+`census.MODULES`, a hand-kept map from each helper module to its kind and a reason, such
+as `polyweave.geometry.voxel_sheet: ("internal", "a voxel build's contact sheet")`. A
+layer that grows a helper therefore edits the census, and the census is the third
+most-edited file in the package.
+
+The classification moves into the layer:
+
+- `Layer.internal` maps each of the layer's helper modules to its reason. The census reads every layer's map, and a module listed by a layer it is not inside is refused.
+- A module whose file name starts with `_` is internal by its name, with no reason needed. This is the convention Python already reads, and most helpers will take it as they move into their layer.
+- `pending` keeps its rule that the list only shrinks, now per layer: `test_census` pins each layer's pending count, not a single global one.
+
+`ENTRY` stays in the census, since the reads a caller starts from belong to the surface
+and not to any layer.
+
+Done when `census.MODULES` is gone, each layer's internals are declared there or by
+name, `test_census` passes, and a fixture layer with one helper of each kind is
+classified without touching `census.py`.
+
+### §PW512 A whole layer added from a fixture, touching nothing else
+
+Each line before this one ends with a fixture layer exercising its own seam. This line
+combines them into one fixture that stands for the next medium,
+`tests/fixtures/layers/tone/`, a layer that makes a sine tone from a declaration. It
+declares:
+
+- one operation, `tone.make`, with a code of its own, `tone.bad-pitch`;
+- a config table `[tone]` with a default and a choice;
+- a record kind `tone` and a staleness check for its source role;
+- a `Subject` measuring pitch and length, and a `Producer` a search can sweep over pitch;
+- a `Judge` that keeps a person's verdict in its own canon;
+- its part of the brief, the review page and the report;
+- a tool budget and one internal helper.
+
+The test points the layer search at the fixture directory, which is the same mechanism a
+project's `[extend]` will use later, and checks that each of those appears where it
+should: in `describe`, `tools/list`, `explain`, `project.check`, `accept.check`,
+`search.sweep`, `verdict.answer`, `provenance.outdated`, `asset.brief`, `loop.report`
+and the census. It then asserts that no file under `kernel/`, `loop/` or `surface/`
+names `tone`.
+
+This is the scalability claim as a number: the kernel files a new layer touches, held at
+zero. When a later layer needs a kernel edit, this test is where that need is argued, by
+extending the fixture rather than by working around it.
+
+Done when the test passes and a deliberately broken seam in the fixture fails it.
+
+### §PW513 One file per geometry op
+
+The geometry vocabulary has fifteen ops (primitive, prism, plate, crowned, annulus,
+inflate, union, transform, carve, bevel, custom, cells, mirror, mesh, paint), and each
+is described in four places. `build.BUILDS` maps it to its builder, and `build.FIELDS`
+lists the keys it reads. `review.py` has an `if op == "prism" ... elif op == "paint"`
+chain that says how the contact sheet shows it. `voxels.py` keeps `_op_bounds`, its own
+chain for the box an op occupies, and `TRACED`, the ops whose cells come from tracing a
+mesh. A comment above `BUILDS` claims it is the one list that decides anything. The
+other three lists decide things too.
+
+Each op becomes one module under `layers/geometry/ops/`, declaring an `Op`:
+
+- `name` and `fields`, the keys it reads (None for `custom`);
+- `takes`, the fields that name another node;
+- `build(node, instance, built, root) -> mesh`;
+- `bounds(node, instance) -> (lo, hi)`, or `traced = True` where voxels must trace it;
+- `review(node) -> dict`, its part of the sheet.
+
+`BUILDS`, `FIELDS`, the review chain, `_op_bounds` and `TRACED` are generated from the
+ops the folder holds. A test checks that every op answers every part, so an op missing
+its voxel bound fails at once, not when a voxel build first meets it. `geometry.md`
+lists the ops from the same source.
+
+Done when adding an op is one new file, every geometry, voxel and review test passes
+unchanged, and `geometry.describe` returns the same vocabulary as before.
+
+### §PW514 Triangles and cells as representations of one graph
+
+One geometry declaration can be built two ways. `build.write` checks `if
+document.get("voxels")` and hands the whole document to `voxels.write`; otherwise it
+refuses a `paint` node, builds triangles and writes glTF. Every part of the loop that
+follows has been written twice to match: `voxel_fit` beside the fit, `voxel_compare`
+beside `geometry.compare`, `voxel_sheet` beside the review sheet, and `post.voxels`
+beside `post.mesh`. A third form (signed-distance fields for a smooth toy, or 2D tiles
+cut from a sprite sheet) would need a third copy of each, plus one more branch in
+`write`.
+
+A `Representation` under `layers/geometry/representations/` declares:
+
+- `name` (`mesh`, `voxels`) and `selects(document) -> bool`, read from the declaration's own table as it is today;
+- `supports`: which ops it builds, so `paint` on triangles is refused by the representation, not by a special case in `write`;
+- `write(document, out, root, **given) -> dict`, `check` (the post-condition), `fit`, `compare` and `sheet`.
+
+`geometry.build`, `geometry.fit`, `geometry.compare` and the review dispatch on the
+representation that claims the document. Each op from the previous line states its
+`bounds` and whether it is `traced` for whichever representation needs them.
+
+Done when `build.write` has no voxel branch, `voxel_*.py` live as the voxels
+representation, every geometry and voxel test passes unchanged, and a fixture
+representation builds a two-op declaration end to end.
+
+### §PW515 A look declares its asks and writes itself to each target
+
+A material states a `colour` and a `roughness`. On top of that, two kinds of intent have
+been added, each with its own module. `finish` (coat, sheen, rim, subsurface) is what
+made the plastic city read as moulded plastic. `surface` is a fuzz. Each derives shader
+inputs from a few numbers and is wired into two places by hand. The bake reads it to
+build Blender's Principled BSDF, plus a rim light at the silhouette. `build.write` calls
+`finish.write_godot`, because glTF carries a colour and a roughness and drops the
+finish. A toon ramp, brushed metal or a pixel-snapped palette would each need its own
+module, its own branch in the bake and its own branch in `write`.
+
+A `Look` under `layers/geometry/looks/` declares:
+
+- `asks`: the material keys it reads, so an unknown key is refused where it is written, as `finish.ASKS` does today;
+- `inputs(material) -> dict`: the derived numbers, still expressions over the document's parameters, so a search turns a look as it turns a shape;
+- `targets`: one writer per destination (`bake` for the Blender shader, `godot` for the engine material), and a target a look cannot reach is said in `describe`, never dropped silently.
+
+The bake and `write` iterate over the looks a material asks for. `finish` and `surface`
+become the first two looks, unchanged.
+
+Done when neither the bake nor `write` names `finish` or `surface`, their tests pass,
+and a fixture look reaches both targets.
+
+### §PW516 A paid service is an adapter; the ledger and the ceiling are the kernel's
+
+Five services are bought from today: Meshy, Tripo and Rodin for meshes, Ideogram for
+pictures, ElevenLabs for sound and voice. Each client lives inside its domain module.
+`mesh_buy` builds `urllib.request.Request` three times, `sound_buy` has its own `_post`
+and two more requests, and `picture` has three. Every copy carries its own timeout,
+polling loop, reading of a 402 or 429, and way of naming the plan whose licence the
+record keeps. `purchase` holds the ledger, the quote and the ceiling, and each domain
+has to remember to call it.
+
+A `Service` under `services/<name>.py` declares:
+
+- `media`: what it sells (mesh, picture, sound, voice);
+- `quote(request) -> Price` in the unit the project's `[budget.<name>]` counts;
+- `submit`, `poll` and `fetch`, the three halves of an asynchronous purchase, with a single kernel-owned HTTP helper for timeouts, retries and reading a refusal into a `PolyweaveError` with the service's own message;
+- `plan(answer)`: the tier and whether it permits a sold game, for the record.
+
+The kernel's `buy(service, request)` is the only path that spends. It checks the
+ceiling, writes the ledger before submitting and reconciles it after fetching, so no
+domain can buy without the bound. Spending stays a person's call: the adapter never
+decides a purchase is worth it.
+
+Done when `mesh_buy`, `sound_buy` and `picture` import no `urllib`, the purchase,
+ledger, quote and service tests pass, and a fixture service is quoted, bought, refused
+over its ceiling and reconciled.
+
+### §PW517 [extend.measures]: a project's measure, declared, run apart and recorded
+
+`measurements.md` keeps a closed list, and `spec.unknown-measure` refuses everything
+else. That rule is right for the vocabulary polyweave ships. It leaves a project with a
+look only it needs, such as Cottony's glow at a rim or Spinhold's hull readability,
+three options: a script beside polyweave, which `project.adoption` then reports as work
+done outside it; a fork; or a line here that waits its turn.
+
+`polyweave.toml` gains:
+
+```toml
+[extend.measures.rim_glow]
+fn        = "tools/art/rim.py:glow"
+subject   = "picture"
+unit      = "ratio"
+range     = [0, 1]
+direction = "higher"   # which way a search moves it
+about     = "light at the silhouette over light in the body"
+```
+
+The name in a spec is `x.<project>.rim_glow`. The prefix keeps it from colliding with a
+built-in and makes it plain that it is not polyweave's. `describe` and
+`measure.available` list it from the TOML alone, so the kernel never imports project
+code to describe it. It runs through the job worker in the project's environment, the
+way a job's target runs today. Its source file is hashed into the provenance record as
+`geometry/custom.py` does for a node, so a changed function makes the measures it
+produced stale.
+
+A measure whose function returns a value outside its declared range or unit is refused,
+never clamped.
+
+Done when a fixture project's measure is bounded in a spec, aimed at by `search.sweep`,
+recorded, and found stale after its source changes.
+
+### §PW518 [extend.operations]: a project's generator on the surface and in the search
+
+A job's target may already be `path/to/file.py:name`, and `describe.for_target` returns
+None for it "as the ordinary answer". That is safe, but it means a project's own
+generator is invisible: no `describe`, no tool, no flags, no `produces`. Even a search
+over its parameters has to be written by hand. Cottony's `bake_model.py` rig, the cost
+this plugin exists to remove, is exactly that kind of script.
+
+`polyweave.toml` gains, beside measures:
+
+```toml
+[extend.operations.tile_sheet]
+fn       = "tools/art/tiles.py:sheet"
+about    = "cut a sprite sheet into tiles"
+produces = "picture"
+kind     = "build"          # asynchronous, so it runs as a job
+[extend.operations.tile_sheet.params]
+source = { type = "str", about = "the sheet" }
+size   = { type = "int", about = "tile edge", lo = 8, hi = 256, unit = "px" }
+```
+
+It is served as `x.<project>.tile_sheet`, described, validated and turned into flags
+from the TOML alone, and run in the project's environment through the worker. Its file
+is hashed into the record of whatever it produces. With `producer = true` and a range on
+a parameter, `search.sweep` turns it like any layer's `Producer`, so a project's
+generator joins the loop with no Python registered inside polyweave.
+
+`layer.off` and the session tool budget count these the same way as built-ins, so a
+project cannot grow its own surface without the number showing it.
+
+Done when a fixture project's operation is listed, described, called, run as a job,
+swept and recorded.
+
+### §PW519 Extensions are reported as what polyweave does not yet do
+
+The vocabulary grew because every gap a consumer hit became a line here, through the
+polyweave-friction skill and `project.adoption`'s `[adoption.own]`, which names each
+project file doing polyweave's work and why it is kept. Extensions (the two lines before
+this) make a gap cheap to work around, and a cheap workaround is a gap nobody files.
+`geometry/custom.py` already states the rule: "where the same custom node appears in
+three projects, that is the signal it should have been vocabulary". Nothing yet sees
+that signal.
+
+So an extension is accounted for in three places:
+
+- `project.adoption` lists every `[extend.*]` entry beside `[adoption.own]`, with how often the provenance records show it used and when it was first declared, under a `not_yet_polyweave` heading;
+- each entry must carry `why`, one sentence on what built-in it stands in for, and `project.check` fails on an entry without one, as it does for `[adoption.own]`;
+- `asset.brief` mentions when an asset's bar or build depends on an extension, so the agent working on it sees the dependency.
+
+The polyweave-friction skill is updated to read `not_yet_polyweave` and file an
+extension used across many assets, or one whose `why` names a built-in that exists by
+then, as a line here. Promotion is still a person's decision. The signal is no longer
+hidden.
+
+Done when a fixture project's extensions appear in adoption, brief and check, and the
+skill's text names the field.
+
+### §PW520 polyweave migrate: one command across the break
+
+The block breaks code and config on purpose, and it does not break data. Spinhold's 443
+provenance records name only `tool` and `version` under `producer`, never a module path,
+and 30 of them carry a person's verdicts. That was checked before this line was written.
+So records, specs, canon and ledgers carry over unchanged. Two things do not:
+
+- **Imports.** Cottony has 10 Python files that import polyweave (`polyweave.errors`, `.testing`, `.pack`, `.geometry`, `.render`, `.image`) and Spinhold has 4 (`polyweave.config`, `.geometry.voxel_fit`). Each path changes when its module moves to its layer.
+- **The project file.** It needs `[layers] on`, and it needs any table whose owner or name a line in this block changed.
+
+`python -m polyweave migrate --root <project>` reads a table of old module paths to new
+ones, written by the layout line as a file of data, and rewrites the project's own
+imports. It writes `[layers] on` from what `project.init` detects, moves any renamed
+table, and clears `.polyweave/jobs` and the cache, whose keys name the old version. By
+default it reports a diff; `--write` applies it. It never touches a provenance record, a
+verdict or a canon. A record whose kind no layer declares is reported as unreadable, not
+rewritten.
+
+Done when a fixture copy of each consumer's config and imports migrates, and
+`project.check`, `project.adoption` and `provenance.outdated` answer the same before and
+after.
+
+### §PW521 Cottony across the break
+
+Cottony (`D:\Git\viglet\cottony`) is the first consumer and the one that reaches
+deepest. Ten of its Python files import polyweave modules directly, it carries 57
+provenance records and 55 acceptance specs, and its `tools/art/` still holds scripts
+that `[adoption.own]` lists as kept on purpose.
+
+The move, done in Cottony as one commit and recorded here when this line ships:
+
+1. `polyweave migrate --root .` reviewed as a diff, then written. Each import it rewrote is read once, and one it could not map becomes a defect in the migration table, not a hand edit.
+2. `[layers] on` checked against what the game actually makes, and the session's `tools/list` size written down before and after. That pair is this block's headline number.
+3. Cottony's gates pass, along with `project.check`, `project.adoption` and `provenance.outdated`, and each answers as it did before the move.
+4. One script from `[adoption.own]` whose job a declaration can state becomes an `[extend.operations]` or `[extend.measures]` entry, the first real use of the extension lines. If none can, the reason is filed as a line here.
+5. The skills and `CLAUDE.md` in Cottony that name a polyweave module path or a tool are updated, so the next session does not read a path that no longer exists.
+
+Done when Cottony's own gates pass on the new polyweave and the before and after
+tool-list sizes are in the changelog entry.
+
+### §PW522 Spinhold across the break
+
+Spinhold (`D:\Git\viglet\spinhold`, still called Starship in older lines here) has the
+most at stake. It holds 443 provenance records, 30 of them carrying a person's verdicts,
+19 verdict, canon and ledger files, and 12 acceptance specs. Its Python reaches into
+polyweave in four files, one of them importing `polyweave.geometry.voxel_fit` directly,
+which the representation line moves.
+
+The move, in Spinhold as one commit:
+
+1. Before anything changes, `provenance.outdated`, `provenance.verify`, `loop.report` and `verdict.answers` are written to a file as the baseline.
+2. `polyweave migrate --root .`, reviewed as a diff, then written.
+3. The same four reads again, compared with the baseline. Any difference is a defect in this block, filed here and fixed before the move is committed. Changing Spinhold's data to make the comparison pass is never the fix.
+4. `[layers] on` checked against what the game makes (pictures, voxels, sound, voice, words, vfx, engine), and the session's `tools/list` size written down before and after.
+5. Spinhold's gates and `game.test` pass. Its skills and `CLAUDE.md` stop naming moved module paths.
+
+Spinhold is the second consumer, and the test of whether the block generalised beyond
+Cottony. A seam that only one consumer used will show up here as an unused contribution,
+and that is worth a note in the changelog entry.
+
+Done when the four reads match their baseline and Spinhold's gates pass.

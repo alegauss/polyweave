@@ -37,12 +37,24 @@ COSTS: dict[str, str] = {
     "cells_drawn": "a voxel model's cells with a face on the outside",
     "holes": "edges one triangle uses once the seams are welded: the rims of holes",
     "non_manifold": "edges more than two triangles share, which no clean surface has",
+    "sharp_edge_share": "the share of edge length whose faces turn more than the "
+                        "crease, 30 degrees unless the predicate says crease",
+    "edge_radius_min": "the tightest round over the surface, in the model's units; a "
+                       "crease is 0",
 }
+
+#: The measures of how round a model is (§PW497), which take a predicate's `crease`.
+EDGES = ("sharp_edge_share", "edge_radius_min")
+
+#: How far two faces may turn at an edge, in degrees, before the edge is a crease. A
+#: round of a quarter turn in three segments turns 30 at each, the coarsest that reads
+#: as round; a chamfer turns 45 and a box 90.
+CREASE = 30.0
 
 #: What each kind of file can answer.
 ANSWERS = {
     ".glb": ("triangles", "materials", "draw_calls", "texture_bytes", "holes",
-             "non_manifold"),
+             "non_manifold", *EDGES),
     ".json": ("cells", "cells_drawn", "triangles", "materials", "draw_calls"),
     ".png": ("texture_bytes",),
 }
@@ -170,6 +182,106 @@ def _glb(where: Path) -> dict:
             _image_bytes(one, gltf, binary) for one in gltf.get("images", [])
         ),
         **_topology(gltf, binary),
+        **{k: v for k, v in _edged(gltf, binary, CREASE).items() if k in EDGES},
+    }
+
+
+def edges(path: str | Path, crease: float = CREASE) -> dict:
+    """How round a .glb is at a crease, and where its sharpest edges are (§PW497)."""
+    where = Path(path)
+    if where.suffix.lower() != ".glb" or not where.is_file():
+        raise PolyweaveError(
+            "spec.no-cost-source",
+            f"{where.name} is not a mesh whose edges can be read",
+            "name the .glb the game draws with `of`",
+        )
+    gltf, binary = _parsed(where)
+    return _edged(gltf, binary, float(crease))
+
+
+def _welded(gltf: dict, binary: bytes):
+    """Every triangle primitive's points and faces, vertices at one place welded."""
+    import numpy as np
+
+    points, faces, offset = [], [], 0
+    for mesh in gltf.get("meshes", []):
+        for primitive in mesh.get("primitives", []):
+            if primitive.get("mode", _TRIANGLES) != _TRIANGLES:
+                continue
+            at = primitive["attributes"].get("POSITION")
+            if at is None or "bufferView" not in gltf["accessors"][at]:
+                continue
+            these = _accessor(gltf, binary, at).astype(np.float64)
+            if "indices" in primitive:
+                corners = _accessor(gltf, binary, primitive["indices"]).reshape(-1)
+            else:
+                corners = np.arange(len(these))
+            points.append(these)
+            faces.append(corners[: len(corners) // 3 * 3].reshape(-1, 3) + offset)
+            offset += len(these)
+    if not points:
+        return np.zeros((0, 3)), np.zeros((0, 3), dtype=int)
+    every = np.vstack(points)
+    _, welded = np.unique(np.round(every, 5), axis=0, return_inverse=True)
+    welded = welded.reshape(-1)
+    joined = np.zeros((welded.max() + 1, 3))
+    joined[welded] = every
+    return joined, welded[np.vstack(faces)]
+
+
+def _edged(gltf: dict, binary: bytes, crease: float) -> dict:
+    """Sharp edges' share of length, the tightest round, and the sharpest edges' places.
+
+    Over each edge two faces share: the angle their normals turn is how sharp it is.
+    Past the crease it is a crease, with no radius; under it, the round it belongs to is
+    as tight as the strip across the edge, half of each face's height over it, divided
+    by that angle: an arc's length over its turn. That reads a sphere and a cylinder's
+    side to within a percent; where a round's corner is meshed in skewed facets it reads
+    the tightest of them, down to about half the radius declared. A flat edge has no
+    radius and is left out.
+    """
+    import numpy as np
+
+    points, faces = _welded(gltf, binary)
+    empty = {"sharp_edge_share": 0.0, "edge_radius_min": 0.0, "sharp_at": []}
+    if not len(faces):
+        return empty
+    a, b, c = (points[faces[:, i]] for i in range(3))
+    normal = np.cross(b - a, c - a)
+    twice = np.linalg.norm(normal, axis=1)
+    keep = twice > 1e-12
+    faces, normal, area = faces[keep], normal[keep] / twice[keep, None], twice[keep] / 2
+    pairs = np.concatenate([np.sort(faces[:, [i, (i + 1) % 3]], axis=1)
+                            for i in range(3)])
+    owner = np.tile(np.arange(len(faces)), 3)
+    unique, inverse, counts = np.unique(pairs, axis=0, return_inverse=True,
+                                        return_counts=True)
+    grouped = owner[np.argsort(inverse.reshape(-1), kind="stable")]
+    starts = np.r_[0, np.cumsum(counts)[:-1]]
+    # An edge two faces share, and only two: a third makes it non-manifold, not sharp.
+    shared = np.nonzero(counts == 2)[0]
+    if not len(shared):
+        return empty
+    edge = unique[shared]
+    one, two = grouped[starts[shared]], grouped[starts[shared] + 1]
+    turn = np.degrees(np.arccos(np.clip(np.sum(normal[one] * normal[two], axis=1),
+                                        -1.0, 1.0)))
+    length = np.linalg.norm(points[edge[:, 0]] - points[edge[:, 1]], axis=1)
+    sharp = turn > crease
+    share = float(length[sharp].sum() / max(length.sum(), 1e-12))
+    bent = (turn > 1e-3) & ~sharp
+    # Each face's height over the edge is twice its area over the edge's length, and
+    # the strip a bend spans is half of each.
+    across = (area[one] + area[two]) / np.maximum(length, 1e-12)
+    radius = across[bent] / np.radians(turn[bent])
+    # A crease has no round at all, and a body all flat faces has none to measure.
+    tightest = 0.0 if sharp.any() or not len(radius) else float(radius.min())
+    at = (points[edge[:, 0]] + points[edge[:, 1]]) / 2
+    longest = np.argsort(-length * sharp)[: min(3, int(sharp.sum()))]
+    return {
+        "sharp_edge_share": round(share, 6),
+        "edge_radius_min": round(tightest, 6),
+        "sharp_at": [[round(float(v), 4) for v in at[i]] for i in longest],
     }
 
 

@@ -109,6 +109,7 @@
 - ✅ **PW493** **a solid round on every edge, a capsule or a soft box, has no op, since plate rounds only its outline's corners in XY** — capsule and rounded_box are primitives, closed meshes the voxel test agrees with, and bevel takes segments and a round or chamfer profile (design recorded in `geometry.md`).
 - ✅ **PW494** **a material declares only colour and roughness, so a glossy plastic with clear coat, sheen and soft rim cannot be asked** — A material takes coat, sheen, rim and subsurface, derived onto the Principled BSDF the bake builds, and reads back as "clear-coated, glossy" (design recorded in `geometry.md`).
 - ✅ **PW495 (material half)** **a declared finish reaches the game only through glTF import, so a look a person accepted is rebuilt in a game shader** — A build writes a finish as a Godot .tres, a shader for a sheen, with the bake's numbers; Godot reads them back.
+- ✅ **PW497** **nothing measures how round a model's edges are, so a hard-edged piece in a soft-toy style reaches a person's sitting** — A spec bounds sharp_edge_share and edge_radius_min off a .glb at a stated crease, no render, and a refusal names where the hard edges are (design recorded in `acceptance-spec.md`).
 
 ## Block H — Proof on a real game
 
@@ -555,3 +556,6 @@
 - 🗑 **PW456** **picture.vector draws an SVG's text as nothing and says nothing, so lettered buttons come out blank** — superseded by PW453: PW453 had already filed the same silent loss of an SVG's text in picture.vector.
 - ✅ **PW484** **the input kits fail to parse in a game that has its own class named Bindings, Spinhold among them** — Every kit script names another by a _Pw constant, kit.prove fixtures declare the bare names as global classes, and a failed proof says where it broke (design recorded in `docs/specs/kit.md`).
 - ✅ **PW485** **the prompts kit's proof fails in a game running in another language, reading its translated key names as wrong** — The prompts proof reads names in a locale of its own and hands the game's back, so a pt-BR game holds, and a failure names both languages (design recorded in `docs/specs/kit.md`).
+
+## Block W — A core that grows by layers
+

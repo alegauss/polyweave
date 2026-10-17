@@ -628,6 +628,27 @@ more than two triangles share). A `.voxels.json` answers `cells`,
 refused (`spec.no-cost-source`) with the ones it can. `cost.read` gives all of a file's
 costs, which is where a first bar is measured.
 
+**How round a mesh is** is read off a `.glb` the same way (§PW497), so a soft-toy style
+can refuse one hard edge before a person sees it. Over each welded edge two triangles
+share, the angle their normals turn is how sharp it is; past `crease` (a predicate
+argument, 30 degrees when left out) it is a crease. `sharp_edge_share` is the creases'
+share of all edge length: a box is 0.586, all its edges creases and its face diagonals
+flat, and a rounded box 0. `edge_radius_min` is the tightest round, each bent edge's
+strip (half of each face's height over it) over its turn, in the model's units, and 0
+wherever a crease is. It reads a sphere and a cylinder's side within a percent; where a
+round's corners are meshed in skewed facets, as a `rounded_box`'s are, it reads the
+tightest facet, down to about half the declared radius. A result on either carries
+`sharp_at`, the middles of the three longest creases, in the model's axes, so a refusal
+says where on the model the hard edges are.
+
+```toml
+[[predicate]]
+id      = "moulded"
+measure = "sharp_edge_share"
+of      = "art/tower.glb"
+max     = 0.02
+```
+
 The same predicates are a bought mesh's engine-ready bar (§PW447).
 `normalise.ingest(ready="<spec>.accept.toml")` welds the mesh's coincident vertices and,
 where the spec bounds `triangles` with a `max`, reduces the mesh to it (a planar dissolve,

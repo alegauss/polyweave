@@ -39,7 +39,7 @@ FIELDS = ("id", "measure", "region", "weight", "of", *BOUNDS)
 #: Arguments a predicate may pass through to the measure it names.
 ARGUMENTS = (
     "target", "against", "display", "delta", "targets", "ring", "radius", "behind",
-    "concept",
+    "concept", "crease",
 )
 
 
@@ -710,8 +710,17 @@ def _sounded(p: Predicate, subject: Any, root: str | Path, heard: dict) -> dict:
 def _costed(p: Predicate, subject: Any, root: str | Path) -> dict:
     """A cost predicate, read off the file the game draws rather than the picture."""
     where = cost.source(subject, p.of, root)
-    value = float(cost.take(p.measure, where))
+    placed: dict = {}
+    if p.measure in cost.EDGES:
+        # How round a model is, at the predicate's own crease, and where on the model
+        # its sharpest edges are, so a refusal points at them (§PW497).
+        read = cost.edges(where, float(p.arguments.get("crease", cost.CREASE)))
+        value = float(read[p.measure])
+        placed = {"sharp_at": read["sharp_at"]}
+    else:
+        value = float(cost.take(p.measure, where))
     return {
+        **placed,
         "id": p.id,
         "measure": p.measure,
         "of": p.of or str(where),
