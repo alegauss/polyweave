@@ -101,26 +101,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW481 A sitting's old picture read from git
-
-Found in Spinhold on 2026-10-16 (RK143). Moving the gunship's spec onto its voxel build
-replaces `art/renders/gunship.png`, so the person compares the new render with the
-committed one. `sound.sitting` takes `old = "HEAD:<path>"` for exactly this. The same
-member passed to `verdict.sitting`:
-
-`families = {"gunship": [{"name": "gunship", "new": "art/renders/gunship.png", "old":
-"HEAD:art/renders/gunship.png", "spec": "art/accept/gunship.accept.toml"}]}`
-
-came back `op.crashed`: OSError 22, Invalid argument, opening
-`D:\Git\viglet\spinhold\HEAD:art\renders\gunship.png` (Image.py:3512 in open). The
-workaround was `git show HEAD:art/renders/gunship.png >
-.polyweave/rk143/gunship-mesh.png` by hand and passing that path.
-
-What polyweave should do: `verdict.sitting` and `verdict.sheet` read `HEAD:<path>` (and
-`<rev>:<path>`) as `sound.sitting` does, from git, never as a file name, and record the
-revision on the sheet. A path that does not exist is refused with a code naming it,
-never a crash.
-
 ### §PW482 A voice sample checked before it is sent
 
 Found in Spinhold on 2026-10-16 (RK168). The studio's spoken tag is two words, so the

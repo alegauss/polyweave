@@ -55,6 +55,52 @@ def test_the_sheet_lays_the_family_out_and_says_what_failed(tmp_path):
     assert set(found["choices"]) == {"accept", "look", "number"}
 
 
+def _git(tmp_path, *args):
+    import subprocess
+
+    subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", *args],
+                   cwd=tmp_path, check=True, capture_output=True)
+
+
+def test_a_committed_old_picture_is_read_from_git(tmp_path):
+    """§PW481: the render overwrote the picture, and the old one lives only in git."""
+    import json
+
+    (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
+    one = member(tmp_path, "gunship", DARK, old=False)
+    _git(tmp_path, "init", "-q")
+    _git(tmp_path, "add", "renders/gunship.png")
+    _git(tmp_path, "commit", "-q", "-m", "the gunship as it shipped")
+    committed = (tmp_path / "renders" / "gunship.png").read_bytes()
+    Image.new("RGBA", (24, 24), (BRIGHT,) * 3 + (255,)).save(
+        tmp_path / "renders" / "gunship.png")  # the new render, in place
+    one["old"] = "HEAD:renders/gunship.png"
+    laid = verdict.sitting({"gunship": [one]}, out="review/rk143", root=str(tmp_path))
+    said = laid["sheets"]["gunship"]["members"][0]
+    assert said["old_from"]["rev"] == "HEAD"
+    assert said["old_from"]["path"] == "renders/gunship.png"
+    sitting = json.loads((tmp_path / "review" / "rk143" / "sitting.json").read_text(
+        "utf-8"))
+    shown = sitting["families"]["gunship"]["members"][0]
+    assert shown["old"].startswith(".polyweave/picture/old/")
+    assert (tmp_path / shown["old"]).read_bytes() == committed
+
+
+def test_an_old_git_does_not_hold_or_a_missing_picture_is_refused(tmp_path):
+    (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
+    one = member(tmp_path, "gunship", DARK, old=False)
+    _git(tmp_path, "init", "-q")
+    with pytest.raises(PolyweaveError) as refused:
+        verdict.sitting({"gunship": [{**one, "old": "HEAD:renders/gunship.png"}]},
+                        out="review/x", root=str(tmp_path))
+    assert refused.value.code == "verdict.no-old"
+    with pytest.raises(PolyweaveError) as refused:
+        verdict.sheet([{**one, "old": "renders/none.png"}], out="review/x.png",
+                      root=str(tmp_path))
+    assert refused.value.code == "verdict.bad-member"
+    assert "renders/none.png" in refused.value.message
+
+
 def test_a_bare_path_is_read_as_the_picture_it_names(tmp_path):
     """§PW261: a family of paths is the commonest first guess at a member."""
     member(tmp_path, "citadel", DARK, old=False)

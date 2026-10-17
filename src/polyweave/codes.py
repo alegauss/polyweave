@@ -1055,8 +1055,15 @@ CODES: dict[str, Code] = {
     # -- verdict: the members a verdict is laid out from --------------------------
     "verdict.bad-member": Code(
         means="a member of a sheet, a sitting or a verdict is not one",
-        when="a member that is a number or a list, or a table with no name or no new",
+        when="a member that is a number or a list, a table with no name or no new, or "
+        "an old, new or capture that names no file",
         doors=("write each member as a table, or as the picture's path",),
+    ),
+    "verdict.no-old": Code(
+        means="a member's old names a committed picture git cannot give back",
+        when="old = '<rev>:<path>' where the revision or the path is not in the "
+        "repository, or the picture is a Git LFS pointer git lfs cannot fetch (§PW481)",
+        doors=("name a revision and a path the repository holds, as HEAD:<path>",),
     ),
     "verdict.not-the-person": Code(
         means="a tool call accepts a look without the code the review page shows, so "

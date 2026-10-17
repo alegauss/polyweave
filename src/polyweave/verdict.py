@@ -114,6 +114,34 @@ def members_of(members: Any) -> list[dict]:
     return found
 
 
+def _from_git(members: list[dict], here: Path) -> list[dict]:
+    """Each member whose `old` names a committed version, `<rev>:<path>` as
+    sound.sitting reads it, with that version checked out into the work area and where
+    it came from kept as `old_from`; and each picture a member names, there (§PW481)."""
+    from .config import load
+    from .sound import _checked_out, _committed
+
+    out = []
+    for member in members:
+        committed = _committed(str(member["old"])) if member.get("old") else None
+        if committed:
+            landed, came = _checked_out(*committed, here, load(here).path("paths.work"),
+                                        kind="picture", code="verdict.no-old")
+            member = {**member, "old": landed, "old_from": came}
+        for key in ("old", "new", "capture"):
+            if member.get(key) and not (here / str(member[key])).is_file():
+                raise PolyweaveError(
+                    "verdict.bad-member",
+                    f"{member.get('name')}'s {key} names {member[key]}, which is not a "
+                    "file",
+                    "name a picture under the project, or a committed one as "
+                    "HEAD:<path>",
+                    given=str(member[key]),
+                )
+        out.append(member)
+    return out
+
+
 @operation("verdict.sheet")
 def sheet(
     members: Annotated[list, Param(MEMBERS)],
@@ -131,8 +159,8 @@ def sheet(
     """
     from PIL import Image, ImageDraw
 
-    members = members_of(members)
     here = Path(root).resolve()
+    members = _from_git(members_of(members), here)
     rows, said = [], []
     for member in members:
         _, _, found = _checked(member, here)
@@ -154,7 +182,8 @@ def sheet(
         rows.append((tiles, lines))
         said.append(
             {"name": member["name"], "passed": found["passed"], "checked": held,
-             "failed": failed}
+             "failed": failed,
+             **({"old_from": member["old_from"]} if member.get("old_from") else {})}
         )
     # A family nothing holds is offered no choice that speaks of a spec (§PW338).
     offered = CHOICES if any(one["checked"] for one in said) else UNHELD_CHOICES
@@ -222,8 +251,11 @@ def sitting(
             f"families is a {type(families).__name__}, and it maps a name to members",
             f'pass {{"<family>": [<member>, ...]}}; {MEMBERS}',
         )
-    # Every family checked before any sheet is drawn, so a bad one is refused whole.
-    families = {name: members_of(one) for name, one in families.items()}
+    # Every family checked before any sheet is drawn, so a bad one is refused whole, and
+    # a committed old checked out, so the page shows the picture it names (§PW481).
+    here = Path(root).resolve()
+    families = {name: _from_git(members_of(one), here)
+                for name, one in families.items()}
     folder = Path(out)
     sheets = {
         name: sheet(members, out=folder / f"{name}.png", root=root)

@@ -125,6 +125,12 @@ member's index, in a sheet, a sitting or a verdict alike. Each member gets a
 row: old, new and the capture at the size shown, with every failed predicate in words
 under it, including where its bound came from. The answer carries the same words and the
 three choices, so an agent can ask the question without opening the picture.
+A render rewrites its picture in place, so a member's `old` may name the committed one,
+`HEAD:<path>` or any `<rev>:<path>`, as a sound's may (§PW481): `verdict.sheet` and
+`verdict.sitting` check it out under the work area's `picture/old/`, the sitting's members
+naming that copy so the page shows it, and each member's answer says where it came from
+in `old_from`. A version git does not hold is `verdict.no-old`, and an `old`, `new` or
+`capture` that names no file is `verdict.bad-member` naming it, never a crash.
 `verdict.judge(members, choice, why, run=, named=)` carries the reply. `accept` means the
 look is right. `look` means the renders go back and the bounds stay, with `named`
 blaming the bounds that let it through. `number` means a bound that failed is wrong, and

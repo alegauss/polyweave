@@ -435,8 +435,10 @@ def _committed(given: str) -> tuple[str, str] | None:
     return (found["rev"], found["path"]) if found else None
 
 
-def _checked_out(rev: str, path: str, here: Path, work: Path) -> tuple[str, dict]:
-    """A committed version of a sound, written into the work area to be heard (§PW425).
+def _checked_out(rev: str, path: str, here: Path, work: Path, kind: str = "sound",
+                 code: str = "sound.no-source") -> tuple[str, dict]:
+    """A committed version of a file, written into the work area to be compared
+    (§PW425): a sound to be heard, or a picture to be looked at (§PW481).
 
     A render rewrites its file in place, so the version a person compares against lives
     only in git, and in a project that keeps audio in LFS as a pointer: spinhold took
@@ -454,7 +456,7 @@ def _checked_out(rev: str, path: str, here: Path, work: Path) -> tuple[str, dict
     commit = git("rev-parse", "--verify", f"{rev}^{{commit}}")
     if shown.returncode or commit.returncode:
         raise PolyweaveError(
-            "sound.no-source",
+            code,
             f"git has no {path} at {rev}",
             "name a revision and a path the repository holds, as HEAD:<path>",
             detail=(shown.stderr or commit.stderr).decode("utf-8", "replace")[:300],
@@ -465,14 +467,14 @@ def _checked_out(rev: str, path: str, here: Path, work: Path) -> tuple[str, dict
         smudged = git("lfs", "smudge", path, given=body)
         if smudged.returncode or not smudged.stdout:
             raise PolyweaveError(
-                "sound.no-source",
+                code,
                 f"{path} at {rev} is a Git LFS pointer, and git lfs could not fetch it",
                 "install Git LFS and fetch the object (git lfs fetch), then ask again",
                 detail=smudged.stderr.decode("utf-8", "replace")[:300],
             )
         body = smudged.stdout
     sha = commit.stdout.decode().strip()
-    landed = work / "sound" / "old" / sha[:12] / path
+    landed = work / kind / "old" / sha[:12] / path
     landed.parent.mkdir(parents=True, exist_ok=True)
     landed.write_bytes(body)
     from .provenance import relative

@@ -18,7 +18,6 @@
 
 - 🛠 **PW372** (deps: Spinhold RK215) **a camera move cannot be declared as a clip or played by the game, so a cutscene's shots are numbers in the project** — No shot is yet captured onto a sitting for a person to accept, and Starship's opening still reads its own JSON. → §PW372
 - 🛠 **PW36** (deps: PW5 ✅, PW82 ⏸) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82. → §PW36
-- 📋 **PW481** (deps: —) **verdict.sitting crashes on an old picture named HEAD:<path>, a form sound.sitting reads from git** — Comparing a replaced render with the committed one means saving the old picture by hand first. → §PW481
 - 📋 **PW482** (deps: —) **voice.design sends a sample shorter than the service accepts and quote cannot price it from the entity** — A short tag's voice came back a 422 after the call, and its price was never shown before it. → §PW482
 - 📋 **PW483** (deps: —) **measure.take reports luma only at p1, p50 and p99, so a spread between other percentiles cannot be measured** — Cottony gates form as (p90 - p10) / p50 and had to compute it on its concept art in its own script. → §PW483
 - 📋 **PW486** (deps: —) **a sitting member that failed a bound shows no accept, so a person who likes the look cannot see how to approve it** — Moving the bound is the acceptance there, but its label reads as a spec tweak, and the Cottony owner asked where the accept had gone. → §PW486
