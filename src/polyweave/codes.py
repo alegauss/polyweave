@@ -1640,6 +1640,12 @@ CODES: dict[str, Code] = {
         "is spelled differently from the pattern the run was given",
         doors=("read the log the run wrote", "check the success pattern"),
     ),
+    "engine.budget-ended": Code(
+        means="the frame budget ended the run before the script printed its line",
+        when="a script whose own frame count, printed as `frames: N`, reached the "
+        "run's frame budget, as a long simulation does at the default 6000 (§PW487)",
+        doors=("pass a larger frames", "print the line sooner"),
+    ),
     "engine.missing-artefact": Code(
         means="the run said it wrote a file, and the file is not there",
         when="a script that printed its line before the write finished, or one writing "

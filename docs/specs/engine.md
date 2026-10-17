@@ -78,6 +78,11 @@ is hung, and saying so is better than sitting there.
 from how the process ended is a guess, and a guess inside a verdict is the thing this
 exists to remove. `bounded` is therefore true in exactly two cases that can be told apart:
 the wall clock fired, or the script said how far it got and got all the way to the budget.
+In the second the verdict is `budget` (`engine.budget-ended` as a refusal), not
+`no-signal` (§PW487): a run the budget cut and a run that never printed are different
+things to fix, and Cottony's sweep read seven of the first as the second. A script that
+prints no frame count and nothing else stays `no-signal`, its `why` naming the budget as
+what may have ended it, since nothing it printed tells the two apart.
 
 ## What a run leaves behind
 
@@ -305,7 +310,9 @@ policy give one is found only by playing. `engine.sweep` runs one scene script, 
 over every combination of a `grid` of arguments (each run given `--<name>=<value>` after
 `--`, besides `args`), `lanes` at a time, and keeps the runs whose output has a line
 matching `pattern`: `hits` lists each one's arguments and matching lines, `runs` every
-combination's verdict, and `first` stops once that many have hit. Each run reads its own
+combination's verdict, and `first` stops once that many have hit. A matching line is
+kept whole, as the run printed it, with the matched text beside it in a run's `matched`,
+so the numbers a run measured on that line are read straight off the answer (§PW487). Each run reads its own
 output, not the shared log file. The sweep is recorded under `.polyweave/sweeps/`, keyed by
 the script's hash, the grid, the pattern, the arguments and the build (the git commit and
 a hash of what is uncommitted, polyweave's own work folder left out), so the same sweep of

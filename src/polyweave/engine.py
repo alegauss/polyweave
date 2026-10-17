@@ -317,7 +317,11 @@ def _verdict(**about: Any) -> dict:
         # exits 0), so it is named whenever it could be why (§PW251): certainly where
         # the script's own frame count reached it, possibly where it said nothing.
         why = _silent(output, about["code"], about["budget"], result["bounded"])
-        return {**result, "verdict": "no-signal", "why": why}
+        # Where the script's own count reached the budget, the budget ended it, and
+        # that is its own verdict: read as no-signal, Cottony's sweep took seven
+        # budget-killed runs for runs that never printed (§PW487).
+        verdict = "budget" if result["bounded"] else "no-signal"
+        return {**result, "verdict": verdict, "why": why}
     if missing:
         return {
             **result,
@@ -367,6 +371,7 @@ REFUSALS = {
     "timed-out": "engine.timed-out",
     "script-error": "engine.script-error",
     "no-signal": "engine.no-signal",
+    "budget": "engine.budget-ended",
     "missing-artefact": "engine.missing-artefact",
 }
 
@@ -501,11 +506,16 @@ def sweep(
             args=("--", *map(str, args), *(f"--{n}={v}" for n, v in combo.items())),
             launch=launch,
         )
-        lines = [m.group(0) for m in wanted.finditer(printed.get("output", ""))]
+        output = printed.get("output", "")
+        matched = list(wanted.finditer(output))
+        # The whole line each hit printed, where the numbers a run measured are: the
+        # matched text alone dropped every one of Cottony's (§PW487).
+        lines = [line.strip() for line in output.splitlines() if wanted.search(line)]
         return {
             "args": combo,
             "hit": bool(lines),
             "lines": lines,
+            "matched": [m.group(0) for m in matched],
             "verdict": "ok" if lines else found["verdict"],
             "why": "" if lines else found.get("why", ""),
             "seconds": found.get("seconds"),

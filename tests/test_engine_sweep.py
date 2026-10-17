@@ -63,6 +63,20 @@ def test_the_runs_that_show_the_moment_are_the_hits(tmp_path):
     assert all(r["verdict"] in ("ok", "no-signal") for r in found["runs"])
 
 
+def test_a_hit_keeps_the_whole_line_the_run_printed(tmp_path):
+    """§PW487: the pattern matched "level:", and every number on the line was lost."""
+    root = game(tmp_path)
+    found = engine.sweep(
+        "scan.gd",
+        grid={"seed": [3], "policy": ["greedy"]},
+        pattern=r"EVENT tick=",
+        root=str(root),
+    )
+    (run,) = found["runs"]
+    assert run["lines"] == ["EVENT tick=300 evolution Ring Gunner"]
+    assert run["matched"] == ["EVENT tick="]
+
+
 def test_a_sweep_can_stop_at_its_first_hit(tmp_path):
     root = game(tmp_path)
     found = engine.sweep(

@@ -333,7 +333,9 @@ def test_a_script_that_ran_to_its_budget_is_bounded_out(tmp_path):
         script, expect=SUMMARY, root=tmp_path, launch=says("frames: 6000\n")
     )
     assert found["bounded"] is True
-    assert found["verdict"] == "no-signal"
+    # §PW487: the budget ended it, which is its own verdict, not one that never printed.
+    assert found["verdict"] == "budget"
+    assert found["frames"] == 6000
 
 
 # -- what the run leaves behind --------------------------------------------------------
@@ -400,6 +402,7 @@ def test_every_verdict_has_a_code_to_close_with():
         "timed-out",
         "script-error",
         "no-signal",
+        "budget",
         "missing-artefact",
     }
 

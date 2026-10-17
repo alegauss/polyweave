@@ -215,29 +215,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW487 A sweep that keeps what its runs printed
-
-Found in Cottony, RK150 (2026-10-16), sweeping the goal count of level 20 with the
-careless spike bot:
-
-    python -m polyweave engine.sweep --script .polyweave/spike/bot.gd --grid @.polyweave/spike/grid.json --pattern "level:" --args=--seeds=200 --args=--bot=careless --args=--levels=20-20 --lanes 4
-
-Two answers misled on the way.
-
-1. Every run came back `no-signal` at about 4 seconds. The cause was the default frame
-   budget of 6000 ending a run that prints its line once at the end; the `why` does name
-   the budget as a possibility, but a run that the budget killed and a run that never
-   printed read the same. `--frames 2000000` fixed it. A run cut off by the budget should
-   say so as its own verdict (`budget`), with the frame it reached.
-
-2. With a hit, `lines` held `["level:"]`, the matched text only, not the line the script
-   printed. Every number the run measured (wins, spare moves) was on that line and
-   dropped. The workaround was a pattern of `level: .*` so the match is the line.
-
-What polyweave should do: keep the whole printed line of each hit in `lines` (or add
-`line` beside the match), and give a budget-ended run its own verdict. With both, a
-parameter sweep reads its measurements straight off the answer.
-
 ### §PW488 A capture that knows what it read
 
 Found in Cottony, RK155 (2026-10-16). After re-baking
