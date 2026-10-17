@@ -215,30 +215,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW488 A capture that knows what it read
-
-Found in Cottony, RK155 (2026-10-16). After re-baking
-`docs/design/art/ui/booster_tray.png`, the three screen captures that draw it were
-re-taken:
-
-    python tools/capture_screens.py tools/capture/board.gd tools/capture/strike.gd tools/capture/card.gd
-
-Each came back OK, and two carried this warning:
-
-    SAME SETTINGS, DIFFERENT PICTURE: screenshot-card.png: the same declared settings produced
-    different bytes ... so something this picture depends on is not declared
-
-The picture changed because a sprite it draws changed, which is the reason it was
-re-taken. The capture's provenance records the script's hash and the declared settings
-(locale, resolution, seed) but not the assets the scene loaded, so a legitimate change
-and a real non-determinism (RK164's strike flash) read the same. The warning is right
-only half the time, and the half it is wrong is the common one.
-
-What polyweave should do: record in a capture's provenance the hashes of the project
-files the run read (Godot can list loaded resources, or the capture can hash what
-`res://` paths it opened), and say "a dependency changed: <path>" when one did, keeping
-SAME SETTINGS, DIFFERENT PICTURE for the case where nothing it read moved.
-
 ### §PW489 A shader that failed to compile fails the run
 
 Found in polyweave on 2026-10-16, building PW473. A uniform named `lift` was redeclared

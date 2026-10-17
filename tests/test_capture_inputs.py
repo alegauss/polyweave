@@ -45,6 +45,32 @@ def test_the_log_says_what_the_game_opened():
     ]
 
 
+def test_godot_4s_own_spelling_is_read_and_its_imported_copies_left_out():
+    """§PW488: Godot 4 adds where it remapped a load to, and the pattern refused it."""
+    log = (
+        "Loading resource: res://shot.gd remapped: res://shot.gd\n"
+        "Loading resource: res://art/star_dim.png remapped: res://art/star_dim.png\n"
+        "Loading resource: res://.godot/imported/star_dim.png-2086.ctex remapped: "
+        "res://.godot/imported/star_dim.png-2086.ctex\n"
+    )
+    assert capture.loaded(log) == ["res://art/star_dim.png", "res://shot.gd"]
+
+
+def test_a_recorded_capture_asks_the_engine_to_name_what_it_loads(tmp_path):
+    script, shot = setup(tmp_path)
+    seen = {}
+    taken = taking(LOG, artefacts=(shot,))
+
+    def watching(script_, **how):
+        seen["args"] = how.get("args")
+        return taken(script_, **how)
+
+    shot.write_bytes(b"one")
+    capture.run(script, expect=SHOT, root=tmp_path, take=watching)
+    assert seen["args"][0] == "--verbose"
+    assert seen["args"].index("--verbose") < seen["args"].index("--")
+
+
 def test_the_record_hashes_the_script_and_every_file_loaded(tmp_path):
     script, shot = setup(tmp_path)
     found = take(tmp_path, script, shot, b"one")

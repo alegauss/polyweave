@@ -248,8 +248,10 @@ def test_a_recorded_picture_is_taken_again_in_another_locale(tmp_path, monkeypat
     found = capture.taken_again("x.png", environment={"locale": "pt_BR"},
                                 root=str(tmp_path))
     assert found["ok"] is True, found
-    assert calls[-1]["args"] == ("--", "--frames=700", "--hold=move_right,fire_right",
-                                 "--out=art/bow.png", "locale=pt_BR")
+    # Recorded again, so the engine names what it loads (§PW488).
+    assert calls[-1]["args"] == ("--verbose", "--", "--frames=700",
+                                 "--hold=move_right,fire_right", "--out=art/bow.png",
+                                 "locale=pt_BR")
     assert calls[-1]["frames"] == 700
     again = json.loads((tmp_path / "x.png.prov.json").read_text("utf-8"))
     assert again["params"]["locale"] == "pt_BR"

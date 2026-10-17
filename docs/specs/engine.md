@@ -423,6 +423,13 @@ covers input hashes, so a changed sprite makes a `different-work`, and its `move
 files whose hashes changed since the last record. Only when every input is unchanged does a
 `differs` still blame something undeclared.
 
+Nothing asked Godot for that log until §PW488: a recorded capture now runs with
+`--verbose` (an engine argument, before `--`), and the line Godot 4 prints, `Loading
+resource: res://a.png remapped: res://a.png`, is read up to its path. The engine's own
+imported copies under `res://.godot/` are left out, so a changed sprite is named by the
+sprite. Cottony's re-taken booster tray had warned that the same settings drew a
+different picture, the one case where nothing undeclared had moved.
+
 **A script can say where it drew each asset** (§PW112). A line `region: star_dim=412,96,508,192`
 names a rectangle of the picture in pixels, `[x0, y0, x1, y1]`, and the script can print one
 per asset it placed, since it knows where it put each one. The run keeps them as `regions`

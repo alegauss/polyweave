@@ -66,15 +66,22 @@ REGION = re.compile(
 
 #: A resource the game opened, as Godot's `--verbose` log spells it or as a script says
 #: it with one `loaded: res://...` line of its own (§PW118).
+#: Godot 4 adds where it was remapped to, `Loading resource: res://a.png remapped:
+#: res://a.png`, which the path ends before (§PW488).
 LOADED = re.compile(
-    r"^[ \t]*(?:loaded:|Loading resource:)[ \t]*(?P<path>res://\S+?)[ \t]*$",
+    r"^[ \t]*(?:loaded:|Loading resource:)[ \t]*(?P<path>res://\S+?)"
+    r"(?:[ \t]+remapped:.*)?[ \t]*$",
     re.MULTILINE,
 )
 
 
 def loaded(output: str) -> list[str]:
-    """Every project resource the run says it opened, once each, in order of path."""
-    return sorted({found.group("path") for found in LOADED.finditer(output or "")})
+    """Every project resource the run says it opened, once each, in order of path.
+
+    The engine's own imported copies under `.godot/` are left out: a sprite changed is
+    named by the sprite, not by the cache file its import wrote."""
+    return sorted({found.group("path") for found in LOADED.finditer(output or "")
+                   if not found.group("path").startswith("res://.godot/")})
 
 
 def inputs(script: str | Path, opened: list[str], root: str | Path) -> dict:
@@ -253,6 +260,11 @@ def _once(
     # script's own has written it, and a second would reach the script as an argument.
     given = _sized(tuple(how.pop("args", ())), asked)
     args = given + (() if "--" in given else ("--",)) + as_args(asked)
+    if record and "--verbose" not in args:
+        # The engine then names every resource the scene loads, which the record
+        # hashes, so a picture re-taken because a sprite changed says so instead of
+        # warning that the same settings drew a different picture (§PW488).
+        args = ("--verbose", *args)
     until = str(how.pop("until_visible", "") or "")
     tries = max(1, int(how.pop("tries", 3)))
     # How the call was made, so its record can take the picture again (§PW418).

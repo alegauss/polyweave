@@ -218,6 +218,7 @@
 - ✅ **PW483** **measure.take reports luma only at p1, p50 and p99, so a spread between other percentiles cannot be measured** — A distribution answers any percentile and a spread over the median, and a region may be a colour worn in, so a painting is measured by object (design recorded in `docs/specs/measurements.md`).
 - ✅ **PW486** **a sitting member that failed a bound shows no accept, so a person who likes the look cannot see how to approve it** — On a card that failed a bound, number reads as Accept and move the bound, and the card says why there is no plain Accept (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW487** **engine.sweep keeps only the matched text of a hit, and a run its frame budget ended reads as one that never printed** — engine.sweep keeps each hit's whole printed line, and a run whose count reached the budget answers budget, not no-signal (design recorded in `docs/specs/engine.md`).
+- ✅ **PW488** **a capture warns same settings, different picture when only a sprite the scene draws changed, as if it were noise** — A recorded capture runs verbose and reads Godot 4's load lines, so a re-take whose sprite changed names that sprite, not noise (design recorded in `docs/specs/engine.md`).
 
 ## Block I — Voxel models from a declaration
 
