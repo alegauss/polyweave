@@ -62,13 +62,13 @@
 
 ## Block W — A core that grows by layers
 
-- 🛠 **PW506** (deps: PW516) **A kernel or loop module can import a layer and both gates still pass, so the direction the layout states is a hope** — Layers still import each other freely, with cycles; Layer.uses must declare each edge, the test refuse others and cycles. → §PW506
+- 🛠 **PW506** (deps: —) **A kernel or loop module can import a layer and both gates still pass, so the direction the layout states is a hope** — Layers still import each other freely, with cycles; Layer.uses must declare each edge, the test refuse others and cycles. → §PW506
 - 📋 **PW512** (deps: PW506 🛠, PW511 ✅) **Nothing proves a new layer can be added without editing the kernel, so the block's whole claim goes unchecked** — Each seam is tested alone, and only a whole layer added from outside shows they leave a kernel file nobody has to open. → §PW512
-- 📋 **PW516** (deps: PW499 ✅) **Each paid service's HTTP client is written inside the domain that buys from it, so a new service copies a client** — mesh_buy, sound_buy and picture each open urllib, poll, time out and read a refusal their own way, and the spend rule is only as strong as the weakest copy. → §PW516
+- ⏳ **PW516** (deps: PW499 ✅) **Each paid service's HTTP client is written inside the domain that buys from it, so a new service copies a client** — Each service is still bought by its own domain code; a Service adapter per provider and one kernel buy() that alone spends are left. → §PW516
 - 📋 **PW517** (deps: PW503 ✅, PW508 ✅, PW512) **A project cannot add a measure of its own, so a look only its game needs is a fork, a side script or a PW line** — A project measure keeps the first-call guarantee only when it is described, bounded and recorded exactly as a built-in one is. → §PW517
 - 📋 **PW518** (deps: PW504 ✅, PW517) **A project's own generator can run as a job but is no operation, so no agent finds it, describes it or searches over it** — A target named as a file path has only the worker's signature check, so the project's most-used script is the one call the surface cannot describe. → §PW518
 - 📋 **PW519** (deps: PW518) **An extension would hide the gap it fills, so a measure two games both wrote never becomes vocabulary** — Friction filed as PW lines is how this vocabulary grew, and an extension point that silences the friction stops that growth unless it reports what it holds. → §PW519
-- 📋 **PW520** (deps: PW509 ✅, PW512, PW515 ✅, PW516) **A project's polyweave.toml and the Python importing polyweave break on the new layout, with nothing to carry them over** — The block owes callers no compatibility, so one command must carry a project across, or every adopter pays for the break by hand. → §PW520
+- 📋 **PW520** (deps: PW509 ✅, PW512, PW515 ✅, PW516 ⏳) **A project's polyweave.toml and the Python importing polyweave break on the new layout, with nothing to carry them over** — The block owes callers no compatibility, so one command must carry a project across, or every adopter pays for the break by hand. → §PW520
 - 📋 **PW521** (deps: PW520, PW518) **Cottony still runs on the flat package and serves every layer, so the block is unproven on its first consumer** — A layering proven only on fixtures can still be wrong where a real game reaches into it, and Cottony reaches deepest, from Python, a rig and its own scripts. → §PW521
 - 📋 **PW522** (deps: PW520) **Spinhold still runs on the flat package, so the 443 records and 30 verdicts most at stake in the break are unchecked** — Spinhold holds the most data a person judged, so it proves whether the break kept the one thing it promised to keep. → §PW522
 
@@ -140,6 +140,13 @@
 - **A layer imports another only where its Layer.uses names it, with no cycle**
   test_layering refuses an import from one layer to another that its layer.py does not
   declare in uses, and refuses a cycle among the declared uses; the tree passes it.
+
+## Done when — PW516
+
+- **One kernel buy() alone spends, through a Service adapter per provider** mesh_buy,
+  sound_buy, picture and scenario buy through buy(service, request), which checks the
+  ceiling and ledgers before submitting; a fixture service is quoted, bought, refused
+  over its ceiling and reconciled.
 
 ## Non-goals
 

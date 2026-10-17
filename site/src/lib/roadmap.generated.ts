@@ -147,7 +147,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "W",
     symptom: "A kernel or loop module can import a layer and both gates still pass, so the direction the layout states is a hope",
     why: "Layers still import each other freely, with cycles; Layer.uses must declare each edge, the test refuse others and cycles.",
-    deps: ["PW516"],
+    deps: [],
   },
   {
     id: "PW512",
@@ -160,7 +160,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW516",
     block: "W",
     symptom: "Each paid service's HTTP client is written inside the domain that buys from it, so a new service copies a client",
-    why: "mesh_buy, sound_buy and picture each open urllib, poll, time out and read a refusal their own way, and the spend rule is only as strong as the weakest copy.",
+    why: "Each service is still bought by its own domain code; a Service adapter per provider and one kernel buy() that alone spends are left.",
     deps: [],
   },
   {

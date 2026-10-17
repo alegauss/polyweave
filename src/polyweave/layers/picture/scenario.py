@@ -21,8 +21,6 @@ from __future__ import annotations
 import base64
 import json
 import time
-import urllib.error
-import urllib.request
 from pathlib import Path
 from typing import Annotated, Any
 
@@ -31,7 +29,7 @@ from polyweave.kernel.config import load
 from polyweave.kernel.describe import Param, operation
 from polyweave.kernel.doors import Blank, door
 from polyweave.kernel.errors import PolyweaveError
-from polyweave.services import purchase
+from polyweave.services import client, purchase
 
 from . import picture, style
 
@@ -64,28 +62,25 @@ def serves(config, service: str | None) -> bool:
 
 def _call(method: str, url: str, key: str, body: dict | None = None) -> tuple[int, Any]:
     """One JSON request with the key and secret, answered as status and JSON."""
-    request = urllib.request.Request(  # noqa: S310 - the base is the project's own
-        url,
-        data=None if body is None else json.dumps(body).encode("utf-8"),
-        method=method,
-        headers={
-            "Authorization": "Basic " + base64.b64encode(key.encode()).decode(),
-            "Content-Type": "application/json",
-            "User-Agent": picture.AGENT,
-        },
-    )
     try:
-        with urllib.request.urlopen(request, timeout=picture.TIMEOUT) as answer:  # noqa: S310
-            status, raw = answer.status, answer.read()
-    except urllib.error.HTTPError as refused:
-        status, raw = refused.code, refused.read()
-    except urllib.error.URLError as exc:
+        answer = client.send(
+            url,
+            method=method,
+            data=None if body is None else json.dumps(body).encode("utf-8"),
+            headers={
+                "Authorization": "Basic " + base64.b64encode(key.encode()).decode(),
+                "Content-Type": "application/json",
+            },
+            timeout=picture.TIMEOUT,
+        )
+    except client.Unreached as exc:
         raise PolyweaveError(
             "fetch.service-error",
             f"the service could not be reached at {url}",
             "check the base under [service] and the network; nothing was spent",
-            detail=str(exc.reason),
+            detail=exc.reason,
         ) from exc
+    status, raw = answer.status, answer.body
     try:
         return status, json.loads(raw or b"{}")
     except json.JSONDecodeError:

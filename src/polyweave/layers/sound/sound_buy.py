@@ -32,9 +32,7 @@ import json
 import re
 import shutil
 import subprocess
-import urllib.error
 import urllib.parse
-import urllib.request
 from pathlib import Path
 from typing import Annotated
 
@@ -42,8 +40,7 @@ from polyweave.kernel import provenance
 from polyweave.kernel.config import load
 from polyweave.kernel.describe import Param, operation
 from polyweave.kernel.errors import PolyweaveError
-from polyweave.layers.picture import picture
-from polyweave.services import purchase
+from polyweave.services import client, purchase
 
 from . import sound
 
@@ -232,8 +229,8 @@ def _bought(
     target = _target(config, cue, out)
     name = config.service(service, model=model)
     about = config.services()[name]
-    base, key = picture._reached(name, about)
-    priced = picture._priced(
+    base, key = client.reached(name, about)
+    priced = client.priced(
         name, about.get("prices") or {}, model, None, len(words)
     )
     price = priced["price"]
@@ -443,8 +440,8 @@ def design(
         )
     named = f"{entity}_{locale}" if locale else entity
     folder = _laid(config, out, named)
-    base, key = picture._reached(name, about)
-    priced = picture._priced(
+    base, key = client.reached(name, about)
+    priced = client.priced(
         name, about.get("prices") or {}, model, None, len(sample)
     )
     purchase.allow_priced(priced, root=here, service=name)
@@ -560,7 +557,7 @@ def choose(
             given=preview,
         )
     name = config.service(service, model=str((record.get("engine") or {}).get("model")))
-    base, key = picture._reached(name, config.services()[name])
+    base, key = client.reached(name, config.services()[name])
     saved = _asked(
         f"{base}{SAVE}", key,
         {"voice_name": drawn["id"], "voice_description": drawn.get("description", ""),
@@ -650,7 +647,7 @@ def lines(
             # Each column in the voice its locale has, the shared one where it has none
             # of its own (§PW413).
             voice = voice_in(entities.get(who) or {}, one)
-            price = picture._priced(name, prices, model, None, len(text))["price"]
+            price = client.priced(name, prices, model, None, len(text))["price"]
             if not voice.get("id"):
                 # Priced all the same, so a set's cost is known before a voice is
                 # bought for it (§PW414).
@@ -907,34 +904,32 @@ def _plan_lacks(said: str) -> PolyweaveError:
 
 def _asked(url: str, key: str, payload: dict) -> dict:
     """One JSON request with the service's key header, answered with JSON."""
-    request = urllib.request.Request(  # noqa: S310
-        url,
-        data=json.dumps(payload).encode("utf-8"),
-        headers={"xi-api-key": key, "Content-Type": "application/json",
-                 "Accept": "application/json", "User-Agent": picture.AGENT},
-        method="POST",
-    )
     try:
-        with urllib.request.urlopen(request, timeout=TIMEOUT) as answer:  # noqa: S310
-            said = json.loads(answer.read() or b"{}")
-    except urllib.error.HTTPError as refused:
-        said = refused.read()[:400].decode("utf-8", "replace")
-        if refused.code == 403:
-            raise _plan_lacks(said) from refused
-        raise PolyweaveError(
-            "fetch.service-error",
-            f"the service answered {refused.code}",
-            "read the detail; a 401 is a key the service does not accept, or an "
-            "account out of credits, and a 422 words it would not use",
-            detail=said,
-        ) from refused
-    except urllib.error.URLError as exc:
+        answer = client.send(
+            url, method="POST", data=json.dumps(payload).encode("utf-8"),
+            headers={"xi-api-key": key, "Content-Type": "application/json",
+                     "Accept": "application/json"},
+            timeout=TIMEOUT,
+        )
+    except client.Unreached as exc:
         raise PolyweaveError(
             "fetch.service-error",
             f"the service could not be reached at {url}",
             "check the base under [service] and the network",
-            detail=str(exc.reason),
+            detail=exc.reason,
         ) from exc
+    if answer.status >= 400:
+        said = answer.body[:400].decode("utf-8", "replace")
+        if answer.status == 403:
+            raise _plan_lacks(said)
+        raise PolyweaveError(
+            "fetch.service-error",
+            f"the service answered {answer.status}",
+            "read the detail; a 401 is a key the service does not accept, or an "
+            "account out of credits, and a 422 words it would not use",
+            detail=said,
+        )
+    said = json.loads(answer.body or b"{}")
     return said if isinstance(said, dict) else {}
 
 
@@ -970,61 +965,55 @@ def _target(config, cue: str | None, out: str | None) -> Path:
 
 def _post(url: str, key: str, payload: dict) -> tuple[bytes, str]:
     """One request with the service's key header, answered with audio and its id."""
-    request = urllib.request.Request(  # noqa: S310
-        url,
-        data=json.dumps(payload).encode("utf-8"),
-        headers={"xi-api-key": key, "Content-Type": "application/json",
-                 "Accept": "audio/mpeg", "User-Agent": picture.AGENT},
-        method="POST",
-    )
     try:
-        with urllib.request.urlopen(request, timeout=TIMEOUT) as answer:  # noqa: S310
-            return answer.read(), answer.headers.get("request-id", "")
-    except urllib.error.HTTPError as refused:
-        said = refused.read()[:400].decode("utf-8", "replace")
-        if refused.code == 422:
-            raise PolyweaveError(
-                "fetch.prompt-refused",
-                "the service would not make a sound from those words",
-                "reword the prompt; nothing was ledgered",
-                detail=said,
-            ) from refused
-        if refused.code == 429:
-            raise PolyweaveError(
-                "fetch.rate-limited",
-                "the service has more requests from this account than it allows",
-                "wait, then ask again",
-                detail=said,
-            ) from refused
-        if refused.code == 403:
-            raise _plan_lacks(said) from refused
-        raise PolyweaveError(
-            "fetch.service-error",
-            f"the service answered {refused.code}",
-            "read the detail; a 401 is a key the service does not accept, or an "
-            "account out of credits, and a 400 a request it does not",
-            detail=said,
-        ) from refused
-    except urllib.error.URLError as exc:
+        answer = client.send(
+            url, method="POST", data=json.dumps(payload).encode("utf-8"),
+            headers={"xi-api-key": key, "Content-Type": "application/json",
+                     "Accept": "audio/mpeg"},
+            timeout=TIMEOUT,
+        )
+    except client.Unreached as exc:
         raise PolyweaveError(
             "fetch.service-error",
             f"the service could not be reached at {url}",
             "check the base under [service] and the network",
-            detail=str(exc.reason),
+            detail=exc.reason,
         ) from exc
+    if answer.status < 400:
+        return answer.body, answer.headers.get("request-id", "")
+    said = answer.body[:400].decode("utf-8", "replace")
+    if answer.status == 422:
+        raise PolyweaveError(
+            "fetch.prompt-refused",
+            "the service would not make a sound from those words",
+            "reword the prompt; nothing was ledgered",
+            detail=said,
+        )
+    if answer.status == 429:
+        raise PolyweaveError(
+            "fetch.rate-limited",
+            "the service has more requests from this account than it allows",
+            "wait, then ask again",
+            detail=said,
+        )
+    if answer.status == 403:
+        raise _plan_lacks(said)
+    raise PolyweaveError(
+        "fetch.service-error",
+        f"the service answered {answer.status}",
+        "read the detail; a 401 is a key the service does not accept, or an "
+        "account out of credits, and a 400 a request it does not",
+        detail=said,
+    )
 
 
 def _subscription(base: str, key: str) -> dict | None:
     """What the account's subscription says, or None where the service will not say."""
-    request = urllib.request.Request(  # noqa: S310
-        f"{base}{USAGE}",
-        headers={"xi-api-key": key, "Accept": "application/json",
-                 "User-Agent": picture.AGENT},
-    )
     try:
-        with urllib.request.urlopen(request, timeout=TIMEOUT) as answer:  # noqa: S310
-            said = json.loads(answer.read())
-    except (urllib.error.URLError, OSError, ValueError):
+        answer = client.send(f"{base}{USAGE}", timeout=TIMEOUT,
+                             headers={"xi-api-key": key, "Accept": "application/json"})
+        said = json.loads(answer.body) if answer.status < 400 else None
+    except (client.Unreached, OSError, ValueError):
         return None
     return said if isinstance(said, dict) else None
 

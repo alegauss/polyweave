@@ -24,8 +24,6 @@ from __future__ import annotations
 import base64
 import json
 import time
-import urllib.error
-import urllib.request
 from pathlib import Path
 from typing import Annotated
 
@@ -34,7 +32,8 @@ from polyweave.kernel.config import load
 from polyweave.kernel.describe import Param, operation
 from polyweave.kernel.errors import PolyweaveError
 from polyweave.layers.picture import picture
-from polyweave.services import purchase
+from polyweave.services import client, purchase
+from polyweave.services.client import download as _download
 
 #: The two routes, and where each is asked after.
 ROUTES = {"text": "/openapi/v2/text-to-3d", "image": "/openapi/v1/image-to-3d",
@@ -121,7 +120,7 @@ def buy(
     name = config.service(service, model=model)
     about = config.services()[name]
     base, key = _reached(name, about)
-    price = picture._price(name, about.get("prices") or {}, model, None)
+    price = client.price(name, about.get("prices") or {}, model, None)
 
     route = "text" if prompt is not None else "views" if views else "image"
     tripo = TRIPO_HOST in base
@@ -202,7 +201,7 @@ def buy(
         )
     if report is not None:
         report.stage("downloading", progress=0.9, note="taking delivery of the mesh")
-    body = picture._download(link)
+    body = _download(link)
     after = _tripo_balance(base, key) if tripo else _balance(base, key)
     return purchase.capture(
         body,
@@ -278,54 +277,54 @@ def _promoted(source: Path, here: Path) -> bool:
 
 
 def _data_uri(source: Path) -> str:
-    encoded = base64.b64encode(picture.sent_bytes(source)).decode("ascii")
-    return f"data:{picture._mime(source)};base64,{encoded}"
+    encoded = base64.b64encode(client.sent_bytes(source)).decode("ascii")
+    return f"data:{client.mime(source)};base64,{encoded}"
 
 
 def _reached(name: str, about: dict) -> tuple[str, str]:
-    return picture._reached(name, about)
+    return client.reached(name, about)
 
 
 def _json(method: str, url: str, key: str, payload: dict | None = None) -> dict:
     """One JSON call with the bearer key, a refusal turned into a code."""
     body = json.dumps(payload).encode("utf-8") if payload is not None else None
-    headers = {"Authorization": f"Bearer {key}", "User-Agent": picture.AGENT}
+    headers = {"Authorization": f"Bearer {key}"}
     if body is not None:
         headers["Content-Type"] = "application/json"
-    request = urllib.request.Request(url, data=body, headers=headers, method=method)  # noqa: S310
     try:
-        with urllib.request.urlopen(request, timeout=TIMEOUT) as answer:  # noqa: S310
-            return json.loads(answer.read() or b"{}")
-    except urllib.error.HTTPError as refused:
-        said = refused.read()[:400].decode("utf-8", "replace")
-        if refused.code == 402:
-            raise PolyweaveError(
-                "fetch.over-budget",
-                "the service says the account has too few credits for this task",
-                "top the account up; the project's own ceiling was not the limit",
-                detail=said,
-            ) from refused
-        if refused.code == 429:
-            raise PolyweaveError(
-                "fetch.rate-limited",
-                "the service has more tasks from this account in flight than it allows",
-                "wait for the tasks already out to finish, then ask again",
-                detail=said,
-            ) from refused
-        raise PolyweaveError(
-            "fetch.service-error",
-            f"the service answered {refused.code} to {method} {url}",
-            "read the detail; a 401 is a key the service does not accept, and a 400 a "
-            "request it does not",
-            detail=said,
-        ) from refused
-    except urllib.error.URLError as exc:
+        answer = client.send(url, method=method, data=body, headers=headers,
+                             timeout=TIMEOUT)
+    except client.Unreached as exc:
         raise PolyweaveError(
             "fetch.service-error",
             f"the service could not be reached at {url}",
             "check the base under [service] and the network",
-            detail=str(exc.reason),
+            detail=exc.reason,
         ) from exc
+    if answer.status < 400:
+        return json.loads(answer.body or b"{}")
+    said = answer.body[:400].decode("utf-8", "replace")
+    if answer.status == 402:
+        raise PolyweaveError(
+            "fetch.over-budget",
+            "the service says the account has too few credits for this task",
+            "top the account up; the project's own ceiling was not the limit",
+            detail=said,
+        )
+    if answer.status == 429:
+        raise PolyweaveError(
+            "fetch.rate-limited",
+            "the service has more tasks from this account in flight than it allows",
+            "wait for the tasks already out to finish, then ask again",
+            detail=said,
+        )
+    raise PolyweaveError(
+        "fetch.service-error",
+        f"the service answered {answer.status} to {method} {url}",
+        "read the detail; a 401 is a key the service does not accept, and a 400 a "
+        "request it does not",
+        detail=said,
+    )
 
 
 def _balance(base: str, key: str) -> float:
@@ -393,7 +392,7 @@ def _rodin(report, *, out, prompt, picture_path, views, model, polycount, name, 
     if report is not None:
         report.stage("downloading", progress=0.9, note="taking delivery of the mesh")
     return purchase.capture(
-        picture._download(link),
+        _download(link),
         out=out,
         task_id=f"{name}:{task}",
         credits=price,
@@ -426,28 +425,27 @@ def _form(url: str, key: str, fields: dict, files: list) -> dict:
     for field, path in files:
         parts.append(
             f'--{boundary}\r\nContent-Disposition: form-data; name="{field}"; '
-            f'filename="{path.name}"\r\nContent-Type: {picture._mime(path)}\r\n\r\n'
-            .encode() + picture.sent_bytes(path) + b"\r\n")
+            f'filename="{path.name}"\r\nContent-Type: {client.mime(path)}\r\n\r\n'
+            .encode() + client.sent_bytes(path) + b"\r\n")
     parts.append(f"--{boundary}--\r\n".encode())
-    request = urllib.request.Request(  # noqa: S310 - the base is the project's own
-        url, data=b"".join(parts), method="POST",
-        headers={"Authorization": f"Bearer {key}", "User-Agent": picture.AGENT,
-                 "Content-Type": f"multipart/form-data; boundary={boundary}"},
-    )
     try:
-        with urllib.request.urlopen(request, timeout=TIMEOUT) as answer:  # noqa: S310
-            return json.loads(answer.read() or b"{}")
-    except urllib.error.HTTPError as refused:
-        raise PolyweaveError(
-            "fetch.service-error", f"the service answered {refused.code} to {url}",
-            "read the detail; a 401 is a key the service does not accept",
-            detail=refused.read()[:400].decode("utf-8", "replace"),
-        ) from refused
-    except urllib.error.URLError as exc:
+        answer = client.send(
+            url, method="POST", data=b"".join(parts), timeout=TIMEOUT,
+            headers={"Authorization": f"Bearer {key}",
+                     "Content-Type": f"multipart/form-data; boundary={boundary}"},
+        )
+    except client.Unreached as exc:
         raise PolyweaveError(
             "fetch.service-error", f"the service could not be reached at {url}",
-            "check the base under [service] and the network", detail=str(exc.reason),
+            "check the base under [service] and the network", detail=exc.reason,
         ) from exc
+    if answer.status >= 400:
+        raise PolyweaveError(
+            "fetch.service-error", f"the service answered {answer.status} to {url}",
+            "read the detail; a 401 is a key the service does not accept",
+            detail=answer.body[:400].decode("utf-8", "replace"),
+        )
+    return json.loads(answer.body or b"{}")
 
 
 def _tripo_balance(base: str, key: str) -> float:
@@ -463,30 +461,29 @@ def _uploaded(base: str, key: str, source: Path) -> str:
     boundary = uuid.uuid4().hex
     body = (
         f'--{boundary}\r\nContent-Disposition: form-data; name="file"; '
-        f'filename="{source.name}"\r\nContent-Type: {picture._mime(source)}\r\n\r\n'
-    ).encode() + picture.sent_bytes(source) + f"\r\n--{boundary}--\r\n".encode()
-    request = urllib.request.Request(  # noqa: S310 - the base is the project's own
-        base + "/files", data=body, method="POST",
-        headers={"Authorization": f"Bearer {key}", "User-Agent": picture.AGENT,
-                 "Content-Type": f"multipart/form-data; boundary={boundary}"},
-    )
+        f'filename="{source.name}"\r\nContent-Type: {client.mime(source)}\r\n\r\n'
+    ).encode() + client.sent_bytes(source) + f"\r\n--{boundary}--\r\n".encode()
     try:
-        with urllib.request.urlopen(request, timeout=TIMEOUT) as answer:  # noqa: S310
-            said = json.loads(answer.read() or b"{}")
-    except urllib.error.HTTPError as refused:
-        raise PolyweaveError(
-            "fetch.service-error",
-            f"the service answered {refused.code} to the picture sent up",
-            "read the detail; nothing was spent or ledgered",
-            detail=refused.read()[:400].decode("utf-8", "replace"),
-        ) from refused
-    except urllib.error.URLError as exc:
+        answer = client.send(
+            base + "/files", method="POST", data=body, timeout=TIMEOUT,
+            headers={"Authorization": f"Bearer {key}",
+                     "Content-Type": f"multipart/form-data; boundary={boundary}"},
+        )
+    except client.Unreached as exc:
         raise PolyweaveError(
             "fetch.service-error",
             f"the service could not be reached at {base}",
             "check the base under [service] and the network",
-            detail=str(exc.reason),
+            detail=exc.reason,
         ) from exc
+    if answer.status >= 400:
+        raise PolyweaveError(
+            "fetch.service-error",
+            f"the service answered {answer.status} to the picture sent up",
+            "read the detail; nothing was spent or ledgered",
+            detail=answer.body[:400].decode("utf-8", "replace"),
+        )
+    said = json.loads(answer.body or b"{}")
     token = (said.get("data") or {}).get("file_token")
     if not token:
         raise PolyweaveError(

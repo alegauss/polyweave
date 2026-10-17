@@ -28,7 +28,7 @@ def quote(
     call at a time (§PW308); `cheaper` names a free path where there is one.
     """
     from polyweave.kernel import describe as D
-    from polyweave.layers.picture import picture
+    from polyweave.services import client
 
     D.load()
     # As Claude Code names the tool, too: the window asks with the name it was given.
@@ -61,7 +61,7 @@ def quote(
 
         counted = _sample_of(str(given["entity"]), given.get("world"), root,
                              given.get("locale"), given.get("sample"))
-    found_price = picture._priced(
+    found_price = client.priced(
         service, about.get("prices") or {}, model, given.get("rendering_speed"),
         None if counted is None else len(counted),
     )

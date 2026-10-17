@@ -140,7 +140,7 @@ def test_a_mesh_of_an_entity_is_bought_from_the_world_s_words(tmp_path, monkeypa
     fake = Meshy()
     monkeypatch.setattr(mesh_buy, "_json", fake)
     monkeypatch.setattr(mesh_buy, "POLL_EVERY", 0)
-    monkeypatch.setattr(picture, "_download", lambda link: GLB)
+    monkeypatch.setattr(mesh_buy, "_download", lambda link: GLB)
     mesh_buy.buy(out="m/mason.glb", entity="mason", root=tmp_path)
     _, payload = fake.sent[0]
     assert payload["prompt"].startswith("a stooped builder in a dust-grey apron.")

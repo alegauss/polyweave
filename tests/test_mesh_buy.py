@@ -52,7 +52,7 @@ def meshy(tmp_path, monkeypatch):
     fake = Meshy()
     monkeypatch.setattr(mesh_buy, "_json", fake)
     monkeypatch.setattr(mesh_buy, "POLL_EVERY", 0)
-    monkeypatch.setattr(picture, "_download", lambda link: GLB)
+    monkeypatch.setattr(mesh_buy, "_download", lambda link: GLB)
     return fake
 
 

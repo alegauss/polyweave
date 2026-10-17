@@ -96,6 +96,8 @@ CORE: dict[str, tuple[str, str]] = {
         "internal", "tracked files kept internal; verify"),
     "polyweave.surface.cli": (
         "internal", "the command line's own parsing and printing"),
+    "polyweave.services.client": (
+        "internal", "every paid service's request, key, price and bytes"),
     "polyweave.services.purchase": ("internal", "what a fetch writes when it has paid"),
     "polyweave.services.schema": (
         "internal", "learning the schema, which sends requests"),

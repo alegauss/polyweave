@@ -24,24 +24,26 @@ variants, with their poll, are not here yet.
 from __future__ import annotations
 
 import json
-import os
 import threading
-import urllib.error
-import urllib.request
 import uuid
 from pathlib import Path
 from typing import Annotated
 
 import numpy as np
 
-from polyweave import __version__
 from polyweave.kernel import provenance
 from polyweave.kernel.config import load
 from polyweave.kernel.describe import Param, operation
 from polyweave.kernel.doors import Blank, door
 from polyweave.kernel.errors import PolyweaveError
 from polyweave.kernel.files import write_atomic
-from polyweave.services import purchase, schema
+from polyweave.services import client, purchase, schema
+from polyweave.services.client import AGENT, sent_bytes  # noqa: F401
+from polyweave.services.client import download as _download
+from polyweave.services.client import mime as _mime
+from polyweave.services.client import price as _price
+from polyweave.services.client import priced as _priced  # noqa: F401
+from polyweave.services.client import reached as _reached
 
 from . import style
 
@@ -63,7 +65,6 @@ _inflight = threading.BoundedSemaphore(INFLIGHT)
 #: What every request says it is. The service's image host sits behind Cloudflare, which
 #: refuses Python's default agent with error 1010, so a picture was drawn, charged and
 #: then could not be read (§PW193). A named agent is what a service's logs should see.
-AGENT = f"polyweave/{__version__} (+https://github.com/alegauss/polyweave)"
 
 #: How long one request may take before it is called failed. A picture takes seconds.
 TIMEOUT = 120
@@ -831,42 +832,6 @@ def _one_prompt(prompt: str | None, json_prompt: dict | None, model: str) -> Non
         )
 
 
-def sent_bytes(path) -> bytes:
-    """A picture as it is sent to a service: the colour under full transparency cleared.
-
-    A generator's transparent PNG keeps whatever colour it drew under alpha zero, and a
-    service that ignores alpha (3.0's inpaint, remix and reframe) shows it. Starship's
-    edited Mote came back ringed in green noise that had been invisible, and every pixel
-    of it counted as changed (§PW195). Clearing it to black leaves the picture as a
-    viewer saw it, on the dark ground a service that drops alpha would give it anyway.
-    """
-    import io
-
-    from PIL import Image as PILImage
-
-    raw = Path(path).read_bytes()
-    try:
-        with PILImage.open(io.BytesIO(raw)) as opened:
-            if "A" not in opened.getbands():
-                return raw
-            rgba = np.asarray(opened.convert("RGBA")).copy()
-    except OSError:
-        return raw  # not a picture this can read; the service will say so
-    clear = rgba[..., 3] == 0
-    if not clear.any():
-        return raw
-    rgba[clear, :3] = 0
-    out = io.BytesIO()
-    PILImage.fromarray(rgba).save(out, format="PNG")
-    return out.getvalue()
-
-
-def _mime(path) -> str:
-    return {".png": "image/png", ".webp": "image/webp"}.get(
-        path.suffix.lower(), "image/jpeg"
-    )
-
-
 #: How long a generation may stay pending before the call gives up on it, and how
 #: often it is asked. A poll that is never answered ends here rather than holding a
 #: slot of the account's ten for ever.
@@ -929,87 +894,17 @@ def _reported(answer: dict, unit: str) -> float | None:
 
 def _get(url: str, key: str) -> tuple[int, bytes]:
     """GET one URL with the key, inside the account's allowance of calls in flight."""
-    request = urllib.request.Request(  # noqa: S310
-        url, headers={"Api-Key": key, "User-Agent": AGENT}
-    )
     with _inflight:
         try:
-            with urllib.request.urlopen(request, timeout=TIMEOUT) as answer:  # noqa: S310
-                return answer.status, answer.read()
-        except urllib.error.HTTPError as refused:
-            return refused.code, refused.read()
-        except urllib.error.URLError as exc:
+            answer = client.send(url, headers={"Api-Key": key}, timeout=TIMEOUT)
+        except client.Unreached as exc:
             raise PolyweaveError(
                 "fetch.service-error",
                 f"the service could not be reached at {url}",
                 "check the base under [service] and the network",
-                detail=str(exc.reason),
+                detail=exc.reason,
             ) from exc
-
-
-def _price(
-    name: str, prices: dict, model: str, speed: str | None, count: int | None = None
-) -> float:
-    """What one call costs, from the declared table, or a refusal (§PW164)."""
-    return _priced(name, prices, model, speed, count)["price"]
-
-
-def _priced(
-    name: str, prices: dict, model: str, speed: str | None, count: int | None = None
-) -> dict:
-    """What one call costs and how it was reached, or a refusal (§PW164, §PW320).
-
-    A row is `<model>:<speed>`, or `<model>` for the speed the service defaults to. A
-    call with no row is refused rather than priced at zero: under-counting is the
-    direction that lets a session pass a ceiling a person set. A row by the unit,
-    `{ per = "character", rate }`, is the rate times `count`, the characters the call
-    sends, and one with no count is refused for the same reason.
-    """
-    row = f"{model}:{speed}" if speed else model
-    if row in prices and isinstance(prices[row], dict):
-        per, rate = prices[row]["per"], float(prices[row]["rate"])
-        if count is None:
-            raise PolyweaveError(
-                "fetch.uncounted",
-                f"[service.{name}] prices {row!r} by the {per}, and this call states "
-                f"no count of them",
-                "pass the text the call would send, so its length can be priced",
-                given=row,
-            )
-        return {"price": round(rate * int(count), 6), "per": per, "rate": rate,
-                "count": int(count)}
-    if row in prices:
-        return {"price": float(prices[row]), "per": "call"}
-    raise PolyweaveError(
-        "fetch.unpriced",
-        f"[service.{name}] prices has no row {row!r}, so what the picture costs is "
-        f"not known",
-        f"add {row!r} = <price of one picture> to [service.{name}] prices, in the "
-        f"unit of its ceiling",
-        given=row,
-        allowed=sorted(prices),
-    )
-
-
-def _reached(name: str, about: dict) -> tuple[str, str]:
-    """Where the service is and the key it takes, refused before anything is sent."""
-    if not about.get("base"):
-        raise PolyweaveError(
-            "fetch.service-unconfigured",
-            f"[service.{name}] names no base, so there is nowhere to send the request",
-            f'set base = "https://api.ideogram.ai" under [service.{name}]',
-        )
-    variable = about.get("key_env")
-    key = os.environ.get(variable) if variable else None
-    if not key:
-        raise PolyweaveError(
-            "fetch.service-unconfigured",
-            f"the key for {name} is not set here"
-            + (f": {variable} is empty" if variable else ", and no key_env names it"),
-            f"export {variable or 'the variable'} in this environment, and name it as "
-            f"key_env under [service.{name}]; the key itself never goes in the file",
-        )
-    return about["base"], key
+    return answer.status, answer.body
 
 
 def _answered(
@@ -1075,42 +970,25 @@ def _send(
             + b"\r\n"
         )
     parts.append(f"--{boundary}--\r\n".encode())
-    request = urllib.request.Request(  # noqa: S310 - the base is the project's own
-        endpoint,
-        data=b"".join(parts),
-        method="POST",
-        headers={
-            "Api-Key": key,
-            "User-Agent": AGENT,
-            "Content-Type": f"multipart/form-data; boundary={boundary}",
-        },
-    )
     with _inflight:
         try:
-            with urllib.request.urlopen(request, timeout=TIMEOUT) as answer:  # noqa: S310
-                return answer.status, answer.read()
-        except urllib.error.HTTPError as refused:
-            return refused.code, refused.read()
-        except urllib.error.URLError as exc:
+            answer = client.send(
+                endpoint,
+                method="POST",
+                data=b"".join(parts),
+                headers={
+                    "Api-Key": key,
+                    "Content-Type": f"multipart/form-data; boundary={boundary}",
+                },
+                timeout=TIMEOUT,
+            )
+        except client.Unreached as exc:
             raise PolyweaveError(
                 "fetch.service-error",
                 f"the service could not be reached at {endpoint}",
                 "check the base under [service] and the network; nothing was spent",
-                detail=str(exc.reason),
+                detail=exc.reason,
             ) from exc
+    return answer.status, answer.body
 
 
-def _download(link: str) -> bytes:
-    """The picture's bytes, fetched at once: the link the service gives expires."""
-    try:
-        fetched = urllib.request.Request(link, headers={"User-Agent": AGENT})  # noqa: S310
-        with urllib.request.urlopen(fetched, timeout=TIMEOUT) as answer:  # noqa: S310
-            return answer.read()
-    except urllib.error.URLError as exc:
-        raise PolyweaveError(
-            "fetch.nothing-arrived",
-            "the picture was made and paid for, and its link could not be read",
-            "read the link again at once, before it expires; nothing was ledgered, "
-            "so the spend is not yet counted against the ceiling",
-            detail=f"{link}: {getattr(exc, 'reason', exc)}",
-        ) from exc

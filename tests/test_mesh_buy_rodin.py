@@ -55,7 +55,7 @@ def rodin(tmp_path, monkeypatch):
     monkeypatch.setattr(mesh_buy, "_form", fake.form)
     monkeypatch.setattr(mesh_buy, "_json", fake.json)
     monkeypatch.setattr(mesh_buy, "POLL_EVERY", 0)
-    monkeypatch.setattr(picture, "_download", lambda link: GLB)
+    monkeypatch.setattr(mesh_buy, "_download", lambda link: GLB)
     return fake
 
 

@@ -201,7 +201,7 @@ def allow(
 
 
 def allow_priced(priced: dict, *, root: str | Path = ".", service: str) -> dict:
-    """`allow` for a price `picture._priced` reached, saying what a count came to.
+    """`allow` for a price `client.priced` reached, saying what a count came to.
 
     A refusal of a price by the unit quotes the count and the rate as well as the sum,
     so the person sees a paragraph cost what twelve characters did not (§PW320).
