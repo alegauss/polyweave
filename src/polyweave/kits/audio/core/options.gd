@@ -4,12 +4,12 @@ extends RefCounted
 ## layout is declared once, in res://polyweave_audio.gd, and read here.
 
 const TAB := "audio"
-const Audio := preload("res://addons/polyweave/audio/audio.gd")
+const _PwAudio := preload("res://addons/polyweave/audio/audio.gd")
 
 
 static func options() -> Array[Dictionary]:
-	var buses: Array = Audio.declaration()["BUSES"]
-	Audio.lay_out(buses)
+	var buses: Array = _PwAudio.declaration()["BUSES"]
+	_PwAudio.lay_out(buses)
 	var out: Array[Dictionary] = []
 	for bus in buses:
 		var name: String = bus["name"]

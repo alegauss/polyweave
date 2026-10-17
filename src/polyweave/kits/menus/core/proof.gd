@@ -5,15 +5,15 @@ extends SceneTree
 ## back where an Xbox pad's confirms, and the game's own time stands still while the
 ## pause menu is open. Prints KIT PROVED, or KIT FAILED with why.
 
-const Menu := preload("res://addons/polyweave/menus/menu.gd")
-const Pause := preload("res://addons/polyweave/menus/pause.gd")
-const Confirm := preload("res://addons/polyweave/menus/confirm.gd")
+const _PwMenu := preload("res://addons/polyweave/menus/menu.gd")
+const _PwPause := preload("res://addons/polyweave/menus/pause.gd")
+const _PwConfirm := preload("res://addons/polyweave/menus/confirm.gd")
 
 var failed := []
 var got := []
-var main: Menu
-var pause: Pause
-var confirm: Confirm
+var main: _PwMenu
+var pause: _PwPause
+var confirm: _PwConfirm
 var ticker: Node
 var frame := 0
 var ticks_paused := 0
@@ -26,15 +26,15 @@ func _initialize() -> void:
 	ticker = Node.new()
 	ticker.set_script(counting)
 	root.add_child(ticker)
-	main = Menu.new()
+	main = _PwMenu.new()
 	main.items.assign(["play", "options", "quit"])
 	main.back_to = "quit"
 	main.chosen.connect(func(item: String) -> void: got.append(item))
 	root.add_child(main)
-	pause = Pause.new()
+	pause = _PwPause.new()
 	root.add_child(pause)
 	pause.chosen.connect(func(item: String) -> void: got.append(item))
-	confirm = Confirm.new()
+	confirm = _PwConfirm.new()
 	confirm.question = "quit?"
 	confirm.visible = false
 	confirm.chosen.connect(func(item: String) -> void: got.append(item))
@@ -57,7 +57,7 @@ func _focused() -> String:
 
 
 ## every button reached walking down by the d-pad, and back to where the walk began
-func _walk(menu: Menu, named: String) -> void:
+func _walk(menu: _PwMenu, named: String) -> void:
 	var all := menu.buttons().map(func(b: Node) -> String: return str(b.name))
 	var start := _focused()
 	var seen := [start]
@@ -81,10 +81,10 @@ func _covers(seen: Array, all: Array) -> bool:
 	return true
 
 
-func _back(menu: Menu, family: String, named: String, expected: String) -> void:
+func _back(menu: _PwMenu, family: String, named: String, expected: String) -> void:
 	got.clear()
 	menu.family = family
-	_pad(Menu.BACK[family])
+	_pad(_PwMenu.BACK[family])
 	if got != [expected]:
 		failed.append("back on %s in %s chose %s, not %s" % [family, named, got, expected])
 

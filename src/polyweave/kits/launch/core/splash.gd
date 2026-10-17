@@ -7,7 +7,7 @@ extends Control
 
 signal finished
 
-const Scenes := preload("res://addons/polyweave/launch/scenes.gd")
+const _PwScenes := preload("res://addons/polyweave/launch/scenes.gd")
 
 ## each logo's path, shown in turn; the logos are the project's
 @export var logos: Array[String] = []
@@ -30,7 +30,7 @@ func _ready() -> void:
 	_shown.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	add_child(_shown)
 	if next_scene != "":
-		Scenes.shared().prefetch(next_scene)
+		_PwScenes.shared().prefetch(next_scene)
 	_next()
 
 
@@ -75,4 +75,4 @@ func _end() -> void:
 	_ended = true
 	finished.emit()
 	if next_scene != "":
-		Scenes.shared().go(next_scene)
+		_PwScenes.shared().go(next_scene)

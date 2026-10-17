@@ -1,5 +1,5 @@
 name = "tables"
-version = "0.1.0"
+version = "0.1.1"
 summary = "a game's data tables loaded typed as their schema declares, read again in a debug build when a file changes"
 requires = []
 
@@ -16,3 +16,4 @@ script = "core/proof.gd"
 
 [changes]
 "0.1.0" = "tables loaded through the scripts tables.check writes, each value typed, and read again when a file changes"
+"0.1.1" = "its scripts name one another by a _Pw name, so a game's own class of the same name, a Bindings or a Settings, cannot shadow them"

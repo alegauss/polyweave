@@ -7,7 +7,7 @@ extends SceneTree
 ## the pad that leaves is named as the player seated on it. Prints KIT PROVED, or KIT
 ## FAILED with why.
 
-const Players := preload("res://addons/polyweave/players/players.gd")
+const _PwPlayers := preload("res://addons/polyweave/players/players.gd")
 const PRESENCE := "res://addons/polyweave/presence/presence.gd"
 ## the pads that join: numbered apart from the seats, so a pad's number is never taken
 ## for its player's
@@ -15,11 +15,11 @@ const SECOND := 3
 const THIRD := 4
 
 var failed := []
-var players: Players
+var players: _PwPlayers
 
 
 func _initialize() -> void:
-	players = Players.shared()
+	players = _PwPlayers.shared()
 
 
 func _button(device: int, index: int) -> InputEventJoypadButton:
@@ -63,7 +63,7 @@ func _process(_delta: float) -> bool:
 		_rebinds(name, first)
 		_presence(first)
 		players.leave(1)
-		if players.player_of(first + SECOND) != -1 or InputMap.has_action(Players.action(name, 1)):
+		if players.player_of(first + SECOND) != -1 or InputMap.has_action(_PwPlayers.action(name, 1)):
 			failed.append("a player leaving kept their pad or their actions")
 		_press(first + THIRD, join)
 		if players.player_of(first + THIRD) != 1:
@@ -78,7 +78,7 @@ func _process(_delta: float) -> bool:
 func _apart(name: String, first: int) -> void:
 	var index: int = (InputMap.action_get_events(name).filter(
 		func(e: InputEvent) -> bool: return e is InputEventJoypadButton)[0] as InputEventJoypadButton).button_index
-	var mine := Players.action(name, 1)
+	var mine := _PwPlayers.action(name, 1)
 	if not InputMap.event_is_action(_button(first + SECOND, index), mine):
 		failed.append("player 2's pad does not press %s" % mine)
 	if InputMap.event_is_action(_button(first + SECOND, index), name):
@@ -95,13 +95,13 @@ func _apart(name: String, first: int) -> void:
 func _rebinds(name: String, first: int) -> void:
 	var before := players._codes(name)
 	players.rebind(1, name, _button(first + SECOND, JOY_BUTTON_RIGHT_SHOULDER))
-	if not InputMap.event_is_action(_button(first + SECOND, JOY_BUTTON_RIGHT_SHOULDER), Players.action(name, 1)):
+	if not InputMap.event_is_action(_button(first + SECOND, JOY_BUTTON_RIGHT_SHOULDER), _PwPlayers.action(name, 1)):
 		failed.append("a rebind of player 2's %s did not take" % name)
 	if players._codes(name) != before:
 		failed.append("a rebind of player 2's %s changed player 1's to %s" % [name, players._codes(name)])
-	var theirs := players._codes(Players.action(name, 1))
+	var theirs := players._codes(_PwPlayers.action(name, 1))
 	players.rebind(0, name, _button(first, JOY_BUTTON_LEFT_SHOULDER))
-	if players._codes(Players.action(name, 1)) != theirs:
+	if players._codes(_PwPlayers.action(name, 1)) != theirs:
 		failed.append("a rebind of player 1's %s changed player 2's" % name)
 	if not InputMap.event_is_action(_button(first, JOY_BUTTON_LEFT_SHOULDER), name) \
 			or InputMap.event_is_action(_button(first + SECOND, JOY_BUTTON_LEFT_SHOULDER), name):
@@ -134,7 +134,7 @@ func _shared_layout(name: String, first: int) -> void:
 	players.declared["SHARED_LAYOUT"] = true
 	players.rebind(0, name, _button(first, JOY_BUTTON_LEFT_SHOULDER))
 	if not InputMap.event_is_action(_button(first + SECOND, JOY_BUTTON_LEFT_SHOULDER),
-			Players.action(name, 1)):
+			_PwPlayers.action(name, 1)):
 		failed.append("with SHARED_LAYOUT the first player's rebind did not reach player 2")
 	if InputMap.event_is_action(_button(first + SECOND, JOY_BUTTON_LEFT_SHOULDER), name):
 		failed.append("with SHARED_LAYOUT player 2's pad presses player 1's %s" % name)

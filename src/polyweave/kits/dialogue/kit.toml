@@ -1,5 +1,5 @@
 name = "dialogue"
-version = "0.1.0"
+version = "0.1.1"
 summary = "a dialogue box that types a line from the string table, completes it on one press and advances on the next, with a speaker and a portrait"
 requires = ["prompts", "language"]
 
@@ -17,3 +17,4 @@ script = "core/proof.gd"
 
 [changes]
 "0.1.0" = "a line typed at its rate, completed whole by the first confirm of the family in hand and followed by the next, held to its box in every locale"
+"0.1.1" = "its scripts name one another by a _Pw name, so a game's own class of the same name, a Bindings or a Settings, cannot shadow them"

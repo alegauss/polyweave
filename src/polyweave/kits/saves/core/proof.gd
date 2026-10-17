@@ -6,7 +6,7 @@ extends SceneTree
 ## the project's migrations; one from a newer build is refused and left on disk; and a
 ## game's older save is taken into slot 0 once (§PW398). Prints KIT PROVED, or KIT FAILED with why.
 
-const Saves := preload("res://addons/polyweave/saves/saves.gd")
+const _PwSaves := preload("res://addons/polyweave/saves/saves.gd")
 const DIR := "user://polyweave_saves_proof"
 
 var failed := []
@@ -23,7 +23,7 @@ func _same(a: Variant, b: Variant) -> bool:
 
 func _initialize() -> void:
 	_clear()
-	var saves := Saves.new(DIR)
+	var saves := _PwSaves.new(DIR)
 	saves.adopt = Callable()
 	for slot in saves.slots:
 		if not saves.save(slot, _data(slot)):
@@ -70,7 +70,7 @@ func _initialize() -> void:
 		if not saves.migrations.has(from):
 			failed.append("no migration brings a version %d save to %d" % [from, from + 1])
 			continue
-		var old := Saves.new(DIR, "res://none.gd")
+		var old := _PwSaves.new(DIR, "res://none.gd")
 		old.version = from
 		old.slots = saves.slots
 		old.save(2, _data(30))
@@ -78,7 +78,7 @@ func _initialize() -> void:
 		if brought.is_empty():
 			failed.append("a version %d save did not come up: %s" % [from, saves.said])
 
-	var newer := Saves.new(DIR, "res://none.gd")
+	var newer := _PwSaves.new(DIR, "res://none.gd")
 	newer.version = saves.version + 1
 	newer.slots = saves.slots
 	newer.save(2, _data(40))
@@ -93,7 +93,7 @@ func _initialize() -> void:
 	# into slot 0 once and said; a slot deleted afterwards stays empty. The proof's own
 	# Callable stands in for the game's, so the game's real older file is never read here.
 	_clear()
-	var adopting := Saves.new(DIR)
+	var adopting := _PwSaves.new(DIR)
 	adopting.adopt = func() -> Dictionary: return _data(50)
 	if not _same(adopting.load_slot(0), _data(50)):
 		failed.append("an older save was not taken into slot 0: %s" % [adopting.said])
@@ -102,7 +102,7 @@ func _initialize() -> void:
 	adopting.delete(0)
 	if not adopting.load_slot(0).is_empty() or not adopting.listed().is_empty():
 		failed.append("an older save was taken again after its slot was deleted")
-	var played := Saves.new(DIR)
+	var played := _PwSaves.new(DIR)
 	_clear()
 	played.save(1, _data(60))
 	played.adopt = func() -> Dictionary: return _data(50)

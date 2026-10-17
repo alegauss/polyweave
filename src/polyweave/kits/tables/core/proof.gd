@@ -4,11 +4,11 @@ extends SceneTree
 ## table file changed while the game runs is read again and named by `changed`. The file
 ## is put back as it was. Prints KIT PROVED, or KIT FAILED with why.
 
-const Tables := preload("res://addons/polyweave/tables/tables.gd")
+const _PwTables := preload("res://addons/polyweave/tables/tables.gd")
 const TYPES := {"int": TYPE_INT, "float": TYPE_FLOAT, "bool": TYPE_BOOL, "string": TYPE_STRING}
 
 var failed := []
-var tables: Tables
+var tables: _PwTables
 var watched := ""
 var file := ""
 var before := ""
@@ -18,7 +18,7 @@ var stage := 0
 
 
 func _initialize() -> void:
-	tables = Tables.shared()
+	tables = _PwTables.shared()
 
 
 func _scripts() -> Array:
@@ -77,7 +77,7 @@ func _typed(name: String) -> void:
 		failed.append("the %s table read no rows from %s" % [name, script.FILE])
 	# a typed field refuses a value of another type in silence and keeps its default, so
 	# each is held to the value read for it as well as to its type
-	var read := Tables.values_of(script.FILE, script.COLUMNS)
+	var read := _PwTables.values_of(script.FILE, script.COLUMNS)
 	for index in rows.size():
 		for column in read[index]:
 			var value = read[index][column]

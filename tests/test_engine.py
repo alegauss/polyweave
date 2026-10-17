@@ -126,6 +126,21 @@ def test_a_script_that_exited_non_zero_in_silence_says_so(tmp_path):
     assert "Godot Engine" not in found["why"]
 
 
+def test_an_errors_place_on_the_line_after_it_is_read(tmp_path):
+    """§PW484: a parse error's file and line came on the next line, and went unread."""
+    script = project(tmp_path)
+    found = engine.run(
+        script,
+        expect=SUMMARY,
+        root=tmp_path,
+        launch=says(
+            'SCRIPT ERROR: Parse Error: Cannot find member "Prompts" in base "Menu".\n'
+            "          at: GDScript::reload (res://addons/kit/options.gd:122)\n",
+        ),
+    )
+    assert found["errors"][0]["at"] == "res://addons/kit/options.gd:122"
+
+
 def test_a_script_error_is_a_failure_however_it_exited(tmp_path):
     """And zero after a script error is the other way round."""
     script = project(tmp_path)

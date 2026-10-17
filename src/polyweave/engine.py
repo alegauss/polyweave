@@ -110,9 +110,13 @@ def _under(named: str, root: Path) -> Path:
 def _errors(output: str, pattern: re.Pattern) -> list[dict]:
     """Every error line, with where in the output and where in the script it began."""
     out = []
-    for number, line in enumerate(output.splitlines(), start=1):
+    lines = output.splitlines()
+    for number, line in enumerate(lines, start=1):
         if pattern.search(line):
-            found = AT.search(line)
+            # Godot names the place on the line after the error, "at: GDScript::reload
+            # (res://...:12)", as often as on its own (§PW484).
+            after = lines[number] if number < len(lines) else ""
+            found = AT.search(line) or (AT.search(after) if "at:" in after else None)
             out.append(
                 {
                     "text": line.strip(),

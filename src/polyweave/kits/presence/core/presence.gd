@@ -18,7 +18,7 @@ signal resumed
 
 const HERE := "res://addons/polyweave/presence/presence.gd"
 const PROJECT := "res://polyweave_presence.gd"
-const Prompts := preload("res://addons/polyweave/prompts/prompts.gd")
+const _PwPrompts := preload("res://addons/polyweave/prompts/prompts.gd")
 const PLAYERS := "res://addons/polyweave/players/players.gd"
 ## the pad button that confirms in each family, as the menus kit has it
 const CONFIRM := {"xbox": JOY_BUTTON_A, "playstation": JOY_BUTTON_A, "switch": JOY_BUTTON_B}
@@ -99,7 +99,7 @@ func named(device: int, joy_name: String) -> void:
 
 func family_of(device: int) -> String:
 	var name := Input.get_joy_name(device)
-	return Prompts.family_of(name if name != "" else str(_names.get(device, "")))
+	return _PwPrompts.family_of(name if name != "" else str(_names.get(device, "")))
 
 
 func _connection(device: int, connected: bool) -> void:
@@ -127,7 +127,7 @@ func player_of(device: int) -> int:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and pause_on_focus and why == "":
-		family = Prompts.shared().family if Prompts.shared().family != "keyboard" else "xbox"
+		family = _PwPrompts.shared().family if _PwPrompts.shared().family != "keyboard" else "xbox"
 		_hold("focus", tr(str(declared["AWAY"])))
 
 
@@ -137,7 +137,7 @@ func _hold(reason: String, text: String) -> void:
 	get_tree().paused = true
 	message.text = text
 	var button := "east" if CONFIRM.get(family, JOY_BUTTON_A) == JOY_BUTTON_B else "south"
-	var path := "%s/%s/%s_64.png" % [Prompts.shared().icons_root, family, button]
+	var path := "%s/%s/%s_64.png" % [_PwPrompts.shared().icons_root, family, button]
 	confirm_icon.texture = _picture(path)
 	confirm_icon.set_meta("path", path)
 	visible = true

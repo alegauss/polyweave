@@ -6,8 +6,8 @@ extends SceneTree
 ## res://polyweave_launch.gd as LAUNCH_MS and FRAME_MS. Prints KIT PROVED, or
 ## KIT FAILED with why.
 
-const Splash := preload("res://addons/polyweave/launch/splash.gd")
-const Scenes := preload("res://addons/polyweave/launch/scenes.gd")
+const _PwSplash := preload("res://addons/polyweave/launch/splash.gd")
+const _PwScenes := preload("res://addons/polyweave/launch/scenes.gd")
 const BIG := "user://polyweave_launch_big.tscn"
 const NODES := 4000
 
@@ -15,7 +15,7 @@ var failed := []
 var launch_budget := 5000
 var frame_budget := 100.0
 var presses: Array[InputEvent] = []
-var splash: Splash
+var splash: _PwSplash
 var frame := 0
 var stage := "skip"
 var since := 0
@@ -56,8 +56,8 @@ func _big_scene() -> void:
 	top.free()
 
 
-func _splash(at: Array[String], held: Array[float], next := "") -> Splash:
-	var made := Splash.new()
+func _splash(at: Array[String], held: Array[float], next := "") -> _PwSplash:
+	var made := _PwSplash.new()
 	made.logos = at
 	made.seconds = held
 	made.next_scene = next
@@ -101,7 +101,7 @@ func _process(_delta: float) -> bool:
 				return false
 			splash = _splash(["res://logo.png"], [30.0])
 		"launch":
-			var scenes := Scenes.shared() as Scenes
+			var scenes := _PwScenes.shared() as _PwScenes
 			if scenes.launch_ms < 0:
 				return _end("the first scene never came in place") if _late(20) else false
 			if scenes.launch_ms > launch_budget:
@@ -113,7 +113,7 @@ func _process(_delta: float) -> bool:
 			since = Time.get_ticks_msec()
 			scenes.go(BIG)
 		"big":
-			var scenes := Scenes.shared() as Scenes
+			var scenes := _PwScenes.shared() as _PwScenes
 			if scenes.busy():
 				return _end("the large scene never came in place") if _late(60) else false
 			var last: Dictionary = scenes.last
@@ -125,7 +125,7 @@ func _process(_delta: float) -> bool:
 			if last["p95_ms"] > frame_budget:
 				failed.append("the change to the large scene ran %.1f ms frames at the 95th percentile, over %.1f"
 					% [last["p95_ms"], frame_budget])
-			if last["frames"] < Scenes.SETTLE + 1:
+			if last["frames"] < _PwScenes.SETTLE + 1:
 				failed.append("the change was measured over %d frames" % last["frames"])
 			return _end()
 	return false

@@ -6,7 +6,7 @@ extends SceneTree
 ## whatever actions the game has (§PW392), and the pad screen binds on the picture
 ## (§PW428). Prints KIT PROVED, or KIT FAILED with why.
 
-const Bindings := preload("res://addons/polyweave/remap/bindings.gd")
+const _PwBindings := preload("res://addons/polyweave/remap/bindings.gd")
 const KEPT := "user://polyweave_bindings_proof.cfg"
 const J := "proof_jump"
 const F := "proof_fire"
@@ -18,7 +18,7 @@ var _fire_key := ""
 
 
 func _keys(code: String) -> bool:
-	return Bindings.on_keys(code)
+	return _PwBindings.on_keys(code)
 
 
 ## the proof's three actions, each bound on both halves as project.godot declares them,
@@ -53,15 +53,15 @@ func _initialize() -> void:
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(KEPT))
 	_declare()
 	var actions := [J, F, P]
-	var bindings := Bindings.new(actions, KEPT)
+	var bindings := _PwBindings.new(actions, KEPT)
 	var start := bindings.current()
 	for action in actions:
 		if (start[action] as Array).is_empty():
 			failed.append("%s starts with no binding" % action)
 
 	var fire_key: String = start[F].filter(_keys)[0]
-	var jump_pad: Array = start[J].filter(func(c: String) -> bool: return not Bindings.on_keys(c))
-	bindings.rebind(J, Bindings.decode(fire_key))
+	var jump_pad: Array = start[J].filter(func(c: String) -> bool: return not _PwBindings.on_keys(c))
+	bindings.rebind(J, _PwBindings.decode(fire_key))
 	var now := bindings.current()
 	if not (now[J] as Array).has(fire_key):
 		failed.append("jump was not rebound to fire's key")
@@ -69,7 +69,7 @@ func _initialize() -> void:
 		failed.append("fire still shares its key with jump")
 	if not (now[F] as Array).has(start[J].filter(_keys)[0]):
 		failed.append("fire did not take jump's old key in the swap")
-	if now[J].filter(func(c: String) -> bool: return not Bindings.on_keys(c)) != jump_pad:
+	if now[J].filter(func(c: String) -> bool: return not _PwBindings.on_keys(c)) != jump_pad:
 		failed.append("rebinding jump's key changed its pad binding")
 
 	var east := InputEventJoypadButton.new()
@@ -94,7 +94,7 @@ func _initialize() -> void:
 	bindings.save()
 	for action in actions:
 		InputMap.action_erase_events(action)
-	var restarted := Bindings.new(actions, KEPT)
+	var restarted := _PwBindings.new(actions, KEPT)
 	restarted.load_kept()
 	if restarted.current() != kept:
 		failed.append("the bindings did not come back after a restart: %s" % restarted.current())
@@ -106,7 +106,7 @@ func _initialize() -> void:
 	restarted.reset()
 	if restarted.current() != start:
 		failed.append("a reset did not go back to the game's own bindings")
-	var again := Bindings.new(actions, KEPT)
+	var again := _PwBindings.new(actions, KEPT)
 	again.load_kept()
 	if again.current() != start:
 		failed.append("a reset was not kept")
@@ -119,7 +119,7 @@ func _initialize() -> void:
 	older.set_value("controls", "deadzone", 0.4)
 	older.save(older_path)
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(KEPT))
-	var adopting := Bindings.new(actions, KEPT)
+	var adopting := _PwBindings.new(actions, KEPT)
 	adopting.from = [older_path, "controls"]
 	adopting.load_kept()
 	if adopting.current()[J] != ["key:%d" % KEY_Q, "button:3"]:
@@ -128,7 +128,7 @@ func _initialize() -> void:
 		failed.append("an older file's deadzone was not taken")
 	if adopting.said.is_empty() or not FileAccess.file_exists(KEPT):
 		failed.append("taking an older file was not said, or not written to the kit's own")
-	var later := Bindings.new(actions, KEPT)
+	var later := _PwBindings.new(actions, KEPT)
 	later.from = [older_path, "controls"]
 	later.load_kept()
 	if not later.said.is_empty():
@@ -145,7 +145,7 @@ func _initialize() -> void:
 	settings.set_value("video", "fullscreen", true)
 	settings.set_value("controls", "sensitivity", 9.0)
 	settings.save(settings_path)
-	var store := Bindings.new(actions, settings_path)
+	var store := _PwBindings.new(actions, settings_path)
 	store.section = "controls"
 	store.deadzone_least = 0.05
 	store.deadzone_most = 0.6
@@ -165,7 +165,7 @@ func _initialize() -> void:
 			or reread.get_value("controls", "twin_stick", true) != false \
 			or not reread.has_section_key("controls", J):
 		failed.append("the game's file did not keep its own and the kit's together")
-	var again_store := Bindings.new(actions, settings_path)
+	var again_store := _PwBindings.new(actions, settings_path)
 	again_store.section = "controls"
 	again_store.declare_options({"twin_stick": [true], "sensitivity": [1.0, 0.5, 2.0]})
 	again_store.load_kept()
@@ -173,7 +173,7 @@ func _initialize() -> void:
 		failed.append("an option did not come back from the game's file")
 	again_store.reset()
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(settings_path))
-	if Bindings.shared() != Bindings.shared():
+	if _PwBindings.shared() != _PwBindings.shared():
 		failed.append("the shared store is not one store")
 
 	_fire_key = fire_key
@@ -189,8 +189,8 @@ func _process(_delta: float) -> bool:
 	var menu := _menu
 	var fire_key := _fire_key
 	var failed := _failed
-	menu.bindings = Bindings.new(menu.bindings.actions, KEPT)
-	var said: String = menu.take(P, Bindings.decode(fire_key))
+	menu.bindings = _PwBindings.new(menu.bindings.actions, KEPT)
+	var said: String = menu.take(P, _PwBindings.decode(fire_key))
 	if not said.contains("took it from"):
 		failed.append("the screen did not say the swap: %s" % said)
 	menu._listen(J, true)
@@ -269,7 +269,7 @@ func _pad_screen(screen: CanvasLayer) -> void:
 		var codes := {}
 		for slot: Dictionary in slots:
 			codes[slot["code"]] = true
-			if Bindings.decode(slot["code"]) == null or screen.glyph(slot["code"], layout) == "":
+			if _PwBindings.decode(slot["code"]) == null or screen.glyph(slot["code"], layout) == "":
 				failed.append("the %s pad has a place no glyph names: %s" % [layout, slot["code"]])
 		if slots.is_empty() or codes.size() != slots.size():
 			failed.append("the %s pad's places are missing or repeated" % layout)

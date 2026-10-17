@@ -565,32 +565,6 @@ own side is Cottony's RK151. Done when Cottony carries neither file, its own sav
 is replaced by the kit's acceptance, a save written by the current release loads after
 the swap, and its gate passes.
 
-### §PW484 Kit scripts that cannot shadow a game's classes
-
-Found in Spinhold on 2026-10-16 (RK216), the game the input kits were extracted from.
-`kit.install --name players` (prompts 0.5.0, remap 0.6.1, players 0.2.0) installed, then
-every proof failed. Run directly (`godot --headless --path . -s
-res://addons/polyweave/players/proof.gd`):
-
-- `Parse Error: Value of type "PolyweaveBindings" cannot be assigned to a variable of
-  type "Bindings"` and `Invalid argument for "rebind()"`: players.gd says
-  `const Bindings := preload("res://addons/polyweave/remap/bindings.gd")` and types
-  `var _store: Bindings`, but Spinhold has its own `class_name Bindings`
-  (game/core/bindings.gd), and the type annotation resolves to the game's global class.
-- `Unable to iterate on value of type "Callable"` at players/proof.gd:39,
-  `players._store.actions`: the same name, read as the game's static `actions()`.
-- the remap proof timed out after the same parse errors.
-
-A kit cannot assume a word is free in the game it lands in: `Bindings`, `Prompts`,
-`Players`, `Settings` are exactly the names a game that needs these kits already uses.
-
-What polyweave should do: every script in a kit names its own classes by their
-`Polyweave` class_name (or a preload const that cannot shadow, such as `_PwBindings`),
-never a bare common word; `kit.prove` runs each proof in a fixture that also declares
-globals named like the kit's concepts (`Bindings`, `Prompts`, `Players`, `Settings`), so
-a shadowed name fails in polyweave's gate; and `kit.install` reports a parse error with
-its file and line in `proved.first`, not `script-error` or `timed-out`.
-
 ### §PW485 A kit's proof reads names in its own locale
 
 Found in Spinhold on 2026-10-16 (RK216). `kit.install --name players` ran the prompts

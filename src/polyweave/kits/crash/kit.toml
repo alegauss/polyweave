@@ -1,5 +1,5 @@
 name = "crash"
-version = "0.1.0"
+version = "0.1.1"
 summary = "a structured log in user://, a capture on every error with its script, line and state, and an unclean exit found on the next launch"
 requires = []
 
@@ -16,3 +16,4 @@ script = "core/proof.gd"
 
 [changes]
 "0.1.0" = "a rotating JSON log, an error packed with its script, line and the state kit's snapshot, and an unclean exit packed on the next launch"
+"0.1.1" = "its scripts name one another by a _Pw name, so a game's own class of the same name, a Bindings or a Settings, cannot shadow them"

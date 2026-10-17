@@ -10,8 +10,8 @@ extends SceneTree
 ## it lacks, and the options kit's language row reads back each locale it sets. Prints
 ## KIT PROVED, or KIT FAILED with why.
 
-const Language := preload("res://addons/polyweave/language/language.gd")
-const Options := preload("res://addons/polyweave/language/options.gd")
+const _PwLanguage := preload("res://addons/polyweave/language/language.gd")
+const _PwOptions := preload("res://addons/polyweave/language/options.gd")
 ## what a layout draws without a glyph
 const LAID_OUT := [" ", "\n", "\r", "\t", " "]
 
@@ -23,14 +23,14 @@ var frames := 0
 
 
 func _initialize() -> void:
-	Language.start(false)
-	locales = Language.locales()
-	for line in Language.said:
+	_PwLanguage.start(false)
+	locales = _PwLanguage.locales()
+	for line in _PwLanguage.said:
 		if not line.contains("has no line for"):
 			failed.append(line)
 	if locales.is_empty():
 		failed.append("the table carries no locale")
-	var declared := Language.declaration()
+	var declared := _PwLanguage.declaration()
 	var paths: Array = declared["SCREENS"]
 	if paths.is_empty():
 		var main := str(ProjectSettings.get_setting("application/run/main_scene", ""))
@@ -65,13 +65,13 @@ func _process(_delta: float) -> bool:
 
 
 func _held(locale: String) -> void:
-	var rows := Language.rows()
+	var rows := _PwLanguage.rows()
 	for key in rows:
 		var line := str(rows[key][locale])
 		if TranslationServer.translate(key) == key and line != key:
 			failed.append("%s shows the raw key %s" % [locale, key])
 		for character in line + line.to_upper():
-			if not LAID_OUT.has(character) and not Language.drawn(character.unicode_at(0)):
+			if not LAID_OUT.has(character) and not _PwLanguage.drawn(character.unicode_at(0)):
 				failed.append("%s %s needs %s (U+%04X), which no declared font draws" % [
 					locale, key, character, character.unicode_at(0)])
 				break
@@ -87,7 +87,7 @@ func _held(locale: String) -> void:
 		var shown := node.tr(key) if node.auto_translate_mode != Node.AUTO_TRANSLATE_MODE_DISABLED else key
 		if shown != str(rows[key][locale]):
 			failed.append("%s %s shows %s, not its line" % [locale, node.get_path(), shown])
-		for unfit in Language.unfit(node, shown):
+		for unfit in _PwLanguage.unfit(node, shown):
 			failed.append("%s %s %s" % [locale, key, unfit])
 
 
@@ -100,23 +100,23 @@ func _texts(node: Node, out: Array) -> void:
 
 
 func _first_launch() -> void:
-	var declared := Language.declaration()
+	var declared := _PwLanguage.declaration()
 	if not bool(declared["FOLLOW_SYSTEM"]):
 		return
 	for locale in locales:
-		if Language.chosen(locale) != locale:
-			failed.append("a first launch on %s chose %s" % [locale, Language.chosen(locale)])
+		if _PwLanguage.chosen(locale) != locale:
+			failed.append("a first launch on %s chose %s" % [locale, _PwLanguage.chosen(locale)])
 		var kin := locale.split("_")[0] + "_ZZ"
-		if Language.chosen(kin).split("_")[0] != locale.split("_")[0]:
+		if _PwLanguage.chosen(kin).split("_")[0] != locale.split("_")[0]:
 			failed.append("a first launch on %s chose %s, not a locale of its language" % [
-				kin, Language.chosen(kin)])
-	if Language.chosen("zz_ZZ") != str(declared["FALLBACK"]):
+				kin, _PwLanguage.chosen(kin)])
+	if _PwLanguage.chosen("zz_ZZ") != str(declared["FALLBACK"]):
 		failed.append("a first launch on a language the table lacks chose %s, not %s" % [
-			Language.chosen("zz_ZZ"), declared["FALLBACK"]])
+			_PwLanguage.chosen("zz_ZZ"), declared["FALLBACK"]])
 
 
 func _row() -> void:
-	var row: Dictionary = Options.options()[0]
+	var row: Dictionary = _PwOptions.options()[0]
 	if Array(row["choices"]) != Array(locales):
 		failed.append("the language row offers %s, not %s" % [row["choices"], locales])
 	for locale in locales:

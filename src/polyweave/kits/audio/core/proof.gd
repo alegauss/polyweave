@@ -8,9 +8,9 @@ extends SceneTree
 ## its pitch; a pad's focus and confirm in a menu play the UI sounds; and every bus's
 ## volume row reads back what it sets. Prints KIT PROVED, or KIT FAILED with why.
 
-const Audio := preload("res://addons/polyweave/audio/audio.gd")
-const Options := preload("res://addons/polyweave/audio/options.gd")
-const Menu := preload("res://addons/polyweave/menus/menu.gd")
+const _PwAudio := preload("res://addons/polyweave/audio/audio.gd")
+const _PwOptions := preload("res://addons/polyweave/audio/options.gd")
+const _PwMenu := preload("res://addons/polyweave/menus/menu.gd")
 const HEARD := "res://.polyweave/kits/audio"
 ## seconds of a bus heard before its level is taken, and how long it is taken for
 const SETTLE := 0.15
@@ -20,7 +20,7 @@ const HOLD_DB := 1.5
 const WINDOW := 0.05
 
 var failed := []
-var audio: Audio
+var audio: _PwAudio
 var declared := {}
 var stage := "start"
 var step := 0
@@ -31,12 +31,12 @@ var before := 0.0
 var master_capture := AudioEffectCapture.new()
 var music_capture := AudioEffectCapture.new()
 var player: AudioStreamPlayer
-var menu: Menu
+var menu: _PwMenu
 var played := []
 
 
 func _initialize() -> void:
-	audio = Audio.shared()
+	audio = _PwAudio.shared()
 	declared = audio.declared
 	AudioServer.add_bus_effect(0, master_capture)
 	var music := AudioServer.get_bus_index("Music")
@@ -143,7 +143,7 @@ func _process(_delta: float) -> bool:
 
 
 func _routes() -> void:
-	for line in Audio.misrouted(declared["BUSES"]) + audio.said:
+	for line in _PwAudio.misrouted(declared["BUSES"]) + audio.said:
 		failed.append(line)
 	for bus in declared["BUSES"]:
 		if bus.has("loudness"):
@@ -299,7 +299,7 @@ func _pool() -> void:
 
 ## every bus's row sets its volume and reads it back
 func _rows() -> void:
-	for row in Options.options():
+	for row in _PwOptions.options():
 		row["apply"].call(-7.0)
 		if absf(float(row["read"].call()) + 7.0) > 0.01:
 			failed.append("the %s row set -7 dB and read back %s" % [row["key"], row["read"].call()])
@@ -312,7 +312,7 @@ func _ui() -> void:
 		_next("done")
 		return
 	if menu == null:
-		menu = Menu.new()
+		menu = _PwMenu.new()
 		menu.items.assign(["play", "options", "quit"])
 		root.add_child(menu)
 		since = Time.get_ticks_msec()

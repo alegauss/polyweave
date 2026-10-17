@@ -72,7 +72,7 @@ def test_two_runs_of_the_fixture_from_one_seed_agree(tmp_path):
 
 @pytest.mark.skipif(not os.environ.get("GODOT"), reason="no $GODOT on this machine")
 @pytest.mark.parametrize(("where", "before", "after"), [
-    ("main.gd", 'Random.randf("spawns") < 0.2',
+    ("main.gd", '_PwRandom.randf("spawns") < 0.2',
      "RandomNumberGenerator.new().randf() < 0.2"),
     ("addons/polyweave/determinism/random.gd", "\t_streams.clear()\n", "\tpass\n"),
 ])

@@ -8,15 +8,15 @@ extends SceneTree
 ## does; with PAUSE_ON_FOCUS off, losing focus pauses nothing. Prints KIT PROVED, or KIT
 ## FAILED with why.
 
-const Presence := preload("res://addons/polyweave/presence/presence.gd")
+const _PwPresence := preload("res://addons/polyweave/presence/presence.gd")
 
 var failed := []
-var presence: Presence
+var presence: _PwPresence
 var ticker: Node
 
 
 func _initialize() -> void:
-	presence = Presence.shared()
+	presence = _PwPresence.shared()
 	var counting := GDScript.new()
 	counting.source_code = "extends Node\nvar ticks := 0\nfunc _process(_d):\n\tticks += 1\n"
 	counting.reload()

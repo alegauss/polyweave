@@ -5,13 +5,13 @@ extends RefCounted
 ## sees their system's language.
 
 const TAB := "general"
-const Language := preload("res://addons/polyweave/language/language.gd")
+const _PwLanguage := preload("res://addons/polyweave/language/language.gd")
 
 
 static func options() -> Array[Dictionary]:
-	var locales := Language.locales()
+	var locales := _PwLanguage.locales()
 	return [{
-		"tab": TAB, "key": "language", "label": "language", "default": Language.chosen(),
+		"tab": TAB, "key": "language", "label": "language", "default": _PwLanguage.chosen(),
 		"choices": locales,
 		"names": locales.map(func(l: String) -> String: return TranslationServer.get_locale_name(l)),
 		"apply": func(v: String) -> void: TranslationServer.set_locale(v),

@@ -11,7 +11,7 @@ extends VBoxContainer
 
 signal chosen(item: String)
 
-const Prompts := preload("res://addons/polyweave/prompts/prompts.gd")
+const _PwPrompts := preload("res://addons/polyweave/prompts/prompts.gd")
 ## the pad button that confirms, and the one that goes back, in each family
 const CONFIRM := {"xbox": JOY_BUTTON_A, "playstation": JOY_BUTTON_A, "switch": JOY_BUTTON_B}
 const BACK := {"xbox": JOY_BUTTON_B, "playstation": JOY_BUTTON_B, "switch": JOY_BUTTON_A}
@@ -75,7 +75,7 @@ func focus_first() -> void:
 
 ## the family a pad event follows: the menu's own, or the one the pad's name says
 func family_of(event: InputEvent) -> String:
-	return family if family != "" else Prompts.family_of(Input.get_joy_name(event.device))
+	return family if family != "" else _PwPrompts.family_of(Input.get_joy_name(event.device))
 
 
 func back() -> void:

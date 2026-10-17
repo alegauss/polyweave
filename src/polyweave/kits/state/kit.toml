@@ -1,5 +1,5 @@
 name = "state"
-version = "0.1.0"
+version = "0.1.1"
 summary = "a game's state named once, each name read with its declared type by game.query and by a dump"
 requires = []
 
@@ -15,3 +15,4 @@ script = "core/proof.gd"
 
 [changes]
 "0.1.0" = "names into a game's state, each a node and a property or method with its type, read by the driver and as one snapshot"
+"0.1.1" = "its scripts name one another by a _Pw name, so a game's own class of the same name, a Bindings or a Settings, cannot shadow them"

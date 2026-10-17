@@ -11,8 +11,8 @@ extends VBoxContainer
 ## reads the action's declared label, and every word goes through the game's string
 ## table under REMAP_, with English where it has no row.
 
-const Bindings := preload("res://addons/polyweave/remap/bindings.gd")
-const Prompts := preload("res://addons/polyweave/prompts/prompts.gd")
+const _PwBindings := preload("res://addons/polyweave/remap/bindings.gd")
+const _PwPrompts := preload("res://addons/polyweave/prompts/prompts.gd")
 ## the screen's own words, by the row each is asked under as REMAP_<NAME>
 const WORDS := {
 	"deadzone": "Deadzone", "invert": "Invert vertical", "reset": "Reset",
@@ -31,7 +31,7 @@ const WORDS := {
 ## seconds the screen listens before it gives up
 @export var listen_seconds := 5.0
 
-var bindings: Bindings
+var bindings: _PwBindings
 var _listening := ""
 var _listening_pad := false
 ## the code pressed while listening, bound once it is let go
@@ -53,9 +53,9 @@ static func said(name: String, args: Array = []) -> String:
 
 
 func _ready() -> void:
-	bindings = Bindings.new(actions)
+	bindings = _PwBindings.new(actions)
 	bindings.load_kept()
-	_prompts = Prompts.new()
+	_prompts = _PwPrompts.new()
 	add_child(_prompts)
 	_rows = VBoxContainer.new()
 	add_child(_rows)
@@ -188,19 +188,19 @@ func capture(event: InputEvent) -> bool:
 				and (event as InputEventKey).physical_keycode == KEY_ESCAPE:
 			_stop("")
 			return true
-		if not Bindings.is_press(event):
+		if not _PwBindings.is_press(event):
 			return false
-		var code := Bindings.encode(event)
-		if code == "" or Bindings.on_keys(code) == _listening_pad:
+		var code := _PwBindings.encode(event)
+		if code == "" or _PwBindings.on_keys(code) == _listening_pad:
 			return false
 		_capture = code
 		_held = 0.0
 		return true
-	if not Bindings.is_release(event, _capture):
+	if not _PwBindings.is_release(event, _capture):
 		return false
 	var action := _listening
 	var code := _capture
-	_stop(take(action, Bindings.decode(code)))
+	_stop(take(action, _PwBindings.decode(code)))
 	return true
 
 
@@ -233,7 +233,7 @@ func _handled() -> void:
 
 ## rebind `action` to `event` and say what changed, the swap with it
 func take(action: String, event: InputEvent) -> String:
-	var code := Bindings.encode(event)
+	var code := _PwBindings.encode(event)
 	var before := bindings.current()
 	var named := bindings.label(action)
 	if not bindings.rebind(action, event):

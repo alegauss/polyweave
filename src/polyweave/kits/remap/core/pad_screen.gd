@@ -20,8 +20,8 @@ extends CanvasLayer
 
 signal closed
 
-const Bindings := preload("res://addons/polyweave/remap/bindings.gd")
-const Prompts := preload("res://addons/polyweave/prompts/prompts.gd")
+const _PwBindings := preload("res://addons/polyweave/remap/bindings.gd")
+const _PwPrompts := preload("res://addons/polyweave/prompts/prompts.gd")
 const PADS := "res://addons/polyweave/remap/pads"
 const LAYOUTS: Array[String] = ["xbox", "playstation", "switch"]
 const DIM := Color(0.55, 0.65, 0.8)
@@ -41,7 +41,7 @@ const WORDS := {
 @export var layout := ""
 
 ## the store the screen binds through; one of its own where none is given
-var bindings: Bindings
+var bindings: _PwBindings
 ## the layout's places, as its spots table lists them
 var slots: Array = []
 ## the place picked, an index into `slots`
@@ -64,10 +64,10 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	layer = 11
 	if bindings == null:
-		bindings = Bindings.new()
+		bindings = _PwBindings.new()
 		bindings.load_kept()
 	if layout == "":
-		var family: String = Prompts.shared().family
+		var family: String = _PwPrompts.shared().family
 		# a generic pad keeps its own names over the Xbox places, with no picture
 		layout = family if family != "keyboard" else "xbox"
 	slots = spots(layout)
@@ -143,7 +143,7 @@ static func picture(of_layout: String) -> Texture2D:
 
 ## what a place is called on a layout's pad, as the prompts kit names a code (§PW431)
 static func glyph(code: String, of_layout: String) -> String:
-	return Prompts.named_code(code, of_layout) if Bindings.decode(code) != null else ""
+	return _PwPrompts.named_code(code, of_layout) if _PwBindings.decode(code) != null else ""
 
 
 ## the action `code` is bound to, or "" where it is free
@@ -164,7 +164,7 @@ func lit(code: String) -> bool:
 func held_text(index: int) -> String:
 	var code: String = slots[index]["code"]
 	var action := choosing if index == picked and choosing != "" else holder(code)
-	return Prompts.said("ACTION_", action) if action != "" else said("free")
+	return _PwPrompts.said("ACTION_", action) if action != "" else said("free")
 
 
 ## a word of the screen's own, as the game's string table says it under PAD_, else its
@@ -261,7 +261,7 @@ func _input(event: InputEvent) -> void:
 		or event is InputEventJoypadMotion
 	if pressed:
 		# a stick inside the press threshold encodes to nothing, and lights nothing
-		var code := Bindings.encode(event)
+		var code := _PwBindings.encode(event)
 		if code != "" and slots.any(func(slot: Dictionary) -> bool: return slot["code"] == code):
 			_lit[code] = lit_for
 			show_pad()
@@ -296,7 +296,7 @@ func press(move: String) -> void:
 				var held := holder(code)
 				choosing = held if held != "" else all[0]
 			else:
-				bindings.rebind(choosing, Bindings.decode(code))
+				bindings.rebind(choosing, _PwBindings.decode(code))
 				choosing = ""
 		"ui_cancel":
 			if choosing != "":

@@ -8,15 +8,15 @@ extends SceneTree
 ## counted, since only they step by a fixed time. Prints KIT PROVED, or KIT FAILED with
 ## why.
 
-const Random := preload("res://addons/polyweave/determinism/random.gd")
-const Recorder := preload("res://addons/polyweave/determinism/recorder.gd")
-const State := preload("res://addons/polyweave/state/state.gd")
+const _PwRandom := preload("res://addons/polyweave/determinism/random.gd")
+const _PwRecorder := preload("res://addons/polyweave/determinism/recorder.gd")
+const _PwState := preload("res://addons/polyweave/state/state.gd")
 const PROJECT := "res://polyweave_random.gd"
 
 var failed := []
 var declared := {}
 var record := {}
-var recorder: Recorder
+var recorder: _PwRecorder
 var watcher: Node
 var runs: Array = [[], []]
 var run := -1
@@ -37,7 +37,7 @@ func _initialize() -> void:
 			print("KIT FAILED: the record %s does not read as JSON" % kept)
 			quit(1)
 			return
-	recorder = Recorder.new()
+	recorder = _PwRecorder.new()
 	recorder.process_physics_priority = -1000
 	root.add_child(recorder)
 	var counting := GDScript.new()
@@ -58,7 +58,7 @@ func _begin() -> void:
 		scene.free()
 	for action in InputMap.get_actions():
 		Input.action_release(action)
-	Random.reseed(int(declared.get("SEED", 1234)))
+	_PwRandom.reseed(int(declared.get("SEED", 1234)))
 	recorder.replay(record)
 	scene = (load(str(declared["RUN"])) as PackedScene).instantiate()
 	root.add_child(scene)
@@ -68,7 +68,7 @@ func _begin() -> void:
 func _ticked() -> void:
 	if run > 1 or scene == null:
 		return
-	runs[run].append(State.snapshot())
+	runs[run].append(_PwState.snapshot())
 	if runs[run].size() < int(declared.get("RUN_TICKS", 120)):
 		return
 	if run == 0:

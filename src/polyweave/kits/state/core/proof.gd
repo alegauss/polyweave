@@ -4,14 +4,14 @@ extends SceneTree
 ## whose node is gone, whose property or method is missing, or whose value is of another
 ## type is a finding naming it. Prints KIT PROVED, or KIT FAILED with why.
 
-const State := preload("res://addons/polyweave/state/state.gd")
+const _PwState := preload("res://addons/polyweave/state/state.gd")
 
 var failed := []
 var frames := 0
 
 
 func _initialize() -> void:
-	if State.declared().is_empty():
+	if _PwState.declared().is_empty():
 		print("KIT FAILED: res://polyweave_state.gd declares no STATE to read")
 		quit(1)
 		return
@@ -25,12 +25,12 @@ func _process(_delta: float) -> bool:
 	frames += 1
 	if frames < 3:
 		return false
-	var each := State.read()
+	var each := _PwState.read()
 	for name in each:
 		if not each[name]["ok"]:
 			failed.append(each[name]["said"])
-	if State.snapshot().size() != State.declared().size():
-		failed.append("the snapshot holds %d of the %d names" % [State.snapshot().size(),
-			State.declared().size()])
+	if _PwState.snapshot().size() != _PwState.declared().size():
+		failed.append("the snapshot holds %d of the %d names" % [_PwState.snapshot().size(),
+			_PwState.declared().size()])
 	print("KIT PROVED" if failed.is_empty() else "KIT FAILED: " + "; ".join(failed))
 	return true

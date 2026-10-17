@@ -8,24 +8,24 @@ extends SceneTree
 ## every locale the table carries, by the measure game.text_fit takes. Prints KIT PROVED,
 ## or KIT FAILED with why.
 
-const Dialogue := preload("res://addons/polyweave/dialogue/dialogue.gd")
-const Language := preload("res://addons/polyweave/language/language.gd")
+const _PwDialogue := preload("res://addons/polyweave/dialogue/dialogue.gd")
+const _PwLanguage := preload("res://addons/polyweave/language/language.gd")
 const PRESS := {"xbox": [JOY_BUTTON_A, JOY_BUTTON_B], "switch": [JOY_BUTTON_B, JOY_BUTTON_A]}
 
 var failed := []
 var sequences := {}
 var locales: Array[String] = []
 var stage := "type"
-var box: Dialogue
+var box: _PwDialogue
 var since := 0
 var fits := []
 var frames := 0
 
 
 func _initialize() -> void:
-	Language.start(false)
-	locales = Language.locales()
-	sequences = Dialogue.declaration()["SEQUENCES"]
+	_PwLanguage.start(false)
+	locales = _PwLanguage.locales()
+	sequences = _PwDialogue.declaration()["SEQUENCES"]
 	if sequences.is_empty():
 		failed.append("res://polyweave_dialogue.gd declares no SEQUENCES to walk")
 		stage = "done"
@@ -37,7 +37,7 @@ func _initialize() -> void:
 		for line in sequences[name]:
 			for locale in locales:
 				fits.append([locale, name, line])
-	box = Dialogue.box(sequences.keys()[0])
+	box = _PwDialogue.box(sequences.keys()[0])
 	root.add_child(box)
 	since = Time.get_ticks_msec()
 
@@ -60,7 +60,7 @@ func _process(_delta: float) -> bool:
 			for family in PRESS:
 				for name in sequences:
 					_walk(family, name)
-			box = Dialogue.box(sequences.keys()[0])
+			box = _PwDialogue.box(sequences.keys()[0])
 			root.add_child(box)
 			stage = "fit"
 		"fit":
@@ -93,7 +93,7 @@ func _typed() -> void:
 
 ## every line of a sequence by one family's confirm alone, the other family's ignored
 func _walk(family: String, name: String) -> void:
-	var walking := Dialogue.box(name)
+	var walking := _PwDialogue.box(name)
 	walking.family = family
 	root.add_child(walking)
 	var lines: Array = sequences[name]
@@ -135,7 +135,7 @@ func _walk(family: String, name: String) -> void:
 	walking.queue_free()
 
 
-func _shows(walking: Dialogue, line: Dictionary) -> void:
+func _shows(walking: _PwDialogue, line: Dictionary) -> void:
 	var speaker := walking.find_child("Speaker", true, false) as Label
 	if line.has("speaker") and (speaker == null or not speaker.visible
 			or speaker.text != str(line["speaker"])):
@@ -162,7 +162,7 @@ func _fit() -> void:
 	if frames < 3:
 		return
 	var text := box.find_child("Text", true, false) as Label
-	for unfit in Language.unfit(text, text.tr(str(line["key"]))):
+	for unfit in _PwLanguage.unfit(text, text.tr(str(line["key"]))):
 		failed.append("%s %s %s" % [locale, line["key"], unfit])
 	fits.pop_front()
 	frames = 0

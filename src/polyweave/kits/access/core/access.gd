@@ -41,7 +41,7 @@ const DEFAULTS := {
 	"FLASH_RUN": "",
 	"FLASH_SECONDS": 2.0,
 }
-const Filters := preload("res://addons/polyweave/access/filters.gd")
+const _PwFilters := preload("res://addons/polyweave/access/filters.gd")
 
 var text_scale := 1.0
 var shaking := true
@@ -132,7 +132,7 @@ func set_filter(deficiency: String, simulating := false) -> void:
 		add_child(_layer)
 	_layer.visible = deficiency != "off"
 	if deficiency != "off":
-		_veil.material = Filters.material(deficiency, simulating)
+		_veil.material = _PwFilters.material(deficiency, simulating)
 
 
 ## show `key`'s line while `player` plays, where the player keeps subtitles on

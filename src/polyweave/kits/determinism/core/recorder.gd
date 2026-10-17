@@ -6,7 +6,7 @@ extends Node
 ## game.record_flow turns a saved record into a game.keep flow, so a bug seen once is a
 ## flow game.replay runs in the gate from then on.
 
-const Random := preload("res://addons/polyweave/determinism/random.gd")
+const _PwRandom := preload("res://addons/polyweave/determinism/random.gd")
 const FILE := "user://polyweave_record.json"
 
 var recording := false
@@ -34,7 +34,7 @@ func start() -> void:
 ## the record: the seed and every event, as a file holds it
 func stop() -> Dictionary:
 	recording = false
-	return {"format": 1, "seed": Random.seed_of(), "events": events.duplicate(true)}
+	return {"format": 1, "seed": _PwRandom.seed_of(), "events": events.duplicate(true)}
 
 
 ## keep the record, and say where it went

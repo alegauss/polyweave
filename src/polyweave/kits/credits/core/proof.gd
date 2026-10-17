@@ -4,11 +4,11 @@ extends SceneTree
 ## lists nothing the file provenance.credits wrote does not hold; it scrolls at its
 ## rate; and a press from every family ends it. Prints KIT PROVED, or KIT FAILED with why.
 
-const Credits := preload("res://addons/polyweave/credits/credits.gd")
+const _PwCredits := preload("res://addons/polyweave/credits/credits.gd")
 const FILE := "res://credits.json"
 
 var failed := []
-var screen: Credits
+var screen: _PwCredits
 var presses: Array[InputEvent] = []
 var stage := "rate"
 var since := 0
@@ -61,8 +61,8 @@ func _initialize() -> void:
 	since = Time.get_ticks_msec()
 
 
-func _screen() -> Credits:
-	var made := Credits.new()
+func _screen() -> _PwCredits:
+	var made := _PwCredits.new()
 	made.file = FILE
 	made.rate = 200.0
 	root.add_child(made)

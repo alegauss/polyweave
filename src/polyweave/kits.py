@@ -510,12 +510,19 @@ def _scripts(order: list, kits: dict, here: Path) -> list[dict]:
             )
             continue
         lines = [ln for ln in printed.splitlines() if ln.startswith("KIT ")]
+        errors = found.get("errors") or []
+        # The engine's first error with its file and line, where there is one: a
+        # proof that would not parse printed "KIT PROVED" from nothing, and said so
+        # (§PW484).
+        first = errors[0] if errors else None
         said.append(
             {
                 "kit": one,
                 "script": at.as_posix(),
                 "status": "failed",
-                "said": lines[-1] if lines else found.get("verdict"),
+                "said": (f"{first['text']} ({first['at'] or 'no line named'})" if first
+                         else lines[-1] if lines else found.get("verdict")),
+                **({"at": first["at"]} if first and first.get("at") else {}),
             }
         )
     return said
@@ -659,6 +666,42 @@ def _captures(printed: str, here: Path) -> list[dict]:
                     **({} if held else
                        {"said": f"{name} {named} {value}, outside [{low}, {high}]"})})
     return out
+
+
+#: A script's own name for another of the kits' scripts, as each kit spells it (§PW484).
+_PRELOADED = re.compile(r"^const (_Pw)?([A-Z]\w*) :?= preload\(", re.MULTILINE)
+
+
+def _shadowed(game: Path, kits: dict) -> list[str]:
+    """Global classes named as the kits name their own scripts, put in a fixture.
+
+    A game that needs these kits already has a `Bindings` or a `Settings` of its own,
+    and a kit's local name for its script resolved to the game's class instead:
+    Spinhold, the game the input kits came from, could run none of their proofs
+    (§PW484). Each fixture is given those classes, and the class cache that makes them
+    global, so a kit that leans on a bare word fails here rather than in a game.
+    """
+    names = sorted({found[2] for kit in kits.values()
+                    for script in Path(kit["folder"]).rglob("*.gd")
+                    for found in _PRELOADED.finditer(script.read_text("utf-8"))})
+    folder = game / "polyweave_shadows"
+    folder.mkdir(exist_ok=True)
+    listed = []
+    for name in names:
+        (folder / f"{name.lower()}.gd").write_text(
+            f"class_name {name}\nextends RefCounted\n\n"
+            "## A game's own class, named as a kit names its script (§PW484).\n\n"
+            "static func actions() -> Array:\n\treturn []\n",
+            encoding="utf-8", newline="\n")
+        listed.append(
+            f'{{\n"base": &"RefCounted",\n"class": &"{name}",\n"icon": "",\n'
+            f'"is_abstract": false,\n"is_tool": false,\n"language": &"GDScript",\n'
+            f'"path": "res://polyweave_shadows/{name.lower()}.gd"\n}}')
+    cache = game / ".godot" / "global_script_class_cache.cfg"
+    cache.parent.mkdir(exist_ok=True)
+    cache.write_text("list = Array[Dictionary]([" + ", ".join(listed) + "])\n",
+                     encoding="utf-8", newline="\n")
+    return names
 
 
 def _first(verdict: dict) -> dict:
@@ -884,6 +927,7 @@ def prove(
         with tempfile.TemporaryDirectory() as scratch:
             game = Path(scratch) / "game"
             shutil.copytree(folder / kit["proves"]["fixture"], game)
+            _shadowed(game, kits)
             try:
                 answer = install(one, root=str(game))
             except PolyweaveError as refused:

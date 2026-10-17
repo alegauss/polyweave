@@ -18,9 +18,9 @@ extends SceneTree
 ## flashes at all, so the run is shown to flash. Prints KIT PROVED, or KIT FAILED with
 ## why.
 
-const Access := preload("res://addons/polyweave/access/access.gd")
-const Options := preload("res://addons/polyweave/access/options.gd")
-const Filters := preload("res://addons/polyweave/access/filters.gd")
+const _PwAccess := preload("res://addons/polyweave/access/access.gd")
+const _PwOptions := preload("res://addons/polyweave/access/options.gd")
+const _PwFilters := preload("res://addons/polyweave/access/filters.gd")
 const PROBE := "polyweave_access_probe"
 const SEEN := "res://.polyweave/kits/access"
 ## each pair's swatch, and the box of the first colour inside it
@@ -28,7 +28,7 @@ const SWATCH := 120
 const BOX := 40
 
 var failed := []
-var access: Access
+var access: _PwAccess
 var stage := "rows"
 var screens := []
 var frames := 0
@@ -46,7 +46,7 @@ const LINE := "A line long enough to need more than one row of the subtitle box 
 
 
 func _initialize() -> void:
-	access = Access.shared()
+	access = _PwAccess.shared()
 
 
 func _process(_delta: float) -> bool:
@@ -75,7 +75,7 @@ func _process(_delta: float) -> bool:
 
 
 func _rows() -> void:
-	for row in Options.options():
+	for row in _PwOptions.options():
 		var other: Variant = (not row["default"]) if row["default"] is bool \
 			else row["choices"][-1]
 		row["apply"].call(other)
@@ -90,14 +90,14 @@ func _pairs() -> void:
 	if pairs.is_empty():
 		return
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(SEEN))
-	for deficiency in Filters.DEFICIENCIES:
+	for deficiency in _PwFilters.DEFICIENCIES:
 		var image := Image.create(SWATCH * pairs.size(), SWATCH, false, Image.FORMAT_RGB8)
 		var targets := []
 		for i in pairs.size():
 			var left := i * SWATCH
 			var inset := (SWATCH - BOX) / 2
-			image.fill_rect(Rect2i(left, 0, SWATCH, SWATCH), Filters.seen(Color(pairs[i][1]), deficiency))
-			image.fill_rect(Rect2i(left + inset, inset, BOX, BOX), Filters.seen(Color(pairs[i][0]), deficiency))
+			image.fill_rect(Rect2i(left, 0, SWATCH, SWATCH), _PwFilters.seen(Color(pairs[i][1]), deficiency))
+			image.fill_rect(Rect2i(left + inset, inset, BOX, BOX), _PwFilters.seen(Color(pairs[i][0]), deficiency))
 			targets.append({"box": [left + inset, inset, left + inset + BOX, inset + BOX]})
 		var picture := "%s/%s.png" % [SEEN, deficiency]
 		var listed := "%s/%s.json" % [SEEN, deficiency]

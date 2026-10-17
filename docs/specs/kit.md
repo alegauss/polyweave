@@ -141,6 +141,16 @@ a kit that fails turns the gate red, so a Godot upgrade in polyweave re-proves e
 kit at once and a kit cannot leave this repository broken. The fixture is also where a
 kit's requirements are exercised together, so a kit that only works alone is found here.
 
+**A kit cannot lean on a word the game already uses** (§PW484). A game that needs these
+kits has its own `Bindings`, `Prompts` or `Settings`, and a kit's script naming another
+by such a bare word resolved to the game's global class instead: Spinhold, the game the
+input kits came from, could run none of their proofs. So every kit script names another
+by a `_Pw` constant, `const _PwBindings := preload(...)`, and `kit.prove` gives each
+fixture a global class, with the class cache that makes it global, for every name the
+kits preload under. A kit that names a script by a bare word fails in polyweave's gate.
+A proof script that fails answers the engine's first error with its file and line,
+read from the line after it where Godot prints it there.
+
 ## A kit that has fallen behind
 
 `kit.install` records in `kit.json` the SHA-256 of every core file it laid down, and a

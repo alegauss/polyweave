@@ -1,5 +1,5 @@
 name = "menus"
-version = "0.1.0"
+version = "0.1.1"
 summary = "a main menu, a pause menu and a confirm a pad can drive, back and confirm by the family in hand"
 requires = ["prompts"]
 
@@ -18,3 +18,4 @@ script = "core/proof.gd"
 
 [changes]
 "0.1.0" = "a menu linked for the pad, a pause on the scene tree's pause and a confirm that defaults to no"
+"0.1.1" = "its scripts name one another by a _Pw name, so a game's own class of the same name, a Bindings or a Settings, cannot shadow them"

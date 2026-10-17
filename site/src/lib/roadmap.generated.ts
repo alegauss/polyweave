@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 4 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 3 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -160,13 +160,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "V",
     symptom: "Cottony keeps its own settings and save code where the kits provide them",
     why: "The second game is what shows a kit is not one project's code moved into a folder.",
-    deps: [],
-  },
-  {
-    id: "PW484",
-    block: "V",
-    symptom: "the input kits fail to parse in a game that has its own class named Bindings, Spinhold among them",
-    why: "A kit's local const Bindings resolves to the game's global class, so no proof runs in the game the kits came from.",
     deps: [],
   },
   {

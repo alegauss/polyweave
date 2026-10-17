@@ -19,7 +19,7 @@ extends Control
 signal line_shown(key: String)
 signal finished
 
-const Prompts := preload("res://addons/polyweave/prompts/prompts.gd")
+const _PwPrompts := preload("res://addons/polyweave/prompts/prompts.gd")
 const PROJECT := "res://polyweave_dialogue.gd"
 ## the pad button that confirms in each family, as the menus kit has it
 const CONFIRM := {"xbox": JOY_BUTTON_A, "playstation": JOY_BUTTON_A, "switch": JOY_BUTTON_B}
@@ -139,7 +139,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	var confirm := false
 	if event is InputEventJoypadButton:
-		var held := family if family != "" else Prompts.family_of(Input.get_joy_name(event.device))
+		var held := family if family != "" else _PwPrompts.family_of(Input.get_joy_name(event.device))
 		confirm = (event as InputEventJoypadButton).button_index == CONFIRM.get(held, JOY_BUTTON_A)
 	elif event is InputEventMouseButton:
 		confirm = (event as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT

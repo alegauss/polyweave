@@ -4,7 +4,7 @@ extends SceneTree
 ## an event from another device changes what is drawn. Prints KIT PROVED, or KIT FAILED
 ## with why.
 
-const Prompts := preload("res://addons/polyweave/prompts/prompts.gd")
+const _PwPrompts := preload("res://addons/polyweave/prompts/prompts.gd")
 
 
 ## Two players seated on pads 0 and 1, as the players kit would, without needing it.
@@ -23,11 +23,11 @@ class Seats:
 
 func _initialize() -> void:
 	var failed := []
-	var prompts = Prompts.new()
+	var prompts = _PwPrompts.new()
 	for action in InputMap.get_actions():
 		if str(action).begins_with("ui_"):
 			continue
-		for family in Prompts.FAMILIES:
+		for family in _PwPrompts.FAMILIES:
 			if prompts.event_for(action, family) != null and prompts.icon(action, family) == null:
 				failed.append("%s has no icon in %s" % [action, family])
 	var named := {
@@ -40,8 +40,8 @@ func _initialize() -> void:
 		"": "xbox",
 	}
 	for joy_name in named:
-		if Prompts.family_of(joy_name) != named[joy_name]:
-			failed.append("%s read as %s" % [joy_name, Prompts.family_of(joy_name)])
+		if _PwPrompts.family_of(joy_name) != named[joy_name]:
+			failed.append("%s read as %s" % [joy_name, _PwPrompts.family_of(joy_name)])
 	var pressed := InputEventJoypadButton.new()
 	pressed.button_index = JOY_BUTTON_A
 	pressed.pressed = true
@@ -65,7 +65,7 @@ func _initialize() -> void:
 	# game: each family names a pad's button as the pad prints it, a key as the string
 	# table says it, and a second player's copy is their own.
 	var own := &"pw_prompts_proof"
-	var second := Prompts.action_of(own, 1)
+	var second := _PwPrompts.action_of(own, 1)
 	for made in [own, second]:
 		InputMap.add_action(made)
 	var space := InputEventKey.new()
@@ -136,23 +136,23 @@ func _initialize() -> void:
 		["button:5", "xbox"]: "GUIDE", ["key:%d" % KEY_SPACE, "xbox"]: "SPACE",
 	}
 	for asked in codes:
-		var reads: String = Prompts.named_code(asked[0], asked[1])
+		var reads: String = _PwPrompts.named_code(asked[0], asked[1])
 		if reads != codes[asked]:
 			failed.append("%s on %s reads %s, not %s" % [asked[0], asked[1], reads,
 				codes[asked]])
-	var row: String = Prompts.describe(["key:%d" % KEY_SPACE, "button:1"], "playstation")
+	var row: String = _PwPrompts.describe(["key:%d" % KEY_SPACE, "button:1"], "playstation")
 	if row != "SPACE   |   CIRCLE":
 		failed.append("a binding's codes read %s" % row)
-	if Prompts.describe(["button:1"]) != "-   |   B":
-		failed.append("a binding with no key does not say so: %s" % Prompts.describe(["button:1"]))
+	if _PwPrompts.describe(["button:1"]) != "-   |   B":
+		failed.append("a binding with no key does not say so: %s" % _PwPrompts.describe(["button:1"]))
 	var table := Translation.new()
 	table.locale = TranslationServer.get_locale()
 	table.add_message("PAD_SOUTH", "SUL")
 	table.add_message("PAD_A", "never")
 	TranslationServer.add_translation(table)
-	if Prompts.named_code("button:0", "generic") != "SUL":
+	if _PwPrompts.named_code("button:0", "generic") != "SUL":
 		failed.append("a generic pad's south button ignores the string table")
-	if Prompts.said("PAD_", "A") != "A":
+	if _PwPrompts.said("PAD_", "A") != "A":
 		failed.append("a one-letter glyph was translated")
 	TranslationServer.remove_translation(table)
 	# A label kept filled (§PW434): filled from its table row, and filled again when the

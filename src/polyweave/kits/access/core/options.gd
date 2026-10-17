@@ -4,11 +4,11 @@ extends RefCounted
 ## toggle, each put in force through PolyweaveAccess and read back from it.
 
 const TAB := "accessibility"
-const Access := preload("res://addons/polyweave/access/access.gd")
+const _PwAccess := preload("res://addons/polyweave/access/access.gd")
 
 
 static func options() -> Array[Dictionary]:
-	var access: Access = Access.shared()
+	var access: _PwAccess = _PwAccess.shared()
 	var scales: Array = access.declared["SCALES"]
 	return [
 		{

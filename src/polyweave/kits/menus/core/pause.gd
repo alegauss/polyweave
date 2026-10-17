@@ -6,18 +6,18 @@ extends CanvasLayer
 
 signal chosen(item: String)
 
-const Menu := preload("res://addons/polyweave/menus/menu.gd")
+const _PwMenu := preload("res://addons/polyweave/menus/menu.gd")
 
 @export var items: Array[String] = ["resume", "options", "quit_to_menu"]
 ## the input action that opens and closes it
 @export var action := "pause"
 
-var menu: Menu
+var menu: _PwMenu
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	menu = Menu.new()
+	menu = _PwMenu.new()
 	menu.items = items
 	menu.back_to = "resume"
 	menu.visible = false

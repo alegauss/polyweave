@@ -58,7 +58,7 @@ ACCESS = "addons/polyweave/access/access.gd"
      "with shake off, /root/Shake/Camera moved"),
     (ACCESS, "_toggled[action] = not _toggled.get(action, false)", "pass",
      "with toggle on, an action does not turn on"),
-    ("shake.gd", "offset = Access.shared().shake(", "offset = Vector2.ZERO * (",
+    ("shake.gd", "offset = _PwAccess.shared().shake(", "offset = Vector2.ZERO * (",
      "the shake run never moved a camera"),
     ("addons/polyweave/access/filters.gd",
      "return _colour(lin + _rows(SHIFT, error))", "return c",
@@ -76,7 +76,7 @@ ACCESS = "addons/polyweave/access/access.gd"
      "leaves the screen"),
     (ACCESS, "return strength if flashing else 0.0", "return strength",
      "flash_run-flashes=off flashes 7"),
-    ("flash.gd", "Access.shared().flash(1.0 if on else 0.0)", "0.0",
+    ("flash.gd", "_PwAccess.shared().flash(1.0 if on else 0.0)", "0.0",
      "flash_run-flashes=on flashes 0"),
 ])
 def test_a_broken_access_option_fails_the_proof_by_name(tmp_path, where, before, after,

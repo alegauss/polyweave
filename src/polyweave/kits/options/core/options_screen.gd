@@ -10,19 +10,19 @@ extends VBoxContainer
 signal closed
 signal opened(scene: String)
 
-const Settings := preload("res://addons/polyweave/options/settings.gd")
-const Menu := preload("res://addons/polyweave/menus/menu.gd")
+const _PwSettings := preload("res://addons/polyweave/options/settings.gd")
+const _PwMenu := preload("res://addons/polyweave/menus/menu.gd")
 
 ## the family whose convention confirm and back follow; the pad's own where unset
 @export var family := ""
 
-var settings: Settings
+var settings: _PwSettings
 var tabs: TabContainer
 
 
 func _ready() -> void:
 	if settings == null:
-		settings = Settings.new()
+		settings = _PwSettings.new()
 		settings.load_file()
 	tabs = TabContainer.new()
 	tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -119,12 +119,12 @@ func _input(event: InputEvent) -> void:
 		return
 	var focused := get_viewport().gui_get_focus_owner()
 	if event is InputEventJoypadButton:
-		var held := family if family != "" else Menu.Prompts.family_of(Input.get_joy_name(event.device))
+		var held := family if family != "" else _PwMenu._PwPrompts.family_of(Input.get_joy_name(event.device))
 		var index := (event as InputEventJoypadButton).button_index
-		if index == Menu.BACK.get(held, JOY_BUTTON_B):
+		if index == _PwMenu.BACK.get(held, JOY_BUTTON_B):
 			_handled()
 			closed.emit()
-		elif index == Menu.CONFIRM.get(held, JOY_BUTTON_A):
+		elif index == _PwMenu.CONFIRM.get(held, JOY_BUTTON_A):
 			_handled()
 			_confirm(focused)
 		elif index in [JOY_BUTTON_LEFT_SHOULDER, JOY_BUTTON_RIGHT_SHOULDER]:

@@ -1,5 +1,5 @@
 name = "launch"
-version = "0.1.0"
+version = "0.1.1"
 summary = "a skippable splash, a threaded load into the first scene and every change of scene measured"
 requires = []
 
@@ -17,3 +17,4 @@ script = "core/proof.gd"
 
 [changes]
 "0.1.0" = "a splash any button skips, PolyweaveScenes loading on a thread, and frame times at a percentile"
+"0.1.1" = "its scripts name one another by a _Pw name, so a game's own class of the same name, a Bindings or a Settings, cannot shadow them"

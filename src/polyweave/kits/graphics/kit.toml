@@ -1,5 +1,5 @@
 name = "graphics"
-version = "0.1.0"
+version = "0.1.1"
 summary = "graphics presets that touch only what the game uses, a first one from the adapter, and the renderer fallback held on"
 requires = ["options"]
 tab = "graphics"
@@ -16,3 +16,4 @@ script = "core/proof.gd"
 
 [changes]
 "0.1.0" = "3D presets of scale, upscaler, anti-aliasing, shadows and the effects the game uses, 2D stretch presets, each read back"
+"0.1.1" = "its scripts name one another by a _Pw name, so a game's own class of the same name, a Bindings or a Settings, cannot shadow them"

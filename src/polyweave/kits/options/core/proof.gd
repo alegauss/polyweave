@@ -7,20 +7,20 @@ extends SceneTree
 ## kit's tab is on the screen; and a pad walks every row, changes tab and goes back.
 ## Prints KIT PROVED, or KIT FAILED with why.
 
-const Settings := preload("res://addons/polyweave/options/settings.gd")
-const Screen := preload("res://addons/polyweave/options/options_screen.gd")
+const _PwSettings := preload("res://addons/polyweave/options/settings.gd")
+const _PwScreen := preload("res://addons/polyweave/options/options_screen.gd")
 const KEPT := "user://polyweave_settings_proof.cfg"
 
 var failed := []
-var settings: Settings
-var screen: Screen
+var settings: _PwSettings
+var screen: _PwScreen
 var closed := 0
 var frame := 0
 
 
 func _initialize() -> void:
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(KEPT))
-	settings = Settings.new(KEPT)
+	settings = _PwSettings.new(KEPT)
 	if settings.options.is_empty():
 		failed.append("no kit and no polyweave_options.gd declares a row")
 	for problem in settings.unchanging():
@@ -30,7 +30,7 @@ func _initialize() -> void:
 	_restart()
 	_tabs()
 	_a_row_that_changes_nothing_is_named()
-	screen = Screen.new()
+	screen = _PwScreen.new()
 	screen.settings = settings
 	screen.family = "switch"
 	screen.closed.connect(func() -> void: closed += 1)
@@ -39,7 +39,7 @@ func _initialize() -> void:
 
 ## a file an older build wrote, with a renamed key, one no row declares and a bad value
 func _older_file() -> void:
-	var rows := settings.options.filter(func(r: Dictionary) -> bool: return Settings.holds_value(r))
+	var rows := settings.options.filter(func(r: Dictionary) -> bool: return _PwSettings.holds_value(r))
 	if rows.is_empty():
 		return
 	var old := ConfigFile.new()
@@ -87,7 +87,7 @@ func _older_file() -> void:
 ## it once, kept in the kit's file and said, and the older file is left as it was. The
 ## proof declares where for itself, so the game's real older file is never read here.
 func _adopted() -> void:
-	var rows := settings.options.filter(func(r: Dictionary) -> bool: return Settings.holds_value(r))
+	var rows := settings.options.filter(func(r: Dictionary) -> bool: return _PwSettings.holds_value(r))
 	if rows.is_empty():
 		return
 	var row: Dictionary = rows[0]
@@ -99,7 +99,7 @@ func _adopted() -> void:
 	older.save(older_path)
 	var before := FileAccess.get_file_as_string(older_path)
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(KEPT))
-	var adopting := Settings.new(KEPT)
+	var adopting := _PwSettings.new(KEPT)
 	adopting.adopted = {at: [older_path, "game", "kept"]}
 	adopting.load_file()
 	if adopting.get_value(row["tab"], row["key"]) != chosen:
@@ -119,11 +119,11 @@ func _adopted() -> void:
 func _restart() -> void:
 	var values := {}
 	for row in settings.options:
-		if Settings.holds_value(row):
+		if _PwSettings.holds_value(row):
 			var other: Variant = settings._other(row)
 			settings.set_value(row["tab"], row["key"], other)
 			values["%s/%s" % [row["tab"], row["key"]]] = other
-	var again := Settings.new(KEPT)
+	var again := _PwSettings.new(KEPT)
 	again.load_file()
 	for at in values:
 		var parts: PackedStringArray = at.split("/")
@@ -135,9 +135,9 @@ func _restart() -> void:
 
 
 func _tabs() -> void:
-	var kits := DirAccess.open(Settings.KITS)
+	var kits := DirAccess.open(_PwSettings.KITS)
 	for kit in kits.get_directories():
-		var script := "%s/%s/options.gd" % [Settings.KITS, kit]
+		var script := "%s/%s/options.gd" % [_PwSettings.KITS, kit]
 		if ResourceLoader.exists(script):
 			var tab: String = load(script).TAB
 			if not settings.tabs().has(tab):
@@ -145,7 +145,7 @@ func _tabs() -> void:
 
 
 func _a_row_that_changes_nothing_is_named() -> void:
-	var idle := Settings.new("user://polyweave_settings_idle.cfg", [{
+	var idle := _PwSettings.new("user://polyweave_settings_idle.cfg", [{
 		"tab": "t", "key": "idle", "default": false,
 		"apply": func(_v: bool) -> void: pass,
 		"read": func() -> bool: return false,

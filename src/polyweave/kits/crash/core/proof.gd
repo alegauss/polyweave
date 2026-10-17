@@ -5,16 +5,16 @@ extends SceneTree
 ## open; and a log closed as it should leaves no marker. Prints KIT PROVED, or KIT FAILED
 ## with why.
 
-const Log := preload("res://addons/polyweave/crash/log.gd")
+const _PwLog := preload("res://addons/polyweave/crash/log.gd")
 
 var failed := []
-var log: Log
+var log: _PwLog
 var expected := {}
 var frames := 0
 
 
 func _initialize() -> void:
-	log = Log.shared()
+	log = _PwLog.shared()
 
 
 ## the error a game would raise, at a line this proof knows
@@ -52,7 +52,7 @@ func _process(_delta: float) -> bool:
 		failed.append("the capture holds none of the log's last lines")
 	_unclean()
 	log.close()
-	if FileAccess.file_exists(Log.DIR + "/running"):
+	if FileAccess.file_exists(_PwLog.DIR + "/running"):
 		failed.append("a log closed as it should left its marker behind")
 	print("KIT PROVED" if failed.is_empty() else "KIT FAILED: " + "; ".join(failed))
 	return true
@@ -60,10 +60,10 @@ func _process(_delta: float) -> bool:
 
 ## a run that never closed its log, as a crash leaves it, found by the next to open
 func _unclean() -> void:
-	var marker := FileAccess.open(Log.DIR + "/running", FileAccess.WRITE)
+	var marker := FileAccess.open(_PwLog.DIR + "/running", FileAccess.WRITE)
 	marker.store_string("0")
 	marker.close()
-	var next: Log = load(Log.HERE).new()
+	var next: _PwLog = load(_PwLog.HERE).new()
 	if _read(next.last_capture).get("reason") != "unclean-exit":
 		failed.append("a marker left behind was not packed as an unclean exit")
 	next.close()

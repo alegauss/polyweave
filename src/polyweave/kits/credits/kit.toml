@@ -1,5 +1,5 @@
 name = "credits"
-version = "0.1.0"
+version = "0.1.1"
 summary = "a credits screen drawn from the file provenance.credits writes, every credit a licence requires on it"
 requires = []
 
@@ -18,3 +18,4 @@ script = "core/proof.gd"
 
 [changes]
 "0.1.0" = "the people the project declares and every credit the records owe, scrolled and skippable"
+"0.1.1" = "its scripts name one another by a _Pw name, so a game's own class of the same name, a Bindings or a Settings, cannot shadow them"

@@ -4,11 +4,11 @@ extends RefCounted
 ## PolyweaveGraphics and read back as the preset in force.
 
 const TAB := "graphics"
-const Graphics := preload("res://addons/polyweave/graphics/graphics.gd")
+const _PwGraphics := preload("res://addons/polyweave/graphics/graphics.gd")
 
 
 static func options() -> Array[Dictionary]:
-	var graphics: Graphics = Graphics.shared()
+	var graphics: _PwGraphics = _PwGraphics.shared()
 	var names: Array = graphics.presets.keys()
 	return [{
 		"tab": TAB, "key": "preset", "label": "quality", "default": graphics.first(),

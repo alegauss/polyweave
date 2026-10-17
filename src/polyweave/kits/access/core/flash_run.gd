@@ -5,16 +5,16 @@ extends SceneTree
 ## what the frames hold, so a game's flashes are held to the switch on the screen and
 ## not on the code's word.
 
-const Access := preload("res://addons/polyweave/access/access.gd")
+const _PwAccess := preload("res://addons/polyweave/access/access.gd")
 
-var access: Access
+var access: _PwAccess
 var run: Node
 var played := 0.0
 var from := -1
 
 
 func _initialize() -> void:
-	access = Access.shared()
+	access = _PwAccess.shared()
 	var path := str(access.declared["FLASH_RUN"])
 	var packed := load(path) as PackedScene if path != "" else null
 	if packed == null:
