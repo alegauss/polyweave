@@ -253,7 +253,10 @@ def applied(
 
 
 def _baked(root: Path) -> Callable[[dict, Path], Any]:
-    from polyweave.layers.geometry import render as R
+    """A request drawn again by the producer that made it: a render (§PW504)."""
+    from polyweave.kernel.layer import function, producers
+
+    bake = function(producers()["render"].target)
 
     class Quiet:
         """A calibration reports its own answer; each render has nobody to tell."""
@@ -268,9 +271,7 @@ def _baked(root: Path) -> Callable[[dict, Path], Any]:
             return None
 
     def draw(request: dict, picture: Path) -> dict:
-        return R.bake(
-            Quiet(), out=str(picture), inline=False, root=str(root), **request
-        )
+        return bake(Quiet(), out=str(picture), inline=False, root=str(root), **request)
 
     return draw
 

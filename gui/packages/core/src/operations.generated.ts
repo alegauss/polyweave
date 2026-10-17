@@ -1902,6 +1902,8 @@ export interface SearchSweepArgs {
   fixed?: Record<string, unknown>
   /** where to write what it rejected, as <name>.json and .png */
   trace?: string
+  /** what makes each sample: a layer's producer by name; default "render" */
+  producer?: string
 }
 
 /** Whether four handles beat four waits, for a render that costs this much. */

@@ -30,6 +30,7 @@ from typing import Annotated, Any
 from polyweave.kernel.describe import Param, operation
 from polyweave.kernel.doors import Blank, door
 from polyweave.kernel.errors import PolyweaveError
+from polyweave.kernel.layer import Producer, call, function, producers
 
 from . import accept, loop
 from .accept import Spec
@@ -78,7 +79,9 @@ def ranges(spec: Spec) -> dict[str, dict]:
     return spec.search
 
 
-def turnable(draw: Callable, *wanted: dict, also: dict = ()) -> list[str]:
+def turnable(
+    draw: Callable, *wanted: dict, also: dict = (), producer: str = "render"
+) -> list[str]:
     """Refuse a parameter the renderer has no knob for, and say what the rest are in.
 
     Returns every axis as `name (unit)` where the unit is declared, which is the half
@@ -98,8 +101,7 @@ def turnable(draw: Callable, *wanted: dict, also: dict = ()) -> list[str]:
     A renderer taking `**kwargs` is not checked. It has said it accepts anything, and a
     stand-in written for a test is the usual one.
     """
-    from polyweave.layers.geometry.render.rig import described
-
+    described = _described(producer)
     noise = sorted({name for one in wanted for name in one} & set(NOISE))
     if noise:
         raise PolyweaveError(
@@ -576,18 +578,20 @@ def renderer(
     rung: str | None = None,
     fixed: dict | None = None,
     bake: Callable | None = None,
+    producer: str = "render",
 ) -> Callable[[dict], dict]:
-    """An evaluator that renders each sample and checks the spec against it.
+    """An evaluator that makes each sample and checks the spec against it.
 
-    The rung is the lowest one that carries the spec's predicates, which is what makes
-    the search affordable: a material question is answered on a sphere in three seconds.
+    `producer` names what makes a sample, a render unless the spec turns something
+    else (§PW504). The rung is the lowest one that carries the spec's predicates, which
+    is what makes the search affordable: a material question is answered on a sphere
+    in three seconds.
     """
-    from polyweave.layers.geometry import render as R
-
-    at = rung or _rung_for(spec, root)
-    draw = bake or R.bake
+    made = _producer(producer)
+    at = rung or _rung_for(spec, root, made)
+    draw = bake or function(made.target)
     fixed = _subject(spec, fixed, root)
-    turnable(draw, ranges(spec), also=fixed or {})
+    turnable(draw, ranges(spec), also=fixed or {}, producer=producer)
 
     class Quiet:
         """A search reports its own progress; each sample does not need to.
@@ -635,6 +639,7 @@ def in_parallel(
     rung: str | None = None,
     fixed: dict | None = None,
     store: Any = None,
+    producer: str = "render",
 ) -> Callable[[list[dict]], list[dict]]:
     """An evaluator that renders a whole pass at once, one job per sample.
 
@@ -654,9 +659,10 @@ def in_parallel(
     """
     from polyweave.kernel.jobs import JobStore
 
-    at = rung or _rung_for(spec, root)
+    made = _producer(producer)
+    at = rung or _rung_for(spec, root, made)
     fixed = _subject(spec, fixed, root)
-    turnable(_bake_signature(), ranges(spec), also=fixed or {})
+    turnable(function(made.target), ranges(spec), also=fixed or {}, producer=producer)
     jobs = store or JobStore.for_project(root)
     where = Path(out)
 
@@ -672,7 +678,7 @@ def in_parallel(
             for index, values in batch:
                 picture = where.with_name(f"{where.stem}-{index:03d}{where.suffix}")
                 handle = jobs.start(
-                    "polyweave.layers.geometry.render:bake",
+                    made.target,
                     kind="bake",
                     label=f"sample {index}",
                     args={
@@ -752,23 +758,37 @@ def worth_parallel(
     return float(seconds_per_render) > crossing_point(lanes=lanes, start_s=start_s)
 
 
-def _rung_for(spec: Spec, root: str | Path) -> str:
+def _rung_for(spec: Spec, root: str | Path, made: Producer) -> str | None:
     """The cheapest rung this project enables that carries the spec's predicates.
 
     Asked of the project rather than of the ladder alone (§PW117): a project that does
-    not render spheres searches a material on its preview instead of being refused.
+    not render spheres searches a material on its preview instead of being refused. A
+    producer with no ladder makes every sample at the spec's own rung, or none.
     """
-    from polyweave.layers.geometry import render as R
-
+    if not made.plan:
+        return spec.rung
     asked = [p.measure for p in spec.predicates]
-    return R.plan(asking=asked or None, floor=spec.rung, root=root)["rung"]
+    return call(made.plan, asking=asked or None, floor=spec.rung, root=root)["rung"]
 
 
-def _bake_signature() -> Callable:
-    """The renderer a job will run, for checking the axes against before spawning."""
-    from polyweave.layers.geometry import render as R
+def _producer(name: str) -> Producer:
+    """The producer a search turns, by name, refused with the ones there are."""
+    found = producers()
+    if name not in found:
+        raise PolyweaveError(
+            "search.unknown-producer",
+            f"no layer makes a sample called {name!r}",
+            f"name one of {', '.join(sorted(found))}",
+            given=name,
+            allowed=sorted(found),
+        )
+    return found[name]
 
-    return R.bake
+
+def _described(producer: str) -> Callable[[str], str]:
+    """How a producer says one parameter back, with its unit where it has one."""
+    made = producers().get(producer)
+    return function(made.described) if made and made.described else str
 
 
 def _chunked(items: list, size: int) -> Iterator[list]:
@@ -792,6 +812,9 @@ def sweep(
     trace: Annotated[
         str, Param("where to write what it rejected, as <name>.json and .png")
     ] = "",
+    producer: Annotated[
+        str, Param("what makes each sample: a layer's producer by name")
+    ] = "render",
 ) -> dict:
     """Search a spec's permitted parameters by actually rendering, and return the best.
 
@@ -804,7 +827,7 @@ def sweep(
     trace = trace or None
     found = search(
         spec,
-        renderer(spec, out=out, root=root, rung=rung, fixed=fixed),
+        renderer(spec, out=out, root=root, rung=rung, fixed=fixed, producer=producer),
         budget=budget,
         points=points,
     )

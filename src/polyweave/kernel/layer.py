@@ -62,8 +62,13 @@ class Judge:
 
 def call(target: str, *args: Any, **kwargs: Any) -> Any:
     """Call a `module:function` a layer declared, importing it only now."""
-    module, function = target.split(":")
-    return getattr(importlib.import_module(module), function)(*args, **kwargs)
+    return function(target)(*args, **kwargs)
+
+
+def function(target: str) -> Callable:
+    """The callable a `module:function` names, imported now."""
+    module, name = target.split(":")
+    return getattr(importlib.import_module(module), name)
 
 
 @dataclass(frozen=True)
@@ -86,6 +91,29 @@ class Subject:
     def names(self) -> dict[str, str]:
         module, name = self.measures.split(":")
         return dict(getattr(importlib.import_module(module), name))
+
+
+@dataclass(frozen=True)
+class Producer:
+    """Something a search can turn, and how one sample of it is made (§PW504).
+
+    `search.sweep` asks the spec's producer for each sample and checks the spec against
+    what it made; its passes, budget, trace and return are the same for every one.
+    """
+
+    #: What `search.sweep` names it by.
+    name: str
+    #: What one sample is, in a few words.
+    about: str
+    #: `module:function` making one sample, called (report, *, out, rung, root,
+    #: inline, **values) -> dict with the `artefact` written and, where it has one,
+    #: the `cache_key` a contact sheet is assembled from. A job runs the same target.
+    target: str
+    #: `module:function` answering which rung carries a spec's measures, called
+    #: (asking=, floor=, root=) -> {"rung": ...}; none where the producer has no ladder.
+    plan: str = ""
+    #: `module:function` saying one parameter back with its unit, for a refusal.
+    described: str = ""
 
 
 @dataclass(frozen=True)
@@ -113,6 +141,8 @@ class Layer:
     #: A section of `provenance.outdated` by its name, to the `module:function` that
     #: answers it for a root (§PW502).
     outdated: dict[str, str] = field(default_factory=dict)
+    #: What a search can turn in this layer, each made one sample at a time (§PW504).
+    producers: tuple[Producer, ...] = ()
     #: The files this layer measures off the picture, for an acceptance spec (§PW503).
     subjects: tuple[Subject, ...] = ()
     #: Picture measures this layer computes, by name, to the `module:function` called
@@ -217,6 +247,14 @@ def subjects() -> dict[str, tuple[str, Subject]]:
         for name, layer in layers().items()
         for one in layer.subjects
         for measure in one.names()
+    ])
+
+
+def producers() -> dict[str, Producer]:
+    """Every producer a search can name, by its name (§PW504)."""
+    return _once("producer", [
+        (name, one.name, one) for name, layer in layers().items()
+        for one in layer.producers
     ])
 
 

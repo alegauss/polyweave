@@ -1430,6 +1430,11 @@ CODES: dict[str, Code] = {
         doors=("refer to it without its name", "take it out of [rules] unshown"),
     ),
     # -- search: looking for values that satisfy a spec -----------------------
+    "search.unknown-producer": Code(
+        means="no layer declares a producer by that name, so nothing makes a sample",
+        when="search.sweep names a producer that no layer.py declares",
+        doors=("name one of the producers the layers declare",),
+    ),
     "search.nothing-to-search": Code(
         means="the spec names no parameter a search is permitted to turn",
         when="an acceptance spec with predicates and no search ranges; a parameter not "

@@ -132,7 +132,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW504",
     block: "W",
     symptom: "search.sweep can only draw a sample through render.bake, so picture, engine and preset each wrote a search of their own",
-    why: "The search is the loop's engine, and four searches that each spend, trace and stop in their own way mean a fifth medium writes a fifth.",
+    why: "picture.fit, engine.sweep and engine.preset_search still run searches of their own, and must become producers on the one search.",
     deps: [],
   },
   {
@@ -146,7 +146,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW506",
     block: "W",
     symptom: "A kernel or loop module can import a layer and both gates still pass, so the direction the layout states is a hope",
-    why: "Every inversion in this block is undone by the first quick import, and only a test that fails holds a boundary between commits.",
+    why: "Every inversion in this block is undone by one quick import, and only a test that fails holds a boundary between commits.",
     deps: ["PW504", "PW505"],
   },
   {

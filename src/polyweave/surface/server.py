@@ -146,7 +146,8 @@ TOOL_BUDGET = 4500
 #: 129,100 at 129,020 for reference.objects' motion, past its own hue (§PW480).
 #: 129,800 at 129,750 for reference.sample, a kind's crop from a frame (§PW480).
 #: 129,900 at 129,857 for panel.capture's sizes, the panel filmed grown (§PW490).
-LIST_BUDGET = 129900
+#: 130,000 at 129,979 for search.sweep's producer, what makes each sample (§PW504).
+LIST_BUDGET = 130000
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

@@ -1,6 +1,6 @@
 """What the geometry layer adds, read by the kernel (§PW500)."""
 
-from polyweave.kernel.layer import Layer, Subject
+from polyweave.kernel.layer import Layer, Producer, Subject
 
 LAYER = Layer(
     name="geometry",
@@ -22,6 +22,15 @@ LAYER = Layer(
             about="a model's cost, read off the file the game draws",
             measures="polyweave.layers.geometry.cost:COSTS",
             target="polyweave.layers.geometry.cost:predicate",
+        ),
+    ),
+    producers=(
+        Producer(
+            name="render",
+            about="a Blender render of a model on the project's rig",
+            target="polyweave.layers.geometry.render:bake",
+            plan="polyweave.layers.geometry.render:plan",
+            described="polyweave.layers.geometry.render.rig:described",
         ),
     ),
 )
