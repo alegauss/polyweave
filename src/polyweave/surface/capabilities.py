@@ -23,6 +23,7 @@ from polyweave.kernel.config import load
 from polyweave.kernel.describe import describe
 from polyweave.kernel.errors import codes
 from polyweave.kernel.jobs.stages import KINDS, TERMINAL
+from polyweave.kernel.layer import extra_present, layers, missing
 from polyweave.kernel.post import CHEAP, OPTIONAL
 from polyweave.loop.measure import COMPUTES, SUFFIXES
 
@@ -112,6 +113,26 @@ def _describe_binary(binary: str, where: Path, probe: bool) -> dict:
     return {"found": None, "path": str(where), "version": None, "why": "not probed"}
 
 
+def _layers(present: dict[str, bool | None]) -> dict:
+    """Each layer, and whether what it requires is here (§PW500).
+
+    A layer whose requirement is absent is still listed: its operations describe
+    themselves, and the state says why calling them would refuse.
+    """
+    out = {}
+    for name, declared in layers().items():
+        absent = missing(declared, present)
+        unknown = [need for need in declared.requires if present.get(need) is None]
+        state = "missing" if absent else "not probed" if unknown else "available"
+        out[name] = {
+            "summary": declared.summary,
+            "requires": list(declared.requires),
+            "state": state,
+            **({"missing": absent} if absent else {}),
+        }
+    return out
+
+
 def _key(key_env: str | None) -> dict:
     """Whether a service's key is set here, by the variable's name alone."""
     return {
@@ -157,6 +178,13 @@ def capabilities(
         for name, about in declared.items()
     }
     service = services[only] if only else None
+    usable = bool(module.get("found") or renderer.get("found"))
+    present = {
+        "blender": usable if probe else None,
+        "godot": engine.get("found"),
+        "audio": extra_present("audio"),
+        "text": extra_present("text"),
+    }
 
     return {
         "polyweave": __version__,
@@ -172,7 +200,7 @@ def capabilities(
         "renderer": {
             "blender": renderer,
             "bpy": module,
-            "usable": bool(module.get("found") or renderer.get("found")),
+            "usable": usable,
             # Usable and trustworthy are different questions: a renderer that runs can
             # still hand back a colour that is not the one authored (§PW43).
             "colour": _colour(config.path("paths.work"), probe),
@@ -184,6 +212,8 @@ def capabilities(
         "service": service,
         "services": services,
         "operations": describe(),
+        # Each medium, and whether this machine has what it needs to run (§PW500).
+        "layers": _layers(present),
         # Surface that exists and is not yet an operation (§PW124): named, so a caller
         # knows to look for it, until each module is registered and leaves this list.
         "unregistered": pending_modules(),

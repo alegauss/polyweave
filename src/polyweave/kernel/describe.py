@@ -23,7 +23,6 @@ description complete rather than merely present.
 
 from __future__ import annotations
 
-import contextlib
 import importlib
 import inspect
 import typing
@@ -32,6 +31,7 @@ from dataclasses import dataclass
 from typing import Annotated, Any, get_args, get_origin
 
 from .errors import PolyweaveError
+from .layer import core_modules, layers, owner
 
 
 @dataclass(frozen=True)
@@ -72,6 +72,9 @@ class Operation:
     #: Checked by the MCP server and the command line before the call, with its
     #: validated arguments, and never by a caller in process (§PW443).
     guard: Callable[[dict], None] | None = None
+    #: The layer whose `layer.py` names this operation's module, or None for one the
+    #: core registers, which every project gets (§PW500).
+    layer: str | None = None
 
     def as_dict(self) -> dict:
         return {
@@ -82,6 +85,7 @@ class Operation:
             "asynchronous": self.kind is not None,
             # Said only where true, so the many that spend nothing cost nothing to read.
             **({"spends": True} if self.spends else {}),
+            **({"layer": self.layer} if self.layer else {}),
             "parameters": [dict(p) for p in self.parameters],
         }
 
@@ -92,90 +96,6 @@ class Operation:
 
 
 _REGISTRY: dict[str, Operation] = {}
-
-#: The plugin's own modules that register operations, imported on demand so the registry
-#: is complete before anything is looked up in it (§PW39). Only this package's own
-#: modules are ever imported here: a project's target may need an environment the caller
-#: does not have, which is exactly why a job spawns rather than importing.
-MODULES: tuple[str, ...] = (
-    "polyweave.layers.geometry.render",
-    "polyweave.loop.brief",
-    "polyweave.loop.accept",
-    "polyweave.loop.search",
-    "polyweave.loop.calibrate",
-    "polyweave.loop.verdict",
-    "polyweave.loop.review",
-    "polyweave.loop.loop",
-    "polyweave.layers.engine.port",
-    "polyweave.loop.trace",
-    "polyweave.kernel.provenance",
-    "polyweave.layers.geometry.units",
-    "polyweave.loop.measure",
-    "polyweave.layers.engine.contrast",
-    "polyweave.layers.engine.pressure",
-    "polyweave.layers.engine.flashes",
-    "polyweave.layers.engine.integrity",
-    "polyweave.surface.adoption",
-    "polyweave.layers.engine.runs",
-    "polyweave.layers.engine.pack",
-    "polyweave.layers.engine.testing",
-    "polyweave.layers.engine.tables",
-    "polyweave.layers.engine.perf",
-    "polyweave.layers.engine.presets",
-    "polyweave.layers.engine.states",
-    "polyweave.surface.newgame",
-    "polyweave.layers.store.icons",
-    "polyweave.layers.kits",
-    "polyweave.layers.geometry.cost",
-    "polyweave.layers.sound.sound",
-    "polyweave.layers.sound.music",
-    "polyweave.layers.sound.music_render",
-    "polyweave.layers.sound.sfx",
-    "polyweave.layers.sound.sound_buy",
-    "polyweave.layers.sound.sound_loop",
-    "polyweave.layers.vfx.vfx",
-    "polyweave.layers.store.video",
-    "polyweave.surface.cli",
-    "polyweave.layers.geometry.review",
-    "polyweave.services.purchase",
-    "polyweave.services.schema",
-    "polyweave.layers.picture.picture",
-    "polyweave.layers.geometry.mesh_buy",
-    "polyweave.layers.picture.style",
-    "polyweave.layers.picture.scenario",
-    "polyweave.layers.picture.variation",
-    "polyweave.layers.picture.fitting",
-    "polyweave.layers.engine.engine",
-    "polyweave.layers.engine.frame_cost",
-    "polyweave.layers.engine.capture",
-    "polyweave.layers.engine.offscreen",
-    "polyweave.layers.engine.godot",
-    "polyweave.layers.engine.driving",
-    "polyweave.layers.geometry.shape",
-    "polyweave.layers.reference.reference",
-    "polyweave.layers.reference.reference_objects",
-    "polyweave.layers.reference.reference_regions",
-    "polyweave.layers.reference.reference_events",
-    "polyweave.layers.reference.reference_register",
-    "polyweave.layers.reference.reference_compare",
-    "polyweave.layers.reference.reference_transcription",
-    "polyweave.layers.reference.reference_concept",
-    "polyweave.layers.geometry.normalise",
-    "polyweave.layers.store.compose",
-    "polyweave.layers.store.store",
-    "polyweave.layers.geometry.texture",
-    "polyweave.layers.motion.clip",
-    "polyweave.layers.motion.camera",
-    "polyweave.layers.motion.skeleton",
-    "polyweave.layers.motion.sprites",
-    "polyweave.layers.motion.motion",
-    "polyweave.layers.words.world",
-    "polyweave.layers.words.words",
-    "polyweave.surface.project",
-    "polyweave.loop.revision",
-    "polyweave.layers.picture.vector",
-    "polyweave.layers.picture.panel",
-)
 
 
 def _type_name(annotation: Any) -> str:
@@ -240,6 +160,7 @@ def operation(
             spends=spends,
             declares=declares,
             guard=guard,
+            layer=owner(fn.__module__),
         )
         return fn
 
@@ -297,9 +218,13 @@ def load() -> None:
     are the plugin's own modules, and `polyweave.layers.geometry.render` deliberately
     keeps `bpy` behind a lazy import so that loading it costs nothing and needs no
     Blender.
+
+    Nothing lists them (§PW500): the core packages are imported whole, and each layer's
+    operation modules are the ones its own `layer.py` names.
     """
-    for module in MODULES:
-        with contextlib.suppress(ImportError):  # pragma: no cover - always present
+    named = (module for one in layers().values() for module in one.modules)
+    for module in (*core_modules(), *named):
+        if not module.endswith("__main__"):  # importing it would run the command line
             importlib.import_module(module)
 
 

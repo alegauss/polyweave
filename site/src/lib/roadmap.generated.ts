@@ -47,7 +47,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 2 },
-  { block: "W", title: "A core that grows by layers", open: 23 },
+  { block: "W", title: "A core that grows by layers", open: 22 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -129,32 +129,25 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW500",
-    block: "W",
-    symptom: "A layer exists only as a line in a hand-kept MODULES tuple, so nothing reads what it contributes or what it needs",
-    why: "Every later seam needs one place where a layer says what it adds, and a list edited by hand is the reason a new layer touches the kernel.",
-    deps: [],
-  },
-  {
     id: "PW501",
     block: "W",
     symptom: "A verdict's answer branches on each domain by name, so every layer a person judges edits verdict.py",
     why: "verdict imports sixteen modules, among them sound, words, style and reference_transcription, so the one check that only a person can make grows with every medium.",
-    deps: ["PW500"],
+    deps: [],
   },
   {
     id: "PW502",
     block: "W",
     symptom: "provenance names words, world, kits and driving and keeps a closed KINDS tuple, so the record format knows every layer",
     why: "A record is the kernel's contract, and today a new medium cannot be recorded, or found outdated, without an edit to provenance.py.",
-    deps: ["PW500"],
+    deps: [],
   },
   {
     id: "PW503",
     block: "W",
     symptom: "accept.check reaches into sound, vfx, video, flashes, render and reference_concept to measure a subject",
     why: "The acceptance spec is the loop's shared contract, and a medium whose subject it cannot measure without an edit to accept.py is a medium that cannot be held to a bar.",
-    deps: ["PW500"],
+    deps: [],
   },
   {
     id: "PW504",
@@ -168,7 +161,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "W",
     symptom: "asset.brief, the review page and loop.report each import every medium they describe, so one new layer edits all three",
     why: "These are the reads an agent and a person start from, and a layer that does not appear in them is one neither of them finds.",
-    deps: ["PW500"],
+    deps: [],
   },
   {
     id: "PW506",
@@ -182,21 +175,21 @@ export const generatedTasks: GeneratedTask[] = [
     block: "W",
     symptom: "Every error code lives in one 2,611-line codes.py, touched by 61 of the last 200 commits to the package",
     why: "A file every feature edits is where two sessions working at once collide, and it grows with every layer whichever layer it is.",
-    deps: ["PW500"],
+    deps: [],
   },
   {
     id: "PW508",
     block: "W",
     symptom: "Every table polyweave.toml may hold is declared in one config.py, so a layer's settings are kernel code",
-    why: "DEFAULTS, the open, free, named and binary tables and the per-key choices are 1,307 lines no layer owns, and a setting nobody owns is one nobody can remove with its layer.",
-    deps: ["PW500"],
+    why: "DEFAULTS, the open, free, named and binary tables and the per-key choices are 1,307 lines no layer owns, and a setting nobody owns is one nobody removes with its layer.",
+    deps: [],
   },
   {
     id: "PW509",
     block: "W",
     symptom: "A project gets all 200 operations as tools whatever it makes, so a 2D game's agent loads Blender, voxel and rig tools",
     why: "tools/list is about 130,000 characters and growing, so the agent's context scales with what polyweave can do, not with what the project uses.",
-    deps: ["PW500", "PW508"],
+    deps: ["PW508"],
   },
   {
     id: "PW510",
@@ -210,7 +203,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "W",
     symptom: "census.py classifies every public function in the package in one map, so each new helper module edits it",
     why: "The census is what keeps the surface findable, and a map 46 of the last 200 commits touched is one that grows with the package instead of with its surface.",
-    deps: ["PW500"],
+    deps: [],
   },
   {
     id: "PW512",

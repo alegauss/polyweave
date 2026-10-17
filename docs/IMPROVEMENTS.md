@@ -476,32 +476,6 @@ the swap, and its gate passes.
 
 ## Block W — A core that grows by layers
 
-### §PW500 A layer declares itself in layer.py
-
-Today `describe.MODULES` is a tuple of 77 module names that every new module has to be
-added to. `load()` imports them so the registry fills as a side effect. Nothing records
-which layer an operation belongs to, which tool it needs, or what else the layer adds to
-the shared loop.
-
-Each `layers/<name>/layer.py` declares one `Layer`:
-
-- `name` and a one-line `summary`;
-- `modules`, the modules that register operations;
-- `requires`: a binary (`blender`, `godot`) or an optional extra (`audio`, `text`) without which the layer is present but cannot run, so `capabilities` reports it as unavailable rather than raising an ImportError;
-- empty slots for what later lines contribute: codes, config tables, census entries, judges, staleness checks, record kinds and report sections.
-
-The kernel finds layers by walking `layers/`, never through a list. `describe` gains
-`layer` on each operation, and `capabilities` lists the layers with their state
-(available, or missing what it requires).
-
-Done when `MODULES` is deleted; a test asserts each registered operation belongs to
-exactly one layer, and that a module registering operations without being named by its
-layer is refused by name.
-
-`kernel/` and `loop/` declare no `Layer`. They are what layers plug into, and an
-operation they register (`describe`, `verdict.answer`) belongs to the surface every
-project gets.
-
 ### §PW501 A layer registers the judge for what it lays out
 
 `verdict.answer` writes the person's choice and then works through a chain: `if

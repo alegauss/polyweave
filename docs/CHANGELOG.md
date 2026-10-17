@@ -561,3 +561,4 @@
 ## Block W — A core that grows by layers
 
 - ✅ **PW499** **The package's 128 modules sit flat, so nothing says which are shared core and which belong to one layer** — The package is now kernel, loop, a layer per medium, services and surface, so an import path says which way a dependency runs (design recorded in `src/polyweave/__init__.py`).
+- ✅ **PW500** **A layer exists only as a line in a hand-kept MODULES tuple, so nothing reads what it contributes or what it needs** — Each layer declares itself in a layer.py found by walking layers/, and describe and capabilities say each one's layer and state (design recorded in `src/polyweave/kernel/layer.py`).

@@ -64,6 +64,7 @@ AREAS: dict[str, str] = {
     "kits": "a part every game repeats, made once in the plugin, proved and installed",
     "tables": "a game's data tables, held to the schema of one row",
     "video": "a teaser cut together from captured runs, scored and encoded",
+    "layer": "a medium's own declaration, which the kernel finds by walking layers/",
 }
 
 CODES: dict[str, Code] = {
@@ -364,6 +365,22 @@ CODES: dict[str, Code] = {
         means="the bytes do not hash to what was expected",
         when="a service serving something other than what it promised",
         doors=("download it again", "compare the two if it differs twice"),
+    ),
+    # -- layer: a medium's own declaration (§PW500) ---------------------------
+    "layer.undeclared": Code(
+        means="a package under layers/ says nothing about what it adds",
+        when="a layer's folder has no layer.py, or it holds no LAYER of that name",
+        doors=("write layer.py with one LAYER = Layer(name=..., ...)",),
+    ),
+    "layer.unnamed-module": Code(
+        means="a module registers an operation that its own layer does not name",
+        when="an operation module under layers/<name>/ is missing from LAYER.modules",
+        doors=("add the module to modules in that layer's layer.py",),
+    ),
+    "layer.unknown-requirement": Code(
+        means="a layer requires something polyweave has no way to find",
+        when="LAYER.requires names a word outside blender, godot, audio and text",
+        doors=("require one of the four", "drop the requirement"),
     ),
     # -- op: an operation's arguments against what it declared ---------------
     "op.unknown": Code(

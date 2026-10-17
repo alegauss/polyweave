@@ -385,6 +385,7 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.kernel.config": (
         "internal", "the project file, reported by capabilities"),
     "polyweave.kernel.describe": ("internal", "the registry's own machinery"),
+    "polyweave.kernel.layer": ("internal", "each layer's declaration, for describe"),
     "polyweave.kernel.errors": ("internal", "the error type and its lookup"),
     "polyweave.kernel.files": ("internal", "atomic writes"),
     "polyweave.kernel.image": ("internal", "one image loader under every measure"),
