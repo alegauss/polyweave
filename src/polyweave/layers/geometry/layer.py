@@ -44,6 +44,8 @@ LAYER = Layer(
     config="polyweave.layers.geometry.settings",
     tools=17_000,
     census={
+        "polyweave.layers.geometry.looks": (
+            "internal", "the looks a material asks for, read by the bake and write"),
         "polyweave.layers.geometry.representations": (
             "internal", "which representation claims a declaration"),
         "polyweave.layers.geometry.representations.mesh": (

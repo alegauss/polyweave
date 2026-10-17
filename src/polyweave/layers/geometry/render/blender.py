@@ -751,16 +751,13 @@ def as_inputs(stated: dict) -> dict:
     """A declaration's material, in the words the shader answers to.
 
     A name the shader already has passes through, so a project that writes `roughness`
-    or `metallic` needs no table entry and a project that writes `colour` gets one. A
-    finish, `coat`, `sheen`, `subsurface` and `rim`, is expanded into the sockets it
-    stands for (§PW494), the rim left as a key the material builds.
+    or `metallic` needs no table entry and a project that writes `colour` gets one. Each
+    look the material asks for is expanded into the sockets it stands for (§PW494,
+    §PW515), a finish's rim left as a key the material builds.
     """
-    from polyweave.layers.geometry import finish
+    from polyweave.layers.geometry.looks import baked
 
-    return {
-        NAMED.get(key, key): _colour(value)
-        for key, value in finish.inputs(stated).items()
-    }
+    return {NAMED.get(key, key): _colour(value) for key, value in baked(stated).items()}
 
 
 #: How sharply the rim falls off toward the surface that faces the view.

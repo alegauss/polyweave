@@ -33,13 +33,11 @@ from . import (
     arithmetic,
     coats,
     expand,
-    finish,
     mentions,
     order,
     refers_to,
     uses,
 )
-from . import surface as F
 
 #: A repeat above this is worth mentioning, because a document rarely means it.
 CROWDED = 500
@@ -110,16 +108,13 @@ def _says(node: dict, instance: dict, materials: dict | None = None) -> str:
     said = what + (f" ({rest})" if rest else "")
     if node.get("material"):
         said += f", in {node['material']}"
-        # A fuzzy surface is the one material property that changes what the shape
-        # looks like rather than only what colour it is, so it is said (§PW50).
+        # A look changes what the shape looks like rather than only what colour it is,
+        # so each one the material asks for is said: a fuzz, a finish (§PW50, §PW494).
+        from .looks import says
+
         worn = (materials or {}).get(node["material"])
-        coat = F.fuzz(worn)
-        if coat:
-            said += f", {F.says(coat)}"
-        # And a finish, which is what moulded plastic is read off (§PW494).
-        finished = finish.says(worn)
-        if finished:
-            said += f", {finished}"
+        for one in says(worn):
+            said += f", {one}"
     return said
 
 

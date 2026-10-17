@@ -139,6 +139,48 @@ once cannot see each other. A test runs two proofs of the saves kit at once in t
 fixtures and holds both to their three slots. Any other kit proof that writes under
 `user://` is checked for the same fixed path.
 
+### §PW524 Render tests crash their workers under the parallel gate
+
+On 2026-10-17 the gate went red at 6472f5c with two xdist workers crashed outright (gw5
+and gw12) inside `tests/test_render.py`: `test_a_blend_bakes_like_any_other_mesh` and
+`test_a_render_that_is_black_to_any_observer_is_refused`. There was no assertion and no
+traceback in the log, only "worker crashed". Both passed when run alone, and the whole
+file passed sequentially (45 tests). The next gate run, with no code changed, was the
+check.
+
+A crashed worker is Blender dying in process. `bpy` is a singleton per interpreter, and
+twelve workers each importing it and rendering at once is the likeliest cause: memory,
+or a GPU or temp-file contention the in-process route never meets on its own.
+
+Measure first. Run the render tests under `-n 12` ten times and count the crashes, then
+again with them marked `serial` (the gate already runs that marker alone after the
+rest). If marking them serial makes the crashes go away, mark every test that imports
+`bpy` the same way, and let the gate say how many ran serially. If they still crash when
+serial, look at Blender's own crash log in the temp folder, which the gate could copy
+beside `pytest.log`.
+
+A flaky gate teaches the next run to rerun rather than read; this one cost a full gate
+run today.
+
+### §PW525 The crash kit's kill waits on the game, not the clock
+
+`tests/test_kit_crash.py::test_a_game_killed_mid_run_is_read_back_as_an_unclean_exit`
+failed twice in the full gate on 2026-10-17, on trees that did not touch the crash kit,
+and passed alone both times (10 of 10 in the file). Each time the assertion was the
+same: the last line read back was "the crash kit's forced error" where the test expects
+"the fixture starts".
+
+So the kill the test sends "mid run" lands late under load: the game has already reached
+the line the kit forces, and the read is right about what happened while the test is
+wrong about when. The test races a sleep or a fixed point in the run against the
+machine's speed.
+
+Make the kill wait on the game's own signal instead of on time: the fixture prints a
+line it then pauses on, the test waits for that line through the held game's output,
+then kills it, so "mid run" is a place in the run rather than a moment. The assertion
+then holds at any load. Run the file under `-n 12` with the rest of the gate ten times
+to show the race is gone.
+
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once
@@ -531,29 +573,6 @@ zero. When a later layer needs a kernel edit, this test is where that need is ar
 extending the fixture rather than by working around it.
 
 Done when the test passes and a deliberately broken seam in the fixture fails it.
-
-### §PW515 A look declares its asks and writes itself to each target
-
-A material states a `colour` and a `roughness`. On top of that, two kinds of intent have
-been added, each with its own module. `finish` (coat, sheen, rim, subsurface) is what
-made the plastic city read as moulded plastic. `surface` is a fuzz. Each derives shader
-inputs from a few numbers and is wired into two places by hand. The bake reads it to
-build Blender's Principled BSDF, plus a rim light at the silhouette. `build.write` calls
-`finish.write_godot`, because glTF carries a colour and a roughness and drops the
-finish. A toon ramp, brushed metal or a pixel-snapped palette would each need its own
-module, its own branch in the bake and its own branch in `write`.
-
-A `Look` under `layers/geometry/looks/` declares:
-
-- `asks`: the material keys it reads, so an unknown key is refused where it is written, as `finish.ASKS` does today;
-- `inputs(material) -> dict`: the derived numbers, still expressions over the document's parameters, so a search turns a look as it turns a shape;
-- `targets`: one writer per destination (`bake` for the Blender shader, `godot` for the engine material), and a target a look cannot reach is said in `describe`, never dropped silently.
-
-The bake and `write` iterate over the looks a material asks for. `finish` and `surface`
-become the first two looks, unchanged.
-
-Done when neither the bake nor `write` names `finish` or `surface`, their tests pass,
-and a fixture look reaches both targets.
 
 ### §PW516 A paid service is an adapter; the ledger and the ceiling are the kernel's
 

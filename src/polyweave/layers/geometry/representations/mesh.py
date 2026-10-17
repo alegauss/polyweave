@@ -43,7 +43,8 @@ def write(
     # A material's `image` is a path under the project, as every path a declaration
     # names is, resolved here where the root is known (§PW78). Its values are resolved
     # too, as the review's are, so a finish over the params reaches the shader.
-    from .. import expand, finish
+    from .. import expand
+    from ..looks import godot as engine
 
     resolved = expand(document, **given)["materials"] or {}
     materials = {
@@ -52,13 +53,12 @@ def write(
         for name, one in resolved.items()
     }
     written = write_mesh(made["output"], where, materials=materials)
-    # glTF carries a colour and a roughness and drops a finish, so a material that asks
+    # glTF carries a colour and a roughness and drops a look, so a material that asks
     # for one is also written as Godot loads it, with the bake's numbers (§PW495).
     godot = [
         str(path)
         for name, one in resolved.items()
-        if finish.asked(one)
-        for path in finish.write_godot(one, name, where.parent, where.stem, root)
+        for path in engine(one, name, where.parent, where.stem, root)
     ]
     return {**made, "artefact": str(written), "materials": godot}
 

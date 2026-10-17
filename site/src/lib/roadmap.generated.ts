@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 3 },
+  { block: "H", title: "Proof on a real game", open: 5 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
@@ -47,7 +47,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 2 },
-  { block: "W", title: "A core that grows by layers", open: 10 },
+  { block: "W", title: "A core that grows by layers", open: 9 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -70,6 +70,20 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "the saves kit's proof writes to one fixed user:// folder, so two proofs at once empty each other's slots",
     why: "The gate went red once on the saves proof and passed when rerun alone, and a flaky gate teaches the next run to rerun rather than read.",
+    deps: [],
+  },
+  {
+    id: "PW524",
+    block: "H",
+    symptom: "a Blender render test's xdist worker crashes under the full gate and passes when the file runs alone",
+    why: "Two render workers died with no traceback on an unchanged tree, and a gate that goes red by chance is one the next run reruns instead of reading.",
+    deps: [],
+  },
+  {
+    id: "PW525",
+    block: "H",
+    symptom: "the crash kit's mid-run kill races the game under load, so the full gate fails it and a lone run passes",
+    why: "It failed twice today on trees that never touched the kit, and a kill timed by the clock instead of the game's own signal is right only on an idle machine.",
     deps: [],
   },
   {
@@ -143,13 +157,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW506"],
   },
   {
-    id: "PW515",
-    block: "W",
-    symptom: "A material's finish and fuzz are special-cased in the bake and in write, so a toon or metal look is a third case",
-    why: "The plastic finish already had to be written twice, for Blender's shader and for Godot's, and each new look pays that twice again.",
-    deps: [],
-  },
-  {
     id: "PW516",
     block: "W",
     symptom: "Each paid service's HTTP client is written inside the domain that buys from it, so a new service copies a client",
@@ -182,7 +189,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "W",
     symptom: "A project's polyweave.toml and the Python importing polyweave break on the new layout, with nothing to carry them over",
     why: "The block owes callers no compatibility, so one command must carry a project across, or every adopter pays for the break by hand.",
-    deps: ["PW512", "PW515", "PW516"],
+    deps: ["PW512", "PW516"],
   },
   {
     id: "PW521",
