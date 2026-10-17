@@ -111,6 +111,57 @@ def test_a_mask_of_another_size_is_refused(tmp_path):
     assert caught.value.code == "spec.bad-region"
 
 
+def painted(tmp_path):
+    """A flat painting with no alpha: a cream well, and a gold star whose lit half is
+    brighter than its shaded half, as Cottony's concept stars are (§PW483)."""
+    picture = PILImage.new("RGB", (40, 40), (245, 232, 200))
+    pixels = picture.load()
+    for y in range(8, 32):
+        for x in range(8, 32):
+            pixels[x, y] = (245, 192, 42) if y < 20 else (190, 140, 30)
+    picture.save(tmp_path / "stars.png")
+    return tmp_path / "stars.png"
+
+
+def test_a_distribution_is_taken_at_any_percentile_and_as_a_spread(tmp_path):
+    """§PW483: Cottony gates form as (p90 - p10) / p50, and could not ask for it."""
+    star = {"colour": "#f5c02a", "tolerance": 0.25}
+    found = {one["measure"]: one["value"] for one in measure.measure(
+        painted(tmp_path), ["luma_p10", "luma_p90", "luma_p50", "luma_spread_10_90"],
+        region=star)}
+    assert found["luma_p90"] > found["luma_p10"]
+    spread = (found["luma_p90"] - found["luma_p10"]) / found["luma_p50"]
+    assert found["luma_spread_10_90"] == pytest.approx(spread, abs=1e-5)
+
+
+def test_a_colour_region_measures_one_object_of_a_flat_painting(tmp_path):
+    star = {"colour": "#f5c02a", "tolerance": 0.25}
+    within = measure.measure(painted(tmp_path), ["luma_p50"], region=star)[0]
+    whole = measure.measure(painted(tmp_path), ["luma_p50"], region="frame")[0]
+    assert within["value"] < whole["value"]  # the cream well is left out
+    assert within["region"] == star
+    # Worn in from its edge, a region keeps fewer pixels, and none past its middle.
+    mask = measure.region_mask(measure.load(painted(tmp_path)), {**star, "erode": 3},
+                               0.0)
+    assert 0 < mask.sum() < measure.region_mask(measure.load(painted(tmp_path)),
+                                                star, 0.0).sum()
+
+
+@pytest.mark.parametrize(
+    ("name", "region", "said"),
+    [
+        ("luma_p120", "frame", "from 0 to 100"),
+        ("luma_spread_90_10", "frame", "low under high"),
+        ("luma_p50", {"colour": "#f5c02a", "erode": -1}, "not a colour region"),
+    ],
+)
+def test_a_statistic_or_colour_region_that_means_nothing_is_refused(tmp_path, name,
+                                                                     region, said):
+    with pytest.raises(PolyweaveError) as refused:
+        measure.measure(painted(tmp_path), [name], region=region)
+    assert said in refused.value.message + refused.value.remedy
+
+
 def test_something_that_is_not_a_region_is_refused(tmp_path):
     with pytest.raises(PolyweaveError) as caught:
         measure.measure(png(tmp_path), region="middle-ish")

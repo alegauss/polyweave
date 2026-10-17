@@ -101,33 +101,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW483 A measure at the percentiles a gate uses
-
-Found in Cottony, RK131 (2026-10-16). Cottony's `tools/perf/material_match.gd` holds a
-piece's **form** as `(p90 - p10) / p50` of luminance inside the silhouette - the spread
-across a surface, which is whether a crown reads. RK131 had to measure the same number
-on the concept painting's stars to re-derive the ceiling.
-
-The call:
-
-    python -m polyweave measure.take --subject docs/design/art/ui/star_gold_big.png --measures luma saturation --region subject --json
-
-came back with `luma_p1`, `luma_p50`, `luma_p99`, `luma_mean` and `luma_std` and nothing
-else. There is no way to ask for p10 and p90, nor for a ratio between percentiles, so
-the measure the project actually gates on cannot be taken by polyweave on any picture. A
-painting with no alpha also needs a mask, which `--region` takes, but cutting one out of
-a flat painting (keep the yellow star, drop the cream well) is another script.
-
-Workaround: Cottony's `tools/measure_form.py`, which segments each star in `screen1.png`
-by colour, erodes to the interior, and computes the spread itself in numpy.
-
-What polyweave should do: let a measure name its percentiles (`luma@10,90`, or a
-`--percentiles` list), and offer `spread` as a computed measure, `(pHi - pLo) / p50`,
-with the percentiles as parameters. Separately, `--region` could take a colour key
-(`{"colour": "#F5C02A", "tolerance": ...}`) and an erosion in pixels, the way
-`reference.objects` already finds kinds by colour, so a painting can be measured object
-by object without a mask file per object.
-
 ### §PW486 Accepting a look a bound refused
 
 Found in Cottony, RK149 (2026-10-16). A sitting opened with `verdict.sitting` for one

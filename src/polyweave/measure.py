@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import base64
 import math
+import re
 from collections.abc import Iterable, Sequence
 from pathlib import Path
 from typing import Annotated, Any
@@ -31,13 +32,47 @@ from .image import Image, load
 #: `saturation`, and the two are computed by the same thing.
 SUFFIXES = ("_p1", "_p50", "_p99", "_mean", "_std")
 
+#: Any other statistic a distribution can be asked for by name (§PW483): a percentile,
+#: `luma_p90`, or a spread between two over the median, `luma_spread_10_90`, which is
+#: (p90 - p10) / p50, Cottony's form.
+_STATISTIC = re.compile(r"^(?P<base>.+?)_(?P<stat>p(?P<p>\d{1,3})"
+                        r"|spread_(?P<low>\d{1,3})_(?P<high>\d{1,3}))$")
+
 
 def base_measure(measure: str) -> str:
     """The measure a statistic is a statistic of."""
     for suffix in SUFFIXES:
         if measure.endswith(suffix):
             return measure[: -len(suffix)]
-    return measure
+    asked = _STATISTIC.match(measure)
+    return asked["base"] if asked else measure
+
+
+def _statistic(values: np.ndarray, name: str) -> float | None:
+    """One statistic a name asks of a distribution beyond the five, or None where the
+    name asks for none of them: a percentile from 0 to 100, or a spread, the distance
+    between two percentiles over the median (§PW483)."""
+    asked = _STATISTIC.match(name)
+    if not asked:
+        return None
+    base = asked["base"]
+    forms = (f"{base}_p10", f"{base}_p90", f"{base}_spread_10_90")
+    if asked["p"] is not None:
+        at = int(asked["p"])
+        if at > 100:
+            raise PolyweaveError("spec.unknown-measure",
+                                 f"{name!r} asks for the {at}th percentile",
+                                 "ask for a percentile from 0 to 100", given=name,
+                                 allowed=forms)
+        return round(float(np.percentile(values, at)), 6)
+    low, high = int(asked["low"]), int(asked["high"])
+    if not 0 <= low < high <= 100:
+        raise PolyweaveError("spec.unknown-measure",
+                             f"{name!r} spreads from p{low} to p{high}",
+                             "write spread_<low>_<high>, low under high, both 0 to 100",
+                             given=name, allowed=forms)
+    lo, mid, hi = np.percentile(values, [low, 50, high])
+    return round(float((hi - lo) / mid), 6) if mid > 1e-9 else 0.0
 
 
 #: Measures reported as a **set of statistics, never as one number**. §PW9 is why:
@@ -692,11 +727,39 @@ def region_mask(image: Image, region: Any, alpha_floor: float) -> np.ndarray:
         return mask
     if isinstance(region, str | Path) and Path(region).is_file():
         return _mask_file(image, region)
+    if isinstance(region, dict):
+        return _keyed(image, region)
     raise PolyweaveError(
         "spec.bad-region",
         f"{region!r} is not a region, and no mask file is there",
-        "give 'frame', 'subject', a rectangle [x0, y0, x1, y1], or the path of a mask",
+        "give 'frame', 'subject', a rectangle [x0, y0, x1, y1], the path of a mask, or "
+        '{"colour": "#rrggbb", "tolerance": 0-1, "erode": pixels}',
     )
+
+
+def _keyed(image: Image, region: dict) -> np.ndarray:
+    """The pixels near a colour, worn `erode` pixels in from their edge (§PW483): an
+    object of a flat painting measured by its own colour, with no mask file to cut,
+    as reference.objects finds a kind."""
+    stray = sorted(set(region) - {"colour", "tolerance", "erode"})
+    tolerance, erode = region.get("tolerance", 0.12), region.get("erode", 0)
+    if (stray or not isinstance(region.get("colour"), str)
+            or not isinstance(tolerance, int | float) or not 0 < tolerance <= 1
+            or isinstance(erode, bool) or not isinstance(erode, int) or erode < 0):
+        raise PolyweaveError(
+            "spec.bad-region",
+            f"{region!r} is not a colour region",
+            'write {"colour": "#rrggbb", "tolerance": 0 to 1, "erode": whole pixels}',
+        )
+    target = from_hex(region["colour"]) * 255.0
+    rgb = image.rgba[..., :3].astype(np.float64)
+    near = np.sqrt(((rgb - target) ** 2).sum(axis=2)) <= tolerance * math.sqrt(3) * 255
+    near &= image.subject(0.0) if image.had_alpha else True
+    for _ in range(erode):
+        padded = np.pad(near, 1, constant_values=False)
+        near = (near & padded[:-2, 1:-1] & padded[2:, 1:-1] & padded[1:-1, :-2]
+                & padded[1:-1, 2:])
+    return near
 
 
 def _mask_file(image: Image, where: str | Path) -> np.ndarray:
@@ -717,6 +780,8 @@ def _named(region: Any) -> Any:
         return region
     if isinstance(region, Path):
         return str(region)
+    if isinstance(region, dict):
+        return dict(region)
     return list(region)
 
 
@@ -787,6 +852,10 @@ def measure(
         where, mask = within(base)
         if base in DISTRIBUTIONS:
             values = DISTRIBUTIONS[base](image, mask, alpha_floor=alpha_floor, **params)
+            asked = _statistic(values, name) if name != base else None
+            if asked is not None:
+                out.append(_taken(name, where, rung, asked))
+                continue
             for suffix, value in statistics(values).items():
                 if name == base or name.endswith(suffix):
                     out.append(_taken(base + suffix, where, rung, value))

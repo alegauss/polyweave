@@ -21,6 +21,13 @@ default wherever the image has an alpha channel. The masking is half the value o
 vocabulary: a prop measured over only its own pixels is not diluted by whatever background it
 happens to sit on.
 
+A region may also be a colour, `{"colour": "#rrggbb", "tolerance": 0.12, "erode": 0}`:
+the pixels within `tolerance` of that colour (a share of the widest RGB distance), worn
+`erode` pixels in from their edge, inside the subject where there is alpha (§PW483). So
+an object of a flat painting with no alpha, Cottony's gold star on its cream well, is
+measured by its own colour with no mask file cut for it, as `reference.objects` finds a
+kind.
+
 **Rung** is which preview level the render came from (§PW7). It is reported, never inferred,
 so a verdict taken on a sphere is never mistaken for one taken on the final mesh.
 
@@ -40,6 +47,12 @@ difference sat at the 99th percentile.
 | `alpha_coverage` | 0–1 | Fraction of the region with alpha above the floor |
 
 A call asking for `saturation` returns all five statistics. A predicate names one.
+
+Beyond the five, a distribution answers any percentile asked by name, `luma_p10` or
+`saturation_p90` (0 to 100), and a spread, `luma_spread_10_90`: (p90 − p10) / p50, the
+distance between two percentiles over the median, which is how Cottony holds a surface's
+form (§PW483). A spec bounds either as it bounds the five; a percentile past 100, or a
+spread whose low is not under its high, is `spec.unknown-measure`.
 
 Two things the first implementation had to settle:
 

@@ -215,6 +215,7 @@
 - ✅ **PW479** **a panel cannot declare a lit bevel, an inner hairline, a moving sweep, inset brackets or a glow by state** — A panel declares a lit bevel, a hairline, set-in brackets, a placed tick, a sweep, and states as glow, lift and drain, with a tint set per instance (design recorded in `docs/specs/panel.md`).
 - ✅ **PW481** **verdict.sitting crashes on an old picture named HEAD:<path>, a form sound.sitting reads from git** — verdict.sitting and verdict.sheet check a committed old picture out of git, say where it came from, and refuse a missing picture by name (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW482** **voice.design sends a sample shorter than the service accepts and quote cannot price it from the entity** — voice.design refuses a sample under the service's least before the call, and purchase.quote prices a voice call from its sample or the entity's own (design recorded in `docs/specs/world.md`).
+- ✅ **PW483** **measure.take reports luma only at p1, p50 and p99, so a spread between other percentiles cannot be measured** — A distribution answers any percentile and a spread over the median, and a region may be a colour worn in, so a painting is measured by object (design recorded in `docs/specs/measurements.md`).
 
 ## Block I — Voxel models from a declaration
 
