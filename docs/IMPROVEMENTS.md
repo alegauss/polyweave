@@ -12,7 +12,121 @@
 
 ## Block F — Motion
 
+### §PW496 A struck mesh that squashes and jiggles
+
+Found in Spinhold on 2026-10-17, for the plastic city of §PW491. Spinhold's voxel city
+answers a kill with a ripple that lifts its cubes one by one
+(`game/world/voxels.gdshader` reads the recent impacts). A city of smooth plastic pieces
+has no cubes to lift, and the answer that fits the look is a toy's: the piece squashes,
+overshoots and jiggles back, the higher parts swinging more. Nothing declares that, so
+it would be a vertex shader written in the game and tuned by eye.
+
+What polyweave should do: a motion declaration for a struck mesh, stated as how far it
+gives, how stiff it is, how fast it settles and how the give falls off from its base,
+and compiled to a Godot vertex shader that takes impacts as uniforms (a point, a
+strength and an age, several at once) and works per instance on a MultiMesh. A clip of a
+strike at fixed frames, filmed through the engine, is what a person judges and what a
+spec bounds (the settle time, the largest give).
+
 ## Block G — Geometry as a declaration
+
+### §PW491 A smooth blend between parts
+
+Found in Spinhold on 2026-10-17. The owner asked for a new habitat, a city in the
+moulded plastic look of Fall Guys, with the ship and the enemies left in voxels.
+Spinhold's ring skin and skyline are cubes on a MultiMesh (`game/world/voxels.gd`,
+`scenery.gd`), so the new city needs smooth pieces, and every one of them is parts that
+flow into each other: a tower whose roof pours into its walls, a tree whose crown melts
+onto its trunk, a mascot whose head sits on its body with no seam.
+
+`union` is a boolean, so where two parts meet the join is a crease as sharp as the
+solver leaves it. A bevel after it rounds every edge alike, and a fillet only where the
+parts meet cannot be asked for. Today such a piece is a bought mesh or a `custom` node.
+
+What polyweave should do: a `blend` op taking a list of ids and a `radius`, joining them
+with a smooth fillet of that radius where they meet and nowhere else (a smooth minimum
+over their distance fields, meshed back to triangles), its material groups carried, with
+the non-empty assertion every boolean keeps. Its readback names the radius, and a radius
+larger than the smaller part is a build warning.
+
+### §PW492 An inflate round on both faces
+
+Found in Spinhold on 2026-10-17, for the plastic city of §PW491. Inflatable shapes are
+half of that look: a heart balloon over the square, a puffed cloud, a bouncy pad, each
+round on its front and on its back. `inflate` is a relief, by its own spec: one face
+lifted off a flat back, which is right for a panel seen front-on and wrong for a body
+the game's camera passes round. Mirroring the relief gives a seam along the outline as
+sharp as a coin's edge.
+
+What polyweave should do: `inflate` taking `sides = 2` (one stays the relief it is), the
+outline kept to the point as the rim, both faces swelling by the same profile and
+meeting round at the edge rather than at a crease, with `thickness` the whole depth. A
+drawing's blurred alpha shapes both faces, so a hole in the drawing is a hole through
+the body.
+
+### §PW493 Solids round on every edge
+
+Found in Spinhold on 2026-10-17, for the plastic city of §PW491. A toy-plastic piece is
+round on every edge: a capsule post, a soft box of a house, a pebble of a hill. The
+vocabulary rounds only in two dimensions: `plate` and `rounded_square` round an
+outline's corners in XY and leave the extruded edges square, and `bevel` takes one width
+with no say in how many segments or what profile, so a radius that reads as moulded and
+not as chamfered cannot be stated.
+
+What polyweave should do: `capsule` and `rounded_box` primitive kinds, `size` as every
+primitive's and a `radius` on every edge, with `steps` across the round; and `bevel`
+taking `segments` and a `profile` (round or chamfer), so an existing node rounds as a
+moulded part does. The mesh and the voxel evaluator answer each by its own formula, as
+PW233's primitives do, and a radius past half the smallest side is refused as
+`geom.bad-solid`.
+
+### §PW494 A plastic finish on a material
+
+Found in Spinhold on 2026-10-17, for the plastic city of §PW491. What makes a piece read
+as moulded plastic is mostly its finish: a saturated colour, a tight bright highlight
+under a clear coat, a soft rim of light at the silhouette, and light going a little way
+into the body so a pastel glows rather than greys. A geometry material declares a
+`colour` and a `roughness`, so none of that can be asked for and every bake renders the
+city as painted clay.
+
+What polyweave should do: a material taking `coat` (its weight and its own roughness),
+`sheen`, `rim` and `subsurface` (a depth and a tint), each an expression over the params
+so PW32's search reaches them, set on the Principled BSDF the bake builds, so a sitting
+shows the finish a person is asked about. Like PW50, a declaration states what it wants
+in a few numbers and the inputs are derived, and a material reads back in words: `in
+pink plastic, clear-coated, glossy`.
+
+### §PW495 The declared finish as a Godot material
+
+Found in Spinhold on 2026-10-17, for the plastic city of §PW491. When §PW494's finish is
+accepted on a sitting, the game must draw the same thing. A built model reaches Godot as
+a `.glb`, and the importer keeps what glTF and its own mapping keep: a coat, a rim, a
+subsurface tint or a sheen may come in at other numbers or not at all, and the game's
+city is drawn on a MultiMesh in its own shader, which takes no material from a mesh.
+Then the accepted look is re-made in game code by eye, which is what the project's rule
+forbids.
+
+What polyweave should do: write the declared material beside the build as a Godot
+material (a `.tres` StandardMaterial3D, or a generated `.gdshader` where a feature the
+standard one lacks is asked for), with the same numbers the bake used and a provenance
+record, so the game loads what was judged. A capture of the game against the bake of the
+same model at one rig says whether the two agree.
+
+### §PW497 A measure of edge softness
+
+Found in Spinhold on 2026-10-17, for the plastic city of §PW491. A style that is soft
+toys and moulded plastic is lost by one hard edge: a cube left square among capsules
+reads as a different game. Spinhold already holds every enemy to a shape bound
+(`silhouette_aspect >= 0.6`), refused before a person sees it, and the plastic city
+needs the same for roundness, but nothing measures it: the measures read silhouettes and
+colour, never the edges of a mesh.
+
+What polyweave should do: a geometry measure of edge softness, read off the built mesh
+with no render: the share of edge length whose dihedral angle is sharper than a stated
+crease, and the smallest radius of curvature over the surface in the model's own units.
+An acceptance spec then holds `sharp_edge_share <= 0.02` or `edge_radius_min >= 0.1`,
+and a refusal names where on the model the hard edges are. A style can ask for the bound
+in every model it governs, as Spinhold's Lattice style asks for a tall silhouette.
 
 ## Block H — Proof on a real game
 
