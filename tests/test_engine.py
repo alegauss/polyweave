@@ -126,6 +126,25 @@ def test_a_script_that_exited_non_zero_in_silence_says_so(tmp_path):
     assert "Godot Engine" not in found["why"]
 
 
+def test_a_shader_that_would_not_compile_fails_the_run(tmp_path):
+    """§PW489: the film answered ok with white stills of a rect whose shader broke."""
+    script = project(tmp_path)
+    found = engine.run(
+        script,
+        expect=SUMMARY,
+        root=tmp_path,
+        launch=says(
+            "SHADER ERROR: Redefinition of 'lift'.\n"
+            "          at: (null) (res://ui/card.gdshader:142)\n"
+            "ERROR: Shader compilation failed.\n"
+            "checks ran: 3, failed: 0\n",
+        ),
+    )
+    assert found["ok"] is False
+    assert found["verdict"] == "script-error"
+    assert found["errors"][0]["at"] == "res://ui/card.gdshader:142"
+
+
 def test_an_errors_place_on_the_line_after_it_is_read(tmp_path):
     """§PW484: a parse error's file and line came on the next line, and went unread."""
     script = project(tmp_path)

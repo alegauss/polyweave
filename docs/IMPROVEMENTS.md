@@ -215,31 +215,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW489 A shader that failed to compile fails the run
-
-Found in polyweave on 2026-10-16, building PW473. A uniform named `lift` was redeclared
-as a local in the panel shader, and Godot printed
-
-    SHADER ERROR: Redefinition of 'lift'.
-    ERROR: Shader compilation failed.
-
-on every film. `panel.capture` still answered with every still, each one the plain white
-`ColorRect` the material failed to draw on, and nothing in the answer said the shader
-never compiled. Only a pixel assertion in a test noticed.
-
-`engine.ERRORS` (`src/polyweave/engine.py`) reads `SCRIPT ERROR`, `Parse Error`,
-`Compile Error` and `String formatting error`, and not `SHADER ERROR`, so
-`capture.movie` takes a run whose shader failed as a clean one. Every caller that films
-a shader is exposed: `panel.capture`, `vfx.preview`, and any `capture.movie` of a scene
-with a `.gdshader` in it.
-
-Add `SHADER ERROR` (and the `Shader compilation failed` line that follows it) to
-`ERRORS`, so the run's verdict is `script-error` with the shader's path and line, which
-the engine prints as `at: (null) (res://ui/card.gdshader:142)`. `panel.capture` already
-refuses a film whose `ok` is false as `compose.unfilmed`, so the refusal then names the
-shader's error rather than handing back white stills. A test: a panel whose shader is
-broken on purpose is refused, not filmed.
-
 ### §PW490 A panel filmed at the sizes it will be drawn
 
 Found in polyweave on 2026-10-16, shipping PW474. The panel shader sews its seam by arc

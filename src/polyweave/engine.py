@@ -46,7 +46,11 @@ from .jobs import children
 #: Every spelling the engine has for "the script is broken". This is the engine's own
 #: vocabulary and not a project's convention, which is why it is the one pattern here.
 #: A formatting error prints without the word SCRIPT and still aborts its own block.
-ERRORS = re.compile(r"SCRIPT ERROR|Parse Error|Compile Error|String formatting error")
+#: A shader that would not compile is one of them (§PW489): the panel film came back
+#: with white stills of the bare rect, and only a pixel assertion noticed.
+ERRORS = re.compile(
+    r"SCRIPT ERROR|Parse Error|Compile Error|String formatting error|SHADER ERROR"
+)
 
 #: Where in the script an error came from, as the engine prints it. The output line it
 #: was on says where to look in the log; this says where to look in the code.

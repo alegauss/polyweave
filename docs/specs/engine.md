@@ -59,8 +59,10 @@ Which files belong in it is the game's to say.
 
 **The error pattern is the engine's**, not the project's, and is the one thing compiled in:
 `SCRIPT ERROR`, `Parse Error`, `Compile Error`, and `String formatting error`, which prints
-without the word SCRIPT and still aborts the block it is in. A caller may widen it; nothing
-requires it to.
+without the word SCRIPT and still aborts the block it is in, and `SHADER ERROR`, which a
+shader that would not compile prints while the run goes on drawing its node white. Its
+place is the shader's own line, `at: (null) (res://ui/card.gdshader:142)`. A caller may
+widen it; nothing requires it to.
 
 Each error comes back with **the line of the script it came from**, as the engine printed
 it, and the line of the output it was on. The first says where to fix it; the second says

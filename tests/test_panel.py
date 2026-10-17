@@ -621,6 +621,30 @@ def test_a_wipe_of_no_known_kind_is_refused(tmp_path):
     assert set(refused.value.as_dict()["allowed"]) == {"sweep", "iris"}
 
 
+def test_a_panel_whose_shader_will_not_compile_is_refused_not_filmed(tmp_path,
+                                                                    monkeypatch):
+    """§PW489: a broken shader was filmed as white stills, and the answer said ok."""
+    import os
+
+    from polyweave import offscreen
+
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    try:
+        offscreen.route_for(tmp_path)
+    except PolyweaveError:
+        pytest.skip("no route draws real pixels here")
+    monkeypatch.setattr(panel, "_PANEL_SHADER", panel._PANEL_SHADER.replace(
+        "uniform float glow = 1.0;", "uniform float glow = 1.0;\nuniform float glow;"))
+    source = panels(tmp_path, HOLO)
+    (tmp_path / "project.godot").write_text(
+        'config_version=5\n\n[application]\nconfig/name="panel"\n', encoding="utf-8")
+    with pytest.raises(PolyweaveError) as refused:
+        panel.capture(source, out="ui", root=str(tmp_path))
+    assert refused.value.code == "compose.unfilmed"
+    assert "error" in refused.value.message
+
+
 def test_the_engine_films_each_state_and_each_wipe_step(tmp_path):
     import os
 
