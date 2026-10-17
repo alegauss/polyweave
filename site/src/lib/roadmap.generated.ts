@@ -132,8 +132,8 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW506",
     block: "W",
     symptom: "A kernel or loop module can import a layer and both gates still pass, so the direction the layout states is a hope",
-    why: "Layers still import each other freely, with cycles; Layer.uses must declare each edge and the test refuse others and cycles.",
-    deps: [],
+    why: "Layers still import each other freely, with cycles; Layer.uses must declare each edge, the test refuse others and cycles.",
+    deps: ["PW516"],
   },
   {
     id: "PW507",

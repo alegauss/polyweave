@@ -478,26 +478,31 @@ the swap, and its gate passes.
 
 ### §PW506 The import direction as a test
 
-After the five inversions, the layout has a direction: `surface` may import anything;
-`layers/` and `services/` may import `loop/` and `kernel/`; `loop/` may import
-`kernel/`; `kernel/` imports only itself. `tests/test_layering.py` checks this the way
-`census` already checks the surface. It parses every module with `ast`, including the
-imports inside functions, which is where most of today's reaches are hidden, and fails
-on any import that points the wrong way, naming the module, the line and the layer it
-reached.
+The package direction landed in `tests/test_layering.py`: kernel imports only itself,
+loop the kernel, services the loop and the kernel, a layer those three, surface
+anything, with no allowlist. What is left is one layer importing another.
 
-One layer may not import another, either. `layers/vfx` reading `layers/engine` is a
-dependency the manifest must state (`Layer.uses = ("engine",)`), so `capabilities` can
-say vfx is unavailable when engine is, and the test refuses an import to a layer that is
-not declared. A cycle between layers is refused.
+`Layer.uses = ("engine",)` declares each edge, so `capabilities` can say vfx is
+unavailable when engine is; the test refuses an undeclared import and any cycle. Today's
+graph has three cycles, measured at 73dc9ca:
 
-The test ships with no allowlist. The edges the five lines did not cover are resolved
-here: `integrity` and `runs` read engine and capture, and `trace` reads compose. Each is
-either moved into the layer whose data it reads or turned into a contribution. Whichever
-way it goes, the commit names it.
+- engine to geometry to picture to engine: `engine.port` renders a family of models and
+  builds them with `make.build_one`, so it belongs in geometry.
+- sound to picture to reference to sound, and half of geometry to picture: `mesh_buy`
+  and `sound_buy` import picture only for its paid-service plumbing (`_download`,
+  `_mime`, `_reached`, `sent_bytes`, `AGENT`, `_price`, `_priced`). PW516 moves that
+  into `services/`, which removes both edges.
+- geometry and picture both ways, after PW516: picture uses geometry's 2D outline math
+  (panel), `render` and `cost` (a style family can hold meshes) and `shape.check`
+  (`picture.chosen` picks a picture for a mesh); geometry uses `picture.gate` and
+  `from_world` before buying a mesh. Either the outline math becomes shared below both
+  and `chosen` moves to geometry, or mesh buying stops reading the gate directly.
 
-Done when the test passes on the tree and fails on a fixture module that imports the
-wrong way, and `python tools/gate.py` runs it with the rest.
+`picture.vector` reaching `store._drawn_svg` is picture's own rasterising living in
+store, and moves to picture.
+
+Done when the test refuses an undeclared layer import and a cycle, and passes on the
+tree.
 
 ### §PW507 A layer declares its own codes
 
