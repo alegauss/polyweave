@@ -33,4 +33,5 @@ LAYER = Layer(
         "page.withdraw": "polyweave.layers.picture.page:withdraw",
         "page.boards": "polyweave.layers.picture.page:boards",
     },
+    codes="polyweave.layers.picture.codes",
 )

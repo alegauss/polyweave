@@ -19,4 +19,5 @@ LAYER = Layer(
     parts={
         "brief.read:vfx": "polyweave.layers.vfx.page:read",
     },
+    codes="polyweave.layers.vfx.codes",
 )

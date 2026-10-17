@@ -26,8 +26,17 @@ from . import doors as _doors
 
 # `area.kebab-case`, the namespaces §3 fixes. A code is part of the published contract,
 # so it is checked where it is constructed rather than where it is read.
-_AREAS = tuple(_codes.AREAS)
-_CODE = re.compile(rf"^({'|'.join(_AREAS)})\.[a-z0-9]+(-[a-z0-9]+)*$")
+# The areas are the kernel's and every layer's, which are known only once the layers
+# are walked, so the shape is checked here and the area against the table (§PW507).
+_CODE = re.compile(r"^([a-z]+)\.[a-z0-9]+(-[a-z0-9]+)*$")
+
+
+def _shaped(code: str) -> bool:
+    found = _CODE.match(code)
+    if not found:
+        return False
+    area = found.group(1)
+    return area in _codes.KERNEL_AREAS or area in _codes.AREAS
 
 
 class PolyweaveError(Exception):
@@ -49,10 +58,10 @@ class PolyweaveError(Exception):
         example: str | None = None,
         at: str | None = None,
     ) -> None:
-        if not _CODE.match(code):
+        if not _shaped(code):
             raise ValueError(
                 f"{code!r} is not a code: expected <area>.<kebab-case>, "
-                f"where area is one of {', '.join(_AREAS)}"
+                f"where area is one of {', '.join(_codes.AREAS)}"
             )
         if not _codes.known(code):
             raise ValueError(
@@ -188,6 +197,8 @@ def explain(code: str) -> dict:
         "code": code,
         "area": _codes.area_of(code),
         "about": _codes.AREAS[_codes.area_of(code)],
+        # Which layer declares it, where a layer does rather than the kernel (§PW507).
+        **({"layer": _codes.owner_of(code)} if _codes.owner_of(code) else {}),
         "means": declared.means,
         "when": declared.when,
         "doors": list(declared.doors),

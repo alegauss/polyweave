@@ -155,10 +155,11 @@ class Layer:
     #: Picture measures this layer computes, by name, to the `module:function` called
     #: (image, mask, *, key, **arguments): part of the closed vocabulary all the same.
     pictures: dict[str, str] = field(default_factory=dict)
-    # What later lines contribute to the shared loop, empty until each lands: error
-    # codes (§PW507), config tables (§PW508), census entries (§PW511) and report
-    # sections (§PW505).
-    codes: tuple = ()
+    #: The module holding this layer's `AREAS` and `CODES`, the errors it raises
+    #: (§PW507); the kernel's table is the union.
+    codes: str = ""
+    # What later lines contribute to the shared loop, empty until each lands: config
+    # tables (§PW508) and census entries (§PW511).
     config: tuple = ()
     census: tuple = ()
     reports: tuple = ()

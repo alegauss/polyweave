@@ -504,28 +504,6 @@ store, and moves to picture.
 Done when the test refuses an undeclared layer import and a cycle, and passes on the
 tree.
 
-### §PW507 A layer declares its own codes
-
-`codes.py` holds 464 codes, each with what it means, when it is raised, and its doors.
-`PolyweaveError` refuses a code the table does not declare, and that guarantee is worth
-keeping. What is not worth keeping is one file that every feature edits: it was touched
-by 61 of the last 200 commits under `src/`, more than any other.
-
-Each layer keeps a `codes.py` of its own, holding only its codes and declared in
-`Layer.codes`. The kernel keeps the codes the kernel and the loop raise (`op.*`,
-`config.*`, `spec.*`, `loop.*`, `job.*`). The table `errors.explain` reads is the union,
-built once when the manifest loads. A code declared twice is refused at that moment,
-naming both layers, and a code's prefix must be its layer's name or a prefix the layer
-declares, so `geom.*` stays readable as geometry's.
-
-`explain` without an argument lists every code and now says which layer owns each one.
-With a code, it gives what it gives today. Nothing a caller reads changes; what changes
-is which file a feature edits.
-
-Done when `codes.py` in the kernel holds only kernel and loop codes, each layer's codes
-sit in that layer, `test_errors` and `test_doors` pass, and a fixture layer's code is
-raised and explained with no kernel file touched.
-
 ### §PW508 A layer declares the tables it reads from polyweave.toml
 
 `config.py` resolves a value (the project file, then the environment, then the default),

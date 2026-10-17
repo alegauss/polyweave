@@ -14,6 +14,8 @@ it lives there so the lookup can refuse in the same shape as everything else.
 
 from __future__ import annotations
 
+import functools
+import importlib
 from dataclasses import dataclass, field
 
 from .doors import Blank, door
@@ -29,45 +31,23 @@ class Code:
 
 
 #: What each area is about, so an unknown code can at least be placed.
-AREAS: dict[str, str] = {
-    "render": "producing a picture from a scene",
-    "mesh": "building or transforming geometry",
+KERNEL_AREAS: dict[str, str] = {
     "fetch": "asking the paid service for something",
     "post": "what an operation asserts about its own output",
     "config": "resolving a value from a call, a project file or a default",
     "job": "long work held by a handle",
-    "geom": "a shape declared as data",
     "spec": "an acceptance spec and its vocabulary",
     "op": "an operation's own arguments, against what it declared",
     "prov": "the record written beside an artefact, and the cache key it defines",
-    "compose": "putting an asset where it will actually be seen",
     "search": "looking for parameter values that satisfy a spec",
-    "engine": "running a scene script and reading its verdict",
-    "units": "the scale an asset is baked at, against the one the engine draws it at",
-    "capture": "the environment a picture of the running game is taken in",
-    "game": "a game held open between an agent's calls",
-    "driver": "the driver inside a held game, answering one command",
-    "rig": "fitting a skeleton to a mesh, and moving a pose between skeletons",
-    "clip": "motion over time, as something with a name and a duration",
-    "texture": "the pixels a service painted, and what has to come back out of them",
     "loop": "what one asset cost to make, each way",
     "verdict": "the members a person's verdict is laid out from and carried to",
-    "style": "what a project's pictures look like, and the canon a person grows",
-    "world": "a game's names, factions and characters, declared beside its prose",
-    "words": "the text a player reads, held to the world it is set in",
     "adopt": "a project's adoption: its config, its server and its agent's section",
-    "sound": "the audio a game declares it needs, and where each file lands",
-    "music": "a score written as a source, compiled to notes and checked",
-    "vfx": "a particle or ribbon effect declared as data and built for the engine",
-    "store": "a store's capsule set, cut from one key art and a logo",
     "review": "the local page a person answers a sitting on, and the server behind it",
-    "kits": "a part every game repeats, made once in the plugin, proved and installed",
-    "tables": "a game's data tables, held to the schema of one row",
-    "video": "a teaser cut together from captured runs, scored and encoded",
     "layer": "a medium's own declaration, which the kernel finds by walking layers/",
 }
 
-CODES: dict[str, Code] = {
+KERNEL_CODES: dict[str, Code] = {
     # -- job: long work held by a handle ------------------------------------
     "job.unknown": Code(
         means="no job with that handle exists under this project's work directory",
@@ -147,39 +127,6 @@ CODES: dict[str, Code] = {
         when="an exception inside the work, whose traceback is in detail and never in "
         "the message",
         doors=("read the job's log", "read the traceback in detail"),
-    ),
-    # -- mesh: building or transforming geometry ------------------------------
-    "mesh.too-few-vertices": Code(
-        means="there are not enough vertices to determine a frame",
-        when="a normalisation of an empty or nearly empty mesh",
-        doors=("check that the file imported",),
-    ),
-    "mesh.not-ready": Code(
-        means="a mesh misses its engine-ready bar on a bound only a person can fix",
-        when="normalise.ingest with ready= whose spec bounds holes, non-manifold "
-        "edges, materials or texture bytes the written mesh exceeds, after its seams "
-        "were welded and its triangles reduced to the ceiling (§PW447)",
-        doors=("repair the mesh by hand", "buy it again",
-               "move the bound if a person accepts the mesh as it is"),
-    ),
-    "mesh.bad-frame": Code(
-        means="a mesh was asked to be sized on an axis or held from an origin that "
-        "does not exist",
-        when="size_on other than height, length or longest, or origin other than base "
-        "or centre",
-        doors=("name one of the axes", "name one of the origins"),
-    ),
-    "mesh.degenerate": Code(
-        means="the mesh is flat or collinear, so its own axes say nothing about which "
-        "way it faces",
-        when="a normalisation of a plane, a line, or a mesh with no height",
-        doors=("orient it against a reference drawing", "state the rotation"),
-    ),
-    "mesh.ambiguous-forward": Code(
-        means="every orientation matches the reference equally well",
-        when="a symmetric mesh, or a reference that does not distinguish its front; "
-        "guessing which way is forward is a judgement this does not make",
-        doors=("give a reference that shows the front", "state the rotation"),
     ),
     # -- post: what an operation asserts about its own output ---------------
     "post.unknown-output": Code(
@@ -293,12 +240,6 @@ CODES: dict[str, Code] = {
         means="every pixel of the texture is below the alpha floor",
         when="a bake whose source had no coverage at all",
         doors=("check the UVs and the source",),
-    ),
-    "texture.not-pixels": Code(
-        means="what was handed over is not a texture",
-        when="an array that is not height x width x channels, where a scrub or a mark "
-        "count was asked for",
-        doors=("pass the texture as floats in 0..1, with at least three channels",),
     ),
     "post.tolerance-unstated": Code(
         means="a check that needs a tolerance was given none",
@@ -519,131 +460,6 @@ CODES: dict[str, Code] = {
             "name the ceiling after a declared service",
         ),
     ),
-    # -- render: producing a picture from a scene -----------------------------
-    "render.no-renderer": Code(
-        means="Blender is not importable here, so nothing can render",
-        when="the bpy module is not installed in the interpreter running the work",
-        doors=("install bpy", "point [paths] blender at one that runs the worker"),
-    ),
-    "render.unknown-rung": Code(
-        means="the rung named is not one of the three the ladder renders",
-        when="a project renames a rung, or a caller misspells one",
-        doors=("name sphere, preview or final",),
-    ),
-    "render.rung-disabled": Code(
-        means="the question needs a rung this project does not enable",
-        when="a measure that needs the real mesh on a project that enables only sphere",
-        doors=("add the rung to [render] rungs", "ask a cheaper question"),
-    ),
-    "render.no-rungs": Code(
-        means="the project enables no rungs at all",
-        when="[render] rungs is empty",
-        doors=("name some of sphere, preview and final",),
-    ),
-    "render.no-samples": Code(
-        means="no sample count is declared for the rung being rendered",
-        when="a project names a rung in [render] rungs and omits it from samples",
-        doors=("set samples for that rung",),
-    ),
-    "render.placed-off-front": Code(
-        means="a rectangle with a place was asked for from a camera not in front",
-        when="covers given as [x0, y0, x1, y1] with a non-zero azimuth or elevation, "
-        "where the corners would land wherever the turn put them",
-        doors=("look straight on", "give covers as [width, height]"),
-    ),
-    "render.size-with-covers": Code(
-        means="a size was asked for where a world rectangle already decides it",
-        when="size given beside covers; the rectangle and its scale fix both axes",
-        doors=("leave size out", "change pixels_per_unit instead"),
-    ),
-    "render.no-mesh": Code(
-        means="the rung renders the real mesh and there is none to render",
-        when="no model was named, the file is not there, or it imported empty",
-        doors=("pass the model", "ask a question the sphere rung carries"),
-    ),
-    "style.references-need-3": Code(
-        means="a family with style references was asked for on a model that takes none",
-        when="[style.<family>] names references and the call asked 4.0",
-        doors=("ask model 3.0, the one that takes a reference picture",
-               "empty references to draw on 4.0 from the words alone"),
-    ),
-    "style.references-take-text": Code(
-        means="style references go with a text prompt, and the call gave structure",
-        when="a family with references was asked for with json_prompt",
-        doors=("pass prompt as text; the skeleton and palette are written into it",),
-    ),
-    "style.no-reference": Code(
-        means="a style reference names a picture the family's canon does not hold",
-        when="references lists a file name that is not in the canon directory",
-        doors=("name a picture the canon holds", "admit it to the canon first"),
-    ),
-    "style.references-too-large": Code(
-        means="the reference pictures are more than the service takes in one request",
-        when="their bytes together pass the 50 MB the service allows",
-        doors=("name fewer or smaller canon pictures in references",),
-    ),
-    "render.no-pass": Code(
-        means="a pass named in `after` is not a function in a file under the project",
-        when="the path is wrong, outside the project, or the function is not in it",
-        doors=("name it as path/to/file.py:function, under the project",),
-    ),
-    "render.pass-failed": Code(
-        means="a project's own pass raised while painting the render",
-        when="the pass's code assumed a picture, an argument or a module it lacks",
-        doors=("read the detail for where it raised, and fix the pass",
-               "drop it from after to see the render without it"),
-    ),
-    "render.unknown-format": Code(
-        means="the mesh file is not in a format this reads",
-        when="an .obj or another format where a .blend, glTF or FBX was expected",
-        doors=("give it a .blend", "export as .glb, .gltf or .fbx"),
-    ),
-    "render.unknown-primitive": Code(
-        means="the primitive named does not exist",
-        when="a rung asks for a shape other than the sphere a surface is read on",
-        doors=("use the sphere",),
-    ),
-    "render.bad-ratio": Code(
-        means="a decimation ratio is not a fraction of one",
-        when="a preview rung is given a ratio at or below zero, or above one",
-        doors=("pass a ratio above 0 and at most 1",),
-    ),
-    "render.no-material": Code(
-        means="this Blender has no standard shader to build a material on",
-        when="a build without the Principled BSDF node",
-        doors=("render with a Blender that ships the standard shader nodes",),
-    ),
-    "render.unknown-material-field": Code(
-        means="a material names an input the shader does not have",
-        when="a misspelled Principled BSDF socket, refused rather than dropped",
-        doors=("name a socket the shader declares",),
-    ),
-    "render.no-scale": Code(
-        means="a picture off the game's grid was given a rectangle and no scale",
-        when="render.bake with on_grid=false and covers, without pixels_per_unit",
-        doors=("pass pixels_per_unit, the scale the picture is drawn at",),
-    ),
-    "render.missing-picture": Code(
-        means="a material wears a picture that is not on disk",
-        when="a declared material's `image` names a path nothing is at",
-        doors=("name the picture as a path under the project",),
-    ),
-    # -- compose: an asset where it will be seen ------------------------------
-    "compose.no-tiles": Code(
-        means="a contact sheet was asked for with nothing to put on it",
-        when="an empty list of assets",
-        doors=("pass the asset and the siblings it is seen beside",),
-    ),
-    "compose.unknown-anchor": Code(
-        means="the anchor named is not one an asset can be placed by",
-        when="a placement asking for something other than footprint or centre",
-        doors=("anchor on the footprint, or on the centre",),
-    ),
-    "compose.outside": Code(
-        means="the asset lands entirely outside the capture it was placed into",
-        when="a position in the coordinates of a different capture, or of the asset",
-        doors=("place it within the capture's own pixels",),
-    ),
     # -- fetch: asking the paid service for something -------------------------
     "fetch.no-reference": Code(
         means="there is no drawing to check the returned shape against",
@@ -785,41 +601,6 @@ CODES: dict[str, Code] = {
         "characters for ElevenLabs unless its table says otherwise (§PW482)",
         doors=("write a longer sample in the voice, or pass one as sample",),
     ),
-    "world.no-voice": Code(
-        means="a line was asked of an entity the world gives no voice id",
-        when="sound.speak with entity= where [entity.<id>.voice] has no id (§PW321); "
-        "it is refused rather than spoken in a voice nobody chose for it",
-        doors=("have a person choose the voice and write its id in the world",),
-    ),
-    "world.voice-unchosen": Code(
-        means="a voice was to be kept that no person accepted",
-        when="voice.choose on a file that is not a voice.design preview, or one with "
-        "no person's accept on its bytes (§PW321); an agent never picks a voice",
-        doors=("let a person accept one on the review page voice.design lays out",),
-    ),
-    "words.no-fonts": Code(
-        means="the project names no font, or one that cannot be read, to hold lines to",
-        when="words.glyphs with no [words] fonts, a path with nothing there, or a "
-        "file whose character map is not one this reads (§PW335)",
-        doors=('set [words] fonts = [{ path = "fonts/Game.ttf" }]',),
-    ),
-    "words.no-voiced": Code(
-        means="the project says nowhere for a spoken line to land",
-        when="voice.lines with no [words] voiced, the path each take is written to "
-        "(§PW322)",
-        doors=('set [words] voiced = "audio/voice/{locale}/{key}.ogg"',),
-    ),
-    "sound.no-speech-engine": Code(
-        means="a line was asked to be drafted and no local speech engine is installed",
-        when="sound.speak rung=draft with neither piper (and a model) nor espeak-ng "
-        "on PATH (§PW324); it is refused rather than moved to the paid rung",
-        doors=("install espeak-ng, or piper with a model in [voice] draft_model",),
-    ),
-    "world.voice-mismatch": Code(
-        means="a call named a voice other than the one the world gives its entity",
-        when="sound.speak with both entity= and a voice= that is not the entity's",
-        doors=("leave voice unset to speak in the entity's own",),
-    ),
     "fetch.service-unconfigured": Code(
         means="the service named cannot be reached: no base, or no key in this "
         "environment",
@@ -885,211 +666,6 @@ CODES: dict[str, Code] = {
             "ask again with a clearer reference",
         ),
     ),
-    # -- style: what a project's pictures look like ---------------------------
-    "style.family-unnamed": Code(
-        means="the project declares several styles and the call named no family",
-        when="a picture bought with [style.<family>] tables and no family; a sprite "
-        "held to a title screen's look is the mistake the families exist to prevent",
-        doors=("pass the asset's family",),
-    ),
-    "style.unknown-family": Code(
-        means="no style is declared for the family named",
-        when="a misspelled family, or one whose [style.<family>] was never written",
-        doors=("name a declared family", "declare [style.<family>]"),
-    ),
-    "style.needs-structure": Code(
-        means="a style is carried by a structured prompt, and the call gave text",
-        when="a picture asked for in a family with a text prompt, which the service "
-        "would rewrite and which has no place for a palette or a style block",
-        doors=("pass json_prompt",),
-    ),
-    "style.no-subject": Code(
-        means="the picture has no pixel above the alpha floor, so there is no look "
-        "to measure",
-        when="an empty or fully transparent frame given to style.drift",
-        doors=("check the picture is the asset",),
-    ),
-    "style.not-in-canon": Code(
-        means="the picture named is not in the family's canon",
-        when="a removal from the review page for a picture already withdrawn, or one "
-        "in another family's canon",
-        doors=("name a picture the board shows",),
-    ),
-    "style.not-a-candidate": Code(
-        means="the picture is not one the family's candidates point at",
-        when="an admission from the review page of a file no [style] candidates glob "
-        "matches, or one the canon already holds",
-        doors=("admit a candidate the board lists",
-               "point [style.<family>] candidates at the pictures a person may admit"),
-    ),
-    "style.no-canon": Code(
-        means="the family has no canon directory, so nothing can be admitted to it",
-        when="a verdict naming a canon family whose [style] declares no canon",
-        doors=("set canon under the family's [style]",),
-    ),
-    "style.too-few-to-train": Code(
-        means="a family's canon holds fewer pictures than Scenario trains on",
-        when="style.train on a canon of fewer than five approved pictures (§PW450)",
-        doors=("admit more pictures to the canon by verdict",),
-    ),
-    "style.untrained": Code(
-        means="a family's canon has trained no model to draw a picture from",
-        when="picture.buy on a Scenario service before style.train (§PW450)",
-        doors=("train one with style.train",),
-    ),
-    "style.bad-rig": Code(
-        means="a family's rig names a setting the render does not take",
-        when="style.drift or the canon board on a mesh, where [style] rig sets a key "
-        "render.bake has no parameter for (§PW451)",
-        doors=("set only render.bake's camera and light settings, rung and seen",),
-    ),
-    # -- sound: the audio a game declares it needs -----------------------------
-    "sound.family-unnamed": Code(
-        means="the project declares several sound families and the call named none",
-        when="a read of the declared audio with [sound.<family>] tables and no family",
-        doors=("pass the family", "leave family out to read every one"),
-    ),
-    "sound.unknown-family": Code(
-        means="no sound family of that name is declared",
-        when="a misspelled family, or one whose [sound.<family>] was never written",
-        doors=("name a declared family", "declare [sound.<family>]"),
-    ),
-    "sound.cue-twice": Code(
-        means="two cues land on one file, so making one would overwrite the other",
-        when="one cue name in two families that share a folder and a format",
-        doors=("rename one cue", "give one family its own folder"),
-    ),
-    "sound.no-ffmpeg": Code(
-        means="cutting a loop needs ffmpeg to decode the track and encode the loop",
-        when="sound.loop on a machine with no ffmpeg on PATH",
-        doors=("put ffmpeg on PATH, with libvorbis for an Ogg loop",),
-    ),
-    "sound.no-loop-point": Code(
-        means="no bar in the track's second half comes back to its opening's level",
-        when="sound.loop on a track cut short, or one that never returns to its intro",
-        doors=("give the whole track, intro to outro",),
-    ),
-    "sound.loop-gap": Code(
-        means="the loop came back from its encoder a different length than it was cut",
-        when="an encoder that pads or trims, which is a gap or an overlap at the seam",
-        doors=("write the loop as .wav", "use an encoder that keeps the length"),
-    ),
-    "sound.unknown-cue": Code(
-        means="no [sound] family declares a cue of that name",
-        when="a sound bought for a cue that was never added to a family's cues",
-        doors=("add the cue to a family", "pass out, a path, instead"),
-    ),
-    "sound.no-source": Code(
-        means="the effects file is missing, not TOML, or holds no [effect.<name>]",
-        when="a path to no file, or a *.sfx.toml with a stray table",
-        doors=("name a *.sfx.toml under the project", "write [effect.<name>] tables"),
-    ),
-    "sound.bad-effect": Code(
-        means="an effect names a key, generator or value sfxr does not have",
-        when="generator = \"coin\" for pickup, base_freq = 2, or a misspelled key",
-        doors=("use the name the remedy offers", "keep a parameter within its range"),
-    ),
-    "sound.no-draw": Code(
-        means="no seed within the tries gave a length inside the effect's bounds",
-        when="a min_duration longer than the generator ever draws",
-        doors=("widen the bounds", "pin env_sustain and env_decay"),
-    ),
-    "sound.no-encoder": Code(
-        means="the effect's cue is declared in a format that needs ffmpeg, and there "
-        "is none",
-        when="an effect for a cue whose family declares ogg, on a machine without "
-        "ffmpeg",
-        doors=("put ffmpeg on PATH", "declare the family's format as wav"),
-    ),
-    # -- video: a teaser cut from captured runs (§PW429) -------------------------
-    "video.no-source": Code(
-        means="the cut named is not there, or is not TOML",
-        when="video.cut given a path with no file, or a file that does not parse",
-        doors=("name a *.cut.toml under the project", "fix the line the detail names"),
-    ),
-    "video.bad-cut": Code(
-        means="a cut declares something it cannot hold",
-        when="a key the cut does not take, a size not two even numbers, no clip, a "
-        "clip with no run or length, a first clip fading in, a fade as long as a clip "
-        "it joins, a fade_out the whole teaser, music not there, or an out not an .mp4",
-        doors=("fix the key the refusal names",),
-    ),
-    "video.no-sequence": Code(
-        means="a clip names a folder capture.movie did not write",
-        when="a clip's from holds no sequence.json",
-        doors=("capture the run with capture.movie and name the folder it wrote",),
-    ),
-    "video.short-sequence": Code(
-        means="a clip asks more of a run than it holds",
-        when="start plus length past the run's frames at its rate",
-        doors=("shorten the clip", "start it earlier", "capture a longer run"),
-    ),
-    "video.no-ffmpeg": Code(
-        means="ffmpeg or ffprobe is not on PATH",
-        when="video.cut, or a video bound in a spec, on a machine without ffmpeg",
-        doors=("install ffmpeg and put it on PATH",),
-    ),
-    "video.encode-failed": Code(
-        means="ffmpeg did not write the teaser",
-        when="ffmpeg exits with an error; the detail is what it said",
-        doors=("read the detail",),
-    ),
-    "video.unreadable": Code(
-        means="a video is not there, or is not one ffprobe reads",
-        when="a video bound in a spec on a path with no file, or a file that is not a "
-        "video",
-        doors=("cut it again with video.cut",),
-    ),
-    # -- music: a score as a source, compiled and checked ----------------------
-    "music.unreadable": Code(
-        means="the score is missing or is not TOML",
-        when="a path to no file, or a source with a syntax error on the line named",
-        doors=("name a *.music.toml under the project", "fix the syntax on that line"),
-    ),
-    "music.no-reference": Code(
-        means="a score names a reference track that is not a file under the project",
-        when="[music] reference points at a path with nothing there",
-        doors=("name a file under the project",
-               "bring another project's in with provenance.borrow first"),
-    ),
-    "music.invalid": Code(
-        means="the score has problems, so it compiles to nothing a render may play",
-        when="music.to_midi on a source music.validate would not pass",
-        doors=("call music.validate and fix every problem it names",),
-    ),
-    # -- store: a store's capsules from one key art -------------------------------
-    "store.unknown": Code(
-        means="no store by that name, and no store file at that path",
-        when="a misspelled store, or a project's store file that is not there",
-        doors=("name a store this plugin knows", "pass a store file's path"),
-    ),
-    "store.bad-shape": Code(
-        means="a store file's shape has no size in pixels or an unknown logo rule",
-        when="a size that is not two whole numbers, or a logo other than centre, "
-        "lower, only or none",
-        doors=("write the shape as the remedy says",),
-    ),
-    "store.bad-focus": Code(
-        means="the focus is not a point inside the key art",
-        when="a focus that is not two fractions from 0 to 1",
-        doors=("pass focus as [x, y], fractions of the key art",),
-    ),
-    "store.no-picture": Code(
-        means="the key art or the logo is not there",
-        when="a path to no file",
-        doors=("name the picture as a path under the project",),
-    ),
-    "store.no-rasteriser": Code(
-        means="a vector logo needs the engine to draw it, which is missing or failed",
-        when="an .svg logo with no Godot binary, or an SVG the engine cannot read",
-        doors=("set $GODOT or [paths] godot", "give the logo as a PNG with alpha"),
-    ),
-    "store.too-small": Code(
-        means="the key art or logo is smaller than a shape needs, and nothing upscales",
-        when="a key art narrower than a store's widest capsule, or a logo drawn larger "
-        "than it is",
-        doors=("give a larger key art or logo",),
-    ),
     # -- verdict: the members a verdict is laid out from --------------------------
     "verdict.judged-twice": Code(
         means="two layers' judges claim one member, so its verdict has two homes",
@@ -1135,182 +711,10 @@ CODES: dict[str, Code] = {
         when="polyweave changed while `python -m polyweave review` was serving",
         doors=("send the same request again in a moment; the page does so itself",),
     ),
-    # -- vfx: an effect declared as data and built for the engine -----------------
-    "vfx.no-source": Code(
-        means="there is no effects file, or it holds no [effect.<name>] tables",
-        when="a path to no file, a file that is not TOML, or one of stray tables",
-        doors=("name a *.vfx.toml under the project",
-               "write each effect as [effect.<name>] with its amount and lifetime"),
-    ),
     "review.not-served": Code(
         means="the picture named is not one the page may show",
         when="a path outside the project, or a file that is not a picture or record",
         doors=("name a picture by its path under the project root",),
-    ),
-    "vfx.unshipped": Code(
-        means="the scenes would land beside a declaration the game's export leaves out",
-        when="no out and no [paths] vfx, with the declaration under a .gdignore or a "
-        "preset's exclude_filter; the editor would load them and the shipped game not",
-        doors=("pass out, a folder the game ships",
-               "set [paths] vfx in polyweave.toml"),
-    ),
-    "vfx.bad-effect": Code(
-        means="an effect's key or value means nothing, or the named one is not there",
-        when="a misspelled key, an amount of 0, a colour not written #rrggbb, a kind "
-        "other than particles or ribbon",
-        doors=("write the value the remedy describes",),
-    ),
-    "vfx.unwatched": Code(
-        means="the engine could not play the effect where its frames could be kept",
-        when="no display and no offscreen route, or a run that failed; the log says",
-        doors=("run it where a display is", "read the log the detail names"),
-    ),
-    "music.bad-format": Code(
-        means="a render asked for a format it does not write",
-        when="formats naming mp3 or flac, or an empty list",
-        doors=("ask for wav, ogg or both",),
-    ),
-    "music.unknown-key": Code(
-        means="a table or key the score format does not have",
-        when="a misspelled key such as tempo for bpm, or a stray table",
-        doors=("use the key the remedy names",),
-    ),
-    "music.missing": Code(
-        means="a key the score must state is absent",
-        when="a score with no title, bpm or form, or a track with no instrument",
-        doors=("write the key the problem names",),
-    ),
-    "music.bad-value": Code(
-        means="a value of the wrong type or outside its range",
-        when="bpm as a string, a meter of [4, 3], a velocity of 200, a track name "
-        "used twice",
-        doors=("write the value the remedy describes",),
-    ),
-    "music.unknown-section": Code(
-        means="the form, loop_from or a track's play names a section never declared",
-        when="form = [\"A\", \"B\"] with only [section.A], or a typo in play",
-        doors=("declare [section.<name>] with its bars", "name a declared section"),
-    ),
-    "music.unknown-pattern": Code(
-        means="a track plays a pattern [pattern] does not hold",
-        when="play = { A = \"lead_a\" } with no lead_a under [pattern]",
-        doors=("add the pattern", "name one [pattern] holds"),
-    ),
-    "music.bad-pattern": Code(
-        means="a pattern does not parse as mini-notation, or plays drums on a pitched "
-        "track",
-        when="an unclosed bracket, a note with no octave such as c instead of c4, or "
-        "bd in a lead's pattern",
-        doors=("fix the step at the character named", "set drums = true on the track"),
-    ),
-    "music.unknown-instrument": Code(
-        means="a track names an instrument no engine plays, or a patch never declared",
-        when="piano instead of gm:0, surge:lead with no [patch.lead], or a drum kit "
-        "on a track that is not drums",
-        doors=("write surge:<patch>, gm:<program> or drums:<kit>",
-               "declare [patch.<name>]"),
-    ),
-    "music.no-engine": Code(
-        means="an engine or library the score renders through is not here",
-        when="Pedalboard not installed, no FluidSynth on PATH, [paths] soundfont "
-        "unset, or Surge XT not in its usual plug-in folder",
-        doors=("install the engine the message names",
-               "set its [paths] entry to where it is"),
-    ),
-    "music.bad-kit": Code(
-        means="a chip kit's file is missing or unreadable, or lacks a hit it is played",
-        when="[kit.chip] naming a file that is not there, or a pattern playing oh "
-        "where the kit has only bd, sd and hh",
-        doors=("write the kit's *.sfx.toml", "add the missing [effect.<drum>]"),
-    ),
-    "music.licence-undeclared": Code(
-        means="the render plays through a library the project declared no licence for",
-        when="a SoundFont in [paths] soundfont with no [licence.\"<its file name>\"]",
-        doors=('declare [licence."<file>"] with its terms and any credit it requires',),
-    ),
-    "music.unknown-parameter": Code(
-        means="a patch sets a parameter Surge XT does not have",
-        when="a misspelled name, or one that exists only under another oscillator type "
-        "than the patch set first",
-        doors=("use the name the remedy offers", "set the _type it depends on first"),
-    ),
-    "music.out-of-range": Code(
-        means="a note falls outside MIDI's 0 to 127",
-        when="a pattern written an octave or two too high or low",
-        doors=("move the note into range",),
-    ),
-    "music.overlap": Code(
-        means="one track strikes the same pitch twice at one tick",
-        when="a stack such as [c4, c4], which MIDI cannot hold as two notes",
-        doors=("remove the duplicate from the stack",),
-    ),
-    # -- world: a game's names, factions and characters -----------------------
-    "world.none": Code(
-        means="no *.world.toml was found where the call looked",
-        when="a project that has not declared its world yet, or a world path "
-        "misspelled",
-        doors=("write a *.world.toml beside the world's prose", "name the file"),
-    ),
-    "world.several": Code(
-        means="the project holds several world files and the call named none",
-        when="a world read or validated without world= in a project with more than "
-        "one *.world.toml",
-        doors=("pass world",),
-    ),
-    "world.malformed": Code(
-        means="the world file is not readable as TOML",
-        when="a syntax error, or one entity's table written twice",
-        doors=("fix the syntax the detail points at",),
-    ),
-    "world.unknown-key": Code(
-        means="the world file declares a table, entity field or rule a world does "
-        "not have",
-        when="a misspelled field, or a table other than [entity.<id>] and [rules]",
-        doors=("use a key the message lists",),
-    ),
-    "world.missing-field": Code(
-        means="an entity lacks a field every entity carries",
-        when="an entity with no name or no kind",
-        doors=("write the field under the entity's table",),
-    ),
-    "world.bad-value": Code(
-        means="a field of the world file holds a value of the wrong type",
-        when="a number where a name belongs, an empty name, or a rule that is not "
-        "a whole number or a list of ids",
-        doors=("write the value in the shape the message gives",),
-    ),
-    "world.bad-kind": Code(
-        means="an entity's kind is not one a world knows",
-        when="a kind other than place, faction, character, enemy or item",
-        doors=("make it one of the five kinds",),
-    ),
-    "world.duplicate-name": Code(
-        means="two entities share the name a player reads or the code the scripts use",
-        when="a character and a place both called the same thing, or a copied entity "
-        "whose name was never changed",
-        doors=("give one of them another name",),
-    ),
-    "world.unknown-faction": Code(
-        means="an entity belongs to a faction no entity of kind faction declares",
-        when="a misspelled faction, or one never written as an entity",
-        doors=("declare the faction as an entity", "name a declared faction"),
-    ),
-    "world.unknown-family": Code(
-        means="an entity is held to a style family polyweave.toml does not declare",
-        when="a family misspelled in the world file, or one whose [style.<family>] "
-        "was never written",
-        doors=("declare [style.<family>]", "name a declared family"),
-    ),
-    "world.unknown-entity": Code(
-        means="an id names no entity the world declares",
-        when="world.read asked for an entity that is not there, or a rule naming one",
-        doors=("name a declared entity", "declare [entity.<id>]"),
-    ),
-    "world.family-mismatch": Code(
-        means="a purchase drawn from an entity named a style family other than the one "
-        "the world holds the entity to",
-        when="picture.buy with entity and a family the entity's style is not",
-        doors=("leave family unset", "pass the entity's own family"),
     ),
     # -- adopt: an adoption, checked (§PW220) --------------------------------
     "adopt.not-adopted": Code(
@@ -1374,66 +778,6 @@ CODES: dict[str, Code] = {
         doors=("move it onto the call the finding names",
                "keep it under [adoption] own with the reason"),
     ),
-    # -- words: the text a player reads ---------------------------------------
-    "words.no-table": Code(
-        means="polyweave.toml names no string table, so there is no text to check",
-        when="words.check in a project whose text is still literals in its scripts",
-        doors=("move the text into Godot's translation CSV and set [words] table",),
-    ),
-    "words.no-canon": Code(
-        means="polyweave.toml names no lines canon, so a verdict on a line has nowhere "
-        "to be kept",
-        when="words.sheet, or a verdict on a line, before [words] canon is set",
-        doors=("set [words] canon to a JSON file under the project",),
-    ),
-    "words.unreadable-table": Code(
-        means="the string table is missing, or has no header naming keys and a locale",
-        when="a moved or misspelled [words] table, or a CSV with no header row",
-        doors=("write the CSV there", "correct [words] table"),
-    ),
-    "words.unreadable-copy": Code(
-        means="a file [words] copy names cannot be read as copy",
-        when="no file at the path, a suffix other than .md, .markdown, .html, .htm or "
-        ".txt, or no locale named for it",
-        doors=("correct the path or its locale in [words] copy",),
-    ),
-    "words.unknown-name": Code(
-        means="a line names something with a capitalised word the world shows as no "
-        "name",
-        when="an old name left on screen after a rename, or a word written in capitals "
-        "that is not a name at all",
-        doors=(
-            "use the world's name",
-            "add the word to [words] ordinary",
-            "declare it in the world",
-        ),
-    ),
-    "words.code-name": Code(
-        means="a line shows an entity's code name, which the scripts use and a player "
-        "never should",
-        when="a key's text copied from the code rather than the world's name",
-        doors=("write the name the world declares",),
-    ),
-    "words.too-long": Code(
-        means="a line is longer than the world's [rules] longest_line",
-        when="a long sentence, often in the locale whose words are longest",
-        doors=("shorten it", "break it with \\n"),
-    ),
-    "words.unknown-speaker": Code(
-        means="a line's speaker is no entity the world declares",
-        when="a misspelled speaker id, or a character not yet in the world",
-        doors=("name a declared entity", "declare [entity.<id>]"),
-    ),
-    "words.silent-speaks": Code(
-        means="a line is given to an entity the world says never speaks",
-        when="dialogue written for a character the world keeps silent",
-        doors=("give the line to another speaker", "take it out of [rules] silent"),
-    ),
-    "words.hidden-name": Code(
-        means="a line shows a name the world keeps unshown",
-        when="an unnamed character named on screen",
-        doors=("refer to it without its name", "take it out of [rules] unshown"),
-    ),
     # -- search: looking for values that satisfy a spec -----------------------
     "search.unknown-producer": Code(
         means="no layer declares a producer by that name, so nothing makes a sample",
@@ -1494,268 +838,6 @@ CODES: dict[str, Code] = {
         calls=(
             door("calibrate.run", spec=Blank("the spec"), accepted=Blank("the render")),
         ),
-    ),
-    # -- engine: running a scene script and reading its verdict ---------------
-    # -- game: a game held open between an agent's calls ----------------------
-    "game.not-listening": Code(
-        means="the game never said where its driver listens",
-        when="a main scene that fails to load, or a game that quits before its first "
-        "frame",
-        doors=("read the log the refusal names",),
-    ),
-    "game.no-session": Code(
-        means="no open session has that name in this project",
-        when="a session closed, one that idled out, or one from another project",
-        doors=("open the game again",),
-    ),
-    "game.gone": Code(
-        means="the game behind the session stopped answering",
-        when="a crash, a script that quit, or [driving] idle seconds with no call",
-        doors=("read the log", "open the game again"),
-    ),
-    "game.bad-target": Code(
-        means="the call did not say what to act on, or said it two ways",
-        when="a query with no path, group or class, or an input with none of its kinds",
-        doors=("give exactly one of the targets the operation lists",),
-    ),
-    "game.no-flow": Code(
-        means="there is no flow this driver can replay at that path",
-        when="a flow not yet kept, a path relative to somewhere else, or a flow kept "
-        "in an older format",
-        doors=("keep the flow with game.keep",),
-    ),
-    "game.flow-broke": Code(
-        means="a flow being re-keyed broke on a step, so nothing was written",
-        when="game.rekey on a flow the game no longer follows",
-        doors=("replay it with game.replay and mend it first",),
-    ),
-    "game.driver-exported": Code(
-        means="an export preset would put the driver into a release",
-        when="a preset exporting all resources with no exclusion for the addon, or one "
-        "whose include filter pulls it in",
-        doors=('add "addons/polyweave_driver/*" to the preset\'s exclude_filter',),
-    ),
-    "game.driver-autoloaded": Code(
-        means="an autoload loads the driver in every run of the game",
-        when="the driver registered as an autoload by hand, when it is meant to be "
-        "launched with --script",
-        doors=("remove the autoload from project.godot",),
-    ),
-    "game.part-not-licensed": Code(
-        means="a file in a sold game was made on a plan licensing it non-commercially",
-        when="game.release_check where [project] sells and a record's plan is free, "
-        "as the service said or [service] plan declared (§PW448)",
-        doors=("make it again on a paid plan", "set [project] sells = false"),
-    ),
-    "game.driver-in-pack": Code(
-        means="an exported pack holds the driver's files",
-        when="a pack exported before the preset excluded the addon",
-        doors=("exclude the addon from the preset and export again",),
-    ),
-    "game.pack-unread": Code(
-        means="the pack cannot be read: its directory is encrypted, it is no Godot "
-        "pack, or its format is older than 4",
-        when="a release exported with directory encryption on, or a file that is not "
-        "a .pck",
-        doors=("rely on the preset check", "export without directory encryption"),
-    ),
-    "game.pack-unwritten": Code(
-        means="game.pack's export wrote no pack (§PW470)",
-        when="a preset name export_presets.cfg does not hold, or an export Godot "
-        "abandoned",
-        doors=("check the preset's name", "read what Godot printed in the detail"),
-    ),
-    "game.no-pack": Code(
-        means="there is no exported pack at the path given",
-        when="a release not yet exported, or a path relative to somewhere else",
-        doors=("export first", "check the presets alone by leaving pack out"),
-    ),
-    "game.refused": Code(
-        means="the driver refused a command without naming why",
-        when="a driver older than this plugin",
-        doors=("install the driver again with godot.install",),
-    ),
-    # -- driver: the driver inside a held game --------------------------------
-    "driver.bad-token": Code(
-        means="the token does not match the one the driver printed",
-        when="a session file from an earlier run of the game",
-        doors=("open the game again",),
-    ),
-    "driver.bad-command": Code(
-        means="a command the driver does not know, or one missing a field",
-        when="a caller written against another version of docs/specs/driving.md",
-        doors=("read the commands in docs/specs/driving.md",),
-    ),
-    "driver.no-node": Code(
-        means="the path, group or class finds nothing in the running game",
-        when="a node not yet created, or a path relative to the wrong node",
-        doors=("query a parent to see what is there", "wait for the node first"),
-    ),
-    "driver.no-method": Code(
-        means="the node has no method of that name",
-        when="a setup method the game does not expose",
-        doors=("call a method the node declares",),
-    ),
-    "driver.no-picture": Code(
-        means="the game draws nothing, so there is no picture to save",
-        when="a shot in a session opened headless",
-        doors=("open the game with display",),
-    ),
-    "driver.shot-not-written": Code(
-        means="the shot was asked for and no file was written",
-        when="a folder that cannot be made, or the engine failing to save the PNG; "
-        "the message carries the engine's error, and no out is answered for a file "
-        "that is not there",
-        doors=("name a folder under the project the game can write to",),
-    ),
-    "driver.off-screen": Code(
-        means="the click lands outside the viewport, where nothing is hovered",
-        when="a point past the declared window size, or a node scrolled off screen",
-        doors=("click inside the viewport", "set display/window/size in project.godot"),
-    ),
-    "game.no-preset": Code(
-        means="game.export_smoke found no export_presets.cfg to export from",
-        when="a project no one has set an export preset up in (§PW363)",
-        doors=("add a preset for this platform in the editor's Export dialog",),
-    ),
-    "game.no-capture": Code(
-        means="game.crash_read found no capture to read, or the file named is none",
-        when="a game that never opened the crash kit's log, or a file that is no "
-        "capture (§PW361)",
-        doors=("install the crash kit and open its log first thing",
-               "name the capture a person sent"),
-    ),
-    "driver.no-state": Code(
-        means="game.query asked for declared state, and the game carries no state kit",
-        when="state= on a game that never installed the state kit (§PW359)",
-        doors=("kit.install state, then name the state in res://polyweave_state.gd",),
-    ),
-    "engine.not-found": Code(
-        means="no engine binary could be found to run the script with",
-        when="neither [paths] godot, nor $GODOT, nor PATH names one",
-        doors=("set [paths] godot to the console build", "put it on PATH"),
-    ),
-    "engine.not-a-project": Code(
-        means="the folder an addon was to go into is not a Godot project",
-        when="a path one level off, or a project not yet created",
-        doors=("point it at the folder holding project.godot",),
-    ),
-    "engine.unknown-addon": Code(
-        means="no addon of that name ships with polyweave",
-        when="a typo in the addon's name",
-        doors=("name one the refusal lists",),
-    ),
-    "engine.bad-grid": Code(
-        means="a sweep's grid gives an argument no values, or values not as a list",
-        when="a grid of scalars, or an empty one",
-        doors=('give grid as {"seed": [1, 2, 3]}, one list per argument',),
-    ),
-    "engine.cost-no-revision": Code(
-        means="a frame cost names a revision git cannot find, or runs outside git",
-        when="engine.cost with against or on naming no commit",
-        doors=("name a commit, branch or tag the repository has",),
-    ),
-    "engine.cost-import": Code(
-        means="a revision's worktree did not import cleanly before it was timed",
-        when="engine.cost against a revision whose resources the editor cannot load",
-        doors=("open that revision in the editor once", "name another revision"),
-    ),
-    "engine.cost-same": Code(
-        means="a frame cost was asked to compare a build with itself",
-        when="engine.cost with on and against naming the same thing",
-        doors=("leave on unset for the working tree, and name against",),
-    ),
-    "engine.no-script": Code(
-        means="the scene script named does not exist",
-        when="a path relative to somewhere other than the project root",
-        doors=("write the path relative to the project root",),
-    ),
-    "engine.script-error": Code(
-        means="the engine reported an error while the script ran",
-        when="a parse error, a compile error, or a runtime error inside a block, "
-        "any of which the engine can still exit zero after",
-        doors=("read the errors, each with the script line it came from",),
-    ),
-    "engine.no-signal": Code(
-        means="the run printed nothing that says it did what it was for",
-        when="a script that never reached its own last line, or one whose success line "
-        "is spelled differently from the pattern the run was given",
-        doors=("read the log the run wrote", "check the success pattern"),
-    ),
-    "engine.budget-ended": Code(
-        means="the frame budget ended the run before the script printed its line",
-        when="a script whose own frame count, printed as `frames: N`, reached the "
-        "run's frame budget, as a long simulation does at the default 6000 (§PW487)",
-        doors=("pass a larger frames", "print the line sooner"),
-    ),
-    "engine.missing-artefact": Code(
-        means="the run said it wrote a file, and the file is not there",
-        when="a script that printed its line before the write finished, or one writing "
-        "somewhere other than where it said",
-        doors=("check what the script wrote and where",),
-    ),
-    "engine.no-offscreen-route": Code(
-        means="nothing on this machine gets the engine to draw real pixels",
-        when="a capture where there is no display server at all; the engine's own "
-        "headless mode offers only a dummy renderer, which draws nothing",
-        doors=("install xvfb-run", "run where there is a display server"),
-    ),
-    "engine.timed-out": Code(
-        means="the run was still going when its wall clock ran out",
-        when="a script that never quits; the frame budget is the other bound and this "
-        "is the one that catches a hang the engine itself does not end",
-        doors=("read the log", "raise [engine] timeout if the run is honestly slow"),
-    ),
-    # -- geom: a shape declared as data ----------------------------------------
-    "geom.unreadable": Code(
-        means="the declaration is not readable as the format it claims",
-        when="a hand edit that left invalid TOML behind",
-        doors=("fix the syntax the detail points at",),
-    ),
-    "geom.malformed": Code(
-        means="the file is TOML and is not a shape",
-        when="a document with no name, no nodes, or no output named",
-        doors=("give it a name, a node and an output",),
-    ),
-    "geom.bad-expression": Code(
-        means="the expression is not one this evaluates",
-        when="a call, an attribute, a comparison or a name outside the parameters and "
-        "the repeat variables; nothing here evaluates arbitrary code, because a value "
-        "that can depend on anything but its parameters breaks the cache key",
-        doors=("write it with the operators and functions the grammar names",),
-    ),
-    "geom.unknown-field": Code(
-        means="a declaration or a node carries a key nothing reads",
-        when="`sizee = 9` beside `size` on a primitive, or `materails` at the top",
-        doors=("spell it as one of the fields the refusal lists",),
-    ),
-    "geom.unknown-name": Code(
-        means="the expression names something the document does not declare",
-        when="a parameter spelled differently here than in [params], or a repeat "
-        "variable used on a node that does not repeat",
-        doors=("declare it in [params]", "name a variable this node repeats over"),
-    ),
-    "geom.duplicate-id": Code(
-        means="two nodes claim the same id",
-        when="a node copied and not renamed; ids are how every other node refers to "
-        "one, so two of them makes every reference ambiguous",
-        doors=("give each node an id of its own",),
-    ),
-    "geom.unknown-node": Code(
-        means="a node refers to an id no node has",
-        when="a typo in an input, or a node deleted while something still points at it",
-        doors=("name a node the document declares",),
-    ),
-    "geom.cycle": Code(
-        means="the nodes refer to each other in a circle, so none can be built first",
-        when="a node taking its own output as an input, directly or through others",
-        doors=("break the circle; a graph of shapes has to have a beginning",),
-    ),
-    "geom.bad-outline": Code(
-        means="what was given is not an outline",
-        when="fewer than three points, a mapping naming no shape, or a star of one "
-        "point",
-        doors=("give it a shape, an image, or at least three points",),
     ),
     "loop.baseline-too-late": Code(
         means="a baseline was started for an asset the plugin has already made",
@@ -1823,201 +905,6 @@ CODES: dict[str, Code] = {
         when="a hand edit that left invalid JSON behind",
         doors=("fix the syntax the detail points at",),
     ),
-    "geom.no-function": Code(
-        means="the custom node names a function nothing here can load",
-        when="a path that does not resolve, or a function the file does not have",
-        doors=("write it as path/to/file.py:name", "check the name"),
-    ),
-    "geom.not-geometry": Code(
-        means="a custom node returned something that is not geometry",
-        when="a project function returning None, or a value with no vertices and faces "
-        "on it; the rest of the graph has nothing to compose with",
-        doors=("return a mesh, or a mapping of vertices and faces",),
-    ),
-    "geom.bad-solid": Code(
-        means="the solid's own numbers do not describe a shape",
-        when="an annulus whose inner radius is not inside its outer one, or a union of "
-        "nothing at all",
-        doors=("check the numbers the node states",),
-    ),
-    "geom.unknown-op": Code(
-        means="a node names an operation nothing here builds",
-        when="a typo in an `op`, or a shape reaching for a vocabulary this does not "
-        "have; the declaration parses either way, because what an op means is the "
-        "vocabulary's question and not the document's",
-        doors=("name a declared op", "write it as a `custom` node of your own"),
-    ),
-    "geom.bad-surface": Code(
-        means="the surface stated on a material is not one this can build",
-        when="a fuzz with no depth or no coarseness, a depth at or below zero, a "
-        "coarseness outside nought to one, or one of the shell constants named as "
-        "though it were the way to ask; those are derived from the two that are",
-        doors=(
-            "state a depth and a coarseness",
-            "read the derived constants back with `construction`",
-        ),
-    ),
-    "geom.unknown-shape": Code(
-        means="there is no outline generator by that name",
-        when="a shape named outside the small library the scripts were read off",
-        doors=("name a declared generator", "trace a drawing instead"),
-    ),
-    "geom.nothing-to-trace": Code(
-        means="the drawing has no subject in it to trace an outline from",
-        when="an image that is entirely background",
-        doors=("point it at a drawing with a subject in it",),
-    ),
-    "geom.bad-repeat": Code(
-        means="the repeat does not describe a range",
-        when="a range with no variable, or a step of zero, which is a loop that never "
-        "ends rather than one that repeats nothing",
-        doors=("give each range a var, a from and a to", "use a step above zero"),
-    ),
-    "geom.bad-voxels": Code(
-        means="the document asks for cells and does not say how big one is",
-        when="a [voxels] table with neither `cell` nor `across`, or with both, or a "
-        "size that is not above zero; two ways of saying one number would disagree",
-        doors=("give [voxels] a `cell` size", "give [voxels] an `across` count"),
-    ),
-    "geom.bad-fracture": Code(
-        means="the fracture plan does not describe fragments that can exist",
-        when="a size that is not two whole numbers, a smallest fragment under one "
-        "cell, or a smallest above the largest",
-        doors=(
-            "write size = [smallest, largest] in cells, with 1 <= smallest <= largest",
-        ),
-    ),
-    "geom.bad-fit": Code(
-        means="a voxel fit was asked for something it cannot compare",
-        when="no parameter to move, a view that is not front, side or top, or a "
-        "drawing asked to stand for a view it does not show",
-        doors=(
-            "give ranges, or a [search.<param>] table in the document",
-            "name views among front, side and top",
-            "fit a drawing on the front view, or give a mesh for more",
-        ),
-    ),
-    "geom.bad-cells": Code(
-        means="a `cells` node's text does not describe a block of cells",
-        when="layers or rows of different lengths, a character the legend does not "
-        "name, or no size for a cell because [voxels] states only `across`",
-        doors=(
-            "make every row and every layer the same size",
-            "add the character to `legend`, or use `.` for an empty cell",
-            "give the node or [voxels] a `cell` size",
-        ),
-    ),
-    # -- clip: motion over time ------------------------------------------------
-    "clip.empty": Code(
-        means="the clip moves nothing",
-        when="a clip with no channels, or channels with no keys in them; a clip that "
-        "changes nothing over its duration is a still with a duration attached",
-        doors=("give it a channel with keys", "render it as a still instead"),
-    ),
-    "clip.unknown-property": Code(
-        means="a channel drives something a joint does not have",
-        when="a property outside the three glTF animates: rotation, scale, translation",
-        doors=("name rotation, scale or translation",),
-    ),
-    "clip.unknown-easing": Code(
-        means="the keyframe asks for an interpolation nothing implements",
-        when="an easing named outside the declared set",
-        doors=("name a declared easing",),
-    ),
-    "clip.outside-duration": Code(
-        means="a keyframe sits outside the clip it belongs to",
-        when="a key at a negative time, or past the duration; the duration is the clip "
-        "and a key beyond it never plays",
-        doors=("move the key inside", "lengthen the clip"),
-    ),
-    "clip.frames-differ": Code(
-        means="the frames of one clip are not all the same size",
-        when="frames rendered at different rungs, or gathered from two runs; a sheet "
-        "of cells that are not one size is a sheet nothing can index",
-        doors=("render every frame at one rung",),
-    ),
-    "clip.nothing-drawn": Code(
-        means="no frame of the clip has anything in it to trim to",
-        when="a clip rendered with the subject out of frame, or on a rung that drew "
-        "nothing at all",
-        doors=("check the rig and the rung", "look at the frames the run wrote"),
-    ),
-    "clip.unreadable": Code(
-        means="the clip file is not readable as the format it claims",
-        when="a hand edit that left invalid TOML behind; the format is text so that a "
-        "person can change it, which is also how it gets broken",
-        doors=("fix the syntax the detail points at",),
-    ),
-    "clip.malformed": Code(
-        means="the file is TOML and is not a clip",
-        when="a file missing a name, a duration, or any channel at all",
-        doors=("give it a name, a duration and a channel with keys",),
-    ),
-    "clip.no-camera": Code(
-        means="there is no camera clip file, or it is not TOML",
-        when="a path to no file, or a hand edit that left invalid TOML behind",
-        doors=("name a *.camera.toml under the project",
-               "fix the syntax the detail points at"),
-    ),
-    "clip.bad-camera": Code(
-        means="a camera clip's key or value means nothing",
-        when="a misspelled key, a shot with no from, look or hold, a place not three "
-        "numbers, a field of view outside 1 to 179 degrees, an easing nothing "
-        "implements, or a camera looking at the place it stands",
-        doors=("correct the key or value the refusal names, at the shot it names",),
-    ),
-    "clip.unshipped": Code(
-        means="the camera scene would land beside a declaration the export leaves out",
-        when="no out, with the declaration under a .gdignore or a preset's "
-        "exclude_filter; the editor would load it and the shipped game not",
-        doors=("pass out, a folder the game ships",),
-    ),
-    "clip.no-frames": Code(
-        means="the clip is too short or too slow to have a single frame in it",
-        when="a duration or a frame rate at or below zero",
-        doors=("give it a duration above zero", "give it a frame rate"),
-    ),
-    # -- rig: fitting a skeleton to a mesh ------------------------------------
-    "rig.no-mesh": Code(
-        means="a clip was asked to move a mesh that is not there",
-        when="motion.bake naming a .glb that was never built or has moved",
-        doors=("name the mesh the clip is for, as a path under the project",),
-    ),
-    "rig.unknown-plan": Code(
-        means="there is no body plan by that name",
-        when="a plan named outside the small library of the body plans that recur",
-        doors=("name a declared plan", "state the joints"),
-    ),
-    "rig.bad-plan": Code(
-        means="the body plan does not describe a skeleton",
-        when="a joint whose parent is not in the plan, a cycle, or no root at all",
-        doors=("give every joint a parent that comes before it",),
-    ),
-    "rig.unbound-vertices": Code(
-        means="some vertices are attached to no bone, so posing leaves them behind",
-        when="a mesh with a part no bone reaches, usually a plan that does not match "
-        "the shape",
-        doors=("fit a plan that covers the shape", "widen the falloff"),
-    ),
-    "rig.tearing": Code(
-        means="a test pose stretches the mesh past what the weights should allow",
-        when="two neighbouring vertices bound to bones that move apart; one influence "
-        "per vertex is the worst case, and either end of the falloff is the next",
-        doors=(
-            "give a vertex more influences",
-            "move the falloff off its extreme",
-            "fit a plan that matches",
-        ),
-    ),
-    "rig.unmatched-joints": Code(
-        means="the pose names joints the skeleton does not have",
-        when="a clip authored against one plan played on another that spells its "
-        "joints differently; a name is the contract and a near miss is not a match",
-        doors=(
-            "name the joints the skeleton has",
-            "retarget through a plan that shares them",
-        ),
-    ),
     # -- capture: the environment a picture is taken in ------------------------
     "spec.unlevel-tier": Code(
         means="the worlds offered on one tier of a route are not worth the same",
@@ -2025,134 +912,6 @@ CODES: dict[str, Code] = {
         "world's, or which saves a different count of the named kind",
         doors=("change the worlds' waves until the tier is level",
                "widen the band where the owner says so"),
-    ),
-    "store.internal-input": Code(
-        means="a store page would be cut from a picture derived from internal footage",
-        when="a key art or logo whose record, or an input's, says internal: frames "
-        "of another game's video, or anything made from them",
-        doors=("cut the capsules from the game's own key art and logo",),
-    ),
-    "capture.internal-input": Code(
-        means="a capture would run on something derived from internal footage",
-        when="a scene script, or a path among its arguments, whose record or an "
-        "input's says internal (§PW407)",
-        doors=("run the capture on the game's own scene and files",),
-    ),
-    "capture.bad-transcription": Code(
-        means="a transcription read from a reference video cannot be checked",
-        when="a file not JSON or TOML, no rows, a row with no id or span, a row "
-        "missing a column, or one citing a frame or track that does not exist",
-        doors=("cite the frames or reference.objects tracks each row was read from",),
-    ),
-    "capture.unknown-reference": Code(
-        means="the reference video named is not one the project declares",
-        when="a name no [reference.<name>] table carries, or none where several do",
-        doors=("name one the answer lists",
-               "declare [reference.<name>] with its size and regions"),
-    ),
-    "capture.bad-concept": Code(
-        means="a capture cannot be held to its concept painting as declared",
-        when="a *.concept.toml missing or not TOML, naming no painting file or no "
-        "region, a region without both rectangles, a rectangle that runs off its "
-        "picture, or a capture that is not there (§PW477)",
-        doors=(
-            "write each [region.<name>] with painting and capture as [x, y, w, h]",
-            "measure each rectangle on the picture it names",
-        ),
-    ),
-    "capture.unknown-region": Code(
-        means="the region named is not the reference's, or it declares no minimap",
-        when="a region name the [reference.<name>] regions do not carry, or a minimap "
-        "read on a reference that names none",
-        doors=("name one of its regions", "set its minimap to one of its regions"),
-    ),
-    "capture.wrong-size": Code(
-        means="the frames are not the size the reference's regions were declared at",
-        when="frames read from another video, or the video resampled",
-        doors=("read the frames from the video the regions were taken from",
-               "declare the reference again at this size"),
-    ),
-    "capture.no-reference-frames": Code(
-        means="there are no frames to count objects in",
-        when="a folder or frames.json reference.frames never wrote",
-        doors=("name the folder reference.frames wrote, or its frames.json",),
-    ),
-    "capture.bad-kinds": Code(
-        means="the kinds of object to look for mean nothing",
-        when="no kinds, a colour not written #rrggbb, a size not [least, most] pixels, "
-        "a tolerance outside 0 to 1, or an area not [left, top, right, bottom]",
-        doors=("declare each kind with its colour and size",),
-    ),
-    "capture.undeclared": Code(
-        means="a setting the project says matters has no value to take",
-        when="a name in `[capture] declared` that nothing sets; leaving it to chance "
-        "is exactly how one machine's picture differs from another's",
-        doors=("give it a value in [capture]", "pass it to the capture"),
-    ),
-    "capture.not-reported": Code(
-        means="the script never said what environment it took the picture in",
-        when="a capture script that does not print its environment line back",
-        doors=("print the settings the run passed it, as it applied them",),
-    ),
-    "capture.not-applied": Code(
-        means="the script left out a setting it was given",
-        when="a script that names a setting and never passes it on; naming it without "
-        "setting it passes a naive check and still gives the wrong picture",
-        doors=("apply it and report it", "drop it from [capture] declared"),
-    ),
-    "capture.differs": Code(
-        means="the script applied a different value from the one it was given",
-        when="a default inside the script winning over the argument it was passed",
-        doors=("take the value from the run rather than from a constant",),
-    ),
-    "capture.not-reproduced": Code(
-        means="the picture moved although every declared setting held still",
-        when="a project with `[capture] reproducible` on, whose capture has stopped "
-        "drawing what it drew last time; off by default, because a capture nobody has "
-        "pinned would fail every run",
-        doors=(
-            "declare whatever moved, so the run passes it and the script applies it",
-            "commit the new picture, which re-anchors what the next run is compared to",
-        ),
-    ),
-    "capture.not-visible": Code(
-        means="no try saw the capture's subject on screen before the picture was taken",
-        when="a moment in play whose spawns vary between runs, or a script that never "
-        "prints the `visible: <group>` line it was asked to wait for",
-        doors=(
-            "print `visible: <group>` once a node of the group is in the camera's view",
-            "raise `tries`, or capture a frame the subject is always in",
-        ),
-    ),
-    # -- units: the scale an asset is baked at --------------------------------
-    "units.undeclared": Code(
-        means="nothing says what scale this asset is baked at",
-        when="a check with no world rectangle, or a project that names no scale of its "
-        "own and no file to read one from",
-        doors=("state the rectangle the asset covers", "set [units] pixels_per_unit"),
-    ),
-    "units.unreadable": Code(
-        means="the file the project points at holds no such number",
-        when="a constant renamed or moved in the engine's own source; the point of "
-        "reading it there is that this is what happens when it moves",
-        doors=("check the name [units] source addresses", "state the number here"),
-    ),
-    "units.mismatch": Code(
-        means="the asset is baked at one scale and the engine draws at another",
-        when="a render rectangle tuned by hand to match a cell size held separately, "
-        "after either of the two moved",
-        doors=("bake at the engine's scale", "change the engine's, deliberately"),
-    ),
-    "units.not-whole": Code(
-        means="the rectangle and the scale do not come to a whole number of pixels",
-        when="a rectangle whose width times the scale lands between two pixels, which "
-        "is a sprite that cannot sit on the grid whatever else is right",
-        doors=("round the rectangle", "use a scale the rectangle divides by"),
-    ),
-    "units.wrong-size": Code(
-        means="the picture is not the size the declaration asks for",
-        when="a bake whose size came from the rung rather than from the rectangle",
-        doors=("render at the size the declaration gives",),
     ),
     # -- prov: what produced an artefact -------------------------------------
     "prov.unknown-kind": Code(
@@ -2316,122 +1075,11 @@ CODES: dict[str, Code] = {
         when="a seam_step bound in a spec checked against a picture",
         doors=("check it against the audio file, or name that file with `of`",),
     ),
-    "capture.no-frames": Code(
-        means="what was named as a captured run holds fewer than two frames, or is not "
-        "there",
-        when="measure.flashes, or a flashes bound in a spec, on a folder capture.movie "
-        "never wrote (§PW354)",
-        doors=("capture the run with capture.movie and name the folder it wrote",),
-    ),
-    "engine.no-project": Code(
-        means="engine.check was pointed at a folder with no project.godot",
-        when="engine.check outside a Godot project (§PW358)",
-        doors=("check the Godot project's own folder",),
-    ),
-    "tables.no-schema": Code(
-        means="tables.check found no table schema, or one it cannot read",
-        when="no data/tables.toml (or [kit.tables] schema), or a table with no file, "
-        "columns or a column type (§PW364)",
-        doors=("declare each table, its file and its columns' types",),
-    ),
     "adopt.not-empty": Code(
         means="project.new was pointed at a folder that already holds files",
         when="starting a game where one, or anything else, already is (§PW369)",
         doors=("adopt a game that exists with project.init --write --agent",
                "name an empty folder, or one not there"),
-    ),
-    "engine.unreachable-state": Code(
-        means="a state machine's state that nothing assigns and it does not start in",
-        when="engine.states reading a script's enum and its assignments (§PW368)",
-        doors=("assign it where the game should reach it", "drop it from the enum"),
-    ),
-    "engine.stuck-state": Code(
-        means="a state machine's state that nothing leaves, not marked final",
-        when="engine.states finding no assignment out of a state (§PW368)",
-        doors=("assign the way out", "mark its enum line # final where that is meant"),
-    ),
-    "engine.no-budget": Code(
-        means="engine.perf found no [perf.<name>] budget to run",
-        when="a project that declares no scene's performance budget (§PW365)",
-        doors=("declare [perf.<name>]: its scene and the most each measure may be",),
-    ),
-    "engine.no-tests": Code(
-        means="game.test found no test script by the project's convention",
-        when="a game with no tests/*_test.gd and no [kit.tests] scripts (§PW362)",
-        doors=("write tests/<name>_test.gd", "declare [kit.tests] scripts"),
-    ),
-    "engine.bad-run": Code(
-        means="a [run.<name>] in polyweave.toml cannot be run as written (§PW467)",
-        when="a run with no script or no expect, or a key a run does not take",
-        doors=("give the run a script and the line that means it worked",),
-    ),
-    "engine.unknown-run": Code(
-        means="engine.run_declared was asked for a run the project does not declare",
-        when="a misspelled name, or a run not yet declared as [run.<name>]",
-        doors=("declare it in polyweave.toml", "name a declared run"),
-    ),
-    "engine.broken-reference": Code(
-        means="a scene, resource or project.godot refers to a file by a UID and a path "
-        "that both resolve to nothing",
-        when="a file moved or was deleted without what refers to it (§PW358)",
-        doors=("point the reference at the file as it is now", "put the file back"),
-    ),
-    "engine.moved-reference": Code(
-        means="a reference's path is gone but its UID names the file where it is now",
-        when="a file moved with its .uid; Godot finds it and warns on every load",
-        doors=("engine.check fix=true repoints it",),
-    ),
-    "engine.stale-uid": Code(
-        means="a reference names a UID nothing declares, and Godot falls back to its "
-        "path",
-        when="a scene written as text, or a resource saved again under a new UID",
-        doors=("open and save the scene in the editor", "drop the uid attribute"),
-    ),
-    "engine.missing-path": Code(
-        means="a script names a res:// or uid:// path that is not there",
-        when="a script loads a file that moved, or one a project may keep (a warning)",
-        doors=("point it at a file that is there", "check it exists before loading"),
-    ),
-    "engine.orphan-uid": Code(
-        means="a .uid file sits beside no file",
-        when="a script moved or was deleted without its .uid",
-        doors=("engine.check fix=true removes it", "put its file back"),
-    ),
-    "engine.orphan-import": Code(
-        means="an .import file imports a source that is not there",
-        when="an asset moved or was deleted without its .import",
-        doors=("engine.check fix=true removes it", "put its source back"),
-    ),
-    "engine.stale-import": Code(
-        means="a source changed since Godot last imported it",
-        when="an asset written by a tool with no editor open",
-        doors=("import it again; engine.check imports where an engine is set",),
-    ),
-    "engine.parse-error": Code(
-        means="a script does not parse, so nothing that loads it works",
-        when="engine.check parses every script after an import, with an engine set",
-        doors=("fix the line Godot names",),
-    ),
-    "capture.no-rate": Code(
-        means="nothing says at what rate a captured run's frames were taken",
-        when="measure.flashes on a folder of PNGs with no sequence.json, no fps passed "
-        "and no [engine] fixed_fps",
-        doors=("pass fps", "capture with capture.movie, whose sequence.json says it"),
-    ),
-    "capture.unrecorded": Code(
-        means="a picture capture.again was asked to take again has no record of how "
-        "it was taken",
-        when="no record beside it, a record of another kind, or a capture recorded "
-        "before its call was kept",
-        doors=("take it once with capture.run, whose record then says how",),
-    ),
-    "capture.override-held": Code(
-        means="a movie or an outsized picture writes an override.cfg, and the project "
-        "has one",
-        when="capture.movie asked a resolution, or capture.run one past the desktop, "
-        "in a project with an override.cfg of its own",
-        doors=("set its window overrides to the size for the run",
-               "ask no resolution, and take the project's window size"),
     ),
     "spec.no-targets": Code(
         means="a contrast measure has no target to measure, or one outside the picture",
@@ -2466,101 +1114,6 @@ CODES: dict[str, Code] = {
         means="the measure answers with something a bound cannot hold",
         when="a bound on a measure that returns a set or a colour rather than a number",
         doors=("bound a statistic of it instead",),
-    ),
-    "kits.unknown": Code(
-        means="a kit was named that the plugin does not carry",
-        when="kit.install with a name kit.list does not answer (§PW341)",
-        doors=("name a kit kit.list answers",),
-    ),
-    "kits.no-game": Code(
-        means="a kit was to be installed where there is no Godot project",
-        when="kit.install in a folder with no project.godot (§PW341)",
-        doors=("install from the Godot project's own folder",),
-    ),
-    "kits.bad": Code(
-        means="a kit's kit.toml does not keep the kit contract",
-        when="a kit.toml missing, not TOML, with a key it does not know, a name that "
-        "is not its folder's, a version not major.minor.patch, no core or proof, a "
-        "file it names and does not hold, or kits that require each other (§PW340)",
-        doors=("fix the kit.toml the refusal names, as docs/specs/kit.md says",),
-    ),
-    "compose.bad-icons": Code(
-        means="an icon set's declaration cannot be drawn",
-        when="a *.icons.toml missing or not TOML, a shape or key it does not know, a "
-        "size out of range, or no icon at all (§PW331)",
-        doors=("declare each icon with a shape the refusal lists",),
-    ),
-    "compose.empty-layer": Code(
-        means="a vector's layer, or the whole picture, drew no pixel at all",
-        when="picture.vector where every pixel of a layer came out transparent in "
-        "every frame: the element is invisible, empty, or leans on a filter or mask "
-        "that is not one (§PW478)",
-        doors=(
-            "check the element draws on its own",
-            "check what it points at is the element meant",
-        ),
-    ),
-    "compose.ambiguous-id": Code(
-        means="an id in a vector means more than one element, or the wrong kind",
-        when="picture.vector where a selector, a sweep or a url(#id) reference names "
-        "an id two elements share, or a filter, mask or clip-path resolves to an "
-        "element of another kind (§PW478)",
-        doors=("give each element its own id", "point the reference at the one meant"),
-    ),
-    "compose.bad-sweep": Code(
-        means="a vector's sweep cannot be drawn",
-        when="picture.vector given a sweep naming an element no id in the SVG has, a "
-        "key it does not take, a from or to that is not a number, or frames outside 2 "
-        "to 256 (§PW476)",
-        doors=(
-            "name each element by an id the drawing holds; the refusal lists them",
-            "write exactly element, attribute, from, to and frames",
-        ),
-    ),
-    "compose.bad-seam": Code(
-        means="a picture cannot be sewn with the seam asked for",
-        when="picture.sew given a seam with no thread, a key nothing reads, a number "
-        "out of its range, or a silhouette too small to lay a stitch inside (§PW474)",
-        doors=(
-            "name the thread's colour, and only the keys a panel's seam takes",
-            "sew a larger picture, or a smaller inset",
-        ),
-    ),
-    "compose.bad-panel": Code(
-        means="a menu panel's declaration cannot be drawn",
-        when="a *.panel.toml missing or not TOML, a key nothing reads, a colour or "
-        "number that is not one, or a corner (cut, bracket) reaching past the "
-        "nine-patch margin, which the stretch would bend (§PW316)",
-        doors=(
-            "name a declared key; the refusal says the nearest",
-            "make the margin at least as wide as the cut plus the bracket",
-        ),
-    ),
-    "compose.unfilmed": Code(
-        means="a built panel or wipe could not be filmed by the engine",
-        when="panel.capture where no display or offscreen route draws real pixels, or "
-        "the run never reached its marks (§PW316)",
-        doors=("run it where a display is, or through the offscreen route",),
-    ),
-    "compose.no-vector": Code(
-        means="the vector picture named cannot be drawn",
-        when="picture.vector given a path with no SVG, one that does not parse, or one "
-        "stating neither a pixel width nor a viewBox (§PW315)",
-        doors=("name an .svg under the project", "give its svg element a viewBox"),
-    ),
-    "compose.text-unoutlined": Code(
-        means="an SVG's live text cannot be outlined, and the engine draws it blank",
-        when="picture.vector or store.capsules on an SVG with text along a path, a "
-        "font-family no declared or installed font has, a character its font lacks, "
-        "or no fontTools (§PW453)",
-        doors=("add the font to [words] fonts", "pip install fonttools",
-               "convert the text to outlines in the editor"),
-    ),
-    "compose.no-layer": Code(
-        means="a layer names an element the SVG does not have",
-        when="picture.vector given a layer whose #id or place matches no top-level "
-        "drawing element",
-        doors=("name it by #id, or by its place counted from 1",),
     ),
     "review.unknown-item": Code(
         means="a revision names an item the inventory does not list",
@@ -2641,13 +1194,67 @@ CODES: dict[str, Code] = {
 }
 
 
-def known(code: str) -> bool:
-    return code in CODES
-
-
 def area_of(code: str) -> str:
     return code.split(".", 1)[0]
 
 
+@functools.cache
+def _every() -> tuple[dict[str, str], dict[str, Code], dict[str, str]]:
+    """The kernel's codes and every layer's, with the layer that owns each (§PW507).
+
+    Built on the first read rather than on import: `errors` imports this module, and
+    the layers are found by a walk that imports `errors`. A layer's code must sit in an
+    area that layer declares, and neither a code nor an area may be declared twice.
+    """
+    from .errors import PolyweaveError
+    from .layer import layers
+
+    areas, codes, owner = dict(KERNEL_AREAS), dict(KERNEL_CODES), {}
+    for name, declared in layers().items():
+        if not declared.codes:
+            continue
+        module = importlib.import_module(declared.codes)
+        for area, about in module.AREAS.items():
+            if area in areas:
+                raise PolyweaveError(
+                    "layer.declared-twice",
+                    f"layer {name} declares the error area {area!r}, which is taken",
+                    "keep the area in the layer that owns it, and drop it elsewhere",
+                    given=area,
+                )
+            areas[area] = about
+        for code, one in module.CODES.items():
+            if area_of(code) not in module.AREAS or code in codes:
+                raise PolyweaveError(
+                    "layer.declared-twice",
+                    f"layer {name} declares {code!r}, which is outside its own areas "
+                    "or declared already",
+                    "declare it once, under an area the declaring layer owns",
+                    given=code,
+                )
+            codes[code], owner[code] = one, name
+    return areas, codes, owner
+
+
+def __getattr__(name: str):
+    # `AREAS` and `CODES` read as they always did, as the whole union (§PW507).
+    if name == "AREAS":
+        return _every()[0]
+    if name == "CODES":
+        return _every()[1]
+    raise AttributeError(name)
+
+
+def known(code: str) -> bool:
+    # The kernel's own first: a refusal raised while the layers are being walked must
+    # not need the walk to finish to be raised.
+    return code in KERNEL_CODES or code in _every()[1]
+
+
+def owner_of(code: str) -> str | None:
+    """The layer that declares a code, or None for one the kernel declares."""
+    return None if code in KERNEL_CODES else _every()[2].get(code)
+
+
 def in_area(area: str) -> list[str]:
-    return sorted(c for c in CODES if area_of(c) == area)
+    return sorted(c for c in _every()[1] if area_of(c) == area)

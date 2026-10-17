@@ -47,7 +47,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 2 },
-  { block: "W", title: "A core that grows by layers", open: 17 },
+  { block: "W", title: "A core that grows by layers", open: 16 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -136,13 +136,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW516"],
   },
   {
-    id: "PW507",
-    block: "W",
-    symptom: "Every error code lives in one 2,611-line codes.py, touched by 61 of the last 200 commits to the package",
-    why: "A file every feature edits is where two sessions working at once collide, and it grows with every layer whichever layer it is.",
-    deps: [],
-  },
-  {
     id: "PW508",
     block: "W",
     symptom: "Every table polyweave.toml may hold is declared in one config.py, so a layer's settings are kernel code",
@@ -175,7 +168,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "W",
     symptom: "Nothing proves a new layer can be added without editing the kernel, so the block's whole claim goes unchecked",
     why: "Each seam is tested alone, and only a whole layer added from outside shows they leave a kernel file nobody has to open.",
-    deps: ["PW506", "PW507", "PW508", "PW509", "PW510", "PW511"],
+    deps: ["PW506", "PW508", "PW509", "PW510", "PW511"],
   },
   {
     id: "PW513",

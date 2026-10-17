@@ -41,4 +41,5 @@ LAYER = Layer(
             "contrast_min", "contrast_median", "delta_e_min", "text_contrast_min",
         )
     },
+    codes="polyweave.layers.engine.codes",
 )

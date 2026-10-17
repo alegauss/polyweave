@@ -24,4 +24,5 @@ LAYER = Layer(
     parts={
         "brief.read:line": "polyweave.layers.words.page:read",
     },
+    codes="polyweave.layers.words.codes",
 )
