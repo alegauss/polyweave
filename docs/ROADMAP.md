@@ -17,7 +17,6 @@
 ## Block G — Geometry as a declaration
 
 - 📋 **PW498** (deps: —) **union joins parts at a hard crease, so a body whose parts flow into each other, as moulded plastic, cannot be declared** — Spinhold's new plastic city needs towers, trees and mascots whose parts flow together, and each would be a bought mesh or a custom node. → §PW498
-- ⏳ **PW495** (deps: PW494 ✅) **a declared finish reaches the game only through glTF import, so a look a person accepted is rebuilt in a game shader** — No capture of the game against the bake of the same model at one rig says yet whether the two agree. → §PW495
 - 📋 **PW497** (deps: —) **nothing measures how round a model's edges are, so a hard-edged piece in a soft-toy style reaches a person's sitting** — One square edge among moulded pieces reads as another game, and Spinhold refuses a shape before a sitting only where a measure exists. → §PW497
 
 ## Block H — Proof on a real game

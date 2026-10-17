@@ -31,7 +31,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 1 },
-  { block: "G", title: "Geometry as a declaration", open: 3 },
+  { block: "G", title: "Geometry as a declaration", open: 2 },
   { block: "H", title: "Proof on a real game", open: 2 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
@@ -62,13 +62,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "G",
     symptom: "union joins parts at a hard crease, so a body whose parts flow into each other, as moulded plastic, cannot be declared",
     why: "Spinhold's new plastic city needs towers, trees and mascots whose parts flow together, and each would be a bought mesh or a custom node.",
-    deps: [],
-  },
-  {
-    id: "PW495",
-    block: "G",
-    symptom: "a declared finish reaches the game only through glTF import, so a look a person accepted is rebuilt in a game shader",
-    why: "No capture of the game against the bake of the same model at one rig says yet whether the two agree.",
     deps: [],
   },
   {
@@ -186,4 +179,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW82", "PW57", "PW449", "PW450", "PW201", "PW480", "PW311", "PW368"];
+export const generatedPaused: string[] = ["PW495", "PW82", "PW57", "PW449", "PW450", "PW201", "PW480", "PW311", "PW368"];

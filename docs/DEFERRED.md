@@ -14,6 +14,8 @@
 
 ## Block G — Geometry as a declaration
 
+- ⏸ **PW495** (deps: PW494 ✅) **a declared finish reaches the game only through glTF import, so a look a person accepted is rebuilt in a game shader** — set aside (Needs the bake's rig in Godot and the owner's tolerance.): No capture yet compares the game with the bake. → §PW495
+
 ## Block H — Proof on a real game
 
 - ⏸ **PW82** (deps: PW81 ✅) **nothing takes bake_model.py out once its assets have moved, so the rig outlives its own replacement** — set aside (a person's judgement): Each family porting leaves the file smaller and still running, and two live paths to one sprite is the state this whole sequence exists to end. → §PW82
