@@ -24,11 +24,17 @@ DESIGNED = PROJECT.replace(
     '"eleven_multilingual_ttv_v2" = { per = "character", rate = 0.001 }',
 )
 
+#: Lines past the 100 characters ElevenLabs' voice design takes at least (§PW482).
+LINE = ("Shift's over. Go home. The cranes can wait till morning, and so can the "
+        "paperwork you keep leaving on my desk.")
+LINHA = ("Acabou o turno. Vai pra casa. Os guindastes esperam ate amanha, e a "
+         "papelada que voce deixa na minha mesa tambem.")
+
 WORLD = (
     "# The cast.\n[entity.bo]\nname = \"Bo\"\nkind = \"character\"\n\n"
     "[entity.bo.voice]\n"
     "description = \"a dry, tired foreman in his fifties\"  # as the owner said it\n"
-    "sample = \"Shift's over. Go home.\"\nstability = 0.4\n"
+    f"sample = \"{LINE}\"\nstability = 0.4\n"
 )
 
 
@@ -70,12 +76,33 @@ def test_previews_of_a_described_voice_are_laid_out_for_a_person(tmp_path, servi
     url, sent = service.sent[0]
     assert url.endswith("/v1/text-to-voice/design")
     assert sent["voice_description"] == "a dry, tired foreman in his fifties"
-    assert sent["text"] == "Shift's over. Go home."
+    assert sent["text"] == LINE
     assert len(found["previews"]) == 3
     assert found["sitting"]
     spent = purchase.read(tmp_path)
     assert len(spent) == 3
-    assert sum(e["credits"] for e in spent) == pytest.approx(22 * 0.001, abs=1e-5)
+    assert sum(e["credits"] for e in spent) == pytest.approx(len(LINE) * 0.001,
+                                                             abs=1e-5)
+
+
+def test_a_sample_shorter_than_the_service_takes_is_refused_before_the_call(
+        tmp_path, service):
+    """§PW482: a two-word tag came back a 422 after the call, and its price unseen."""
+    with pytest.raises(PolyweaveError) as refused:
+        sound_buy.design(entity="bo", sample="Viglet Games!", root=str(tmp_path))
+    assert refused.value.code == "fetch.sample-short"
+    assert "13 characters" in refused.value.message
+    assert "at least 100" in refused.value.message
+    assert service.sent == []
+    assert purchase.read(tmp_path) == []
+
+
+def test_a_voice_call_is_quoted_from_the_entitys_own_sample(tmp_path, service):
+    quoted = purchase.quote("voice.design", {"entity": "bo"}, root=str(tmp_path))
+    assert quoted["price"] == pytest.approx(len(LINE) * 0.001, abs=1e-6)
+    given = purchase.quote("voice.design", {"entity": "bo", "sample": "x" * 120},
+                           root=str(tmp_path))
+    assert given["price"] == pytest.approx(0.12, abs=1e-6)
 
 
 def test_a_voice_no_person_accepted_is_not_kept(tmp_path, service):
@@ -136,10 +163,10 @@ def test_a_locale_has_a_voice_born_in_it(tmp_path, service):
     (tmp_path / "game.world.toml").write_text(
         WORLD + '\n[entity.bo.voice.pt_BR]\n'
         'description = "um capataz cansado, paulista"\n'
-        'sample = "Acabou o turno. Vai pra casa."\n', encoding="utf-8")
+        f'sample = "{LINHA}"\n', encoding="utf-8")
     found = sound_buy.design(entity="bo", locale="pt_BR", root=str(tmp_path))
     assert service.sent[0][1]["voice_description"] == "um capataz cansado, paulista"
-    assert service.sent[0][1]["text"] == "Acabou o turno. Vai pra casa."
+    assert service.sent[0][1]["text"] == LINHA
     assert all("bo_pt_BR_" in one for one in found["previews"])
     accepted(tmp_path, found["previews"][0])
     kept = sound_buy.choose(found["previews"][0], root=str(tmp_path))

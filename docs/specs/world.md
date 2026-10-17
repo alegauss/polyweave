@@ -121,6 +121,13 @@ ceiling like any purchase. Each preview lands as an MP3 under `voices/<id>/` in 
 an engine would import the sheets (§PW416), with its record: its share of the price, the preview's service id and the entity. A
 sound sitting lays them out, and a person accepts one on the review page.
 
+The service's voice design wants a line of at least 100 characters to speak, and a
+shorter one came back a 422 after the call (§PW482). So a `sample` under the service's
+`voice_sample_least` (100 unless its table says otherwise) is refused before anything is
+sent, `fetch.sample-short`, naming its length and the least. `purchase.quote` prices a
+voice call by its `sample`, or by the entity's own where the call passes none, so its
+price is shown before it as any purchase's is.
+
 `voice.choose(preview)` keeps that one: refused with `world.voice-unchosen` unless the
 preview's record holds a person's `accept` on its very bytes, since an agent never picks a
 voice (the non-goal on accepting its own look, applied to a sound). The service saves it

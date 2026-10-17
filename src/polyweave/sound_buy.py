@@ -347,6 +347,22 @@ def _speech(target: Path, words: str, config) -> dict:
 DESIGN = "/v1/text-to-voice/design"
 SAVE = "/v1/text-to-voice"
 
+#: The fewest characters ElevenLabs' voice design takes as the line it speaks; a
+#: shorter one comes back a 422 after the call (§PW482). A service declares its own as
+#: `voice_sample_least` in its table.
+SAMPLE_LEAST = 100
+
+
+def _sample_of(entity: str, world: str | None, root: str, locale: str | None = None,
+               given: str | None = None) -> str | None:
+    """The line a voice is designed on: the one given, or the entity's own sample."""
+    if given:
+        return given
+    from .world import brief, voice_in
+
+    _, found = brief(entity, world, root)
+    return voice_in(found, locale).get("sample")
+
 
 @operation("voice.design", kind="fetch", injects=("report",), spends=True)
 def design(
@@ -408,10 +424,21 @@ def design(
         )
     config = load(root)
     here = config.root
-    named = f"{entity}_{locale}" if locale else entity
-    folder = _laid(config, out, named)
     name = config.service(service, model=model)
     about = config.services()[name]
+    least = int(about.get("voice_sample_least", SAMPLE_LEAST))
+    if len(sample) < least:
+        # Refused before the call, never answered by the service after it (§PW482).
+        raise PolyweaveError(
+            "fetch.sample-short",
+            f"{entity}'s sample is {len(sample)} characters, and {name}'s voice design "
+            f"takes at least {least}",
+            f"write a longer sample under {table}, a line in the voice that runs to "
+            f"{least} characters or more, or pass one as sample",
+            given=sample,
+        )
+    named = f"{entity}_{locale}" if locale else entity
+    folder = _laid(config, out, named)
     base, key = picture._reached(name, about)
     priced = picture._priced(
         name, about.get("prices") or {}, model, None, len(sample)

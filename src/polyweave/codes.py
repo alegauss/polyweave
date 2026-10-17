@@ -747,6 +747,12 @@ CODES: dict[str, Code] = {
         "no text to count (§PW320)",
         doors=("pass the text the call would send",),
     ),
+    "fetch.sample-short": Code(
+        means="the line a voice is designed on is shorter than the service accepts",
+        when="voice.design with a sample under the service's voice_sample_least, 100 "
+        "characters for ElevenLabs unless its table says otherwise (§PW482)",
+        doors=("write a longer sample in the voice, or pass one as sample",),
+    ),
     "world.no-voice": Code(
         means="a line was asked of an entity the world gives no voice id",
         when="sound.speak with entity= where [entity.<id>.voice] has no id (§PW321); "

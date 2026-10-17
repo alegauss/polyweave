@@ -201,6 +201,12 @@ def quote(
     service = config.service(given.get("service") or None, model=model or None)
     about = config.services()[service]
     counted = next((given[k] for k in COUNTED if isinstance(given.get(k), str)), None)
+    if counted is None and operation == "voice.design" and given.get("entity"):
+        # The line it speaks is its count: the one passed, or the entity's own (§PW482).
+        from .sound_buy import _sample_of
+
+        counted = _sample_of(str(given["entity"]), given.get("world"), root,
+                             given.get("locale"), given.get("sample"))
     found_price = picture._priced(
         service, about.get("prices") or {}, model, given.get("rendering_speed"),
         None if counted is None else len(counted),

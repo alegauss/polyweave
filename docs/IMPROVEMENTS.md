@@ -101,23 +101,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW482 A voice sample checked before it is sent
-
-Found in Spinhold on 2026-10-16 (RK168). The studio's spoken tag is two words, so the
-entity's voice sample was the tag itself: `[entity.studio_voice.voice] sample = "Viglet
-Games!"`. `voice.design --entity studio_voice` sent it and came back
-`fetch.service-error`, a 422 whose detail says ElevenLabs' voice design wants a text of
-at least 100 characters. `purchase.quote` for the same call refused with
-`fetch.uncounted` ("this call states no count of them"), though the text it would send
-is the entity's own sample, which polyweave reads.
-
-The workaround was a longer sample written into the world file by hand.
-
-What polyweave should do: `voice.design` refuses a sample under the service's minimum
-before sending, naming the length and the minimum (and `world.validate` can say it of a
-declared sample), and `purchase.quote` prices a voice call from the entity's own
-description and sample when no text is passed.
-
 ### §PW483 A measure at the percentiles a gate uses
 
 Found in Cottony, RK131 (2026-10-16). Cottony's `tools/perf/material_match.gd` holds a
