@@ -333,6 +333,16 @@ KERNEL_CODES: dict[str, Code] = {
         when="a judge's name, the key its answer is reported under, is taken already",
         doors=("rename one of the two judges",),
     ),
+    "layer.off": Code(
+        means="the operation is a layer's that this project has switched off",
+        when="a tool or command of a layer [layers] on leaves out, or a table it reads",
+        doors=("add the layer to [layers] on in polyweave.toml",),
+    ),
+    "layer.unknown": Code(
+        means="[layers] on names a layer polyweave does not have",
+        when="a typo, or a layer from another version, in polyweave.toml",
+        doors=("name a layer capabilities lists", "drop [layers] for every one"),
+    ),
     "layer.unknown-requirement": Code(
         means="a layer requires something polyweave has no way to find",
         when="LAYER.requires names a word outside blender, godot, audio and text",

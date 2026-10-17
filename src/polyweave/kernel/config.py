@@ -79,6 +79,9 @@ _NAMED_BUDGET = {"amount": 0, "unit": "credits", "expires": ""}
 #: Every key, with the value used where the project declares none. The shape is the
 #: schema: a key absent from here is refused rather than ignored.
 KERNEL_DEFAULTS: dict[str, Any] = {
+    # The layers this project uses (§PW509); empty is every one, so a project
+    # that never says is served the whole surface.
+    "layers": {"on": []},
     "project": {
         "name": "",  # the root directory's name, filled in on load
         "root": ".",
@@ -748,12 +751,30 @@ def load(root: str | Path = ".") -> Config:
     return Config(where, declared, source)
 
 
+def _off_tables(declared: dict) -> None:
+    """A table of a layer `[layers] on` leaves off, refused by the layer's name."""
+    named = (declared.get("layers") or {}).get("on") or []
+    if not named:
+        return
+    owner = _schema().owner
+    for table in declared:
+        if owner.get(table) and owner[table] not in named:
+            raise PolyweaveError(
+                "layer.off",
+                f"[{table}] is the {owner[table]} layer's, and [layers] on leaves "
+                f"{owner[table]} off",
+                f'add "{owner[table]}" to [layers] on, or drop [{table}]',
+                given=table,
+            )
+
+
 def _check(declared: dict, source: Path) -> None:
     """Refuse a key nothing declares, rather than ignoring it.
 
     §3 of the tool surface: an unknown field in any input is refused. A config key that
     is silently dropped is a setting the caller believes is in effect and is not.
     """
+    _off_tables(declared)
     for table, values in declared.items():
         if table not in _schema().tables:
             near = difflib.get_close_matches(table, _schema().tables, n=1)

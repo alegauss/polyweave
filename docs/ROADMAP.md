@@ -61,10 +61,10 @@
 ## Block W — A core that grows by layers
 
 - 🛠 **PW506** (deps: PW516) **A kernel or loop module can import a layer and both gates still pass, so the direction the layout states is a hope** — Layers still import each other freely, with cycles; Layer.uses must declare each edge, the test refuse others and cycles. → §PW506
-- 📋 **PW509** (deps: PW500 ✅, PW508 ✅) **A project gets all 200 operations as tools whatever it makes, so a 2D game's agent loads Blender, voxel and rig tools** — tools/list is about 130,000 characters and growing, so the agent's context scales with what polyweave can do, not with what the project uses. → §PW509
-- 📋 **PW510** (deps: PW509) **The tool list's budget has been raised about 30 times in a row, so it stops no growth and names no layer that grew** — A ceiling that each feature raises by its own size is a log, and the limit that scales is one per layer, held where the layer is written. → §PW510
+- ⏳ **PW509** (deps: PW500 ✅, PW508 ✅) **A project gets all 200 operations as tools whatever it makes, so a 2D game's agent loads Blender, voxel and rig tools** — project.init does not yet propose [layers] on from what the tree holds, so every project still starts with every layer on. → §PW509
+- 📋 **PW510** (deps: PW509 ⏳) **The tool list's budget has been raised about 30 times in a row, so it stops no growth and names no layer that grew** — A ceiling that each feature raises by its own size is a log, and the limit that scales is one per layer, held where the layer is written. → §PW510
 - 📋 **PW511** (deps: PW500 ✅) **census.py classifies every public function in the package in one map, so each new helper module edits it** — The census is what keeps the surface findable, and a map 46 of the last 200 commits touched is one that grows with the package instead of with its surface. → §PW511
-- 📋 **PW512** (deps: PW506 🛠, PW507 ✅, PW508 ✅, PW509, PW510, PW511) **Nothing proves a new layer can be added without editing the kernel, so the block's whole claim goes unchecked** — Each seam is tested alone, and only a whole layer added from outside shows they leave a kernel file nobody has to open. → §PW512
+- 📋 **PW512** (deps: PW506 🛠, PW507 ✅, PW508 ✅, PW509 ⏳, PW510, PW511) **Nothing proves a new layer can be added without editing the kernel, so the block's whole claim goes unchecked** — Each seam is tested alone, and only a whole layer added from outside shows they leave a kernel file nobody has to open. → §PW512
 - 📋 **PW513** (deps: PW499 ✅) **A geometry op is spread over BUILDS, FIELDS, review's elif chain and voxels' bounds and TRACED, four places per op** — A fifteenth op written in four files is how a voxel bound goes missing for one op, and the vocabulary only grows by ops. → §PW513
 - 📋 **PW514** (deps: PW513) **Voxels are a branch inside build.write and a voxel_* module beside each mesh one, so a third form has no place to go** — Triangles and cells are two answers to one declaration, and a form chosen by an if in write is one each new form has to wedge itself beside. → §PW514
 - 📋 **PW515** (deps: PW514) **A material's finish and fuzz are special-cased in the bake and in write, so a toon or metal look is a third case** — The plastic finish already had to be written twice, for Blender's shader and for Godot's, and each new look pays that twice again. → §PW515
@@ -72,7 +72,7 @@
 - 📋 **PW517** (deps: PW503 ✅, PW508 ✅, PW512) **A project cannot add a measure of its own, so a look only its game needs is a fork, a side script or a PW line** — A project measure keeps the first-call guarantee only when it is described, bounded and recorded exactly as a built-in one is. → §PW517
 - 📋 **PW518** (deps: PW504 ✅, PW517) **A project's own generator can run as a job but is no operation, so no agent finds it, describes it or searches over it** — A target named as a file path has only the worker's signature check, so the project's most-used script is the one call the surface cannot describe. → §PW518
 - 📋 **PW519** (deps: PW518) **An extension would hide the gap it fills, so a measure two games both wrote never becomes vocabulary** — Friction filed as PW lines is how this vocabulary grew, and an extension point that silences the friction stops that growth unless it reports what it holds. → §PW519
-- 📋 **PW520** (deps: PW509, PW512, PW515, PW516) **A project's polyweave.toml and the Python importing polyweave break on the new layout, with nothing to carry them over** — The block owes callers no compatibility, so one command must carry a project across, or every adopter pays for the break by hand. → §PW520
+- 📋 **PW520** (deps: PW509 ⏳, PW512, PW515, PW516) **A project's polyweave.toml and the Python importing polyweave break on the new layout, with nothing to carry them over** — The block owes callers no compatibility, so one command must carry a project across, or every adopter pays for the break by hand. → §PW520
 - 📋 **PW521** (deps: PW520, PW518) **Cottony still runs on the flat package and serves every layer, so the block is unproven on its first consumer** — A layering proven only on fixtures can still be wrong where a real game reaches into it, and Cottony reaches deepest, from Python, a rig and its own scripts. → §PW521
 - 📋 **PW522** (deps: PW520) **Spinhold still runs on the flat package, so the 443 records and 30 verdicts most at stake in the break are unchecked** — Spinhold holds the most data a person judged, so it proves whether the break kept the one thing it promised to keep. → §PW522
 
@@ -144,6 +144,12 @@
 - **A layer imports another only where its Layer.uses names it, with no cycle**
   test_layering refuses an import from one layer to another that its layer.py does not
   declare in uses, and refuses a cycle among the declared uses; the tree passes it.
+
+## Done when — PW509
+
+- **project.init proposes [layers] on from what the tree holds** A project.godot turns
+  engine on, a geometry declaration geometry, a [words] table words; each layer's signal
+  is tested, and a layer with no signal is left out only where the answer says why.
 
 ## Non-goals
 

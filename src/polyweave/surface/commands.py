@@ -268,6 +268,11 @@ def answer_for(stated: argparse.Namespace) -> Any:
         )
 
     registered = D._REGISTRY[stated.command]
+    if registered.layer:
+        from polyweave.kernel.layer import off, on
+
+        if registered.layer not in on(getattr(stated, "root", None) or "."):
+            raise off(registered.layer, registered.name)
     declared = {p["name"]: p for p in registered.parameters}
     given = {
         name: parsed(getattr(stated, name), declared[name])

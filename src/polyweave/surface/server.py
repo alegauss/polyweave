@@ -32,6 +32,7 @@ import importlib.util
 import json
 import shutil
 import sys
+from pathlib import Path
 from typing import Any
 
 from polyweave.kernel import errors
@@ -240,12 +241,24 @@ DESCRIBE = {
 }
 
 
-def tools(*, blender: bool | None = None) -> list[dict]:
-    """Every operation as a tool, leaving out the ones that need an absent Blender,
-    and `describe` beside them."""
+def _on(root: str | Path = ".") -> frozenset[str] | None:
+    """The layers this project uses, or None for every one where the file cannot say:
+    a `[layers]` the project got wrong is answered on the call, not by an empty list."""
+    from polyweave.kernel.layer import on
+
+    try:
+        return on(root)
+    except PolyweaveError:
+        return None
+
+
+def tools(*, blender: bool | None = None, root: str | Path = ".") -> list[dict]:
+    """Every operation of a layer the project uses as a tool, leaving out the ones that
+    need an absent Blender, and `describe` beside them (§PW509)."""
     from polyweave.kernel import describe as D
 
     reachable = blender_here() if blender is None else blender
+    using = _on(root)
     return [
         {
             "name": tool_name(found["operation"]),
@@ -253,7 +266,8 @@ def tools(*, blender: bool | None = None) -> list[dict]:
             "inputSchema": schema_of(found),
         }
         for found in D.describe()
-        if reachable or not needs_blender(found)
+        if (reachable or not needs_blender(found))
+        and (using is None or found.get("layer") in (None, *using))
     ] + [DESCRIBE]
 
 
@@ -271,12 +285,18 @@ def _described(arguments: dict) -> Any:
         )
     asked = arguments["operation"]
     by_tool = {tool_name(op): op for op in D.operations()}
-    return D.describe(by_tool.get(asked, asked))
+    said = D.describe(by_tool.get(asked, asked))
+    using = _on()
+    if using is not None and said.get("layer") not in (None, *using):
+        # Still described, so an agent finds what exists, and said off (§PW509).
+        said = {**said, "off": True}
+    return said
 
 
 def call(name: str, arguments: dict | None) -> dict:
     """One tool call as MCP content; a refusal is an error result, not a raise."""
     from polyweave.kernel import describe as D
+    from polyweave.kernel.layer import off, on
 
     from .commands import Quiet, as_data
 
@@ -293,6 +313,8 @@ def call(name: str, arguments: dict | None) -> dict:
                 allowed=by_tool,
             )
         registered = D._REGISTRY[by_tool[name]]
+        if registered.layer and registered.layer not in on():
+            raise off(registered.layer, registered.name)
         args = D.validate(registered.name, dict(arguments or {}))
         if registered.guard is not None:
             registered.guard(args)

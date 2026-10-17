@@ -139,7 +139,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW509",
     block: "W",
     symptom: "A project gets all 200 operations as tools whatever it makes, so a 2D game's agent loads Blender, voxel and rig tools",
-    why: "tools/list is about 130,000 characters and growing, so the agent's context scales with what polyweave can do, not with what the project uses.",
+    why: "project.init does not yet propose [layers] on from what the tree holds, so every project still starts with every layer on.",
     deps: [],
   },
   {

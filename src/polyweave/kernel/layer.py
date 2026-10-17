@@ -17,6 +17,7 @@ import importlib.util
 import pkgutil
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
 from .errors import PolyweaveError
@@ -348,6 +349,39 @@ def judge_of(member: dict) -> Judge | None:
             allowed=[one.name for one in claiming],
         )
     return claiming[0] if claiming else None
+
+
+def on(root: str | Path = ".") -> frozenset[str]:
+    """The layers a project uses: `[layers] on`, or every layer where it says none.
+
+    A name no layer has is refused with the ones there are, since a typo here turns a
+    whole medium off without a word.
+    """
+    from .config import load
+
+    every = layers()
+    named = [str(one) for one in load(root).get("layers.on") or ()]
+    unknown = [one for one in named if one not in every]
+    if unknown:
+        raise PolyweaveError(
+            "layer.unknown",
+            f"[layers] on names {', '.join(unknown)}, which no layer is",
+            "name layers capabilities lists, or drop [layers] for every one",
+            given=unknown[0],
+            allowed=sorted(every),
+        )
+    return frozenset(named or every)
+
+
+def off(layer: str | None, operation: str) -> PolyweaveError:
+    """The refusal for an operation whose layer this project has off (§PW509)."""
+    return PolyweaveError(
+        "layer.off",
+        f"{operation} is the {layer} layer's, and this project's [layers] on leaves "
+        f"{layer} off",
+        f'add "{layer}" to [layers] on in polyweave.toml',
+        given=str(layer),
+    )
 
 
 def layer_of(module: str) -> str | None:

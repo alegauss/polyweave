@@ -80,6 +80,9 @@ handmade = ["docs/design/art/brand/*"]
 # why: project.adoption reports them, and project.check fails on any file not named here
 "tools/art/make_assets.py" = "drawn 2D generation, which polyweave does not do"
 
+[layers]
+on = []                        # the layers this project uses; empty is every one
+
 [review]
 language = "en"                # the review page and its sittings: en or pt-BR, one
                                # catalog each in review_page/locales/
@@ -565,3 +568,10 @@ the kernel's schema is the union (PW508). A key for a layer's table is added the
 | words | `[words]` |
 | motion | `[sprites]`, `[rig]` |
 | reference | `[reference]` |
+
+`[layers] on` names the layers a project uses (PW509), such as
+`on = ["picture", "sound", "words", "engine"]`. The server lists, and the command line
+runs, only those layers' operations beside the kernel's and the loop's; an off layer's
+operation is still described, marked `off`, and calling it answers `layer.off` with the
+line to add. A table of an off layer is refused by the layer's name. Without `[layers]`,
+or with `on` empty, every layer is on.
