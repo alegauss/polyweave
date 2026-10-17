@@ -17,6 +17,7 @@ import pytest
 from polyweave.kernel.errors import PolyweaveError
 from polyweave.layers.sound import sound_buy
 from polyweave.services import purchase
+from polyweave.surface.quote import quote
 from test_sound import tone, written
 
 PROJECT = (
@@ -251,11 +252,11 @@ def test_a_long_text_over_the_ceiling_is_refused_with_its_count(tmp_path, counte
 
 
 def test_a_quote_counts_the_text_the_call_would_send(tmp_path, counted):
-    said = purchase.quote("sound.buy", {"prompt": "x" * 40}, root=str(tmp_path))
+    said = quote("sound.buy", {"prompt": "x" * 40}, root=str(tmp_path))
     assert said["price"] == pytest.approx(0.04)
     assert (said["per"], said["count"], said["rate"]) == ("character", 40, 0.001)
     with pytest.raises(PolyweaveError) as refused:
-        purchase.quote("sound.buy", {}, root=str(tmp_path))
+        quote("sound.buy", {}, root=str(tmp_path))
     assert refused.value.code == "fetch.uncounted"
 
 
@@ -331,7 +332,7 @@ def test_a_line_without_words_or_a_voice_is_refused_before_sending(
 
 
 def test_a_spoken_line_is_quoted_by_its_characters(tmp_path, voiced):
-    said = purchase.quote("sound.speak", {"text": "x" * 100}, root=str(tmp_path))
+    said = quote("sound.speak", {"text": "x" * 100}, root=str(tmp_path))
     assert said["price"] == pytest.approx(0.03)
     assert said["count"] == 100
 

@@ -7,6 +7,7 @@ LAYER = Layer(
     summary="Shapes declared as data, built to meshes or voxels, rendered, measured.",
     modules=(
         "polyweave.layers.geometry.cost",
+        "polyweave.layers.geometry.make",
         "polyweave.layers.geometry.mesh_buy",
         "polyweave.layers.geometry.normalise",
         "polyweave.layers.geometry.render",
@@ -34,6 +35,7 @@ LAYER = Layer(
         ),
     ),
     parts={
+        "declaration.is": "polyweave.layers.geometry.make:is_declaration",
         "declaration.read": "polyweave.layers.geometry:read",
         "declaration.describe": "polyweave.layers.geometry.review:describe",
         "review:turntables": "polyweave.layers.geometry.page:turntables",

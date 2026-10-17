@@ -25,27 +25,11 @@ from typing import Annotated, Any
 from polyweave.kernel.describe import Param, operation
 from polyweave.kernel.errors import PolyweaveError
 from polyweave.kernel.layer import call, needed, part, sections
-
-
-def _declared(here: Path):
-    """Every readable declaration under the root, with the path it was read from."""
-    from polyweave.surface.cli import is_declaration
-
-    read = part("declaration.read")
-    for source in sorted(here.rglob("*.toml")) if read else ():
-        if ".polyweave" in source.parts or source.name.endswith(".accept.toml"):
-            continue
-        if not is_declaration(source):
-            continue
-        try:
-            yield source.relative_to(here).as_posix(), call(read, source, root=here)
-        except PolyweaveError:
-            continue
-
-
-def _declarations(here: Path) -> dict[str, str]:
-    """Each declared asset's name, with the path of its declaration."""
-    return {document["name"]: path for path, document in _declared(here)}
+from polyweave.loop.declared import (
+    _declared,
+    _effect,
+    _parted,
+)
 
 
 def _declaration(asset: str, here: Path) -> dict | None:
@@ -57,57 +41,8 @@ def _declaration(asset: str, here: Path) -> dict | None:
     return None
 
 
-def _builds(here: Path) -> dict[str, list[str]]:
-    """What each declaration was built into, as its outputs' records say (§PW298)."""
-    from polyweave.kernel import provenance
-
-    made: dict[str, list[str]] = {}
-    for record in provenance._records(here):
-        if record.get("kind") != "mesh":
-            continue
-        for one in record.get("inputs") or ():
-            if one.get("role") == "declaration" and one.get("path"):
-                made.setdefault(one["path"], []).append(record["artefact"]["path"])
-    return {path: sorted(outputs) for path, outputs in made.items()}
-
-
-def _parted(
-    declaration: str | None, artefact: str | None, here: Path, built: dict | None = None
-) -> dict | None:
-    """Where a spec's render is of a mesh its asset's declaration does not build.
-
-    A spec written for a mesh the project later replaced with a declaration measures a
-    model no player sees, and its artefact still matches its own record (§PW298). None
-    where the render's record names no mesh, or the declaration has no recorded build.
-    """
-    from polyweave.kernel import provenance
-
-    if not declaration or not artefact or not (here / artefact).is_file():
-        return None
-    try:
-        record = provenance.read(here / artefact, here)
-    except PolyweaveError:
-        return None
-    rendered = next(
-        (i.get("path") for i in record.get("inputs") or () if i.get("role") == "mesh"),
-        None,
-    )
-    made = (_builds(here) if built is None else built).get(declaration) or []
-    if not rendered or not made or rendered in made:
-        return None
-    return {
-        "declaration": declaration,
-        "built": made,
-        "rendered_from": rendered,
-        "says": f"{artefact} is a render of {rendered}, and {declaration} builds "
-        f"{', '.join(made)}: the spec measures a model the game may no longer draw. "
-        "Render the build and point the spec's artefact at it; a bound read off the "
-        "old render is a person's to set again",
-    }
-
-
 def _spec(asset: str, here: Path) -> Any:
-    from . import accept
+    from polyweave.loop import accept
 
     for found in sorted(here.rglob(f"*{accept.SUFFIX}")):
         if ".polyweave" in found.parts:
@@ -167,7 +102,7 @@ def _artefact_at(path: str, here: Path) -> dict:
 
 
 def _last_verdict(asset: str, here: Path) -> dict | None:
-    from . import loop
+    from polyweave.loop import loop
 
     verdicts = [
         (run.get("way"), one)
@@ -229,8 +164,6 @@ def _declared_item(item: dict, here: Path) -> dict | None:
     A shape in its parts, a line in its locales, a cue as music.validate says it, an
     effect as its own table, and a picture as the style family it is held to.
     """
-    from polyweave.surface.cli import is_declaration
-
     path = item["declaration"]
     record = {} if item["kind"] == "line" else _record_of(item, here)
     # Read in its own layer's words, where a layer reads that kind (§PW505); a
@@ -248,7 +181,9 @@ def _declared_item(item: dict, here: Path) -> dict | None:
     except PolyweaveError as refused:
         return {"path": path, "refused": refused.as_dict()}
     read, described = part("declaration.read"), part("declaration.describe")
-    if path.endswith(".toml") and is_declaration(here / path) and read and described:
+    declaring = part("declaration.is")
+    if (path.endswith(".toml") and read and described and declaring
+            and call(declaring, here / path)):
         try:
             said = call(described, call(read, here / path, root=here))
         except PolyweaveError as refused:
@@ -267,24 +202,6 @@ def _record_of(item: dict, here: Path) -> dict:
         return provenance.read(here / item["artefact"], here)
     except PolyweaveError:
         return {}
-
-
-def _effect(item: dict, path: str, record: dict, here: Path) -> dict:
-    """An sfx or vfx effect as its table declares it, and what a built one measures."""
-    import tomllib
-
-    tables = tomllib.loads((here / path).read_text(encoding="utf-8-sig")).get("effect")
-    tables = tables if isinstance(tables, dict) else {}
-    params = record.get("params") or {}
-    if params.get("arrangement"):
-        # A mix of several effects reads back as the cues it was mixed from (§PW313).
-        return {"path": path, "arrangement": params["arrangement"],
-                "cues": params.get("cues") or []}
-    # The record names its effect; one written before it did is matched by its file.
-    name = params.get("effect") or Path(item["id"]).stem
-    if name not in tables:
-        return {"path": path, "effects": sorted(tables)}
-    return {"path": path, "effect": name, "table": tables[name]}
 
 
 def _loop(path: str | None, here: Path) -> bool:
@@ -325,7 +242,7 @@ def brief(
     sound, an effect or a line then answers with its row as `item`, and every answer
     names the artefacts made from it as `dependents`.
     """
-    from . import loop
+    from polyweave.loop import loop
 
     here = Path(root).resolve()
     item = _item(asset, here)

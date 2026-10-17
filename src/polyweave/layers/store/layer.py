@@ -18,4 +18,5 @@ LAYER = Layer(
             target="polyweave.layers.store.video:predicate",
         ),
     ),
+    parts={"contact.sheet": "polyweave.layers.store.compose:sheet"},
 )

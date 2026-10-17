@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 
 from polyweave.kernel import provenance
+from polyweave.services.generated import generated as generated_files
 
 TWO = """[service.meshy]
 base = "https://api.meshy.ai"
@@ -36,7 +37,7 @@ def bought(root, path, *, task_id="01a0d058", engine=None, **extra):
 
 
 def said(root, path):
-    found = provenance.generated(paths=[path], root=str(root))["generated"]
+    found = generated_files(paths=[path], root=str(root))["generated"]
     assert len(found) == 1
     return found[0]
 

@@ -268,8 +268,7 @@ def test_a_cue_that_cannot_be_played_is_refused(tmp_path, cue, said):
 
 
 def test_a_brief_on_a_mix_reads_back_its_cues(tmp_path):
-    from polyweave.loop import brief
-
+    from polyweave.surface import brief
     sfx.synth(effects(tmp_path, JINGLE), root=str(tmp_path))
     said = brief.brief("audio/splash.wav", root=str(tmp_path))["declaration"]
     assert said["arrangement"] == "splash"

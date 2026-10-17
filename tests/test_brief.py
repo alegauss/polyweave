@@ -7,7 +7,8 @@ from PIL import Image
 
 from polyweave.kernel import provenance
 from polyweave.kernel.errors import PolyweaveError
-from polyweave.loop import brief, loop
+from polyweave.loop import loop
+from polyweave.surface import brief
 
 SHAPE = """name = "crate"
 output = "crate"

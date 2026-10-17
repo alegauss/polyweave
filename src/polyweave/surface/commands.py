@@ -30,45 +30,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from polyweave.kernel.errors import PolyweaveError
-
-#: The most of a refusal's detail its text prints, in characters.
-DETAIL_LINE = 300
-
-
-def _message_in(found: Any) -> str | None:
-    """The first `message` a service's answer carries, however deep it is nested."""
-    if isinstance(found, dict):
-        if isinstance(found.get("message"), str):
-            return found["message"]
-        found = list(found.values())
-    if isinstance(found, list):
-        for one in found:
-            message = _message_in(one)
-            if message:
-                return message
-    return None
-
-
-def detail_line(detail: str | None) -> str | None:
-    """A refusal's detail as one line of its text (§PW410).
-
-    The remedy of a service's refusal says "read the detail", and the text used to drop
-    it, so a 403 that said why only said so under `--json`. A service's JSON answer is
-    read for its message; one line is printed as it is; a traceback or a log is longer
-    than a line, so its last line is printed and `--json` keeps it whole.
-    """
-    if not detail or not detail.strip():
-        return None
-    with contextlib.suppress(ValueError):
-        message = _message_in(json.loads(detail))
-        if message:
-            return message[:DETAIL_LINE]
-    lines = [one.strip() for one in detail.strip().splitlines() if one.strip()]
-    if len(lines) == 1:
-        return lines[0][:DETAIL_LINE]
-    return f"{lines[-1][:DETAIL_LINE]} (the last of {len(lines)} lines; --json has all)"
-
+from polyweave.kernel.errors import PolyweaveError, detail_line
 
 #: The verbs that are not operations: the first reads, the job handle's, and the server.
 VERBS = (
@@ -413,7 +375,7 @@ def run(stated: argparse.Namespace) -> int:
         return 0
     if stated.command == "hook":
         # A hook that fails must not fail the session's tool call: it says nothing.
-        from polyweave.loop.revision import hooked
+        from polyweave.surface.revision import hooked
 
         try:
             event = json.loads(sys.stdin.read() or "{}")

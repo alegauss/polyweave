@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from polyweave.kernel import provenance as P
+from polyweave.services.generated import generated as generated_files
 
 
 def made(root, path, kind, inputs=(), extra=None, text="x"):
@@ -53,7 +54,7 @@ def game(root):
 
 def test_a_mesh_descended_from_a_purchase_is_named_with_its_chain(tmp_path):
     game(tmp_path)
-    found = P.generated(["assets"], root=tmp_path)
+    found = generated_files(["assets"], root=tmp_path)
     assert found["generated"] == [
         {
             "path": "assets/models/drone.glb",
@@ -73,13 +74,13 @@ def test_a_mesh_descended_from_a_purchase_is_named_with_its_chain(tmp_path):
 
 def test_a_file_bought_as_it_is_is_direct(tmp_path):
     game(tmp_path)
-    found = P.generated(["tools/art/meshy/drone.glb"], root=tmp_path)
+    found = generated_files(["tools/art/meshy/drone.glb"], root=tmp_path)
     assert found["generated"][0]["direct"] is True
 
 
 def test_without_paths_every_recorded_artefact_is_read(tmp_path):
     game(tmp_path)
-    found = P.generated(root=tmp_path)
+    found = generated_files(root=tmp_path)
     assert {one["path"] for one in found["generated"]} == {
         "assets/models/drone.glb",
         "tools/art/meshy/drone.glb",
@@ -94,4 +95,4 @@ def test_a_cycle_in_the_records_ends_the_walk(tmp_path):
     record = P.read("a.txt", tmp_path)
     record["inputs"] = [P.source("from", tmp_path / "b.txt", root=tmp_path)]
     P.write(record, root=tmp_path)
-    assert P.generated(["a.txt"], root=tmp_path)["authored"] == ["a.txt"]
+    assert generated_files(["a.txt"], root=tmp_path)["authored"] == ["a.txt"]

@@ -157,8 +157,9 @@ MODULES: dict[str, tuple[str, str]] = {
         "internal", "a panel's states, checked; panel.build"),
     "polyweave.layers.picture.panel:wipe": (
         "internal", "a wipe's kind and uniforms, for panel.build"),
-    "polyweave.loop.revision:hooked": ("internal", "the `hook revision` verb's answer"),
-    "polyweave.loop.revision:paid": (
+    "polyweave.surface.revision:hooked": (
+        "internal", "the `hook revision` verb's answer"),
+    "polyweave.surface.revision:paid": (
         "internal", "the paid tools a revision always asks"),
     "polyweave.loop.review_text": (
         "internal", "a sitting's words, from the catalogs"),
@@ -255,6 +256,14 @@ MODULES: dict[str, tuple[str, str]] = {
         "internal", "the instruments a sound's record names"),
     "polyweave.surface.cli": (
         "internal", "the command line's own parsing and printing"),
+    "polyweave.layers.geometry.make:is_declaration": (
+        "internal", "whether a TOML file is meant as a shape"),
+    "polyweave.layers.geometry.make:made_from": (
+        "internal", "what a build's outputs are made from"),
+    "polyweave.layers.geometry.make:settings": (
+        "internal", "`--set name=value`, read for the build"),
+    "polyweave.layers.geometry.make:stamp": (
+        "internal", "a build's stamp, its record's cache key"),
     "polyweave.layers.geometry": (
         "internal", "a declaration's machinery; geometry.build"),
     "polyweave.layers.geometry.build": ("internal", "the mesh a build writes"),

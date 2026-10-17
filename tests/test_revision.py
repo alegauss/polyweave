@@ -9,7 +9,7 @@ from PIL import Image
 
 from polyweave.kernel import provenance
 from polyweave.kernel.errors import PolyweaveError
-from polyweave.loop import revision
+from polyweave.surface import revision
 
 
 @pytest.fixture

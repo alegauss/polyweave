@@ -11,7 +11,9 @@ import pytest
 import polyweave.layers
 from polyweave.kernel import layer as L
 from polyweave.kernel.errors import PolyweaveError
-from polyweave.loop import brief, loop, review
+from polyweave.loop import loop, review
+from polyweave.surface import brief
+from polyweave.surface.report import report as loop_report
 
 LAYER = '''
 from polyweave.kernel.layer import Layer
@@ -88,7 +90,7 @@ def test_a_layers_part_shows_up_in_the_brief_the_report_and_the_page(scent):
     assert said["scent"] == {"bottles": 3, "of": None}
     # The picture layer's own part is there beside it, under its key as before.
     assert "gate" in said
-    assert loop.report(root=str(scent))["scent"] == {
+    assert loop_report(root=str(scent))["scent"] == {
         "bottles": 3, "from": "bottles.json"}
     page = review.state(root=str(scent))
     assert page["scent"] == [{"bottle": "lavender"}]

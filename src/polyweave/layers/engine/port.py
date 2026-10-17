@@ -177,12 +177,12 @@ def port(
     searches, and keeps what a passing search finds. `fresh` searches regardless.
 
     `bake` is the renderer, `render.bake` unless a test stands one in; `build` turns a
-    declaration into a mesh, `cli.build_one` by default. With `run` open, every bake
+    declaration into a mesh, `make.build_one` by default. With `run` open, every bake
     counts itself into it; the run is still judged and closed by whoever gave the
     verdict.
     """
     from polyweave.layers.geometry import render as R
-    from polyweave.surface.cli import build_one
+    from polyweave.layers.geometry.make import build_one
 
     here = Path(root).resolve()
     family = read(path, here)

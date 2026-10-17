@@ -9,7 +9,7 @@ from polyweave.kernel.errors import PolyweaveError
 
 def read(item: dict, record: dict, here: Path) -> dict | None:
     """An effect in the brief, as its table declares it and as a build measures it."""
-    from polyweave.loop import brief
+    from polyweave.loop import declared
 
     from . import vfx
 
@@ -17,7 +17,7 @@ def read(item: dict, record: dict, here: Path) -> dict | None:
     if not path or not path.endswith(".toml"):
         return None
     try:
-        answer = brief._effect(item, path, record, here)
+        answer = declared._effect(item, path, record, here)
         if "table" in answer:
             answer["measures"] = vfx.measured_whole(
                 vfx.declared(answer["effect"], answer["table"], here))

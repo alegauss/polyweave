@@ -655,8 +655,7 @@ def verify(
     from polyweave.kernel import provenance
     from polyweave.kernel.config import load as load_config
 
-    from . import brief
-
+    from . import declared as brief
     here = Path(root).resolve()
     folder = Path(under) if under else load_config(here).path("paths.specs")
     folder = folder if folder.is_absolute() else here / folder

@@ -14,6 +14,7 @@ from polyweave.kernel import provenance
 from polyweave.kernel.errors import PolyweaveError
 from polyweave.layers.sound import sound, sound_buy
 from polyweave.services import purchase
+from polyweave.services.generated import generated as generated_files
 from test_sound import tone, written
 from test_speech import unheard
 from test_voice_lines import TABLE, VOICED, WORLD
@@ -47,7 +48,7 @@ def test_a_draft_is_spoken_free_and_recorded_as_one(tmp_path, local):
     record = provenance.read(str(tmp_path / "vo" / "hold.wav"), root=tmp_path)
     assert record["params"]["rung"] == "draft"
     assert record["engine"] == {"name": "espeak-ng", "draft": True}
-    shown = provenance.generated(root=str(tmp_path))
+    shown = generated_files(root=str(tmp_path))
     assert shown["drafts"] == ["vo/hold.wav"] and "vo/hold.wav" not in shown["authored"]
 
 

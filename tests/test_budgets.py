@@ -139,7 +139,8 @@ from polyweave.surface.capabilities import capabilities
 #: 145,927 with panel.capture's sizes, the panel filmed grown (§PW490).
 #: 148,402 with the layer each of 128 operations belongs to (§PW500).
 #: 148,542 with search.sweep's producer, what makes each sample (§PW504).
-DESCRIBE = 148_600
+#: 148,626 with the geometry build's four operations named as geometry's (§PW506).
+DESCRIBE = 148_700
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -256,7 +257,8 @@ DESCRIBE = 148_600
 #: 159,565 with panel.capture's sizes (§PW490).
 #: 163,514 with each operation's layer, the layers and their state (§PW500).
 #: 163,749 with search.sweep's producer and the layer codes since (§PW501-§PW504).
-CAPABILITIES = 163_800
+#: 163,855 with the geometry build's operations named as geometry's (§PW506).
+CAPABILITIES = 163_900
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

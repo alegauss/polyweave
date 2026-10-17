@@ -892,7 +892,7 @@ def _plan_lacks(said: str) -> PolyweaveError:
     ElevenLabs answers voice design on a free plan with a 403 whose message says so,
     and the refusal used to be a service error whose remedy named only 401 and 422.
     """
-    from polyweave.surface.commands import detail_line
+    from polyweave.kernel.errors import detail_line
 
     why = detail_line(said)
     return PolyweaveError(

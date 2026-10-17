@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 
 from polyweave.loop import loop
+from polyweave.surface.report import report as loop_report
 
 
 def made(tmp_path, asset, way, *, renders, seconds, credits=0, passed=True,
@@ -26,7 +27,7 @@ def test_each_asset_s_ways_and_verdicts_are_totalled_and_named_by_their_file(tmp
     made(tmp_path, "tray", "before", renders=4, seconds=120.0)
     made(tmp_path, "tray", "after", renders=9, seconds=30.0, credits=2, passed=False)
     made(tmp_path, "stars", "after", renders=28, seconds=8.6)
-    said = loop.report(root=str(tmp_path))
+    said = loop_report(root=str(tmp_path))
     tray = next(one for one in said["assets"] if one["asset"] == "tray")
     assert tray["ways"]["after"]["made"]["renders"] == 9
     assert tray["ways"]["after"]["made"]["rounds"] == 1
@@ -47,5 +48,5 @@ def test_each_asset_s_ways_and_verdicts_are_totalled_and_named_by_their_file(tmp
 
 def test_a_project_with_no_records_reports_nothing_and_says_so(tmp_path):
     (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
-    said = loop.report(root=str(tmp_path))
+    said = loop_report(root=str(tmp_path))
     assert said["assets"] == [] and said["totals"]["runs"] == 0

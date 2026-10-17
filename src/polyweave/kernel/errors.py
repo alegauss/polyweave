@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import contextlib
 import difflib
+import json
 import re
 import traceback
 from collections.abc import Iterable, Iterator
@@ -239,3 +240,41 @@ def guard(code: str, *, remedy: str, message: str | None = None) -> Iterator[Non
             remedy,
             detail=traceback.format_exc(),
         ) from exc
+
+
+def _message_in(found: Any) -> str | None:
+    """The first `message` a service's answer carries, however deep it is nested."""
+    if isinstance(found, dict):
+        if isinstance(found.get("message"), str):
+            return found["message"]
+        found = list(found.values())
+    if isinstance(found, list):
+        for one in found:
+            message = _message_in(one)
+            if message:
+                return message
+    return None
+
+
+#: The most of a refusal's detail its text prints, in characters.
+DETAIL_LINE = 300
+
+
+def detail_line(detail: str | None) -> str | None:
+    """A refusal's detail as one line of its text (§PW410).
+
+    The remedy of a service's refusal says "read the detail", and the text used to drop
+    it, so a 403 that said why only said so under `--json`. A service's JSON answer is
+    read for its message; one line is printed as it is; a traceback or a log is longer
+    than a line, so its last line is printed and `--json` keeps it whole.
+    """
+    if not detail or not detail.strip():
+        return None
+    with contextlib.suppress(ValueError):
+        message = _message_in(json.loads(detail))
+        if message:
+            return message[:DETAIL_LINE]
+    lines = [one.strip() for one in detail.strip().splitlines() if one.strip()]
+    if len(lines) == 1:
+        return lines[0][:DETAIL_LINE]
+    return f"{lines[-1][:DETAIL_LINE]} (the last of {len(lines)} lines; --json has all)"

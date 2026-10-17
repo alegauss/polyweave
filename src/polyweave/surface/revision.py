@@ -168,7 +168,7 @@ def open_(
     at, so the agent knows the request may already be answered, or was made of an
     earlier version.
     """
-    from . import brief
+    from polyweave.surface import brief
 
     rows = _rows(root)
     found = []
@@ -237,8 +237,7 @@ def _laid(asked: dict, root: str) -> str | None:
     before the request answers an older question, so it does not count.
     """
     from polyweave.kernel.config import load
-
-    from . import review
+    from polyweave.loop import review
 
     item = asked["item"]
     key = item[len("line:"):] if item.startswith("line:") else None
@@ -256,7 +255,7 @@ def _laid(asked: dict, root: str) -> str | None:
 
 def _answer(sitting: str | None, root: str) -> dict | None:
     """The person's latest answer on that sitting, as the review page kept it."""
-    from . import verdict
+    from polyweave.loop import verdict
 
     if not sitting:
         return None
@@ -278,8 +277,7 @@ def _scope(asked: dict, root: str) -> set[str]:
     from it, by the provenance graph. Anything else is outside the revision.
     """
     from polyweave.kernel import provenance
-
-    from . import brief
+    from polyweave.surface import brief
 
     here = Path(root).resolve()
     row = _rows(root).get(asked["item"]) or {}
@@ -453,8 +451,7 @@ def check(
     """
     from polyweave.kernel.config import load
     from polyweave.layers.words import words
-
-    from . import brief
+    from polyweave.surface import brief
 
     here = load(root).root
     asked = _asked(revision, root)
@@ -465,7 +462,7 @@ def check(
     spec = briefed.get("spec")
     checks: list[dict] = []
     if spec and spec.get("path") and artefact:
-        from . import accept
+        from polyweave.loop import accept
 
         found = accept.checked(spec["path"], artefact, root=str(here))
         checks.append({

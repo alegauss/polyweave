@@ -8,7 +8,7 @@ import pytest
 from PIL import Image
 
 from polyweave.kernel import describe
-from polyweave.kernel.errors import PolyweaveError
+from polyweave.kernel.errors import DETAIL_LINE, PolyweaveError
 from polyweave.surface import cli, commands
 
 
@@ -102,7 +102,7 @@ def test_a_refusal_s_text_says_what_the_service_said(tmp_path, capsys, monkeypat
     ('{"errors": [{"message": "bad prompt"}]}', "bad prompt"),
     ("Traceback (most recent call last):\n  File x\nValueError: no",
      "ValueError: no (the last of 3 lines; --json has all)"),
-    ("x" * 500, "x" * commands.DETAIL_LINE),
+    ("x" * 500, "x" * DETAIL_LINE),
 ])
 def test_a_detail_is_one_line_of_text(detail, line):
     assert commands.detail_line(detail) == line

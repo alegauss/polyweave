@@ -31,7 +31,7 @@ from polyweave.kernel import cache as store
 from polyweave.kernel.config import load
 from polyweave.kernel.describe import Param, operation
 from polyweave.kernel.files import write_atomic
-from polyweave.layers.store import compose
+from polyweave.kernel.layer import call, part
 
 from .accept import Spec
 
@@ -75,7 +75,11 @@ def sheet(
             "why": "no sample's picture is in the cache, so there is nothing to "
             "lay out",
         }
-    made = compose.sheet(tiles, cell=cell, out=out)
+    lays = part("contact.sheet")
+    if lays is None:
+        return {"sheet": None, "shown": [], "why": "no layer lays out a "
+                "contact sheet"}
+    made = call(lays, tiles, cell=cell, out=out)
     return {
         "sheet": str(made.path),
         "shown": shown,

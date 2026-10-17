@@ -17,6 +17,7 @@ from polyweave.kernel.errors import PolyweaveError
 from polyweave.layers.sound import sound_buy
 from polyweave.layers.words import world
 from polyweave.services import purchase
+from polyweave.surface.quote import quote
 from test_sound_buy import PROJECT, mp3
 
 pytestmark = pytest.mark.skipif(not shutil.which("ffmpeg"), reason="needs ffmpeg")
@@ -101,9 +102,9 @@ def test_a_sample_shorter_than_the_service_takes_is_refused_before_the_call(
 
 
 def test_a_voice_call_is_quoted_from_the_entitys_own_sample(tmp_path, service):
-    quoted = purchase.quote("voice.design", {"entity": "bo"}, root=str(tmp_path))
+    quoted = quote("voice.design", {"entity": "bo"}, root=str(tmp_path))
     assert quoted["price"] == pytest.approx(len(LINE) * 0.001, abs=1e-6)
-    given = purchase.quote("voice.design", {"entity": "bo", "sample": "x" * 120},
+    given = quote("voice.design", {"entity": "bo", "sample": "x" * 120},
                            root=str(tmp_path))
     assert given["price"] == pytest.approx(0.12, abs=1e-6)
 

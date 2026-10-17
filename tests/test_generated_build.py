@@ -11,6 +11,7 @@ import pytest
 
 from polyweave.kernel import provenance
 from polyweave.kernel.errors import PolyweaveError
+from polyweave.services.generated import generated as generated_files
 
 PRESETS = """[preset.0]
 
@@ -57,13 +58,13 @@ def game(tmp_path):
 
 
 def test_a_godot_project_answers_for_what_its_first_preset_ships(tmp_path):
-    said = provenance.generated(root=str(game(tmp_path)))
+    said = generated_files(root=str(game(tmp_path)))
     assert said["preset"] == "Windows Desktop"
     assert [one["path"] for one in said["generated"]] == ["game/voice/line_01.ogg"]
 
 
 def test_unrecorded_pictures_are_apart_from_code(tmp_path):
-    said = provenance.generated(root=str(game(tmp_path)))
+    said = generated_files(root=str(game(tmp_path)))
     assert said["unrecorded"] == ["game/ui/brand/logo.png"]
     assert "game/main.gd" in said["unrecorded_code"]
     assert "game/waves/one.toml" in said["unrecorded_code"]  # its include_filter
@@ -72,7 +73,7 @@ def test_unrecorded_pictures_are_apart_from_code(tmp_path):
 
 
 def test_another_preset_is_named(tmp_path):
-    said = provenance.generated(preset="Web", root=str(game(tmp_path)))
+    said = generated_files(preset="Web", root=str(game(tmp_path)))
     assert said["preset"] == "Web"
     assert {one["path"] for one in said["generated"]} == {
         "game/voice/line_01.ogg", "assets/models/drone.glb",
@@ -81,12 +82,12 @@ def test_another_preset_is_named(tmp_path):
 
 def test_a_preset_nothing_declares_is_refused_with_the_ones_there(tmp_path):
     with pytest.raises(PolyweaveError) as refused:
-        provenance.generated(preset="Linux", root=str(game(tmp_path)))
+        generated_files(preset="Linux", root=str(game(tmp_path)))
     assert refused.value.code == "prov.no-preset"
     assert set(refused.value.allowed) == {"Windows Desktop", "Web"}
 
 
 def test_paths_given_are_read_as_given(tmp_path):
-    said = provenance.generated(paths=["assets"], root=str(game(tmp_path)))
+    said = generated_files(paths=["assets"], root=str(game(tmp_path)))
     assert "preset" not in said
     assert [one["path"] for one in said["generated"]] == ["assets/models/drone.glb"]
