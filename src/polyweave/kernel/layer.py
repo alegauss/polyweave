@@ -145,6 +145,13 @@ class Layer:
     producers: tuple[Producer, ...] = ()
     #: The files this layer measures off the picture, for an acceptance spec (§PW503).
     subjects: tuple[Subject, ...] = ()
+    #: Named reads the shared surfaces call, each to its `module:function` (§PW505).
+    #: `brief:<key>`, `report:<key>` and `review:<key>` add a section under that key
+    #: to `asset.brief` (path, root), `loop.report` (root) and `review.state` (root);
+    #: `brief.read:<kind>` reads an inventory item's declaration in its kind's words
+    #: (item, record, root); any other name, such as the page's `page.admit`, is
+    #: one a surface asks for by that name.
+    parts: dict[str, str] = field(default_factory=dict)
     #: Picture measures this layer computes, by name, to the `module:function` called
     #: (image, mask, *, key, **arguments): part of the closed vocabulary all the same.
     pictures: dict[str, str] = field(default_factory=dict)
@@ -256,6 +263,42 @@ def producers() -> dict[str, Producer]:
         (name, one.name, one) for name, layer in layers().items()
         for one in layer.producers
     ])
+
+
+def parts() -> dict[str, str]:
+    """Every named read a layer answers, to what answers it (§PW505)."""
+    return _once("part", [
+        (name, key, target) for name, layer in layers().items()
+        for key, target in layer.parts.items()
+    ])
+
+
+def part(name: str) -> str | None:
+    """What answers one named read, or None where no layer does."""
+    return parts().get(name)
+
+
+def needed(name: str) -> str:
+    """What answers a named read a surface cannot do without, refused where none."""
+    found = part(name)
+    if found is None:
+        raise PolyweaveError(
+            "layer.missing-part",
+            f"no layer answers {name!r}, which this call needs",
+            "install the layer that declares it in its layer.py parts",
+            given=name,
+            allowed=sorted(parts()),
+        )
+    return found
+
+
+def sections(surface: str) -> dict[str, str]:
+    """Each section a layer adds to one surface (brief, report, review), by key."""
+    prefix = f"{surface}:"
+    return {
+        key[len(prefix):]: target for key, target in parts().items()
+        if key.startswith(prefix)
+    }
 
 
 def pictures() -> dict[str, str]:

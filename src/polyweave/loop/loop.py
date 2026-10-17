@@ -756,8 +756,8 @@ def report(root: Annotated[str, ROOT] = ".") -> dict:
     the picture gate refused before a person saw any. A figure no record holds is
     absent, never zero by assumption, so the report can be quoted as it stands.
     """
+    from polyweave.kernel.layer import call, sections
     from polyweave.kernel.provenance import relative
-    from polyweave.layers.picture import picture
     from polyweave.services import purchase
 
     config = load(root)
@@ -802,7 +802,6 @@ def report(root: Annotated[str, ROOT] = ".") -> dict:
         row["credits"] = round(row["credits"] + float(one.get("credits") or 0.0), 6)
         if one.get("reported") is not None:
             row["reported"] = round(row["reported"] + float(one["reported"]), 6)
-    looked = [c for run in picture.gates(root) for c in run.get("candidates", ())]
     answer = {
         "assets": assets,
         "totals": {**_totals([one for one in runs if was_made(one)]), "from": ledger},
@@ -810,13 +809,11 @@ def report(root: Annotated[str, ROOT] = ".") -> dict:
     if bought:
         answer["bought"] = {"services": list(bought.values()),
                             "from": relative(purchase.where(root), here)}
-    if looked:
-        answer["gate"] = {
-            "candidates": len(looked),
-            "refused": sum(1 for c in looked if c.get("passed") is False),
-            "unchecked": sum(1 for c in looked if c.get("passed") is None),
-            "from": relative(config.path("paths.work") / picture.GATES, here),
-        }
+    # A layer's own section, where it has one to report: the picture gate's refusals.
+    for key, target in sections("report").items():
+        said = call(target, root)
+        if said:
+            answer[key] = said
     return answer
 
 

@@ -29,4 +29,7 @@ LAYER = Layer(
             target="polyweave.layers.sound.sound:predicate",
         ),
     ),
+    parts={
+        "brief.read:music": "polyweave.layers.sound.page:music",
+    },
 )

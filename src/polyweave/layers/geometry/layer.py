@@ -33,4 +33,9 @@ LAYER = Layer(
             described="polyweave.layers.geometry.render.rig:described",
         ),
     ),
+    parts={
+        "declaration.read": "polyweave.layers.geometry:read",
+        "declaration.describe": "polyweave.layers.geometry.review:describe",
+        "review:turntables": "polyweave.layers.geometry.page:turntables",
+    },
 )

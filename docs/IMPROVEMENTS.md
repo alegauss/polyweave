@@ -476,28 +476,6 @@ the swap, and its gate passes.
 
 ## Block W — A core that grows by layers
 
-### §PW505 A layer contributes its part of the brief, the page and the report
-
-Three reads cover every medium, and each one does it by importing all of them.
-`brief.py` imports geometry, music, picture, style, vfx, words, cli and project to say
-where an asset stands. `review.py` imports picture, shape, style and review_text to put
-a candidate on the page. `loop.report` imports picture to count what the picture gate
-refused before a person saw it. They are the most-read surfaces here (the first call an
-agent makes, and the page a person answers on), and each new layer has to reach into all
-three.
-
-Three contributions in `Layer`:
-
-- `brief(asset, root) -> dict | None`: the layer's part of `asset.brief` for an asset it owns, or None when it does not own it. `brief` calls each layer and keeps its order, its budget and its `next` field.
-- `review_parts`: what the page shows for the layer's members (the image, sound or text, and the words the person reads), declared as data the page's locale catalogs already render, so a layer adds strings, not page code.
-- `report(runs, root) -> dict`: the layer's section of `loop.report`, under its name and its `from`.
-
-These are reads, so there is no ordering conflict: two layers that both answer for one
-asset each get a section, and `brief` says that both do.
-
-Done when `brief.py`, `review.py` and `loop.py` import nothing from `layers/`, their
-tests pass, and a fixture layer shows up in all three.
-
 ### §PW506 The import direction as a test
 
 After the five inversions, the layout has a direction: `surface` may import anything;

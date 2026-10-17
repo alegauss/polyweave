@@ -21,4 +21,7 @@ LAYER = Layer(
         "words": "polyweave.layers.words.words:still",
         "world": "polyweave.layers.words.world:still",
     },
+    parts={
+        "brief.read:line": "polyweave.layers.words.page:read",
+    },
 )

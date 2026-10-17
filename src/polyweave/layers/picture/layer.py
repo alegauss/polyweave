@@ -23,4 +23,14 @@ LAYER = Layer(
         ),
     ),
     kinds=("picture",),
+    parts={
+        "brief:gate": "polyweave.layers.picture.page:gate",
+        "brief.read:picture": "polyweave.layers.picture.page:read",
+        "report:gate": "polyweave.layers.picture.page:report_gate",
+        "review:gates": "polyweave.layers.picture.page:gates",
+        "page.admit": "polyweave.layers.picture.page:admitted",
+        "page.overrule": "polyweave.layers.picture.page:overruled",
+        "page.withdraw": "polyweave.layers.picture.page:withdraw",
+        "page.boards": "polyweave.layers.picture.page:boards",
+    },
 )

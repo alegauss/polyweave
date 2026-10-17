@@ -16,4 +16,7 @@ LAYER = Layer(
             target="polyweave.layers.vfx.vfx:predicate",
         ),
     ),
+    parts={
+        "brief.read:vfx": "polyweave.layers.vfx.page:read",
+    },
 )

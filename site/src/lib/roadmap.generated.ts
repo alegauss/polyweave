@@ -47,7 +47,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 2 },
-  { block: "W", title: "A core that grows by layers", open: 18 },
+  { block: "W", title: "A core that grows by layers", open: 17 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -129,18 +129,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW505",
-    block: "W",
-    symptom: "asset.brief, the review page and loop.report each import every medium they describe, so one new layer edits all three",
-    why: "These are the reads an agent and a person start from, and a layer that does not appear in them is one neither of them finds.",
-    deps: [],
-  },
-  {
     id: "PW506",
     block: "W",
     symptom: "A kernel or loop module can import a layer and both gates still pass, so the direction the layout states is a hope",
     why: "Every inversion in this block is undone by one quick import, and only a test that fails holds a boundary between commits.",
-    deps: ["PW505"],
+    deps: [],
   },
   {
     id: "PW507",

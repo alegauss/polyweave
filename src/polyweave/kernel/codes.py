@@ -382,6 +382,11 @@ CODES: dict[str, Code] = {
         when="a layer.py names something another layer, or the kernel, already owns",
         doors=("keep it in the layer that owns it and drop it from the other",),
     ),
+    "layer.missing-part": Code(
+        means="a call needs a read that no installed layer answers",
+        when="the review page or the brief asks for a part only one layer provides",
+        doors=("install the layer whose layer.py declares the part",),
+    ),
     "layer.two-judges": Code(
         means="two layers declare a judge under one name",
         when="a judge's name, the key its answer is reported under, is taken already",

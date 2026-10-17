@@ -175,8 +175,12 @@ MODULES: dict[str, tuple[str, str]] = {
         "internal", "why the export leaves a path out"),
     "polyweave.loop.review:sittings": (
         "internal", "the sittings laid out; review.state"),
-    "polyweave.loop.review:looked_at": ("internal", "the gate runs; review.state"),
-    "polyweave.loop.review:turntables": ("internal", "the turntables; review.state"),
+    "polyweave.layers.picture.page": (
+        "internal", "the picture layer's parts of the brief, page and report"),
+    "polyweave.layers.geometry.page": ("internal", "the turntables; review.state"),
+    "polyweave.layers.words.page": ("internal", "a line, for asset.brief"),
+    "polyweave.layers.sound.page": ("internal", "a music cue, for asset.brief"),
+    "polyweave.layers.vfx.page": ("internal", "an effect, for asset.brief"),
     "polyweave.loop.review:difference": ("internal", "the compare map; review.compare"),
     "polyweave.loop.review:answer": ("internal", "the page's write; review.answer"),
     "polyweave.loop.review:newest": (

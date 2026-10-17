@@ -24,20 +24,21 @@ from typing import Annotated, Any
 
 from polyweave.kernel.describe import Param, operation
 from polyweave.kernel.errors import PolyweaveError
+from polyweave.kernel.layer import call, needed, part, sections
 
 
 def _declared(here: Path):
     """Every readable declaration under the root, with the path it was read from."""
-    from polyweave.layers import geometry as G
     from polyweave.surface.cli import is_declaration
 
-    for source in sorted(here.rglob("*.toml")):
+    read = part("declaration.read")
+    for source in sorted(here.rglob("*.toml")) if read else ():
         if ".polyweave" in source.parts or source.name.endswith(".accept.toml"):
             continue
         if not is_declaration(source):
             continue
         try:
-            yield source.relative_to(here).as_posix(), G.read(source, root=here)
+            yield source.relative_to(here).as_posix(), call(read, source, root=here)
         except PolyweaveError:
             continue
 
@@ -49,11 +50,9 @@ def _declarations(here: Path) -> dict[str, str]:
 
 def _declaration(asset: str, here: Path) -> dict | None:
     """The declaration named `asset`, read back in words, where there is one."""
-    from polyweave.layers.geometry import review
-
     for path, document in _declared(here):
         if document["name"] == asset:
-            said = review.describe(document)
+            said = call(needed("declaration.describe"), document)
             return {"path": path, "reads": said["reads"], "warnings": said["warnings"]}
     return None
 
@@ -233,28 +232,25 @@ def _declared_item(item: dict, here: Path) -> dict | None:
     from polyweave.surface.cli import is_declaration
 
     path = item["declaration"]
-    if item["kind"] == "line":
-        return _line(item, here)
-    record = _record_of(item, here)
-    if item["kind"] == "picture":
-        return _family(record, here)
+    record = {} if item["kind"] == "line" else _record_of(item, here)
+    # Read in its own layer's words, where a layer reads that kind (§PW505); a
+    # reader that answers None leaves the item to what follows.
+    reader = part(f"brief.read:{item['kind']}")
+    if reader:
+        said = call(reader, item, record, here)
+        if said is not None or item["kind"] in ("line", "picture"):
+            return said
     if not path:
         return None
     try:
-        if item["kind"] == "music":
-            from polyweave.layers.sound import music
-
-            return {"path": path, **music.validate(path, root=str(here))}
-        if item["kind"] in ("sound", "vfx") and path.endswith(".toml"):
+        if item["kind"] == "sound" and path.endswith(".toml"):
             return _effect(item, path, record, here)
     except PolyweaveError as refused:
         return {"path": path, "refused": refused.as_dict()}
-    if path.endswith(".toml") and is_declaration(here / path):
-        from polyweave.layers import geometry as G
-        from polyweave.layers.geometry import review
-
+    read, described = part("declaration.read"), part("declaration.describe")
+    if path.endswith(".toml") and is_declaration(here / path) and read and described:
         try:
-            said = review.describe(G.read(here / path, root=here))
+            said = call(described, call(read, here / path, root=here))
         except PolyweaveError as refused:
             return {"path": path, "refused": refused.as_dict()}
         return {"path": path, "reads": said["reads"], "warnings": said["warnings"]}
@@ -288,103 +284,7 @@ def _effect(item: dict, path: str, record: dict, here: Path) -> dict:
     name = params.get("effect") or Path(item["id"]).stem
     if name not in tables:
         return {"path": path, "effects": sorted(tables)}
-    answer = {"path": path, "effect": name, "table": tables[name]}
-    if item["kind"] == "vfx":
-        from polyweave.layers.vfx import vfx
-
-        answer["measures"] = vfx.measured_whole(vfx.declared(name, tables[name], here))
-    return answer
-
-
-def _family(record: dict, here: Path) -> dict | None:
-    """The style family a picture is held to: the one it was bought for, or the one."""
-    from polyweave.kernel.config import load
-
-    config = load(here)
-    if not config.states("style"):
-        return None
-    family = (record.get("details") or {}).get("family")
-    try:
-        name, style = config.style(family)
-    except PolyweaveError as refused:
-        return {"refused": refused.as_dict()}
-    from polyweave.layers.picture import style as S
-
-    return {
-        "family": name,
-        "palette": style["palette"],
-        "skeleton": style["skeleton"],
-        "cell": style["cell"],
-        "filter": style["filter"],
-        "canon": style["canon"] or None,
-        "admitted": len(S.admitted(style)),
-    }
-
-
-def _line(item: dict, here: Path) -> dict:
-    """A line of the string table: its text in each locale, who says it, its verdict."""
-    from polyweave.kernel.config import load
-    from polyweave.layers.words import words
-
-    where, locales, table = words.table(here)
-    key = item["id"][len("line:") :]
-    row = next(one for one in table if one["key"] == key)
-    sha = words._digest(row, locales)
-    latest = [one for one in words.held(here) if one["key"] == key]
-    verdict = latest[-1] if latest else None
-    speaker = load(here).get("words.speaker")
-    return {
-        "path": item["declaration"],
-        "key": key,
-        "row": row["row"],
-        "text": {locale: row["cells"].get(locale) or "" for locale in locales},
-        "speaker": (row["cells"].get(speaker) or "").strip() or None,
-        "verdict": None
-        if verdict is None
-        else {
-            "approved": verdict.get("approved"),
-            **verdict.get("verdict", {}),
-            # A verdict on the line as it read then; false once the text moved.
-            "on_this_text": verdict.get("sha256") == sha,
-        },
-    }
-
-
-def _gate(path: str | None, here: Path) -> dict | None:
-    """The last gate run that weighed this picture, in its two lanes (§PW175, §PW304).
-
-    The refused beside the kept, each refused one with what failed it, so a person sees
-    what the filter turned away and not only what it let through.
-    """
-    from polyweave.kernel import provenance
-    from polyweave.layers.picture import picture
-
-    if not path:
-        return None
-    runs = [
-        run
-        for run in picture.gates(here)
-        if any(
-            provenance.relative(one["picture"], here) == path
-            for one in run.get("candidates") or ()
-        )
-    ]
-    if not runs:
-        return None
-    run = runs[-1]
-    lanes = [
-        (provenance.relative(one["picture"], here), one) for one in run["candidates"]
-    ]
-    return {
-        "run": run.get("id"),
-        "at": run.get("at"),
-        "kept": [where for where, one in lanes if one.get("passed")],
-        "refused": [
-            {"picture": where, "failed": one.get("failed") or []}
-            for where, one in lanes
-            if not one.get("passed")
-        ],
-    }
+    return {"path": path, "effect": name, "table": tables[name]}
 
 
 def _loop(path: str | None, here: Path) -> bool:
@@ -469,8 +369,10 @@ def brief(
         (artefact and artefact["path"]) or (declared and declared.get("path")), here
     )
     path = artefact and artefact["path"]
-    # The window shows a picture's last gate beside it and loops a loop (§PW304).
-    answer["gate"] = _gate(path, here)
+    # The window shows a picture's last gate beside it and loops a loop (§PW304); a
+    # layer's own part of the brief is under its key (§PW505).
+    for key, target in sections("brief").items():
+        answer[key] = call(target, path, here)
     answer["loop"] = _loop(path, here)
     if not any(answer[k] for k in ("item", "declaration", "spec", "last_verdict")):
         raise PolyweaveError(

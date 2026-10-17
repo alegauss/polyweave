@@ -37,6 +37,7 @@ from polyweave.kernel.config import load
 from polyweave.kernel.describe import Param, operation
 from polyweave.kernel.errors import PolyweaveError, crashed
 from polyweave.kernel.files import read_text_retrying
+from polyweave.kernel.layer import call, needed, part, sections
 
 from . import loop, person, verdict
 
@@ -89,62 +90,6 @@ def sittings(root) -> list[dict]:
             continue  # a sitting folder since deleted is simply not offered
         found.append({"manifest": listed, **json.loads(text)})
     return found
-
-
-def looked_at(root) -> list[dict]:
-    """Every gate run, each candidate with what is left of its service's ceiling.
-
-    The refused beside the kept (§PW175), with the numbers the agent used and what is
-    left to spend, read now rather than when the gate ran.
-    """
-    from polyweave.layers.picture import picture
-    from polyweave.services import purchase
-
-    left: dict = {}
-    found = picture.gates(root)
-    for run in found:
-        for one in run["candidates"]:
-            service = (one.get("bought") or {}).get("service")
-            if service and service not in left:
-                try:
-                    left[service] = purchase.remaining(str(root), service=service)
-                except PolyweaveError:
-                    left[service] = None
-            one["ceiling"] = left.get(service)
-            one["compare"] = _compared_with(root, run, one)
-    return found
-
-
-def _compared_with(root, run: dict, one: dict) -> dict | None:
-    """What a candidate is best compared against, and how (§PW176).
-
-    A variation against its parent, as a slider with its mask outlined; anything else
-    against its family's first canon picture, as a difference map.
-    """
-    from polyweave.kernel import provenance
-    from polyweave.layers.picture import style
-
-    config = load(root)
-    here = config.root
-    try:
-        details = provenance.read(one["picture"], root=here).get("details") or {}
-    except PolyweaveError:
-        details = {}
-    if (details.get("parent") or {}).get("path"):
-        return {
-            "old": details["parent"]["path"],
-            "mode": "slider",
-            "mask": details.get("mask"),
-        }
-    try:
-        _, declared = config.style(run.get("family"))
-    except PolyweaveError:
-        return None
-    canon = style.admitted(declared)
-    if not canon:
-        return None
-    first = provenance.relative(Path(declared["canon"]) / canon[0]["picture"], here)
-    return {"old": first, "mode": "difference", "mask": None}
 
 
 def difference(root, old: str, new: str) -> dict:
@@ -211,80 +156,6 @@ def difference(root, old: str, new: str) -> dict:
     }
 
 
-def _overruled(root, body: dict) -> tuple[list[dict], str, str]:
-    """A refused picture promoted by a person: the members, the sitting and family."""
-    from polyweave.layers.picture import picture
-
-    ran = {one["id"]: one for one in picture.gates(root)}
-    run = ran.get(str(body.get("gate") or ""))
-    held = {one["picture"]: one for one in (run or {}).get("candidates", ())}
-    if run is None:
-        # The runs themselves, where the gate is the unknown one (§PW265).
-        raise PolyweaveError(
-            "loop.unknown-sitting",
-            f"there is no gate run {body.get('gate')!r} in this project",
-            f"name one of the gate runs: {', '.join(sorted(ran)) or 'there are none'}",
-            given=str(body.get("gate")),
-            allowed=sorted(ran),
-        )
-    chosen = held.get(str(body.get("picture") or ""))
-    if chosen is None:
-        raise PolyweaveError(
-            "loop.unknown-sitting",
-            f"gate run {run['id']} has no picture {body.get('picture')!r}",
-            f"name one of its pictures: {', '.join(sorted(held))}",
-            given=str(body.get("picture")),
-            allowed=sorted(held),
-        )
-    name = Path(chosen["picture"]).stem
-    member = {"name": name, "new": chosen["picture"], "passed": chosen["passed"]}
-    return [member], f"gate:{run['id']}", name
-
-
-def _admitted(root, body: dict) -> tuple[list[dict], str, str]:
-    """A candidate admitted to a canon by a person, never gated (§PW266).
-
-    Only a picture the family's own `candidates` lists: the page can admit what the
-    project pointed at, and not any file a request names.
-    """
-    from polyweave.layers.picture import style
-
-    config = load(root)
-    name, declared = config.style(body.get("canon") or None)
-    offered = {
-        one["path"]: one
-        for one in style.candidates(declared, style.admitted(declared), config.root)
-    }
-    chosen = str(body.get("admit") or "")
-    if chosen not in offered:
-        raise PolyweaveError(
-            "style.not-a-candidate",
-            f"{chosen!r} is not a candidate of the {name} canon",
-            f"admit one of {', '.join(sorted(offered))}"
-            if offered
-            else f"point [style.{name}] candidates at the pictures a person may admit",
-            given=chosen,
-            allowed=sorted(offered),
-        )
-    stem = Path(chosen).stem
-    member = {"name": stem, "new": chosen, "passed": True, "canon": name}
-    return [member], f"canon:{name}", stem
-
-
-def turntables(root) -> list[dict]:
-    """Every turntable laid out in this project, newest last (§PW176)."""
-    from polyweave.layers.geometry.shape import TURNTABLES
-
-    config = load(root)
-    index = config.path("paths.work") / TURNTABLES
-    found = []
-    for listed in json.loads(read_text_retrying(index) or "[]"):
-        text = read_text_retrying(config.root / listed)
-        if text is not None:
-            found.append({"manifest": listed, **json.loads(text)})
-    return found
-
-
 def answer(root, body: dict) -> dict:
     """The page's one write: a person's verdict on one family of one sitting.
 
@@ -294,19 +165,10 @@ def answer(root, body: dict) -> dict:
     """
     config = load(root)
     if body.get("withdraw"):
-        from polyweave.layers.picture import style
-
         # Out of the canon by a person's click and sentence, and by nothing else.
-        return {
-            "withdrawn": style.withdraw(
-                str(body["withdraw"]),
-                family=body.get("canon") or None,
-                why=str(body.get("why") or ""),
-                root=config.root,
-            )
-        }
+        return {"withdrawn": call(needed("page.withdraw"), config.root, body)}
     if body.get("admit"):
-        members, listed, family = _admitted(root, body)
+        members, listed, family = call(needed("page.admit"), root, body)
         said = verdict.judge(
             members, "accept", str(body.get("why") or ""), root=str(config.root)
         )
@@ -315,7 +177,7 @@ def answer(root, body: dict) -> dict:
         )
         return said
     if body.get("gate"):
-        members, listed, family = _overruled(root, body)
+        members, listed, family = call(needed("page.overrule"), root, body)
         if body.get("canon"):
             # Into the canon the same way: a verdict accepting the look, whose record
             # the canon's own entry names (§PW177).
@@ -513,8 +375,9 @@ def state(root: Annotated[str, Param("the project the page is for")] = ".") -> d
         "pending": loop.pending(str(here)),
         "sittings": sittings(here),
         "answers": verdict.answers(root=str(here))["answers"],
-        "gates": looked_at(here),
-        "turntables": turntables(here),
+        # What each layer puts on the page: a picture's gate runs, a model's
+        # turntables (§PW505).
+        **{key: call(target, here) for key, target in sections("review").items()},
     }
 
 
@@ -532,11 +395,8 @@ def words(root: Annotated[str, Param("the project the screen is for")] = ".") ->
 @operation("review.canon")
 def canon(root: Annotated[str, Param("the project the page is for")] = ".") -> dict:
     """Each style family's canon board, as the page's canon tab draws it."""
-    from polyweave.layers.picture import style
-
-    config = load(root)
-    families = config.styles() if config.states("style") else {}
-    return {"boards": [style.board(name, config.root) for name in families]}
+    boards = part("page.boards")
+    return {"boards": call(boards, load(root).root) if boards else []}
 
 
 @operation("review.compare")
