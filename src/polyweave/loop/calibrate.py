@@ -80,7 +80,7 @@ def variations(request: dict, side: int, root: str | Path = ".") -> list[dict]:
     rung below the sphere's samples — is left out, and the answer says so.
     """
     from polyweave.kernel.config import load
-    from polyweave.layers.geometry.render.ladder import RUNGS
+    from polyweave.loop.ladder import RUNGS
 
     seed = int(request.get("seed", 0))
     out = [

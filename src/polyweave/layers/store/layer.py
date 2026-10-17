@@ -1,6 +1,6 @@
 """What the store layer adds, read by the kernel (§PW500)."""
 
-from polyweave.kernel.layer import Layer
+from polyweave.kernel.layer import Layer, Subject
 
 LAYER = Layer(
     name="store",
@@ -10,5 +10,12 @@ LAYER = Layer(
         "polyweave.layers.store.icons",
         "polyweave.layers.store.store",
         "polyweave.layers.store.video",
+    ),
+    subjects=(
+        Subject(
+            about="a teaser video",
+            measures="polyweave.layers.store.video:VIDEOS",
+            target="polyweave.layers.store.video:predicate",
+        ),
     ),
 )

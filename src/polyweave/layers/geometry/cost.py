@@ -411,3 +411,16 @@ def source(subject: Any, of: str | None, root: str | Path) -> Path:
         'add of = "<the .glb or .voxels.json the game draws>" to the predicate',
         example='of = "art/star.glb"',
     )
+
+
+def predicate(p: Any, subject: Any, root: str | Path, seen: dict) -> dict:
+    """A cost predicate for accept.check, read off the file the game draws rather than
+    the picture (§PW143, §PW503)."""
+    where = source(subject, p.of, root)
+    if p.measure in EDGES:
+        # How round a model is, at the predicate's own crease, and where on the model
+        # its sharpest edges are, so a refusal points at them (§PW497).
+        found = edges(where, float(p.arguments.get("crease", CREASE)))
+        return {"value": float(found[p.measure]), "of": p.of or str(where),
+                "sharp_at": found["sharp_at"]}
+    return {"value": float(take(p.measure, where)), "of": p.of or str(where)}

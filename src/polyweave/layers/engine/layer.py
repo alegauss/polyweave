@@ -1,6 +1,6 @@
 """What the engine layer adds, read by the kernel (§PW500)."""
 
-from polyweave.kernel.layer import Layer
+from polyweave.kernel.layer import Layer, Subject
 
 LAYER = Layer(
     name="engine",
@@ -28,4 +28,17 @@ LAYER = Layer(
     requires=("godot",),
     kinds=("capture",),
     ships="polyweave.layers.engine.driving:ships",
+    subjects=(
+        Subject(
+            about="the flashes of a captured run",
+            measures="polyweave.layers.engine.flashes:FLASHES",
+            target="polyweave.layers.engine.flashes:predicate",
+        ),
+    ),
+    pictures={
+        key: "polyweave.layers.engine.contrast:picture_measure"
+        for key in (
+            "contrast_min", "contrast_median", "delta_e_min", "text_contrast_min",
+        )
+    },
 )

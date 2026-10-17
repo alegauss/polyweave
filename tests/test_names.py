@@ -9,8 +9,7 @@ import pytest
 
 from polyweave.kernel import describe
 from polyweave.kernel.errors import PolyweaveError, near
-from polyweave.layers.geometry.render import ladder
-from polyweave.loop import loop
+from polyweave.loop import ladder, loop
 
 SOURCE = Path(__file__).parents[1] / "src" / "polyweave"
 

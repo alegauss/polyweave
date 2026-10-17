@@ -476,30 +476,6 @@ the swap, and its gate passes.
 
 ## Block W — A core that grows by layers
 
-### §PW503 A layer measures its own subject for accept
-
-An acceptance spec names a subject (a picture, a render, a capture, a sound, a video, an
-effect) and bounds measures over it. To turn that subject into numbers, `accept.py`
-imports six domain modules: `render` for a mesh's rung, `sound` for loudness, `vfx` and
-`video` for their own records, `flashes` for a captured run, and `reference_concept` for
-a capture against its painting. `measure.py` imports `contrast` in the same way. Each
-medium that could be held to a bar added an import and a branch.
-
-`Layer.subjects` declares a `Subject` for each kind of file the layer can measure:
-
-- `matches(path, spec) -> bool`, whether it measures this subject (by suffix, or by the spec's `subject` kind);
-- `measures`: the closed names it can return, each with its unit and the direction a search should move it, which `measurements.md` keeps as the vocabulary;
-- `measure(path, names, *, region, rung, root) -> dict`.
-
-`accept.check` finds the subject's `Subject` (when two match, it refuses, naming both),
-asks it for the bounded measures, and keeps everything it already does: percentiles,
-anchors, origins, staleness and the report order. The vocabulary stays closed. What
-changes is that the layer that owns a measure also declares it, and the
-`spec.unknown-measure` refusal names which layer would have answered.
-
-Done when `accept.py` and `measure.py` import nothing from `layers/`, every accept test
-passes, and a fixture layer's subject is bounded and checked end to end.
-
 ### §PW504 A layer produces a sample, and one search aims every layer
 
 `search.sweep` builds its evaluator from `render.bake`, and `calibrate` reads

@@ -23,7 +23,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any
 
 import numpy as np
 
@@ -40,10 +40,6 @@ FLASHES: dict[str, str] = {
 #: Frames are read at most this many pixels on their longer side, averaged in linear
 #: light first, so a 4K capture costs what a small one does and a flash keeps its area.
 _SIDE = 320
-
-
-def is_flash(name: str) -> bool:
-    return name in FLASHES
 
 
 def _frames(capture: Path, fps: float, here: Path) -> tuple[list[Path], float]:
@@ -227,3 +223,15 @@ def flashes(
         f"{worst['file']} ({worst['second']} s), over the {found['limit']} allowed"
     )
     return {"capture": capture, **found, "says": says}
+
+
+def predicate(p: Any, subject: Any, root: str | Path, seen: dict) -> dict:
+    """A flash predicate for accept.check, read off the captured run it names or the
+    subject (§PW354, §PW503)."""
+    where = Path(p.of) if p.of else Path(subject)
+    where = where if where.is_absolute() else Path(root) / where
+    key = f"flashes:{where}"
+    if key not in seen:
+        seen[key] = measured(where, root=root)
+    return {"value": float(seen[key][p.measure]), "of": str(where),
+            "certifies": seen[key]["certifies"]}

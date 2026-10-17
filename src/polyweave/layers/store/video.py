@@ -74,10 +74,6 @@ _VIDEO_KEYS = {
 _CLIP_KEYS = {"from", "start", "length", "fade_in"}
 
 
-def is_video(name: str) -> bool:
-    return name in VIDEOS
-
-
 def _ffmpeg(tool: str = "ffmpeg") -> str:
     found = shutil.which(tool)
     if not found:
@@ -566,3 +562,14 @@ def cut(
         f"{found['video_height']}, moving from {found['first_motion']:g}s; watch "
         f"{provenance.relative(target, here)}, or lay the sheet in a sitting",
     }
+
+
+def predicate(p: Any, subject: Any, root: str | Path, seen: dict) -> dict:
+    """A video predicate for accept.check, read off the teaser it names or the subject
+    (§PW429, §PW503)."""
+    where = Path(p.of) if p.of else Path(subject)
+    where = where if where.is_absolute() else Path(root) / where
+    key = f"video:{where}"
+    if key not in seen:
+        seen[key] = measured(where)
+    return {"value": float(seen[key][p.measure]), "of": str(where)}

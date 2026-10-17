@@ -1,6 +1,6 @@
 """What the reference layer adds, read by the kernel (§PW500)."""
 
-from polyweave.kernel.layer import Judge, Layer
+from polyweave.kernel.layer import Judge, Layer, Subject
 
 LAYER = Layer(
     name="reference",
@@ -21,6 +21,13 @@ LAYER = Layer(
             about="a transcription row is kept in the answers beside its sheet",
             claims=lambda member: bool(member.get("transcription")),
             target="polyweave.layers.reference.reference_transcription:judged",
+        ),
+    ),
+    subjects=(
+        Subject(
+            about="a capture against the concept painting it copies",
+            measures="polyweave.layers.reference.reference_concept:CONCEPTS",
+            target="polyweave.layers.reference.reference_concept:predicate",
         ),
     ),
 )

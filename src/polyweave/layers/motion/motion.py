@@ -20,7 +20,7 @@ from typing import Annotated
 
 from polyweave.kernel.describe import Param, operation
 from polyweave.kernel.errors import PolyweaveError
-from polyweave.layers.geometry.render.ladder import RUNGS
+from polyweave.loop.ladder import RUNGS
 
 
 @operation("motion.bake", produces="render", kind="bake", injects=("report",))

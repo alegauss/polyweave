@@ -263,7 +263,7 @@ def test_a_pixel_distance_with_nothing_to_measure_to_is_refused(tmp_path):
 
 
 def test_it_is_answered_where_every_colour_is():
-    from polyweave.layers.geometry.render.ladder import rung_for
+    from polyweave.loop.ladder import rung_for
 
     assert rung_for("pixel_delta_e_p50") == "sphere"
 

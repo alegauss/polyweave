@@ -67,6 +67,28 @@ def call(target: str, *args: Any, **kwargs: Any) -> Any:
 
 
 @dataclass(frozen=True)
+class Subject:
+    """A file a layer measures for an acceptance spec, off the picture (§PW503).
+
+    `accept.check` hands each predicate whose measure this subject names to `target`,
+    called (predicate, subject, root, seen) -> {"value", "of", ...}: what the file
+    measures, which file it was, and anything the layer adds to the predicate's
+    report. `seen` is shared across one check, so a file measured once is not again.
+    """
+
+    #: What is measured, in a few words, which a refusal and `describe` show.
+    about: str
+    #: `module:NAME`, the layer's own table of the measures it answers, name to meaning.
+    measures: str
+    #: `module:function`, imported only when a spec bounds one of its measures.
+    target: str
+
+    def names(self) -> dict[str, str]:
+        module, name = self.measures.split(":")
+        return dict(getattr(importlib.import_module(module), name))
+
+
+@dataclass(frozen=True)
 class Layer:
     """One medium's declaration: what it registers and what it needs to run."""
 
@@ -91,6 +113,11 @@ class Layer:
     #: A section of `provenance.outdated` by its name, to the `module:function` that
     #: answers it for a root (§PW502).
     outdated: dict[str, str] = field(default_factory=dict)
+    #: The files this layer measures off the picture, for an acceptance spec (§PW503).
+    subjects: tuple[Subject, ...] = ()
+    #: Picture measures this layer computes, by name, to the `module:function` called
+    #: (image, mask, *, key, **arguments): part of the closed vocabulary all the same.
+    pictures: dict[str, str] = field(default_factory=dict)
     # What later lines contribute to the shared loop, empty until each lands: error
     # codes (§PW507), config tables (§PW508), census entries (§PW511) and report
     # sections (§PW505).
@@ -181,6 +208,25 @@ def outdated_sections() -> dict[str, str]:
 def shipping() -> list[str]:
     """What answers which files a build ships, layer by layer (§PW502)."""
     return [one.ships for one in layers().values() if one.ships]
+
+
+def subjects() -> dict[str, tuple[str, Subject]]:
+    """Each measure a layer reads off a file, to that layer and its subject (§PW503)."""
+    return _once("measure", [
+        (name, measure, (name, one))
+        for name, layer in layers().items()
+        for one in layer.subjects
+        for measure in one.names()
+    ])
+
+
+def pictures() -> dict[str, str]:
+    """Each picture measure a layer computes, to what computes it (§PW503)."""
+    return _once("picture measure", [
+        (name, measure, target)
+        for name, layer in layers().items()
+        for measure, target in layer.pictures.items()
+    ])
 
 
 def judges() -> dict[str, Judge]:

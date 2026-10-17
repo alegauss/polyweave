@@ -1,6 +1,6 @@
 """What the sound layer adds, read by the kernel (§PW500)."""
 
-from polyweave.kernel.layer import Judge, Layer
+from polyweave.kernel.layer import Judge, Layer, Subject
 
 LAYER = Layer(
     name="sound",
@@ -22,4 +22,11 @@ LAYER = Layer(
         ),
     ),
     kinds=("sound",),
+    subjects=(
+        Subject(
+            about="a sound's loudness, peak, length and loop seam",
+            measures="polyweave.layers.sound.sound:SOUNDS",
+            target="polyweave.layers.sound.sound:predicate",
+        ),
+    ),
 )

@@ -27,6 +27,7 @@ import numpy as np
 from polyweave.kernel.describe import Param, operation
 from polyweave.kernel.errors import PolyweaveError
 from polyweave.kernel.image import Image, load
+from polyweave.kernel.layer import call, pictures, subjects
 
 #: The statistic suffixes `measurements.md` appends. `saturation_p99` is a statistic of
 #: `saturation`, and the two are computed by the same thing.
@@ -161,33 +162,19 @@ def _hsl(rgb: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     return (hue / 6.0) % 1.0, np.clip(saturation, 0.0, 1.0), lightness
 
 
-def _contrast(key: str):
-    """A contrast measure over the predicate's `targets`, not its region (§PW272)."""
+def _contributed(key: str, target: str):
+    """A picture measure a layer computes, called by its name (§PW503): contrast over a
+    predicate's `targets` is the engine layer's (§PW272)."""
 
-    def compute(image: Image, _mask: np.ndarray, *, targets: Any = None,
-                ring: Any = None, radius: Any = None, behind: Any = None, **_: Any):
-        from polyweave.layers.engine.contrast import RADIUS, RING, contrasts
+    def compute(image: Image, mask: np.ndarray, **params: Any):
+        return call(target, image, mask, key=key, **params)
 
-        # A spec gives the measure's own ring and default radius (§PW279).
-        said = contrasts(image, targets, ring=RING if ring is None else int(ring),
-                         radius=RADIUS if radius is None else float(radius),
-                         behind=behind)
-        if key not in said:
-            # A text box has no ring and a shot no glyphs (§PW319).
-            raise PolyweaveError(
-                "spec.no-targets",
-                f"no target here is measured by {key}",
-                "give text lines as {text: [l, t, r, b]} for text_contrast_min, and "
-                "shots as points or boxes for the others",
-            )
-        return said[key]
-
-    compute.__doc__ = f"{key} over the targets, each against the ring around it"
+    compute.__doc__ = f"{key}, which a layer computes over the predicate's arguments"
     return compute
 
 
-for _key in ("contrast_min", "contrast_median", "delta_e_min", "text_contrast_min"):
-    _computes(_key)(_contrast(_key))
+for _key, _target in pictures().items():
+    _computes(_key)(_contributed(_key, _target))
 
 
 @_distributes("saturation")
@@ -892,6 +879,18 @@ def resolve(name: str) -> str:
             "spec.unmeasured",
             f"{name!r} is a measure this plugin does not compute yet",
             f"{PENDING[base]}; ask for {', '.join(sorted(COMPUTES))} meanwhile",
+        )
+    owner = subjects().get(base)
+    if owner is not None:
+        # A layer reads it off a file, which only a spec's predicate hands it (§PW503).
+        layer, read = owner
+        raise PolyweaveError(
+            "spec.unknown-measure",
+            f"{name!r} is not a picture measure: the {layer} layer reads it off "
+            f"{read.about}",
+            "bound it in an acceptance spec, whose accept.check hands it to that layer",
+            given=name,
+            allowed=set(COMPUTES) | set(PENDING),
         )
     raise PolyweaveError(
         "spec.unknown-measure",

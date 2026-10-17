@@ -23,8 +23,7 @@ from polyweave.kernel.doors import Blank, door
 from polyweave.kernel.errors import PolyweaveError
 from polyweave.layers.geometry import units
 from polyweave.loop import measure
-
-from .ladder import (
+from polyweave.loop.ladder import (
     CARRIES,
     RUNGS,
     check_rung,
@@ -33,6 +32,7 @@ from .ladder import (
     lowest_rung,
     rung_for,
 )
+
 from .rig import WATTS, Rig, as_params
 
 #: How much of the real mesh a preview keeps. Enough face count for a silhouette, far

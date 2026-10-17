@@ -192,10 +192,6 @@ EFFECTS: dict[str, str] = {
 }
 
 
-def is_effect(name: str) -> bool:
-    return name in EFFECTS
-
-
 def measures_of(path: Path, root: Path) -> dict:
     """What a built effect measures, as its record says: the scene is not re-read."""
     try:
@@ -1591,3 +1587,12 @@ def preview(
         "says": f"{len(watched)} effect{'' if len(watched) == 1 else 's'} for a person "
         "to watch on the review page; verdict.answers resumes from what they said",
     }
+
+
+def predicate(p: Any, subject: Any, root: str | Path, seen: dict) -> dict:
+    """An effect predicate for accept.check, read off the record of the scene
+    vfx.build made (§PW259, §PW503)."""
+    where = Path(p.of) if p.of else Path(subject)
+    where = where if where.is_absolute() else Path(root) / where
+    return {"value": float(measures_of(where, Path(root))[p.measure]),
+            "of": str(where)}

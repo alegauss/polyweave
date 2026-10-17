@@ -284,10 +284,6 @@ CONCEPTS: dict[str, str] = {
 }
 
 
-def is_concept(name: str) -> bool:
-    return name in CONCEPTS
-
-
 def concept_value(measure: str, *, concept: Any, region: Any, subject: Path,
                   here: Path, size: int = 256) -> float:
     """One concept measure of a capture, for a spec's predicate to bound."""
@@ -381,3 +377,15 @@ def concept(
             answer[name]["sheet"] = provenance.relative(where, here)
     return {"painting": provenance.relative(painting, here),
             "capture": provenance.relative(subject, here), "regions": answer}
+
+
+def predicate(p: Any, subject: Any, root: str | Path, seen: dict) -> dict:
+    """A concept region's measure of the capture checked, for accept.check (§PW477):
+    `region` names the region of the concept file `concept` names, so a search aims at
+    the painting (§PW503)."""
+    here = Path(root)
+    where = Path(p.of) if p.of else Path(subject)
+    where = where if where.is_absolute() else here / where
+    value = concept_value(p.measure, concept=p.arguments.get("concept"),
+                          region=p.region, subject=where, here=here)
+    return {"value": value, "of": str(where), "region": p.region}

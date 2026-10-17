@@ -47,7 +47,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 2 },
-  { block: "W", title: "A core that grows by layers", open: 20 },
+  { block: "W", title: "A core that grows by layers", open: 19 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -129,18 +129,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW503",
-    block: "W",
-    symptom: "accept.check reaches into sound, vfx, video, flashes, render and reference_concept to measure a subject",
-    why: "The acceptance spec is the loop's shared contract, and a medium whose subject it cannot measure without an edit to accept.py is a medium that cannot be held to a bar.",
-    deps: [],
-  },
-  {
     id: "PW504",
     block: "W",
     symptom: "search.sweep can only draw a sample through render.bake, so picture, engine and preset each wrote a search of their own",
     why: "The search is the loop's engine, and four searches that each spend, trace and stop in their own way mean a fifth medium writes a fifth.",
-    deps: ["PW503"],
+    deps: [],
   },
   {
     id: "PW505",
@@ -154,7 +147,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "W",
     symptom: "A kernel or loop module can import a layer and both gates still pass, so the direction the layout states is a hope",
     why: "Every inversion in this block is undone by the first quick import, and only a test that fails holds a boundary between commits.",
-    deps: ["PW503", "PW504", "PW505"],
+    deps: ["PW504", "PW505"],
   },
   {
     id: "PW507",
@@ -231,7 +224,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "W",
     symptom: "A project cannot add a measure of its own, so a look only its game needs is a fork, a side script or a PW line",
     why: "A project measure keeps the first-call guarantee only when it is described, bounded and recorded exactly as a built-in one is.",
-    deps: ["PW503", "PW508", "PW512"],
+    deps: ["PW508", "PW512"],
   },
   {
     id: "PW518",

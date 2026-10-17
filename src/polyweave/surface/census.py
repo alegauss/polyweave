@@ -121,18 +121,12 @@ MODULES: dict[str, tuple[str, str]] = {
         "internal", "each waiting sitting's link; review"),
     "polyweave.layers.engine.integrity:parsed": (
         "internal", "every script parsed after an import"),
-    "polyweave.layers.engine.flashes:is_flash": (
-        "internal", "whether a spec bounds a run's flashes"),
     "polyweave.layers.engine.flashes:count": (
         "internal", "each kind's worst second over frames"),
     "polyweave.layers.engine.flashes:measured": (
         "internal", "what a flashes bound reads"),
     "polyweave.loop.verdict:kept_answers": (
         "internal", "every answer, at its sitting now"),
-    "polyweave.layers.store.video:is_video": (
-        "internal", "whether a spec's measure is a video's"),
-    "polyweave.layers.reference.reference_concept:is_concept": (
-        "internal", "whether a spec's measure is a concept region's"),
     "polyweave.layers.reference.reference_concept:concept_value": (
         "internal", "one concept measure, which accept.check reads for a predicate"),
     "polyweave.layers.store.video:measured": (
@@ -155,8 +149,6 @@ MODULES: dict[str, tuple[str, str]] = {
         "internal", "an effect's measures from its declaration"),
     "polyweave.layers.vfx.vfx:scene": (
         "internal", "an effect as the Godot scene build writes"),
-    "polyweave.layers.vfx.vfx:is_effect": (
-        "internal", "whether a spec's measure is an effect's"),
     "polyweave.layers.vfx.vfx:measures_of": (
         "internal", "a built effect's measures, for accept"),
     "polyweave.layers.vfx.vfx:declared": (
@@ -349,6 +341,16 @@ MODULES: dict[str, tuple[str, str]] = {
         "internal", "what icons.build holds a set to"),
     "polyweave.layers.words.words:still_said": (
         "internal", "provenance.outdated, per row"),
+    "polyweave.layers.engine.contrast:picture_measure": (
+        "internal", "contrast as a picture measure, for measure"),
+    "polyweave.layers.engine.flashes:predicate": (
+        "internal", "a flash predicate, for accept.check"),
+    "polyweave.layers.reference.reference_concept:predicate": (
+        "internal", "a concept predicate, for accept.check"),
+    "polyweave.layers.store.video:predicate": (
+        "internal", "a video predicate, for accept.check"),
+    "polyweave.layers.vfx.vfx:predicate": (
+        "internal", "an effect predicate, for accept.check"),
     "polyweave.layers.words.words:still": (
         "internal", "the words role's staleness check"),
     "polyweave.layers.picture.picture:from_world": (
@@ -407,7 +409,7 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.kernel.post.pixels": ("internal", "an assertion"),
     "polyweave.kernel.post.voxels": ("internal", "an assertion"),
     "polyweave.layers.geometry.render.blender": ("internal", "bpy, behind the bake"),
-    "polyweave.layers.geometry.render.ladder": (
+    "polyweave.loop.ladder": (
         "internal", "the rung map, answered by render.plan"),
     "polyweave.layers.geometry.render.rig": (
         "internal", "the rig's arithmetic, behind the bake"),

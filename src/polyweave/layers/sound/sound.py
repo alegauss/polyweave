@@ -32,7 +32,7 @@ import shutil
 import subprocess
 import wave
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any
 
 import numpy as np
 
@@ -59,10 +59,6 @@ SUFFIXES = (".wav", ".ogg", ".flac", ".mp3", ".opus")
 RATE = 44100
 
 _SIZE, _HOP = 2048, 512
-
-
-def is_sound(name: str) -> bool:
-    return name in SOUNDS
 
 
 def is_audio(path: str | Path) -> bool:
@@ -821,3 +817,42 @@ def judged(member: dict, *, accepted: bool, choice: str, why: str, when: str,
     record["verdicts"] = [*(record.get("verdicts") or []), entry]
     written = provenance.write(record, root)
     return {**entry, "record": provenance.relative(written, root)}
+
+
+def predicate(p: Any, subject: Any, root: str | Path, heard: dict) -> dict:
+    """A sound predicate for accept.check, read off the sound it names or the subject
+    (§PW113, §PW503)."""
+    where = Path(p.of) if p.of else subject
+    if not isinstance(where, str | Path) or not is_audio(where):
+        raise PolyweaveError(
+            "spec.not-sound",
+            f"{p.id} bounds {p.measure}, and what it is checked on is not a sound",
+            'check the spec against an audio file, or add of = "<the .wav or .ogg>"',
+            example='of = "audio/music_calm.ogg"',
+        )
+    where = Path(where)
+    where = where if where.is_absolute() else Path(root) / where
+    if str(where) not in heard:
+        heard[str(where)] = measure(where)
+    if p.measure not in heard[str(where)]:
+        # Only a seam can be missing: a one-shot has none (§PW221), and a loop with no
+        # pulse has no grid to be held to (§PW225).
+        found = heard[str(where)]
+        if "seam_step" in found:
+            raise PolyweaveError(
+                "spec.no-seam",
+                f"{p.id} bounds {p.measure}, and {where.name} keeps no pulse clear "
+                f"enough to find its beat, and has no record naming its bar",
+                "render it with music.render, whose record carries the bar, or bound "
+                "seam_step and seam_flux instead",
+                given=p.measure,
+            )
+        raise PolyweaveError(
+            "spec.no-seam",
+            f"{p.id} bounds {p.measure}, and {where.name} is "
+            f"{found['duration']:.3f} s, too short to have a seam",
+            f"bound a seam only on a loop of at least {shortest_seam():.2f} s; "
+            f"an effect is bounded on loudness, peak and duration",
+            given=p.measure,
+        )
+    return {"value": float(heard[str(where)][p.measure]), "of": str(where)}

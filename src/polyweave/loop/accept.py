@@ -24,13 +24,8 @@ from typing import Annotated, Any
 
 from polyweave.kernel.describe import Param, operation
 from polyweave.kernel.errors import PolyweaveError
-from polyweave.layers.engine import flashes
-from polyweave.layers.geometry import cost
-from polyweave.layers.geometry.render.ladder import RUNGS, check_rung, lowest_rung
-from polyweave.layers.reference import reference_concept as concepts
-from polyweave.layers.sound import sound
-from polyweave.layers.store import video
-from polyweave.layers.vfx import vfx
+from polyweave.kernel.layer import call, subjects
+from polyweave.loop.ladder import RUNGS, check_rung, lowest_rung
 
 from . import measure as M
 
@@ -270,11 +265,9 @@ def _predicate(entry: dict, index: int) -> Predicate:
         raise PolyweaveError(
             "spec.no-measure",
             f"the predicate {name!r} names no measure",
-            f"name one of {', '.join(sorted(M.COMPUTES))}, or a cost: "
-            f"{', '.join(cost.COSTS)}, or a sound: {', '.join(sound.SOUNDS)}, or an "
-            f"effect: {', '.join(vfx.EFFECTS)}, or a run's flashes: "
-            f"{', '.join(flashes.FLASHES)}, or a video: {', '.join(video.VIDEOS)}, "
-            f"or a concept region: {', '.join(concepts.CONCEPTS)}",
+            f"name one of {', '.join(sorted(M.COMPUTES))}, or "
+            + ", or ".join(f"{owner.about}: {', '.join(owner.names())}"
+                           for owner in _subjects_once()),
         )
     unknown = sorted(set(entry) - set(FIELDS) - set(ARGUMENTS))
     if unknown:
@@ -459,25 +452,12 @@ def check(
         )
 
     results = []
-    heard: dict = {}
+    seen: dict = {}
+    owners = subjects()
     for p in spec.predicates:
-        if cost.is_cost(p.measure):
-            results.append(_costed(p, subject, root))
-            continue
-        if sound.is_sound(p.measure):
-            results.append(_sounded(p, subject, root, heard))
-            continue
-        if vfx.is_effect(p.measure):
-            results.append(_effected(p, subject, root))
-            continue
-        if flashes.is_flash(p.measure):
-            results.append(_flashed(p, subject, root, heard))
-            continue
-        if video.is_video(p.measure):
-            results.append(_watched(p, subject, root, heard))
-            continue
-        if concepts.is_concept(p.measure):
-            results.append(_conceived(p, subject, root))
+        if p.measure in owners:
+            # A measure read off a file, by the layer whose subject it is (§PW503).
+            results.append(_subjected(p, owners[p.measure][1], subject, root, seen))
             continue
         arguments = dict(p.arguments)
         for key in ("against", "target", "targets", "behind"):
@@ -554,182 +534,34 @@ def checked(
 
 
 def _off_picture(name: str) -> bool:
-    """A measure read off a file rather than one picture: a cost, a sound, an effect or
-    the flashes of a captured run."""
-    return (cost.is_cost(name) or sound.is_sound(name) or vfx.is_effect(name)
-            or flashes.is_flash(name) or video.is_video(name)
-            or concepts.is_concept(name))
+    """A measure read off a file rather than one picture, by a layer's subject: a
+    cost, a sound, an effect, the flashes of a captured run, a video or a concept."""
+    return name in subjects()
 
 
-def _conceived(p: Predicate, subject: Any, root: str | Path) -> dict:
-    """A concept region's measure of the capture checked (§PW477): `region` names the
-    region of the concept file `concept` names, so a search aims at the painting."""
-    here = Path(root)
-    where = Path(p.of) if p.of else Path(subject)
-    where = where if where.is_absolute() else here / where
-    value = concepts.concept_value(p.measure, concept=p.arguments.get("concept"),
-                                   region=p.region, subject=where, here=here)
+def _subjects_once() -> list:
+    """Each layer's subject once, in the order the layers declare them."""
+    found = []
+    for _, owner in subjects().values():
+        if owner not in found:
+            found.append(owner)
+    return found
+
+
+def _subjected(p: Predicate, owner: Any, subject: Any, root: str | Path,
+               seen: dict) -> dict:
+    """A predicate measured by the layer whose subject names it (§PW503): the layer
+    says the value and the file, and this says what the bound makes of them."""
+    said = dict(call(owner.target, p, subject, root, seen))
+    value = said.pop("value")
+    of = said.pop("of")
+    region = said.pop("region", None)
     return {
+        **said,
         "id": p.id,
         "measure": p.measure,
-        "of": str(where),
-        "region": p.region,
-        "rung": None,
-        "value": value,
-        "min": p.minimum,
-        "max": p.maximum,
-        "weight": p.weight,
-        "passed": _passes(value, p),
-        "margin": margin(value, p.minimum, p.maximum),
-        "headroom": headroom(value, p.minimum, p.maximum),
-        **_bound(p, value),
-    }
-
-
-def _watched(p: Predicate, subject: Any, root: str | Path, seen: dict) -> dict:
-    """A video predicate, read off the teaser it names or the subject (§PW429)."""
-    where = Path(p.of) if p.of else Path(subject)
-    where = where if where.is_absolute() else Path(root) / where
-    key = f"video:{where}"
-    if key not in seen:
-        seen[key] = video.measured(where)
-    value = float(seen[key][p.measure])
-    return {
-        "id": p.id,
-        "measure": p.measure,
-        "of": str(where),
-        "region": None,
-        "rung": None,
-        "value": value,
-        "min": p.minimum,
-        "max": p.maximum,
-        "weight": p.weight,
-        "passed": _passes(value, p),
-        "margin": margin(value, p.minimum, p.maximum),
-        "headroom": headroom(value, p.minimum, p.maximum),
-        **_bound(p, value),
-    }
-
-
-def _effected(p: Predicate, subject: Any, root: str | Path) -> dict:
-    """An effect predicate, read off the record of the scene vfx.build made (§PW259)."""
-    where = Path(p.of) if p.of else Path(subject)
-    where = where if where.is_absolute() else Path(root) / where
-    value = float(vfx.measures_of(where, Path(root))[p.measure])
-    return {
-        "id": p.id,
-        "measure": p.measure,
-        "of": str(where),
-        "region": None,
-        "rung": None,
-        "value": value,
-        "min": p.minimum,
-        "max": p.maximum,
-        "weight": p.weight,
-        "passed": _passes(value, p),
-        "margin": margin(value, p.minimum, p.maximum),
-        "headroom": headroom(value, p.minimum, p.maximum),
-        **_bound(p, value),
-    }
-
-
-def _flashed(p: Predicate, subject: Any, root: str | Path, seen: dict) -> dict:
-    """A flash predicate, read off the captured run it names or the subject (§PW354)."""
-    where = Path(p.of) if p.of else Path(subject)
-    where = where if where.is_absolute() else Path(root) / where
-    key = f"flashes:{where}"
-    if key not in seen:
-        seen[key] = flashes.measured(where, root=root)
-    value = float(seen[key][p.measure])
-    return {
-        "id": p.id,
-        "measure": p.measure,
-        "of": str(where),
-        "region": None,
-        "rung": None,
-        "value": value,
-        "min": p.minimum,
-        "max": p.maximum,
-        "weight": p.weight,
-        "passed": _passes(value, p),
-        "margin": margin(value, p.minimum, p.maximum),
-        "headroom": headroom(value, p.minimum, p.maximum),
-        "certifies": seen[key]["certifies"],
-        **_bound(p, value),
-    }
-
-
-def _sounded(p: Predicate, subject: Any, root: str | Path, heard: dict) -> dict:
-    """A sound predicate, read off the sound it names or the subject (§PW113)."""
-    where = Path(p.of) if p.of else subject
-    if not isinstance(where, str | Path) or not sound.is_audio(where):
-        raise PolyweaveError(
-            "spec.not-sound",
-            f"{p.id} bounds {p.measure}, and what it is checked on is not a sound",
-            'check the spec against an audio file, or add of = "<the .wav or .ogg>"',
-            example='of = "audio/music_calm.ogg"',
-        )
-    where = Path(where)
-    where = where if where.is_absolute() else Path(root) / where
-    if str(where) not in heard:
-        heard[str(where)] = sound.measure(where)
-    if p.measure not in heard[str(where)]:
-        # Only a seam can be missing: a one-shot has none (§PW221), and a loop with no
-        # pulse has no grid to be held to (§PW225).
-        found = heard[str(where)]
-        if "seam_step" in found:
-            raise PolyweaveError(
-                "spec.no-seam",
-                f"{p.id} bounds {p.measure}, and {where.name} keeps no pulse clear "
-                f"enough to find its beat, and has no record naming its bar",
-                "render it with music.render, whose record carries the bar, or bound "
-                "seam_step and seam_flux instead",
-                given=p.measure,
-            )
-        raise PolyweaveError(
-            "spec.no-seam",
-            f"{p.id} bounds {p.measure}, and {where.name} is "
-            f"{found['duration']:.3f} s, too short to have a seam",
-            f"bound a seam only on a loop of at least {sound.shortest_seam():.2f} s; "
-            f"an effect is bounded on loudness, peak and duration",
-            given=p.measure,
-        )
-    value = float(heard[str(where)][p.measure])
-    return {
-        "id": p.id,
-        "measure": p.measure,
-        "of": str(where),
-        "region": None,
-        "rung": None,
-        "value": value,
-        "min": p.minimum,
-        "max": p.maximum,
-        "weight": p.weight,
-        "passed": _passes(value, p),
-        "margin": margin(value, p.minimum, p.maximum),
-        "headroom": headroom(value, p.minimum, p.maximum),
-        **_bound(p, value),
-    }
-
-
-def _costed(p: Predicate, subject: Any, root: str | Path) -> dict:
-    """A cost predicate, read off the file the game draws rather than the picture."""
-    where = cost.source(subject, p.of, root)
-    placed: dict = {}
-    if p.measure in cost.EDGES:
-        # How round a model is, at the predicate's own crease, and where on the model
-        # its sharpest edges are, so a refusal points at them (§PW497).
-        read = cost.edges(where, float(p.arguments.get("crease", cost.CREASE)))
-        value = float(read[p.measure])
-        placed = {"sharp_at": read["sharp_at"]}
-    else:
-        value = float(cost.take(p.measure, where))
-    return {
-        **placed,
-        "id": p.id,
-        "measure": p.measure,
-        "of": p.of or str(where),
-        "region": None,
+        "of": of,
+        "region": region,
         "rung": None,
         "value": value,
         "min": p.minimum,

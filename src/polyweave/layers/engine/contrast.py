@@ -359,3 +359,24 @@ def measured(
     return {"picture": picture,
             **contrasts(load_image(where), log if log else targets, ring=ring,
                         radius=radius, root=here, behind=behind)}
+
+
+def picture_measure(image: Any, _mask: Any, *, key: str, targets: Any = None,
+                    ring: Any = None, radius: Any = None, behind: Any = None,
+                    **_: Any) -> Any:
+    """One contrast measure over a predicate's `targets`, not its region (§PW272).
+
+    The engine layer's picture measure, which `measure` computes by its name (§PW503).
+    A spec gives the measure's own ring and default radius (§PW279).
+    """
+    said = contrasts(image, targets, ring=RING if ring is None else int(ring),
+                     radius=RADIUS if radius is None else float(radius), behind=behind)
+    if key not in said:
+        # A text box has no ring and a shot no glyphs (§PW319).
+        raise PolyweaveError(
+            "spec.no-targets",
+            f"no target here is measured by {key}",
+            "give text lines as {text: [l, t, r, b]} for text_contrast_min, and "
+            "shots as points or boxes for the others",
+        )
+    return said[key]

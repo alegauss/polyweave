@@ -12,7 +12,8 @@ import pytest
 from polyweave.kernel import config as C
 from polyweave.kernel.errors import PolyweaveError
 from polyweave.layers.geometry import render
-from polyweave.layers.geometry.render import ladder, rig
+from polyweave.layers.geometry.render import rig
+from polyweave.loop import ladder
 
 
 def project(tmp_path, text=None):
