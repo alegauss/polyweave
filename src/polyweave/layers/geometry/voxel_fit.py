@@ -1,0 +1,420 @@
+"""A voxel model's proportions found against a reference, not guessed (§PW98).
+
+The author declares the parts, what they mean and how far each may move; the search
+finds the proportions. The reference is a drawing's alpha, or a mesh — a model bought
+from the service, say — projected the way `normalise.project` projects one. So a fetched
+ship becomes the target a declared ship is fitted to, not a mesh to chop into cubes.
+
+**Each sample is a voxel build, not a render.** Milliseconds, so the search can afford
+hundreds where a render ladder affords dozens. The measure is the overlap of the model's
+silhouette with the reference's, per view, both fitted to their own bounds on one grid
+the way `normalise.fitted` frames every silhouette — so what is compared is outline and
+proportion and never framing.
+
+**The voxel checks are constraints.** A sample that floats cells or breaks the project's
+budget scores zero: a fit that only works by leaving a piece hanging in the air is not a
+fit.
+"""
+
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.loop.accept import Spec
+
+from .normalise import GRID, drawing, fitted, overlap, project
+from .tuning import addressable
+
+__all__ = ["VIEWS", "fit", "silhouettes"]
+
+#: The views a model can be compared in, as the contact sheet draws them (§PW94).
+VIEWS = ("front", "side", "top")
+
+#: Findings that make a sample worthless whatever its overlap.
+DISQUALIFY = ("floating", "budget")
+
+#: How the reference mesh is turned so `normalise.project`, which looks along +Z with
+#: +Y up, sees it from each view: from +X for the side, from +Y for the top.
+_TURNED = {
+    "front": lambda v: v,
+    "side": lambda v: np.stack([-v[:, 2], v[:, 1], v[:, 0]], axis=1),
+    "top": lambda v: np.stack([v[:, 0], v[:, 2], -v[:, 1]], axis=1),
+}
+
+
+def _part(model: dict, materials: list, grid: int) -> np.ndarray:
+    """The front outline of the cells wearing `materials`, framed by the whole model.
+
+    A part fitted in place: where it stands and how big it is inside the model, which
+    a whole-model outline cannot say once the part sits within it (§PW326).
+    """
+    names = [entry.get("name") for entry in model["palette"]]
+    wanted = {i for i, name in enumerate(names) if name in materials}
+    cells = model["cells"]
+    filled = np.zeros(tuple(model["size"]), dtype=bool)
+    part = np.zeros_like(filled)
+    if len(cells["x"]):
+        at = (np.asarray(cells["x"]), np.asarray(cells["y"]), np.asarray(cells["z"]))
+        filled[at] = True
+        worn = np.isin(np.asarray(cells["palette"]), list(wanted))
+        part[tuple(axis[worn] for axis in at)] = True
+    whole = filled.any(axis=2).T[::-1, :]
+    return fitted(part.any(axis=2).T[::-1, :], grid=grid, within=whole)
+
+
+#: How far a pixel's colour may sit from one a region names, as CIE76 ΔE, and still be
+#: the region's: antialiased edges and a lossy file's noise, not another colour.
+REGION_DELTA_E = 12.0
+
+
+def _region(reference: Any, region: dict, grid: int, root: Path) -> np.ndarray:
+    """A drawing's pixels near the region's colours, framed by the whole drawing."""
+    from polyweave.kernel.config import load
+    from polyweave.kernel.image import load as load_image
+    from polyweave.loop.measure import to_lab
+
+    where = Path(reference)
+    where = where if where.is_absolute() else root / where
+    image = load_image(where)
+    whole = image.subject(float(load(root).get("tolerance.alpha_floor")))
+    colours = region.get("colours") or []
+    try:
+        named = np.array([[int(c.lstrip("#")[i : i + 2], 16) / 255 for i in (0, 2, 4)]
+                          for c in colours])
+    except (AttributeError, ValueError):
+        named = np.zeros((0, 3))
+    if not len(named) or len(named) != len(colours):
+        raise PolyweaveError(
+            "geom.bad-fit",
+            f"a region's colours are {colours!r}, and they are hex colours",
+            'give region colours = ["#2b2b3a", "#f3e6c8"], the part\'s own colours',
+        )
+    lab = to_lab(image.rgba[..., :3].astype(np.float64) / 255.0)
+    targets = to_lab(named)
+    near = np.min(
+        np.linalg.norm(lab[..., None, :] - targets[None, None, :, :], axis=-1), axis=-1
+    ) <= float(region.get("delta_e", REGION_DELTA_E))
+    part = whole & near
+    if not part.any():
+        raise PolyweaveError(
+            "geom.bad-fit",
+            f"no pixel of {where.name} is near {', '.join(colours)}",
+            "name the colours the part is drawn in, or widen region delta_e",
+        )
+    return fitted(part, grid=grid, within=whole)
+
+
+def silhouettes(model: dict, *, grid: int = GRID) -> dict[str, np.ndarray]:
+    """A voxel model's outline in each view, rows top to bottom, fitted to the grid."""
+    filled = np.zeros(tuple(model["size"]), dtype=bool)
+    cells = model["cells"]
+    if len(cells["x"]):
+        filled[
+            (np.asarray(cells["x"]), np.asarray(cells["y"]), np.asarray(cells["z"]))
+        ] = True
+    front = filled.any(axis=2).T[::-1, :]  # x across, y up
+    side = filled.any(axis=0)[::-1, ::-1]  # -z across, y up
+    top = filled.any(axis=1).T[::-1, :]  # x across, the front (-z) at the bottom
+    return {
+        name: fitted(mask, grid=grid)
+        for name, mask in {"front": front, "side": side, "top": top}.items()
+    }
+
+
+def filled(mask: np.ndarray) -> np.ndarray:
+    """A silhouette with its enclosed holes filled: everything the border cannot reach.
+
+    A flood fill from the border through the empty pixels, numpy alone: what it reaches
+    is outside, and every other pixel is the subject's.
+    """
+    empty = ~mask
+    outside = np.zeros_like(mask)
+    outside[0, :], outside[-1, :] = empty[0, :], empty[-1, :]
+    outside[:, 0], outside[:, -1] = empty[:, 0], empty[:, -1]
+    while True:
+        grown = outside.copy()
+        grown[1:, :] |= outside[:-1, :]
+        grown[:-1, :] |= outside[1:, :]
+        grown[:, 1:] |= outside[:, :-1]
+        grown[:, :-1] |= outside[:, 1:]
+        grown &= empty
+        if np.array_equal(grown, outside):
+            return ~outside
+        outside = grown
+
+
+def _references(reference: Any, views: tuple, grid: int, root: Path) -> dict:
+    """The reference's outline in each view the fit is scored on.
+
+    A mesh's outline has its enclosed holes filled (§PW232): a service's surface has
+    gaps, and a pixel no triangle covers inside the outline says nothing about
+    proportion, yet scored as empty it made the fit shrink the model to match the gaps.
+    A drawing keeps its holes, since a drawn gap is meant.
+    """
+    from polyweave.kernel.config import load
+
+    if isinstance(reference, dict):
+        mesh = reference
+    else:
+        where = Path(reference)
+        if not where.is_absolute():
+            where = root / where
+        if where.suffix.lower() in (".png", ".jpg", ".jpeg", ".webp"):
+            if views != ("front",):
+                raise PolyweaveError(
+                    "geom.bad-fit",
+                    f"{where.name} is one drawing, and it can only be the front view",
+                    "fit a drawing on views = ['front'], or give a mesh for more",
+                )
+            floor = float(load(root).get("tolerance.alpha_floor"))
+            return {"front": drawing(where, grid=grid, alpha_floor=floor)}
+        from .normalise import read_mesh
+
+        mesh = read_mesh(where)
+    points = np.asarray(mesh["vertices"], dtype=float)
+    return {
+        view: filled(project(
+            {"vertices": _TURNED[view](points), "faces": mesh["faces"]}, grid=grid
+        ))
+        for view in views
+    }
+
+
+def _holes(reference: Any, views: tuple, grid: int, root: Path) -> dict[str, float]:
+    """How much of each view's filled outline was holes in the mesh as projected."""
+    if not isinstance(reference, dict):
+        where = Path(reference)
+        where = where if where.is_absolute() else root / where
+        if where.suffix.lower() in (".png", ".jpg", ".jpeg", ".webp"):
+            return {}
+        from .normalise import read_mesh
+
+        reference = read_mesh(where)
+    points = np.asarray(reference["vertices"], dtype=float)
+    found = {}
+    for view in views:
+        raw = project(
+            {"vertices": _TURNED[view](points), "faces": reference["faces"]}, grid=grid
+        )
+        whole = filled(raw)
+        found[view] = round(float((whole & ~raw).sum()) / max(int(whole.sum()), 1), 4)
+    return found
+
+
+def _aspect(mask: np.ndarray) -> float | None:
+    """A silhouette's width over its height, off what it covers; None where empty."""
+    rows = np.flatnonzero(mask.any(axis=1))
+    columns = np.flatnonzero(mask.any(axis=0))
+    if not rows.size or not columns.size:
+        return None
+    return (columns[-1] - columns[0] + 1) / (rows[-1] - rows[0] + 1)
+
+
+def _boxed(mask: np.ndarray, grid: int) -> np.ndarray:
+    """A silhouette stretched to fill the grid both ways: its shape inside its box.
+
+    Scored this way a fit compares where the parts sit and how thick they are within
+    the box, and not the box itself, which a game's hitbox may fix (§PW263).
+    """
+    rows = np.flatnonzero(mask.any(axis=1))
+    columns = np.flatnonzero(mask.any(axis=0))
+    if not rows.size or not columns.size:
+        return np.zeros((grid, grid), dtype=bool)
+    box = mask[rows[0] : rows[-1] + 1, columns[0] : columns[-1] + 1]
+    inner = grid - 2
+    down = ((np.arange(inner) + 0.5) * box.shape[0] / inner).astype(int)
+    across = ((np.arange(inner) + 0.5) * box.shape[1] / inner).astype(int)
+    out = np.zeros((grid, grid), dtype=bool)
+    out[1 : 1 + inner, 1 : 1 + inner] = box[down][:, across]
+    return out
+
+
+#: How far, as a share, a reference's aspect may sit outside what the declaration
+#: reached before the gap is named: one grid pixel's worth of rounding and a little.
+_ASPECT_SLACK = 0.03
+
+
+def _aspects(wanted: dict, reached: dict) -> tuple[dict, list[str]]:
+    """Each view's reference aspect beside what the samples reached, and the gaps."""
+    said, gaps = {}, []
+    for view, mask in wanted.items():
+        target, seen = _aspect(mask), [a for a in reached.get(view, ()) if a]
+        if target is None or not seen:
+            continue
+        low, high = min(seen), max(seen)
+        said[view] = {"reference": round(target, 3),
+                      "reached": [round(low, 3), round(high, 3)]}
+        if target > high * (1 + _ASPECT_SLACK):
+            gaps.append(f"the reference is {target:.2f}:1 in {view} and the "
+                        f"declaration reached {high:.2f}:1 at most")
+        elif target < low * (1 - _ASPECT_SLACK):
+            gaps.append(f"the reference is {target:.2f}:1 in {view} and the "
+                        f"declaration reached {low:.2f}:1 at least")
+    return said, gaps
+
+
+def _on_edges(best: dict, permitted: dict) -> list[str]:
+    """The best values that sit on an edge of their range: bound by it, not fitted."""
+    edged = []
+    for name, value in best.items():
+        bounds = permitted.get(name) or {}
+        low, high = bounds.get("min"), bounds.get("max")
+        if low is None or high is None:
+            continue
+        span = abs(float(high) - float(low)) or 1.0
+        if min(abs(value - float(low)), abs(value - float(high))) <= 1e-6 * span:
+            edged.append(name)
+    return edged
+
+
+def _ranges(document: dict, ranges: dict | None) -> dict:
+    """What the fit may move: the call's ranges, or the document's own `[search]`."""
+    found = dict(ranges or document.get("search") or {})
+    if not found:
+        raise PolyweaveError(
+            "geom.bad-fit",
+            f"{document['name']} names no parameter the fit may move",
+            "give it ranges, or a [search.<param>] table with min and max in the "
+            "document",
+        )
+    addressable(document, found)
+    return found
+
+
+def fit(
+    document: dict,
+    reference: Any,
+    *,
+    ranges: dict | None = None,
+    views: Any = ("front",),
+    root: str | Path = ".",
+    budget: int = 400,
+    points: int = 7,
+    grid: int = GRID,
+    sheet: str | Path | None = None,
+    boxed: bool = False,
+    region: dict | None = None,
+) -> dict:
+    """Search a voxel model's declared parameters for the best overlap with a reference.
+
+    `reference` is a drawing's path, a mesh's path or a mesh; `views` are the ones the
+    score is the mean over. The answer is the best parameters, the score per view, the
+    model they build and, with `sheet`, its contact sheet written there.
+
+    The answer also says each view's aspect, the reference's beside the range the
+    samples reached, and names a gap between them in `aspect_gaps`: a model a game's
+    box holds narrower than its reference can only raise the overlap by shrinking, and
+    its best values land on their range edges, which `bound` names (§PW263). `boxed`
+    scores each silhouette stretched to its box instead, so shape is compared and the
+    box is not.
+
+    `region` fits a part inside a drawing (§PW326): `colours` pick the drawing's pixels
+    that are the part, `materials` the cells that stand for it, and both are framed by
+    their whole, the drawing's and the model's, so the part is fitted in place and at
+    scale, not only in proportion.
+    """
+    from polyweave.loop import search as S
+
+    from . import voxel_sheet, voxels
+
+    views = tuple(views)
+    unknown = [one for one in views if one not in VIEWS]
+    if unknown or not views:
+        raise PolyweaveError(
+            "geom.bad-fit",
+            f"{', '.join(unknown) or 'no view'} is not a view a model is compared in",
+            f"name some of {', '.join(VIEWS)}",
+        )
+    here = Path(root).resolve()
+    materials = list((region or {}).get("materials") or [])
+    if region is not None:
+        declared = list(document.get("materials") or {})
+        unknown = [one for one in materials if one not in declared]
+        if boxed or views != ("front",) or not materials or unknown:
+            raise PolyweaveError(
+                "geom.bad-fit",
+                "a region is fitted on a drawing's front view, unboxed, against "
+                "materials the declaration has"
+                + (f"; it has no {', '.join(unknown)}" if unknown else ""),
+                "give region materials from the declaration's [materials], with "
+                "views = ['front'] and boxed off",
+                allowed=declared,
+            )
+        kept = {"front": _region(reference, region, grid, here)}
+    else:
+        kept = _references(reference, views, grid, here)
+    wanted = {v: _boxed(m, grid) for v, m in kept.items()} if boxed else kept
+    permitted = _ranges(document, ranges)
+    reached: dict[str, list] = {view: [] for view in views}
+
+    def judge(values: dict) -> dict:
+        try:
+            made = voxels.voxelize(document, root=here, **values)
+        except PolyweaveError as refused:
+            return {
+                "passed": False,
+                "score": 0.0,
+                "failed": [refused.code],
+                "why": refused.message,
+            }
+        seen = (
+            {"front": _part(made, materials, grid)} if region is not None
+            else silhouettes(made, grid=grid)
+        )
+        for view in views:
+            reached[view].append(_aspect(seen[view]))
+        if boxed:
+            seen = {view: _boxed(mask, grid) for view, mask in seen.items()}
+        per_view = {view: overlap(seen[view], wanted[view]) for view in views}
+        broken = [
+            one["check"]
+            for one in made["checks"]["findings"]
+            if one["check"] in DISQUALIFY
+        ]
+        score = 0.0 if broken else float(np.mean(list(per_view.values())))
+        return {
+            "passed": False,
+            "score": score,
+            "views": per_view,
+            "failed": broken,
+            "predicates": [
+                {"id": view, "value": value, "passed": None, "margin": value}
+                for view, value in per_view.items()
+            ],
+        }
+
+    spec = Spec(asset=document["name"], rung=None, predicates=(), search=permitted)
+    found = S.search(spec, judge, budget=budget, points=points)
+    made = voxels.voxelize(document, root=here, **found["best"])
+    answer = {
+        "best": found["best"],
+        "score": found["score"],
+        "views": judge(found["best"]).get("views", {}),
+        "spent": found["spent"],
+        "stopped": found["stopped"],
+        "model": made,
+        "says": made["says"],
+        # How much of each outline the mesh left as holes, filled before scoring: a
+        # reference that is mostly holes shows as that rather than as a poor fit.
+        "filled": {} if region is not None else _holes(reference, views, grid, here),
+        "boxed": bool(boxed),
+        **({"region": region} if region is not None else {}),
+    }
+    answer["aspect"], answer["aspect_gaps"] = _aspects(kept, reached)
+    answer["bound"] = _on_edges(found["best"], permitted)
+    if answer["bound"] and answer["aspect_gaps"] and not boxed:
+        answer["why_bound"] = (
+            f"{', '.join(answer['bound'])} sit on the edge of their ranges, and "
+            f"{answer['aspect_gaps'][0]}: the fit shrank the model to meet the box; "
+            "fit again with boxed=true to compare shape inside the box"
+        )
+    if sheet:
+        where = Path(sheet)
+        if not where.is_absolute():
+            where = here / where
+        answer["sheet"] = voxel_sheet.sheet(made, where)["sheet"]
+    return answer

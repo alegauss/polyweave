@@ -7,8 +7,9 @@ import json
 import pytest
 from PIL import Image
 
-from polyweave import accept, cli
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.loop import accept
+from polyweave.surface import cli
 
 SPEC = """asset = "{name}"
 {anchor}

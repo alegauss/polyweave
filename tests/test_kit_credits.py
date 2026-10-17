@@ -13,7 +13,8 @@ import shutil
 
 import pytest
 
-from polyweave import kits, provenance
+from polyweave.kernel import provenance
+from polyweave.layers import kits
 
 
 @pytest.fixture

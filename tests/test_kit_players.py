@@ -12,7 +12,7 @@ import shutil
 
 import pytest
 
-from polyweave import kits
+from polyweave.layers import kits
 
 
 def test_the_players_kit_seats_players_through_the_remap_kit():

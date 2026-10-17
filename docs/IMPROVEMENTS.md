@@ -476,24 +476,6 @@ the swap, and its gate passes.
 
 ## Block W — A core that grows by layers
 
-### §PW499 Kernel, loop, layers, services and surface as packages
-
-polyweave has 128 modules, 77 of which register operations, and all of them sit side by
-side under `src/polyweave`. A reader can tell `errors` from `reference_concept` only by
-opening both. The fix is a layout that states which way dependencies run, moved in one
-commit, because nothing here owes a caller backward compatibility.
-
-- `kernel/`: errors and doors, the operation registry and `describe`, the config loader, jobs, files, cache, the post-checks and the provenance record format. It knows no domain.
-- `loop/`: accept, the measurement core, search, calibrate, verdict, review, brief and loop.
-- `layers/<name>/`: geometry (with render), picture, sound (sound, sfx, sfxr, music, music_render, voice, the loop cutter), words (words, world, svgtext, review_text), vfx, motion (clip, skeleton, camera), engine (godot, driving, capture, offscreen, perf, states, testing, pack, port), reference (its eight modules), store (store, video, icons, compose) and kits. A measure reading one medium, such as contrast, pressure or flashes, goes with its layer.
-- `services/`: the paid-service clients, the purchase ledger and the budget.
-- `surface/`: server, cli, commands, census and capabilities.
-
-The move only relocates code. Import paths change, `python -m polyweave` and `serve`
-answer as before, and both gates stay green. `MODULES` is edited by hand one last time;
-the manifest line derives it. A module that fits no layer cleanly goes to the layer
-owning its data, and the commit message names each such call.
-
 ### §PW500 A layer declares itself in layer.py
 
 Today `describe.MODULES` is a tuple of 77 module names that every new module has to be

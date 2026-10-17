@@ -118,7 +118,7 @@ def generate(operations: list[dict]) -> str:
 
 
 def current() -> str:
-    from polyweave import describe
+    from polyweave.kernel import describe
 
     return generate(describe.describe())
 

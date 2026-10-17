@@ -6,8 +6,8 @@ import subprocess
 
 import pytest
 
-from polyweave import engine, testing
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.engine import engine, testing
 
 CLEAN = "Godot Engine v4.7.1.stable.official\n\n"
 MUSIC = (CLEAN + "WARNING: 4 ObjectDB instances were leaked at exit\n"

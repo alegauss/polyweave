@@ -13,8 +13,8 @@ import numpy as np
 import pytest
 from PIL import Image as PILImage
 
-from polyweave import reference
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.reference import reference
 
 
 def photo(where, *, size=(120, 120), ground=(210, 205, 200), blobs=()):

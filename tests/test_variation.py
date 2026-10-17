@@ -12,9 +12,10 @@ import json
 import pytest
 from PIL import Image, ImageDraw
 
-from polyweave import config as C
-from polyweave import picture, provenance, variation
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import config as C
+from polyweave.kernel import provenance
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.picture import picture, variation
 
 PROJECT = (
     '[service]\nbase = "https://api.ideogram.ai"\nkey_env = "POLYWEAVE_TEST_I"\n'
@@ -242,7 +243,7 @@ def _varied(tmp_path, monkeypatch, out, image):
 
 def _accepted(tmp_path, *paths):
     """A sitting of variations, and a person's accept of each on the review page."""
-    from polyweave import verdict
+    from polyweave.loop import verdict
 
     families = {p: [{"name": p, "new": p}] for p in paths}
     sheets = {p: {"sheet": str(tmp_path / p), "members": []} for p in paths}

@@ -15,8 +15,8 @@ from pathlib import Path
 
 import pytest
 
-from polyweave import engine
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.engine import engine
 
 CAPTURED = r"captured: (?P<artefact>\S+) (?P<width>\d+) x (?P<height>\d+)"
 SUMMARY = r"checks ran: (?P<ran>\d+), failed: (?P<failed>\d+)"

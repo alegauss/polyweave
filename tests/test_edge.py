@@ -10,8 +10,8 @@ from __future__ import annotations
 import pytest
 from PIL import Image, ImageDraw, ImageFilter
 
-from polyweave import measure
-from polyweave.render import ladder
+from polyweave.layers.geometry.render import ladder
+from polyweave.loop import measure
 
 RED = (150, 40, 60, 255)
 

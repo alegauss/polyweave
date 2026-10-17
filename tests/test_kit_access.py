@@ -12,7 +12,7 @@ import shutil
 
 import pytest
 
-from polyweave import kits
+from polyweave.layers import kits
 
 
 def test_the_access_kit_contributes_the_accessibility_tab_after_options():
@@ -92,8 +92,8 @@ def test_a_broken_access_option_fails_the_proof_by_name(tmp_path, where, before,
 
 
 def test_a_capture_with_no_screen_to_draw_on_is_skipped_and_said(tmp_path, monkeypatch):
-    from polyweave import capture
-    from polyweave.errors import PolyweaveError
+    from polyweave.kernel.errors import PolyweaveError
+    from polyweave.layers.engine import capture
 
     def no_screen(*_, **__):
         raise PolyweaveError("engine.no-offscreen-route",

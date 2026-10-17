@@ -9,8 +9,8 @@ from __future__ import annotations
 
 import pytest
 
-from polyweave import schema
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.services import schema
 
 
 def project(tmp_path, text=""):

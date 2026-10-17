@@ -13,8 +13,10 @@ from pathlib import Path
 
 import pytest
 
-from polyweave import engine, provenance, vfx
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import provenance
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.engine import engine
+from polyweave.layers.vfx import vfx
 
 TRAILS = """\
 [effect.sparks]
@@ -112,7 +114,7 @@ def test_the_project_names_where_its_built_effects_go(tmp_path):
 
 
 def test_a_camera_clip_beside_an_unshipped_source_is_refused(tmp_path):
-    from polyweave import camera
+    from polyweave.layers.motion import camera
 
     (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
     (tmp_path / "art").mkdir()
@@ -226,7 +228,7 @@ def test_a_picture_can_be_a_particle_s_shape(tmp_path):
 
 def test_describe_says_what_a_declaration_holds():
     """§PW409: writing two Quilt effects meant reading KEYS and SHAPES in vfx.py."""
-    from polyweave import describe
+    from polyweave.kernel import describe
 
     said = describe.describe("vfx.build")["declares"]
     assert set(said["keys"]) == set(vfx.KEYS) == set(vfx.ABOUT)
@@ -438,7 +440,7 @@ def test_a_strike_is_filmed_at_fixed_frames_as_a_sitting(tmp_path):
     import numpy as np
     from PIL import Image
 
-    from polyweave import offscreen
+    from polyweave.layers.engine import offscreen
 
     if not os.environ.get("GODOT"):
         pytest.skip("no $GODOT on this machine")
@@ -634,7 +636,7 @@ def test_a_burst_is_watched_standing_still_and_a_trail_moving():
 
 
 def test_an_acceptance_spec_bounds_what_a_built_effect_measures(tmp_path):
-    from polyweave import accept
+    from polyweave.loop import accept
 
     vfx.build(effects(tmp_path), root=str(tmp_path))
     where = tmp_path / "vfx" / "sparks.accept.toml"
@@ -653,7 +655,7 @@ def test_an_acceptance_spec_bounds_what_a_built_effect_measures(tmp_path):
 
 
 def test_an_effect_bound_on_something_vfx_build_did_not_make_is_refused(tmp_path):
-    from polyweave import accept
+    from polyweave.loop import accept
 
     effects(tmp_path)
     (tmp_path / "plain.tscn").write_text("[gd_scene format=3]\n", encoding="utf-8")
@@ -668,7 +670,7 @@ def test_an_effect_bound_on_something_vfx_build_did_not_make_is_refused(tmp_path
 def test_an_effect_is_watched_over_its_life_as_a_sitting(tmp_path):
     import json
 
-    from polyweave import offscreen
+    from polyweave.layers.engine import offscreen
 
     if not os.environ.get("GODOT"):
         pytest.skip("no $GODOT on this machine")
@@ -705,7 +707,7 @@ def test_an_effect_is_watched_over_its_life_as_a_sitting(tmp_path):
 def test_an_effect_the_export_leaves_out_is_watched_in_a_sitting_under_art(tmp_path):
     """§PW424: spinhold's bomb, declared under art/, could not be previewed into
     art/review/ beside the day's other sittings."""
-    from polyweave import offscreen
+    from polyweave.layers.engine import offscreen
 
     if not os.environ.get("GODOT"):
         pytest.skip("no $GODOT on this machine")
@@ -1117,7 +1119,7 @@ def test_a_path_ribbon_is_as_long_at_600_frames_a_second_as_at_60(tmp_path, fps)
 
 
 def test_a_path_ribbon_is_watched_moving_as_a_sitting(tmp_path):
-    from polyweave import offscreen
+    from polyweave.layers.engine import offscreen
 
     if not os.environ.get("GODOT"):
         pytest.skip("no $GODOT on this machine")

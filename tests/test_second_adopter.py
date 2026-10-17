@@ -13,7 +13,9 @@ from pathlib import Path
 
 import pytest
 
-from polyweave import accept, config, render, search, units
+from polyweave.kernel import config
+from polyweave.layers.geometry import render, units
+from polyweave.loop import accept, search
 
 FIXTURE = Path(__file__).parent / "fixtures" / "website.toml"
 
@@ -68,7 +70,7 @@ def test_a_question_nothing_enabled_can_carry_is_still_refused(tmp_path):
     (tmp_path / "polyweave.toml").write_text(
         '[render]\nrungs = ["sphere"]\n', encoding="utf-8"
     )
-    from polyweave.errors import PolyweaveError
+    from polyweave.kernel.errors import PolyweaveError
 
     with pytest.raises(PolyweaveError) as refused:
         render.plan(asking=["silhouette_iou"], root=tmp_path)

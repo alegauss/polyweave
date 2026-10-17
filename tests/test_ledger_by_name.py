@@ -10,8 +10,8 @@ import json
 
 import pytest
 
-from polyweave import purchase
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.services import purchase
 
 LOCK = {
     "booster_hammer": {

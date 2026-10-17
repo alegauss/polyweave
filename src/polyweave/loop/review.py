@@ -1,0 +1,808 @@
+"""One local page to look at, and one call to answer from it (§PW172).
+
+A verdict is the one step the loop cannot automate, and it was the slowest: the person
+saw a render only by opening files by hand, so in practice they saw the agent's
+description of it, which is the agent's judgement arriving where theirs was asked for.
+
+`python -m polyweave review` serves one page, bound to 127.0.0.1 and nothing else, from
+files that ship with the plugin, on the standard library's server. The page is the
+window's own decision screen, built once from gui/ and committed (§PW403), so a person
+needs no build, no account and nothing to install.
+
+**The page is a reader.** Everything it shows is already on disk: `loop.pending`, the
+sittings `verdict.sitting` laid out, their sheets and the project's files. It keeps no
+state of its own, so it cannot disagree with the files, and a second page shows the
+same.
+
+**It has one write**: `verdict.judge`, with the members taken from the sitting's own
+manifest rather than from the page, and the person's choice and sentence. There is no
+second path into a spec or a canon for a bug to live on. That is why this is not the
+graphical editor the non-goal excludes: it edits nothing an agent could not.
+"""
+
+from __future__ import annotations
+
+import json
+import mimetypes
+import threading
+from http import HTTPStatus
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+from typing import Annotated
+from urllib.parse import parse_qs, urlparse
+
+import numpy as np
+
+from polyweave.kernel.config import load
+from polyweave.kernel.describe import Param, operation
+from polyweave.kernel.errors import PolyweaveError, crashed
+from polyweave.kernel.files import read_text_retrying
+
+from . import loop, person, verdict
+
+#: Where the page's own files are, beside this module.
+PAGE = Path(__file__).with_name("review_page")
+
+#: The decision screen, built from gui/packages/ui by `npm run build:review` and
+#: committed, so the page needs Python alone. It is the window's own screen with a
+#: browser's desk, which makes the browser and the window one screen (§PW403).
+SCREEN = PAGE / "screen"
+
+#: The package whose code the server runs. The page's files are read on every request,
+#: but its Python is the copy the server started with (§PW294).
+CODE = Path(__file__).parents[1]
+
+#: The only address the server listens on. A verdict is a person's, and a page anyone
+#: on the network could post to would make it anyone's.
+HOST = "127.0.0.1"
+
+#: A header a browser will not send across origins without asking first, and this
+#: server never answers that question. So another site open in the same browser cannot
+#: post a verdict here, which a form or a plain fetch from it otherwise could.
+ASKED = "X-Polyweave"
+
+#: What the page may be sent from the project: pictures, sounds to hear (§PW256), and
+#: the records beside them.
+SERVED = {".png", ".jpg", ".jpeg", ".webp", ".json", ".wav", ".ogg", ".flac", ".mp3",
+          ".opus"}
+
+# Not every platform's table knows these, and a sound sent as octet-stream is one a
+# browser may refuse to play.
+for _kind, _suffix in (("audio/wav", ".wav"), ("audio/ogg", ".ogg"),
+                       ("audio/flac", ".flac"), ("audio/mpeg", ".mp3"),
+                       ("audio/opus", ".opus"),
+                       # A module script sent as text/plain, as some platforms' tables
+                       # say, is one a browser refuses to run.
+                       ("text/javascript", ".js"), ("text/css", ".css"),
+                       ("font/woff2", ".woff2")):
+    mimetypes.add_type(_kind, _suffix)
+
+
+def sittings(root) -> list[dict]:
+    """Every sitting laid out in this project, newest last, as its manifest says."""
+    config = load(root)
+    index = config.path("paths.work") / "sittings.json"
+    found = []
+    for listed in json.loads(read_text_retrying(index) or "[]"):
+        text = read_text_retrying(config.root / listed)
+        if text is None:
+            continue  # a sitting folder since deleted is simply not offered
+        found.append({"manifest": listed, **json.loads(text)})
+    return found
+
+
+def looked_at(root) -> list[dict]:
+    """Every gate run, each candidate with what is left of its service's ceiling.
+
+    The refused beside the kept (§PW175), with the numbers the agent used and what is
+    left to spend, read now rather than when the gate ran.
+    """
+    from polyweave.layers.picture import picture
+    from polyweave.services import purchase
+
+    left: dict = {}
+    found = picture.gates(root)
+    for run in found:
+        for one in run["candidates"]:
+            service = (one.get("bought") or {}).get("service")
+            if service and service not in left:
+                try:
+                    left[service] = purchase.remaining(str(root), service=service)
+                except PolyweaveError:
+                    left[service] = None
+            one["ceiling"] = left.get(service)
+            one["compare"] = _compared_with(root, run, one)
+    return found
+
+
+def _compared_with(root, run: dict, one: dict) -> dict | None:
+    """What a candidate is best compared against, and how (§PW176).
+
+    A variation against its parent, as a slider with its mask outlined; anything else
+    against its family's first canon picture, as a difference map.
+    """
+    from polyweave.kernel import provenance
+    from polyweave.layers.picture import style
+
+    config = load(root)
+    here = config.root
+    try:
+        details = provenance.read(one["picture"], root=here).get("details") or {}
+    except PolyweaveError:
+        details = {}
+    if (details.get("parent") or {}).get("path"):
+        return {
+            "old": details["parent"]["path"],
+            "mode": "slider",
+            "mask": details.get("mask"),
+        }
+    try:
+        _, declared = config.style(run.get("family"))
+    except PolyweaveError:
+        return None
+    canon = style.admitted(declared)
+    if not canon:
+        return None
+    first = provenance.relative(Path(declared["canon"]) / canon[0]["picture"], here)
+    return {"old": first, "mode": "difference", "mask": None}
+
+
+def difference(root, old: str, new: str) -> dict:
+    """Where two pictures differ above the noise floor, as a picture (§PW176).
+
+    The floor is the one `measure.same` resolves, and the map lights a patch only where
+    its pooled difference is past it, so what shows is what is above noise and not every
+    resampled pixel. The map is derived output, written under `[paths] work`.
+    """
+    import hashlib
+
+    from PIL import Image as PILImage
+
+    from polyweave.kernel.image import Image
+    from polyweave.kernel.image import load as load_image
+
+    from . import measure
+
+    config = load(root)
+    here = config.root
+    before, after = load_image(here / old), load_image(here / new)
+    if after.size == before.size:
+        said = measure.same(str(here / new), str(here / old), root=str(here))
+    else:
+        # Scaled to the old one's size, so a pixel is compared with its own; the floor
+        # is then the strictest rung's, since no one render's record applies.
+        scaled = PILImage.fromarray(after.rgba).resize(
+            before.size, PILImage.Resampling.LANCZOS
+        )
+        after = Image(
+            path=after.path, rgba=np.asarray(scaled), had_alpha=after.had_alpha
+        )
+        said = {
+            "tolerance": config.tolerances().render_noise,
+            "tolerance_from": "[tolerance] render_noise, the new picture scaled to the "
+            "old one's size",
+        }
+    bar = float(said["tolerance"]) * measure.DELTA_E_FULL
+    field = measure._delta_field(after, before)
+    block = measure.POOL
+    every = np.ones(field.shape, dtype=bool)
+    patches = measure.pooled(field, every, block) > bar
+    lit = np.kron(patches, np.ones((block, block), dtype=bool))[
+        : field.shape[0], : field.shape[1]
+    ]
+    grey = after.rgba[..., :3].mean(axis=2, keepdims=True).repeat(3, axis=2) * 0.45
+    shown = np.where(lit[..., None], np.array([255.0, 59.0, 48.0]), grey).astype(
+        np.uint8
+    )
+    digest = hashlib.sha256(f"{old}\0{new}".encode()).hexdigest()[:16]
+    target = config.path("paths.work") / "compare" / f"{digest}.png"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    PILImage.fromarray(shown).save(target)
+    from polyweave.kernel.provenance import relative
+
+    return {
+        "map": relative(target, here),
+        "changed_patches": int(patches.sum()),
+        "patches": int(patches.size),
+        "tolerance": said["tolerance"],
+        "same": said.get("same"),
+        "distance": said.get("distance"),
+        "tolerance_from": said.get("tolerance_from"),
+    }
+
+
+def _overruled(root, body: dict) -> tuple[list[dict], str, str]:
+    """A refused picture promoted by a person: the members, the sitting and family."""
+    from polyweave.layers.picture import picture
+
+    ran = {one["id"]: one for one in picture.gates(root)}
+    run = ran.get(str(body.get("gate") or ""))
+    held = {one["picture"]: one for one in (run or {}).get("candidates", ())}
+    if run is None:
+        # The runs themselves, where the gate is the unknown one (§PW265).
+        raise PolyweaveError(
+            "loop.unknown-sitting",
+            f"there is no gate run {body.get('gate')!r} in this project",
+            f"name one of the gate runs: {', '.join(sorted(ran)) or 'there are none'}",
+            given=str(body.get("gate")),
+            allowed=sorted(ran),
+        )
+    chosen = held.get(str(body.get("picture") or ""))
+    if chosen is None:
+        raise PolyweaveError(
+            "loop.unknown-sitting",
+            f"gate run {run['id']} has no picture {body.get('picture')!r}",
+            f"name one of its pictures: {', '.join(sorted(held))}",
+            given=str(body.get("picture")),
+            allowed=sorted(held),
+        )
+    name = Path(chosen["picture"]).stem
+    member = {"name": name, "new": chosen["picture"], "passed": chosen["passed"]}
+    return [member], f"gate:{run['id']}", name
+
+
+def _admitted(root, body: dict) -> tuple[list[dict], str, str]:
+    """A candidate admitted to a canon by a person, never gated (§PW266).
+
+    Only a picture the family's own `candidates` lists: the page can admit what the
+    project pointed at, and not any file a request names.
+    """
+    from polyweave.layers.picture import style
+
+    config = load(root)
+    name, declared = config.style(body.get("canon") or None)
+    offered = {
+        one["path"]: one
+        for one in style.candidates(declared, style.admitted(declared), config.root)
+    }
+    chosen = str(body.get("admit") or "")
+    if chosen not in offered:
+        raise PolyweaveError(
+            "style.not-a-candidate",
+            f"{chosen!r} is not a candidate of the {name} canon",
+            f"admit one of {', '.join(sorted(offered))}"
+            if offered
+            else f"point [style.{name}] candidates at the pictures a person may admit",
+            given=chosen,
+            allowed=sorted(offered),
+        )
+    stem = Path(chosen).stem
+    member = {"name": stem, "new": chosen, "passed": True, "canon": name}
+    return [member], f"canon:{name}", stem
+
+
+def turntables(root) -> list[dict]:
+    """Every turntable laid out in this project, newest last (§PW176)."""
+    from polyweave.layers.geometry.shape import TURNTABLES
+
+    config = load(root)
+    index = config.path("paths.work") / TURNTABLES
+    found = []
+    for listed in json.loads(read_text_retrying(index) or "[]"):
+        text = read_text_retrying(config.root / listed)
+        if text is not None:
+            found.append({"manifest": listed, **json.loads(text)})
+    return found
+
+
+def answer(root, body: dict) -> dict:
+    """The page's one write: a person's verdict on one family of one sitting.
+
+    A refused picture promoted from a gate's lane is the same write: a verdict through
+    `judge`, whose record says the tool refused what the person accepted, which is the
+    evidence a tolerance is loosened from (§PW175).
+    """
+    config = load(root)
+    if body.get("withdraw"):
+        from polyweave.layers.picture import style
+
+        # Out of the canon by a person's click and sentence, and by nothing else.
+        return {
+            "withdrawn": style.withdraw(
+                str(body["withdraw"]),
+                family=body.get("canon") or None,
+                why=str(body.get("why") or ""),
+                root=config.root,
+            )
+        }
+    if body.get("admit"):
+        members, listed, family = _admitted(root, body)
+        said = verdict.judge(
+            members, "accept", str(body.get("why") or ""), root=str(config.root)
+        )
+        said["answer"] = verdict.record_answer(
+            said, sitting=listed, family=family, root=config.root
+        )
+        return said
+    if body.get("gate"):
+        members, listed, family = _overruled(root, body)
+        if body.get("canon"):
+            # Into the canon the same way: a verdict accepting the look, whose record
+            # the canon's own entry names (§PW177).
+            members = [{**one, "canon": str(body["canon"])} for one in members]
+        said = verdict.judge(
+            members,
+            str(body.get("choice") or ""),
+            str(body.get("why") or ""),
+            root=str(config.root),
+        )
+        said["answer"] = verdict.record_answer(
+            said, sitting=listed, family=family, root=config.root
+        )
+        return said
+    listed = str(body.get("sitting") or "")
+    offered = {one["manifest"]: one for one in sittings(root)}
+    if listed not in offered:
+        raise PolyweaveError(
+            "loop.unknown-sitting",
+            f"{listed!r} is not a sitting this project laid out",
+            "answer a sitting the page lists; verdict.sitting lays one out",
+            given=listed,
+            allowed=sorted(offered),
+        )
+    families = offered[listed]["families"]
+    family = str(body.get("family") or "")
+    if family not in families:
+        raise PolyweaveError(
+            "loop.unknown-sitting",
+            f"the sitting has no family {family!r}",
+            f"answer one of {', '.join(sorted(families))}",
+            given=family,
+            allowed=sorted(families),
+        )
+    members = families[family]["members"]
+    # Checked before the verdict, so a mark that cannot be kept never leaves a verdict
+    # recorded without the place it was about.
+    shapes = _shapes(members, body.get("marks") or [])
+    choice = str(body.get("choice") or "")
+    why = str(body.get("why") or "").strip()
+    if choice == "accept" and not why:
+        # A person who clicked accept and wrote nothing said exactly that, and the
+        # ledger says so in their language; judge still refuses an empty sentence from
+        # anyone else, and a redo still needs the person's words (§PW288).
+        from polyweave.layers.words import review_text
+
+        why = review_text.catalog(review_text.language(config.root))["page"][
+            "accepted_silent"]
+    # Where the sitting names the ledger's asset, the verdict lands there too, in a run
+    # opened and closed for it, as one given in conversation does (§PW465).
+    said = verdict.judge(
+        members,
+        choice,
+        why,
+        root=str(config.root),
+        named=list(body.get("named") or ()),
+        asset=offered[listed].get("asset") or None,
+    )
+    marks = [_mark(member, drawn, config) for member, drawn in shapes]
+    # An event on disk, so the agent that offered the sitting resumes on it without
+    # the person saying so again in chat (§PW173).
+    said["answer"] = verdict.record_answer(
+        said, sitting=listed, family=family, root=config.root, marks=marks
+    )
+    return said
+
+
+def _shapes(members: list[dict], marks: list) -> list[tuple[dict, list]]:
+    """Each mark matched to the member it was drawn on, its shapes checked (§PW174)."""
+    named = {m["name"]: m for m in members}
+    found = []
+    for mark in marks:
+        member = named.get(str(mark.get("member")))
+        if member is None:
+            raise PolyweaveError(
+                "loop.unknown-sitting",
+                f"a mark names {mark.get('member')!r}, which is not in this family",
+                f"mark one of {', '.join(sorted(named))}",
+                given=str(mark.get("member")),
+                allowed=sorted(named),
+            )
+        shapes = [
+            s for s in mark.get("shapes") or [] if s.get("box") or s.get("outline")
+        ]
+        if shapes:
+            found.append((member, shapes))
+    return found
+
+
+def _mark(member: dict, shapes: list, config) -> dict:
+    """A person's mark as a mask the size of the picture it was drawn on.
+
+    Black where they marked, white elsewhere, which is the edit call's own convention,
+    kept with the digest of the picture, so it can never bound an edit of another.
+    """
+    from datetime import UTC, datetime
+
+    from PIL import Image, ImageDraw
+
+    from polyweave.kernel import provenance
+
+    here = config.root
+    picture = here / member["new"]
+    with Image.open(picture) as opened:
+        size = opened.size
+    mask = Image.new("L", size, 255)
+    pen = ImageDraw.Draw(mask)
+    for shape in shapes:
+        if shape.get("box"):
+            left, top, right, bottom = (float(v) for v in shape["box"])
+            pen.rectangle(
+                (
+                    min(left, right),
+                    min(top, bottom),
+                    max(left, right),
+                    max(top, bottom),
+                ),
+                fill=0,
+            )
+        else:
+            pen.polygon(
+                [tuple(float(v) for v in point) for point in shape["outline"]], fill=0
+            )
+    stamp = datetime.now(tz=UTC).strftime("%Y%m%dT%H%M%S%f")
+    target = config.path("paths.work") / "marks" / f"{stamp}-{member['name']}.png"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    mask.save(target)
+    try:
+        record = provenance.read(picture, root=here)
+    except PolyweaveError:
+        record = {}
+    return {
+        "member": member["name"],
+        "picture": member["new"],
+        "sha256": provenance.sha256_of(picture)[0],
+        "mask": provenance.relative(target, here),
+        "shapes": shapes,
+        # For a render, the camera the mark was drawn from, so the region can be
+        # traced back onto the surface rather than applied to pixels.
+        "camera": record.get("camera"),
+    }
+
+
+def _served(here: Path, wanted: str) -> bool:
+    """Whether a path is one the page may be sent: inside the project, a picture or a
+    record."""
+    target = (here / wanted).resolve()
+    return (
+        bool(wanted)
+        and target.is_relative_to(here)
+        and target.suffix.lower() in SERVED
+        and target.is_file()
+    )
+
+
+def newest(code: Path) -> float:
+    """The newest modification time of the package's Python, in seconds."""
+    return max((one.stat().st_mtime for one in code.rglob("*.py")), default=0.0)
+
+
+def staleness(code: Path, started: float) -> dict | None:
+    """What changed in the package since the server started, or None (§PW294)."""
+    now = newest(code)
+    if now <= started:
+        return None
+    return PolyweaveError(
+        "review.stale-server",
+        "polyweave changed after this review server started, so it would judge with "
+        "older code than the specs it reads",
+        "stop the server and start it again: python -m polyweave review",
+    ).as_dict()
+
+
+# -- the page's facts and its write, as operations (§PW377) ---------------------------
+#
+# The page and the window's own screen read the same answers: each route below calls
+# one of these, so there is no second implementation for a screen to drift from.
+
+#: The newest Python the process that imported this module was started with, so an
+#: answer is refused once the package changes under a long-running server (§PW294).
+_LOADED = newest(CODE)
+
+
+@operation("review.state")
+def state(root: Annotated[str, Param("the project the page is for")] = ".") -> dict:
+    """Everything the decision screen shows, as the page reads it: the language, what
+    waits on a person, the sittings, their answers, the gate runs and the turntables."""
+    from polyweave.layers.words import review_text
+
+    here = load(root).root
+    return {
+        # The page's own words follow the project's (§PW287).
+        "language": review_text.language(here),
+        "project": load(here).get("project.name"),
+        "pending": loop.pending(str(here)),
+        "sittings": sittings(here),
+        "answers": verdict.answers(root=str(here))["answers"],
+        "gates": looked_at(here),
+        "turntables": turntables(here),
+    }
+
+
+@operation("review.words")
+def words(root: Annotated[str, Param("the project the screen is for")] = ".") -> dict:
+    """The words the decision screen reads, in the project's language: the review
+    catalog's page and every kind of sitting's, so a screen holds no copy (§PW400)."""
+    from polyweave.layers.words import review_text
+
+    speaks = review_text.language(load(root).root)
+    said = review_text.catalog(speaks)
+    return {"language": speaks, "page": said["page"], "kinds": said.get("kinds", {})}
+
+
+@operation("review.canon")
+def canon(root: Annotated[str, Param("the project the page is for")] = ".") -> dict:
+    """Each style family's canon board, as the page's canon tab draws it."""
+    from polyweave.layers.picture import style
+
+    config = load(root)
+    families = config.styles() if config.states("style") else {}
+    return {"boards": [style.board(name, config.root) for name in families]}
+
+
+@operation("review.compare")
+def compare(
+    old: Annotated[str, Param("the picture before, under the project")],
+    new: Annotated[str, Param("the picture after, under the project")],
+    root: Annotated[str, Param("the project the pictures belong to")] = ".",
+) -> dict:
+    """Where two pictures differ above the noise floor, as a map the page shows."""
+    here = load(root).root
+    for one in (old, new):
+        if not _served(here, one):
+            raise PolyweaveError(
+                "review.not-served",
+                f"{one!r} is not a picture under the project the page may show",
+                "name a picture by its path under the project root",
+                given=one,
+            )
+    return difference(here, old, new)
+
+
+@operation("review.answer", guard=person.page_answer)
+def answered(
+    body: Annotated[
+        dict,
+        Param("the answer as the page sends it: sitting, family, choice, why and "
+              "marks; or gate and picture; or admit or withdraw, with canon"),
+    ],
+    root: Annotated[str, Param("the project the sitting belongs to")] = ".",
+) -> dict:
+    """The page's one write, marks turned into masks and then verdict.judge, refused
+    where this process runs older code than the package on disk.
+
+    Called as a tool rather than by the page, an accept needs the body's `code`, the
+    one the page shows for the sitting or above its lanes (§PW443).
+    """
+    stale = staleness(CODE, _LOADED)
+    if stale:
+        raise PolyweaveError(stale["code"], stale["message"], stale["remedy"])
+    return answer(load(root).root, body)
+
+
+#: What a stale server answers while it hands over to a fresh one (§PW463); the page
+#: waits and sends the same request again.
+RESTARTING = PolyweaveError(
+    "review.restarting",
+    "polyweave changed under this review server, and it is starting again on the new "
+    "code",
+    "send the same request again in a moment; the page does so by itself",
+).as_dict()
+
+
+def server(root=".", port: int = 0, on_stale=None) -> ThreadingHTTPServer:
+    """The page's server for one project, bound and not yet serving.
+
+    `on_stale` is called once the package changes under it, and every request is then
+    answered `review.restarting` rather than refused (§PW463): `run` passes one that
+    starts a fresh server on the same root and port. Without it, a stale server says so
+    and the person is told to restart it.
+    """
+    here = load(root).root
+    code = CODE
+    started = newest(code)
+    # The codes a person may say in conversation to accept what this page shows
+    # (§PW443): issued here, held in this process alone, and on disk only as digests.
+    issued: dict[str, str] = {}
+    issuing = threading.Lock()  # two tabs loading at once would issue twice
+
+    def codes(shown: dict) -> dict:
+        with issuing:
+            for key in [one["manifest"] for one in shown["sittings"]] + [person.PAGE]:
+                if key not in issued:
+                    issued[key] = person.issue(here, key)
+            return dict(issued)
+
+    handing_over = threading.Event()
+
+    class Handler(BaseHTTPRequestHandler):
+        def _restarting(self) -> bool:
+            """Answer `review.restarting` and hand over once the code moved (§PW463)."""
+            if on_stale is None or not staleness(code, started):
+                return False
+            if not handing_over.is_set():
+                handing_over.set()
+                on_stale()
+            self._json(RESTARTING, HTTPStatus.SERVICE_UNAVAILABLE)
+            return True
+
+        def log_message(self, *_):  # the terminal is the agent's, not a request log
+            return
+
+        def do_GET(self):  # noqa: N802 - the name the standard library calls
+            self._answering(self._get)
+
+        def do_POST(self):  # noqa: N802
+            self._answering(self._post)
+
+        def _answering(self, route):
+            # A raise used to drop the connection, and the page could only say "Failed
+            # to fetch" (§PW411). It answers the defect instead, which the page shows.
+            try:
+                route()
+            except Exception as broken:  # noqa: BLE001 - the page must hear something
+                import traceback
+
+                traceback.print_exc()  # the server's terminal keeps the whole of it
+                path = urlparse(self.path).path
+                refused = crashed(
+                    f"{self.command} {path}",
+                    broken,
+                    "this is a defect in polyweave, not in the answer; the page still "
+                    "answers, the detail says where it raised, and the server's "
+                    "terminal holds the traceback",
+                )
+                self._json(refused.as_dict(), HTTPStatus.INTERNAL_SERVER_ERROR)
+
+        def _get(self):
+            asked = urlparse(self.path)
+            if asked.path in ("/", "/index.html"):
+                return self._file(SCREEN / "index.html")
+            built = asked.path.removeprefix("/")
+            if built and "/" not in built and (SCREEN / built).is_file():
+                # The screen's script, styles and fonts, by name, and nothing below.
+                return self._file(SCREEN / built)
+            if asked.path.startswith("/locales/"):
+                # A catalog by its language, and only one the plugin ships (§PW287).
+                from polyweave.layers.words import review_text
+
+                speaks = asked.path.removeprefix("/locales/").removesuffix(".json")
+                if speaks in review_text.languages():
+                    return self._file(review_text.LOCALES / f"{speaks}.json")
+                return self._json({"code": "not-found"}, HTTPStatus.NOT_FOUND)
+            if asked.path.startswith("/api/") and self._restarting():
+                return None
+            if asked.path == "/api/state":
+                # Staleness before the config: a table newer than this code crashed
+                # every read instead of saying so (§PW463).
+                stale = staleness(code, started)
+                try:
+                    shown = state(here)
+                except PolyweaveError:
+                    if stale:
+                        return self._json(stale, HTTPStatus.CONFLICT)
+                    raise
+                # The page shows a banner naming the restart.
+                return self._json({**shown, "stale": stale, "codes": codes(shown)})
+            if asked.path == "/api/canon":
+                try:
+                    return self._json(canon(here)["boards"])
+                except PolyweaveError as refused:
+                    return self._json(refused.as_dict(), HTTPStatus.BAD_REQUEST)
+            if asked.path == "/api/compare":
+                query = parse_qs(asked.query)
+                old, new = (query.get(k, [""])[0] for k in ("old", "new"))
+                if all(_served(here, one) for one in (old, new)):
+                    try:
+                        return self._json(difference(here, old, new))
+                    except PolyweaveError as refused:
+                        return self._json(refused.as_dict(), HTTPStatus.BAD_REQUEST)
+            if asked.path == "/file":
+                wanted = (parse_qs(asked.query).get("path") or [""])[0]
+                target = (here / wanted).resolve()
+                if target.is_relative_to(here) and target.suffix.lower() in SERVED:
+                    return self._file(target)
+            return self._json({"code": "not-found"}, HTTPStatus.NOT_FOUND)
+
+        def _post(self):
+            # Read before answering, refusals included: a reply sent while the client
+            # is still writing its body gets the connection reset under it.
+            length = int(self.headers.get("Content-Length") or 0)
+            sent = self.rfile.read(length) if length else b""
+            if (
+                urlparse(self.path).path != "/api/judge"
+                or self.headers.get(ASKED) != "1"
+            ):
+                return self._json({"code": "refused"}, HTTPStatus.FORBIDDEN)
+            if self._restarting():
+                return None
+            stale = staleness(code, started)
+            if stale:
+                # Never an answer judged by code older than the specs it reads.
+                return self._json(stale, HTTPStatus.CONFLICT)
+            try:
+                body = json.loads(sent or b"{}")
+                return self._json(answer(here, body))
+            except PolyweaveError as refused:
+                return self._json(refused.as_dict(), HTTPStatus.BAD_REQUEST)
+            except json.JSONDecodeError:
+                return self._json({"code": "not-json"}, HTTPStatus.BAD_REQUEST)
+
+        def _file(self, path: Path):
+            if not path.is_file():
+                return self._json({"code": "not-found"}, HTTPStatus.NOT_FOUND)
+            kind = mimetypes.guess_type(path.name)[0] or "application/octet-stream"
+            self._send(path.read_bytes(), kind)
+
+        def _json(self, value, status=HTTPStatus.OK):
+            self._send(json.dumps(value).encode("utf-8"), "application/json", status)
+
+        def _send(self, body: bytes, kind: str, status=HTTPStatus.OK):
+            self.send_response(status)
+            self.send_header("Content-Type", kind)
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            self.wfile.write(body)
+
+    return ThreadingHTTPServer((HOST, int(port)), Handler)
+
+
+def waiting_at(root, base: str) -> list[str]:
+    """One line per sitting with a family nobody answered, newest last, with its URL."""
+    answered = {(one.get("sitting"), one.get("family"))
+                for one in verdict.kept_answers(root)}
+    lines = []
+    for one in sittings(root):
+        left = [name for name in one.get("families") or {}
+                if (one["manifest"], name) not in answered]
+        if left:
+            at = verdict.address(one["manifest"])
+            lines.append(f"  {len(left)} to answer: {base}{at}")
+    return lines
+
+
+def run(root=".", port: int = 0, spawn=None) -> int:
+    """Serve the page until interrupted, having said where it is.
+
+    Once polyweave changes under it, it starts a fresh server on the same root and port
+    and waits on that one (§PW463), so the person's answer lands on current code without
+    anyone restarting a server they never started, and whatever holds this process
+    still holds the page. `spawn` is `subprocess.Popen`, which a test stands in for.
+    """
+    import subprocess
+    import sys
+
+    stale = threading.Event()
+
+    def hand_over():
+        stale.set()
+        # Not from the request's own thread, which shutdown would wait on forever.
+        threading.Thread(target=serving.shutdown, daemon=True).start()
+
+    serving = server(root, port, on_stale=hand_over)
+    host, bound = serving.server_address[:2]
+    base = f"http://{host}:{bound}"
+    print(f"polyweave review: {base}/  (Ctrl+C stops it)", flush=True)
+    # Each sitting still waiting, at the address that opens it alone (§PW459), so the
+    # person is linked straight to it and a screenshot shows what they will judge.
+    for line in waiting_at(root, base):
+        print(line, flush=True)
+    try:
+        serving.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        serving.server_close()  # waits for the answers in flight, then frees the port
+    if not stale.is_set():
+        return 0
+    print("polyweave review: polyweave changed; starting again on the new code",
+          flush=True)
+    fresh = (spawn or subprocess.Popen)(
+        [sys.executable, "-m", "polyweave", "review", "--root", str(root),
+         "--port", str(bound)]
+    )
+    try:
+        return int(fresh.wait() or 0)
+    except KeyboardInterrupt:
+        fresh.terminate()
+        return 0

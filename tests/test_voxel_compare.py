@@ -6,10 +6,10 @@ import json
 
 import pytest
 
-from polyweave import cli
-from polyweave.errors import PolyweaveError
-from polyweave.geometry import voxel_compare as C
-from polyweave.geometry import voxels as V
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.geometry import voxel_compare as C
+from polyweave.layers.geometry import voxels as V
+from polyweave.surface import cli
 
 PAINT = {"hull": {"colour": "#808080"}, "glass": {"colour": "#40C0FF"}}
 

@@ -18,7 +18,7 @@ import json
 
 import pytest
 
-from polyweave import cli, server
+from polyweave.surface import cli, server
 
 PROP = """name = "crate"
 output = "crate"

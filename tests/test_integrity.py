@@ -10,8 +10,9 @@ import os
 
 import pytest
 
-from polyweave import integrity, project
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.engine import integrity
+from polyweave.surface import project
 
 SCENE = (
     '[gd_scene load_steps=2 format=3 uid="uid://cmain"]\n\n'

@@ -7,7 +7,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-from polyweave import cli, provenance
+from polyweave.kernel import provenance
+from polyweave.surface import cli
 
 GUARD = Path(__file__).parents[1] / "plugin" / "hooks" / "guard.py"
 

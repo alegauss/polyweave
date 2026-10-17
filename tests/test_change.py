@@ -13,9 +13,9 @@ import numpy as np
 import pytest
 from PIL import Image as PILImage
 
-from polyweave import config as C
-from polyweave import measure
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import config as C
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.loop import measure
 
 SIDE = 1024  # so 29,696 differing pixels is the proportion Cottony measured: 2.8%
 
@@ -265,7 +265,7 @@ def test_a_twin_beats_a_stated_bar_which_beats_the_configured_one(tmp_path):
 
 def test_the_rung_is_read_off_the_record_rather_than_asked_for(tmp_path):
     """§PW6 wrote it down, and a caller repeating it is one who can get it wrong."""
-    from polyweave import provenance
+    from polyweave.kernel import provenance
 
     where = project(tmp_path)
     original = scene(tmp_path, "a.png")

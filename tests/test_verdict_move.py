@@ -10,8 +10,8 @@ import json
 
 import pytest
 
-from polyweave import review, verdict
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.loop import review, verdict
 from test_verdict_answer import member
 
 

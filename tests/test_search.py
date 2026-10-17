@@ -13,8 +13,8 @@ from __future__ import annotations
 
 import pytest
 
-from polyweave import accept, search
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.loop import accept, search
 
 
 def a_spec(**over):
@@ -232,7 +232,7 @@ def test_a_grid_of_one_value_is_that_value():
 def test_a_search_turns_a_real_rig_number(tmp_path):
     """The loop end to end: a spec, a renderer, and a number nobody chose by hand."""
     pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
-    from polyweave import config as C
+    from polyweave.kernel import config as C
 
     (tmp_path / C.FILENAME).write_text(
         "[render]\npreview_size = 32\nfinal_size = 32\n"
@@ -419,7 +419,7 @@ def test_every_axis_comes_back_with_what_it_is_measured_in():
     nearly black picture, and nothing refuses it because `fill` is a knob this really
     has. Saying the unit back is what puts that in front of whoever wrote it.
     """
-    from polyweave.search import turnable
+    from polyweave.loop.search import turnable
 
     def draw(*, fill=120.0, key=400.0, ambient=0.25, exposure=0.0, **rest):
         return {}
@@ -431,8 +431,8 @@ def test_every_axis_comes_back_with_what_it_is_measured_in():
 
 
 def test_a_near_match_is_offered_with_its_unit_too():
-    from polyweave.errors import PolyweaveError
-    from polyweave.search import turnable
+    from polyweave.kernel.errors import PolyweaveError
+    from polyweave.loop.search import turnable
 
     def draw(*, exposure=0.0):
         return {}
@@ -445,7 +445,7 @@ def test_a_near_match_is_offered_with_its_unit_too():
 
 def test_a_parameter_with_no_declared_unit_is_named_plainly():
     """Nothing is invented for a knob nobody measured; it comes back as its own name."""
-    from polyweave.search import turnable
+    from polyweave.loop.search import turnable
 
     def draw(*, transparent=True):
         return {}
@@ -455,7 +455,7 @@ def test_a_parameter_with_no_declared_unit_is_named_plainly():
 
 def test_the_three_cottony_collisions_each_read_as_a_different_thing():
     """Named together because it is the set that was measured, not one example."""
-    from polyweave.render.rig import UNITS, described
+    from polyweave.layers.geometry.render.rig import UNITS, described
 
     assert UNITS["fill"].startswith("W "), "Cottony's fill is a fraction of the frame"
     assert UNITS["key"].startswith("W "), "Cottony's key is a share of the reach"

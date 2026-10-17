@@ -11,8 +11,8 @@ import numpy as np
 import pytest
 from PIL import Image as PILImage
 
-from polyweave import shape
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.geometry import shape
 
 
 def project(tmp_path, text=""):
@@ -142,7 +142,7 @@ def test_a_returned_mesh_is_rendered_front_on_and_checked(tmp_path):
     pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
     import bpy
 
-    from polyweave import config as C
+    from polyweave.kernel import config as C
 
     (tmp_path / C.FILENAME).write_text(
         "[render]\npreview_size = 48\nfinal_size = 48\n"

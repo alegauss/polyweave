@@ -10,8 +10,8 @@ from typing import Annotated
 
 import pytest
 
-from polyweave import describe as D
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import describe as D
+from polyweave.kernel.errors import PolyweaveError
 
 
 @pytest.fixture(autouse=True)

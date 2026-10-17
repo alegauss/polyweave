@@ -7,8 +7,9 @@ import json
 import pytest
 from PIL import Image
 
-from polyweave import provenance, revision
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import provenance
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.loop import revision
 
 
 @pytest.fixture
@@ -164,7 +165,7 @@ def test_the_hook_denies_a_verdict_and_answers_a_write_to_the_item(tree):
 
 def test_a_revision_ends_in_a_sitting_and_hears_the_persons_answer(tree):
     # §PW307: the session cannot stop on its own word; the person's answer is read back.
-    from polyweave import verdict
+    from polyweave.loop import verdict
 
     asked = revision.ask("art/icon.png", "darker", root=str(tree))["revision"]
     stopping = {"hook_event_name": "Stop"}

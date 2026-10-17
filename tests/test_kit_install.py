@@ -12,9 +12,10 @@ import json
 import pytest
 from PIL import Image
 
-from polyweave import kits, provenance
-from polyweave.config import load
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import provenance
+from polyweave.kernel.config import load
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers import kits
 
 KIT = """name = "{name}"
 version = "{version}"

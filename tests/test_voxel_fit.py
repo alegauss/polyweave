@@ -9,9 +9,9 @@ from __future__ import annotations
 import pytest
 from PIL import Image
 
-from polyweave.errors import PolyweaveError
-from polyweave.geometry import solid as S
-from polyweave.geometry import voxel_fit as F
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.geometry import solid as S
+from polyweave.layers.geometry import voxel_fit as F
 
 
 def plate(width="w", depth=1.0, voxels=None, search=None):

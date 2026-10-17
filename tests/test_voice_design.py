@@ -12,8 +12,11 @@ import shutil
 
 import pytest
 
-from polyweave import provenance, purchase, sound_buy, world
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import provenance
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.sound import sound_buy
+from polyweave.layers.words import world
+from polyweave.services import purchase
 from test_sound_buy import PROJECT, mp3
 
 pytestmark = pytest.mark.skipif(not shutil.which("ffmpeg"), reason="needs ffmpeg")
@@ -136,7 +139,7 @@ def test_a_preview_accepted_on_the_review_page_is_kept_as_a_sound(tmp_path, serv
     that is a sound heard, not a line of the string table read (§PW411)."""
     import json
 
-    from polyweave import verdict
+    from polyweave.loop import verdict
 
     found = sound_buy.design(entity="bo", root=str(tmp_path))
     sitting = json.loads((tmp_path / found["sitting"]).read_text("utf-8"))
@@ -148,7 +151,7 @@ def test_a_preview_accepted_on_the_review_page_is_kept_as_a_sound(tmp_path, serv
 
 
 def test_an_entity_with_no_voice_table_gets_one(tmp_path, service):
-    from polyweave.world import keep_voice
+    from polyweave.layers.words.world import keep_voice
 
     (tmp_path / "game.world.toml").write_text(
         '[entity.ada]\nname = "Ada"\nkind = "character"\n', encoding="utf-8")

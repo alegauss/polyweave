@@ -9,8 +9,8 @@ from __future__ import annotations
 
 import pytest
 
-from polyweave import provenance
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import provenance
+from polyweave.kernel.errors import PolyweaveError
 
 PRESETS = """[preset.0]
 

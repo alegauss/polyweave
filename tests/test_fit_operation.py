@@ -9,8 +9,9 @@ from __future__ import annotations
 import pytest
 from PIL import Image
 
-from polyweave import cli, describe
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import describe
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.surface import cli
 
 SHIP = """name = "ship"
 output = "hull"
@@ -169,7 +170,7 @@ def test_a_region_that_names_nothing_real_is_refused(tmp_path, region):
 
 
 def test_a_part_can_be_declared_by_its_end_points():
-    from polyweave.geometry.expr import evaluate
+    from polyweave.layers.geometry.expr import evaluate
 
     tilt = evaluate("degrees(atan2(dy, dx))", {"dx": 1.0, "dy": 1.0})
     assert tilt == pytest.approx(45.0)

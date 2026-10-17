@@ -1,0 +1,881 @@
+"""The text a player reads, held to the world it is set in (§PW197).
+
+Starship shows KEEPERS where its bible says Lattice, and nothing failed. Its text is
+literals in GDScript and scenes, and a check that read those with a regular expression
+would be a pattern about one project's code. So the contract is a string table: the game
+reads its text through Godot's translation CSV with `tr()`, one key per row and one
+column per locale, and `[words] table` names that file. A column whose header starts
+with an underscore is one Godot skips; `[words] speaker` names the one that says who
+speaks the line, as an entity id of the world (§PW196).
+
+`words.check` holds every row, in every locale, to the world:
+
+- every capitalised name is one the world shows (`[words] ordinary` lists the
+  capitalised words that are not names, such as START on a title screen);
+- a column is held to the names in its own language (§PW329): an entity's
+  `[entity.<id>.names.<locale>]` form where it declares one, its own name where it does
+  not, so a Portuguese name passes in the pt_BR column and is a finding in the English
+  one, and `[words] ordinary_in` adds the ordinary words of one locale;
+- no entity's code name reaches the screen;
+- no line is longer than `[rules] longest_line`;
+- a speaker the world calls silent has no line;
+- a name the world keeps unshown never appears.
+
+The copy a buyer reads before the game is held to the same names (§PW419): `[words]
+copy` maps a Markdown, HTML or text file to the locale it is written in, and each line
+of its prose, code, comments, scripts and addresses left out, is held to the names, the
+code names and the unshown names, each finding naming the file and line. A paragraph
+is not a line on a screen, so the copy is not held to `longest_line`.
+
+What it cannot see is a string still written into a scene. `words.unlisted` reports what
+it can prove instead: every literal `text` in the project's `.tscn` files that is not a
+key of the table, as a count and a list, so moving text into the table has a measure.
+
+**Whether a line keeps the world's tone is a person's call** (§PW199). `words.sheet`
+lays out the lines no verdict covers as a sitting on the review page, one family a line,
+each beside the world's `[rules] tone` and what the canon holds of its speaker. The
+answer goes through `verdict.judge`, which is the only writer of `[words] canon`: every
+verdict is kept there, and the approved lines are the canon `world.read` gives a speaker
+as examples.
+"""
+
+from __future__ import annotations
+
+import csv
+import difflib
+import hashlib
+import io
+import json
+import re
+import textwrap
+from datetime import date as Date
+from pathlib import Path
+from typing import Annotated
+
+from polyweave.kernel import provenance
+from polyweave.kernel.config import load
+from polyweave.kernel.describe import Param, operation
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.kernel.files import read_text_retrying, write_atomic
+
+from .world import declared
+
+_ROOT = Param("the project whose text this is")
+_WORLD = Param("the *.world.toml; needed only where the project holds several")
+
+#: A word as the checks read it: letters first, then letters, digits and apostrophes.
+_WORD = re.compile(r"[^\W\d_][\w'’-]*")
+
+#: What is not read as text: a `{placeholder}`, a `%s` and a `[b]` BBCode tag.
+_MARKUP = re.compile(r"\{[^}]*\}|%[a-z]|\[/?[a-z_]+(?:=[^\]]*)?\]", re.I)
+
+#: The English pronoun's contractions, capitalised mid-sentence and never a name.
+_PRONOUN_I = re.compile(r"I['’](?:m|ll|ve|d)", re.I)
+
+#: What ends a sentence, so the word after it may be capitalised without being a name.
+_ENDS = ".!?:…"
+
+
+def _words(text: str) -> list[str]:
+    return [re.sub(r"['’]s$", "", w) for w in _WORD.findall(text)]
+
+
+def _plurals(word: str) -> list[str]:
+    """A word's English plurals by rule: Gleaner, Gleaners; Foreman, Foremen.
+
+    A word ending in -man takes both -men and -mans, since Foremen and Humans are both
+    English and passing one more word costs a check nothing.
+    """
+    lower = word.casefold()
+    if lower.endswith(("s", "x", "z", "ch", "sh")):
+        return [word + "es"]
+    if lower.endswith("y") and lower[-2:-1] not in "aeiou":
+        return [word[:-1] + "ies"]
+    return [word + "s", *([word[:-2] + "en"] if lower.endswith("man") else [])]
+
+
+def _spoken(entity: dict, locale: str | None = None) -> set[str]:
+    """Every word an entity is shown by: its name's, and the same in the plural.
+
+    A name is spoken of in the plural as often as not (Motes, Lancers, Foremen), and a
+    check that read the plural as a new name made every project list it as ordinary,
+    which then hid a real misspelling of it (§PW257). An entity states an irregular
+    plural as `plural`.
+
+    In `locale`, the entity's form for that language where it declares one (§PW329),
+    with its feminine form beside it; its own name where it does not.
+    """
+    form = (entity.get("names") or {}).get(locale) if locale else None
+    if not isinstance(form, dict) or not form.get("name"):
+        words = _words(entity["name"])
+        stated = entity.get("plural")
+        plurals = _words(stated) if stated else [p for w in words for p in _plurals(w)]
+        return {w.casefold() for w in [*words, *plurals]}
+    said: list[str] = []
+    for name, plural in (("name", "plural"), ("feminine", "feminine_plural")):
+        if not form.get(name):
+            continue
+        words = _words(form[name])
+        said += words
+        # another language's plural by rule is not English's: a stated one, or the
+        # word with -s and -es, which is what most Romance plurals add
+        said += _words(form[plural]) if form.get(plural) else [
+            p for w in words for p in (w + "s", w + "es")
+        ]
+    return {w.casefold() for w in said}
+
+
+def _plain(text: str) -> str:
+    return _MARKUP.sub(" ", text)
+
+
+def _lines(text: str) -> list[str]:
+    """The lines a player reads: a newline, or Godot's escaped one, breaks a line."""
+    return _plain(text).replace("\\n", "\n").replace("\r\n", "\n").split("\n")
+
+
+def _capitalised(text: str) -> list[str]:
+    """The words written as names: capitalised mid-sentence, or in capitals anywhere."""
+    found = []
+    for match in _WORD.finditer(text):
+        word = re.sub(r"['’]s$", "", match.group())
+        if len(word) < 2 or not word[0].isupper():
+            continue
+        before = text[: match.start()].rstrip().rstrip("\"'“‘«(")
+        opening = not before or before[-1] in _ENDS
+        if word.isupper() or not opening:
+            found.append(word)
+    return found
+
+
+def table(root: str | Path = ".") -> tuple[Path, list[str], list[dict]]:
+    """The string table: where it is, its locales, and its rows with their CSV line."""
+    config = load(root)
+    if not config.get("words.table"):
+        raise PolyweaveError(
+            "words.no-table",
+            "polyweave.toml names no string table, so there is no text to check",
+            "move the player's text into Godot's translation CSV and set "
+            "[words] table to its path",
+        )
+    where = config.path("words.table")
+    text = read_text_retrying(where)
+    if text is None:
+        raise PolyweaveError(
+            "words.unreadable-table",
+            f"[words] table is {where}, and there is no file there",
+            "write the translation CSV there, or correct [words] table",
+        )
+    # Read as one stream, not line by line (§PW243): a quoted cell may hold a real
+    # line break, as Godot's importer accepts, and lines handed over one at a time
+    # lost it and glued the two halves into a word nobody wrote.
+    reader = csv.reader(io.StringIO(text.lstrip("\ufeff"), newline=""))
+    header = next(reader, None)
+    if not header or len(header) < 2:
+        raise PolyweaveError(
+            "words.unreadable-table",
+            f"{where.name} has no header naming a key column and a locale",
+            "start it with a header row such as keys,en",
+        )
+    locales = [h for h in header[1:] if h and not h.startswith("_")]
+    rows = []
+    for row in reader:
+        if not row or not row[0].strip():
+            continue
+        cells = dict(zip(header, row, strict=False))
+        rows.append({"key": row[0], "row": reader.line_num, "cells": cells})
+    return where, locales, rows
+
+
+#: What Markdown wraps prose in and is not prose itself: inline code, a link's or an
+#: image's address (its text kept), a bare address, a tag, and a line's own marker.
+_MD_CODE = re.compile(r"`[^`]*`")
+_MD_LINK = re.compile(r"!?\[([^\]]*)\]\([^)]*\)")
+_ADDRESS = re.compile(r"\b(?:https?://|www\.)\S+", re.I)
+_TAG = re.compile(r"<[^>]+>")
+_MD_MARK = re.compile(r"^\s*(?:#{1,6}\s+|>\s*|[-*+]\s+|\d+[.)]\s+)*")
+_FENCE = re.compile(r"^\s*(?:```|~~~)")
+
+
+def _markdown(text: str) -> list[tuple[int, str]]:
+    """A Markdown file's prose, line by line: fenced code and comments left out, a
+    table's cells read as sentences of their own."""
+    # A comment goes, its line breaks kept so every line keeps its number.
+    text = re.sub(r"<!--.*?-->", lambda one: "\n" * one.group().count("\n"), text,
+                  flags=re.S)
+    lines, fenced = [], False
+    for number, line in enumerate(text.splitlines(), start=1):
+        if _FENCE.match(line):
+            fenced = not fenced
+            continue
+        if fenced:
+            continue
+        prose = _MD_LINK.sub(r"\1", _MD_CODE.sub(" ", line))
+        prose = _TAG.sub(" ", _ADDRESS.sub(" ", _MD_MARK.sub("", prose)))
+        prose = prose.replace("|", ". ")
+        if prose.strip(" .-:"):
+            lines.append((number, prose.strip()))
+    return lines
+
+
+def _html(text: str) -> list[tuple[int, str]]:
+    """An HTML file's text, line by line as the source lays it out, scripts, styles and
+    code left out: text split by inline tags on one line reads as one sentence."""
+    from html.parser import HTMLParser
+
+    by_line: dict[int, list[str]] = {}
+
+    class Reader(HTMLParser):
+        skipped = 0
+
+        def handle_starttag(self, tag, attrs):
+            if tag in ("script", "style", "code", "pre"):
+                self.skipped += 1
+
+        def handle_endtag(self, tag):
+            if tag in ("script", "style", "code", "pre") and self.skipped:
+                self.skipped -= 1
+
+        def handle_data(self, data):
+            if self.skipped:
+                return
+            first = self.getpos()[0]
+            for offset, part in enumerate(data.split("\n")):
+                by_line.setdefault(first + offset, []).append(part)
+
+    reader = Reader(convert_charrefs=True)
+    reader.feed(text)
+    reader.close()
+    joined = ((n, _ADDRESS.sub(" ", " ".join(parts)).strip())
+              for n, parts in sorted(by_line.items()))
+    return [(n, line) for n, line in joined if line]
+
+
+#: How each kind of copy is read for its prose, by suffix.
+_COPY = {".md": _markdown, ".markdown": _markdown, ".html": _html, ".htm": _html,
+         ".txt": lambda text: [(n, line.strip())
+                               for n, line in enumerate(text.splitlines(), start=1)
+                               if line.strip()]}
+
+
+def _copy_lines(root: str | Path = ".") -> list[tuple[str, str, list[tuple[int, str]]]]:
+    """The copy `[words] copy` names: each file, its locale and its prose lines."""
+    config = load(root)
+    named = config.get("words.copy") or {}
+    out = []
+    for path, locale in sorted(named.items()):
+        where = config.path("paths.work", path)
+        reader = _COPY.get(where.suffix.lower())
+        text = read_text_retrying(where) if reader else None
+        if reader is None or text is None or not isinstance(locale, str) or not locale:
+            raise PolyweaveError(
+                "words.unreadable-copy",
+                f"[words] copy names {path} in {locale!r}, and "
+                + ("it is not Markdown, HTML or text" if reader is None
+                   else "there is no file there" if text is None
+                   else "no locale is named for it"),
+                f"name a file ending in {', '.join(_COPY)} under the project, with "
+                "the locale it is written in",
+                given=path,
+            )
+        out.append((provenance.relative(where, config.root), locale,
+                    reader(text.lstrip("﻿"))))
+    return out
+
+
+@operation("words.check")
+def check(
+    world: Annotated[str, _WORLD] = None,
+    root: Annotated[str, _ROOT] = ".",
+) -> dict:
+    """Hold every line of the string table, and of the copy [words] copy names, in
+    every locale, to the world's names and rules; each finding names its line and rule.
+    """
+    config = load(root)
+    copied = _copy_lines(root)
+    try:
+        where, locales, rows = table(root)
+    except PolyweaveError as missing:
+        # A store page is checked in a project that has no table yet (§PW419).
+        if missing.code != "words.no-table" or not copied:
+            raise
+        where, locales, rows = None, [], []
+    source, entities, rules = declared(world, root)
+    unshown = set(rules.get("unshown") or [])
+    silent = set(rules.get("silent") or [])
+    ordinary = {str(w).casefold() for w in config.get("words.ordinary")}
+    by_locale = config.get("words.ordinary_in") or {}
+
+    # what each column is held to: its own language's names (§PW329)
+    def held_to(locale: str | None) -> tuple:
+        shown = {
+            w
+            for i, e in entities.items()
+            if i not in unshown
+            for w in _spoken(e, locale)
+        }
+        hidden = {
+            i: _spoken(entities[i], locale) - shown for i in unshown if i in entities
+        }
+        codes = {
+            e["code"].casefold(): i
+            for i, e in entities.items()
+            if e["code"].casefold() not in shown
+        }
+        own = ordinary | {str(w).casefold() for w in by_locale.get(locale, [])}
+        return shown, hidden, codes, own
+
+    columns = {locale: held_to(locale)
+               for locale in {*locales, *(one[1] for one in copied)}}
+    longest = rules.get("longest_line")
+    speaker = config.get("words.speaker")
+    findings: list[dict] = []
+
+    def found(error: PolyweaveError, row: dict, locale: str | None, rule: str) -> None:
+        findings.append(
+            {
+                **error.as_dict(),
+                "key": row["key"],
+                "locale": locale,
+                "rule": rule,
+                "row": row["row"],
+                **({"file": row["file"]} if row.get("file") else {}),
+            }
+        )
+
+    for row in rows:
+        said = (row["cells"].get(speaker) or "").strip()
+        if said and said not in entities:
+            found(
+                PolyweaveError(
+                    "words.unknown-speaker",
+                    f"{row['key']} is spoken by {said!r}, which the world does not "
+                    "declare",
+                    f"name an entity id as its {speaker}, or declare [entity.{said}]",
+                    given=said,
+                    allowed=list(entities),
+                ),
+                row,
+                None,
+                "speaker",
+            )
+        elif said in silent:
+            found(
+                PolyweaveError(
+                    "words.silent-speaks",
+                    f"{row['key']} is spoken by {said}, who the world says never "
+                    "speaks",
+                    f"give the line to another speaker, or take {said} out of "
+                    "[rules] silent",
+                ),
+                row,
+                None,
+                "silent",
+            )
+        for locale in locales:
+            text = row["cells"].get(locale) or ""
+            if text.strip():
+                _held(text, row, locale, found, *columns[locale], longest)
+    # The copy is held to the names, and not to a line's length: a paragraph on a
+    # store page is not a line on a screen (§PW419).
+    for path, locale, lines in copied:
+        for number, text in lines:
+            row = {"key": f"{path}:{number}", "row": number, "file": path}
+            _held(text, row, locale, found, *columns[locale], None)
+    judged = verdicts(root)
+    return {
+        "table": provenance.relative(where, config.root) if where else None,
+        **({"copy": {path: locale for path, locale, _ in copied}} if copied else {}),
+        "world": provenance.relative(source, Path(root)),
+        "locales": locales,
+        "rows": len(rows),
+        "passed": not findings,
+        "findings": findings,
+        # Whether a line sounds like the world is a person's call and never this
+        # check's (§PW199): a line no verdict covers is named, and passes all the same.
+        "unjudged": [
+            r["key"] for r in rows if (r["key"], _digest(r, locales)) not in judged
+        ],
+    }
+
+
+def _held(text, row, locale, found, shown, hidden, codes, ordinary, longest) -> None:
+    """One locale's text of one row, against every rule that reads text."""
+    plain = _plain(text)
+    lowered = {w.casefold() for w in _words(plain)}
+    for code in sorted(c for c in codes if c in lowered):
+        found(
+            PolyweaveError(
+                "words.code-name",
+                f"{row['key']} ({locale}) shows {code!r}, the code name of "
+                f"{codes[code]}",
+                "write the name a player reads instead, as the world declares it",
+            ),
+            row,
+            locale,
+            "code_names",
+        )
+    for ident, words in sorted(hidden.items()):
+        if words & lowered:
+            found(
+                PolyweaveError(
+                    "words.hidden-name",
+                    f"{row['key']} ({locale}) names {ident}, whose name the world "
+                    "keeps unshown",
+                    "refer to it without its name, or take it out of [rules] unshown",
+                ),
+                row,
+                locale,
+                "unshown",
+            )
+    kept = set().union(*hidden.values()) | set(codes) | shown | ordinary
+    english = re.match(r"en(?:[_-]|$)", locale, re.I) is not None
+    for word in dict.fromkeys(_capitalised(plain)):
+        # English writes "I" capitalised wherever it falls, and its contractions with
+        # it (§PW244); they are never names, and no project should have to list them.
+        if english and _PRONOUN_I.fullmatch(word):
+            continue
+        if word.casefold() not in kept:
+            # A word only near a name is most often that name misspelled (§PW257).
+            near = difflib.get_close_matches(word.casefold(), sorted(shown), 1, 0.8)
+            found(
+                PolyweaveError(
+                    "words.unknown-name",
+                    f"{row['key']} ({locale}) names {word!r}, which is no name the "
+                    "world shows" + (f"; it is near {near[0]!r}" if near else ""),
+                    f"use the world's name for it; if {word} is not a name, add it to "
+                    "[words] ordinary; if it is a new one, declare it in the world",
+                    given=word,
+                    allowed=sorted(shown),
+                ),
+                row,
+                locale,
+                "names",
+            )
+    if longest:
+        for line in _lines(text):
+            if len(line.strip()) > longest:
+                found(
+                    PolyweaveError(
+                        "words.too-long",
+                        f"{row['key']} ({locale}) has a line of {len(line.strip())} "
+                        f"characters, and the world allows {longest}",
+                        "shorten it or break it with \\n",
+                    ),
+                    row,
+                    locale,
+                    "longest_line",
+                )
+
+
+#: A `text` property in a scene file, with Godot's escapes inside the quotes.
+_TEXT = re.compile(r'^text = "((?:[^"\\]|\\.)*)"', re.M | re.S)
+_NODE = re.compile(r'^\[node name="([^"]*)"', re.M)
+
+
+def characters(font: Path) -> set[int]:
+    """Every code point a TrueType or OpenType font maps to a glyph (§PW335).
+
+    Read off the font's `cmap` table directly, formats 4 and 12, which between them
+    are every Unicode map a game's font carries; nothing is drawn, so no renderer and
+    no font library is needed. A file that is not a font, or maps nothing this reads,
+    is refused.
+    """
+    import struct
+
+    data = font.read_bytes()
+
+    def bad(why: str) -> PolyweaveError:
+        return PolyweaveError(
+            "words.no-fonts",
+            f"{font.name} {why}",
+            "name a .ttf or .otf the game draws with",
+            given=str(font),
+        )
+
+    if len(data) < 12:
+        raise bad("is too short to be a font")
+    (count,) = struct.unpack(">H", data[4:6])
+    tables = {
+        data[12 + 16 * i : 16 + 16 * i]: struct.unpack(
+            ">II", data[20 + 16 * i : 28 + 16 * i]
+        )
+        for i in range(count)
+        if 28 + 16 * i <= len(data)
+    }
+    if b"cmap" not in tables:
+        raise bad("has no character map, so it is no font this reads")
+    base, _ = tables[b"cmap"]
+    (subtables,) = struct.unpack(">H", data[base + 2 : base + 4])
+    found: set[int] = set()
+    for i in range(subtables):
+        platform, encoding, offset = struct.unpack(
+            ">HHI", data[base + 4 + 8 * i : base + 12 + 8 * i]
+        )
+        if (platform, encoding) not in ((3, 1), (3, 10), (0, 3), (0, 4), (0, 6)):
+            continue
+        at = base + offset
+        (kind,) = struct.unpack(">H", data[at : at + 2])
+        if kind == 4:
+            (doubled,) = struct.unpack(">H", data[at + 6 : at + 8])
+            n = doubled // 2
+            ends = struct.unpack(f">{n}H", data[at + 14 : at + 14 + 2 * n])
+            starts_at = at + 16 + 2 * n
+            starts = struct.unpack(f">{n}H", data[starts_at : starts_at + 2 * n])
+            deltas_at = starts_at + 2 * n
+            deltas = struct.unpack(f">{n}h", data[deltas_at : deltas_at + 2 * n])
+            ranges_at = starts_at + 4 * n
+            offsets = struct.unpack(f">{n}H", data[ranges_at : ranges_at + 2 * n])
+            for seg in range(n):
+                for code in range(starts[seg], ends[seg] + 1):
+                    if code == 0xFFFF:
+                        continue
+                    if offsets[seg] == 0:
+                        glyph = (code + deltas[seg]) & 0xFFFF
+                    else:
+                        where = (ranges_at + 2 * seg + offsets[seg]
+                                 + 2 * (code - starts[seg]))
+                        (glyph,) = struct.unpack(">H", data[where : where + 2])
+                        if glyph:
+                            glyph = (glyph + deltas[seg]) & 0xFFFF
+                    if glyph:
+                        found.add(code)
+        elif kind == 12:
+            (groups,) = struct.unpack(">I", data[at + 12 : at + 16])
+            for g in range(groups):
+                start, end, first = struct.unpack(
+                    ">III", data[at + 16 + 12 * g : at + 28 + 12 * g]
+                )
+                found.update(
+                    code for code in range(start, end + 1) if first + code - start
+                )
+    if not found:
+        raise bad("maps no Unicode character this reads")
+    return found
+
+
+#: Characters no font is asked to draw: the space and line breaks a layout handles.
+_DRAWN_BY_LAYOUT = {" ", "\n", "\r", "\t", "\u00a0"}
+
+
+@operation("words.glyphs")
+def glyphs(root: Annotated[str, _ROOT] = ".") -> dict:
+    """Every character a line needs that the font drawing it lacks (§PW335).
+
+    Reads `[words] table` and `[words] fonts`, each font with the glob patterns of the
+    rows it draws (every row where it names none), and answers, per font, each
+    character missing from it with the locales and keys that use it. Upper case
+    counts, since a game may upper-case a line at draw time. A missing character is a
+    finding, so a gate goes red before a player sees a box or a borrowed glyph.
+    """
+    import fnmatch
+
+    config = load(root)
+    fonts = config.get("words.fonts") or []
+    if not fonts:
+        raise PolyweaveError(
+            "words.no-fonts",
+            "polyweave.toml names no font to hold the table's lines to",
+            'set [words] fonts = [{ path = "fonts/Game.ttf" }], one per font the '
+            "game draws with",
+        )
+    source, locales, rows = table(root)
+    answer = []
+    for one in fonts:
+        declared = one if isinstance(one, dict) else {"path": one}
+        where = config.path("paths.work", str(declared.get("path", "")))
+        if not where.is_file():
+            raise PolyweaveError(
+                "words.no-fonts",
+                f"[words] fonts names {declared.get('path')!r}, and there is no file "
+                "there",
+                "name the font file the game ships, relative to the project",
+                given=str(declared.get("path")),
+            )
+        has = characters(where)
+        patterns = declared.get("keys") or ["*"]
+        missing: dict[str, dict] = {}
+        for row in rows:
+            if not any(fnmatch.fnmatchcase(row["key"], p) for p in patterns):
+                continue
+            for locale in locales:
+                text = row["cells"].get(locale) or ""
+                for char in set(text) | set(text.upper()):
+                    if char in _DRAWN_BY_LAYOUT or ord(char) in has:
+                        continue
+                    seen = missing.setdefault(char, {"locales": set(), "keys": set()})
+                    seen["locales"].add(locale)
+                    seen["keys"].add(row["key"])
+        answer.append({
+            "font": provenance.relative(where, config.root),
+            "keys": patterns,
+            "missing": [
+                {"char": char, "code": f"U+{ord(char):04X}",
+                 "locales": sorted(seen["locales"]), "keys": sorted(seen["keys"])}
+                for char, seen in sorted(missing.items())
+            ],
+        })
+    lacking = sum(len(one["missing"]) for one in answer)
+    return {
+        "table": provenance.relative(source, config.root),
+        "fonts": answer,
+        "passed": not lacking,
+        "says": "every character the table needs is in the font that draws it"
+        if not lacking
+        else f"{lacking} character(s) a line needs are missing from its font",
+    }
+
+
+@operation("words.unlisted")
+def unlisted(root: Annotated[str, _ROOT] = ".") -> dict:
+    """The literal texts in the project's scenes that are not keys of the string table.
+
+    This is what `words.check` cannot see, counted, so moving it has a measure."""
+    here = load(root).root
+    try:
+        keys = {row["key"] for row in table(root)[2]}
+    except PolyweaveError as refused:
+        if refused.code != "words.no-table":
+            raise
+        keys = set()
+    scenes = sorted(
+        s
+        for s in here.rglob("*.tscn")
+        if not any(p.startswith(".") for p in s.relative_to(here).parts[:-1])
+    )
+    literals = []
+    for scene in scenes:
+        text = read_text_retrying(scene) or ""
+        nodes = [(m.start(), m.group(1)) for m in _NODE.finditer(text)]
+        for match in _TEXT.finditer(text):
+            said = match.group(1)
+            if not said.strip() or said in keys:
+                continue
+            node = next((n for at, n in reversed(nodes) if at < match.start()), None)
+            literals.append(
+                {
+                    "scene": provenance.relative(scene, here),
+                    "line": text.count("\n", 0, match.start()) + 1,
+                    "node": node,
+                    "text": said,
+                }
+            )
+    return {"scenes": len(scenes), "count": len(literals), "literals": literals}
+
+
+# -- a line's tone, judged by a person (§PW199) --------------------------------------
+
+#: What a person can say of a line on the review page, in `verdict.judge`'s words.
+LINE_CHOICES = {
+    "accept": "the line sounds like the world: it joins the lines canon",
+    "look": "it does not: say why, and it stays out of the canon",
+}
+
+
+def said_digest(text: str) -> str:
+    """What a spoken take of one cell said, as one hash (§PW322)."""
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def still_said(source: str | Path, key: str, locale: str, digest: str) -> bool:
+    """Whether the table still says this cell as the digest recorded it.
+
+    A table that no longer reads, or no longer holds the key, does not.
+    """
+    text = read_text_retrying(Path(source))
+    if text is None:
+        return False
+    reader = csv.DictReader(io.StringIO(text.lstrip("\ufeff"), newline=""))
+    first = (reader.fieldnames or [""])[0]
+    for row in reader:
+        if row.get(first) == key:
+            return said_digest(row.get(locale) or "") == digest
+    return False
+
+
+def _digest(row: dict, locales: list[str]) -> str:
+    """What a verdict on a line was given to: its text in every locale."""
+    said = {locale: row["cells"].get(locale) or "" for locale in locales}
+    text = json.dumps(said, sort_keys=True, ensure_ascii=False)
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def _canon(root) -> Path | None:
+    config = load(root)
+    return config.path("words.canon") if config.get("words.canon") else None
+
+
+def held(root=".") -> list[dict]:
+    """Every verdict a person gave on a line, oldest first."""
+    where = _canon(root)
+    return json.loads(read_text_retrying(where) or "[]") if where else []
+
+
+def verdicts(root=".") -> dict[tuple[str, str], dict]:
+    """The latest verdict on each line as it read, by key and text digest."""
+    return {(one["key"], one["sha256"]): one for one in held(root)}
+
+
+def approved(speaker: str, root=".") -> list[dict]:
+    """The lines a person approved for one speaker, which a new one starts from."""
+    return [
+        {"key": one["key"], "text": one["text"], "why": one["verdict"]["why"]}
+        for one in verdicts(root).values()
+        if one.get("speaker") == speaker and one.get("approved")
+    ]
+
+
+def judged(
+    member: dict, *, accepted: bool, choice: str, why: str, when: str = "", root="."
+) -> dict:
+    """Keep a person's verdict on one line, and grow the canon by it.
+
+    Called by `verdict.judge` and by nothing else, as `style.admit` is: an agent that
+    could approve its own line would make its tone the world's.
+    """
+    where = _canon(root)
+    if where is None:
+        raise PolyweaveError(
+            "words.no-canon",
+            "polyweave.toml names no lines canon, so a verdict on a line has nowhere "
+            "to be kept",
+            "set [words] canon to a JSON file under the project",
+        )
+    entry = {
+        "key": member["line"],
+        "speaker": member.get("speaker"),
+        "text": member["text"],
+        "sha256": member["sha256"],
+        "approved": bool(accepted),
+        "verdict": {
+            "choice": choice,
+            "why": why,
+            "when": when or Date.today().isoformat(),
+        },
+    }
+    write_atomic(
+        where, json.dumps([*held(root), entry], indent=2, sort_keys=True) + "\n"
+    )
+    return entry
+
+
+@operation("words.sheet")
+def sheet(
+    out: Annotated[str, Param("the folder the sitting is laid out in")],
+    examples: Annotated[
+        int, Param("approved lines shown beside each, per speaker", lo=0, hi=12)
+    ] = 3,
+    spoken: Annotated[bool, Param("only lines someone says; false, every row")] = True,
+    about: Annotated[str, Param("what the person should know, under the summary")] = "",
+    world: Annotated[str, _WORLD] = None,
+    root: Annotated[str, _ROOT] = ".",
+) -> dict:
+    """Put every spoken line no verdict covers on the review page, one family a line.
+
+    A line is spoken where its speaker column names someone; the interface's own text
+    has no tone to judge and words.check holds it, so it is laid out only with
+    `spoken=false` (§PW291).
+
+    Each sheet shows the line in every locale, its speaker, the world's tone and the
+    speaker's approved lines, and any rule `words.check` says it breaks. Lines are laid
+    out by speaker. The person answers on the page: accept joins the canon, look keeps
+    it out with their reason.
+    """
+    from polyweave.loop import verdict
+
+    if _canon(root) is None:
+        raise PolyweaveError(
+            "words.no-canon",
+            "polyweave.toml names no lines canon, so a verdict on a line has nowhere "
+            "to be kept",
+            "set [words] canon to a JSON file under the project, then lay out again",
+        )
+    config = load(root)
+    _, locales, rows = table(root)
+    _, entities, rules = declared(world, root)
+    broken: dict[str, list[str]] = {}
+    for found in check(world, root)["findings"]:
+        broken.setdefault(found["key"], []).append(found["message"])
+    judged_ = verdicts(root)
+    column = config.get("words.speaker")
+    pending = sorted(
+        (r for r in rows if (r["key"], _digest(r, locales)) not in judged_
+         and (not spoken or (r["cells"].get(column) or "").strip())),
+        key=lambda r: ((r["cells"].get(column) or "").strip(), r["row"]),
+    )
+    folder = config.root / out
+    families: dict = {}
+    sheets: dict = {}
+    for row in pending:
+        speaker = (row["cells"].get(column) or "").strip() or None
+        member = {
+            "name": row["key"],
+            "line": row["key"],
+            "speaker": speaker,
+            "text": {locale: row["cells"].get(locale) or "" for locale in locales},
+            "sha256": _digest(row, locales),
+            "passed": row["key"] not in broken,
+        }
+        name = re.sub(r"[^\w.-]", "_", f"{speaker or 'unspoken'}.{row['key']}")
+        drawn = folder / f"{name}.png"
+        shown = approved(speaker, root)[-examples:] if speaker and examples else []
+        who = (entities.get(speaker) or {}).get("name") if speaker else None
+        # Carried as words too, so the page shows the line itself (§PW291).
+        member["who"] = who or speaker
+        member["examples"] = [next(iter(one["text"].values()), "") for one in shown]
+        _draw(drawn, member, who, rules.get("tone") or [], shown, broken)
+        families[name] = [member]
+        sheets[name] = {
+            "sheet": str(drawn),
+            "members": [
+                {
+                    "name": row["key"],
+                    "passed": member["passed"],
+                    "failed": broken.get(row["key"], []),
+                }
+            ],
+        }
+    if families:
+        verdict._manifest(folder, families, sheets, root, kind="line", about=about,
+                          tone=list(rules.get("tone") or []))
+    return {
+        "sitting": provenance.relative(folder / verdict.MANIFEST, config.root)
+        if families
+        else None,
+        "lines": len(pending),
+        "families": list(families),
+        "choices": dict(LINE_CHOICES),
+        "says": f"{len(pending)} line{'' if len(pending) == 1 else 's'} for a person "
+        "to judge on the review page; verdict.answers resumes from what they said",
+    }
+
+
+def _draw(where: Path, member: dict, who, tone: list, shown: list, broken) -> None:
+    """One line's sheet: the line, its speaker, the tone and the approved examples."""
+    from PIL import Image, ImageDraw
+
+    said = [f"{member['line']}, spoken by {who or member['speaker'] or 'nobody'}"]
+    for locale, text in member["text"].items():
+        said += textwrap.wrap(f"{locale}: {text}", 90) or [f"{locale}:"]
+    if tone:
+        said += ["", "The world's tone:"]
+        said += [w for rule in tone for w in textwrap.wrap(f"- {rule}", 90)]
+    if shown:
+        said += ["", "Lines a person approved for this speaker:"]
+        for one in shown:
+            first = next(iter(one["text"].values()), "")
+            said += textwrap.wrap(f"- {first}", 90)
+    if broken.get(member["line"]):
+        said += ["", "Rules it breaks:"]
+        said += [w for m in broken[member["line"]] for w in textwrap.wrap(f"- {m}", 90)]
+    said += [""] + [f"{word}: {meaning}" for word, meaning in LINE_CHOICES.items()]
+    gap, line = 8, 16
+    measuring = ImageDraw.Draw(Image.new("RGBA", (1, 1)))
+    width = max(int(measuring.textlength(text)) for text in said) + 2 * gap
+    canvas = Image.new("RGBA", (width, line * len(said) + 2 * gap), (40, 40, 40, 255))
+    draw = ImageDraw.Draw(canvas)
+    for index, text in enumerate(said):
+        colour = (255, 210, 90, 255) if index >= len(said) - 2 else (235, 235, 235, 255)
+        draw.text((gap, gap + index * line), text, fill=colour)
+    where.parent.mkdir(parents=True, exist_ok=True)
+    canvas.save(where)

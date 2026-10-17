@@ -1,0 +1,1074 @@
+"""The same declaration, answered as cells instead of triangles.
+
+The evidence is §PW93. Starship draws its ship and its enemies as cubes and breaks them
+apart when they are shot, so what it has to read is which cells exist and what each one
+wears. A triangle mesh says neither: its faces are where the surface is, not what is
+inside it, and a boolean hands back topology no game wants to walk.
+
+**Evaluated on the grid, not traced off a mesh.** Each op answers "is this point
+inside" at the centres of the cells: a primitive by its own formula, a prism by the
+crossing test on its ring and its depth range, a plate as the rounded rectangle it is, a
+transform by moving the sample points the other way, a union and a carve as the set
+operations they are. That is exact, needs no Blender and no MANIFOLD, and runs in
+milliseconds, so a search can afford thousands of builds. The ops with no test of their
+own — `inflate`, `crowned`, `annulus` and `custom` — are built as meshes and read by
+ray parity.
+
+**A later node paints.** A cell wears the material of the last node in the document that
+covers it and carries one, so a cockpit declared after the hull is the cockpit's colour.
+Document order rather than `order`'s, because `order` breaks ties by name and a cockpit
+called `canopy` would lose to a hull called `hull` for no reason anyone wrote down.
+
+A `bevel` passes its input through. It rounds an edge by less than the cells it would be
+sampled at, and a carve done beside it is the op that changes which cells exist.
+"""
+
+from __future__ import annotations
+
+import json
+import math
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+
+from polyweave.kernel.errors import PolyweaveError
+
+from . import expand, refers_to
+from . import outline as O
+from . import solid as S
+from .expr import evaluate
+
+__all__ = ["SUFFIX", "TRACED", "says", "voxelize", "write"]
+
+#: What the cells are written as, beside the cubes' mesh.
+SUFFIX = ".voxels.json"
+
+#: The version of that file's shape. Raised whenever a reader of the old one would
+#: misread the new one.
+FORMAT = 1
+
+#: The ops with no inside-test of their own, voxelised from the mesh they build. A
+#: `mesh` node is one (§PW100): filled by parity, a closed hull comes out solid. So is a
+#: `blend` (§PW498), whose fillet only its mesh says.
+TRACED = ("inflate", "crowned", "annulus", "custom", "mesh", "blend")
+
+#: What a painted cell's key is lifted by, so any node carrying a material outranks any
+#: node that does not, whatever their order.
+_PAINTED = 1 << 20
+
+_EPS = 1e-9
+
+
+@dataclass
+class _Found:
+    """Which of the sample points are inside, and who decides what each one wears.
+
+    `wears` is per point and not per node, because a `cells` node paints each of its
+    cells from its own legend (§PW95).
+    """
+
+    inside: np.ndarray
+    key: np.ndarray
+    owner: np.ndarray
+    wears: np.ndarray
+
+    @classmethod
+    def of(cls, inside: np.ndarray, rank: int) -> _Found:
+        mark = np.where(inside, rank, -1)
+        return cls(inside, mark.copy(), mark, np.full(len(inside), "", dtype=object))
+
+    @classmethod
+    def drawn(cls, inside: np.ndarray, rank: int, wears: np.ndarray) -> _Found:
+        """Cells that each name what they wear, painting where they name anything."""
+        worn = inside & (wears != "")
+        key = np.where(inside, np.where(worn, rank + _PAINTED, rank), -1)
+        return cls(inside, key, np.where(inside, rank, -1), np.where(inside, wears, ""))
+
+    def painted(self, rank: int, material: str) -> _Found:
+        return _Found(
+            self.inside,
+            np.where(self.inside, rank + _PAINTED, self.key),
+            np.where(self.inside, rank, self.owner),
+            np.where(self.inside, material, self.wears),
+        )
+
+    def repainted(self, where: np.ndarray, rank: int, material: str) -> _Found:
+        """The same cells, `material` and `rank` taking over where `where` is set."""
+        return _Found(
+            self.inside,
+            np.where(where, rank + _PAINTED, self.key),
+            np.where(where, rank, self.owner),
+            np.where(where, material, self.wears),
+        )
+
+    def only(self, kept: np.ndarray) -> _Found:
+        return _Found(
+            kept,
+            np.where(kept, self.key, -1),
+            np.where(kept, self.owner, -1),
+            np.where(kept, self.wears, ""),
+        )
+
+
+def _merge(one: _Found, other: _Found) -> _Found:
+    """Both sets of cells, the later key deciding where they overlap."""
+    takes = other.inside & (~one.inside | (other.key > one.key))
+    return _Found(
+        one.inside | other.inside,
+        np.where(takes, other.key, one.key),
+        np.where(takes, other.owner, one.owner),
+        np.where(takes, other.wears, one.wears),
+    )
+
+
+class _Model:
+    """One resolved document, able to say where each node is and what is inside it."""
+
+    def __init__(
+        self, document: dict, root: Path, given: dict, cell: float | None = None
+    ) -> None:
+        self.document, self.root, self.given = document, root, given
+        self.resolved = expand(document, **given)
+        self.stated = {node["id"]: node for node in document["nodes"]}
+        self.instanced = {node["id"]: node for node in self.resolved["nodes"]}
+        self.rank = {node["id"]: at for at, node in enumerate(document["nodes"])}
+        self.cell = cell or stated_cell(document, self.resolved["params"])
+        self._meshes: dict | None = None
+        self._traced_by: dict[int, dict] = {}
+        self._coloured: dict[int, dict] = {}
+        #: Materials the model found rather than the document declared: a textured
+        #: mesh's quantised colours, one per palette slot.
+        self.found_materials: dict[str, dict] = {}
+
+    # -- where a node is ---------------------------------------------------------------
+
+    def bounds(self, one: str) -> tuple[np.ndarray, np.ndarray]:
+        node = self.stated[one]
+        boxes = []
+        for instance in self.instanced[one]["instances"]:
+            low, high = self._op_bounds(node, instance)
+            if node["op"] != "transform" and instance.get("at") is not None:
+                shift = np.asarray(S._triple(instance["at"]))
+                low, high = low + shift, high + shift
+            boxes.append((low, high))
+        return (
+            np.min([low for low, _ in boxes], axis=0),
+            np.max([high for _, high in boxes], axis=0),
+        )
+
+    def _op_bounds(self, node: dict, instance: dict) -> tuple[np.ndarray, np.ndarray]:
+        op = node["op"]
+        if op == "primitive":
+            return S.shape_box(S.shape({**instance, "axis": node.get("axis", "z")}))
+        if op in ("prism", "plate"):
+            ring, near, far = self._slab(op, instance)
+            return (
+                np.array([*ring.min(axis=0), near]),
+                np.array([*ring.max(axis=0), far]),
+            )
+        if op == "transform":
+            low, high = self.bounds(refers_to(node)[0])
+            corners = np.array(
+                [
+                    [x, y, z]
+                    for x in (low[0], high[0])
+                    for y in (low[1], high[1])
+                    for z in (low[2], high[2])
+                ]
+            )
+            moved = _forward(corners, instance)
+            return moved.min(axis=0), moved.max(axis=0)
+        if op == "union":
+            boxes = [self.bounds(one) for one in refers_to(node)]
+            return (
+                np.min([low for low, _ in boxes], axis=0),
+                np.max([high for _, high in boxes], axis=0),
+            )
+        if op == "carve":
+            return self.bounds(node["into"])
+        if op == "bevel":
+            return self.bounds(refers_to(node)[0])
+        if op == "paint":
+            return self.bounds(node["on"])
+        if op == "cells":
+            size = self.size_of(node, instance)
+            return np.zeros(3), np.asarray(lattice(node)["size"], dtype=float) * size
+        if op == "mirror":
+            low, high = self.bounds(refers_to(node)[0])
+            along, plane = _mirrored(node, instance)
+            flipped_low, flipped_high = low.copy(), high.copy()
+            flipped_low[along] = 2 * plane - high[along]
+            flipped_high[along] = 2 * plane - low[along]
+            return np.minimum(low, flipped_low), np.maximum(high, flipped_high)
+        points = np.asarray(self._traced(node, instance)["vertices"], dtype=float)
+        return points.min(axis=0), points.max(axis=0)
+
+    # -- what is inside it -------------------------------------------------------------
+
+    def inside(self, one: str, points: np.ndarray) -> _Found:
+        node = self.stated[one]
+        found = None
+        for instance in self.instanced[one]["instances"]:
+            here = points
+            if node["op"] != "transform" and instance.get("at") is not None:
+                here = points - np.asarray(S._triple(instance["at"]))
+            part = self._op_inside(node, instance, here)
+            found = part if found is None else _merge(found, part)
+        # A paint's material is its point, and it lands only where it covers (§PW237).
+        if node.get("material") and node["op"] != "paint":
+            found = found.painted(self.rank[one], node["material"])
+        return found
+
+    def _op_inside(self, node: dict, instance: dict, points: np.ndarray) -> _Found:
+        op, rank = node["op"], self.rank[node["id"]]
+        if op == "primitive":
+            return _Found.of(
+                _primitive({**instance, "axis": node.get("axis", "z")}, points), rank
+            )
+        if op in ("prism", "plate"):
+            ring, near, far = self._slab(op, instance)
+            depth = (points[:, 2] >= near - _EPS) & (points[:, 2] <= far + _EPS)
+            within = np.zeros(len(points), dtype=bool)
+            if depth.any():
+                # A point on the ring's edge is inside, as one on a primitive's face
+                # is: the crossing number alone took a left edge and not a right one,
+                # so one box as a plate and as a cube filled different cells (§PW274).
+                flat = points[depth, :2]
+                within[depth] = S._inside(ring, flat) | (S._to_edge(ring, flat) <= _EPS)
+            return _Found.of(within, rank)
+        if op == "transform":
+            return self.inside(refers_to(node)[0], _backward(points, instance))
+        if op == "union":
+            found = None
+            for one in refers_to(node):
+                part = self.inside(one, points)
+                found = part if found is None else _merge(found, part)
+            return found
+        if op == "carve":
+            into = self.inside(node["into"], points)
+            cut = self.inside(node["cutter"], points).inside
+            return into.only(into.inside & ~cut)
+        if op == "bevel":
+            return self.inside(refers_to(node)[0], points)
+        if op == "paint":
+            # The body's cells, every one and no more, repainted where `where` covers
+            # them: a band round a sphere without a slab sticking out of it (§PW237).
+            if not node.get("on") or not _named_list(node.get("where")):
+                raise PolyweaveError(
+                    "geom.bad-solid",
+                    f"{node['id']} paints and does not say "
+                    + ("on what" if not node.get("on") else "where"),
+                    "give it `on`, the body whose cells it repaints, and `where`, the "
+                    "node or list of nodes whose cells take its material",
+                    at=f"nodes.{node['id']}",
+                )
+            body = self.inside(node["on"], points)
+            cover = np.zeros(len(points), dtype=bool)
+            for one in _named_list(node.get("where")):
+                cover |= self.inside(one, points).inside
+            return body.repainted(body.inside & cover, rank, node.get("material") or "")
+        if op == "cells":
+            return self._drawn(node, instance, points)
+        if op == "mesh" and not node.get("material"):
+            return self._textured(node, instance, points)
+        if op == "mirror":
+            # A point is in the mirror where it or its reflection is in the half, so a
+            # column on the plane is one set of cells and never counted twice.
+            source = refers_to(node)[0]
+            along, plane = _mirrored(node, instance)
+            reflected = points.copy()
+            reflected[:, along] = 2 * plane - reflected[:, along]
+            return _merge(self.inside(source, points), self.inside(source, reflected))
+        return _Found.of(_parity(self._traced(node, instance), points), rank)
+
+    def _drawn(self, node: dict, instance: dict, points: np.ndarray) -> _Found:
+        """A `cells` node: which drawn cell each point falls in, and what it wears."""
+        grid, size = lattice(node), self.size_of(node, instance)
+        index = np.floor(points / size + _EPS).astype(np.int64, copy=False)
+        within = np.all((index >= 0) & (index < np.asarray(grid["size"])), axis=1)
+        wears = np.full(len(points), "", dtype=object)
+        filled = np.zeros(len(points), dtype=bool)
+        if within.any():
+            at = tuple(index[within].T)
+            filled[within] = grid["filled"][at]
+            wears[within] = grid["wears"][at]
+        return _Found.drawn(filled, self.rank[node["id"]], wears)
+
+    def _textured(self, node: dict, instance: dict, points: np.ndarray) -> _Found:
+        """A mesh node's cells, each in the colour of the surface nearest it (§PW100).
+
+        A mesh with no texture is filled as any traced op is. One with a texture paints
+        its cells from the palette its surface quantises to, as materials named after
+        the node, and they paint like any material does.
+        """
+        from . import voxel_colour as C
+
+        mesh = self._traced(node, instance)
+        inside = _parity(mesh, points)
+        rank = self.rank[node["id"]]
+        colours = self._coloured.get(id(instance))
+        if colours is None:
+            colours = C.painted(mesh, int(instance.get("colours", 8))) or {}
+            self._coloured[id(instance)] = colours
+            for slot, colour in enumerate(colours.get("palette", ())):
+                self.found_materials[f"{node['id']}.{slot}"] = {
+                    "colour": C.hexed(colour)
+                }
+        if not colours:
+            return _Found.of(inside, rank)
+        wears = np.full(len(points), "", dtype=object)
+        if inside.any():
+            slots = C.nearest(colours, points[inside])
+            wears[inside] = [f"{node['id']}.{slot}" for slot in slots]
+        return _Found.drawn(inside, rank, wears)
+
+    def size_of(self, node: dict, instance: dict) -> float:
+        """How big a `cells` node's cells are: its own `cell`, or the document's."""
+        size = instance.get("cell") or self.cell
+        if not size or float(size) <= 0:
+            raise PolyweaveError(
+                "geom.bad-cells",
+                f"{node['id']} draws cells and nothing says how big one is",
+                "give the node a `cell`, or give [voxels] a `cell` rather than only "
+                "`across`; the drawing's cells cannot wait for the bounds they make",
+            )
+        return float(size)
+
+    # -- the pieces the tests are made of ----------------------------------------------
+
+    def _slab(self, op: str, instance: dict) -> tuple[np.ndarray, float, float]:
+        """A prism's or a plate's ring, and the depth range it is swept through."""
+        from .build import _outline
+
+        if op == "plate":
+            x, y, wide, tall = (float(v) for v in instance["rect"])
+            ring = O.rounded_square((wide, tall), float(instance.get("corner", 0.0)))
+            ring = ring + np.array([x + wide / 2, y + tall / 2])
+        else:
+            ring = O._ring(_outline(instance, self.root))
+        front = float(instance.get("front", 0.0))
+        far = front + float(instance["depth"])
+        return ring, min(front, far), max(front, far)
+
+    def _traced(self, node: dict, instance: dict) -> dict:
+        """The mesh an op with no inside-test builds, for ray parity to read.
+
+        Built once per instance: the bounds and every inside-test ask for it, and a
+        `mesh` node reading its file through Blender each time would cost a load per
+        question.
+        """
+        kept = self._traced_by.get(id(instance))
+        if kept is None:
+            kept = self._traced_by[id(instance)] = self._trace(node, instance)
+        return kept
+
+    def _trace(self, node: dict, instance: dict) -> dict:
+        from .build import BUILDS, mesh_file
+
+        if node["op"] == "mesh":
+            from .normalise import read_mesh
+
+            # Its paint too, unless a material of the node's own covers it anyway.
+            where = mesh_file(node, instance, self.root)
+            return read_mesh(where, colour=not node.get("material"))
+        built = {}
+        if refers_to(node):
+            if self._meshes is None:
+                from .build import build
+
+                self._meshes = build(self.document, root=self.root, **self.given)[
+                    "built"
+                ]
+            built = self._meshes
+        return BUILDS[node["op"]](node, instance, built, self.root)
+
+
+def _primitive(instance: dict, points: np.ndarray) -> np.ndarray:
+    return S.shape_inside(S.shape(instance), points, _EPS)
+
+
+def _named_list(stated: Any) -> list[str]:
+    """One node's id or a list of them, as a list."""
+    if isinstance(stated, str):
+        return [stated]
+    return [one for one in stated or () if isinstance(one, str)]
+
+
+def _mirrored(node: dict, instance: dict) -> tuple[int, float]:
+    """A mirror's axis and where its plane sits along it."""
+    return S.axis(node.get("axis", "x")), float(instance.get("plane", 0.0))
+
+
+def _forward(points: np.ndarray, instance: dict) -> np.ndarray:
+    """Scale, then rotate, then place — `solid.transform`'s order."""
+    stretch = np.asarray(S._triple(instance.get("scale", (1, 1, 1))), dtype=float)
+    turn = S._turn(instance.get("rotate", (0, 0, 0)))
+    return (points * stretch) @ turn.T + np.asarray(
+        S._triple(instance.get("at", (0, 0, 0)))
+    )
+
+
+def _backward(points: np.ndarray, instance: dict) -> np.ndarray:
+    """Where a point came from before the transform, so the input can be asked."""
+    stretch = np.asarray(S._triple(instance.get("scale", (1, 1, 1))), dtype=float)
+    turn = S._turn(instance.get("rotate", (0, 0, 0)))
+    moved = (points - np.asarray(S._triple(instance.get("at", (0, 0, 0))))) @ turn
+    with np.errstate(divide="ignore", invalid="ignore"):
+        # A zero scale flattens its input to nothing, and a NaN is inside no test.
+        return np.where(
+            stretch == 0.0, np.nan, moved / np.where(stretch == 0.0, 1.0, stretch)
+        )
+
+
+def _parity(mesh: dict, points: np.ndarray) -> np.ndarray:
+    """Inside a closed mesh: a ray up from the point crosses its surface an odd number
+    of times.
+
+    The ray starts a hair off the point in x and y, so a cell centre lined up exactly
+    with an edge of the mesh is counted by one of the two triangles sharing it and not
+    by both — a grid and a built mesh line up far more often than chance would.
+    """
+    vertices = np.asarray(mesh["vertices"], dtype=float)
+    out = np.zeros(len(points), dtype=bool)
+    if not len(vertices) or not len(points):
+        return out
+    low, high = vertices.min(axis=0), vertices.max(axis=0)
+    near = np.all((points >= low - _EPS) & (points <= high + _EPS), axis=1)
+    if not near.any():
+        return out
+    probe = points[near] + np.array([1.3e-7, 0.7e-7, 0.0])
+    corners = vertices[_triangles(mesh["faces"])]  # (triangles, 3 corners, xyz)
+    if not len(corners):
+        return out
+    # Sorted along x and taken a batch at a time, so each batch spans a narrow strip
+    # and only the points under that strip are tested against it (§PW100: a bought
+    # hull of forty thousand triangles took eight seconds one triangle at a time).
+    corners = corners[np.argsort(corners[:, :, 0].mean(axis=1), kind="stable")]
+    crossings = np.zeros(len(probe), dtype=int)
+    for start in range(0, len(corners), _BATCH):
+        batch = corners[start : start + _BATCH]
+        lo, hi = batch[:, :, :2].min(axis=(0, 1)), batch[:, :, :2].max(axis=(0, 1))
+        under = np.flatnonzero(
+            np.all((probe[:, :2] >= lo) & (probe[:, :2] <= hi), axis=1)
+            & (probe[:, 2] < batch[:, :, 2].max())
+        )
+        if len(under):
+            crossings[under] += _crosses(batch, probe[under])
+    out[near] = crossings % 2 == 1
+    return out
+
+
+#: How many triangles are tested against their points at once.
+_BATCH = 256
+
+
+def _triangles(faces: list) -> np.ndarray:
+    """Every face as a fan of triangles, as vertex indices."""
+    return np.asarray(
+        [
+            (face[0], face[second], face[second + 1])
+            for face in faces
+            for second in range(1, len(face) - 1)
+        ],
+        dtype=np.int64,
+    ).reshape(-1, 3)
+
+
+def _crosses(batch: np.ndarray, probe: np.ndarray) -> np.ndarray:
+    """How many of a batch of triangles sit above each point, seen down the z axis."""
+    a, b, c = batch[:, 0, None, :], batch[:, 1, None, :], batch[:, 2, None, :]
+    denominator = (b[..., 1] - c[..., 1]) * (a[..., 0] - c[..., 0]) + (
+        c[..., 0] - b[..., 0]
+    ) * (a[..., 1] - c[..., 1])
+    flat = np.abs(denominator) < 1e-15
+    denominator = np.where(flat, 1.0, denominator)
+    x, y = probe[None, :, 0] - c[..., 0], probe[None, :, 1] - c[..., 1]
+    u = ((b[..., 1] - c[..., 1]) * x + (c[..., 0] - b[..., 0]) * y) / denominator
+    v = ((c[..., 1] - a[..., 1]) * x + (a[..., 0] - c[..., 0]) * y) / denominator
+    w = 1.0 - u - v
+    over = (u >= 0) & (v >= 0) & (w >= 0) & ~flat
+    height = u * a[..., 2] + v * b[..., 2] + w * c[..., 2]
+    return (over & (height > probe[None, :, 2])).sum(axis=0)
+
+
+# -- cells drawn as text ---------------------------------------------------------------
+
+#: The character a `cells` drawing leaves empty.
+EMPTY = "."
+
+
+def lattice(node: dict) -> dict:
+    """A `cells` node's drawing, read into arrays over its own grid (§PW95).
+
+    `layers` is a list of slices along z, the first at the front; each is a list of
+    rows written top to bottom, one character a cell, so a row reads as it looks.
+    `legend` names what each character wears and `.` is empty. A character the legend
+    does not name is refused rather than left empty, since a typo that erased a cell
+    would look exactly like a cell that was meant not to be there.
+    """
+    layers, legend = node.get("layers"), dict(node.get("legend") or {})
+    named = node.get("id", "a cells node")
+    if (
+        not isinstance(layers, list)
+        or not layers
+        or not all(
+            isinstance(layer, list) and layer and all(isinstance(r, str) for r in layer)
+            for layer in layers
+        )
+    ):
+        raise PolyweaveError(
+            "geom.bad-cells",
+            f"{named} has no layers of rows to read",
+            "give it `layers`, a list of slices, each a list of strings of one "
+            "character per cell",
+        )
+    tall, wide = len(layers[0]), len(layers[0][0])
+    for depth, layer in enumerate(layers):
+        if len(layer) != tall or any(len(row) != wide for row in layer):
+            raise PolyweaveError(
+                "geom.bad-cells",
+                f"{named}: layer {depth} is not {wide} by {tall} like the first one",
+                "make every row and every layer the same size; pad with `.` where a "
+                "slice has fewer cells",
+            )
+    unknown = sorted(
+        {c for layer in layers for row in layer for c in row} - set(legend) - {EMPTY}
+    )
+    if unknown:
+        raise PolyweaveError(
+            "geom.bad-cells",
+            f"{named} draws {', '.join(repr(c) for c in unknown)}, which its legend "
+            f"does not name",
+            "add each one to `legend` with the material it wears, or write `.` for an "
+            "empty cell",
+        )
+    size = (wide, tall, len(layers))
+    filled = np.zeros(size, dtype=bool)
+    wears = np.full(size, "", dtype=object)
+    for z, layer in enumerate(layers):
+        for row, text in enumerate(layer):
+            y = tall - 1 - row
+            for x, character in enumerate(text):
+                if character != EMPTY:
+                    filled[x, y, z] = True
+                    wears[x, y, z] = str(legend[character] or "")
+    return {"size": size, "filled": filled, "wears": wears}
+
+
+def with_project_cell(document: dict, root: str | Path) -> tuple[dict, str, float]:
+    """The document with the project's cell where it states none of its own (§PW229).
+
+    A game whose actors break into their own cubes needs one cell across every actor,
+    so `[voxels] cell` in the project config is the default for a document giving
+    neither `cell` nor `across`; a document's own still wins, as `extent`'s does.
+    Answers the document to build, where its cell came from, and the project's cell.
+    """
+    from polyweave.kernel.config import load
+
+    project = float(load(root).get("voxels.cell") or 0.0)
+    table = document.get("voxels") or {}
+    if any(table.get(one) not in (None, "") for one in ("cell", "across")):
+        return document, "document", project
+    if project <= 0 or not document.get("voxels"):
+        return document, "document", project
+    filled = {**document, "voxels": {**table, "cell": project}}
+    return filled, "project", project
+
+
+def stated_cell(document: dict, params: dict) -> float | None:
+    """The cell size `[voxels]` gives outright, or None where it gives only `across`."""
+    stated = (document.get("voxels") or {}).get("cell")
+    if stated in (None, ""):
+        return None
+    return float(evaluate(stated, params, where="voxels.cell"))
+
+
+def drawn_mesh(node: dict, size: float) -> dict:
+    """A `cells` node as cubes, for a document built as triangles rather than cells."""
+    grid = lattice(node)
+    where = np.argwhere(grid["filled"])
+    names = list(dict.fromkeys(grid["wears"][tuple(where.T)].tolist()))
+    slot = {one: at for at, one in enumerate(names)}
+    return cubes(
+        {
+            "cell": size,
+            "size": list(grid["size"]),
+            "origin": [0.0, 0.0, 0.0],
+            "palette": [{"name": one} for one in names],
+            "cells": {
+                "x": where[:, 0].tolist(),
+                "y": where[:, 1].tolist(),
+                "z": where[:, 2].tolist(),
+                "palette": [slot[one] for one in grid["wears"][tuple(where.T)]],
+            },
+        }
+    )
+
+
+# -- the grid --------------------------------------------------------------------------
+
+
+def _cell(document: dict, params: dict, extent: np.ndarray, **stated: Any) -> float:
+    """The size of one cell, from `cell` or from `across`, and never from both."""
+    table = {**(document.get("voxels") or {}), **{k: v for k, v in stated.items() if v}}
+    given = [one for one in ("cell", "across") if table.get(one) not in (None, "")]
+    if len(given) != 1:
+        raise PolyweaveError(
+            "geom.bad-voxels",
+            f"{document['name']} asks for cells and says "
+            + (
+                "neither how big one is nor how many go across"
+                if not given
+                else "both how big one is and how many go across"
+            ),
+            "give [voxels] one of `cell`, a size, or `across`, a count of cells along "
+            "the longest side",
+        )
+    value = evaluate(table[given[0]], params, where=f"voxels.{given[0]}")
+    if value <= 0:
+        raise PolyweaveError(
+            "geom.bad-voxels",
+            f"{document['name']}: voxels.{given[0]} is {value:g}, and a cell has to "
+            f"have a size",
+            "give it a value above zero",
+        )
+    if given[0] == "cell":
+        return float(value)
+    longest = float(np.max(extent))
+    return longest / max(1, round(value)) if longest > 0 else 1.0
+
+
+def voxelize(
+    document: dict,
+    *,
+    root: str | Path = ".",
+    cell: float | None = None,
+    across: int | None = None,
+    **given: Any,
+) -> dict:
+    """Which cells a declaration fills, and what each one wears.
+
+    The grid is centred on what the output covers, so a symmetric shape comes back
+    symmetric, and a cell is filled where its centre is inside. A document with a
+    `cells` node is the exception: its grid sits on whole cells from the origin, so a
+    drawn cell is a cell of the model and not split between two. `cell` or `across`
+    override the document's own `[voxels]` for this call, and a document stating
+    neither takes the project's `[voxels] cell` (§PW229).
+    """
+    document, cell_from, project_cell = with_project_cell(document, root)
+    if cell or across:
+        cell_from = "call"
+    model = _Model(document, Path(root).resolve(), given, cell=cell)
+    output = document["output"]
+    low, high = model.bounds(output)
+    extent = high - low
+    size = _cell(document, model.resolved["params"], extent, cell=cell, across=across)
+    if any(node["op"] == "cells" for node in document["nodes"]):
+        origin = np.floor(low / size + 1e-6) * size
+        counts = np.maximum(np.ceil((high - origin) / size - 1e-6).astype(int), 1)
+    else:
+        counts = np.maximum(np.ceil(extent / size - 1e-6).astype(int), 1)
+        origin = (low + high) / 2.0 - counts * size / 2.0
+
+    index = np.stack(
+        np.meshgrid(*(np.arange(n) for n in counts), indexing="ij"), axis=-1
+    ).reshape(-1, 3)
+    found = model.inside(output, origin + (index + 0.5) * size)
+    inside = _hollowed(document, model.resolved["params"], found.inside, counts)
+    filled = index[inside]
+    owners = found.owner[inside]
+
+    names = [node["id"] for node in document["nodes"]]
+    wears = [str(one) for one in found.wears[inside].tolist()]
+    materials = {**model.found_materials, **model.resolved["materials"]}
+    palette_names = [one for one in materials if one in set(wears)]
+    palette_names += sorted({one for one in wears if one not in palette_names})
+    palette = [
+        {"name": one, **(materials.get(one) or {})} if one else {"name": ""}
+        for one in palette_names
+    ]
+    at = {one: slot for slot, one in enumerate(palette_names)}
+
+    made = {
+        # What a reader checks before trusting the rest; the Godot loader refuses
+        # another number rather than half-read it (§PW102).
+        "format": FORMAT,
+        "name": document["name"],
+        "cell": float(size),
+        "size": [int(n) for n in counts],
+        "origin": [float(v) for v in origin],
+        "palette": palette,
+        "nodes": names,
+        "cells": {
+            "x": filled[:, 0].tolist(),
+            "y": filled[:, 1].tolist(),
+            "z": filled[:, 2].tolist(),
+            "palette": [at[one] for one in wears],
+            "node": owners.tolist(),
+        },
+        "count": len(filled),
+        # Where the cell came from, and the project's, so a build can say which it used
+        # and a document drifting from the project's is reported (§PW229).
+        "cell_from": cell_from,
+        "project_cell": project_cell,
+    }
+    made["says"] = says(made)
+    made["checks"] = _checked(made, document, model.resolved["params"], root)
+    # A paint that paints nothing, and a material nothing wears, built clean and were
+    # found only by looking at the preview (§PW252).
+    centres = origin + (index + 0.5) * size
+    made["checks"]["findings"] += _unpainted(model, document, centres, size)
+    made["checks"]["findings"] += _straddled(model, document, centres, size)
+    made["checks"]["findings"] += _unworn(document, palette_names)
+    stated = (document.get("voxels") or {}).get("fracture")
+    if stated:
+        from .fracture import plan
+
+        made["fracture"] = plan(made, stated)
+    return made
+
+
+def _hollowed(
+    document: dict, params: dict, inside: np.ndarray, counts: np.ndarray
+) -> np.ndarray:
+    """The cells within `[voxels] hollow` of the surface, and none deeper (§PW234).
+
+    A game draws a model's skin, and a cell three deep is there only if the model breaks
+    apart, yet the budget counts it. Taken out on the grid after the build and before
+    the checks, so no cutter is sized by trial and none breaks through a wall.
+    """
+    stated = (document.get("voxels") or {}).get("hollow")
+    if stated in (None, "", 0):
+        return inside
+    depth = evaluate(stated, params, where="voxels.hollow")
+    if depth < 1 or depth != int(depth):
+        raise PolyweaveError(
+            "geom.bad-voxels",
+            f"{document['name']}: voxels.hollow is {depth:g}, and a skin is a whole "
+            f"number of cells",
+            "give it the skin's thickness in cells, 1 or more, or leave it out",
+        )
+    from polyweave.kernel.post.voxels import eroded
+
+    grid = inside.reshape(tuple(int(n) for n in counts))
+    return (grid & ~eroded(grid, int(depth))).reshape(-1)
+
+
+def _unpainted(model: _Model, document: dict, centres: np.ndarray, size: float) -> list:
+    """Each `paint` member that covers none of its body's cells (§PW252).
+
+    A mark one cell high placed between cell centres takes no centre, so it paints
+    nothing and nothing says so. Named with how far it sits from the body's nearest
+    cell, and whether it took any centre of the grid at all, which is the usual cause.
+    """
+    found = []
+    for node in document["nodes"]:
+        if node["op"] != "paint" or not node.get("on"):
+            continue
+        body = model.inside(node["on"], centres).inside
+        for member in _named_list(node.get("where")):
+            if member not in model.stated:
+                continue
+            mark = model.inside(member, centres).inside
+            if (mark & body).any():
+                continue
+            low, high = model.bounds(member)
+            middle = (np.asarray(low) + np.asarray(high)) / 2.0
+            cells = centres[body]
+            apart = np.linalg.norm(cells - middle, axis=1)
+            gap = float(np.min(apart)) if len(cells) else 0.0
+            cause = (
+                "it takes no cell centre of the grid at all, so it sits between them"
+                if not mark.any()
+                else f"its cells miss {node['on']}'s"
+            )
+            found.append(
+                {
+                    "check": "paint",
+                    "says": f"{node['id']} paints nothing where {member}: {cause}; "
+                    f"{node['on']}'s nearest cell is {gap:.3g} from its middle, "
+                    f"{gap / size:.1f} cells",
+                    "cells": [],
+                    "count": 0,
+                    "node": node["id"],
+                    "member": member,
+                }
+            )
+    return found
+
+
+def _pieces(model: _Model, one: str) -> list[tuple[np.ndarray, np.ndarray]]:
+    """Each separate box a region is made of: a union's parts, each instance's own."""
+    node = model.stated[one]
+    if node["op"] == "union":
+        return [box for part in refers_to(node) for box in _pieces(model, part)]
+    boxes = []
+    for instance in model.instanced[one]["instances"]:
+        low, high = model._op_bounds(node, instance)
+        if node["op"] != "transform" and instance.get("at") is not None:
+            shift = np.asarray(S._triple(instance["at"]))
+            low, high = low + shift, high + shift
+        boxes.append((np.asarray(low, dtype=float), np.asarray(high, dtype=float)))
+    return boxes
+
+
+#: How thin a piece of a paint region is, in cells, before where its faces fall matters.
+_THIN = 1.5
+
+
+def _straddled(model: _Model, document: dict, centres: np.ndarray, size: float) -> list:
+    """Each thin paint region that takes more cells across than its width (§PW262).
+
+    A piece one cell wide whose faces fall on the grid's cell centres takes the two
+    cells either side, so a row of mullions a cell apart paints a whole face. Named
+    with the node, the axis and the move that puts it on one cell.
+    """
+    found = []
+    for node in document["nodes"]:
+        if node["op"] != "paint" or not node.get("on"):
+            continue
+        body = model.inside(node["on"], centres).inside
+        for member in _named_list(node.get("where")):
+            if member not in model.stated:
+                continue
+            taken = centres[model.inside(member, centres).inside & body]
+            for low, high in _pieces(model, member):
+                within = np.all((taken >= low - _EPS) & (taken <= high + _EPS), axis=1)
+                for axis, name in enumerate("xyz"):
+                    wide = float(high[axis] - low[axis])
+                    if wide > _THIN * size + _EPS:
+                        continue
+                    across = len(np.unique(np.round(taken[within, axis] / size, 6)))
+                    fits = max(1, round(wide / size))
+                    if across <= fits:
+                        continue
+                    found.append({
+                        "check": "paint",
+                        "says": f"{member} is {wide:.3g} wide on {name} and covers "
+                        f"{across} cells: its faces fall on cell centres; move it by "
+                        f"{size / 2:.3g} on {name}, or make the model's cell count on "
+                        f"{name} odd",
+                        "cells": [], "count": across,
+                        "node": node["id"], "member": member, "axis": name,
+                    })
+                    break
+    return _once(found)
+
+
+def _once(found: list) -> list:
+    """One finding per member and axis, however many of its pieces straddle."""
+    seen, kept = set(), []
+    for one in found:
+        key = (one["node"], one["member"], one["axis"])
+        if key not in seen:
+            seen.add(key)
+            kept.append(one)
+    return kept
+
+
+def _unworn(document: dict, worn: list[str]) -> list:
+    """Each material the declaration names that no cell ended up wearing (§PW252)."""
+    return [
+        {
+            "check": "material",
+            "says": f"no cell wears {name}, which the declaration names",
+            "cells": [],
+            "count": 0,
+            "material": name,
+        }
+        for name in document.get("materials") or {}
+        if name not in worn
+    ]
+
+
+def _checked(made: dict, document: dict, params: dict, root: str | Path) -> dict:
+    """What the cells are checked for (§PW97), with the project's own limits.
+
+    `parts` and `extent` are the model's and come from its `[voxels]`; the thread length
+    is the game's and comes from the project config. So is the budget, unless the model
+    states its own (§PW318): one the owner allowed over the game's ceiling, which would
+    otherwise carry a finding for good that reads like a real overrun. The symmetry bar
+    is the game's too, unless the model says its asymmetry is meant (§PW241): its own
+    `near_symmetry`, or `asymmetric = true`, which switches that one check off for it.
+    """
+    from polyweave.kernel import post
+    from polyweave.kernel.config import load
+
+    settings = load(root)
+    table = document.get("voxels") or {}
+    extent = table.get("extent") or settings.get("voxels.extent")
+    near = settings.get("voxels.near_symmetry")
+    if table.get("near_symmetry") is not None:
+        near = evaluate(table["near_symmetry"], params, where="voxels.near_symmetry")
+    meant = table.get("asymmetric", False)
+    if not isinstance(meant, bool):
+        raise PolyweaveError(
+            "geom.bad-voxels",
+            f"{document['name']}: voxels.asymmetric is {meant!r}, not true or false",
+            "write asymmetric = true for a model meant to be one-sided, or leave it "
+            "out",
+        )
+    if meant:
+        near = _NEVER
+    budget, whose = int(settings.get("voxels.budget")), "project"
+    if table.get("budget") is not None:
+        budget = evaluate(table["budget"], params, where="voxels.budget")
+        if isinstance(budget, bool) or not float(budget).is_integer() or budget < 0:
+            raise PolyweaveError(
+                "geom.bad-voxels",
+                f"{document['name']}: voxels.budget is {table['budget']!r}, not a "
+                "whole number of cells",
+                "write budget = <cells> for this model's own ceiling, or leave it out "
+                "for the project's",
+            )
+        budget, whose = int(budget), "declaration"
+    return post.check(
+        "voxels",
+        made,
+        parts=int(evaluate(table.get("parts", 1), params, where="voxels.parts")),
+        thread=int(settings.get("voxels.thread")),
+        budget=budget,
+        budget_from=whose,
+        extent=[evaluate(v, params, where="voxels.extent") for v in extent or ()],
+        near_symmetry=float(near),
+    )
+
+
+#: A symmetry bar no share reaches: a model meant to be one-sided is never "nearly"
+#: symmetric.
+_NEVER = 2.0
+
+
+def says(model: dict) -> str:
+    """The voxel model in one line: the readback a mesh gets as a face count."""
+    wide, deep, tall = model["size"]
+    materials = len(model["palette"])
+    return (
+        f"a voxel model {wide} by {deep} by {tall}, {model['count']} cells in "
+        f"{materials} material{'' if materials == 1 else 's'}"
+    )
+
+
+# -- the cubes, for everything that takes a mesh ---------------------------------------
+
+#: Each face of a unit cell, as its four corners wound to face outward, and the
+#: neighbour whose absence exposes it.
+_FACES = (
+    ((1, 0, 0), ((1, 0, 0), (1, 1, 0), (1, 1, 1), (1, 0, 1))),
+    ((-1, 0, 0), ((0, 0, 0), (0, 0, 1), (0, 1, 1), (0, 1, 0))),
+    ((0, 1, 0), ((0, 1, 0), (0, 1, 1), (1, 1, 1), (1, 1, 0))),
+    ((0, -1, 0), ((0, 0, 0), (1, 0, 0), (1, 0, 1), (0, 0, 1))),
+    ((0, 0, 1), ((0, 0, 1), (1, 0, 1), (1, 1, 1), (0, 1, 1))),
+    ((0, 0, -1), ((0, 0, 0), (0, 1, 0), (1, 1, 0), (1, 0, 0))),
+)
+
+
+def cubes(model: dict) -> dict:
+    """The cells as a mesh of their exposed faces, grouped by what they wear.
+
+    Only the faces with no neighbour behind them, since a face between two cells is one
+    nobody will see and every renderer would pay for.
+    """
+    cells = model["cells"]
+    where = np.column_stack([cells["x"], cells["y"], cells["z"]]).astype(int)
+    wears = np.asarray(cells["palette"], dtype=int)
+    size = float(model["cell"])
+    origin = np.asarray(model["origin"], dtype=float)
+    filled = np.zeros(model["size"], dtype=bool)
+    if len(where):
+        filled[tuple(where.T)] = True
+    padded = np.pad(filled, 1)
+
+    vertices, faces, face_wears = [], [], []
+    for step, corners in _FACES:
+        ahead = where + np.asarray(step) + 1
+        exposed = ~padded[tuple(ahead.T)] if len(where) else np.zeros(0, dtype=bool)
+        for cell, worn in zip(where[exposed], wears[exposed], strict=True):
+            start = len(vertices)
+            vertices += [origin + (cell + np.asarray(c)) * size for c in corners]
+            faces.append((start, start + 1, start + 2, start + 3))
+            face_wears.append(int(worn))
+
+    order = sorted(range(len(faces)), key=lambda one: face_wears[one])
+    faces = [faces[one] for one in order]
+    face_wears = [face_wears[one] for one in order]
+    groups, begun = [], 0
+    for slot, entry in enumerate(model["palette"]):
+        count = face_wears.count(slot)
+        if count and entry["name"]:
+            groups.append({"material": entry["name"], "faces": [begun, begun + count]})
+        begun += count
+    made = S.mesh(np.asarray(vertices).reshape(-1, 3), faces)
+    if groups:
+        made["groups"] = groups
+    return made
+
+
+def write(
+    document: dict,
+    out: str | Path,
+    *,
+    root: str | Path = ".",
+    mesh: bool = True,
+    sheet: bool = True,
+    **given: Any,
+) -> dict:
+    """The cells as `<stem>.voxels.json`, and beside it the same cubes as `out`.
+
+    `out` is the mesh's path, as `build.write` takes it, so `bake` and every render read
+    a voxel model unchanged. `mesh=False` writes the cells alone, needing no Blender.
+    A contact sheet goes beside the cells as `<stem>.voxels.png` (§PW94) unless
+    `sheet=False`; `pixels`, `grid` and `labels` are passed to it.
+    """
+    from . import voxel_sheet
+
+    drawn = voxel_sheet.options(given)
+    made = voxelize(document, root=root, **given)
+    where = Path(out)
+    if not where.is_absolute():
+        where = Path(root).resolve() / where
+    cells = where.with_name(where.stem + SUFFIX)
+    cells.parent.mkdir(parents=True, exist_ok=True)
+    # LF on every platform, so the digest its record carries holds on any checkout
+    # (§PW228).
+    # Where the cell came from is the build's to say, not the game's to read, so the
+    # file a game loads is the same bytes whichever table set the cell (§PW229).
+    kept = {k: v for k, v in made.items() if k not in ("cell_from", "project_cell")}
+    cells.write_text(
+        json.dumps(_plain(kept), indent=1) + "\n", encoding="utf-8", newline="\n"
+    )
+    answer = {"model": made, "says": made["says"], "voxels": str(cells)}
+    if sheet:
+        looked = voxel_sheet.sheet(made, voxel_sheet.beside(cells), **drawn)
+        answer["sheet"] = looked["sheet"]
+    if mesh:
+        from .normalise import write_mesh
+        from .render.blender import shader_keys
+
+        # The palette and not the document's table: a textured mesh's colours are
+        # materials the model found (§PW100). And only what the shader has, since a key
+        # like `glow` is for the game, rides in the cells' file, and Blender refuses it.
+        shaded = shader_keys()
+        painted = {
+            entry["name"]: {k: v for k, v in entry.items() if k in shaded}
+            for entry in made["palette"]
+            if entry["name"]
+        }
+        written = write_mesh(cubes(made), where, materials=painted)
+        answer["artefact"] = str(written)
+    return answer
+
+
+def _plain(value: Any) -> Any:
+    """What JSON can hold, from whatever numpy handed back through a material table."""
+    if isinstance(value, dict):
+        return {str(k): _plain(v) for k, v in value.items()}
+    if isinstance(value, list | tuple):
+        return [_plain(v) for v in value]
+    if isinstance(value, np.generic):
+        return value.item()
+    if isinstance(value, float) and not math.isfinite(value):
+        return None
+    return value

@@ -11,8 +11,8 @@ from datetime import date
 
 import pytest
 
-from polyweave import config as C
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import config as C
+from polyweave.kernel.errors import PolyweaveError
 
 
 def project(tmp_path, text=None):
@@ -237,7 +237,7 @@ def test_an_expiry_that_is_not_a_date_is_refused(tmp_path):
 
 
 def test_a_job_store_takes_its_parallelism_and_work_from_the_project(tmp_path):
-    from polyweave.jobs import JobStore
+    from polyweave.kernel.jobs import JobStore
 
     project(tmp_path, '[render]\nmax_parallel = 2\n\n[paths]\nwork = ".work"\n')
     store = JobStore.for_project(tmp_path)
@@ -246,7 +246,7 @@ def test_a_job_store_takes_its_parallelism_and_work_from_the_project(tmp_path):
 
 
 def test_capabilities_reads_the_project_it_is_asked_about(tmp_path, monkeypatch):
-    from polyweave.capabilities import capabilities
+    from polyweave.surface.capabilities import capabilities
 
     monkeypatch.setenv("POLYWEAVE_TEST_KEY", "sk-never-echoed")
     project(

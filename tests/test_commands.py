@@ -7,8 +7,9 @@ import json
 import pytest
 from PIL import Image
 
-from polyweave import cli, commands, describe
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import describe
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.surface import cli, commands
 
 
 def run(argv, capsys):
@@ -161,8 +162,9 @@ def test_a_json_file_written_by_windows_powershell_is_read_past_its_mark(tmp_pat
 
 
 def test_declarations_saved_with_a_byte_order_mark_are_read(tmp_path):
-    from polyweave import pressure, world
-    from polyweave.config import load
+    from polyweave.kernel.config import load
+    from polyweave.layers.engine import pressure
+    from polyweave.layers.words import world
 
     mark = b"\xef\xbb\xbf"
     (tmp_path / "polyweave.toml").write_bytes(mark + b'[project]\nname = "game"\n')
@@ -267,7 +269,7 @@ def test_an_asynchronous_operation_can_be_started_as_a_job(
             started.append((target, kind, args))
             return {"job": "j1", "kind": kind}
 
-    from polyweave import jobs
+    from polyweave.kernel import jobs
 
     monkeypatch.setattr(jobs.JobStore, "for_project", classmethod(lambda c, r: Store()))
     spec(tmp_path)
@@ -290,6 +292,6 @@ def test_an_asynchronous_operation_can_be_started_as_a_job(
     assert status == 0
     assert json.loads(printed.out)["job"] == "j1"
     ((target, kind, args),) = started
-    assert target == "polyweave.search:sweep"
+    assert target == "polyweave.loop.search:sweep"
     assert kind == "search"
     assert args["budget"] == 4

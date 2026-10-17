@@ -9,10 +9,10 @@ from __future__ import annotations
 
 import pytest
 
-from polyweave import config as C
-from polyweave import render
-from polyweave.errors import PolyweaveError
-from polyweave.render import ladder, rig
+from polyweave.kernel import config as C
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.geometry import render
+from polyweave.layers.geometry.render import ladder, rig
 
 
 def project(tmp_path, text=None):
@@ -244,7 +244,7 @@ def test_how_the_power_is_read_is_in_the_record():
 
 
 def test_the_bake_operation_describes_every_rig_field():
-    from polyweave.describe import describe
+    from polyweave.kernel.describe import describe
 
     found = describe("render.bake")
     names = {p["name"] for p in found["parameters"]}

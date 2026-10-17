@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from polyweave import search as S
-from polyweave.accept import Spec, headroom, margin
+from polyweave.loop import search as S
+from polyweave.loop.accept import Spec, headroom, margin
 
 AXES = {"x": {"min": 0.0, "max": 1.0}}
 

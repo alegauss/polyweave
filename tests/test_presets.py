@@ -10,8 +10,9 @@ import shutil
 
 import pytest
 
-from polyweave import kits, offscreen, presets
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers import kits
+from polyweave.layers.engine import offscreen, presets
 
 
 def test_an_upscaler_is_tried_only_below_full_scale():

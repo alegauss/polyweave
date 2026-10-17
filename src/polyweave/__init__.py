@@ -6,6 +6,20 @@ before the call happens.
 
 The one function here keeps that rule: `readable()` imports `sys` inside itself, and a
 caller that never calls it pays nothing for it.
+
+The package is laid out by which way its dependencies are meant to run (§PW499):
+
+- `kernel/`: errors and doors, the operation registry, config, jobs, files, the cache,
+  the post-checks and the provenance record. It knows no medium.
+- `loop/`: accept, measure, search, calibrate, verdict, review, brief, revision and the
+  loop's own ledger: what every medium is declared, measured, searched and judged by.
+- `layers/<medium>/`: geometry (with render), picture, sound, words, vfx, motion,
+  engine, reference, store and kits. A measure reading one medium lives with it.
+- `services/`: what was bought from a paid service, and what the service accepts.
+- `surface/`: the server, the command line, the census, capabilities and the calls
+  that adopt a project whole.
+
+A module that fits no layer cleanly sits with the layer that owns its data.
 """
 
 __version__ = "0.1.0"

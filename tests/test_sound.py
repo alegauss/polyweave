@@ -16,8 +16,9 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from polyweave import accept, sound
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.sound import sound
+from polyweave.loop import accept
 
 RATE = 44100
 

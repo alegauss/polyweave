@@ -2,7 +2,7 @@
 // review catalog and never a copy of it. It reads and writes through a `Desk`, so one
 // screen runs in both places: the window's desk is bridge channels over the review
 // operations, and the browser's (review.tsx) is the page's own routes, built into
-// src/polyweave/review_page/screen and served by `python -m polyweave review`.
+// src/polyweave/loop/review_page/screen and served by `python -m polyweave review`.
 
 import { Button, Textarea } from '@viglet/viglet-design-system'
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react'

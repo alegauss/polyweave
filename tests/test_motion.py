@@ -13,10 +13,10 @@ from pathlib import Path
 import pytest
 from tests.test_skeleton import figure
 
-from polyweave import clip as C
-from polyweave.commands import Quiet
-from polyweave.errors import PolyweaveError
-from polyweave.motion import bake
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.motion import clip as C
+from polyweave.layers.motion.motion import bake
+from polyweave.surface.commands import Quiet
 
 SQUASH = {
     "root": {"scale": [(0.0, [1, 1, 1]), (0.2, [1.06, 0.93, 1.06]), (0.4, [1, 1, 1])]}
@@ -36,7 +36,7 @@ def files(tmp_path):
 
 def test_a_clip_is_baked_by_name_to_both_shapes(tmp_path):
     pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
-    from polyweave.normalise import write_mesh
+    from polyweave.layers.geometry.normalise import write_mesh
 
     root = files(tmp_path)
     write_mesh(figure(), root / "body.glb")

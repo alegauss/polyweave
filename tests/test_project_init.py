@@ -7,11 +7,12 @@ import tomllib
 
 import pytest
 
-from polyweave import __version__, project
-from polyweave import config as C
-from polyweave.cli import command_line
-from polyweave.commands import answer_for
-from polyweave.errors import PolyweaveError
+from polyweave import __version__
+from polyweave.kernel import config as C
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.surface import project
+from polyweave.surface.cli import command_line
+from polyweave.surface.commands import answer_for
 
 
 @pytest.fixture
@@ -170,7 +171,7 @@ def test_an_enabled_plugin_is_not_declared_a_second_time(tree):
 
 
 def test_the_section_names_only_operations_the_registry_has(tree, monkeypatch):
-    from polyweave import describe
+    from polyweave.kernel import describe
 
     monkeypatch.setattr(
         describe,
@@ -275,7 +276,7 @@ def test_a_tree_never_adopted_is_told_how(tree):
 
 
 def test_init_check_exits_non_zero_on_an_error(tree, capsys):
-    from polyweave.commands import run
+    from polyweave.surface.commands import run
 
     stated = command_line().parse_args(["init", "--root", str(tree), "--check"])
     assert run(stated) == 1

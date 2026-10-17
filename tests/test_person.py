@@ -11,9 +11,10 @@ import json
 import pytest
 from PIL import Image
 
-from polyweave import person, review, server, verdict
-from polyweave.cli import command_line
-from polyweave.commands import run
+from polyweave.loop import person, review, verdict
+from polyweave.surface import server
+from polyweave.surface.cli import command_line
+from polyweave.surface.commands import run
 
 SPEC = """asset = "{name}"
 

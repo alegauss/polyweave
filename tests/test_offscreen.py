@@ -17,8 +17,8 @@ import numpy as np
 import pytest
 from PIL import Image as PILImage
 
-from polyweave import engine, offscreen
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.engine import engine, offscreen
 
 #: The scene script these run, as a file rather than a literal (§PW48): real code
 #: living in a Python string is code nothing highlights and nothing lints, and

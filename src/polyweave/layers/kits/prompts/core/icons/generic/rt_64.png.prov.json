@@ -1,0 +1,28 @@
+{
+  "artefact": {
+    "bytes": 3649,
+    "path": "src/polyweave/layers/kits/prompts/core/icons/generic/rt_64.png",
+    "sha256": "18c96bc67f8fcae47717dd9db5fc17a3378243fae196a58ab56ea938b517d913"
+  },
+  "elapsed_s": null,
+  "engine": {
+    "name": "icons.build"
+  },
+  "inputs": [
+    {
+      "path": "src/polyweave/layers/kits/prompts/icons/generic.icons.toml",
+      "role": "icons",
+      "sha256": "e16d00bbafc5f13d441f5502cc7275987919815abc610fa56f0aeedaba3fa3b6"
+    }
+  ],
+  "kind": "picture",
+  "measurements": {},
+  "params": {
+    "set": "generic"
+  },
+  "produced_at": "2026-10-14T13:03:56Z",
+  "producer": {
+    "tool": "polyweave",
+    "version": "0.1.0"
+  }
+}

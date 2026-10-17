@@ -5,9 +5,9 @@ from __future__ import annotations
 import pytest
 from PIL import Image, ImageDraw
 
-from polyweave import provenance
-from polyweave.errors import PolyweaveError
-from polyweave.reference_concept import concept
+from polyweave.kernel import provenance
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.reference.reference_concept import concept
 
 CONCEPT = """\
 painting = "design/screen.png"
@@ -112,7 +112,7 @@ max     = 6
 
 def test_a_spec_holds_a_capture_to_a_region_of_the_painting(project):
     """§PW477: a predicate a search can aim at the painting with."""
-    from polyweave import accept
+    from polyweave.loop import accept
 
     (project / "screen.accept.toml").write_text(SPEC, encoding="utf-8")
     spec = accept.read("screen.accept.toml", project)
@@ -129,7 +129,7 @@ def test_a_spec_holds_a_capture_to_a_region_of_the_painting(project):
 
 
 def test_a_concept_predicate_naming_no_region_it_declares_is_refused(project):
-    from polyweave import accept
+    from polyweave.loop import accept
 
     body = SPEC.replace('region  = "board"\nmin', 'region  = "footer"\nmin')
     (project / "screen.accept.toml").write_text(body, encoding="utf-8")

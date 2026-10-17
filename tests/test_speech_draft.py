@@ -10,8 +10,10 @@ import shutil
 
 import pytest
 
-from polyweave import provenance, purchase, sound, sound_buy
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import provenance
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.sound import sound, sound_buy
+from polyweave.services import purchase
 from test_sound import tone, written
 from test_speech import unheard
 from test_voice_lines import TABLE, VOICED, WORLD

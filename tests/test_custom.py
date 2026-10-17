@@ -9,9 +9,9 @@ from __future__ import annotations
 
 import pytest
 
-from polyweave import geometry as G
-from polyweave.errors import PolyweaveError
-from polyweave.geometry import custom
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers import geometry as G
+from polyweave.layers.geometry import custom
 
 ROPE = '''
 """A shape the format cannot state, which is the whole point of this node."""
@@ -226,7 +226,7 @@ def test_a_function_returning_something_that_is_not_geometry_is_refused(tmp_path
 
 
 def test_a_custom_node_reads_back_in_words(tmp_path):
-    from polyweave.geometry import review
+    from polyweave.layers.geometry import review
 
     found = review.describe(project(tmp_path))
     says = next(one["says"] for one in found["nodes"] if one["id"] == "rope")

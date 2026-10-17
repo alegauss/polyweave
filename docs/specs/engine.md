@@ -469,7 +469,7 @@ same way (§PW358). `engine.check root=` reads the tree as text first, with no e
 Each finding carries its file, line, words and remedy. Where an engine is set it then
 imports the project headless (`--import`), which builds the class cache a script naming
 another's `class_name` needs, and parses every script with
-`src/polyweave/godot/parse_all.gd`. Each script that does not parse is
+`src/polyweave/layers/engine/godot/parse_all.gd`. Each script that does not parse is
 `engine.parse-error`, with its line and Godot's own words. `clean` is false while an
 error is left. `project.check` adds the text half for any adopted project holding a
 `project.godot`, so a project's gate holds its references with no engine at all.
@@ -482,7 +482,7 @@ per scene under `[perf.<name>]`: its `scene`, the `frames` measured, and the mos
 measure may reach, `p95_ms` and `p99_ms` (frame time at a percentile, never a mean, so
 one hitch is not averaged away), `load_ms`, `memory_mb` (peak static memory) and `nodes`
 (peak node count). `engine.perf` runs each scene with polyweave's own
-`src/polyweave/godot/perf_run.gd`, through the route that draws real pixels with vsync
+`src/polyweave/layers/engine/godot/perf_run.gd`, through the route that draws real pixels with vsync
 off, and answers each budget held or exceeded. The first run on a machine and device
 writes the baseline under the work folder (`perf/baseline.json`), and every later run
 answers how far each measure moved from it as a share; `rebase=true` writes it again. A
@@ -499,7 +499,7 @@ machine, as every constant of Cottony's render rig was (§PW367).
 graphics settings, in the graphics kit's terms (`scale`, `scaler`, `msaa`, `effects`,
 `shadows`; full quality first in each list, and an upscaler tried only below full
 scale). It goes through the route that draws real pixels, timing frames with
-`src/polyweave/godot/preset_run.gd` and keeping the last one. The full-quality
+`src/polyweave/layers/engine/godot/preset_run.gd` and keeping the last one. The full-quality
 combination is the reference, and every other is scored against it by `measure.same`.
 Per preset of `budgets` (each a p95 in ms), the answer is the combination that fits and
 loses least, with its frame time, its loss and its picture, or `fits` false with the

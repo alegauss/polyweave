@@ -10,7 +10,8 @@ from __future__ import annotations
 import hashlib
 import json
 
-from polyweave import cli, files, provenance
+from polyweave.kernel import files, provenance
+from polyweave.surface import cli
 
 VOXEL = """name = "box"
 output = "box"

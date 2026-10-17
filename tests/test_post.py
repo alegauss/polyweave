@@ -11,9 +11,9 @@ import numpy as np
 import pytest
 from PIL import Image as PILImage
 
-from polyweave import post
-from polyweave.errors import PolyweaveError
-from polyweave.post import pixels
+from polyweave.kernel import post
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.kernel.post import pixels
 
 # -- meshes --------------------------------------------------------------------
 
@@ -360,7 +360,7 @@ def test_the_floor_the_caller_states_is_the_floor_that_is_used(tmp_path):
 
 def test_the_project_is_where_the_number_lives(tmp_path):
     """One home, resolved together, so an operation cannot pick up a stale sibling."""
-    from polyweave import config
+    from polyweave.kernel import config
 
     (tmp_path / "polyweave.toml").write_text(
         "[tolerance]\nalpha_floor = 0.5\n", encoding="utf-8"

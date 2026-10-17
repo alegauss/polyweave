@@ -12,8 +12,9 @@ import sys
 
 import pytest
 
-from polyweave import kits, testing
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers import kits
+from polyweave.layers.engine import testing
 
 OWN = testing.DEFAULTS
 

@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import pytest
 
-from polyweave import capture, engine, runs
-from polyweave.cli import command_line
-from polyweave.commands import run
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.engine import capture, engine, runs
+from polyweave.surface.cli import command_line
+from polyweave.surface.commands import run
 
 DECLARED = """
 [capture]

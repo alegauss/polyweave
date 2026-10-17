@@ -8,7 +8,7 @@ call, so a project writes no crop script of its own.
 
 ## The store
 
-A store is data: `src/polyweave/stores/<name>.toml` for one this plugin knows (`steam`),
+A store is data: `src/polyweave/layers/store/stores/<name>.toml` for one this plugin knows (`steam`),
 or a project's own file of the same shape, passed by path.
 
 ```toml

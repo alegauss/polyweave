@@ -6,10 +6,10 @@ from pathlib import Path
 
 import pytest
 
-from polyweave import geometry as G
-from polyweave import provenance
-from polyweave.errors import PolyweaveError
-from polyweave.geometry import finish, review
+from polyweave.kernel import provenance
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers import geometry as G
+from polyweave.layers.geometry import finish, review
 
 PLASTIC = {
     "colour": "#F27BA8",
@@ -109,7 +109,7 @@ def _plastic_post(tmp_path, material) -> dict:
         '[[nodes]]\nid = "post"\nop = "primitive"\nkind = "capsule"\n'
         'size = [1, 1, 3]\nmaterial = "pink plastic"\n',
         encoding="utf-8")
-    from polyweave.cli import build_one
+    from polyweave.surface.cli import build_one
 
     return build_one("post.toml", out="built", root=str(tmp_path))
 
@@ -149,7 +149,7 @@ def test_godot_loads_the_material_with_the_numbers_it_was_written_with(tmp_path)
     """§PW495: the game loads what was judged, read back by the engine itself."""
     import os
 
-    from polyweave import engine
+    from polyweave.layers.engine import engine
 
     if not os.environ.get("GODOT"):
         pytest.skip("no $GODOT on this machine")
@@ -172,7 +172,7 @@ def test_godot_loads_the_material_with_the_numbers_it_was_written_with(tmp_path)
 
 def test_the_bake_puts_the_finish_on_the_shader():
     pytest.importorskip("bpy")
-    from polyweave.render import blender
+    from polyweave.layers.geometry.render import blender
 
     blender.reset()
     made = blender._material(blender.as_inputs(PLASTIC), "pink plastic")

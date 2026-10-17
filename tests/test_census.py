@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
-from polyweave import census, describe, errors, measure
-from polyweave.capabilities import capabilities
+from polyweave.kernel import describe, errors
+from polyweave.loop import measure
+from polyweave.surface import census
+from polyweave.surface.capabilities import capabilities
 
 #: How much surface is still unregistered. Registering a module lowers it, and this
 #: number is lowered with it: it may only fall, never rise.
@@ -63,7 +65,7 @@ def test_everything_capabilities_names_is_one_read_away():
     for name in found["measures"]["names"]:
         assert measure.resolve(name)
     assert set(found["unregistered"]) == set(census.pending_modules())
-    assert "polyweave.search" not in found["unregistered"]
+    assert "polyweave.loop.search" not in found["unregistered"]
     assert all(module.startswith("polyweave") for module in found["unregistered"])
 
 
@@ -183,7 +185,7 @@ def test_the_budget_is_asked_by_name_with_a_date_as_text(tmp_path):
     )
     import pytest
 
-    from polyweave.errors import PolyweaveError
+    from polyweave.kernel.errors import PolyweaveError
 
     fn = describe._REGISTRY["purchase.allow"].fn
     root = str(tmp_path)
@@ -203,7 +205,8 @@ def test_the_engine_side_is_described_without_its_test_hooks():
 
 def test_a_declared_choice_is_the_modules_own_list():
     """A choice typed out beside the code drifts; these are read off it."""
-    from polyweave import compose, normalise
+    from polyweave.layers.geometry import normalise
+    from polyweave.layers.store import compose
 
     def choices(op, name):
         found = describe.describe(op)["parameters"]
@@ -271,7 +274,7 @@ def test_a_fresh_read_of_the_operations_loads_them():
         [
             sys.executable,
             "-c",
-            "from polyweave.describe import operations; print(operations())",
+            "from polyweave.kernel.describe import operations; print(operations())",
         ],
         capture_output=True,
         text=True,

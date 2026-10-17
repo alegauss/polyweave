@@ -6,7 +6,7 @@ import os
 
 import pytest
 
-from polyweave import engine
+from polyweave.layers.engine import engine
 
 LATE = """extends SceneTree
 

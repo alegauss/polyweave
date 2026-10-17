@@ -8,8 +8,10 @@ from pathlib import Path
 
 import pytest
 
-from polyweave import codes, commands, describe, doors, loop
-from polyweave.errors import PolyweaveError, explain
+from polyweave.kernel import codes, describe, doors
+from polyweave.kernel.errors import PolyweaveError, explain
+from polyweave.loop import loop
+from polyweave.surface import commands
 
 SOURCE = Path(__file__).parents[1] / "src" / "polyweave"
 

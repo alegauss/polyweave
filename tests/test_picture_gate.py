@@ -6,8 +6,8 @@ import json
 
 from PIL import Image, ImageDraw
 
-from polyweave import config as C
-from polyweave import picture
+from polyweave.kernel import config as C
+from polyweave.layers.picture import picture
 
 
 def drawn(path, box, fill=(242, 193, 78), size=128, ground=(0, 0, 0, 0)):

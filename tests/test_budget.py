@@ -11,8 +11,8 @@ from datetime import date
 
 import pytest
 
-from polyweave import purchase
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.services import purchase
 
 GLTF = b"glTF" + b"\x00" * 60
 LIVE = '[budget]\ncredits = 60\nexpires = "2099-12-31"\n'
@@ -146,7 +146,7 @@ def test_without_two_readings_the_expected_cost_is_recorded(tmp_path):
 
 
 def test_the_record_beside_the_artefact_carries_the_same_numbers(tmp_path):
-    from polyweave import provenance
+    from polyweave.kernel import provenance
 
     where = project(tmp_path, LIVE)
     bought(where, credits=30, balance_before=100.0, balance_after=72.0)

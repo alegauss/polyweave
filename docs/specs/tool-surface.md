@@ -253,7 +253,7 @@ both answers.
   The check belongs to the probing read, because it costs a render.
 - **What is not yet an operation is still named** (§PW124). `capabilities()` carries
   `unregistered`, every module whose surface is not yet registered with what it is for,
-  and `measures`, the vocabulary's names and statistic suffixes. `polyweave.census`
+  and `measures`, the vocabulary's names and statistic suffixes. `polyweave.surface.census`
   classifies every public function in the package: a registered operation, an `entry`
   read a caller starts from (`capabilities`, `describe`, `explain`), or, by its module,
   `internal` (a helper an operation calls) or `pending`. `tests/test_census.py` refuses

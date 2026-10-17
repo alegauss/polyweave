@@ -8,8 +8,9 @@ check refuses a part its plan does not license.
 
 from __future__ import annotations
 
-from polyweave import provenance, purchase
-from polyweave.driving import release_checked
+from polyweave.kernel import provenance
+from polyweave.layers.engine.driving import release_checked
+from polyweave.services import purchase
 
 GLTF = b"glTF" + b"\x00" * 60
 

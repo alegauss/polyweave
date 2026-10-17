@@ -11,7 +11,7 @@ import shutil
 
 import pytest
 
-from polyweave import kits
+from polyweave.layers import kits
 
 
 def test_the_saves_kit_lands_alone_and_proves_in_its_fixture(tmp_path):

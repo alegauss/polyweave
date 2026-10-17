@@ -12,9 +12,9 @@ from pathlib import Path
 
 import pytest
 
-from polyweave import engine, godot
-from polyweave.errors import PolyweaveError
-from polyweave.geometry import voxels as V
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.engine import engine, godot
+from polyweave.layers.geometry import voxels as V
 
 SHIP = {
     "name": "ship",

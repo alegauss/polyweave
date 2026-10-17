@@ -78,7 +78,7 @@ once, which is what hosting the old page in an iframe protected before there was
 screen (§PW305). The browser's desk (`ui/src/review.tsx`) is the page's own routes:
 `/api/state`, `/api/judge` with the header no other site can send, `/api/compare`,
 `/api/canon`, `/locales` and `/file`, linked directly. `npm run build:review` builds it
-into `src/polyweave/review_page/screen`, committed so the page needs Python alone, with a
+into `src/polyweave/loop/review_page/screen`, committed so the page needs Python alone, with a
 `stamp.json` naming its sources and their digest; `tests/test_review_bundle.py` fails
 when the bundle is older than them. "Where it is judged" on an item opens Decide on the
 card holding that file and outlines it, and a browser given `?member=<path>` lands on the

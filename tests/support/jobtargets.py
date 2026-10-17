@@ -9,7 +9,7 @@ from __future__ import annotations
 import os
 import time
 
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
 
 
 def immediate(report, value=7):
@@ -48,7 +48,7 @@ def spawner(report, seconds=120.0):
     import subprocess
     import sys
 
-    from polyweave.jobs import children
+    from polyweave.kernel.jobs import children
 
     child = subprocess.Popen(  # noqa: S603 - a sleep, with no shell and no input
         [sys.executable, "-c", f"import time; time.sleep({seconds})"],

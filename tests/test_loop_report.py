@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import json
 
-from polyweave import loop
+from polyweave.loop import loop
 
 
 def made(tmp_path, asset, way, *, renders, seconds, credits=0, passed=True,

@@ -14,8 +14,9 @@ import urllib.request
 
 import pytest
 
-from polyweave import purchase, sound_buy
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.sound import sound_buy
+from polyweave.services import purchase
 from test_sound import tone, written
 
 PROJECT = (
@@ -102,7 +103,7 @@ def test_a_take_on_a_free_tier_keeps_its_tier_and_credits_says_so(
 ):
     """§PW435: the free tier licenses a take for non-commercial use only, and the
     record is the one place that can say so later."""
-    from polyweave import provenance
+    from polyweave.kernel import provenance
 
     monkeypatch.setattr(sound_buy, "_tier", lambda base, key: "free")
     sound_buy.buy(prompt="rain", out="sfx/rain.mp3", root=str(tmp_path))
@@ -263,7 +264,7 @@ def test_a_quote_counts_the_text_the_call_would_send(tmp_path, counted):
             '{ per = "character", rate = 0.1, cap = 3 }'],
 )
 def test_a_row_by_the_unit_that_says_it_wrong_is_refused(tmp_path, row):
-    from polyweave.config import load
+    from polyweave.kernel.config import load
 
     (tmp_path / "polyweave.toml").write_text(
         PROJECT.replace("0.05", row), encoding="utf-8"
@@ -307,7 +308,7 @@ def test_a_line_is_spoken_in_the_voice_named(tmp_path, voiced):
 
 
 def test_the_record_keeps_what_makes_the_take_again(tmp_path, voiced):
-    from polyweave import provenance
+    from polyweave.kernel import provenance
 
     sound_buy.speak(
         text="Go", voice="v1", out="vo/go.mp3", style=0.2, root=str(tmp_path)
@@ -360,7 +361,7 @@ def test_an_entitys_line_is_spoken_in_the_voice_the_world_gives_it(tmp_path, cas
 
 
 def test_a_changed_voice_makes_its_lines_outdated_and_a_look_does_not(tmp_path, cast):
-    from polyweave import provenance
+    from polyweave.kernel import provenance
 
     sound_buy.speak(text="Hold fast", entity="ada", out="vo/ada.mp3",
                     root=str(tmp_path))
@@ -390,7 +391,7 @@ def test_a_call_that_names_another_voice_for_an_entity_is_refused(tmp_path, cast
 
 
 def test_a_voice_the_world_says_wrong_is_found(tmp_path):
-    from polyweave import world
+    from polyweave.layers.words import world
 
     (tmp_path / "game.world.toml").write_text(
         WORLD.replace("speed = 0.9", "speed = 3\npitch = 2"), encoding="utf-8"

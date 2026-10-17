@@ -6,8 +6,8 @@ import json
 
 import pytest
 
-from polyweave import kits
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers import kits
 
 KIT = """name = "{name}"
 version = "0.1.0"

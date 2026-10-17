@@ -15,7 +15,7 @@ from pathlib import Path
 
 import pytest
 
-from polyweave import driving, godot
+from polyweave.layers.engine import driving, godot
 
 LABELS = """extends Node2D
 

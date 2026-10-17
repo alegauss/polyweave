@@ -16,11 +16,11 @@ import numpy as np
 import pytest
 from tests.test_geometry import TRAY
 
-from polyweave import geometry as G
-from polyweave.errors import PolyweaveError
-from polyweave.geometry import build as B
-from polyweave.geometry import review
-from polyweave.post.mesh import check_mesh
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.kernel.post.mesh import check_mesh
+from polyweave.layers import geometry as G
+from polyweave.layers.geometry import build as B
+from polyweave.layers.geometry import review
 
 
 def document(tmp_path, body=TRAY, name="tray.toml"):
@@ -29,7 +29,7 @@ def document(tmp_path, body=TRAY, name="tray.toml"):
 
 
 def solving():
-    from polyweave.geometry import solver
+    from polyweave.layers.geometry import solver
 
     found = solver.available()
     if not found["ready"]:
@@ -451,7 +451,7 @@ def test_the_read_and_the_build_now_agree_about_that_star(tmp_path):
 
 def test_the_star_keeps_its_five_even_points(tmp_path):
     """The one shape whose silhouette has to stay exactly five even points."""
-    from polyweave.geometry import outline as O
+    from polyweave.layers.geometry import outline as O
 
     document = G.read("star.toml", root=COTTONY)
     resolved = G.expand(document)["nodes"][0]["instances"][0]
@@ -761,7 +761,7 @@ def test_a_declaration_writes_itself_where_bake_can_take_it(tmp_path):
     # And it is the shape that was built, measured on what survives the trip. glTF
     # stores triangles, so the n-gons a build makes come back cut up — 86 faces out and
     # 156 back for this star — which is the format's and not a difference in the shape.
-    from polyweave.normalise import read_mesh
+    from polyweave.layers.geometry.normalise import read_mesh
 
     back = read_mesh(written)
     assert len(back["faces"]) >= found["report"]["nodes"][0]["faces"]
@@ -779,7 +779,7 @@ def test_the_coordinates_a_panel_worked_out_survive_the_file(tmp_path):
     solving()
     import bpy
 
-    from polyweave.render import blender
+    from polyweave.layers.geometry.render import blender
 
     found = B.write(
         G.read("panel.toml", root=COTTONY), tmp_path / "panel.glb", root=COTTONY
@@ -795,7 +795,7 @@ def test_both_of_a_trays_materials_survive_the_file(tmp_path):
     solving()
     import bpy
 
-    from polyweave.render import blender
+    from polyweave.layers.geometry.render import blender
 
     found = B.write(
         G.read("tray.toml", root=COTTONY), tmp_path / "tray.glb", root=COTTONY
@@ -809,7 +809,7 @@ def test_both_of_a_trays_materials_survive_the_file(tmp_path):
 
 def test_a_declaration_a_colour_was_written_for_reaches_the_shader(tmp_path):
     """`colour = "#F2E4D0"` is what a person authors and `base_color` is the socket."""
-    from polyweave.render import blender
+    from polyweave.layers.geometry.render import blender
 
     # Linear, which is what the socket reads: sRGB 128 is 0.21586 of the light (§PW83).
     assert blender.as_inputs({"colour": "#FF8000"}) == {
@@ -822,8 +822,8 @@ def test_a_declaration_a_colour_was_written_for_reaches_the_shader(tmp_path):
 
 
 def test_a_colour_nothing_can_read_is_refused(tmp_path):
-    from polyweave.errors import PolyweaveError
-    from polyweave.render import blender
+    from polyweave.kernel.errors import PolyweaveError
+    from polyweave.layers.geometry.render import blender
 
     with pytest.raises(PolyweaveError) as caught:
         blender.as_inputs({"colour": "#12345"})

@@ -11,8 +11,8 @@ import json
 import pytest
 from PIL import Image, ImageDraw
 
-from polyweave import config as C
-from polyweave import style
+from polyweave.kernel import config as C
+from polyweave.layers.picture import style
 
 GOLD, PLUM = "#f2c14e", "#3a2e39"
 PROJECT = f'[style]\ncanon = "canon"\npalette = ["{GOLD}", "{PLUM}"]\n'

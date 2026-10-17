@@ -11,8 +11,9 @@ import shutil
 
 import pytest
 
-from polyweave import driving, godot, kits
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers import kits
+from polyweave.layers.engine import driving, godot
 
 
 def test_the_state_kit_is_declared_and_proved_by_script():

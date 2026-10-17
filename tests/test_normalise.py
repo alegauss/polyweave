@@ -12,8 +12,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from polyweave import normalise
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.geometry import normalise
 
 
 def box(width=1.0, height=2.0, depth=0.5, *, at=(0.0, 0.0, 0.0), turn=None):
@@ -415,8 +415,8 @@ def test_an_axis_that_does_not_exist_is_refused():
 
 def test_ingest_records_the_frame_it_was_given(tmp_path):
     pytest.importorskip("bpy")
-    from polyweave import provenance
-    from polyweave.normalise import write_mesh
+    from polyweave.kernel import provenance
+    from polyweave.layers.geometry.normalise import write_mesh
 
     source = write_mesh(
         normalise.normalise(cube(1.0, 0.5, 5.0), height=None), tmp_path / "raw.glb"
@@ -509,7 +509,7 @@ def test_a_lathe_turned_mesh_keeps_its_own_long_axis_and_settles_the_rest(monkey
 
 def test_a_mesh_arrives_and_is_stored_in_the_project_s_frame(tmp_path):
     pytest.importorskip("bpy")
-    from polyweave.normalise import write_mesh
+    from polyweave.layers.geometry.normalise import write_mesh
 
     source = write_mesh(normalise.normalise(cube(1.0, 4.0, 1.0)), tmp_path / "raw.glb")
     record = normalise.ingest(
@@ -523,7 +523,7 @@ def test_a_mesh_arrives_and_is_stored_in_the_project_s_frame(tmp_path):
 
 def test_what_was_applied_is_recorded_so_nothing_downstream_repeats_it(tmp_path):
     pytest.importorskip("bpy")
-    from polyweave.normalise import write_mesh
+    from polyweave.layers.geometry.normalise import write_mesh
 
     source = write_mesh(
         normalise.normalise(cube(2.0, 8.0, 2.0), height=None), tmp_path / "raw.glb"
@@ -538,7 +538,7 @@ def painted(where):
     """A quad a service might return: UVs, and a colour that is only a texture."""
     import bpy
 
-    from polyweave.render import blender
+    from polyweave.layers.geometry.render import blender
 
     blender.reset()
     bpy.ops.mesh.primitive_plane_add(size=2.0)
@@ -562,7 +562,7 @@ def painted(where):
 def test_what_a_service_painted_comes_through_ingest(tmp_path):
     """§PW90: the fetched hammer came out the right way round, the right size, white."""
     bpy = pytest.importorskip("bpy")
-    from polyweave.render import blender
+    from polyweave.layers.geometry.render import blender
 
     source = painted(tmp_path / "raw.glb")
     record = normalise.ingest(source, out=tmp_path / "kept.glb", root=tmp_path)
@@ -581,7 +581,7 @@ def test_what_a_service_painted_comes_through_ingest(tmp_path):
 def test_the_file_written_is_where_the_maths_put_it(tmp_path):
     """Moved in place rather than rebuilt, so the two have to agree."""
     pytest.importorskip("bpy")
-    from polyweave.normalise import read_mesh
+    from polyweave.layers.geometry.normalise import read_mesh
 
     source = painted(tmp_path / "raw.glb")
     record = normalise.ingest(source, out=tmp_path / "kept.glb", root=tmp_path)
@@ -597,8 +597,8 @@ def test_the_file_written_is_where_the_maths_put_it(tmp_path):
 def test_the_normalised_mesh_carries_a_record_of_its_own(tmp_path):
     """The ledger holds the bytes that arrived; the project loads this one."""
     pytest.importorskip("bpy")
-    from polyweave import provenance
-    from polyweave.normalise import write_mesh
+    from polyweave.kernel import provenance
+    from polyweave.layers.geometry.normalise import write_mesh
 
     source = write_mesh(normalise.normalise(cube(2.0, 8.0, 2.0)), tmp_path / "raw.glb")
     found = normalise.ingest(source, out=tmp_path / "kept.glb", root=tmp_path)
@@ -611,8 +611,8 @@ def test_the_normalised_mesh_carries_a_record_of_its_own(tmp_path):
 
 def test_the_parent_is_named_by_hash_so_a_mesh_that_moved_is_the_same_parent(tmp_path):
     pytest.importorskip("bpy")
-    from polyweave import provenance
-    from polyweave.normalise import write_mesh
+    from polyweave.kernel import provenance
+    from polyweave.layers.geometry.normalise import write_mesh
 
     source = write_mesh(normalise.normalise(cube(2.0, 8.0, 2.0)), tmp_path / "raw.glb")
     normalise.ingest(source, out=tmp_path / "kept.glb", root=tmp_path)
@@ -625,8 +625,8 @@ def test_the_parent_is_named_by_hash_so_a_mesh_that_moved_is_the_same_parent(tmp
 
 def test_the_transform_is_in_the_record_so_the_chain_can_be_followed(tmp_path):
     pytest.importorskip("bpy")
-    from polyweave import provenance
-    from polyweave.normalise import write_mesh
+    from polyweave.kernel import provenance
+    from polyweave.layers.geometry.normalise import write_mesh
 
     source = write_mesh(
         normalise.normalise(cube(2.0, 8.0, 2.0), height=None), tmp_path / "raw.glb"
@@ -643,8 +643,8 @@ def test_a_normalisation_has_no_engine_seed_or_sampler_and_says_so_by_absence(tm
     """One vocabulary, with what does not apply absent rather than null: a record
     carrying four nulls claims it has them and they are unknown, which is not true."""
     pytest.importorskip("bpy")
-    from polyweave import provenance
-    from polyweave.normalise import write_mesh
+    from polyweave.kernel import provenance
+    from polyweave.layers.geometry.normalise import write_mesh
 
     source = write_mesh(normalise.normalise(cube(2.0, 8.0, 2.0)), tmp_path / "raw.glb")
     normalise.ingest(source, out=tmp_path / "kept.glb", root=tmp_path)
@@ -657,8 +657,8 @@ def test_a_normalisation_has_no_engine_seed_or_sampler_and_says_so_by_absence(tm
 def test_one_mesh_normalised_twice_leaves_two_records_naming_one_parent(tmp_path):
     """Which is a fact. Two files and no records is a question nobody can answer."""
     pytest.importorskip("bpy")
-    from polyweave import provenance
-    from polyweave.normalise import write_mesh
+    from polyweave.kernel import provenance
+    from polyweave.layers.geometry.normalise import write_mesh
 
     source = write_mesh(normalise.normalise(cube(1.0, 4.0, 1.0)), tmp_path / "raw.glb")
     normalise.ingest(
@@ -683,8 +683,8 @@ def test_one_mesh_normalised_twice_leaves_two_records_naming_one_parent(tmp_path
 def test_verify_no_longer_reads_the_derived_mesh_as_unrecorded(tmp_path):
     """The whole point: the mesh the project loads stops being invisible to verify."""
     pytest.importorskip("bpy")
-    from polyweave import provenance
-    from polyweave.normalise import write_mesh
+    from polyweave.kernel import provenance
+    from polyweave.layers.geometry.normalise import write_mesh
 
     (tmp_path / "polyweave.toml").write_text(
         "[paths]\nmeshes = 'assets/3d'\n", encoding="utf-8"
@@ -701,8 +701,8 @@ def test_verify_no_longer_reads_the_derived_mesh_as_unrecorded(tmp_path):
 def test_a_mesh_oriented_against_a_drawing_records_the_bars_it_was_judged_by(tmp_path):
     """The silhouette IoU beside it is a number until something says against what."""
     pytest.importorskip("bpy")
-    from polyweave import provenance
-    from polyweave.normalise import write_mesh
+    from polyweave.kernel import provenance
+    from polyweave.layers.geometry.normalise import write_mesh
 
     source = write_mesh(normalise.normalise(cube(1.0, 4.0, 1.0)), tmp_path / "raw.glb")
     normalise.ingest(
@@ -728,8 +728,8 @@ def test_a_mesh_oriented_against_a_drawing_records_the_bars_it_was_judged_by(tmp
 def test_the_floor_recorded_is_the_one_that_decided_the_mask(tmp_path):
     """Not what the project would decide today, which is the whole point (§PW51)."""
     pytest.importorskip("bpy")
-    from polyweave import provenance
-    from polyweave.normalise import write_mesh
+    from polyweave.kernel import provenance
+    from polyweave.layers.geometry.normalise import write_mesh
 
     source = write_mesh(normalise.normalise(cube(1.0, 4.0, 1.0)), tmp_path / "raw.glb")
     normalise.ingest(
@@ -745,8 +745,8 @@ def test_the_floor_recorded_is_the_one_that_decided_the_mask(tmp_path):
 
 def test_a_mesh_with_no_drawing_measured_nothing_against_a_bar(tmp_path):
     pytest.importorskip("bpy")
-    from polyweave import provenance
-    from polyweave.normalise import write_mesh
+    from polyweave.kernel import provenance
+    from polyweave.layers.geometry.normalise import write_mesh
 
     source = write_mesh(normalise.normalise(cube(2.0, 8.0, 2.0)), tmp_path / "raw.glb")
     normalise.ingest(source, out=tmp_path / "kept.glb", root=tmp_path)

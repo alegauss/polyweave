@@ -12,9 +12,9 @@ import math
 import numpy as np
 import pytest
 
-from polyweave import geometry as G
-from polyweave.errors import PolyweaveError
-from polyweave.geometry import voxels as V
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers import geometry as G
+from polyweave.layers.geometry import voxels as V
 
 
 def shape(*nodes, output=None, voxels=None, materials=None, params=None):
@@ -274,7 +274,7 @@ def test_a_paint_that_does_not_say_where_is_refused():
 
 
 def test_a_paint_reads_back_as_what_it_does():
-    from polyweave.geometry import review
+    from polyweave.layers.geometry import review
 
     paint = {
         "id": "seam",
@@ -289,7 +289,7 @@ def test_a_paint_reads_back_as_what_it_does():
 
 
 def test_a_paint_is_refused_on_triangles(tmp_path):
-    from polyweave.geometry import build as B
+    from polyweave.layers.geometry import build as B
 
     paint = {
         "id": "seam",
@@ -499,7 +499,7 @@ def test_a_voxel_document_reads_its_table_and_one_without_has_none(tmp_path):
 
 def test_build_write_answers_cells_for_a_voxel_document(tmp_path):
     pytest.importorskip("bpy")
-    from polyweave.geometry import build as B
+    from polyweave.layers.geometry import build as B
 
     answer = B.write(shape(CUBE, voxels={"cell": 1.0}), "box.glb", root=tmp_path)
     assert (tmp_path / "box.glb").is_file()

@@ -6,8 +6,9 @@ import json
 
 import pytest
 
-from polyweave import review, verdict, words, world
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.words import words, world
+from polyweave.loop import review, verdict
 
 WORLD = """\
 [entity.ada]

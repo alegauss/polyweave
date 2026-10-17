@@ -13,8 +13,10 @@ import json
 import pytest
 from PIL import Image
 
-from polyweave import picture, provenance, purchase, scenario, style
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import provenance
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.picture import picture, scenario, style
+from polyweave.services import purchase
 
 PROJECT = """[style.heroes]
 canon = "art/canon/heroes"

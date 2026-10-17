@@ -17,9 +17,9 @@ import pytest
 from PIL import Image as PILImage
 from tests.test_skeleton import figure
 
-from polyweave import clip as C
-from polyweave import skeleton, sprites
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.motion import clip as C
+from polyweave.layers.motion import skeleton, sprites
 
 SQUASH = {
     "root": {"scale": [(0.0, [1, 1, 1]), (0.2, [1.06, 0.93, 1.06]), (0.4, [1, 1, 1])]}

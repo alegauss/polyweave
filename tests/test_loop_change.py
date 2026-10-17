@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from polyweave import loop
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.loop import loop
 
 
 def made(tmp_path, way, *, seconds, change=None, person_minutes=0.0, renders=0):

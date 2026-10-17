@@ -6,9 +6,9 @@ import json
 
 import pytest
 
-from polyweave import cli
-from polyweave import geometry as G
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers import geometry as G
+from polyweave.surface import cli
 
 SHIP = """name = "ship"
 output = "hull"

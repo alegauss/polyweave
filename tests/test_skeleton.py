@@ -10,8 +10,8 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from polyweave import skeleton
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.motion import skeleton
 
 
 def tube(width=0.6, height=1.0, depth=0.4, *, at=(0.0, 0.0, 0.0), levels=9):

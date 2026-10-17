@@ -12,9 +12,11 @@ import json
 import pytest
 from PIL import Image, ImageDraw
 
-from polyweave import config as C
-from polyweave import mesh_buy, picture, purchase
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import config as C
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.geometry import mesh_buy
+from polyweave.layers.picture import picture
+from polyweave.services import purchase
 
 GLB = b"glTF" + b"\x00" * 60
 PROJECT = (
@@ -155,7 +157,7 @@ def test_a_failed_task_ledgers_nothing(tmp_path, meshy, monkeypatch):
 
 
 def test_buying_a_mesh_is_a_fetch_job():
-    from polyweave.describe import describe
+    from polyweave.kernel.describe import describe
 
     found = next(one for one in describe() if one["operation"] == "mesh.buy")
     assert found["kind"] == "fetch"
@@ -178,7 +180,7 @@ def test_json_is_a_code_on_refusal(monkeypatch):
 
 def test_a_refused_picture_a_person_promoted_can_be_bought_from(tmp_path, meshy):
     """§PW208: the gate's bar is the project's, and a person's promotion is its door."""
-    from polyweave import review, verdict
+    from polyweave.loop import review, verdict
 
     def drawn(name, box):
         image = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
@@ -202,8 +204,8 @@ def test_a_refused_picture_a_person_promoted_can_be_bought_from(tmp_path, meshy)
 
 def test_a_promotion_given_in_chat_is_one_call_and_opens_the_buy(tmp_path, meshy):
     """§PW265: "use the original mote-3" had no operation to carry it."""
-    from polyweave import verdict
-    from polyweave.errors import PolyweaveError
+    from polyweave.kernel.errors import PolyweaveError
+    from polyweave.loop import verdict
 
     image = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
     ImageDraw.Draw(image).ellipse((14, 44, 114, 84), fill=(200, 60, 60, 255))

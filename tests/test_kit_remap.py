@@ -12,7 +12,7 @@ import shutil
 
 import pytest
 
-from polyweave import kits
+from polyweave.layers import kits
 
 
 @pytest.mark.parametrize("layout", ["xbox", "playstation", "switch"])
@@ -38,7 +38,7 @@ def test_each_pad_s_spots_table_is_where_its_drawing_puts_each_place(layout):
     table = json.loads((kit / "core" / "pads" / f"{layout}.json").read_text("utf-8"))
     assert table["slots"] == drawn
     # what picture.vector drew from it holds to the kit's spec for a pad
-    from polyweave import accept
+    from polyweave.loop import accept
 
     said = accept.checked(
         str(kit / "pads" / "pads.accept.toml"),

@@ -11,7 +11,7 @@ import shutil
 
 import pytest
 
-from polyweave import kits
+from polyweave.layers import kits
 
 
 def test_the_menus_kit_is_proved_by_its_script_alone():

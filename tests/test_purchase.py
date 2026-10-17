@@ -13,8 +13,9 @@ from pathlib import Path
 
 import pytest
 
-from polyweave import provenance, purchase
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import provenance
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.services import purchase
 
 GLTF = b"glTF" + b"\x00" * 60
 
@@ -298,7 +299,7 @@ def test_a_replayed_spend_does_not_eat_a_ceiling_set_afterwards(tmp_path):
 
 def test_an_adopted_mesh_gets_a_record_beside_it(tmp_path):
     """Everything downstream keys off the record and the hash, not the remote id."""
-    from polyweave import provenance
+    from polyweave.kernel import provenance
 
     project(tmp_path)
     purchase.adopt([an_entry(tmp_path)], root=tmp_path)
@@ -309,7 +310,7 @@ def test_an_adopted_mesh_gets_a_record_beside_it(tmp_path):
 
 
 def test_a_record_somebody_already_wrote_is_left_alone(tmp_path):
-    from polyweave import provenance
+    from polyweave.kernel import provenance
 
     project(tmp_path)
     entry = an_entry(tmp_path)

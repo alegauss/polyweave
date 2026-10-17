@@ -10,8 +10,8 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from polyweave import sfx, sfxr, sound
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.sound import sfx, sfxr, sound
 
 #: A held square tone: no envelope attack, a long sustain, so the pitch is clear.
 HELD = {"wave": "square", "env_attack": 0.0, "env_sustain": 0.6, "env_decay": 0.1}

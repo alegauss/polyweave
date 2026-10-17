@@ -11,8 +11,8 @@ from __future__ import annotations
 
 import pytest
 
-from polyweave import geometry as G
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers import geometry as G
 
 TRAY = """
 name    = "board_tray"
@@ -303,7 +303,7 @@ def test_a_repeat_variable_is_not_in_scope_on_another_node(tmp_path):
     `art/star.png` parses as a division and evaluating an image path would break a
     working document. That leaves a typo looking like a name, so it is a warning.
     """
-    from polyweave.geometry import review
+    from polyweave.layers.geometry import review
 
     body = TRAY.replace('depth    = "face_depth"', 'depth    = "face_depth + row"')
     document = tray(tmp_path, body)

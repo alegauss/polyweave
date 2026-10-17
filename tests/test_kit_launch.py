@@ -11,7 +11,7 @@ import shutil
 
 import pytest
 
-from polyweave import kits
+from polyweave.layers import kits
 
 # Measures frame times on this machine, so the gate runs it alone after the rest.
 pytestmark = pytest.mark.serial
@@ -27,7 +27,7 @@ def test_the_launch_kit_lands_and_proves_in_its_fixture(tmp_path):
 
 
 def test_a_proof_script_runs_on_the_wall_clock(tmp_path, monkeypatch):
-    from polyweave import engine
+    from polyweave.layers.engine import engine
 
     seen = {}
 

@@ -11,7 +11,8 @@ import numpy as np
 import pytest
 from PIL import Image as PILImage
 
-from polyweave import accept, cache, search, trace
+from polyweave.kernel import cache
+from polyweave.loop import accept, search, trace
 
 
 def project(tmp_path, text=""):
@@ -160,7 +161,7 @@ def test_ranked_puts_the_best_first(tmp_path):
 
 def test_a_real_sweep_writes_a_trace_and_a_sheet(tmp_path):
     pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
-    from polyweave import config as C
+    from polyweave.kernel import config as C
 
     (tmp_path / C.FILENAME).write_text(
         "[render]\npreview_size = 32\nfinal_size = 32\n"

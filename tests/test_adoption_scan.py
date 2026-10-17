@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from polyweave import adoption, project
-from polyweave import config as C
-from polyweave.cli import command_line
-from polyweave.commands import run
+from polyweave.kernel import config as C
+from polyweave.surface import adoption, project
+from polyweave.surface.cli import command_line
+from polyweave.surface.commands import run
 
 RUNNER = '''import subprocess
 GODOT = "godot"

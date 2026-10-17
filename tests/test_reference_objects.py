@@ -14,8 +14,9 @@ import math
 import pytest
 from PIL import Image, ImageDraw
 
-from polyweave import provenance, reference_objects
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import provenance
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.reference import reference_objects
 
 CYAN, MAGENTA = (63, 232, 255), (255, 61, 203)
 KINDS = {"lander": {"colour": "#3fe8ff", "size": [40, 400]},

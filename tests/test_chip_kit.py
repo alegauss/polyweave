@@ -13,8 +13,8 @@ import shutil
 import numpy as np
 import pytest
 
-from polyweave import music, music_render, sfx
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.sound import music, music_render, sfx
 
 PEDALBOARD = importlib.util.find_spec("pedalboard") is not None
 
@@ -136,7 +136,7 @@ def test_every_hit_lands_on_its_tick_and_velocity_scales_it(tmp_path):
 
 @pytest.mark.skipif(not PEDALBOARD, reason="audio engine absent: Pedalboard")
 def test_a_chip_score_renders_with_no_soundfont_and_records_sfxr(tmp_path):
-    from polyweave import provenance
+    from polyweave.kernel import provenance
 
     class Reported:
         def stage(self, *a, **k):

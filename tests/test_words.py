@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from polyweave import words
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.words import words
 
 WORLD = """\
 [entity.lattice]

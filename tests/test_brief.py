@@ -5,8 +5,9 @@ from __future__ import annotations
 import pytest
 from PIL import Image
 
-from polyweave import brief, loop, provenance
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import provenance
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.loop import brief, loop
 
 SHAPE = """name = "crate"
 output = "crate"
@@ -119,7 +120,7 @@ def rendered_from(root, mesh: str, built: str = "assets/crate.glb"):
 
 def test_a_render_of_a_mesh_the_declaration_no_longer_builds_is_said(tmp_path):
     # §PW298: the spec measured the bought mesh while the game drew the voxel build.
-    from polyweave import accept
+    from polyweave.loop import accept
 
     root = project(tmp_path)
     rendered_from(root, "assets/models/crate.glb")
@@ -133,7 +134,7 @@ def test_a_render_of_a_mesh_the_declaration_no_longer_builds_is_said(tmp_path):
 
 
 def test_a_render_of_the_build_is_not_parted(tmp_path):
-    from polyweave import accept
+    from polyweave.loop import accept
 
     root = project(tmp_path)
     rendered_from(root, "assets/crate.glb")
@@ -150,7 +151,7 @@ def subject_spec(root, subject: str = "shapes/crate.toml"):
 
 def test_a_spec_names_its_declarations_build_as_the_model_it_renders(tmp_path):
     # §PW298: render.bake and the search render the build, not a mesh path.
-    from polyweave import accept, search
+    from polyweave.loop import accept, search
 
     root = project(tmp_path)
     rendered_from(root, "assets/crate.glb")
@@ -164,7 +165,7 @@ def test_a_spec_names_its_declarations_build_as_the_model_it_renders(tmp_path):
 
 
 def test_a_spec_holding_its_subject_reads_stale_on_a_render_of_another_mesh(tmp_path):
-    from polyweave import accept
+    from polyweave.loop import accept
 
     root = project(tmp_path)
     rendered_from(root, "assets/models/crate.glb")
@@ -177,7 +178,7 @@ def test_a_spec_holding_its_subject_reads_stale_on_a_render_of_another_mesh(tmp_
 
 
 def test_a_subject_with_no_build_is_refused_with_the_build_to_run(tmp_path):
-    from polyweave import accept
+    from polyweave.loop import accept
 
     root = project(tmp_path)
     spec = accept.read(subject_spec(root))
@@ -188,7 +189,7 @@ def test_a_subject_with_no_build_is_refused_with_the_build_to_run(tmp_path):
 
 
 def test_a_subject_that_is_not_a_declaration_is_refused(tmp_path):
-    from polyweave import accept
+    from polyweave.loop import accept
 
     root = project(tmp_path)
     with pytest.raises(PolyweaveError) as refused:
@@ -199,8 +200,8 @@ def test_a_subject_that_is_not_a_declaration_is_refused(tmp_path):
 def test_a_bake_of_a_spec_records_the_build_its_subject_names(tmp_path):
     # §PW298: the render's record names the built mesh, with no path written by hand.
     pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
-    from polyweave import config as C
-    from polyweave import render
+    from polyweave.kernel import config as C
+    from polyweave.layers.geometry import render
 
     root = project(tmp_path)
     (root / C.FILENAME).write_text(

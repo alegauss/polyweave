@@ -11,8 +11,8 @@ import numpy as np
 import pytest
 from PIL import Image as PILImage
 
-from polyweave import accept, measure
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.loop import accept, measure
 
 
 def png(tmp_path, name, *, size=(32, 32), colour=(232, 213, 196), coverage=1.0):

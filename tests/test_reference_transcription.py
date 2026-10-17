@@ -12,8 +12,10 @@ import json
 import pytest
 from PIL import Image, ImageDraw
 
-from polyweave import provenance, reference_objects, reference_transcription, verdict
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import provenance
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.reference import reference_objects, reference_transcription
+from polyweave.loop import verdict
 
 CYAN = (63, 232, 255)
 KINDS = {"lander": {"colour": "#3fe8ff", "size": [40, 400]}}

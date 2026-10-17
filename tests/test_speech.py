@@ -10,7 +10,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from polyweave import sound
+from polyweave.layers.sound import sound
 from test_sound import RATE, tone, written
 
 
@@ -90,7 +90,7 @@ def test_an_interjection_is_said_however_it_was_spelled():
 def test_a_take_is_transcribed_in_the_language_its_record_names(
     tmp_path, monkeypatch
 ):
-    from polyweave import provenance
+    from polyweave.kernel import provenance
 
     asked = {}
 
@@ -133,7 +133,8 @@ def test_a_bought_take_lands_with_its_silence_cut_to_the_bound(tmp_path, monkeyp
     import shutil
     import subprocess
 
-    from polyweave import provenance, sound_buy
+    from polyweave.kernel import provenance
+    from polyweave.layers.sound import sound_buy
     from test_sound_buy import PROJECT, Service
 
     if not shutil.which("ffmpeg"):

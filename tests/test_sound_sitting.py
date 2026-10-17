@@ -12,8 +12,10 @@ import wave
 import numpy as np
 import pytest
 
-from polyweave import provenance, review, sfx, sound, verdict
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import provenance
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.sound import sfx, sound
+from polyweave.loop import review, verdict
 
 
 def _tone(path, seconds=0.2, level=0.5):

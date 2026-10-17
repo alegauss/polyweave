@@ -15,8 +15,11 @@ from pathlib import Path
 
 import pytest
 
-from polyweave import camera, describe, engine, project, provenance
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import describe, provenance
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.engine import engine
+from polyweave.layers.motion import camera
+from polyweave.surface import project
 
 OPENING = """\
 name = "opening"
@@ -138,7 +141,7 @@ def test_the_scene_is_listed_as_a_clip_in_the_inventory(tmp_path):
 
 
 def test_it_is_an_operation_an_agent_can_find():
-    assert describe.for_target("polyweave.camera:build") == "clip.camera"
+    assert describe.for_target("polyweave.layers.motion.camera:build") == "clip.camera"
     params = {p["name"] for p in describe.describe("clip.camera")["parameters"]}
     assert params == {"source", "out", "root"}
 

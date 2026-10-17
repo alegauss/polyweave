@@ -13,8 +13,11 @@ import subprocess
 
 import pytest
 
-from polyweave import capture, project, provenance, reference, reference_register
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import provenance
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.engine import capture
+from polyweave.layers.reference import reference, reference_register
+from polyweave.surface import project
 
 pytestmark = pytest.mark.skipif(not shutil.which("ffmpeg"), reason="needs ffmpeg")
 

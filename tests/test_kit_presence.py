@@ -12,7 +12,7 @@ import shutil
 
 import pytest
 
-from polyweave import kits
+from polyweave.layers import kits
 
 
 def test_the_presence_kit_draws_its_prompts_from_the_prompts_kit():

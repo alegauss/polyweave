@@ -10,9 +10,9 @@ from __future__ import annotations
 
 import pytest
 
-from polyweave import style
-from polyweave.config import _shifted, load
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.config import _shifted, load
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.picture import style
 
 PALETTE_PY = '''"""The sister game's palette."""
 

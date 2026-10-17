@@ -14,9 +14,9 @@ from pathlib import Path
 
 import pytest
 
-from polyweave import codes as C
-from polyweave import config
-from polyweave.errors import PolyweaveError, codes, explain, guard
+from polyweave.kernel import codes as C
+from polyweave.kernel import config
+from polyweave.kernel.errors import PolyweaveError, codes, explain, guard
 
 SRC = Path(__file__).resolve().parent.parent / "src" / "polyweave"
 
@@ -30,8 +30,8 @@ SHAPED = re.compile(rf"^({'|'.join(C.AREAS)})\.[a-z0-9]+(-[a-z0-9]+)*$")
 #: config address (`render.samples`) and an operation name (`render.bake`). Only the
 #: codes have to be declared, so the other two are enumerated and subtracted first.
 def _not_codes() -> set[str]:
-    import polyweave.render  # noqa: F401 - imported for the side effect of registering
-    from polyweave.describe import operations
+    import polyweave.layers.geometry.render  # noqa: F401 - imported for the side effect of registering
+    from polyweave.kernel.describe import operations
 
     settings = {f"{t}.{k}" for t, keys in config.DEFAULTS.items() for k in keys}
     return settings | set(operations())

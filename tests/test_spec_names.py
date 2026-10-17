@@ -15,6 +15,7 @@ pass.
 from __future__ import annotations
 
 import importlib
+import pkgutil
 import re
 import shlex
 import tomllib
@@ -22,13 +23,13 @@ from pathlib import Path
 
 import pytest
 
-from polyweave.cli import command_line
-from polyweave.codes import AREAS
-from polyweave.config import _FREE_TABLES, DEFAULTS
-from polyweave.describe import describe, load
-from polyweave.errors import codes
-from polyweave.measure import COMPUTES, SUFFIXES
-from polyweave.provenance import key_subset
+from polyweave.kernel.codes import AREAS
+from polyweave.kernel.config import _FREE_TABLES, DEFAULTS
+from polyweave.kernel.describe import describe, load
+from polyweave.kernel.errors import codes
+from polyweave.kernel.provenance import key_subset
+from polyweave.loop.measure import COMPUTES, SUFFIXES
+from polyweave.surface.cli import command_line
 
 ROOT = Path(__file__).resolve().parent.parent
 SPECS = ROOT / "docs" / "specs"
@@ -167,11 +168,23 @@ def _resolves(name: str, operations: set[str], declared: set[str]) -> bool:
     if name.replace(".", "_") in key_subset({}):
         return True
     head, *rest = name.split(".")
-    try:
-        found = importlib.import_module(f"polyweave.{head}")
-    except ImportError:
-        return False
-    for part in rest:
+    return any(_has(module, rest) for module in _modules_named(head))
+
+
+def _modules_named(leaf: str) -> list[str]:
+    """Every module in the package named `leaf`, at whatever depth (§PW499)."""
+    import polyweave
+
+    return [
+        found.name
+        for found in pkgutil.walk_packages(polyweave.__path__, "polyweave.")
+        if found.name.rsplit(".", 1)[-1] == leaf
+    ]
+
+
+def _has(module: str, parts: list[str]) -> bool:
+    found = importlib.import_module(module)
+    for part in parts:
         if not hasattr(found, part):
             return False
         found = getattr(found, part)

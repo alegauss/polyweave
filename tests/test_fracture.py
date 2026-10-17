@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import pytest
 
-from polyweave.errors import PolyweaveError
-from polyweave.geometry import fracture as FR
-from polyweave.geometry import voxels as V
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.geometry import fracture as FR
+from polyweave.layers.geometry import voxels as V
 
 
 def block(width=8, height=4, depth=2, fracture=None, nodes=None):

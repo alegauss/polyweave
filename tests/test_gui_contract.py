@@ -7,7 +7,7 @@ server, so this holds the real one to the same shape from this side.
 
 from __future__ import annotations
 
-from polyweave import server
+from polyweave.surface import server
 
 
 def test_an_inventory_call_answers_the_shape_the_window_reads(tmp_path):

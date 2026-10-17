@@ -6,8 +6,8 @@ import struct
 
 import pytest
 
-from polyweave import engine, pack
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.engine import engine, pack
 
 
 def write_pack(path, files, *, flags=0, version=4):

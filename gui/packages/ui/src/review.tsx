@@ -1,6 +1,6 @@
 // The review page in a browser (§PW403): the same decision screen the window draws, over
 // the page's own routes, so there is one screen and not two. Built by
-// `npm run build:review` into src/polyweave/review_page/screen, which
+// `npm run build:review` into src/polyweave/loop/review_page/screen, which
 // `python -m polyweave review` serves; its stamp says which sources it was built from.
 
 import './review.css'

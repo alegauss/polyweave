@@ -13,8 +13,8 @@ import numpy as np
 import pytest
 from PIL import Image as PILImage
 
-from polyweave import measure
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.loop import measure
 
 
 def picture(tmp_path, name, pixels):

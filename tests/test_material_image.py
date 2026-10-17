@@ -10,9 +10,9 @@ from __future__ import annotations
 import pytest
 from PIL import Image, ImageDraw
 
-from polyweave import cost, geometry
-from polyweave.errors import PolyweaveError
-from polyweave.geometry import build
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers import geometry
+from polyweave.layers.geometry import build, cost
 
 pytest.importorskip("bpy", reason="Blender writes the mesh")
 

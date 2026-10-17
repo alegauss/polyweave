@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import pytest
 
-from polyweave import describe, purchase, revision
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import describe
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.loop import revision
+from polyweave.services import purchase
 
 PROJECT = (
     '[service.ideogram]\nbase = "https://api.ideogram.ai"\n'
@@ -55,7 +57,7 @@ def test_a_free_operation_has_no_price(project):
 def test_a_revision_asks_every_paid_call_and_ties_its_spend(project):
     from PIL import Image
 
-    from polyweave import provenance
+    from polyweave.kernel import provenance
 
     (project / "art").mkdir()
     Image.new("RGBA", (4, 4)).save(project / "art" / "icon.png")

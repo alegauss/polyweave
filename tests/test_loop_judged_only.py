@@ -11,8 +11,8 @@ import json
 
 import pytest
 
-from polyweave import loop, verdict
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.loop import loop, verdict
 from test_verdict import DARK, member
 
 

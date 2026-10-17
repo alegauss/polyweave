@@ -13,7 +13,7 @@ from pathlib import Path
 
 import pytest
 
-from polyweave import offscreen
+from polyweave.layers.engine import offscreen
 
 
 @pytest.fixture

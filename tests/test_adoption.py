@@ -24,8 +24,10 @@ from pathlib import Path
 
 import pytest
 
-from polyweave import accept, config, render, search
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import config
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.geometry import render
+from polyweave.loop import accept, search
 
 FIXTURE = Path(__file__).parent / "fixtures" / "cottony.toml"
 

@@ -13,8 +13,9 @@ import subprocess
 import pytest
 from PIL import Image
 
-from polyweave import provenance, reference
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import provenance
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.reference import reference
 
 pytestmark = pytest.mark.skipif(not shutil.which("ffmpeg"), reason="needs ffmpeg")
 
@@ -92,7 +93,7 @@ def _git(project, *args):
 
 
 def test_frames_are_marked_internal_and_so_is_what_is_made_from_them(video):
-    from polyweave import reference_objects
+    from polyweave.layers.reference import reference_objects
 
     source, project = video
     found = reference.frames(str(source), rate=2, root=str(project))
@@ -127,7 +128,7 @@ def test_a_tracked_file_taken_from_a_reference_is_named_by_verify(video):
 
 
 def test_a_store_page_is_never_cut_from_internal_footage(video):
-    from polyweave import store
+    from polyweave.layers.store import store
 
     source, project = video
     found = reference.frames(str(source), rate=2, root=str(project))

@@ -12,8 +12,9 @@ import json
 import pytest
 from PIL import Image
 
-from polyweave import describe, verdict
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import describe
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.loop import verdict
 
 SPEC = """asset = "{name}"
 
@@ -103,4 +104,4 @@ def test_a_verdict_carried_from_chat_needs_the_person_s_words(project):
 
 
 def test_it_is_an_operation_an_agent_can_find():
-    assert describe.for_target("polyweave.verdict:answer") == "verdict.answer"
+    assert describe.for_target("polyweave.loop.verdict:answer") == "verdict.answer"

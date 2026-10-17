@@ -6,9 +6,10 @@ import numpy as np
 import pytest
 from PIL import Image, ImageDraw
 
-from polyweave import config as C
-from polyweave import fitting, provenance
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import config as C
+from polyweave.kernel import provenance
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.picture import fitting
 
 
 def arrived(path, box=(40, 30, 90, 110), fringe=(255, 255, 255)):

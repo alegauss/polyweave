@@ -10,8 +10,10 @@ import json
 
 import pytest
 
-from polyweave import picture, provenance, purchase, schema
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import provenance
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.picture import picture
+from polyweave.services import purchase, schema
 
 PNG = b"\x89PNG\r\n\x1a\n" + b"\x00" * 60
 PROJECT = (
@@ -158,7 +160,7 @@ def test_an_answer_with_more_pictures_is_charged_for_each(tmp_path, service):
 
 
 def test_a_price_that_is_not_a_positive_number_is_refused(tmp_path):
-    from polyweave import config
+    from polyweave.kernel import config
 
     (tmp_path / "polyweave.toml").write_text(
         '[service.ideogram]\nprices = { "4.0" = 0 }\n', encoding="utf-8"
@@ -400,7 +402,7 @@ def test_a_poll_never_answered_ends_on_the_timeout(tmp_path, polled, monkeypatch
 
 
 def test_buying_is_a_fetch_job():
-    from polyweave.describe import describe
+    from polyweave.kernel.describe import describe
 
     found = next(one for one in describe() if one["operation"] == "picture.buy")
     assert found["kind"] == "fetch" and found["asynchronous"] is True

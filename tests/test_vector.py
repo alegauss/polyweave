@@ -9,8 +9,9 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from polyweave import provenance, vector
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import provenance
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.picture import vector
 
 LOGO = """<svg xmlns="http://www.w3.org/2000/svg" width="100" height="50"
   viewBox="0 0 100 50">

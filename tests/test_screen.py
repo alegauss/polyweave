@@ -5,8 +5,11 @@ from __future__ import annotations
 import pytest
 from PIL import Image
 
-from polyweave import accept, capture, cli, provenance
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import provenance
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.engine import capture
+from polyweave.loop import accept
+from polyweave.surface import cli
 
 #: Flat greys by byte: 200 reads 0.578 in linear luma and 102 reads 0.133.
 BRIGHT, DARK = 200, 102

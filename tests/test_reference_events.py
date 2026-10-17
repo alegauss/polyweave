@@ -15,8 +15,9 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from polyweave import provenance, reference_events
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import provenance
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.reference import reference_events
 
 DECLARED = """\
 [reference]

@@ -15,8 +15,9 @@ import time
 
 import pytest
 
-from polyweave import driving, engine, kits
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers import kits
+from polyweave.layers.engine import driving, engine
 
 CAPTURE = {"format": 1, "reason": "error", "seed": 7, "state": {"health": 0},
            "error": {"said": "Invalid call", "script": "res://boss.gd", "line": 41},

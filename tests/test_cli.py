@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from polyweave import cli
+from polyweave.surface import cli
 
 VOXEL = """name = "box"
 output = "box"
@@ -148,7 +148,7 @@ def test_all_rebuilds_after_the_plugin_changed(tmp_path, capsys, monkeypatch):
     declared(tmp_path / "art")
     run(tmp_path, "--all", "art", "--json", capsys=capsys)
 
-    monkeypatch.setattr("polyweave.provenance.__version__", "9.9.9-fixed")
+    monkeypatch.setattr("polyweave.kernel.provenance.__version__", "9.9.9-fixed")
     _, printed = run(tmp_path, "--all", "art", "--json", capsys=capsys)
     assert [one["status"] for one in json.loads(printed.out)] == ["built"]
 
@@ -164,7 +164,7 @@ def test_a_preview_is_not_answered_from_a_build_without_one(tmp_path, capsys):
 
 
 def test_every_output_carries_the_record_the_stamp_is_the_key_of(tmp_path, capsys):
-    from polyweave import provenance
+    from polyweave.kernel import provenance
 
     (tmp_path / "polyweave.toml").write_text(
         '[paths]\nmeshes = "art"\n', encoding="utf-8"

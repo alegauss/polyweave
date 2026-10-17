@@ -11,7 +11,7 @@ import shutil
 
 import pytest
 
-from polyweave import kits
+from polyweave.layers import kits
 
 
 def test_the_language_kit_contributes_the_language_row_and_proves_by_script():

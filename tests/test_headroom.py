@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from polyweave import search as S
-from polyweave.accept import Spec, headroom
+from polyweave.loop import search as S
+from polyweave.loop.accept import Spec, headroom
 
 
 def test_headroom_is_the_room_to_the_nearer_bound():

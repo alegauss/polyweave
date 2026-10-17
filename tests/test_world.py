@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import pytest
 
-from polyweave import world
-from polyweave.commands import answer_for
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.words import world
+from polyweave.surface.commands import answer_for
 
 GOOD = """\
 [entity.crew]
@@ -169,7 +169,7 @@ def test_broken_toml_is_refused_as_malformed(tmp_path):
 
 
 def test_both_operations_answer_by_name_on_the_command_line(tmp_path):
-    from polyweave.cli import command_line
+    from polyweave.surface.cli import command_line
 
     _project(tmp_path)
     stated = command_line().parse_args(["world.validate", "--root", str(tmp_path)])

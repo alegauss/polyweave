@@ -9,8 +9,8 @@ import os
 
 import pytest
 
-from polyweave import offscreen, perf
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.engine import offscreen, perf
 
 # Measures frame times on this machine, so the gate runs it alone after the rest.
 pytestmark = pytest.mark.serial

@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from PIL import Image
 
-from polyweave import loop, provenance, verdict
+from polyweave.kernel import provenance
+from polyweave.loop import loop, verdict
 
 SPEC = """asset = "{name}"
 

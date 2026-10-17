@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from polyweave import capture
+from polyweave.layers.engine import capture
 from test_capture import SHOT, project, taking
 
 LOG = (

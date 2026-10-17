@@ -12,8 +12,8 @@ import wave
 
 import pytest
 
-from polyweave import sfx, sfxr
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.sound import sfx, sfxr
 
 #: The spike's ten effects, each generator's first draw and the length it came out at.
 SPIKE = {
@@ -55,7 +55,7 @@ def test_the_spikes_ten_effects_come_out_at_the_lengths_a_person_heard(tmp_path)
 
 
 def test_each_effect_carries_a_record_of_what_made_it(tmp_path):
-    from polyweave import provenance
+    from polyweave.kernel import provenance
 
     sfx.synth(effects(tmp_path, spike_body()), effect="bomb", root=str(tmp_path))
     record = provenance.read(str(tmp_path / "audio" / "bomb.wav.prov.json"), tmp_path)
@@ -223,7 +223,7 @@ def test_an_arrangement_is_mixed_as_the_game_plays_it(tmp_path):
     # §PW313: a jingle heard whole, at the times its cues are played.
     import json
 
-    from polyweave import provenance
+    from polyweave.kernel import provenance
 
     made = sfx.synth(effects(tmp_path, JINGLE), root=str(tmp_path))
     splash = made["arrangements"]["splash"]
@@ -268,7 +268,7 @@ def test_a_cue_that_cannot_be_played_is_refused(tmp_path, cue, said):
 
 
 def test_a_brief_on_a_mix_reads_back_its_cues(tmp_path):
-    from polyweave import brief
+    from polyweave.loop import brief
 
     sfx.synth(effects(tmp_path, JINGLE), root=str(tmp_path))
     said = brief.brief("audio/splash.wav", root=str(tmp_path))["declaration"]

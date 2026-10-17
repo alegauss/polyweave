@@ -14,10 +14,10 @@ import time
 import pytest
 
 from conftest import wait_for
-from polyweave.errors import PolyweaveError
-from polyweave.jobs import KINDS, JobStore, stages_for
-from polyweave.jobs import record as rec
-from polyweave.jobs.record import holding
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.kernel.jobs import KINDS, JobStore, stages_for
+from polyweave.kernel.jobs import record as rec
+from polyweave.kernel.jobs.record import holding
 
 TARGET = "support.jobtargets"
 
@@ -96,7 +96,7 @@ def test_poll_reports_the_stage_the_work_reached(store, target_path):
 
 
 def test_a_stage_outside_the_kind_is_refused(store):
-    from polyweave.jobs.stages import check_stage
+    from polyweave.kernel.jobs.stages import check_stage
 
     with pytest.raises(PolyweaveError) as caught:
         check_stage("search", "downloading")
@@ -152,7 +152,7 @@ def test_a_registered_operation_is_held_to_its_declared_range_before_it_spawns(s
     import the target and come back a failed job through the other."""
     with pytest.raises(PolyweaveError) as caught:
         store.start(
-            "polyweave.render:bake",
+            "polyweave.layers.geometry.render:bake",
             kind="bake",
             args={"out": "r.png", "elevation": 400.0},
         )
@@ -162,14 +162,16 @@ def test_a_registered_operation_is_held_to_its_declared_range_before_it_spawns(s
 
 def test_a_missing_required_argument_is_refused_before_it_spawns(store):
     with pytest.raises(PolyweaveError) as caught:
-        store.start("polyweave.render:bake", kind="bake", args={})
+        store.start("polyweave.layers.geometry.render:bake", kind="bake", args={})
     assert caught.value.code == "op.missing-argument"
 
 
 def test_an_unknown_argument_to_a_registered_operation_never_reaches_a_worker(store):
     with pytest.raises(PolyweaveError) as caught:
         store.start(
-            "polyweave.render:bake", kind="bake", args={"out": "r.png", "sixe": 512}
+            "polyweave.layers.geometry.render:bake",
+            kind="bake",
+            args={"out": "r.png", "sixe": 512},
         )
     assert caught.value.code == "op.unknown-argument"
 
@@ -179,7 +181,7 @@ def test_a_target_with_no_registration_is_still_the_workers_to_check(
 ):
     """A project's own generator named as a file path is a legitimate target, and the
     signature check in the child is the only contract it has."""
-    from polyweave import describe
+    from polyweave.kernel import describe
 
     assert describe.for_target(f"{TARGET}:takes_nothing") is None
     handle = start(store, "takes_nothing", target_path, args={"sixe": 512})
@@ -190,16 +192,16 @@ def test_a_target_with_no_registration_is_still_the_workers_to_check(
 def test_the_registry_answers_by_target_without_the_caller_importing_anything(store):
     """Registration is a side effect of an import, so asking whether something is an
     operation used to be asking whether its module had been imported yet."""
-    from polyweave import describe
+    from polyweave.kernel import describe
 
-    assert describe.for_target("polyweave.render:bake") == "render.bake"
+    assert describe.for_target("polyweave.layers.geometry.render:bake") == "render.bake"
     assert describe.for_target("nothing.at.all:ever") is None
 
 
 def test_a_value_inside_the_declared_range_starts_the_job(store):
     """The check refuses what the declaration refuses, and nothing more."""
     handle = store.start(
-        "polyweave.render:bake",
+        "polyweave.layers.geometry.render:bake",
         kind="bake",
         args={"out": "r.png", "rung": "sphere", "elevation": 20.0},
     )
@@ -219,7 +221,7 @@ def test_a_dead_worker_is_a_failure_not_a_hang(store, target_path):
     job = handle["job"]
     wait_for(lambda: store.poll(job)["stage"] == "rendering")
 
-    from polyweave.jobs import process
+    from polyweave.kernel.jobs import process
 
     process.kill_tree(handle["pid"])
     process.wait_gone(handle["pid"])
@@ -256,7 +258,7 @@ def test_cancel_ends_the_process(store, target_path):
     view = store.cancel(job)
     assert view["status"] == "cancelled"
 
-    from polyweave.jobs import process
+    from polyweave.kernel.jobs import process
 
     assert not process.alive(handle["pid"])
     assert store.poll(job)["status"] == "cancelled"
@@ -376,7 +378,7 @@ def test_sweep_reaps_an_abandoned_job(store, target_path):
     job = handle["job"]
     wait_for(lambda: store.poll(job)["stage"] == "rendering")
 
-    from polyweave.jobs import process
+    from polyweave.kernel.jobs import process
 
     process.kill_tree(handle["pid"])
     process.wait_gone(handle["pid"])
@@ -404,7 +406,7 @@ def test_a_worker_writes_down_what_it_spawned_before_waiting_on_it(
     )
     wait_for(lambda: store.poll(handle["job"])["stage"] == "rendering")
 
-    from polyweave.jobs import record as rec
+    from polyweave.kernel.jobs import record as rec
 
     kids = rec.read_kids(store.work / "jobs" / f"{handle['job']}.kids")
     assert [pid for pid, _ in kids] == [int(marker.read_text())]
@@ -428,7 +430,7 @@ def test_a_sweep_ends_the_renderer_a_dead_worker_left_running(
     wait_for(lambda: store.poll(job)["stage"] == "rendering")
     child = int(marker.read_text())
 
-    from polyweave.jobs import process
+    from polyweave.kernel.jobs import process
 
     # The worker alone, not its tree: a tree walk is exactly what a sweep does not have,
     # and on POSIX taking the group would hide the bug by killing the child too.
@@ -445,8 +447,8 @@ def test_a_sweep_ends_the_renderer_a_dead_worker_left_running(
 def test_a_recorded_pid_that_belongs_to_somebody_else_now_is_left_alone(store):
     """Killing a stranger is a worse failure than leaking a renderer, and a sweep
     that might do it is one nobody will run."""
-    from polyweave.jobs import process
-    from polyweave.jobs import record as rec
+    from polyweave.kernel.jobs import process
+    from polyweave.kernel.jobs import record as rec
 
     assert not process.end(os.getpid(), since=1.0), "a start time nothing matches"
     assert process.alive(os.getpid())
@@ -460,7 +462,7 @@ def test_a_recorded_pid_that_belongs_to_somebody_else_now_is_left_alone(store):
 
 def test_a_process_can_be_told_apart_from_a_stranger_that_reused_its_number():
     """The reuse problem the heartbeat solves for a worker, for its children."""
-    from polyweave.jobs import process
+    from polyweave.kernel.jobs import process
 
     mine = process.started_at(os.getpid())
     assert mine is not None, "this platform must be able to date a process"
@@ -469,7 +471,7 @@ def test_a_process_can_be_told_apart_from_a_stranger_that_reused_its_number():
 
 def test_a_torn_trail_does_not_stop_the_rest_being_collected(tmp_path):
     """A sweep runs after a crash, which is when a file is most likely to be torn."""
-    from polyweave.jobs import record as rec
+    from polyweave.kernel.jobs import record as rec
 
     trail = tmp_path / "j_x.kids"
     trail.write_text("123 4.0\nnot-a-pid\n456 -\n", encoding="utf-8")
@@ -478,7 +480,7 @@ def test_a_torn_trail_does_not_stop_the_rest_being_collected(tmp_path):
 
 def test_nothing_is_recorded_outside_a_worker(tmp_path):
     """`watch` is called wherever something spawns, job or no job."""
-    from polyweave.jobs import children
+    from polyweave.kernel.jobs import children
 
     assert children.watched() is None
     children.watch(os.getpid())  # no job, so nowhere to write and nothing raised

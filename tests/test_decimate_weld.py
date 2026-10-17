@@ -15,7 +15,7 @@ bpy = pytest.importorskip("bpy", reason="Blender decimates the mesh")
 
 def unwelded_grid(cells: int):
     """A flat grid whose every quad has its own four corners, as a seamed glTF comes."""
-    from polyweave.render import blender
+    from polyweave.layers.geometry.render import blender
 
     blender.reset()
     vertices, faces = [], []
@@ -47,7 +47,7 @@ def open_edges(obj) -> int:
 
 
 def test_a_seamed_mesh_is_whole_after_the_preview_decimation(tmp_path):
-    from polyweave.render import blender
+    from polyweave.layers.geometry.render import blender
 
     cells = 170  # 57,800 triangles, over the floor
     obj = unwelded_grid(cells)

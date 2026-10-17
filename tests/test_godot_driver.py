@@ -17,8 +17,8 @@ from pathlib import Path
 
 import pytest
 
-from polyweave import driving, engine, godot
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.engine import driving, engine, godot
 
 #: A game with one button that counts its presses, a counter that moves every frame, and
 #: a timer's worth of state: enough to see input, frames and holding at work.

@@ -9,8 +9,8 @@ from __future__ import annotations
 import pytest
 from PIL import Image
 
-from polyweave import config as C
-from polyweave import picture
+from polyweave.kernel import config as C
+from polyweave.layers.picture import picture
 
 
 @pytest.fixture
@@ -59,7 +59,7 @@ def test_no_engine_is_a_stated_gap_and_never_a_pass(titled, monkeypatch):
 
 
 def test_the_lettering_is_read_off_the_record_by_default(titled, monkeypatch):
-    from polyweave import provenance
+    from polyweave.kernel import provenance
 
     record = provenance.build(
         "fetch",

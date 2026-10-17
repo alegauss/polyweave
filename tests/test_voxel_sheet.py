@@ -9,8 +9,8 @@ from __future__ import annotations
 import numpy as np
 from PIL import Image
 
-from polyweave.geometry import voxel_sheet as VS
-from polyweave.geometry import voxels as V
+from polyweave.layers.geometry import voxel_sheet as VS
+from polyweave.layers.geometry import voxels as V
 
 RED, BLUE = "#FF0000", "#0000FF"
 

@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from polyweave.jobs import JobStore
+from polyweave.kernel.jobs import JobStore
 
 TESTS = Path(__file__).resolve().parent
 
@@ -24,7 +24,7 @@ def store(tmp_path):
 def no_subscription_read(monkeypatch):
     """The speech service's subscription is never read from a test: a test that buys
     replaces the transport, and a tier it wants is stubbed on `sound_buy._tier`."""
-    from polyweave import sound_buy
+    from polyweave.layers.sound import sound_buy
 
     monkeypatch.setattr(sound_buy, "_tier", lambda base, key: None)
 

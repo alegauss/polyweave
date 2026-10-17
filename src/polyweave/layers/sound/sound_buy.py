@@ -1,0 +1,1081 @@
+"""Buying a realistic effect, or a line spoken aloud, under the project's ceiling.
+
+§PW190 bought effects; §PW314 speaks a given line in a named voice, through the same
+doors and the same service.
+
+Footsteps, glass or rain are not what a synthesiser does well, and a paid fetch without
+a ceiling is the surprise Block D exists to prevent. So a bought sound goes through the
+doors a picture and a mesh go through:
+
+    1. the price is the project's `prices` row for the model, never the caller's figure
+    2. `purchase.allow` is asked against the service's own ceiling, before any request
+    3. the answer is captured before anything else: written, hashed and ledgered
+
+The service is ElevenLabs' sound generation: one JSON request, answered with the audio.
+It answers MP3, so a sound bought for a cue declared in another format is transcoded by
+ffmpeg before it is captured, and the file on record is the one the game plays.
+
+A `prices` row may be by the character, `{ per = "character", rate }` (§PW320): the
+words sent are counted before anything is, and where the service's subscription answers
+its `character_count` before and after, the spend is the difference times the rate and
+the entry is `measured`. The quoted rate stays as the fallback, and says it was quoted.
+
+No budget means no spend, and the decision to spend stays with a person: a ceiling is
+written into `[budget.<name>]` by a person and never proposed by the plugin.
+"""
+
+from __future__ import annotations
+
+import base64
+import hashlib
+import json
+import re
+import shutil
+import subprocess
+import urllib.error
+import urllib.parse
+import urllib.request
+from pathlib import Path
+from typing import Annotated
+
+from polyweave.kernel import provenance
+from polyweave.kernel.config import load
+from polyweave.kernel.describe import Param, operation
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.picture import picture
+from polyweave.services import purchase
+
+from . import sound
+
+#: The service's route, and the format it is asked to answer in.
+ROUTE = "/v1/sound-generation"
+
+#: Where the service says how many characters the account has used (§PW320).
+USAGE = "/v1/user/subscription"
+FORMAT = "mp3_44100_128"
+
+TIMEOUT = 120
+
+_CUE = Param("a cue [sound] declares; the file lands where it does")
+_OUT = Param("or a path for it under the project, with its suffix")
+_SECONDS = Param("how long, 0.5 to 30; the service's choice if unset", lo=0.5, hi=30)
+
+
+@operation("sound.buy", kind="fetch", injects=("report",), spends=True)
+def buy(
+    report=None,
+    prompt: Annotated[str, Param("the sound, in words: footsteps on gravel")] = None,
+    *,
+    cue: Annotated[str, _CUE] = None,
+    out: Annotated[str, _OUT] = None,
+    seconds: Annotated[float, _SECONDS] = None,
+    influence: Annotated[
+        float, Param("how closely it follows the words, 0 to 1", lo=0.0, hi=1.0)
+    ] = 0.3,
+    loop: Annotated[bool, Param("ask for a sound that loops, such as rain")] = False,
+    model: Annotated[str, Param("the service's model, priced in [service]")] = (
+        "eleven_text_to_sound_v2"
+    ),
+    service: Annotated[str, purchase.SERVICE] = None,
+    root: Annotated[str, Param("the project whose ledger this is")] = ".",
+) -> dict:
+    """Buy one sound effect from words, at a declared cue's file, against the ceiling.
+
+    Returns the ledger entry and where the file landed. The `prices` row for `model`
+    decides whether it may be spent, and nothing is sent when it may not.
+    """
+    if not prompt:
+        raise PolyweaveError(
+            "fetch.missing-field",
+            "a sound was asked for without words",
+            "pass prompt, the sound described as a sound designer would",
+        )
+    request: dict = {"text": prompt, "model_id": model, "prompt_influence": influence}
+    if seconds is not None:
+        request["duration_seconds"] = float(seconds)
+    if loop:
+        request["loop"] = True
+    return _bought(
+        report, f"{ROUTE}?output_format={FORMAT}", request, words=prompt, cue=cue,
+        out=out, model=model, service=service, root=root,
+        details={"cue": cue, "seconds": seconds, "influence": influence, "loop": loop},
+    )
+
+
+#: Where a line is spoken, by the voice the route names (§PW314).
+SPEAK = "/v1/text-to-speech/{voice}"
+
+#: How each delivery setting is named in the service's `voice_settings`.
+DELIVERY = {
+    "stability": "stability",
+    "similarity": "similarity_boost",
+    "style": "style",
+    "speed": "speed",
+}
+
+#: The models the service lets a call hold to one language, by `language_code`; any
+#: other answers the field with an error (§PW412).
+LANGUAGE_HELD = ("eleven_v3", "eleven_turbo_v2_5", "eleven_flash_v2_5")
+
+
+def language_of(locale: str) -> str:
+    """The ISO 639-1 code a table's column speaks: `pt_BR` is `pt`, `en` is `en`."""
+    return re.split(r"[_-]", str(locale), maxsplit=1)[0].lower()
+
+
+_UNIT = Param("0 to 1; the voice's own if unset", lo=0.0, hi=1.0)
+
+
+@operation("sound.speak", kind="fetch", injects=("report",), spends=True)
+def speak(
+    report=None,
+    text: Annotated[str, Param("the line, word for word: Viglet Games")] = None,
+    *,
+    voice: Annotated[str, Param("the service's voice id that speaks it")] = None,
+    cue: Annotated[str, _CUE] = None,
+    out: Annotated[str, _OUT] = None,
+    stability: Annotated[float, _UNIT] = None,
+    similarity: Annotated[float, _UNIT] = None,
+    style: Annotated[float, _UNIT] = None,
+    speed: Annotated[
+        float, Param("how fast, 0.7 to 1.2; the voice's own if unset", lo=0.7, hi=1.2)
+    ] = None,
+    model: Annotated[str, Param("the service's model, priced in [service]")] = (
+        "eleven_multilingual_v2"
+    ),
+    entity: Annotated[str, Param("a world entity, whose voice speaks it")] = None,
+    world: Annotated[str, Param("the *.world.toml, where the project has several")] = (
+        None
+    ),
+    rung: Annotated[
+        str, Param("draft speaks it free on a local engine; paid buys it",
+                   choices=("paid", "draft"))
+    ] = "paid",
+    service: Annotated[str, purchase.SERVICE] = None,
+    root: Annotated[str, Param("the project whose ledger this is")] = ".",
+) -> dict:
+    """Speak one line aloud in a named voice, at a cue's file, against the ceiling.
+
+    `entity` speaks it in the voice the world gives that entity (§PW321), its delivery
+    the voice's own where the call sets none; an entity with no voice id is refused.
+
+    Text to speech is billed by the character, so its `prices` row is one by the
+    character (§PW320) and the line is counted before anything is sent. The record
+    keeps the words, the voice, the model and the delivery, so the take can be made
+    again (§PW314).
+    """
+    if not text or not text.strip():
+        raise PolyweaveError(
+            "fetch.missing-field",
+            "a line was asked to be spoken without its words",
+            "pass text, the line exactly as it is to be said",
+        )
+    if rung == "draft":
+        return _drafted(text, cue=cue, out=out, entity=entity, root=root)
+    drawn_from, own = None, {}
+    if entity:
+        from polyweave.layers.words.world import voiced
+
+        drawn_from, own = voiced(entity, world, root)
+        if voice and voice != own["id"]:
+            raise PolyweaveError(
+                "world.voice-mismatch",
+                f"{entity} speaks in {own['id']!r} in the world, and the call named "
+                f"{voice!r}",
+                "leave voice unset, so every line of theirs is in their own voice",
+                given=voice,
+                allowed=[own["id"]],
+            )
+        voice = own["id"]
+    if not voice:
+        raise PolyweaveError(
+            "fetch.missing-field",
+            "a line was asked to be spoken in no voice",
+            "pass voice, the id of one of the service's voices, or entity, one the "
+            "world gives a voice",
+        )
+    called = {"stability": stability, "similarity": similarity, "style": style,
+              "speed": speed}
+    delivery = {
+        DELIVERY[name]: float(called[name] if called[name] is not None else own[name])
+        for name in DELIVERY
+        if called[name] is not None or own.get(name) is not None
+    }
+    request: dict = {"text": text, "model_id": model}
+    if delivery:
+        request["voice_settings"] = delivery
+    route = SPEAK.format(voice=urllib.parse.quote(voice, safe=""))
+    return _bought(
+        report, f"{route}?output_format={FORMAT}", request, words=text, cue=cue,
+        out=out, model=model, service=service, root=root,
+        details={"cue": cue, "voice": voice, "delivery": delivery, "spoken": True,
+                 "entity": drawn_from},
+        inputs=[provenance.source("world", drawn_from["world"], root=load(root).root)]
+        if drawn_from
+        else None,
+    )
+
+
+def _bought(
+    report, route: str, request: dict, *, words: str, cue, out, model: str,
+    service, root, details: dict, inputs: list | None = None,
+) -> dict:
+    """One paid request for audio, priced, allowed, captured and ledgered.
+
+    What `sound.buy` and `sound.speak` share: the price by the project's row for the
+    model, counted by the words where it is by the character, the ceiling asked before
+    anything is sent, and the spend read off the service's usage where it answers
+    (§PW320).
+    """
+    config = load(root)
+    here = config.root
+    target = _target(config, cue, out)
+    name = config.service(service, model=model)
+    about = config.services()[name]
+    base, key = picture._reached(name, about)
+    priced = picture._priced(
+        name, about.get("prices") or {}, model, None, len(words)
+    )
+    price = priced["price"]
+    if target.suffix.lower() != ".mp3" and not shutil.which("ffmpeg"):
+        raise PolyweaveError(
+            "sound.no-encoder",
+            f"{target.name} wants {target.suffix[1:]}, the service answers MP3, and "
+            f"there is no ffmpeg on PATH to transcode it",
+            "put ffmpeg on PATH before spending, or ask for an .mp3",
+        )
+    trimming = bool(details.get("spoken")) and bool(config.get("voice.trim"))
+    if trimming and not shutil.which("ffmpeg"):
+        raise PolyweaveError(
+            "sound.no-encoder",
+            "[voice] trim asks for a take's silence to be cut, and there is no ffmpeg "
+            "on PATH to cut it",
+            "put ffmpeg on PATH before spending, or set [voice] trim = false",
+        )
+
+    purchase.allow_priced(priced, root=here, service=name)
+    by_character = priced["per"] == "character"
+    tier = _tier(base, key)
+    before = _used(base, key) if by_character else None
+    if report is not None:
+        report.stage("building", progress=0.2, note="asking the service for the sound")
+    body, asked = _post(f"{base}{route}", key, request)
+    after = _used(base, key) if before is not None else None
+    reported = (
+        round((after - before) * priced["rate"], 6)
+        if before is not None and after is not None and after >= before
+        else None
+    )
+    if not body:
+        raise PolyweaveError(
+            "fetch.nothing-arrived",
+            "the service answered with no audio",
+            "ask again; nothing was ledgered",
+        )
+    if report is not None:
+        report.stage("downloading", progress=0.9, note="taking delivery of the sound")
+    played = body if target.suffix.lower() == ".mp3" else _transcoded(body, target)
+    if trimming:
+        played, cut = _trim(played, target, config.table("voice"))
+        if cut:
+            details = {**details, "trimmed": {
+                **cut, "sent_sha256": hashlib.sha256(body).hexdigest()}}
+    entry = purchase.capture(
+        played,
+        out=target.relative_to(here).as_posix(),
+        task_id=f"{name}:{asked or hashlib.sha256(body).hexdigest()[:16]}",
+        credits=price,
+        reported=reported,
+        prompt=words,
+        bought="sound",
+        engine=_made_with(name, model, tier),
+        service=name,
+        details={**details, "format": target.suffix[1:]},
+        inputs=inputs,
+        root=here,
+    )
+    answer = {**entry, "file": target.relative_to(here).as_posix(),
+              "measured": _measured(target)}
+    if details.get("spoken"):
+        # Held to its line before a person hears it (§PW323); a take that fails is
+        # kept and said, never bought again here.
+        answer["speech"] = _speech(target, words, config)
+    return answer
+
+
+def _trim(played: bytes, target: Path, bounds: dict) -> tuple[bytes, dict | None]:
+    """A take with its lead and tail silence cut down to their bounds (§PW323).
+
+    Only silence past a bound goes: speech is never cut, and a bound of zero cuts
+    nothing on its side. Answers the bytes to keep and what was cut, or None.
+    """
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as scratch:
+        held = Path(scratch) / f"take{target.suffix}"
+        held.write_bytes(played)
+        first, last, duration = sound._span(held)
+    lead, tail = float(bounds.get("lead_silence") or 0), float(
+        bounds.get("tail_silence") or 0)
+    start = first - lead if lead and first > lead else 0.0
+    end = last + tail if tail and duration - last > tail else duration
+    if start <= 0 and end >= duration:
+        return played, None
+    shaped = {".mp3": ["-f", "mp3"], **_SHAPED}
+    done = subprocess.run(
+        [shutil.which("ffmpeg"), "-v", "error", "-i", "pipe:0", "-ss", f"{start:.3f}",
+         "-to", f"{end:.3f}", *shaped[target.suffix.lower()], "pipe:1"],
+        input=played, capture_output=True, check=False,
+    )
+    if done.returncode or not done.stdout:
+        raise PolyweaveError(
+            "fetch.nothing-arrived",
+            f"ffmpeg could not cut the take's silence from {target.name}",
+            "read the detail; nothing was ledgered, and [voice] trim = false keeps "
+            "the take whole",
+            detail=done.stderr[:400].decode("utf-8", "replace"),
+        )
+    return done.stdout, {"lead": round(start, 3), "tail": round(duration - end, 3)}
+
+
+def _speech(target: Path, words: str, config) -> dict:
+    """What a spoken take measures against its line, or why it cannot be measured."""
+    try:
+        found = sound.speech(target, words, **sound.expected(target, config))
+    except PolyweaveError as refused:
+        return {"unmeasured": refused.message}
+    return {**found, "failed": sound.held(found, config.table("voice"))}
+
+
+#: Where a voice is designed from words, and where a chosen preview is kept (§PW321).
+DESIGN = "/v1/text-to-voice/design"
+SAVE = "/v1/text-to-voice"
+
+#: The fewest characters ElevenLabs' voice design takes as the line it speaks; a
+#: shorter one comes back a 422 after the call (§PW482). A service declares its own as
+#: `voice_sample_least` in its table.
+SAMPLE_LEAST = 100
+
+
+def _sample_of(entity: str, world: str | None, root: str, locale: str | None = None,
+               given: str | None = None) -> str | None:
+    """The line a voice is designed on: the one given, or the entity's own sample."""
+    if given:
+        return given
+    from polyweave.layers.words.world import brief, voice_in
+
+    _, found = brief(entity, world, root)
+    return voice_in(found, locale).get("sample")
+
+
+@operation("voice.design", kind="fetch", injects=("report",), spends=True)
+def design(
+    report=None,
+    entity: Annotated[str, Param("the world entity whose voice is described")] = None,
+    *,
+    sample: Annotated[str, Param("the line the previews speak; the voice's own")] = (
+        None
+    ),
+    out: Annotated[str, Param("the folder the previews and the sitting go in")] = (
+        None
+    ),
+    model: Annotated[str, Param("the service's model, priced in [service]")] = (
+        "eleven_multilingual_ttv_v2"
+    ),
+    locale: Annotated[
+        str, Param("a locale's own voice, from its table; the shared if unset")
+    ] = None,
+    world: Annotated[str, Param("the *.world.toml, where the project has several")] = (
+        None
+    ),
+    service: Annotated[str, purchase.SERVICE] = None,
+    root: Annotated[str, Param("the project whose ledger this is")] = ".",
+) -> dict:
+    """Previews of an entity's described voice, laid out for a person to hear.
+
+    Sends the world's `description` of the voice, speaking its `sample`, to the
+    service's voice design, priced and ledgered as any purchase. Each preview lands as a
+    sound with its record, and a sitting plays them; the person's verdict, not the
+    agent's, is what `voice.choose` saves (§PW321). With `locale`, the words come from
+    that locale's own table, `[entity.<id>.voice.<locale>]`, and the chosen preview is
+    kept there (§PW413): a voice designed in English speaks Portuguese with an English
+    mouth, so a language can have a voice born in it.
+    """
+    from polyweave.layers.words.world import brief, voice_in
+
+    if not entity:
+        raise PolyweaveError(
+            "fetch.missing-field",
+            "a voice was asked to be designed for no entity",
+            "pass entity, one the world describes a voice for",
+        )
+    source, found = brief(entity, world, root)
+    voice = voice_in(found, locale)
+    table = f"[entity.{entity}.voice" + (f".{locale}]" if locale else "]")
+    if not voice.get("description"):
+        raise PolyweaveError(
+            "world.no-voice",
+            f"{entity} has no words about a voice to design it from",
+            f'write description = "..." under {table}',
+            given=entity,
+        )
+    sample = sample or voice.get("sample")
+    if not sample:
+        raise PolyweaveError(
+            "fetch.missing-field",
+            f"no line to hear {entity}'s voice on",
+            f'pass sample, or write sample = "..." under {table}',
+        )
+    config = load(root)
+    here = config.root
+    name = config.service(service, model=model)
+    about = config.services()[name]
+    least = int(about.get("voice_sample_least", SAMPLE_LEAST))
+    if len(sample) < least:
+        # Refused before the call, never answered by the service after it (§PW482).
+        raise PolyweaveError(
+            "fetch.sample-short",
+            f"{entity}'s sample is {len(sample)} characters, and {name}'s voice design "
+            f"takes at least {least}",
+            f"write a longer sample under {table}, a line in the voice that runs to "
+            f"{least} characters or more, or pass one as sample",
+            given=sample,
+        )
+    named = f"{entity}_{locale}" if locale else entity
+    folder = _laid(config, out, named)
+    base, key = picture._reached(name, about)
+    priced = picture._priced(
+        name, about.get("prices") or {}, model, None, len(sample)
+    )
+    purchase.allow_priced(priced, root=here, service=name)
+    tier = _tier(base, key)
+    before = _used(base, key) if priced["per"] == "character" else None
+    if report is not None:
+        report.stage("building", progress=0.2, note="asking the service for voices")
+    answer = _asked(
+        f"{base}{DESIGN}", key,
+        {"voice_description": voice["description"], "text": sample, "model_id": model},
+    )
+    after = _used(base, key) if before is not None else None
+    previews = [one for one in answer.get("previews") or () if one.get("audio_base_64")]
+    if not previews:
+        raise PolyweaveError(
+            "fetch.nothing-arrived",
+            "the service answered with no preview of the voice",
+            "reword the description; nothing was ledgered",
+        )
+    spent = (
+        (after - before) * priced["rate"]
+        if before is not None and after is not None and after >= before
+        else None
+    )
+    drawn_from = {
+        "id": entity,
+        "world": provenance.relative(source, here),
+        "description": voice["description"],
+        **({"locale": locale} if locale else {}),
+    }
+    heard = []
+    for index, preview in enumerate(previews, start=1):
+        body = base64.b64decode(preview["audio_base_64"])
+        target = folder / f"{named}_{index}.mp3"
+        # One call answers every preview, so each carries its share of the price.
+        entry = purchase.capture(
+            body,
+            out=target.relative_to(here).as_posix(),
+            task_id=f"{name}:{preview.get('generated_voice_id') or index}",
+            credits=round(priced["price"] / len(previews), 6),
+            reported=None if spent is None else round(spent / len(previews), 6),
+            prompt=sample,
+            bought="sound",
+            engine=_made_with(name, model, tier),
+            service=name,
+            details={"voice_preview": preview.get("generated_voice_id"),
+                     "entity": drawn_from, "format": "mp3"},
+            inputs=[provenance.source("world", source, root=here)],
+            root=here,
+        )
+        heard.append({"name": target.stem, "new": entry["artefact"], "line": sample})
+    laid = sound.sitting(
+        heard, out=provenance.relative(folder, here), root=str(here)
+    )
+    return {
+        "entity": entity,
+        **({"locale": locale} if locale else {}),
+        "description": voice["description"],
+        "sample": sample,
+        "previews": [one["new"] for one in heard],
+        "sitting": laid["sitting"],
+        "says": f"{len(heard)} previews of {entity}'s voice"
+        + (f" in {locale}" if locale else "")
+        + " for a person to hear; voice.choose saves the one they accept",
+    }
+
+
+@operation("voice.choose", kind="fetch")
+def choose(
+    preview: Annotated[str, Param("the preview a person accepted, as a path")],
+    *,
+    world: Annotated[str, Param("the *.world.toml, where the project has several")] = (
+        None
+    ),
+    service: Annotated[str, purchase.SERVICE] = None,
+    root: Annotated[str, Param("the project whose ledger this is")] = ".",
+) -> dict:
+    """Keep the preview a person accepted as its entity's voice, written in the world.
+
+    Refused unless the preview's record holds a person's `accept` on those very bytes:
+    the agent never picks a voice (§PW321). The service saves it as a voice, and its id
+    is written under `[entity.<id>.voice]` with the preview it came from.
+    """
+    config = load(root)
+    here = config.root
+    where = config.path("paths.work", preview)
+    try:
+        record = provenance.read(str(where), root=here)
+    except PolyweaveError as missing:
+        raise PolyweaveError(
+            "world.voice-unchosen",
+            f"{preview} has no record, so no one chose it",
+            "run voice.design and choose from the previews it lays out",
+            given=preview,
+        ) from missing
+    details = record.get("details") or {}
+    drawn = details.get("entity") or {}
+    if not details.get("voice_preview") or not drawn.get("id"):
+        raise PolyweaveError(
+            "world.voice-unchosen",
+            f"{preview} is not a preview voice.design made",
+            "choose from the previews voice.design lays out",
+            given=preview,
+        )
+    digest = provenance.sha256_of(where)[0]
+    said = [v for v in record.get("verdicts") or () if v.get("sha256") == digest]
+    if not said or said[-1].get("choice") != "accept":
+        raise PolyweaveError(
+            "world.voice-unchosen",
+            f"no person has accepted {preview} as {drawn['id']}'s voice",
+            "lay the previews out with voice.design and let a person accept one on "
+            "the review page; an agent does not choose a voice",
+            given=preview,
+        )
+    name = config.service(service, model=str((record.get("engine") or {}).get("model")))
+    base, key = picture._reached(name, config.services()[name])
+    saved = _asked(
+        f"{base}{SAVE}", key,
+        {"voice_name": drawn["id"], "voice_description": drawn.get("description", ""),
+         "generated_voice_id": details["voice_preview"]},
+    )
+    if not saved.get("voice_id"):
+        raise PolyweaveError(
+            "fetch.nothing-arrived",
+            "the service kept no voice from the preview",
+            "ask again; the world was not changed",
+        )
+    from polyweave.layers.words.world import keep_voice
+
+    # A preview designed for a locale's own voice is kept in its table (§PW413).
+    kept = keep_voice(
+        drawn["id"], saved["voice_id"], provenance.relative(where, here),
+        world or drawn.get("world"), here, locale=drawn.get("locale"),
+    )
+    return {"entity": drawn["id"], "voice": saved["voice_id"], "world": kept,
+            "from": provenance.relative(where, here),
+            **({"locale": drawn["locale"]} if drawn.get("locale") else {})}
+
+
+@operation("voice.lines", kind="fetch", injects=("report",), spends=True)
+def lines(
+    report=None,
+    speaker: Annotated[str, Param("only this entity's lines; all if unset")] = None,
+    *,
+    locale: Annotated[str, Param("only this locale's column; every one if unset")] = (
+        None
+    ),
+    keys: Annotated[list, Param("only these keys of the table")] = None,
+    spend: Annotated[bool, Param("send them; false answers the plan alone")] = False,
+    out: Annotated[str, Param("the folder the takes' sitting goes in")] = None,
+    model: Annotated[str, Param("the service's model, priced in [service]")] = (
+        "eleven_multilingual_v2"
+    ),
+    world: Annotated[str, Param("the *.world.toml, where the project has several")] = (
+        None
+    ),
+    service: Annotated[str, purchase.SERVICE] = None,
+    root: Annotated[str, Param("the project whose ledger this is")] = ".",
+) -> dict:
+    """Voice the string table's lines as a set, each in its speaker's voice (§PW322).
+
+    Without `spend` it sends nothing: each row it would voice with its characters and
+    price, the takes still current, and the rows whose speaker has no voice. With it,
+    the same selection is spoken until the ceiling stops it, the rest named as not
+    voiced, and a sitting lays the new takes out by speaker for a person to hear.
+    """
+    from polyweave.layers.words import words
+    from polyweave.layers.words.world import declared, voice_digest, voice_in
+
+    config = load(root)
+    here = config.root
+    if not config.get("words.voiced"):
+        raise PolyweaveError(
+            "words.no-voiced",
+            "the project says nowhere for a spoken line to land",
+            'set [words] voiced = "audio/voice/{locale}/{key}.ogg" in polyweave.toml',
+        )
+    source, locales, rows = words.table(here)
+    column = config.get("words.speaker")
+    world_file, entities, _ = declared(world, here)
+    if locale is not None and locale not in locales:
+        raise PolyweaveError(
+            "fetch.missing-field",
+            f"the table has no {locale!r} column",
+            f"name one of {', '.join(locales)}",
+            given=locale,
+            allowed=locales,
+        )
+    name = config.service(service, model=model)
+    prices = config.services()[name].get("prices") or {}
+    plan, current, unvoiced = [], [], []
+    for row in rows:
+        who = (row["cells"].get(column) or "").strip()
+        if not who or (speaker and who != speaker):
+            continue
+        if keys and row["key"] not in keys:
+            continue
+        for one in [locale] if locale else locales:
+            text = (row["cells"].get(one) or "").strip()
+            if not text:
+                continue
+            at = {"key": row["key"], "locale": one, "speaker": who}
+            # Each column in the voice its locale has, the shared one where it has none
+            # of its own (§PW413).
+            voice = voice_in(entities.get(who) or {}, one)
+            price = picture._priced(name, prices, model, None, len(text))["price"]
+            if not voice.get("id"):
+                # Priced all the same, so a set's cost is known before a voice is
+                # bought for it (§PW414).
+                unvoiced.append({**at, "code": "world.no-voice",
+                                 "characters": len(text), "price": price})
+                continue
+            land = config.get("words.voiced").format(
+                locale=one, key=re.sub(r"[^\w.-]+", "_", row["key"])
+            )
+            line = {"key": row["key"], "locale": one, "sha256": words.said_digest(text)}
+            if _still(here / land, line, voice_digest(entities[who], one), model, here):
+                current.append({**at, "out": land})
+                continue
+            plan.append({**at, "out": land, "text": text, "characters": len(text),
+                         "price": price, "line": line,
+                         **({"draft": True} if _draft(here / land, here) else {})})
+    total = round(sum(one["price"] for one in plan), 6)
+    left = purchase.remaining(str(here), service=name)
+    answer = {
+        "voice": [{k: v for k, v in one.items() if k != "line"} for one in plan],
+        "current": current,
+        "unvoiced": unvoiced,
+        "characters": sum(one["characters"] for one in plan),
+        "price": total,
+        # What the rows still waiting on a voice will cost once they have one.
+        "unvoiced_characters": sum(one["characters"] for one in unvoiced),
+        "unvoiced_price": round(sum(one["price"] for one in unvoiced), 6),
+        "left": left["left"],
+        "unit": left["unit"],
+        "spent": False,
+    }
+    if not spend or not plan:
+        return answer
+    table_at = provenance.relative(source, here)
+    voiced, stopped = [], []
+    for index, one in enumerate(plan):
+        drawn_from, own = (
+            {"id": one["speaker"], "world": provenance.relative(world_file, here),
+             "sha256": voice_digest(entities[one["speaker"]], one["locale"]),
+             "of": "voice", "locale": one["locale"]},
+            voice_in(entities[one["speaker"]], one["locale"]),
+        )
+        delivery = {
+            DELIVERY[k]: float(own[k]) for k in DELIVERY if own.get(k) is not None
+        }
+        request: dict = {"text": one["text"], "model_id": model}
+        if delivery:
+            request["voice_settings"] = delivery
+        # The column says the line's language, so a model that can be held to one is
+        # told it: left to guess, a voice designed in English read Portuguese with an
+        # English mouth (§PW412). The others refuse the field, so it is never sent them.
+        if model in LANGUAGE_HELD:
+            request["language_code"] = language_of(one["locale"])
+        route = SPEAK.format(voice=urllib.parse.quote(own["id"], safe=""))
+        try:
+            took = _bought(
+                report, f"{route}?output_format={FORMAT}", request, words=one["text"],
+                cue=None, out=one["out"], model=model, service=name, root=here,
+                details={"voice": own["id"], "delivery": delivery, "spoken": True,
+                         "entity": drawn_from, "line": {**one["line"],
+                                                        "table": table_at}},
+                inputs=[provenance.source("world", world_file, root=here),
+                        provenance.source("words", source, root=here)],
+            )
+        except PolyweaveError as refused:
+            if refused.code not in ("fetch.over-budget", "fetch.budget-closed"):
+                raise
+            stopped = [{k: one[k] for k in ("key", "locale", "speaker", "price")}
+                       for one in plan[index:]]
+            answer["stopped_by"] = refused.message
+            break
+        voiced.append({**one, "failed": took["speech"].get("failed", [])})
+    if voiced:
+        heard = [
+            {"name": f"{one['speaker']}.{one['key']}.{one['locale']}",
+             "new": one["out"], "line": one["text"]}
+            for one in sorted(voiced, key=lambda one: one["speaker"])
+        ]
+        folder = _laid(config, out, "lines")
+        answer["sitting"] = sound.sitting(
+            heard, out=provenance.relative(folder, here), root=str(here)
+        )["sitting"]
+    answer.update({
+        "spent": True,
+        "voiced": [{k: one[k] for k in ("key", "locale", "speaker", "out", "failed")}
+                   for one in voiced],
+        "not_voiced": stopped,
+    })
+    return answer
+
+
+def _laid(config, out: str | None, named: str) -> Path:
+    """The folder a voice sitting goes in: `out` under the project, or `voices/<named>`
+    in the work area. Never the project's root, where an engine imports the sheets as
+    the game's own assets (§PW416)."""
+    if out:
+        return config.path("paths.work", out)
+    return config.path("paths.work") / "voices" / named
+
+
+def _draft(where: Path, here: Path) -> bool:
+    """Whether the take at a path is a free draft still to be bought (§PW324)."""
+    if not where.is_file():
+        return False
+    try:
+        record = provenance.read(str(where), root=here)
+    except PolyweaveError:
+        return False
+    return (record.get("params") or {}).get("rung") == "draft"
+
+
+def _still(where: Path, line: dict, voice: str, model: str, here: Path) -> bool:
+    """Whether a take already says this line, in this voice, on this model."""
+    if not where.is_file():
+        return False
+    try:
+        record = provenance.read(str(where), root=here)
+    except PolyweaveError:
+        return False
+    if (record.get("params") or {}).get("rung") == "draft":
+        # A placeholder never satisfies a line, so a game cannot ship it by accident.
+        return False
+    details = record.get("details") or {}
+    said = details.get("line") or {}
+    return (
+        said.get("sha256") == line["sha256"]
+        and (details.get("entity") or {}).get("sha256") == voice
+        and (record.get("engine") or {}).get("model") == model
+        and provenance.sha256_of(where)[0] == (record.get("artefact") or {}).get(
+            "sha256"
+        )
+    )
+
+
+#: How to install each local engine, for a refusal to say.
+_INSTALL = {
+    "espeak-ng": "winget install eSpeak-NG.eSpeak-NG (or apt install espeak-ng)",
+    "piper": "pip install piper-tts, and download a model for [voice] draft_model",
+}
+
+
+def _drafted(text: str, *, cue, out, entity, root) -> dict:
+    """A line spoken free on a local engine, at the cue's file, recorded as a draft.
+
+    The free rung (§PW324): wording and timing are judged in a plain voice before a
+    character is billed. It needs no budget and never moves to the paid rung by itself;
+    `voice.lines` reports a draft as a take still to be bought.
+    """
+    import tempfile
+
+    config = load(root)
+    here = config.root
+    target = _target(config, cue, out)
+    engine = _engine(config)
+    with tempfile.TemporaryDirectory() as scratch:
+        wav = Path(scratch) / "draft.wav"
+        _local_speech(engine, text, wav)
+        body = wav.read_bytes()
+    if target.suffix.lower() != ".wav":
+        if not shutil.which("ffmpeg"):
+            raise PolyweaveError(
+                "sound.no-encoder",
+                f"{target.name} wants {target.suffix[1:]}, the engine writes WAV, and "
+                "there is no ffmpeg on PATH to transcode it",
+                "put ffmpeg on PATH, or draft to a .wav",
+            )
+        shaped = {".mp3": ["-f", "mp3"], **_SHAPED}
+        done = subprocess.run(
+            [shutil.which("ffmpeg"), "-v", "error", "-i", "pipe:0",
+             *shaped[target.suffix.lower()], "pipe:1"],
+            input=body, capture_output=True, check=False,
+        )
+        body = done.stdout
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes(body)
+    record = provenance.build(
+        "sound", target, engine={"name": engine["name"], "draft": True},
+        params={"rung": "draft", "line": text, "entity": entity,
+                **{k: v for k, v in engine.items() if k in ("model", "voice") and v}},
+        measurements=_measured(target),
+        root=here,
+    )
+    provenance.write(record, here)
+    return {"file": target.relative_to(here).as_posix(), "rung": "draft",
+            "engine": engine["name"], "spent": 0,
+            "speech": _speech(target, text, config),
+            "says": "a draft on a local engine, free; buy the take with rung=paid "
+                    "once its words and timing are settled"}
+
+
+def _engine(config) -> dict:
+    """The local engine the project names, or the first one installed, or a refusal."""
+    named = config.get("voice.draft_engine") or ""
+    model = config.get("voice.draft_model") or ""
+    voice = config.get("voice.draft_voice") or ""
+    model_at = str(config.path("voice.draft_model")) if model else ""
+    order = [named] if named else ["piper", "espeak-ng"]
+    for name in order:
+        found = shutil.which(name) or (shutil.which("espeak") if name == "espeak-ng"
+                                       else None)
+        if name == "piper" and found and model_at and Path(model_at).is_file():
+            return {"name": "piper", "path": found, "model": model}
+        if name == "espeak-ng" and found:
+            return {"name": "espeak-ng", "path": found, "voice": voice}
+    wanted = named or "espeak-ng"
+    raise PolyweaveError(
+        "sound.no-speech-engine",
+        "no local speech engine is installed to draft the line"
+        + (f": [voice] draft_engine names {named}" if named else ""),
+        f"install one: {_INSTALL.get(wanted, _INSTALL['espeak-ng'])}; the paid rung "
+        "is the person's call, never taken in its place",
+        given=named or None,
+    )
+
+
+def _local_speech(engine: dict, text: str, wav: Path) -> None:
+    """Speak `text` into a WAV with the local engine."""
+    if engine["name"] == "piper":
+        argv = [engine["path"], "--model", engine["model"], "--output_file", str(wav)]
+        done = subprocess.run(argv, input=text.encode("utf-8"), capture_output=True,
+                              check=False)
+    else:
+        argv = [engine["path"], "-w", str(wav)]
+        if engine.get("voice"):
+            argv += ["-v", engine["voice"]]
+        done = subprocess.run([*argv, text], capture_output=True, check=False)
+    if done.returncode or not wav.is_file():
+        raise PolyweaveError(
+            "sound.no-speech-engine",
+            f"{engine['name']} did not speak the line",
+            "read the detail; check its model or voice in [voice]",
+            detail=done.stderr[:400].decode("utf-8", "replace"),
+        )
+
+
+def _plan_lacks(said: str) -> PolyweaveError:
+    """A 403: the account's plan lacks the feature, in the service's own words (§PW410).
+
+    ElevenLabs answers voice design on a free plan with a 403 whose message says so,
+    and the refusal used to be a service error whose remedy named only 401 and 422.
+    """
+    from polyweave.surface.commands import detail_line
+
+    why = detail_line(said)
+    return PolyweaveError(
+        "fetch.plan-lacks",
+        "the account's plan does not include this"
+        + (f": {why}" if why else " (the service answered 403)"),
+        "move the account to a plan that has it, or ask for what the plan has; "
+        "nothing was ledgered, and a refused call is not charged",
+        detail=said,
+    )
+
+
+def _asked(url: str, key: str, payload: dict) -> dict:
+    """One JSON request with the service's key header, answered with JSON."""
+    request = urllib.request.Request(  # noqa: S310
+        url,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"xi-api-key": key, "Content-Type": "application/json",
+                 "Accept": "application/json", "User-Agent": picture.AGENT},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=TIMEOUT) as answer:  # noqa: S310
+            said = json.loads(answer.read() or b"{}")
+    except urllib.error.HTTPError as refused:
+        said = refused.read()[:400].decode("utf-8", "replace")
+        if refused.code == 403:
+            raise _plan_lacks(said) from refused
+        raise PolyweaveError(
+            "fetch.service-error",
+            f"the service answered {refused.code}",
+            "read the detail; a 401 is a key the service does not accept, or an "
+            "account out of credits, and a 422 words it would not use",
+            detail=said,
+        ) from refused
+    except urllib.error.URLError as exc:
+        raise PolyweaveError(
+            "fetch.service-error",
+            f"the service could not be reached at {url}",
+            "check the base under [service] and the network",
+            detail=str(exc.reason),
+        ) from exc
+    return said if isinstance(said, dict) else {}
+
+
+def _target(config, cue: str | None, out: str | None) -> Path:
+    """Where the sound lands: its declared cue's file, or the path the call names."""
+    if (cue is None) == (out is None):
+        raise PolyweaveError(
+            "fetch.missing-field",
+            "a sound lands at a cue or a path, and this call gave "
+            + ("neither" if cue is None else "both"),
+            "pass cue, a name [sound] declares, or out, a path under the project",
+        )
+    if cue is not None:
+        declared = config.cue_files()
+        if cue not in declared:
+            raise PolyweaveError(
+                "sound.unknown-cue",
+                f"no [sound] family declares a cue named {cue!r}",
+                "add it to a family's cues, or pass out instead",
+                given=cue,
+                allowed=sorted(declared),
+            )
+        return declared[cue]
+    target = config.path("paths.work", out)
+    if target.suffix.lower() not in sound.SUFFIXES:
+        raise PolyweaveError(
+            "fetch.missing-field",
+            f"{out} is not a sound file's name",
+            f"end it in one of {', '.join(sound.SUFFIXES)}",
+        )
+    return target
+
+
+def _post(url: str, key: str, payload: dict) -> tuple[bytes, str]:
+    """One request with the service's key header, answered with audio and its id."""
+    request = urllib.request.Request(  # noqa: S310
+        url,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"xi-api-key": key, "Content-Type": "application/json",
+                 "Accept": "audio/mpeg", "User-Agent": picture.AGENT},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=TIMEOUT) as answer:  # noqa: S310
+            return answer.read(), answer.headers.get("request-id", "")
+    except urllib.error.HTTPError as refused:
+        said = refused.read()[:400].decode("utf-8", "replace")
+        if refused.code == 422:
+            raise PolyweaveError(
+                "fetch.prompt-refused",
+                "the service would not make a sound from those words",
+                "reword the prompt; nothing was ledgered",
+                detail=said,
+            ) from refused
+        if refused.code == 429:
+            raise PolyweaveError(
+                "fetch.rate-limited",
+                "the service has more requests from this account than it allows",
+                "wait, then ask again",
+                detail=said,
+            ) from refused
+        if refused.code == 403:
+            raise _plan_lacks(said) from refused
+        raise PolyweaveError(
+            "fetch.service-error",
+            f"the service answered {refused.code}",
+            "read the detail; a 401 is a key the service does not accept, or an "
+            "account out of credits, and a 400 a request it does not",
+            detail=said,
+        ) from refused
+    except urllib.error.URLError as exc:
+        raise PolyweaveError(
+            "fetch.service-error",
+            f"the service could not be reached at {url}",
+            "check the base under [service] and the network",
+            detail=str(exc.reason),
+        ) from exc
+
+
+def _subscription(base: str, key: str) -> dict | None:
+    """What the account's subscription says, or None where the service will not say."""
+    request = urllib.request.Request(  # noqa: S310
+        f"{base}{USAGE}",
+        headers={"xi-api-key": key, "Accept": "application/json",
+                 "User-Agent": picture.AGENT},
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=TIMEOUT) as answer:  # noqa: S310
+            said = json.loads(answer.read())
+    except (urllib.error.URLError, OSError, ValueError):
+        return None
+    return said if isinstance(said, dict) else None
+
+
+def _used(base: str, key: str) -> int | None:
+    """The characters the account has used, or None where the service will not say.
+
+    Read before and after a call priced by the character, so its spend is measured; a
+    reading that fails leaves the quoted price standing, never a guess (§PW320).
+    """
+    count = (_subscription(base, key) or {}).get("character_count")
+    return count if isinstance(count, int) and not isinstance(count, bool) else None
+
+
+def _tier(base: str, key: str) -> str | None:
+    """The account's tier, kept in each take's record so a free one's licence is never
+    forgotten (§PW435); None where the service will not say, never a guess."""
+    tier = (_subscription(base, key) or {}).get("tier")
+    return tier.lower() if isinstance(tier, str) and tier.strip() else None
+
+
+def _made_with(name: str, model: str, tier: str | None) -> dict:
+    return {"name": name, "model": model, **({"tier": tier} if tier else {})}
+
+
+#: How ffmpeg writes each format a cue may declare.
+_SHAPED = {".wav": ["-f", "wav", "-c:a", "pcm_s16le"],
+           ".ogg": ["-f", "ogg", "-c:a", "libvorbis", "-q:a", "6"],
+           ".flac": ["-f", "flac"], ".opus": ["-f", "opus", "-c:a", "libopus"]}
+
+
+def _transcoded(body: bytes, target: Path) -> bytes:
+    """The service's MP3 in the format the cue declares, through ffmpeg's pipes."""
+    done = subprocess.run(
+        [shutil.which("ffmpeg"), "-v", "error", "-i", "pipe:0",
+         *_SHAPED[target.suffix.lower()], "pipe:1"],
+        input=body, capture_output=True, check=False,
+    )
+    if done.returncode or not done.stdout:
+        raise PolyweaveError(
+            "fetch.nothing-arrived",
+            f"ffmpeg could not turn the service's MP3 into {target.suffix[1:]}",
+            "read the detail; nothing was ledgered",
+            detail=done.stderr[:400].decode("utf-8", "replace"),
+        )
+    return done.stdout
+
+
+def _measured(target: Path) -> dict:
+    """What the sound measures, or why it cannot be measured yet."""
+    try:
+        return sound.measure(target)
+    except PolyweaveError as refused:
+        return {"unmeasured": refused.message}

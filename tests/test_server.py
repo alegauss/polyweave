@@ -9,7 +9,8 @@ import sys
 
 from PIL import Image
 
-from polyweave import describe, server
+from polyweave.kernel import describe
+from polyweave.surface import server
 
 
 def listed(blender=True):

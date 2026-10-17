@@ -6,7 +6,8 @@ import json
 import re
 from pathlib import Path
 
-from polyweave import commands, describe
+from polyweave.kernel import describe
+from polyweave.surface import commands
 
 REPO = Path(__file__).parents[1]
 PLUGIN = REPO / "plugin"

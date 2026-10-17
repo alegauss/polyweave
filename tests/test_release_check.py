@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from polyweave import driving
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.engine import driving
 
 PRESET = """[preset.0]
 

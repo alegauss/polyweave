@@ -47,7 +47,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 2 },
-  { block: "W", title: "A core that grows by layers", open: 24 },
+  { block: "W", title: "A core that grows by layers", open: 23 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -129,18 +129,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW499",
-    block: "W",
-    symptom: "The package's 128 modules sit flat, so nothing says which are shared core and which belong to one layer",
-    why: "Prefixes such as reference_* and sound_* are packages waiting to exist, and a boundary nobody can see is one no test can hold.",
-    deps: [],
-  },
-  {
     id: "PW500",
     block: "W",
     symptom: "A layer exists only as a line in a hand-kept MODULES tuple, so nothing reads what it contributes or what it needs",
     why: "Every later seam needs one place where a layer says what it adds, and a list edited by hand is the reason a new layer touches the kernel.",
-    deps: ["PW499"],
+    deps: [],
   },
   {
     id: "PW501",
@@ -231,7 +224,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "W",
     symptom: "A geometry op is spread over BUILDS, FIELDS, review's elif chain and voxels' bounds and TRACED, four places per op",
     why: "A fifteenth op written in four files is how a voxel bound goes missing for one op, and the vocabulary only grows by ops.",
-    deps: ["PW499"],
+    deps: [],
   },
   {
     id: "PW514",
@@ -252,7 +245,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "W",
     symptom: "Each paid service's HTTP client is written inside the domain that buys from it, so a new service copies a client",
     why: "mesh_buy, sound_buy and picture each open urllib, poll, time out and read a refusal their own way, and the spend rule is only as strong as the weakest copy.",
-    deps: ["PW499"],
+    deps: [],
   },
   {
     id: "PW517",

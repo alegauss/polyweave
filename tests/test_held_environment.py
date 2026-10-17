@@ -12,8 +12,8 @@ from pathlib import Path
 
 import pytest
 
-from polyweave import driving, godot, offscreen
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.engine import driving, godot, offscreen
 
 MAIN = """extends Node2D
 """

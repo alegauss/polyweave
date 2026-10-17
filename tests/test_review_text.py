@@ -14,8 +14,9 @@ from pathlib import Path
 
 import pytest
 
-from polyweave import review, review_text, verdict
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.words import review_text
+from polyweave.loop import review, verdict
 
 
 def test_every_catalog_holds_the_same_words():

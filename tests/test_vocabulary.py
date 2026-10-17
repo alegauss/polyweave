@@ -14,10 +14,10 @@ import numpy as np
 import pytest
 from PIL import Image as PILImage
 
-from polyweave.errors import PolyweaveError
-from polyweave.geometry import outline as O
-from polyweave.geometry import solid as S
-from polyweave.post.mesh import check_mesh
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.kernel.post.mesh import check_mesh
+from polyweave.layers.geometry import outline as O
+from polyweave.layers.geometry import solid as S
 
 
 def drawn(where, mask):
@@ -529,7 +529,7 @@ def test_an_outline_with_no_width_has_nothing_to_inflate():
 
 
 def solving():
-    from polyweave.geometry import solver
+    from polyweave.layers.geometry import solver
 
     found = solver.available()
     if not found["ready"]:

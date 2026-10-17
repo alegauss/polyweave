@@ -8,10 +8,10 @@ from __future__ import annotations
 
 import pytest
 
-from polyweave.errors import PolyweaveError
-from polyweave.geometry import build as B
-from polyweave.geometry import review
-from polyweave.geometry import voxels as V
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.geometry import build as B
+from polyweave.layers.geometry import review
+from polyweave.layers.geometry import voxels as V
 
 PAINT = {"hull": {"colour": "#808080"}, "glass": {"colour": "#40C0FF"}}
 

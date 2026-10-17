@@ -12,7 +12,7 @@ import shutil
 
 import pytest
 
-from polyweave import kits
+from polyweave.layers import kits
 
 
 def test_the_prompts_kit_keeps_the_contract():

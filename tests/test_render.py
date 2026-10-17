@@ -10,9 +10,10 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from polyweave import config as C
-from polyweave import provenance, render
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import config as C
+from polyweave.kernel import provenance
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.geometry import render
 
 bpy = pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
 
@@ -182,8 +183,8 @@ def test_a_render_that_is_black_to_any_observer_is_refused(project):
 
 def test_the_edge_noise_that_used_to_get_through_is_what_the_floor_is_set_at(project):
     """1/255 is 0.0039, and a floor of 0.0040 is why it is caught at all."""
-    from polyweave import config, post
-    from polyweave.image import Image
+    from polyweave.kernel import config, post
+    from polyweave.kernel.image import Image
 
     # The flatness check is about a byte of edge noise, not about sampler noise, so it
     # states its own bar rather than reading the rung's (§PW44).
@@ -427,7 +428,7 @@ def _object(build):
 
 def test_a_light_mesh_is_kept_whole_at_the_preview_rung():
     """§PW420: collapsing a voxel build of ten thousand triangles shattered it."""
-    from polyweave.render import blender
+    from polyweave.layers.geometry.render import blender
 
     def cubes(bpy):
         for x in range(4):
@@ -440,7 +441,7 @@ def test_a_light_mesh_is_kept_whole_at_the_preview_rung():
 
 
 def test_a_heavy_flat_mesh_is_reduced_without_changing_its_shape(monkeypatch):
-    from polyweave.render import blender
+    from polyweave.layers.geometry.render import blender
 
     # A floor this low makes a small grid "heavy": a 200x200 one at the real floor
     # took ten minutes to merge, the same proof as this one.
@@ -503,7 +504,7 @@ def test_a_colour_written_as_hex_renders_as_that_colour(project):
     Emission with every light off, so what reaches the film is the declared colour and
     nothing the rig added, and the Standard transform hands it back as the same sRGB.
     """
-    from polyweave import measure
+    from polyweave.loop import measure
 
     render.bake(
         Reported(),
@@ -607,7 +608,7 @@ def test_a_path_tracers_own_noise_is_far_below_a_real_change(project):
     floor moves with the rung is §PW44; what this test holds is the separation, which is
     what makes any threshold between them findable at all.
     """
-    from polyweave import measure
+    from polyweave.loop import measure
 
     red = {"base_color": [0.8, 0.2, 0.2, 1.0]}
     blue = {"base_color": [0.2, 0.2, 0.9, 1.0]}
@@ -636,11 +637,11 @@ def test_a_path_tracers_own_noise_is_far_below_a_real_change(project):
 
 def test_a_bake_runs_as_a_job_and_reports_its_stages(project, mesh):
     """§1 and §PW7 together: a render is a handle, and the handle names the rung."""
-    from polyweave.jobs import JobStore
+    from polyweave.kernel.jobs import JobStore
 
     store = JobStore.for_project(project, heartbeat_s=0.2)
     handle = store.start(
-        "polyweave.render:bake",
+        "polyweave.layers.geometry.render:bake",
         kind="bake",
         args={"out": "job.png", "rung": "sphere", "root": str(project)},
     )
@@ -655,7 +656,7 @@ def test_a_bake_runs_as_a_job_and_reports_its_stages(project, mesh):
 
 def test_a_pass_renders_through_job_handles_rather_than_one_at_a_time(project):
     """The job system was built for this and the search was not using it."""
-    from polyweave import accept, search
+    from polyweave.loop import accept, search
 
     (project / "m.accept.toml").write_text(
         "asset = 'mascot'\n"
@@ -684,7 +685,7 @@ def test_a_pass_renders_through_job_handles_rather_than_one_at_a_time(project):
 
 
 def test_an_empty_pass_starts_no_jobs(project):
-    from polyweave import accept, search
+    from polyweave.loop import accept, search
 
     spec = accept.parse(
         {
@@ -710,8 +711,8 @@ def test_the_strictest_floor_is_the_one_that_lets_a_flat_sphere_through():
     """
     import numpy as np
 
-    from polyweave import post
-    from polyweave.image import Image
+    from polyweave.kernel import post
+    from polyweave.kernel.image import Image
 
     # Two values, about 0.02 apart: sampler noise at four samples, on a picture that is
     # one colour to any observer.
@@ -732,8 +733,9 @@ def test_the_strictest_floor_is_the_one_that_lets_a_flat_sphere_through():
 def test_a_render_is_judged_at_its_own_rungs_floor(tmp_path):
     """The record PW51 writes is what makes this checkable at all."""
     pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
-    from polyweave import config as C
-    from polyweave import provenance, render
+    from polyweave.kernel import config as C
+    from polyweave.kernel import provenance
+    from polyweave.layers.geometry import render
 
     (tmp_path / C.FILENAME).write_text(
         "[render]\npreview_size = 32\nfinal_size = 32\n"
@@ -786,8 +788,8 @@ def test_one_rig_lights_one_shape_the_same_at_every_size(project):
     both fill the same picture and the only thing that differs is how big the subject is
     in the world the lights stand in.
     """
-    from polyweave import measure
-    from polyweave.geometry import build as B
+    from polyweave.layers.geometry import build as B
+    from polyweave.loop import measure
 
     stated = {
         "name": "cube",
@@ -819,7 +821,7 @@ def _blend(where, *, text=False):
     """A `.blend` holding one cube in a material of its own, or one line of text."""
     import bpy
 
-    from polyweave.render import blender
+    from polyweave.layers.geometry.render import blender
 
     blender.reset()
     if text:
@@ -840,7 +842,7 @@ def _blend(where, *, text=False):
 
 def test_a_blend_is_read_as_it_is(project):
     """§PW89: the brand marks are built in Blender, and an export would lose them."""
-    from polyweave.render import blender
+    from polyweave.layers.geometry.render import blender
 
     obj = blender.load_mesh(_blend(project / "mark.blend"))
     assert obj.type == "MESH"
@@ -848,7 +850,7 @@ def test_a_blend_is_read_as_it_is(project):
 
 
 def test_a_blend_with_no_mesh_in_it_says_what_it_holds(project):
-    from polyweave.render import blender
+    from polyweave.layers.geometry.render import blender
 
     with pytest.raises(PolyweaveError) as caught:
         blender.load_mesh(_blend(project / "words.blend", text=True))
@@ -868,7 +870,7 @@ def test_a_blend_bakes_like_any_other_mesh(project):
 
 def _two_cubes(project):
     """One mesh of twelve faces: the first six wear one material, the rest another."""
-    from polyweave.geometry import build as B
+    from polyweave.layers.geometry import build as B
 
     stated = {
         "name": "pair",
@@ -915,7 +917,7 @@ def _as_object(made):
 
 def test_a_mesh_in_two_materials_gets_a_slot_for_each(project):
     """The renderer could always do this; nothing was handing it the groups."""
-    from polyweave.render import blender
+    from polyweave.layers.geometry.render import blender
 
     made = _two_cubes(project)
     obj = _as_object(made)
@@ -935,7 +937,7 @@ def test_a_mesh_in_two_materials_gets_a_slot_for_each(project):
 
 
 def test_a_material_the_mesh_names_and_nobody_gave_is_refused(project):
-    from polyweave.render import blender
+    from polyweave.layers.geometry.render import blender
 
     made = _two_cubes(project)
     obj = _as_object(made)
@@ -948,7 +950,7 @@ def test_a_material_the_mesh_names_and_nobody_gave_is_refused(project):
 def test_one_material_and_no_groups_still_means_one_slot(project):
     import bpy
 
-    from polyweave.render import blender
+    from polyweave.layers.geometry.render import blender
 
     bpy.ops.wm.read_factory_settings(use_empty=True)
     bpy.ops.mesh.primitive_cube_add()

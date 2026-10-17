@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import pytest
 
-from polyweave.errors import PolyweaveError
-from polyweave.geometry import build as B
-from polyweave.geometry import review
-from polyweave.geometry import solid as S
-from polyweave.geometry import voxels as V
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.geometry import build as B
+from polyweave.layers.geometry import review
+from polyweave.layers.geometry import solid as S
+from polyweave.layers.geometry import voxels as V
 
 
 def hull(path="hull.glb", **extra):
@@ -25,7 +25,7 @@ def hull(path="hull.glb", **extra):
 
 def written(tmp_path, solid, name="hull.glb"):
     pytest.importorskip("bpy")
-    from polyweave.normalise import write_mesh
+    from polyweave.layers.geometry.normalise import write_mesh
 
     write_mesh(solid, tmp_path / name)
     return name
@@ -85,7 +85,7 @@ def two_colours(tmp_path, name="painted.glb"):
     which colour a cell should wear is known before anything is voxelised.
     """
     bpy = pytest.importorskip("bpy")
-    from polyweave.render import blender
+    from polyweave.layers.geometry.render import blender
 
     blender.reset()
     corners = [(x, y, z) for x in (0, 2) for y in (0, 2) for z in (0, 2)]

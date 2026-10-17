@@ -16,9 +16,11 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from polyweave import accept, cost, provenance
-from polyweave.errors import PolyweaveError
-from polyweave.geometry import voxels as V
+from polyweave.kernel import provenance
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.geometry import cost
+from polyweave.layers.geometry import voxels as V
+from polyweave.loop import accept
 
 SOLID = {
     "name": "block",
@@ -139,7 +141,7 @@ def solid_glb(where: Path, made: dict) -> Path:
 
 def test_a_box_is_all_creases_and_a_rounded_one_none():
     """§PW497: one square edge among moulded pieces reads as another game."""
-    from polyweave.geometry import solid as S
+    from polyweave.layers.geometry import solid as S
 
     def read(made, name):
         return cost.read(solid_glb(Path(name), made))
@@ -162,7 +164,7 @@ def test_a_box_is_all_creases_and_a_rounded_one_none():
 
 
 def test_a_spec_refuses_a_hard_edge_and_says_where_it_is(tmp_path):
-    from polyweave.geometry import solid as S
+    from polyweave.layers.geometry import solid as S
 
     solid_glb(tmp_path / "box.glb", S.transform(S.primitive("cube", 1.0), at=(5, 0, 0)))
     found = accept.check(
@@ -176,7 +178,7 @@ def test_a_spec_refuses_a_hard_edge_and_says_where_it_is(tmp_path):
 
 
 def test_a_crease_the_predicate_states_decides_what_is_sharp(tmp_path):
-    from polyweave.geometry import solid as S
+    from polyweave.layers.geometry import solid as S
 
     solid_glb(tmp_path / "box.glb", S.primitive("cube", 1.0))
     found = accept.check(

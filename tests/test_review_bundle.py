@@ -1,6 +1,6 @@
 """The review page is the window's decision screen, built and committed (§PW403).
 
-`python -m polyweave review` serves src/polyweave/review_page/screen, which
+`python -m polyweave review` serves src/polyweave/loop/review_page/screen, which
 `npm run build:review` in gui/ builds from the screen's sources. The bundle is committed
 so the page needs Python alone; this is what keeps it from going stale behind them, as
 tests/test_operations_ts.py does for the SDK.
@@ -12,7 +12,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from polyweave import review
+from polyweave.loop import review
 
 REPO = Path(__file__).parents[1]
 

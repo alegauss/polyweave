@@ -10,8 +10,9 @@ import json
 
 import pytest
 
-from polyweave import style, verdict
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.picture import style
+from polyweave.loop import verdict
 
 pytest.importorskip("bpy", reason="Blender draws a mesh's render")
 
@@ -24,7 +25,7 @@ rig = { azimuth = 30.0, elevation = 20.0, seen = 48 }
 def made(tmp_path, name, colour, *, tall=1.0):
     import bpy
 
-    from polyweave.render import blender
+    from polyweave.layers.geometry.render import blender
 
     blender.reset()
     bpy.ops.mesh.primitive_uv_sphere_add(segments=24, ring_count=12, radius=1.0)

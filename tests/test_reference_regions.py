@@ -14,9 +14,10 @@ import json
 import pytest
 from PIL import Image, ImageDraw
 
-from polyweave import provenance, reference_regions
-from polyweave.config import load
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import provenance
+from polyweave.kernel.config import load
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.reference import reference_regions
 
 DECLARED = """\
 [reference.resogun]

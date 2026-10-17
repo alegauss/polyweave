@@ -12,8 +12,8 @@ from pathlib import Path
 
 import pytest
 
-from polyweave import loop
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.loop import loop
 
 
 def project(tmp_path):

@@ -12,8 +12,9 @@ import shutil
 
 import pytest
 
-from polyweave import engine, kits, offscreen
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers import kits
+from polyweave.layers.engine import engine, offscreen
 
 
 def test_the_graphics_kit_contributes_the_graphics_tab_after_options():

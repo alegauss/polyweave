@@ -7,9 +7,10 @@ from pathlib import Path
 
 import pytest
 
-from polyweave import describe, loop
-from polyweave.errors import PolyweaveError, near
-from polyweave.render import ladder
+from polyweave.kernel import describe
+from polyweave.kernel.errors import PolyweaveError, near
+from polyweave.layers.geometry.render import ladder
+from polyweave.loop import loop
 
 SOURCE = Path(__file__).parents[1] / "src" / "polyweave"
 
@@ -82,7 +83,7 @@ def test_an_unknown_argument_names_the_ones_the_operation_takes():
 
 
 def test_a_misspelt_config_key_names_the_one_meant_and_where(tmp_path):
-    from polyweave import config
+    from polyweave.kernel import config
 
     (tmp_path / "polyweave.toml").write_text(
         "[render]\npreveiw_size = 128\n", encoding="utf-8"

@@ -16,10 +16,10 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from polyweave.errors import PolyweaveError
-from polyweave.geometry import solid as S
-from polyweave.geometry import surface as F
-from polyweave.post.mesh import check_mesh
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.kernel.post.mesh import check_mesh
+from polyweave.layers.geometry import solid as S
+from polyweave.layers.geometry import surface as F
 
 #: What Cottony's readings settled on, as this vocabulary asks for it.
 COTTON = {"depth": 3.0, "coarseness": 0.62}

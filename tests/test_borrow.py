@@ -10,8 +10,8 @@ import subprocess
 
 import pytest
 
-from polyweave import provenance
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import provenance
+from polyweave.kernel.errors import PolyweaveError
 
 
 def git(where, *argv):

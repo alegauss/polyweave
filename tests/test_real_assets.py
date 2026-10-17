@@ -43,7 +43,7 @@ def real(path: Path) -> Path:
 def test_a_real_drawing_cuts_down_to_the_subject_somebody_drew():
     """Antialiased edges and a hand's irregularity, which a built rectangle has neither
     of — and the alpha floor is what decides where the drawing stops."""
-    from polyweave.image import load
+    from polyweave.kernel.image import load
 
     image = load(real(HAMMER_DRAWING))
     assert image.had_alpha, "a drawing meant for a silhouette carries one"
@@ -53,7 +53,7 @@ def test_a_real_drawing_cuts_down_to_the_subject_somebody_drew():
 
 def test_the_alpha_floor_moves_the_edge_on_a_real_drawing_and_not_on_a_hard_one():
     """The reason the floor exists: a drawn edge fades and a built one does not."""
-    from polyweave.image import load
+    from polyweave.kernel.image import load
 
     image = load(real(HAMMER_DRAWING))
     loose = float(image.subject(0.0).mean())
@@ -62,7 +62,7 @@ def test_the_alpha_floor_moves_the_edge_on_a_real_drawing_and_not_on_a_hard_one(
 
     hard = np.zeros((16, 16, 4), dtype=np.uint8)
     hard[4:12, 4:12] = 255
-    from polyweave.image import Image
+    from polyweave.kernel.image import Image
 
     built = Image(path=None, rgba=hard, had_alpha=True)
     assert built.subject(0.0).mean() == built.subject(0.5).mean(), "nothing in between"
@@ -70,7 +70,7 @@ def test_the_alpha_floor_moves_the_edge_on_a_real_drawing_and_not_on_a_hard_one(
 
 def test_a_real_drawing_traces_to_an_outline_with_corners_in_it(tmp_path):
     """§PW31's tracer against a drawing rather than a generated shape."""
-    from polyweave.geometry import outline
+    from polyweave.layers.geometry import outline
 
     (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
     ring = outline.image(real(HAMMER_DRAWING), root=tmp_path, alpha_floor=0.02)
@@ -85,7 +85,7 @@ def test_a_real_drawing_traces_to_an_outline_with_corners_in_it(tmp_path):
 def test_a_fetched_mesh_reads_back_with_the_topology_it_arrived_with():
     """Not a box: a generated mesh has whatever topology the service left it with."""
     pytest.importorskip("bpy", reason="reading a mesh needs the renderer")
-    from polyweave.normalise import read_mesh
+    from polyweave.layers.geometry.normalise import read_mesh
 
     found = read_mesh(real(HAMMER_MESH))
     assert len(found["vertices"]) > 100, "a real mesh, not a primitive"
@@ -97,7 +97,7 @@ def test_the_hammer_arrives_upright_and_the_drawing_says_it_leans(tmp_path):
     """§PW20's case, with both halves of it real: the mesh came back standing up and the
     drawing already knew which way round it goes."""
     pytest.importorskip("bpy", reason="orienting a mesh needs the renderer")
-    from polyweave import normalise
+    from polyweave.layers.geometry import normalise
 
     (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
     found = normalise.ingest(
@@ -118,7 +118,8 @@ def test_the_hammer_arrives_upright_and_the_drawing_says_it_leans(tmp_path):
 def test_a_normalised_real_mesh_is_recorded_like_any_other(tmp_path):
     """§PW46 against 8 MB of real mesh rather than a cube of stated proportions."""
     pytest.importorskip("bpy", reason="normalising a mesh needs the renderer")
-    from polyweave import normalise, provenance
+    from polyweave.kernel import provenance
+    from polyweave.layers.geometry import normalise
 
     (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
     normalise.ingest(real(HAMMER_MESH), out=tmp_path / "hammer.glb", root=tmp_path)
@@ -130,8 +131,8 @@ def test_a_real_plush_body_takes_a_skeleton(tmp_path):
     """§PW26 against a mesh whose limbs are where somebody modelled them, rather than
     where the plan assumed they would be."""
     pytest.importorskip("bpy", reason="fitting a skeleton needs the renderer")
-    from polyweave import skeleton
-    from polyweave.normalise import read_mesh
+    from polyweave.layers.geometry.normalise import read_mesh
+    from polyweave.layers.motion import skeleton
 
     body = read_mesh(real(PLUSH_MESH))
     fitted = skeleton.fit(body, named="plush", root=str(tmp_path))
@@ -153,7 +154,7 @@ def test_the_hammers_texture_has_painted_shading_in_it():
     pytest.importorskip("bpy", reason="reading a texture needs the renderer")
     import bpy
 
-    from polyweave import texture
+    from polyweave.layers.geometry import texture
 
     bpy.ops.wm.read_factory_settings(use_empty=True)
     bpy.ops.import_scene.gltf(filepath=str(real(HAMMER_MESH)))
@@ -172,7 +173,7 @@ def test_scrubbing_the_hammer_lifts_the_marks_and_leaves_the_rest():
     pytest.importorskip("bpy", reason="scrubbing a texture needs the renderer")
     import bpy
 
-    from polyweave import texture
+    from polyweave.layers.geometry import texture
 
     bpy.ops.wm.read_factory_settings(use_empty=True)
     bpy.ops.import_scene.gltf(filepath=str(real(HAMMER_MESH)))
@@ -211,9 +212,9 @@ def test_a_real_asset_reaches_far_further_across_the_frame_than_the_bar(
     figures belong in the comment above `subject_extent`, beside the number they set.
     """
     pytest.importorskip("bpy", reason="rendering needs the renderer")
-    from polyweave import config as C
-    from polyweave import render
-    from polyweave.config import DEFAULTS
+    from polyweave.kernel import config as C
+    from polyweave.kernel.config import DEFAULTS
+    from polyweave.layers.geometry import render
 
     class Quiet:
         def stage(self, *a, **k):
@@ -323,7 +324,7 @@ def test_the_hashes_a_lock_file_recorded_are_asked_about_for_the_first_time(tmp_
     import json
     import shutil
 
-    from polyweave import purchase
+    from polyweave.services import purchase
 
     (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
     lock = json.loads(real(MESHY_LOCK).read_text(encoding="utf-8"))
@@ -360,7 +361,7 @@ SQUASH = 0.93
 
 def _box(path):
     """The subject's box in a real render, as the sheet's own trim would find it."""
-    from polyweave.image import load as load_image
+    from polyweave.kernel.image import load as load_image
 
     mask = load_image(path).subject(0.02)
     rows = np.nonzero(np.any(mask, axis=1))[0]
@@ -396,8 +397,8 @@ def test_a_games_own_settle_pair_lays_out_as_one_sheet(tmp_path):
     """
     import json
 
-    from polyweave import clip as C
-    from polyweave import sprites
+    from polyweave.layers.motion import clip as C
+    from polyweave.layers.motion import sprites
 
     (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
     settle = C.clip(
@@ -431,8 +432,8 @@ def test_a_games_own_settle_pair_lays_out_as_one_sheet(tmp_path):
 
 def test_the_sheet_and_the_animation_agree_on_which_clip_they_are(tmp_path):
     """The whole claim of §PW29, asked over a real pair."""
-    from polyweave import clip as C
-    from polyweave import sprites
+    from polyweave.layers.motion import clip as C
+    from polyweave.layers.motion import sprites
 
     (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
     settle = C.clip(

@@ -12,7 +12,7 @@ import react from '@vitejs/plugin-react'
 import { defineConfig, type Plugin } from 'vite'
 
 const REPO = resolve(import.meta.dirname, '..', '..', '..')
-const OUT = join(REPO, 'src', 'polyweave', 'review_page', 'screen')
+const OUT = join(REPO, 'src', 'polyweave', 'loop', 'review_page', 'screen')
 
 /** Every file the bundle is built from, as the repository names it. */
 export const SOURCES = [

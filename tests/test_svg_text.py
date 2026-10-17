@@ -15,8 +15,10 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from polyweave import provenance, svgtext, vector
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import provenance
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.picture import vector
+from polyweave.layers.words import svgtext
 
 pytest.importorskip("fontTools", reason="fontTools outlines the text")
 

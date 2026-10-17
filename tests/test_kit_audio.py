@@ -14,7 +14,7 @@ import wave
 import numpy as np
 import pytest
 
-from polyweave import kits
+from polyweave.layers import kits
 
 
 def test_the_audio_kit_declares_its_layout_and_contributes_the_audio_tab():

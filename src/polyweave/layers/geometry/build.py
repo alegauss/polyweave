@@ -1,0 +1,560 @@
+"""The twenty lines between a declaration and a mesh.
+
+The evidence is §PW60. Every piece either side of this was built and nothing composed
+them: each `op` is a function in `solid`, `solver` or `custom`; `expand` resolves every
+expression and instances every repeat; `order` returns the nodes in an order where each
+input is built before what needs it — a walker's scaffolding with no walker on it — and
+`review.report` takes the built meshes from its caller, which every test supplied by
+hand. So `docs/specs/geometry.md` described a build that no call in the package could
+perform, and nothing under `src/` imported `polyweave.layers.geometry` at all.
+
+**One table, read twice.** `BUILDS` maps an `op` to the adapter that shapes a node's own
+fields into the call, and it is the only list of op names in the package that decides
+anything. `review` reads it too, so a document naming an op nothing builds is a warning
+before it is a refusal rather than a surprise at build time — the alternative was a
+second enumeration in `review._says`, which would have drifted from this one.
+
+**A repeated node's id names the whole set.** Sixty-four seats build as sixty-four
+meshes and are joined into the one mesh their id stands for, which is what lets the tray
+be one boolean rather than sixty-four.
+
+**`at` places an instance and is applied last**, because it is the field that makes a
+repeat mean anything: a seat differs from its sixty-three siblings in nothing but where
+it sits. `transform` is the exception, since `at` is its own argument there.
+"""
+
+from __future__ import annotations
+
+from collections.abc import Callable
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+
+from polyweave.kernel.errors import PolyweaveError
+
+from . import custom, expand, order, refers_to, solver
+from . import outline as O
+from . import solid as S
+
+__all__ = ["BUILDS", "build", "builds"]
+
+
+def _outline(instance: dict, root: Any, field: str = "outline") -> np.ndarray:
+    stated = instance.get(field)
+    if stated is None:
+        raise PolyweaveError(
+            "geom.bad-outline",
+            f"this node has no {field} to build from",
+            f"give it an `{field}` naming a shape, an image or points",
+        )
+    return O.resolve(stated, root=root)
+
+
+def _rest(instance: dict, *skip: str) -> dict:
+    """A node's remaining fields, as keyword arguments to the op that takes them.
+
+    An op's own optional arguments — `steps`, `front`, `profile`, `resolution` — are
+    written on the node beside its required ones, so they arrive the same way.
+    """
+    kept = ("steps", "front", "profile", "resolution", "crown")
+    return {k: v for k, v in instance.items() if k in kept and k not in skip}
+
+
+def _primitive(node, instance, built, root):
+    shaped = ("bottom", "top", "height", "major", "minor", "radius")
+    return S.primitive(
+        str(instance.get("kind", "cube")),
+        instance.get("size", 1.0),
+        **_rest(instance, "front", "profile", "resolution", "crown"),
+        **{k: v for k, v in instance.items() if k in shaped},
+        axis=node.get("axis", "z"),
+    )
+
+
+def _prism(node, instance, built, root):
+    return S.prism(
+        _outline(instance, root), float(instance["depth"]), **_rest(instance, "steps")
+    )
+
+
+def _plate(node, instance, built, root):
+    return S.plate(
+        instance["rect"],
+        float(instance["depth"]),
+        float(instance.get("corner", 0.0)),
+        **_rest(instance, "steps"),
+    )
+
+
+def _crowned(node, instance, built, root):
+    return S.crowned(
+        _outline(instance, root),
+        float(instance["depth"]),
+        float(instance["crown"]),
+        **_rest(instance, "crown"),
+    )
+
+
+def _annulus(node, instance, built, root):
+    # A number is a radius and anything else is an outline (§PW65), so the two edges
+    # resolve the same way every other outline on a node does.
+    return S.annulus(
+        _edge(instance["outer"], root),
+        _edge(instance["inner"], root),
+        float(instance["depth"]),
+        **_rest(instance, "profile", "resolution", "crown"),
+    )
+
+
+def _edge(stated: Any, root: Any) -> Any:
+    return stated if isinstance(stated, int | float) else O.resolve(stated, root=root)
+
+
+def _inflate(node, instance, built, root):
+    # Two profiles, and what the node was given decides which (§PW68). An outline knows
+    # only where the shape stops, so it swells by distance from the edge; a drawing
+    # carries what is inside it too, so the alpha itself is blurred into the height.
+    if instance.get("drawing"):
+        return S.stuffed(
+            _alpha(instance["drawing"], root),
+            float(instance["thickness"]),
+            **{
+                k: v
+                for k, v in instance.items()
+                if k in ("size", "soften", "cell", "floor", "sides")
+            },
+        )
+    # An outline already swells both faces (§PW492), so only a drawing has a choice.
+    if instance.get("sides", 2) != 2:
+        raise PolyweaveError(
+            "geom.bad-solid",
+            f"{node['id']} inflates an outline on {instance['sides']!r} sides, and an "
+            "outline swells both faces",
+            "leave sides out on an outline; sides = 1 is a drawing's relief",
+        )
+    return S.inflate(
+        _outline(instance, root),
+        float(instance["thickness"]),
+        **_rest(instance, "steps", "front", "crown"),
+    )
+
+
+def _alpha(named: Any, root: Any) -> Any:
+    """A drawing's own alpha, as the array the profile is read off."""
+    from polyweave.kernel.image import load as load_image
+
+    where = Path(named)
+    if not where.is_absolute():
+        where = Path(root) / where
+    return load_image(where).rgba[..., 3] / 255.0
+
+
+def _union(node, instance, built, root):
+    return S.union(*(built[one] for one in refers_to(node)))
+
+
+def _blend(node, instance, built, root):
+    # Parts joined by a fillet where they meet (§PW498), each read as its own distance
+    # field, which only a primitive and what moves one carry.
+    from .blend import blend
+
+    takes = refers_to(node)
+    bare = [one for one in takes if not built[one].get("field")]
+    if bare or len(takes) < 2:
+        raise PolyweaveError(
+            "geom.bad-solid",
+            f"{node['id']} blends {', '.join(bare) or 'fewer than two parts'}, and a "
+            "blend joins two or more primitives, or transforms and repeats of them",
+            "make each part a primitive (a rounded_box, capsule, sphere, cylinder, "
+            "cone, frustum, torus or cube), moved by a transform where it needs to be",
+            at=f"nodes.{node['id']}",
+        )
+    radius = float(instance.get("radius", 0.0))
+    if radius <= 0:
+        raise PolyweaveError(
+            "geom.bad-solid",
+            f"{node['id']} blends with a radius of {radius:g}, which is no fillet",
+            "give the blend a radius above 0, in the declaration's units; a union "
+            "joins parts with none",
+            at=f"nodes.{node['id']}.radius",
+        )
+    parts = [part for one in takes for part in built[one]["field"]]
+    points = np.vstack([np.asarray(built[one]["vertices"]) for one in takes])
+    made = blend(parts, radius, points.min(axis=0), points.max(axis=0),
+                 int(instance.get("steps", S.STEPS)))
+    smallest = min(float(np.min(np.ptp(np.asarray(built[one]["vertices"]), axis=0)))
+                   for one in takes)
+    if radius > smallest:
+        made["warnings"] = [f"its radius of {radius:g} is larger than its smallest "
+                            f"part, {smallest:g} across, so the fillet swallows it"]
+    return made
+
+
+def _transform(node, instance, built, root):
+    return S.transform(
+        built[refers_to(node)[0]],
+        at=instance.get("at", (0, 0, 0)),
+        scale=instance.get("scale", (1, 1, 1)),
+        rotate=instance.get("rotate", (0, 0, 0)),
+    )
+
+
+#: A bevel's profile by the word a declaration writes, as Blender's profile and how
+#: many segments it forces (§PW493): a chamfer is one flat cut whatever is asked.
+PROFILES = {"round": (0.5, None), "chamfer": (0.5, 1)}
+
+
+def _beveled(node: dict, instance: dict) -> dict:
+    """How a node's bevel rounds: its `segments` and its `profile`, each checked."""
+    said = instance.get("profile", "round")
+    if said not in PROFILES:
+        raise PolyweaveError(
+            "geom.bad-solid",
+            f"{node['id']} bevels with a {said!r} profile, which is not one",
+            "write profile as round or chamfer",
+            given=said,
+            allowed=tuple(PROFILES),
+        )
+    # A parameter resolves to a float, so a whole one is a count.
+    segments = instance.get("segments", 3)
+    whole = isinstance(segments, int | float) and not isinstance(segments, bool) and (
+        float(segments).is_integer())
+    if not whole or segments < 1:
+        raise PolyweaveError(
+            "geom.bad-solid",
+            f"{node['id']} bevels in {segments!r} segments",
+            "give segments as a whole number from 1; more is rounder",
+        )
+    profile, forced = PROFILES[said]
+    return {"segments": forced or int(segments), "profile": profile}
+
+
+def _carve(node, instance, built, root):
+    return solver.build(
+        built[node["into"]],
+        cutter=built[node["cutter"]],
+        bevel_by=float(instance.get("bevel", 0.0)),
+        **_beveled(node, instance),
+    )
+
+
+def _bevel(node, instance, built, root):
+    return solver.build(
+        built[refers_to(node)[0]],
+        bevel_by=float(instance.get("bevel", 0.0)),
+        **_beveled(node, instance),
+    )
+
+
+def _custom(node, instance, built, root):
+    return custom.build(node, instance, built, root=root)
+
+
+def _cells(node, instance, built, root):
+    # Cells drawn as text build as their cubes here, so a drawing is not voxel-only
+    # (§PW95): a canopy painted in cells sits on a hull built as triangles.
+    from .voxels import drawn_mesh
+
+    size = instance.get("cell")
+    if not size:
+        raise PolyweaveError(
+            "geom.bad-cells",
+            f"{node['id']} draws cells and nothing says how big one is",
+            "give the node a `cell`, or give the document a [voxels] `cell`",
+        )
+    return drawn_mesh(node, float(size))
+
+
+def mesh_file(node: dict, instance: dict, root: Any) -> Path:
+    """The file a `mesh` node names, refused where there is none."""
+    stated = instance.get("path")
+    where = Path(str(stated or ""))
+    if not where.is_absolute():
+        where = Path(root) / where
+    if not stated or not where.is_file():
+        raise PolyweaveError(
+            "geom.bad-solid",
+            f"{node['id']} takes its shape from {stated!r}, and there is no file there",
+            "give `path` a mesh file under the project, as a .glb or a .blend",
+        )
+    return where
+
+
+def _mesh(node, instance, built, root):
+    # A mesh file as a node, in the project's own axes (§PW100): a hull bought from the
+    # service becomes the block a declaration cuts and paints, rather than the end.
+    from .normalise import read_mesh
+
+    found = read_mesh(mesh_file(node, instance, root))
+    return S.mesh(found["vertices"], found["faces"])
+
+
+def _paint(node, instance, built, root):
+    # The body's own triangles: a repaint adds no shape, and only cells take it
+    # (§PW237). A traced op in a voxel document builds the whole document through here,
+    # so this passes the body on rather than refusing; `write` refuses a triangle build.
+    return built[node["on"]]
+
+
+def _mirror(node, instance, built, root):
+    return S.mirror(
+        built[refers_to(node)[0]],
+        S.axis(node.get("axis", "x")),
+        float(instance.get("plane", 0.0)),
+    )
+
+
+#: Every op a declaration may name, and what turns its fields into a mesh. The one list
+#: of op names in the package that decides anything; `review` reads it rather than
+#: keeping a second.
+BUILDS: dict[str, Callable] = {
+    "primitive": _primitive,
+    "prism": _prism,
+    "plate": _plate,
+    "crowned": _crowned,
+    "annulus": _annulus,
+    "inflate": _inflate,
+    "union": _union,
+    "blend": _blend,
+    "transform": _transform,
+    "carve": _carve,
+    "bevel": _bevel,
+    "custom": _custom,
+    "cells": _cells,
+    "mirror": _mirror,
+    "mesh": _mesh,
+    "paint": _paint,
+}
+
+#: What every node may say, whatever its op: its name, what it builds, what it wears,
+#: how it repeats and where it sits.
+NODE_FIELDS = ("id", "op", "material", "repeat", "at")
+
+#: The fields that name another node, for the ops that take one (§PW146).
+_TAKES = ("inputs", "operands", "of", "on")
+
+#: What each op reads beyond `NODE_FIELDS`, declared beside the adapters that read it
+#: so a key no builder reads is refused where it is written rather than dropped
+#: (§PW146). `custom` is open: its fields are the function's own arguments.
+FIELDS: dict[str, tuple[str, ...] | None] = {
+    "primitive": (
+        "kind",
+        "size",
+        "steps",
+        "axis",
+        "bottom",
+        "top",
+        "height",
+        "major",
+        "minor",
+        "radius",
+    ),
+    "prism": ("outline", "depth", "front"),
+    "plate": ("rect", "depth", "corner", "front"),
+    "crowned": ("outline", "depth", "crown", "front", "steps"),
+    "annulus": ("outer", "inner", "depth", "front", "steps"),
+    "inflate": (
+        "outline",
+        "thickness",
+        "profile",
+        "resolution",
+        "drawing",
+        "size",
+        "soften",
+        "cell",
+        "floor",
+        "sides",
+    ),
+    "union": _TAKES,
+    "blend": (*_TAKES, "radius", "steps"),
+    "transform": (*_TAKES, "scale", "rotate"),
+    "carve": ("into", "cutter", "bevel", "segments", "profile"),
+    "bevel": (*_TAKES, "bevel", "segments", "profile"),
+    "custom": None,
+    "cells": ("layers", "legend", "cell", "axis"),
+    "mirror": (*_TAKES, "axis", "plane"),
+    "mesh": ("path", "colours"),
+    "paint": ("on", "where"),
+}
+
+#: The ops that consume `at` themselves, so the placement below leaves them alone.
+PLACES = ("transform",)
+
+
+def builds(op: str) -> bool:
+    """Whether anything here builds that op. What `review` asks before warning."""
+    return op in BUILDS
+
+
+def build(
+    document: dict, *, root: str | Path = ".", manifold: bool = False, **given: Any
+) -> dict:
+    """The mesh a declaration describes, with the report that says what came out.
+
+    Walks `order`, dispatches on `op`, collects into `built`, and hands the lot to
+    `review.report` — which is the whole of what was missing. A shape that can only be
+    checked by looking at a render is one whose construction errors are found in the
+    expensive place, so the report comes back with the mesh and not on request.
+    """
+    from .review import report
+    from .voxels import stated_cell, with_project_cell
+
+    here = Path(root).resolve()
+    document, _, _ = with_project_cell(document, here)
+    resolved = expand(document, **given)
+    stated = {node["id"]: node for node in document["nodes"]}
+    instanced = {node["id"]: node for node in resolved["nodes"]}
+    cell = stated_cell(document, resolved["params"])
+
+    built: dict[str, dict] = {}
+    for one in order(document):
+        node, made = stated[one], []
+        how = BUILDS.get(node["op"])
+        if how is None:
+            raise PolyweaveError(
+                "geom.unknown-op",
+                f"{one!r} has op {node['op']!r}, and nothing builds that",
+                f"name one of {', '.join(sorted(BUILDS))}, or write it as a `custom` "
+                f"node pointing at a function of your own",
+                given=node["op"],
+                allowed=BUILDS,
+                at=f"nodes.{one}.op",
+            )
+        for instance in instanced[one]["instances"]:
+            if node["op"] == "cells" and cell and not instance.get("cell"):
+                instance = {**instance, "cell": cell}
+            made.append(_placed(node, instance, how(node, instance, built, here)))
+        # A repeated node's id names the whole set, which is what makes the tray one
+        # boolean rather than sixty-four.
+        whole = made[0] if len(made) == 1 else S.union(*made)
+        if node.get("material") and whole.get("field"):
+            # What a node wears goes with its field, so a blend paints each part.
+            whole = {**whole, "field": [{**part, "material": node["material"]}
+                                        for part in whole["field"]]}
+        worn = _worn(node, whole, built)
+        built[one] = {**whole, "groups": worn} if worn else whole
+
+    return {
+        "output": built[document["output"]],
+        "built": built,
+        "report": report(document, built, manifold=manifold, **given),
+    }
+
+
+def write(
+    document: dict,
+    out: str | Path,
+    *,
+    root: str | Path = ".",
+    manifold: bool = False,
+    **given: Any,
+) -> dict:
+    """Build a declaration and put it where the rest of the plugin can reach it.
+
+    The call the block ended one short of (§PW69). A document could be read, reviewed,
+    expanded, searched and built, and the only way to see the result was a test: `bake`
+    takes its model as a path, so a mesh in memory had nowhere to go.
+
+    **A file rather than a handle, and that is the decision.** The cache key and the
+    provenance record key off a file and its hash already, and both are the discipline
+    this plugin is built on — a mesh in memory has no sha256 until something defines a
+    canonical serialisation for it, which is a second format to keep true. So a build
+    writes what it made, `bake(model=…)` takes it unchanged from there, and a search
+    that rebuilds per sample pays one file per sample beside the render it was going to
+    pay for anyway.
+
+    The materials go with it, because a group names one and a file needs the thing.
+
+    A document declaring `[voxels]` answers cells instead (§PW93): the cells go beside
+    `out` as `<stem>.voxels.json` and `out` holds the same cubes, so everything that
+    takes a mesh still takes it.
+    """
+    from .normalise import write_mesh
+
+    if document.get("voxels"):
+        from .voxels import write as cells
+
+        return cells(document, out, root=root, **given)
+
+    painting = [node["id"] for node in document["nodes"] if node["op"] == "paint"]
+    if painting:
+        raise PolyweaveError(
+            "geom.bad-voxels",
+            f"{painting[0]} repaints cells, and {document['name']} is built as "
+            f"triangles, which have no cells to repaint",
+            "give the declaration a [voxels] table, or put the material on the node "
+            "whose faces it is meant for",
+            at=f"nodes.{painting[0]}.op",
+        )
+    made = build(document, root=root, manifold=manifold, **given)
+    where = Path(out)
+    if not where.is_absolute():
+        where = Path(root).resolve() / where
+    # A material's `image` is a path under the project, as every path a declaration
+    # names is, resolved here where the root is known (§PW78). Its values are resolved
+    # too, as the review's are, so a finish over the params reaches the shader.
+    from . import expand, finish
+
+    resolved = expand(document, **given)["materials"] or {}
+    materials = {
+        name: {**one, "image": str(Path(root).resolve() / one["image"])}
+        if isinstance(one, dict) and one.get("image") else one
+        for name, one in resolved.items()
+    }
+    written = write_mesh(made["output"], where, materials=materials)
+    # glTF carries a colour and a roughness and drops a finish, so a material that asks
+    # for one is also written as Godot loads it, with the bake's numbers (§PW495).
+    godot = [
+        str(path)
+        for name, one in resolved.items()
+        if finish.asked(one)
+        for path in finish.write_godot(one, name, where.parent, where.stem, root)
+    ]
+    return {**made, "artefact": str(written), "materials": godot}
+
+
+def _worn(node: dict, made: dict, built: dict) -> list[dict]:
+    """Which faces of this mesh wear which material (§PW67).
+
+    A material sits on a node and a document names one output, so a model in two
+    materials — Cottony's cream rope rim on its cushion face — could only be handed back
+    as a join, and the join kept one material or none. The colours were in the document,
+    survived `expand`, were read back by the review, and were gone from the mesh.
+
+    Faces, because that is the one thing a join really does know: `union` lays its
+    operands out in order, so where each one's faces landed is arithmetic. It is also
+    what a renderer wants, since a material slot is assigned per polygon.
+
+    **A boolean keeps what it cut into and nothing finer.** The cutter is gone from the
+    result and the solver does not preserve face correspondence, so a carve or a bevel
+    over one material is one group and over several is none. Claiming a range the solver
+    reordered would be worse than saying nothing.
+    """
+    if node.get("material"):
+        return [{"material": node["material"], "faces": [0, len(made["faces"])]}]
+    if node["op"] == "union":
+        groups, at = [], 0
+        for one in refers_to(node):
+            part = built[one]
+            for group in part.get("groups") or ():
+                start, stop = group["faces"]
+                groups.append(
+                    {"material": group["material"], "faces": [start + at, stop + at]}
+                )
+            at += len(part["faces"])
+        return groups
+    if node["op"] in ("carve", "bevel"):
+        source = node.get("into") or (refers_to(node) or [""])[0]
+        worn = {g["material"] for g in built.get(source, {}).get("groups") or ()}
+        if len(worn) == 1:
+            return [{"material": worn.pop(), "faces": [0, len(made["faces"])]}]
+    return []
+
+
+def _placed(node: dict, instance: dict, made: dict) -> dict:
+    """One instance where its own `at` puts it, which is what a repeat varies."""
+    at = instance.get("at")
+    if at is None or node["op"] in PLACES:
+        return made
+    return S.transform(made, at=at)

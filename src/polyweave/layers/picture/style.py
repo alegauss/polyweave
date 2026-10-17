@@ -1,0 +1,682 @@
+"""What a project's pictures look like, declared once, and a canon only a person grows.
+
+§PW166: a generator asked for consistency in prose gives consistency by luck. Two
+pictures of one character from one prompt differ in palette, line weight and
+proportion, and a refinement drifts further from the picture it refines. So the style
+is an **input every call carries**, not an adjective in a prompt:
+
+- `[style]` (or `[style.<family>]`, one per asset family) declares a `palette`, as
+  values, and a `skeleton`, the style block every structured prompt starts from;
+- `picture.buy` composes each structured prompt over the skeleton, and the skeleton
+  wins where the prompt says otherwise, because a style overridden per call is the
+  drift it exists to stop;
+- `canon` is a directory of pictures a person approved, each with its described prompt
+  where there is one, and a `canon.json` naming the verdict that admitted it.
+
+**The canon grows only by a person's verdict.** `admit` is not an operation: the one
+caller is `verdict.judge`, carrying what a person said. An agent that could add its own
+output to the canon would make its drift the standard.
+"""
+
+from __future__ import annotations
+
+import copy
+import json
+import shutil
+from datetime import date as Date
+from pathlib import Path
+from typing import Annotated
+
+import numpy as np
+
+from polyweave.kernel import provenance
+from polyweave.kernel.config import Config, load
+from polyweave.kernel.describe import Param, operation
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.kernel.files import read_text_retrying, write_atomic
+
+#: The file in a canon directory that says why each picture is in it.
+LEDGER = "canon.json"
+
+
+def in_force(config: Config, family: str | None) -> tuple[str, dict] | None:
+    """The style a picture is held to, or none where the project declares no style."""
+    if not config.states("style") and family is None:
+        return None
+    return config.style(family)
+
+
+def compose(json_prompt: dict, style: dict) -> dict:
+    """A structured prompt over the family's skeleton, with its palette.
+
+    The skeleton's keys win over the prompt's own style keys; the prompt adds what the
+    skeleton leaves unsaid. The palette, where declared, is the palette.
+    """
+    composed = copy.deepcopy(json_prompt)
+    own = dict(composed.get("style_description") or {})
+    described = {**own, **copy.deepcopy(style.get("skeleton") or {})}
+    if style.get("palette"):
+        described["color_palette"] = list(style["palette"])
+    if described:
+        composed["style_description"] = described
+    return composed
+
+
+#: What the service takes in one request, every reference's bytes together.
+REFERENCES_MAX = 50 * 1024 * 1024
+
+
+def worded(prompt: str, style: dict) -> str:
+    """A text prompt carrying the family's skeleton and palette, for a model that takes
+    no structured prompt (§PW180). Said after the call's own words, in a fixed order, so
+    the same family words every call the same way."""
+    said = [prompt.rstrip(". ")]
+    skeleton = style.get("skeleton") or {}
+    if skeleton:
+        held = sorted(skeleton.items())
+        said.append("Style: " + "; ".join(f"{k} {v}" for k, v in held))
+    if style.get("palette"):
+        said.append("Palette: " + ", ".join(style["palette"]))
+    return ". ".join(said) + "."
+
+
+def references(name: str, style: dict) -> list[dict]:
+    """The canon pictures a family sends as style references, read and digested.
+
+    Each is `{"picture", "bytes", "sha256"}`; the digest goes on the picture's record so
+    a regeneration sends the same pictures (§PW180).
+    """
+    import hashlib
+
+    named = list(style.get("references") or ())
+    canon = Path(style["canon"]) if style.get("canon") else None
+    found, total = [], 0
+    for picture in named:
+        where = canon / picture if canon else None
+        if where is None or not where.is_file():
+            raise PolyweaveError(
+                "style.no-reference",
+                f"the {name} style names {picture!r} as a reference, and its canon "
+                f"does not hold it",
+                "name a picture the canon holds, or admit it to the canon first",
+                given=picture,
+                allowed=[e["picture"] for e in admitted(style)],
+            )
+        content = where.read_bytes()
+        total += len(content)
+        found.append({"picture": picture, "bytes": content,
+                      "sha256": hashlib.sha256(content).hexdigest()})
+    if total > REFERENCES_MAX:
+        raise PolyweaveError(
+            "style.references-too-large",
+            f"the {name} style's references are {total / 1e6:.1f} MB together, and the "
+            f"service takes {REFERENCES_MAX / 1e6:.0f} MB in one request",
+            "name fewer or smaller canon pictures in references",
+        )
+    return found
+
+
+@operation("style.read")
+def read(
+    family: Annotated[str, Param("the asset family; needed only among several")] = None,
+    root: Annotated[str, Param("the project whose style this is")] = ".",
+) -> dict:
+    """One family's declared style and the pictures a person admitted to its canon."""
+    name, style = load(root).style(family)
+    return {"family": name, **style, "admitted": admitted(style)}
+
+
+def admitted(style: dict) -> list[dict]:
+    """What the canon holds, with the verdict each picture came in on."""
+    if not style.get("canon"):
+        return []
+    text = read_text_retrying(Path(style["canon"]) / LEDGER)
+    return json.loads(text) if text else []
+
+
+def admit(
+    picture: str,
+    *,
+    family: str | None,
+    why: str,
+    choice: str,
+    when: str = "",
+    root: str | Path = ".",
+) -> dict:
+    """Copy an approved picture into its family's canon, with the verdict admitting it.
+
+    Called by `verdict.judge` and by nothing else. The described prompt beside the
+    picture (`<name>.prompt.json`, from `picture.describe`) goes with it, so a canon
+    picture carries its own terms. Admitting one picture twice is a no-op.
+    """
+    config = load(root)
+    here = config.root
+    name, style = config.style(family)
+    if not style.get("canon"):
+        raise PolyweaveError(
+            "style.no-canon",
+            f"the {name} style declares no canon, so there is nowhere to admit "
+            f"{picture} to",
+            f"set canon under [style.{name}] to a directory under the project"
+            if name != "default"
+            else "set canon under [style] to a directory under the project",
+        )
+    source = here / picture
+    digest, _ = provenance.sha256_of(source)
+    canon = Path(style["canon"])
+    held = admitted(style)
+    already = next((e for e in held if e["sha256"] == digest), None)
+    if already:
+        return already
+    canon.mkdir(parents=True, exist_ok=True)
+    landed = canon / source.name
+    shutil.copy2(source, landed)
+    described = source.with_suffix(".prompt.json")
+    prompt = None
+    if described.is_file():
+        shutil.copy2(described, canon / described.name)
+        prompt = described.name
+    entry = {
+        "picture": landed.name,
+        "sha256": digest,
+        "from": provenance.relative(source, here),
+        "prompt": prompt,
+        "verdict": {
+            "choice": choice,
+            "why": why,
+            "when": when or Date.today().isoformat(),
+        },
+    }
+    write_atomic(
+        canon / LEDGER, json.dumps([*held, entry], indent=2, sort_keys=True) + "\n"
+    )
+    return entry
+
+
+# -- drift, measured against the canon (§PW167) -------------------------------------
+
+#: What cannot be seen by number, said in every report rather than left out.
+NOT_CHECKED = (
+    "whether it is still the same character or subject",
+    "the silhouette against a declared outline",
+)
+
+#: What one render of a mesh cannot say.
+NOT_CHECKED_MESH = ("how it reads from any side but the rig's",)
+
+#: What a canon member may be besides a picture: a mesh, measured through a render at
+#: the family's rig (§PW451).
+MESHES = (".glb",)
+
+#: The render settings a family's rig may set, as render.bake takes them.
+RIG = ("azimuth", "elevation", "margin", "focal_mm", "key", "fill", "rim",
+       "light_distance", "ambient", "ambient_colour", "exposure", "rung")
+
+
+def is_mesh(path: str | Path) -> bool:
+    return Path(path).suffix.lower() in MESHES
+
+
+def measured(path: Path, declared: dict, config: Config) -> dict:
+    """A canon member's or a candidate's features: a picture's off its pixels, a mesh's
+    off its render at the family's rig and off the mesh itself (§PW451)."""
+    from polyweave.kernel.image import load as load_image
+
+    palette = list(declared.get("palette") or [])
+    floor_alpha = config.tolerances().alpha_floor
+    if not is_mesh(path):
+        return features(load_image(path), palette, floor_alpha)
+    from PIL import Image
+
+    from polyweave.layers.geometry import cost
+
+    rig = dict(declared.get("rig") or {})
+    seen = int(rig.pop("seen", 64))
+    picture = _rendered(path, rig, config)
+    found = features(load_image(picture), palette, floor_alpha)
+    low, high = cost.bounds(path)
+    width = max(high[0] - low[0], 1e-9)
+    found["height_to_width"] = round((high[1] - low[1]) / width, 4)
+    found["depth_to_width"] = round((high[2] - low[2]) / width, 4)
+    found["materials"] = cost.read(path)["materials"]
+    with Image.open(picture) as drawn:
+        small = drawn.convert("RGBA").resize(
+            (seen, max(1, round(seen * drawn.height / drawn.width))),
+            Image.Resampling.BOX)
+    found["silhouette_fill"] = round(float((np.asarray(small)[..., 3] > 127).mean()), 4)
+    found["hue_degrees"] = _hue(load_image(picture), floor_alpha)
+    found["render"] = provenance.relative(picture, config.root)
+    return found
+
+
+def _hue(image, alpha_floor: float) -> float | None:
+    """The subject's hue, a circular mean weighted by saturation, so a family with no
+    declared palette still says when a member is painted another colour (§PW451)."""
+    from polyweave.loop.measure import _hsl
+
+    mask = image.subject(alpha_floor)
+    rgb = image.rgba[..., :3].astype(np.float64)[mask] / 255.0
+    turns, saturation, _ = _hsl(rgb)
+    if float(saturation.sum()) < 1e-6:
+        return None  # grey: no hue to drift from
+    angle = turns * 2.0 * np.pi
+    mean = np.arctan2((np.sin(angle) * saturation).sum(),
+                      (np.cos(angle) * saturation).sum())
+    return round(float(np.degrees(mean)) % 360.0, 2)
+
+
+#: The measures that go round, so a gap is the short way between two angles.
+CIRCULAR = ("light_degrees", "hue_degrees")
+
+
+class _Quiet:
+    """A drift reports its own answer; each render has nobody to tell."""
+
+    def stage(self, stage, *, progress=None, note=None):
+        return None
+
+    def progress(self, value, *, note=None):
+        return None
+
+    def note(self, text):
+        return None
+
+
+def _rendered(mesh: Path, rig: dict, config: Config) -> Path:
+    """A mesh drawn at its family's rig, under the work folder, paid for once."""
+    import hashlib
+
+    from polyweave.layers.geometry import render
+
+    unknown = sorted(set(rig) - set(RIG))
+    if unknown:
+        raise PolyweaveError(
+            "style.bad-rig",
+            f"a family's rig sets {', '.join(unknown)}, which render.bake has no "
+            "parameter for",
+            f"set only {', '.join(RIG)} and seen",
+            given=unknown[0],
+            allowed=(*RIG, "seen"),
+        )
+    rig = {"rung": "preview", **rig}
+    digest = provenance.sha256_of(mesh)[0][:16]
+    said = hashlib.sha256(json.dumps(rig, sort_keys=True).encode()).hexdigest()[:8]
+    out = config.path("paths.work") / "canon" / f"{digest}-{said}.png"
+    if not out.is_file():
+        out.parent.mkdir(parents=True, exist_ok=True)
+        render.bake(_Quiet(), out=str(out), model=str(mesh), inline=False,
+                    root=str(config.root), **rig)
+    return out
+
+
+def _neighbour(mine: dict, members: list[dict], canon: list[dict], measures: dict,
+               declared: dict, config: Config) -> dict:
+    """The canon member nearest the candidate, each measure's gap counted in its own
+    floor, so the person judging it sees the member it would sit beside."""
+    def distance(other: dict) -> float:
+        total = 0.0
+        for key, said in measures.items():
+            if said.get("floor") and other.get(key) is not None:
+                gap = _gap(mine[key], other[key], key in CIRCULAR)
+                total += abs(gap) / said["floor"]
+        return total
+
+    nearest = min(range(len(canon)), key=lambda i: distance(canon[i]))
+    member = members[nearest]
+    found = {"member": member["picture"],
+             "path": provenance.relative(Path(declared["canon"]) / member["picture"],
+                                         config.root)}
+    if canon[nearest].get("render"):
+        found["render"] = canon[nearest]["render"]
+    return found
+
+
+#: The least span of lightness, in L*, between a subject's darkest and lightest tones
+#: for its darker half to be read as ink. Outlines in a flat drawing are its darkest
+#: pixels, and a fixed share of the subject would not find them: a thin outline is
+#: under a fifth of a disc and a heavy one over half. So the line is told from the fill
+#: by the midpoint between the two, which does not care how much of each there is.
+INK = 20.0
+
+
+@operation("style.drift")
+def drift(
+    picture: Annotated[str, Param("the picture, under the project")],
+    family: Annotated[str, Param("the asset family, needed only among several")] = None,
+    root: Annotated[str, Param("the project whose style this is")] = ".",
+) -> dict:
+    """Refuse a picture that drifts from its family's canon by number, saying which way.
+
+    Palette distance, value and saturation, line weight, edge and light are measured on
+    the picture and on every canon picture, each at a percentile. The bar is the canon's
+    own spread: how far its approved pictures sit from their median is the floor below
+    which a difference means nothing. A canon of fewer than two pictures has no spread,
+    and the report says so rather than inventing a floor. A picture that passes is not
+    thereby right; `not_checked` says what only a person can see.
+
+    A `.glb` is held to the family's meshes (§PW451): each is rendered at the family's
+    `rig` and measured there, with its bounding box's proportions, its silhouette's
+    weight at the `seen` width and its materials. `neighbour` names the member nearest
+    it, with its render, so a drift is judged beside the mesh it drifts from.
+    """
+    config = load(root)
+    name, declared = config.style(family)
+    mesh = is_mesh(picture)
+    mine = measured(config.root / picture, declared, config)
+    # A family's meshes are held to its meshes, and its pictures to its pictures.
+    members = [e for e in admitted(declared) if is_mesh(e["picture"]) == mesh]
+    canon = [measured(Path(declared["canon"]) / e["picture"], declared, config)
+             for e in members]
+    measures = {
+        key: _against(key, value, [c[key] for c in canon if c.get(key) is not None])
+        for key, value in mine.items()
+        if value is not None and key not in ("warmth", "render")
+    }
+    palette_drift = measures.get("palette_delta_e_p95") or {}
+    if palette_drift.get("drifted"):
+        warmer = mine["warmth"] > float(np.median([c["warmth"] for c in canon]))
+        palette_drift["which_way"] = "warmer" if warmer else "cooler"
+    judged = len(canon) >= 2
+    drifted = sorted(k for k, m in measures.items() if m["drifted"])
+    plural = "" if len(canon) == 1 else "s"
+    return {
+        "family": name,
+        "picture": picture,
+        "canon": len(canon),
+        "judged": judged,
+        "floor": f"the spread among {len(canon)} canon pictures"
+        if judged
+        else f"none: the canon holds {len(canon)} picture{plural}, and a floor is "
+        f"the spread among at least two",
+        "passed": (not drifted) if judged else None,
+        "drifted": drifted,
+        "measures": measures,
+        # The member a person compares it with, beside the numbers (§PW451).
+        **({"neighbour": _neighbour(mine, members, canon, measures, declared, config)}
+           if judged else {}),
+        **({"render": mine["render"]} if mesh else {}),
+        "not_checked": list(NOT_CHECKED + (NOT_CHECKED_MESH if mesh else ())),
+        # A palette borrowed from another project whose source moved since it was
+        # pinned: the canon was judged against colours the source has left (§PW387).
+        **({"source_moved": declared["borrowed"]}
+           if (declared.get("borrowed") or {}).get("moved") else {}),
+    }
+
+
+def features(image, palette: list[str], alpha_floor: float) -> dict:
+    """What a picture's look is made of, each as a percentile of its subject."""
+    from polyweave.loop.measure import _hsl, from_hex, to_lab
+
+    mask = image.subject(alpha_floor)
+    if not mask.any():
+        raise PolyweaveError(
+            "style.no-subject",
+            f"{image.path} has no pixel above the alpha floor to measure",
+            "check the picture is the asset and not an empty frame",
+        )
+    rgb = image.rgba[..., :3].astype(np.float64) / 255.0
+    lab = to_lab(rgb)
+    subject = lab[mask]
+    saturation = _hsl(rgb[mask])[1] * 100.0
+    found: dict = {
+        "value_p5": _p(subject[:, 0], 5),
+        "value_p95": _p(subject[:, 0], 95),
+        "saturation_p5": _p(saturation, 5),
+        "saturation_p95": _p(saturation, 95),
+        "warmth": round(float(subject[:, 2].mean()), 4),
+        "palette_delta_e_p95": None,
+    }
+    if palette:
+        swatches = to_lab(np.array([from_hex(c) for c in palette]))
+        nearest = np.linalg.norm(subject[:, None, :] - swatches[None], axis=-1)
+        found["palette_delta_e_p95"] = _p(nearest.min(axis=1), 95)
+    found["line_weight"] = _line_weight(mask, lab[..., 0])
+    found.update(_edge(image, mask, lab, alpha_floor))
+    found["light_degrees"] = _light(mask, lab[..., 0])
+    return found
+
+
+def _p(values, q: float) -> float:
+    return round(float(np.percentile(values, q)), 4)
+
+
+def _interior(mask):
+    """The pixels of a mask whose four neighbours are in it too."""
+    grown = np.pad(mask, 1)
+    return (
+        mask & grown[:-2, 1:-1] & grown[2:, 1:-1] & grown[1:-1, :-2] & grown[1:-1, 2:]
+    )
+
+
+def _line_weight(mask, lightness) -> float | None:
+    """Stroke width of the ink, from how many erosions each ink pixel survives."""
+    dark, light = np.percentile(lightness[mask], [5, 95])
+    if light - dark < INK:
+        return None  # no line darker than the fill: nothing to measure a width of
+    ink = mask & (lightness <= (dark + light) / 2.0)
+    if ink.sum() < 4:
+        return None
+    depth = np.zeros(ink.shape, dtype=np.int32)
+    left = ink.copy()
+    for _ in range(64):
+        if not left.any():
+            break
+        depth += left
+        left = _interior(left)
+    # A stroke w pixels wide reaches depth about w/2 at its spine, so the deepest
+    # pixels, not the typical one, say how wide the strokes are.
+    return round(2.0 * float(np.percentile(depth[ink], 90)) - 1.0, 4)
+
+
+def _edge(image, mask, lab, alpha_floor: float) -> dict:
+    """How wide the soft edge is, and how far its colour sits from the subject's."""
+    if not image.had_alpha:
+        return {"fringe_width": None, "halo_delta_e": None}
+    alpha = image.alpha.astype(np.float64) / 255.0
+    fringe = (alpha > alpha_floor) & (alpha < 0.98)
+    inside = _interior(mask)
+    boundary = mask & ~inside
+    width = float(fringe.sum()) / max(1.0, float(boundary.sum()))
+    core = inside & ~fringe
+    halo = (
+        float(np.linalg.norm(lab[fringe].mean(0) - lab[core].mean(0)))
+        if fringe.any() and core.any()
+        else 0.0
+    )
+    return {"fringe_width": round(width, 4), "halo_delta_e": round(halo, 4)}
+
+
+def _light(mask, lightness) -> float | None:
+    """Where the light comes from, in degrees anticlockwise from the right."""
+    rows, columns = np.gradient(lightness)
+    inside = _interior(_interior(mask))
+    if inside.sum() < 16:
+        return None
+    across, down = float(columns[inside].mean()), float(rows[inside].mean())
+    if np.hypot(across, down) < 1e-3:
+        return None  # flat shading: no direction to drift from
+    return round(float(np.degrees(np.arctan2(-down, across))) % 360.0, 2)
+
+
+#: What a difference in each measure is called, larger then smaller.
+_WAYS = {
+    "value_p5": ("lighter shadows", "darker shadows"),
+    "value_p95": ("lighter highlights", "darker highlights"),
+    "saturation_p5": ("more saturated", "duller"),
+    "saturation_p95": ("more saturated", "duller"),
+    "palette_delta_e_p95": ("further from the palette", "closer to the palette"),
+    "line_weight": ("thicker lines", "thinner lines"),
+    "fringe_width": ("a softer edge", "a harder edge"),
+    "halo_delta_e": ("a stronger halo", "less halo"),
+    "height_to_width": ("taller", "squatter"),
+    "depth_to_width": ("deeper", "flatter"),
+    "silhouette_fill": ("a heavier silhouette", "a lighter silhouette"),
+    "materials": ("more materials", "fewer materials"),
+}
+
+
+def _against(key: str, value: float, canon: list[float]) -> dict:
+    """One measure held to the canon's spread, and which way it went if it drifted."""
+    if len(canon) < 2:
+        return {"value": value, "canon": canon, "floor": None, "drifted": False}
+    circular = key in CIRCULAR
+    middle = float(np.median(canon))
+    floor = max(abs(_gap(c, middle, circular)) for c in canon)
+    gap = _gap(value, middle, circular)
+    # Closer to the palette than the canon is, is not drift: that measure has a side.
+    drifted = abs(gap) > floor + 1e-6 and (key != "palette_delta_e_p95" or gap > 0)
+    found = {
+        "value": value,
+        "canon": round(middle, 4),
+        "floor": round(floor, 4),
+        "off": round(gap, 4),
+        "drifted": drifted,
+    }
+    if drifted:
+        if circular:
+            turn = "anticlockwise" if gap > 0 else "clockwise"
+            what = "hue" if key == "hue_degrees" else "light"
+            found["which_way"] = f"{what} turned {abs(gap):.0f} degrees {turn}"
+        else:
+            found["which_way"] = _WAYS[key][0 if gap > 0 else 1]
+            if key == "line_weight" and middle > 0:
+                found["which_way"] += f", {value / middle:.1f} times the canon's"
+    return found
+
+
+def _gap(value: float, middle: float, circular: bool) -> float:
+    gap = value - middle
+    return (gap + 180.0) % 360.0 - 180.0 if circular else gap
+
+
+# -- the canon on one board (§PW177) ------------------------------------------------
+
+#: Where a picture taken out of a canon goes, beside it: kept, so a removal can be
+#: argued with, and out of what `admitted` reads, so no drift is measured against it.
+WITHDRAWN = "withdrawn"
+
+
+def _floors(features_of: list[dict]) -> dict[str, float | None]:
+    """Each measure's floor: how far the canon's pictures sit from their median."""
+    keys = sorted({k for one in features_of for k, v in one.items() if v is not None})
+    found: dict[str, float | None] = {}
+    for key in keys:
+        if key in ("warmth", "render"):
+            continue
+        values = [one[key] for one in features_of if one.get(key) is not None]
+        if len(values) < 2:
+            found[key] = None
+            continue
+        middle = float(np.median(values))
+        circular = key in CIRCULAR
+        found[key] = round(max(abs(_gap(v, middle, circular)) for v in values), 4)
+    return found
+
+
+def board(family: str | None = None, root=".") -> dict:
+    """One family's canon as a person sees it: pictures, palette, skeleton, spread.
+
+    `without` gives every floor as it would be with each picture taken out, so an
+    outlier widening every tolerance shows as exactly that before anyone removes it.
+    """
+    config = load(root)
+    name, declared = config.style(family)
+    held = admitted(declared)
+    palette = list(declared.get("palette") or [])
+    each = [measured(Path(declared["canon"]) / e["picture"], declared, config)
+            for e in held]
+    here = config.root
+    return {
+        "family": name,
+        "canon": provenance.relative(Path(declared["canon"]), here)
+        if declared.get("canon")
+        else None,
+        "pictures": [
+            {
+                **e,
+                "path": provenance.relative(
+                    Path(declared["canon"]) / e["picture"], here
+                ),
+            }
+            for e in held
+        ],
+        "palette": palette,
+        "skeleton": declared.get("skeleton") or {},
+        "floors": _floors(each),
+        "without": {
+            e["picture"]: _floors(each[:i] + each[i + 1 :])
+            for i, e in enumerate(held)
+        },
+        "candidates": candidates(declared, held, here),
+        # A spread needs two pictures, so a family with fewer holds no picture to it.
+        "judges": len(held) >= 2,
+        "says": ""
+        if len(held) >= 2
+        else f"the {name} canon holds {len(held)} picture"
+        f"{'' if len(held) == 1 else 's'}, and judges nothing until it holds two",
+    }
+
+
+def candidates(declared: dict, held: list[dict], here: Path) -> list[dict]:
+    """The pictures `candidates` points at that the canon does not hold yet (§PW266)."""
+    kept = {e["sha256"] for e in held}
+    found, seen = [], set()
+    for pattern in declared.get("candidates") or []:
+        for path in sorted(here.glob(str(pattern))):
+            if not path.is_file() or path.suffix.lower() not in PICTURES:
+                continue
+            digest = provenance.sha256_of(path)[0]
+            if digest in kept or digest in seen:
+                continue
+            seen.add(digest)
+            found.append({"path": provenance.relative(path, here), "sha256": digest})
+    return found
+
+
+#: What a candidate may be: a picture the canon's measures can read.
+PICTURES = (".png", ".jpg", ".jpeg", ".webp")
+
+
+def withdraw(
+    picture: str, *, family: str | None, why: str, when: str = "", root="."
+) -> dict:
+    """Take a picture out of its family's canon, as a person's verdict (§PW177).
+
+    Like `admit`, not an operation: the review page is the one caller, carrying a
+    person's click and sentence. The file moves to `withdrawn/` beside the canon, and
+    the entry with the verdict that took it out goes to `withdrawn/canon.json`.
+    """
+    if not str(why).strip():
+        raise PolyweaveError(
+            "loop.no-reason",
+            "a picture was taken out of the canon with no sentence",
+            "say why it no longer belongs; a canon changed without a reason is one "
+            "nobody can argue with",
+        )
+    config = load(root)
+    name, declared = config.style(family)
+    held = admitted(declared)
+    chosen = next((e for e in held if e["picture"] == picture), None)
+    if chosen is None:
+        raise PolyweaveError(
+            "style.not-in-canon",
+            f"{picture!r} is not in the {name} canon",
+            f"name one of {', '.join(e['picture'] for e in held) or 'its pictures'}",
+            given=picture,
+            allowed=[e["picture"] for e in held],
+        )
+    canon = Path(declared["canon"])
+    aside = canon / WITHDRAWN
+    aside.mkdir(parents=True, exist_ok=True)
+    shutil.move(str(canon / picture), str(aside / picture))
+    gone = json.loads(read_text_retrying(aside / LEDGER) or "[]")
+    entry = {
+        **chosen,
+        "withdrawn": {"why": why, "when": when or Date.today().isoformat()},
+    }
+    write_atomic(
+        aside / LEDGER, json.dumps([*gone, entry], indent=2, sort_keys=True) + "\n"
+    )
+    kept = [e for e in held if e["picture"] != picture]
+    write_atomic(canon / LEDGER, json.dumps(kept, indent=2, sort_keys=True) + "\n")
+    return entry

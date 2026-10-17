@@ -11,8 +11,9 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from polyweave import provenance, store
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import provenance
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.store import store
 
 
 def key_art(where, size=(3840, 2160), focus=(0.7, 0.4)):

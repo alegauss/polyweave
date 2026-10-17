@@ -11,8 +11,8 @@ import struct
 
 import pytest
 
-from polyweave import words
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.words import words
 
 
 def font(chars: str) -> bytes:

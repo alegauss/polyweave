@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-from polyweave import kits
+from polyweave.layers import kits
 from test_kit_install import kit
 
 

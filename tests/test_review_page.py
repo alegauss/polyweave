@@ -11,7 +11,7 @@ import urllib.request
 import pytest
 from PIL import Image
 
-from polyweave import review, verdict
+from polyweave.loop import review, verdict
 
 SPEC = """asset = "{name}"
 
@@ -209,7 +209,7 @@ def screen_source(path):
 
 
 def test_the_command_line_has_the_verb():
-    from polyweave.cli import command_line
+    from polyweave.surface.cli import command_line
 
     stated = command_line().parse_args(["review", "--port", "8765"])
     assert stated.command == "review" and stated.port == 8765
@@ -264,7 +264,7 @@ def test_the_canon_operation_is_what_the_page_reads(page):
 
 
 def test_the_compare_operation_refuses_a_path_the_page_would_not_show(page):
-    from polyweave.errors import PolyweaveError
+    from polyweave.kernel.errors import PolyweaveError
 
     _, where = page
     with pytest.raises(PolyweaveError) as refused:
@@ -288,7 +288,7 @@ def test_the_answer_operation_is_the_page_s_write(page, monkeypatch):
 
 
 def test_the_answer_operation_refuses_on_code_older_than_the_package(page, monkeypatch):
-    from polyweave.errors import PolyweaveError
+    from polyweave.kernel.errors import PolyweaveError
 
     _, where = page
     monkeypatch.setattr(review, "_LOADED", 0.0)
@@ -310,7 +310,7 @@ def test_an_answer_on_the_page_is_an_event_on_disk(page):
 
 
 def test_the_agent_resumes_from_what_was_said_and_carries_it_into_its_run(page):
-    from polyweave import loop
+    from polyweave.loop import loop
 
     base, where = page
     first = verdict.answers(root=where)
@@ -356,7 +356,7 @@ def test_a_mark_is_kept_as_a_mask_the_size_of_the_picture_it_was_drawn_on(page):
     with Image.open(where / mark["mask"]) as mask:
         assert mask.size == (24, 24)
         assert mask.getpixel((5, 8)) == 0 and mask.getpixel((20, 20)) == 255
-    from polyweave import provenance
+    from polyweave.kernel import provenance
 
     assert mark["sha256"] == provenance.sha256_of(where / "renders" / "star_dim.png")[0]
 
@@ -375,7 +375,7 @@ def test_a_mark_on_a_member_the_family_does_not_have_is_refused_before_the_verdi
 
 
 def test_a_persons_mark_outranks_the_described_region_for_an_edit(page, monkeypatch):
-    from polyweave import picture, variation
+    from polyweave.layers.picture import picture, variation
 
     base, where = page
     post(
@@ -406,7 +406,7 @@ def test_a_persons_mark_outranks_the_described_region_for_an_edit(page, monkeypa
     variation.vary(
         "renders/star_dim.png", "renders/v.png", "fix it", region="anything", root=where
     )
-    from polyweave import provenance
+    from polyweave.kernel import provenance
 
     record = provenance.read("renders/v.png", root=where)
     assert record["details"]["mask_from"] == "person"
@@ -420,7 +420,7 @@ def test_a_persons_mark_outranks_the_described_region_for_an_edit(page, monkeypa
 def gated(page):
     from PIL import ImageDraw
 
-    from polyweave import picture
+    from polyweave.layers.picture import picture
 
     base, where = page
 
@@ -448,7 +448,7 @@ def test_the_page_shows_what_the_gate_refused_with_its_numbers(gated):
 
 
 def test_a_person_may_promote_a_refused_picture_and_it_is_an_overruling(gated):
-    from polyweave import verdict
+    from polyweave.loop import verdict
 
     base, where, ran = gated
     status, said = post(
@@ -514,7 +514,7 @@ def test_nothing_outside_the_project_is_compared(page):
 def test_a_refused_picture_is_compared_with_the_canon_as_a_difference_map(page):
     from PIL import ImageDraw
 
-    from polyweave import picture
+    from polyweave.layers.picture import picture
 
     base, where = page
     (where / "polyweave.toml").write_text('[style]\ncanon = "canon"\n', "utf-8")
@@ -538,8 +538,8 @@ def test_a_refused_picture_is_compared_with_the_canon_as_a_difference_map(page):
 
 
 def test_a_mesh_is_turned_at_the_rigs_own_camera_and_listed_for_the_page(page):
-    from polyweave import shape
-    from polyweave.render.rig import Rig
+    from polyweave.layers.geometry import shape
+    from polyweave.layers.geometry.render.rig import Rig
 
     base, where = page
     asked = []
@@ -616,7 +616,7 @@ def test_the_board_shows_the_canon_and_what_each_picture_does_to_the_floor(canon
 
 
 def test_a_picture_is_taken_out_of_the_canon_by_a_persons_sentence(canon):
-    from polyweave import style
+    from polyweave.layers.picture import style
 
     base, where = canon
     status, said = post(
@@ -632,7 +632,7 @@ def test_a_picture_is_taken_out_of_the_canon_by_a_persons_sentence(canon):
 
 
 def style_of(where):
-    from polyweave import config
+    from polyweave.kernel import config
 
     return config.load(where).style()
 
@@ -640,7 +640,7 @@ def style_of(where):
 def test_a_kept_picture_joins_the_canon_by_a_click(canon):
     from PIL import ImageDraw
 
-    from polyweave import picture, style
+    from polyweave.layers.picture import picture, style
 
     base, where = canon
     for name in ("outline.png", "new.png"):
@@ -666,7 +666,7 @@ def test_a_kept_picture_joins_the_canon_by_a_click(canon):
 
 def test_a_family_never_gated_starts_from_its_candidates(page):
     """§PW266: Starship's brand studies had no outline to gate, and no door in."""
-    from polyweave import style
+    from polyweave.layers.picture import style
 
     base, where = page
     (where / "polyweave.toml").write_text(
@@ -686,7 +686,7 @@ def test_a_family_never_gated_starts_from_its_candidates(page):
         "canon": "brand", "admit": "studies/brand-a.png", "why": "the wordmark"})
     assert status == 200
     assert said["members"][0]["canon"]["verdict"]["why"] == "the wordmark"
-    from polyweave import config
+    from polyweave.kernel import config
 
     _, declared = config.load(where).style("brand")
     assert [e["from"] for e in style.admitted(declared)] == ["studies/brand-a.png"]
@@ -702,7 +702,7 @@ def test_a_family_never_gated_starts_from_its_candidates(page):
 
 
 def test_an_answer_on_the_page_lands_in_the_ledger_for_the_sitting_s_asset(tmp_path):
-    from polyweave import loop
+    from polyweave.loop import loop
 
     (tmp_path / "polyweave.toml").write_text('[paths]\nspecs = "accept"\n', "utf-8")
     laid = verdict.sitting({"bandejas": [member(tmp_path, "board_tray", 120)]},
@@ -719,7 +719,7 @@ def test_an_answer_on_the_page_lands_in_the_ledger_for_the_sitting_s_asset(tmp_p
 
 def test_a_family_s_older_verdict_counts_for_the_member_it_names(tmp_path):
     """Cottony's stars were judged in a family run before verdicts named a member."""
-    from polyweave import loop
+    from polyweave.loop import loop
 
     (tmp_path / "polyweave.toml").write_text('[paths]\nspecs = "accept"\n', "utf-8")
     member(tmp_path, "star_dim", 120)

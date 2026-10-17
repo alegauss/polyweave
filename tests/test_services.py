@@ -12,9 +12,9 @@ from datetime import date
 
 import pytest
 
-from polyweave import config as C
-from polyweave import purchase, schema
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import config as C
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.services import purchase, schema
 
 GLTF = b"glTF" + b"\x00" * 60
 PNG = b"\x89PNG\r\n\x1a\n" + b"\x00" * 60
@@ -215,7 +215,7 @@ def test_an_entry_nothing_can_attribute_is_refused_rather_than_guessed(tmp_path)
 def test_capabilities_reports_each_key_by_name_and_never_by_value(
     tmp_path, monkeypatch
 ):
-    from polyweave.capabilities import capabilities
+    from polyweave.surface.capabilities import capabilities
 
     monkeypatch.setenv("POLYWEAVE_TEST_MESHY", "sk-never-echoed")
     monkeypatch.delenv("POLYWEAVE_TEST_IDEOGRAM", raising=False)

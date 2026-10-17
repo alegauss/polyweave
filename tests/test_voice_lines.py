@@ -10,8 +10,10 @@ import shutil
 
 import pytest
 
-from polyweave import provenance, purchase, sound_buy
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import provenance
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.sound import sound_buy
+from polyweave.services import purchase
 from test_sound_buy import PROJECT, Service, mp3
 
 pytestmark = pytest.mark.skipif(not shutil.which("ffmpeg"), reason="needs ffmpeg")

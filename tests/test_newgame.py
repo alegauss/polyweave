@@ -12,8 +12,8 @@ import sys
 
 import pytest
 
-from polyweave import newgame
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.surface import newgame
 
 
 def test_a_folder_that_holds_files_is_refused_for_project_init(tmp_path):

@@ -10,8 +10,8 @@ import subprocess
 
 import pytest
 
-from polyweave import engine
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.engine import engine
 
 SCAN = """extends SceneTree
 

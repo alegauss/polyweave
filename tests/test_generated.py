@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from polyweave import provenance as P
+from polyweave.kernel import provenance as P
 
 
 def made(root, path, kind, inputs=(), extra=None, text="x"):

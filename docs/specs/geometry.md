@@ -472,7 +472,7 @@ vocabulary, and it gets filed as a roadmap line rather than copied a fourth time
 ## What a build returns
 
 ```python
-from polyweave.geometry import build, write
+from polyweave.layers.geometry import build, write
 
 made = build(document, root=".", board=8)   # parameters given here reach the shape
 made["output"]      # the mesh the document names
@@ -901,7 +901,7 @@ being 1, which is the order a hit chips them. A size that is not `1 <= smallest 
 largest` whole cells is `geom.bad-fracture`.
 
 **A Godot project reads the cells with a loader written once** (§PW102).
-`polyweave.godot.install(project)` copies `addons/polyweave_voxels/` into a Godot project,
+`polyweave.layers.engine.godot.install(project)` copies `addons/polyweave_voxels/` into a Godot project,
 replacing an older copy, and refuses a folder with no `project.godot`. Its `voxels.gd`
 turns a `.voxels.json` into a voxel model resource: each cell's middle in the model's
 units, its palette slot, each slot's colour and whole material table (`glow` and the rest

@@ -11,8 +11,8 @@ import json
 
 import pytest
 
-from polyweave import provenance as P
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import provenance as P
+from polyweave.kernel.errors import PolyweaveError
 
 
 def artefact(tmp_path, name="mascot.png", body=b"\x89PNG-pretend"):
@@ -377,7 +377,7 @@ def test_measurements_from_a_check_go_straight_into_the_record(tmp_path):
     import numpy as np
     from PIL import Image as PILImage
 
-    from polyweave import post
+    from polyweave.kernel import post
 
     rgba = np.zeros((8, 8, 4), dtype=np.uint8)
     rgba[:, :, 3] = 255
@@ -482,7 +482,7 @@ def test_a_bar_is_compared_at_the_key_s_own_rounding(tmp_path):
 
 def test_the_bars_are_read_off_whatever_the_caller_resolved(tmp_path):
     """A Tolerances and its dict are the same question asked two ways."""
-    from polyweave.config import Tolerances
+    from polyweave.kernel.config import Tolerances
 
     found = a_record(tmp_path, tolerances=BARS)
     assert P.remeasure(found, Tolerances(**BARS)) == []

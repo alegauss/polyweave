@@ -15,8 +15,8 @@ from pathlib import Path
 
 import pytest
 
-from polyweave import music_render, sound
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.sound import music_render, sound
 
 PEDALBOARD = importlib.util.find_spec("pedalboard") is not None
 FLUIDSYNTH = os.environ.get("FLUIDSYNTH") or shutil.which("fluidsynth")
@@ -122,7 +122,7 @@ def fluid_paths(credit: str = "") -> str:
 
 def test_a_score_carries_the_track_it_was_written_against():
     """§PW422: the Quilt's cue could name Cottony's calm loop only in a comment."""
-    from polyweave import music
+    from polyweave.layers.sound import music
 
     score = GM.replace('form = ["A"]', 'form = ["A"]\nreference = "refs/calm.ogg"')
     model, problems = music.compile_source(score, "cue")
@@ -140,7 +140,7 @@ def test_a_reference_that_is_not_there_is_named_before_anything_plays(tmp_path):
 
 @needs_fluid
 def test_a_rendered_cue_names_its_reference_in_its_record(tmp_path):
-    from polyweave import provenance
+    from polyweave.kernel import provenance
 
     score = GM.replace('form = ["A"]', 'form = ["A"]\nreference = "refs/calm.ogg"')
     source = project(tmp_path, score, fluid_paths())
@@ -242,7 +242,7 @@ def test_a_library_with_no_declared_licence_is_refused_before_anything_plays(tmp
 
 @needs_fluid
 def test_every_file_made_carries_its_instruments_and_what_they_owe(tmp_path):
-    from polyweave import provenance
+    from polyweave.kernel import provenance
 
     score = GM.replace('instrument = "gm:73"', 'instrument = "gm:73"\nlayer = "tense"')
     found = music_render.render(
@@ -341,7 +341,7 @@ play = { A = "note" }
 
 def test_an_effect_carries_its_peak_and_its_length():
     """§PW192: Cottony's pick plays at a third of a pop's level, and a pop is short."""
-    from polyweave import music
+    from polyweave.layers.sound import music
 
     model, problems = music.compile_source(EFFECT, "pop")
     assert problems == []
@@ -357,7 +357,7 @@ def test_an_effect_carries_its_peak_and_its_length():
     ],
 )
 def test_a_peak_on_a_loop_or_a_length_with_no_peak_is_refused(change, named):
-    from polyweave import music
+    from polyweave.layers.sound import music
 
     model, problems = music.compile_source(EFFECT.replace(*change), "pop")
     assert model is None

@@ -12,8 +12,9 @@ import json
 import pytest
 from PIL import Image, ImageDraw
 
-from polyweave import provenance, reference_compare
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import provenance
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.reference import reference_compare
 
 KINDS = {"enemy": {"colour": "#3fe8ff", "size": [40, 400]}}
 

@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from polyweave import kits, provenance
+from polyweave.kernel import provenance
+from polyweave.layers import kits
 from test_kit_install import kit
 
 KITS_TOML = "kit.toml"

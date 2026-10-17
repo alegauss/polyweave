@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import pytest
 
-from polyweave import config as C
-from polyweave import project, provenance
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import config as C
+from polyweave.kernel import provenance
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.surface import project
 
 SHAPE = """name = "{name}"
 output = "{name}"
@@ -143,7 +144,7 @@ def test_an_empty_project_answers_with_nothing_and_is_never_refused(tmp_path):
 
 
 def test_an_unknown_kind_is_refused_with_the_kinds(tree):
-    from polyweave import describe as D
+    from polyweave.kernel import describe as D
 
     with pytest.raises(PolyweaveError) as caught:
         D.validate("project.inventory", {"root": str(tree), "kind": "meshes"})
@@ -161,7 +162,7 @@ def test_a_record_that_does_not_read_is_left_out_not_raised(tree):
 
 def test_a_brief_answers_for_any_item_the_inventory_lists(tree):
     # §PW300: a sound, a picture or a line has a one-read state, not only a mesh.
-    from polyweave import brief
+    from polyweave.loop import brief
 
     hit = brief.brief("audio/hit.wav", root=str(tree))
     assert hit["item"]["kind"] == "sound"
@@ -179,7 +180,7 @@ def test_a_brief_answers_for_any_item_the_inventory_lists(tree):
 def test_a_brief_on_a_line_reads_its_text_speaker_and_verdict(tree):
     import json
 
-    from polyweave import brief
+    from polyweave.loop import brief
 
     (tree / "text" / "strings.csv").write_text(
         "keys,en,pt_BR,_speaker\nTITLE,Starship,Nave,captain\n", encoding="utf-8"
@@ -210,7 +211,7 @@ def test_a_brief_on_a_line_reads_its_text_speaker_and_verdict(tree):
 
 
 def test_an_id_nothing_lists_is_refused_like_an_unknown_name(tree):
-    from polyweave import brief
+    from polyweave.loop import brief
 
     with pytest.raises(PolyweaveError) as refused:
         brief.brief("audio/nothing.wav", root=str(tree))
@@ -219,7 +220,9 @@ def test_an_id_nothing_lists_is_refused_like_an_unknown_name(tree):
 
 def test_a_brief_reads_each_kind_back_in_its_own_words(tmp_path):
     # §PW300: an effect as its table, a cue as music.validate, a picture as its family.
-    from polyweave import brief, sfx, vfx
+    from polyweave.layers.sound import sfx
+    from polyweave.layers.vfx import vfx
+    from polyweave.loop import brief
 
     (tmp_path / C.FILENAME).write_text(
         '[style]\npalette = ["#112233", "#ffeedd"]\nfilter = "pixel"\n',
@@ -281,7 +284,7 @@ def test_a_brief_carries_a_pictures_last_gate_in_its_two_lanes(tree):
         ],
     }
     log.write_text(json.dumps(run) + "\n", encoding="utf-8")
-    from polyweave import brief
+    from polyweave.loop import brief
 
     gate = brief.brief("art/b.png", root=str(tree))["gate"]
     assert gate["run"] == "g1"
@@ -292,7 +295,7 @@ def test_a_brief_carries_a_pictures_last_gate_in_its_two_lanes(tree):
 
 
 def test_a_brief_says_a_loop_is_a_loop(tmp_path):
-    from polyweave import brief
+    from polyweave.loop import brief
 
     (tmp_path / C.FILENAME).write_text(
         '[paths]\naudio = "audio"\n\n[sound.music]\nkind = "loop"\nformat = "ogg"\n'

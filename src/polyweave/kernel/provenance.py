@@ -1,0 +1,1232 @@
+"""What produced an artefact, written beside it.
+
+`docs/specs/provenance.md` is the contract. A path-traced bake is not byte-reproducible:
+two runs of one unchanged Cottony scene differed in 29,696 pixels, none by more than
+1/255. So when a render changes, nothing in the file says whether the scene moved, a
+library moved, or the sampler simply landed elsewhere.
+
+The record answers that, and it is also the cache key — which is why the subset that
+goes into the key is stated exactly rather than taken to be "the important fields". A
+key that is merely likely to be right returns the wrong picture eventually.
+
+    prov = build("render", "docs/renders/mascot.png", engine=..., seed=...)
+    write(prov)                       # docs/renders/mascot.png.prov.json
+    cache_key(prov)                   # the same key for the same inputs, anywhere
+    verify(root)                      # is every recorded artefact still what it was
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+from collections.abc import Sequence
+from datetime import UTC, datetime
+from fnmatch import fnmatch
+from pathlib import Path, PurePath, PurePosixPath
+from typing import Annotated, Any
+
+from polyweave import __version__
+
+from .describe import Param, operation
+from .errors import PolyweaveError
+
+#: What a record may describe. Closed, because a reader branches on it.
+KINDS = (
+    "render", "mesh", "capture", "fetch", "picture", "sound", "vfx", "camera", "borrow",
+)
+
+SUFFIX = ".prov.json"
+
+#: Floats are rounded to this many places before a key is computed. Without it, 0.1 and
+#: 0.10000000000000001 are two keys for one render.
+PLACES = 6
+
+#: The `extra` keys that carry a path (§PW72). Declared here rather than remembered at
+#: each call site, because remembering is what failed: `purchase` relativised its one
+#: and `capture` did not, so a record committed beside a screenshot named a drive letter
+#: while the artefact two keys above it was relative. A value that is already a `Path`
+#: is rewritten whatever it is called, so a key added later and not listed here still
+#: comes out right as long as it arrives as a path rather than as a string.
+PATHS = ("script", "reference")
+
+#: The tiers a service licenses for non-commercial use only, as a record's engine keeps
+#: its `tier` (§PW435): `provenance.credits` names every file made on one.
+NON_COMMERCIAL = frozenset({"free"})
+
+
+def licensed_to_sell(engine: dict) -> bool:
+    """Whether the plan a record's engine names lets a sold game ship the file: false
+    only where the plan is known to forbid it (§PW448). A record from before plans were
+    kept still says so by its tier (§PW435)."""
+    if "commercial" in engine:
+        return bool(engine["commercial"])
+    return engine.get("tier") not in NON_COMMERCIAL
+
+_CHUNK = 1 << 20
+
+
+# -- the record ------------------------------------------------------------------
+
+
+def sha256_of(path: Path) -> tuple[str, int]:
+    """The digest and the byte length of a file, read once."""
+    hasher = hashlib.sha256()
+    length = 0
+    with open(path, "rb") as fh:
+        while chunk := fh.read(_CHUNK):
+            hasher.update(chunk)
+            length += len(chunk)
+    return hasher.hexdigest(), length
+
+
+def relative(path: str | Path, root: Path) -> str:
+    """A path as the record spells it: relative to the root, forward slashes.
+
+    A key computed on Windows and one computed elsewhere have to agree, and a backslash
+    is the difference between a hit and a second render.
+    """
+    absolute = Path(path)
+    if not absolute.is_absolute():
+        absolute = root / absolute
+    try:
+        return absolute.resolve().relative_to(root).as_posix()
+    except ValueError:
+        return absolute.resolve().as_posix()
+
+
+def source(role: str, path: str | Path, root: str | Path = ".") -> dict:
+    """One input of an artefact, hashed now.
+
+    The hash is what the key uses and the path is not: a file that moved is the same
+    input, and a file that changed is not.
+    """
+    where = Path(root).resolve()
+    absolute = Path(path)
+    if not absolute.is_absolute():
+        absolute = where / absolute
+    if not absolute.is_file():
+        raise PolyweaveError(
+            "prov.missing-input",
+            f"the {role} input is not at {absolute}",
+            "record the path the operation actually read",
+        )
+    digest, _ = sha256_of(absolute)
+    return {"role": role, "path": relative(absolute, where), "sha256": digest}
+
+
+def build(
+    kind: str,
+    artefact: str | Path,
+    *,
+    engine: dict | None = None,
+    inputs: Sequence[dict] = (),
+    params: dict | None = None,
+    measurements: dict | None = None,
+    rung: str | None = None,
+    seed: int | None = None,
+    samples: int | None = None,
+    tolerances: dict | None = None,
+    elapsed_s: float | None = None,
+    extra: dict | None = None,
+    root: str | Path = ".",
+    produced_at: str | None = None,
+) -> dict:
+    """The record of one artefact, with the artefact itself hashed.
+
+    `extra` carries what one kind needs and the others do not — a fetch's task id,
+    prompt hash and credits consumed go there, in this record rather than a second one.
+    A path among them is written the way the rest of the record writes one, relative to
+    the root; `PATHS` names the keys that carry one, and a `Path` is rewritten whatever
+    it is called (§PW72).
+
+    `tolerances` is what the numbers in `measurements` were taken against (§PW51).
+    Without it two records can carry the same measurement and mean different things,
+    because the alpha floor that decided what counted as the subject sat in a file that
+    has since been edited — and reading the config back recovers the project's numbers
+    now, not the artefact's. An operation resolves all six with `Config.tolerances()`
+    and passes `as_dict()` here. A record whose measurements were taken against nothing
+    carries no field, by the same rule that keeps a normalisation free of a seed.
+    """
+    if kind not in KINDS:
+        raise PolyweaveError(
+            "prov.unknown-kind",
+            f"there is no record kind {kind!r}",
+            f"use one of {', '.join(KINDS)}",
+            given=kind,
+            allowed=KINDS,
+        )
+    where = Path(root).resolve()
+    path = Path(artefact)
+    if not path.is_absolute():
+        path = where / path
+    if not path.is_file():
+        raise PolyweaveError(
+            "prov.missing-artefact",
+            f"nothing is at {path} to record",
+            "write the artefact before recording it; a record of a file that is not "
+            "there is what lost a paid mesh",
+        )
+    digest, length = sha256_of(path)
+    record = {
+        "artefact": {
+            "path": relative(path, where),
+            "sha256": digest,
+            "bytes": length,
+        },
+        "kind": kind,
+        "produced_at": produced_at or _stamp(),
+        "elapsed_s": elapsed_s,
+        "producer": {"tool": "polyweave", "version": __version__},
+        "inputs": [dict(i) for i in inputs],
+        "params": dict(params or {}),
+        "measurements": dict(measurements or {}),
+    }
+    # One vocabulary for every kind, with what does not apply **absent rather than
+    # empty** (§PW46). A normalisation has no engine, no rung, no seed and no sampler,
+    # and a record carrying four nulls for them says it has them and they are unknown —
+    # which is a different claim, and the wrong one. The key reads these with `.get`,
+    # so an absent field and a null one key identically and nothing is invalidated.
+    for name, value in (
+        ("engine", dict(engine or {})),
+        ("rung", rung),
+        ("seed", seed),
+        ("samples", samples),
+        ("tolerances", dict(tolerances or {})),
+    ):
+        if value or value == 0:
+            record[name] = value
+    if extra:
+        record.update(_placed(extra, where))
+    return record
+
+
+def _placed(extra: dict, where: Path) -> dict:
+    """`extra`, with every path in it spelled the way the rest of the record is.
+
+    The record is read on a machine that is not the one that wrote it — that is most of
+    what it is for — and it is committed beside the artefact it describes. A path in it
+    that survives a clone and one that does not cannot sit two keys apart.
+    """
+    return {
+        name: relative(value, where)
+        if value is not None and (name in PATHS or isinstance(value, PurePath))
+        else value
+        for name, value in extra.items()
+    }
+
+
+def planned(
+    kind: str,
+    *,
+    engine: dict | None = None,
+    inputs: Sequence[dict] = (),
+    params: dict | None = None,
+    rung: str | None = None,
+    seed: int | None = None,
+    samples: int | None = None,
+) -> dict:
+    """The record of work about to be done, for a key computed before it is paid for.
+
+    The key's subset excludes the artefact, so it can be known before the artefact
+    exists — which is the whole of what makes a cache lookup cheaper than a render.
+    `cache_key(planned(…))` equals `cache_key(build(…))` for the same work.
+    """
+    if kind not in KINDS:
+        raise PolyweaveError(
+            "prov.unknown-kind",
+            f"there is no record kind {kind!r}",
+            f"use one of {', '.join(KINDS)}",
+            given=kind,
+            allowed=KINDS,
+        )
+    return {
+        "artefact": None,
+        "kind": kind,
+        "producer": {"tool": "polyweave", "version": __version__},
+        "engine": dict(engine or {}),
+        "rung": rung,
+        "seed": seed,
+        "samples": samples,
+        "inputs": [dict(i) for i in inputs],
+        "params": dict(params or {}),
+    }
+
+
+def sidecar(artefact: str | Path, root: str | Path = ".") -> Path:
+    """Where the record for `artefact` lives: beside it, named after it."""
+    where = Path(root).resolve()
+    path = Path(artefact)
+    if not path.is_absolute():
+        path = where / path
+    return path.with_name(path.name + SUFFIX)
+
+
+def write(record: dict, root: str | Path = ".") -> Path:
+    """Write the record beside the artefact it describes, and return where."""
+    where = Path(root).resolve()
+    path = sidecar(record["artefact"]["path"], where)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    # LF on every platform, so a record committed from Windows is the same bytes on any
+    # other checkout (§PW228).
+    path.write_text(
+        json.dumps(record, indent=2, sort_keys=True) + "\n", "utf-8", newline="\n"
+    )
+    return path
+
+
+ROOT = Param("the project the records are under")
+
+
+@operation("provenance.read")
+def read(
+    path: Annotated[str, Param("an artefact, or its .prov.json, under the project")],
+    root: Annotated[str, ROOT] = ".",
+) -> dict:
+    """Read a record, by its own path or by the path of the artefact it describes."""
+    where = Path(root).resolve()
+    candidate = Path(path)
+    if not candidate.is_absolute():
+        candidate = where / candidate
+    if candidate.suffix != ".json" or not candidate.name.endswith(SUFFIX):
+        candidate = sidecar(candidate, where)
+    if not candidate.is_file():
+        raise PolyweaveError(
+            "prov.no-record",
+            f"there is no record at {candidate}",
+            "the artefact was produced without one, or beside a different file",
+        )
+    try:
+        return json.loads(candidate.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise PolyweaveError(
+            "prov.malformed",
+            f"{candidate} is not readable as a record",
+            "the file was edited or truncated; produce the artefact again",
+            detail=str(exc),
+        ) from exc
+
+
+# -- the key ---------------------------------------------------------------------
+
+
+def key_subset(record: dict) -> dict:
+    """Exactly the fields the key is computed over.
+
+    Stating the subset is what makes returning a hit safe rather than merely likely to
+    be right. Out: when it was made, how long it took, where it landed, what it
+    measured, and every input's path.
+
+    **Tolerances are deliberately out** (§PW51). A tolerance is read after the pixels
+    exist, so a render made at one alpha floor is byte-identical to the same render at
+    another, and keying on one would spend a path trace to recompute a number that can
+    be recomputed from the file already on disk. What does go stale is the verdict, and
+    `remeasure` is where that is answered.
+    """
+    engine = record.get("engine") or {}
+    return {
+        "kind": record.get("kind"),
+        "producer_version": (record.get("producer") or {}).get("version"),
+        "engine_name": engine.get("name"),
+        "engine_version": engine.get("version"),
+        "engine_bindings": engine.get("bindings"),
+        # The colour pipeline changes what lands in the file, so two installations that
+        # disagree about it must not share a key. §PW43 is what that costs when it is
+        # not noticed.
+        "engine_view_transform": engine.get("view_transform"),
+        "engine_display_device": engine.get("display_device"),
+        "rung": record.get("rung"),
+        "seed": record.get("seed"),
+        "samples": record.get("samples"),
+        "inputs": [
+            {"role": i.get("role"), "sha256": i.get("sha256")}
+            for i in record.get("inputs") or []
+        ],
+        "params": record.get("params") or {},
+    }
+
+
+def remeasure(record: dict, now: Any) -> list[str]:
+    """Which tolerances this record's measurements are no longer valid under.
+
+    Empty means the verdict written beside the artefact still stands and its numbers can
+    be read as they are. A name in the list is a bar that has moved since, so what sits
+    under it was measured against something else.
+
+    **A record carrying no tolerances at all returns every name asked about**, because a
+    measurement whose bar nobody wrote down cannot be shown to still hold. Reading that
+    silence as agreement is what keeps a stale verdict, and it is the symptom §PW51 is
+    about — so the answer for a record written before the field existed is the honest
+    "unknown", spelled as the same list a caller already has to handle.
+
+    Compared at the key's own rounding, so a float that survived a JSON round trip does
+    not read as a bar somebody moved.
+    """
+    wanted = now.as_dict() if hasattr(now, "as_dict") else dict(now or {})
+    taken = record.get("tolerances") or {}
+    if not taken:
+        return sorted(wanted)
+    return sorted(
+        name
+        for name, value in wanted.items()
+        if name not in taken
+        or round(float(taken[name]), PLACES) != round(float(value), PLACES)
+    )
+
+
+def canonical(value: Any) -> str:
+    """The one serialisation two machines agree on.
+
+    Keys sorted, arrays in declaration order, no insignificant whitespace, floats
+    rounded — each rule is here because its absence splits the cache.
+    """
+    return json.dumps(
+        _round(value), sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    )
+
+
+def cache_key(record: dict) -> str:
+    """The sha256 that identifies this work, wherever it is computed."""
+    return hashlib.sha256(canonical(key_subset(record)).encode("utf-8")).hexdigest()
+
+
+#: What a rerun can say about the one before it. Closed, because a caller branches on
+#: it.
+#:
+#: `differs` is the only one that is news. `different-work` is a byte difference the key
+#: already explains, and saying nothing about it would make the interesting case harder
+#: to spot rather than easier.
+AGAIN = ("first", "reproduced", "differs", "different-work")
+
+
+def reproduced(record: dict, root: str | Path = ".") -> dict:
+    """This artefact against the last one recorded in its place (§PW71).
+
+    The key says what counts as the same work, and the artefact's own hash is left out
+    of it deliberately — so a record whose key matches the one already beside the
+    artefact, and whose digest does not, is the same work having produced a different
+    file. Nothing in the project could say that before: both runs wrote a record, both
+    records stated the same params, and the second simply overwrote the first.
+
+    It is worth saying because it is not always expected. Three of Cottony's four
+    captures are byte-identical across runs and the fourth is not, and the difference
+    between a screenshot worth reviewing and one that is only noise is this answer.
+
+    **Called before the new record is written**, since writing it is what destroys the
+    evidence. `capture.run` does that and carries the answer back.
+
+    This is a report and never a refusal, for the reason `verify` is: the plugin cannot
+    make an engine deterministic and should not pretend to. What it can do is say so.
+
+    What it says carries the boundary the picture was held at (§PW74), because "the same
+    declared settings" is only actionable once the reader knows which settings those
+    were. Cottony declared `locale` and `resolution`, and the burst it could not
+    reproduce is drawn by a particle system answering to neither.
+
+    The comparison is the key's, so two different scripts writing to one artefact under
+    one set of params read as the same work — which they are not, but they are also
+    overwriting each other, and that is a different fault from this one.
+    """
+    now = (record.get("artefact") or {}).get("sha256")
+    path = sidecar(record["artefact"]["path"], root)
+    if not path.is_file():
+        return _again("first", record, None, "")
+    try:
+        before = read(path, root)
+    except PolyweaveError as unreadable:
+        why = f"{path.name} could not be read: {unreadable.message}"
+        return _again("first", record, None, why)
+    was = (before.get("artefact") or {}).get("sha256")
+    since = before.get("produced_at")
+    if cache_key(before) != cache_key(record):
+        # A key moves when an input did, and saying which is what turns an alarm into
+        # an explanation (§PW118): four captures changed because four sprites did.
+        moved = inputs_moved(before, record)
+        why = (
+            f"{PurePosixPath(record['artefact']['path']).name}: "
+            f"{_naming(moved)} changed since {since or 'the last record'}"
+            if moved
+            else ""
+        )
+        return {**_again("different-work", record, before, why), "moved": moved}
+    if was == now:
+        return _again("reproduced", record, before, "")
+    return _again(
+        "differs",
+        record,
+        before,
+        f"{PurePosixPath(record['artefact']['path']).name}: the same declared settings "
+        f"produced different bytes — {(was or '?')[:12]} on "
+        f"{since or 'an unknown date'}, {(now or '?')[:12]} now; {_boundary(record)}",
+    )
+
+
+def inputs_moved(before: dict, now: dict) -> list[str]:
+    """The input paths whose hash differs between two records, or that one lacks."""
+
+    def hashed(record: dict) -> dict[str, str]:
+        return {
+            i["path"]: i.get("sha256", "")
+            for i in record.get("inputs") or ()
+            if i.get("path")
+        }
+
+    was, is_ = hashed(before), hashed(now)
+    return sorted(p for p in set(was) | set(is_) if was.get(p) != is_.get(p))
+
+
+def pinned(record: dict) -> list[str]:
+    """The settings this artefact was held at, by name (§PW74)."""
+    return sorted(record.get("params") or {})
+
+
+def _naming(names: Sequence[str]) -> str:
+    """A short list as prose, because `[capture] declared` is short by design."""
+    names = list(names)
+    if len(names) < 2:
+        return names[0] if names else ""
+    return f"{', '.join(names[:-1])} and {names[-1]}"
+
+
+def _boundary(record: dict) -> str:
+    """What the picture was held at, and what the record leaves open (§PW74).
+
+    A `differs` says the settings matched and the bytes did not, which states the fault
+    without stating where to look. The settings the run pinned are the boundary: what is
+    inside it cannot be the cause, so something outside it moved and is not declared.
+    Naming them is the whole of the help, and it costs nothing to be sure of — they are
+    read off this record rather than guessed from a vocabulary of likely names, which
+    would be one project's spelling compiled in.
+
+    The frame is named separately because it is this record's own field rather than a
+    project's setting, and a run that recorded none did not pin even the instant.
+    """
+    held = _naming(pinned(record))
+    said = (
+        f"{held} {'was' if len(pinned(record)) == 1 else 'were'} pinned, so something "
+        f"this picture depends on is not declared"
+        if held
+        else "nothing was declared, so every difference here is unaccounted for"
+    )
+    if record.get("frames") in (None, ""):
+        said += ", and no frame was recorded"
+    return said
+
+
+def _again(verdict: str, record: dict, before: dict | None, why: str) -> dict:
+    """One verdict, in the shape every caller of this reads."""
+    return {
+        "verdict": verdict,
+        "artefact": record["artefact"]["path"],
+        "key": cache_key(record),
+        "was": ((before or {}).get("artefact") or {}).get("sha256"),
+        "now": (record.get("artefact") or {}).get("sha256"),
+        "since": (before or {}).get("produced_at"),
+        "pinned": pinned(record),
+        "why": why,
+    }
+
+
+def _round(value: Any) -> Any:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, float):
+        return round(value, PLACES)
+    if isinstance(value, dict):
+        return {k: _round(v) for k, v in value.items()}
+    if isinstance(value, list | tuple):
+        return [_round(v) for v in value]
+    return value
+
+
+# -- verification ------------------------------------------------------------------
+
+
+#: Which directories hold produced artefacts, and what the plugin writes into each. The
+#: other half of §PW41's question is asked over these: a file here with one of these
+#: suffixes and no sidecar was produced by something that did not record it.
+PRODUCED: dict[str, tuple[str, ...]] = {
+    "paths.meshes": (".glb", ".gltf"),
+    "paths.renders": (".png",),
+}
+
+
+@operation("provenance.unrecorded")
+def unrecorded(root: Annotated[str, ROOT] = ".") -> list[dict]:
+    """Produced files carrying no record — the half `verify` could not ask about.
+
+    §PW41. `verify` walks the records and checks their artefacts; it cannot walk the
+    artefacts and check their records, because nothing told it which files are supposed
+    to have one. So a mesh that was paid for, downloaded, committed and never recorded
+    is invisible to it, and the project reads as sound.
+
+    That is the more expensive half of the same failure. A recorded artefact that went
+    missing costs a re-render; an unrecorded one that was paid for costs the credits
+    again, and nothing says which of the meshes in the tree those are.
+
+    `[provenance] handmade` is how a project says which files here it made itself. A
+    project puts hand-made art in these directories too, and calling each of them a
+    defect makes the report useless within a week.
+    """
+    from .config import load as load_config
+
+    settings = load_config(root)
+    where = settings.root
+    excused = [str(p) for p in settings.get("provenance.handmade")]
+    out: list[dict] = []
+    for address, suffixes in PRODUCED.items():
+        directory = settings.path(address)
+        if not directory.is_dir():
+            continue
+        for found in sorted(directory.rglob("*")):
+            if not found.is_file() or found.suffix.lower() not in suffixes:
+                continue
+            here = relative(found, where)
+            if sidecar(found, where).is_file() or _excused(here, excused):
+                continue
+            out.append(
+                {"artefact": here, "expected": relative(sidecar(found, where), where)}
+            )
+    return out
+
+
+def _excused(path: str, patterns: Sequence[str]) -> bool:
+    """Whether the project already said this one is hand-made.
+
+    Matched against the path as written and against its name alone, so `*.png` excuses
+    a whole directory's worth without anybody spelling out the directory.
+    """
+    name = PurePosixPath(path).name
+    return any(fnmatch(path, pattern) or fnmatch(name, pattern) for pattern in patterns)
+
+
+@operation("provenance.verify")
+def verify(root: Annotated[str, ROOT] = ".") -> dict:
+    """Is every artefact the records claim to hold present, and still what it was.
+
+    A report rather than a refusal: the answer to "what is missing" is a list, and one
+    broken record should not hide the next.
+
+    Both directions are asked (§PW41): every record's artefact is checked, **and** every
+    produced file is checked for a record. The second is the expensive half — a paid
+    mesh with no sidecar used to read as a sound project.
+
+    Only the project's own records are read: another checkout below the root, such as
+    the work area's worktree of an older commit, is left out and named in `other_trees`
+    (§PW376), so `changed` and `missing` mean this project and nothing else.
+    """
+    where = Path(root).resolve()
+    ok: list[str] = []
+    missing: list[dict] = []
+    changed: list[dict] = []
+    unreadable: list[dict] = []
+
+    records, trees = _own(where)
+    for found in records:
+        try:
+            record = read(found, where)
+        except PolyweaveError as exc:
+            unreadable.append({"record": relative(found, where), "why": exc.message})
+            continue
+        claimed = (record.get("artefact") or {}).get("path")
+        if not claimed:
+            unreadable.append(
+                {"record": relative(found, where), "why": "it names no artefact"}
+            )
+            continue
+        artefact = where / claimed
+        if not artefact.is_file():
+            missing.append({"record": relative(found, where), "artefact": claimed})
+            continue
+        digest, length = sha256_of(artefact)
+        recorded = record["artefact"].get("sha256")
+        if digest != recorded:
+            entry = {
+                "record": relative(found, where),
+                "artefact": claimed,
+                "recorded": recorded,
+                "found": digest,
+                "bytes": length,
+            }
+            if _over_crlf(artefact, recorded):
+                entry["why"] = (
+                    "recorded over CRLF: a checkout normalised the line endings and "
+                    "nothing else changed; build it again to record it over LF"
+                )
+            changed.append(entry)
+            continue
+        ok.append(claimed)
+
+    nowhere = unrecorded(where)
+    out_in_git = leaked(where)
+    return {
+        "root": str(where),
+        "checked": len(ok) + len(missing) + len(changed) + len(unreadable),
+        "sound": not (missing or changed or unreadable or nowhere or out_in_git),
+        # What git tracks that was taken from a reference kept internal (§PW384).
+        "leaked": out_in_git,
+        "ok": ok,
+        "missing": missing,
+        "changed": changed,
+        "unreadable": unreadable,
+        "unrecorded": nowhere,
+        "other_trees": trees,
+    }
+
+
+#: The largest artefact read whole to ask whether only its line endings moved.
+_CRLF_LIMIT = 64 << 20
+
+
+def _over_crlf(artefact: Path, recorded: str | None) -> bool:
+    """Whether a record's digest was taken over this text with CRLF endings (§PW228).
+
+    Polyweave wrote text through Windows' text mode before it wrote LF everywhere, so a
+    record made there hashed CRLF bytes, and a checkout that normalises to LF hands back
+    a file that differs in nothing else. Said as such, rather than as a change.
+    """
+    if not recorded or artefact.stat().st_size > _CRLF_LIMIT:
+        return False
+    body = artefact.read_bytes()
+    if b"\r" in body or b"\n" not in body:
+        return False
+    return hashlib.sha256(body.replace(b"\n", b"\r\n")).hexdigest() == recorded
+
+
+def internal(
+    path: str | Path, root: str | Path = ".", _seen: set | None = None
+) -> bool:
+    """Whether an artefact is internal: its record says so, or an input's does (§PW384).
+
+    A reference video given to study is marked where it is first read, and everything
+    made from it inherits the mark through its record's inputs, so a contact sheet, a
+    track list or a transcription three steps down is as internal as the frames.
+    """
+    where = Path(root).resolve()
+    target = Path(path) if Path(path).is_absolute() else where / path
+    seen = _seen if _seen is not None else set()
+    if target in seen:
+        return False
+    seen.add(target)
+    if not sidecar(target, where).is_file():
+        return False
+    try:
+        record = read(target, where)
+    except PolyweaveError:
+        return False
+    if record.get("internal"):
+        return True
+    return any(
+        one.get("path") and internal(one["path"], where, seen)
+        for one in record.get("inputs") or ()
+    )
+
+
+def leaked(where: Path) -> list[dict]:
+    """Every file git tracks whose record is internal, so a reference never ships."""
+    import subprocess
+
+    done = subprocess.run(
+        ["git", "ls-files", "-z"], cwd=where, capture_output=True, check=False
+    )
+    if done.returncode:
+        return []
+    tracked = [p for p in done.stdout.decode("utf-8", "replace").split("\0") if p]
+    return [
+        {"artefact": path, "why": "derived from a reference kept internal"}
+        for path in tracked
+        if not path.endswith(SUFFIX) and internal(path, where)
+    ]
+
+
+def _own(where: Path) -> tuple[list[Path], list[str]]:
+    """The project's own records, and the other checkouts the walk left out (§PW376).
+
+    A folder below the root holding a `.git` is another tree, such as the worktree of
+    an older commit `engine.cost` keeps under the work area: its records describe that
+    commit's files, and read against this project's they report drift that is not.
+    """
+    import os
+
+    found: list[Path] = []
+    trees: list[str] = []
+    for folder, dirs, files in os.walk(where):
+        here = Path(folder)
+        if here != where and (here / ".git").exists():
+            trees.append(relative(here, where))
+            dirs[:] = []
+            continue
+        dirs.sort()
+        found.extend(here / name for name in files if name.endswith(SUFFIX))
+    return sorted(found), sorted(trees)
+
+
+def _records(where: Path):
+    """Every readable record of the project's own, with the artefact it names."""
+    for found in _own(where)[0]:
+        try:
+            record = read(found, where)
+        except PolyweaveError:
+            continue
+        if (record.get("artefact") or {}).get("path"):
+            yield record
+
+
+def _made_by(record: dict) -> str:
+    """What made an artefact, in words a person can act on."""
+    kind = record.get("kind", "")
+    script = record.get("script")
+    return f"{kind} by {script}" if script else kind
+
+
+@operation("provenance.credits")
+def credits(
+    root: Annotated[str, ROOT] = ".",
+    out: Annotated[
+        str, Param("write the answer here for the game's credits screen, as JSON")
+    ] = "",
+    check: Annotated[
+        bool, Param("answer whether the file at `out` still matches the records")
+    ] = False,
+) -> dict:
+    """The credits a game owes, and what else its licences say.
+
+    Read from every `sound` record's instruments (§PW191) and every record that carries
+    a `credit` of its own, as a borrowed file can (§PW350): `owed` lists each credit a
+    licence requires, with the files it is owed for; `notes` what a person should know
+    of the rest, such as a library whose author cannot vouch for every sample; `people`
+    the names and roles the project declares under `[kit.credits] people`. A file a
+    service made on its free tier, whose record keeps the tier, is listed under
+    `non_commercial`, since that tier licenses it for nothing a game sells (§PW435).
+
+    With `out`, the answer is written there with its `digest`, for the credits kit's
+    screen to read, so the screen lists what the records hold and nothing else. With
+    `check` as well, nothing is written: `fresh` says whether that file still matches
+    the records, and `why` what moved, so an asset recorded after the last build cannot
+    ship uncredited.
+    """
+    where = Path(root).resolve()
+    owed: dict[str, dict] = {}
+    notes: dict[str, dict] = {}
+    unlicensed: list[dict] = []
+    for record in _records(where):
+        made = record["artefact"]["path"]
+        engine = record.get("engine") or {}
+        if not licensed_to_sell(engine):
+            unlicensed.append({"file": made, "service": engine.get("name", ""),
+                               "tier": engine.get("plan") or engine.get("tier", "")})
+        if record.get("credit"):
+            entry = owed.setdefault(record["credit"], {
+                "name": record["credit"], "licence": record.get("licence", ""),
+                "credit": record["credit"], "files": []})
+            entry["files"].append(made)
+        if record.get("kind") != "sound":
+            continue
+        for one in record.get("instruments") or ():
+            if one.get("credit"):
+                entry = owed.setdefault(one["name"], {
+                    "name": one["name"], "licence": one.get("licence", ""),
+                    "credit": one["credit"], "files": []})
+                entry["files"].append(made)
+            elif one.get("note") and one.get("role") != "engine":
+                entry = notes.setdefault(one["name"], {
+                    "name": one["name"], "licence": one.get("licence", ""),
+                    "note": one["note"], "files": []})
+                entry["files"].append(made)
+    answer = {"owed": list(owed.values()), "notes": list(notes.values()),
+              "people": _people(where)}
+    if unlicensed:
+        # Said only where there is one, so a credits file written before this read the
+        # same (§PW435).
+        answer["non_commercial"] = unlicensed
+        answer["says"] = (
+            f"{len(unlicensed)} file(s) were made on a service's free tier, licensed "
+            "for non-commercial use only: make them again on a paid plan before a game "
+            "that sells ships them")
+    digest = hashlib.sha256(
+        json.dumps(answer, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    if not out:
+        return answer
+    target = Path(out) if Path(out).is_absolute() else where / out
+    if check:
+        try:
+            held = json.loads(target.read_text(encoding="utf-8-sig"))
+        except (OSError, ValueError):
+            return {**answer, "fresh": False, "file": relative(target, where),
+                    "why": f"{relative(target, where)} is not there to read: "
+                           "write it with provenance.credits out="}
+        written = {c["credit"] for c in held.get("owed", ())}
+        missing = [c["credit"] for c in answer["owed"] if c["credit"] not in written]
+        fresh = held.get("digest") == digest
+        why = (f"{len(missing)} credit(s) owed are not in it: {', '.join(missing)}"
+               if missing else "the records moved since it was written")
+        return {**answer, "fresh": fresh, "file": relative(target, where),
+                **({} if fresh else {"why": why, "missing": missing})}
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps({**answer, "digest": digest}, indent=1) + "\n",
+                      encoding="utf-8", newline="\n")
+    return {**answer, "wrote": relative(target, where), "digest": digest}
+
+
+def _people(where: Path) -> list[dict]:
+    """The names and roles the project declares for its credits, in order."""
+    from .config import load
+
+    if not (where / "polyweave.toml").is_file():
+        return []
+    declared = (load(where).table("kit").get("credits") or {}).get("people") or []
+    return [{"name": str(p.get("name", "")), "role": str(p.get("role", ""))}
+            for p in declared if isinstance(p, dict)]
+
+
+def _lineage(path: str, where: Path, seen: set[str]) -> tuple[list[str], dict] | None:
+    """The chain from `path` back to a purchase, and that purchase's record, if any.
+
+    Walked through each record's inputs, depth first, so the first chain found is the
+    one named; an input with no record is where a lineage ends, a file a person made.
+    """
+    if path in seen:
+        return None
+    seen.add(path)
+    try:
+        record = read(path, where)
+    except PolyweaveError:
+        return None
+    if record.get("kind") == "fetch":
+        return [path], record
+    for one in record.get("inputs") or ():
+        if one.get("path"):
+            found = _lineage(one["path"], where, seen)
+            if found:
+                return [path, *found[0]], found[1]
+    return None
+
+
+@operation("provenance.generated")
+def generated(
+    paths: Annotated[
+        list, Param("the files a build ships, or folders of them, under the project")
+    ] = (),
+    preset: Annotated[
+        str, Param("a Godot project's export preset to read what ships off; the first")
+    ] = "",
+    root: Annotated[str, ROOT] = ".",
+) -> dict:
+    """Which files a build ships a paid generator made, and through what (§PW248).
+
+    Steam's content survey asks whether a game ships generated content, and the honest
+    answer needs every shipped file's lineage: bought from a service directly, or made
+    from something that was, through the records' inputs. `generated` lists each such
+    file with the chain back to the purchase, the service and what was bought;
+    `authored` the files whose lineage reaches no purchase; `unrecorded` the pictures,
+    sounds, meshes, fonts and videos with no record, which no one can vouch for either
+    way, and `unrecorded_code` the rest, which no generator made (§PW455). Without
+    paths, a Godot project answers for what its export `preset` ships, and any other
+    for every recorded artefact under it.
+    """
+    where = Path(root).resolve()
+    files: list[str] = []
+    shipping = None
+    if not paths and (where / "project.godot").is_file():
+        from polyweave.layers.engine.driving import shipped
+
+        shipping, paths = shipped(where, preset)
+    for one in paths or ():
+        target = Path(one)
+        target = target if target.is_absolute() else where / target
+        found = sorted(target.rglob("*")) if target.is_dir() else [target]
+        for file in found:
+            if file.is_file() and not file.name.endswith((SUFFIX, ".import", ".uid")):
+                files.append(relative(file, where))
+    if not paths:
+        files = [record["artefact"]["path"] for record in _records(where)]
+    made: list[dict] = []
+    authored: list[str] = []
+    unrecorded: list[str] = []
+    drafts: list[str] = []
+    known = _known(where)
+    for path in dict.fromkeys(files):
+        if not sidecar(path, where).is_file():
+            unrecorded.append(path)
+            continue
+        # A free local draft is a placeholder, shown apart so it is never shipped as
+        # the line (§PW324).
+        if (_sidecar_params(path, where) or {}).get("rung") == "draft":
+            drafts.append(path)
+            continue
+        found = _lineage(path, where, set())
+        if found is None:
+            authored.append(path)
+            continue
+        chain, bought = found
+        made.append(
+            {
+                "path": path,
+                "chain": chain,
+                **_service_of(bought, chain[-1], where, known),
+                "bought": bought.get("bought", ""),
+                "direct": len(chain) == 1,
+            }
+        )
+    media = [one for one in unrecorded if one.lower().endswith(MEDIA)]
+    answer = {"generated": made, "authored": authored, "unrecorded": media,
+              "unrecorded_code": [one for one in unrecorded if one not in media],
+              "drafts": drafts}
+    return {"preset": shipping, **answer} if shipping else answer
+
+
+#: What a generator could have made, so an unrecorded one needs a person's word.
+MEDIA = (".png", ".jpg", ".jpeg", ".webp", ".svg", ".bmp", ".tga", ".exr", ".hdr",
+         ".ktx", ".dds", ".wav", ".ogg", ".mp3", ".flac", ".opus", ".glb", ".gltf",
+         ".obj", ".fbx", ".blend", ".dae", ".ttf", ".otf", ".woff", ".woff2", ".fnt",
+         ".ogv", ".webm", ".mp4")
+
+
+#: What a record written before services were named put where the name goes.
+_UNNAMED = frozenset({"", "service"})
+
+
+def _known(where: Path) -> tuple[list[str], dict[str, str]]:
+    """The services the project declares, and each ledger entry's service by file."""
+    from polyweave.services import purchase
+
+    from .config import load
+
+    try:
+        declared = sorted(load(where).services())
+    except PolyweaveError:
+        declared = []
+    try:
+        ledger = {e.get("artefact"): e.get("service") for e in purchase.read(where)
+                  if e.get("service")}
+    except PolyweaveError:
+        ledger = {}
+    return declared, ledger
+
+
+def _service_of(record: dict, path: str, where: Path, known: tuple) -> dict:
+    """Which service a purchase's record says made it, or what it can be read off
+    (§PW454): the ledger entry for the file, a `<service>:` task id, or a folder named
+    for a declared service, each answered with how it was `inferred`. Where nothing
+    says, the service is null with why and the remedy, never a placeholder."""
+    named = record.get("service") or (record.get("engine") or {}).get("name", "")
+    if named not in _UNNAMED:
+        return {"service": named}
+    declared, ledger = known
+    if ledger.get(path):
+        return {"service": ledger[path], "inferred": "ledger"}
+    prefix = str(record.get("task_id") or "").partition(":")[0]
+    if prefix in declared and ":" in str(record.get("task_id")):
+        return {"service": prefix, "inferred": "task_id"}
+    folders = [part for part in Path(path).parts[:-1] if part in declared]
+    if folders:
+        return {"service": folders[-1], "inferred": "folder"}
+    return {
+        "service": None,
+        "why": f"the record of {path} names no service, and neither the ledger, its "
+        "task id nor its folder says which made it",
+        "fix": f'add "service": "<name>" to {relative(sidecar(path, where), where)}',
+    }
+
+
+def _sidecar_params(path: str, where: Path) -> dict | None:
+    try:
+        held = json.loads(sidecar(path, where).read_text(encoding="utf-8-sig"))
+        return held.get("params")
+    except (OSError, ValueError):
+        return None
+
+
+@operation("provenance.borrow")
+def borrow(
+    path: Annotated[
+        str, Param("the file to bring in: another project's, as an absolute path")
+    ],
+    out: Annotated[str, Param("where it lands here, as a path under the project")],
+    *,
+    licence: Annotated[str, Param("the licence it comes under, e.g. CC-BY-4.0")] = "",
+    credit: Annotated[
+        str, Param("the credit its licence requires; the credits screen shows it")
+    ] = "",
+    root: Annotated[str, ROOT] = ".",
+) -> dict:
+    """Copy an artefact another project made into this one, recording where from.
+
+    The record names the source's project, its path there, the commit it was taken at
+    and its SHA-256, so `provenance.outdated` says when the source has moved on and
+    every game that borrowed a studio's badge learns it changed (§PW325). A path in this
+    project works too, for a file kept apart from the engine's tree. Borrowing again
+    takes the source as it is now.
+    """
+    import shutil
+
+    where = Path(root).resolve()
+    origin = Path(path) if Path(path).is_absolute() else where / path
+    if not origin.is_file():
+        raise PolyweaveError(
+            "prov.missing-input",
+            f"there is no file at {origin} to borrow",
+            "name the file the other project made, as an absolute path",
+            given=str(path),
+        )
+    landed = Path(out) if Path(out).is_absolute() else where / out
+    if landed.resolve() == origin.resolve():
+        raise PolyweaveError(
+            "prov.missing-input",
+            f"{out} is the file being borrowed",
+            "name where the copy lands, apart from its source",
+            given=str(out),
+        )
+    landed.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(origin, landed)
+    taken = _from(origin)
+    record = build(
+        "borrow", landed,
+        engine={"name": "provenance.borrow"},
+        inputs=[source("borrowed", origin, root=where)],
+        extra={"borrowed": taken,
+               **({"licence": licence} if licence else {}),
+               **({"credit": credit} if credit else {})},
+        root=where,
+    )
+    write(record, where)
+    return {"artefact": record["artefact"]["path"], "borrowed": taken,
+            "sha256": record["artefact"]["sha256"],
+            **({"credit": credit} if credit else {})}
+
+
+def _from(origin: Path) -> dict:
+    """Where a borrowed file lives: its project, its path there and the commit."""
+    import subprocess
+
+    def git(*argv: str) -> str | None:
+        try:
+            done = subprocess.run(
+                ["git", "-C", str(origin.parent), *argv],
+                capture_output=True, text=True, check=False, timeout=20,
+            )
+        except (OSError, subprocess.TimeoutExpired):
+            return None
+        return done.stdout.strip() if done.returncode == 0 else None
+
+    top = git("rev-parse", "--show-toplevel")
+    if not top:
+        return {"project": None, "path": origin.resolve().as_posix(), "commit": None}
+    project = Path(top).resolve()
+    inside = origin.resolve().relative_to(project).as_posix()
+    # From the top, which is what the path is relative to.
+    changed = git("-C", str(project), "status", "--porcelain", "--", inside)
+    return {
+        "project": project.as_posix(),
+        "path": inside,
+        "commit": git("rev-parse", "HEAD"),
+        # Taken from a working tree that differs from the commit it names.
+        "uncommitted": bool(changed),
+    }
+
+
+@operation("provenance.dependents")
+def dependents(
+    path: Annotated[str, Param("the input file, under the project")],
+    root: Annotated[str, ROOT] = ".",
+) -> dict:
+    """Every artefact whose record names this file as an input (§PW119).
+
+    When Cottony's stars changed, which of its four screenshots would change was a
+    guess, so all four were re-taken and diffed. Every record is already an edge from an
+    artefact to what it was made from, so the reverse read answers it directly: captures
+    and renders alike, each with what made it. No index and no service; the same walk
+    `verify` makes.
+    """
+    where = Path(root).resolve()
+    wanted = relative(path, where)
+    found = [
+        {
+            "artefact": record["artefact"]["path"],
+            "kind": record.get("kind"),
+            "made_by": _made_by(record),
+            "role": next(
+                i.get("role")
+                for i in record.get("inputs") or ()
+                if i.get("path") == wanted
+            ),
+            # Which entity of a world it was drawn from, so the answer for a world
+            # file can be narrowed to one character (§PW198).
+            **({"entity": _entity(record)["id"]} if _entity(record) else {}),
+        }
+        for record in _records(where)
+        if any(i.get("path") == wanted for i in record.get("inputs") or ())
+    ]
+    return {"input": wanted, "artefacts": found}
+
+
+@operation("provenance.outdated")
+def outdated(root: Annotated[str, ROOT] = ".") -> dict:
+    """Artefacts made from a file that has changed since, and not made again (§PW119).
+
+    The gate half: a file moved and an artefact depending on it did not, so a committed
+    screenshot no longer shows the game. `sound` is false while any is left. `kits`
+    names each installed kit the plugin now carries in a newer version, with the
+    changes between the two (§PW343).
+    """
+    where = Path(root).resolve()
+    stale = []
+    for record in _records(where):
+        moved = []
+        for one in record.get("inputs") or ():
+            named = one.get("path")
+            if not named:
+                continue
+            source = where / named
+            now = sha256_of(source)[0] if source.is_file() else None
+            if now != one.get("sha256") and not _same_entity(record, one, source):
+                moved.append(named)
+        if moved:
+            stale.append(
+                {
+                    "artefact": (record.get("artefact") or {}).get("path"),
+                    "made_by": _made_by(record),
+                    "moved": moved,
+                }
+            )
+    from polyweave.layers.kits import behind
+
+    return {"outdated": stale, "sound": not stale, "kits": behind(where)}
+
+
+def _entity(record: dict) -> dict | None:
+    """The world entity a purchase was drawn from, where it was (§PW198)."""
+    return (record.get("details") or {}).get("entity")
+
+
+def _same_entity(record: dict, one: dict, source: Path) -> bool:
+    """Whether a changed world still describes this record's entity as it was drawn.
+
+    A world file holds every entity, so any edit changes its hash. What was bought from
+    one entity is stale only when that entity's look changed, and the digest recorded
+    beside the id is what says so. A string table is the same (§PW322): a spoken take
+    is stale only when its own row's words changed.
+    """
+    line = (record.get("details") or {}).get("line")
+    if one.get("role") == "words" and line and source.is_file():
+        if not all(line.get(k) for k in ("key", "locale", "sha256")):
+            return False  # nothing to prove it unchanged by, so it reads outdated
+        from polyweave.layers.words.words import still_said
+
+        return still_said(source, line["key"], line["locale"], line["sha256"])
+    drawn = _entity(record)
+    if one.get("role") != "world" or not drawn or not source.is_file():
+        return False
+    if not (drawn.get("id") and drawn.get("sha256")):
+        # A record naming its entity without the digest it was drawn at cannot say the
+        # entity is unchanged, so it reads outdated rather than stopping the read with a
+        # KeyError, as one of Spinhold's did (§PW423).
+        return False
+    from polyweave.layers.words.world import still_drawn
+
+    return still_drawn(source, drawn["id"], drawn["sha256"], drawn.get("of", "look"),
+                       drawn.get("locale"))
+
+
+def _stamp() -> str:
+    return datetime.now(tz=UTC).isoformat(timespec="seconds").replace("+00:00", "Z")

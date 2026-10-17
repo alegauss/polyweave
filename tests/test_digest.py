@@ -11,8 +11,8 @@ import numpy as np
 import pytest
 from PIL import Image as PILImage
 
-from polyweave import measure
-from polyweave.image import load
+from polyweave.kernel.image import load
+from polyweave.loop import measure
 
 NOISE = 0.02
 FLOOR = 0.02
@@ -90,8 +90,9 @@ def test_the_operation_digests_a_picture_by_path(tmp_path):
 
 def test_a_bake_returns_and_records_both_digests(tmp_path):
     pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
-    from polyweave import config as C
-    from polyweave import provenance, render
+    from polyweave.kernel import config as C
+    from polyweave.kernel import provenance
+    from polyweave.layers.geometry import render
 
     (tmp_path / C.FILENAME).write_text(
         "[render]\npreview_size = 32\nfinal_size = 32\n"
@@ -146,8 +147,10 @@ def test_restyling_a_small_slot_moves_its_own_palette_entry(tmp_path):
     """§PW161: the mean of the whole subject barely moves when a small slot is
     recoloured; the slot's own colour does."""
     pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
-    from polyweave import cli, provenance, render
-    from polyweave import config as C
+    from polyweave.kernel import config as C
+    from polyweave.kernel import provenance
+    from polyweave.layers.geometry import render
+    from polyweave.surface import cli
 
     (tmp_path / C.FILENAME).write_text(
         "[render]\npreview_size = 64\nfinal_size = 64\n"

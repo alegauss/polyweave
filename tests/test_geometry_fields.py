@@ -11,9 +11,9 @@ from pathlib import Path
 
 import pytest
 
-from polyweave import geometry
-from polyweave.errors import PolyweaveError
-from polyweave.geometry.build import BUILDS, FIELDS
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers import geometry
+from polyweave.layers.geometry.build import BUILDS, FIELDS
 
 BOX = {
     "name": "box",
@@ -70,7 +70,7 @@ def test_every_committed_declaration_still_reads():
     root = Path(__file__).resolve().parent.parent
     read = 0
     for where in sorted((root / "tests").rglob("*.toml")):
-        from polyweave.cli import is_declaration
+        from polyweave.surface.cli import is_declaration
 
         if is_declaration(where):
             geometry.read(where)

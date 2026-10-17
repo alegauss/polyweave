@@ -8,9 +8,9 @@ from __future__ import annotations
 
 import pytest
 
-from polyweave import post
-from polyweave.errors import PolyweaveError
-from polyweave.geometry import voxels as V
+from polyweave.kernel import post
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.geometry import voxels as V
 
 LIMITS = {
     "parts": 1,
@@ -183,7 +183,7 @@ def test_asymmetric_is_true_or_false():
 
 
 def test_one_variant_may_be_one_sided_while_its_base_is_checked():
-    from polyweave import geometry as G
+    from polyweave.layers import geometry as G
 
     document = drawn(WAVE)
     document["variants"] = {"wave": {"voxels": {"asymmetric": True}}}
@@ -194,7 +194,7 @@ def test_one_variant_may_be_one_sided_while_its_base_is_checked():
 
 
 def test_a_variant_may_not_change_the_rest_of_voxels():
-    from polyweave import geometry as G
+    from polyweave.layers import geometry as G
 
     document = drawn(WAVE)
     document["variants"] = {"big": {"voxels": {"cell": 2.0}}}

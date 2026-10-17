@@ -7,8 +7,9 @@ import json
 import pytest
 from PIL import Image
 
-from polyweave import icons, provenance
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import provenance
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.store import icons
 
 SET = """name = "pad"
 sizes = [32, 64]

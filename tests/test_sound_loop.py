@@ -13,8 +13,8 @@ import wave
 import numpy as np
 import pytest
 
-from polyweave import sound, sound_loop
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.sound import sound, sound_loop
 
 needs_ffmpeg = pytest.mark.skipif(shutil.which("ffmpeg") is None,
                                   reason="ffmpeg absent: it decodes and encodes")

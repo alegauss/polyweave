@@ -1,0 +1,14 @@
+{
+  "sources": [
+    "gui/packages/core/src/desk.ts",
+    "gui/packages/core/src/index.ts",
+    "gui/packages/ui/review/index.html",
+    "gui/packages/ui/src/Advanced.tsx",
+    "gui/packages/ui/src/Decide.tsx",
+    "gui/packages/ui/src/index.css",
+    "gui/packages/ui/src/review.css",
+    "gui/packages/ui/src/review.tsx"
+  ],
+  "sha256": "e533b9a813e78561f10eb312651949908c7785e96d8ade2edeea2c9572b80b56",
+  "rebuild": "cd gui && npm run build:review"
+}

@@ -2,6 +2,6 @@
 
 import sys
 
-from .cli import main
+from .surface.cli import main
 
 sys.exit(main())

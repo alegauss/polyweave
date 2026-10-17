@@ -11,8 +11,9 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from polyweave import accept, video
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.store import video
+from polyweave.loop import accept
 
 needs_ffmpeg = pytest.mark.skipif(
     not (shutil.which("ffmpeg") and shutil.which("ffprobe")), reason="needs ffmpeg"

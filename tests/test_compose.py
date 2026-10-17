@@ -11,8 +11,9 @@ import numpy as np
 import pytest
 from PIL import Image as PILImage
 
-from polyweave import compose, measure
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.store import compose
+from polyweave.loop import measure
 
 
 def asset(tmp_path, name, *, size=(16, 16), colour=(200, 40, 40), grounded=True):
@@ -142,7 +143,7 @@ def test_an_asset_placed_off_the_capture_is_refused(tmp_path):
 
 def test_a_placed_picture_carries_a_record_of_what_it_was_made_from(tmp_path):
     """§PW269: Starship's capsules had no record, so nothing found them stale."""
-    from polyweave import provenance
+    from polyweave.kernel import provenance
 
     (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
     asset(tmp_path, "logo.png")
@@ -158,7 +159,7 @@ def test_a_placed_picture_carries_a_record_of_what_it_was_made_from(tmp_path):
 
 
 def test_a_sheet_carries_a_record_of_its_tiles(tmp_path):
-    from polyweave import provenance
+    from polyweave.kernel import provenance
 
     (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
     for i in range(3):

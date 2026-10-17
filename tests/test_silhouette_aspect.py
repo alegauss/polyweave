@@ -10,9 +10,9 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from polyweave import accept
-from polyweave import measure as M
-from polyweave.render.ladder import rung_for
+from polyweave.layers.geometry.render.ladder import rung_for
+from polyweave.loop import accept
+from polyweave.loop import measure as M
 
 
 def shape(where, width, height, *, size=(200, 200)):

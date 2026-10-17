@@ -5,8 +5,8 @@ from __future__ import annotations
 import pytest
 from PIL import Image
 
-from polyweave import accept, loop, verdict
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.loop import accept, loop, verdict
 
 SPEC = """asset = "{name}"
 

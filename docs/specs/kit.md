@@ -10,8 +10,8 @@ last one learned.
 
 ## Where a kit lives
 
-A kit is a folder `kits/<name>/` inside the plugin, at `src/polyweave/kits/<name>/`, so
-it ships in the wheel as the Godot addons under `src/polyweave/godot/` do. A kit only in
+A kit is a folder `kits/<name>/` inside the plugin, at `src/polyweave/layers/kits/<name>/`, so
+it ships in the wheel as the Godot addons under `src/polyweave/layers/engine/godot/` do. A kit only in
 the repository's root would never reach a project installed from the package, which is
 the one place a kit is for. `<name>` is lower case, letters, digits and underscores, and
 is the kit's name everywhere: its folder, its `name` in `kit.toml`, its table in a

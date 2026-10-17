@@ -6,8 +6,9 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from polyweave import panel, provenance
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import provenance
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.picture import panel
 
 HOLO = """\
 [panel.holo]
@@ -353,7 +354,7 @@ def prop(tmp_path) -> str:
 
 def test_a_pictures_silhouette_is_sewn_with_the_panels_needle(tmp_path):
     """§PW474: a baked prop and a drawn panel are sewn by one needle."""
-    from polyweave import describe
+    from polyweave.kernel import describe
 
     made = describe._REGISTRY["picture.sew"].fn(
         prop(tmp_path), out="art/prop.sewn.png",
@@ -387,7 +388,7 @@ def test_a_pictures_silhouette_is_sewn_with_the_panels_needle(tmp_path):
     ],
 )
 def test_a_picture_that_cannot_be_sewn_is_refused(tmp_path, seam, said):
-    from polyweave import describe
+    from polyweave.kernel import describe
 
     source = prop(tmp_path)
     with pytest.raises(PolyweaveError) as refused:
@@ -626,7 +627,7 @@ def test_a_panel_whose_shader_will_not_compile_is_refused_not_filmed(tmp_path,
     """§PW489: a broken shader was filmed as white stills, and the answer said ok."""
     import os
 
-    from polyweave import offscreen
+    from polyweave.layers.engine import offscreen
 
     if not os.environ.get("GODOT"):
         pytest.skip("no $GODOT on this machine")
@@ -663,7 +664,7 @@ def test_a_panel_filmed_grown_keeps_its_stitch_pitch(tmp_path):
     """§PW490: the shader route sews by arc length, which only a grown still shows."""
     import os
 
-    from polyweave import offscreen
+    from polyweave.layers.engine import offscreen
 
     if not os.environ.get("GODOT"):
         pytest.skip("no $GODOT on this machine")
@@ -702,7 +703,7 @@ def test_a_panel_filmed_grown_keeps_its_stitch_pitch(tmp_path):
 def test_the_engine_films_each_state_and_each_wipe_step(tmp_path):
     import os
 
-    from polyweave import offscreen
+    from polyweave.layers.engine import offscreen
 
     if not os.environ.get("GODOT"):
         pytest.skip("no $GODOT on this machine")

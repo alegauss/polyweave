@@ -10,8 +10,8 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from polyweave import units
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.geometry import units
 
 
 def project(tmp_path, body):
@@ -248,7 +248,7 @@ class Quiet:
 
 
 def baking(tmp_path, body):
-    from polyweave import render
+    from polyweave.layers.geometry import render
 
     project(tmp_path, f"[render]\npreview_size = 48\nfinal_size = 64\n\n{body}")
     return render
@@ -368,7 +368,7 @@ def test_a_rectangular_request_keys_differently_from_a_square_one(tmp_path):
     rides in `params`, and `params` is already what the key is computed over. So a
     square render can never come back for a rectangular request, and no cached entry
     is invalidated, because a bake that declares nothing keys exactly as before."""
-    from polyweave import provenance
+    from polyweave.kernel import provenance
 
     def key(**params):
         return provenance.cache_key(
@@ -390,8 +390,8 @@ def test_a_declared_rectangle_is_rendered_orthographically(tmp_path):
     the rig's perspective camera a unit at the front covers more pixels than one at the
     back, so the scale would be a different number in every part of the frame."""
     pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
-    from polyweave.render import blender
-    from polyweave.render.rig import Rig
+    from polyweave.layers.geometry.render import blender
+    from polyweave.layers.geometry.render.rig import Rig
 
     scene = blender.reset()
     subject = blender.primitive("sphere", 1.0)
@@ -433,8 +433,8 @@ def test_a_placed_rectangle_seen_from_a_turned_camera_is_refused(tmp_path):
 def test_the_camera_stands_over_the_rectangle_and_not_over_the_subject():
     """The whole of §PW78: a size is centred on the subject's bounds, a place is not."""
     pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
-    from polyweave.render import blender
-    from polyweave.render.rig import Rig
+    from polyweave.layers.geometry.render import blender
+    from polyweave.layers.geometry.render.rig import Rig
 
     scene = blender.reset()
     subject = blender.primitive("sphere", 1.0)
@@ -448,7 +448,7 @@ def test_the_camera_stands_over_the_rectangle_and_not_over_the_subject():
 def test_a_subject_lands_where_its_rectangle_says(tmp_path):
     """A unit sphere at the origin, in a rectangle from -1 to 3: the left half, only."""
     pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
-    from polyweave.image import load
+    from polyweave.kernel.image import load
 
     render = baking(
         tmp_path, "samples = { sphere = 4 }\n\n[units]\npixels_per_unit = 16.0\n"
@@ -472,8 +472,8 @@ def test_a_subject_lands_where_its_rectangle_says(tmp_path):
 
 def test_a_bake_with_no_rectangle_keeps_the_perspective_rig(tmp_path):
     pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
-    from polyweave.render import blender
-    from polyweave.render.rig import Rig
+    from polyweave.layers.geometry.render import blender
+    from polyweave.layers.geometry.render.rig import Rig
 
     scene = blender.reset()
     blender.place(scene, Rig(), blender.primitive("sphere", 1.0))

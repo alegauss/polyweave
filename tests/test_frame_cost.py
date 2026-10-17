@@ -15,8 +15,8 @@ from pathlib import Path
 
 import pytest
 
-from polyweave import frame_cost
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.engine import frame_cost
 
 # Measures frame times on this machine, so the gate runs it alone after the rest.
 pytestmark = pytest.mark.serial
@@ -155,7 +155,7 @@ def test_a_comparison_that_cannot_be_made_is_refused(tmp_path, timed, ask, code)
 
 
 def test_a_timing_run_is_left_on_the_wall_clock(tmp_path):
-    from polyweave import engine
+    from polyweave.layers.engine import engine
 
     (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
     (tmp_path / "t.gd").write_text(PERF, encoding="utf-8")

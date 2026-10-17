@@ -18,10 +18,12 @@ import json
 
 import pytest
 
-from polyweave import commands, config, describe, errors, search
-from polyweave.accept import Spec
-from polyweave.capabilities import capabilities
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import config, describe, errors
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.loop import search
+from polyweave.loop.accept import Spec
+from polyweave.surface import commands
+from polyweave.surface.capabilities import capabilities
 
 #: describe(): 74 operations measured 46,946. One more average operation is ~630.
 #: Raised for asset.brief (§PW131), which took 435 and left 19: 75 measure 47,381.

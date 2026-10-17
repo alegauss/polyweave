@@ -10,10 +10,10 @@ from __future__ import annotations
 import pytest
 from tests.test_geometry import TRAY
 
-from polyweave import geometry as G
-from polyweave.errors import PolyweaveError
-from polyweave.geometry import review
-from polyweave.geometry import solid as S
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers import geometry as G
+from polyweave.layers.geometry import review
+from polyweave.layers.geometry import solid as S
 
 
 def tray(tmp_path, body=TRAY):
@@ -162,7 +162,7 @@ def test_a_document_with_nothing_odd_in_it_warns_about_nothing(tmp_path):
 
 
 def built_tray(tmp_path, **how):
-    from polyweave.geometry import outline as O
+    from polyweave.layers.geometry import outline as O
 
     return {
         "face": S.plate([0, 0, 928, 928], 6, 28),

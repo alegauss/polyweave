@@ -11,8 +11,8 @@ import shutil
 
 import pytest
 
-from polyweave import kits
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers import kits
 
 
 def test_a_kit_that_contributes_a_tab_declares_it():

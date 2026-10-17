@@ -11,8 +11,8 @@ import numpy as np
 import pytest
 from PIL import Image as PILImage
 
-from polyweave import cache, provenance
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import cache, provenance
+from polyweave.kernel.errors import PolyweaveError
 
 
 def artefact(tmp_path, name="shot.png", *, colour=(200, 40, 40)):
@@ -197,8 +197,8 @@ def test_an_entry_can_be_forgotten(tmp_path):
 def test_a_second_identical_render_is_a_hit_and_says_so(tmp_path):
     """A caller timing a sweep needs to know what it actually measured."""
     pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
-    from polyweave import config as C
-    from polyweave import render
+    from polyweave.kernel import config as C
+    from polyweave.layers.geometry import render
 
     (tmp_path / C.FILENAME).write_text(
         "[render]\npreview_size = 32\nfinal_size = 32\n"
@@ -230,8 +230,8 @@ def test_a_second_identical_render_is_a_hit_and_says_so(tmp_path):
 def test_a_preview_rung_is_cached_too(tmp_path):
     """Those are the renders a search asks for thousands of times."""
     pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
-    from polyweave import config as C
-    from polyweave import render
+    from polyweave.kernel import config as C
+    from polyweave.layers.geometry import render
 
     (tmp_path / C.FILENAME).write_text(
         "[render]\npreview_size = 32\nfinal_size = 32\n"
@@ -258,8 +258,8 @@ def test_a_changed_rung_size_is_a_miss_at_the_new_size(tmp_path):
     """§PW145: the size came from the project file and was in no keyed field, so a
     smaller `preview_size` was served the larger picture as a hit."""
     pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
-    from polyweave import config as C
-    from polyweave import render
+    from polyweave.kernel import config as C
+    from polyweave.layers.geometry import render
 
     settings = (
         "[render]\npreview_size = {size}\nfinal_size = 32\n"
@@ -286,8 +286,8 @@ def test_a_changed_rung_size_is_a_miss_at_the_new_size(tmp_path):
 
 def test_a_caller_may_refuse_the_cache(tmp_path):
     pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
-    from polyweave import config as C
-    from polyweave import render
+    from polyweave.kernel import config as C
+    from polyweave.layers.geometry import render
 
     (tmp_path / C.FILENAME).write_text(
         "[render]\npreview_size = 32\nfinal_size = 32\n"
@@ -327,7 +327,7 @@ class _Quiet:
 
 
 def _project(tmp_path, tolerance=""):
-    from polyweave import config as C
+    from polyweave.kernel import config as C
 
     (tmp_path / C.FILENAME).write_text(
         "[render]\npreview_size = 32\nfinal_size = 32\n"
@@ -338,7 +338,8 @@ def _project(tmp_path, tolerance=""):
 
 def test_a_render_records_the_bars_its_measurements_were_taken_against(tmp_path):
     pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
-    from polyweave import provenance, render
+    from polyweave.kernel import provenance
+    from polyweave.layers.geometry import render
 
     _project(tmp_path)
     render.bake(_Quiet(), out="a.png", rung="sphere", root=tmp_path, inline=False)
@@ -349,7 +350,7 @@ def test_a_render_records_the_bars_its_measurements_were_taken_against(tmp_path)
 
 def test_a_hit_taken_under_the_same_bars_has_nothing_stale(tmp_path):
     pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
-    from polyweave import render
+    from polyweave.layers.geometry import render
 
     _project(tmp_path)
     at = {"rung": "sphere", "root": tmp_path, "inline": False}
@@ -362,7 +363,7 @@ def test_a_hit_taken_under_the_same_bars_has_nothing_stale(tmp_path):
 def test_a_hit_whose_floor_moved_is_still_the_picture_and_names_the_bar(tmp_path):
     """A tolerance is read after the pixels exist, so the render is not paid again."""
     pytest.importorskip("bpy", reason="Blender is not importable in this interpreter")
-    from polyweave import render
+    from polyweave.layers.geometry import render
 
     _project(tmp_path)
     at = {"rung": "sphere", "root": tmp_path, "inline": False}

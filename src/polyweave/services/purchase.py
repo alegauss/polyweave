@@ -1,0 +1,906 @@
+"""Taking delivery of something that was paid for.
+
+The evidence is §PW17: the service deletes a task's assets seventy-two hours after it
+completes. One Cottony run recorded the settings it had proved and did not commit the
+mesh or its ledger entry, and the mesh is now gone: thirty credits spent for a receipt.
+
+That is a design problem rather than a discipline one, so the order is fixed here:
+
+    1. the bytes land on disk and are asserted against what the response declared
+    2. they are hashed, and the record is written beside them
+    3. only then is the ledger entry appended
+
+**The ledger is written last, so it can never claim an asset that is not there.** The
+reverse — a file on disk that nothing recorded — is what `provenance.verify` finds, and
+between the two there is no window in which a session can believe an asset is safe
+because a ledger mentions it.
+
+Everything downstream keys off **the local file and its hash**, never the remote id,
+which is the identifier that stops existing.
+
+§PW18 is the other half. An agent may not decide that a mesh is worth money, and that
+rule is right — but what it constrains is the **ceiling**, not each call, so a person
+sets one in `[budget]` and the plugin spends against it without asking and refuses the
+call that would pass it. The balance is read either side of a spend, and the difference
+between those readings is what the call actually cost — the only form of that claim
+anybody can check.
+"""
+
+from __future__ import annotations
+
+import json
+import os
+import shutil
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Annotated, Any
+
+from polyweave.kernel import post, provenance
+from polyweave.kernel.config import FILENAME, load
+from polyweave.kernel.describe import Param, operation
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.kernel.files import read_text_retrying, write_atomic
+
+#: What a project may buy. `kind` in the record stays `fetch` for all of them.
+BOUGHT = ("mesh", "texture", "image", "description", "sound", "model")
+
+
+def owing(root: str | Path = ".") -> Path:
+    """Where charges with no asset yet are kept, beside the ledger and committed too.
+
+    The ledger never names an asset that is not there, and a ceiling never misses a
+    charge, and a picture the service charged for whose download failed is where the two
+    rules meet (§PW179). It goes here, which the ceiling counts and the ledger does not.
+    """
+    ledger = where(root)
+    return ledger.with_name(ledger.stem + ".owed" + ledger.suffix)
+
+
+def owed(root: str | Path = ".") -> list[dict]:
+    """Every charge made for an asset that has not arrived, oldest first."""
+    text = read_text_retrying(owing(root))
+    return json.loads(text) if text else []
+
+
+def owe(charge: dict, *, root: str | Path = ".") -> dict:
+    """Record a charge for something that was paid for and never landed."""
+    entry = {
+        **charge,
+        "at": charge.get("at")
+        or datetime.now(tz=UTC).isoformat(timespec="seconds").replace("+00:00", "Z"),
+        "measured": bool(charge.get("measured", False)),
+    }
+    # Owed once however often its delivery fails: a retry replaces its own entry.
+    others = [e for e in owed(root) if e.get("task_id") != entry.get("task_id")]
+    write_atomic(
+        owing(root), json.dumps([*others, entry], indent=2, sort_keys=True) + "\n"
+    )
+    return entry
+
+
+def settle(task_id: str, *, root: str | Path = ".") -> dict | None:
+    """Take a charge off the owed list once its asset is in the ledger; its record."""
+    held = owed(root)
+    found = next((e for e in held if e.get("task_id") == task_id), None)
+    if found is not None:
+        rest = [e for e in held if e.get("task_id") != task_id]
+        write_atomic(owing(root), json.dumps(rest, indent=2, sort_keys=True) + "\n")
+    return found
+
+
+def where(root: str | Path = ".") -> Path:
+    """The ledger's own file, which belongs to the project and is committed with it."""
+    config = load(root)
+    return config.path("paths.purchases")
+
+
+#: Which service a call draws on. Needed only where the project declares several.
+SERVICE = Param("the [service.<name>] to use; needed only where there are several")
+
+
+@operation("purchase.remaining")
+def remaining(
+    root: Annotated[str, Param("the project whose ledger this is")] = ".",
+    today: Annotated[
+        str, Param("the date the ceiling is judged on; today if unset")
+    ] = None,
+    service: Annotated[str, SERVICE] = None,
+) -> dict:
+    """What is left of one service's ceiling, against what was spent on that service.
+
+    An agent may not decide that a mesh is worth money, and that rule is right. What it
+    actually constrains is the **ceiling**, not each call — so the ceiling is approved
+    once, with the whole plan in view, instead of five interruptions. Each service has
+    its own, in its own unit, and a spend on one never draws on another's (§PW162).
+    """
+    if isinstance(today, str):
+        # By name the date arrives as text; in process it may already be a date.
+        from datetime import date
+
+        today = date.fromisoformat(today)
+    config = load(root)
+    declared = config.budget(today, service)
+    already = spent(root, declared["service"])
+    left = round(float(declared["amount"]) - already, 4)
+    return {
+        "service": declared["service"],
+        "unit": declared["unit"],
+        "declared": float(declared["amount"]),
+        "spent": already,
+        # How much of `spent` is a declared price rather than a reading (§PW164). It
+        # counts in full: under-counting is what would let a session pass the ceiling.
+        "quoted": _charged(read(root) + owed(root), config, quoted=True)[0].get(
+            declared["service"], 0.0
+        ),
+        "left": max(0.0, left) if declared["spendable"] else 0.0,
+        "expires": declared["expires"],
+        "spendable": declared["spendable"] and left > 0,
+        "why": declared["why"]
+        or (
+            ""
+            if left > 0
+            else f"the budget of {declared['amount']} {declared['unit']} is used up"
+        ),
+        "table": declared["table"],
+    }
+
+
+#: Set in a revision's session, so what it buys is tied to the revision (§PW308).
+REVISION_VAR = "POLYWEAVE_REVISION"
+
+#: What each paid operation is priced by, where it is not its `model`: the row of
+#: `[service.<name>] prices` it charges (§PW308).
+PRICED_BY = {"picture.describe": "describe", "picture.vary": "change"}
+
+#: The arguments whose length is the count a row by the character prices (§PW320).
+COUNTED = ("text", "prompt")
+
+#: The free operation beside a paid one, where the item may not need a purchase. Named
+#: by operation, so the window says it in the person's language.
+CHEAPER = {"picture.buy": "picture.fit", "picture.vary": "picture.fit"}
+
+
+@operation("purchase.quote")
+def quote(
+    operation: Annotated[str, Param("the paid operation, as describe names it")],
+    arguments: Annotated[dict, Param("the arguments the call would pass")] = None,
+    *,
+    root: Annotated[str, Param("the project whose ledger this is")] = ".",
+) -> dict:
+    """What one paid call would cost, and what the ceiling leaves, spending nothing.
+
+    Priced exactly as the operation prices itself: its service's `prices` row for the
+    model it would buy. A window asks a person with this before such a call runs, one
+    call at a time (§PW308); `cheaper` names a free path where there is one.
+    """
+    from polyweave.kernel import describe as D
+    from polyweave.layers.picture import picture
+
+    D.load()
+    # As Claude Code names the tool, too: the window asks with the name it was given.
+    if operation.startswith("mcp__polyweave__"):
+        from polyweave.surface.server import tool_name
+
+        named = {tool_name(name): name for name in D._REGISTRY}
+        operation = named.get(operation.removeprefix("mcp__polyweave__"), operation)
+    found = D._REGISTRY.get(operation)
+    if found is None or not found.spends:
+        paid = sorted(name for name, op in D._REGISTRY.items() if op.spends)
+        raise PolyweaveError(
+            "fetch.not-paid",
+            f"{operation!r} draws on no paid service, so it has no price",
+            f"quote one of {', '.join(paid)}",
+            given=operation,
+            allowed=paid,
+        )
+    given = dict(arguments or {})
+    defaults = {p["name"]: p.get("default") for p in found.parameters}
+    by = PRICED_BY.get(operation, "model")
+    model = by if by not in defaults else str(given.get(by) or defaults.get(by) or "")
+    config = load(root)
+    service = config.service(given.get("service") or None, model=model or None)
+    about = config.services()[service]
+    counted = next((given[k] for k in COUNTED if isinstance(given.get(k), str)), None)
+    if counted is None and operation == "voice.design" and given.get("entity"):
+        # The line it speaks is its count: the one passed, or the entity's own (§PW482).
+        from polyweave.layers.sound.sound_buy import _sample_of
+
+        counted = _sample_of(str(given["entity"]), given.get("world"), root,
+                             given.get("locale"), given.get("sample"))
+    found_price = picture._priced(
+        service, about.get("prices") or {}, model, given.get("rendering_speed"),
+        None if counted is None else len(counted),
+    )
+    price = found_price["price"]
+    left = remaining(root, service=service)
+    return {
+        "operation": operation,
+        "service": service,
+        "model": model,
+        "price": price,
+        **{k: v for k, v in found_price.items() if k != "price"},
+        "unit": left["unit"],
+        "left": left["left"],
+        "after": round(float(left["left"]) - price, 4),
+        "affordable": bool(left["spendable"]) and price <= float(left["left"]),
+        **({"cheaper": CHEAPER[operation]} if operation in CHEAPER else {}),
+    }
+
+
+@operation("purchase.allow")
+def allow(
+    cost: Annotated[
+        float, Param("what the spend would cost, in the service's own unit", lo=0.0)
+    ],
+    *,
+    root: Annotated[str, Param("the project whose ledger this is")] = ".",
+    today: Annotated[
+        str, Param("the date the ceiling is judged on; today if unset")
+    ] = None,
+    service: Annotated[str, SERVICE] = None,
+) -> dict:
+    """Refuse a spend that would pass the ceiling. Never asks; the answer is the file.
+
+    What is given up is the per-call veto. What is bought is an approval made once.
+    Where the project declares several services, one has to be named: guessing which
+    balance to draw on is the one mistake a ceiling exists to prevent.
+    """
+    _writable(root)
+    left = remaining(root, today, service)
+    table = left["table"]
+    key = "credits" if table == "[budget]" else "amount"
+    if not left["spendable"]:
+        raise PolyweaveError(
+            "fetch.budget-closed",
+            f"nothing may be spent on {left['service']}: {left['why']}",
+            f"set `{table} {key}` and `expires` in {load(root).source or FILENAME}; "
+            f"an absent or expired budget is never read as permission",
+        )
+    if float(cost) > left["left"]:
+        raise PolyweaveError(
+            "fetch.over-budget",
+            f"this would spend {cost} of the {left['left']} {left['unit']} left for "
+            f"{left['service']}",
+            f"raise `{table} {key}` above {left['spent'] + float(cost):g}, or ask "
+            f"for something that costs less",
+        )
+    return left
+
+
+def allow_priced(priced: dict, *, root: str | Path = ".", service: str) -> dict:
+    """`allow` for a price `picture._priced` reached, saying what a count came to.
+
+    A refusal of a price by the unit quotes the count and the rate as well as the sum,
+    so the person sees a paragraph cost what twelve characters did not (§PW320).
+    """
+    try:
+        return allow(priced["price"], root=root, service=service)
+    except PolyweaveError as refused:
+        if refused.code != "fetch.over-budget" or priced.get("count") is None:
+            raise
+        raise PolyweaveError(
+            refused.code,
+            f"{refused.message}: {priced['count']} {priced['per']}s at "
+            f"{priced['rate']:g} each",
+            refused.remedy,
+        ) from refused
+
+
+def capture(
+    source: bytes | str | Path,
+    *,
+    out: str | Path,
+    task_id: str,
+    credits: float = 0.0,
+    balance_before: float | None = None,
+    balance_after: float | None = None,
+    prompt: str | None = None,
+    reference: str | Path | None = None,
+    bought: str = "mesh",
+    declared_length: int | None = None,
+    sha256: str | None = None,
+    engine: dict | None = None,
+    service: str | None = None,
+    details: dict | None = None,
+    outputs: int = 1,
+    reported: float | None = None,
+    inputs: list[dict] | None = None,
+    root: str | Path = ".",
+) -> dict:
+    """Put a bought artefact somewhere it will outlive the service, and write it down.
+
+    `details` is what the service reported about what it made (a picture's model, speed
+    and resolution, which may not be the ones asked for), kept on the record. `inputs`
+    are files it was made from beside the reference, such as the world an entity's look
+    was read from (§PW198), each as `provenance.source` gives it.
+
+    Returns the ledger entry. The call completes only once the file is on disk, hashed,
+    recorded and ledgered — a fetch that fails partway leaves no entry claiming it.
+    The entry names the service it was bought from, resolved before anything lands, so
+    a spend is always charged to the ceiling it was allowed against.
+    """
+    _writable(root)
+    project = load(root)
+    service = project.service(service)
+    # The plan that paid for it, which is what licenses it (§PW448): read off the
+    # service where the adapter could, as ElevenLabs' tier, and declared where not. Kept
+    # here rather than by each adapter, so a new one cannot forget it.
+    engine = dict(engine or {"name": "service"})
+    plan = engine.get("tier") or project.services()[service].get("plan", "")
+    if plan:
+        engine["plan"] = plan
+        engine["commercial"] = plan not in provenance.NON_COMMERCIAL
+    if bought not in BOUGHT:
+        raise PolyweaveError(
+            "fetch.unknown-purchase",
+            f"there is no such thing to buy as a {bought!r}",
+            f"name one of {', '.join(BOUGHT)}",
+            given=bought,
+            allowed=BOUGHT,
+        )
+    if not task_id:
+        raise PolyweaveError(
+            "fetch.no-task",
+            "a purchase with no task id cannot be traced back to what was bought",
+            "pass the service's own id for the task that produced this",
+        )
+
+    # What it really cost is the difference between two readings of the balance, not
+    # what the caller believed it would cost. That is also what makes a claim that some
+    # call is free verifiable rather than merely asserted.
+    # Two balance readings, or the charge the service itself reports for the call
+    # (§PW178): either is a measurement, where a declared price is only a quote.
+    measured = (
+        round(float(balance_before) - float(balance_after), 4)
+        if balance_before is not None and balance_after is not None
+        else (round(float(reported), 6) if reported is not None else None)
+    )
+    charged = float(credits) if measured is None else measured
+
+    here = Path(root).resolve()
+    landed = Path(out)
+    if not landed.is_absolute():
+        landed = here / landed
+    landed.parent.mkdir(parents=True, exist_ok=True)
+
+    # 1. The bytes, and what the response said about them. An assertion here is the
+    #    difference between a short download and a mesh that loads with half its faces.
+    if isinstance(source, bytes | bytearray):
+        landed.write_bytes(source)
+    else:
+        arriving = Path(source)
+        if not arriving.is_file():
+            raise PolyweaveError(
+                "fetch.nothing-arrived",
+                f"nothing is at {arriving} to take delivery of",
+                "the transfer never completed; ask the service again before recording "
+                "anything",
+            )
+        shutil.copy2(arriving, landed)
+    checked = post.check(
+        "download", landed, declared_length=declared_length, sha256=sha256
+    )
+
+    # 2. The record, beside the artefact, carrying what the service charged for it.
+    extra = {
+        "task_id": task_id,
+        "service": service,
+        "credits": charged,
+        "expected_credits": float(credits),
+        "balance_before": balance_before,
+        "balance_after": balance_after,
+        "bought": bought,
+        "prompt": prompt,
+    }
+    if details:
+        extra["details"] = dict(details)
+    if reference is not None:
+        # Not relativised here: `build` does it for every path in `extra`, and this
+        # having been the only call site that remembered to is §PW72.
+        extra["reference"] = reference
+    record = provenance.build(
+        "fetch",
+        landed,
+        engine=engine,
+        inputs=(
+            [provenance.source("reference", reference, root=here)]
+            if reference is not None
+            else []
+        )
+        + list(inputs or ()),
+        measurements=checked,
+        extra=extra,
+        root=here,
+    )
+    provenance.write(record, root=here)
+
+    # 3. The ledger, last, so it never names a file that is not there.
+    entry = {
+        "artefact": record["artefact"]["path"],
+        "sha256": record["artefact"]["sha256"],
+        "bytes": record["artefact"]["bytes"],
+        "task_id": task_id,
+        "service": service,
+        # In the service's own unit, whatever it is; the name is the ledger's first one.
+        "credits": charged,
+        "expected_credits": float(credits),
+        "balance_before": balance_before,
+        "balance_after": balance_after,
+        "surprised": measured is not None and abs(measured - float(credits)) > 1e-9,
+        # Read off two balances, or quoted from a declared price: a ledger that cannot
+        # tell the two apart has stopped being evidence (§PW164).
+        "measured": measured is not None,
+        # How many outputs the service billed this call for, which is what a usage
+        # export counts and so what `reconcile` matches on (§PW164).
+        "outputs": int(outputs),
+        "bought": bought,
+        "prompt": prompt,
+        # Off the record rather than off `extra`: the record is where a path is spelled
+        # the one way both files agree on, and the ledger is committed too (§PW72).
+        "reference": record.get("reference"),
+        "at": datetime.now(tz=UTC).isoformat(timespec="seconds").replace("+00:00", "Z"),
+    }
+    # Made inside a revision's session: the spend is tied to the change it was for, so
+    # a closed revision says what it cost (§PW308).
+    if os.environ.get(REVISION_VAR):
+        entry["revision"] = os.environ[REVISION_VAR]
+    append(entry, root=here)
+    return entry
+
+
+@operation("purchase.adopt")
+def adopt(
+    entries: Annotated[
+        Any, Param("another ledger's entries, or the file holding them")
+    ],
+    *,
+    root: Annotated[str, Param("the project whose ledger this is")] = ".",
+) -> dict:
+    """Bring a ledger somebody else kept into this one, spending nothing (§PW55).
+
+    A project adopting the plugin already has a record of what it bought, in whatever
+    shape its own client wrote — Cottony's is a `meshy.lock.json` holding a task id, the
+    exact request, the cost and the sha256 of what went in and what came out. Replaying
+    it is what stops one spend being recorded twice, and it costs nothing, because every
+    claim in such a file is about a file already on disk.
+
+    Each entry needs an `artefact`, a `sha256` and a `task_id`; the rest of the ledger's
+    own fields are carried across where they are given. Mapping a foreign file's field
+    names onto those is the caller's, and deliberately so: the service's format is not
+    this plugin's to hard-code, and a project's own paths are the thing that must never
+    be compiled in.
+
+    **An entry is adopted only where the file is there and still hashes to what it
+    claims.** The ledger is written last precisely so that it can never name an asset
+    that is not there (§PW17), and importing past that rule would hand the project back
+    the failure it started with: a receipt for a mesh nobody has. So a claim that no
+    longer holds is reported instead, which is also the first time anything asks that
+    question mechanically — a lock file records a hash and nothing ever compares it.
+
+    Adopting twice is a no-op. The match is on the hash, never the remote id, for the
+    same reason nothing else here keys off one: it is the identifier that stops
+    existing.
+    """
+    here = Path(root).resolve()
+    already_held = {e.get("sha256") for e in read(here)}
+    report: dict[str, list] = {
+        "adopted": [],
+        "missing": [],
+        "changed": [],
+        "already": [],
+    }
+    fresh: list[dict] = []
+
+    for stated in entries:
+        entry = dict(stated)
+        claimed = entry.get("sha256")
+        if not entry.get("task_id"):
+            raise PolyweaveError(
+                "fetch.no-task",
+                f"the entry for {entry.get('artefact')!r} carries no task id",
+                "map the service's own id for the task onto `task_id`; an entry "
+                "without one cannot be traced back to what was bought",
+            )
+        if not entry.get("artefact") or not claimed:
+            raise PolyweaveError(
+                "fetch.ledger-malformed",
+                f"an entry for task {entry['task_id']!r} names no artefact or no hash",
+                "map the file it bought onto `artefact` and its digest onto `sha256`; "
+                "everything downstream keys off the local file and its hash",
+            )
+
+        artefact = here / entry["artefact"]
+        if not artefact.is_file():
+            report["missing"].append({**entry, "expected_at": str(artefact)})
+            continue
+        digest, length = provenance.sha256_of(artefact)
+        if digest != claimed:
+            report["changed"].append({**entry, "found": digest, "recorded": claimed})
+            continue
+        if claimed in already_held:
+            report["already"].append(entry)
+            continue
+
+        already_held.add(claimed)
+        fresh.append(_adopted(entry, length, here))
+
+    if fresh:
+        write_atomic(
+            where(here), json.dumps(read(here) + fresh, indent=2, sort_keys=True) + "\n"
+        )
+        report["adopted"] = fresh
+    report["credits"] = round(sum(float(e["credits"]) for e in fresh), 4)
+    report["sound"] = not (report["missing"] or report["changed"])
+    return report
+
+
+#: How far apart a ledger entry and a usage row may be in time and still be one call.
+#: The ledger's time is when the picture landed, a few seconds after the service billed.
+RECONCILE_WINDOW = 300
+
+
+@operation("purchase.reconcile")
+def reconcile(
+    rows: Annotated[
+        Any, Param("the service's usage rows, each {at, cost, count}, or their file")
+    ],
+    *,
+    service: Annotated[str, SERVICE] = None,
+    root: Annotated[str, Param("the project whose ledger this is")] = ".",
+) -> dict:
+    """Hold each quoted price against what the service's usage export says it billed.
+
+    A price declared in `[service] prices` is a quote, and a quote goes stale without
+    anyone noticing (§PW164). A person downloads the service's usage export, and each
+    row is matched to the quoted entry nearest it in time with the same count of
+    outputs. The billed amount becomes the entry's `credits`, the quote stays as
+    `expected_credits`, and a difference sets `surprised`, as a measured one does.
+
+    Mapping the export's columns onto `at`, `cost` and `count` is the caller's, as it is
+    for `adopt`: the service's format is not this plugin's to hard-code. A row nothing
+    matches is reported, because a charge with no entry is money the ceiling never saw.
+    """
+    here = Path(root).resolve()
+    config = load(here)
+    name = config.service(service)
+    if isinstance(rows, str | Path):
+        rows = json.loads(Path(here / rows).read_text(encoding="utf-8-sig"))
+    ledger = read(here)
+    only = next(iter(config.services())) if len(config.services()) == 1 else None
+    open_ = [
+        i
+        for i, e in enumerate(ledger)
+        if (e.get("service") or only) == name
+        and not _measured(e)
+        and not e.get("adopted")
+    ]
+    matched, unmatched = [], []
+    for row in sorted(rows, key=lambda r: str(r.get("at", ""))):
+        billed_at = _moment(row.get("at"), "a usage row")
+        count = int(row.get("count", 1))
+        near = [
+            (abs((_moment(ledger[i]["at"], "an entry") - billed_at).total_seconds()), i)
+            for i in open_
+            if int(ledger[i].get("outputs", 1)) == count
+        ]
+        near = [pair for pair in near if pair[0] <= RECONCILE_WINDOW]
+        if not near:
+            unmatched.append(dict(row))
+            continue
+        _, i = min(near)
+        open_.remove(i)
+        billed = round(float(row["cost"]), 4)
+        entry = ledger[i]
+        entry.update(
+            expected_credits=float(entry.get("credits", 0.0)),
+            credits=billed,
+            measured=True,
+            surprised=abs(billed - float(entry.get("credits", 0.0))) > 1e-9,
+            reconciled={"at": row.get("at"), "cost": billed, "count": count},
+        )
+        matched.append(entry)
+    if matched:
+        write_atomic(where(here), json.dumps(ledger, indent=2, sort_keys=True) + "\n")
+    return {
+        "service": name,
+        "matched": matched,
+        "surprised": [e["artefact"] for e in matched if e["surprised"]],
+        # Billed and in no entry: a picture paid for whose download failed looks so.
+        "unmatched_rows": unmatched,
+        # Still quoted: what the export did not cover.
+        "still_quoted": [ledger[i]["artefact"] for i in open_],
+    }
+
+
+def _moment(stamp: Any, what: str) -> datetime:
+    try:
+        moment = datetime.fromisoformat(str(stamp).replace("Z", "+00:00"))
+    except ValueError:
+        raise PolyweaveError(
+            "fetch.ledger-malformed",
+            f"{what} carries the time {stamp!r}, which is not an ISO date and time",
+            "map the export's time column onto `at` as YYYY-MM-DDTHH:MM:SSZ",
+        ) from None
+    return moment if moment.tzinfo else moment.replace(tzinfo=UTC)
+
+
+def _adopted(entry: dict, length: int, root: Path) -> dict:
+    """One foreign entry in this ledger's shape, with a record beside its artefact.
+
+    A sidecar that already exists is left alone. This is a replay of something that
+    happened, so a record somebody already wrote is the better account of it than one
+    reconstructed from a lock file.
+    """
+    artefact = root / entry["artefact"]
+    if not provenance.sidecar(artefact, root).is_file():
+        provenance.write(
+            provenance.build(
+                "fetch",
+                artefact,
+                inputs=[provenance.source("reference", entry["reference"], root=root)]
+                if entry.get("reference") and (root / entry["reference"]).is_file()
+                else [],
+                extra={
+                    "task_id": entry["task_id"],
+                    "credits": float(entry.get("credits", 0.0)),
+                    "prompt": entry.get("prompt"),
+                    "adopted": True,
+                },
+                root=root,
+            ),
+            root=root,
+        )
+    return {
+        "artefact": provenance.relative(artefact, root),
+        "sha256": entry["sha256"],
+        "bytes": length,
+        "task_id": entry["task_id"],
+        "service": entry.get("service"),
+        "credits": float(entry.get("credits", 0.0)),
+        "expected_credits": float(
+            entry.get("expected_credits", entry.get("credits", 0.0))
+        ),
+        "balance_before": entry.get("balance_before"),
+        "balance_after": entry.get("balance_after"),
+        "surprised": bool(entry.get("surprised", False)),
+        "measured": _measured(entry),
+        "bought": entry.get("bought", "mesh"),
+        "prompt": entry.get("prompt"),
+        "reference": entry.get("reference"),
+        "at": entry.get("at")
+        or datetime.now(tz=UTC).isoformat(timespec="seconds").replace("+00:00", "Z"),
+        # What separates a replay from a spend. `spent` reads this, so money that was
+        # gone before the ceiling existed does not eat it.
+        "adopted": True,
+    }
+
+
+def append(entry: dict, *, root: str | Path = ".") -> Path:
+    """Add one entry, rewriting the whole file so a reader never sees half a line."""
+    path = where(root)
+    _writable(root)
+    held = read(root)
+    held.append(entry)
+    write_atomic(path, json.dumps(held, indent=2, sort_keys=True) + "\n")
+    return path
+
+
+@operation("purchase.ledger")
+def read(
+    root: Annotated[str, Param("the project whose ledger this is")] = ".",
+) -> list[dict]:
+    """Everything this project has bought, oldest first.
+
+    A ledger is a list of entries, or an adopting project's own lock kept as a table by
+    name (§PW457), read as one adopted entry per name, which no ceiling is charged for.
+    """
+    path = where(root)
+    held = _held(path)
+    if held is None:
+        return []
+    if isinstance(held, list) and all(isinstance(one, dict) for one in held):
+        return held
+    if isinstance(held, dict) and all(
+        isinstance(one, dict) for one in held.values()
+    ):
+        return [_by_name(name, one) for name, one in held.items()]
+    raise PolyweaveError(
+        "fetch.ledger-malformed",
+        f"{path} is neither a list of entries nor a table of purchases keyed by name",
+        "restore it from version control; a ledger is a list of entries, or a lock "
+        "keyed by name whose values are purchases",
+        detail=type(held).__name__,
+    )
+
+
+def _held(path: Path) -> Any:
+    """The ledger file's JSON, or None where there is none."""
+    text = read_text_retrying(path)
+    if text is None:
+        return None
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError as exc:
+        raise PolyweaveError(
+            "fetch.ledger-malformed",
+            f"{path} is not readable as a ledger",
+            "the file was edited by hand; restore it from version control, where it "
+            "belongs",
+            detail=str(exc),
+        ) from exc
+
+
+def _by_name(name: str, one: dict) -> dict:
+    """One purchase of a lock keyed by name, in the ledger's shape (§PW457): the key
+    kept as `name`, the credits the measured ones where the lock says it measured
+    them."""
+    measured = one.get("credits_measured")
+    quoted = one.get("consumed_credits", one.get("credits", 0))
+    credits = float(measured if measured is not None else quoted)
+    stamp = one.get("finished_at") or one.get("created_at")
+    at = one.get("at")
+    if at is None and isinstance(stamp, int | float):
+        moment = datetime.fromtimestamp(stamp / 1000 if stamp > 1e11 else stamp, tz=UTC)
+        at = moment.isoformat(timespec="seconds").replace("+00:00", "Z")
+    request = one.get("request") or {}
+    return {
+        "name": name,
+        "artefact": one.get("artefact") or one.get("mesh") or "",
+        "sha256": one.get("sha256") or one.get("mesh_sha256") or "",
+        "bytes": one.get("bytes") or one.get("mesh_bytes"),
+        "task_id": one.get("task_id", ""),
+        "service": one.get("service"),
+        "credits": credits,
+        "expected_credits": float(one.get("consumed_credits", credits)),
+        "measured": measured is not None,
+        "bought": one.get("bought", "mesh"),
+        "prompt": one.get("prompt") or request.get("texture_prompt")
+        or request.get("prompt"),
+        "reference": one.get("reference") or one.get("image"),
+        "at": at,
+        "adopted": True,
+    }
+
+
+def _writable(root: str | Path) -> None:
+    """Refuse a write to a lock kept by name before anything is spent (§PW457): the
+    lock is the adopting project's own, and only `purchase.adopt` converts it."""
+    path = where(root)
+    if isinstance(_held(path), dict):
+        raise PolyweaveError(
+            "fetch.ledger-by-name",
+            f"{path.name} is a lock keyed by name, which polyweave reads but never "
+            "rewrites, so nothing bought now could be written down",
+            "point [paths] purchases at a ledger of polyweave's own and purchase.adopt "
+            "the lock's entries into it",
+        )
+
+
+@operation("purchase.spent")
+def spent(
+    root: Annotated[str, Param("the project whose ledger this is")] = ".",
+    service: Annotated[str, SERVICE] = None,
+) -> float:
+    """What this project has spent against one service's ceiling, by its own ledger.
+
+    **An adopted entry does not count** (§PW55). A project bringing an existing ledger
+    in bought those meshes before it had a ceiling here, and charging them to the one a
+    person set for today would refuse the next call over money already gone. They stay
+    in the ledger, because `held` is about assets and every one of them is an asset.
+
+    The sum is in that service's unit and counts only its entries (§PW162).
+    """
+    config = load(root)
+    name = config.service(service)
+    # What is owed counts: a charge with no asset yet was still charged (§PW179).
+    by_service, unattributed = _charged(read(root) + owed(root), config)
+    if unattributed:
+        raise PolyweaveError(
+            "fetch.ledger-unattributed",
+            f"{len(unattributed)} ledger entries name no service, and the project "
+            f"declares {len(config.services())}, so whose ceiling they drew on is a "
+            f"guess",
+            "add the service each was bought from as its `service` field, e.g. for "
+            f"{unattributed[0]['artefact']}",
+            detail=", ".join(e["artefact"] for e in unattributed),
+            allowed=sorted(config.services()),
+        )
+    return by_service.get(name, 0.0)
+
+
+def _charged(entries: list[dict], config, quoted: bool = False) -> tuple[dict, list]:
+    """What each service's ceiling was charged, and the entries nothing can attribute.
+
+    An entry written before the ledger named services belongs to the only service a
+    project declares; once there are several, it belongs to none of them by default.
+    With `quoted`, only what was priced from a table rather than read off two balances
+    is summed (§PW164): the part of a total that is somebody's figure, not a reading.
+    """
+    only = next(iter(config.services())) if len(config.services()) == 1 else None
+    sums: dict[str, float] = {}
+    unattributed = []
+    for entry in entries:
+        if entry.get("adopted") or (quoted and _measured(entry)):
+            continue
+        name = entry.get("service") or only
+        if name is None:
+            unattributed.append(entry)
+            continue
+        sums[name] = round(sums.get(name, 0.0) + float(entry.get("credits", 0.0)), 4)
+    return sums, unattributed
+
+
+def _measured(entry: dict) -> bool:
+    """Whether an entry's cost was read off two balances rather than quoted."""
+    if "measured" in entry:
+        return bool(entry["measured"])
+    return (
+        entry.get("balance_before") is not None
+        and entry.get("balance_after") is not None
+    )
+
+
+def _per_service(sums: dict[str, float], config) -> float | dict[str, float]:
+    """One number where there is one ceiling; per service where there are several."""
+    if len(config.services()) == 1:
+        return sums.get(next(iter(config.services())), 0.0)
+    return {name: sums.get(name, 0.0) for name in config.services()}
+
+
+@operation("purchase.find")
+def find(
+    sha: Annotated[str, Param("the sha256 of the file bought")],
+    *,
+    root: Annotated[str, Param("the project whose ledger this is")] = ".",
+) -> dict | None:
+    """The entry for a file, looked up by **its hash rather than a remote id**.
+
+    The remote id is the one that stops existing, so nothing downstream keys off it.
+    """
+    return next((e for e in read(root) if e.get("sha256") == sha), None)
+
+
+@operation("purchase.held")
+def held(root: Annotated[str, Param("the project whose ledger this is")] = ".") -> dict:
+    """Is everything this project paid for still here, and still what it was.
+
+    The question §PW17 says nothing could answer: `provenance.verify` walks the records,
+    and this narrows it to the ones that cost money.
+    """
+    here = Path(root).resolve()
+    entries = read(here)
+    config = load(here)
+    owes = owed(here)
+    by_service, unattributed = _charged(entries + owes, config)
+    missing, changed, present = [], [], []
+    for entry in entries:
+        artefact = here / entry["artefact"]
+        if not artefact.is_file():
+            missing.append(entry)
+            continue
+        digest, _ = provenance.sha256_of(artefact)
+        (present if digest == entry.get("sha256") else changed).append(entry)
+    return {
+        "entries": len(entries),
+        # Every entry, adopted or not: this is the question about assets, and a mesh
+        # bought before the ledger was adopted cost just as much as one bought after.
+        "credits": round(sum(float(e.get("credits", 0.0)) for e in entries), 4),
+        # One number where there is one ceiling; per service where there are several,
+        # because credits and dollars do not add up to anything (§PW162).
+        "against_ceiling": _per_service(by_service, config),
+        "unattributed": [e["artefact"] for e in unattributed],
+        # What of that was a declared price, never read off a balance (§PW164).
+        "quoted": _per_service(_charged(entries, config, quoted=True)[0], config),
+        "sound": not (missing or changed),
+        "present": [e["artefact"] for e in present],
+        "missing": missing,
+        "changed": changed,
+        "lost_credits": round(sum(float(e.get("credits", 0.0)) for e in missing), 4),
+        # Paid for and never landed: counted against the ceiling, and collectable while
+        # its link lasts (`picture.collect`).
+        "owed": owes,
+    }
+
+
+def as_dict(entry: Any) -> dict:  # pragma: no cover - a convenience for callers
+    return dict(entry)

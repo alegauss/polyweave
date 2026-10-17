@@ -11,9 +11,11 @@ from __future__ import annotations
 import pytest
 from PIL import Image, ImageDraw
 
-from polyweave import config as C
-from polyweave import mesh_buy, picture, purchase
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import config as C
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.geometry import mesh_buy
+from polyweave.layers.picture import picture
+from polyweave.services import purchase
 
 GLB = b"glTF" + b"\x00" * 60
 PROJECT = (

@@ -11,10 +11,11 @@ from __future__ import annotations
 
 import pytest
 
-from polyweave import accept, geometry
-from polyweave.errors import PolyweaveError
-from polyweave.geometry import tuning
-from polyweave.search import rebuilds_in, slowest_first
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers import geometry
+from polyweave.layers.geometry import tuning
+from polyweave.loop import accept
+from polyweave.loop.search import rebuilds_in, slowest_first
 
 SHAPE = """
 name   = "tray"

@@ -11,8 +11,8 @@ from fractions import Fraction
 
 import pytest
 
-from polyweave import music
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.sound import music
 
 SCORE = """\
 [music]

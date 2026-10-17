@@ -10,8 +10,9 @@ import json
 
 import pytest
 
-from polyweave import pressure, provenance
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import provenance
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.engine import pressure
 
 #: Two drones at 0 s in a wave ending at 4 s, a heavy at 1.5 s ending at 3 s, and a
 #: lone drone at 9 s ending at 10 s.

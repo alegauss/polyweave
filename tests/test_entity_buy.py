@@ -6,8 +6,10 @@ import json
 
 import pytest
 
-from polyweave import mesh_buy, picture, provenance
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import provenance
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.geometry import mesh_buy
+from polyweave.layers.picture import picture
 from test_mesh_buy import GLB, Meshy
 from test_mesh_buy import PROJECT as MESHY
 from test_picture import PNG, Service

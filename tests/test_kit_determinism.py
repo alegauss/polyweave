@@ -13,8 +13,9 @@ import shutil
 
 import pytest
 
-from polyweave import driving, godot, kits
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers import kits
+from polyweave.layers.engine import driving, godot
 
 
 def test_the_determinism_kit_compares_runs_by_the_state_kit():

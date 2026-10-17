@@ -7,9 +7,10 @@ import json
 import pytest
 from PIL import Image
 
-from polyweave import config as C
-from polyweave import picture, style, verdict
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import config as C
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.picture import picture, style
+from polyweave.loop import verdict
 
 SPEC = """asset = "{name}"
 
@@ -266,7 +267,7 @@ def test_a_family_with_no_canon_directory_refuses_to_admit(tmp_path):
 
 def test_nothing_but_a_verdict_can_add_to_a_canon():
     """`admit` is not an operation, so no caller reaches it by name."""
-    from polyweave.describe import describe
+    from polyweave.kernel.describe import describe
 
     names = {one["operation"] for one in describe()}
     assert {"style.read", "style.drift"} <= names

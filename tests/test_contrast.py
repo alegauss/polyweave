@@ -11,8 +11,9 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from polyweave import accept, contrast
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.engine import contrast
+from polyweave.loop import accept
 
 
 def field(where, *, back=(40, 40, 40), shots=(((20, 20), (255, 255, 255)),)):
@@ -243,7 +244,8 @@ def test_a_box_with_no_glyphs_in_it_is_refused(tmp_path):
 def test_measure_take_takes_targets_beside_the_other_measures(tmp_path):
     # §PW386: measure.take refused contrast_min for want of targets and had no door
     # to pass them; the predicate's own key and measure.contrast were the only way.
-    from polyweave import describe, measure
+    from polyweave.kernel import describe
+    from polyweave.loop import measure
 
     field(tmp_path / "combat.png", shots=(((20, 20), (255, 255, 255)),
                                           ((60, 30), (60, 60, 60))))
@@ -262,7 +264,7 @@ def test_measure_take_takes_targets_beside_the_other_measures(tmp_path):
 
 
 def test_a_contrast_asked_with_no_targets_names_the_doors_that_take_them(tmp_path):
-    from polyweave import measure
+    from polyweave.loop import measure
 
     field(tmp_path / "combat.png")
     with pytest.raises(PolyweaveError) as refused:

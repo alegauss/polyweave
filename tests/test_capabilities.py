@@ -13,7 +13,7 @@ from pathlib import Path
 
 import pytest
 
-from polyweave.capabilities import capabilities
+from polyweave.surface.capabilities import capabilities
 
 
 def test_it_reports_this_interpreter_and_this_machine():
@@ -144,7 +144,7 @@ def test_the_probe_is_deterministic_so_a_second_read_agrees_with_the_first(tmp_p
 
 def test_a_machine_with_no_renderer_says_that_rather_than_failing(monkeypatch):
     """The read is a report. A probe that cannot run is an answer, not a stop."""
-    from polyweave.render import blender
+    from polyweave.layers.geometry.render import blender
 
     monkeypatch.setattr(blender, "available", lambda: {"found": False, "why": "none"})
     found = capabilities(probe=True)["renderer"]["colour"]

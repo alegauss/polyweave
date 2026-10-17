@@ -6,9 +6,11 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from polyweave import accept, calibrate, provenance, render, search
-from polyweave import config as C
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import config as C
+from polyweave.kernel import provenance
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.geometry import render
+from polyweave.loop import accept, calibrate, search
 
 
 def star(tmp_path, name, *, body=100, tail=200):

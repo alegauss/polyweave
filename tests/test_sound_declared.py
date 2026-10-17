@@ -12,8 +12,9 @@ import shutil
 
 import pytest
 
-from polyweave import config, sound
-from polyweave.errors import PolyweaveError
+from polyweave.kernel import config
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.sound import sound
 from test_sound import RATE, texture, tone, written
 
 COTTONY = """

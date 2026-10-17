@@ -11,8 +11,9 @@ import json
 import pytest
 from PIL import Image
 
-from polyweave import accept, flashes
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.engine import flashes
+from polyweave.loop import accept
 
 SIZE = (160, 90)
 

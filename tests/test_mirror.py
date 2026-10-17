@@ -8,11 +8,11 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from polyweave.errors import PolyweaveError
-from polyweave.geometry import build as B
-from polyweave.geometry import review
-from polyweave.geometry import voxels as V
-from polyweave.post.mesh import check_mesh
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.kernel.post.mesh import check_mesh
+from polyweave.layers.geometry import build as B
+from polyweave.layers.geometry import review
+from polyweave.layers.geometry import voxels as V
 
 HALF = {
     "id": "hull_half",

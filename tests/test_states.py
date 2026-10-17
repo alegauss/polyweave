@@ -7,8 +7,8 @@ from __future__ import annotations
 
 import pytest
 
-from polyweave import states
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.engine import states
 
 SEEKER = """extends Node
 enum State { HOVER, LOCK, DIVE }

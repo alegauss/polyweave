@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import json
 
-from polyweave import provenance
+from polyweave.kernel import provenance
 
 TWO = """[service.meshy]
 base = "https://api.meshy.ai"

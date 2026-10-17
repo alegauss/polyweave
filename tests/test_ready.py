@@ -11,8 +11,8 @@ import json
 
 import pytest
 
-from polyweave import cost, normalise
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.geometry import cost, normalise
 
 SPEC = """asset = "drone"
 
@@ -30,7 +30,7 @@ max = 0
 
 def exported(tmp_path, name, make):
     bpy = pytest.importorskip("bpy", reason="Blender is not importable here")
-    from polyweave.render import blender
+    from polyweave.layers.geometry.render import blender
 
     blender.reset()
     make(bpy)

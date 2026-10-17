@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from polyweave import loop
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.loop import loop
 
 
 def checked(tail, *, body=0.2, ceiling=0.37):

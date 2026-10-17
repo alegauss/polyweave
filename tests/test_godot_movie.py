@@ -12,8 +12,8 @@ from pathlib import Path
 
 import pytest
 
-from polyweave import capture, offscreen
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.engine import capture, offscreen
 
 SHOT = """extends SceneTree
 

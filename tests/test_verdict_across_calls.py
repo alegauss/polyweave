@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import json
 
-from polyweave import loop, verdict
+from polyweave.loop import loop, verdict
 from test_verdict import DARK, member
 
 

@@ -16,8 +16,8 @@ from pathlib import Path
 
 import pytest
 
-from polyweave import capture
-from polyweave.errors import PolyweaveError
+from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.engine import capture
 
 SHOT = r"captured: (?P<artefact>\S+) (?P<width>\d+) x (?P<height>\d+)"
 
