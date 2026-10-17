@@ -151,6 +151,13 @@ kits preload under. A kit that names a script by a bare word fails in polyweave'
 A proof script that fails answers the engine's first error with its file and line,
 read from the line after it where Godot prints it there.
 
+**A proof reads words in a language of its own** (§PW485). Spinhold, running on a pt-BR
+machine with its own `KEYNAME_` and `PAD_` rows, read its key names through its table,
+correctly, and the prompts kit's proof called that ignoring the table. So a proof that
+reads a translated name first sets a locale no game carries (`zz`), adds its own rows
+there, and gives the game its locale back when it is done; a failure says both, the
+proof's and the game's.
+
 ## A kit that has fallen behind
 
 `kit.install` records in `kit.json` the SHA-256 of every core file it laid down, and a

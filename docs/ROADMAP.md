@@ -62,7 +62,6 @@
 
 - 🛠 **PW370** (deps: PW345 ✅, PW357 ✅, PW394 ✅, PW395 ✅, PW396 ✅, PW397 ✅, Spinhold RK216) **Starship keeps its own bindings and co-op code after the input kits were extracted from it** — A kit proved only in a fixture has not met a game, and the game it came from is the cheapest first consumer. → §PW370
 - 🛠 **PW371** (deps: PW347 ✅, PW348 ✅, PW398 ✅, Cottony RK151) **Cottony keeps its own settings and save code where the kits provide them** — The second game is what shows a kit is not one project's code moved into a folder. → §PW371
-- 📋 **PW485** (deps: —) **the prompts kit's proof fails in a game running in another language, reading its translated key names as wrong** — A pt-BR machine turns a correct table lookup into a red proof that says the table was ignored. → §PW485
 
 ## Done when — PW36
 

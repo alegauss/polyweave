@@ -1,5 +1,5 @@
 name = "prompts"
-version = "0.5.1"
+version = "0.5.2"
 summary = "button prompts for the pad in the player's hands, switched live, drawn as icons"
 requires = []
 
@@ -23,3 +23,4 @@ script = "core/proof.gd"
 "0.4.0" = "a generic family for a pad nobody names, every stored code named in any family, a binding's codes in one row, the clicks as each family prints them"
 "0.5.0" = "a label watched and kept filled, and a follower run, on a device, binding or language change"
 "0.5.1" = "its scripts name one another by a _Pw name, so a game's own class of the same name, a Bindings or a Settings, cannot shadow them"
+"0.5.2" = "its proof reads names in a language of its own, so a game running in Portuguese with its own key names no longer fails it, and a failure says both languages"

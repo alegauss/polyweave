@@ -21,7 +21,28 @@ class Seats:
 		return pads.size()
 
 
+## The language the proof reads names in: one no game's table carries, so only the
+## proof's own rows apply and the words it expects are its own (§PW485). A pt-BR game
+## read its key names through its own table, correctly, and the proof called that
+## ignoring the table.
+const PROOF_LOCALE := "zz"
+
+
 func _initialize() -> void:
+	var game_locale := TranslationServer.get_locale()
+	TranslationServer.set_locale(PROOF_LOCALE)
+	var failed := _proved()
+	TranslationServer.set_locale(game_locale)
+	if failed.is_empty():
+		print("KIT PROVED")
+	else:
+		# Read in the proof's own language; the game's is said, for a finding on a name.
+		print("KIT FAILED (names read in %s, the game's language %s): %s"
+			% [PROOF_LOCALE, game_locale, "; ".join(failed)])
+	quit()
+
+
+func _proved() -> Array:
 	var failed := []
 	var prompts = _PwPrompts.new()
 	for action in InputMap.get_actions():
@@ -209,8 +230,4 @@ func _initialize() -> void:
 	TranslationServer.remove_translation(spoken_help)
 	InputMap.erase_action(watched)
 	prompts.free()
-	if failed.is_empty():
-		print("KIT PROVED")
-	else:
-		print("KIT FAILED: " + "; ".join(failed))
-	quit()
+	return failed

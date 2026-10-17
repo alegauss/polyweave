@@ -564,22 +564,3 @@ needs a door into them (PW398, docs/specs/kit.md: `adopted()` and `ADOPTED`). Th
 own side is Cottony's RK151. Done when Cottony carries neither file, its own save test
 is replaced by the kit's acceptance, a save written by the current release loads after
 the swap, and its gate passes.
-
-### §PW485 A kit's proof reads names in its own locale
-
-Found in Spinhold on 2026-10-16 (RK216). `kit.install --name players` ran the prompts
-kit's proof in the game, and it failed on words, not behaviour:
-
-`KIT FAILED: a key's name ignores the string table: ESPAÇO; button:0 on generic reads
-SUL, not SOUTH; axis:2:-1 on xbox reads RS ESQUERDA, not RS LEFT; button:12 on xbox
-reads D-BAIXO, not D-DOWN; key:32 on xbox reads ESPAÇO, not SPACE; ... a watched label
-did not follow the keyboard: PRESS ESPAÇO`
-
-Spinhold has `KEYNAME_` and `PAD_` rows in Portuguese, and the machine runs in pt-BR, so
-the game's own language code put the locale at pt_BR before the proof read a name. The
-names were read through the table correctly; the proof expected English. "ignores the
-string table" says the opposite of what happened.
-
-What polyweave should do: a kit's proof sets the locale it asserts in (`en`, or reads
-the expected word from the table itself) before it reads a name, and restores it; and a
-finding about a translated name says which locale it was read in.
