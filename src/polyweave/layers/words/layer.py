@@ -28,6 +28,8 @@ LAYER = Layer(
     config="polyweave.layers.words.settings",
     tools=3_000,
     census={
+        "polyweave.layers.words.world:from_world": (
+            "internal", "entity= on picture and mesh.buy"),
         "polyweave.layers.words.svgtext:texts": (
             "internal", "every <text> in an SVG (§PW453)"),
         "polyweave.layers.words.svgtext:outlined": (

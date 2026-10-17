@@ -4,6 +4,7 @@ from polyweave.kernel.layer import Judge, Layer, Subject
 
 LAYER = Layer(
     name="sound",
+    uses=("words",),
     summary="Sound held to a spec: seeded effects, scored music, bought clips.",
     modules=(
         "polyweave.layers.sound.music",

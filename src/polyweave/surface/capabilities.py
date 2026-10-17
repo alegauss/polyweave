@@ -119,9 +119,15 @@ def _layers(present: dict[str, bool | None]) -> dict:
     A layer whose requirement is absent is still listed: its operations describe
     themselves, and the state says why calling them would refuse.
     """
+    from polyweave.kernel.layer import used
+
+    every = layers()
     out = {}
-    for name, declared in layers().items():
-        absent = missing(declared, present)
+    for name, declared in every.items():
+        # A layer is missing what any layer it uses is missing (§PW506).
+        inherited = [need for one in sorted(used(name))
+                     for need in missing(every[one], present)]
+        absent = list(dict.fromkeys([*missing(declared, present), *inherited]))
         unknown = [need for need in declared.requires if present.get(need) is None]
         state = "missing" if absent else "not probed" if unknown else "available"
         out[name] = {

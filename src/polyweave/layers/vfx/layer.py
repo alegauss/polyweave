@@ -4,6 +4,7 @@ from polyweave.kernel.layer import Layer, Subject
 
 LAYER = Layer(
     name="vfx",
+    uses=("engine",),
     summary="Visual effects declared, built into what the engine plays.",
     modules=(
         "polyweave.layers.vfx.vfx",

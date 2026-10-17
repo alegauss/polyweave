@@ -4,12 +4,14 @@ from polyweave.kernel.layer import Layer, Producer, Subject
 
 LAYER = Layer(
     name="geometry",
+    uses=("words",),
     summary="Shapes declared as data, built to meshes or voxels, rendered, measured.",
     modules=(
         "polyweave.layers.geometry.cost",
         "polyweave.layers.geometry.make",
         "polyweave.layers.geometry.mesh_buy",
         "polyweave.layers.geometry.normalise",
+        "polyweave.layers.geometry.port",
         "polyweave.layers.geometry.render",
         "polyweave.layers.geometry.review",
         "polyweave.layers.geometry.shape",
@@ -44,6 +46,10 @@ LAYER = Layer(
     config="polyweave.layers.geometry.settings",
     tools=17_000,
     census={
+        "polyweave.layers.geometry.port:read": (
+            "internal", "a family file checked, inside port.run"),
+        "polyweave.layers.geometry.port:port": (
+            "internal", "port.run with its renderer as a test hook"),
         "polyweave.layers.geometry.looks": (
             "internal", "the looks a material asks for, read by the bake and write"),
         "polyweave.layers.geometry.representations": (

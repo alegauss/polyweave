@@ -318,6 +318,11 @@ KERNEL_CODES: dict[str, Code] = {
         when="an operation module under layers/<name>/ is missing from LAYER.modules",
         doors=("add the module to modules in that layer's layer.py",),
     ),
+    "layer.cycle": Code(
+        means="two or more layers use each other in a circle",
+        when="a layer.py's uses names a layer whose own uses lead back to it",
+        doors=("move what both need below both", "turn one edge into a part"),
+    ),
     "layer.declared-twice": Code(
         means="two layers declare one record kind, source role or outdated section",
         when="a layer.py names something another layer, or the kernel, already owns",

@@ -8,7 +8,7 @@ import pytest
 from PIL import Image
 
 from polyweave.kernel.errors import PolyweaveError
-from polyweave.layers.engine import port
+from polyweave.layers.geometry import port
 from polyweave.loop import loop
 
 SPEC = """asset = "{name}"

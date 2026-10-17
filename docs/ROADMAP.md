@@ -62,8 +62,7 @@
 
 ## Block W — A core that grows by layers
 
-- 🛠 **PW506** (deps: —) **A kernel or loop module can import a layer and both gates still pass, so the direction the layout states is a hope** — Layers still import each other freely, with cycles; Layer.uses must declare each edge, the test refuse others and cycles. → §PW506
-- 📋 **PW512** (deps: PW506 🛠, PW511 ✅) **Nothing proves a new layer can be added without editing the kernel, so the block's whole claim goes unchecked** — Each seam is tested alone, and only a whole layer added from outside shows they leave a kernel file nobody has to open. → §PW512
+- 📋 **PW512** (deps: PW506 ✅, PW511 ✅) **Nothing proves a new layer can be added without editing the kernel, so the block's whole claim goes unchecked** — Each seam is tested alone, and only a whole layer added from outside shows they leave a kernel file nobody has to open. → §PW512
 - ⏳ **PW516** (deps: PW499 ✅) **Each paid service's HTTP client is written inside the domain that buys from it, so a new service copies a client** — Each service is still bought by its own domain code; a Service adapter per provider and one kernel buy() that alone spends are left. → §PW516
 - 📋 **PW517** (deps: PW503 ✅, PW508 ✅, PW512) **A project cannot add a measure of its own, so a look only its game needs is a fork, a side script or a PW line** — A project measure keeps the first-call guarantee only when it is described, bounded and recorded exactly as a built-in one is. → §PW517
 - 📋 **PW518** (deps: PW504 ✅, PW517) **A project's own generator can run as a job but is no operation, so no agent finds it, describes it or searches over it** — A target named as a file path has only the worker's signature check, so the project's most-used script is the one call the surface cannot describe. → §PW518
@@ -134,12 +133,6 @@
 - **Resogun's phase 1 counts its pods, not its city** On Spinhold's resogun_p1 frames
   the count per frame follows the pods by eye on the sheets, with silhouette or warp-in
   where motion alone is not enough.
-
-## Done when — PW506
-
-- **A layer imports another only where its Layer.uses names it, with no cycle**
-  test_layering refuses an import from one layer to another that its layer.py does not
-  declare in uses, and refuses a cycle among the declared uses; the tree passes it.
 
 ## Done when — PW516
 

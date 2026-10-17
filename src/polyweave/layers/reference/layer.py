@@ -4,6 +4,7 @@ from polyweave.kernel.layer import Judge, Layer, Subject
 
 LAYER = Layer(
     name="reference",
+    uses=("engine", "sound",),
     summary="Reference videos and paintings, read for what a game copies.",
     modules=(
         "polyweave.layers.reference.reference",

@@ -893,3 +893,64 @@ def still(source: Path, record: dict, one: dict) -> bool:
         return False
     return still_drawn(source, drawn["id"], drawn["sha256"], drawn.get("of", "look"),
                        drawn.get("locale"))
+
+
+#: The two parameters a purchase drawn from the world takes (§PW198).
+ENTITY = Param("a world entity to compose the prompt from")
+
+
+WORLD = Param("the *.world.toml, needed only among several")
+
+
+def from_world(
+    entity: str,
+    world: str | None,
+    root,
+    family: str | None,
+    prompt: str | None,
+    json_prompt: dict | None,
+    *,
+    structured: bool,
+) -> tuple[dict, str | None, str | None, dict | None]:
+    """A purchase's prompt and family composed from one entity of the world (§PW198).
+
+    Returns what the record names, the family in force, and the prompt to send: a
+    structured one where the model takes one, whose `high_level_description` is the
+    world's, and text otherwise. A family the call names that is not the entity's own is
+    refused, because a character held to two styles is the drift the world prevents.
+    """
+    source, found = brief(entity, world, root)
+    own = found.get("style")
+    if family is not None and own and family != own:
+        raise PolyweaveError(
+            "world.family-mismatch",
+            f"{entity} is held to the {own!r} style in the world, and the call named "
+            f"{family!r}",
+            f"leave family unset, or pass {own!r}",
+            given=family,
+            allowed=[own],
+        )
+    if structured:
+        base = dict(json_prompt or {})
+        base["high_level_description"] = described(
+            found, base.get("high_level_description") or prompt
+        )
+        # 4.0 refuses a json_prompt without it (§PW290), so the world's look composes
+        # one where the call brought none: an object for each thing it shows.
+        if "compositional_deconstruction" not in base:
+            look = found.get("look") or {}
+            shows = [str(one) for one in look.get("shows") or ()] or [found["name"]]
+            base["compositional_deconstruction"] = {
+                "background": str(look.get("background")
+                                  or "transparent, nothing behind it"),
+                "elements": [{"type": "obj", "desc": one} for one in shows],
+            }
+        json_prompt, prompt = base, None
+    else:
+        prompt = described(found, prompt)
+    record = {
+        "id": entity,
+        "world": provenance.relative(source, Path(root).resolve()),
+        "sha256": look_digest(found),
+    }
+    return record, family or own, prompt, json_prompt

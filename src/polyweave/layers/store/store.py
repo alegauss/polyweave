@@ -28,6 +28,7 @@ from polyweave.kernel import provenance
 from polyweave.kernel.config import load
 from polyweave.kernel.describe import Param, operation
 from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.picture.vector import _drawn_svg
 
 #: Where the stores this plugin knows are declared, one file each.
 STORES = Path(__file__).with_name("stores")
@@ -80,103 +81,6 @@ def _opened(path: Path, role: str, root: Path | None = None,
         return _drawn_svg(path, {"native": 1.0}, root or path.parent, used)["native"]
     with Image.open(path) as picture:
         return picture.convert("RGBA")
-
-
-_SVG = """extends SceneTree
-
-func _initialize() -> void:
-\tvar text := FileAccess.get_file_as_string("%(svg)s")
-\tif OS.get_cmdline_user_args().is_empty():
-\t\tprint("svg: nothing asked")
-\t\tquit(1)
-\t\treturn
-\tfor pair in OS.get_cmdline_user_args():
-\t\tvar image := Image.new()
-\t\tvar failed := image.load_svg_from_string(text, float(pair.get_slice("=", 0)))
-\t\tif failed != OK:
-\t\t\tprint("svg: failed %%d" %% failed)
-\t\t\tquit(1)
-\t\t\treturn
-\t\timage.save_png(pair.get_slice("=", 1))
-\tprint("svg: drawn")
-\tquit()
-"""
-
-
-def _drawn_svg(svg: Path, scales: dict[str, float], root: Path,
-               used: list | None = None) -> dict:
-    """A vector logo drawn at each scale asked, by the engine's own SVG rasteriser.
-
-    Godot draws SVG through ThorVG, which a headless run does in milliseconds, so a
-    vector logo is drawn at the size each capsule shows it and its strokes measured
-    there, where a raster scaled down from one export measures the export (§PW275).
-    ThorVG draws no text, so live text is outlined first (§PW453), and the font files
-    that drew it are added to `used` for the picture's record.
-    """
-    import tempfile
-
-    from PIL import Image
-
-    from polyweave.layers.engine import engine
-    from polyweave.layers.picture import vector
-    from polyweave.layers.words import svgtext
-
-    try:
-        binary = engine.find(root)
-    except PolyweaveError as missing:
-        raise PolyweaveError(
-            "store.no-rasteriser",
-            f"{svg.name} is a vector, and drawing one needs the engine, which is not "
-            "found",
-            "set $GODOT or [paths] godot, or give the logo as a PNG with alpha",
-            detail=missing.message,
-        ) from missing
-    with tempfile.TemporaryDirectory(prefix="polyweave-svg-") as held:
-        work = Path(held)
-        tree = vector._read(svg)
-        if svgtext.texts(tree.getroot()):
-            fonts = svgtext.outlined(tree, _declared_fonts(root))
-            svg = work / "outlined.svg"
-            tree.write(svg, encoding="utf-8", xml_declaration=True)
-            if used is not None:
-                used += [one for one in fonts if one not in used]
-        (work / "polyweave.toml").write_text("", encoding="utf-8")
-        (work / "project.godot").write_text(
-            'config_version=5\n\n[application]\nconfig/name="svg"\n', encoding="utf-8"
-        )
-        (work / "draw.gd").write_text(
-            _SVG % {"svg": svg.resolve().as_posix()}, encoding="utf-8"
-        )
-        outs = {name: work / f"{index}.png" for index, name in enumerate(scales)}
-        ran = engine.run(
-            work / "draw.gd", expect=r"^svg: drawn", root=work, headless=True,
-            binary=binary,
-            args=("--", *(f"{scales[n]:.6f}={outs[n].as_posix()}" for n in scales)),
-        )
-        if not ran["ok"]:
-            raise PolyweaveError(
-                "store.no-rasteriser",
-                f"the engine could not draw {svg.name}: {ran.get('why')}",
-                "check the SVG opens in a browser, or give the logo as a PNG",
-                detail=ran.get("log"),
-            )
-        drawn = {}
-        for name, out in outs.items():
-            with Image.open(out) as picture:
-                drawn[name] = picture.convert("RGBA")
-        return drawn
-
-
-def _declared_fonts(root: Path) -> list[Path]:
-    """The font files `[words] fonts` names, which a text run is outlined in first."""
-    from polyweave.kernel.config import load
-
-    try:
-        config = load(root)
-    except PolyweaveError:
-        return []
-    return [config.root / one["path"] for one in config.get("words.fonts") or ()
-            if isinstance(one, dict) and one.get("path")]
 
 
 def _logo_size(shape: dict, logo) -> tuple[int, int] | None:

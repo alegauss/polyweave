@@ -127,6 +127,8 @@ class Layer:
     modules: tuple[str, ...]
     #: Without one of these the layer is present but cannot run (`REQUIREMENTS`).
     requires: tuple[str, ...] = ()
+    #: The other layers this one imports, each edge declared; no cycle (§PW506).
+    uses: tuple[str, ...] = ()
     #: The most this layer's served tools may cost tools/list, in characters
     #: (§PW510). A layer that grows past it raises it here, where it is read.
     tools: int = 0
@@ -207,6 +209,53 @@ def layers() -> dict[str, Layer]:
                 allowed=sorted(REQUIREMENTS),
             )
         found[one.name] = declared
+    _acyclic(found)
+    return found
+
+
+def _acyclic(found: dict[str, Layer]) -> None:
+    """Refuse a layer using one that does not exist, or a cycle among their uses."""
+    for name, declared in found.items():
+        unknown = [one for one in declared.uses if one not in found]
+        if unknown:
+            raise PolyweaveError(
+                "layer.unknown",
+                f"layer {name} uses {', '.join(unknown)}, which no layer is",
+                "name layers that exist in uses",
+                given=unknown[0],
+                allowed=sorted(found),
+            )
+    state: dict[str, int] = {}
+
+    def visit(name: str, path: list[str]) -> None:
+        if state.get(name) == 1:
+            loop = " -> ".join([*path[path.index(name):], name])
+            raise PolyweaveError(
+                "layer.cycle",
+                f"the layers use each other in a circle: {loop}",
+                "move what both need below both, or turn one edge into a part",
+                given=name,
+            )
+        if state.get(name) == 2:
+            return
+        state[name] = 1
+        for one in found[name].uses:
+            visit(one, [*path, name])
+        state[name] = 2
+
+    for name in found:
+        visit(name, [])
+
+
+def used(name: str) -> set[str]:
+    """Every layer `name` uses, directly or through another."""
+    found, every = set(), layers()
+    stack = list(every[name].uses)
+    while stack:
+        one = stack.pop()
+        if one not in found:
+            found.add(one)
+            stack.extend(every[one].uses)
     return found
 
 
@@ -375,6 +424,8 @@ def on(root: str | Path = ".") -> frozenset[str]:
             given=unknown[0],
             allowed=sorted(every),
         )
+    # A layer's uses do not switch the used layer's tools on: its own operations run
+    # whatever is served, and serving more is the cost [layers] on exists to cut.
     return frozenset(named or every)
 
 

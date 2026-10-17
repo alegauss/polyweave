@@ -4,6 +4,7 @@ from polyweave.kernel.layer import Layer
 
 LAYER = Layer(
     name="kits",
+    uses=("engine", "sound",),
     summary="Parts every game repeats, made once, proved and installed.",
     modules=(
         "polyweave.layers.kits",

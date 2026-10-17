@@ -31,7 +31,7 @@ from polyweave.kernel import provenance
 from polyweave.kernel.config import load
 from polyweave.kernel.describe import Param, operation
 from polyweave.kernel.errors import PolyweaveError
-from polyweave.layers.picture import picture
+from polyweave.layers.words.world import ENTITY, WORLD, from_world
 from polyweave.services import client, purchase
 from polyweave.services.client import download as _download
 
@@ -80,8 +80,8 @@ def buy(
         str, Param("the service's model: meshy-6-lite, or Tripo's v2.5-20250123")
     ] = "meshy-6-lite",
     polycount: Annotated[int, Param("the triangles to aim at", lo=100)] = 8000,
-    entity: Annotated[str, picture.ENTITY] = None,
-    world: Annotated[str, picture.WORLD] = None,
+    entity: Annotated[str, ENTITY] = None,
+    world: Annotated[str, WORLD] = None,
     service: Annotated[str, purchase.SERVICE] = None,
     root: Annotated[str, Param("the project whose ledger this is")] = ".",
 ) -> dict:
@@ -103,7 +103,7 @@ def buy(
         )
     drawn_from = None
     if entity is not None:
-        drawn_from, _, composed, _ = picture.from_world(
+        drawn_from, _, composed, _ = from_world(
             entity, world, root, None, prompt, None, structured=False
         )
         if picture_path is None:

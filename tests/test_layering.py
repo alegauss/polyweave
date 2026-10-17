@@ -54,15 +54,38 @@ def _named(module: str, is_package: bool, node: ast.AST) -> list[str]:
     return [target]
 
 
-def wrong_way(source: str, module: str, is_package: bool = False) -> list[str]:
-    """Each import in `source` against the layout, as `module:line -> target`."""
+def layer_name(module: str) -> str | None:
+    parts = module.split(".")
+    return parts[2] if len(parts) > 2 and parts[1] == "layers" else None
+
+
+def _uses() -> dict[str, tuple[str, ...]]:
+    from polyweave.kernel.layer import layers
+
+    return {name: one.uses for name, one in layers().items()}
+
+
+def wrong_way(source: str, module: str, is_package: bool = False,
+              uses: dict | None = None) -> list[str]:
+    """Each import in `source` against the layout, as `module:line -> target`.
+
+    One layer reaching another is allowed only where its `layer.py` declares the edge
+    in `uses` (§PW506).
+    """
     mine = area_of(module)
+    uses = _uses() if uses is None else uses
     out = []
     for node in ast.walk(ast.parse(source)):
         for target in _named(module, is_package, node):
             if target == "polyweave.layers":
                 continue  # the namespace the kernel walks; it holds no code
             theirs = area_of(target)
+            if mine == theirs == "layers":
+                own, other = layer_name(module), layer_name(target)
+                if other and own != other and other not in uses.get(own, ()):
+                    out.append(f"{module}:{node.lineno} -> {target} (layer {own} does "
+                               f"not declare it uses {other})")
+                continue
             if theirs == "root" or theirs == mine or theirs in MAY[mine]:
                 continue
             out.append(f"{module}:{node.lineno} -> {target} ({mine} may not reach "
@@ -82,12 +105,35 @@ def _modules():
 
 
 def test_every_import_in_the_package_points_the_way_the_layout_states():
+    uses = _uses()
     found = [
         line
         for path, module, is_package in _modules()
-        for line in wrong_way(path.read_text(encoding="utf-8"), module, is_package)
+        for line in wrong_way(path.read_text(encoding="utf-8"), module, is_package,
+                              uses)
     ]
     assert found == []
+
+
+def test_a_layer_reaching_one_it_does_not_declare_is_named():
+    source = "from polyweave.layers.engine import capture\n"
+    [said] = wrong_way(source, "polyweave.layers.words.fake", uses={"words": ()})
+    assert "layer words does not declare it uses engine" in said
+    declared = {"vfx": ("engine",)}
+    assert wrong_way(source, "polyweave.layers.vfx.fake", uses=declared) == []
+
+
+def test_layers_that_use_each_other_in_a_circle_are_refused():
+    from polyweave.kernel.errors import PolyweaveError
+    from polyweave.kernel.layer import Layer, _acyclic
+
+    def one(name, uses):
+        return Layer(name=name, summary="x", modules=(), uses=uses)
+
+    with pytest.raises(PolyweaveError) as refused:
+        _acyclic({"a": one("a", ("b",)), "b": one("b", ("c",)), "c": one("c", ("a",))})
+    assert refused.value.code == "layer.cycle"
+    assert "a -> b -> c -> a" in refused.value.message
 
 
 @pytest.mark.parametrize(

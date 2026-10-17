@@ -159,8 +159,10 @@ rest). If marking them serial makes the crashes go away, mark every test that im
 serial, look at Blender's own crash log in the temp folder, which the gate could copy
 beside `pytest.log`.
 
-A flaky gate teaches the next run to rerun rather than read; this one cost a full gate
-run today.
+The same day `test_sound_buy`'s cue test raised a bare `MemoryError` in its ffmpeg
+transcode under the full gate and passed alone, so memory pressure from twelve workers
+is the first thing to measure. A flaky gate teaches the next run to rerun rather than
+read.
 
 ### §PW525 The crash kit's kill waits on the game, not the clock
 
@@ -517,34 +519,6 @@ is replaced by the kit's acceptance, a save written by the current release loads
 the swap, and its gate passes.
 
 ## Block W — A core that grows by layers
-
-### §PW506 The import direction as a test
-
-The package direction landed in `tests/test_layering.py`: kernel imports only itself,
-loop the kernel, services the loop and the kernel, a layer those three, surface
-anything, with no allowlist. What is left is one layer importing another.
-
-`Layer.uses = ("engine",)` declares each edge, so `capabilities` can say vfx is
-unavailable when engine is; the test refuses an undeclared import and any cycle. Today's
-graph has three cycles, measured at 73dc9ca:
-
-- engine to geometry to picture to engine: `engine.port` renders a family of models and
-  builds them with `make.build_one`, so it belongs in geometry.
-- sound to picture to reference to sound, and half of geometry to picture: `mesh_buy`
-  and `sound_buy` import picture only for its paid-service plumbing (`_download`,
-  `_mime`, `_reached`, `sent_bytes`, `AGENT`, `_price`, `_priced`). PW516 moves that
-  into `services/`, which removes both edges.
-- geometry and picture both ways, after PW516: picture uses geometry's 2D outline math
-  (panel), `render` and `cost` (a style family can hold meshes) and `shape.check`
-  (`picture.chosen` picks a picture for a mesh); geometry uses `picture.gate` and
-  `from_world` before buying a mesh. Either the outline math becomes shared below both
-  and `chosen` moves to geometry, or mesh buying stops reading the gate directly.
-
-`picture.vector` reaching `store._drawn_svg` is picture's own rasterising living in
-store, and moves to picture.
-
-Done when the test refuses an undeclared layer import and a cycle, and passes on the
-tree.
 
 ### §PW512 A whole layer added from a fixture, touching nothing else
 

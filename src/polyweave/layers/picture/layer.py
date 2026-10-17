@@ -4,6 +4,7 @@ from polyweave.kernel.layer import Judge, Layer
 
 LAYER = Layer(
     name="picture",
+    uses=("engine", "geometry", "reference", "words",),
     summary="Pictures bought, fitted, varied and drawn, held to the project's style.",
     modules=(
         "polyweave.layers.picture.fitting",
@@ -49,8 +50,6 @@ LAYER = Layer(
             "internal", "a person's mark, inside vary"),
         "polyweave.layers.picture.picture:gates": (
             "internal", "the gate's log, read by the review page"),
-        "polyweave.layers.picture.picture:from_world": (
-            "internal", "entity= on picture and mesh.buy"),
         "polyweave.layers.picture.scenario:serves": (
             "internal", "whether a service is Scenario (§PW450)"),
         "polyweave.layers.picture.scenario:trained_model": (

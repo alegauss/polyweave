@@ -4,6 +4,7 @@ from polyweave.kernel.layer import Layer
 
 LAYER = Layer(
     name="motion",
+    uses=("geometry", "store", "vfx",),
     summary="Clips, cameras and skeletons, baked to what a game plays.",
     modules=(
         "polyweave.layers.motion.camera",

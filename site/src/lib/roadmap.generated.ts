@@ -47,7 +47,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 2 },
-  { block: "W", title: "A core that grows by layers", open: 9 },
+  { block: "W", title: "A core that grows by layers", open: 8 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -143,18 +143,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW506",
-    block: "W",
-    symptom: "A kernel or loop module can import a layer and both gates still pass, so the direction the layout states is a hope",
-    why: "Layers still import each other freely, with cycles; Layer.uses must declare each edge, the test refuse others and cycles.",
-    deps: [],
-  },
-  {
     id: "PW512",
     block: "W",
     symptom: "Nothing proves a new layer can be added without editing the kernel, so the block's whole claim goes unchecked",
     why: "Each seam is tested alone, and only a whole layer added from outside shows they leave a kernel file nobody has to open.",
-    deps: ["PW506"],
+    deps: [],
   },
   {
     id: "PW516",

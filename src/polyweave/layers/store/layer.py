@@ -4,6 +4,7 @@ from polyweave.kernel.layer import Layer, Subject
 
 LAYER = Layer(
     name="store",
+    uses=("picture",),
     summary="What a game shows outside itself: store art, teasers, icons, sheets.",
     modules=(
         "polyweave.layers.store.compose",

@@ -17,7 +17,6 @@ LAYER = Layer(
         "polyweave.layers.engine.offscreen",
         "polyweave.layers.engine.pack",
         "polyweave.layers.engine.perf",
-        "polyweave.layers.engine.port",
         "polyweave.layers.engine.presets",
         "polyweave.layers.engine.pressure",
         "polyweave.layers.engine.runs",
@@ -45,10 +44,6 @@ LAYER = Layer(
     config="polyweave.layers.engine.settings",
     tools=29_000,
     census={
-        "polyweave.layers.engine.port:read": (
-            "internal", "a family file checked, inside port.run"),
-        "polyweave.layers.engine.port:port": (
-            "internal", "port.run with its renderer as a test hook"),
         "polyweave.layers.engine.contrast:targets_in": (
             "internal", "the targets a log's lines name"),
         "polyweave.layers.engine.contrast:contrasts": (
