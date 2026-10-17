@@ -9,4 +9,5 @@ LAYER = Layer(
         "polyweave.layers.kits",
     ),
     requires=("godot",),
+    outdated={"kits": "polyweave.layers.kits:behind"},
 )

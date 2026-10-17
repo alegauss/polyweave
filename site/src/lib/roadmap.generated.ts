@@ -47,7 +47,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 2 },
-  { block: "W", title: "A core that grows by layers", open: 21 },
+  { block: "W", title: "A core that grows by layers", open: 20 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -129,13 +129,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW502",
-    block: "W",
-    symptom: "provenance names words, world, kits and driving and keeps a closed KINDS tuple, so the record format knows every layer",
-    why: "A record is the kernel's contract, and today a new medium cannot be recorded, or found outdated, without an edit to provenance.py.",
-    deps: [],
-  },
-  {
     id: "PW503",
     block: "W",
     symptom: "accept.check reaches into sound, vfx, video, flashes, render and reference_concept to measure a subject",
@@ -161,7 +154,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "W",
     symptom: "A kernel or loop module can import a layer and both gates still pass, so the direction the layout states is a hope",
     why: "Every inversion in this block is undone by the first quick import, and only a test that fails holds a boundary between commits.",
-    deps: ["PW502", "PW503", "PW504", "PW505"],
+    deps: ["PW503", "PW504", "PW505"],
   },
   {
     id: "PW507",

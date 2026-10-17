@@ -26,4 +26,6 @@ LAYER = Layer(
         "polyweave.layers.engine.testing",
     ),
     requires=("godot",),
+    kinds=("capture",),
+    ships="polyweave.layers.engine.driving:ships",
 )

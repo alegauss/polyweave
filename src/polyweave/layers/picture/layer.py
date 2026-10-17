@@ -22,4 +22,5 @@ LAYER = Layer(
             target="polyweave.layers.picture.style:judged",
         ),
     ),
+    kinds=("picture",),
 )

@@ -878,3 +878,18 @@ def _families(entities: dict, faults: _Findings, root: str | Path) -> None:
             f"entity.{ident}",
             "style",
         )
+
+
+def still(source: Path, record: dict, one: dict) -> bool:
+    """Whether a changed world still describes a record's entity as it was drawn.
+
+    The words layer's staleness check for the `world` role (§PW198, §PW502). A world
+    file holds every entity, so any edit changes its hash; what was bought from one
+    entity is stale only when that entity changed. A record naming its entity without
+    the digest it was drawn at cannot say so, and reads outdated (§PW423).
+    """
+    drawn = (record.get("details") or {}).get("entity")
+    if not drawn or not (drawn.get("id") and drawn.get("sha256")):
+        return False
+    return still_drawn(source, drawn["id"], drawn["sha256"], drawn.get("of", "look"),
+                       drawn.get("locale"))

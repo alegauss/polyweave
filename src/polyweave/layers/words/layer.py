@@ -17,4 +17,8 @@ LAYER = Layer(
             target="polyweave.layers.words.words:judged",
         ),
     ),
+    staleness={
+        "words": "polyweave.layers.words.words:still",
+        "world": "polyweave.layers.words.world:still",
+    },
 )

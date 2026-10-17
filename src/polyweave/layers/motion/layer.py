@@ -13,4 +13,5 @@ LAYER = Layer(
         "polyweave.layers.motion.sprites",
     ),
     requires=("blender",),
+    kinds=("camera",),
 )

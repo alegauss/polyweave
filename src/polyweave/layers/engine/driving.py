@@ -1483,3 +1483,13 @@ def closed(
         "frame": answer["frame"],
         "errors": answer["errors"],
     }
+
+
+def ships(here: Path, preset: str = "") -> tuple[str, list[str]] | None:
+    """What a Godot project's export preset ships, or None for any other project.
+
+    The engine layer's answer to `provenance.generated` asked with no paths (§PW502).
+    """
+    if not (Path(here) / "project.godot").is_file():
+        return None
+    return shipped(Path(here), preset)

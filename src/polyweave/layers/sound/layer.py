@@ -21,4 +21,5 @@ LAYER = Layer(
             target="polyweave.layers.sound.sound:judged",
         ),
     ),
+    kinds=("sound",),
 )

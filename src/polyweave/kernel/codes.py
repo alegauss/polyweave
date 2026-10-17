@@ -377,6 +377,11 @@ CODES: dict[str, Code] = {
         when="an operation module under layers/<name>/ is missing from LAYER.modules",
         doors=("add the module to modules in that layer's layer.py",),
     ),
+    "layer.declared-twice": Code(
+        means="two layers declare one record kind, source role or outdated section",
+        when="a layer.py names something another layer, or the kernel, already owns",
+        doors=("keep it in the layer that owns it and drop it from the other",),
+    ),
     "layer.two-judges": Code(
         means="two layers declare a judge under one name",
         when="a judge's name, the key its answer is reported under, is taken already",

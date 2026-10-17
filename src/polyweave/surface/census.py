@@ -315,6 +315,8 @@ MODULES: dict[str, tuple[str, str]] = {
         "internal", "what a purchase records it drew"),
     "polyweave.layers.words.world:still_drawn": (
         "internal", "provenance.outdated, per entity"),
+    "polyweave.layers.words.world:still": (
+        "internal", "the world role's staleness check"),
     "polyweave.layers.words.world:voice_in": (
         "internal", "a locale's voice over the shared one"),
     "polyweave.layers.sound.sound_buy:language_of": (
@@ -347,6 +349,8 @@ MODULES: dict[str, tuple[str, str]] = {
         "internal", "what icons.build holds a set to"),
     "polyweave.layers.words.words:still_said": (
         "internal", "provenance.outdated, per row"),
+    "polyweave.layers.words.words:still": (
+        "internal", "the words role's staleness check"),
     "polyweave.layers.picture.picture:from_world": (
         "internal", "entity= on picture and mesh.buy"),
     "polyweave.layers.picture.scenario:serves": (

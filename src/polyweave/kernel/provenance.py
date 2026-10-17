@@ -29,11 +29,38 @@ from polyweave import __version__
 
 from .describe import Param, operation
 from .errors import PolyweaveError
+from .layer import call, outdated_sections, record_kinds, shipping, staleness
 
-#: What a record may describe. Closed, because a reader branches on it.
-KINDS = (
-    "render", "mesh", "capture", "fetch", "picture", "sound", "vfx", "camera", "borrow",
-)
+#: The record kinds the kernel writes itself: a purchase taken delivery of, and a file
+#: borrowed from another project. Every other kind is a layer's (§PW502).
+CORE_KINDS = ("fetch", "borrow")
+
+
+def kinds() -> tuple[str, ...]:
+    """What a record may describe: the kernel's kinds and every layer's. Closed,
+    because a reader branches on it."""
+    declared = record_kinds()
+    taken = sorted(set(declared) & set(CORE_KINDS))
+    if taken:
+        raise PolyweaveError(
+            "layer.declared-twice",
+            f"a layer declares the record kind {taken[0]!r}, which the kernel writes",
+            "drop it from the layer: the kernel's kinds are fetch and borrow",
+            given=taken[0],
+        )
+    return (*CORE_KINDS, *declared)
+
+
+def _known_kind(kind: str) -> None:
+    allowed = kinds()
+    if kind not in allowed:
+        raise PolyweaveError(
+            "prov.unknown-kind",
+            f"there is no record kind {kind!r}",
+            f"use one of {', '.join(allowed)}",
+            given=kind,
+            allowed=allowed,
+        )
 
 SUFFIX = ".prov.json"
 
@@ -147,14 +174,7 @@ def build(
     and passes `as_dict()` here. A record whose measurements were taken against nothing
     carries no field, by the same rule that keeps a normalisation free of a seed.
     """
-    if kind not in KINDS:
-        raise PolyweaveError(
-            "prov.unknown-kind",
-            f"there is no record kind {kind!r}",
-            f"use one of {', '.join(KINDS)}",
-            given=kind,
-            allowed=KINDS,
-        )
+    _known_kind(kind)
     where = Path(root).resolve()
     path = Path(artefact)
     if not path.is_absolute():
@@ -231,14 +251,7 @@ def planned(
     exists — which is the whole of what makes a cache lookup cheaper than a render.
     `cache_key(planned(…))` equals `cache_key(build(…))` for the same work.
     """
-    if kind not in KINDS:
-        raise PolyweaveError(
-            "prov.unknown-kind",
-            f"there is no record kind {kind!r}",
-            f"use one of {', '.join(KINDS)}",
-            given=kind,
-            allowed=KINDS,
-        )
+    _known_kind(kind)
     return {
         "artefact": None,
         "kind": kind,
@@ -926,11 +939,15 @@ def generated(
     """
     where = Path(root).resolve()
     files: list[str] = []
-    shipping = None
-    if not paths and (where / "project.godot").is_file():
-        from polyweave.layers.engine.driving import shipped
-
-        shipping, paths = shipped(where, preset)
+    # Which files ship is the engine's to say, asked of each layer that answers it for
+    # a project of its kind (§PW502).
+    for answers in [] if paths else shipping():
+        said = call(answers, where, preset)
+        if said is not None:
+            shipped, paths = said
+            break
+    else:
+        shipped = None
     for one in paths or ():
         target = Path(one)
         target = target if target.is_absolute() else where / target
@@ -972,7 +989,7 @@ def generated(
     answer = {"generated": made, "authored": authored, "unrecorded": media,
               "unrecorded_code": [one for one in unrecorded if one not in media],
               "drafts": drafts}
-    return {"preset": shipping, **answer} if shipping else answer
+    return {"preset": shipped, **answer} if shipped else answer
 
 
 #: What a generator could have made, so an unrecorded one needs a person's word.
@@ -1189,9 +1206,9 @@ def outdated(root: Annotated[str, ROOT] = ".") -> dict:
                     "moved": moved,
                 }
             )
-    from polyweave.layers.kits import behind
-
-    return {"outdated": stale, "sound": not stale, "kits": behind(where)}
+    # A section a layer adds, under its own name: kits that are behind (§PW343).
+    added = {name: call(target, where) for name, target in outdated_sections().items()}
+    return {"outdated": stale, "sound": not stale, **added}
 
 
 def _entity(record: dict) -> dict | None:
@@ -1200,32 +1217,17 @@ def _entity(record: dict) -> dict | None:
 
 
 def _same_entity(record: dict, one: dict, source: Path) -> bool:
-    """Whether a changed world still describes this record's entity as it was drawn.
+    """Whether a changed source still describes this record as it was made.
 
-    A world file holds every entity, so any edit changes its hash. What was bought from
-    one entity is stale only when that entity's look changed, and the digest recorded
-    beside the id is what says so. A string table is the same (§PW322): a spoken take
-    is stale only when its own row's words changed.
+    A world file holds every entity, so any edit changes its hash, and a string table
+    every line: whether the one a record was made from changed is the layer's to say,
+    by the role the input was recorded under (§PW198, §PW322). A role no layer checks
+    is stale whenever its hash moved (§PW502).
     """
-    line = (record.get("details") or {}).get("line")
-    if one.get("role") == "words" and line and source.is_file():
-        if not all(line.get(k) for k in ("key", "locale", "sha256")):
-            return False  # nothing to prove it unchanged by, so it reads outdated
-        from polyweave.layers.words.words import still_said
-
-        return still_said(source, line["key"], line["locale"], line["sha256"])
-    drawn = _entity(record)
-    if one.get("role") != "world" or not drawn or not source.is_file():
+    check = staleness().get(one.get("role"))
+    if check is None or not source.is_file():
         return False
-    if not (drawn.get("id") and drawn.get("sha256")):
-        # A record naming its entity without the digest it was drawn at cannot say the
-        # entity is unchanged, so it reads outdated rather than stopping the read with a
-        # KeyError, as one of Spinhold's did (§PW423).
-        return False
-    from polyweave.layers.words.world import still_drawn
-
-    return still_drawn(source, drawn["id"], drawn["sha256"], drawn.get("of", "look"),
-                       drawn.get("locale"))
+    return bool(call(check, source, record, one))
 
 
 def _stamp() -> str:

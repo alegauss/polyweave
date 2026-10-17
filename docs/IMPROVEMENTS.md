@@ -476,28 +476,6 @@ the swap, and its gate passes.
 
 ## Block W — A core that grows by layers
 
-### §PW502 Record kinds, staleness and what ships, contributed by layers
-
-`provenance.py` is meant to describe the record's format, yet it reaches into four
-layers. `KINDS` is a closed tuple of nine (render, mesh, capture, fetch, picture, sound,
-vfx, camera, borrow). `outdated` decides whether a changed source still describes a
-record by calling `words.still_said` when the role is `words` and `world.still_drawn`
-when it is `world`, then appends `kits.behind`. `generated` asks `driving.shipped` what
-a Godot export preset ships.
-
-Three contributions replace those calls:
-
-- `Layer.kinds`: the record kinds the layer writes. The kernel's set is the union, still closed, because a reader branches on it. A kind two layers declare is refused when the manifest loads.
-- `Layer.staleness`: a mapping from a source role to `still(source, record) -> bool`. `outdated` looks up the role and, where no layer claims it, falls back to the hash comparison it already makes.
-- `Layer.ships`: the engine layer's answer to which files a build ships, consulted by `generated` when no paths are given. Kits contribute their `behind` as a section of `outdated` under their own name.
-
-The record format itself does not change in this line. A kind moving from the kernel's
-tuple to a layer keeps its spelling, so no committed record needs migrating yet.
-
-Done when `provenance.py` imports nothing from `layers/`, the provenance, dependents and
-generated tests pass, and a fixture layer's kind and staleness check work with no kernel
-file touched.
-
 ### §PW503 A layer measures its own subject for accept
 
 An acceptance spec names a subject (a picture, a render, a capture, a sound, a video, an

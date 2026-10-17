@@ -8,4 +8,5 @@ LAYER = Layer(
     modules=(
         "polyweave.layers.vfx.vfx",
     ),
+    kinds=("vfx",),
 )

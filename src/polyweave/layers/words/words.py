@@ -879,3 +879,16 @@ def _draw(where: Path, member: dict, who, tone: list, shown: list, broken) -> No
         draw.text((gap, gap + index * line), text, fill=colour)
     where.parent.mkdir(parents=True, exist_ok=True)
     canvas.save(where)
+
+
+def still(source: Path, record: dict, one: dict) -> bool:
+    """Whether a changed string table still says the line a record was made from.
+
+    The words layer's staleness check for the `words` role (§PW322, §PW502): a spoken
+    take is stale only when its own row's words changed. A record that names no line,
+    or one without the digest to prove it unchanged by, reads outdated.
+    """
+    line = (record.get("details") or {}).get("line")
+    if not line or not all(line.get(k) for k in ("key", "locale", "sha256")):
+        return False
+    return still_said(source, line["key"], line["locale"], line["sha256"])

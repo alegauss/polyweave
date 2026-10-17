@@ -16,4 +16,5 @@ LAYER = Layer(
         "polyweave.layers.geometry.units",
     ),
     requires=("blender",),
+    kinds=("render", "mesh"),
 )

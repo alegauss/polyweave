@@ -16,7 +16,7 @@ import importlib
 import importlib.util
 import pkgutil
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 from .errors import PolyweaveError
@@ -57,8 +57,13 @@ class Judge:
     target: str
 
     def judged(self, member: dict, **said: Any) -> Any:
-        module, function = self.target.split(":")
-        return getattr(importlib.import_module(module), function)(member, **said)
+        return call(self.target, member, **said)
+
+
+def call(target: str, *args: Any, **kwargs: Any) -> Any:
+    """Call a `module:function` a layer declared, importing it only now."""
+    module, function = target.split(":")
+    return getattr(importlib.import_module(module), function)(*args, **kwargs)
 
 
 @dataclass(frozen=True)
@@ -73,14 +78,25 @@ class Layer:
     requires: tuple[str, ...] = ()
     #: Where a person's verdict on what this layer lays out is kept (§PW501).
     judges: tuple[Judge, ...] = ()
+    #: The record kinds this layer declares (§PW502). Any layer may write one; only one
+    #: declares it, and the kernel's closed set is theirs and its own together.
+    kinds: tuple[str, ...] = ()
+    #: A source role to the `module:function` that says whether a changed file still
+    #: describes a record, called (source, record, input) -> bool (§PW502). A role no
+    #: layer claims is stale whenever its hash moved.
+    staleness: dict[str, str] = field(default_factory=dict)
+    #: `module:function` answering which files a build of this project ships, called
+    #: (root, preset) -> (preset, paths), or None where the project is not its kind.
+    ships: str = ""
+    #: A section of `provenance.outdated` by its name, to the `module:function` that
+    #: answers it for a root (§PW502).
+    outdated: dict[str, str] = field(default_factory=dict)
     # What later lines contribute to the shared loop, empty until each lands: error
-    # codes (§PW507), config tables (§PW508), census entries (§PW511), staleness checks
-    # and record kinds (§PW502), and report sections (§PW505).
+    # codes (§PW507), config tables (§PW508), census entries (§PW511) and report
+    # sections (§PW505).
     codes: tuple = ()
     config: tuple = ()
     census: tuple = ()
-    staleness: tuple = ()
-    kinds: tuple = ()
     reports: tuple = ()
 
 
@@ -120,6 +136,51 @@ def layers() -> dict[str, Layer]:
             )
         found[one.name] = declared
     return found
+
+
+def _once(what: str, pairs: list[tuple[str, str, Any]]) -> dict[str, Any]:
+    """Each key to its value, refused where two layers declare one key."""
+    found: dict[str, tuple[str, Any]] = {}
+    for layer, key, value in pairs:
+        if key in found:
+            raise PolyweaveError(
+                "layer.declared-twice",
+                f"layers {found[key][0]} and {layer} both declare the {what} {key!r}",
+                "keep it in the layer that owns it and drop it from the other",
+                given=key,
+            )
+        found[key] = (layer, value)
+    return {key: value for key, (_, value) in found.items()}
+
+
+def record_kinds() -> tuple[str, ...]:
+    """Every record kind a layer declares, each declared once (§PW502)."""
+    return tuple(_once("record kind", [
+        (name, kind, None) for name, one in layers().items() for kind in one.kinds
+    ]))
+
+
+def staleness() -> dict[str, str]:
+    """Each source role a layer checks itself, to its check (§PW502)."""
+    return _once("source role", [
+        (name, role, target)
+        for name, one in layers().items()
+        for role, target in one.staleness.items()
+    ])
+
+
+def outdated_sections() -> dict[str, str]:
+    """Each section a layer adds to `provenance.outdated`, to what answers it."""
+    return _once("outdated section", [
+        (name, section, target)
+        for name, one in layers().items()
+        for section, target in one.outdated.items()
+    ])
+
+
+def shipping() -> list[str]:
+    """What answers which files a build ships, layer by layer (§PW502)."""
+    return [one.ships for one in layers().values() if one.ships]
 
 
 def judges() -> dict[str, Judge]:
