@@ -30,7 +30,7 @@ spec bounds (the settle time, the largest give).
 
 ## Block G — Geometry as a declaration
 
-### §PW491 A smooth blend between parts
+### §PW498 A smooth blend between parts
 
 Found in Spinhold on 2026-10-17. The owner asked for a new habitat, a city in the
 moulded plastic look of Fall Guys, with the ship and the enemies left in voxels.
@@ -214,24 +214,6 @@ time, recorded as kind `camera` (docs/specs/motion.md, "A camera clip"). Not an
 Animation track: an anchor placed at run time, on a ring that is not Cartesian, cannot
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
-
-### §PW486 Accepting a look a bound refused
-
-Found in Cottony, RK149 (2026-10-16). A sitting opened with `verdict.sitting` for one
-member, the mascot, whose new render failed one bound (`median-tone`, 0.762 against a
-min of 0.780). The review page offered two buttons, Refazer and Ajustar o limite, and no
-Aceitar. The owner liked the look and asked where the accept was: the page never says
-that, when a bound fails, moving the bound *is* the acceptance.
-
-The choices are honest - `accept` means the look is right and the spec agrees, which a
-failed member cannot be - but the label `number` carries reads as a tweak to a spec, not
-as the approval of a picture. A person who came to approve sees no approve button.
-
-What polyweave should do: when a member failed a bound, label the `number` choice as an
-acceptance that moves the bound (pt-BR: Aceitar e ajustar o limite; en: Accept and move
-the bound), and say under it which bound moves and to what measured value. Keep `accept`
-hidden for that member, as now. Optionally, show a line under the buttons explaining why
-Accept is absent ("this member failed median-tone; accepting it moves that bound").
 
 ### §PW487 A sweep that keeps what its runs printed
 

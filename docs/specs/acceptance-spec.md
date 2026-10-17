@@ -183,7 +183,13 @@ spec fails offers no accept where the kind has `number`: accept means the spec a
 and an accept there left the failed bound standing, so the bake refused what the person
 had just accepted. Their yes on that card is `number`, which moves the bound as theirs,
 and accepting every card still waiting skips the failing ones (§PW460). A tool call may
-still accept a failing member, which `loop.bounds` reads as a bound too tight.
+still accept a failing member, which `loop.bounds` reads as a bound too tight. On that
+card `number` says it is the acceptance (§PW486): Cottony's owner liked a look and found
+only "Ajustar o limite", which reads as a tweak to a spec. A choice in the locale catalog
+may carry `failing_label` and `failing_means`, which a failing card shows in place of its
+own words ("Accept and move the bound", "Aceitar e ajustar o limite"), and the card says
+under its buttons why there is no plain Accept. The sitting's own list of choices keeps
+the plain words.
 
 **A server on old code starts again by itself** (§PW463). The server compares the
 package's newest `.py` with its own start, and used to refuse every answer once they

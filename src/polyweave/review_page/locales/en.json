@@ -109,7 +109,8 @@
     "accept_rest": "Accept the {n} not yet answered",
     "accept_rest_confirm": "Accept all {n} items of this sitting that have no answer yet? Items you already answered are left as they are.",
     "accept_rest_why": "Accepted with the rest on the review page.",
-    "accept_rest_running": "Accepting {done} of {n}…"
+    "accept_rest_running": "Accepting {done} of {n}…",
+    "no_accept": "This card failed a bound of its spec, written above, so there is no plain Accept: accepting the look here moves that bound to what was measured, as your decision."
   },
   "kinds": {
     "look": {
@@ -129,7 +130,9 @@
         "number": {
           "label": "Move the bound",
           "means": "The look is right, and a bound that failed it is wrong.",
-          "then": "That bound moves to the measured value, recorded as yours."
+          "then": "That bound moves to the measured value, recorded as yours.",
+          "failing_label": "Accept and move the bound",
+          "failing_means": "The look is right; the bound that refused it moves to what was measured."
         }
       }
     },

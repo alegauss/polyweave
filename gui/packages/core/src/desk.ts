@@ -9,6 +9,10 @@ export interface Choice {
   label: string
   means: string
   then: string
+  /** What the choice is called on a card that failed a bound, where it is the person's
+   * acceptance of the look (§PW486). */
+  failing_label?: string
+  failing_means?: string
 }
 
 export interface Member {
@@ -305,7 +309,22 @@ export function choices(words: Words, sitting: Sitting, laid?: Laid): [string, C
   return Object.entries(sitting.choices ?? {})
     .filter(([word]) => word !== 'number' || failed)
     .filter(([word]) => !(laid && failed && numbered && word === 'accept'))
-    .map(([word, raw]) => [word, choiceOf(words, word, raw, sitting.kind)])
+    .map(([word, raw]): [string, Choice] => {
+      const choice = choiceOf(words, word, raw, sitting.kind)
+      // On a failing card "number" is how a person accepts the look, and it says so:
+      // Cottony's owner looked for an accept and found "Adjust the bound" (§PW486).
+      if (laid && failed && word === 'number' && choice.failing_label) {
+        return [word, { ...choice, label: choice.failing_label,
+                        means: choice.failing_means ?? choice.means }]
+      }
+      return [word, choice]
+    })
+}
+
+/** Whether a card's accept is held back because a member failed a bound, so the card
+ * says why and that "number" is its acceptance (§PW486). */
+export function acceptWithheld(sitting: Sitting, laid: Laid): boolean {
+  return failing(laid) && 'number' in (sitting.choices ?? {}) && 'accept' in (sitting.choices ?? {})
 }
 
 /** The last answer a family was given, if any. */

@@ -16,7 +16,7 @@
 
 ## Block G — Geometry as a declaration
 
-- 📋 **PW491** (deps: —) **union joins parts at a hard crease, so a body whose parts flow into each other, as moulded plastic, cannot be declared** — Spinhold's new plastic city needs towers, trees and mascots whose parts flow together, and each would be a bought mesh or a custom node. → §PW491
+- 📋 **PW498** (deps: —) **union joins parts at a hard crease, so a body whose parts flow into each other, as moulded plastic, cannot be declared** — Spinhold's new plastic city needs towers, trees and mascots whose parts flow together, and each would be a bought mesh or a custom node. → §PW498
 - 📋 **PW492** (deps: —) **inflate swells one face of a drawing, so a body puffed round on both sides, as an inflatable toy is, cannot be declared** — The plastic city's balloons, clouds and pads are seen from both sides, and a mirrored relief meets itself at a coin-sharp seam. → §PW492
 - 📋 **PW493** (deps: —) **a solid round on every edge, a capsule or a soft box, has no op, since plate rounds only its outline's corners in XY** — Every piece of the plastic city is moulded round, and bevel takes one width with no segments or profile, so its edges read chamfered. → §PW493
 - 📋 **PW494** (deps: —) **a material declares only colour and roughness, so a glossy plastic with clear coat, sheen and soft rim cannot be asked** — Moulded plastic is read off its finish more than its shape, and every bake today renders the plastic city as painted clay. → §PW494
@@ -27,7 +27,6 @@
 
 - 🛠 **PW372** (deps: Spinhold RK215) **a camera move cannot be declared as a clip or played by the game, so a cutscene's shots are numbers in the project** — No shot is yet captured onto a sitting for a person to accept, and Starship's opening still reads its own JSON. → §PW372
 - 🛠 **PW36** (deps: PW5 ✅, PW82 ⏸) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82. → §PW36
-- 📋 **PW486** (deps: —) **a sitting member that failed a bound shows no accept, so a person who likes the look cannot see how to approve it** — Moving the bound is the acceptance there, but its label reads as a spec tweak, and the Cottony owner asked where the accept had gone. → §PW486
 - 📋 **PW487** (deps: —) **engine.sweep keeps only the matched text of a hit, and a run its frame budget ended reads as one that never printed** — Cottony's level sweep lost every measured number off the line and first read seven budget-killed runs as no-signal. → §PW487
 - 📋 **PW488** (deps: —) **a capture warns same settings, different picture when only a sprite the scene draws changed, as if it were noise** — PW71's warning cannot tell a re-taken picture's changed asset from real non-determinism, so it cries wolf on every legitimate re-take. → §PW488
 - 📋 **PW489** (deps: —) **a capture whose shader failed to compile answers ok, so panel.capture hands back stills of the bare white rect** — The engine runner never reads SHADER ERROR, so a broken shader is found only by a pixel assertion, if one exists. → §PW489

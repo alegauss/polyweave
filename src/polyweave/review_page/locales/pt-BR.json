@@ -109,7 +109,8 @@
     "accept_rest": "Aceitar os {n} pendentes",
     "accept_rest_confirm": "Aceitar os {n} itens desta sessão que ainda não têm resposta? Os que você já respondeu ficam como estão.",
     "accept_rest_why": "Aceito em lote na página de revisão.",
-    "accept_rest_running": "Aceitando {done} de {n}…"
+    "accept_rest_running": "Aceitando {done} de {n}…",
+    "no_accept": "Este cartão reprovou um limite da especificação, escrito acima, então não há um Aceitar simples: aceitar o visual aqui ajusta esse limite para o valor medido, como decisão sua."
   },
   "kinds": {
     "look": {
@@ -129,7 +130,9 @@
         "number": {
           "label": "Ajustar o limite",
           "means": "O visual está certo, mas um limite que o reprovou está errado.",
-          "then": "Esse limite passa a ser o valor medido, registrado como decisão sua."
+          "then": "Esse limite passa a ser o valor medido, registrado como decisão sua.",
+          "failing_label": "Aceitar e ajustar o limite",
+          "failing_means": "O visual está certo; o limite que o reprovou passa a ser o valor medido."
         }
       }
     },

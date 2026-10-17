@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 1 },
   { block: "G", title: "Geometry as a declaration", open: 6 },
-  { block: "H", title: "Proof on a real game", open: 13 },
+  { block: "H", title: "Proof on a real game", open: 7 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
@@ -58,7 +58,7 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW491",
+    id: "PW498",
     block: "G",
     symptom: "union joins parts at a hard crease, so a body whose parts flow into each other, as moulded plastic, cannot be declared",
     why: "Spinhold's new plastic city needs towers, trees and mascots whose parts flow together, and each would be a bought mesh or a custom node.",
@@ -112,13 +112,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "a real project cannot adopt the plugin without carrying its own paths and palette into it",
     why: "Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82.",
     deps: ["PW82"],
-  },
-  {
-    id: "PW486",
-    block: "H",
-    symptom: "a sitting member that failed a bound shows no accept, so a person who likes the look cannot see how to approve it",
-    why: "Moving the bound is the acceptance there, but its label reads as a spec tweak, and the Cottony owner asked where the accept had gone.",
-    deps: [],
   },
   {
     id: "PW487",

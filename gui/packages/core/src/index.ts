@@ -4,6 +4,7 @@ export { Broken, Client, Refused } from './client'
 export type { Refusal, Server, Transport } from './client'
 export {
   acceptable,
+  acceptWithheld,
   answered,
   choiceOf,
   choices,

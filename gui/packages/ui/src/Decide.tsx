@@ -10,6 +10,7 @@ import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
 import {
   answered,
   acceptable,
+  acceptWithheld,
   choices,
   drawn,
   holding,
@@ -564,6 +565,12 @@ function Card({
               </Button>
             ))}
           </div>
+          {acceptWithheld(sitting, laid) && (
+            // Why there is no plain accept, and which button is one (§PW486).
+            <p data-no-accept className="text-sm text-muted-foreground">
+              {say(words, 'no_accept')}
+            </p>
+          )}
           {picked && (
             <label className="flex flex-col gap-1 text-sm">
               {say(words, picked === 'accept' ? 'note_accept' : 'note_look')}

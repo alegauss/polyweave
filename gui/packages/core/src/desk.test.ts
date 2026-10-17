@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   acceptable,
+  acceptWithheld,
   choices,
   drawn,
   figures,
@@ -71,6 +72,28 @@ describe('the decision screen', () => {
     expect(choices(WORDS, one, one.families['mark']).map(([word]) => word)).toEqual(['accept', 'look'])
     expect(acceptable(one, 'icon')).toBe(false)
     expect(acceptable(one, 'mark')).toBe(true)
+  })
+
+  it('calls number an acceptance on a failing card, and says why accept is absent', () => {
+    // §PW486: Cottony's owner liked the look, and looked for an accept that was not there.
+    const one = sitting('a', ['mascot', 'star'], {
+      choices: {
+        accept: { label: 'Aceitar', means: 'Está certo.', then: '' },
+        look: { label: 'Refazer', means: 'Está errado.', then: '' },
+        number: {
+          label: 'Ajustar o limite', means: 'Um limite errou.', then: '',
+          failing_label: 'Aceitar e ajustar o limite', failing_means: 'O visual está certo.',
+        },
+      },
+    })
+    one.families['mascot']!.said = [{ name: 'mascot', passed: false, failed: ['median-tone'] }]
+    const failing = Object.fromEntries(choices(WORDS, one, one.families['mascot']))
+    expect(failing['number']!.label).toBe('Aceitar e ajustar o limite')
+    expect(failing['number']!.means).toBe('O visual está certo.')
+    expect(acceptWithheld(one, one.families['mascot']!)).toBe(true)
+    expect(acceptWithheld(one, one.families['star']!)).toBe(false)
+    // The sitting's own "how to decide" keeps the choice's plain name.
+    expect(Object.fromEntries(choices(WORDS, one))['number']!.label).toBe('Ajustar o limite')
   })
 
   it('opens the newest sittings with something to answer, folds the finished, and counts', () => {
