@@ -36,6 +36,7 @@ from typing import Annotated
 
 import numpy as np
 
+from polyweave.kernel import git
 from polyweave.kernel.config import load
 from polyweave.kernel.describe import Param, operation
 from polyweave.kernel.errors import PolyweaveError
@@ -421,70 +422,6 @@ LISTENED = (
     "words a spoken take should say"
 )
 
-#: `<revision>:<path>`, a committed file; two characters at least before the colon, so
-#: a Windows drive (`C:/...`) is never read as one.
-_COMMITTED = re.compile(r"^(?P<rev>[\w.~^/@{}-]{2,}):(?P<path>[^:].*)$")
-
-#: What a Git LFS pointer starts with, where the file itself is kept elsewhere.
-_LFS = b"version https://git-lfs"
-
-
-def _committed(given: str) -> tuple[str, str] | None:
-    """The revision and the path an `old` names, where it names a committed version."""
-    found = _COMMITTED.match(given)
-    return (found["rev"], found["path"]) if found else None
-
-
-def _checked_out(rev: str, path: str, here: Path, work: Path, kind: str = "sound",
-                 code: str = "sound.no-source") -> tuple[str, dict]:
-    """A committed version of a file, written into the work area to be compared
-    (§PW425): a sound to be heard, or a picture to be looked at (§PW481).
-
-    A render rewrites its file in place, so the version a person compares against lives
-    only in git, and in a project that keeps audio in LFS as a pointer: spinhold took
-    three commands a track to get one back. Answers where it landed and where it came
-    from, the commit it resolved to, for the sitting to say.
-    """
-    import hashlib
-    import subprocess
-
-    def git(*args: str, given: bytes | None = None) -> subprocess.CompletedProcess:
-        return subprocess.run(["git", *args], cwd=here, input=given,
-                              capture_output=True, check=False)
-
-    shown = git("show", f"{rev}:{path}")
-    commit = git("rev-parse", "--verify", f"{rev}^{{commit}}")
-    if shown.returncode or commit.returncode:
-        raise PolyweaveError(
-            code,
-            f"git has no {path} at {rev}",
-            "name a revision and a path the repository holds, as HEAD:<path>",
-            detail=(shown.stderr or commit.stderr).decode("utf-8", "replace")[:300],
-            given=f"{rev}:{path}",
-        )
-    body = shown.stdout
-    if body.startswith(_LFS):
-        smudged = git("lfs", "smudge", path, given=body)
-        if smudged.returncode or not smudged.stdout:
-            raise PolyweaveError(
-                code,
-                f"{path} at {rev} is a Git LFS pointer, and git lfs could not fetch it",
-                "install Git LFS and fetch the object (git lfs fetch), then ask again",
-                detail=smudged.stderr.decode("utf-8", "replace")[:300],
-            )
-        body = smudged.stdout
-    sha = commit.stdout.decode().strip()
-    landed = work / kind / "old" / sha[:12] / path
-    landed.parent.mkdir(parents=True, exist_ok=True)
-    landed.write_bytes(body)
-    from polyweave.kernel.provenance import relative
-
-    return relative(landed, here), {
-        "rev": rev, "commit": sha, "path": path,
-        "sha256": hashlib.sha256(body).hexdigest(),
-    }
-
-
 @operation("sound.sitting")
 def sitting(
     members: Annotated[list, Param(LISTENED)],
@@ -523,10 +460,10 @@ def sitting(
         heard = {"name": str(member["name"]), "sound": True}
         for key in ("new", "old", "spec"):
             if member.get(key):
-                committed = _committed(str(member[key])) if key == "old" else None
+                committed = git.committed(str(member[key])) if key == "old" else None
                 if committed:
                     # The version a render overwrote, out of git and LFS (§PW425).
-                    heard["old"], heard["old_from"] = _checked_out(
+                    heard["old"], heard["old_from"] = git.checked_out(
                         *committed, here, config.path("paths.work"))
                     continue
                 heard[key] = relative(config.path("paths.work", member[key]), here)
@@ -855,3 +792,32 @@ def measured(
     """A sound's seam, loudness, peak and length: what a sound predicate bounds."""
     where = Path(subject) if Path(subject).is_absolute() else Path(root) / subject
     return {"subject": subject, **measure(where)}
+
+
+def judged(member: dict, *, accepted: bool, choice: str, why: str, when: str,
+           root: Path) -> dict:
+    """A person's verdict on a sound, appended to the new sound's record (§PW256).
+
+    The sound layer's judge: `verdict.judge` hands it each member `sound.sitting` laid
+    out. Kept with the digest of what was heard, so a verdict on a sound made again
+    since is read as one on the old bytes. A sound with no record says so rather than
+    failing the verdict the ledger already holds.
+    """
+    from polyweave.kernel import provenance
+
+    new = root / member["new"]
+    entry = {
+        "choice": choice,
+        "why": why,
+        "when": when,
+        "sha256": provenance.sha256_of(new)[0],
+        "against": member.get("old"),
+    }
+    try:
+        record = provenance.read(str(new), root=root)
+    except PolyweaveError:
+        return {**entry, "record": None,
+                "why_unrecorded": f"{member['new']} has no record to keep it in"}
+    record["verdicts"] = [*(record.get("verdicts") or []), entry]
+    written = provenance.write(record, root)
+    return {**entry, "record": provenance.relative(written, root)}

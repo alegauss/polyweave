@@ -1,6 +1,6 @@
 """What the reference layer adds, read by the kernel (§PW500)."""
 
-from polyweave.kernel.layer import Layer
+from polyweave.kernel.layer import Judge, Layer
 
 LAYER = Layer(
     name="reference",
@@ -14,5 +14,13 @@ LAYER = Layer(
         "polyweave.layers.reference.reference_regions",
         "polyweave.layers.reference.reference_register",
         "polyweave.layers.reference.reference_transcription",
+    ),
+    judges=(
+        Judge(
+            name="row",
+            about="a transcription row is kept in the answers beside its sheet",
+            claims=lambda member: bool(member.get("transcription")),
+            target="polyweave.layers.reference.reference_transcription:judged",
+        ),
     ),
 )

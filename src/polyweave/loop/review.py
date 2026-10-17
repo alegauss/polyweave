@@ -360,7 +360,7 @@ def answer(root, body: dict) -> dict:
         # A person who clicked accept and wrote nothing said exactly that, and the
         # ledger says so in their language; judge still refuses an empty sentence from
         # anyone else, and a redo still needs the person's words (§PW288).
-        from polyweave.layers.words import review_text
+        from . import review_text
 
         why = review_text.catalog(review_text.language(config.root))["page"][
             "accepted_silent"]
@@ -503,7 +503,7 @@ _LOADED = newest(CODE)
 def state(root: Annotated[str, Param("the project the page is for")] = ".") -> dict:
     """Everything the decision screen shows, as the page reads it: the language, what
     waits on a person, the sittings, their answers, the gate runs and the turntables."""
-    from polyweave.layers.words import review_text
+    from . import review_text
 
     here = load(root).root
     return {
@@ -522,7 +522,7 @@ def state(root: Annotated[str, Param("the project the page is for")] = ".") -> d
 def words(root: Annotated[str, Param("the project the screen is for")] = ".") -> dict:
     """The words the decision screen reads, in the project's language: the review
     catalog's page and every kind of sitting's, so a screen holds no copy (§PW400)."""
-    from polyweave.layers.words import review_text
+    from . import review_text
 
     speaks = review_text.language(load(root).root)
     said = review_text.catalog(speaks)
@@ -663,7 +663,7 @@ def server(root=".", port: int = 0, on_stale=None) -> ThreadingHTTPServer:
                 return self._file(SCREEN / built)
             if asked.path.startswith("/locales/"):
                 # A catalog by its language, and only one the plugin ships (§PW287).
-                from polyweave.layers.words import review_text
+                from . import review_text
 
                 speaks = asked.path.removeprefix("/locales/").removesuffix(".json")
                 if speaks in review_text.languages():

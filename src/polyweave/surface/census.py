@@ -168,7 +168,7 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.loop.revision:hooked": ("internal", "the `hook revision` verb's answer"),
     "polyweave.loop.revision:paid": (
         "internal", "the paid tools a revision always asks"),
-    "polyweave.layers.words.review_text": (
+    "polyweave.loop.review_text": (
         "internal", "a sitting's words, from the catalogs"),
     "polyweave.layers.vfx.vfx:measured_whole": (
         "internal", "a whole's measures, over its parts"),
@@ -386,6 +386,7 @@ MODULES: dict[str, tuple[str, str]] = {
         "internal", "the project file, reported by capabilities"),
     "polyweave.kernel.describe": ("internal", "the registry's own machinery"),
     "polyweave.kernel.layer": ("internal", "each layer's declaration, for describe"),
+    "polyweave.kernel.git": ("internal", "a committed file read back, for a sitting"),
     "polyweave.kernel.errors": ("internal", "the error type and its lookup"),
     "polyweave.kernel.files": ("internal", "atomic writes"),
     "polyweave.kernel.image": ("internal", "one image loader under every measure"),

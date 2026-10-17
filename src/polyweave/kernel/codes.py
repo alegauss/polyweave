@@ -377,6 +377,11 @@ CODES: dict[str, Code] = {
         when="an operation module under layers/<name>/ is missing from LAYER.modules",
         doors=("add the module to modules in that layer's layer.py",),
     ),
+    "layer.two-judges": Code(
+        means="two layers declare a judge under one name",
+        when="a judge's name, the key its answer is reported under, is taken already",
+        doors=("rename one of the two judges",),
+    ),
     "layer.unknown-requirement": Code(
         means="a layer requires something polyweave has no way to find",
         when="LAYER.requires names a word outside blender, godot, audio and text",
@@ -1076,6 +1081,11 @@ CODES: dict[str, Code] = {
         doors=("give a larger key art or logo",),
     ),
     # -- verdict: the members a verdict is laid out from --------------------------
+    "verdict.judged-twice": Code(
+        means="two layers' judges claim one member, so its verdict has two homes",
+        when="a member carries the keys of two media, such as canon and line",
+        doors=("lay the member out with one medium's keys",),
+    ),
     "verdict.bad-member": Code(
         means="a member of a sheet, a sitting or a verdict is not one",
         when="a member that is a number or a list, a table with no name or no new, or "

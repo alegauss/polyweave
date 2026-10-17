@@ -25,7 +25,7 @@ from pathlib import Path
 from polyweave.kernel.errors import PolyweaveError
 
 #: Where the catalogs are, one `<language>.json` each.
-LOCALES = Path(__file__).parents[2] / "loop" / "review_page" / "locales"
+LOCALES = Path(__file__).with_name("review_page") / "locales"
 
 
 def languages() -> tuple[str, ...]:

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import sys
 from typing import Annotated
 
 import pytest
@@ -67,8 +68,8 @@ def test_an_operation_from_a_module_its_layer_does_not_name_is_refused_by_name()
 
 
 def test_a_layer_folder_without_a_declaration_is_refused(tmp_path, monkeypatch):
-    (tmp_path / "haptics").mkdir()
-    (tmp_path / "haptics" / "__init__.py").write_text("", encoding="utf-8")
+    (tmp_path / "undeclared").mkdir()
+    (tmp_path / "undeclared" / "__init__.py").write_text("", encoding="utf-8")
     monkeypatch.setattr(polyweave.layers, "__path__", [str(tmp_path)])
     L.layers.cache_clear()
     try:
@@ -77,8 +78,9 @@ def test_a_layer_folder_without_a_declaration_is_refused(tmp_path, monkeypatch):
     finally:
         monkeypatch.undo()
         L.layers.cache_clear()
+        sys.modules.pop("polyweave.layers.undeclared", None)
     assert refused.value.code == "layer.undeclared"
-    assert "polyweave.layers.haptics" in refused.value.message
+    assert "polyweave.layers.undeclared" in refused.value.message
 
 
 def test_capabilities_lists_each_layer_and_what_it_is_missing():

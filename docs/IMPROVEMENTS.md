@@ -476,32 +476,6 @@ the swap, and its gate passes.
 
 ## Block W — A core that grows by layers
 
-### §PW501 A layer registers the judge for what it lays out
-
-`verdict.answer` writes the person's choice and then works through a chain: `if
-member.get("line")` hands it to `words.judged`, `if member.get("transcription")` to
-`reference_transcription.judged`, and further along a sound's take, a style canon and a
-family's members each get their own branch. Every medium a person can judge has added a
-branch, and the module now imports sixteen others, `sound` among them, for
-`_checked_out` and `_committed`.
-
-A `Judge` is a protocol with three parts:
-
-- `claims(member) -> bool`, whether this judge keeps the member's verdict;
-- `judged(member, *, accepted, choice, why, when, root) -> dict`, the write into its own canon, returning what it kept;
-- `about`, one sentence that `describe` shows, saying where that verdict lives.
-
-A layer lists its judges in `Layer.judges`. `verdict.answer` writes the shared record,
-calls each judge that claims the member, and reports each one's return under that
-judge's name. When two judges claim one member, the call is refused, never resolved by
-order. That rule is what keeps a spoken take's `line` the sound's verdict and never a
-line's, which today depends on the order of two `if`s. The words, transcription, sound
-and style branches move into their layers unchanged.
-
-Done when `verdict.py` imports nothing from `layers/`. The existing verdict tests
-(answer, across calls, move, bounds) pass unedited apart from imports, and a test judge
-declared in a fixture layer receives its member with no kernel or loop file touched.
-
 ### §PW502 Record kinds, staleness and what ships, contributed by layers
 
 `provenance.py` is meant to describe the record's format, yet it reaches into four

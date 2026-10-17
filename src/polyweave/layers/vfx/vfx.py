@@ -1518,8 +1518,7 @@ def preview(
     one look (§PW287). The sheets are a sitting on the review page in the project's
     language, one family an effect; the answer lands through verdict.judge.
     """
-    from polyweave.layers.words import review_text
-    from polyweave.loop import verdict
+    from polyweave.loop import review_text, verdict
 
     config = load(root)
     here = config.root

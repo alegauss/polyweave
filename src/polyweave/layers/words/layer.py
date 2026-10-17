@@ -1,6 +1,6 @@
 """What the words layer adds, read by the kernel (§PW500)."""
 
-from polyweave.kernel.layer import Layer
+from polyweave.kernel.layer import Judge, Layer
 
 LAYER = Layer(
     name="words",
@@ -8,5 +8,13 @@ LAYER = Layer(
     modules=(
         "polyweave.layers.words.words",
         "polyweave.layers.words.world",
+    ),
+    judges=(
+        Judge(
+            name="line",
+            about="a line of text laid out by words.sheet is kept in the lines canon",
+            claims=lambda member: bool(member.get("line")) and not member.get("sound"),
+            target="polyweave.layers.words.words:judged",
+        ),
     ),
 )

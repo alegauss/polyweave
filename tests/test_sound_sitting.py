@@ -12,7 +12,7 @@ import wave
 import numpy as np
 import pytest
 
-from polyweave.kernel import provenance
+from polyweave.kernel import git, provenance
 from polyweave.kernel.errors import PolyweaveError
 from polyweave.layers.sound import sfx, sound
 from polyweave.loop import review, verdict
@@ -156,9 +156,9 @@ def test_a_committed_old_git_does_not_hold_is_refused(tmp_path):
 
 
 def test_a_windows_path_is_never_read_as_a_revision():
-    assert sound._committed("C:/game/audio/bomb.wav") is None
-    assert sound._committed("before/bomb.wav") is None
-    assert sound._committed("HEAD~2:audio/bomb.wav") == ("HEAD~2", "audio/bomb.wav")
+    assert git.committed("C:/game/audio/bomb.wav") is None
+    assert git.committed("before/bomb.wav") is None
+    assert git.committed("HEAD~2:audio/bomb.wav") == ("HEAD~2", "audio/bomb.wav")
 
 
 def test_a_member_with_no_file_to_hear_is_refused(tmp_path):

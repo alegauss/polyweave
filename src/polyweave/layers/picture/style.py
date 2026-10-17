@@ -134,6 +134,19 @@ def admitted(style: dict) -> list[dict]:
     return json.loads(text) if text else []
 
 
+def judged(member: dict, *, accepted: bool, choice: str, why: str, when: str,
+           root: Path) -> dict | None:
+    """The picture layer's judge: an accepted look joins the family `canon` names.
+
+    `verdict.judge` hands it each member carrying `canon`; a look the person refused
+    joins nothing and answers None (§PW166, §PW501).
+    """
+    if not accepted:
+        return None
+    return admit(member["new"], family=member["canon"], why=why, choice=choice,
+                 when=when, root=root)
+
+
 def admit(
     picture: str,
     *,

@@ -24,7 +24,7 @@ from typing import Annotated, Any
 from polyweave.kernel.describe import Param, operation
 from polyweave.kernel.doors import Blank, door
 from polyweave.kernel.errors import PolyweaveError
-from polyweave.layers.picture import style
+from polyweave.kernel.layer import judge_of, judges
 
 from . import accept, calibrate, loop, person
 
@@ -120,15 +120,16 @@ def _from_git(members: list[dict], here: Path) -> list[dict]:
     """Each member whose `old` names a committed version, `<rev>:<path>` as
     sound.sitting reads it, with that version checked out into the work area and where
     it came from kept as `old_from`; and each picture a member names, there (§PW481)."""
+    from polyweave.kernel import git
     from polyweave.kernel.config import load
-    from polyweave.layers.sound.sound import _checked_out, _committed
 
     out = []
     for member in members:
-        committed = _committed(str(member["old"])) if member.get("old") else None
+        committed = git.committed(str(member["old"])) if member.get("old") else None
         if committed:
-            landed, came = _checked_out(*committed, here, load(here).path("paths.work"),
-                                        kind="picture", code="verdict.no-old")
+            landed, came = git.checked_out(*committed, here,
+                                           load(here).path("paths.work"),
+                                           kind="picture", code="verdict.no-old")
             member = {**member, "old": landed, "old_from": came}
         for key in ("old", "new", "capture"):
             if member.get(key) and not (here / str(member[key])).is_file():
@@ -313,7 +314,8 @@ def _manifest(
     from polyweave.kernel.config import load
     from polyweave.kernel.files import read_text_retrying, write_atomic
     from polyweave.kernel.provenance import relative
-    from polyweave.layers.words import review_text
+
+    from . import review_text
 
     config = load(root)
     here = config.root
@@ -352,7 +354,12 @@ CODE = (
 )
 
 
-@operation("verdict.judge", guard=person.judging)
+def _judges() -> dict:
+    """Where each kind of member's verdict is kept, by the key it is reported under."""
+    return {"judges": {name: one.about for name, one in sorted(judges().items())}}
+
+
+@operation("verdict.judge", guard=person.judging, declares=_judges)
 def judge(
     members: Annotated[list, Param(MEMBERS)],
     choice: Annotated[
@@ -405,6 +412,9 @@ def judge(
             "one nobody can learn from",
         )
     here = Path(root).resolve()
+    # Each member's judge, settled before anything is written: two that claim one
+    # member are refused here, not after the ledger already holds the verdict (§PW501).
+    judging = [judge_of(member) for member in members]
     checked = [(member, *_checked(member, here)) for member in members]
     carried = {r["id"] for *_, found in checked for r in found["predicates"]}
     unknown = sorted(set(named) - carried)
@@ -442,7 +452,7 @@ def judge(
     if opened:
         run = loop.judging(str(asset), root=str(here))
     answers = []
-    for member, _spec, spec_path, found in checked:
+    for (member, _spec, spec_path, found), judge in zip(checked, judging, strict=True):
         mine = [n for n in named if n in {r["id"] for r in found["predicates"]}]
         if run is not None:
             loop.judged(
@@ -463,47 +473,14 @@ def judge(
                 root=here,
                 person=True,
             )["written"]
-        joined = None
-        if accepted and member.get("canon"):
-            joined = style.admit(
-                member["new"],
-                family=member["canon"],
-                why=why,
-                choice=choice,
-                when=stamp,
-                root=here,
-            )
-        kept_line = None
-        if member.get("line") and not member.get("sound"):
-            from polyweave.layers.words import words
-
-            # A line laid out by words.sheet: the verdict is kept in the lines canon,
-            # and this is the only door into it (§PW199). A sound's `line` is the words
-            # a spoken take says, heard and not read, so its verdict is the sound's
-            # below and never a line's (§PW411).
-            kept_line = words.judged(
-                member,
-                accepted=accepted,
-                choice=choice,
-                why=why,
-                when=stamp,
-                root=here,
-            )
-        row = None
-        if member.get("transcription"):
-            from polyweave.layers.reference import reference_transcription
-
-            # A row of a transcription read from a video: the person's answer is kept
-            # beside the sheet, and this is the only door into it (§PW383).
-            row = reference_transcription.judged(
+        # What the member's own layer kept of the verdict, under its judge's name: a
+        # picture's canon, a line's, a transcription row, a sound's record (§PW501).
+        kept = {}
+        if judge is not None:
+            kept[judge.name] = judge.judged(
                 member, accepted=accepted, choice=choice, why=why, when=stamp,
                 root=here,
             )
-        heard = None
-        if member.get("sound"):
-            # A sound laid out by sound.sitting: the verdict is kept in its own record,
-            # against the bytes that were heard (§PW256).
-            heard = _heard(member, choice=choice, why=why, when=stamp, root=here)
         answers.append(
             {
                 "name": member["name"],
@@ -511,10 +488,7 @@ def judge(
                 "person_accepted": accepted,
                 "named": mine,
                 "rewritten": rewritten,
-                "canon": joined,
-                **({"line": kept_line} if kept_line else {}),
-                **({"row": row} if row else {}),
-                **({"heard": heard} if member.get("sound") else {}),
+                **kept,
                 # What the check said, as `loop.judged` takes it, so an answer given
                 # where no run was open can still be carried into one (§PW173).
                 "check": {
@@ -847,33 +821,6 @@ def answer(
         answered.append({"family": one, "members": said["members"]})
     return {"sitting": listed, "choice": choice, "why": why, "answered": answered,
             "skipped": skipped}
-
-
-def _heard(member: dict, *, choice: str, why: str, when: str, root: Path) -> dict:
-    """A person's verdict on a sound, appended to the new sound's record.
-
-    Kept with the digest of what was heard, so a verdict on a sound made again since is
-    read as one on the old bytes. A sound with no record says so rather than failing
-    the verdict the ledger already holds.
-    """
-    from polyweave.kernel import provenance
-
-    new = root / member["new"]
-    entry = {
-        "choice": choice,
-        "why": why,
-        "when": when,
-        "sha256": provenance.sha256_of(new)[0],
-        "against": member.get("old"),
-    }
-    try:
-        record = provenance.read(str(new), root=root)
-    except PolyweaveError:
-        return {**entry, "record": None,
-                "why_unrecorded": f"{member['new']} has no record to keep it in"}
-    record["verdicts"] = [*(record.get("verdicts") or []), entry]
-    written = provenance.write(record, root)
-    return {**entry, "record": provenance.relative(written, root)}
 
 
 def _moved(found: dict, why: str, stamp: str) -> dict:
