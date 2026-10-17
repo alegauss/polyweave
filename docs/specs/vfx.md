@@ -65,6 +65,24 @@ also name a `.tres` or `.res` mesh under the project, which is drawn as it is, i
 materials and all; one with nothing there is refused, and so is a `squash` beside it,
 since the engine scales its own solids and not a mesh the project shaped.
 
+**A struck piece squashes and jiggles back** (§PW496), as a toy does when it is hit:
+`kind = "struck"` is a mesh, `mesh` (a capsule when left out, or a sphere, a box or a
+mesh of the project's own) `size` wide and `height` tall, and a shader that gives.
+`give` is how far its top swings from a full strike, in metres, and it squashes by the
+same share of its height, widening to keep its volume; `wobble` is how many times a
+second it swings; `lifetime` is how long it takes to settle to a twentieth of its give;
+`falloff` is how the swing grows up it, 0 moving it whole and above 1 keeping the base
+still; `radius` is how far from a strike a piece still feels it, fading to nothing
+there; and `amount` is the strikes it feels at once, at most 16. The swing is a cosine
+decaying from the strike, the same curve `vfx.swing` answers, and each piece reads its
+own origin, so on a MultiMesh every instance answers by its distance from the strike.
+The scene's script takes `strike(at, strength = 1)`, ages each strike and hands the
+shader its points, so the game calls one method. An engine solid is centred on its
+origin and a mesh of the project's own stands on it. A give, a radius, a size or a
+height of 0 is refused. It measures `lifetime` as its settle time and `reach` as its
+largest give, which is what a spec bounds, and `vfx.preview` films it lit, from in
+front, struck from its left on the first frame filmed.
+
 The five keys after `gravity` are what Starship's accepted trails drew with (§PW281): its
 sparks brake at 6 to 10 and stay by the engine, its confetti spins, its sun band throws
 from a tall box. A `shape` other than `square` is a texture on each quad, drawn from a

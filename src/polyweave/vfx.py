@@ -111,6 +111,9 @@ KEYS: dict[str, tuple[type | tuple, Any]] = {
     "billboard": (str, "none"),
     "mesh": (str, ""),
     "squash": (list, [1.0, 1.0, 1.0]),
+    "give": (float, 0.0),
+    "wobble": (float, 3.0),
+    "falloff": (float, 1.5),
 }
 
 #: The solids a particle may be drawn as instead of a quad (§PW427): primitives the
@@ -121,20 +124,25 @@ MESHES = ("sphere", "capsule", "box")
 #: KEYS, or there and not here, fails a test, so the two cannot drift.
 ABOUT: dict[str, str] = {
     "kind": "what is drawn: particles, a ribbon through each particle's path, a "
-            "path_ribbon through the path the emitter flew, or a sheet of light",
+            "path_ribbon through the path the emitter flew, a sheet of light, or a "
+            "struck piece that squashes and jiggles back",
     "amount": "the particles alive at once, the effect's budget; a path_ribbon's "
-              "points; a sheet's copies, itself and its afterimage; at least 1",
-    "lifetime": "seconds a particle, a path_ribbon's point or a sheet lives; above 0",
+              "points; a sheet's copies, itself and its afterimage; the strikes a "
+              "struck piece feels at once; at least 1",
+    "lifetime": "seconds a particle, a path_ribbon's point or a sheet lives; seconds "
+                "a struck piece takes to settle to a twentieth of its give; above 0",
     "explosiveness": "0 starts the particles evenly over a life, 1 all at once",
     "randomness": "how unevenly they start, 0 to 1",
     "one_shot": "true emits once and stops, as a burst",
     "emission": "where they start: a point, a sphere of radius, or a box of extents",
-    "radius": "the emitting sphere's radius, in metres",
+    "radius": "the emitting sphere's radius, in metres; how far from a strike a struck "
+              "piece still feels it, fading to nothing there",
     "direction": "the way they set off, as [x, y, z]",
     "spread": "degrees either side of direction, 0 to 180",
     "speed": "metres a second at the start, as [least, most]",
     "gravity": "the pull on every particle, metres a second squared, as [x, y, z]",
-    "size": "a quad's side, a ribbon's width or a sheet's width, in metres",
+    "size": "a quad's side, a ribbon's width, a sheet's width or a struck piece's, in "
+            "metres",
     "size_over_life": "scales evenly across the life, at least two, none below 0",
     "colour_over_life": "colours evenly across the life, #rrggbb or #rrggbbaa, at "
                         "least two; a sheet is tinted by it as it ages",
@@ -151,7 +159,8 @@ ABOUT: dict[str, str] = {
     "step": "seconds between a path_ribbon's points",
     "gap": "metres the emitter moves before a path_ribbon adds a point anyway; "
            "metres between a sheet's afterimage copies, trailing behind it",
-    "height": "a sheet's height, in metres, centred on its origin",
+    "height": "a sheet's height, or a struck piece's, in metres; an engine solid is "
+              "centred on its origin, and a mesh of the project's own stands on it",
     "across": "a sheet's colours from its centre line out to either edge, "
               "#rrggbbaa, at least two: a hot core, a band, a halo",
     "behind": "the same out to its trailing edge, where it differs; empty is "
@@ -166,6 +175,11 @@ ABOUT: dict[str, str] = {
             "size across, shaded so its light reads and turning as it flies",
     "squash": "a mesh's scale on [x, y, z], such as [1, 0.6, 1] for a flattened puff; "
               "a sphere's or capsule's x and z are one",
+    "give": "how far a struck piece's top swings away from a full strike, in metres; "
+            "it squashes by the same share of its height; above 0 on a struck piece",
+    "wobble": "how many times a second a struck piece swings back and forth",
+    "falloff": "how the swing grows up a struck piece: 0 moves it whole, 1 evenly "
+               "from its base, more keeps the base still and the top loose",
 }
 
 #: Every effect measure a predicate may bound, and what it says.
@@ -202,7 +216,7 @@ def measures_of(path: Path, root: Path) -> dict:
     return record.get("measurements") or {}
 
 
-KINDS = ("particles", "ribbon", "path_ribbon", "sheet")
+KINDS = ("particles", "ribbon", "path_ribbon", "sheet", "struck")
 EMISSIONS = ("point", "sphere", "box")
 BILLBOARDS = ("none", "y")
 
@@ -403,7 +417,7 @@ def checked(name: str, table: Any, root: Path | None = None) -> dict:
                    f"name one of {', '.join(MESHES)}, or a .tres mesh's path",
                    given=str(own["mesh"]), allowed=list(MESHES))
     pictured = table.get("shape")
-    if own["mesh"] and (own["kind"] != "particles" or pictured):
+    if own["mesh"] and (own["kind"] not in ("particles", "struck") or pictured):
         raise _bad(name, f"draws a {own['mesh']} and is a {own['kind']}"
                    + (f" with shape {pictured!r}" if pictured else ""),
                    "give mesh to particles alone, and leave shape out: a solid "
@@ -448,7 +462,34 @@ def checked(name: str, table: Any, root: Path | None = None) -> dict:
                 "trail"):
         own[key] = float(own[key])
     _sheet_keys(name, own)
+    _struck_keys(name, own)
     return own
+
+
+#: The most strikes a struck piece's shader holds at once: a uniform array's length.
+STRIKES_MOST = 16
+
+
+def _struck_keys(name: str, own: dict) -> None:
+    """A struck piece's own keys, checked and made numbers in place (§PW496)."""
+    for key in ("give", "wobble", "falloff"):
+        if not _number(own[key]) or own[key] < 0:
+            raise _bad(name, f"sets {key} to {own[key]!r}",
+                       f"write {key} as a number no less than 0")
+        own[key] = float(own[key])
+    if own["kind"] != "struck":
+        return
+    if own["give"] <= 0 or own["radius"] <= 0 or own["height"] <= 0 or own["size"] <= 0:
+        raise _bad(name, f"is struck with a give of {own['give']:g}, felt within "
+                   f"{own['radius']:g}, on a piece {own['size']:g} by "
+                   f"{own['height']:g}", "a struck piece gives, is felt and has a "
+                   "size: write give, radius, size and height above 0, in metres")
+    if own["amount"] > STRIKES_MOST:
+        raise _bad(name, f"feels {own['amount']} strikes at once",
+                   f"write amount as at most {STRIKES_MOST}, the strikes its shader "
+                   "holds")
+    if not own["mesh"]:
+        own["mesh"] = "capsule"
 
 
 def _sheet_keys(name: str, own: dict) -> None:
@@ -538,6 +579,11 @@ def measured(effect: dict) -> dict:
         reach = max(effect["height"] / 2, trailing)
         brightness *= max(_luminous(stop)
                           for stop in effect["across"] + effect["behind"])
+    if effect["kind"] == "struck":
+        # It stays where it stands: its reach is the furthest its top swings, its
+        # light the colour it wears, the first stop.
+        reach = effect["give"]
+        brightness = _luminous(effect["colour_over_life"][0])
     return {
         "lifetime": round(life, 4),
         "reach": round(reach, 4),
@@ -754,6 +800,153 @@ func _process(delta: float) -> void:
 """
 
 
+#: A struck piece's give (§PW496): each strike a point and a strength, aged by the
+#: script, swinging the piece away from it and squashing it, a decaying cosine over its
+#: age. `settle` is the decay that leaves a twentieth of the give at the lifetime. The
+#: origin is read from the model matrix, so on a MultiMesh each instance answers by
+#: its own distance from the strike.
+_GIVE = """shader_type spatial;
+
+uniform vec4 albedo : source_color = vec4(1.0);
+uniform float give = 0.1;
+uniform float wobble = 3.0;
+uniform float settle = 3.7;
+uniform float falloff = 1.5;
+uniform float height = 1.0;
+uniform float base = -0.5;
+uniform float felt = 1.0;
+uniform vec4 hits[%(most)d];
+uniform float ages[%(most)d];
+
+void vertex() {
+\tvec3 origin = (MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+\tfloat up = clamp((VERTEX.y - base) / height, 0.0, 1.0);
+\tfloat bend = pow(up, falloff);
+\tvec3 sway = vec3(0.0);
+\tfloat squash = 0.0;
+\tfor (int i = 0; i < %(most)d; i++) {
+\t\tif (hits[i].w <= 0.0 || ages[i] < 0.0) {
+\t\t\tcontinue;
+\t\t}
+\t\tvec3 away = origin - hits[i].xyz;
+\t\taway.y = 0.0;
+\t\tfloat near = 1.0 - clamp(length(away) / felt, 0.0, 1.0);
+\t\tfloat swing = hits[i].w * near * exp(-settle * ages[i])
+\t\t\t* cos(6.2831853 * wobble * ages[i]);
+\t\tvec3 local = (vec4(away, 0.0) * MODEL_MATRIX).xyz;
+\t\tlocal = length(local) > 0.0001 ? normalize(local) : vec3(0.0);
+\t\tsway += local * swing * give * bend;
+\t\tsquash += abs(swing) * give / height;
+\t}
+\tsquash = clamp(squash, 0.0, 0.5);
+\tVERTEX.y = base + (VERTEX.y - base) * (1.0 - squash);
+\tVERTEX.xz *= 1.0 + 0.5 * squash;
+\tVERTEX += sway;
+}
+
+void fragment() {
+\tALBEDO = albedo.rgb;
+\tROUGHNESS = 0.4;
+}
+"""
+
+#: A struck piece's script: `strike(at, strength)` takes the oldest slot, and each frame
+#: ages every strike and hands the shader its points and ages, so the game calls one
+#: method and holds no numbers of its own.
+_STRIKES = """extends GeometryInstance3D
+
+@export var most := 4
+@export var life := 1.0
+var hits: Array = []
+var ages: Array = []
+
+func _ready() -> void:
+\tfor i in most:
+\t\thits.append(Vector4.ZERO)
+\t\tages.append(-1.0)
+\t_hand()
+
+func strike(at: Vector3, strength: float = 1.0) -> void:
+\tvar slot := 0
+\tfor i in most:
+\t\tif ages[i] < 0.0 or ages[i] > ages[slot]:
+\t\t\tslot = i
+\t\t\tif ages[i] < 0.0:
+\t\t\t\tbreak
+\thits[slot] = Vector4(at.x, at.y, at.z, strength)
+\tages[slot] = 0.0
+\t_hand()
+
+func _process(delta: float) -> void:
+\tfor i in most:
+\t\tif ages[i] >= 0.0:
+\t\t\tages[i] += delta
+\t\t\tif ages[i] > life * 2.0:
+\t\t\t\tages[i] = -1.0
+\t\t\t\thits[i] = Vector4.ZERO
+\t_hand()
+
+func _hand() -> void:
+\tvar look := material_override as ShaderMaterial
+\tlook.set_shader_parameter("hits", hits)
+\tlook.set_shader_parameter("ages", ages)
+"""
+
+
+def settle_rate(lifetime: float) -> float:
+    """The decay that leaves a twentieth of a strike's give at `lifetime` seconds."""
+    return math.log(20.0) / lifetime
+
+
+def swing(effect: dict, age: float) -> float:
+    """A full strike's swing at `age` seconds, as a share of the give (§PW496).
+
+    The shader's own curve, so what a spec bounds and what the engine draws are one.
+    """
+    if age < 0:
+        return 0.0
+    return math.exp(-settle_rate(effect["lifetime"]) * age) * math.cos(
+        2 * math.pi * effect["wobble"] * age)
+
+
+def _struck_scene(name: str, effect: dict) -> str:
+    """A struck piece's scene: its mesh, the shader that gives, and its script."""
+    owned = effect["mesh"].lower().endswith((".tres", ".res"))
+    base = 0.0 if owned else -effect["height"] / 2
+    shader = _GIVE % {"most": effect["amount"]}
+    head = f'[ext_resource type="Mesh" path="res://{effect["mesh"]}" id="mesh"]\n\n' \
+        if owned else ""
+    width, tall = effect["size"], effect["height"]
+    draw = "" if owned else (
+        f'[sub_resource type="BoxMesh" id="draw"]\nsize = Vector3({width:.6g}, '
+        f"{tall:.6g}, {width:.6g})\n\n" if effect["mesh"] == "box" else
+        f'[sub_resource type="{effect["mesh"].capitalize()}Mesh" id="draw"]\n'
+        f"radius = {width / 2:.6g}\nheight = {tall:.6g}\n\n")
+    return (
+        "[gd_scene load_steps=5 format=3]\n\n" + head
+        + '[sub_resource type="Shader" id="give"]\n'
+        f'code = "{_quoted(shader)}"\n\n'
+        '[sub_resource type="ShaderMaterial" id="look"]\n'
+        'shader = SubResource("give")\n'
+        f"shader_parameter/albedo = Color({_floats(effect['colour_over_life'][0])})\n"
+        f"shader_parameter/give = {effect['give']:.6g}\n"
+        f"shader_parameter/wobble = {effect['wobble']:.6g}\n"
+        f"shader_parameter/settle = {settle_rate(effect['lifetime']):.6g}\n"
+        f"shader_parameter/falloff = {effect['falloff']:.6g}\n"
+        f"shader_parameter/height = {tall:.6g}\n"
+        f"shader_parameter/base = {base:.6g}\n"
+        f"shader_parameter/felt = {effect['radius']:.6g}\n\n"
+        + draw
+        + '[sub_resource type="GDScript" id="strikes"]\n'
+        f'script/source = "{_quoted(_STRIKES)}"\n\n'
+        f'[node name="{name}" type="MeshInstance3D"]\n'
+        + ('mesh = ExtResource("mesh")\n' if owned else 'mesh = SubResource("draw")\n')
+        + 'material_override = SubResource("look")\n'
+        'script = SubResource("strikes")\n'
+        f"most = {effect['amount']}\nlife = {effect['lifetime']:.6g}\n"
+    )
+
+
 def _quoted(source: str) -> str:
     """Source text as a .tscn string holds it."""
     return source.replace("\\", "\\\\").replace('"', '\\"')
@@ -837,6 +1030,8 @@ def scene(name: str, effect: dict) -> str:
         return _path_ribbon(name, effect, colours, curve)
     if effect["kind"] == "sheet":
         return _sheet_scene(name, effect, colours)
+    if effect["kind"] == "struck":
+        return _struck_scene(name, effect)
     ribbon = effect["kind"] == "ribbon"
     solid = effect.get("mesh") or ""
     owned = solid.lower().endswith((".tres", ".res"))
@@ -1087,6 +1282,7 @@ FRAME = (320, 180)
 _WATCH = """extends SceneTree
 
 var mover := Node3D.new()
+var shown: Node
 
 func _initialize() -> void:
 \tvar world := Node3D.new()
@@ -1100,9 +1296,10 @@ func _initialize() -> void:
 \t\tBasis.looking_at(Vector3(%(centre)s) - Vector3(%(eye)s), Vector3(%(up)s)),
 \t\tVector3(%(eye)s))
 \tworld.add_child(camera)
-\tmover.position = Vector3(%(centre)s)
+%(light)s\tmover.position = Vector3(%(centre)s)
 \tworld.add_child(mover)
-\tmover.add_child(load("%(scene)s").instantiate())
+\tshown = load("%(scene)s").instantiate()
+\tmover.add_child(shown)
 \troot.add_child.call_deferred(world)
 
 func _process(_delta: float) -> bool:
@@ -1110,6 +1307,8 @@ func _process(_delta: float) -> bool:
 \tvar turn := TAU * frame / %(turn)s
 \tmover.position = Vector3(%(centre)s) + %(round)s * (
 \t\tcos(turn) * Vector3(%(along)s) + sin(turn) * Vector3(%(across)s))
+\tif frame == %(start)d and shown.has_method("strike"):
+\t\tshown.strike(Vector3(%(struck)s))
 \tif frame == %(start)d:
 \t\tprint("environment: resolution=%%dx%%d" %% [root.size.x, root.size.y])
 \tif frame == %(start)d:
@@ -1127,6 +1326,8 @@ def _watched_as(effect: dict) -> dict:
         # Seen face on, standing still: it lies across the way it runs, so a camera
         # beside that way would see its edge.
         return {**effect, "direction": [1.0, 0.0, 0.0], "one_shot": True}
+    if effect["kind"] == "struck":
+        return {**effect, "one_shot": True}
     if effect["kind"] != "parts":
         return effect
     parts = list(effect["parts"].values())
@@ -1141,6 +1342,8 @@ def _framing(effect: dict, fps: int = 60) -> dict:
     """Where the camera stands to see the whole of an effect's reach from its side, and
     the circle the emitter is carried round in its view: a trail reads only in motion
     (§PW281), and a one-shot burst is watched standing still."""
+    if effect["kind"] == "struck":
+        return _framing_struck(effect, fps)
     # A particle is a speck in its spray; a sheet's own size is already its reach.
     floor = 0.0 if effect["kind"] == "sheet" else effect["size"] * 6
     reach = max(measured(effect)["reach"], 0.5, floor)
@@ -1169,7 +1372,38 @@ def _framing(effect: dict, fps: int = 60) -> dict:
             "along": _floats(d), "across": _floats(v / wide for v in across),
             "round": f"{0.0 if still else reach * 0.4:.6g}",
             # Once round in two lives, so the trail behind it curves and fades.
-            "turn": f"{max(1.0, 2 * effect['lifetime'] * fps):.6g}"}
+            "turn": f"{max(1.0, 2 * effect['lifetime'] * fps):.6g}",
+            "struck": "0, 0, 0", "light": ""}
+
+
+def _framing_struck(effect: dict, fps: int) -> dict:
+    """A struck piece seen from in front, upright, struck from its left (§PW496).
+
+    Standing still, framed with room for its give either side; the strike lands at its
+    middle, a little to the left, so the piece swings right across the view.
+    """
+    tall, wide = effect["height"], effect["size"] + 2 * effect["give"]
+    # A mesh of the project's own stands on its origin, which the camera looks at, so
+    # it stands back twice as far to hold the whole height above it.
+    owned = effect["mesh"].lower().endswith((".tres", ".res"))
+    back = max(tall, wide * 16 / 9) * (2.8 if owned else 1.4)
+    return {"centre": "0, 0, 0", "eye": _floats([0.0, 0.0, back]),
+            "up": _floats([0.0, 1.0, 0.0]), "along": _floats([1.0, 0.0, 0.0]),
+            "across": _floats([0.0, 1.0, 0.0]), "round": "0",
+            "turn": f"{max(1.0, 2 * effect['lifetime'] * fps):.6g}",
+            "struck": _floats([-effect["radius"] / 2, 0.0, 0.0]),
+            # A piece is shaded, unlike the light an effect adds, so it is lit from
+            # above and in front, or it films as a dark shape on the grey.
+            "light": _KEY_LIGHT}
+
+
+#: The light a struck piece is watched under: one key from above, in front and left.
+_KEY_LIGHT = """\tvar key := DirectionalLight3D.new()
+\tkey.rotation_degrees = Vector3(-40, -30, 0)
+\tworld.add_child(key)
+\tbackdrop.environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+\tbackdrop.environment.ambient_light_color = Color(0.45, 0.45, 0.45)
+"""
 
 
 def _filmed(name: str, scene: str, own: dict, fps: int, work: Path, here: Path) -> list:

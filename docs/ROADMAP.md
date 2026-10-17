@@ -12,8 +12,6 @@
 
 ## Block F — Motion
 
-- 📋 **PW496** (deps: —) **a mesh's squash and jiggle when struck cannot be declared, so a toy that wobbles on a hit is a game's own vertex shader** — The plastic city has no cubes for Spinhold's kill ripple to lift, and a toy's answer to a hit is to squash and jiggle back. → §PW496
-
 ## Block G — Geometry as a declaration
 
 - 📋 **PW498** (deps: —) **union joins parts at a hard crease, so a body whose parts flow into each other, as moulded plastic, cannot be declared** — Spinhold's new plastic city needs towers, trees and mascots whose parts flow together, and each would be a bought mesh or a custom node. → §PW498

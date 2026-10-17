@@ -12,22 +12,6 @@
 
 ## Block F — Motion
 
-### §PW496 A struck mesh that squashes and jiggles
-
-Found in Spinhold on 2026-10-17, for the plastic city of §PW498. Spinhold's voxel city
-answers a kill with a ripple that lifts its cubes one by one
-(`game/world/voxels.gdshader` reads the recent impacts). A city of smooth plastic pieces
-has no cubes to lift, and the answer that fits the look is a toy's: the piece squashes,
-overshoots and jiggles back, the higher parts swinging more. Nothing declares that, so
-it would be a vertex shader written in the game and tuned by eye.
-
-What polyweave should do: a motion declaration for a struck mesh, stated as how far it
-gives, how stiff it is, how fast it settles and how the give falls off from its base,
-and compiled to a Godot vertex shader that takes impacts as uniforms (a point, a
-strength and an age, several at once) and works per instance on a MultiMesh. A clip of a
-strike at fixed frames, filmed through the engine, is what a person judges and what a
-spec bounds (the settle time, the largest give).
-
 ## Block G — Geometry as a declaration
 
 ### §PW498 A smooth blend between parts

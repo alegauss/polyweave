@@ -86,6 +86,7 @@
 - ✅ **PW29** **a 2D screen needs frames and a 3D scene needs a clip, so the motion is authored twice** — One clip produces the engine's animation and a trimmed sprite sheet with its atlas, both carrying the digest that says they are the same motion (design recorded in `docs/specs/motion.md`).
 - ✅ **PW272** **no measure says how well a target stands out from what lies behind it, so a shot's legibility is scripted by hand** — measure.contrast gives each target's WCAG ratio and CIEDE2000 distance against its ring, and a spec bounds contrast_min over targets a log names.
 - ✅ **PW279** **a spec cannot give contrast_min its ring or a target's radius, so a shot measured from a spec reads 1.0 in silence** — A contrast predicate takes ring, radius and a JSON or log targets file; a ring inside its shot is refused, not read as 1.0 (design recorded in `docs/specs/measurements.md`).
+- ✅ **PW496** **a mesh's squash and jiggle when struck cannot be declared, so a toy that wobbles on a hit is a game's own vertex shader** — A vfx kind = "struck" declares give, wobble, settle and falloff, built as a shader and a strike() script, filmed struck and measured for a spec (design recorded in `vfx.md`).
 
 ## Block G — Geometry as a declaration
 

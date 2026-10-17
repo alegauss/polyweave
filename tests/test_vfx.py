@@ -314,6 +314,152 @@ def test_a_sheet_that_means_nothing_is_refused(tmp_path, extra):
     assert refused.value.code == "vfx.bad-effect"
 
 
+POST = """\
+[effect.post]
+kind = "struck"
+amount = 4
+lifetime = 0.8
+give = 0.3
+wobble = 3.0
+falloff = 1.5
+radius = 3.0
+size = 0.6
+height = 2.0
+colour_over_life = ["#f27ba8ff", "#f27ba8ff"]
+"""
+
+
+def test_a_struck_piece_is_its_mesh_a_shader_that_gives_and_a_script(tmp_path):
+    """§PW496: a toy's answer to a hit, declared, not a vertex shader in game code."""
+    made = vfx.build(effects(tmp_path, POST), root=str(tmp_path))["effects"]["post"]
+    built = (tmp_path / "vfx" / "post.tscn").read_text("utf-8")
+    assert '[node name="post" type="MeshInstance3D"]' in built
+    assert '[sub_resource type="CapsuleMesh" id="draw"]' in built
+    assert "uniform vec4 hits[4];" in built
+    assert "func strike(at: Vector3, strength: float = 1.0)" in built
+    assert "shader_parameter/base = -1" in built  # an engine solid, centred
+    # What a spec bounds: the settle time and the largest give.
+    assert made["lifetime"] == pytest.approx(0.8)
+    assert made["reach"] == pytest.approx(0.3)
+    assert made["alive"] == 4
+
+
+def test_a_strike_settles_to_a_twentieth_of_its_give_at_its_lifetime():
+    import tomllib
+
+    post = vfx.declared("post", tomllib.loads(POST)["effect"]["post"])
+    assert vfx.swing(post, 0.0) == pytest.approx(1.0)
+    # The envelope at the lifetime; the cosine is at a whole swing there.
+    assert vfx.swing({**post, "wobble": 1 / 0.8}, 0.8) == pytest.approx(0.05)
+    # Half a swing in, it has come back past its rest the other way.
+    assert vfx.swing(post, 1 / 6) < 0
+
+
+def test_a_struck_piece_is_watched_upright_and_struck_from_its_left():
+    import tomllib
+
+    post = vfx._watched_as(vfx.declared("post", tomllib.loads(POST)["effect"]["post"]))
+    framed = vfx._framing(post)
+    assert framed["up"] == "0, 1, 0"
+    assert framed["round"] == "0"
+    assert framed["struck"] == "-1.5, 0, 0"
+
+
+@pytest.mark.parametrize(
+    "extra",
+    ["give = 0", "radius = 0", "amount = 17", "falloff = -1", 'mesh = "cone"'],
+)
+def test_a_struck_piece_that_means_nothing_is_refused(tmp_path, extra):
+    body = "\n".join(line for line in POST.splitlines()
+                     if not line.startswith(extra.split(" =")[0] + " "))
+    with pytest.raises(PolyweaveError) as refused:
+        vfx.build(effects(tmp_path, body + f"\n{extra}\n"), root=str(tmp_path))
+    assert refused.value.code == "vfx.bad-effect"
+
+
+STRIKES = """extends SceneTree
+
+var frames := 0
+var post: MeshInstance3D
+
+func _initialize() -> void:
+\tvar camera := Camera3D.new()
+\tcamera.position = Vector3(0, 0, 2.5)
+\troot.add_child(camera)
+\tpost = load("res://vfx/post.tscn").instantiate()
+\troot.add_child(post)
+
+func _middle() -> float:
+\tvar seen := root.get_texture().get_image()
+\tvar back := seen.get_pixel(1, 1)
+\tvar row := int(seen.get_height() * 0.4)
+\tvar total := 0.0
+\tvar count := 0
+\tfor x in seen.get_width():
+\t\tvar c := seen.get_pixel(x, row)
+\t\tif absf(c.r - back.r) + absf(c.g - back.g) + absf(c.b - back.b) > 0.2:
+\t\t\ttotal += x
+\t\t\tcount += 1
+\treturn total / maxf(count, 1) / seen.get_width()
+
+func _process(_delta: float) -> bool:
+\tframes += 1
+\tif frames == 3:
+\t\tprint("vfx: rest top=%.3f" % _middle())
+\t\tpost.strike(Vector3(-0.5, 0, 0))
+\tif frames == 5:
+\t\tprint("vfx: struck top=%.3f" % _middle())
+\tif frames == 120:
+\t\tprint("vfx: settled top=%.3f" % _middle())
+\t\treturn true
+\treturn false
+"""
+
+
+def test_the_engine_swings_a_struck_piece_and_settles_it(tmp_path):
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    vfx.build(effects(tmp_path, POST), root=str(tmp_path))
+    (tmp_path / "project.godot").write_text(
+        'config_version=5\n\n[application]\nconfig/name="vfx"\n', encoding="utf-8")
+    (tmp_path / "strikes.gd").write_text(STRIKES, encoding="utf-8")
+    ran = engine.run("strikes.gd", expect=r"^vfx: settled", root=tmp_path)
+    assert ran["ok"] is True, ran
+    said = Path(ran["log"]).read_text("utf-8")
+    top = {k: float(v) for k, v in re.findall(r"vfx: (\w+) top=([\d.]+)", said)}
+    assert set(top) == {"rest", "struck", "settled"}, said
+    # Struck from its left, its top swings right; two seconds on it stands again.
+    assert top["struck"] > top["rest"] + 0.01
+    assert top["settled"] == pytest.approx(top["rest"], abs=0.005)
+
+
+def test_a_strike_is_filmed_at_fixed_frames_as_a_sitting(tmp_path):
+    """§PW496: what a person judges, the piece struck on the first frame filmed."""
+    import numpy as np
+    from PIL import Image
+
+    from polyweave import offscreen
+
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    try:
+        offscreen.route_for(tmp_path)
+    except PolyweaveError:
+        pytest.skip("no route draws real pixels here")
+    source = effects(tmp_path, POST)
+    (tmp_path / "project.godot").write_text(
+        'config_version=5\n\n[application]\nconfig/name="vfx"\n', encoding="utf-8")
+    laid = vfx.preview(source, out="review/fx", effect="post", stills=4,
+                       root=str(tmp_path))
+    assert laid["effects"]["post"]["frames"] >= 72  # one and a half settles at 60
+    with Image.open(tmp_path / "review" / "fx" / "post.png") as sheet:
+        drawn = np.asarray(sheet.convert("RGB")).astype(int)
+    first = drawn[32:32 + vfx.FRAME[1], 8:8 + vfx.FRAME[0]]
+    last = drawn[32:32 + vfx.FRAME[1], -8 - vfx.FRAME[0]:-8]
+    # Struck, it leans; settled, it stands: the two stills differ where it swung.
+    assert np.abs(first - last).max() > 40
+
+
 CUTE = """\
 [effect.twinkles]
 amount = 8

@@ -115,6 +115,8 @@ MODULES: dict[str, tuple[str, str]] = {
     "polyweave.vfx:measured_whole": ("internal", "a whole's measures, over its parts"),
     "polyweave.vfx:scene_whole": ("internal", "a whole's scene, its parts under one"),
     "polyweave.vfx:shipped_folder": ("internal", "where a built scene lands, shipped"),
+    "polyweave.vfx:settle_rate": ("internal", "a struck piece's decay, from its life"),
+    "polyweave.vfx:swing": ("internal", "a struck piece's swing at an age"),
     "polyweave.driving:left_out": ("internal", "why the export leaves a path out"),
     "polyweave.review:sittings": ("internal", "the sittings laid out; review.state"),
     "polyweave.review:looked_at": ("internal", "the gate runs; review.state"),
