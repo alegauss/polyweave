@@ -335,36 +335,11 @@ def _member(
         "warnings": list(said["warnings"]),
     }
     mesh = folder / f"{document['name']}.glb"
-    if document.get("voxels"):
-        from polyweave.layers.geometry import voxels
+    from polyweave.layers.geometry.representations import claim
 
-        if not wanted:
-            _unwanted(mesh)
-        written = voxels.write(
-            document, mesh, root=here, mesh=wanted and _has_blender(), sheet=preview,
-            **given,
-        )
-        answer["says"] = written["says"]
-        answer["reads"] += _cell_said(written["model"], answer["warnings"])
-        answer["findings"] = [
-            f"{one['check']}: {one['says']}"
-            for one in written["model"]["checks"]["findings"]
-        ]
-        answer["outputs"] = [
-            written[key] for key in ("artefact", "voxels", "sheet") if written.get(key)
-        ]
-        return answer
-    from polyweave.layers.geometry.build import write
-
-    written = write(document, mesh, root=here, **given)
-    answer["warnings"] += [
-        one for one in written["report"]["warnings"] if one not in answer["warnings"]
-    ]
-    answer["says"] = f"a mesh of {len(written['output']['faces'])} faces"
-    answer["outputs"] = [written["artefact"], *written.get("materials", ())]
-    if preview:
-        answer["outputs"].append(_silhouette(written["output"], folder, document))
-    return answer
+    return claim(document).member(
+        document, folder, here, given, preview, wanted, answer, mesh
+    )
 
 
 def _silhouette(mesh: dict, folder: Path, document: dict) -> str:
@@ -462,13 +437,13 @@ def fit_one(
     view's aspect gap and the values bound by their ranges are named (§PW263).
     """
     from polyweave.layers import geometry as G
-    from polyweave.layers.geometry import voxel_fit
+    from polyweave.layers.geometry.representations import every
 
     here = Path(root).resolve()
     where = Path(source)
     where = where if where.is_absolute() else here / where
     document = G.read(where, root=here)
-    found = voxel_fit.fit(
+    found = every()["voxels"].fit(
         document, reference, views=tuple(views or ("front",)), root=here,
         budget=budget, points=points, sheet=sheet, boxed=boxed, region=region,
     )
@@ -494,9 +469,9 @@ def compare_two(
     in one and those repainted, and how the grids differ. A rewrite of a declaration
     holds `same` to prove it changed nothing.
     """
-    from polyweave.layers.geometry import voxel_compare
+    from polyweave.layers.geometry.representations import every
 
-    return voxel_compare.compared(first, second, root=root)
+    return every()["voxels"].compare(first, second, root=root)
 
 
 def _write_params(where: Path, best: dict, here: Path) -> list[str]:

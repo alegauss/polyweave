@@ -12,7 +12,7 @@ from polyweave.kernel.errors import PolyweaveError
 from polyweave.kernel.post.mesh import check_mesh
 from polyweave.layers.geometry import build as B
 from polyweave.layers.geometry import review
-from polyweave.layers.geometry import voxels as V
+from polyweave.layers.geometry.representations.voxels import model as V
 
 HALF = {
     "id": "hull_half",

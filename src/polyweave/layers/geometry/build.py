@@ -94,8 +94,8 @@ def build(
     checked by looking at a render is one whose construction errors are found in the
     expensive place, so the report comes back with the mesh and not on request.
     """
+    from .representations.voxels.model import stated_cell, with_project_cell
     from .review import report
-    from .voxels import stated_cell, with_project_cell
 
     here = Path(root).resolve()
     document, _, _ = with_project_cell(document, here)
@@ -163,52 +163,13 @@ def write(
 
     The materials go with it, because a group names one and a file needs the thing.
 
-    A document declaring `[voxels]` answers cells instead (§PW93): the cells go beside
-    `out` as `<stem>.voxels.json` and `out` holds the same cubes, so everything that
-    takes a mesh still takes it.
+    The representation that claims the document writes it (§PW514): triangles as glTF,
+    or, where it declares `[voxels]`, the cells beside `out` as `<stem>.voxels.json`
+    with `out` holding the same cubes, so everything that takes a mesh still takes it.
     """
-    from .normalise import write_mesh
+    from .representations import claim
 
-    if document.get("voxels"):
-        from .voxels import write as cells
-
-        return cells(document, out, root=root, **given)
-
-    painting = [node["id"] for node in document["nodes"] if node["op"] == "paint"]
-    if painting:
-        raise PolyweaveError(
-            "geom.bad-voxels",
-            f"{painting[0]} repaints cells, and {document['name']} is built as "
-            f"triangles, which have no cells to repaint",
-            "give the declaration a [voxels] table, or put the material on the node "
-            "whose faces it is meant for",
-            at=f"nodes.{painting[0]}.op",
-        )
-    made = build(document, root=root, manifold=manifold, **given)
-    where = Path(out)
-    if not where.is_absolute():
-        where = Path(root).resolve() / where
-    # A material's `image` is a path under the project, as every path a declaration
-    # names is, resolved here where the root is known (§PW78). Its values are resolved
-    # too, as the review's are, so a finish over the params reaches the shader.
-    from . import expand, finish
-
-    resolved = expand(document, **given)["materials"] or {}
-    materials = {
-        name: {**one, "image": str(Path(root).resolve() / one["image"])}
-        if isinstance(one, dict) and one.get("image") else one
-        for name, one in resolved.items()
-    }
-    written = write_mesh(made["output"], where, materials=materials)
-    # glTF carries a colour and a roughness and drops a finish, so a material that asks
-    # for one is also written as Godot loads it, with the bake's numbers (§PW495).
-    godot = [
-        str(path)
-        for name, one in resolved.items()
-        if finish.asked(one)
-        for path in finish.write_godot(one, name, where.parent, where.stem, root)
-    ]
-    return {**made, "artefact": str(written), "materials": godot}
+    return claim(document).write(document, out, root=root, manifold=manifold, **given)
 
 
 def _worn(node: dict, made: dict, built: dict) -> list[dict]:

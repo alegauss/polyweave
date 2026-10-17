@@ -49,8 +49,8 @@ def load(stated: str | Path, *, root: str | Path = ".") -> dict:
                 "name the .voxels.json a voxel build wrote",
             )
         return model
-    from . import read
-    from .voxels import voxelize
+    from ... import read
+    from .model import voxelize
 
     document = read(where, root=here)
     if not document.get("voxels"):

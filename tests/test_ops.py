@@ -6,7 +6,8 @@ import sys
 
 import pytest
 
-from polyweave.layers.geometry import build, ops, review, voxels
+from polyweave.layers.geometry import build, ops, review
+from polyweave.layers.geometry.representations.voxels import model as voxels
 
 OP = '''
 from .. import solid as S

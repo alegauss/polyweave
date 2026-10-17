@@ -6,7 +6,7 @@ import pytest
 
 from polyweave.kernel.errors import PolyweaveError
 from polyweave.layers.geometry import fracture as FR
-from polyweave.layers.geometry import voxels as V
+from polyweave.layers.geometry.representations.voxels import model as V
 
 
 def block(width=8, height=4, depth=2, fracture=None, nodes=None):

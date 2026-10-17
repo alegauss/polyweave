@@ -11,7 +11,7 @@ from PIL import Image
 
 from polyweave.kernel.errors import PolyweaveError
 from polyweave.layers.geometry import solid as S
-from polyweave.layers.geometry import voxel_fit as F
+from polyweave.layers.geometry.representations.voxels import fit as F
 
 
 def plate(width="w", depth=1.0, voxels=None, search=None):

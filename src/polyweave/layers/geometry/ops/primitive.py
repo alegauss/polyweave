@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from .. import solid as S
-from .. import voxels as V
+from ..representations.voxels import model as V
 from . import _shared as H
 
 NAME = "primitive"

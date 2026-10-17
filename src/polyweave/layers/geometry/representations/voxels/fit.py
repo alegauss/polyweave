@@ -26,8 +26,8 @@ import numpy as np
 from polyweave.kernel.errors import PolyweaveError
 from polyweave.loop.accept import Spec
 
-from .normalise import GRID, drawing, fitted, overlap, project
-from .tuning import addressable
+from ...normalise import GRID, drawing, fitted, overlap, project
+from ...tuning import addressable
 
 __all__ = ["VIEWS", "fit", "silhouettes"]
 
@@ -172,7 +172,7 @@ def _references(reference: Any, views: tuple, grid: int, root: Path) -> dict:
                 )
             floor = float(load(root).get("tolerance.alpha_floor"))
             return {"front": drawing(where, grid=grid, alpha_floor=floor)}
-        from .normalise import read_mesh
+        from ...normalise import read_mesh
 
         mesh = read_mesh(where)
     points = np.asarray(mesh["vertices"], dtype=float)
@@ -191,7 +191,7 @@ def _holes(reference: Any, views: tuple, grid: int, root: Path) -> dict[str, flo
         where = where if where.is_absolute() else root / where
         if where.suffix.lower() in (".png", ".jpg", ".jpeg", ".webp"):
             return {}
-        from .normalise import read_mesh
+        from ...normalise import read_mesh
 
         reference = read_mesh(where)
     points = np.asarray(reference["vertices"], dtype=float)
@@ -319,7 +319,8 @@ def fit(
     """
     from polyweave.loop import search as S
 
-    from . import voxel_sheet, voxels
+    from . import model as voxels
+    from . import sheet as voxel_sheet
 
     views = tuple(views)
     unknown = [one for one in views if one not in VIEWS]

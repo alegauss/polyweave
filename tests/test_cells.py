@@ -11,7 +11,7 @@ import pytest
 from polyweave.kernel.errors import PolyweaveError
 from polyweave.layers.geometry import build as B
 from polyweave.layers.geometry import review
-from polyweave.layers.geometry import voxels as V
+from polyweave.layers.geometry.representations.voxels import model as V
 
 PAINT = {"hull": {"colour": "#808080"}, "glass": {"colour": "#40C0FF"}}
 

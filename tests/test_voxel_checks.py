@@ -10,7 +10,7 @@ import pytest
 
 from polyweave.kernel import post
 from polyweave.kernel.errors import PolyweaveError
-from polyweave.layers.geometry import voxels as V
+from polyweave.layers.geometry.representations.voxels import model as V
 
 LIMITS = {
     "parts": 1,

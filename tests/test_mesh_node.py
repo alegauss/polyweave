@@ -8,7 +8,7 @@ from polyweave.kernel.errors import PolyweaveError
 from polyweave.layers.geometry import build as B
 from polyweave.layers.geometry import review
 from polyweave.layers.geometry import solid as S
-from polyweave.layers.geometry import voxels as V
+from polyweave.layers.geometry.representations.voxels import model as V
 
 
 def hull(path="hull.glb", **extra):

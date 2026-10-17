@@ -14,7 +14,7 @@ import pytest
 
 from polyweave.kernel.errors import PolyweaveError
 from polyweave.layers import geometry as G
-from polyweave.layers.geometry import voxels as V
+from polyweave.layers.geometry.representations.voxels import model as V
 
 
 def shape(*nodes, output=None, voxels=None, materials=None, params=None):

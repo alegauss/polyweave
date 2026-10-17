@@ -47,7 +47,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 2 },
-  { block: "W", title: "A core that grows by layers", open: 11 },
+  { block: "W", title: "A core that grows by layers", open: 10 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -143,18 +143,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW506"],
   },
   {
-    id: "PW514",
-    block: "W",
-    symptom: "Voxels are a branch inside build.write and a voxel_* module beside each mesh one, so a third form has no place to go",
-    why: "Triangles and cells are two answers to one declaration, and a form chosen by an if in write is one each new form has to wedge itself beside.",
-    deps: [],
-  },
-  {
     id: "PW515",
     block: "W",
     symptom: "A material's finish and fuzz are special-cased in the bake and in write, so a toon or metal look is a third case",
     why: "The plastic finish already had to be written twice, for Blender's shader and for Godot's, and each new look pays that twice again.",
-    deps: ["PW514"],
+    deps: [],
   },
   {
     id: "PW516",

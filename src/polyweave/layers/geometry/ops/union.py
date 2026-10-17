@@ -6,7 +6,7 @@ import numpy as np
 
 from .. import refers_to
 from .. import solid as S
-from .. import voxels as V
+from ..representations.voxels import model as V
 from . import _shared as H
 
 NAME = "union"

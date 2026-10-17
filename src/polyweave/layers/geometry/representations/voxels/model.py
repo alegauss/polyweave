@@ -35,10 +35,10 @@ import numpy as np
 
 from polyweave.kernel.errors import PolyweaveError
 
-from . import expand, refers_to
-from . import outline as O
-from . import solid as S
-from .expr import evaluate
+from ... import expand, refers_to
+from ... import outline as O
+from ... import solid as S
+from ...expr import evaluate
 
 __all__ = ["SUFFIX", "TRACED", "says", "voxelize", "write"]  # noqa: F822 - TRACED is read lazily
 
@@ -158,7 +158,7 @@ class _Model:
         )
 
     def _op_bounds(self, node: dict, instance: dict) -> tuple[np.ndarray, np.ndarray]:
-        from .ops import every
+        from ...ops import every
 
         said = every()[node["op"]]
         if said.bounds is not None:
@@ -183,7 +183,7 @@ class _Model:
         return found
 
     def _op_inside(self, node: dict, instance: dict, points: np.ndarray) -> _Found:
-        from .ops import every
+        from ...ops import every
 
         said = every()[node["op"]]
         if said.inside is not None:
@@ -211,7 +211,7 @@ class _Model:
         its cells from the palette its surface quantises to, as materials named after
         the node, and they paint like any material does.
         """
-        from . import voxel_colour as C
+        from . import colour as C
 
         mesh = self._traced(node, instance)
         inside = _parity(mesh, points)
@@ -248,7 +248,7 @@ class _Model:
 
     def _slab(self, op: str, instance: dict) -> tuple[np.ndarray, float, float]:
         """A prism's or a plate's ring, and the depth range it is swept through."""
-        from .build import _outline
+        from ...build import _outline
 
         if op == "plate":
             x, y, wide, tall = (float(v) for v in instance["rect"])
@@ -273,10 +273,10 @@ class _Model:
         return kept
 
     def _trace(self, node: dict, instance: dict) -> dict:
-        from .build import BUILDS, mesh_file
+        from ...build import BUILDS, mesh_file
 
         if node["op"] == "mesh":
-            from .normalise import read_mesh
+            from ...normalise import read_mesh
 
             # Its paint too, unless a material of the node's own covers it anyway.
             where = mesh_file(node, instance, self.root)
@@ -284,7 +284,7 @@ class _Model:
         built = {}
         if refers_to(node):
             if self._meshes is None:
-                from .build import build
+                from ...build import build
 
                 self._meshes = build(self.document, root=self.root, **self.given)[
                     "built"
@@ -296,7 +296,7 @@ class _Model:
 def __getattr__(name: str):
     # `TRACED` reads as it always did: the ops a voxel build traces (§PW513).
     if name == "TRACED":
-        from .ops import every
+        from ...ops import every
 
         return tuple(one for one, op in every().items() if op.traced)
     raise AttributeError(name)
@@ -641,7 +641,7 @@ def voxelize(
     made["checks"]["findings"] += _unworn(document, palette_names)
     stated = (document.get("voxels") or {}).get("fracture")
     if stated:
-        from .fracture import plan
+        from ...fracture import plan
 
         made["fracture"] = plan(made, stated)
     return made
@@ -939,7 +939,7 @@ def write(
     A contact sheet goes beside the cells as `<stem>.voxels.png` (§PW94) unless
     `sheet=False`; `pixels`, `grid` and `labels` are passed to it.
     """
-    from . import voxel_sheet
+    from . import sheet as voxel_sheet
 
     drawn = voxel_sheet.options(given)
     made = voxelize(document, root=root, **given)
@@ -961,8 +961,8 @@ def write(
         looked = voxel_sheet.sheet(made, voxel_sheet.beside(cells), **drawn)
         answer["sheet"] = looked["sheet"]
     if mesh:
-        from .normalise import write_mesh
-        from .render.blender import shader_keys
+        from ...normalise import write_mesh
+        from ...render.blender import shader_keys
 
         # The palette and not the document's table: a textured mesh's colours are
         # materials the model found (§PW100). And only what the shader has, since a key

@@ -271,7 +271,7 @@ def sheet(
 
 def beside(cells: Path) -> Path:
     """Where a sheet goes, given where its cells were written."""
-    from .voxels import SUFFIX as CELLS
+    from .model import SUFFIX as CELLS
 
     return cells.with_name(cells.name[: -len(CELLS)] + SUFFIX)
 

@@ -44,6 +44,10 @@ LAYER = Layer(
     config="polyweave.layers.geometry.settings",
     tools=17_000,
     census={
+        "polyweave.layers.geometry.representations": (
+            "internal", "which representation claims a declaration"),
+        "polyweave.layers.geometry.representations.mesh": (
+            "internal", "triangles, written by build.write"),
         "polyweave.layers.geometry.ops.primitive": (
             "internal", "the primitive op, read by build, voxels and review"),
         "polyweave.layers.geometry.ops.prism": (
@@ -98,7 +102,7 @@ LAYER = Layer(
             "internal", "the words geometry.describe says"),
         "polyweave.layers.geometry.tuning": (
             "internal", "a shape search, with callable hooks"),
-        "polyweave.layers.geometry.voxels": (
+        "polyweave.layers.geometry.representations.voxels.model": (
             "internal", "the voxel model a build writes"),
         "polyweave.layers.geometry.shape": (
             "internal", "silhouette with its bake hook, and the gate"),
@@ -124,12 +128,13 @@ LAYER = Layer(
         "polyweave.layers.geometry.fracture": ("internal", "an op a build runs"),
         "polyweave.layers.geometry.custom": (
             "internal", "the way back to code, called by build"),
-        "polyweave.layers.geometry.voxel_colour": (
+        "polyweave.layers.geometry.representations.voxels.colour": (
             "internal", "a voxel build's palette"),
-        "polyweave.layers.geometry.voxel_fit": ("internal", "a voxel build's fitting"),
-        "polyweave.layers.geometry.voxel_compare": (
+        "polyweave.layers.geometry.representations.voxels.fit": (
+            "internal", "a voxel build's fitting"),
+        "polyweave.layers.geometry.representations.voxels.compare": (
             "internal", "geometry.compare's two models"),
-        "polyweave.layers.geometry.voxel_sheet": (
+        "polyweave.layers.geometry.representations.voxels.sheet": (
             "internal", "a voxel build's contact sheet"),
     },
 )

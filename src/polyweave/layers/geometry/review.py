@@ -125,7 +125,7 @@ def _says(node: dict, instance: dict, materials: dict | None = None) -> str:
 
 def _drawing(node: dict) -> str:
     """`3 layers of 8 by 5, 41 cells in hull and glass` (§PW95)."""
-    from .voxels import lattice
+    from .representations.voxels.model import lattice
 
     try:
         grid = lattice(node)
@@ -204,7 +204,7 @@ def _facing_back(document: dict, root: Any, given: dict) -> list[str]:
         return []
     from pathlib import Path
 
-    from .voxels import _Model
+    from .representations.voxels.model import _Model
 
     # A warning never costs the readback: a document describe is asked about is often
     # one that does not build yet, and the other warnings are what it needs then.

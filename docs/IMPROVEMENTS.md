@@ -532,31 +532,6 @@ extending the fixture rather than by working around it.
 
 Done when the test passes and a deliberately broken seam in the fixture fails it.
 
-### §PW514 Triangles and cells as representations of one graph
-
-One geometry declaration can be built two ways. `build.write` checks `if
-document.get("voxels")` and hands the whole document to `voxels.write`; otherwise it
-refuses a `paint` node, builds triangles and writes glTF. Every part of the loop that
-follows has been written twice to match: `voxel_fit` beside the fit, `voxel_compare`
-beside `geometry.compare`, `voxel_sheet` beside the review sheet, and `post.voxels`
-beside `post.mesh`. A third form (signed-distance fields for a smooth toy, or 2D tiles
-cut from a sprite sheet) would need a third copy of each, plus one more branch in
-`write`.
-
-A `Representation` under `layers/geometry/representations/` declares:
-
-- `name` (`mesh`, `voxels`) and `selects(document) -> bool`, read from the declaration's own table as it is today;
-- `supports`: which ops it builds, so `paint` on triangles is refused by the representation, not by a special case in `write`;
-- `write(document, out, root, **given) -> dict`, `check` (the post-condition), `fit`, `compare` and `sheet`.
-
-`geometry.build`, `geometry.fit`, `geometry.compare` and the review dispatch on the
-representation that claims the document. Each op from the previous line states its
-`bounds` and whether it is `traced` for whichever representation needs them.
-
-Done when `build.write` has no voxel branch, `voxel_*.py` live as the voxels
-representation, every geometry and voxel test passes unchanged, and a fixture
-representation builds a two-op declaration end to end.
-
 ### §PW515 A look declares its asks and writes itself to each target
 
 A material states a `colour` and a `roughness`. On top of that, two kinds of intent have

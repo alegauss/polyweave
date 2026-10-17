@@ -6,7 +6,7 @@ import numpy as np
 
 from polyweave.kernel.errors import PolyweaveError
 
-from .. import voxels as V
+from ..representations.voxels import model as V
 
 NAME = "paint"
 

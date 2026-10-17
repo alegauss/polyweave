@@ -19,7 +19,7 @@ from PIL import Image
 from polyweave.kernel import provenance
 from polyweave.kernel.errors import PolyweaveError
 from polyweave.layers.geometry import cost
-from polyweave.layers.geometry import voxels as V
+from polyweave.layers.geometry.representations.voxels import model as V
 from polyweave.loop import accept
 
 SOLID = {

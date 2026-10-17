@@ -7,7 +7,7 @@ import numpy as np
 from polyweave.kernel.errors import PolyweaveError
 
 from .. import review as R
-from .. import voxels as V
+from ..representations.voxels import model as V
 
 NAME = "cells"
 
@@ -21,7 +21,7 @@ TRACED = False
 def build(node, instance, built, root):
     # Cells drawn as text build as their cubes here, so a drawing is not voxel-only
     # (§PW95): a canopy painted in cells sits on a hull built as triangles.
-    from ..voxels import drawn_mesh
+    from ..representations.voxels.model import drawn_mesh
 
     size = instance.get("cell")
     if not size:
