@@ -112,6 +112,15 @@ def test_a_frustum_holds_its_own_volume():
     assert made["size"] == [40, 40, 12]
 
 
+def test_a_capsule_holds_its_own_volume_on_the_grid():
+    """§PW493: answered by the rounded box's own formula, as every primitive is."""
+    post = {"id": "post", "op": "primitive", "kind": "capsule", "size": [8, 8, 24]}
+    made = V.voxelize(shape(post, voxels={"cell": 0.5}))
+    volume = math.pi * 4**2 * 16 + 4 / 3 * math.pi * 4**3
+    assert made["count"] * 0.5**3 == pytest.approx(volume, rel=0.05)
+    assert made["size"] == [16, 16, 48]
+
+
 BODY = {"id": "body", "op": "primitive", "kind": "sphere", "size": 12.0}
 BAND = {"id": "band", "op": "plate", "rect": [-8, -1, 16, 2], "depth": 16, "front": -8}
 SEAM = {"glow": {"colour": "#FF2020"}}

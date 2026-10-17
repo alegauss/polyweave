@@ -172,7 +172,7 @@ counts y upward — an outline that came back mirrored is a sprite extruded back
 
 | `op` | What it is |
 |---|---|
-| `primitive` | `cube`, `plane`, `sphere`, `cylinder`, `cone`, `frustum`, `torus`, centred on the origin — see "Primitives" |
+| `primitive` | `cube`, `plane`, `sphere`, `cylinder`, `cone`, `frustum`, `torus`, `capsule`, `rounded_box`, centred on the origin — see "Primitives" |
 | `prism` | An outline extruded along the depth axis |
 | `plate` | A rounded plate: a rectangle with a corner radius and a depth |
 | `crowned` | A plate with a domed face |
@@ -197,6 +197,18 @@ A `frustum` takes `bottom` and `top` diameters and a `height` rather than a `siz
 `torus` a `major` radius to the tube's centre and a `minor` one across the tube. The mesh
 and the voxel evaluator read the same description, and on the grid each is answered by
 its own formula, so a stepped stack of discs under a `repeat` is one `frustum`.
+
+**Round on every edge** (§PW493), as a moulded piece is. A `rounded_box` is `size` with a
+`radius` on every edge and corner; a `capsule` is `size` whose radius is half its
+smaller extent across its `axis`, so its ends are half spheres. Each is the box shrunk
+by the radius and grown back by a sphere of it: the mesh is a grid on each face with
+`steps / 4` cells across each round, closed where the faces meet, and the voxel test is
+the rounded box's distance. A radius of 0 or past half the smallest side is
+`geom.bad-solid`, and a capsule given a radius of its own is too.
+
+A `bevel`, and a `carve`'s, takes `segments` (default 3) and `profile`: `round`, the
+default, or `chamfer`, one flat cut whatever the segments. So an existing node rounds as
+a moulded part does, and not as a chamfer.
 
 `inflate` is the operation that gives a drawn panel its volume while keeping the drawn
 silhouette to the pixel. `prism` over an `image` outline is the other half of the same idea:

@@ -61,7 +61,7 @@ def _rest(instance: dict, *skip: str) -> dict:
 
 
 def _primitive(node, instance, built, root):
-    shaped = ("bottom", "top", "height", "major", "minor")
+    shaped = ("bottom", "top", "height", "major", "minor", "radius")
     return S.primitive(
         str(instance.get("kind", "cube")),
         instance.get("size", 1.0),
@@ -162,17 +162,50 @@ def _transform(node, instance, built, root):
     )
 
 
+#: A bevel's profile by the word a declaration writes, as Blender's profile and how
+#: many segments it forces (§PW493): a chamfer is one flat cut whatever is asked.
+PROFILES = {"round": (0.5, None), "chamfer": (0.5, 1)}
+
+
+def _beveled(node: dict, instance: dict) -> dict:
+    """How a node's bevel rounds: its `segments` and its `profile`, each checked."""
+    said = instance.get("profile", "round")
+    if said not in PROFILES:
+        raise PolyweaveError(
+            "geom.bad-solid",
+            f"{node['id']} bevels with a {said!r} profile, which is not one",
+            "write profile as round or chamfer",
+            given=said,
+            allowed=tuple(PROFILES),
+        )
+    # A parameter resolves to a float, so a whole one is a count.
+    segments = instance.get("segments", 3)
+    whole = isinstance(segments, int | float) and not isinstance(segments, bool) and (
+        float(segments).is_integer())
+    if not whole or segments < 1:
+        raise PolyweaveError(
+            "geom.bad-solid",
+            f"{node['id']} bevels in {segments!r} segments",
+            "give segments as a whole number from 1; more is rounder",
+        )
+    profile, forced = PROFILES[said]
+    return {"segments": forced or int(segments), "profile": profile}
+
+
 def _carve(node, instance, built, root):
     return solver.build(
         built[node["into"]],
         cutter=built[node["cutter"]],
         bevel_by=float(instance.get("bevel", 0.0)),
+        **_beveled(node, instance),
     )
 
 
 def _bevel(node, instance, built, root):
     return solver.build(
-        built[refers_to(node)[0]], bevel_by=float(instance.get("bevel", 0.0))
+        built[refers_to(node)[0]],
+        bevel_by=float(instance.get("bevel", 0.0)),
+        **_beveled(node, instance),
     )
 
 
@@ -276,6 +309,7 @@ FIELDS: dict[str, tuple[str, ...] | None] = {
         "height",
         "major",
         "minor",
+        "radius",
     ),
     "prism": ("outline", "depth", "front"),
     "plate": ("rect", "depth", "corner", "front"),
@@ -295,8 +329,8 @@ FIELDS: dict[str, tuple[str, ...] | None] = {
     ),
     "union": _TAKES,
     "transform": (*_TAKES, "scale", "rotate"),
-    "carve": ("into", "cutter", "bevel"),
-    "bevel": (*_TAKES, "bevel"),
+    "carve": ("into", "cutter", "bevel", "segments", "profile"),
+    "bevel": (*_TAKES, "bevel", "segments", "profile"),
     "custom": None,
     "cells": ("layers", "legend", "cell", "axis"),
     "mirror": (*_TAKES, "axis", "plane"),

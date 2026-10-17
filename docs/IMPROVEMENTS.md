@@ -49,22 +49,6 @@ over their distance fields, meshed back to triangles), its material groups carri
 the non-empty assertion every boolean keeps. Its readback names the radius, and a radius
 larger than the smaller part is a build warning.
 
-### §PW493 Solids round on every edge
-
-Found in Spinhold on 2026-10-17, for the plastic city of §PW498. A toy-plastic piece is
-round on every edge: a capsule post, a soft box of a house, a pebble of a hill. The
-vocabulary rounds only in two dimensions: `plate` and `rounded_square` round an
-outline's corners in XY and leave the extruded edges square, and `bevel` takes one width
-with no say in how many segments or what profile, so a radius that reads as moulded and
-not as chamfered cannot be stated.
-
-What polyweave should do: `capsule` and `rounded_box` primitive kinds, `size` as every
-primitive's and a `radius` on every edge, with `steps` across the round; and `bevel`
-taking `segments` and a `profile` (round or chamfer), so an existing node rounds as a
-moulded part does. The mesh and the voxel evaluator answer each by its own formula, as
-PW233's primitives do, and a radius past half the smallest side is refused as
-`geom.bad-solid`.
-
 ### §PW494 A plastic finish on a material
 
 Found in Spinhold on 2026-10-17, for the plastic city of §PW498. What makes a piece read

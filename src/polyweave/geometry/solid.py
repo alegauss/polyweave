@@ -290,7 +290,14 @@ def _edge(stated: Any, steps: int) -> np.ndarray:
 
 
 #: Every primitive a declaration may name.
-KINDS = ("cube", "plane", "cylinder", "sphere", "cone", "frustum", "torus")
+KINDS = (
+    "cube", "plane", "cylinder", "sphere", "cone", "frustum", "torus", "capsule",
+    "rounded_box",
+)
+
+#: The kinds round on every edge (§PW493): a box shrunk by the radius, grown back by a
+#: sphere of it.
+ROUNDED = ("capsule", "rounded_box")
 
 #: For an `axis`, which world axes a shape's across, across and along run on. Each is
 #: a cyclic turn of x, y, z, so a mesh built on z and moved onto x or y keeps its faces
@@ -359,6 +366,8 @@ def shape(stated: dict) -> dict:
             "give size as one number, or as three extents along x, y and z",
         )
     extents = _triple(size)
+    if kind in ROUNDED:
+        return _rounded_shape(kind, order, extents, stated)
     across = extents[order[0]] / 2.0, extents[order[1]] / 2.0
     tip = (0.0, 0.0) if kind == "cone" else across
     return {
@@ -368,6 +377,39 @@ def shape(stated: dict) -> dict:
         "radii": (across, tip),
         "height": extents[order[2]],
     }
+
+
+def _rounded_shape(kind: str, order: tuple, extents: tuple, stated: dict) -> dict:
+    """A capsule's or a rounded box's radius, refused past half its smallest side.
+
+    A capsule's is half its smaller extent across its axis, so its ends are half
+    spheres; a rounded box says its own as `radius`.
+    """
+    if kind == "capsule":
+        if "radius" in stated:
+            raise PolyweaveError(
+                "geom.bad-solid",
+                "a capsule's radius is half its width, and this one was given another",
+                "leave radius out of a capsule, or make it a rounded_box",
+            )
+        radius = min(extents[order[0]], extents[order[1]]) / 2.0
+    elif "radius" not in stated:
+        raise PolyweaveError(
+            "geom.bad-solid",
+            "a rounded_box needs a `radius`",
+            "give it the radius every edge is rounded by",
+        )
+    else:
+        radius = float(stated["radius"])
+    most = min(extents) / 2.0
+    if not 0.0 < radius <= most + 1e-9:
+        raise PolyweaveError(
+            "geom.bad-solid",
+            f"a {kind} of {' x '.join(f'{v:g}' for v in extents)} rounded by "
+            f"{radius:g} has no such edge",
+            f"give it a radius above 0 and at most {most:g}, half its smallest side",
+        )
+    return {"kind": kind, "order": order, "extents": extents, "radius": radius}
 
 
 def shape_box(found: dict) -> tuple[np.ndarray, np.ndarray]:
@@ -400,6 +442,12 @@ def shape_inside(found: dict, points: np.ndarray, slack: float = 0.0) -> np.ndar
     if kind == "sphere":
         half = np.asarray(found["extents"]) / 2.0 + slack
         return np.sum((points / half) ** 2, axis=1) <= 1.0
+    if kind in ROUNDED:
+        # The rounded box's distance: past the shrunk box, or how deep inside it.
+        radius = found["radius"]
+        reach = np.abs(points) - (np.asarray(found["extents"]) / 2.0 - radius)
+        outside = np.linalg.norm(np.maximum(reach, 0.0), axis=1)
+        return outside + np.minimum(reach.max(axis=1), 0.0) <= radius + slack
     u, v, w = (points[:, i] for i in found["order"])
     if kind == "torus":
         ring = np.hypot(u, v) - found["major"]
@@ -437,6 +485,8 @@ def primitive(
         made = _sphere(1.0, steps)
         made["vertices"] = made["vertices"] * (np.asarray(found["extents"]) / 2.0)
         return made
+    if kind in ROUNDED:
+        return _rounded_box(np.asarray(found["extents"]) / 2.0, found["radius"], steps)
     if kind == "plane":
         across = [found["extents"][order[0]], found["extents"][order[1]]]
         made = prism(O.rounded_square(across), 0.0)
@@ -475,6 +525,55 @@ def _tapered(radii: tuple, height: float, steps: int) -> dict:
         (i, (i + 1) % count, count + (i + 1) % count, count + i) for i in range(count)
     ]
     return mesh(np.vstack([near, far]), sides + _caps(ring, count, count))
+
+
+def _rounded_box(half: np.ndarray, radius: float, steps: int) -> dict:
+    """A box round on every edge: each face a grid, each point pushed onto the round.
+
+    The grid lies on the box itself, with `steps // 4` cells across each band a radius
+    wide and one across the flat between, and every point moves to the shrunk box's
+    nearest point plus the radius toward it. The faces share their edges' points, so
+    the body is closed; a flat between of no width, as a capsule's sides have, is one
+    line of points and not two.
+    """
+    inner = half - radius
+    band = max(2, int(steps) // 4)
+    lines = []
+    for low in inner:
+        rim = [low + radius * k / band for k in range(band + 1)]
+        lines.append(np.unique(np.round([-v for v in rim[::-1]] + rim, 12)))
+    index: dict = {}
+    points, faces = [], []
+
+    def at(p: tuple) -> int:
+        key = tuple(round(v, 9) for v in p)
+        if key not in index:
+            spot = np.asarray(p, dtype=float)
+            nearest = np.clip(spot, -inner, inner)
+            away = spot - nearest
+            length = float(np.linalg.norm(away))
+            index[key] = len(points)
+            points.append(nearest + away / length * radius if length > 1e-12 else spot)
+        return index[key]
+
+    for fixed in range(3):
+        u, v = (a for a in range(3) if a != fixed)
+        for side in (-1.0, 1.0):
+            for i in range(len(lines[u]) - 1):
+                for j in range(len(lines[v]) - 1):
+                    corners = []
+                    for a, b in ((i, j), (i + 1, j), (i + 1, j + 1), (i, j + 1)):
+                        p = [0.0, 0.0, 0.0]
+                        p[fixed] = side * half[fixed]
+                        p[u], p[v] = lines[u][a], lines[v][b]
+                        corners.append(p)
+                    # Which way round points out is read on the box, before the round
+                    # bends the quad: its normal there is the face's own axis.
+                    c = np.asarray(corners)
+                    out = np.cross(c[2] - c[0], c[3] - c[1])[fixed] * side > 0
+                    quad = tuple(at(tuple(p)) for p in corners)
+                    faces.append(quad if out else quad[::-1])
+    return mesh(points, faces)
 
 
 def _torus(major: float, minor: float, steps: int) -> dict:

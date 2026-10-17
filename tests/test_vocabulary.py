@@ -311,6 +311,70 @@ def test_a_primitive_missing_what_it_needs_is_refused(stated):
     assert caught.value.code == "geom.bad-solid"
 
 
+def _volume(made) -> float:
+    """The enclosed volume, positive when every face points out."""
+    points = np.asarray(made["vertices"], dtype=float)
+    total = 0.0
+    for face in made["faces"]:
+        for k in range(1, len(face) - 1):
+            a, b, c = points[face[0]], points[face[k]], points[face[k + 1]]
+            total += np.dot(a, np.cross(b, c))
+    return total / 6.0
+
+
+def _closed(made) -> bool:
+    from collections import Counter
+
+    uses = Counter()
+    for face in made["faces"]:
+        for a, b in zip(face, face[1:] + face[:1], strict=True):
+            uses[min(a, b), max(a, b)] += 1
+    return set(uses.values()) == {2}
+
+
+def test_a_capsule_is_a_cylinder_with_half_spheres_for_ends():
+    """§PW493: a capsule post, round on every edge, at the size it was asked for."""
+    made = S.primitive("capsule", [0.5, 0.5, 2.0])
+    low, high = check_mesh(made)["bounds"]
+    assert np.subtract(high, low).tolist() == pytest.approx([0.5, 0.5, 2.0], rel=0.01)
+    assert _closed(made)
+    exact = math.pi * 0.25**2 * 1.5 + 4 / 3 * math.pi * 0.25**3
+    assert _volume(made) == pytest.approx(exact, rel=0.01)
+
+
+def test_a_rounded_box_is_round_on_every_edge_and_flat_between():
+    made = S.primitive("rounded_box", [2.0, 1.0, 0.6], radius=0.2)
+    low, high = check_mesh(made)["bounds"]
+    assert np.subtract(high, low).tolist() == pytest.approx([2.0, 1.0, 0.6], rel=0.01)
+    assert _closed(made)
+    # The box less what rounding its twelve edges and eight corners takes off.
+    r = 0.2
+    edges = (4 - math.pi) * r**2 * (2.0 + 1.0 + 0.6 - 6 * r)
+    corners = (8 - 4 / 3 * math.pi) * r**3
+    assert _volume(made) == pytest.approx(2.0 * 1.0 * 0.6 - edges - corners, rel=0.01)
+    # And the voxel evaluator's formula agrees with the mesh about where it stops.
+    found = S.shape({"kind": "rounded_box", "size": [2.0, 1.0, 0.6], "radius": 0.2})
+    surface = np.asarray(made["vertices"], dtype=float)
+    assert S.shape_inside(found, surface * 0.999).all()
+    assert not S.shape_inside(found, surface * 1.01).any()
+
+
+@pytest.mark.parametrize(
+    "stated, said",
+    [
+        ({"kind": "rounded_box", "size": 1.0}, "needs a `radius`"),
+        ({"kind": "rounded_box", "size": [2, 1, 0.6], "radius": 0.4}, "at most 0.3"),
+        ({"kind": "rounded_box", "size": 1.0, "radius": 0}, "above 0"),
+        ({"kind": "capsule", "size": [0.5, 0.5, 2], "radius": 0.1}, "half its width"),
+    ],
+)
+def test_a_rounded_solid_with_no_such_edge_is_refused(stated, said):
+    with pytest.raises(PolyweaveError) as caught:
+        S.primitive(**stated)
+    assert caught.value.code == "geom.bad-solid"
+    assert said in caught.value.message + caught.value.remedy
+
+
 # -- putting them together -------------------------------------------------------------
 
 

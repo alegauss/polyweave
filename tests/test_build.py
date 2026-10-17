@@ -78,6 +78,46 @@ def test_every_op_that_needs_no_solver_builds_a_mesh(tmp_path, node):
     assert found["report"]["nodes"][0]["faces"] > 0
 
 
+@pytest.mark.parametrize("node", [
+    {"op": "primitive", "kind": "capsule", "size": [1.0, 1.0, 3.0], "axis": "y"},
+    {"op": "primitive", "kind": "rounded_box", "size": [4.0, 2.0, 1.0], "radius": 0.3},
+])
+def test_a_solid_round_on_every_edge_builds_from_a_declaration(tmp_path, node):
+    """§PW493: a capsule post and a soft box, with no Blender and no solver."""
+    found = B.build(one(node.pop("op"), **node), root=tmp_path)
+    low, high = check_mesh(found["output"])["bounds"]
+    assert np.subtract(high, low).tolist() == pytest.approx(node["size"], rel=0.01)
+
+
+def _bevelled(tmp_path, **how) -> int:
+    """How many faces a cube has once its bevel rounds it as `how` says."""
+    document = {
+        **one("primitive", kind="cube", size=2.0),
+        "nodes": [{"id": "box", "op": "primitive", "kind": "cube", "size": 2.0},
+                  {"id": "it", "op": "bevel", "of": "box", "bevel": 0.3, **how}],
+    }
+    return len(B.build(document, root=tmp_path)["output"]["faces"])
+
+
+def test_a_bevel_says_how_many_segments_and_what_profile(tmp_path):
+    """§PW493: more segments round further, and a chamfer is one flat cut."""
+    solving()
+    assert _bevelled(tmp_path, segments=6) > _bevelled(tmp_path, segments=3)
+    assert _bevelled(tmp_path, segments=6, profile="chamfer") == _bevelled(
+        tmp_path, segments=1)
+
+
+@pytest.mark.parametrize("how, said", [
+    ({"profile": "cove"}, "round or chamfer"),
+    ({"segments": 0}, "from 1"),
+])
+def test_a_bevel_with_no_such_profile_is_refused(tmp_path, how, said):
+    with pytest.raises(PolyweaveError) as caught:
+        _bevelled(tmp_path, **how)
+    assert caught.value.code == "geom.bad-solid"
+    assert said in caught.value.remedy
+
+
 def test_an_op_nothing_builds_is_refused_by_name(tmp_path):
     with pytest.raises(PolyweaveError) as caught:
         B.build(one("extrude_along_spline", depth=1.0), root=tmp_path)
