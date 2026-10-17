@@ -42,4 +42,5 @@ LAYER = Layer(
         )
     },
     codes="polyweave.layers.engine.codes",
+    config="polyweave.layers.engine.settings",
 )

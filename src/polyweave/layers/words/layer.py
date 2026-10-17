@@ -25,4 +25,5 @@ LAYER = Layer(
         "brief.read:line": "polyweave.layers.words.page:read",
     },
     codes="polyweave.layers.words.codes",
+    config="polyweave.layers.words.settings",
 )

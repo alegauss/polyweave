@@ -17,6 +17,8 @@ runs from another repository.
 from __future__ import annotations
 
 import difflib
+import functools
+import importlib
 import os
 import re
 import tomllib
@@ -35,13 +37,13 @@ _ENV_REF = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_]*)\}")
 
 #: Tables whose keys a project names itself, so an unknown key in them is not a typo.
 #: `render.samples` is keyed by the rung names `render.rungs` declares.
-_OPEN_TABLES = ("render.samples",)
+_KERNEL_OPEN: tuple[str, ...] = ()
 
 #: Tables a project may add keys to while keeping the ones declared here. `[capture]`
 #: is one because the settings a picture depends on are per project and short, and a
 #: project that cannot name its own has to leave them to the machine (§PW25).
 #: `[licence]` is keyed by the file names of the libraries a render plays (§PW191).
-_FREE_TABLES = ("capture", "licence", "perf", "run")
+_KERNEL_FREE: tuple[str, ...] = ()
 
 #: Only a binary may sit outside the tree. Everything else resolves under
 #: `project.root`, because a path elsewhere is state a colleague cannot reproduce.
@@ -61,7 +63,7 @@ _INSIDE = ("service.schema",)
 #: Tables that hold either one paid service or several named ones (§PW162). A bare
 #: `[service]` is the one service it always was; `[service.meshy]` beside
 #: `[service.ideogram]` is two, each with its own `[budget.<name>]`.
-_NAMED_TABLES = ("service", "budget", "style", "sound", "reference")
+_KERNEL_NAMED = ("service", "budget")
 
 #: What a bare `[style]` is called: a project with one look has one family (§PW166).
 DEFAULT_FAMILY = "default"
@@ -76,7 +78,7 @@ _NAMED_BUDGET = {"amount": 0, "unit": "credits", "expires": ""}
 
 #: Every key, with the value used where the project declares none. The shape is the
 #: schema: a key absent from here is refused rather than ignored.
-DEFAULTS: dict[str, Any] = {
+KERNEL_DEFAULTS: dict[str, Any] = {
     "project": {
         "name": "",  # the root directory's name, filled in on load
         "root": ".",
@@ -117,14 +119,6 @@ DEFAULTS: dict[str, Any] = {
         "fluidsynth": "fluidsynth",
         "soundfont": "",
         "surge": "",
-    },
-    "render": {
-        "rungs": ["sphere", "preview", "final"],
-        "preview_size": 256,
-        "final_size": 1024,
-        "samples": {"sphere": 32, "preview": 64, "final": 512},
-        "seed": 0,
-        "max_parallel": 4,
     },
     "tolerance": {
         "alpha_floor": 0.02,
@@ -172,33 +166,6 @@ DEFAULTS: dict[str, Any] = {
         # The language a sitting and the review page are read in (§PW287): en, pt-BR.
         "language": "en",
     },
-    "engine": {
-        # The bounds a scene script runs under. Both of them, because the frame budget
-        # is what ends a script the engine would otherwise sit in forever, and the wall
-        # clock is what ends a run the engine never reaches a frame of (§PW22).
-        "fixed_fps": 60,
-        "frames": 6000,
-        "timeout": 180,
-        # A capture's window starts minimised and unfocused, out of sight (§PW296).
-        "quiet": True,
-        # The leak at exit game.boot forgives, as [objects, resources] (§PW469): one the
-        # engine's headless dummy driver causes and the game cannot, named exactly.
-        "leaks": [],
-    },
-    # Each scene's performance budget, `[perf.<name>]` (§PW365): its scene, the frames
-    # measured, and the most each measure may reach; engine.perf reads them.
-    "perf": {},
-    # Each engine run a game declares, `[run.<name>]` (§PW467): its script, the line it
-    # prints when it worked and what it writes; engine.run_declared runs them.
-    "run": {},
-    # Each installed kit's declaration, `[kit.<name>]` (§PW341): its keys are the kit's
-    # own, so the kit checks them and this table does not.
-    "kit": {},
-    "driving": {
-        # Seconds a driven game waits for its next call before it quits, so a session an
-        # agent forgot never outlives the conversation that opened it (§PW213).
-        "idle": 600,
-    },
     "service": {
         "base": "",  # naming no service is how a project that buys nothing says so
         "key_env": "",
@@ -223,219 +190,72 @@ DEFAULTS: dict[str, Any] = {
         "credits": 0,
         "expires": "",
     },
-    "capture": {
-        "locale": "",
-        "resolution": [1920, 1080],
-        # The two that differed between two machines in §PW25, and the reason the list
-        # exists at all.
-        "declared": ["locale", "resolution"],
-        # Whether a capture that stops reproducing is a refusal rather than a remark
-        # (§PW75). Off, because the plugin cannot make an engine deterministic and a
-        # project that has not pinned its captures would fail every run. A project that
-        # has pinned them turns it on, and keeps what it earned.
-        "reproducible": False,
-    },
-    "geometry": {"outlines": ""},
-    "style": {
-        # What a project's pictures look like, declared once and never in the plugin:
-        # two games have two looks (§PW166). `[style.<family>]` gives each asset family
-        # its own, so a sprite sheet is never held to a title screen's canon.
-        # The directory of pictures a person approved; only a verdict adds to it.
-        "canon": "",
-        # Globs under the project of pictures a person may admit to the canon from the
-        # review page without a gate run (§PW266): key art and wordmarks have no
-        # outline to gate, and they are what a brand's canon starts from.
-        "candidates": [],
-        # The colours a picture may use, as #rrggbb values rather than names.
-        "palette": [],
-        # The style block every structured prompt starts from, as the service spells
-        # it: medium, lighting, aesthetics. It wins over a prompt that says otherwise.
-        "skeleton": {},
-        # Canon pictures, by file name, sent with every picture of the family as style
-        # references (§PW180). Only Ideogram 3.0 takes one, with a text prompt, so a
-        # family that names any draws on 3.0 with its skeleton and palette in the words.
-        "references": [],
-        # The grid a picture of this family is put on when it arrives (§PW171): the
-        # cell in pixels as [width, height], empty to leave the size alone; the margin
-        # inside it; where the subject sits, `centre` for an icon and `base` for what
-        # stands on the ground; and the filter, `smooth` for painted art and `pixel` for
-        # pixel art, which is never smoothed and is quantised to the palette.
-        "cell": [],
-        "margin": 0,
-        "anchor": "centre",
-        "filter": "smooth",
-        # A palette kept in code (§PW387): `{ file = "tools/art/palette.py", names =
-        # ["PIPING", ...] }` reads each `NAME = "#rrggbb"` the file holds, in the order
-        # named, or every one in the file's order where `names` is empty.
-        "palette_source": {},
-        # Another project's palette, borrowed rather than copied (§PW387): `{ root =
-        # "../cottony", family = "", lightness = -0.1, saturation = 0.0, pinned = "" }`.
-        # Its resolved palette is shifted in lightness and saturation for this game,
-        # and `pinned`, the source palette's digest when it was last looked at, makes
-        # a source that moved since say so.
-        "borrow": {},
-        # A family of meshes is measured through renders at one rig (§PW451):
-        # render.bake's camera and light settings (azimuth, elevation, margin, key,
-        # rung...) and `seen`, the width in pixels a player sees one at.
-        "rig": {},
-    },
-    "sound": {
-        # What a game needs to hear, declared by the game (§PW185): each family is a
-        # list of cues sharing a kind, a format and a folder, so polyweave can say which
-        # file is missing without reading the consumer's scripts. A bare [sound] is one
-        # family, `default`, as a bare [style] is.
-        # `loop` has a seam; a `stinger` plays once over the music; an `effect` is a
-        # one-shot. The kind decides which measures mean anything for its files.
-        "kind": "effect",
-        "format": "wav",
-        # Under [paths] audio; empty is that folder itself.
-        "folder": "",
-        # What the cue is made to: seconds and RMS dBFS, where zero states none. Bounds
-        # a file is held to stay in its *.accept.toml; these are the targets.
-        "duration": 0.0,
-        "loudness": 0.0,
-        # The cue names, each landing at <folder>/<name>.<format>.
-        "cues": [],
-    },
-    # What each instrument library a render plays through permits and owes (§PW191),
-    # keyed by the library's file name: `[licence."GeneralUser-GS.sf2"]` with `terms`,
-    # the `credit` it requires (empty owes none), a `note` and a `url`. The project's to
-    # declare, because the project chose the library; a render through an undeclared
-    # one is refused.
-    "licence": {},
-    "words": {
-        # The text a player reads, as the game reads it (§PW197): Godot's translation
-        # CSV, one key per row and one column per locale. A column whose header starts
-        # with an underscore is one Godot skips, and `speaker` names the one that says
-        # who speaks the line, as an entity id of the world.
-        "table": "",
-        "speaker": "_speaker",
-        # Where a spoken take of a row lands, `audio/voice/{locale}/{key}.ogg` (§PW322):
-        # one file per key and locale, in the format its suffix names.
-        "voiced": "",
-        # The fonts the game draws its lines with (§PW335): each `{ path, keys }`,
-        # `keys` the glob patterns of the rows it draws, every row where unset.
-        "fonts": [],
-        # Capitalised words that are not names, such as START on a title screen, so the
-        # name check passes over them.
-        "ordinary": [],
-        # The ordinary words of one locale alone, `{ pt_BR = ["VIDAS", ...] }`
-        # (§PW329), so a word another language writes in capitals is not read as a
-        # name there, and an English column cannot lean on it.
-        "ordinary_in": {},
-        # The copy a buyer reads before the game, held to the same names (§PW419): a
-        # Markdown or HTML file under the project and the locale it is written in,
-        # `{ "art/store/page.md" = "en", "art/store/page.pt-BR.md" = "pt_BR" }`.
-        "copy": {},
-        # Where a person's verdicts on lines are kept, as JSON (§PW199): the approved
-        # ones are the lines canon, and only `verdict.judge` writes it.
-        "canon": "",
-    },
-    "flashes": {
-        # The photosensitivity guidance measure.flashes holds a captured run to
-        # (§PW354), WCAG 2.3.1's numbers: at most `limit` flashes in any one second, a
-        # flash being two opposing changes of relative luminance of `luminance` with the
-        # darker state under `dark`, or of a saturated red's (R - G - B) * 320 by more
-        # than `red`, over at least `area` of the screen (a quarter of a 10 degree
-        # field, 341 by 256 of a 1024 by 768 screen).
-        "limit": 3,
-        "luminance": 0.1,
-        "dark": 0.8,
-        "red": 20.0,
-        "area": 0.0277,
-    },
-    "voice": {
-        # What a spoken take is held to before a person hears it (§PW323). The game's
-        # numbers, so nothing here invents one: zero, or an empty band, bounds nothing.
-        # Seconds of silence before the first word and after the last.
-        "lead_silence": 0.0,
-        "tail_silence": 0.0,
-        # [low, high] characters of the line per second spoken: a skipped phrase reads
-        # fast, a repeated one slow.
-        "rate": [],
-        # [low, high] dBFS, so dialogue sits where the project's effects do.
-        "loudness": [],
-        # Cut a bought take's silence down to the two bounds above as it lands, the
-        # service's own bytes kept on its record by their digest.
-        "trim": False,
-        # The game's interjections ("uhuu", "vamo"): a transcription spells them its own
-        # way ("woohoo", "vamos"), so a take is never failed for how one was heard.
-        "interjections": [],
-        # The free rung a line is drafted on before a character is billed (§PW324):
-        # "piper" with `draft_model` (a downloaded .onnx), or "espeak-ng" with
-        # `draft_voice` (such as "pt-br"). Empty takes the first one installed.
-        "draft_engine": "",
-        "draft_model": "",
-        "draft_voice": "",
-    },
-    "voxels": {
-        # What a voxel build is checked against (§PW97). A game decides how many cubes
-        # it can draw and how thin a part may be before it vanishes, so these are the
-        # project's. A budget of zero is no ceiling and an empty extent no target.
-        "budget": 0,
-        # The longest run one cell thick before it is reported.
-        "thread": 3,
-        # [x, y, z] in the declaration's units; a document's own [voxels] extent wins.
-        "extent": [],
-        # One cell for every voxel declaration in the project (§PW229), so the debris of
-        # a drone and of a boss are the same cubes. A document giving neither `cell` nor
-        # `across` takes it; its own wins, reported where it differs. Zero is none.
-        "cell": 0.0,
-        # A model at least this symmetric in x and short of whole is reported, because
-        # that is what two halves drifting apart looks like.
-        "near_symmetry": 0.9,
-    },
-    "sprites": {
-        # What the 2D half of a clip is baked at. Configuration rather than decisions
-        # taken inside code: a sheet's rate, its count and its trim are a project's
-        # (§PW29). `frames` of zero takes every frame the clip has.
-        "fps": 12,
-        "frames": 0,
-        "trim": True,
-        "columns": 0,
-    },
-    "rig": {
-        # Which body plan a mesh gets fitted with, and how the weights fall off. The
-        # plan is the only one of these a project usually changes (§PW26).
-        "plan": "plush",
-        # One influence snaps every vertex to one bone and tears at every boundary.
-        "influences": 4,
-        # Both ends tear: high snaps a vertex to one bone, low spreads it onto bones
-        # nowhere near it. Four sits in the trough, at 1.6x on the test figure.
-        "falloff": 4.0,
-        # How far a joint is pulled from the plan's own position onto the mesh's volume.
-        "pull": 0.6,
-        # How far an edge may stretch in a test pose before the rig is called wrong.
-        "tear_ratio": 2.0,
-    },
-    "units": {
-        # The scale the engine draws at. Stating it here is the weaker half; `source`
-        # is the stronger one — `path/to.gd:NAME` reads it from wherever the game
-        # already holds it, so the two numbers cannot drift apart (§PW24).
-        "pixels_per_unit": 0.0,
-        "source": "",
-        "tolerance": 0.001,
-    },
-    "reference": {
-        # A reference video's fixed places, declared once (§PW380): `[reference.<name>]`
-        # per video or game, as rectangles [left, top, right, bottom] in pixels of the
-        # source frame `size` was read at, so a call names a region and never repeats
-        # numbers, and frames of another size are refused rather than misread.
-        "size": [],
-        "regions": {},
-        # The region that is a minimap, and its shape: `strip`, a band whose left and
-        # right edges meet (a cylinder seen whole), or `rect`, a flat level from above.
-        "minimap": "",
-        "map": "strip",
-        # The player's blip colour, which every other blip is measured from, and each
-        # other blip by name and #rrggbb colour; nothing about a game is known here.
-        "player": "",
-        "blips": {},
-        "tolerance": 0.15,
-        # The pixels of the source frame one blip covers, least and most.
-        "blip_size": [1, 64],
-    },
 }
+
+
+@dataclass(frozen=True)
+class Schema:
+    """Every table polyweave.toml may hold: the kernel's and each layer's (§PW508)."""
+
+    tables: dict[str, Any]
+    free: tuple[str, ...]
+    open: tuple[str, ...]
+    named: tuple[str, ...]
+    settings: tuple[str, ...]
+    choices: dict[str, tuple[str, ...]]
+    #: The layer that declares each table; a kernel table is absent.
+    owner: dict[str, str]
+
+
+@functools.cache
+def _schema() -> Schema:
+    """The kernel's tables and each layer's, read on first use: the layers are found
+    by a walk that imports this module's own refusals. A table, a choice or a setting
+    two layers declare is refused, naming both."""
+    from .layer import layers
+
+    tables, owner = dict(KERNEL_DEFAULTS), {}
+    free, opened = list(_KERNEL_FREE), list(_KERNEL_OPEN)
+    named, settings = list(_KERNEL_NAMED), list(_KERNEL_SETTINGS)
+    choices = dict(_KERNEL_CHOICES)
+    for name, declared in layers().items():
+        if not declared.config:
+            continue
+        module = importlib.import_module(declared.config)
+        for table, keys in module.TABLES.items():
+            if table in tables:
+                raise PolyweaveError(
+                    "layer.declared-twice",
+                    f"layer {name} declares the table [{table}], which "
+                    f"{owner.get(table, 'the kernel')} already does",
+                    "keep the table in the layer that owns it and drop it elsewhere",
+                    given=table,
+                )
+            tables[table], owner[table] = keys, name
+        for key, words in getattr(module, "CHOICES", {}).items():
+            if key in choices:
+                raise PolyweaveError(
+                    "layer.declared-twice",
+                    f"layer {name} declares the choice {key!r}, which is declared",
+                    "give the setting a name of its own",
+                    given=key,
+                )
+            choices[key] = tuple(words)
+        free += getattr(module, "FREE", ())
+        opened += getattr(module, "OPEN", ())
+        named += getattr(module, "NAMED", ())
+        settings += getattr(module, "SETTINGS", ())
+    return Schema(tables, tuple(free), tuple(opened), tuple(named), tuple(settings),
+                  choices, owner)
+
+
+def __getattr__(name: str):
+    # `DEFAULTS` and `_FREE_TABLES` read as they always did, as the union (§PW508).
+    if name == "DEFAULTS":
+        return _schema().tables
+    if name == "_FREE_TABLES":
+        return _schema().free
+    raise AttributeError(name)
 
 
 @dataclass(frozen=True)
@@ -476,7 +296,7 @@ class Config:
         self.root = root
         self.source = source
         self._declared = declared
-        self._merged = _merge(DEFAULTS, declared)
+        self._merged = _merge(_schema().tables, declared)
         if not self._merged["project"]["name"]:
             self._merged["project"]["name"] = root.name
 
@@ -487,7 +307,7 @@ class Config:
         if explicit is not None:
             return explicit
         table, _, key = address.partition(".")
-        if not key or table not in DEFAULTS:
+        if not key or table not in _schema().tables:
             raise PolyweaveError(
                 "config.unknown-address",
                 f"{address!r} is not a setting",
@@ -541,19 +361,20 @@ class Config:
 
     def table(self, name: str) -> dict:
         """One whole table, with every value resolved."""
-        if name not in DEFAULTS:
+        if name not in _schema().tables:
             raise PolyweaveError(
                 "config.unknown-address",
                 f"there is no [{name}] table",
-                f"name one of {', '.join(sorted(DEFAULTS))}",
+                f"name one of {', '.join(sorted(_schema().tables))}",
                 given=name,
-                allowed=DEFAULTS,
+                allowed=_schema().tables,
             )
         return {k: _expand(v, f"{name}.{k}") for k, v in self._merged[name].items()}
 
     def addresses(self) -> list[str]:
         """Every setting a project may declare, as `table.key`."""
-        return [f"{t}.{k}" for t in sorted(DEFAULTS) for k in sorted(DEFAULTS[t])]
+        tables = _schema().tables
+        return [f"{t}.{k}" for t in sorted(tables) for k in sorted(tables[t])]
 
     def states(self, table: str) -> bool:
         """Whether the project wrote this table at all, rather than take the default."""
@@ -600,10 +421,10 @@ class Config:
         named = _named(self._declared.get("service", {}))
         if not named:
             bare = self.table("service")
-            return {DEFAULT_SERVICE: {k: bare[k] for k in DEFAULTS["service"]}}
+            return {DEFAULT_SERVICE: {k: bare[k] for k in _schema().tables["service"]}}
         return {
             name: {
-                **DEFAULTS["service"],
+                **_schema().tables["service"],
                 "schema": f"polyweave.service.{name}.toml",
                 **{k: _expand(v, f"service.{name}.{k}") for k, v in stated.items()},
             }
@@ -672,7 +493,7 @@ class Config:
         stated = named or {DEFAULT_FAMILY: self._declared.get("style", {})}
         found = {}
         for family, own in stated.items():
-            style = {**DEFAULTS["style"], **own}
+            style = {**_schema().tables["style"], **own}
             address = f"style.{family}.canon" if named else "style.canon"
             style["canon"] = (
                 str(self.path(address, style["canon"])) if style["canon"] else ""
@@ -728,7 +549,7 @@ class Config:
         stated = named or ({DEFAULT_FAMILY: stated_table} if stated_table else {})
         found, owners = {}, {}
         for family, own in stated.items():
-            sound = {**DEFAULTS["sound"], **own}
+            sound = {**_schema().tables["sound"], **own}
             address = f"sound.{family}.folder" if named else "sound.folder"
             # Joined before resolving, so an absolute folder or one that climbs out is
             # refused by `path` like any other path setting.
@@ -762,7 +583,7 @@ class Config:
         stated = named or ({DEFAULT_FAMILY: stated_table} if stated_table else {})
         found = {}
         for name, own in stated.items():
-            declared = {**DEFAULTS["reference"], **own}
+            declared = {**_schema().tables["reference"], **own}
             at = f"reference.{name}" if named else "reference"
 
             def bad(key: str, what: str, remedy: str, at: str = at) -> PolyweaveError:
@@ -934,16 +755,16 @@ def _check(declared: dict, source: Path) -> None:
     is silently dropped is a setting the caller believes is in effect and is not.
     """
     for table, values in declared.items():
-        if table not in DEFAULTS:
-            near = difflib.get_close_matches(table, DEFAULTS, n=1)
+        if table not in _schema().tables:
+            near = difflib.get_close_matches(table, _schema().tables, n=1)
             raise PolyweaveError(
                 "config.unknown-table",
                 f"{source.name} declares [{table}], which is not a table",
                 f"did you mean [{near[0]}]?"
                 if near
-                else f"the tables are {', '.join(sorted(DEFAULTS))}",
+                else f"the tables are {', '.join(sorted(_schema().tables))}",
                 given=table,
-                allowed=DEFAULTS,
+                allowed=_schema().tables,
             )
         if not isinstance(values, dict):
             raise PolyweaveError(
@@ -961,7 +782,7 @@ def _check(declared: dict, source: Path) -> None:
                     at=f"kit.{loose[0]}",
                 )
             continue
-        if table in _NAMED_TABLES and _named(values):
+        if table in _schema().named and _named(values):
             _check_named(table, values, source)
             continue
         for key, value in values.items():
@@ -970,8 +791,7 @@ def _check(declared: dict, source: Path) -> None:
 
 
 #: Settings of one service whose value is itself a table, so not a named service.
-_TABLE_SETTINGS = ("prices", "skeleton", "regions", "blips", "palette_source", "borrow",
-                   "rig")
+_KERNEL_SETTINGS = ("prices",)
 
 
 def _sells(about: dict, model: str) -> bool:
@@ -1054,7 +874,7 @@ def _named(values: dict) -> dict[str, dict]:
     return {
         k: v
         for k, v in values.items()
-        if isinstance(v, dict) and k not in _TABLE_SETTINGS
+        if isinstance(v, dict) and k not in _schema().settings
     }
 
 
@@ -1070,10 +890,10 @@ def _check_named(table: str, values: dict, source: Path) -> None:
             at=table,
         )
     allowed = {
-        "service": DEFAULTS["service"],
-        "style": DEFAULTS["style"],
-        "sound": DEFAULTS["sound"],
-        "reference": DEFAULTS["reference"],
+        "service": _schema().tables["service"],
+        "style": _schema().tables["style"],
+        "sound": _schema().tables["sound"],
+        "reference": _schema().tables["reference"],
     }.get(table, _NAMED_BUDGET)
     for name, stated in values.items():
         for key, value in stated.items():
@@ -1121,9 +941,9 @@ def _check_services(declared: dict, source: Path) -> None:
 
 
 def _check_key(table: str, key: str, value: Any, source: Path) -> None:
-    allowed = DEFAULTS[table]
+    allowed = _schema().tables[table]
     if key not in allowed:
-        if table in _FREE_TABLES:
+        if table in _schema().free:
             return
         near = difflib.get_close_matches(key, allowed, n=1)
         raise PolyweaveError(
@@ -1136,20 +956,14 @@ def _check_key(table: str, key: str, value: Any, source: Path) -> None:
             allowed=allowed,
             at=f"{table}.{key}",
         )
-    if f"{table}.{key}" in _OPEN_TABLES:
+    if f"{table}.{key}" in _schema().open:
         return
     _check_type(f"{table}.{key}", allowed[key], value, source)
     _check_value(f"{table}.{key}", key, value, source)
 
 
 #: Settings whose value is one of a few words.
-_CHOICES = {
-    "anchor": ("centre", "base"),
-    "filter": ("smooth", "pixel"),
-    "kind": ("loop", "stinger", "effect"),
-    "format": ("wav", "ogg", "flac", "mp3", "opus"),
-    "map": ("strip", "rect"),
-}
+_KERNEL_CHOICES: dict[str, tuple[str, ...]] = {}
 
 #: A colour as a palette states it.
 _HEX = re.compile(r"#[0-9a-fA-F]{6}")
@@ -1162,14 +976,14 @@ def _check_value(address: str, key: str, value: Any, source: Path) -> None:
     """The settings whose type alone does not say whether a value is one."""
     if key == "prices":
         _check_prices(address, value, source)
-    elif key in _CHOICES and value not in _CHOICES[key]:
+    elif key in _schema().choices and value not in _schema().choices[key]:
         raise PolyweaveError(
             "config.bad-type",
             f"{address} is {value!r} in {source.name}, which is not one of "
-            f"{', '.join(_CHOICES[key])}",
-            f"write one of {', '.join(_CHOICES[key])}",
+            f"{', '.join(_schema().choices[key])}",
+            f"write one of {', '.join(_schema().choices[key])}",
             given=str(value),
-            allowed=_CHOICES[key],
+            allowed=_schema().choices[key],
             at=address,
         )
     elif address == "voxels.cell" and value < 0:
@@ -1268,7 +1082,7 @@ def _merge(base: dict, over: dict, at: str = "") -> dict:
     for key, value in base.items():
         address = f"{at}.{key}" if at else key
         stated = over.get(key)
-        if isinstance(value, dict) and address in _OPEN_TABLES:
+        if isinstance(value, dict) and address in _schema().open:
             # Keyed by names the project chooses, so what it states replaces the
             # default outright: a project that renames its rungs would otherwise
             # inherit samples for rungs it does not have.

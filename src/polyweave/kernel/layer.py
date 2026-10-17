@@ -158,9 +158,10 @@ class Layer:
     #: The module holding this layer's `AREAS` and `CODES`, the errors it raises
     #: (§PW507); the kernel's table is the union.
     codes: str = ""
-    # What later lines contribute to the shared loop, empty until each lands: config
-    # tables (§PW508) and census entries (§PW511).
-    config: tuple = ()
+    #: The module holding this layer's polyweave.toml tables: `TABLES`, and `FREE`,
+    #: `OPEN`, `NAMED`, `SETTINGS` and `CHOICES` where it has them (§PW508).
+    config: str = ""
+    # What a later line contributes, empty until it lands: census entries (§PW511).
     census: tuple = ()
     reports: tuple = ()
 

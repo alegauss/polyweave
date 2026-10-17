@@ -11,4 +11,5 @@ LAYER = Layer(
     requires=("godot",),
     outdated={"kits": "polyweave.layers.kits:behind"},
     codes="polyweave.layers.kits.codes",
+    config="polyweave.layers.kits.settings",
 )

@@ -547,3 +547,21 @@ A new key here is the cheap answer to "Cottony needs X and no other project woul
 expensive answer is a change inside the plugin, and PW36 is the line that measures how often
 the cheap one was enough. The list of keys that had to be added during that adoption is the
 plugin's real interface, discovered rather than designed.
+
+## Which layer owns each table
+
+The kernel declares the tables every project has: `[project]`, `[paths]`, `[tolerance]`,
+`[cache]`, `[provenance]`, `[adoption]`, `[review]`, `[service]` and `[budget]`. Every
+other table is declared by the layer that reads it, in that layer's `settings.py`, and
+the kernel's schema is the union (PW508). A key for a layer's table is added there.
+
+| Layer | Tables |
+|---|---|
+| geometry | `[render]`, `[geometry]`, `[voxels]`, `[units]` |
+| engine | `[engine]`, `[perf]`, `[run]`, `[driving]`, `[capture]`, `[flashes]` |
+| kits | `[kit]` |
+| picture | `[style]` |
+| sound | `[sound]`, `[licence]`, `[voice]` |
+| words | `[words]` |
+| motion | `[sprites]`, `[rig]` |
+| reference | `[reference]` |

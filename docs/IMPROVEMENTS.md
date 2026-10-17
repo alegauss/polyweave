@@ -504,30 +504,6 @@ store, and moves to picture.
 Done when the test refuses an undeclared layer import and a cycle, and passes on the
 tree.
 
-### §PW508 A layer declares the tables it reads from polyweave.toml
-
-`config.py` resolves a value (the project file, then the environment, then the default),
-refuses an unknown key, and holds the schema of every table in the file. That last job
-is what makes it a hotspot. `DEFAULTS` holds every layer's settings. `_OPEN_TABLES`,
-`_FREE_TABLES`, `_NAMED_TABLES`, `_BINARIES`, `_INSIDE`, `_TABLE_SETTINGS` and
-`_CHOICES` are lists of `[render]`, `[sound]`, `[voxels]`, `[words]` and the other
-tables, kept in one module that 58 of the last 200 commits touched.
-
-The kernel keeps the resolution order, `${NAME}` references, paths that must stay inside
-the tree, and the refusal. A layer declares its tables in `Layer.config` as data: each
-table with its keys, defaults, choices and units; whether it is open, free or named; and
-the binaries it may point outside the tree. Tables the loop owns (`[review]`,
-`[tolerance]`, `[cache]`, `[provenance]`, `[budget]`, `[service]`) stay in the kernel.
-
-`config.unknown-table` changes in one useful way. A table that belongs to a layer the
-project has not enabled is refused with that layer's name, not as a typo, so turning
-layers on (the line after this) is one correction rather than a hunt. `project.init`
-proposes only the tables of the layers it found.
-
-Done when a layer's settings live only in that layer, `test_config` and
-`test_project_init` pass, and a fixture layer's table is read, defaulted and refused
-with no kernel file touched. `project-config.md` says which layer owns each table.
-
 ### §PW509 A project turns on the layers it uses
 
 `server.tools()` serves every registered operation. The only thing it leaves out is the
@@ -541,7 +517,8 @@ server and the command line register and serve only those layers' operations, pl
 `kernel` and `loop`, which every project gets. `project.init` proposes `on` from what it
 finds in the tree: a `project.godot` turns engine on, `*.geom.toml` turns geometry on, a
 `[words]` table turns words on. A layer `uses` another (engine for vfx), so turning one
-on turns that one on too, and `capabilities` reports it.
+on turns that one on too, and `capabilities` reports it. An off layer's table is refused
+naming that layer, not as a typo.
 
 Calling an operation of a layer that is off answers `layer.off`, naming the layer and
 the one line to add. `describe` still lists it, marked off. So an agent can find what

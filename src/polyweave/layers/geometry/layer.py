@@ -41,4 +41,5 @@ LAYER = Layer(
         "review:turntables": "polyweave.layers.geometry.page:turntables",
     },
     codes="polyweave.layers.geometry.codes",
+    config="polyweave.layers.geometry.settings",
 )

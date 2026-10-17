@@ -15,4 +15,5 @@ LAYER = Layer(
     requires=("blender",),
     kinds=("camera",),
     codes="polyweave.layers.motion.codes",
+    config="polyweave.layers.motion.settings",
 )

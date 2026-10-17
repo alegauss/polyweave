@@ -33,4 +33,5 @@ LAYER = Layer(
         "brief.read:music": "polyweave.layers.sound.page:music",
     },
     codes="polyweave.layers.sound.codes",
+    config="polyweave.layers.sound.settings",
 )

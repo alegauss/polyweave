@@ -34,4 +34,5 @@ LAYER = Layer(
         "page.boards": "polyweave.layers.picture.page:boards",
     },
     codes="polyweave.layers.picture.codes",
+    config="polyweave.layers.picture.settings",
 )

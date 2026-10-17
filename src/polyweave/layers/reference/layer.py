@@ -30,4 +30,5 @@ LAYER = Layer(
             target="polyweave.layers.reference.reference_concept:predicate",
         ),
     ),
+    config="polyweave.layers.reference.settings",
 )

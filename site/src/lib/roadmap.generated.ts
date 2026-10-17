@@ -47,7 +47,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 2 },
-  { block: "W", title: "A core that grows by layers", open: 16 },
+  { block: "W", title: "A core that grows by layers", open: 15 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -136,18 +136,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW516"],
   },
   {
-    id: "PW508",
-    block: "W",
-    symptom: "Every table polyweave.toml may hold is declared in one config.py, so a layer's settings are kernel code",
-    why: "DEFAULTS, the open, free, named and binary tables and the per-key choices are 1,307 lines no layer owns, and a setting nobody owns is one nobody removes with its layer.",
-    deps: [],
-  },
-  {
     id: "PW509",
     block: "W",
     symptom: "A project gets all 200 operations as tools whatever it makes, so a 2D game's agent loads Blender, voxel and rig tools",
     why: "tools/list is about 130,000 characters and growing, so the agent's context scales with what polyweave can do, not with what the project uses.",
-    deps: ["PW508"],
+    deps: [],
   },
   {
     id: "PW510",
@@ -168,7 +161,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "W",
     symptom: "Nothing proves a new layer can be added without editing the kernel, so the block's whole claim goes unchecked",
     why: "Each seam is tested alone, and only a whole layer added from outside shows they leave a kernel file nobody has to open.",
-    deps: ["PW506", "PW508", "PW509", "PW510", "PW511"],
+    deps: ["PW506", "PW509", "PW510", "PW511"],
   },
   {
     id: "PW513",
@@ -203,7 +196,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "W",
     symptom: "A project cannot add a measure of its own, so a look only its game needs is a fork, a side script or a PW line",
     why: "A project measure keeps the first-call guarantee only when it is described, bounded and recorded exactly as a built-in one is.",
-    deps: ["PW508", "PW512"],
+    deps: ["PW512"],
   },
   {
     id: "PW518",
