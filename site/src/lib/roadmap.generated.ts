@@ -47,7 +47,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 2 },
-  { block: "W", title: "A core that grows by layers", open: 8 },
+  { block: "W", title: "A core that grows by layers", open: 7 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -143,13 +143,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW512",
-    block: "W",
-    symptom: "Nothing proves a new layer can be added without editing the kernel, so the block's whole claim goes unchecked",
-    why: "Each seam is tested alone, and only a whole layer added from outside shows they leave a kernel file nobody has to open.",
-    deps: [],
-  },
-  {
     id: "PW516",
     block: "W",
     symptom: "Each paid service's HTTP client is written inside the domain that buys from it, so a new service copies a client",
@@ -161,7 +154,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "W",
     symptom: "A project cannot add a measure of its own, so a look only its game needs is a fork, a side script or a PW line",
     why: "A project measure keeps the first-call guarantee only when it is described, bounded and recorded exactly as a built-in one is.",
-    deps: ["PW512"],
+    deps: [],
   },
   {
     id: "PW518",
@@ -182,7 +175,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "W",
     symptom: "A project's polyweave.toml and the Python importing polyweave break on the new layout, with nothing to carry them over",
     why: "The block owes callers no compatibility, so one command must carry a project across, or every adopter pays for the break by hand.",
-    deps: ["PW512", "PW516"],
+    deps: ["PW516"],
   },
   {
     id: "PW521",

@@ -520,34 +520,6 @@ the swap, and its gate passes.
 
 ## Block W — A core that grows by layers
 
-### §PW512 A whole layer added from a fixture, touching nothing else
-
-Each line before this one ends with a fixture layer exercising its own seam. This line
-combines them into one fixture that stands for the next medium,
-`tests/fixtures/layers/tone/`, a layer that makes a sine tone from a declaration. It
-declares:
-
-- one operation, `tone.make`, with a code of its own, `tone.bad-pitch`;
-- a config table `[tone]` with a default and a choice;
-- a record kind `tone` and a staleness check for its source role;
-- a `Subject` measuring pitch and length, and a `Producer` a search can sweep over pitch;
-- a `Judge` that keeps a person's verdict in its own canon;
-- its part of the brief, the review page and the report;
-- a tool budget and one internal helper.
-
-The test points the layer search at the fixture directory, which is the same mechanism a
-project's `[extend]` will use later, and checks that each of those appears where it
-should: in `describe`, `tools/list`, `explain`, `project.check`, `accept.check`,
-`search.sweep`, `verdict.answer`, `provenance.outdated`, `asset.brief`, `loop.report`
-and the census. It then asserts that no file under `kernel/`, `loop/` or `surface/`
-names `tone`.
-
-This is the scalability claim as a number: the kernel files a new layer touches, held at
-zero. When a later layer needs a kernel edit, this test is where that need is argued, by
-extending the fixture rather than by working around it.
-
-Done when the test passes and a deliberately broken seam in the fixture fails it.
-
 ### §PW516 A paid service is an adapter; the ledger and the ceiling are the kernel's
 
 Five services are bought from today: Meshy, Tripo and Rodin for meshes, Ideogram for
