@@ -302,6 +302,17 @@ what a panel seen front-on is. A cell whose corners are all below `floor` is dro
 which is the drop shadow's faintest tail — built down to it, the panel showed a pale
 rectangle the size of the canvas.
 
+**`sides = 2` makes the drawn profile a pillow** (§PW492), for a balloon, a cloud or a
+pad the camera goes round. Both faces swell by the same profile and `thickness` is the
+whole depth. Near the rim each face falls as a quarter circle as wide as half the depth,
+and the vertices at zero height are moved onto the outline pixel nearest them, so the
+faces meet round. Measured on a ring at the default cell, the faces are 79° apart across
+the rim, where a relief mirrored across its back is 124° apart, a coin's edge. The body
+is closed: the faces share every vertex at zero height, a cell is built only where the
+body is, and the canvas's border is an outline too. A hole in the drawing goes through.
+`sides` is a drawing's choice: an outline already swells both faces, and `sides = 1` on
+one is `geom.bad-solid`.
+
 ### Surfaces
 
 A material is a table under `[materials.<name>]` and a node wears one by name. **Its values

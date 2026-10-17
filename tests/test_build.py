@@ -543,6 +543,45 @@ def test_inflate_over_an_outline_still_swells_from_its_edge(tmp_path):
     assert np.ptp(points[:, 2]) == pytest.approx(6.0, rel=0.05), "a pillow, both ways"
 
 
+def test_a_drawing_inflated_on_both_sides_is_a_closed_body(tmp_path):
+    """§PW492: a balloon the camera passes round, its hole a hole through it."""
+    from collections import Counter
+
+    from PIL import Image as PILImage
+
+    size = 128
+    yy, xx = np.mgrid[0:size, 0:size]
+    far = (xx - 64) ** 2 + (yy - 64) ** 2
+    canvas = np.zeros((size, size, 4), dtype=np.uint8)
+    canvas[far < 50**2] = (200, 90, 60, 255)
+    canvas[far < 18**2] = (0, 0, 0, 0)
+    PILImage.fromarray(canvas, "RGBA").save(tmp_path / "balloon.png")
+
+    found = B.build(one("inflate", drawing="balloon.png", thickness=10.0, size=100.0,
+                        sides=2), root=tmp_path)
+    made = found["output"]
+    check_mesh(made)
+    points = np.asarray(made["vertices"], dtype=float)
+    assert np.ptp(points[:, 2]) == pytest.approx(10.0, rel=0.05), "the whole depth"
+    middle = points[np.argmin(np.hypot(points[:, 0], points[:, 1]))]
+    assert middle[2] == pytest.approx(0.0, abs=0.01), "the hole goes through"
+    uses = Counter()
+    for face in made["faces"]:
+        for a, b in zip(face, face[1:] + face[:1], strict=True):
+            uses[min(a, b), max(a, b)] += 1
+    assert set(uses.values()) == {2}, "every edge is shared, so the body is closed"
+
+
+def test_an_outline_is_not_inflated_on_one_side(tmp_path):
+    """It swells both faces already; a relief is a drawing's."""
+    with pytest.raises(PolyweaveError) as refused:
+        B.build(one("inflate", outline={"shape": "rounded_square", "size": 20.0,
+                                        "corner": 4.0}, thickness=6.0, sides=1),
+                root=tmp_path)
+    assert refused.value.code == "geom.bad-solid"
+    assert "drawing's relief" in refused.value.remedy
+
+
 def test_cottonys_panel_builds_from_a_declaration():
     """§PW54's other half: the route that is a drawing rather than a composition.
 

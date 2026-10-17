@@ -790,6 +790,62 @@ def test_a_tight_blur_only_rounds_the_rim():
     assert _at_full_height(flooded) > _at_full_height(domed)
 
 
+def _seam(made) -> float:
+    """The median angle between the faces' normals across the edges at zero height.
+
+    Vertices are matched by place, so a mirrored relief's two halves meet as well.
+    """
+    points = np.asarray(made["vertices"], dtype=float)
+    places: dict = {}
+    same = [places.setdefault(tuple(np.round(p, 6)), len(places)) for p in points]
+    normals, owners = [], {}
+    for k, face in enumerate(made["faces"]):
+        p = points[list(face)]
+        n = np.cross(p[2] - p[0], p[3] - p[1])
+        normals.append(n / max(np.linalg.norm(n), 1e-12))
+        for a, b in zip(face, face[1:] + face[:1], strict=True):
+            if abs(points[a, 2]) < 1e-9 and abs(points[b, 2]) < 1e-9:
+                owners.setdefault(tuple(sorted((same[a], same[b]))), []).append(k)
+    angles = [
+        np.degrees(np.arccos(np.clip(normals[one] @ normals[two], -1, 1)))
+        for one, two in (ks for ks in owners.values() if len(ks) == 2)
+        if points[list(made["faces"][one]), 2].sum()
+        * points[list(made["faces"][two]), 2].sum() < 0
+    ]
+    return float(np.median(angles))
+
+
+def test_a_drawing_stuffed_on_both_sides_meets_round_at_its_rim():
+    """§PW492: a mirrored relief meets itself at a seam as sharp as a coin's edge.
+
+    Measured on the ring at the default cell: the mirrored relief's faces are 124° apart
+    across the rim, and the pillow's 79°, the rim's vertices on the outline itself.
+    """
+    pillow = S.stuffed(ring_drawing(), 10.0, size=100.0, sides=2)
+    check_mesh(pillow)
+    points = np.asarray(pillow["vertices"], dtype=float)
+    assert points[:, 2].max() == pytest.approx(-points[:, 2].min())
+    assert np.ptp(points[:, 2]) == pytest.approx(10.0, rel=0.05)
+    coin = S.mirror(S.stuffed(ring_drawing(), 5.0, size=100.0), 2)
+    assert _seam(pillow) < 90 < _seam(coin)
+
+
+def test_a_drawing_that_fills_its_canvas_still_closes_on_both_sides():
+    """The canvas's own border is an outline, so nothing is left open along it."""
+    made = S.stuffed(np.ones((40, 60)), 4.0, size=60.0, sides=2)
+    check_mesh(made)
+    points = np.asarray(made["vertices"], dtype=float)
+    assert points[:, 2].max() > 1.5
+
+
+@pytest.mark.parametrize("sides", [0, 3, True])
+def test_a_drawing_stuffed_on_a_number_of_sides_it_has_not_is_refused(sides):
+    with pytest.raises(PolyweaveError) as caught:
+        S.stuffed(ring_drawing(), 10.0, sides=sides)
+    assert caught.value.code == "geom.bad-solid"
+    assert "sides = 1" in caught.value.remedy
+
+
 def test_a_drawing_with_nothing_solid_in_it_has_no_body_to_stuff():
     with pytest.raises(PolyweaveError) as caught:
         S.stuffed(np.full((64, 64), 0.2), 10.0)

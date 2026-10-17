@@ -17,7 +17,6 @@
 ## Block G — Geometry as a declaration
 
 - 📋 **PW498** (deps: —) **union joins parts at a hard crease, so a body whose parts flow into each other, as moulded plastic, cannot be declared** — Spinhold's new plastic city needs towers, trees and mascots whose parts flow together, and each would be a bought mesh or a custom node. → §PW498
-- 📋 **PW492** (deps: —) **inflate swells one face of a drawing, so a body puffed round on both sides, as an inflatable toy is, cannot be declared** — The plastic city's balloons, clouds and pads are seen from both sides, and a mirrored relief meets itself at a coin-sharp seam. → §PW492
 - 📋 **PW493** (deps: —) **a solid round on every edge, a capsule or a soft box, has no op, since plate rounds only its outline's corners in XY** — Every piece of the plastic city is moulded round, and bevel takes one width with no segments or profile, so its edges read chamfered. → §PW493
 - 📋 **PW494** (deps: —) **a material declares only colour and roughness, so a glossy plastic with clear coat, sheen and soft rim cannot be asked** — Moulded plastic is read off its finish more than its shape, and every bake today renders the plastic city as painted clay. → §PW494
 - 📋 **PW495** (deps: PW494) **a declared finish reaches the game only through glTF import, so a look a person accepted is rebuilt in a game shader** — Spinhold draws its city on a MultiMesh in its own shader, so a plastic finish judged on a sitting would be re-made there by eye. → §PW495

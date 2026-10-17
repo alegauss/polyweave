@@ -711,6 +711,7 @@ def stuffed(
     soften: float = 0.40,
     cell: int = CELL,
     floor: float = 0.02,
+    sides: int = 1,
 ) -> dict:
     """A drawing given volume **by its own alpha** rather than by its outline (§PW68).
 
@@ -730,6 +731,12 @@ def stuffed(
     front-on is and what the script this reads off builds. A cell whose corners are all
     below the floor is dropped, which is the drop shadow's faintest tail: built down to
     it, the panel showed a pale rectangle the size of the canvas.
+
+    **`sides = 2` is the pillow** (§PW492): a balloon or a cloud the camera goes round.
+    Both faces swell by the same profile, `thickness` is the whole depth, and near the
+    rim each falls as a quarter circle to the outline, so the two meet round rather than
+    at the coin-sharp seam a mirrored relief leaves. The body is closed: the faces share
+    every vertex at zero height, and a cell is built only where the body is.
     """
     mask = np.asarray(alpha, dtype=float)
     if mask.ndim != 2 or min(mask.shape) < 2:
@@ -737,6 +744,12 @@ def stuffed(
             "geom.bad-solid",
             f"a drawing of {mask.shape} is not a surface to stuff",
             "give it the alpha of a drawing, as a two-dimensional array",
+        )
+    if sides not in (1, 2) or isinstance(sides, bool):
+        raise PolyweaveError(
+            "geom.bad-solid",
+            f"a drawing stuffed on {sides!r} sides has no such body",
+            "write sides = 1 for a relief seen front-on, or 2 for a body round on both",
         )
     tall, wide = mask.shape
     body = (mask > 0.5).astype(float)
@@ -754,6 +767,10 @@ def stuffed(
     rows = list(range(0, tall, step)) + [tall - 1]
     scale = (float(size) / max(wide, tall)) if size else 1.0
     middle = np.array([wide - 1, tall - 1]) / 2.0
+    if sides == 2:
+        # Half the depth each way, and a rim as wide as that half is deep, in pixels.
+        rise = rise / 2.0 * _rim(body, float(thickness) / 2.0 / scale, step)
+        return _stuffed_round(mask, body, rise, columns, rows, scale, middle)
 
     index, points, uv = {}, [], []
     for y in rows:
@@ -804,6 +821,89 @@ def _stuffing(body: np.ndarray, radius: float) -> np.ndarray:
     blurred = np.asarray(wide, dtype=float) / 255.0
     peak = max(float(blurred.max()), 1e-6)
     return np.clip(blurred / peak, 0.0, 1.0) ** 0.6 * body
+
+
+#: The most pixels a rim is measured in, each one an erosion of the body.
+RIM_MOST = 256
+
+
+def _rim(body: np.ndarray, width: float, step: int) -> np.ndarray:
+    """How round each pixel of the body is at its rim: a quarter circle over `width`.
+
+    Each pixel's distance in from the edge is how many 3x3 erosions it survives, and
+    the circle starts on the outline pixel, at zero, where `_stuffed_round` moves the
+    rim's vertices. The canvas's own border is zero, so a body that touches it closes.
+    """
+    from PIL import Image as PILImage
+    from PIL import ImageFilter
+
+    padded = np.pad(body, 1)
+    picture = PILImage.fromarray((padded * 255).astype(np.uint8), "L")
+    inward = np.zeros(padded.shape)
+    width = max(width, float(step))
+    reach = max(1, min(RIM_MOST, math.ceil(width) + 1))
+    for _ in range(reach):
+        inward += np.asarray(picture, dtype=float) / 255.0
+        picture = picture.filter(ImageFilter.MinFilter(3))
+    share = np.clip((inward[1:-1, 1:-1] - 1.0) / width, 0.0, 1.0)
+    round_ = np.sqrt(1.0 - (1.0 - share) ** 2) * body
+    round_[[0, -1], :] = 0.0
+    round_[:, [0, -1]] = 0.0
+    return round_
+
+
+def _on_outline(body: np.ndarray, x: int, y: int, step: int) -> tuple[int, int]:
+    """The body pixel nearest a rim vertex, within a grid step, or the vertex's own."""
+    tall, wide = body.shape
+    x0, x1 = max(0, x - step), min(wide, x + step + 1)
+    y0, y1 = max(0, y - step), min(tall, y + step + 1)
+    ys, xs = np.nonzero(body[y0:y1, x0:x1])
+    if not len(xs):
+        return x, y
+    nearest = int(np.argmin((xs + x0 - x) ** 2 + (ys + y0 - y) ** 2))
+    return int(xs[nearest] + x0), int(ys[nearest] + y0)
+
+
+def _stuffed_round(mask, body, rise, columns, rows, scale, middle) -> dict:
+    """Both faces of a stuffed drawing, closed where they meet at zero height.
+
+    A vertex at zero height beside the body is moved onto the outline pixel nearest it,
+    which is at zero too: left a grid step outside, the faces' first rise was a long
+    chord, and they met at an angle as sharp as the mirrored relief's.
+    """
+    wide, tall = len(columns), len(rows)
+    width, height = mask.shape[1], mask.shape[0]
+    step = columns[1] - columns[0] if wide > 1 else 1
+    index, back, points, uv = {}, {}, [], []
+    for y in rows:
+        for x in columns:
+            px, py = (x, y) if rise[y, x] > 1e-9 else _on_outline(body, x, y, step)
+            at = [(px - middle[0]) * scale, (middle[1] - py) * scale]
+            index[x, y] = len(points)
+            points.append([*at, float(rise[y, x])])
+            uv.append([px / (width - 1), py / (height - 1)])
+    for y in rows:
+        for x in columns:
+            # A vertex at zero height is on both faces, which is what closes the body.
+            if rise[y, x] > 1e-9:
+                back[x, y] = len(points)
+                points.append([points[index[x, y]][0], points[index[x, y]][1],
+                               -float(rise[y, x])])
+                uv.append(uv[index[x, y]])
+            else:
+                back[x, y] = index[x, y]
+
+    faces = []
+    for down in range(tall - 1):
+        for across in range(wide - 1):
+            x0, x1 = columns[across], columns[across + 1]
+            y0, y1 = rows[down], rows[down + 1]
+            corners = ((x0, y0), (x0, y1), (x1, y1), (x1, y0))
+            if not any(rise[y, x] > 1e-9 for x, y in corners):
+                continue
+            faces.append(tuple(index[one] for one in corners))
+            faces.append(tuple(back[one] for one in reversed(corners)))
+    return mesh(points, faces, uv)
 
 
 def _inside(ring: np.ndarray, points: np.ndarray) -> np.ndarray:

@@ -49,21 +49,6 @@ over their distance fields, meshed back to triangles), its material groups carri
 the non-empty assertion every boolean keeps. Its readback names the radius, and a radius
 larger than the smaller part is a build warning.
 
-### §PW492 An inflate round on both faces
-
-Found in Spinhold on 2026-10-17, for the plastic city of §PW498. Inflatable shapes are
-half of that look: a heart balloon over the square, a puffed cloud, a bouncy pad, each
-round on its front and on its back. `inflate` is a relief, by its own spec: one face
-lifted off a flat back, which is right for a panel seen front-on and wrong for a body
-the game's camera passes round. Mirroring the relief gives a seam along the outline as
-sharp as a coin's edge.
-
-What polyweave should do: `inflate` taking `sides = 2` (one stays the relief it is), the
-outline kept to the point as the rim, both faces swelling by the same profile and
-meeting round at the edge rather than at a crease, with `thickness` the whole depth. A
-drawing's blurred alpha shapes both faces, so a hole in the drawing is a hole through
-the body.
-
 ### §PW493 Solids round on every edge
 
 Found in Spinhold on 2026-10-17, for the plastic city of §PW498. A toy-plastic piece is

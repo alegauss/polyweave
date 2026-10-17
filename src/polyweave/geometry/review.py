@@ -103,8 +103,9 @@ def _says(node: dict, instance: dict, materials: dict | None = None) -> str:
     elif op == "inflate":
         # Two profiles, and which one it gets is worth saying: an outline swells from
         # its edge, a drawing from its own alpha (§PW68).
+        both = " on both faces" if instance.get("sides") == 2 else ""
         what = (
-            f"{instance['drawing']}, given volume by its own alpha"
+            f"{instance['drawing']}, given volume by its own alpha{both}"
             if instance.get("drawing")
             else f"{_outline_words(instance.get('outline'))}, given volume"
         )

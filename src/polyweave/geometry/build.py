@@ -121,8 +121,16 @@ def _inflate(node, instance, built, root):
             **{
                 k: v
                 for k, v in instance.items()
-                if k in ("size", "soften", "cell", "floor")
+                if k in ("size", "soften", "cell", "floor", "sides")
             },
+        )
+    # An outline already swells both faces (§PW492), so only a drawing has a choice.
+    if instance.get("sides", 2) != 2:
+        raise PolyweaveError(
+            "geom.bad-solid",
+            f"{node['id']} inflates an outline on {instance['sides']!r} sides, and an "
+            "outline swells both faces",
+            "leave sides out on an outline; sides = 1 is a drawing's relief",
         )
     return S.inflate(
         _outline(instance, root),
@@ -283,6 +291,7 @@ FIELDS: dict[str, tuple[str, ...] | None] = {
         "soften",
         "cell",
         "floor",
+        "sides",
     ),
     "union": _TAKES,
     "transform": (*_TAKES, "scale", "rotate"),

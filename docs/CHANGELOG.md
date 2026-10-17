@@ -104,6 +104,7 @@
 - ✅ **PW69** **a declaration that has been built reaches no renderer and no file, so the only way to see one is a test** — A declaration writes itself to a file that bake takes, carrying the coordinates and the materials the build worked out (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW146** **a misspelt key in a geometry declaration is accepted silently, at the top level or on a node** — parse refuses a key nothing reads with geom.unknown-field, per document, node, repeat and op; it caught a fixture whose bevel said amount (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW468** **a mesh with two equal extents gets whatever frame the machine's SVD returns, so its orientation differs by CPU** — A tied subspace takes the mesh's own axes, so a cube or lathe-turned mesh gets one frame on every machine and a cube's ambiguity is reported on CI too.
+- ✅ **PW492** **inflate swells one face of a drawing, so a body puffed round on both sides, as an inflatable toy is, cannot be declared** — A drawing inflated with sides = 2 is a closed pillow, its rim on the outline and round: 79° across it against a mirrored relief's 124° (design recorded in `geometry.md`).
 
 ## Block H — Proof on a real game
 
