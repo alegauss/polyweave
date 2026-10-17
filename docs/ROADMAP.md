@@ -12,7 +12,16 @@
 
 ## Block F — Motion
 
+- 📋 **PW496** (deps: —) **a mesh's squash and jiggle when struck cannot be declared, so a toy that wobbles on a hit is a game's own vertex shader** — The plastic city has no cubes for Spinhold's kill ripple to lift, and a toy's answer to a hit is to squash and jiggle back. → §PW496
+
 ## Block G — Geometry as a declaration
+
+- 📋 **PW491** (deps: —) **union joins parts at a hard crease, so a body whose parts flow into each other, as moulded plastic, cannot be declared** — Spinhold's new plastic city needs towers, trees and mascots whose parts flow together, and each would be a bought mesh or a custom node. → §PW491
+- 📋 **PW492** (deps: —) **inflate swells one face of a drawing, so a body puffed round on both sides, as an inflatable toy is, cannot be declared** — The plastic city's balloons, clouds and pads are seen from both sides, and a mirrored relief meets itself at a coin-sharp seam. → §PW492
+- 📋 **PW493** (deps: —) **a solid round on every edge, a capsule or a soft box, has no op, since plate rounds only its outline's corners in XY** — Every piece of the plastic city is moulded round, and bevel takes one width with no segments or profile, so its edges read chamfered. → §PW493
+- 📋 **PW494** (deps: —) **a material declares only colour and roughness, so a glossy plastic with clear coat, sheen and soft rim cannot be asked** — Moulded plastic is read off its finish more than its shape, and every bake today renders the plastic city as painted clay. → §PW494
+- 📋 **PW495** (deps: PW494) **a declared finish reaches the game only through glTF import, so a look a person accepted is rebuilt in a game shader** — Spinhold draws its city on a MultiMesh in its own shader, so a plastic finish judged on a sitting would be re-made there by eye. → §PW495
+- 📋 **PW497** (deps: —) **nothing measures how round a model's edges are, so a hard-edged piece in a soft-toy style reaches a person's sitting** — One square edge among moulded pieces reads as another game, and Spinhold refuses a shape before a sitting only where a measure exists. → §PW497
 
 ## Block H — Proof on a real game
 
