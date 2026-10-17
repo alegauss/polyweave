@@ -476,30 +476,6 @@ the swap, and its gate passes.
 
 ## Block W — A core that grows by layers
 
-### §PW504 A layer produces a sample, and one search aims every layer
-
-`search.sweep` builds its evaluator from `render.bake`, and `calibrate` reads
-`render.ladder`'s rungs. So the search the loop is built around reaches only a Blender
-render. `picture.fit`, `engine.sweep` and `engine.preset_search` each implemented their
-own sampling, budget, trace and stopping rule, and none of them imports `search.py`. A
-level's parameters, a sound's synth or a vfx's declaration would each be a fifth.
-
-`Layer.producers` declares a `Producer` per thing a search can turn:
-
-- `parameters(spec, root)`: the turnable parameters with their ranges, read from the declaration as `ranges(spec)` does today;
-- `produce(values, *, rung, out, root) -> Path`: one sample, made;
-- `rungs`: the cheap-to-faithful ladder, if the layer has one, which `calibrate` reads in place of `render.ladder`;
-- `cost`: what one sample costs (seconds, or a paid unit the ledger already counts), so `search.worth_parallel` and the budget hold for every producer.
-
-`search.sweep` takes the spec's subject, finds its producer, and keeps its passes,
-budget, trace and verdict-ready return. The geometry render becomes one producer.
-`picture.fit`, `engine.sweep` and `engine.preset_search` are rewritten as producers on
-the one search, with their operation names kept, and their existing tests prove that
-what they return did not change.
-
-Done when `search.py` and `calibrate.py` import nothing from `layers/`, and a fixture
-producer is swept, traced and reported through `search.sweep`.
-
 ### §PW505 A layer contributes its part of the brief, the page and the report
 
 Three reads cover every medium, and each one does it by importing all of them.

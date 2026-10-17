@@ -47,7 +47,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 2 },
-  { block: "W", title: "A core that grows by layers", open: 19 },
+  { block: "W", title: "A core that grows by layers", open: 18 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -129,13 +129,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW504",
-    block: "W",
-    symptom: "search.sweep can only draw a sample through render.bake, so picture, engine and preset each wrote a search of their own",
-    why: "picture.fit, engine.sweep and engine.preset_search still run searches of their own, and must become producers on the one search.",
-    deps: [],
-  },
-  {
     id: "PW505",
     block: "W",
     symptom: "asset.brief, the review page and loop.report each import every medium they describe, so one new layer edits all three",
@@ -147,7 +140,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "W",
     symptom: "A kernel or loop module can import a layer and both gates still pass, so the direction the layout states is a hope",
     why: "Every inversion in this block is undone by one quick import, and only a test that fails holds a boundary between commits.",
-    deps: ["PW504", "PW505"],
+    deps: ["PW505"],
   },
   {
     id: "PW507",
@@ -231,7 +224,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "W",
     symptom: "A project's own generator can run as a job but is no operation, so no agent finds it, describes it or searches over it",
     why: "A target named as a file path has only the worker's signature check, so the project's most-used script is the one call the surface cannot describe.",
-    deps: ["PW504", "PW517"],
+    deps: ["PW517"],
   },
   {
     id: "PW519",
