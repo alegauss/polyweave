@@ -34,4 +34,5 @@ LAYER = Layer(
     },
     codes="polyweave.layers.sound.codes",
     config="polyweave.layers.sound.settings",
+    tools=11_000,
 )

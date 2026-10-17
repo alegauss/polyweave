@@ -258,7 +258,8 @@ DESCRIBE = 148_700
 #: 163,514 with each operation's layer, the layers and their state (§PW500).
 #: 163,749 with search.sweep's producer and the layer codes since (§PW501-§PW504).
 #: 163,855 with the geometry build's operations named as geometry's (§PW506).
-CAPABILITIES = 163_900
+#: 164,052 with what the session's tools/list costs and its dearest layers (§PW510).
+CAPABILITIES = 164_100
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

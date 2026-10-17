@@ -504,30 +504,6 @@ store, and moves to picture.
 Done when the test refuses an undeclared layer import and a cycle, and passes on the
 tree.
 
-### §PW510 A tool budget per layer, and one for a session
-
-`server.LIST_BUDGET` is 129,900 characters. Its comment is a list of about thirty
-raises, each written as "at N for the operation added", so every feature that crossed
-the line moved the line. The test passes, and nothing it measures has ever been refused.
-`TOOL_BUDGET` caps a single tool at 4,500, and that one does hold.
-
-Each `Layer` declares `tools`, the most its served tools may cost in characters. The
-test measures each layer's share of `tools/list` against its own figure, and a layer
-that crosses its budget fails, naming that layer and its three most expensive tools.
-Raising the figure is still possible, but the edit lands in the layer's own manifest,
-beside the code that grew, where a reviewer sees which layer paid.
-
-The figure that matters to an agent is a session's. `capabilities` reports, for the
-project's `[layers] on`, the total `tools/list` size and its largest contributors. A
-second test builds the heaviest combination a real consumer turns on (Spinhold's, from
-its `polyweave.toml`) and holds it to `SESSION_BUDGET`, which, unlike today's figure, is
-not raised by a line that adds one operation.
-
-`LIST_BUDGET` and its comment are deleted. The history it kept is in git.
-
-Done when every layer declares a budget its tools fit, a fixture layer crossing its own
-fails naming itself, and the session figure is reported and tested.
-
 ### §PW511 A layer says which of its modules are internal
 
 `census` sorts every public function into registered, entry, internal or pending. The

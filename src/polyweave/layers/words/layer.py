@@ -26,4 +26,5 @@ LAYER = Layer(
     },
     codes="polyweave.layers.words.codes",
     config="polyweave.layers.words.settings",
+    tools=3_000,
 )

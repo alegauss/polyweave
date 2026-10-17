@@ -39,11 +39,33 @@ def test_a_schema_carries_the_range_the_choices_and_what_is_required():
     assert judge["properties"]["choice"]["enum"] == ["accept", "look", "number"]
 
 
-def test_the_list_and_every_tool_stay_within_their_budgets():
-    tools = server.tools(blender=True)
-    for one in tools:
+def test_every_tool_stays_within_its_budget():
+    for one in server.tools(blender=True):
         assert len(json.dumps(one)) <= server.TOOL_BUDGET, one["name"]
-    assert len(json.dumps(tools)) <= server.LIST_BUDGET
+
+
+def test_every_layer_declares_a_figure_its_tools_fit():
+    from polyweave.kernel.layer import layers
+
+    assert all(one.tools > 0 for one in layers().values())
+    assert server.over(server.shares(), server.budgets()) == []
+
+
+def test_a_layer_past_its_own_figure_fails_naming_itself_and_its_dearest():
+    found = {"scent": {"size": 50, "dearest": ["scent_mix", "scent_read"]},
+             "core": {"size": 5, "dearest": ["describe"]}}
+    [said] = server.over(found, {"scent": 10, "core": 39_000})
+    assert said.startswith("scent serves 50") and "past its 10" in said
+    assert "scent_mix, scent_read" in said
+
+
+def test_the_heaviest_session_a_consumer_opens_fits_its_budget(tmp_path):
+    # Spinhold's polyweave.toml names no [layers], so it is served every one.
+    (tmp_path / "polyweave.toml").write_text('[project]\nname = "x"\n', "utf-8")
+    said = server.session(tmp_path)
+    assert said["size"] <= server.SESSION_BUDGET == said["ceiling"]
+    assert said["dearest"][0]["layer"] == "core"
+    assert len(said["dearest"]) == 3
 
 
 def test_a_tool_that_needs_blender_is_left_out_where_there_is_none():

@@ -133,6 +133,12 @@ def _layers(present: dict[str, bool | None]) -> dict:
     return out
 
 
+def _session(root) -> dict:
+    from .server import session
+
+    return session(root)
+
+
 def _key(key_env: str | None) -> dict:
     """Whether a service's key is set here, by the variable's name alone."""
     return {
@@ -214,6 +220,8 @@ def capabilities(
         "operations": describe(),
         # Each medium, and whether this machine has what it needs to run (§PW500).
         "layers": _layers(present),
+        # What this project's tools/list costs a session, and who pays most (§PW510).
+        "tools": _session(root),
         # Surface that exists and is not yet an operation (§PW124): named, so a caller
         # knows to look for it, until each module is registered and leaves this list.
         "unregistered": pending_modules(),

@@ -127,6 +127,9 @@ class Layer:
     modules: tuple[str, ...]
     #: Without one of these the layer is present but cannot run (`REQUIREMENTS`).
     requires: tuple[str, ...] = ()
+    #: The most this layer's served tools may cost tools/list, in characters
+    #: (§PW510). A layer that grows past it raises it here, where it is read.
+    tools: int = 0
     #: Where a person's verdict on what this layer lays out is kept (§PW501).
     judges: tuple[Judge, ...] = ()
     #: The record kinds this layer declares (§PW502). Any layer may write one; only one

@@ -42,4 +42,5 @@ LAYER = Layer(
     },
     codes="polyweave.layers.geometry.codes",
     config="polyweave.layers.geometry.settings",
+    tools=17_000,
 )

@@ -20,9 +20,10 @@ The protocol is the handful of MCP methods a client uses (`initialize`, `tools/l
 dependencies are numpy and Pillow, and a server is not a reason to add a third.
 
 **Two budgets from the first day**, because both projects before this paid to add them
-late: `TOOL_BUDGET` characters for any one tool and `LIST_BUDGET` for the whole list,
-held by `tests/test_server.py`. A tool whose work needs Blender is listed only where
-Blender is reachable, and still answers elsewhere, with the refusal that says so.
+late: `TOOL_BUDGET` characters for any one tool, and for the list a figure per layer
+with `SESSION_BUDGET` over a whole session (§PW510), held by `tests/test_server.py`.
+A tool whose work needs Blender is listed only where Blender is reachable, and still
+answers elsewhere, with the refusal that says so.
 """
 
 from __future__ import annotations
@@ -45,110 +46,16 @@ PROTOCOL = "2025-06-18"
 #: that plus room for a few more, and a tool needing more is a signal to split it.
 TOOL_BUDGET = 4500
 
-#: The most the whole list may cost, which is what every session pays to learn the
-#: surface: 74 tools measured 41,683 characters when this was set, and this is a tenth
-#: above. A raise is argued here, beside the number, never made silently in the test.
-#: Raised to 47,000 at 46,491 for picture.buy (§PW163), the first operation that sends
-#: a paid request itself, and `service` on six purchase and schema tools (§PW162).
-#: Raised to 48,300 at 47,679 for purchase.reconcile (§PW164) and picture.describe
-#: (§PW165), a quote held against the bill and an approved picture's own prompt.
-#: Raised to 49,400 at 48,759 for style.read (§PW166) and style.drift (§PW167), and
-#: to 50,600 at 50,015 for picture.gate (§PW168) and picture.letters (§PW169), and to
-#: 52,400 at 51,765 for picture.vary and picture.against_parent (§PW170), and to
-#: 53,300 at 52,889 for picture.fit (§PW171) and verdict.answers (§PW173), and to
-#: 54,200 at 53,692 for shape.turntable (§PW176), and to 54,800 at 54,240 for
-#: picture.collect (§PW179) and picture.vary's reframe (§PW181), and to 55,800 at
-#: 55,151 for mesh.buy (§PW183), and to 56,600 at 56,059 for world.read and
-#: world.validate (§PW196), and to 57,400 at 56,827 for words.check and
-#: words.unlisted (§PW197), and to 58,400 at 57,832 for words.sheet and entity= on
-#: the two purchases (§PW198, §PW199), and to 59,000 at 58,413 for project.init and
-#: its agent flag (§PW218, §PW219), and to 59,700 at 59,081 for sound.declared
-#: (§PW185), the game's declared audio and which of it is missing, and to 60,600 at
-#: 60,003 for music.validate and music.to_midi (§PW186), a score and its MIDI, and to
-#: 61,600 at 60,998 for music.render and sound.synth (§PW187, §PW189), and to 62,800
-#: at 62,199 for sound.buy (§PW190), a whole paid call, and to 64,500 at 63,873 for
-#: `mesh` on the geometry builds and geometry.fit (§PW226, §PW230), and to 65,000 at
-#: 64,589 for capture.run's args and geometry.compare (§PW238, §PW240), and to 70,500
-#: at 70,138 for the eight game.* operations that drive a held game (§PW213).
-#: 71,900 at 71,401 for game.keep and game.replay (§PW214).
-#: 72,500 at 71,928 for game.release_check (§PW215).
-#: 73,200 at 72,797 for game.set and input's hold and release (§PW216, §PW217).
-#: 73,800 at 73,240 for provenance.generated (§PW248).
-#: 74,600 at 74,018 for capture.movie (§PW249).
-#: 75,800 at 75,219 for engine.sweep (§PW250).
-#: 76,700 at 76,130 for music.render's formats and sound.sitting (§PW255, §PW256).
-#: 77,500 at 76,728 for vfx.build (§PW259).
-#: 78,000 at 77,543 for geometry.fit's boxed (§PW263).
-#: 78,800 at 78,277 for verdict.promote (§PW265).
-#: 79,800 at 79,224 for store.capsules (§PW268).
-#: 80,700 at 80,104 for game.batch (§PW271).
-#: 81,400 at 80,835 for measure.contrast (§PW272).
-#: 83,200 at 82,674 for engine.cost (§PW258).
-#: 83,800 at 83,227 for a sitting's about, against and spoken (§PW287, §PW291).
-#: 84,600 at 83,982 for project.inventory, the first read of a project (§PW299).
-#: 86,400 at 85,837 for revision.ask, .open and .close (§PW301).
-#: 87,100 at 86,617 for picture.vector (§PW315).
-#: 87,800 at 87,221 for panel.build (§PW316).
-#: 88,700 at 88,124 for panel.capture and panel.build's shader (§PW316).
-#: 89,300 at 88,722 for revision.turn (§PW306).
-#: 90,100 at 89,544 for revision.check and revision.settings (§PW307).
-#: 90,400 at 90,139 for measure.contrast's `behind`, a frame without text (§PW319).
-#: 92,100 at 91,510 for sound.speak, a line spoken aloud (§PW314).
-#: 93,800 at 93,221 for voice.design and voice.choose (§PW321).
-#: 94,800 at 94,221 for voice.lines (§PW322).
-#: 95,500 at 94,923 for sound.speak's draft rung (§PW324).
-#: 96,100 at 95,560 for geometry.fit's region (§PW326).
-#: 97,200 at 96,573 for reference.frames (§PW328).
-#: 98,200 at 97,606 for measure.pressure (§PW330).
-#: 98,800 at 98,256 for icons.build (§PW331).
-#: 99,400 at 98,895 for words.glyphs (§PW335).
-#: 100,000 at 99,419 for game.text_fit (§PW336).
-#: 101,000 at 100,419 for kit.list and kit.install (§PW340, §PW341).
-#: 101,900 at 101,334 for kit.prove and kit.update (§PW342, §PW343).
-#: 103,000 at 102,380 for measure.flashes (§PW354).
-#: 103,600 at 103,053 for engine.check and game.query's state (§PW358, §PW359).
-#: 104,400 at 103,800 for game.record_flow (§PW360).
-#: 105,300 at 104,661 for game.test (§PW362).
-#: 106,000 at 105,340 for game.export_smoke (§PW363).
-#: 107,000 at 106,321 for tables.check and engine.perf (§PW364, §PW365).
-#: 107,700 at 107,072 for engine.preset_search (§PW367).
-#: 108,700 at 108,091 for engine.states and project.new (§PW368, §PW369).
-#: 110,000 at 109,379 for clip.camera and verdict.answer (§PW372, §PW375).
-#: 111,700 at 111,089 for review.state, .canon, .compare and .answer, the decision
-#: screen's facts and write as operations a native screen calls (§PW377).
-#: 113,300 at 112,682 for revision.outside and reference.objects (§PW378, §PW379).
-#: 114,500 at 113,903 for reference.regions and reference.minimap (§PW380).
-#: 115,400 at 114,806 for reference.events, a reference video's timeline (§PW381).
-#: 116,500 at 115,940 for reference.compare (§PW382).
-#: 117,600 at 116,923 for reference.transcription and reference.transcribed (§PW383).
-#: 118,400 at 117,796 for measure.level (§PW385).
-#: 119,000 at 118,718 for review.words, the decision screen's own words (§PW400).
-#: 119,700 at 119,148 for reference.compare's declared wave (§PW406).
-#: 120,400 at 119,749 for reference.register, a reference read by name (§PW407).
-#: 121,200 at 120,533 for capture.again, a picture taken again from its record (§PW418).
-#: 121,800 at 121,478 for video.cut, a teaser cut from captured runs (§PW429).
-#: 122,300 at 121,866 for the describe tool, a declaration's keys over MCP (§PW430).
-#: 122,900 at 122,410 for verdict.move, a sitting moved with its answers (§PW436).
-#: 123,000 at 122,961 for normalise.ingest's ready, a mesh held to a bar (§PW447).
-#: 123,100 at 123,090 for provenance.generated's preset, a build's files (§PW455).
-#: 123,800 at 123,739 for style.train, a canon trained into a model (§PW450).
-#: 123,900 at 123,864 for render.bake's on_grid, a mark at its own scale (§PW79).
-#: 124,600 at 124,509 for sound.loop, a recorded track cut into a loop (§PW192).
-#: 124,900 at 124,819 for project.adoption, what a project still does itself (§PW59).
-#: 125,300 at 125,288 for the code an accept needs on three verdict tools (§PW443).
-#: 125,500 at 125,434 for sound.sitting's about, what to listen for (§PW464).
-#: 125,700 at 125,699 for a sitting's ledger asset and a verdict's member (§PW465).
-#: 126,200 at 126,135 for engine.run_declared, a game's runs declared (§PW467).
-#: 126,500 at 126,428 for game.boot, the main scene booted and read (§PW469).
-#: 127,000 at 126,952 for game.pack, an exported pack listed (§PW470).
-#: 127,700 at 127,617 for picture.sew, a picture's silhouette sewn (§PW474).
-#: 128,100 at 128,031 for picture.vector's sweep, a loop from one source (§PW476).
-#: 128,900 at 128,822 for reference.concept, a capture held to its painting (§PW477).
-#: 129,100 at 129,020 for reference.objects' motion, past its own hue (§PW480).
-#: 129,800 at 129,750 for reference.sample, a kind's crop from a frame (§PW480).
-#: 129,900 at 129,857 for panel.capture's sizes, the panel filmed grown (§PW490).
-#: 130,000 at 129,979 for search.sweep's producer, what makes each sample (§PW504).
-LIST_BUDGET = 130000
+#: What the kernel's and the loop's own tools may cost the list, every project's.
+#: Each layer's figure is its own, in its `layer.py`, beside the code that grows it
+#: (§PW510): measured at 37,550 here when the figure moved.
+CORE_TOOLS = 39_000
+
+#: What the heaviest session a real consumer opens may cost, every layer on: Spinhold's,
+#: which declares no [layers]. 129,979 when this was set. It is not raised by a line
+#: that adds one operation: that line raises its layer's own figure, and this one moves
+#: only when the layers' figures together no longer fit, argued here.
+SESSION_BUDGET = 132_000
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {
@@ -269,6 +176,58 @@ def tools(*, blender: bool | None = None, root: str | Path = ".") -> list[dict]:
         if (reachable or not needs_blender(found))
         and (using is None or found.get("layer") in (None, *using))
     ] + [DESCRIBE]
+
+
+def shares(listed: list[dict] | None = None) -> dict[str, dict]:
+    """What each layer's tools cost the list, and its three dearest, by layer; the
+    kernel's and the loop's are under `core` (§PW510)."""
+    from polyweave.kernel import describe as D
+
+    D.load()
+    by_tool = {tool_name(op.name): op.layer or "core" for op in D._REGISTRY.values()}
+    found: dict[str, dict] = {}
+    for tool in tools(blender=True) if listed is None else listed:
+        size = len(json.dumps(tool))
+        one = found.setdefault(by_tool.get(tool["name"], "core"),
+                               {"size": 0, "tools": []})
+        one["size"] += size
+        one["tools"].append((size, tool["name"]))
+    return {
+        layer: {"size": one["size"],
+                "dearest": [name for _, name in sorted(one["tools"], reverse=True)[:3]]}
+        for layer, one in sorted(found.items())
+    }
+
+
+def over(found: dict[str, dict], budgets: dict[str, int]) -> list[str]:
+    """Each layer whose tools cost more than its own figure, naming its dearest."""
+    return [
+        f"{layer} serves {one['size']} characters of tools, past its {budgets[layer]}; "
+        f"dearest: {', '.join(one['dearest'])}"
+        for layer, one in found.items()
+        if one["size"] > budgets.get(layer, 0)
+    ]
+
+
+def budgets() -> dict[str, int]:
+    """Each layer's own figure, and the core's."""
+    from polyweave.kernel.layer import layers
+
+    return {"core": CORE_TOOLS, **{name: one.tools for name, one in layers().items()}}
+
+
+def session(root: str | Path = ".") -> dict:
+    """What this project's tools/list costs a session, and the three dearest layers."""
+    listed = tools(blender=True, root=root)
+    found = shares(listed)
+    return {
+        "size": len(json.dumps(listed)),
+        "ceiling": SESSION_BUDGET,
+        "dearest": [
+            {"layer": layer, "size": one["size"]}
+            for layer, one in sorted(found.items(), key=lambda kv: -kv[1]["size"])[:3]
+        ],
+    }
 
 
 def _described(arguments: dict) -> Any:

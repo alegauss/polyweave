@@ -16,4 +16,5 @@ LAYER = Layer(
     kinds=("camera",),
     codes="polyweave.layers.motion.codes",
     config="polyweave.layers.motion.settings",
+    tools=6_500,
 )

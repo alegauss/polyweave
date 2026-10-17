@@ -31,4 +31,5 @@ LAYER = Layer(
         ),
     ),
     config="polyweave.layers.reference.settings",
+    tools=11_000,
 )

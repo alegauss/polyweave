@@ -35,4 +35,5 @@ LAYER = Layer(
     },
     codes="polyweave.layers.picture.codes",
     config="polyweave.layers.picture.settings",
+    tools=12_000,
 )

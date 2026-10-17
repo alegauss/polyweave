@@ -20,4 +20,5 @@ LAYER = Layer(
     ),
     parts={"contact.sheet": "polyweave.layers.store.compose:sheet"},
     codes="polyweave.layers.store.codes",
+    tools=4_000,
 )

@@ -47,7 +47,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 2 },
-  { block: "W", title: "A core that grows by layers", open: 14 },
+  { block: "W", title: "A core that grows by layers", open: 13 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -136,13 +136,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW516"],
   },
   {
-    id: "PW510",
-    block: "W",
-    symptom: "The tool list's budget has been raised about 30 times in a row, so it stops no growth and names no layer that grew",
-    why: "A ceiling that each feature raises by its own size is a log, and the limit that scales is one per layer, held where the layer is written.",
-    deps: [],
-  },
-  {
     id: "PW511",
     block: "W",
     symptom: "census.py classifies every public function in the package in one map, so each new helper module edits it",
@@ -154,7 +147,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "W",
     symptom: "Nothing proves a new layer can be added without editing the kernel, so the block's whole claim goes unchecked",
     why: "Each seam is tested alone, and only a whole layer added from outside shows they leave a kernel file nobody has to open.",
-    deps: ["PW506", "PW510", "PW511"],
+    deps: ["PW506", "PW511"],
   },
   {
     id: "PW513",
