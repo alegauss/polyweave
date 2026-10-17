@@ -15,18 +15,19 @@ PENDING = 0
 def test_every_public_function_is_classified():
     found = census.census()
     assert found["unclassified"] == [], (
-        "register these with @operation, or add their module to census.MODULES with "
-        "the reason it is internal or pending"
+        "register these with @operation, or list their module in census.CORE or in "
+        "its layer's layer.py census, with the reason it is internal or pending"
     )
 
 
 def test_no_entry_or_module_is_listed_that_no_longer_needs_to_be():
     names = census.public()
+    listed = census.classified()
     registered = {op.target for op in describe._REGISTRY.values()}
     stale_entries = sorted(set(census.ENTRY) - set(names))
     live_modules = set(names.values())
-    listed_functions = [key for key in census.MODULES if ":" in key]
-    listed_modules = [key for key in census.MODULES if ":" not in key]
+    listed_functions = [key for key in listed if ":" in key]
+    listed_modules = [key for key in listed if ":" not in key]
     stale_functions = sorted(
         key for key in listed_functions if key not in names or key in registered
     )
@@ -36,7 +37,7 @@ def test_no_entry_or_module_is_listed_that_no_longer_needs_to_be():
         for module in listed_modules
         if module in live_modules
         and all(
-            target in registered or target in census.ENTRY or target in census.MODULES
+            target in registered or target in census.ENTRY or target in listed
             for target, owner in names.items()
             if owner == module
         )
@@ -44,7 +45,7 @@ def test_no_entry_or_module_is_listed_that_no_longer_needs_to_be():
     assert stale_entries == []
     assert stale_functions == [], "these are gone or registered; take them off"
     assert stale_modules == []
-    assert wholly_registered == [], "take these off census.MODULES: nothing is left"
+    assert wholly_registered == [], "take these off the census: nothing is left"
 
 
 def test_the_pending_surface_only_shrinks():

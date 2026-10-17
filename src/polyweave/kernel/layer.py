@@ -165,8 +165,10 @@ class Layer:
     #: The module holding this layer's polyweave.toml tables: `TABLES`, and `FREE`,
     #: `OPEN`, `NAMED`, `SETTINGS` and `CHOICES` where it has them (§PW508).
     config: str = ""
-    # What a later line contributes, empty until it lands: census entries (§PW511).
-    census: tuple = ()
+    #: This layer's helper modules, or single functions, to their kind (`internal` or
+    #: `pending`) and the reason, which the census reads (§PW511). A module whose
+    #: name starts with `_` is internal without being listed.
+    census: dict[str, tuple[str, str]] = field(default_factory=dict)
     reports: tuple = ()
 
 

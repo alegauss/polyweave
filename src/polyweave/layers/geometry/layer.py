@@ -43,4 +43,61 @@ LAYER = Layer(
     codes="polyweave.layers.geometry.codes",
     config="polyweave.layers.geometry.settings",
     tools=17_000,
+    census={
+        "polyweave.layers.geometry.units": (
+            "internal", "a rectangle's arithmetic, inside units.check"),
+        "polyweave.layers.geometry.cost": (
+            "internal", "the readers under cost.read and a cost predicate"),
+        "polyweave.layers.geometry.cost:bounds": (
+            "internal", "a .glb's stored extent (§PW451)"),
+        "polyweave.layers.geometry.page": ("internal", "the turntables; review.state"),
+        "polyweave.layers.geometry.make:is_declaration": (
+            "internal", "whether a TOML file is meant as a shape"),
+        "polyweave.layers.geometry.make:made_from": (
+            "internal", "what a build's outputs are made from"),
+        "polyweave.layers.geometry.make:settings": (
+            "internal", "`--set name=value`, read for the build"),
+        "polyweave.layers.geometry.make:stamp": (
+            "internal", "a build's stamp, its record's cache key"),
+        "polyweave.layers.geometry": (
+            "internal", "a declaration's machinery; geometry.build"),
+        "polyweave.layers.geometry.build": ("internal", "the mesh a build writes"),
+        "polyweave.layers.geometry.review": (
+            "internal", "the words geometry.describe says"),
+        "polyweave.layers.geometry.tuning": (
+            "internal", "a shape search, with callable hooks"),
+        "polyweave.layers.geometry.voxels": (
+            "internal", "the voxel model a build writes"),
+        "polyweave.layers.geometry.shape": (
+            "internal", "silhouette with its bake hook, and the gate"),
+        "polyweave.layers.geometry.normalise": (
+            "internal", "a mesh's maths, in memory, inside ingest"),
+        "polyweave.layers.geometry.texture": (
+            "internal", "the scrub on pixels in memory, in the bake"),
+        "polyweave.layers.geometry.render.blender": (
+            "internal", "bpy, behind the bake"),
+        "polyweave.layers.geometry.render.rig": (
+            "internal", "the rig's arithmetic, behind the bake"),
+        "polyweave.layers.geometry.expr": ("internal", "a declaration's arithmetic"),
+        "polyweave.layers.geometry.solver": ("internal", "a declaration's constraints"),
+        "polyweave.layers.geometry.solid": ("internal", "the solid ops a build runs"),
+        "polyweave.layers.geometry.outline": (
+            "internal", "the outline ops a build runs"),
+        "polyweave.layers.geometry.surface": (
+            "internal", "the surface ops a build runs"),
+        "polyweave.layers.geometry.finish": (
+            "internal", "a material's finish, read by the bake"),
+        "polyweave.layers.geometry.blend": (
+            "internal", "the blend op's fields, built by build"),
+        "polyweave.layers.geometry.fracture": ("internal", "an op a build runs"),
+        "polyweave.layers.geometry.custom": (
+            "internal", "the way back to code, called by build"),
+        "polyweave.layers.geometry.voxel_colour": (
+            "internal", "a voxel build's palette"),
+        "polyweave.layers.geometry.voxel_fit": ("internal", "a voxel build's fitting"),
+        "polyweave.layers.geometry.voxel_compare": (
+            "internal", "geometry.compare's two models"),
+        "polyweave.layers.geometry.voxel_sheet": (
+            "internal", "a voxel build's contact sheet"),
+    },
 )

@@ -36,4 +36,28 @@ LAYER = Layer(
     codes="polyweave.layers.picture.codes",
     config="polyweave.layers.picture.settings",
     tools=12_000,
+    census={
+        "polyweave.layers.picture.panel:declared": (
+            "internal", "a panel's states, checked; panel.build"),
+        "polyweave.layers.picture.panel:wipe": (
+            "internal", "a wipe's kind and uniforms, for panel.build"),
+        "polyweave.layers.picture.page": (
+            "internal", "the picture layer's parts of the brief, page and report"),
+        "polyweave.layers.picture.style": (
+            "internal", "compose and admit; verdict.judge is admit's door"),
+        "polyweave.layers.picture.variation:person_marked": (
+            "internal", "a person's mark, inside vary"),
+        "polyweave.layers.picture.picture:gates": (
+            "internal", "the gate's log, read by the review page"),
+        "polyweave.layers.picture.picture:sent_bytes": (
+            "internal", "a picture as every upload sends it"),
+        "polyweave.layers.picture.picture:from_world": (
+            "internal", "entity= on picture and mesh.buy"),
+        "polyweave.layers.picture.scenario:serves": (
+            "internal", "whether a service is Scenario (§PW450)"),
+        "polyweave.layers.picture.scenario:trained_model": (
+            "internal", "the model a family's canon trained (§PW450)"),
+        "polyweave.layers.picture.scenario:bought": (
+            "internal", "picture.buy on Scenario, from the trained model (§PW450)"),
+    },
 )

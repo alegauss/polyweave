@@ -504,28 +504,6 @@ store, and moves to picture.
 Done when the test refuses an undeclared layer import and a cycle, and passes on the
 tree.
 
-### §PW511 A layer says which of its modules are internal
-
-`census` sorts every public function into registered, entry, internal or pending. The
-first two are derived from the registry and from `ENTRY`. The last two come from
-`census.MODULES`, a hand-kept map from each helper module to its kind and a reason, such
-as `polyweave.geometry.voxel_sheet: ("internal", "a voxel build's contact sheet")`. A
-layer that grows a helper therefore edits the census, and the census is the third
-most-edited file in the package.
-
-The classification moves into the layer:
-
-- `Layer.internal` maps each of the layer's helper modules to its reason. The census reads every layer's map, and a module listed by a layer it is not inside is refused.
-- A module whose file name starts with `_` is internal by its name, with no reason needed. This is the convention Python already reads, and most helpers will take it as they move into their layer.
-- `pending` keeps its rule that the list only shrinks, now per layer: `test_census` pins each layer's pending count, not a single global one.
-
-`ENTRY` stays in the census, since the reads a caller starts from belong to the surface
-and not to any layer.
-
-Done when `census.MODULES` is gone, each layer's internals are declared there or by
-name, `test_census` passes, and a fixture layer with one helper of each kind is
-classified without touching `census.py`.
-
 ### §PW512 A whole layer added from a fixture, touching nothing else
 
 Each line before this one ends with a fixture layer exercising its own seam. This line

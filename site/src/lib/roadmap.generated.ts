@@ -47,7 +47,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 2 },
-  { block: "W", title: "A core that grows by layers", open: 13 },
+  { block: "W", title: "A core that grows by layers", open: 12 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -136,18 +136,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW516"],
   },
   {
-    id: "PW511",
-    block: "W",
-    symptom: "census.py classifies every public function in the package in one map, so each new helper module edits it",
-    why: "The census is what keeps the surface findable, and a map 46 of the last 200 commits touched is one that grows with the package instead of with its surface.",
-    deps: [],
-  },
-  {
     id: "PW512",
     block: "W",
     symptom: "Nothing proves a new layer can be added without editing the kernel, so the block's whole claim goes unchecked",
     why: "Each seam is tested alone, and only a whole layer added from outside shows they leave a kernel file nobody has to open.",
-    deps: ["PW506", "PW511"],
+    deps: ["PW506"],
   },
   {
     id: "PW513",
