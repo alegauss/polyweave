@@ -95,68 +95,17 @@ def _says(node: dict, instance: dict, materials: dict | None = None) -> str:
     rest = _fields(instance, skip)
     takes = refers_to(node)
 
-    if op == "prism":
-        what = f"{_outline_words(instance.get('outline'))}, extruded"
-    elif op == "plate":
-        rect = instance.get("rect") or []
-        what = (
-            f"a plate {_number(rect[2:]) or '?'} at {_number(rect[:2]) or '?'}"
-            if len(rect) == 4
-            else "a plate"
-        )
-    elif op == "crowned":
-        what = f"{_outline_words(instance.get('outline'))}, extruded with a domed face"
-    elif op == "annulus":
-        what = "a ring"
-    elif op == "primitive":
-        what = f"a {instance.get('kind', 'cube')}"
-    elif op == "inflate":
-        # Two profiles, and which one it gets is worth saying: an outline swells from
-        # its edge, a drawing from its own alpha (§PW68).
-        both = " on both faces" if instance.get("sides") == 2 else ""
-        what = (
-            f"{instance['drawing']}, given volume by its own alpha{both}"
-            if instance.get("drawing")
-            else f"{_outline_words(instance.get('outline'))}, given volume"
-        )
-    elif op == "carve":
-        what = (
-            f"{takes[0]} with {takes[1]} cut out of it" if len(takes) > 1 else "a cut"
-        )
-    elif op == "union":
-        what = f"{' and '.join(takes)} joined" if takes else "a join"
-    elif op == "blend":
-        # The radius is the one number a blend asks for, so it is said (§PW498).
-        radius = instance.get("radius")
-        stated = isinstance(radius, int | float)
-        fillet = f" by a fillet of {radius:g}" if stated else ""
-        what = f"{' and '.join(takes)} flowing together{fillet}"
-    elif op == "bevel":
-        what = f"{takes[0]}, with its edges softened" if takes else "a bevel"
-    elif op == "transform":
-        what = f"{takes[0]}, moved" if takes else "a transform"
-    elif op == "custom":
-        what = f"whatever {node.get('fn', 'a project function')} builds"
-    elif op == "cells":
-        what = _drawing(node)
-    elif op == "mesh":
-        what = f"the mesh in {instance.get('path', '?')}"
-        rest = _fields(instance, (*skip, "path"))
-    elif op == "mirror":
-        letter = str(node.get("axis", "x")).lower()
-        plane = _number(instance.get("plane", 0))
-        what = f"{takes[0] if takes else 'nothing'} mirrored across {letter} = {plane}"
-        rest = _fields(instance, (*skip, "plane"))
-    elif op == "paint":
-        # Said whole, material included, because the material is what it adds (§PW237).
-        where = node.get("where")
-        covers = " and ".join(where) if isinstance(where, list) else str(where)
-        return (
-            f"{node.get('on', 'nothing')} painted {node.get('material') or 'nothing'} "
-            f"where {covers}"
-        )
-    else:
+    from .ops import every
+
+    # Each op says itself, in its own module (§PW513).
+    told = every().get(op)
+    if told is None or told.words is None:
         what = f"a {op}"
+    else:
+        said = told.words(node, instance, takes, rest, skip)
+        if isinstance(said, str):
+            return said  # said whole, as a paint is
+        what, rest = said
 
     said = what + (f" ({rest})" if rest else "")
     if node.get("material"):

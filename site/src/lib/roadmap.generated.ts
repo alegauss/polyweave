@@ -47,7 +47,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 2 },
-  { block: "W", title: "A core that grows by layers", open: 12 },
+  { block: "W", title: "A core that grows by layers", open: 11 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -143,18 +143,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW506"],
   },
   {
-    id: "PW513",
-    block: "W",
-    symptom: "A geometry op is spread over BUILDS, FIELDS, review's elif chain and voxels' bounds and TRACED, four places per op",
-    why: "A fifteenth op written in four files is how a voxel bound goes missing for one op, and the vocabulary only grows by ops.",
-    deps: [],
-  },
-  {
     id: "PW514",
     block: "W",
     symptom: "Voxels are a branch inside build.write and a voxel_* module beside each mesh one, so a third form has no place to go",
     why: "Triangles and cells are two answers to one declaration, and a form chosen by an if in write is one each new form has to wedge itself beside.",
-    deps: ["PW513"],
+    deps: [],
   },
   {
     id: "PW515",

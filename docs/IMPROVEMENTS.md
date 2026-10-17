@@ -532,33 +532,6 @@ extending the fixture rather than by working around it.
 
 Done when the test passes and a deliberately broken seam in the fixture fails it.
 
-### §PW513 One file per geometry op
-
-The geometry vocabulary has fifteen ops (primitive, prism, plate, crowned, annulus,
-inflate, union, transform, carve, bevel, custom, cells, mirror, mesh, paint), and each
-is described in four places. `build.BUILDS` maps it to its builder, and `build.FIELDS`
-lists the keys it reads. `review.py` has an `if op == "prism" ... elif op == "paint"`
-chain that says how the contact sheet shows it. `voxels.py` keeps `_op_bounds`, its own
-chain for the box an op occupies, and `TRACED`, the ops whose cells come from tracing a
-mesh. A comment above `BUILDS` claims it is the one list that decides anything. The
-other three lists decide things too.
-
-Each op becomes one module under `layers/geometry/ops/`, declaring an `Op`:
-
-- `name` and `fields`, the keys it reads (None for `custom`);
-- `takes`, the fields that name another node;
-- `build(node, instance, built, root) -> mesh`;
-- `bounds(node, instance) -> (lo, hi)`, or `traced = True` where voxels must trace it;
-- `review(node) -> dict`, its part of the sheet.
-
-`BUILDS`, `FIELDS`, the review chain, `_op_bounds` and `TRACED` are generated from the
-ops the folder holds. A test checks that every op answers every part, so an op missing
-its voxel bound fails at once, not when a voxel build first meets it. `geometry.md`
-lists the ops from the same source.
-
-Done when adding an op is one new file, every geometry, voxel and review test passes
-unchanged, and `geometry.describe` returns the same vocabulary as before.
-
 ### §PW514 Triangles and cells as representations of one graph
 
 One geometry declaration can be built two ways. `build.write` checks `if

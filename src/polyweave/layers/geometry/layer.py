@@ -44,6 +44,38 @@ LAYER = Layer(
     config="polyweave.layers.geometry.settings",
     tools=17_000,
     census={
+        "polyweave.layers.geometry.ops.primitive": (
+            "internal", "the primitive op, read by build, voxels and review"),
+        "polyweave.layers.geometry.ops.prism": (
+            "internal", "the prism op, read by build, voxels and review"),
+        "polyweave.layers.geometry.ops.plate": (
+            "internal", "the plate op, read by build, voxels and review"),
+        "polyweave.layers.geometry.ops.crowned": (
+            "internal", "the crowned op, read by build, voxels and review"),
+        "polyweave.layers.geometry.ops.annulus": (
+            "internal", "the annulus op, read by build, voxels and review"),
+        "polyweave.layers.geometry.ops.inflate": (
+            "internal", "the inflate op, read by build, voxels and review"),
+        "polyweave.layers.geometry.ops.union": (
+            "internal", "the union op, read by build, voxels and review"),
+        "polyweave.layers.geometry.ops.blend": (
+            "internal", "the blend op, read by build, voxels and review"),
+        "polyweave.layers.geometry.ops.transform": (
+            "internal", "the transform op, read by build, voxels and review"),
+        "polyweave.layers.geometry.ops.carve": (
+            "internal", "the carve op, read by build, voxels and review"),
+        "polyweave.layers.geometry.ops.bevel": (
+            "internal", "the bevel op, read by build, voxels and review"),
+        "polyweave.layers.geometry.ops.custom": (
+            "internal", "the custom op, read by build, voxels and review"),
+        "polyweave.layers.geometry.ops.cells": (
+            "internal", "the cells op, read by build, voxels and review"),
+        "polyweave.layers.geometry.ops.mirror": (
+            "internal", "the mirror op, read by build, voxels and review"),
+        "polyweave.layers.geometry.ops.mesh": (
+            "internal", "the mesh op, read by build, voxels and review"),
+        "polyweave.layers.geometry.ops.paint": (
+            "internal", "the paint op, read by build, voxels and review"),
         "polyweave.layers.geometry.units": (
             "internal", "a rectangle's arithmetic, inside units.check"),
         "polyweave.layers.geometry.cost": (

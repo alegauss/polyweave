@@ -8,11 +8,11 @@ input is built before what needs it — a walker's scaffolding with no walker on
 hand. So `docs/specs/geometry.md` described a build that no call in the package could
 perform, and nothing under `src/` imported `polyweave.layers.geometry` at all.
 
-**One table, read twice.** `BUILDS` maps an `op` to the adapter that shapes a node's own
-fields into the call, and it is the only list of op names in the package that decides
-anything. `review` reads it too, so a document naming an op nothing builds is a warning
-before it is a refusal rather than a surprise at build time — the alternative was a
-second enumeration in `review._says`, which would have drifted from this one.
+**One module per op** (§PW513). `BUILDS` maps an `op` to the adapter that shapes a
+node's own fields into the call, and it is read off `ops/`, where each op's module also
+holds the fields it reads, its voxel bound and the words the review sheet says of it.
+So a document naming an op nothing builds is a warning before it is a refusal, and a
+new op is one new file rather than four lists that drift apart.
 
 **A repeated node's id names the whole set.** Sixty-four seats build as sixty-four
 meshes and are joined into the one mesh their id stands for, which is what lets the tray
@@ -29,241 +29,13 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-import numpy as np
-
 from polyweave.kernel.errors import PolyweaveError
 
-from . import custom, expand, order, refers_to, solver
-from . import outline as O
+from . import expand, order, refers_to
 from . import solid as S
+from .ops._shared import PROFILES, _outline, _rest  # noqa: F401 - read from here
 
-__all__ = ["BUILDS", "build", "builds"]
-
-
-def _outline(instance: dict, root: Any, field: str = "outline") -> np.ndarray:
-    stated = instance.get(field)
-    if stated is None:
-        raise PolyweaveError(
-            "geom.bad-outline",
-            f"this node has no {field} to build from",
-            f"give it an `{field}` naming a shape, an image or points",
-        )
-    return O.resolve(stated, root=root)
-
-
-def _rest(instance: dict, *skip: str) -> dict:
-    """A node's remaining fields, as keyword arguments to the op that takes them.
-
-    An op's own optional arguments — `steps`, `front`, `profile`, `resolution` — are
-    written on the node beside its required ones, so they arrive the same way.
-    """
-    kept = ("steps", "front", "profile", "resolution", "crown")
-    return {k: v for k, v in instance.items() if k in kept and k not in skip}
-
-
-def _primitive(node, instance, built, root):
-    shaped = ("bottom", "top", "height", "major", "minor", "radius")
-    return S.primitive(
-        str(instance.get("kind", "cube")),
-        instance.get("size", 1.0),
-        **_rest(instance, "front", "profile", "resolution", "crown"),
-        **{k: v for k, v in instance.items() if k in shaped},
-        axis=node.get("axis", "z"),
-    )
-
-
-def _prism(node, instance, built, root):
-    return S.prism(
-        _outline(instance, root), float(instance["depth"]), **_rest(instance, "steps")
-    )
-
-
-def _plate(node, instance, built, root):
-    return S.plate(
-        instance["rect"],
-        float(instance["depth"]),
-        float(instance.get("corner", 0.0)),
-        **_rest(instance, "steps"),
-    )
-
-
-def _crowned(node, instance, built, root):
-    return S.crowned(
-        _outline(instance, root),
-        float(instance["depth"]),
-        float(instance["crown"]),
-        **_rest(instance, "crown"),
-    )
-
-
-def _annulus(node, instance, built, root):
-    # A number is a radius and anything else is an outline (§PW65), so the two edges
-    # resolve the same way every other outline on a node does.
-    return S.annulus(
-        _edge(instance["outer"], root),
-        _edge(instance["inner"], root),
-        float(instance["depth"]),
-        **_rest(instance, "profile", "resolution", "crown"),
-    )
-
-
-def _edge(stated: Any, root: Any) -> Any:
-    return stated if isinstance(stated, int | float) else O.resolve(stated, root=root)
-
-
-def _inflate(node, instance, built, root):
-    # Two profiles, and what the node was given decides which (§PW68). An outline knows
-    # only where the shape stops, so it swells by distance from the edge; a drawing
-    # carries what is inside it too, so the alpha itself is blurred into the height.
-    if instance.get("drawing"):
-        return S.stuffed(
-            _alpha(instance["drawing"], root),
-            float(instance["thickness"]),
-            **{
-                k: v
-                for k, v in instance.items()
-                if k in ("size", "soften", "cell", "floor", "sides")
-            },
-        )
-    # An outline already swells both faces (§PW492), so only a drawing has a choice.
-    if instance.get("sides", 2) != 2:
-        raise PolyweaveError(
-            "geom.bad-solid",
-            f"{node['id']} inflates an outline on {instance['sides']!r} sides, and an "
-            "outline swells both faces",
-            "leave sides out on an outline; sides = 1 is a drawing's relief",
-        )
-    return S.inflate(
-        _outline(instance, root),
-        float(instance["thickness"]),
-        **_rest(instance, "steps", "front", "crown"),
-    )
-
-
-def _alpha(named: Any, root: Any) -> Any:
-    """A drawing's own alpha, as the array the profile is read off."""
-    from polyweave.kernel.image import load as load_image
-
-    where = Path(named)
-    if not where.is_absolute():
-        where = Path(root) / where
-    return load_image(where).rgba[..., 3] / 255.0
-
-
-def _union(node, instance, built, root):
-    return S.union(*(built[one] for one in refers_to(node)))
-
-
-def _blend(node, instance, built, root):
-    # Parts joined by a fillet where they meet (§PW498), each read as its own distance
-    # field, which only a primitive and what moves one carry.
-    from .blend import blend
-
-    takes = refers_to(node)
-    bare = [one for one in takes if not built[one].get("field")]
-    if bare or len(takes) < 2:
-        raise PolyweaveError(
-            "geom.bad-solid",
-            f"{node['id']} blends {', '.join(bare) or 'fewer than two parts'}, and a "
-            "blend joins two or more primitives, or transforms and repeats of them",
-            "make each part a primitive (a rounded_box, capsule, sphere, cylinder, "
-            "cone, frustum, torus or cube), moved by a transform where it needs to be",
-            at=f"nodes.{node['id']}",
-        )
-    radius = float(instance.get("radius", 0.0))
-    if radius <= 0:
-        raise PolyweaveError(
-            "geom.bad-solid",
-            f"{node['id']} blends with a radius of {radius:g}, which is no fillet",
-            "give the blend a radius above 0, in the declaration's units; a union "
-            "joins parts with none",
-            at=f"nodes.{node['id']}.radius",
-        )
-    parts = [part for one in takes for part in built[one]["field"]]
-    points = np.vstack([np.asarray(built[one]["vertices"]) for one in takes])
-    made = blend(parts, radius, points.min(axis=0), points.max(axis=0),
-                 int(instance.get("steps", S.STEPS)))
-    smallest = min(float(np.min(np.ptp(np.asarray(built[one]["vertices"]), axis=0)))
-                   for one in takes)
-    if radius > smallest:
-        made["warnings"] = [f"its radius of {radius:g} is larger than its smallest "
-                            f"part, {smallest:g} across, so the fillet swallows it"]
-    return made
-
-
-def _transform(node, instance, built, root):
-    return S.transform(
-        built[refers_to(node)[0]],
-        at=instance.get("at", (0, 0, 0)),
-        scale=instance.get("scale", (1, 1, 1)),
-        rotate=instance.get("rotate", (0, 0, 0)),
-    )
-
-
-#: A bevel's profile by the word a declaration writes, as Blender's profile and how
-#: many segments it forces (§PW493): a chamfer is one flat cut whatever is asked.
-PROFILES = {"round": (0.5, None), "chamfer": (0.5, 1)}
-
-
-def _beveled(node: dict, instance: dict) -> dict:
-    """How a node's bevel rounds: its `segments` and its `profile`, each checked."""
-    said = instance.get("profile", "round")
-    if said not in PROFILES:
-        raise PolyweaveError(
-            "geom.bad-solid",
-            f"{node['id']} bevels with a {said!r} profile, which is not one",
-            "write profile as round or chamfer",
-            given=said,
-            allowed=tuple(PROFILES),
-        )
-    # A parameter resolves to a float, so a whole one is a count.
-    segments = instance.get("segments", 3)
-    whole = isinstance(segments, int | float) and not isinstance(segments, bool) and (
-        float(segments).is_integer())
-    if not whole or segments < 1:
-        raise PolyweaveError(
-            "geom.bad-solid",
-            f"{node['id']} bevels in {segments!r} segments",
-            "give segments as a whole number from 1; more is rounder",
-        )
-    profile, forced = PROFILES[said]
-    return {"segments": forced or int(segments), "profile": profile}
-
-
-def _carve(node, instance, built, root):
-    return solver.build(
-        built[node["into"]],
-        cutter=built[node["cutter"]],
-        bevel_by=float(instance.get("bevel", 0.0)),
-        **_beveled(node, instance),
-    )
-
-
-def _bevel(node, instance, built, root):
-    return solver.build(
-        built[refers_to(node)[0]],
-        bevel_by=float(instance.get("bevel", 0.0)),
-        **_beveled(node, instance),
-    )
-
-
-def _custom(node, instance, built, root):
-    return custom.build(node, instance, built, root=root)
-
-
-def _cells(node, instance, built, root):
-    # Cells drawn as text build as their cubes here, so a drawing is not voxel-only
-    # (§PW95): a canopy painted in cells sits on a hull built as triangles.
-    from .voxels import drawn_mesh
-
-    size = instance.get("cell")
-    if not size:
-        raise PolyweaveError(
-            "geom.bad-cells",
-            f"{node['id']} draws cells and nothing says how big one is",
-            "give the node a `cell`, or give the document a [voxels] `cell`",
-        )
-    return drawn_mesh(node, float(size))
+__all__ = ["BUILDS", "build", "builds"]  # noqa: F822 - BUILDS is read lazily
 
 
 def mesh_file(node: dict, instance: dict, root: Any) -> Path:
@@ -281,102 +53,9 @@ def mesh_file(node: dict, instance: dict, root: Any) -> Path:
     return where
 
 
-def _mesh(node, instance, built, root):
-    # A mesh file as a node, in the project's own axes (§PW100): a hull bought from the
-    # service becomes the block a declaration cuts and paints, rather than the end.
-    from .normalise import read_mesh
-
-    found = read_mesh(mesh_file(node, instance, root))
-    return S.mesh(found["vertices"], found["faces"])
-
-
-def _paint(node, instance, built, root):
-    # The body's own triangles: a repaint adds no shape, and only cells take it
-    # (§PW237). A traced op in a voxel document builds the whole document through here,
-    # so this passes the body on rather than refusing; `write` refuses a triangle build.
-    return built[node["on"]]
-
-
-def _mirror(node, instance, built, root):
-    return S.mirror(
-        built[refers_to(node)[0]],
-        S.axis(node.get("axis", "x")),
-        float(instance.get("plane", 0.0)),
-    )
-
-
-#: Every op a declaration may name, and what turns its fields into a mesh. The one list
-#: of op names in the package that decides anything; `review` reads it rather than
-#: keeping a second.
-BUILDS: dict[str, Callable] = {
-    "primitive": _primitive,
-    "prism": _prism,
-    "plate": _plate,
-    "crowned": _crowned,
-    "annulus": _annulus,
-    "inflate": _inflate,
-    "union": _union,
-    "blend": _blend,
-    "transform": _transform,
-    "carve": _carve,
-    "bevel": _bevel,
-    "custom": _custom,
-    "cells": _cells,
-    "mirror": _mirror,
-    "mesh": _mesh,
-    "paint": _paint,
-}
-
 #: What every node may say, whatever its op: its name, what it builds, what it wears,
 #: how it repeats and where it sits.
 NODE_FIELDS = ("id", "op", "material", "repeat", "at")
-
-#: The fields that name another node, for the ops that take one (§PW146).
-_TAKES = ("inputs", "operands", "of", "on")
-
-#: What each op reads beyond `NODE_FIELDS`, declared beside the adapters that read it
-#: so a key no builder reads is refused where it is written rather than dropped
-#: (§PW146). `custom` is open: its fields are the function's own arguments.
-FIELDS: dict[str, tuple[str, ...] | None] = {
-    "primitive": (
-        "kind",
-        "size",
-        "steps",
-        "axis",
-        "bottom",
-        "top",
-        "height",
-        "major",
-        "minor",
-        "radius",
-    ),
-    "prism": ("outline", "depth", "front"),
-    "plate": ("rect", "depth", "corner", "front"),
-    "crowned": ("outline", "depth", "crown", "front", "steps"),
-    "annulus": ("outer", "inner", "depth", "front", "steps"),
-    "inflate": (
-        "outline",
-        "thickness",
-        "profile",
-        "resolution",
-        "drawing",
-        "size",
-        "soften",
-        "cell",
-        "floor",
-        "sides",
-    ),
-    "union": _TAKES,
-    "blend": (*_TAKES, "radius", "steps"),
-    "transform": (*_TAKES, "scale", "rotate"),
-    "carve": ("into", "cutter", "bevel", "segments", "profile"),
-    "bevel": (*_TAKES, "bevel", "segments", "profile"),
-    "custom": None,
-    "cells": ("layers", "legend", "cell", "axis"),
-    "mirror": (*_TAKES, "axis", "plane"),
-    "mesh": ("path", "colours"),
-    "paint": ("on", "where"),
-}
 
 #: The ops that consume `at` themselves, so the placement below leaves them alone.
 PLACES = ("transform",)
@@ -384,7 +63,25 @@ PLACES = ("transform",)
 
 def builds(op: str) -> bool:
     """Whether anything here builds that op. What `review` asks before warning."""
-    return op in BUILDS
+    return op in _builds()
+
+
+def _builds() -> dict[str, Callable]:
+    """Every op a declaration may name, and what builds it, from `ops/` (§PW513)."""
+    from .ops import every
+
+    return {name: op.build for name, op in every().items()}
+
+
+def __getattr__(name: str):
+    # `BUILDS` and `FIELDS` read as they always did, from the op modules (§PW513).
+    from .ops import every
+
+    if name == "BUILDS":
+        return _builds()
+    if name == "FIELDS":
+        return {one: op.fields for one, op in every().items()}
+    raise AttributeError(name)
 
 
 def build(
@@ -410,15 +107,15 @@ def build(
     built: dict[str, dict] = {}
     for one in order(document):
         node, made = stated[one], []
-        how = BUILDS.get(node["op"])
+        how = _builds().get(node["op"])
         if how is None:
             raise PolyweaveError(
                 "geom.unknown-op",
                 f"{one!r} has op {node['op']!r}, and nothing builds that",
-                f"name one of {', '.join(sorted(BUILDS))}, or write it as a `custom` "
-                f"node pointing at a function of your own",
+                f"name one of {', '.join(sorted(_builds()))}, or write it as a "
+                f"`custom` node pointing at a function of your own",
                 given=node["op"],
-                allowed=BUILDS,
+                allowed=_builds(),
                 at=f"nodes.{one}.op",
             )
         for instance in instanced[one]["instances"]:

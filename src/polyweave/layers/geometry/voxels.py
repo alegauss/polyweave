@@ -40,7 +40,7 @@ from . import outline as O
 from . import solid as S
 from .expr import evaluate
 
-__all__ = ["SUFFIX", "TRACED", "says", "voxelize", "write"]
+__all__ = ["SUFFIX", "TRACED", "says", "voxelize", "write"]  # noqa: F822 - TRACED is read lazily
 
 #: What the cells are written as, beside the cubes' mesh.
 SUFFIX = ".voxels.json"
@@ -52,7 +52,6 @@ FORMAT = 1
 #: The ops with no inside-test of their own, voxelised from the mesh they build. A
 #: `mesh` node is one (§PW100): filled by parity, a closed hull comes out solid. So is a
 #: `blend` (§PW498), whose fillet only its mesh says.
-TRACED = ("inflate", "crowned", "annulus", "custom", "mesh", "blend")
 
 #: What a painted cell's key is lifted by, so any node carrying a material outranks any
 #: node that does not, whatever their order.
@@ -159,49 +158,11 @@ class _Model:
         )
 
     def _op_bounds(self, node: dict, instance: dict) -> tuple[np.ndarray, np.ndarray]:
-        op = node["op"]
-        if op == "primitive":
-            return S.shape_box(S.shape({**instance, "axis": node.get("axis", "z")}))
-        if op in ("prism", "plate"):
-            ring, near, far = self._slab(op, instance)
-            return (
-                np.array([*ring.min(axis=0), near]),
-                np.array([*ring.max(axis=0), far]),
-            )
-        if op == "transform":
-            low, high = self.bounds(refers_to(node)[0])
-            corners = np.array(
-                [
-                    [x, y, z]
-                    for x in (low[0], high[0])
-                    for y in (low[1], high[1])
-                    for z in (low[2], high[2])
-                ]
-            )
-            moved = _forward(corners, instance)
-            return moved.min(axis=0), moved.max(axis=0)
-        if op == "union":
-            boxes = [self.bounds(one) for one in refers_to(node)]
-            return (
-                np.min([low for low, _ in boxes], axis=0),
-                np.max([high for _, high in boxes], axis=0),
-            )
-        if op == "carve":
-            return self.bounds(node["into"])
-        if op == "bevel":
-            return self.bounds(refers_to(node)[0])
-        if op == "paint":
-            return self.bounds(node["on"])
-        if op == "cells":
-            size = self.size_of(node, instance)
-            return np.zeros(3), np.asarray(lattice(node)["size"], dtype=float) * size
-        if op == "mirror":
-            low, high = self.bounds(refers_to(node)[0])
-            along, plane = _mirrored(node, instance)
-            flipped_low, flipped_high = low.copy(), high.copy()
-            flipped_low[along] = 2 * plane - high[along]
-            flipped_high[along] = 2 * plane - low[along]
-            return np.minimum(low, flipped_low), np.maximum(high, flipped_high)
+        from .ops import every
+
+        said = every()[node["op"]]
+        if said.bounds is not None:
+            return said.bounds(self, node, instance)
         points = np.asarray(self._traced(node, instance)["vertices"], dtype=float)
         return points.min(axis=0), points.max(axis=0)
 
@@ -222,66 +183,13 @@ class _Model:
         return found
 
     def _op_inside(self, node: dict, instance: dict, points: np.ndarray) -> _Found:
-        op, rank = node["op"], self.rank[node["id"]]
-        if op == "primitive":
-            return _Found.of(
-                _primitive({**instance, "axis": node.get("axis", "z")}, points), rank
-            )
-        if op in ("prism", "plate"):
-            ring, near, far = self._slab(op, instance)
-            depth = (points[:, 2] >= near - _EPS) & (points[:, 2] <= far + _EPS)
-            within = np.zeros(len(points), dtype=bool)
-            if depth.any():
-                # A point on the ring's edge is inside, as one on a primitive's face
-                # is: the crossing number alone took a left edge and not a right one,
-                # so one box as a plate and as a cube filled different cells (§PW274).
-                flat = points[depth, :2]
-                within[depth] = S._inside(ring, flat) | (S._to_edge(ring, flat) <= _EPS)
-            return _Found.of(within, rank)
-        if op == "transform":
-            return self.inside(refers_to(node)[0], _backward(points, instance))
-        if op == "union":
-            found = None
-            for one in refers_to(node):
-                part = self.inside(one, points)
-                found = part if found is None else _merge(found, part)
-            return found
-        if op == "carve":
-            into = self.inside(node["into"], points)
-            cut = self.inside(node["cutter"], points).inside
-            return into.only(into.inside & ~cut)
-        if op == "bevel":
-            return self.inside(refers_to(node)[0], points)
-        if op == "paint":
-            # The body's cells, every one and no more, repainted where `where` covers
-            # them: a band round a sphere without a slab sticking out of it (§PW237).
-            if not node.get("on") or not _named_list(node.get("where")):
-                raise PolyweaveError(
-                    "geom.bad-solid",
-                    f"{node['id']} paints and does not say "
-                    + ("on what" if not node.get("on") else "where"),
-                    "give it `on`, the body whose cells it repaints, and `where`, the "
-                    "node or list of nodes whose cells take its material",
-                    at=f"nodes.{node['id']}",
-                )
-            body = self.inside(node["on"], points)
-            cover = np.zeros(len(points), dtype=bool)
-            for one in _named_list(node.get("where")):
-                cover |= self.inside(one, points).inside
-            return body.repainted(body.inside & cover, rank, node.get("material") or "")
-        if op == "cells":
-            return self._drawn(node, instance, points)
-        if op == "mesh" and not node.get("material"):
-            return self._textured(node, instance, points)
-        if op == "mirror":
-            # A point is in the mirror where it or its reflection is in the half, so a
-            # column on the plane is one set of cells and never counted twice.
-            source = refers_to(node)[0]
-            along, plane = _mirrored(node, instance)
-            reflected = points.copy()
-            reflected[:, along] = 2 * plane - reflected[:, along]
-            return _merge(self.inside(source, points), self.inside(source, reflected))
-        return _Found.of(_parity(self._traced(node, instance), points), rank)
+        from .ops import every
+
+        said = every()[node["op"]]
+        if said.inside is not None:
+            return said.inside(self, node, instance, points)
+        return _Found.of(_parity(self._traced(node, instance), points),
+                         self.rank[node["id"]])
 
     def _drawn(self, node: dict, instance: dict, points: np.ndarray) -> _Found:
         """A `cells` node: which drawn cell each point falls in, and what it wears."""
@@ -383,6 +291,15 @@ class _Model:
                 ]
             built = self._meshes
         return BUILDS[node["op"]](node, instance, built, self.root)
+
+
+def __getattr__(name: str):
+    # `TRACED` reads as it always did: the ops a voxel build traces (§PW513).
+    if name == "TRACED":
+        from .ops import every
+
+        return tuple(one for one, op in every().items() if op.traced)
+    raise AttributeError(name)
 
 
 def _primitive(instance: dict, points: np.ndarray) -> np.ndarray:

@@ -86,8 +86,8 @@ node is it.
 with the path to it and the nearest real name. The document takes `name`, `version`,
 `params`, `materials`, `nodes`, `output`, `voxels`, `search` and `variants`. Every node
 takes `id`, `op`, `material`, `repeat` and `at`, a repeat range takes `var`, `from`, `to`
-and `step`, and each op takes the fields `FIELDS` in `geometry/build.py` declares beside
-the adapter that reads them, so the list and the reading cannot drift apart. `custom` is
+and `step`, and each op takes the fields its own module under `geometry/ops/` declares
+beside the adapter that reads them, so the list and the reading cannot drift apart. `custom` is
 open, since its fields are its function's arguments. A misspelt field used to build the
 shape without it; the first thing the refusal caught was a test fixture whose bevel said
 `amount` where the builder reads `bevel`.
@@ -564,9 +564,10 @@ A mesh, and a report — because a shape that can only be checked by looking at 
 one whose construction errors are found in the expensive place (§PW33). Two wrong
 constructions of Cottony's tray seats each looked entirely reasonable while being written.
 
-**One table decides what an `op` is** (§PW60). `build.BUILDS` maps each op to the adapter
-that shapes a node's own fields into the call, and it is the only list of op names in the
-package that decides anything — the review reads it rather than keeping a second, so a
+**One module decides what an `op` is** (§PW60, §PW513). Each op is one file under
+`geometry/ops/`: its fields, its adapter, the box and cells a voxel build reads off it (or
+that it is traced), and the words the review sheet says of it. `build.BUILDS` is read off
+those modules — the review reads the same ones rather than keeping a second list, so a
 document naming an op nothing builds is a **warning** from the structural read and a typed
 refusal at the build, and the two cannot disagree. An op nobody declared is
 `geom.unknown-op`, whose remedy names the declared ops and the `custom` door.
