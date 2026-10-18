@@ -499,11 +499,13 @@ def check(root: Annotated[str, Param("the adopted project")] = ".") -> dict:
     _paths(config, said)
     from polyweave.loop import extend
 
-    try:
-        # Each measure the project declares, read as a spec naming it would (§PW517).
-        extend.declared(here)
-    except PolyweaveError as refused:
-        said(refused)
+    for read in (extend.declared, extend.operations):
+        try:
+            # Each measure and operation the project declares, read as a spec or a
+            # call naming it would (§PW517, §PW518).
+            read(here)
+        except PolyweaveError as refused:
+            said(refused)
     settings = json.loads(
         read_text_retrying(here / ".claude" / "settings.json") or "{}"
     )

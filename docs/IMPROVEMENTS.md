@@ -520,39 +520,6 @@ the swap, and its gate passes.
 
 ## Block W — A core that grows by layers
 
-### §PW518 [extend.operations]: a project's generator on the surface and in the search
-
-A job's target may already be `path/to/file.py:name`, and `describe.for_target` returns
-None for it "as the ordinary answer". That is safe, but it means a project's own
-generator is invisible: no `describe`, no tool, no flags, no `produces`. Even a search
-over its parameters has to be written by hand. Cottony's `bake_model.py` rig, the cost
-this plugin exists to remove, is exactly that kind of script.
-
-`polyweave.toml` gains, beside measures:
-
-```toml
-[extend.operations.tile_sheet]
-fn       = "tools/art/tiles.py:sheet"
-about    = "cut a sprite sheet into tiles"
-produces = "picture"
-kind     = "build"          # asynchronous, so it runs as a job
-[extend.operations.tile_sheet.params]
-source = { type = "str", about = "the sheet" }
-size   = { type = "int", about = "tile edge", lo = 8, hi = 256, unit = "px" }
-```
-
-It is served as `x.<project>.tile_sheet`, described, validated and turned into flags
-from the TOML alone, and run in the project's environment through the worker. Its file
-is hashed into the record of whatever it produces. With `producer = true` and a range on
-a parameter, `search.sweep` turns it like any layer's `Producer`, so a project's
-generator joins the loop with no Python registered inside polyweave.
-
-`layer.off` and the session tool budget count these the same way as built-ins, so a
-project cannot grow its own surface without the number showing it.
-
-Done when a fixture project's operation is listed, described, called, run as a job,
-swept and recorded.
-
 ### §PW519 Extensions are reported as what polyweave does not yet do
 
 The vocabulary grew because every gap a consumer hit became a line here, through the

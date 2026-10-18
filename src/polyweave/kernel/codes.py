@@ -354,6 +354,12 @@ KERNEL_CODES: dict[str, Code] = {
         doors=("require one of the four", "drop the requirement"),
     ),
     # -- op: an operation's arguments against what it declared ---------------
+    "op.project-failed": Code(
+        means="an operation the project declares failed when it ran",
+        when="the project's own function raised, or answered nothing polyweave could "
+        "read, in the interpreter it runs in apart",
+        doors=("run the function yourself with those arguments", "fix its fn"),
+    ),
     "op.unknown": Code(
         means="no operation is registered under that name",
         when="a describe or a validate names an operation that does not exist",
@@ -454,6 +460,14 @@ KERNEL_CODES: dict[str, Code] = {
         when="a declaration misses fn, subject, unit, range or about, names a function "
         "not as file.py:function, or gives a range that is not two numbers, low first",
         doors=("write the declaration with every field it takes",),
+    ),
+    "config.bad-operation": Code(
+        means="an operation the project declares under [extend.operations] cannot be "
+        "served",
+        when="a declaration misses fn or about, names a function not as "
+        "file.py:function, a job kind there is none of, a parameter with no type or "
+        "about, or is a producer with no out parameter",
+        doors=("write the declaration with what it takes",),
     ),
     "config.bad-type": Code(
         means="a setting was given a value of the wrong type",

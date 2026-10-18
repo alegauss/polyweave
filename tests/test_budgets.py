@@ -261,7 +261,8 @@ DESCRIBE = 148_800
 #: 163,855 with the geometry build's operations named as geometry's (§PW506).
 #: 164,052 with what the session's tools/list costs and its dearest layers (§PW510).
 #: 164,267 with measure.available's root and the project measure codes (§PW517).
-CAPABILITIES = 164_300
+#: 164,312 with the project operation codes (§PW518).
+CAPABILITIES = 164_400
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

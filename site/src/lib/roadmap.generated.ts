@@ -47,7 +47,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 2 },
-  { block: "W", title: "A core that grows by layers", open: 5 },
+  { block: "W", title: "A core that grows by layers", open: 4 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -143,18 +143,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW518",
-    block: "W",
-    symptom: "A project's own generator can run as a job but is no operation, so no agent finds it, describes it or searches over it",
-    why: "A target named as a file path has only the worker's signature check, so the project's most-used script is the one call the surface cannot describe.",
-    deps: [],
-  },
-  {
     id: "PW519",
     block: "W",
     symptom: "An extension would hide the gap it fills, so a measure two games both wrote never becomes vocabulary",
     why: "Friction filed as PW lines is how this vocabulary grew, and an extension point that silences the friction stops that growth unless it reports what it holds.",
-    deps: ["PW518"],
+    deps: [],
   },
   {
     id: "PW520",
@@ -168,7 +161,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "W",
     symptom: "Cottony still runs on the flat package and serves every layer, so the block is unproven on its first consumer",
     why: "A layering proven only on fixtures can still be wrong where a real game reaches into it, and Cottony reaches deepest, from Python, a rig and its own scripts.",
-    deps: ["PW520", "PW518"],
+    deps: ["PW520"],
   },
   {
     id: "PW522",

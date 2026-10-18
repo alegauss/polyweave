@@ -32,7 +32,7 @@ from polyweave.kernel.doors import Blank, door
 from polyweave.kernel.errors import PolyweaveError
 from polyweave.kernel.layer import Producer, call, function, producers
 
-from . import accept, loop
+from . import accept, extend, loop
 from .accept import Spec
 
 #: How many points each axis gets in a pass, before the window closes around the best.
@@ -587,9 +587,10 @@ def renderer(
     is what makes the search affordable: a material question is answered on a sphere
     in three seconds.
     """
-    made = _producer(producer)
+    made = _producer(producer, root)
     at = rung or _rung_for(spec, root, made)
-    draw = bake or function(made.target)
+    draw = bake or (extend.drawer(producer, root) if extend.is_extended(producer)
+                    else function(made.target))
     fixed = _subject(spec, fixed, root)
     turnable(draw, ranges(spec), also=fixed or {}, producer=producer)
 
@@ -659,6 +660,15 @@ def in_parallel(
     """
     from polyweave.kernel.jobs import JobStore
 
+    if extend.is_extended(producer):
+        raise PolyweaveError(
+            "search.unknown-producer",
+            f"{producer} is a project's own producer, which a sweep turns one sample "
+            "at a time",
+            "sweep it with search.sweep",
+            given=producer,
+            allowed=sorted(producers()),
+        )
     made = _producer(producer)
     at = rung or _rung_for(spec, root, made)
     fixed = _subject(spec, fixed, root)
@@ -771,8 +781,15 @@ def _rung_for(spec: Spec, root: str | Path, made: Producer) -> str | None:
     return call(made.plan, asking=asked or None, floor=spec.rung, root=root)["rung"]
 
 
-def _producer(name: str) -> Producer:
-    """The producer a search turns, by name, refused with the ones there are."""
+def _producer(name: str, root: str | Path = ".") -> Producer:
+    """The producer a search turns, by name, refused with the ones there are.
+
+    A project's own operation declared a producer is one too (§PW518), made a sample
+    at a time apart from this process, so it has no ladder and no job target.
+    """
+    if extend.is_extended(name):
+        one = extend.operation(name, root)
+        return Producer(name=one.name, about=one.about, target="")
     found = producers()
     if name not in found:
         raise PolyweaveError(

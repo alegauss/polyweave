@@ -171,18 +171,8 @@ def measured(one: Declared, subject: str | Path, root: str | Path = ".") -> dict
     here = load(root).root
     where = Path(subject) if Path(subject).is_absolute() else here / subject
     said = source(one, here)
-    from polyweave.kernel.jobs.runner import _PACKAGE_ROOT
-
-    env = dict(os.environ)
-    env["PYTHONPATH"] = os.pathsep.join(
-        [str(_PACKAGE_ROOT), *([env["PYTHONPATH"]] if env.get("PYTHONPATH") else [])])
     try:
-        done = subprocess.run(  # noqa: S603 - the project's own interpreter and code
-            [sys.executable, "-m", "polyweave.loop.extend", one.fn, str(where),
-             str(here)],
-            cwd=here, env=env, capture_output=True, text=True, encoding="utf-8",
-            timeout=TIMEOUT, check=False,
-        )
+        done = _run_apart([one.fn, str(where), str(here)], here)
     except subprocess.TimeoutExpired as exc:
         raise PolyweaveError(
             "spec.measure-failed",
@@ -269,12 +259,250 @@ def stale(root: str | Path = ".") -> list[dict]:
     return out
 
 
-def main(argv: list[str] | None = None) -> int:
-    """Run one project measure in this interpreter and print its value as JSON."""
+# -- a project's own operations (§PW518) ---------------------------------------------
+
+#: What an operation's declaration takes, and each of its parameters.
+OPERATION_FIELDS = ("fn", "about", "produces", "kind", "params", "producer")
+PARAM_FIELDS = ("type", "about", "lo", "hi", "unit", "choices", "default")
+PARAM_TYPES = ("str", "int", "float", "bool", "list", "dict")
+
+
+@dataclass(frozen=True)
+class Operation:
+    """One project operation, as `[extend.operations.<short>]` declares it."""
+
+    name: str
+    short: str
+    fn: str
+    about: str
+    produces: str | None
+    #: A job kind where it runs as a job, and none where a call waits for it.
+    kind: str | None
+    parameters: tuple[dict, ...]
+    #: Whether `search.sweep` may turn it, a sample at a time into its `out`.
+    producer: bool
+
+    def described(self) -> dict:
+        """What `describe` answers for it, in the shape a built-in's answer has."""
+        return {
+            "operation": self.name,
+            "summary": self.about,
+            "produces": self.produces,
+            "kind": self.kind,
+            "asynchronous": self.kind is not None,
+            "parameters": [dict(one) for one in self.parameters],
+            "layer": None,
+            "project": {"fn": self.fn, "producer": self.producer},
+        }
+
+
+def operations(root: str | Path = ".") -> dict[str, Operation]:
+    """Every operation the project declares, by the name it is served as."""
+    config = load(root)
+    project = str(config.get("project.name"))
+    found = {}
+    for short, entry in (config.get("extend.operations") or {}).items():
+        one = _operation(short, entry, project)
+        found[one.name] = one
+    return found
+
+
+def operation(name: str, root: str | Path = ".") -> Operation:
+    """The project operation a call names, refused with the ones there are."""
+    every = operations(root)
+    if name not in every:
+        raise PolyweaveError(
+            "op.unknown",
+            f"there is no operation named {name!r} in this project",
+            f"name one of {', '.join(sorted(every))}" if every else
+            "declare it under [extend.operations.<name>] in polyweave.toml",
+            given=name,
+            allowed=sorted(every),
+        )
+    return every[name]
+
+
+def _operation(short: str, entry: Any, project: str) -> Operation:
+    from polyweave.kernel.jobs.stages import KINDS
+
+    at = f"extend.operations.{short}"
+
+    def refused(why: str, remedy: str) -> PolyweaveError:
+        return PolyweaveError("config.bad-operation", f"[{at}] {why}", remedy,
+                              given=short, at=at, allowed=OPERATION_FIELDS)
+
+    if not isinstance(entry, dict):
+        raise refused("is not a table", f"write it as [{at}] with fn and about")
+    unknown = sorted(set(entry) - set(OPERATION_FIELDS))
+    if unknown or not entry.get("fn") or not entry.get("about"):
+        raise refused(
+            f"has {', '.join(unknown)}, which it does not take" if unknown
+            else "says no fn or no about",
+            f"an operation takes {', '.join(OPERATION_FIELDS)}; fn and about are "
+            "needed",
+        )
+    fn = str(entry["fn"])
+    if ":" not in fn or not fn.split(":", 1)[0].endswith(".py"):
+        raise refused(f"names {fn!r} as its function",
+                      "write fn as 'path/to/file.py:function', under the project")
+    kind = entry.get("kind")
+    if kind is not None and kind not in KINDS:
+        raise refused(f"runs as a {kind!r} job, which is no job kind",
+                      f"set kind to one of {', '.join(sorted(KINDS))}, or leave it "
+                      "out for a call that waits")
+    params = entry.get("params") or {}
+    parameters = tuple(_parameter(name, said, refused) for name, said in params.items())
+    producer = bool(entry.get("producer", False))
+    if producer and "out" not in {one["name"] for one in parameters}:
+        raise refused("is a producer with no out parameter",
+                      'declare params.out = { type = "str", about = "where it is '
+                      'written" }: a search writes each sample there')
+    return Operation(
+        name=f"{PREFIX}{project}.{short}", short=short, fn=fn,
+        about=str(entry["about"]),
+        produces=str(entry["produces"]) if entry.get("produces") else None,
+        kind=kind, parameters=parameters, producer=producer,
+    )
+
+
+def _parameter(name: str, said: Any, refused) -> dict:
+    if not isinstance(said, dict) or said.get("type") not in PARAM_TYPES \
+            or not said.get("about") or set(said) - set(PARAM_FIELDS):
+        raise refused(
+            f"declares the parameter {name!r} as {said!r}",
+            f"write params.{name} = {{ type = ..., about = ... }}, the type one of "
+            f"{', '.join(PARAM_TYPES)}, with lo, hi, unit, choices or default",
+        )
+    low, high = said.get("lo"), said.get("hi")
+    return {
+        "name": name,
+        "type": said["type"],
+        "required": "default" not in said,
+        "default": said.get("default"),
+        "about": str(said["about"]),
+        **({"range": [low, high]} if low is not None or high is not None else {}),
+        **({"choices": list(said["choices"])} if said.get("choices") else {}),
+        **({"unit": str(said["unit"])} if said.get("unit") else {}),
+    }
+
+
+def called(name: str, args: dict | None, root: str | Path = ".") -> dict:
+    """One call of a project operation, held to its declaration before it runs.
+
+    One declaring a `kind` is started as a job and answers its handle; any other runs
+    in a separate interpreter and answers what the function returned, with the record
+    written for what it produced.
+    """
+    from polyweave.kernel import describe as D
+
+    one = operation(name, root)
+    values = D.checked(one.name, one.parameters, dict(args or {}))
+    if one.kind:
+        from polyweave.kernel.jobs import JobStore
+
+        return JobStore.for_project(root).start(
+            "polyweave.loop.extend:job", kind=one.kind, label=one.name,
+            args={"operation": one.name, "values": values},
+        )
+    return apart(one, values, root)
+
+
+def apart(one: Operation, values: dict, root: str | Path = ".") -> dict:
+    """Run a project operation in a separate interpreter, as a job's target runs."""
+    here = load(root).root
+    done = _run_apart(["make", one.name, json.dumps(values), str(here)], here)
+    answer = _answered(done.stdout)
+    if done.returncode != 0 or answer is None or "error" in answer:
+        raise PolyweaveError(
+            "op.project-failed",
+            f"{one.name} failed"
+            + (f": {answer['error']}" if answer and answer.get("error") else ""),
+            f"run {one.fn} yourself with those arguments; it is the project's code",
+            given=one.fn,
+            detail=(done.stderr or "")[-800:],
+        )
+    return answer
+
+
+def job(report, *, operation: str, values: dict) -> dict:
+    """A project operation run as a job: the worker is the project's interpreter."""
+    report.stage("building", note=f"running {operation}")
+    return made(operation, values, ".")
+
+
+def made(name: str, values: dict, root: str | Path = ".") -> dict:
+    """Call the project's function here and record what it produced.
+
+    What it returns is its answer. Where it says an `artefact`, or answers a path, and
+    the operation `produces` something, the file is recorded with the function's source
+    as an input, so a changed function makes it stale.
+    """
+    from polyweave.kernel import provenance
     from polyweave.kernel.jobs.worker import resolve_target
 
-    fn, subject, root = (argv if argv is not None else sys.argv[1:])
+    here = load(root).root
+    one = operation(name, here)
+    said = resolve_target(one.fn, here)(**values)
+    artefact = said.get("artefact") if isinstance(said, dict) else (
+        said if isinstance(said, str) else None)
+    recorded = None
+    if artefact and one.produces:
+        where = Path(artefact) if Path(artefact).is_absolute() else here / artefact
+        record = provenance.build(
+            "extend", where, root=here, params=values,
+            engine={"name": "project", "operation": one.name},
+            inputs=[provenance.source("fn", here / one.fn.split(":", 1)[0], here)],
+        )
+        recorded = str(provenance.write(record, here))
+    return {"result": said, "artefact": artefact, "recorded": recorded}
+
+
+def drawer(name: str, root: str | Path = "."):
+    """What `search.sweep` calls for one sample of a project producer (§PW518)."""
+    one = operation(name, root)
+    if not one.producer:
+        raise PolyweaveError(
+            "search.unknown-producer",
+            f"{one.name} is not declared a producer, so a search does not turn it",
+            f"set producer = true under [extend.operations.{one.short}]",
+            given=one.name,
+            allowed=sorted(n for n, o in operations(root).items() if o.producer),
+        )
+
+    def draw(report, *, out, rung=None, root=root, inline=True, **values):
+        from polyweave.kernel import describe as D
+
+        checked = D.checked(one.name, one.parameters, {**values, "out": str(out)})
+        said = apart(one, checked, root)
+        return {"artefact": said.get("artefact") or str(out)}
+
+    return draw
+
+
+def _run_apart(argv: list[str], here: Path) -> subprocess.CompletedProcess:
+    from polyweave.kernel.jobs.runner import _PACKAGE_ROOT
+
+    env = dict(os.environ)
+    env["PYTHONPATH"] = os.pathsep.join(
+        [str(_PACKAGE_ROOT), *([env["PYTHONPATH"]] if env.get("PYTHONPATH") else [])])
+    return subprocess.run(  # noqa: S603 - the project's own interpreter and code
+        [sys.executable, "-m", "polyweave.loop.extend", *argv],
+        cwd=here, env=env, capture_output=True, text=True, encoding="utf-8",
+        timeout=TIMEOUT, check=False,
+    )
+
+
+def main(argv: list[str] | None = None) -> int:
+    """Run one project measure, or one project operation, here; print it as JSON."""
+    from polyweave.kernel.jobs.worker import resolve_target
+
+    args = argv if argv is not None else sys.argv[1:]
     try:
+        if args[0] == "make":
+            _, name, values, root = args
+            print(json.dumps(made(name, json.loads(values), root), default=str))
+            return 0
+        fn, subject, root = args
         value = resolve_target(fn, Path(root))(str(subject))
     except Exception as exc:  # noqa: BLE001 - the project's code, said back as it failed
         print(json.dumps({"error": f"{type(exc).__name__}: {exc}"}))

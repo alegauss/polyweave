@@ -175,7 +175,25 @@ def tools(*, blender: bool | None = None, root: str | Path = ".") -> list[dict]:
         for found in D.describe()
         if (reachable or not needs_blender(found))
         and (using is None or found.get("layer") in (None, *using))
+    ] + [
+        {
+            "name": tool_name(found["operation"]),
+            "description": found["summary"],
+            "inputSchema": schema_of(found),
+        }
+        for found in _project(root).values()
     ] + [DESCRIBE]
+
+
+def _project(root: str | Path = ".") -> dict[str, dict]:
+    """The project's own operations, described (§PW518), by name. A declaration it got
+    wrong serves none of them, and `project.check` says why."""
+    from polyweave.loop import extend
+
+    try:
+        return {name: one.described() for name, one in extend.operations(root).items()}
+    except PolyweaveError:
+        return {}
 
 
 def shares(listed: list[dict] | None = None) -> dict[str, dict]:
@@ -185,6 +203,8 @@ def shares(listed: list[dict] | None = None) -> dict[str, dict]:
 
     D.load()
     by_tool = {tool_name(op.name): op.layer or "core" for op in D._REGISTRY.values()}
+    # A project's own operations are counted as its own share, never hidden in another.
+    by_tool.update({tool_name(name): "project" for name in _project()})
     found: dict[str, dict] = {}
     for tool in tools(blender=True) if listed is None else listed:
         size = len(json.dumps(tool))
@@ -243,6 +263,10 @@ def _described(arguments: dict) -> Any:
             given=unknown[0] if unknown else "operation",
         )
     asked = arguments["operation"]
+    own = _project()
+    project = {**own, **{tool_name(name): one for name, one in own.items()}}
+    if asked in project:
+        return project[asked]
     by_tool = {tool_name(op): op for op in D.operations()}
     said = D.describe(by_tool.get(asked, asked))
     using = _on()
@@ -263,6 +287,14 @@ def call(name: str, arguments: dict | None) -> dict:
     try:
         if name == DESCRIBE["name"]:
             return _content(_described(dict(arguments or {})), error=False)
+        project = {tool_name(one): one for one in _project()}
+        if name in project:
+            from polyweave.loop import extend
+
+            # Held to its declaration, then run apart or started as a job (§PW518).
+            with contextlib.redirect_stdout(sys.stderr):
+                answer = as_data(extend.called(project[name], dict(arguments or {})))
+            return _content(answer, error=False)
         if name not in by_tool:
             raise PolyweaveError(
                 "op.unknown",

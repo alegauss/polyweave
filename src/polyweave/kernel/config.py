@@ -37,9 +37,9 @@ _ENV_REF = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_]*)\}")
 
 #: Tables whose keys a project names itself, so an unknown key in them is not a typo.
 #: `render.samples` is keyed by the rung names `render.rungs` declares.
-#: `extend.measures` is keyed by the project's own measures, each checked where it is
-#: read (§PW517).
-_KERNEL_OPEN: tuple[str, ...] = ("extend.measures",)
+#: `extend.measures` and `extend.operations` are keyed by the project's own measures and
+#: operations, each checked where it is read (§PW517, §PW518).
+_KERNEL_OPEN: tuple[str, ...] = ("extend.measures", "extend.operations")
 
 #: Tables a project may add keys to while keeping the ones declared here. `[capture]`
 #: is one because the settings a picture depends on are per project and short, and a
@@ -86,7 +86,7 @@ KERNEL_DEFAULTS: dict[str, Any] = {
     "layers": {"on": []},
     # What a project adds to polyweave's own vocabulary: a measure only its game needs,
     # declared and run apart, as `x.<project>.<name>` (§PW517).
-    "extend": {"measures": {}},
+    "extend": {"measures": {}, "operations": {}},
     "project": {
         "name": "",  # the root directory's name, filled in on load
         "root": ".",

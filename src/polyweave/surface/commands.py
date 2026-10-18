@@ -177,7 +177,10 @@ def add_operations(commands: Any) -> None:
     """One subcommand per registered operation, and the verbs beside them."""
     from polyweave.kernel import describe as D
 
-    for found in D.describe():
+    from .server import _project
+
+    # The project's own operations beside polyweave's, flags and all (§PW518).
+    for found in [*D.describe(), *_project().values()]:
         name = found["operation"]
         sub = commands.add_parser(name, help=found["summary"])
         for p in found["parameters"]:
@@ -267,6 +270,16 @@ def answer_for(stated: argparse.Namespace) -> Any:
             stated.root, write=stated.write, merge=stated.merge, agent=stated.agent
         )
 
+    from .server import _project
+
+    own = _project()
+    if stated.command in own:
+        from polyweave.loop import extend
+
+        declared = {p["name"]: p for p in own[stated.command]["parameters"]}
+        given = {name: parsed(getattr(stated, name), declared[name])
+                 for name in declared if hasattr(stated, name)}
+        return extend.called(stated.command, given)
     registered = D._REGISTRY[stated.command]
     if registered.layer:
         from polyweave.kernel.layer import off, on

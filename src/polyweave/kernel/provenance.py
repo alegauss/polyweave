@@ -31,9 +31,10 @@ from .describe import Param, operation
 from .errors import PolyweaveError
 from .layer import call, outdated_sections, record_kinds, staleness
 
-#: The record kinds the kernel writes itself: a purchase taken delivery of, and a file
-#: borrowed from another project. Every other kind is a layer's (§PW502).
-CORE_KINDS = ("fetch", "borrow")
+#: The record kinds the kernel writes itself: a purchase taken delivery of, a file
+#: borrowed from another project, and what a project's own operation made (§PW518).
+#: Every other kind is a layer's (§PW502).
+CORE_KINDS = ("fetch", "borrow", "extend")
 
 
 def kinds() -> tuple[str, ...]:

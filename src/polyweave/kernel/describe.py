@@ -294,7 +294,13 @@ def validate(name: str, args: dict) -> dict:
             allowed=_REGISTRY,
         ) from None
 
-    declared = {p["name"]: p for p in registered.parameters}
+    return checked(name, registered.parameters, args)
+
+
+def checked(name: str, parameters: Sequence[dict], args: dict) -> dict:
+    """Refuse `args` against declared `parameters`, and fill in the defaults: the rules
+    every operation is held to, a project's own included (§PW518)."""
+    declared = {p["name"]: p for p in parameters}
     unknown = sorted(set(args) - set(declared))
     if unknown:
         raise PolyweaveError(

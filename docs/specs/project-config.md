@@ -85,6 +85,7 @@ on = []                        # the layers this project uses; empty is every on
 
 [extend]
 measures = {}                  # the project's own, as [extend.measures.<name>] (PW517)
+operations = {}                # and as [extend.operations.<name>] (PW518)
 
 [review]
 language = "en"                # the review page and its sittings: en or pt-BR, one
@@ -580,3 +581,34 @@ runs, only those layers' operations beside the kernel's and the loop's; an off l
 operation is still described, marked `off`, and calling it answers `layer.off` with the
 line to add. A table of an off layer is refused by the layer's name. Without `[layers]`,
 or with `on` empty, every layer is on.
+
+## A project's own operations
+
+A generator only one game has, such as a rig that bakes its sprites, is declared under
+`[extend.operations.<name>]` (PW518) and served as `x.<project>.<name>`, beside
+polyweave's own operations. Its measures are declared the same way, under
+`[extend.measures]` ([measurements.md](measurements.md#a-projects-own-measure)).
+
+```toml
+[extend.operations.tile_sheet]
+fn       = "tools/art/tiles.py:sheet"   # called with the parameters by name
+about    = "cut a sprite sheet into tiles"
+produces = "picture"                    # what it answers as `artefact` is recorded
+kind     = "fetch"                      # a job kind: it runs as a job; none waits
+producer = true                         # search.sweep may turn it; it takes `out`
+[extend.operations.tile_sheet.params]
+source = { type = "str", about = "the sheet" }
+size   = { type = "int", about = "tile edge", lo = 8, hi = 256, unit = "px" }
+```
+
+- It is a tool (`x_<project>_<name>`), a command with flags and a `describe` answer,
+  all from this file alone; describing it never imports the project's code.
+- A call is held to `params` by the rules every operation is, then runs in a separate
+  interpreter, or as a job where it declares a `kind`.
+- Where the function answers an `artefact` and the operation `produces` something, the
+  file is recorded (`kind = "extend"`) with the function's source as its `fn` input, so
+  a changed function makes it outdated.
+- Its tools count in the session's tools/list under `project`, so a project's surface
+  cannot grow without the number showing it.
+- A declaration that cannot be served is `config.bad-operation`, a `project.check`
+  finding, and the project's operations are left off the list until it is fixed.
