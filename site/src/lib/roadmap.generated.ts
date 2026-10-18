@@ -47,7 +47,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 2 },
-  { block: "W", title: "A core that grows by layers", open: 2 },
+  { block: "W", title: "A core that grows by layers", open: 1 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -140,13 +140,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "V",
     symptom: "Cottony keeps its own settings and save code where the kits provide them",
     why: "The second game is what shows a kit is not one project's code moved into a folder.",
-    deps: [],
-  },
-  {
-    id: "PW522",
-    block: "W",
-    symptom: "Spinhold still runs on the flat package, so the 443 records and 30 verdicts most at stake in the break are unchecked",
-    why: "Spinhold holds the most data a person judged, so it proves whether the break kept the one thing it promised to keep.",
     deps: [],
   },
   {

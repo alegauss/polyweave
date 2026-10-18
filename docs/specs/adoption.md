@@ -644,6 +644,19 @@ ruff sorted them (§PW530). Rule 2 of `check_pieces.py` became the first real ex
 `pieces3d.accept.toml` through the script's own `ring`, and a rope painted onto the sheet
 measures 1.
 
+**Spinhold crossed second** (§PW522, its commit 8b31c62), with the most a person judged at
+stake. Four reads were taken first: `provenance.outdated`, `provenance.verify`,
+`loop.report` and `verdict.answers`. After `migrate --write` all four were identical,
+so its 443 records and every verdict crossed untouched, and no record kind went
+unreadable. Three art scripts were rewritten. `site_assets.py` had been moved by hand the
+day the split landed. `[layers] on` first left motion off, though the cinema opening is
+a `*.camera.toml` that `clip.camera` builds. That was fixed in polyweave before the move
+was committed (§PW531): a layer whose record kind the tree carries is now proposed on.
+The tools/list went from 201 tools and 130,085 characters to 183 and 116,003.
+`dev/check.gd`, `test_launch.py` and `words.check` pass. `game.test` finds no
+`tests/*_test.gd`, because Spinhold keeps its checks in `dev/check.gd`. Spinhold uses
+no `[extend]` entry, so the extension seam has one consumer so far.
+
 ## Still to come in this block
 
 The port PW36 is deferred on, once somebody records its baseline — and then the six

@@ -520,28 +520,6 @@ the swap, and its gate passes.
 
 ## Block W — A core that grows by layers
 
-### §PW522 Spinhold across the break
-
-Spinhold (`D:\Git\viglet\spinhold`, still called Starship in older lines here) has the
-most at stake. It holds 443 provenance records, 30 of them carrying a person's verdicts,
-19 verdict, canon and ledger files, and 12 acceptance specs. Its Python reaches into
-polyweave in four files, one of them importing `polyweave.geometry.voxel_fit` directly,
-which the representation line moves.
-
-The move, in Spinhold as one commit:
-
-1. Before anything changes, `provenance.outdated`, `provenance.verify`, `loop.report` and `verdict.answers` are written to a file as the baseline.
-2. `polyweave migrate --root .`, reviewed as a diff, then written.
-3. The same four reads again, compared with the baseline. Any difference is a defect in this block, filed here and fixed before the move is committed. Changing Spinhold's data to make the comparison pass is never the fix.
-4. `[layers] on` checked against what the game makes (pictures, voxels, sound, voice, words, vfx, engine), and the session's `tools/list` size written down before and after.
-5. Spinhold's gates and `game.test` pass. Its skills and `CLAUDE.md` stop naming moved module paths.
-
-Spinhold is the second consumer, and the test of whether the block generalised beyond
-Cottony. A seam that only one consumer used will show up here as an unused contribution,
-and that is worth a note in the changelog entry.
-
-Done when the four reads match their baseline and Spinhold's gates pass.
-
 ### §PW530 migrate keeps a block of imports sorted
 
 `python -m polyweave migrate --write` on Cottony (PW521) left five of its ten rewritten
