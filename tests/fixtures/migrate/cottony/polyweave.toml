@@ -1,0 +1,192 @@
+# Cottony's polyweave config.
+#
+# Every value here was read off a constant that exists in this repository — the file it
+# came from is in the comment — rather than invented to make the config look adequate.
+# §PW36 of the plugin's backlog is the audit that produced it, and
+# `tests/fixtures/cottony.toml` over there is the copy its gate keeps honest: a key
+# renamed inside the plugin turns that red before it turns this red.
+
+[project]
+name = "cottony"
+root = "."
+
+[paths]
+# **Neither binary is stated, and that is deliberate.** A path to an executable is the one
+# setting that is about a machine rather than about this project, and a declared `godot`
+# that is not there is refused outright rather than falling back — so a path from one desk
+# committed here breaks every other desk, and breaks CI, which sets $GODOT itself.
+#
+# So the engine comes from $GODOT or from PATH, which is where it came from before and
+# what CI already does. On Windows point it at the **console build**: the other one is a
+# GUI binary that detaches from the console, and every runner here reads the line the
+# script printed rather than trusting an exit code.
+#
+#   setx GODOT "D:\Dev\godot\Godot_v4.7.1-stable_win64_console.exe"
+meshes     = "tools/art/3d"              # bake_model.py MODELS_DIR
+renders    = "docs/design/art"           # bake_model.py ART
+references = "docs/design/references"
+specs      = "docs/design/accept"
+work       = ".polyweave"
+purchases  = "tools/art/3d/meshy.lock.json"   # the ledger that is already there
+loop       = "polyweave.loop.json"
+audio      = "docs/design/audio"         # the music and every effect, side by side
+# The effects are General MIDI scores (polyweave PW192), played by FluidSynth from a
+# SoundFont that, like the engines above, is the machine's and never the game's:
+#   setx SOUNDFONT "D:\Dev\soundfonts\GeneralUser-GS.sf2"   and FluidSynth on PATH
+soundfont  = "${SOUNDFONT}"
+
+[render]
+# Cottony renders at one sample count for everything: SAMPLES = 320 in bake_model.py.
+# The ladder is the plugin's contribution, and 320 is what its top rung has to match for
+# a ported render to be comparable with the one it replaces.
+rungs        = ["sphere", "preview", "final"]
+preview_size = 256
+final_size   = 1024
+samples      = { sphere = 32, preview = 64, final = 320 }
+seed         = 7                          # bake_model.py SEED
+max_parallel = 4
+
+[service]
+base    = "https://api.meshy.ai"
+key_env = "MESHY_API_KEY"
+schema  = "polyweave.service.toml"
+
+[budget]
+# A person's decision, and this one is deliberately zero: the meshes this project buys
+# are already bought and in the lock file. Adoption does not re-buy them.
+credits = 0
+expires = ""
+
+[units]
+# scripts/board.gd holds `const CELL := 112`, and reading it there is what stops the two
+# numbers drifting.
+source    = "scripts/board.gd:CELL"
+tolerance = 0.001
+
+[capture]
+# project.godot declares two translations — cottony.en and cottony.pt_BR — so which
+# language a screenshot is in is exactly the thing that cannot be left to the machine.
+# `locale` is the default, for a declared run that names none (board3d_beside). The gallery
+# captures each state their own in tools/capture_screens.py, and all of them are English,
+# README.md's language and the one the owner chose for the site (RK148).
+#
+# `seed` is the global RNG's, and it is here because the strike capture proved it belongs:
+# Fx.strike throws its rays at randf() angles, Godot seeds the global generator afresh in
+# every process, and the picture came out different every run. Each board already fixes its
+# own generator, so the deal was never the loose thing. The value is arbitrary and only has
+# to stay put — moving it redraws the blast, which is a picture worth reviewing.
+declared   = ["locale", "resolution", "seed"]
+locale     = "pt_BR"
+resolution = [1080, 1920]                 # project.godot viewport_width/height
+seed       = 20260923
+
+[engine]
+# QUIT_AFTER and TIMEOUT_SECONDS as capture_screens.py held them: a capture settles in a
+# few dozen frames, and a hundred seconds at 60 fps is a hang.
+fixed_fps = 60
+frames    = 6000
+timeout   = 180
+# What game.boot forgives at exit (polyweave PW469): the music loop's Ogg playback and its
+# packet playback, holding one stream and its packet sequence, which the headless dummy
+# audio driver never releases. A windowed run on a real driver prints neither (RK75, RK134).
+leaks     = [4, 2]
+
+[rig]
+# The skeleton, not the render rig. The friends are plush toys.
+plan       = "plush"
+influences = 4
+falloff    = 4.0
+
+[sound.music]
+# The recorded track, looped by `python -m polyweave sound.loop` (polyweave PW192). Its source
+# is the 20 MB WAV RK134 removed, still in Git LFS history:
+#   git show e1a41f8^:docs/design/audio/music_calm.wav | git lfs smudge > .polyweave/music/source.wav
+#   python -m polyweave sound.loop --track .polyweave/music/source.wav --out docs/design/audio/music_calm.ogg
+kind     = "loop"
+format   = "ogg"
+cues     = ["music_calm"]
+
+[sound.effects]
+# Each a General MIDI score under tools/audio/sfx/, rendered by
+#   python -m polyweave music.render --source tools/audio/sfx/<cue>.music.toml --out docs/design/audio/<cue> --formats wav
+kind     = "effect"
+format   = "wav"
+cues     = ["booster_arm", "booster_down", "booster_earn", "booster_shuffle", "cascade_1",
+            "cascade_2", "cascade_3", "cascade_4", "cascade_5", "cascade_6", "cascade_7",
+            "cascade_8", "charge", "choose", "fire_bomb", "fire_line", "fire_rainbow", "land",
+            "pick", "pop_button", "pop_candy", "pop_drop", "pop_heart", "pop_puff", "pop_star",
+            "reject", "star_1", "star_2", "star_3", "swap"]
+
+[licence."GeneralUser-GS.sf2"]
+# Read off the bank's own LICENSE.txt (GeneralUser GS v2.0.3, License v2.0).
+terms  = "GeneralUser GS License v2.0: use without restriction for music creation, private or commercial"
+credit = ""
+note   = "its author cannot vouch for the origin of every sample, though none came from commercial banks"
+
+[geometry]
+outlines = "tools/art/solid.py"
+
+[review]
+# The owner judges in Portuguese: the review page and its sittings are read in pt-BR.
+language = "pt-BR"
+
+# The scripts under tools/perf, each held to the line it prints when it did what it is for
+# (polyweave PW467). `python -m polyweave engine.run_declared` runs all of them, and
+# `--runs '["piece_sheet3d"]'` one; a script that never printed its line fails, whatever
+# Godot exited with, and a file it named and did not write fails too. The board shot is
+# the screen the player sees, so it is taken in [capture] declared and recorded; the
+# others render sheets and props at their own sizes. Every one but piece_extent needs a
+# real renderer, so CI has no screen for these. cascade.gd is tools/measure_frames.py's,
+# which holds the number it prints to a ratio.
+[run.board3d_align]
+script = "tools/perf/board3d_align.gd"
+expect = 'aligned: \d+ cells'
+
+[run.board3d_beside]
+script   = "tools/perf/board3d_beside.gd"
+expect   = 'captured: res://(?P<wrote>\S+) (?P<width>\d+) x (?P<height>\d+)'
+produces = ["wrote"]
+capture  = true
+
+[run.markings3d]
+script   = "tools/perf/markings3d.gd"
+expect   = 'captured: res://(?P<wrote>\S+?),? '
+produces = ["wrote"]
+
+[run.material_match]
+script   = "tools/perf/material_match.gd"
+expect   = 'matched: \d+ subjects inside their bands, res://(?P<wrote>\S+)'
+produces = ["wrote"]
+
+[run.piece_extent]
+script = "tools/perf/piece_extent.gd"
+expect = 'kind\s+mesh w/cell'
+
+[run.piece_sheet3d]
+script   = "tools/perf/piece_sheet3d.gd"
+expect   = 'captured: res://(?P<wrote>\S+?),? '
+produces = ["wrote"]
+
+[run.tray_match]
+script   = "tools/perf/tray_match.gd"
+expect   = 'matched: the tray holds its bake, res://(?P<wrote>\S+)'
+produces = ["wrote"]
+
+[adoption.own]
+# What this tree still does that a polyweave call also does, kept on purpose and each with
+# why (polyweave PW59). `python -m polyweave init --check` fails on any other file that starts
+# Godot, drives Blender, calls a generative service or holds a picture to a statistic of its
+# own, so a runner, rig or gate written again beside the call is caught in the commit that
+# writes it. `python -m polyweave project.adoption` says how much is left.
+"tools/art/bake_model.py"      = "the rig every family moved off, kept until the owner takes it out (polyweave PW82)"
+"tools/art/cloth.py"           = "Cottony's own cotton, dressed onto a shape in Blender before polyweave renders it"
+"tools/art/solid.py"           = "the outlines [geometry] names, which polyweave's own build loads"
+"tools/art/tray_model.py"      = "the tray's geometry in code, read by frame_trays.py; the trays build from declarations (polyweave PW78)"
+"tools/art/frame_trays.py"     = "bakes the two trays through polyweave and checks they land on the game's grid (polyweave PW78)"
+"tools/art/prop_model.py"      = "four map props built from code, which no polyweave declaration can say; polyweave renders them (PW77)"
+"tools/art/ball_model.py"      = "the shuffle ball, a sphere swirled in Python; polyweave renders it (polyweave PW80)"
+"tools/art/export_props.py"    = "writes prop_model's meshes for polyweave's port.run (polyweave PW77)"
+"tools/art/export_boosters.py" = "writes the booster meshes for port.run, the fetched two through normalise.ingest (PW80)"
+"tools/art/export_friends.py"  = "writes the friends' meshes, dressed by cloth.py, for polyweave's port.run (PW81)"
+"tools/art/meshy.py"           = "the Meshy client the committed meshes were fetched with, from before mesh.buy"
+"tools/check_pieces.py"        = "rings and silhouette gaps no measure names; the owner decides (polyweave PW57)"

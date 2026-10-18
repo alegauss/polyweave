@@ -34,7 +34,8 @@ from polyweave.kernel.errors import PolyweaveError, detail_line
 
 #: The verbs that are not operations: the first reads, the job handle's, and the server.
 VERBS = (
-    "capabilities", "explain", "describe", "job", "serve", "notice", "init", "hook"
+    "capabilities", "explain", "describe", "job", "serve", "notice", "init", "hook",
+    "migrate",
 )
 
 #: The most a session notice may cost, in characters: one line, read every session.
@@ -236,7 +237,13 @@ def add_operations(commands: Any) -> None:
     init.add_argument("--agent", action="store_true", help="wire the agent: AGENTS.md")
     init.add_argument("--check", action="store_true", help="report gaps, write nothing")
     init.add_argument("--json", action="store_true")
-    commands.add_parser("serve", help="serve every operation as an MCP tool, on stdio")
+    migrate = commands.add_parser(
+        "migrate", help="carry a project across the layout break (a diff)"
+    )
+    migrate.add_argument("--root", default=".")
+    migrate.add_argument("--write", action="store_true", help="apply it, not only show")
+    migrate.add_argument("--json", action="store_true")
+    commands.add_parser("serve",help="serve every operation as an MCP tool, on stdio")
     notice = commands.add_parser("notice", help="the one line a session starts with")
     notice.add_argument("--root", default=".")
     hook = commands.add_parser("hook", help="a Claude Code hook, its event on stdin")
@@ -269,6 +276,10 @@ def answer_for(stated: argparse.Namespace) -> Any:
         return init(
             stated.root, write=stated.write, merge=stated.merge, agent=stated.agent
         )
+    if stated.command == "migrate":
+        from .migrate import migrate
+
+        return migrate(stated.root, write=stated.write)
 
     from .server import _project
 
@@ -428,7 +439,8 @@ def run(stated: argparse.Namespace) -> int:
     # An adoption check is a gate a project can put in its own (§PW220), and so are the
     # integrity check, the game's tests and what the project still does itself (§PW358,
     # §PW362, §PW59).
-    gates = ("init", "project.check", "engine.check", "project.adoption", "game.boot")
+    gates = ("init", "project.check", "engine.check", "project.adoption", "game.boot",
+             "migrate")
     if stated.command in gates and answer.get("clean") is False:
         return 1
     if stated.command in ("game.test", "engine.run_declared") and answer.get(

@@ -597,6 +597,39 @@ the main scene. The gate, `tools/gate.py`, runs `project.check`, `engine.check` 
 new tree and every kit `provenance.read` says it carries, with its version; the gate
 passes on the first commit.
 
+## Across the layout break
+
+Block W broke code and config on purpose and kept data (§PW499 onward). A provenance
+record names only `tool` and `version` under `producer`, never a module path, so records,
+specs, canon, verdicts and ledgers cross unchanged. Two things do not: a project's own
+Python, whose imports name modules that moved, and its `polyweave.toml`, which needs
+`[layers] on`.
+
+    python -m polyweave migrate --root <project>          # a diff, nothing written
+    python -m polyweave migrate --root <project> --write  # applied
+
+The moves are data, in `src/polyweave/surface/moved.toml`: each old module path to its
+new one, the few public names that left their module, and any renamed table (block W
+renamed none). `tests/test_migrate.py` fails on a line whose target the package does not
+hold. An import that already resolves is left alone, so a second run changes nothing. One
+that cannot be mapped is named under `unmapped` with its file and line, never guessed at,
+and the command then exits 1. So does a `module.name` the file reaches through a module
+that no longer holds the name, since an import that resolves can still be used for a
+function that left it. `from polyweave import a, b, c` splits into one import per new
+home, and `import polyweave.x` takes its dotted uses along.
+
+`[layers] on` is written only where the file has none: what `project.init` reads in the
+tree, the owner of every table the file holds, and the layer of every module its Python
+imports, each with the reason. `--write` also clears the work area's `jobs` and `cache`,
+whose keys name the old version. A Markdown file (skills under `.claude/` included) that
+names a moved module is reported under `mentions` and not rewritten. A record whose kind
+no layer declares is reported under `unreadable` and left as it is.
+
+Checked on copies of both consumers as the break found them (`tests/fixtures/migrate/`):
+Cottony's ten files and Spinhold's three migrate with nothing unmapped, and
+`project.check`, `project.adoption` and `provenance.outdated` answer the same before and
+after.
+
 ## Still to come in this block
 
 The port PW36 is deferred on, once somebody records its baseline — and then the six

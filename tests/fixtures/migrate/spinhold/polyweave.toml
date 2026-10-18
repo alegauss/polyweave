@@ -1,0 +1,215 @@
+[project]
+name = "spinhold"
+
+[paths]
+godot     = "${GODOT}"                       # or PATH; a desk's own path is never committed
+meshes    = "assets/models"                  # what Godot imports, in the project's frame
+work      = ".polyweave"
+purchases = "tools/art/meshy/purchases.json" # the ledger, committed with the meshes it names
+renders   = "art/renders"                    # the looks a person is shown, one per model (RK94)
+specs     = "art/accept"                     # what each model's look must hold (RK94)
+audio     = "game/audio"                     # where the game's sounds land (RK87)
+
+# Two paid services, each with its own key, prices and ceiling (RK90). A spend on one
+# never draws on the other's, and a call names which it means.
+[service.meshy]
+base    = "https://api.meshy.ai"
+key_env = "MESHY_API_KEY"
+schema  = "tools/art/meshy/schema.toml"
+# credits per untextured preview, from Meshy's published API pricing; meshy-5 and meshy-7
+# are no longer listed, and are what this project's ledger shows they cost (RK95)
+prices  = { "meshy-5" = 5, "meshy-7" = 20, "meshy-6-lite" = 5, "meshy-6" = 20, "meshy-7.1" = 20 }
+
+[service.ideogram]
+base    = "https://api.ideogram.ai"
+key_env = "IDEOGRAM_API_KEY"
+schema  = "tools/art/ideogram/schema.toml"
+# US dollars per output image, from Ideogram's published API rates. `describe` has no
+# published price, so it is quoted high until purchase.reconcile reads the real bill.
+prices  = { "4.0" = 0.06, "4.0:TURBO" = 0.03, "4.0:QUALITY" = 0.10, "3.0" = 0.06, "remix" = 0.06, "edit" = 0.06, "reframe" = 0.06, "describe" = 0.06 }
+
+# The pilot's voice and lines (RK218). US dollars per character sent, quoted from the
+# Starter plan's $5 for 30,000 characters and rounded up, so the ceiling quotes high. The
+# account moved to Starter on 2026-10-12, for its commercial licence and the voice design
+# the free tier refuses through the API.
+[service.elevenlabs]
+base    = "https://api.elevenlabs.io"
+key_env = "ELEVENLABS_API_KEY"
+prices  = { "eleven_multilingual_v2" = { per = "character", rate = 0.0002 }, "eleven_multilingual_ttv_v2" = { per = "character", rate = 0.0002 }, "eleven_v3" = { per = "character", rate = 0.0002 }, "eleven_ttv_v3" = { per = "character", rate = 0.0002 } }
+
+# the user's ceiling, set 2026-09-23 for the ship and the first enemies (RK6)
+[budget.meshy]
+amount  = 60
+unit    = "credits"
+expires = "2026-12-31"
+
+# What every voxel actor's build is checked against (RK39): an actor is a few thousand cells
+# at most, since each is a cube on screen and, once it breaks, a cube of debris, and detail
+# is what sells the game (AGENTS.md), so the ceiling leaves room for it; a one-cell
+# thread longer than two reads as a hair and breaks off as a single cube. The cell size is
+# each declaration's own until polyweave takes a project default (PW229).
+[voxels]
+budget        = 6000
+thread        = 2
+near_symmetry = 0.9
+
+# What a capture of the running game is taken in, stated and checked (RK98): the game has
+# one language today, and the site's pictures are full HD.
+[capture]
+locale     = "en"
+resolution = [1920, 1080]
+
+# Spinhold's look, declared once and composed into every structured prompt (RK92). The
+# skeleton's keys are the style block Ideogram 4.0 reads, and they win over a prompt's own.
+# A canon grows only by a person's verdict on the review page (RK93).
+[style.brand]
+canon    = "art/canon/brand"
+# pictures a person may admit from the review page without a gate (polyweave PW266)
+candidates = ["art/brand/reference/*.jpg", "art/brand/key-art.png"]
+palette  = ["#0B0B1A", "#F4F7FF", "#FF3DCB", "#6A1B9A", "#3FE8FF"]
+skeleton = { art_style = "dark neon, a voxel cylinder colony seen from the side, never a sphere", medium = "3D voxel render", lighting = "emissive neon edges against deep space", aesthetics = "no caption, no label, no lettering unless asked for" }
+
+[style.holders]
+canon    = "art/canon/holders"
+candidates = ["art/brand/reference/*colonists*.jpg"]
+palette  = ["#FFE3C4", "#FF7A59", "#FFD94D", "#4DFF73", "#0B0B1A"]
+skeleton = { art_style = "small chunky voxel figures with the Viglet face: two dot eyes, a small smile, blushed cheeks", medium = "3D voxel render", lighting = "soft warm light", aesthetics = "cute and warm against a cold neon world" }
+cell     = [64, 64]
+margin   = 4
+anchor   = "base"
+
+[style.lattice]
+canon    = "art/canon/lattice"
+palette  = ["#1A73FF", "#8C33FF", "#FF4033", "#FF3DCB", "#3FE8FF", "#0B0B1A"]
+skeleton = { art_style = "cube-built machine, hard edges, emissive neon lines, a single object on its own, standing tall, its height at least two thirds of its width, never thin or flat", medium = "3D voxel render", lighting = "neon rim light", aesthetics = "transparent background, no ground, no stand, no pedestal, no text" }
+cell     = [128, 128]
+margin   = 8
+anchor   = "centre"
+
+# The Quilt (RK201): the mill ring drawn in Cottony's colours and by its rules. The palette
+# is a snapshot of D:\Git\viglet\cottony\tools\art\palette.py taken on 2026-10-08, since a
+# style cannot yet borrow another project's (PW387): the six piece hues (heart, drop, star,
+# button, puff, candy), the fabric's piping, card, cell and stitch, and the sky's three
+# stops. It is Cottony's daylight; the dusk the ring is drawn at is RK205's, measured
+# against art/accept/legibility-quilt.accept.toml rather than chosen here.
+[style.quilt]
+canon    = "art/canon/quilt"
+palette  = ["#FF7FAC", "#5FBCF0", "#FFC43F", "#A688EC", "#7FD8A8", "#FF9166", "#FFFAEE", "#F7E8CB", "#DEC79E", "#BD9770", "#9FD3F4", "#D6D4F3", "#F7C7DD"]
+skeleton = { art_style = "two materials only: matte stitched felt with a dashed thread seam inset from every rim, and glossy moulded candy with a mould line and one gloss window at the upper left; quilted patches in several hues, shadows that keep their hue, nothing floats, imperfect by hand", medium = "3D voxel render", lighting = "one warm key light above and to the left, at dusk", aesthetics = "transparent background, no ground, no stand, no pedestal, no text" }
+cell     = [128, 128]
+margin   = 8
+anchor   = "centre"
+
+# the user's ceiling, set 2026-09-25 for Block P's picture runs (RK90)
+[budget.ideogram]
+amount  = 2.0
+unit    = "USD"
+expires = "2026-12-31"
+
+# the user's ceiling, set 2026-10-12 for the pilot's voice and lines (RK218)
+[budget.elevenlabs]
+amount  = 5.0
+unit    = "USD"
+expires = "2026-12-31"
+
+# The game's sound effects, all made by polyweave (RK87, RK115): each cue lands at
+# game/audio/sfx/<cue>.wav, made by `sound.synth` from art/audio/effects.sfx.toml.
+[sound.effects]
+kind   = "effect"
+format = "wav"
+folder = "sfx"
+cues   = ["lost", "pickup", "reward", "crew_blip", "shot", "hit", "kill", "boost", "bomb", "boom", "puff", "chime", "rescue", "death", "evolve", "riser", "splash_gather", "splash_pop", "splash_boing"]
+
+# The phase music (RK115): each cue is a loop `music.render` makes from
+# art/audio/<cue>.music.toml, at the render's own master level.
+[sound.music]
+kind     = "loop"
+format   = "wav"
+folder   = "music"
+loudness = -18.0
+cues     = ["phase_1", "phase_2", "phase_3", "title", "quilt", "quilt_boss"]
+
+# The menus' sounds (RK157): each cue lands at game/audio/ui/<cue>.wav, made by
+# `sound.synth` from art/audio/interface.sfx.toml, and plays on the Interface bus.
+[sound.interface]
+kind   = "effect"
+format = "wav"
+folder = "ui"
+cues   = ["ui_move", "ui_tab", "ui_confirm", "ui_back", "ui_refused", "ui_open", "ui_close", "ui_shutter"]
+
+# What a player reads, held to the world (RK73): the game's string table, read with tr(),
+# and the verdicts a person gave on its lines. `ordinary` lists the interface's own words,
+# which the check would otherwise read as names since the interface is set in capitals.
+[words]
+table    = "game/text/strings.csv"
+canon    = "art/words/canon.json"
+# who speaks a line, as a world entity (RK89), and where voice.lines puts its take (RK218)
+speaker  = "_speaker"
+voiced   = "game/audio/voice/{locale}/{key}.mp3"
+ordinary = [
+  "ALL", "ATTEMPT", "BEST", "CHOOSE", "CO-OP", "COMPLETE", "COUNTED", "DAILY", "DOWN",
+  "DRILL", "FIRE", "FIREPOWER", "GAME", "HERE", "JOIN", "LB", "LEFT", "LIVES", "MOVE",
+  "NEW", "NOTHING", "OF", "OPTIONS", "OR", "OVER", "P2", "PAD", "PAUSE", "PAUSED",
+  "PRACTICE", "PRESS", "PULSES", "RB", "REPLAY", "RIGHT", "RT", "SCORE", "SCORES",
+  "SECOND", "SET", "SHIFT", "SPEED", "START", "TENDERS", "TO", "UP", "WASD", "WEEK",
+  "WEEKLY", "WITH", "YET", "YOUR",
+  "ABOARD", "AN", "BEAMS", "BONUS", "CREW", "DAMAGE", "DRAIN", "ELITE", "EVERY",
+  "EVOLUTION", "EVOLVES", "EXTRA", "FOLDED", "FOUND", "GUNS", "Gunner", "HALF",
+  "INTERVAL", "JOINING", "JOINS", "KILL", "LEVEL", "LIFE", "LINK", "NEXT", "NO", "NOT",
+  "PER", "PICK", "PICKUP", "PIERCE", "PLAYER", "REACH", "RESCUE", "RISES", "SAVED",
+  "SELECT", "SHIELD", "SHIELDS", "SHOTS", "STATUS", "STUN", "SURVIVAL", "WARNING", "WAVE",
+  "ADAPTIVE", "AUDIO", "BILINEAR", "BORDERLESS", "BUTTON", "CARD", "CONTROLS", "CUSTOM",
+  "DEFAULT", "DISPLAY", "DISTRICT", "DONE", "FEEDBACK", "FSR", "FULLSCREEN", "FXAA",
+  "GRAPHICS", "HIGH", "IN", "KEEP", "KEY", "LEAST", "LEAVE", "LOW", "MEDIUM", "MOST",
+  "MSAA", "OFF", "ON", "POINTS", "REROLL", "SALVAGE", "TAA", "THIS", "UI", "ULTRA",
+  "UNLIMITED", "WINDOWED",
+  # the title's menu (RK152)
+  "RECORDS", "QUIT", "FLY", "WATCH",
+  # the codex (RK68)
+  "CODEX", "COMMON", "DESTROYED", "EVOLUTIONS", "EVOLVED", "RARE",
+  # the studio's name on the boot splash (RK86), outside the game's world
+  "Viglet", "Games",
+  # the keys and pad buttons the prompts name (RK179)
+  "ALT", "BACKSPACE", "CAPSLOCK", "CTRL", "D-DOWN", "D-LEFT", "D-RIGHT", "D-UP", "DELETE",
+  "EAST", "END", "ENTER", "ESCAPE", "GUIDE", "HOME", "INSERT", "LS", "NORTH", "PAGEDOWN",
+  "PAGEUP", "RS", "SOUTH", "SPACE", "TAB", "WEST",
+  # a wave's announcement (RK122)
+  "INCOMING", "FREE",
+  # the Feedback option that dims the city under the shots (RK142)
+  "BACKGROUND", "DIM",
+  # the end panel's goals (RK130)
+  "GOALS", "REACHED",
+  # the Graphics tab's backdrop (RK131)
+  "BACKDROP",
+  # "I" and its contractions, always capitalised in English (polyweave PW244)
+  "I'll", "I've", "I'm",
+  # the banner of a hidden road opening (RK213)
+  "LOST", "HIDDEN", "ROAD", "OPENS",
+]
+# the ordinary words of one language alone (polyweave PW329): the interface's own words in
+# Brazilian Portuguese (RK163), and a language's own name in the language list (RK161)
+[words.ordinary_in]
+pt_BR = [
+  "Brasil", "ABATE", "ABATIDA", "ADAPTATIVO", "AINDA", "AJUSTAR", "ALCANCE", "ALCANÇADAS", "ALERTA", "ALTO",
+  "AOS", "APERTE", "AQUI", "ARMAS", "AS", "ASSISTIR", "ATIRAR", "BAIXO", "BORDAS", "BORDO",
+  "BOTÃO", "BÔNUS", "CAPS", "CARTA", "CHEGANDO", "CHEIA", "CIMA", "COLETA", "COM", "COMECE",
+  "COMUM", "CONCLUÍDO", "CONTROLE", "CONTROLES", "CÓDEX", "D-BAIXO", "D-CIMA", "D-DIREITA", "D-ESQUERDA", "DANO",
+  "DESCOBERTA", "DESLIGADO", "DESTRUÍDOS", "DIREITA", "DISTRITO", "DIÁRIA", "DIÁRIO", "ELO", "ENSAIO", "ENTRA",
+  "ENTRAR", "ESC", "ESCOLHA", "ESCUDO", "ESCUDOS", "ESCURECER", "ESPAÇO", "ESQUERDA", "EVOLUI", "EVOLUÇÃO",
+  "EVOLUÇÕES", "EVOLUÍDO", "FALTAM", "FEITO", "FEIXES", "FIM", "FOGO", "FPS", "FUNDIDO", "FUNDO",
+  "GASTO", "GRÁFICOS", "ILIMITADO", "INTERVALO", "JANELA", "JOGADOR", "JOGO", "LESTE", "LIBERTE", "LIGADO",
+  "LOCK", "MANTER", "MELHOR", "METADE", "METAS", "MOVER", "MÁXIMO", "MÉDIO", "MÍNIMO", "NA",
+  "NADA", "NENHUM", "NORTE", "NOVO", "NÃO", "NÍVEL", "OESTE", "ONDA", "OPÇÕES", "OS",
+  "OU", "PADRÃO", "PAGE", "PARA", "PAUSA", "PAUSADO", "PERFURAÇÃO", "PERSONALIZADO", "PODER", "PONTOS",
+  "PONTUAÇÃO", "POR", "PROTEÇÃO", "PRÓXIMA", "PRÓXIMO", "RARO", "RECORDE", "RECORDES", "RESGATE", "SAIR",
+  "SALVO", "SALVOS", "SEGUNDO", "SEM", "SEMANA", "SEMANAL", "SEU", "SOBREVIVÊNCIA", "SORTEIO", "SUA",
+  "SUCATA", "SUL", "SURGE", "TECLA", "TELA", "TENTATIVA", "TIRO", "TIROS", "TODAS", "TODOS",
+  "TREINO", "TRIPULANTE", "TRIPULAÇÃO", "TURNO", "UM", "UMA", "VALENDO", "VEL", "VELOCIDADE", "VIDA",
+  "VIDAS", "VOE", "ÁUDIO",
+  # the banner of a hidden road opening (RK213)
+  "PERDIDO", "ESTRADA", "ESCONDIDA", "SE", "ABRE",
+]
+
+# The language the review page and its sittings are read in (polyweave PW287).
+[review]
+language = "pt-BR"

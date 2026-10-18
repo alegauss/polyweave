@@ -322,7 +322,9 @@ HELP_VERB = 4_900
 #: 31,210 with picture.sew (§PW474).
 #: 31,375 with reference.concept (§PW477).
 #: 31,531 with reference.sample (§PW480).
-HELP_TOP = 31_600
+#: 31,620 with migrate, the one command that carries a project across the layout
+#: break, which no adopter can do without (§PW520).
+HELP_TOP = 31_700
 #: A search's answer over its default budget of 24 samples: 3,739.
 #: 4,019 where it fails with its best on an edge, which `at_bound` and `stopped` now
 #: say, so a range that cut the answer off is not read as unreachable (§PW442).

@@ -124,6 +124,8 @@ CORE: dict[str, tuple[str, str]] = {
     "polyweave.kernel.cache": (
         "internal", "the render cache, reached through bake's cached"),
     "polyweave.surface.census": ("internal", "this census's own walk"),
+    "polyweave.surface.migrate": (
+        "internal", "the `migrate` verb's rewrite across the layout break"),
     "polyweave.surface.commands": (
         "internal", "the command line derived from the registry"),
     "polyweave.surface.server": (

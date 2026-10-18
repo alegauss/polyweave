@@ -520,28 +520,6 @@ the swap, and its gate passes.
 
 ## Block W — A core that grows by layers
 
-### §PW520 polyweave migrate: one command across the break
-
-The block breaks code and config on purpose, and it does not break data. Spinhold's 443
-provenance records name only `tool` and `version` under `producer`, never a module path,
-and 30 of them carry a person's verdicts. That was checked before this line was written.
-So records, specs, canon and ledgers carry over unchanged. Two things do not:
-
-- **Imports.** Cottony has 10 Python files that import polyweave (`polyweave.errors`, `.testing`, `.pack`, `.geometry`, `.render`, `.image`) and Spinhold has 4 (`polyweave.config`, `.capture`, `.provenance`, `.geometry.voxel_fit`). PW499 already broke them: Spinhold's `tools/site_assets.py --check` died on ImportError until fixed by hand. Each path changes when its module moves to its layer.
-- **The project file.** It needs `[layers] on`, and it needs any table whose owner or name a line in this block changed.
-
-`python -m polyweave migrate --root <project>` reads a table of old module paths to new
-ones, written by the layout line as a file of data, and rewrites the project's own
-imports. It writes `[layers] on` from what `project.init` detects, moves any renamed
-table, and clears `.polyweave/jobs` and the cache, whose keys name the old version. By
-default it reports a diff; `--write` applies it. It never touches a provenance record, a
-verdict or a canon. A record whose kind no layer declares is reported as unreadable, not
-rewritten.
-
-Done when a fixture copy of each consumer's config and imports migrates, and
-`project.check`, `project.adoption` and `provenance.outdated` answer the same before and
-after.
-
 ### §PW521 Cottony across the break
 
 Cottony (`D:\Git\viglet\cottony`) is the first consumer and the one that reaches

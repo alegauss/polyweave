@@ -45,8 +45,10 @@ line-length = 88
 src = ["src", "tests"]
 target-version = "py311"
 # The hooks under `.claude` are this repository's plumbing rather than the plugin, and
-# they predate any lint config here.
-extend-exclude = [".claude"]
+# they predate any lint config here. The migration fixtures are two consumers' scripts
+# copied as they were, which is what tests/test_migrate.py reads, so they are not ours
+# to lint.
+extend-exclude = [".claude", "tests/fixtures/migrate"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]

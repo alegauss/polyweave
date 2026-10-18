@@ -47,7 +47,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 2 },
-  { block: "W", title: "A core that grows by layers", open: 3 },
+  { block: "W", title: "A core that grows by layers", open: 2 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -143,25 +143,18 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW520",
-    block: "W",
-    symptom: "A project's polyweave.toml and the Python importing polyweave break on the new layout, with nothing to carry them over",
-    why: "The block owes callers no compatibility, so one command must carry a project across, or every adopter pays for the break by hand.",
-    deps: [],
-  },
-  {
     id: "PW521",
     block: "W",
     symptom: "Cottony still runs on the flat package and serves every layer, so the block is unproven on its first consumer",
-    why: "A layering proven only on fixtures can still be wrong where a real game reaches into it, and Cottony reaches deepest, from Python, a rig and its own scripts.",
-    deps: ["PW520"],
+    why: "A layering proven only on fixtures can still be wrong where a real game reaches into it, and Cottony reaches deepest, from Python, a rig and scripts.",
+    deps: [],
   },
   {
     id: "PW522",
     block: "W",
     symptom: "Spinhold still runs on the flat package, so the 443 records and 30 verdicts most at stake in the break are unchecked",
     why: "Spinhold holds the most data a person judged, so it proves whether the break kept the one thing it promised to keep.",
-    deps: ["PW520"],
+    deps: [],
   },
 ];
 
