@@ -880,6 +880,40 @@ def update(
     }
 
 
+#: A fixture's own name, as project.godot states it.
+NAMED = re.compile(r'^config/name="([^"]*)"', re.MULTILINE)
+
+
+def fixture(name: str, to: Path, kits: dict | None = None) -> Path:
+    """A fresh copy of a kit's fixture at `to`, under a name of this run's own (§PW532).
+
+    Godot names user:// after `config/name`, and every copy of a fixture kept the
+    fixture's, so every proof of a kit shared one user:// across runs and processes:
+    a marker one run left there failed the next proof. The copy is named apart; a
+    game's own install is never renamed, only this copy. `forget` removes what it
+    left in user://.
+    """
+    import os
+    import secrets
+
+    kit = (kits or every())[name]
+    shutil.copytree(Path(kit["folder"]) / kit["proves"]["fixture"], to)
+    project = to / "project.godot"
+    text = project.read_text(encoding="utf-8")
+    own = f"{os.getpid()}-{secrets.token_hex(3)}"
+    project.write_text(
+        NAMED.sub(lambda m: f'config/name="{m.group(1)} {own}"', text, count=1),
+        encoding="utf-8")
+    return to
+
+
+def forget(game: Path) -> None:
+    """Remove the user:// a fixture copy ran under, which no later run reads."""
+    from polyweave.layers.engine.driving import _user_dir
+
+    shutil.rmtree(_user_dir(game), ignore_errors=True)
+
+
 @operation("kit.prove")
 def prove(
     name: Annotated[str, Param("one kit; every kit the plugin carries if unset")] = "",
@@ -926,8 +960,7 @@ def prove(
             )
             continue
         with tempfile.TemporaryDirectory() as scratch:
-            game = Path(scratch) / "game"
-            shutil.copytree(folder / kit["proves"]["fixture"], game)
+            game = fixture(one, Path(scratch) / "game", kits)
             _shadowed(game, kits)
             try:
                 answer = install(one, root=str(game))
@@ -941,6 +974,8 @@ def prove(
                     }
                 )
                 continue
+            finally:
+                forget(game)
         held = answer["ok"]
         said.append(
             {

@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import json
 import os
-import shutil
 import subprocess
 import time
 
@@ -75,35 +74,47 @@ def test_user_dir_follows_the_project_name_or_its_custom_folder(tmp_path):
     assert driving._user_dir(tmp_path).name == "stargarden"
 
 
-def _installed(tmp_path):
-    """The fixture, under a name of its own so its user:// is its own (§PW525).
-
-    Godot names user:// after the project, and the kit logs to a fixed folder there, so
-    copies sharing the fixture's name read each other's log and marker under xdist.
-    """
-    game = tmp_path / "game"
-    shutil.copytree(kits.KITS / "crash" / "fixture", game)
-    project = game / "project.godot"
-    named = 'config/name="polyweave crash fixture"'
-    text = project.read_text(encoding="utf-8")
-    assert named in text
-    own = f'config/name="polyweave crash fixture {os.getpid()} {time.monotonic_ns()}"'
-    project.write_text(text.replace(named, own), encoding="utf-8")
-    return game, kits.install("crash", root=str(game))
-
-
 @pytest.fixture
 def installed(tmp_path):
-    """The fixture installed, and its user:// removed after."""
-    game, said = _installed(tmp_path)
-    yield game, said
-    shutil.rmtree(driving._user_dir(game), ignore_errors=True)
+    """The fixture under a name of its own run, so its user:// is its own (§PW525,
+    §PW532): the kit logs to a fixed folder there, and copies sharing the fixture's
+    name read each other's log and marker under xdist. Removed after."""
+    game = kits.fixture("crash", tmp_path / "game")
+    yield game, kits.install("crash", root=str(game))
+    kits.forget(game)
 
 
 @pytest.mark.skipif(not os.environ.get("GODOT"), reason="no $GODOT on this machine")
 def test_the_crash_kit_holds_in_its_fixture(installed):
     _, said = installed
     assert said["proved"]["passed"] is True, said["proved"]
+
+
+def test_a_fixture_copy_is_named_for_its_run_alone(tmp_path):
+    """§PW532: every copy kept the fixture's name, so every proof shared one user://."""
+    one = kits.fixture("crash", tmp_path / "a")
+    two = kits.fixture("crash", tmp_path / "b")
+    names = {driving._user_dir(game).name for game in (one, two)}
+    assert len(names) == 2
+    assert all(name.startswith("polyweave crash fixture ") for name in names)
+
+
+@pytest.mark.skipif(not os.environ.get("GODOT"), reason="no $GODOT on this machine")
+def test_a_marker_left_under_the_fixture_s_own_name_fails_no_proof():
+    """The gate went red once on a `running` marker an earlier run left (§PW532)."""
+    left = driving._user_dir(kits.KITS / "crash" / "fixture") / "polyweave_log"
+    marker = left / "running"
+    was = marker.read_bytes() if marker.is_file() else None
+    left.mkdir(parents=True, exist_ok=True)
+    marker.write_text("a run that never closed", encoding="utf-8")
+    try:
+        said = kits.prove("crash")
+    finally:
+        if was is None:
+            marker.unlink(missing_ok=True)
+        else:
+            marker.write_bytes(was)
+    assert said["held"] == 1, said
 
 
 LOG = "addons/polyweave/crash/log.gd"

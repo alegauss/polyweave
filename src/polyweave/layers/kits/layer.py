@@ -19,5 +19,9 @@ LAYER = Layer(
         "polyweave.layers.kits:every": (
             "internal", "every kit the plugin carries, checked"),
         "polyweave.layers.kits:behind": ("internal", "provenance.outdated's kits"),
+        "polyweave.layers.kits:fixture": (
+            "internal", "a fixture copy named for its run, for kit.prove"),
+        "polyweave.layers.kits:forget": (
+            "internal", "the user:// a fixture copy ran under, removed"),
     },
 )

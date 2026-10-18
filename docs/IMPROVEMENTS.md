@@ -118,28 +118,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW532 A fixture proved under a name of its own run
-
-Found shipping PW525 on 2026-10-18. The gate went red with the crash kit's own proof
-failing in `kit.prove`, though every pytest test passed. Run again a minute later, it
-held. Earlier in the same session, tests that break the crash log on purpose had run
-under the fixture's own name. One of them leaves the `running` marker behind, so it was
-left in the shared `app_userdata/polyweave crash fixture/polyweave_log`. The next proof
-under that name read it as an unclean exit of its own and failed.
-
-Godot names `user://` after `config/name`, and every copy of a kit's fixture keeps the
-fixture's name. So `kit.prove`, `kit.install`'s proof and any test proving a kit all
-share one `user://` per kit, across runs and across processes. PW523 gave four proofs
-paths of their own run, and PW525 gave the crash tests a name of their own. The kits
-whose runtime writes a fixed `user://` path (crash, determinism, options, remap, saves)
-are still exposed wherever the proof is run on a copy that keeps the fixture's name.
-
-What polyweave should do: when `kit.prove` or `kit.install` proves a kit in a copy of
-its fixture, write that copy's `config/name` with a suffix of the run's own, and remove
-that `user://` folder when the proof ends. A game's own install never renames the game:
-this is the fixture copy alone. Done when a marker left in the fixture's old `user://`
-no longer fails the next proof, and the crash tests drop their own renaming for it.
-
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once
