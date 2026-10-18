@@ -35,7 +35,8 @@ from polyweave.kernel import provenance
 from polyweave.kernel.config import load
 from polyweave.kernel.describe import Param, operation
 from polyweave.kernel.errors import PolyweaveError
-from polyweave.services import purchase
+from polyweave.services import ideogram, purchase
+from polyweave.services import service as S
 
 from . import picture, style
 
@@ -134,51 +135,32 @@ def vary(
     if rendering_speed is not None:
         payload["rendering_speed"] = rendering_speed
 
-    purchase.allow(price, root=here, service=name)
-    answer = picture._answered(
-        f"{base.rstrip('/')}/v1/{OPERATIONS[change]}", key, payload, files=files
-    )
-    drawn = (answer.get("data") or [{}])[0]
-    if not drawn.get("url"):
-        raise PolyweaveError(
-            "fetch.prompt-refused"
-            if drawn.get("is_image_safe") is False
-            else "fetch.nothing-arrived",
-            "the service answered with no variation to take delivery of",
-            "reword the prompt; nothing was ledgered",
-            detail=json.dumps(answer)[:400],
-        )
-    body = picture._download(drawn["url"])
-    returned = max(1, len(answer.get("data") or ()))
-    return purchase.capture(
-        body,
-        out=out,
-        task_id=f"{name}:{change}:{answer.get('created')}:{drawn.get('seed')}",
-        credits=round(price * returned, 4),
-        outputs=returned,
-        prompt=prompt,
-        reference=parent,
-        bought="image",
-        engine={"name": name, "model": "3.0"},
-        service=name,
-        details={
-            "parent": {
-                "path": parent,
-                "sha256": provenance.sha256_of(source)[0],
+    order = S.Order(
+        service=name, base=base, key=key, price=price, root=here,
+        asked={"path": OPERATIONS[change], "payload": payload, "files": files,
+               "prefix": f"{change}:"},
+        kept={
+            "out": out,
+            "prompt": prompt,
+            "reference": parent,
+            "bought": "image",
+            "engine": {"name": name, "model": "3.0"},
+            "details": {
+                "parent": {
+                    "path": parent,
+                    "sha256": provenance.sha256_of(source)[0],
+                },
+                "change": change,
+                "frame": resolution,
+                "region": region,
+                "strength": strength,
+                "mask": provenance.relative(mask_path, here) if mask_path else None,
+                # Whose the region was: a person's mark outranks the described boxes.
+                "mask_from": mask_from,
             },
-            "change": change,
-            "frame": resolution,
-            "region": region,
-            "strength": strength,
-            "mask": provenance.relative(mask_path, here) if mask_path else None,
-            # Whose the region was: a person's mark outranks the described boxes.
-            "mask_from": mask_from,
-            "resolution": drawn.get("resolution"),
-            "seed": drawn.get("seed"),
-            "returned_prompt": drawn.get("prompt"),
         },
-        root=here,
     )
+    return S.buy(ideogram.SERVICE, order)
 
 
 def _mask_for(source: Path, region, mask, here: Path, out: str) -> tuple[Path, str]:

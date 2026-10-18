@@ -11,6 +11,8 @@ from polyweave.kernel import config as C
 from polyweave.kernel.errors import PolyweaveError
 from polyweave.layers.picture import picture, style
 from polyweave.loop import verdict
+from polyweave.services import ideogram
+from polyweave.services import service as S
 
 SPEC = """asset = "{name}"
 
@@ -105,8 +107,8 @@ def service(tmp_path, monkeypatch):
         answer = {"created": "x", "data": [{"seed": 1, "url": "https://p/x.png"}]}
         return 200, json.dumps(answer).encode()
 
-    monkeypatch.setattr(picture, "_send", send)
-    monkeypatch.setattr(picture, "_download", lambda link: b"\x89PNG" + b"\0" * 60)
+    monkeypatch.setattr(ideogram, "send", send)
+    monkeypatch.setattr(S, "download", lambda link: b"\x89PNG" + b"\0" * 60)
     return sent
 
 
@@ -153,8 +155,8 @@ def referenced(tmp_path, monkeypatch):
         answer = {"created": "x", "data": [{"seed": 1, "url": "https://p/x.png"}]}
         return 200, json.dumps(answer).encode()
 
-    monkeypatch.setattr(picture, "_send", send)
-    monkeypatch.setattr(picture, "_download", lambda link: b"\x89PNG" + b"\0" * 60)
+    monkeypatch.setattr(ideogram, "send", send)
+    monkeypatch.setattr(S, "download", lambda link: b"\x89PNG" + b"\0" * 60)
     return sent
 
 

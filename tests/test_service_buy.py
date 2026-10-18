@@ -10,6 +10,7 @@ import pytest
 from polyweave.kernel import config as C
 from polyweave.kernel.errors import PolyweaveError
 from polyweave.layers.geometry import mesh_buy
+from polyweave.layers.picture import picture, variation
 from polyweave.services import purchase
 from polyweave.services import service as S
 
@@ -27,7 +28,7 @@ class Bells:
         self.money, self.submitted, self.asked = 100.0, [], 0
         self.service = S.Service(
             name="bells", media=("sound",), hosts=("bells.example",),
-            submit=self.submit, poll=self.poll, fetch=self.fetch,
+            submit=self.submit, poll=self.poll, deliver=self.deliver,
             balance=self.balance if balance else None, details={"metal": "bronze"},
         )
 
@@ -45,8 +46,9 @@ class Bells:
 
         return S.waited(task, ask, report)
 
-    def fetch(self, order, finished):
-        return b"RIFF" + b"\x00" * 40
+    def deliver(self, order, task, finished):
+        return S.Delivery(task=task, body=b"RIFF" + b"\x00" * 40,
+                          details={"peals": 3})
 
     def balance(self, base, key):
         return self.money
@@ -90,6 +92,54 @@ def test_a_provider_with_no_balance_records_its_quote_as_not_measured(project):
     assert entry["measured"] is False and entry["credits"] == 4.0
 
 
+def test_a_request_the_provider_refused_owes_nothing(project):
+    bells = Bells()
+
+    def refused(order):
+        raise PolyweaveError("fetch.prompt-refused", "no bells", "ask for another")
+
+    with pytest.raises(PolyweaveError):
+        S.buy(S.Service(**{**vars(bells.service), "submit": refused}), _order(project))
+    assert purchase.owed(project) == []
+
+
+def test_a_task_taken_and_never_finished_stays_owed_against_the_ceiling(project):
+    bells = Bells()
+
+    def cracked(order, task, report):
+        raise PolyweaveError("fetch.service-error", "the bell cracked", "ask again")
+
+    with pytest.raises(PolyweaveError):
+        S.buy(S.Service(**{**vars(bells.service), "poll": cracked}), _order(project))
+    [owed] = purchase.owed(project)
+    assert owed["credits"] == 4.0 and owed["service"] == "bells"
+    assert purchase.read(project) == []
+    assert purchase.remaining(str(project), service="bells")["left"] == 6.0
+
+
+def test_a_link_that_cannot_be_read_is_owed_with_it_for_collecting(
+    project, monkeypatch
+):
+    bells = Bells()
+
+    def linked(order, task, finished):
+        return S.Delivery(task=task, link="https://bells.example/peal.wav")
+
+    def unread(link):
+        raise PolyweaveError("fetch.service-error", "gone", "again")
+
+    monkeypatch.setattr(S, "download", unread)
+    with pytest.raises(PolyweaveError) as refused:
+        S.buy(S.Service(**{**vars(bells.service), "deliver": linked}), _order(project))
+    assert refused.value.code == "fetch.nothing-arrived"
+    [owed] = purchase.owed(project)
+    assert owed["task_id"] == "bells:peal-1"
+    assert owed["link"] == "https://bells.example/peal.wav"
+    monkeypatch.setattr(S, "download", lambda link: b"RIFF" + b"\x00" * 40)
+    entry = S.delivered(owed["link"], owed["capture"], project)
+    assert entry["task_id"] == "bells:peal-1" and purchase.owed(project) == []
+
+
 def test_each_mesh_provider_is_an_adapter_found_by_its_host():
     assert {"meshy", "tripo", "rodin"} <= set(S.providers())
     assert S.provider("https://openapi.tripo3d.com/v3", "mesh", "meshy").name == "tripo"
@@ -97,8 +147,10 @@ def test_each_mesh_provider_is_an_adapter_found_by_its_host():
     assert S.provider("https://api.meshy.ai", "mesh", "meshy").name == "meshy"
 
 
-def test_the_mesh_domain_neither_allows_nor_speaks_http_itself():
-    source = Path(mesh_buy.__file__).read_text(encoding="utf-8")
+@pytest.mark.parametrize("module", [mesh_buy, picture, variation],
+                         ids=lambda module: module.__name__.rsplit(".", 1)[-1])
+def test_a_domain_neither_allows_nor_captures_nor_speaks_http_itself(module):
+    source = Path(module.__file__).read_text(encoding="utf-8")
     called = {
         f"{node.func.value.id}.{node.func.attr}"
         for node in ast.walk(ast.parse(source))

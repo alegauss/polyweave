@@ -62,7 +62,7 @@
 
 ## Block W — A core that grows by layers
 
-- 🛠 **PW516** (deps: PW499 ✅) **Each paid service's HTTP client is written inside the domain that buys from it, so a new service copies a client** — Meshes go through one buy() now (PW526); Ideogram, Scenario and ElevenLabs are still bought by their own domain code. → §PW516
+- 🛠 **PW516** (deps: PW499 ✅) **Each paid service's HTTP client is written inside the domain that buys from it, so a new service copies a client** — Meshes and pictures go through one buy() now (PW526, PW527); Scenario and ElevenLabs are still bought by their own domain code. → §PW516
 - 📋 **PW517** (deps: PW503 ✅, PW508 ✅, PW512 ✅) **A project cannot add a measure of its own, so a look only its game needs is a fork, a side script or a PW line** — A project measure keeps the first-call guarantee only when it is described, bounded and recorded exactly as a built-in one is. → §PW517
 - 📋 **PW518** (deps: PW504 ✅, PW517) **A project's own generator can run as a job but is no operation, so no agent finds it, describes it or searches over it** — A target named as a file path has only the worker's signature check, so the project's most-used script is the one call the surface cannot describe. → §PW518
 - 📋 **PW519** (deps: PW518) **An extension would hide the gap it fills, so a measure two games both wrote never becomes vocabulary** — Friction filed as PW lines is how this vocabulary grew, and an extension point that silences the friction stops that growth unless it reports what it holds. → §PW519

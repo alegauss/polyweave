@@ -7,8 +7,9 @@ transparent endpoint delivers a PNG with a real alpha channel, which is the form
 costs thirty credits.
 
 **This is the first service the plugin speaks to itself.** Until now a consumer's own
-client fetched and the plugin captured. The client here is small, and it goes through
-the same doors a mesh does, in the same order:
+client fetched and the plugin captured. The client is `services/ideogram.py`, and a
+picture goes through `services.service.buy`, the doors a mesh goes through, in the same
+order (§PW516):
 
     1. the payload is checked against the learned schema, where one is learned (§PW19)
     2. `purchase.allow` is asked, against this service's own ceiling (§PW18, §PW162)
@@ -17,15 +18,13 @@ the same doors a mesh does, in the same order:
        service's links expire and that order is the only one that cannot leave a
        receipt without an asset
 
-The call is synchronous: the service answers with the picture's link. Its asynchronous
-variants, with their poll, are not here yet.
+On 4.0 the call is asynchronous: the answer is a generation id, asked after until the
+picture is drawn; 3.0 answers with the picture's link at once.
 """
 
 from __future__ import annotations
 
 import json
-import threading
-import uuid
 from typing import Annotated
 
 import numpy as np
@@ -37,37 +36,17 @@ from polyweave.kernel.doors import Blank, door
 from polyweave.kernel.errors import PolyweaveError
 from polyweave.kernel.files import write_atomic
 from polyweave.layers.words.world import ENTITY, WORLD, from_world
-from polyweave.services import client, purchase, schema
+from polyweave.services import ideogram, purchase, schema
+from polyweave.services import service as S
 from polyweave.services.client import AGENT, sent_bytes  # noqa: F401
-from polyweave.services.client import download as _download
 from polyweave.services.client import mime as _mime
 from polyweave.services.client import price as _price
 from polyweave.services.client import priced as _priced  # noqa: F401
 from polyweave.services.client import reached as _reached
+from polyweave.services.ideogram import MODELS
 
 from . import style
 
-#: The models this client knows the request shape of. They spell the prompt field
-#: differently, which is the reason the choice is a parameter and not a guess, and only
-#: 4.0 has an asynchronous route: 3.0's `async/generate` answers 404, its synchronous
-#: `generate` and `generate-transparent` the picture in the body (§PW437, probed
-#: 2026-10-13 with an empty request, which draws nothing).
-MODELS = {
-    "4.0": ("ideogram-v4", "text_prompt", True),
-    "3.0": ("ideogram-v3", "prompt", False),
-}
-
-#: What the service allows in flight on an account by default. More than this and it
-#: answers 429, so the client never holds more open than this in one process.
-INFLIGHT = 10
-_inflight = threading.BoundedSemaphore(INFLIGHT)
-
-#: What every request says it is. The service's image host sits behind Cloudflare, which
-#: refuses Python's default agent with error 1010, so a picture was drawn, charged and
-#: then could not be read (§PW193). A named agent is what a service's logs should see.
-
-#: How long one request may take before it is called failed. A picture takes seconds.
-TIMEOUT = 120
 
 @operation("picture.buy", kind="fetch", injects=("report",), spends=True)
 def buy(
@@ -188,7 +167,7 @@ def buy(
     base, key = _reached(name, about)
     price = _price(name, about.get("prices") or {}, model, rendering_speed)
 
-    path, prompt_field, asynchronous = MODELS[model]
+    _, prompt_field, _ = MODELS[model]
     sent = prompt if json_prompt is None else json.dumps(json_prompt, sort_keys=True)
     payload: dict = {prompt_field if json_prompt is None else "json_prompt": sent}
     for field, value in (
@@ -213,119 +192,42 @@ def buy(
     if learned:
         schema.validate(payload, root=root, service=name)
 
-    purchase.allow(price, root=root, service=name)
-
-    # The asynchronous route where the model has one (§PW178): the answer is a
-    # generation id at once, and the connection is not held while the picture is drawn.
-    # The id is the purchase's task id, which the synchronous answer never carried. 3.0
-    # has none, and sent there every 3.0 picture failed with a 404 (§PW437).
-    route = "async/generate" if asynchronous else "generate"
-    endpoint = f"{base.rstrip('/')}/v1/{path}/{route}"
-    if transparent:
-        endpoint += "-transparent"
-    # Each reference as its own repeated field, which is how the service reads a list.
-    answer = _answered(endpoint, key, payload, [
-        ("style_reference_images", (one["picture"], one["bytes"], "image/png"))
-        for one in referenced
-    ] or None)
-    if answer.get("generation_id") and not answer.get("data"):
-        answer = _polled(base, key, answer["generation_id"], report)
-    drawn = (answer.get("data") or [{}])[0]
-    link = drawn.get("url")
-    if not link:
-        raise PolyweaveError(
-            "fetch.prompt-refused"
-            if drawn.get("is_image_safe") is False
-            else "fetch.nothing-arrived",
-            "the service answered with no picture to take delivery of",
-            "reword the prompt; a picture the service calls unsafe comes back "
-            "without a link, and nothing was ledgered",
-            detail=json.dumps(answer)[:400],
-        )
-
-    if report is not None:
-        report.stage(
-            "downloading", progress=0.9, note="taking delivery before the link expires"
-        )
-    # The service bills per picture returned, so an answer carrying more than was asked
-    # for is charged as many prices, although only the first is kept.
-    returned = max(1, len(answer.get("data") or ()))
-    kept = {
-        "out": out,
-        # The generation id where there is one; an answer without one is identified by
-        # what it does carry, when it was made and the seed it was made with.
-        "task_id": f"{name}:{answer.get('generation_id')}"
-        if answer.get("generation_id")
-        else f"{name}:{answer.get('created')}:{drawn.get('seed')}",
-        "credits": round(price * returned, 4),
-        # What the service says it charged, where it says: a reading, not the quote.
-        "reported": _reported(answer, config.budget(service=name)["unit"]),
-        "outputs": returned,
-        "prompt": sent,
-        "bought": "image",
-        "engine": {"name": name, "model": model},
-        "service": name,
-        "details": {
-            "model": model,
-            "transparent": bool(transparent),
-            "rendering_speed": rendering_speed,
-            "aspect_ratio": aspect_ratio,
-            "resolution": drawn.get("resolution"),
-            # What it reports, which is the seed a second call asks for.
-            "seed": drawn.get("seed"),
-            "json_prompt": json_prompt,
-            "family": held_to[0] if held_to else None,
-            # The canon pictures sent as style references, by digest, so a second call
-            # sends the same ones (§PW180).
-            **({"references": [{"picture": one["picture"], "sha256": one["sha256"]}
-                               for one in referenced]} if referenced else {}),
-            # What the service says it drew from. On a text prompt to 4.0 this is not
-            # what was sent, and it is the only account of the picture that is true.
-            "returned_prompt": drawn.get("prompt"),
-            "entity": drawn_from,
+    order = S.Order(
+        service=name, base=base, key=key, price=price, root=config.root,
+        asked={
+            "path": ideogram.generation(model, transparent),
+            "payload": payload,
+            # Each reference as its own repeated field, which is how the service reads
+            # a list.
+            "files": [
+                ("style_reference_images", (one["picture"], one["bytes"], "image/png"))
+                for one in referenced
+            ] or None,
+            "unit": config.budget(service=name)["unit"],
         },
-    }
-    if drawn_from:
-        kept["inputs"] = [provenance.source("world", drawn_from["world"], root=root)]
-    return _delivered(link, kept, root)
-
-
-def _delivered(link: str, kept: dict, root) -> dict:
-    """Take delivery and ledger it, or owe the charge where delivery fails (§PW179).
-
-    The service has charged by now. A download that fails leaves no asset, so nothing
-    may enter the ledger, and yet the ceiling must see the spend: the charge goes on the
-    owed list, which `spent` counts, with the link, for `picture.collect` to retry.
-    """
-    try:
-        body = _download(link)
-    except PolyweaveError as missed:
-        charged = kept["reported"] if kept["reported"] is not None else kept["credits"]
-        purchase.owe(
-            {
-                "task_id": kept["task_id"],
-                "service": kept["service"],
-                "credits": charged,
-                "expected_credits": kept["credits"],
-                "measured": kept["reported"] is not None,
-                "outputs": kept["outputs"],
-                "artefact": kept["out"],
-                "link": link,
-                "capture": kept,
+        kept={
+            "out": out,
+            "prompt": sent,
+            "bought": "image",
+            "engine": {"name": name, "model": model},
+            "details": {
+                "model": model,
+                "transparent": bool(transparent),
+                "rendering_speed": rendering_speed,
+                "aspect_ratio": aspect_ratio,
+                "json_prompt": json_prompt,
+                "family": held_to[0] if held_to else None,
+                # The canon pictures sent as style references, by digest, so a second
+                # call sends the same ones (§PW180).
+                **({"references": [{"picture": one["picture"], "sha256": one["sha256"]}
+                                   for one in referenced]} if referenced else {}),
+                "entity": drawn_from,
             },
-            root=root,
-        )
-        raise PolyweaveError(
-            "fetch.nothing-arrived",
-            "the picture was made and charged, and its link could not be read; the "
-            "charge is counted against the ceiling as owed",
-            f"call picture.collect with task_id {kept['task_id']!r} while the link "
-            "lasts; it lands the picture and moves the charge into the ledger",
-            detail=missed.detail,
-        ) from missed
-    entry = purchase.capture(body, **kept, root=root)
-    purchase.settle(kept["task_id"], root=root)
-    return entry
+            **({"inputs": [provenance.source("world", drawn_from["world"], root=root)]}
+               if drawn_from else {}),
+        },
+    )
+    return S.buy(ideogram.SERVICE, order, report)
 
 
 @operation("picture.collect")
@@ -351,7 +253,7 @@ def collect(
             allowed=sorted(held),
         )
     owed_for = held[task_id]
-    return _delivered(owed_for["link"], owed_for["capture"], root)
+    return S.delivered(owed_for["link"], owed_for["capture"], root)
 
 
 @operation("picture.describe", spends=True)
@@ -384,35 +286,24 @@ def describe_picture(
             "name a picture under the project, as a path relative to its root",
         )
     price = _price(name, about.get("prices") or {}, "describe", None)
-    purchase.allow(price, root=here, service=name)
-
-    answer = _answered(
-        f"{base.rstrip('/')}/v1/ideogram-v4/describe",
-        key,
-        {"include_bbox": "true"},
-        files={"image_file": (source.name, sent_bytes(source), _mime(source))},
+    order = S.Order(
+        service=name, base=base, key=key, price=price, root=here,
+        asked={
+            "path": "ideogram-v4/describe",
+            "payload": {"include_bbox": "true"},
+            "files": {"image_file": (source.name, sent_bytes(source), _mime(source))},
+            "describe": True,
+            "digest": provenance.sha256_of(source)[0],
+        },
+        kept={
+            "out": out or str(source.with_suffix(".prompt.json").relative_to(here)),
+            "prompt": None,
+            "reference": picture,
+            "bought": "description",
+            "engine": {"name": name, "model": "4.0"},
+        },
     )
-    described = answer.get("json_prompt")
-    if not isinstance(described, dict):
-        raise PolyweaveError(
-            "fetch.nothing-arrived",
-            "the service answered with no structured description",
-            "ask again; nothing was ledgered",
-            detail=json.dumps(answer)[:400],
-        )
-    target = out or str(source.with_suffix(".prompt.json").relative_to(here))
-    return purchase.capture(
-        (json.dumps(described, indent=2, sort_keys=True) + "\n").encode("utf-8"),
-        out=target,
-        task_id=f"{name}:describe:{provenance.sha256_of(source)[0][:16]}",
-        credits=price,
-        prompt=None,
-        reference=picture,
-        bought="description",
-        engine={"name": name, "model": "4.0"},
-        service=name,
-        root=here,
-    )
+    return S.buy(ideogram.SERVICE, order)
 
 
 @operation("picture.gate")
@@ -666,6 +557,10 @@ def _folded(text: str) -> str:
     return " ".join(str(text).casefold().split())
 
 
+#: How long the OCR engine may take over one picture.
+OCR_TIMEOUT = 120
+
+
 def _read_letters(engine: str, path, language: str) -> str:
     """What the OCR engine reads off the picture."""
     import subprocess
@@ -675,7 +570,7 @@ def _read_letters(engine: str, path, language: str) -> str:
         capture_output=True,
         text=True,
         encoding="utf-8",
-        timeout=TIMEOUT,
+        timeout=OCR_TIMEOUT,
         check=False,
     )
     if done.returncode != 0:
@@ -769,165 +664,5 @@ def _one_prompt(prompt: str | None, json_prompt: dict | None, model: str) -> Non
             given="json_prompt",
             allowed=("prompt",),
         )
-
-
-#: How long a generation may stay pending before the call gives up on it, and how
-#: often it is asked. A poll that is never answered ends here rather than holding a
-#: slot of the account's ten for ever.
-POLL_TIMEOUT = 300
-POLL_EVERY = 2.0
-
-
-def _polled(base: str, key: str, generation: str, report) -> dict:
-    """Ask after one generation until it is done, failed or out of time."""
-    import time
-
-    started = time.monotonic()
-    while True:
-        status, body = _get(f"{base.rstrip('/')}/v1/generations/{generation}", key)
-        if status != 200:
-            raise PolyweaveError(
-                "fetch.service-error",
-                f"asking after generation {generation} was answered {status}",
-                "read the detail; nothing was ledgered",
-                detail=body[:400].decode("utf-8", "replace"),
-            )
-        answer = json.loads(body)
-        state = answer.get("status")
-        if state == "completed":
-            return {
-                **answer,
-                "generation_id": answer.get("generation_id") or generation,
-            }
-        if state == "failed":
-            raise PolyweaveError(
-                "fetch.service-error",
-                f"generation {generation} failed: "
-                f"{answer.get('failure_reason') or 'no reason given'}",
-                "reword the prompt or ask again; nothing was ledgered",
-                detail=json.dumps(answer)[:400],
-            )
-        waited = time.monotonic() - started
-        if waited > POLL_TIMEOUT:
-            raise PolyweaveError(
-                "fetch.service-error",
-                f"generation {generation} was still {state} after {POLL_TIMEOUT}s",
-                f"ask after it later by its id, {generation}; nothing was ledgered",
-            )
-        if report is not None:
-            report.stage(
-                "building",
-                progress=min(0.8, waited / POLL_TIMEOUT),
-                note=f"generation {generation} is {state}",
-            )
-        time.sleep(POLL_EVERY)
-
-
-def _reported(answer: dict, unit: str) -> float | None:
-    """What the service reports a generation cost, in the ceiling's unit, if it does."""
-    micros = answer.get("usage_cost_usd_micros")
-    if micros is None or str(unit).upper() != "USD":
-        return None
-    return round(float(micros) / 1_000_000, 6)
-
-
-def _get(url: str, key: str) -> tuple[int, bytes]:
-    """GET one URL with the key, inside the account's allowance of calls in flight."""
-    with _inflight:
-        try:
-            answer = client.send(url, headers={"Api-Key": key}, timeout=TIMEOUT)
-        except client.Unreached as exc:
-            raise PolyweaveError(
-                "fetch.service-error",
-                f"the service could not be reached at {url}",
-                "check the base under [service] and the network",
-                detail=exc.reason,
-            ) from exc
-    return answer.status, answer.body
-
-
-def _answered(
-    endpoint: str, key: str, payload: dict, files: dict | list | None = None
-) -> dict:
-    """Send one request and read its answer, turning a refusal into a code."""
-    status, body = _send(endpoint, key, payload, files)
-    if status == 200:
-        try:
-            return json.loads(body)
-        except json.JSONDecodeError as exc:
-            raise PolyweaveError(
-                "fetch.service-error",
-                "the service answered 200 with something that is not JSON",
-                "try again; nothing was charged to the ledger",
-                detail=body[:400].decode("utf-8", "replace"),
-            ) from exc
-    said = body[:400].decode("utf-8", "replace")
-    if status == 422:
-        raise PolyweaveError(
-            "fetch.prompt-refused",
-            "the service refused the prompt as failing its safety check",
-            "reword the prompt; a refused request is not charged",
-            detail=said,
-        )
-    if status == 429:
-        raise PolyweaveError(
-            "fetch.rate-limited",
-            "the service has more requests from this account in flight than it allows",
-            "wait for the calls already out to finish, then ask again",
-            detail=said,
-        )
-    raise PolyweaveError(
-        "fetch.service-error",
-        f"the service answered {status}",
-        "read the detail; a 401 is a key the service does not accept, and a 400 "
-        "a payload it does not",
-        detail=said,
-    )
-
-
-def _send(
-    endpoint: str, key: str, payload: dict, files: dict | list | None = None
-) -> tuple[int, bytes]:
-    """POST the payload as a form, holding no more calls open than the account may.
-
-    `files` maps a field to `(filename, bytes, content type)`, for a picture sent up,
-    or is a list of `(field, (filename, bytes, type))` where a field repeats (§PW180).
-    """
-    boundary = uuid.uuid4().hex
-    parts: list[bytes] = []
-    for field, value in payload.items():
-        parts.append(
-            f'--{boundary}\r\nContent-Disposition: form-data; name="{field}"\r\n\r\n'
-            f"{value}\r\n".encode()
-        )
-    sent_up = files.items() if isinstance(files, dict) else (files or ())
-    for field, (filename, content, kind) in sent_up:
-        parts.append(
-            f'--{boundary}\r\nContent-Disposition: form-data; name="{field}"; '
-            f'filename="{filename}"\r\nContent-Type: {kind}\r\n\r\n'.encode()
-            + content
-            + b"\r\n"
-        )
-    parts.append(f"--{boundary}--\r\n".encode())
-    with _inflight:
-        try:
-            answer = client.send(
-                endpoint,
-                method="POST",
-                data=b"".join(parts),
-                headers={
-                    "Api-Key": key,
-                    "Content-Type": f"multipart/form-data; boundary={boundary}",
-                },
-                timeout=TIMEOUT,
-            )
-        except client.Unreached as exc:
-            raise PolyweaveError(
-                "fetch.service-error",
-                f"the service could not be reached at {endpoint}",
-                "check the base under [service] and the network; nothing was spent",
-                detail=exc.reason,
-            ) from exc
-    return answer.status, answer.body
 
 

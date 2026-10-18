@@ -10,6 +10,7 @@ from polyweave.kernel import provenance
 from polyweave.kernel.errors import PolyweaveError
 from polyweave.layers.geometry import mesh_buy
 from polyweave.layers.picture import picture
+from polyweave.services import ideogram
 from polyweave.services import service as S
 from test_mesh_buy import GLB, Meshy
 from test_mesh_buy import PROJECT as MESHY
@@ -41,8 +42,8 @@ def world(tmp_path, monkeypatch):
     (tmp_path / "game.world.toml").write_text(WORLD, encoding="utf-8")
     monkeypatch.setenv("POLYWEAVE_TEST_I", "sk-picture")
     fake = Service()
-    monkeypatch.setattr(picture, "_send", fake.send)
-    monkeypatch.setattr(picture, "_download", lambda link: PNG)
+    monkeypatch.setattr(ideogram, "send", fake.send)
+    monkeypatch.setattr(S, "download", lambda link: PNG)
     return fake
 
 

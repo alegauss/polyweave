@@ -375,7 +375,9 @@ def test_a_mark_on_a_member_the_family_does_not_have_is_refused_before_the_verdi
 
 
 def test_a_persons_mark_outranks_the_described_region_for_an_edit(page, monkeypatch):
-    from polyweave.layers.picture import picture, variation
+    from polyweave.layers.picture import variation
+    from polyweave.services import ideogram
+    from polyweave.services import service as S
 
     base, where = page
     post(
@@ -397,10 +399,10 @@ def test_a_persons_mark_outranks_the_described_region_for_an_edit(page, monkeypa
             {"created": "t", "data": [{"seed": 1, "url": "https://p/x.png"}]}
         ).encode()
 
-    monkeypatch.setattr(picture, "_send", send)
+    monkeypatch.setattr(ideogram, "send", send)
     monkeypatch.setattr(
-        picture,
-        "_download",
+        S,
+        "download",
         lambda link: (where / "renders" / "star_dim.png").read_bytes(),
     )
     variation.vary(

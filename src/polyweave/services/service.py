@@ -1,16 +1,26 @@
 """A paid provider is an adapter, and one `buy` spends through it (§PW516).
 
 Each provider is a module under `services/` holding one `SERVICE`: what it sells, the
-hosts its base is on, and the three halves of an asynchronous purchase, `submit`, `poll`
-and `fetch`, with the balance read either side where the provider publishes one. What
-the domain asks for is an `Order` in its own words (a route, a prompt, the pictures, a
-model); the adapter turns it into the provider's request.
+hosts its base is on, and the halves of a purchase: `submit` sends what was asked and
+answers a handle, `poll` asks after it until it is finished where the provider works
+asynchronously, and `deliver` says what arrived, a link or the bytes, under which task
+id, and what the provider reported of it. What the domain asks for is an `Order` in its
+own words (a route, a prompt, the pictures, a model); the adapter turns it into the
+provider's request.
 
-`buy` is the order of doors every purchase goes through, written once: the ceiling is
-asked, the balance read, the task submitted and polled, the balance read again, and the
-bytes captured into the record and the ledger. A domain names what it wants and never
-calls `purchase.allow` itself, so a provider added here cannot be bought from without
-the bound.
+`buy` is the order of doors every purchase goes through, written once:
+
+    1. the ceiling is asked for the quote, and nothing is sent where it refuses
+    2. the charge is owed before the request goes, so a purchase the provider took and
+       never delivered is still counted against the ceiling (§PW179); a request the
+       provider refused takes its charge back off at once
+    3. the balance is read, the request submitted and asked after, the balance read
+    4. the bytes are taken delivery of, recorded and ledgered, and the charge settled
+
+A link that cannot be read leaves the charge owed under the task's own id with the
+link, for `picture.collect` to take delivery of later. A domain names what it wants and
+never calls `purchase.allow` itself, so a provider added here cannot be bought from
+without the bound.
 """
 
 from __future__ import annotations
@@ -19,6 +29,7 @@ import importlib
 import json
 import pkgutil
 import time
+import uuid
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -43,15 +54,32 @@ class Order:
     service: str
     base: str
     key: str
-    #: The quote from the project's `prices` row, which decides whether it may be spent.
+    #: The quote from the project's `prices` row, which decides whether it may be spent;
+    #: per output, where the provider bills per output.
     price: float
-    #: What is asked, which the adapter reads: `route`, `prompt`, `pictures`, `model`,
-    #: `polycount`.
+    #: What is asked, in the words the adapter reads.
     asked: dict
     root: Path
     #: What `purchase.capture` keeps beside the bytes: `out`, `prompt`, `reference`,
     #: `bought`, `engine`, `details`, `inputs`.
     kept: dict = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class Delivery:
+    """What a finished purchase delivers, and what the provider said about it."""
+
+    #: The provider's id for what was bought; the ledger's is `<service>:<task>`.
+    task: str
+    #: Where to take delivery from, or the bytes where the answer carried them.
+    link: str | None = None
+    body: bytes | None = None
+    #: How many outputs the provider billed, which the quote is multiplied by.
+    outputs: int = 1
+    #: What the provider says it charged, where it says, in the ceiling's unit.
+    reported: float | None = None
+    #: What the provider reported about what it made, kept on the record.
+    details: dict = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -63,12 +91,12 @@ class Service:
     media: tuple[str, ...]
     #: A project's base on one of these hosts is spoken to by this adapter.
     hosts: tuple[str, ...]
-    #: (order) -> the provider's task id.
-    submit: Callable[[Order], str]
-    #: (order, task, report) -> the finished task, as the provider answers it.
-    poll: Callable[[Order, str, Any], dict]
-    #: (order, finished) -> the bytes delivered.
-    fetch: Callable[[Order, dict], bytes]
+    #: (order) -> a handle on what was sent: a task id, or a synchronous answer.
+    submit: Callable[[Order], Any]
+    #: (order, handle, finished) -> what arrived.
+    deliver: Callable[[Order, Any, Any], Delivery]
+    #: (order, handle, report) -> the finished answer; none where `submit` answers it.
+    poll: Callable[[Order, Any, Any], Any] | None = None
     #: (base, key) -> the account's balance now; none where the provider publishes none,
     #: and the cost recorded is then the quote, marked as not measured.
     balance: Callable[[str, str], float] | None = None
@@ -102,36 +130,88 @@ def buy(adapter: Service, order: Order, report=None) -> dict:
     """Spend on one order through its adapter, against the ceiling; the ledger entry.
 
     The only path a purchase takes from a quote to a ledger entry: nothing is sent
-    before the ceiling allows the quote, and nothing is ledgered before the bytes are
-    on disk and recorded.
+    before the ceiling allows the quote, the charge is owed from the moment it is
+    sent, and nothing is ledgered before the bytes are on disk and recorded.
     """
-    purchase.allow(order.price, root=order.root, service=order.service)
-    before = adapter.balance(order.base, order.key) if adapter.balance else None
-    task = adapter.submit(order)
-    if not task:
+    root = order.root
+    purchase.allow(order.price, root=root, service=order.service)
+    pending = f"{order.service}:sent:{uuid.uuid4().hex[:12]}"
+    purchase.owe({"task_id": pending, "service": order.service,
+                  "credits": order.price, "expected_credits": order.price,
+                  "measured": False, "outputs": 1,
+                  "artefact": order.kept.get("out")}, root=root)
+    try:
+        before = adapter.balance(order.base, order.key) if adapter.balance else None
+        handle = adapter.submit(order)
+    except Exception:
+        # Refused before the provider took it, so nothing was charged.
+        purchase.settle(pending, root=root)
+        raise
+    if not handle:
+        purchase.settle(pending, root=root)
         raise PolyweaveError(
             "fetch.service-error",
             "the service accepted the request and returned no task id",
             "read the service's answer; nothing was ledgered",
         )
-    finished = adapter.poll(order, task, report)
+    finished = adapter.poll(order, handle, report) if adapter.poll else handle
+    got = adapter.deliver(order, handle, finished)
+    after = adapter.balance(order.base, order.key) if adapter.balance else None
+    details = {**(order.kept.get("details") or {}), **adapter.details, **got.details}
+    kept = {
+        **order.kept,
+        **({"details": details} if details else {}),
+        "task_id": f"{order.service}:{got.task}",
+        "credits": round(order.price * got.outputs, 4),
+        "outputs": got.outputs,
+        "reported": got.reported,
+        "balance_before": before,
+        "balance_after": after,
+        "service": order.service,
+    }
+    purchase.settle(pending, root=root)
+    if got.body is not None:
+        return purchase.capture(got.body, **kept, root=root)
     if report is not None:
         report.stage("downloading", progress=0.9, note="taking delivery of it")
-    body = adapter.fetch(order, finished)
-    after = adapter.balance(order.base, order.key) if adapter.balance else None
-    kept = dict(order.kept)
-    if adapter.details:
-        kept["details"] = {**(kept.get("details") or {}), **adapter.details}
-    return purchase.capture(
-        body,
-        task_id=f"{order.service}:{task}",
-        credits=order.price,
-        balance_before=before,
-        balance_after=after,
-        service=order.service,
-        root=order.root,
-        **kept,
-    )
+    return delivered(got.link, kept, root)
+
+
+def delivered(link: str, kept: dict, root) -> dict:
+    """Take delivery and ledger it, or owe the charge where delivery fails (§PW179).
+
+    The service has charged by now. A download that fails leaves no asset, so nothing
+    may enter the ledger, and yet the ceiling must see the spend: the charge goes on the
+    owed list, which `spent` counts, with the link, for `picture.collect` to retry.
+    """
+    try:
+        body = download(link)
+    except PolyweaveError as missed:
+        purchase.owe({**_owed(kept), "link": link, "capture": kept}, root=root)
+        raise PolyweaveError(
+            "fetch.nothing-arrived",
+            "it was made and charged, and its link could not be read; the charge is "
+            "counted against the ceiling as owed",
+            f"call picture.collect with task_id {kept['task_id']!r} while the link "
+            "lasts; it lands it and moves the charge into the ledger",
+            detail=missed.detail,
+        ) from missed
+    entry = purchase.capture(body, **kept, root=root)
+    purchase.settle(kept["task_id"], root=root)
+    return entry
+
+
+def _owed(kept: dict) -> dict:
+    reported = kept.get("reported")
+    return {
+        "task_id": kept["task_id"],
+        "service": kept["service"],
+        "credits": reported if reported is not None else kept["credits"],
+        "expected_credits": kept["credits"],
+        "measured": reported is not None,
+        "outputs": kept.get("outputs", 1),
+        "artefact": kept["out"],
+    }
 
 
 @dataclass(frozen=True)

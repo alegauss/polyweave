@@ -30,6 +30,7 @@ from polyweave.kernel.describe import Param, operation
 from polyweave.kernel.doors import Blank, door
 from polyweave.kernel.errors import PolyweaveError
 from polyweave.services import client, purchase
+from polyweave.services import service as S
 
 from . import picture, style
 
@@ -71,7 +72,7 @@ def _call(method: str, url: str, key: str, body: dict | None = None) -> tuple[in
                 "Authorization": "Basic " + base64.b64encode(key.encode()).decode(),
                 "Content-Type": "application/json",
             },
-            timeout=picture.TIMEOUT,
+            timeout=S.TIMEOUT,
         )
     except client.Unreached as exc:
         raise PolyweaveError(
@@ -303,7 +304,7 @@ def bought(report, *, out: str, prompt: str | None, family: str | None,
         },
         "inputs": [provenance.source("model", canon / TRAINED, config.root)],
     }
-    entry = picture._delivered(link, kept, root)
+    entry = S.delivered(link, kept, root)
     return {**entry, "outdated": outdated} if outdated else entry
 
 

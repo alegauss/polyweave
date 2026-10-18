@@ -13,7 +13,8 @@ import pytest
 from polyweave.kernel import provenance
 from polyweave.kernel.errors import PolyweaveError
 from polyweave.layers.picture import picture
-from polyweave.services import purchase, schema
+from polyweave.services import ideogram, purchase, schema
+from polyweave.services import service as S
 
 PNG = b"\x89PNG\r\n\x1a\n" + b"\x00" * 60
 PROJECT = (
@@ -59,8 +60,8 @@ def service(tmp_path, monkeypatch):
     (tmp_path / "polyweave.toml").write_text(PROJECT, encoding="utf-8")
     monkeypatch.setenv("POLYWEAVE_TEST_I", "sk-picture")
     fake = Service()
-    monkeypatch.setattr(picture, "_send", fake.send)
-    monkeypatch.setattr(picture, "_download", lambda link: PNG)
+    monkeypatch.setattr(ideogram, "send", fake.send)
+    monkeypatch.setattr(S, "download", lambda link: PNG)
     return fake
 
 
@@ -232,7 +233,7 @@ def test_an_answer_marked_unsafe_with_no_picture_is_a_refused_prompt(tmp_path, s
 
 
 def test_the_client_never_holds_more_calls_open_than_the_account_allows():
-    assert picture._inflight._value == picture.INFLIGHT == 10
+    assert ideogram._inflight._value == ideogram.INFLIGHT == 10
 
 
 # -- a quote is not trusted forever --------------------------------------------------
@@ -357,7 +358,7 @@ def test_an_approved_picture_is_described_into_a_file_beside_it(tmp_path, servic
 def polled(tmp_path, service, monkeypatch):
     service.answer = {"generation_id": "g1"}
     answers = []
-    monkeypatch.setattr(picture, "POLL_EVERY", 0)
+    monkeypatch.setattr(ideogram, "POLL_EVERY", 0)
 
     def get(url, key):
         answers.append(url)
@@ -365,7 +366,7 @@ def polled(tmp_path, service, monkeypatch):
         return 200, json.dumps(one).encode()
 
     replies: list = []
-    monkeypatch.setattr(picture, "_get", get)
+    monkeypatch.setattr(ideogram, "get", get)
     return replies, answers
 
 
@@ -396,7 +397,7 @@ def test_a_failed_generation_ledgers_nothing(tmp_path, polled):
 
 
 def test_a_poll_never_answered_ends_on_the_timeout(tmp_path, polled, monkeypatch):
-    monkeypatch.setattr(picture, "POLL_TIMEOUT", 0)
+    monkeypatch.setattr(ideogram, "POLL_TIMEOUT", 0)
     error = refused(tmp_path)
     assert "still pending" in error.message and "g1" in error.remedy
 
@@ -417,7 +418,7 @@ def lost(monkeypatch):
     def fails(link):
         raise PolyweaveError("fetch.nothing-arrived", "no", "retry", detail=link)
 
-    monkeypatch.setattr(picture, "_download", fails)
+    monkeypatch.setattr(S, "download", fails)
 
 
 def test_a_charge_whose_picture_never_arrived_is_owed_and_counted(
@@ -448,7 +449,7 @@ def test_collecting_lands_the_picture_and_moves_the_charge_into_the_ledger(
     lost(monkeypatch)
     refused(tmp_path)
     task = purchase.owed(tmp_path)[0]["task_id"]
-    monkeypatch.setattr(picture, "_download", lambda link: PNG)
+    monkeypatch.setattr(S, "download", lambda link: PNG)
     entry = picture.collect(task, root=tmp_path)
     assert (tmp_path / "refs" / "booster.png").read_bytes() == PNG
     assert entry["task_id"] == task and purchase.owed(tmp_path) == []
@@ -484,9 +485,9 @@ def test_the_picture_is_fetched_with_a_named_agent(monkeypatch):
         return Answer(PNG)
 
     monkeypatch.setattr("urllib.request.urlopen", urlopen)
-    assert picture._download("https://ideogram.ai/api/images/ephemeral/x.png") == PNG
+    assert S.download("https://ideogram.ai/api/images/ephemeral/x.png") == PNG
     assert seen["agent"].startswith("polyweave/")
-    picture._get("https://api.ideogram.ai/v1/generations/g", "k")
+    ideogram.get("https://api.ideogram.ai/v1/generations/g", "k")
     assert seen["agent"].startswith("polyweave/")
 
 

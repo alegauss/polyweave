@@ -62,16 +62,16 @@ def poll(order: S.Order, task: str, report) -> dict:
     return S.waited(task, ask, report)
 
 
-def fetch(order: S.Order, finished: dict) -> bytes:
+def deliver(order: S.Order, task: str, finished: dict) -> S.Delivery:
     link = (finished.get("output") or {}).get("model_url")
     if not link:
         raise PolyweaveError(
             "fetch.nothing-arrived",
-            "the task finished with no .glb to take delivery of",
+            f"task {task} finished with no .glb to take delivery of",
             "look at the task on the service; nothing was ledgered",
             detail=json.dumps(finished)[:400],
         )
-    return S.download(link)
+    return S.Delivery(task=task, link=link)
 
 
 def balance(base: str, key: str) -> float:
@@ -82,5 +82,5 @@ def balance(base: str, key: str) -> float:
 
 SERVICE = S.Service(
     name="tripo", media=("mesh",), hosts=("tripo3d",),
-    submit=submit, poll=poll, fetch=fetch, balance=balance,
+    submit=submit, poll=poll, deliver=deliver, balance=balance,
 )

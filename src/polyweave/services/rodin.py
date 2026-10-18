@@ -62,7 +62,7 @@ def poll(order: S.Order, task: str, report) -> str:
     return S.waited(task, ask, report)
 
 
-def fetch(order: S.Order, task: str) -> bytes:
+def deliver(order: S.Order, task: str, finished: str) -> S.Delivery:
     files = S.call("POST", order.base + ROUTES["download"], order.key,
                    {"task_uuid": task}).get("list") or []
     link = next((one.get("url") for one in files
@@ -73,10 +73,10 @@ def fetch(order: S.Order, task: str) -> bytes:
             f"task {task} finished with no .glb to take delivery of",
             "look at the task on the service; nothing was ledgered",
             detail=json.dumps(files)[:400])
-    return S.download(link)
+    return S.Delivery(task=task, link=link)
 
 
 SERVICE = S.Service(
     name="rodin", media=("mesh",), hosts=("hyper3d", "deemos"),
-    submit=submit, poll=poll, fetch=fetch, details={"mesh_mode": "Quad"},
+    submit=submit, poll=poll, deliver=deliver, details={"mesh_mode": "Quad"},
 )

@@ -31,6 +31,7 @@ from __future__ import annotations
 import json
 import os
 import shutil
+import threading
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Annotated, Any
@@ -43,6 +44,11 @@ from polyweave.kernel.files import read_text_retrying, write_atomic
 
 #: What a project may buy. `kind` in the record stays `fetch` for all of them.
 BOUGHT = ("mesh", "texture", "image", "description", "sound", "model")
+
+#: Held while the owed list or the ledger is read and rewritten. Every purchase owes
+#: and settles its charge (§PW516), and pictures are bought ten at a time in one
+#: process, so two rewrites racing would drop a charge or bring a settled one back.
+_writing = threading.RLock()
 
 
 def owing(root: str | Path = ".") -> Path:
@@ -71,20 +77,23 @@ def owe(charge: dict, *, root: str | Path = ".") -> dict:
         "measured": bool(charge.get("measured", False)),
     }
     # Owed once however often its delivery fails: a retry replaces its own entry.
-    others = [e for e in owed(root) if e.get("task_id") != entry.get("task_id")]
-    write_atomic(
-        owing(root), json.dumps([*others, entry], indent=2, sort_keys=True) + "\n"
-    )
+    with _writing:
+        others = [e for e in owed(root) if e.get("task_id") != entry.get("task_id")]
+        write_atomic(
+            owing(root), json.dumps([*others, entry], indent=2, sort_keys=True) + "\n"
+        )
     return entry
 
 
 def settle(task_id: str, *, root: str | Path = ".") -> dict | None:
     """Take a charge off the owed list once its asset is in the ledger; its record."""
-    held = owed(root)
-    found = next((e for e in held if e.get("task_id") == task_id), None)
-    if found is not None:
-        rest = [e for e in held if e.get("task_id") != task_id]
-        write_atomic(owing(root), json.dumps(rest, indent=2, sort_keys=True) + "\n")
+    with _writing:
+        held = owed(root)
+        found = next((e for e in held if e.get("task_id") == task_id), None)
+        if found is not None:
+            rest = [e for e in held if e.get("task_id") != task_id]
+            write_atomic(owing(root),
+                         json.dumps(rest, indent=2, sort_keys=True) + "\n")
     return found
 
 
@@ -612,9 +621,10 @@ def append(entry: dict, *, root: str | Path = ".") -> Path:
     """Add one entry, rewriting the whole file so a reader never sees half a line."""
     path = where(root)
     _writable(root)
-    held = read(root)
-    held.append(entry)
-    write_atomic(path, json.dumps(held, indent=2, sort_keys=True) + "\n")
+    with _writing:
+        held = read(root)
+        held.append(entry)
+        write_atomic(path, json.dumps(held, indent=2, sort_keys=True) + "\n")
     return path
 
 

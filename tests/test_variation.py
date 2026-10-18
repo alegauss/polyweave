@@ -15,7 +15,9 @@ from PIL import Image, ImageDraw
 from polyweave.kernel import config as C
 from polyweave.kernel import provenance
 from polyweave.kernel.errors import PolyweaveError
-from polyweave.layers.picture import picture, variation
+from polyweave.layers.picture import variation
+from polyweave.services import ideogram
+from polyweave.services import service as S
 
 PROJECT = (
     '[service]\nbase = "https://api.ideogram.ai"\nkey_env = "POLYWEAVE_TEST_I"\n'
@@ -59,7 +61,7 @@ def parent(tmp_path, monkeypatch):
         answer = {"created": "t", "data": [{"seed": 3, "url": "https://p/v.png"}]}
         return 200, json.dumps(answer).encode()
 
-    monkeypatch.setattr(picture, "_send", send)
+    monkeypatch.setattr(ideogram, "send", send)
     return sent
 
 
@@ -71,7 +73,7 @@ def preserving(tmp_path):
 
 
 def came_back(monkeypatch, image):
-    monkeypatch.setattr(picture, "_download", lambda link: png(image))
+    monkeypatch.setattr(S, "download", lambda link: png(image))
 
 
 def test_a_variation_records_its_parent_and_its_mask(tmp_path, parent, monkeypatch):

@@ -101,6 +101,7 @@ CORE: dict[str, tuple[str, str]] = {
     "polyweave.services.purchase": ("internal", "what a fetch writes when it has paid"),
     "polyweave.services.service": (
         "internal", "the adapter seam and the one buy every purchase goes through"),
+    "polyweave.services.ideogram": ("internal", "Ideogram's adapter"),
     "polyweave.services.meshy": ("internal", "Meshy's adapter"),
     "polyweave.services.tripo": ("internal", "Tripo's adapter"),
     "polyweave.services.rodin": ("internal", "Rodin's adapter"),
