@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 2 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 4 },
   { block: "W", title: "A core that grows by layers", open: 0 },
 ];
 
@@ -108,10 +108,24 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW371",
+    id: "PW534",
     block: "V",
-    symptom: "Cottony keeps its own settings and save code where the kits provide them",
-    why: "The second game is what shows a kit is not one project's code moved into a folder.",
+    symptom: "the saves kit's proof writes slots 1 and 2 by number, so a game declaring one slot fails it",
+    why: "Cottony keeps one save and had to declare three slots to pass the proof, a declaration that lies about the game.",
+    deps: [],
+  },
+  {
+    id: "PW535",
+    block: "V",
+    symptom: "the options kit requires the menus and prompts kits, so a game wanting only the store ships 69 unused icons",
+    why: "Cottony keeps its own settings card and had to exclude the prompt icons and kit scenes from its export to keep its build and its export check.",
+    deps: [],
+  },
+  {
+    id: "PW536",
+    block: "V",
+    symptom: "a kit's older-file adoption is a fixed user:// path, so a game's tests overwrite kit fields to keep off the real file",
+    why: "Cottony's game.gd reaches into both stores after building them, so tests never adopt a player's real save.",
     deps: [],
   },
 ];

@@ -54,7 +54,9 @@
 ## Block V — Parts every game repeats, installed already proved
 
 - 🛠 **PW370** (deps: PW345 ✅, PW357 ✅, PW394 ✅, PW395 ✅, PW396 ✅, PW397 ✅, Spinhold RK216) **Starship keeps its own bindings and co-op code after the input kits were extracted from it** — A kit proved only in a fixture has not met a game, and the game it came from is the cheapest first consumer. → §PW370
-- 🛠 **PW371** (deps: PW347 ✅, PW348 ✅, PW398 ✅, Cottony RK151) **Cottony keeps its own settings and save code where the kits provide them** — The second game is what shows a kit is not one project's code moved into a folder. → §PW371
+- 📋 **PW534** (deps: —) **the saves kit's proof writes slots 1 and 2 by number, so a game declaring one slot fails it** — Cottony keeps one save and had to declare three slots to pass the proof, a declaration that lies about the game. → §PW534
+- 📋 **PW535** (deps: —) **the options kit requires the menus and prompts kits, so a game wanting only the store ships 69 unused icons** — Cottony keeps its own settings card and had to exclude the prompt icons and kit scenes from its export to keep its build and its export check. → §PW535
+- 📋 **PW536** (deps: —) **a kit's older-file adoption is a fixed user:// path, so a game's tests overwrite kit fields to keep off the real file** — Cottony's game.gd reaches into both stores after building them, so tests never adopt a player's real save. → §PW536
 
 ## Block W — A core that grows by layers
 

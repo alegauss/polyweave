@@ -410,23 +410,56 @@ side, Controls.MAP into project.godot and its input code gone, is Spinhold's RK2
 Done when Starship carries no input code the kits provide, its gate passes on the kits'
 proof, and provenance.read names each kit with its version.
 
-### §PW371 Cottony onto the settings and save kits
+### §PW534 The saves proof within the slots a game declares
 
-Cottony's scripts/settings.gd, and scripts/save_file.gd with tests/save_test.gd, are a
-second instance of what the options and saves kits provide, written without either kit
-in mind. Moving Cottony onto them proves the kits against a game they were not extracted
-from, which is the non-goal on one project's palette, rig or paths compiled in, checked
-in practice rather than asserted.
+Found moving Cottony onto the saves kit (PW371, Cottony RK151). Cottony keeps one save,
+so it declared `SLOTS := 1` in `polyweave_saves.gd`, and the kit's proof failed: "slot 1
+holds no save that reads after two saves", "a save from a newer build was not refused:
+2.save is not there", "an older save was taken over a game already saved in the kit".
+`saves/core/proof.gd` writes to slots 1 and 2 by number, so it proves a game with three
+slots or more and refuses one with fewer. Cottony now declares three slots and uses slot
+0 alone, which is a declaration that lies to pass a proof.
 
-Players' existing save files must load through the kit's declared migration, so no one
-loses progress on the update that swaps the code; that is part of the proof, not a
-follow-up.
+What polyweave should do: the proof works within the slots the game declares. The
+corrupt-save and newer-build cases use the last slot rather than a fixed one, and where
+a case needs two slots and the game has one, it runs on slot 0 in turn, clearing it
+between cases, never skipping them. Done when the saves fixture proves with `SLOTS := 1`
+and with three, and Cottony goes back to declaring one.
 
-What Cottony needs that the kits lack is filed as friction and fixed in the kits:
-measured on 2026-10-10, the kits read only their own files, so its user://cottony.cfg
-needs a door into them (PW398, docs/specs/kit.md: `adopted()` and `ADOPTED`). The game's
-own side is Cottony's RK151. Done when Cottony carries neither file, its own save test
-is replaced by the kit's acceptance, a save written by the current release loads after
-the swap, and its gate passes.
+### §PW535 The options store installed without its screen
+
+Found moving Cottony onto the options kit (PW371, Cottony RK151). Cottony keeps its own
+settings card and wanted only the store: rows, apply and read, the file and the one-time
+adoption. `kit.toml` says the options kit requires `menus`, and menus requires
+`prompts`. So the install brought the menus scripts, three kit scenes under `kits/` and
+the prompts kit's 69 icon PNGs. Cottony's `check_export.py` then failed on all 69 as
+assets imported from outside its art, and the game had to add
+`addons/polyweave/prompts/icons/*,kits/*` to its export's exclude filter to keep a
+six-megabyte build lean.
+
+The store (`options/core/settings.gd`) does not use the menus or the prompts; only the
+screen does. What polyweave should do: the options kit's screen is its own part, and a
+game can install the store alone. One way is a `[installs] store` beside `screen`, with
+`requires` on the screen only; another is `kit.install --name options --without screen`.
+`kit.prove` then proves the store in a fixture with no screen too. Done when Cottony
+reinstalls options as a store alone, its export filter drops the two patterns, and
+`check_export` holds.
+
+### §PW536 Adoption resolved against the store's own folder
+
+Found moving Cottony onto the options and saves kits (PW371, Cottony RK151). A game's
+tests must never adopt the player's real older file, so Cottony's tests point the game
+at a folder of their own. But `ADOPTED` in `polyweave_options.gd` is a const of absolute
+`user://` paths, and `adopted()` in `polyweave_saves.gd` takes no argument. To aim
+adoption at a test folder, Cottony's game.gd overwrites `settings.adopted` and
+`saves.adopt` after building both stores. Both are public and the kits' own proofs do
+the same, but it is the game reaching into a kit's state to make it testable.
+
+What polyweave should do: an older file named in `ADOPTED`, or read by `adopted()`, is
+resolved against the store's own folder when it is relative. So a store built on a test
+folder adopts the older file in that folder, and the real game, built on `user://`,
+adopts the real one. The same for the saves kit, whose `adopted(folder)` is handed the
+store's folder. Done when Cottony's tests seed a folder and build the stores on it, and
+game.gd no longer overwrites either field.
 
 ## Block W — A core that grows by layers

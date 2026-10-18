@@ -563,6 +563,7 @@
 - 🗑 **PW456** **picture.vector draws an SVG's text as nothing and says nothing, so lettered buttons come out blank** — superseded by PW453: PW453 had already filed the same silent loss of an SVG's text in picture.vector.
 - ✅ **PW484** **the input kits fail to parse in a game that has its own class named Bindings, Spinhold among them** — Every kit script names another by a _Pw constant, kit.prove fixtures declare the bare names as global classes, and a failed proof says where it broke (design recorded in `docs/specs/kit.md`).
 - ✅ **PW485** **the prompts kit's proof fails in a game running in another language, reading its translated key names as wrong** — The prompts proof reads names in a locale of its own and hands the game's back, so a pt-BR game holds, and a failure names both languages (design recorded in `docs/specs/kit.md`).
+- ✅ **PW371** **Cottony keeps its own settings and save code where the kits provide them** — Cottony runs on the options and saves kits with its own files gone, and a save the last release wrote loads with nothing lost (Cottony 20f98c4).
 
 ## Block W — A core that grows by layers
 
