@@ -489,6 +489,15 @@ def test_a_cube_s_frame_does_not_depend_on_what_the_machine_s_svd_returns(
     assert caught.value.code == "mesh.ambiguous-forward"
 
 
+def test_a_near_tie_between_axes_goes_to_the_world_s_order_not_the_kernel_s():
+    """§PW533: CI's kernel left y a rounding ahead of x on a cube, and the frame came
+    out y, x, z. A tilt of 1e-12 shows it on any machine."""
+    for tilt in ([1.0, 1.0 + 1e-12, 1.0], [1.0, 1.0, 1.0 + 1e-12],
+                 [1.0 - 1e-12, 1.0, 1.0]):
+        settled = normalise._settled(np.diag(tilt), np.array([1.0, 1.0, 1.0]))
+        assert np.allclose(np.abs(settled), np.eye(3)), tilt
+
+
 def test_a_lathe_turned_mesh_keeps_its_own_long_axis_and_settles_the_rest(monkeypatch):
     real = np.linalg.svd
     turn = np.array([[1.0, 0.0, 0.0], [0.0, 0.8, -0.6], [0.0, 0.6, 0.8]])

@@ -81,6 +81,10 @@ def axes(vertices: np.ndarray) -> np.ndarray:
 #: How close two spreads are before their directions stop being the mesh's (§PW468).
 TIED = 1e-6
 
+#: How close two world axes' share of a tied subspace is before it is rounding, and
+#: the first in x, y, z order is taken (§PW533).
+AXIS_TIE = 1e-9
+
 
 def _settled(frame: np.ndarray, spread: np.ndarray) -> np.ndarray:
     """The frame with every tied subspace given the mesh's own axes (§PW468).
@@ -110,7 +114,13 @@ def _settled(frame: np.ndarray, spread: np.ndarray) -> np.ndarray:
                     for kept in chosen:
                         vector = vector - (vector @ kept) * kept
                     left.append(vector)
-                best = max(left, key=lambda v: float(np.linalg.norm(v)))
+                # An axis wins only by more than rounding (§PW533): on a cube all three
+                # lie in it fully, and which the SVD's last bits favour is the BLAS
+                # kernel's choice, so a near tie goes to the world's own x, y, z order.
+                norms = [float(np.linalg.norm(v)) for v in left]
+                top = max(norms)
+                best = next(v for v, n in zip(left, norms, strict=True)
+                            if n >= top - AXIS_TIE)
                 chosen.append(best / float(np.linalg.norm(best)))
             settled[start:end] = chosen
         start = end

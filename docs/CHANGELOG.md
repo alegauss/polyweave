@@ -233,6 +233,7 @@
 - ✅ **PW524** **a Blender render test's xdist worker crashes under the full gate and passes when the file runs alone** — Measured at 1 crash in about 180 gate runs and 0 in ten render runs on 12 workers; the gate now names a crashed worker's test and keeps Blender's crash log (design recorded in `tools/gate.py`).
 - ✅ **PW525** **the crash kit's mid-run kill races the game under load, so the full gate fails it and a lone run passes** — The kill waits for the game's own first log line, and each crash test proves under a name of its own; the file holds 10 of 10 on 12 workers, from 1 of 10.
 - ✅ **PW532** **kit.prove proves each fixture under its fixed project name, so a run that left state in its user:// fails the next proof** — kit.prove copies each fixture under a name of its run and removes that user:// after, so a marker left under the fixture's own name fails no proof.
+- ✅ **PW533** **a cube's settled frame comes out as a permutation on some CPUs, so CI's cube test fails now and then** — A near tie between world axes goes to x, y, z order, so a cube settles to the same frame whatever rounding the CPU's BLAS kernel leaves.
 
 ## Block I — Voxel models from a declaration
 
