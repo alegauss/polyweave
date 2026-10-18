@@ -75,9 +75,9 @@ game's story for it.
 Sponsored by **Viglet** (https://www.viglet.org). Open source search and content tools for
 organisations with a lot to publish. Run on your own servers, with no per-user licence.
 
-- **Viglet Turing ES** (https://turing.viglet.org). Search for sites with a lot of content,
+- **Viglet Turing** (https://turing.viglet.org). Search for sites with a lot of content,
   with AI answers drawn only from your own published content.
-- **Viglet Shio CMS** (https://shio.viglet.org). A content system that takes the page out
+- **Viglet Shio** (https://shio.viglet.org). A content system that takes the page out
   of the development queue, with every version kept.
 
 ## Links
