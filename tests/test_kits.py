@@ -53,9 +53,32 @@ def test_a_kit_that_keeps_the_contract_is_read_whole(tmp_path):
 def test_the_plugin_lists_the_kits_it_carries():
     said = kits.listed()
     assert said["kits"] == [
-        {k: one[k] for k in ("name", "version", "summary", "requires")}
+        {
+            **{k: one[k] for k in ("name", "version", "summary", "requires")},
+            **({"parts": one["parts"]} if one["parts"] else {}),
+        }
         for one in kits.every().values()
     ]
+    [options] = [one for one in said["kits"] if one["name"] == "options"]
+    assert options["parts"]["screen"]["core"] == ["options_screen.gd"]
+
+
+@pytest.mark.parametrize(("part", "said"), [
+    ('core = ["missing.gd"]', "which the core does not hold"),
+    ('core = ["proof.gd"]', "leaves out the proof script"),
+    ("scene = 1", "has scene = 1"),
+    ('theme = "dark"', "declares theme"),
+])
+def test_a_part_that_breaks_the_contract_is_refused(tmp_path, part, said):
+    body = KIT.format(name="input", requires="[]").replace(
+        'spec = "proof.accept.toml"', 'script = "core/proof.gd"'
+    ) + f"\n[parts.screen]\n{part}\n"
+    folder = kit(tmp_path, "input", body=body)
+    (folder / "core" / "proof.gd").write_text("extends SceneTree\n", "utf-8")
+    with pytest.raises(PolyweaveError) as refused:
+        kits.every(tmp_path)
+    assert refused.value.code == "kits.bad"
+    assert said in refused.value.message
 
 
 @pytest.mark.parametrize("change", [

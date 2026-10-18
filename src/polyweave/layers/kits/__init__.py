@@ -55,9 +55,12 @@ TOP = {
     "proves",
     "changes",
     "tab",
+    "parts",
 }
 INSTALLS = {"core", "scene"}
 PROVES = {"spec", "fixture", "script"}
+#: The keys of one `[parts.<name>]` table: what a game may install the kit without.
+PART = {"requires", "core", "scene"}
 
 #: The line a kit's proof script prints when it holds, and the one when it does not.
 PROVED = r"^KIT PROVED$"
@@ -207,8 +210,64 @@ def read(folder: Path) -> dict:
         "proves": dict(held["proves"]),
         "changes": dict(changes),
         "tab": tab,
+        "parts": _parts(where, held, folder),
         "folder": str(folder),
     }
+
+
+def _parts(where: Path, held: dict, folder: Path) -> dict[str, dict]:
+    """The parts a game may install the kit without, each checked (§PW535).
+
+    A part is files of the core, the scene, and the kits only they need: the options
+    kit's screen needs the menus kit, and its store does not, so a game keeping its
+    own settings card installs the store alone.
+    """
+    parts = held.get("parts", {})
+    if not isinstance(parts, dict) or not all(
+        isinstance(p, dict) for p in parts.values()
+    ):
+        raise _bad(where, "has a [parts] that is not tables",
+                   "write each part as [parts.<name>] with requires, core and scene")
+    out = {}
+    for part, own in parts.items():
+        out[part] = _part(where, held, folder, part, own)
+    return out
+
+
+def _part(where: Path, held: dict, folder: Path, part: str, own: dict) -> dict:
+    """One `[parts.<name>]` table, checked against the kit it belongs to."""
+    extra = sorted(set(own) - PART)
+    if not _NAME.match(part) or extra:
+        raise _bad(where, f"[parts.{part}] declares {', '.join(extra) or part}",
+                   "name the part in lower case, with some of "
+                   + ", ".join(sorted(PART)))
+    requires, files = own.get("requires", []), own.get("core", [])
+    if not all(isinstance(r, str) for r in [*requires, *files]):
+        raise _bad(where, f"[parts.{part}] holds a name that is not text",
+                   "list kits under requires and core files under core, by name")
+    core = Path(held["installs"]["core"])
+    for one in files:
+        if not (folder / core / one).is_file():
+            raise _bad(where,
+                       f"[parts.{part}] names {one!r}, which the core does not hold",
+                       "name a file inside the core, as it lands in the game")
+        if (core / one).as_posix() == held["proves"].get("script"):
+            raise _bad(where, f"[parts.{part}] leaves out the proof script",
+                       "keep the proof in every install: it reads what landed")
+    scene = own.get("scene", False)
+    if not isinstance(scene, bool) or (scene and "scene" not in held["installs"]):
+        raise _bad(where, f"[parts.{part}] has scene = {scene!r}",
+                   "write scene = true only where [installs] names a scene")
+    return {"requires": list(requires), "core": list(files), "scene": scene}
+
+
+def _needs(kit: dict, without: list[str] | tuple = ()) -> list[str]:
+    """The kits one kit requires, less what only the parts left out need."""
+    needs = list(kit["requires"])
+    for part, own in kit["parts"].items():
+        if part not in without:
+            needs += [r for r in own["requires"] if r not in needs]
+    return needs
 
 
 def every(under: Path | None = None) -> dict[str, dict]:
@@ -220,7 +279,7 @@ def every(under: Path | None = None) -> dict[str, dict]:
         if (folder / "kit.toml").is_file():
             found[folder.name] = read(folder)
     for name, kit in found.items():
-        missing = [r for r in kit["requires"] if r not in found]
+        missing = [r for r in _needs(kit) if r not in found]
         if missing:
             raise PolyweaveError(
                 "kits.bad",
@@ -242,17 +301,32 @@ def _acyclic(name: str, kits: dict, path: list) -> None:
             f"kits require each other in a loop: {loop}",
             "break the loop; a kit is installed after what it needs",
         )
-    for needed in kits[name]["requires"]:
+    for needed in _needs(kits[name]):
         _acyclic(needed, kits, [*path, name])
 
 
-def _order(name: str, kits: dict, done: list) -> list:
-    """The kits to install for `name`, what each requires first."""
-    for needed in kits[name]["requires"]:
-        _order(needed, kits, done)
+def _order(name: str, kits: dict, done: list, without: dict | None = None) -> list:
+    """The kits to install for `name`, what each requires first.
+
+    `without` maps a kit to the parts it is installed without, so what only those
+    parts need is not installed for it.
+    """
+    for needed in _needs(kits[name], (without or {}).get(name, ())):
+        _order(needed, kits, done, without)
     if name not in done:
         done.append(name)
     return done
+
+
+def _left_out(here: Path) -> dict[str, list[str]]:
+    """The parts each kit in the game was installed without, as its kit.json says."""
+    folder = here / "addons" / "polyweave"
+    found = {}
+    for manifest in sorted(folder.glob("*/kit.json")) if folder.is_dir() else ():
+        held = json.loads(manifest.read_text(encoding="utf-8"))
+        if held.get("without"):
+            found[held["name"]] = list(held["without"])
+    return found
 
 
 def _toml(value: Any) -> str:
@@ -322,6 +396,10 @@ def install(
         bool, Param("false answers what it would do and writes nothing")
     ] = (True),
     root: Annotated[str, Param("the Godot project the kit lands in")] = ".",
+    without: Annotated[
+        list[str] | None,
+        Param("parts to leave out, as kit.list names them; kept on a later install"),
+    ] = None,
 ) -> dict:
     """Land one kit in the game and prove it there, in one call (§PW341).
 
@@ -331,6 +409,8 @@ def install(
     and its version, and runs its proof through accept.verify. The answer is ready to
     decide: ok or the first finding with its remedy, what is the project's to change,
     and any question that is a person's. `write=false` answers it, writing nothing.
+    `without` leaves parts out, with the kits only they need (§PW535); unset, a kit
+    already in the game keeps the parts it was installed without.
     """
     from polyweave.kernel import provenance
     from polyweave.kernel.config import load
@@ -348,24 +428,40 @@ def install(
             allowed=sorted(kits),
         )
     game = _game(here)
-    order = _order(name, kits, [])
+    left = _left_out(here)
+    if without is not None:
+        unknown = [p for p in without if p not in kits[name]["parts"]]
+        if unknown:
+            raise PolyweaveError(
+                "kits.no-part",
+                f"the kit {name} has no part {unknown[0]!r} to leave out",
+                "name a part kit.list answers under the kit's parts",
+                given=unknown[0],
+                allowed=sorted(kits[name]["parts"]),
+            )
+        left[name] = sorted(set(without))
+    order = _order(name, kits, [], left)
     declared = config.table("kit") if (here / "polyweave.toml").is_file() else {}
     landed, proposed, scenes, proofs = [], {}, [], []
     for one in order:
         kit = kits[one]
         source = Path(kit["folder"])
         core = here / "addons" / "polyweave" / one
+        out = left.get(one, [])
         landed.append(
             {
                 "name": one,
                 "version": kit["version"],
                 "was": game["kits"].get(one),
                 "core": provenance.relative(core, here),
+                **({"without": out} if out else {}),
             }
         )
         if one not in declared and kit["declares"]:
             proposed[one] = kit["declares"]
         scene = kit["installs"].get("scene")
+        if any(kit["parts"][p]["scene"] for p in out):
+            scene = None
         target = here / "kits" / one / Path(scene).name if scene else None
         if target is not None and not target.exists():
             scenes.append(provenance.relative(target, here))
@@ -377,6 +473,9 @@ def install(
         if core.exists():
             shutil.rmtree(core)
         shutil.copytree(source / kit["installs"]["core"], core)
+        for part in out:
+            for file in kit["parts"][part]["core"]:
+                (core / file).unlink()
         if target is not None and not target.exists():
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(source / scene, target)
@@ -387,7 +486,8 @@ def install(
         files = _digests(core)
         manifest.write_text(
             json.dumps(
-                {"name": one, "version": kit["version"], "files": files}, indent=1
+                {"name": one, "version": kit["version"], "files": files,
+                 **({"without": out} if out else {})}, indent=1
             )
             + "\n",
             encoding="utf-8",
@@ -926,10 +1026,10 @@ def prove(
     exercise it, is copied fresh, the kit is installed into it with what it requires,
     and its proof runs. A kit whose proof needs a running game is skipped, said as
     such, where no engine is present. polyweave's own gate runs this, so a Godot
-    upgrade re-proves every kit at once.
+    upgrade re-proves every kit at once. A kit with parts is proved again without
+    each one, since a game may install it so (§PW535).
     """
     import os
-    import tempfile
 
     from polyweave.loop import accept
 
@@ -959,32 +1059,9 @@ def prove(
                 }
             )
             continue
-        with tempfile.TemporaryDirectory() as scratch:
-            game = fixture(one, Path(scratch) / "game", kits)
-            _shadowed(game, kits)
-            try:
-                answer = install(one, root=str(game))
-            except PolyweaveError as refused:
-                said.append(
-                    {
-                        "kit": one,
-                        "version": kit["version"],
-                        "status": "failed",
-                        "why": refused.message,
-                    }
-                )
-                continue
-            finally:
-                forget(game)
-        held = answer["ok"]
-        said.append(
-            {
-                "kit": one,
-                "version": kit["version"],
-                "status": "held" if held else "failed",
-                **({} if held else {"why": answer["proved"]["first"]}),
-            }
-        )
+        # the whole kit, then once without each part a game may leave out (§PW535)
+        for out in [None, *([part] for part in kit["parts"])]:
+            said.append(_proved(one, kits, out))
     counted = {
         s: sum(1 for one in said if one["status"] == s)
         for s in ("held", "failed", "skipped")
@@ -995,6 +1072,33 @@ def prove(
         "passed": not counted["failed"],
         "says": f"{counted['held']} kit(s) held, {counted['failed']} failed, "
         f"{counted['skipped']} skipped for want of an engine",
+    }
+
+
+def _proved(one: str, kits: dict, without: list[str] | None) -> dict:
+    """One kit installed into a fresh copy of its fixture, and what its proof said."""
+    import tempfile
+
+    kit = kits[one]
+    named = {
+        "kit": one,
+        "version": kit["version"],
+        **({"without": without} if without else {}),
+    }
+    with tempfile.TemporaryDirectory() as scratch:
+        game = fixture(one, Path(scratch) / "game", kits)
+        _shadowed(game, kits)
+        try:
+            answer = install(one, root=str(game), without=without)
+        except PolyweaveError as refused:
+            return {**named, "status": "failed", "why": refused.message}
+        finally:
+            forget(game)
+    held = answer["ok"]
+    return {
+        **named,
+        "status": "held" if held else "failed",
+        **({} if held else {"why": answer["proved"]["first"]}),
     }
 
 
@@ -1011,7 +1115,10 @@ def listed(
     kits = every()
     return {
         "kits": [
-            {k: kit[k] for k in ("name", "version", "summary", "requires")}
+            {
+                **{k: kit[k] for k in ("name", "version", "summary", "requires")},
+                **({"parts": kit["parts"]} if kit["parts"] else {}),
+            }
             for kit in kits.values()
         ],
         "says": f"{len(kits)} kit(s) the plugin carries"

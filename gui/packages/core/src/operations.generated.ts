@@ -738,6 +738,8 @@ export interface KitInstallArgs {
   write?: boolean
   /** the Godot project the kit lands in; default "." */
   root?: string
+  /** parts to leave out, as kit.list names them; kept on a later install */
+  without?: unknown
 }
 
 /** The kits the plugin carries, each its name, version, summary and requirements. */

@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 8 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 7 },
   { block: "W", title: "A core that grows by layers", open: 0 },
 ];
 
@@ -106,13 +106,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "A playtest's trace of spawns, kills and hits cannot be measured or laid against the wave it played",
     why: "A declared wave says what it asks of a player; only a trace says where players struggle, and Starship's balance needs both.",
     deps: ["PW205"],
-  },
-  {
-    id: "PW535",
-    block: "V",
-    symptom: "the options kit requires the menus and prompts kits, so a game wanting only the store ships 69 unused icons",
-    why: "Cottony keeps its own settings card and had to exclude the prompt icons and kit scenes from its export to keep its build and its export check.",
-    deps: [],
   },
   {
     id: "PW536",

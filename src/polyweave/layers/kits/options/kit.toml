@@ -1,11 +1,18 @@
 name = "options"
-version = "0.2.1"
+version = "0.3.0"
 summary = "a versioned settings store and an options screen whose tabs come from the kits installed"
-requires = ["menus"]
+requires = []
 
 [installs]
 core = "core"
 scene = "scene/options_screen.tscn"
+
+# The screen is a part a game may leave out: a game keeping its own settings card takes
+# the store alone, and with it neither the menus kit nor the prompts kit's icons.
+[parts.screen]
+requires = ["menus"]
+core = ["options_screen.gd"]
+scene = true
 
 [declares]
 file = "user://polyweave_settings.cfg"
@@ -20,3 +27,4 @@ script = "core/proof.gd"
 "0.1.1" = "its proof holds in a game whose kits give one row holding a value"
 "0.2.0" = "the values a game kept before the kit, named by ADOPTED, taken once into the kit's file and said"
 "0.2.1" = "its scripts name one another by a _Pw name, so a game's own class of the same name, a Bindings or a Settings, cannot shadow them"
+"0.3.0" = "the screen is a part: kit.install options without screen lands the store alone, with no menus or prompts"

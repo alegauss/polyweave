@@ -6,6 +6,7 @@ build wrote, and a pad walking the screen. It runs where $GODOT is set.
 
 from __future__ import annotations
 
+import json
 import os
 import shutil
 
@@ -19,7 +20,42 @@ def test_a_kit_that_contributes_a_tab_declares_it():
     found = kits.every()
     assert found["remap"]["tab"] == "controls"
     assert found["options"]["tab"] is None
-    assert found["options"]["requires"] == ["menus"]
+    assert found["options"]["requires"] == []
+    assert found["options"]["parts"]["screen"]["requires"] == ["menus"]
+
+
+def test_the_options_store_lands_alone_without_its_screen(tmp_path):
+    """Cottony keeps its own settings card, and the screen it did not want brought the
+    menus kit and the prompts kit's 69 icons into its export (§PW535)."""
+    game = tmp_path / "game"
+    shutil.copytree(kits.KITS / "options" / "fixture", game)
+    said = kits.install("options", root=str(game), without=["screen"])
+    assert said["order"] == ["options"]
+    assert said["installed"][0]["without"] == ["screen"]
+    assert said["scenes"] == []
+    assert said["proved"]["passed"] is True, said["proved"]
+    addons = game / "addons" / "polyweave"
+    assert sorted(p.name for p in addons.iterdir()) == ["options"]
+    assert not (addons / "options" / "options_screen.gd").exists()
+    assert (addons / "options" / "settings.gd").is_file()
+    assert not (game / "kits").exists()
+    recorded = json.loads((addons / "options" / "kit.json").read_text("utf-8"))
+    assert recorded["without"] == ["screen"]
+    assert "options_screen.gd" not in recorded["files"]
+    # a kit installed later over it keeps the store alone
+    again = kits.install("access", root=str(game))
+    assert again["order"] == ["options", "access"]
+    assert not (addons / "menus").exists()
+    assert not (addons / "options" / "options_screen.gd").exists()
+
+
+def test_a_part_the_kit_lacks_is_refused(tmp_path):
+    game = tmp_path / "game"
+    shutil.copytree(kits.KITS / "options" / "fixture", game)
+    with pytest.raises(PolyweaveError) as refused:
+        kits.install("options", root=str(game), without=["tabs"])
+    assert refused.value.code == "kits.no-part"
+    assert refused.value.allowed == ["screen"]
 
 
 def test_a_tab_with_no_rows_and_rows_with_no_tab_are_refused(tmp_path):

@@ -19,6 +19,11 @@ CODES: dict[str, Code] = {
         when="kit.install with a name kit.list does not answer (§PW341)",
         doors=("name a kit kit.list answers",),
     ),
+    "kits.no-part": Code(
+        means="a kit was to be installed without a part it does not have",
+        when="kit.install with a `without` naming none of the kit's parts (§PW535)",
+        doors=("name a part kit.list answers under the kit's parts",),
+    ),
     "kits.no-game": Code(
         means="a kit was to be installed where there is no Godot project",
         when="kit.install in a folder with no project.godot (§PW341)",

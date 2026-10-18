@@ -5,10 +5,13 @@ extends SceneTree
 ## row may not take is said, never a crash and never a silent reset; a game's own older
 ## file is taken once (§PW398); each installed
 ## kit's tab is on the screen; and a pad walks every row, changes tab and goes back.
-## Prints KIT PROVED, or KIT FAILED with why.
+## A game that installed the store without its screen (§PW535) is proved on the store
+## alone. Prints KIT PROVED, or KIT FAILED with why.
 
 const _PwSettings := preload("res://addons/polyweave/options/settings.gd")
-const _PwScreen := preload("res://addons/polyweave/options/options_screen.gd")
+## loaded only where it landed: the screen is a part a game may leave out, and with it
+## the menus kit the screen preloads
+const SCREEN := "res://addons/polyweave/options/options_screen.gd"
 ## A folder of this run's own (§PW523): Godot names user:// after the project, so two
 ## proofs at once in fixtures of one name wrote the same fixed files.
 var run := ""
@@ -16,7 +19,7 @@ var kept := ""
 
 var failed := []
 var settings: _PwSettings
-var screen: _PwScreen
+var screen: Variant = null
 var closed := 0
 var frame := 0
 
@@ -35,11 +38,24 @@ func _initialize() -> void:
 	_restart()
 	_tabs()
 	_a_row_that_changes_nothing_is_named()
-	screen = _PwScreen.new()
+	if not ResourceLoader.exists(SCREEN):
+		_end()
+		return
+	screen = load(SCREEN).new()
 	screen.settings = settings
 	screen.family = "switch"
 	screen.closed.connect(func() -> void: closed += 1)
 	root.add_child(screen)
+
+
+func _end() -> void:
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(kept))
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(run))
+	if failed.is_empty():
+		print("KIT PROVED")
+	else:
+		print("KIT FAILED: " + "; ".join(failed))
+	quit()
 
 
 ## a file an older build wrote, with a renamed key, one no row declares and a bad value
@@ -176,7 +192,7 @@ func _focused() -> Control:
 
 ## every row of the tab shown reached walking down, and back round to the first
 func _walk() -> void:
-	var all := screen.controls(screen.tabs.get_current_tab_control())
+	var all: Array = screen.controls(screen.tabs.get_current_tab_control())
 	var start := _focused()
 	var seen := [start]
 	for i in all.size():
@@ -191,8 +207,10 @@ func _walk() -> void:
 
 
 func _process(_delta: float) -> bool:
+	if screen == null:
+		return true
 	frame += 1
-	var count := screen.tabs.get_tab_count()
+	var count: int = screen.tabs.get_tab_count()
 	if frame <= count * 2 and frame % 2 == 0:
 		if _focused() == null or not screen.is_ancestor_of(_focused()):
 			failed.append("tab %d showed with nothing focused" % screen.tabs.current_tab)
@@ -213,12 +231,7 @@ func _process(_delta: float) -> bool:
 		_pad(JOY_BUTTON_A)
 		if closed != 1:
 			failed.append("a Switch pad's south button did not close the screen")
-		DirAccess.remove_absolute(ProjectSettings.globalize_path(kept))
-		DirAccess.remove_absolute(ProjectSettings.globalize_path(run))
-		if failed.is_empty():
-			print("KIT PROVED")
-		else:
-			print("KIT FAILED: " + "; ".join(failed))
+		_end()
 		return true
 	return false
 
@@ -227,7 +240,7 @@ func _process(_delta: float) -> bool:
 func _choice() -> Variant:
 	for row in settings.options:
 		if row.has("choices"):
-			var rows := screen.tabs.get_node(NodePath(row["tab"]))
+			var rows: Node = screen.tabs.get_node(NodePath(row["tab"]))
 			screen.tabs.current_tab = rows.get_index()
 			return [row, rows.get_node("%s/value" % row["key"])]
 	return null

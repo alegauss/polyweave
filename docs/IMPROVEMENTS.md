@@ -408,25 +408,6 @@ differently, and a skeleton that suits one may fight the next. So it stays an id
 Starship and Cottony both show code it would replace, at which point the shape it should
 take is read off that code rather than invented here.
 
-### §PW535 The options store installed without its screen
-
-Found moving Cottony onto the options kit (PW371, Cottony RK151). Cottony keeps its own
-settings card and wanted only the store: rows, apply and read, the file and the one-time
-adoption. `kit.toml` says the options kit requires `menus`, and menus requires
-`prompts`. So the install brought the menus scripts, three kit scenes under `kits/` and
-the prompts kit's 69 icon PNGs. Cottony's `check_export.py` then failed on all 69 as
-assets imported from outside its art, and the game had to add
-`addons/polyweave/prompts/icons/*,kits/*` to its export's exclude filter to keep a
-six-megabyte build lean.
-
-The store (`options/core/settings.gd`) does not use the menus or the prompts; only the
-screen does. What polyweave should do: the options kit's screen is its own part, and a
-game can install the store alone. One way is a `[installs] store` beside `screen`, with
-`requires` on the screen only; another is `kit.install --name options --without screen`.
-`kit.prove` then proves the store in a fixture with no screen too. Done when Cottony
-reinstalls options as a store alone, its export filter drops the two patterns, and
-`check_export` holds.
-
 ### §PW536 Adoption resolved against the store's own folder
 
 Found moving Cottony onto the options and saves kits (PW371, Cottony RK151). A game's

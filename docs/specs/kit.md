@@ -44,6 +44,14 @@ fixture = "fixture"           # a minimal Godot project it is proved in, in this
   `res://addons/polyweave/<name>/`. It is the plugin's, replaced whole on an upgrade and
   never edited in the game. `scene` is optional: a scene copied once into the project,
   which the project owns from then on and changes as it likes.
+- `[parts.<name>]` is optional: a part a game may install the kit without (§PW535).
+  It names the `core` files that belong to it, whether the `scene` does (`scene = true`,
+  only where `[installs]` names one) and the kits only it `requires`, beyond the kit's
+  own. The options kit's screen is one: it needs the menus kit, and the settings store
+  does not, so a game keeping its own settings card takes the store alone and none of
+  the prompts kit's icons. The proof script never belongs to a part; it reads whether a
+  part landed and proves what did. A part with another key, a file the core lacks or a
+  scene the kit does not install is `kits.bad`.
 - `[declares]` is the declaration the kit proposes, written into the project's
   `[kit.<name>]` only where the project has none. A kit carries no palette or theme of
   its own: anything that is a game's look is the game's to declare.
@@ -121,6 +129,13 @@ kit assumes no genre. Installing (§PW341) and proving every kit in polyweave's 
 6. it copies the kit's spec, where it has one, to
    `<[paths] specs>/kits/<name>/proof.accept.toml` and runs it through `accept.verify`
    in the game, then the kit's script.
+
+`without` names parts to leave out (§PW535): their core files and scene are not laid
+down, the kits only they need are not installed, and `kit.json` records `without`, so
+a later install of this kit or of one that requires it, and `kit.update`, keep the
+same parts out. A name the kit has no part for is `kits.no-part`, with the parts it
+has. `kit.list` answers each kit's `parts`, and `kit.prove` proves a kit with parts
+once whole and once without each.
 
 The answer is ready to decide: `ok`, `proved` with the first finding where the proof
 fails, `declared` (what it proposed), `scenes` and `change` (what is the project's to
@@ -332,7 +347,7 @@ events: every menu walked down reaches each button and comes back round, back la
 where each menu says in every family's convention, and the game does not tick while
 paused.
 
-**options** (§PW347, requires menus): one settings file and the screen over it, from
+**options** (§PW347; its screen part requires menus, §PW535): one settings file and the screen over it, from
 Starship's SettingsStore and Cottony's settings. `PolyweaveSettings` keeps every option
 in `user://polyweave_settings.cfg` under `[meta] version`. A row is
 `{tab, key, label, default}` with `choices` (and `names`), `range` `[min, max, step]`,
