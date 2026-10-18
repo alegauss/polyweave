@@ -18,7 +18,7 @@
 
 - 🛠 **PW372** (deps: Spinhold RK215) **a camera move cannot be declared as a clip or played by the game, so a cutscene's shots are numbers in the project** — No shot is yet captured onto a sitting for a person to accept, and Starship's opening still reads its own JSON. → §PW372
 - 🛠 **PW36** (deps: PW5 ✅, PW82 ⏸) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82. → §PW36
-- 📋 **PW525** (deps: —) **the crash kit's mid-run kill races the game under load, so the full gate fails it and a lone run passes** — It failed twice today on trees that never touched the kit, and a kill timed by the clock instead of the game's own signal is right only on an idle machine. → §PW525
+- 📋 **PW532** (deps: —) **kit.prove proves each fixture under its fixed project name, so a run that left state in its user:// fails the next proof** — The gate went red on the crash kit's proof from a marker an earlier run left, and passed a minute later on the same tree. → §PW532
 
 ## Block I — Voxel models from a declaration
 

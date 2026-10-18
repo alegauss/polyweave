@@ -76,14 +76,33 @@ def test_user_dir_follows_the_project_name_or_its_custom_folder(tmp_path):
 
 
 def _installed(tmp_path):
+    """The fixture, under a name of its own so its user:// is its own (§PW525).
+
+    Godot names user:// after the project, and the kit logs to a fixed folder there, so
+    copies sharing the fixture's name read each other's log and marker under xdist.
+    """
     game = tmp_path / "game"
     shutil.copytree(kits.KITS / "crash" / "fixture", game)
+    project = game / "project.godot"
+    named = 'config/name="polyweave crash fixture"'
+    text = project.read_text(encoding="utf-8")
+    assert named in text
+    own = f'config/name="polyweave crash fixture {os.getpid()} {time.monotonic_ns()}"'
+    project.write_text(text.replace(named, own), encoding="utf-8")
     return game, kits.install("crash", root=str(game))
 
 
+@pytest.fixture
+def installed(tmp_path):
+    """The fixture installed, and its user:// removed after."""
+    game, said = _installed(tmp_path)
+    yield game, said
+    shutil.rmtree(driving._user_dir(game), ignore_errors=True)
+
+
 @pytest.mark.skipif(not os.environ.get("GODOT"), reason="no $GODOT on this machine")
-def test_the_crash_kit_holds_in_its_fixture(tmp_path):
-    _, said = _installed(tmp_path)
+def test_the_crash_kit_holds_in_its_fixture(installed):
+    _, said = installed
     assert said["proved"]["passed"] is True, said["proved"]
 
 
@@ -100,8 +119,8 @@ LOG = "addons/polyweave/crash/log.gd"
      'pass #("unclean-exit", {"said": "the last run ended without closing',
      "was not packed as an unclean exit"),
 ])
-def test_a_broken_log_fails_the_proof_by_name(tmp_path, where, before, after, said):
-    game, _ = _installed(tmp_path)
+def test_a_broken_log_fails_the_proof_by_name(installed, where, before, after, said):
+    game, _ = installed
     broken = game / where
     text = broken.read_text(encoding="utf-8")
     assert before in text
@@ -112,13 +131,28 @@ def test_a_broken_log_fails_the_proof_by_name(tmp_path, where, before, after, sa
 
 
 @pytest.mark.skipif(not os.environ.get("GODOT"), reason="no $GODOT on this machine")
-def test_a_game_killed_mid_run_is_read_back_as_an_unclean_exit(tmp_path):
-    game, _ = _installed(tmp_path)
+def test_a_game_killed_mid_run_is_read_back_as_an_unclean_exit(installed):
+    game, _ = installed
     godot = engine.find(game)
+    log = driving._user_dir(game) / "polyweave_log" / "log.jsonl"
+
+    def started() -> int:
+        if not log.is_file():
+            return 0
+        text = log.read_text(encoding="utf-8", errors="replace")
+        return text.count("the fixture starts")
+
+    before = started()
     running = subprocess.Popen([godot, "--headless", "--path", str(game)],
                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     try:
-        time.sleep(4)
+        # "Mid run" is a place in the run, not a moment (§PW525): a fixed sleep under
+        # the full gate's load killed the game before it had logged its first line.
+        deadline = time.monotonic() + 120
+        while started() == before and time.monotonic() < deadline:
+            assert running.poll() is None, "the fixture quit before it logged"
+            time.sleep(0.1)
+        assert started() > before, "the fixture never logged that it started"
     finally:
         running.kill()
         running.wait()

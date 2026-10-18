@@ -118,24 +118,27 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW525 The crash kit's kill waits on the game, not the clock
+### §PW532 A fixture proved under a name of its own run
 
-`tests/test_kit_crash.py::test_a_game_killed_mid_run_is_read_back_as_an_unclean_exit`
-failed twice in the full gate on 2026-10-17, on trees that did not touch the crash kit,
-and passed alone both times (10 of 10 in the file). Each time the assertion was the
-same: the last line read back was "the crash kit's forced error" where the test expects
-"the fixture starts".
+Found shipping PW525 on 2026-10-18. The gate went red with the crash kit's own proof
+failing in `kit.prove`, though every pytest test passed. Run again a minute later, it
+held. Earlier in the same session, tests that break the crash log on purpose had run
+under the fixture's own name. One of them leaves the `running` marker behind, so it was
+left in the shared `app_userdata/polyweave crash fixture/polyweave_log`. The next proof
+under that name read it as an unclean exit of its own and failed.
 
-So the kill the test sends "mid run" lands late under load: the game has already reached
-the line the kit forces, and the read is right about what happened while the test is
-wrong about when. The test races a sleep or a fixed point in the run against the
-machine's speed.
+Godot names `user://` after `config/name`, and every copy of a kit's fixture keeps the
+fixture's name. So `kit.prove`, `kit.install`'s proof and any test proving a kit all
+share one `user://` per kit, across runs and across processes. PW523 gave four proofs
+paths of their own run, and PW525 gave the crash tests a name of their own. The kits
+whose runtime writes a fixed `user://` path (crash, determinism, options, remap, saves)
+are still exposed wherever the proof is run on a copy that keeps the fixture's name.
 
-Make the kill wait on the game's own signal instead of on time: the fixture prints a
-line it then pauses on, the test waits for that line through the held game's output,
-then kills it, so "mid run" is a place in the run rather than a moment. The assertion
-then holds at any load. Run the file under `-n 12` with the rest of the gate ten times
-to show the race is gone.
+What polyweave should do: when `kit.prove` or `kit.install` proves a kit in a copy of
+its fixture, write that copy's `config/name` with a suffix of the run's own, and remove
+that `user://` folder when the proof ends. A game's own install never renames the game:
+this is the fixture copy alone. Done when a marker left in the fixture's old `user://`
+no longer fails the next proof, and the crash tests drop their own renaming for it.
 
 ## Block I — Voxel models from a declaration
 

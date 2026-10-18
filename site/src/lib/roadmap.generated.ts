@@ -66,10 +66,10 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW82"],
   },
   {
-    id: "PW525",
+    id: "PW532",
     block: "H",
-    symptom: "the crash kit's mid-run kill races the game under load, so the full gate fails it and a lone run passes",
-    why: "It failed twice today on trees that never touched the kit, and a kill timed by the clock instead of the game's own signal is right only on an idle machine.",
+    symptom: "kit.prove proves each fixture under its fixed project name, so a run that left state in its user:// fails the next proof",
+    why: "The gate went red on the crash kit's proof from a marker an earlier run left, and passed a minute later on the same tree.",
     deps: [],
   },
   {
