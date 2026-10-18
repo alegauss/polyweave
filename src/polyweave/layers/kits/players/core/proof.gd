@@ -8,6 +8,7 @@ extends SceneTree
 ## FAILED with why.
 
 const _PwPlayers := preload("res://addons/polyweave/players/players.gd")
+const _PwBindings := preload("res://addons/polyweave/remap/bindings.gd")
 const PRESENCE := "res://addons/polyweave/presence/presence.gd"
 ## the pads that join: numbered apart from the seats, so a pad's number is never taken
 ## for its player's
@@ -16,10 +17,25 @@ const THIRD := 4
 
 var failed := []
 var players: _PwPlayers
+## The store the proof rebinds and resets, in a file of this run's own (§PW538): the
+## shared store is the game's declared STORE, and resetting it reset the player's own
+## controls on the machine the kit was proved on.
+var _kept := ""
+## The game's own AUTO_JOIN, put back when the proof ends (§PW539).
+var _auto_join := true
 
 
 func _initialize() -> void:
 	players = _PwPlayers.shared()
+	var run := "user://polyweave_proof/players_%d_%d" % [
+		OS.get_process_id(), Time.get_ticks_usec()]
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(run))
+	_kept = run + "/bindings.cfg"
+	players._store = _PwBindings.new(players._store.actions, _kept)
+	# The proof joins on the first press; a game that answers its joins itself
+	# (AUTO_JOIN false) is proved on that half by _deferred, and gets its value back.
+	_auto_join = bool(players.declared["AUTO_JOIN"])
+	players.declared["AUTO_JOIN"] = true
 
 
 func _button(device: int, index: int) -> InputEventJoypadButton:
@@ -70,6 +86,11 @@ func _process(_delta: float) -> bool:
 			failed.append("a pad freed by a leave could not be joined by the next")
 		_deferred(join, first)
 		_shared_layout(name, first)
+	players.declared["AUTO_JOIN"] = _auto_join
+	var run := ProjectSettings.globalize_path(_kept.get_base_dir())
+	for file in DirAccess.get_files_at(run):
+		DirAccess.remove_absolute(run.path_join(file))
+	DirAccess.remove_absolute(run)
 	print("KIT PROVED" if failed.is_empty() else "KIT FAILED: " + "; ".join(failed))
 	return true
 

@@ -46,6 +46,50 @@ def test_the_players_kit_lands_after_remap_and_holds_with_presence_beside_it(tmp
     assert found["status"] == "held", found
 
 
+def _declared(tmp_path, players: str = "", remap: str = ""):
+    """The fixture under a name of its own run, with a game's own declarations."""
+    game = kits.fixture("players", tmp_path / "game")
+    if players:
+        (game / "polyweave_players.gd").write_text(
+            "extends RefCounted\n" + players, encoding="utf-8")
+    if remap:
+        (game / "polyweave_remap.gd").write_text(
+            "extends RefCounted\n" + remap, encoding="utf-8")
+    return game
+
+
+@pytest.mark.skipif(not os.environ.get("GODOT"), reason="no $GODOT on this machine")
+def test_the_proof_leaves_the_game_s_own_store_alone(tmp_path):
+    """§PW538: the proof rebound and reset through the game's declared STORE, so
+    proving the kit on Spinhold's machine reset the player's own controls."""
+    from polyweave.layers.engine.driving import _user_dir
+
+    store = 'const STORE := ["user://settings.cfg", "controls"]\n'
+    game = _declared(tmp_path, remap=store)
+    kept = _user_dir(game) / "settings.cfg"
+    kept.parent.mkdir(parents=True, exist_ok=True)
+    held = '[controls]\n\ndeadzone=0.4\ntwin_stick=false\n\n[display]\n\nvsync=true\n'
+    kept.write_text(held, encoding="utf-8")
+    try:
+        said = kits.install("players", root=str(game))
+        assert said["proved"]["passed"] is True, said["proved"]
+        assert kept.read_text(encoding="utf-8") == held
+    finally:
+        kits.forget(game)
+
+
+@pytest.mark.skipif(not os.environ.get("GODOT"), reason="no $GODOT on this machine")
+def test_a_game_that_answers_its_own_joins_holds(tmp_path):
+    """§PW539: Spinhold declares AUTO_JOIN false, and the proof joined on the first
+    press as if every game seated a pad at once."""
+    game = _declared(tmp_path, players="const AUTO_JOIN := false\n")
+    try:
+        said = kits.install("players", root=str(game))
+        assert said["proved"]["passed"] is True, said["proved"]
+    finally:
+        kits.forget(game)
+
+
 PLAYERS = "addons/polyweave/players/players.gd"
 PRESENCE = "addons/polyweave/presence/presence.gd"
 

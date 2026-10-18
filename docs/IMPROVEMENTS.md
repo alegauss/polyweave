@@ -481,39 +481,6 @@ adopts the real one. The same for the saves kit, whose `adopted(folder)` is hand
 store's folder. Done when Cottony's tests seed a folder and build the stores on it, and
 game.gd no longer overwrites either field.
 
-### §PW538 The players proof keeps off the player's store
-
-Found moving Spinhold onto the input kits (PW370, Spinhold RK216). The players proof
-rebinds a pad and calls `players._store.reset()` twice, and `_store` is the shared
-bindings store built on the game's declaration. Spinhold declares `STORE :=
-["user://settings.cfg", "controls"]`, its one settings file, so proving the players kit,
-or installing it (install proves), reset the player's own controls to their defaults:
-every rebind, the deadzone and the twin-stick option. It was caught only because the
-proof ran with APPDATA pointed at a scratch folder.
-
-A proof must never write a player's data. The players proof now builds its store on a
-file of its own run under `user://polyweave_proof/` (as PW523 did for the other proofs),
-which a bindings store keeps whatever the game declares, and removes it at the end.
-`tests/test_kit_players.py` plants a game store with a declared `STORE` and holds its
-bytes unchanged across an install.
-
-Every other kit proof that writes through a store the game declares is to be read for
-the same fault.
-
-### §PW539 The players proof for a game that answers its own joins
-
-Found moving Spinhold onto the input kits (PW370, Spinhold RK216). Spinhold declares
-`AUTO_JOIN := false` in `polyweave_players.gd`, since its co-op seats a second pad only
-when coop.gd says so (the next wave). The players proof presses the join button and
-expects the pad seated at once, so it failed for any game that answers its own joins,
-though the kit's deferred join (PW396) is the very thing such a game uses, and
-`_deferred` already proves it.
-
-The proof now holds AUTO_JOIN true while it proves seating, rebinding and leaving, lets
-`_deferred` prove the false half, and puts the game's own value back when it ends.
-`tests/test_kit_players.py` installs the kit into a fixture declaring `AUTO_JOIN :=
-false` and holds the proof.
-
 ### §PW540 The remap screen rebinds through the players kit
 
 Found moving Spinhold onto the input kits (PW370, Spinhold RK216). The remap screen

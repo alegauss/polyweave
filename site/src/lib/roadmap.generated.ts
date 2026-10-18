@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 12 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 10 },
   { block: "W", title: "A core that grows by layers", open: 0 },
 ];
 
@@ -133,20 +133,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "V",
     symptom: "a kit's older-file adoption is a fixed user:// path, so a game's tests overwrite kit fields to keep off the real file",
     why: "Cottony's game.gd reaches into both stores after building them, so tests never adopt a player's real save.",
-    deps: [],
-  },
-  {
-    id: "PW538",
-    block: "V",
-    symptom: "the players kit's proof resets bindings through the game's declared store, wiping a player's own controls",
-    why: "Installing the players kit on a player's machine reset every rebind, the deadzone and twin-stick in Spinhold's settings file.",
-    deps: [],
-  },
-  {
-    id: "PW539",
-    block: "V",
-    symptom: "the players kit's proof expects a pad seated on its first join press, so a game declaring AUTO_JOIN false fails it",
-    why: "Spinhold seats its second pad only when its co-op says so, which is what AUTO_JOIN false is for.",
     deps: [],
   },
   {
