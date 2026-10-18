@@ -520,24 +520,6 @@ the swap, and its gate passes.
 
 ## Block W — A core that grows by layers
 
-### §PW521 Cottony across the break
-
-Cottony (`D:\Git\viglet\cottony`) is the first consumer and the one that reaches
-deepest. Ten of its Python files import polyweave modules directly, it carries 57
-provenance records and 55 acceptance specs, and its `tools/art/` still holds scripts
-that `[adoption.own]` lists as kept on purpose.
-
-The move, done in Cottony as one commit and recorded here when this line ships:
-
-1. `polyweave migrate --root .` reviewed as a diff, then written. Each import it rewrote is read once, and one it could not map becomes a defect in the migration table, not a hand edit.
-2. `[layers] on` checked against what the game actually makes, and the session's `tools/list` size written down before and after. That pair is this block's headline number.
-3. Cottony's gates pass, along with `project.check`, `project.adoption` and `provenance.outdated`, and each answers as it did before the move.
-4. One script from `[adoption.own]` whose job a declaration can state becomes an `[extend.operations]` or `[extend.measures]` entry, the first real use of the extension lines. If none can, the reason is filed as a line here.
-5. The skills and `CLAUDE.md` in Cottony that name a polyweave module path or a tool are updated, so the next session does not read a path that no longer exists.
-
-Done when Cottony's own gates pass on the new polyweave and the before and after
-tool-list sizes are in the changelog entry.
-
 ### §PW522 Spinhold across the break
 
 Spinhold (`D:\Git\viglet\spinhold`, still called Starship in older lines here) has the
@@ -559,3 +541,23 @@ Cottony. A seam that only one consumer used will show up here as an unused contr
 and that is worth a note in the changelog entry.
 
 Done when the four reads match their baseline and Spinhold's gates pass.
+
+### §PW530 migrate keeps a block of imports sorted
+
+`python -m polyweave migrate --write` on Cottony (PW521) left five of its ten rewritten
+files failing Cottony's own `ruff check` with I001. A rewritten import keeps its old
+place in the block, but its new path sorts somewhere else: `from polyweave.layers.engine
+import engine` above `from polyweave.kernel.errors import PolyweaveError`. And one `from
+polyweave import a, b, c` split into three lines comes out in first-seen order. The fix
+was `ruff check --fix --select I`, by hand.
+
+`migrate` cannot know a project's import style, and it should not run a project's
+linter. What it can do is leave the polyweave imports it touched in the order isort's
+default profile gives within one block: each run of consecutive `polyweave` import
+statements it rewrote is re-sorted by module path, `import x` before `from x import`,
+with the names inside one `from` sorted. That is ruff's and isort's default, and it is
+the order Cottony and Spinhold both use. A block that mixes polyweave and other
+first-party imports keeps its other lines where they are.
+
+Done when the Cottony and Spinhold fixtures under `tests/fixtures/migrate/` pass `ruff
+check --select I` once migrated.

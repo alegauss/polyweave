@@ -630,6 +630,20 @@ Cottony's ten files and Spinhold's three migrate with nothing unmapped, and
 `project.check`, `project.adoption` and `provenance.outdated` answer the same before and
 after.
 
+**Cottony crossed first** (§PW521, its commit 924e452). `migrate --write` rewrote its ten
+scripts with nothing unmapped, wrote `[layers] on` as engine, geometry, kits, motion,
+picture, sound and words, and cleared the cache. Its pin moved to bd552a6, the first
+pushed commit on the new layout. The session's tools/list went from 201 tools and 130,085
+characters to 181 and 114,489. `project.adoption` and `provenance.outdated` answered
+exactly as before, and `project.check` kept the same five errors. Its Python gates,
+`run_tests.py` and `check_boot.py` pass. `check_export.py` passes on a clean checkout and
+fails on the working desk only because of ignored tray meshes an earlier `frame_trays.py`
+run left in `tools/art/`. Five rewritten files failed Cottony's import-order lint until
+ruff sorted them (§PW530). Rule 2 of `check_pieces.py` became the first real extension,
+`x.cottony.ringed` under `[extend.measures]`. It is held to 0 by
+`pieces3d.accept.toml` through the script's own `ring`, and a rope painted onto the sheet
+measures 1.
+
 ## Still to come in this block
 
 The port PW36 is deferred on, once somebody records its baseline — and then the six

@@ -143,17 +143,17 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW521",
-    block: "W",
-    symptom: "Cottony still runs on the flat package and serves every layer, so the block is unproven on its first consumer",
-    why: "A layering proven only on fixtures can still be wrong where a real game reaches into it, and Cottony reaches deepest, from Python, a rig and scripts.",
-    deps: [],
-  },
-  {
     id: "PW522",
     block: "W",
     symptom: "Spinhold still runs on the flat package, so the 443 records and 30 verdicts most at stake in the break are unchecked",
     why: "Spinhold holds the most data a person judged, so it proves whether the break kept the one thing it promised to keep.",
+    deps: [],
+  },
+  {
+    id: "PW530",
+    block: "W",
+    symptom: "migrate leaves the imports it rewrote out of sorted order, so an adopter's import lint fails until they fix it by hand",
+    why: "Five of Cottony's ten migrated files failed its ruff I001, and a migration that turns a gate red is one more hand step.",
     deps: [],
   },
 ];

@@ -62,8 +62,8 @@
 
 ## Block W — A core that grows by layers
 
-- 📋 **PW521** (deps: PW520 ✅, PW518 ✅) **Cottony still runs on the flat package and serves every layer, so the block is unproven on its first consumer** — A layering proven only on fixtures can still be wrong where a real game reaches into it, and Cottony reaches deepest, from Python, a rig and scripts. → §PW521
 - 📋 **PW522** (deps: PW520 ✅) **Spinhold still runs on the flat package, so the 443 records and 30 verdicts most at stake in the break are unchecked** — Spinhold holds the most data a person judged, so it proves whether the break kept the one thing it promised to keep. → §PW522
+- 📋 **PW530** (deps: —) **migrate leaves the imports it rewrote out of sorted order, so an adopter's import lint fails until they fix it by hand** — Five of Cottony's ten migrated files failed its ruff I001, and a migration that turns a gate red is one more hand step. → §PW530
 
 ## Done when — PW36
 
