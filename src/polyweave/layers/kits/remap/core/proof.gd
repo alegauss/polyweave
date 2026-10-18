@@ -10,8 +10,13 @@ const _PwBindings := preload("res://addons/polyweave/remap/bindings.gd")
 const J := "proof_jump"
 const F := "proof_fire"
 const P := "proof_pause"
+## The proof reads the screen's words in a language of its own (§PW537), as the prompts
+## proof does (§PW485): a game whose table says the swap in Portuguese, on a machine set
+## to Portuguese, is a game with words, not a broken screen.
+const PROOF_LOCALE := "zz"
 
 var _failed := []
+var _game_locale := ""
 ## A folder of this run's own (§PW523): Godot names user:// after the project, so two
 ## proofs at once in fixtures of one name wrote the same fixed files.
 var _run := ""
@@ -53,6 +58,8 @@ func _declare() -> void:
 
 func _initialize() -> void:
 	var failed := _failed
+	_game_locale = TranslationServer.get_locale()
+	TranslationServer.set_locale(PROOF_LOCALE)
 	_run = "user://polyweave_proof/remap_%d_%d" % [OS.get_process_id(), Time.get_ticks_usec()]
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(_run))
 	_kept = _run + "/bindings.cfg"
@@ -194,9 +201,13 @@ func _process(_delta: float) -> bool:
 	var menu := _menu
 	var fire_key := _fire_key
 	var failed := _failed
+	# Again here: a game's own autoloads set the player's language in their _ready,
+	# which runs after _initialize (§PW537).
+	TranslationServer.set_locale(PROOF_LOCALE)
 	menu.bindings = _PwBindings.new(menu.bindings.actions, _kept)
 	var said: String = menu.take(P, _PwBindings.decode(fire_key))
-	if not said.contains("took it from"):
+	# Said in whatever words the game's table gives it, it names both actions.
+	if not (said.contains(menu.bindings.label(P)) and said.contains(menu.bindings.label(F))):
 		failed.append("the screen did not say the swap: %s" % said)
 	menu._listen(J, true)
 	var stray := InputEventKey.new()
@@ -245,7 +256,11 @@ func _process(_delta: float) -> bool:
 	table.add_message("PROOF_JUMP", "Pular")
 	TranslationServer.add_translation(table)
 	menu.bindings.labels = {J: "PROOF_JUMP"}
-	if menu.said("reset") != "Restaurar" or menu.said("pad") != "Pad":
+	# "pad" has no row of the proof's: the game's own, where its table has one in the
+	# fallback language, else the kit's English (§PW537).
+	var pad_row := String(TranslationServer.translate("REMAP_PAD"))
+	var pad := "Pad" if pad_row == "REMAP_PAD" else pad_row
+	if menu.said("reset") != "Restaurar" or menu.said("pad") != pad:
 		failed.append("the screen's words ignore the table: %s, %s"
 			% [menu.said("reset"), menu.said("pad")])
 	if menu.bindings.label(J) != "Pular" or menu.bindings.label(F) != F:
@@ -258,10 +273,13 @@ func _process(_delta: float) -> bool:
 	for name in DirAccess.get_files_at(at):
 		DirAccess.remove_absolute(at.path_join(name))
 	DirAccess.remove_absolute(at)
+	TranslationServer.set_locale(_game_locale)
 	if failed.is_empty():
 		print("KIT PROVED")
 	else:
-		print("KIT FAILED: " + "; ".join(failed))
+		# Read in the proof's own language; the game's is said, for a finding on a word.
+		print("KIT FAILED (words read in %s, the game's language %s): %s"
+			% [PROOF_LOCALE, _game_locale, "; ".join(failed)])
 	return true
 
 

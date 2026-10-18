@@ -94,6 +94,25 @@ this is where that is recorded honestly: what still runs by hand, and why the ri
 instead of disappearing. An outcome worth having, stated, beats the same outcome
 unstated.
 
+### §PW546 The dialogue proof ends on the game's signal
+
+On 2026-10-18 the gate went red at 98ea6d5 on
+`test_kit_dialogue.py::test_a_broken_dialogue_box_fails_the_proof_by_name`, in its
+`_shown += 100000.0` case (a box that types every character at once). The proof came
+back `no-signal`: it printed no KIT line before the engine run's timeout, so the test
+found no "characters typed in" to read. The file passed four runs out of four alone, and
+the change under test touched no dialogue code.
+
+So under the full gate's twelve workers this proof, with that mutation, runs past the
+time it is given, where alone it finishes. Like PW525, the proof is racing the clock.
+
+Measure first: run the file under `-n 12` beside the render and kit tests ten times and
+count `no-signal`, and read the dialogue proof for a wait counted in wall-clock time or
+in frames that the mutation can stretch. Then make the proof end on the game's own
+signal. Each typed-in check waits for the box's own `finished` or a frame count it sets,
+not a time, and a proof that cannot finish says which step it was on. Done when the file
+holds ten runs of ten under the gate's load.
+
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once
@@ -461,5 +480,132 @@ folder adopts the older file in that folder, and the real game, built on `user:/
 adopts the real one. The same for the saves kit, whose `adopted(folder)` is handed the
 store's folder. Done when Cottony's tests seed a folder and build the stores on it, and
 game.gd no longer overwrites either field.
+
+### §PW538 The players proof keeps off the player's store
+
+Found moving Spinhold onto the input kits (PW370, Spinhold RK216). The players proof
+rebinds a pad and calls `players._store.reset()` twice, and `_store` is the shared
+bindings store built on the game's declaration. Spinhold declares `STORE :=
+["user://settings.cfg", "controls"]`, its one settings file, so proving the players kit,
+or installing it (install proves), reset the player's own controls to their defaults:
+every rebind, the deadzone and the twin-stick option. It was caught only because the
+proof ran with APPDATA pointed at a scratch folder.
+
+A proof must never write a player's data. The players proof now builds its store on a
+file of its own run under `user://polyweave_proof/` (as PW523 did for the other proofs),
+which a bindings store keeps whatever the game declares, and removes it at the end.
+`tests/test_kit_players.py` plants a game store with a declared `STORE` and holds its
+bytes unchanged across an install.
+
+Every other kit proof that writes through a store the game declares is to be read for
+the same fault.
+
+### §PW539 The players proof for a game that answers its own joins
+
+Found moving Spinhold onto the input kits (PW370, Spinhold RK216). Spinhold declares
+`AUTO_JOIN := false` in `polyweave_players.gd`, since its co-op seats a second pad only
+when coop.gd says so (the next wave). The players proof presses the join button and
+expects the pad seated at once, so it failed for any game that answers its own joins,
+though the kit's deferred join (PW396) is the very thing such a game uses, and
+`_deferred` already proves it.
+
+The proof now holds AUTO_JOIN true while it proves seating, rebinding and leaving, lets
+`_deferred` prove the false half, and puts the game's own value back when it ends.
+`tests/test_kit_players.py` installs the kit into a fixture declaring `AUTO_JOIN :=
+false` and holds the proof.
+
+### §PW540 The remap screen rebinds through the players kit
+
+Found moving Spinhold onto the input kits (PW370, Spinhold RK216). The remap screen
+keeps a bindings store of its own, and it does not know about the players kit:
+
+- a rebind on its pad half applies to every pad, which undoes the players kit narrowing
+  player 1's pad bindings to player 1's pad during co-op;
+- a rebind is not passed on to player 2's copied actions;
+- `PolyweaveBindings.shared()` goes stale, so the game's twin-stick and invert read the
+  old values until something reloads it.
+
+Spinhold works around all three in game/ui/options.gd: on leaving the screen, where
+anything changed, it calls `load_kept()` on the shared store and has player 2 leave and
+join again (`OptionsScreen.keep_seats()`).
+
+What polyweave should do: the remap screen rebinds through the shared store, and where
+the players kit is installed, through `players.rebind(player, ...)`, so the narrowing,
+the copies and the shared values stay right with no game code. Done when Spinhold drops
+`keep_seats` and a rebind mid-co-op leaves each player's pad on their own actions.
+
+### §PW541 The remap screen says when it listens and keeps focus
+
+Found moving Spinhold onto the input kits (PW370, Spinhold RK216). A game hosting the
+remap screen inside its own options needs to know when the screen is listening for a
+binding, so its own back and tab keys stay out of the way. The screen says nothing, and
+Spinhold reads the private `remap._listening`. The screen also rebuilds its rows on
+every listen and every bind, so the focused row is freed and a pad is left with nothing
+focused. Spinhold puts focus back itself in game/ui/options.gd.
+
+What polyweave should do: the remap screen emits `listening(action)` and `listened()`
+and exposes `is_listening()`, and it updates a row in place rather than rebuilding the
+list, keeping focus on the row that was bound. Done when Spinhold reads neither private
+field nor restores focus, and a pad walks the screen after a bind without a lost focus.
+
+### §PW542 The pad screen in the game's own labels and buttons
+
+Found moving Spinhold onto the input kits (PW370, Spinhold RK216). The remap kit's drawn
+pad screen (PW428) has three gaps a game's own words and buttons fall into:
+
+- it labels each place with an `ACTION_<name>` row, where the remap screen uses the
+  declared `LABELS`, so Spinhold, whose labels are its `OPT_` rows, shows raw names
+  such as "move_left" on the drawn pad;
+- its `PAD_HELP` and `PAD_CHOOSE` lines are drawn as plain text, with no `{action}`
+  marks filled through the prompts kit, so they cannot name the buttons that work them;
+- both kit screens confirm and go back on `ui_accept` and `ui_cancel` only. In Godot 4.7
+  those have no pad buttons by default, so Spinhold added pad buttons 0 and 1 to them in
+  project.godot, and its own rebindable fire and bomb cannot work the screens.
+
+What polyweave should do: the pad screen labels a place from the same `LABELS` the remap
+screen reads; its help lines are filled by the prompts kit as every other kit line is;
+and a declared `CONFIRM` and `BACK` (actions) replace `ui_accept` and `ui_cancel` where
+a game names them. Done when Spinhold's drawn pad reads its own labels and its help
+names the buttons, with no ui_* edit of its own.
+
+### §PW543 Bindings load quietly where a key is absent
+
+Found moving Spinhold onto the input kits (PW370, Spinhold RK216). A file the game's
+older build wrote holds a key only for each action the player changed. Loading it,
+`bindings.gd` reads every rebindable action with `get_value(section, action, null)`, and
+Godot prints an engine ERROR for each key that is not there. So a player's first launch
+on the kits logs one error per action they never changed, which looks like a broken
+build in a crash log and in `game.boot`.
+
+What polyweave should do: the store asks `has_section_key` before it reads, and an
+action with no key keeps its default in silence. Done when loading a file that names one
+action of eleven prints no engine error, which a check in the remap proof holds.
+
+### §PW544 The install writes the store the game declares
+
+Found moving Spinhold onto the input kits (PW370, Spinhold RK216). `kit.install` writes
+a `[kit.remap]` table into polyweave.toml with `file = "user://polyweave_bindings.cfg"`,
+the kit's own file, though Spinhold's `polyweave_remap.gd` declares `STORE :=
+["user://settings.cfg", "controls"]` and the store keeps everything there. Spinhold
+corrected the table by hand. A reader of polyweave.toml, an agent among them, is told
+the bindings live in a file the game never writes.
+
+What polyweave should do: where the project's declaration names a `STORE`, the install
+writes that file, with the section beside it, into the table, and `kit.update` keeps it.
+Done when installing remap into a game with a STORE writes its file into the table, and
+Spinhold's hand correction is the table install would have written.
+
+### §PW545 Prompts start on the first connected pad
+
+Found moving Spinhold onto the input kits (PW370, Spinhold RK216). The prompts kit
+starts every player on the keyboard family and moves only on an input. Spinhold's rule
+(its RK146) is that, before any input, the prompts show the first pad that is plugged
+in, since a game launched from a couch is played with the pad in hand. Spinhold sets
+`family` itself at boot in game/core/settings.gd to keep that rule.
+
+What polyweave should do: the prompts kit, before a player's first input, takes the
+family of the first connected pad where one is connected, and the keyboard where none
+is, and says which in its proof. Done when Spinhold's boot no longer sets the family and
+its prompts still name the pad on a launch with a pad plugged in.
 
 ## Block W — A core that grows by layers

@@ -17,6 +17,7 @@
 ## Block H — Proof on a real game
 
 - 🛠 **PW36** (deps: PW5 ✅, PW82 ⏸) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82. → §PW36
+- 📋 **PW546** (deps: —) **a dialogue kit proof ends with no signal under the full gate's load, so its broken-box case fails with nothing to read** — It passed alone four times on a tree that never touched it, and a gate red by chance teaches the next run to rerun it. → §PW546
 
 ## Block I — Voxel models from a declaration
 
@@ -57,6 +58,14 @@
 - 📋 **PW534** (deps: —) **the saves kit's proof writes slots 1 and 2 by number, so a game declaring one slot fails it** — Cottony keeps one save and had to declare three slots to pass the proof, a declaration that lies about the game. → §PW534
 - 📋 **PW535** (deps: —) **the options kit requires the menus and prompts kits, so a game wanting only the store ships 69 unused icons** — Cottony keeps its own settings card and had to exclude the prompt icons and kit scenes from its export to keep its build and its export check. → §PW535
 - 📋 **PW536** (deps: —) **a kit's older-file adoption is a fixed user:// path, so a game's tests overwrite kit fields to keep off the real file** — Cottony's game.gd reaches into both stores after building them, so tests never adopt a player's real save. → §PW536
+- 📋 **PW538** (deps: —) **the players kit's proof resets bindings through the game's declared store, wiping a player's own controls** — Installing the players kit on a player's machine reset every rebind, the deadzone and twin-stick in Spinhold's settings file. → §PW538
+- 📋 **PW539** (deps: —) **the players kit's proof expects a pad seated on its first join press, so a game declaring AUTO_JOIN false fails it** — Spinhold seats its second pad only when its co-op says so, which is what AUTO_JOIN false is for. → §PW539
+- 📋 **PW540** (deps: —) **the remap screen rebinds on a store of its own, so co-op pads lose their narrowing and the shared store goes stale** — Spinhold reloads the shared store and re-seats player 2 every time its Controls tab closes, which the kit should do itself. → §PW540
+- 📋 **PW541** (deps: —) **the remap screen says nothing when it listens and rebuilds its rows on each bind, so a host game loses focus** — Spinhold reads the screen's private listening field and restores focus after every bind to keep a pad usable. → §PW541
+- 📋 **PW542** (deps: —) **the drawn pad screen shows raw action names, unfilled help and works only on ui_accept and ui_cancel** — Spinhold's drawn pad reads "move_left", its help names no button, and it had to bind pad buttons to ui_* itself. → §PW542
+- 📋 **PW543** (deps: —) **loading an older bindings file logs an engine error for every action the player never rebound** — A player's first launch on the kits fills the crash log with errors that are not errors. → §PW543
+- 📋 **PW544** (deps: —) **kit.install writes the remap kit's own file into polyweave.toml even where the game declares a STORE** — polyweave.toml then names a bindings file the game never writes, and Spinhold corrected it by hand. → §PW544
+- 📋 **PW545** (deps: —) **the prompts kit starts on the keyboard before any input, so a game launched with a pad in hand shows keys** — Spinhold sets the prompt family itself at boot to name the plugged-in pad, a rule the kit should keep. → §PW545
 
 ## Block W — A core that grows by layers
 
