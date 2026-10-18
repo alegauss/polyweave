@@ -644,7 +644,7 @@ provenance records name only `tool` and `version` under `producer`, never a modu
 and 30 of them carry a person's verdicts. That was checked before this line was written.
 So records, specs, canon and ledgers carry over unchanged. Two things do not:
 
-- **Imports.** Cottony has 10 Python files that import polyweave (`polyweave.errors`, `.testing`, `.pack`, `.geometry`, `.render`, `.image`) and Spinhold has 4 (`polyweave.config`, `.geometry.voxel_fit`). Each path changes when its module moves to its layer.
+- **Imports.** Cottony has 10 Python files that import polyweave (`polyweave.errors`, `.testing`, `.pack`, `.geometry`, `.render`, `.image`) and Spinhold has 4 (`polyweave.config`, `.capture`, `.provenance`, `.geometry.voxel_fit`). PW499 already broke them: Spinhold's `tools/site_assets.py --check` died on ImportError until fixed by hand. Each path changes when its module moves to its layer.
 - **The project file.** It needs `[layers] on`, and it needs any table whose owner or name a line in this block changed.
 
 `python -m polyweave migrate --root <project>` reads a table of old module paths to new
