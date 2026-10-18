@@ -118,31 +118,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW524 Render tests crash their workers under the parallel gate
-
-On 2026-10-17 the gate went red at 6472f5c with two xdist workers crashed outright (gw5
-and gw12) inside `tests/test_render.py`: `test_a_blend_bakes_like_any_other_mesh` and
-`test_a_render_that_is_black_to_any_observer_is_refused`. There was no assertion and no
-traceback in the log, only "worker crashed". Both passed when run alone, and the whole
-file passed sequentially (45 tests). The next gate run, with no code changed, was the
-check.
-
-A crashed worker is Blender dying in process. `bpy` is a singleton per interpreter, and
-twelve workers each importing it and rendering at once is the likeliest cause: memory,
-or a GPU or temp-file contention the in-process route never meets on its own.
-
-Measure first. Run the render tests under `-n 12` ten times and count the crashes, then
-again with them marked `serial` (the gate already runs that marker alone after the
-rest). If marking them serial makes the crashes go away, mark every test that imports
-`bpy` the same way, and let the gate say how many ran serially. If they still crash when
-serial, look at Blender's own crash log in the temp folder, which the gate could copy
-beside `pytest.log`.
-
-The same day `test_sound_buy`'s cue test raised a bare `MemoryError` in its ffmpeg
-transcode under the full gate and passed alone, so memory pressure from twelve workers
-is the first thing to measure. A flaky gate teaches the next run to rerun rather than
-read.
-
 ### §PW525 The crash kit's kill waits on the game, not the clock
 
 `tests/test_kit_crash.py::test_a_game_killed_mid_run_is_read_back_as_an_unclean_exit`

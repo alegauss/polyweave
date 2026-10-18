@@ -28,6 +28,14 @@ arguments choose no `-n` or `-m`: the gate went from half an hour to under fifte
 minutes on a 28-thread desk. Tests marked `serial`, the ones that measure time on the
 machine, run alone after the rest, since a frame budget read beside 28 workers measures
 the load and not the code.
+
+**A worker that dies is named, with what it left** (§PW524). Blender runs in process, so
+a render that kills it takes the xdist worker with it and the log says only "worker
+crashed", with no traceback. It happened once in about 180 gate runs (2026-10-17, two
+render tests) and not in ten runs of the render file on twelve workers since, so it is
+not marked away. The summary instead says which tests' workers crashed, and any
+`*.crash.txt` Blender wrote to the temp folder during the run is copied beside the red
+log, so the next crash can be read rather than rerun.
 """
 
 from __future__ import annotations
@@ -35,9 +43,11 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -192,6 +202,41 @@ def kits() -> dict:
         "red": [one["kit"] for one in said["kits"] if one["status"] == "failed"]}
 
 
+#: What xdist prints for a worker that died under a test.
+CRASHED = re.compile(r"worker '(\w+)' crashed while running '([^']+)'")
+
+
+def crashed(log: Path, since: float, keep: Path) -> dict:
+    """The tests whose workers died, and Blender's crash logs from this run, kept.
+
+    A crash log is any `*.crash.txt` in the temp folder written since the run began,
+    copied into `keep` under the run's time so a later crash does not overwrite it.
+    """
+    text = log.read_text(encoding="utf-8", errors="replace") if log.is_file() else ""
+    tests = sorted({test for _, test in CRASHED.findall(text)})
+    kept = []
+    if tests:
+        for found in sorted(Path(tempfile.gettempdir()).glob("*.crash.txt")):
+            try:
+                fresh = found.stat().st_mtime >= since
+            except OSError:
+                continue
+            if fresh:
+                to = keep / f"crash-{time.strftime('%Y%m%d-%H%M%S')}-{found.name}"
+                shutil.copyfile(found, to)
+                kept.append(to.relative_to(ROOT).as_posix())
+    return {"tests": tests, "logs": kept}
+
+
+def _crashed_said(found: dict) -> str:
+    if not found["tests"]:
+        return ""
+    logs = (f"Blender's crash log kept at {', '.join(found['logs'])}" if found["logs"]
+            else "Blender left no crash log in the temp folder")
+    return (f" {len(found['tests'])} worker(s) crashed, under "
+            f"{', '.join(found['tests'])}; {logs}.")
+
+
 def _kits_said(proved: dict) -> str:
     said = (f"kits: {proved['held']} held, {proved['failed']} failed, "
             f"{proved['skipped']} skipped for want of an engine")
@@ -215,10 +260,11 @@ def summary(stamp: dict) -> str:
     )
     gui = f" {_said(stamp['gui'])}." if "gui" in stamp else ""
     proved = f" {_kits_said(stamp['kits'])}." if "kits" in stamp else ""
+    died = _crashed_said(stamp["crashed"]) if "crashed" in stamp else ""
     return (
         f"gate {'green' if stamp['exit'] == 0 else 'RED'} at {stamp['commit']}: "
         f"{stamp['passed']} passed, {stamp['failed']} failed, {stamp['skipped']} "
-        f"skipped. {engines}.{gui}{proved} Log: {stamp['log']}"
+        f"skipped. {engines}.{gui}{proved}{died} Log: {stamp['log']}"
     )
 
 
@@ -256,6 +302,7 @@ def main(argv: list[str]) -> int:
         for stale in HERE.glob("junit*.xml"):
             stale.unlink(missing_ok=True)
         codes = []
+        began = time.time()
         with log.open("w", encoding="utf-8") as out:
             for args, report in zip(planned, reports, strict=True):
                 out.flush()
@@ -282,6 +329,9 @@ def main(argv: list[str]) -> int:
             "present": present(),
             **summed([counts(report) for report in reports]),
         }
+        died = crashed(log, began, HERE)
+        if died["tests"]:
+            stamp["crashed"] = died
         if failed:
             kept = HERE / f"pytest-red-{time.strftime('%Y%m%d-%H%M%S')}.log"
             shutil.copyfile(log, kept)

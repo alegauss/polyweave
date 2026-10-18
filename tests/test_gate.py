@@ -41,6 +41,51 @@ def test_the_counts_say_which_engine_each_skip_was_for(gate, tmp_path):
     assert found["skipped_for"] == {"Blender": 2, "Godot": 1, "Audio": 0}
 
 
+#: What xdist printed on 2026-10-17, the one crash in the kept red logs (§PW524).
+CRASH = (
+    "[gw5] node down: Not properly terminated\n"
+    "worker 'gw5' crashed while running "
+    "'tests/test_render.py::test_a_blend_bakes_like_any_other_mesh'\n"
+    "worker 'gw12' crashed while running "
+    "'tests/test_render.py::test_a_render_that_is_black_to_any_observer_is_refused'\n"
+)
+
+
+def test_a_crashed_worker_is_named_with_the_crash_log_it_left(gate, tmp_path,
+                                                              monkeypatch):
+    temp = tmp_path / "temp"
+    temp.mkdir()
+    monkeypatch.setattr(gate.tempfile, "gettempdir", lambda: str(temp))
+    stale = temp / "old.crash.txt"
+    stale.write_text("before the run", encoding="utf-8")
+    os.utime(stale, (1, 1))
+    (temp / "blender.crash.txt").write_text("# Blender 4.5, Crash report",
+                                            encoding="utf-8")
+    log = tmp_path / "pytest.log"
+    log.write_text(CRASH, encoding="utf-8")
+    keep = tmp_path / "gate"
+    keep.mkdir()
+    found = gate.crashed(log, since=100.0, keep=keep)
+    assert found["tests"] == [
+        "tests/test_render.py::test_a_blend_bakes_like_any_other_mesh",
+        "tests/test_render.py::test_a_render_that_is_black_to_any_observer_is_refused",
+    ]
+    [kept] = found["logs"]
+    assert kept.endswith("blender.crash.txt")
+    assert (tmp_path / kept).read_text(encoding="utf-8").startswith("# Blender")
+    said = gate._crashed_said(found)
+    assert "2 worker(s) crashed" in said and "crash log kept at" in said
+
+
+def test_a_run_with_no_crash_names_none_and_copies_nothing(gate, tmp_path, monkeypatch):
+    monkeypatch.setattr(gate.tempfile, "gettempdir", lambda: str(tmp_path))
+    (tmp_path / "blender.crash.txt").write_text("from another day", encoding="utf-8")
+    log = tmp_path / "pytest.log"
+    log.write_text("3 passed in 1.0s\n", encoding="utf-8")
+    assert gate.crashed(log, since=0.0, keep=tmp_path) == {"tests": [], "logs": []}
+    assert gate._crashed_said({"tests": [], "logs": []}) == ""
+
+
 def test_the_summary_says_an_absent_engine_plainly(gate):
     stamp = {
         "exit": 0,

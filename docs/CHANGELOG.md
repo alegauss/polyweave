@@ -230,6 +230,7 @@
 - ✅ **PW490** **panel.capture films a panel only at its declared size, so how its shader draws it grown is never seen** — panel.capture takes sizes and films each state at each, so a test holds the stitch pitch at twice the width (design recorded in `panel.md`).
 - ✅ **PW491** **four source files cite a line through a mis-encoded section sign, so a search for that citation misses them** — The four signs are repaired, and a test fails on any source holding the twice-read sign or a byte-order mark, naming its file and line.
 - ✅ **PW523** **the saves kit's proof writes to one fixed user:// folder, so two proofs at once empty each other's slots** — The saves, options, remap and launch proofs each write under user:// paths of their own run, so two proofs at once no longer empty each other's files.
+- ✅ **PW524** **a Blender render test's xdist worker crashes under the full gate and passes when the file runs alone** — Measured at 1 crash in about 180 gate runs and 0 in ten render runs on 12 workers; the gate now names a crashed worker's test and keeps Blender's crash log (design recorded in `tools/gate.py`).
 
 ## Block I — Voxel models from a declaration
 
