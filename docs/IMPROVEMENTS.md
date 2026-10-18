@@ -408,27 +408,6 @@ differently, and a skeleton that suits one may fight the next. So it stays an id
 Starship and Cottony both show code it would replace, at which point the shape it should
 take is read off that code rather than invented here.
 
-### §PW370 Starship onto the input kits
-
-The prompt, remap and co-op kits (the prompts, remap and players kits, in
-docs/specs/kit.md) are extracted from Starship's game/core/bindings.gd, controls.gd and
-coop.gd. Starship then adopts them, which is the decision that every project adapts to
-polyweave rather than the other way round: its actions and options become the kit's
-declaration, its own input code is removed, its Controls tab becomes the kit's screen
-under Starship's Theme, and the checks in dev/check.gd that cover the same ground give
-way to the kits' acceptance specs.
-
-Whatever Starship needs that the kits lack is filed here as friction and fixed in the
-kit, never patched in the game, so the extraction ends with one copy of the code and not
-two. Measured on 2026-10-10 against Starship's bindings.gd, prompts.gd and coop.gd: the
-prompts in words per player (PW394, docs/specs/kit.md), prompts per player's device
-(PW395, docs/specs/kit.md), a join the game answers (PW396, docs/specs/kit.md) and
-bindings taken from the game's older file (PW397, docs/specs/kit.md). The game's own
-side, Controls.MAP into project.godot and its input code gone, is Spinhold's RK216.
-
-Done when Starship carries no input code the kits provide, its gate passes on the kits'
-proof, and provenance.read names each kit with its version.
-
 ### §PW534 The saves proof within the slots a game declares
 
 Found moving Cottony onto the saves kit (PW371, Cottony RK151). Cottony keeps one save,

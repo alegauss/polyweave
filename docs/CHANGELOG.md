@@ -567,6 +567,7 @@
 - ✅ **PW537** **the remap kit's proof reads the screen's words in the game's language, so a pt-BR game with its own rows fails it** — The remap proof reads in a language of its own, set again after the game's autoloads, and holds in Spinhold on a pt-BR machine with its pt_BR rows.
 - ✅ **PW538** **the players kit's proof resets bindings through the game's declared store, wiping a player's own controls** — The players proof rebinds and resets a store of its own run, so installing the kit leaves a game's declared store and a player's controls untouched.
 - ✅ **PW539** **the players kit's proof expects a pad seated on its first join press, so a game declaring AUTO_JOIN false fails it** — The players proof holds AUTO_JOIN on while it proves seating and puts the game's value back, so a game that answers its own joins holds.
+- ✅ **PW370** **Starship keeps its own bindings and co-op code after the input kits were extracted from it** — Spinhold runs on the prompts, remap and players kits with its own input code gone, and a player's rebinds load unchanged (Spinhold 798845a).
 
 ## Block W — A core that grows by layers
 
