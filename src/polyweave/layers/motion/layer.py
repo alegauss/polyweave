@@ -4,7 +4,7 @@ from polyweave.kernel.layer import Layer
 
 LAYER = Layer(
     name="motion",
-    uses=("geometry", "store", "vfx",),
+    uses=("engine", "geometry", "store", "vfx",),
     summary="Clips, cameras and skeletons, baked to what a game plays.",
     modules=(
         "polyweave.layers.motion.camera",
@@ -17,7 +17,8 @@ LAYER = Layer(
     kinds=("camera",),
     codes="polyweave.layers.motion.codes",
     config="polyweave.layers.motion.settings",
-    tools=6_500,
+    # 7,104 with clip.shots, each camera shot framed in the running game (§PW372).
+    tools=7_200,
     census={
         "polyweave.layers.motion.camera:checked": (
             "internal", "a camera clip's table, with defaults"),
@@ -31,6 +32,8 @@ LAYER = Layer(
             "internal", "the shot showing at a moment"),
         "polyweave.layers.motion.camera:at": (
             "internal", "the camera at a moment, as the scene frames"),
+        "polyweave.layers.motion.camera:moments": (
+            "internal", "the moment of each shot clip.shots frames"),
         "polyweave.layers.motion.clip": (
             "internal", "compiling needs a mesh and a rig: motion.bake"),
         "polyweave.layers.motion.skeleton": (

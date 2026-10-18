@@ -146,6 +146,64 @@ def test_it_is_an_operation_an_agent_can_find():
     assert params == {"source", "out", "root"}
 
 
+def test_each_shot_is_framed_in_the_game_and_laid_out_to_judge(tmp_path, monkeypatch):
+    """clip.shots pins each shot, lets a frame pass, saves the screen, lets the pin
+    go, and lays the shots out as one sitting (§PW372)."""
+    from PIL import Image
+
+    from polyweave.layers.engine import driving
+
+    source = clip_file(tmp_path)
+    sent = []
+
+    def set_value(session, *, path, prop, value, root):
+        sent.append(("set", path, prop, value))
+
+    def stepped(session, *, frames, root):
+        sent.append(("step", frames))
+
+    def shot(session, *, out, root):
+        sent.append(("shot", Path(out).name))
+        Path(out).parent.mkdir(parents=True, exist_ok=True)
+        Image.new("RGB", (32, 18), (40, 40, 60)).save(out)
+
+    monkeypatch.setattr(driving, "set_value", set_value)
+    monkeypatch.setattr(driving, "stepped", stepped)
+    monkeypatch.setattr(driving, "shot", shot)
+    said = camera.shots(source, session="g1", camera="/root/Main/Camera",
+                        out="art/review/opening", root=str(tmp_path))
+    assert [one["at"] for one in said["shots"]] == [0.5, 1.25]
+    assert said["shots"][1]["mark"] == "citadel"
+    assert sent == [
+        ("set", "/root/Main/Camera", "pinned", "0.5"), ("step", 2),
+        ("shot", "opening-1.png"),
+        ("set", "/root/Main/Camera", "pinned", "1.25"), ("step", 2),
+        ("shot", "opening-2.png"),
+        ("set", "/root/Main/Camera", "pinned", "-1"),
+    ]
+    assert (tmp_path / "art/review/opening/opening.png").is_file()
+    assert said["sitting"].endswith("sitting.json")
+    assert said["page"].startswith("/?sitting=")
+
+
+def test_the_pin_is_let_go_when_a_shot_fails(tmp_path, monkeypatch):
+    from polyweave.layers.engine import driving
+
+    sent = []
+    monkeypatch.setattr(driving, "set_value",
+                        lambda session, **said: sent.append(said["value"]))
+    monkeypatch.setattr(driving, "stepped", lambda session, **said: None)
+
+    def broken(session, **said):
+        raise PolyweaveError("driver.shot-not-written", "headless", "open with display")
+
+    monkeypatch.setattr(driving, "shot", broken)
+    with pytest.raises(PolyweaveError):
+        camera.shots(clip_file(tmp_path), session="g1", camera="Camera", out="o",
+                     root=str(tmp_path))
+    assert sent == ["0.5", "-1"]
+
+
 PLAYS = """extends SceneTree
 
 var ship := Node3D.new()
@@ -174,6 +232,11 @@ func _process(_delta: float) -> bool:
 \tcam.place = func(anchor: String, at: Vector3) -> Vector3: return at * 2.0
 \tcam.seek(1.2)
 \tprint("camera: placed y=%.4f" % cam.global_position.y)
+\tcam.pinned = 1.2
+\tcam.seek(0.25)
+\tprint("camera: pinned time=%.2f shown=%d y=%.4f" % [cam.time, cam.shown,
+\t\tcam.global_position.y])
+\tcam.pinned = -1.0
 \tprint("camera: cuts=%s length=%.2f" % [",".join(cuts), cam.length()])
 \treturn true
 """
@@ -206,5 +269,7 @@ def test_the_engine_plays_the_clip_as_its_declaration_says(tmp_path):
         assert float(fov) == pytest.approx(expected["fov"])
     assert "still x=100.0000" in said
     assert "placed y=24.0000" in said
+    # A pinned moment is framed whatever the game seeks (§PW372, clip.shots).
+    assert "pinned time=1.20 shown=1 y=24.0000" in said
     # Seeking back into the first shot and on again is two more cuts.
     assert "cuts=0:,1:citadel,0:,1:citadel length=1.50" in said

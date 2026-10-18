@@ -254,6 +254,9 @@ var place: Callable
 var still := false
 ## seconds since the clip began
 var time := 0.0
+## a moment held whatever the game seeks, so clip.shots can frame each shot in the
+## running game (§PW372); below 0, the game's own time is framed
+var pinned := -1.0
 ## the shot shown, or -1 outside the clip
 var shown := -1
 
@@ -288,6 +291,8 @@ func advance(delta: float) -> void:
 
 ## frame the moment `at`; a change of shot is a cut
 func seek(at: float) -> void:
+\tif pinned >= 0.0:
+\t\tat = pinned
 \ttime = at
 \tvar index := shot_at(at)
 \tif index != shown:
@@ -416,3 +421,65 @@ def build(
         "marks": [shot["mark"] for shot in clip["shots"]],
         **numbers,
     }
+
+
+def moments(clip: dict, into: float = 0.5) -> list[float]:
+    """The moment each shot is framed at: `into` of the way through its hold."""
+    found, start = [], 0.0
+    for shot in clip["shots"]:
+        found.append(start + shot["hold"] * into)
+        start += shot["hold"]
+    return found
+
+
+@operation("clip.shots")
+def shots(
+    source: Annotated[str, Param("the *.camera.toml the game's camera was built from")],
+    *,
+    session: Annotated[str, Param("a game.open session, opened with display")],
+    camera: Annotated[str, Param("the built camera's node in the running game")],
+    out: Annotated[str, Param("the folder the shots and the sitting are written to")],
+    into: Annotated[
+        float, Param("how far through each shot's hold it is framed", lo=0.0, hi=1.0)
+    ] = 0.5,
+    root: Annotated[str, Param("the project the clip belongs to")] = ".",
+) -> dict:
+    """Frame every shot of a camera clip in the running game and lay them out to judge.
+
+    Whether a framing is right is a person's call, and it can only be made on what the
+    game draws: the anchors are placed at run time. The game is driven to the scene
+    that plays the clip first; then each shot is held through the camera's `pinned`,
+    whatever the game seeks, a frame is let pass and the screen is saved. The pin is
+    let go after. The shots are one family in one sitting, answered on the review page.
+    """
+    from polyweave.layers.engine import driving
+    from polyweave.loop import verdict
+
+    config = load(root)
+    _, clip = _source(source, config)
+    folder = Path(out) if Path(out).is_absolute() else config.root / out
+    taken = []
+    try:
+        for index, when in enumerate(moments(clip, into)):
+            driving.set_value(session, path=camera, prop="pinned", value=str(when),
+                              root=root)
+            driving.stepped(session, frames=2, root=root)
+            picture = folder / f"{clip['name']}-{index + 1}.png"
+            driving.shot(session, out=str(picture), root=root)
+            mark = clip["shots"][index]["mark"]
+            taken.append({"shot": index + 1, "at": round(when, 3), "mark": mark,
+                          "picture": provenance.relative(picture, config.root)})
+    finally:
+        driving.set_value(session, path=camera, prop="pinned", value="-1", root=root)
+    members = [{"name": f"shot {one['shot']}" + (f" ({one['mark']})" if one["mark"]
+                                                   else ""),
+                "new": one["picture"]} for one in taken]
+    laid = verdict.sitting(
+        {clip["name"]: members}, out=str(folder), root=str(config.root),
+        about=f"Each shot of {source}, framed in the running game "
+              f"{into:.0%} of the way through its hold.",
+    )
+    return {"source": source, "shots": taken, "sitting": laid["manifest"],
+            "page": laid["page"],
+            "says": f"{len(taken)} shot(s) of {clip['name']} to judge at "
+                    f"{laid['page']}"}

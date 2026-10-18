@@ -94,30 +94,6 @@ this is where that is recorded honestly: what still runs by hand, and why the ri
 instead of disappearing. An outcome worth having, stated, beats the same outcome
 unstated.
 
-### §PW372 A camera clip the game plays
-
-Met in starship (RK190): a cinema opening before the first phase, with four camera shots
-of the city, each a position, a target and a slow drift over about 1.2 s, cut by a
-flash, then a glide back to the run's camera. The project's rule is that timing and
-curves are declared and built through polyweave, not set by eye.
-
-`clip.new`/`clip.set_key`/`clip.write` author a clip of joints and their properties, and
-`motion.bake` bakes one onto a skeleton. Nothing declares a camera move (a shot list
-with position, look-at, field of view, hold, drift, ease and cut), and nothing writes
-one the game can play, so the shots live in the project's own
-`game/ui/opening_shots.json`, read by `game/ui/opening.gd`, with no record and no spec.
-
-What polyweave should do: a camera clip, a clip whose channels are a camera's position,
-target and FOV (absolute or relative to a named anchor, here the ship's start on the
-ring), with cuts and holds. Plus an export the engine plays, and a capture per shot so a
-person accepts the framing on the review page.
-
-Landed: `clip.camera` builds a `*.camera.toml` into a Camera3D scene the game seeks by
-time, recorded as kind `camera` (docs/specs/motion.md, "A camera clip"). Not an
-Animation track: an anchor placed at run time, on a ring that is not Cartesian, cannot
-be baked, so a place stays in its anchor's frame and the game maps it with `place`.
-Left: each shot captured onto a sitting, and Starship's opening moved onto it.
-
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once

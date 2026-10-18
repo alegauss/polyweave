@@ -184,6 +184,22 @@ export interface ClipSetKeyArgs {
   ease?: string
 }
 
+/** Frame every shot of a camera clip in the running game and lay them out to judge. */
+export interface ClipShotsArgs {
+  /** the *.camera.toml the game's camera was built from */
+  source: string
+  /** a game.open session, opened with display */
+  session: string
+  /** the built camera's node in the running game */
+  camera: string
+  /** the folder the shots and the sitting are written to */
+  out: string
+  /** how far through each shot's hold it is framed; from 0 to 1; default 0.5 */
+  into?: number
+  /** the project the clip belongs to; default "." */
+  root?: string
+}
+
 /** Write the authored clip, the source and not an export, and say where. */
 export interface ClipWriteArgs {
   /** the clip, as clip.read or clip.new returns it */
@@ -2476,6 +2492,7 @@ export interface Operations {
   "clip.read": ClipReadArgs
   "clip.retime": ClipRetimeArgs
   "clip.set_key": ClipSetKeyArgs
+  "clip.shots": ClipShotsArgs
   "clip.write": ClipWriteArgs
   "compose.place": ComposePlaceArgs
   "compose.sheet": ComposeSheetArgs
@@ -2683,6 +2700,7 @@ export const OPERATIONS = [
   "clip.read",
   "clip.retime",
   "clip.set_key",
+  "clip.shots",
   "clip.write",
   "compose.place",
   "compose.sheet",

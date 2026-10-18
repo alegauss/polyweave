@@ -237,6 +237,17 @@ The scene is recorded as kind `camera` with the declaration as its input, and is
 by the inventory as a `clip`. What it measures (duration, shots, shortest and longest
 hold) is arithmetic over the declaration; whether a framing is right is a person's call.
 
+**That call is made on what the game draws** (§PW372). The anchors are placed at run
+time, so no framing can be judged off the declaration. `clip.shots` takes a `game.open`
+session opened with display and already driven to the scene that plays the clip, the
+built camera's node path and an `out` folder. For each shot it sets the camera's
+`pinned` to the moment `into` of the way through the hold (half by default). While
+pinned, `seek` frames that moment whatever the game's own clock asks, so the game's
+player cannot move it on. It then lets two frames pass, saves the screen and, after the
+last shot, lets the pin go, even when a shot fails. The shots are one family in one
+`verdict.sitting`, answered on the review page. Spinhold's five opening shots were the
+first laid out this way.
+
 **Both are baked by name** (§PW160). Every step between a clip and what a game plays took a
 mesh and a fitted rig as objects in memory, which a JSON call cannot carry, so a GDScript
 project needed a Python script for motion and for nothing else. `motion.bake` takes the
