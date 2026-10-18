@@ -43,7 +43,29 @@ def test_two_proofs_at_once_keep_their_own_slots(tmp_path):
                 assert one["status"] == "held", one
 
 
+def _declare_slots(game, slots: int) -> None:
+    target = game / "polyweave_saves.gd"
+    text = target.read_text(encoding="utf-8")
+    assert "const SLOTS := 3" in text
+    target.write_text(text.replace("const SLOTS := 3", f"const SLOTS := {slots}"),
+                      encoding="utf-8")
+
+
 @pytest.mark.skipif(not os.environ.get("GODOT"), reason="no $GODOT on this machine")
+@pytest.mark.parametrize("slots", [1, 2])
+def test_a_game_with_fewer_slots_proves_within_them(tmp_path, slots):
+    """The proof once wrote slots 1 and 2 by number, so Cottony, keeping one save, had
+    to declare three to pass it (§PW534)."""
+    game = tmp_path / "game"
+    shutil.copytree(kits.KITS / "saves" / "fixture", game)
+    _declare_slots(game, slots)
+    kits.install("saves", root=str(game))
+    [found] = kits._scripts(["saves"], kits.every(), game)
+    assert found["status"] == "held", found
+
+
+@pytest.mark.skipif(not os.environ.get("GODOT"), reason="no $GODOT on this machine")
+@pytest.mark.parametrize("slots", [1, 3])
 @pytest.mark.parametrize(("where", "before", "after", "said"), [
     ("addons/polyweave/saves/saves.gd", 'FileAccess.open(target + ".tmp"',
      "FileAccess.open(target", "stopped once written did not load the last good one"),
@@ -56,9 +78,11 @@ def test_two_proofs_at_once_keep_their_own_slots(tmp_path):
     ("addons/polyweave/saves/saves.gd", "if from > version:", "if false:",
      "a save from a newer build was not refused"),
 ])
-def test_a_broken_save_fails_the_proof_by_name(tmp_path, where, before, after, said):
+def test_a_broken_save_fails_the_proof_by_name(tmp_path, slots, where, before, after,
+                                               said):
     game = tmp_path / "game"
     shutil.copytree(kits.KITS / "saves" / "fixture", game)
+    _declare_slots(game, slots)
     kits.install("saves", root=str(game))
     target = game / where
     text = target.read_text(encoding="utf-8")

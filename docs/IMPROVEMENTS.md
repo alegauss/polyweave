@@ -408,22 +408,6 @@ differently, and a skeleton that suits one may fight the next. So it stays an id
 Starship and Cottony both show code it would replace, at which point the shape it should
 take is read off that code rather than invented here.
 
-### §PW534 The saves proof within the slots a game declares
-
-Found moving Cottony onto the saves kit (PW371, Cottony RK151). Cottony keeps one save,
-so it declared `SLOTS := 1` in `polyweave_saves.gd`, and the kit's proof failed: "slot 1
-holds no save that reads after two saves", "a save from a newer build was not refused:
-2.save is not there", "an older save was taken over a game already saved in the kit".
-`saves/core/proof.gd` writes to slots 1 and 2 by number, so it proves a game with three
-slots or more and refuses one with fewer. Cottony now declares three slots and uses slot
-0 alone, which is a declaration that lies to pass a proof.
-
-What polyweave should do: the proof works within the slots the game declares. The
-corrupt-save and newer-build cases use the last slot rather than a fixed one, and where
-a case needs two slots and the game has one, it runs on slot 0 in turn, clearing it
-between cases, never skipping them. Done when the saves fixture proves with `SLOTS := 1`
-and with three, and Cottony goes back to declaring one.
-
 ### §PW535 The options store installed without its screen
 
 Found moving Cottony onto the options kit (PW371, Cottony RK151). Cottony keeps its own

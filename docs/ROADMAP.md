@@ -54,7 +54,6 @@
 
 ## Block V — Parts every game repeats, installed already proved
 
-- 📋 **PW534** (deps: —) **the saves kit's proof writes slots 1 and 2 by number, so a game declaring one slot fails it** — Cottony keeps one save and had to declare three slots to pass the proof, a declaration that lies about the game. → §PW534
 - 📋 **PW535** (deps: —) **the options kit requires the menus and prompts kits, so a game wanting only the store ships 69 unused icons** — Cottony keeps its own settings card and had to exclude the prompt icons and kit scenes from its export to keep its build and its export check. → §PW535
 - 📋 **PW536** (deps: —) **a kit's older-file adoption is a fixed user:// path, so a game's tests overwrite kit fields to keep off the real file** — Cottony's game.gd reaches into both stores after building them, so tests never adopt a player's real save. → §PW536
 - 📋 **PW540** (deps: —) **the remap screen rebinds on a store of its own, so co-op pads lose their narrowing and the shared store goes stale** — Spinhold reloads the shared store and re-seats player 2 every time its Controls tab closes, which the kit should do itself. → §PW540

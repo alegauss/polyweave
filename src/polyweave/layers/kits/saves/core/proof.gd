@@ -49,47 +49,53 @@ func _initialize() -> void:
 			failed.append("a save stopped once %s did not load the last good one" % step)
 		saves.save(0, _data(10))
 
-	saves.save(1, _data(20))
-	saves.save(1, _data(21))
+	# The cases below each run on the last slot the game declares, cleared before them
+	# (§PW534): a game keeping one save proves on slot 0 alone, never on a slot it lacks.
+	var last := saves.slots - 1
+	_clear()
+	saves.save(last, _data(20))
+	saves.save(last, _data(21))
 	# the data changed under a sum that still reads, as a disk or a hand edit leaves it
-	var envelope: Variant = JSON.parse_string(FileAccess.get_file_as_string(saves.path_of(1)))
+	var envelope: Variant = JSON.parse_string(FileAccess.get_file_as_string(saves.path_of(last)))
 	if not envelope is Dictionary:
-		failed.append("slot 1 holds no save that reads after two saves")
+		failed.append("slot %d holds no save that reads after two saves" % last)
 		envelope = {"data": ""}
 	envelope["data"] = str(envelope["data"]).replace("21", "99")
-	FileAccess.open(saves.path_of(1), FileAccess.WRITE).store_string(JSON.stringify(envelope))
-	if not _same(saves.load_slot(1), _data(20)) or not "; ".join(saves.said).contains("save before"):
+	FileAccess.open(saves.path_of(last), FileAccess.WRITE).store_string(JSON.stringify(envelope))
+	if not _same(saves.load_slot(last), _data(20)) or not "; ".join(saves.said).contains("save before"):
 		failed.append("a corrupt save did not fall back to the one before: %s" % [saves.said])
-	saves.save(1, _data(22))
-	if not _same(saves._read(saves.path_of(1) + ".bak"), _data(20)):
+	saves.save(last, _data(22))
+	if not _same(saves._read(saves.path_of(last) + ".bak"), _data(20)):
 		failed.append("saving over a corrupt save pushed the last good one out")
-	saves.save(1, _data(23))
-	if not _same(saves.load_slot(1), _data(23)):
+	saves.save(last, _data(23))
+	if not _same(saves.load_slot(last), _data(23)):
 		failed.append("saving over a corrupt save lost the new one")
-	if not FileAccess.file_exists(saves.path_of(1) + ".bak"):
+	if not FileAccess.file_exists(saves.path_of(last) + ".bak"):
 		failed.append("no save before was kept")
 
 	for from in range(1, saves.version):
 		if not saves.migrations.has(from):
 			failed.append("no migration brings a version %d save to %d" % [from, from + 1])
 			continue
+		_clear()
 		var old := _PwSaves.new(dir, "res://none.gd")
 		old.version = from
 		old.slots = saves.slots
-		old.save(2, _data(30))
-		var brought := saves.load_slot(2)
+		old.save(last, _data(30))
+		var brought := saves.load_slot(last)
 		if brought.is_empty():
 			failed.append("a version %d save did not come up: %s" % [from, saves.said])
 
+	_clear()
 	var newer := _PwSaves.new(dir, "res://none.gd")
 	newer.version = saves.version + 1
 	newer.slots = saves.slots
-	newer.save(2, _data(40))
-	var text := FileAccess.get_file_as_string(saves.path_of(2))
-	saves.load_slot(2)
+	newer.save(last, _data(40))
+	var text := FileAccess.get_file_as_string(saves.path_of(last))
+	saves.load_slot(last)
 	if not "; ".join(saves.said).contains("newer than this build"):
 		failed.append("a save from a newer build was not refused: %s" % [saves.said])
-	if FileAccess.get_file_as_string(saves.path_of(2)) != text:
+	if FileAccess.get_file_as_string(saves.path_of(last)) != text:
 		failed.append("loading a save from a newer build changed it on disk")
 
 	# A game's older save (§PW398): with no slot saved, what its `adopted` reads is taken
@@ -107,10 +113,11 @@ func _initialize() -> void:
 		failed.append("an older save was taken again after its slot was deleted")
 	var played := _PwSaves.new(dir)
 	_clear()
-	played.save(1, _data(60))
+	played.save(last, _data(60))
 	played.adopt = func() -> Dictionary: return _data(50)
 	played.load_slot(0)
-	if FileAccess.file_exists(played.path_of(0)):
+	if FileAccess.file_exists("%s/%s" % [dir, _PwSaves.ADOPTED]) \
+			or not _same(played.load_slot(last), _data(60)):
 		failed.append("an older save was taken over a game already saved in the kit")
 
 	_clear()

@@ -568,6 +568,7 @@
 - ✅ **PW538** **the players kit's proof resets bindings through the game's declared store, wiping a player's own controls** — The players proof rebinds and resets a store of its own run, so installing the kit leaves a game's declared store and a player's controls untouched.
 - ✅ **PW539** **the players kit's proof expects a pad seated on its first join press, so a game declaring AUTO_JOIN false fails it** — The players proof holds AUTO_JOIN on while it proves seating and puts the game's value back, so a game that answers its own joins holds.
 - ✅ **PW370** **Starship keeps its own bindings and co-op code after the input kits were extracted from it** — Spinhold runs on the prompts, remap and players kits with its own input code gone, and a player's rebinds load unchanged (Spinhold 798845a).
+- ✅ **PW534** **the saves kit's proof writes slots 1 and 2 by number, so a game declaring one slot fails it** — The saves proof runs its corrupt, migration, newer-build and already-played cases on the last slot a game declares, so a game keeping one save proves as it is.
 
 ## Block W — A core that grows by layers
 
