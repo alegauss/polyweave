@@ -194,8 +194,34 @@ def _signals(here: Path, tables: dict) -> dict[str, str]:
         found["vfx"] = "a *.vfx.toml"
     if _first(here, "*.clip.toml"):
         found["motion"] = "a *.clip.toml"
+    elif _first(here, "*.camera.toml"):
+        found["motion"] = "a *.camera.toml"
     if any((here / one).is_dir() for one in ("references", "reference")):
         found["reference"] = "a references folder"
+    # A record of a layer's kind is a file that layer made and the project kept, which
+    # is the surest sign it uses the layer (§PW531).
+    for layer, kind in _recorded(here).items():
+        found.setdefault(layer, f"its {kind} records")
+    return found
+
+
+def _recorded(here: Path) -> dict[str, str]:
+    """Each layer whose record kind a provenance record in the tree carries, with the
+    first such kind; a core kind names no layer."""
+    import json
+
+    from polyweave.kernel.layer import layers
+    from polyweave.kernel.provenance import _own
+
+    owner = {kind: name for name, one in layers().items() for kind in one.kinds}
+    found: dict[str, str] = {}
+    for path in _own(here)[0]:
+        try:
+            kind = json.loads(path.read_text(encoding="utf-8")).get("kind")
+        except (OSError, ValueError, AttributeError):
+            continue
+        if kind in owner:
+            found.setdefault(owner[kind], kind)
     return found
 
 
