@@ -365,10 +365,15 @@ def is_declaration(source: Path) -> bool:
     """Whether a TOML file is meant as a shape, whatever else is wrong with it.
 
     A file that does not parse is counted as one: it cannot say it is something else,
-    and passing over it silently is how an asset drops out of the build.
+    and passing over it silently is how an asset drops out of the build. The project's
+    own file never is, though `[voxels]` in it shares a shape's key (§PW529).
     """
     import tomllib
 
+    from polyweave.kernel.config import FILENAME
+
+    if source.name == FILENAME:
+        return False
     try:
         stated = tomllib.loads(source.read_text(encoding="utf-8-sig"))
     except (tomllib.TOMLDecodeError, UnicodeDecodeError):

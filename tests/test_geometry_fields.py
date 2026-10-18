@@ -76,3 +76,13 @@ def test_every_committed_declaration_still_reads():
             geometry.read(where)
             read += 1
     assert read > 0
+
+
+def test_the_project_file_is_never_a_declaration(tmp_path):
+    """Spinhold's `[voxels]` is its budget for every actor, not a shape (§PW529)."""
+    from polyweave.surface.cli import is_declaration
+
+    (tmp_path / "polyweave.toml").write_text("[voxels]\nbudget = 6000\n", "utf-8")
+    (tmp_path / "ship.toml").write_text("[voxels]\ncell = 1\n", "utf-8")
+    assert not is_declaration(tmp_path / "polyweave.toml")
+    assert is_declaration(tmp_path / "ship.toml")

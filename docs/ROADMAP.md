@@ -62,7 +62,7 @@
 
 ## Block W — A core that grows by layers
 
-- 📋 **PW520** (deps: PW512 ✅, PW516 ✅) **A project's polyweave.toml and the Python importing polyweave break on the new layout, with nothing to carry them over** — The block owes callers no compatibility, so one command must carry a project across, or every adopter pays for the break by hand. → §PW520
+- 🛠 **PW520** (deps: PW512 ✅, PW516 ✅) **A project's polyweave.toml and the Python importing polyweave break on the new layout, with nothing to carry them over** — The block owes callers no compatibility, so one command must carry a project across, or every adopter pays for the break by hand. → §PW520
 - 📋 **PW521** (deps: PW520, PW518 ✅) **Cottony still runs on the flat package and serves every layer, so the block is unproven on its first consumer** — A layering proven only on fixtures can still be wrong where a real game reaches into it, and Cottony reaches deepest, from Python, a rig and its own scripts. → §PW521
 - 📋 **PW522** (deps: PW520) **Spinhold still runs on the flat package, so the 443 records and 30 verdicts most at stake in the break are unchecked** — Spinhold holds the most data a person judged, so it proves whether the break kept the one thing it promised to keep. → §PW522
 
