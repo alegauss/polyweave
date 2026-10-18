@@ -16,7 +16,7 @@ import pytest
 
 from polyweave.kernel.errors import PolyweaveError
 from polyweave.layers.sound import sound_buy
-from polyweave.services import purchase
+from polyweave.services import elevenlabs, purchase
 from polyweave.surface.quote import quote
 from test_sound import tone, written
 
@@ -55,7 +55,7 @@ def service(tmp_path, monkeypatch):
     (tmp_path / "polyweave.toml").write_text(PROJECT, encoding="utf-8")
     monkeypatch.setenv("POLYWEAVE_TEST_E", "sk-sound")
     fake = Service()
-    monkeypatch.setattr(sound_buy, "_post", fake.post)
+    monkeypatch.setattr(elevenlabs, "post", fake.post)
     return fake
 
 
@@ -106,7 +106,7 @@ def test_a_take_on_a_free_tier_keeps_its_tier_and_credits_says_so(
     record is the one place that can say so later."""
     from polyweave.kernel import provenance
 
-    monkeypatch.setattr(sound_buy, "_tier", lambda base, key: "free")
+    monkeypatch.setattr(elevenlabs, "tier", lambda base, key: "free")
     sound_buy.buy(prompt="rain", out="sfx/rain.mp3", root=str(tmp_path))
     record = provenance.read("sfx/rain.mp3", tmp_path)
     assert record["engine"]["tier"] == "free"
@@ -115,20 +115,20 @@ def test_a_take_on_a_free_tier_keeps_its_tier_and_credits_says_so(
         {"file": "sfx/rain.mp3", "service": "elevenlabs", "tier": "free"}]
     assert "non-commercial" in said["says"]
 
-    monkeypatch.setattr(sound_buy, "_tier", lambda base, key: "creator")
+    monkeypatch.setattr(elevenlabs, "tier", lambda base, key: "creator")
     sound_buy.buy(prompt="rain", out="sfx/rain.mp3", root=str(tmp_path))
     assert provenance.read("sfx/rain.mp3", tmp_path)["engine"]["tier"] == "creator"
     assert "non_commercial" not in provenance.credits(root=str(tmp_path))
 
 
 def test_a_tier_the_service_will_not_say_is_recorded_as_nothing(tmp_path, monkeypatch):
-    monkeypatch.setattr(sound_buy, "_subscription", lambda base, key: None)
-    assert sound_buy._used("b", "k") is None
+    monkeypatch.setattr(elevenlabs, "subscription", lambda base, key: None)
+    assert elevenlabs.used("b", "k") is None
     monkeypatch.undo()
-    monkeypatch.setattr(sound_buy, "_subscription",
+    monkeypatch.setattr(elevenlabs, "subscription",
                         lambda base, key: {"tier": "Free", "character_count": 12})
-    assert sound_buy._used("b", "k") == 12
-    assert sound_buy._made_with("e", "m", None) == {"name": "e", "model": "m"}
+    assert elevenlabs.used("b", "k") == 12
+    assert elevenlabs.tier("b", "k") == "free"
 
 
 def test_no_budget_is_no_spend(tmp_path, service):
@@ -144,7 +144,7 @@ def test_no_budget_is_no_spend(tmp_path, service):
 def test_a_sound_for_a_declared_cue_lands_there_in_its_format(tmp_path, monkeypatch):
     (tmp_path / "polyweave.toml").write_text(PROJECT, encoding="utf-8")
     monkeypatch.setenv("POLYWEAVE_TEST_E", "sk-sound")
-    monkeypatch.setattr(sound_buy, "_post", Service(mp3(tmp_path)).post)
+    monkeypatch.setattr(elevenlabs, "post", Service(mp3(tmp_path)).post)
     found = sound_buy.buy(prompt="footsteps on gravel", cue="footsteps",
                           root=str(tmp_path))
     assert found["file"] == "game/audio/footsteps.wav"
@@ -184,7 +184,7 @@ def test_a_refusal_from_the_service_is_a_code(monkeypatch, status, code):
 
     monkeypatch.setattr(urllib.request, "urlopen", refuse)
     with pytest.raises(PolyweaveError) as caught:
-        sound_buy._post("https://api.elevenlabs.io/v1/sound-generation", "k", {})
+        elevenlabs.post("https://api.elevenlabs.io/v1/sound-generation", "k", {})
     assert caught.value.code == code
 
 
@@ -194,7 +194,7 @@ FREE_PLAN = (b'{"detail":{"type":"authorization_error","code":"feature_not_avail
              b'paid plan."}}')
 
 
-@pytest.mark.parametrize("sent", [sound_buy._post, sound_buy._asked])
+@pytest.mark.parametrize("sent", [elevenlabs.post, elevenlabs.asked_json])
 def test_a_403_says_the_plan_lacks_the_feature(monkeypatch, sent):
     """§PW410: the 403 was a service error whose remedy named only 401 and 422."""
     def refuse(request, timeout):
@@ -220,7 +220,7 @@ def counted(tmp_path, monkeypatch, service):
     """The project priced by the character, and the service's usage readings."""
     (tmp_path / "polyweave.toml").write_text(BY_CHARACTER, encoding="utf-8")
     readings = []
-    monkeypatch.setattr(sound_buy, "_used", lambda base, key: readings.pop(0))
+    monkeypatch.setattr(elevenlabs, "used", lambda base, key: readings.pop(0))
     return readings
 
 
@@ -285,7 +285,7 @@ SPEECH = PROJECT.replace(
 @pytest.fixture
 def voiced(tmp_path, monkeypatch, service):
     (tmp_path / "polyweave.toml").write_text(SPEECH, encoding="utf-8")
-    monkeypatch.setattr(sound_buy, "_used", lambda base, key: None)
+    monkeypatch.setattr(elevenlabs, "used", lambda base, key: None)
     return service
 
 

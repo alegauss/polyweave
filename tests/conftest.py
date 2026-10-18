@@ -23,10 +23,10 @@ def store(tmp_path):
 @pytest.fixture(autouse=True)
 def no_subscription_read(monkeypatch):
     """The speech service's subscription is never read from a test: a test that buys
-    replaces the transport, and a tier it wants is stubbed on `sound_buy._tier`."""
-    from polyweave.layers.sound import sound_buy
+    replaces the transport, and a tier it wants is stubbed on `elevenlabs.tier`."""
+    from polyweave.services import elevenlabs
 
-    monkeypatch.setattr(sound_buy, "_tier", lambda base, key: None)
+    monkeypatch.setattr(elevenlabs, "tier", lambda base, key: None)
 
 
 @pytest.fixture

@@ -13,7 +13,7 @@ import pytest
 from polyweave.kernel import provenance
 from polyweave.kernel.errors import PolyweaveError
 from polyweave.layers.sound import sound, sound_buy
-from polyweave.services import purchase
+from polyweave.services import elevenlabs, purchase
 from polyweave.services.generated import generated as generated_files
 from test_sound import tone, written
 from test_speech import unheard
@@ -67,7 +67,7 @@ def test_no_engine_is_refused_and_the_paid_rung_is_not_taken(tmp_path, monkeypat
     (tmp_path / "polyweave.toml").write_text(VOICED, encoding="utf-8")
     monkeypatch.setattr(shutil, "which", lambda name: None)
     sent = []
-    monkeypatch.setattr(sound_buy, "_post", lambda *a: sent.append(a))
+    monkeypatch.setattr(elevenlabs, "post", lambda *a: sent.append(a))
     with pytest.raises(PolyweaveError) as refused:
         sound_buy.speak(text="Go", out="vo/go.wav", rung="draft", root=str(tmp_path))
     assert refused.value.code == "sound.no-speech-engine"

@@ -520,32 +520,6 @@ the swap, and its gate passes.
 
 ## Block W — A core that grows by layers
 
-### §PW516 A paid service is an adapter; the ledger and the ceiling are the kernel's
-
-Five services are bought from today: Meshy, Tripo and Rodin for meshes, Ideogram for
-pictures, ElevenLabs for sound and voice. Each client lives inside its domain module.
-`mesh_buy` builds `urllib.request.Request` three times, `sound_buy` has its own `_post`
-and two more requests, and `picture` has three. Every copy carries its own timeout,
-polling loop, reading of a 402 or 429, and way of naming the plan whose licence the
-record keeps. `purchase` holds the ledger, the quote and the ceiling, and each domain
-has to remember to call it.
-
-A `Service` under `services/<name>.py` declares:
-
-- `media`: what it sells (mesh, picture, sound, voice);
-- `quote(request) -> Price` in the unit the project's `[budget.<name>]` counts;
-- `submit`, `poll` and `fetch`, the three halves of an asynchronous purchase, with a single kernel-owned HTTP helper for timeouts, retries and reading a refusal into a `PolyweaveError` with the service's own message;
-- `plan(answer)`: the tier and whether it permits a sold game, for the record.
-
-The kernel's `buy(service, request)` is the only path that spends. It checks the
-ceiling, writes the ledger before submitting and reconciles it after fetching, so no
-domain can buy without the bound. Spending stays a person's call: the adapter never
-decides a purchase is worth it.
-
-Done when `mesh_buy`, `sound_buy` and `picture` import no `urllib`, the purchase,
-ledger, quote and service tests pass, and a fixture service is quoted, bought, refused
-over its ceiling and reconciled.
-
 ### §PW517 [extend.measures]: a project's measure, declared, run apart and recorded
 
 `measurements.md` keeps a closed list, and `spec.unknown-measure` refuses everything

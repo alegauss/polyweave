@@ -13,7 +13,7 @@ import pytest
 from polyweave.kernel import provenance
 from polyweave.kernel.errors import PolyweaveError
 from polyweave.layers.sound import sound_buy
-from polyweave.services import purchase
+from polyweave.services import elevenlabs, purchase
 from test_sound_buy import PROJECT, Service, mp3
 
 pytestmark = pytest.mark.skipif(not shutil.which("ffmpeg"), reason="needs ffmpeg")
@@ -44,9 +44,9 @@ def project(tmp_path, monkeypatch):
     (tmp_path / "text" / "strings.csv").write_text(TABLE, encoding="utf-8")
     (tmp_path / "game.world.toml").write_text(WORLD, encoding="utf-8")
     monkeypatch.setenv("POLYWEAVE_TEST_E", "sk-sound")
-    monkeypatch.setattr(sound_buy, "_used", lambda base, key: None)
+    monkeypatch.setattr(elevenlabs, "used", lambda base, key: None)
     fake = Service(mp3(tmp_path))
-    monkeypatch.setattr(sound_buy, "_post", fake.post)
+    monkeypatch.setattr(elevenlabs, "post", fake.post)
     return fake
 
 

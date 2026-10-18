@@ -135,6 +135,7 @@ def test_a_bought_take_lands_with_its_silence_cut_to_the_bound(tmp_path, monkeyp
 
     from polyweave.kernel import provenance
     from polyweave.layers.sound import sound_buy
+    from polyweave.services import elevenlabs
     from test_sound_buy import PROJECT, Service
 
     if not shutil.which("ffmpeg"):
@@ -151,9 +152,9 @@ def test_a_bought_take_lands_with_its_silence_cut_to_the_bound(tmp_path, monkeyp
         encoding="utf-8",
     )
     monkeypatch.setenv("POLYWEAVE_TEST_E", "sk-sound")
-    monkeypatch.setattr(sound_buy, "_used", lambda base, key: None)
+    monkeypatch.setattr(elevenlabs, "used", lambda base, key: None)
     monkeypatch.setattr(sound, "_transcribed", unheard)
-    monkeypatch.setattr(sound_buy, "_post", Service(sent).post)
+    monkeypatch.setattr(elevenlabs, "post", Service(sent).post)
     found = sound_buy.speak(text="Hold fast", voice="v1", out="vo/hold.wav",
                             root=str(tmp_path))
     assert found["speech"]["failed"] == []

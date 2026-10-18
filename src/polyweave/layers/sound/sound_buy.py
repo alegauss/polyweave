@@ -12,8 +12,10 @@ doors a picture and a mesh go through:
     3. the answer is captured before anything else: written, hashed and ledgered
 
 The service is ElevenLabs' sound generation: one JSON request, answered with the audio.
-It answers MP3, so a sound bought for a cue declared in another format is transcoded by
-ffmpeg before it is captured, and the file on record is the one the game plays.
+Its client is `services/elevenlabs.py`, and every purchase here goes through
+`services.service.buy` (§PW516). It answers MP3, so a sound bought for a cue declared
+in another format is transcoded by ffmpeg before it is captured, and the file on record
+is the one the game plays.
 
 A `prices` row may be by the character, `{ per = "character", rate }` (§PW320): the
 words sent are counted before anything is, and where the service's subscription answers
@@ -26,9 +28,7 @@ written into `[budget.<name>]` by a person and never proposed by the plugin.
 
 from __future__ import annotations
 
-import base64
 import hashlib
-import json
 import re
 import shutil
 import subprocess
@@ -40,18 +40,11 @@ from polyweave.kernel import provenance
 from polyweave.kernel.config import load
 from polyweave.kernel.describe import Param, operation
 from polyweave.kernel.errors import PolyweaveError
-from polyweave.services import client, purchase
+from polyweave.services import client, elevenlabs, purchase
+from polyweave.services import service as S
+from polyweave.services.elevenlabs import FORMAT, ROUTE, SAVE, SPEAK
 
 from . import sound
-
-#: The service's route, and the format it is asked to answer in.
-ROUTE = "/v1/sound-generation"
-
-#: Where the service says how many characters the account has used (§PW320).
-USAGE = "/v1/user/subscription"
-FORMAT = "mp3_44100_128"
-
-TIMEOUT = 120
 
 _CUE = Param("a cue [sound] declares; the file lands where it does")
 _OUT = Param("or a path for it under the project, with its suffix")
@@ -98,9 +91,6 @@ def buy(
         details={"cue": cue, "seconds": seconds, "influence": influence, "loop": loop},
     )
 
-
-#: Where a line is spoken, by the voice the route names (§PW314).
-SPEAK = "/v1/text-to-speech/{voice}"
 
 #: How each delivery setting is named in the service's `voice_settings`.
 DELIVERY = {
@@ -250,47 +240,33 @@ def _bought(
             "put ffmpeg on PATH before spending, or set [voice] trim = false",
         )
 
-    purchase.allow_priced(priced, root=here, service=name)
-    by_character = priced["per"] == "character"
-    tier = _tier(base, key)
-    before = _used(base, key) if by_character else None
-    if report is not None:
-        report.stage("building", progress=0.2, note="asking the service for the sound")
-    body, asked = _post(f"{base}{route}", key, request)
-    after = _used(base, key) if before is not None else None
-    reported = (
-        round((after - before) * priced["rate"], 6)
-        if before is not None and after is not None and after >= before
-        else None
+    def shaped(body: bytes, details: dict) -> tuple[bytes, dict]:
+        # The file on record is the one the game plays: the cue's format, and a take's
+        # silence cut where [voice] trim asks.
+        played = body if target.suffix.lower() == ".mp3" else _transcoded(body, target)
+        if trimming:
+            played, cut = _trim(played, target, config.table("voice"))
+            if cut:
+                details = {**details, "trimmed": {
+                    **cut, "sent_sha256": hashlib.sha256(body).hexdigest()}}
+        return played, details
+
+    order = S.Order(
+        service=name, base=base, key=key, price=price, root=here,
+        asked={"call": "audio", "route": route, "payload": request,
+               "rate": priced["rate"] if priced["per"] == "character" else None},
+        kept={
+            "out": target.relative_to(here).as_posix(),
+            "prompt": words,
+            "bought": "sound",
+            "engine": {"name": name, "model": model},
+            "details": {**details, "format": target.suffix[1:]},
+            "inputs": inputs,
+        },
+        priced=priced,
+        shaped=shaped,
     )
-    if not body:
-        raise PolyweaveError(
-            "fetch.nothing-arrived",
-            "the service answered with no audio",
-            "ask again; nothing was ledgered",
-        )
-    if report is not None:
-        report.stage("downloading", progress=0.9, note="taking delivery of the sound")
-    played = body if target.suffix.lower() == ".mp3" else _transcoded(body, target)
-    if trimming:
-        played, cut = _trim(played, target, config.table("voice"))
-        if cut:
-            details = {**details, "trimmed": {
-                **cut, "sent_sha256": hashlib.sha256(body).hexdigest()}}
-    entry = purchase.capture(
-        played,
-        out=target.relative_to(here).as_posix(),
-        task_id=f"{name}:{asked or hashlib.sha256(body).hexdigest()[:16]}",
-        credits=price,
-        reported=reported,
-        prompt=words,
-        bought="sound",
-        engine=_made_with(name, model, tier),
-        service=name,
-        details={**details, "format": target.suffix[1:]},
-        inputs=inputs,
-        root=here,
-    )
+    entry = S.buy(elevenlabs.SERVICE, order, report)
     answer = {**entry, "file": target.relative_to(here).as_posix(),
               "measured": _measured(target)}
     if details.get("spoken"):
@@ -343,10 +319,6 @@ def _speech(target: Path, words: str, config) -> dict:
         return {"unmeasured": refused.message}
     return {**found, "failed": sound.held(found, config.table("voice"))}
 
-
-#: Where a voice is designed from words, and where a chosen preview is kept (§PW321).
-DESIGN = "/v1/text-to-voice/design"
-SAVE = "/v1/text-to-voice"
 
 #: The fewest characters ElevenLabs' voice design takes as the line it speaks; a
 #: shorter one comes back a 422 after the call (§PW482). A service declares its own as
@@ -444,55 +416,37 @@ def design(
     priced = client.priced(
         name, about.get("prices") or {}, model, None, len(sample)
     )
-    purchase.allow_priced(priced, root=here, service=name)
-    tier = _tier(base, key)
-    before = _used(base, key) if priced["per"] == "character" else None
-    if report is not None:
-        report.stage("building", progress=0.2, note="asking the service for voices")
-    answer = _asked(
-        f"{base}{DESIGN}", key,
-        {"voice_description": voice["description"], "text": sample, "model_id": model},
-    )
-    after = _used(base, key) if before is not None else None
-    previews = [one for one in answer.get("previews") or () if one.get("audio_base_64")]
-    if not previews:
-        raise PolyweaveError(
-            "fetch.nothing-arrived",
-            "the service answered with no preview of the voice",
-            "reword the description; nothing was ledgered",
-        )
-    spent = (
-        (after - before) * priced["rate"]
-        if before is not None and after is not None and after >= before
-        else None
-    )
     drawn_from = {
         "id": entity,
         "world": provenance.relative(source, here),
         "description": voice["description"],
         **({"locale": locale} if locale else {}),
     }
-    heard = []
-    for index, preview in enumerate(previews, start=1):
-        body = base64.b64decode(preview["audio_base_64"])
-        target = folder / f"{named}_{index}.mp3"
-        # One call answers every preview, so each carries its share of the price.
-        entry = purchase.capture(
-            body,
-            out=target.relative_to(here).as_posix(),
-            task_id=f"{name}:{preview.get('generated_voice_id') or index}",
-            credits=round(priced["price"] / len(previews), 6),
-            reported=None if spent is None else round(spent / len(previews), 6),
-            prompt=sample,
-            bought="sound",
-            engine=_made_with(name, model, tier),
-            service=name,
-            details={"voice_preview": preview.get("generated_voice_id"),
-                     "entity": drawn_from, "format": "mp3"},
-            inputs=[provenance.source("world", source, root=here)],
-            root=here,
-        )
-        heard.append({"name": target.stem, "new": entry["artefact"], "line": sample})
+    laid_at = folder.relative_to(here).as_posix()
+    order = S.Order(
+        service=name, base=base, key=key, price=priced["price"], root=here,
+        asked={
+            "call": "design",
+            "payload": {"voice_description": voice["description"], "text": sample,
+                        "model_id": model},
+            "rate": priced["rate"] if priced["per"] == "character" else None,
+            "folder": laid_at,
+            "named": named,
+        },
+        kept={
+            "out": laid_at,
+            "prompt": sample,
+            "bought": "sound",
+            "engine": {"name": name, "model": model},
+            "details": {"entity": drawn_from, "format": "mp3"},
+            "inputs": [provenance.source("world", source, root=here)],
+        },
+        priced=priced,
+    )
+    heard = [
+        {"name": Path(entry["artefact"]).stem, "new": entry["artefact"], "line": sample}
+        for entry in S.buy(elevenlabs.SERVICE, order, report)
+    ]
     laid = sound.sitting(
         heard, out=provenance.relative(folder, here), root=str(here)
     )
@@ -558,7 +512,7 @@ def choose(
         )
     name = config.service(service, model=str((record.get("engine") or {}).get("model")))
     base, key = client.reached(name, config.services()[name])
-    saved = _asked(
+    saved = elevenlabs.asked_json(
         f"{base}{SAVE}", key,
         {"voice_name": drawn["id"], "voice_description": drawn.get("description", ""),
          "generated_voice_id": details["voice_preview"]},
@@ -883,56 +837,6 @@ def _local_speech(engine: dict, text: str, wav: Path) -> None:
         )
 
 
-def _plan_lacks(said: str) -> PolyweaveError:
-    """A 403: the account's plan lacks the feature, in the service's own words (§PW410).
-
-    ElevenLabs answers voice design on a free plan with a 403 whose message says so,
-    and the refusal used to be a service error whose remedy named only 401 and 422.
-    """
-    from polyweave.kernel.errors import detail_line
-
-    why = detail_line(said)
-    return PolyweaveError(
-        "fetch.plan-lacks",
-        "the account's plan does not include this"
-        + (f": {why}" if why else " (the service answered 403)"),
-        "move the account to a plan that has it, or ask for what the plan has; "
-        "nothing was ledgered, and a refused call is not charged",
-        detail=said,
-    )
-
-
-def _asked(url: str, key: str, payload: dict) -> dict:
-    """One JSON request with the service's key header, answered with JSON."""
-    try:
-        answer = client.send(
-            url, method="POST", data=json.dumps(payload).encode("utf-8"),
-            headers={"xi-api-key": key, "Content-Type": "application/json",
-                     "Accept": "application/json"},
-            timeout=TIMEOUT,
-        )
-    except client.Unreached as exc:
-        raise PolyweaveError(
-            "fetch.service-error",
-            f"the service could not be reached at {url}",
-            "check the base under [service] and the network",
-            detail=exc.reason,
-        ) from exc
-    if answer.status >= 400:
-        said = answer.body[:400].decode("utf-8", "replace")
-        if answer.status == 403:
-            raise _plan_lacks(said)
-        raise PolyweaveError(
-            "fetch.service-error",
-            f"the service answered {answer.status}",
-            "read the detail; a 401 is a key the service does not accept, or an "
-            "account out of credits, and a 422 words it would not use",
-            detail=said,
-        )
-    said = json.loads(answer.body or b"{}")
-    return said if isinstance(said, dict) else {}
-
-
 def _target(config, cue: str | None, out: str | None) -> Path:
     """Where the sound lands: its declared cue's file, or the path the call names."""
     if (cue is None) == (out is None):
@@ -961,82 +865,6 @@ def _target(config, cue: str | None, out: str | None) -> Path:
             f"end it in one of {', '.join(sound.SUFFIXES)}",
         )
     return target
-
-
-def _post(url: str, key: str, payload: dict) -> tuple[bytes, str]:
-    """One request with the service's key header, answered with audio and its id."""
-    try:
-        answer = client.send(
-            url, method="POST", data=json.dumps(payload).encode("utf-8"),
-            headers={"xi-api-key": key, "Content-Type": "application/json",
-                     "Accept": "audio/mpeg"},
-            timeout=TIMEOUT,
-        )
-    except client.Unreached as exc:
-        raise PolyweaveError(
-            "fetch.service-error",
-            f"the service could not be reached at {url}",
-            "check the base under [service] and the network",
-            detail=exc.reason,
-        ) from exc
-    if answer.status < 400:
-        return answer.body, answer.headers.get("request-id", "")
-    said = answer.body[:400].decode("utf-8", "replace")
-    if answer.status == 422:
-        raise PolyweaveError(
-            "fetch.prompt-refused",
-            "the service would not make a sound from those words",
-            "reword the prompt; nothing was ledgered",
-            detail=said,
-        )
-    if answer.status == 429:
-        raise PolyweaveError(
-            "fetch.rate-limited",
-            "the service has more requests from this account than it allows",
-            "wait, then ask again",
-            detail=said,
-        )
-    if answer.status == 403:
-        raise _plan_lacks(said)
-    raise PolyweaveError(
-        "fetch.service-error",
-        f"the service answered {answer.status}",
-        "read the detail; a 401 is a key the service does not accept, or an "
-        "account out of credits, and a 400 a request it does not",
-        detail=said,
-    )
-
-
-def _subscription(base: str, key: str) -> dict | None:
-    """What the account's subscription says, or None where the service will not say."""
-    try:
-        answer = client.send(f"{base}{USAGE}", timeout=TIMEOUT,
-                             headers={"xi-api-key": key, "Accept": "application/json"})
-        said = json.loads(answer.body) if answer.status < 400 else None
-    except (client.Unreached, OSError, ValueError):
-        return None
-    return said if isinstance(said, dict) else None
-
-
-def _used(base: str, key: str) -> int | None:
-    """The characters the account has used, or None where the service will not say.
-
-    Read before and after a call priced by the character, so its spend is measured; a
-    reading that fails leaves the quoted price standing, never a guess (§PW320).
-    """
-    count = (_subscription(base, key) or {}).get("character_count")
-    return count if isinstance(count, int) and not isinstance(count, bool) else None
-
-
-def _tier(base: str, key: str) -> str | None:
-    """The account's tier, kept in each take's record so a free one's licence is never
-    forgotten (§PW435); None where the service will not say, never a guess."""
-    tier = (_subscription(base, key) or {}).get("tier")
-    return tier.lower() if isinstance(tier, str) and tier.strip() else None
-
-
-def _made_with(name: str, model: str, tier: str | None) -> dict:
-    return {"name": name, "model": model, **({"tier": tier} if tier else {})}
 
 
 #: How ffmpeg writes each format a cue may declare.

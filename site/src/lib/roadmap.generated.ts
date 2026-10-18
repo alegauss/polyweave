@@ -47,7 +47,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 2 },
-  { block: "W", title: "A core that grows by layers", open: 7 },
+  { block: "W", title: "A core that grows by layers", open: 6 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -143,13 +143,6 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW516",
-    block: "W",
-    symptom: "Each paid service's HTTP client is written inside the domain that buys from it, so a new service copies a client",
-    why: "Meshes and pictures go through one buy() now (PW526-PW528); ElevenLabs' sounds and voices are still bought by their own domain code.",
-    deps: [],
-  },
-  {
     id: "PW517",
     block: "W",
     symptom: "A project cannot add a measure of its own, so a look only its game needs is a fork, a side script or a PW line",
@@ -175,7 +168,7 @@ export const generatedTasks: GeneratedTask[] = [
     block: "W",
     symptom: "A project's polyweave.toml and the Python importing polyweave break on the new layout, with nothing to carry them over",
     why: "The block owes callers no compatibility, so one command must carry a project across, or every adopter pays for the break by hand.",
-    deps: ["PW516"],
+    deps: [],
   },
   {
     id: "PW521",

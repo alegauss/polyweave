@@ -63,6 +63,22 @@ class Order:
     #: What `purchase.capture` keeps beside the bytes: `out`, `prompt`, `reference`,
     #: `bought`, `engine`, `details`, `inputs`.
     kept: dict = field(default_factory=dict)
+    #: The quote as `client.priced` reached it, where it was counted by the unit, so a
+    #: refusal says what the count came to (§PW320).
+    priced: dict | None = None
+    #: (bytes, details) -> (bytes, details): what the domain does to delivered bytes
+    #: before they are kept, such as a transcode to the cue's format.
+    shaped: Callable[[bytes, dict], tuple[bytes, dict]] | None = None
+
+
+@dataclass(frozen=True)
+class Part:
+    """One of several files a single purchase delivers, which share its charge."""
+
+    task: str
+    body: bytes
+    out: str
+    details: dict = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -80,6 +96,11 @@ class Delivery:
     reported: float | None = None
     #: What the provider reported about what it made, kept on the record.
     details: dict = field(default_factory=dict)
+    #: What the record's engine adds, such as the plan tier that licenses it (§PW448).
+    engine: dict = field(default_factory=dict)
+    #: Several files from one call, each kept and ledgered with its share of the
+    #: charge, in place of `link` or `body`.
+    parts: tuple[Part, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -126,15 +147,19 @@ def provider(base: str, media: str, default: str) -> Service:
     return every[default]
 
 
-def buy(adapter: Service, order: Order, report=None) -> dict:
+def buy(adapter: Service, order: Order, report=None) -> dict | list[dict]:
     """Spend on one order through its adapter, against the ceiling; the ledger entry.
 
     The only path a purchase takes from a quote to a ledger entry: nothing is sent
     before the ceiling allows the quote, the charge is owed from the moment it is
-    sent, and nothing is ledgered before the bytes are on disk and recorded.
+    sent, and nothing is ledgered before the bytes are on disk and recorded. A
+    delivery in several parts answers an entry for each, in order.
     """
     root = order.root
-    purchase.allow(order.price, root=root, service=order.service)
+    if order.priced is not None:
+        purchase.allow_priced(order.priced, root=root, service=order.service)
+    else:
+        purchase.allow(order.price, root=root, service=order.service)
     pending = f"{order.service}:sent:{uuid.uuid4().hex[:12]}"
     purchase.owe({"task_id": pending, "service": order.service,
                   "credits": order.price, "expected_credits": order.price,
@@ -161,17 +186,47 @@ def buy(adapter: Service, order: Order, report=None) -> dict:
     kept = {
         **order.kept,
         **({"details": details} if details else {}),
+        **({"engine": {**(order.kept.get("engine") or {}), **got.engine}}
+           if got.engine else {}),
         "task_id": f"{order.service}:{got.task}",
-        "credits": round(order.price * got.outputs, 4),
+        "credits": round(order.price * got.outputs, 6),
         "outputs": got.outputs,
         "reported": got.reported,
         "balance_before": before,
         "balance_after": after,
         "service": order.service,
     }
-    purchase.settle(pending, root=root)
+    if got.parts:
+        # One call answered every part, so each carries its share of the charge: of
+        # what the balance readings measured where there are two, else of what the
+        # provider reported, and never the whole difference on every part.
+        share = len(got.parts)
+        measured = (before - after if before is not None and after is not None
+                    else got.reported)
+        entries = [
+            purchase.capture(one.body, **{
+                **kept,
+                "out": one.out,
+                "task_id": f"{order.service}:{one.task}",
+                "credits": round(kept["credits"] / share, 6),
+                "reported": None if measured is None else round(measured / share, 6),
+                "balance_before": None,
+                "balance_after": None,
+                "details": {**details, **one.details},
+            }, root=root)
+            for one in got.parts
+        ]
+        purchase.settle(pending, root=root)
+        return entries
     if got.body is not None:
-        return purchase.capture(got.body, **kept, root=root)
+        body = got.body
+        if order.shaped is not None:
+            body, shaped = order.shaped(body, kept.get("details") or {})
+            kept["details"] = shaped
+        entry = purchase.capture(body, **kept, root=root)
+        purchase.settle(pending, root=root)
+        return entry
+    purchase.settle(pending, root=root)
     if report is not None:
         report.stage("downloading", progress=0.9, note="taking delivery of it")
     return delivered(got.link, kept, root)

@@ -11,6 +11,7 @@ from polyweave.kernel import config as C
 from polyweave.kernel.errors import PolyweaveError
 from polyweave.layers.geometry import mesh_buy
 from polyweave.layers.picture import picture, scenario, variation
+from polyweave.layers.sound import sound_buy
 from polyweave.services import purchase
 from polyweave.services import service as S
 
@@ -147,15 +148,65 @@ def test_each_mesh_provider_is_an_adapter_found_by_its_host():
     assert S.provider("https://api.meshy.ai", "mesh", "meshy").name == "meshy"
 
 
-@pytest.mark.parametrize("module", [mesh_buy, picture, variation, scenario],
+#: What only `buy` may call: the ceiling, the owed list and the ledger's capture.
+SPENDING = {"purchase.allow", "purchase.allow_priced", "purchase.capture",
+            "purchase.owe", "purchase.settle"}
+
+
+def test_no_layer_spends_except_through_buy():
+    import polyweave.layers
+
+    spent = []
+    for path in Path(polyweave.layers.__path__[0]).rglob("*.py"):
+        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
+            if (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+                    and isinstance(node.func.value, ast.Name)
+                    and f"{node.func.value.id}.{node.func.attr}" in SPENDING):
+                spent.append(f"{path.name}:{node.lineno} {node.func.attr}")
+    assert spent == []
+
+
+@pytest.mark.parametrize("module", [mesh_buy, picture, variation, scenario, sound_buy],
                          ids=lambda module: module.__name__.rsplit(".", 1)[-1])
-def test_a_domain_neither_allows_nor_captures_nor_speaks_http_itself(module):
+def test_a_paid_domain_speaks_no_http_itself(module):
     source = Path(module.__file__).read_text(encoding="utf-8")
-    called = {
-        f"{node.func.value.id}.{node.func.attr}"
-        for node in ast.walk(ast.parse(source))
-        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
-        and isinstance(node.func.value, ast.Name)
-    }
-    assert "purchase.allow" not in called and "purchase.capture" not in called
-    assert "urllib" not in source and "client.send" not in source
+    assert "urllib.request" not in source and "client.send" not in source
+
+
+def test_each_paid_provider_is_an_adapter():
+    assert set(S.providers()) == {"meshy", "tripo", "rodin", "ideogram", "scenario",
+                                  "elevenlabs"}
+
+
+def test_the_domain_shapes_the_bytes_before_they_are_kept(project):
+    def shaped(body, details):
+        return b"RIFF-shaped" + body[4:], {**details, "shaped": True}
+
+    order = S.Order(**{**vars(_order(project)), "shaped": shaped})
+    S.buy(Bells().service, order)
+    assert (project / "bell.wav").read_bytes().startswith(b"RIFF-shaped")
+    record = __import__("polyweave.kernel.provenance", fromlist=["read"]).read(
+        "bell.wav", project)
+    assert record["details"]["shaped"] is True
+
+
+def _peals(order, task, finished):
+    return S.Delivery(task=task, reported=3.0, engine={"tier": "free"}, parts=tuple(
+        S.Part(task=f"{task}-{i}", body=b"RIFF" + bytes([i]) * 40, out=f"p{i}.wav")
+        for i in (1, 2, 3)))
+
+
+def test_one_call_delivering_several_parts_splits_its_charge(project):
+    bells = Bells(balance=False)
+    entries = S.buy(S.Service(**{**vars(bells.service), "deliver": _peals}),
+                    _order(project))
+    assert [one["task_id"] for one in entries] == [
+        "bells:peal-1-1", "bells:peal-1-2", "bells:peal-1-3"]
+    assert [one["credits"] for one in entries] == [1.0, 1.0, 1.0]
+    assert purchase.owed(project) == []
+
+
+def test_parts_split_what_the_balance_measured_never_charge_it_on_each(project):
+    entries = S.buy(S.Service(**{**vars(Bells().service), "deliver": _peals}),
+                    _order(project))
+    assert sum(one["credits"] for one in entries) == pytest.approx(4.0, abs=1e-5)
