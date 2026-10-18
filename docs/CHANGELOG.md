@@ -229,6 +229,7 @@
 - ✅ **PW489** **a capture whose shader failed to compile answers ok, so panel.capture hands back stills of the bare white rect** — A shader that won't compile now fails the run as script-error at the shader's line, so panel.capture refuses the film as compose.unfilmed (design recorded in `engine.md`).
 - ✅ **PW490** **panel.capture films a panel only at its declared size, so how its shader draws it grown is never seen** — panel.capture takes sizes and films each state at each, so a test holds the stitch pitch at twice the width (design recorded in `panel.md`).
 - ✅ **PW491** **four source files cite a line through a mis-encoded section sign, so a search for that citation misses them** — The four signs are repaired, and a test fails on any source holding the twice-read sign or a byte-order mark, naming its file and line.
+- ✅ **PW523** **the saves kit's proof writes to one fixed user:// folder, so two proofs at once empty each other's slots** — The saves, options, remap and launch proofs each write under user:// paths of their own run, so two proofs at once no longer empty each other's files.
 
 ## Block I — Voxel models from a declaration
 

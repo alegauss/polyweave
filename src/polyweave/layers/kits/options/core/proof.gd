@@ -9,7 +9,10 @@ extends SceneTree
 
 const _PwSettings := preload("res://addons/polyweave/options/settings.gd")
 const _PwScreen := preload("res://addons/polyweave/options/options_screen.gd")
-const KEPT := "user://polyweave_settings_proof.cfg"
+## A folder of this run's own (§PW523): Godot names user:// after the project, so two
+## proofs at once in fixtures of one name wrote the same fixed files.
+var run := ""
+var kept := ""
 
 var failed := []
 var settings: _PwSettings
@@ -19,8 +22,10 @@ var frame := 0
 
 
 func _initialize() -> void:
-	DirAccess.remove_absolute(ProjectSettings.globalize_path(KEPT))
-	settings = _PwSettings.new(KEPT)
+	run = "user://polyweave_proof/options_%d_%d" % [OS.get_process_id(), Time.get_ticks_usec()]
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(run))
+	kept = run + "/settings.cfg"
+	settings = _PwSettings.new(kept)
 	if settings.options.is_empty():
 		failed.append("no kit and no polyweave_options.gd declares a row")
 	for problem in settings.unchanging():
@@ -59,7 +64,7 @@ func _older_file() -> void:
 	var alone := refused == row
 	if not alone:
 		old.set_value(refused["tab"], refused["key"], {"not": "a value"})
-	old.save(KEPT)
+	old.save(kept)
 	settings.load_file()
 	if settings.get_value(row["tab"], row["key"]) != chosen:
 		failed.append("%s was not taken from the older file as %s" % [at, chosen])
@@ -68,7 +73,7 @@ func _older_file() -> void:
 	var heard: Array[String] = settings.said.duplicate()
 	if alone:
 		old.set_value(refused["tab"], refused["key"], {"not": "a value"})
-		old.save(KEPT)
+		old.save(kept)
 		settings.load_file()
 		heard.append_array(settings.said)
 	var said := "; ".join(heard)
@@ -76,7 +81,7 @@ func _older_file() -> void:
 		if not said.contains(expected):
 			failed.append("loading the older file did not say %s: %s" % [expected, said])
 	var after := ConfigFile.new()
-	after.load(KEPT)
+	after.load(kept)
 	if after.get_value("legacy", "thing", null) != 7:
 		failed.append("a key no row declares was dropped from the file")
 	if int(after.get_value("meta", "version", 0)) != settings.version:
@@ -92,19 +97,19 @@ func _adopted() -> void:
 		return
 	var row: Dictionary = rows[0]
 	var at := "%s/%s" % [row["tab"], row["key"]]
-	var older_path := "user://polyweave_settings_proof_older.cfg"
+	var older_path := run + "/older.cfg"
 	var chosen: Variant = settings._other(row)
 	var older := ConfigFile.new()
 	older.set_value("game", "kept", chosen)
 	older.save(older_path)
 	var before := FileAccess.get_file_as_string(older_path)
-	DirAccess.remove_absolute(ProjectSettings.globalize_path(KEPT))
-	var adopting := _PwSettings.new(KEPT)
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(kept))
+	var adopting := _PwSettings.new(kept)
 	adopting.adopted = {at: [older_path, "game", "kept"]}
 	adopting.load_file()
 	if adopting.get_value(row["tab"], row["key"]) != chosen:
 		failed.append("%s was not taken from the game's older file" % at)
-	if not "; ".join(adopting.said).contains("took 1 options") or not FileAccess.file_exists(KEPT):
+	if not "; ".join(adopting.said).contains("took 1 options") or not FileAccess.file_exists(kept):
 		failed.append("taking the older file was not said, or not kept: %s" % [adopting.said])
 	if FileAccess.get_file_as_string(older_path) != before:
 		failed.append("taking the older file changed it")
@@ -123,7 +128,7 @@ func _restart() -> void:
 			var other: Variant = settings._other(row)
 			settings.set_value(row["tab"], row["key"], other)
 			values["%s/%s" % [row["tab"], row["key"]]] = other
-	var again := _PwSettings.new(KEPT)
+	var again := _PwSettings.new(kept)
 	again.load_file()
 	for at in values:
 		var parts: PackedStringArray = at.split("/")
@@ -145,14 +150,14 @@ func _tabs() -> void:
 
 
 func _a_row_that_changes_nothing_is_named() -> void:
-	var idle := _PwSettings.new("user://polyweave_settings_idle.cfg", [{
+	var idle := _PwSettings.new(run + "/idle.cfg", [{
 		"tab": "t", "key": "idle", "default": false,
 		"apply": func(_v: bool) -> void: pass,
 		"read": func() -> bool: return false,
 	}])
 	if not "; ".join(idle.unchanging()).contains("t/idle changes nothing"):
 		failed.append("a row that changes nothing was not named")
-	DirAccess.remove_absolute(ProjectSettings.globalize_path("user://polyweave_settings_idle.cfg"))
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(run + "/idle.cfg"))
 
 
 func _pad(index: int) -> void:
@@ -208,7 +213,8 @@ func _process(_delta: float) -> bool:
 		_pad(JOY_BUTTON_A)
 		if closed != 1:
 			failed.append("a Switch pad's south button did not close the screen")
-		DirAccess.remove_absolute(ProjectSettings.globalize_path(KEPT))
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(kept))
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(run))
 		if failed.is_empty():
 			print("KIT PROVED")
 		else:

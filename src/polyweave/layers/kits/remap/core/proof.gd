@@ -7,12 +7,15 @@ extends SceneTree
 ## (§PW428). Prints KIT PROVED, or KIT FAILED with why.
 
 const _PwBindings := preload("res://addons/polyweave/remap/bindings.gd")
-const KEPT := "user://polyweave_bindings_proof.cfg"
 const J := "proof_jump"
 const F := "proof_fire"
 const P := "proof_pause"
 
 var _failed := []
+## A folder of this run's own (§PW523): Godot names user:// after the project, so two
+## proofs at once in fixtures of one name wrote the same fixed files.
+var _run := ""
+var _kept := ""
 var _menu: Node
 var _fire_key := ""
 
@@ -50,10 +53,12 @@ func _declare() -> void:
 
 func _initialize() -> void:
 	var failed := _failed
-	DirAccess.remove_absolute(ProjectSettings.globalize_path(KEPT))
+	_run = "user://polyweave_proof/remap_%d_%d" % [OS.get_process_id(), Time.get_ticks_usec()]
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(_run))
+	_kept = _run + "/bindings.cfg"
 	_declare()
 	var actions := [J, F, P]
-	var bindings := _PwBindings.new(actions, KEPT)
+	var bindings := _PwBindings.new(actions, _kept)
 	var start := bindings.current()
 	for action in actions:
 		if (start[action] as Array).is_empty():
@@ -94,7 +99,7 @@ func _initialize() -> void:
 	bindings.save()
 	for action in actions:
 		InputMap.action_erase_events(action)
-	var restarted := _PwBindings.new(actions, KEPT)
+	var restarted := _PwBindings.new(actions, _kept)
 	restarted.load_kept()
 	if restarted.current() != kept:
 		failed.append("the bindings did not come back after a restart: %s" % restarted.current())
@@ -106,29 +111,29 @@ func _initialize() -> void:
 	restarted.reset()
 	if restarted.current() != start:
 		failed.append("a reset did not go back to the game's own bindings")
-	var again := _PwBindings.new(actions, KEPT)
+	var again := _PwBindings.new(actions, _kept)
 	again.load_kept()
 	if again.current() != start:
 		failed.append("a reset was not kept")
 
 	# A game's older file (§PW397): with no kit file yet, its bindings are taken once,
 	# written to the kit's own file and said, and the older file is left as it was.
-	var older_path := "user://polyweave_bindings_proof_older.cfg"
+	var older_path := _run + "/older.cfg"
 	var older := ConfigFile.new()
 	older.set_value("controls", J, ["key:%d" % KEY_Q, "button:3"])
 	older.set_value("controls", "deadzone", 0.4)
 	older.save(older_path)
-	DirAccess.remove_absolute(ProjectSettings.globalize_path(KEPT))
-	var adopting := _PwBindings.new(actions, KEPT)
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(_kept))
+	var adopting := _PwBindings.new(actions, _kept)
 	adopting.from = [older_path, "controls"]
 	adopting.load_kept()
 	if adopting.current()[J] != ["key:%d" % KEY_Q, "button:3"]:
 		failed.append("an older file's binding was not taken: %s" % [adopting.current()[J]])
 	if not is_equal_approx(adopting.deadzone, 0.4):
 		failed.append("an older file's deadzone was not taken")
-	if adopting.said.is_empty() or not FileAccess.file_exists(KEPT):
+	if adopting.said.is_empty() or not FileAccess.file_exists(_kept):
 		failed.append("taking an older file was not said, or not written to the kit's own")
-	var later := _PwBindings.new(actions, KEPT)
+	var later := _PwBindings.new(actions, _kept)
 	later.from = [older_path, "controls"]
 	later.load_kept()
 	if not later.said.is_empty():
@@ -140,7 +145,7 @@ func _initialize() -> void:
 	# The game's own store (§PW433): the bindings and the pad's settings kept in its one
 	# file and section beside its other sections, a deadzone held to the game's range,
 	# and options of its own, kept, held to their range and read back.
-	var settings_path := "user://polyweave_bindings_proof_store.cfg"
+	var settings_path := _run + "/store.cfg"
 	var settings := ConfigFile.new()
 	settings.set_value("video", "fullscreen", true)
 	settings.set_value("controls", "sensitivity", 9.0)
@@ -189,7 +194,7 @@ func _process(_delta: float) -> bool:
 	var menu := _menu
 	var fire_key := _fire_key
 	var failed := _failed
-	menu.bindings = _PwBindings.new(menu.bindings.actions, KEPT)
+	menu.bindings = _PwBindings.new(menu.bindings.actions, _kept)
 	var said: String = menu.take(P, _PwBindings.decode(fire_key))
 	if not said.contains("took it from"):
 		failed.append("the screen did not say the swap: %s" % said)
@@ -249,7 +254,10 @@ func _process(_delta: float) -> bool:
 	menu.bindings.reset()
 	_pad_screen(menu.open_pad())
 	menu.bindings.reset()
-	DirAccess.remove_absolute(ProjectSettings.globalize_path(KEPT))
+	var at := ProjectSettings.globalize_path(_run)
+	for name in DirAccess.get_files_at(at):
+		DirAccess.remove_absolute(at.path_join(name))
+	DirAccess.remove_absolute(at)
 	if failed.is_empty():
 		print("KIT PROVED")
 	else:

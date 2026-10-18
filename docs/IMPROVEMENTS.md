@@ -118,27 +118,6 @@ Animation track: an anchor placed at run time, on a ring that is not Cartesian, 
 be baked, so a place stays in its anchor's frame and the game maps it with `place`.
 Left: each shot captured onto a sitting, and Starship's opening moved onto it.
 
-### §PW523 The saves proof in a folder of its own run
-
-Found in polyweave on 2026-10-17, shipping PW497. The gate went red once on
-`tests/test_kit_saves.py::test_the_saves_kit_lands_alone_and_proves_in_its_fixture`: the
-proof said "slot 0 could not be saved; slot 1 could not be saved; slot 0 read back {  };
-listed 1 slots of 3". Run alone straight after, the test passed, and the change under
-test touched no kit.
-
-The likely cause, read and not yet reproduced: `kits/saves/core/proof.gd` writes its
-slots to a fixed `user://polyweave_saves_proof` and empties that folder when it is done.
-Godot names the `user://` folder after the project, so every fixture project with the
-same name shares one folder. The gate runs pytest beside its own proof of the nineteen
-kits, and the pytest test proves the same kit, so two proofs can write into one folder
-and one empties it under the other.
-
-What polyweave should do: the saves proof writes under a folder of its own run, such as
-`user://polyweave_saves_proof/<a random token>`, and empties only that, so two proofs at
-once cannot see each other. A test runs two proofs of the saves kit at once in two
-fixtures and holds both to their three slots. Any other kit proof that writes under
-`user://` is checked for the same fixed path.
-
 ### §PW524 Render tests crash their workers under the parallel gate
 
 On 2026-10-17 the gate went red at 6472f5c with two xdist workers crashed outright (gw5

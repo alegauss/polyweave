@@ -8,10 +8,12 @@ extends SceneTree
 
 const _PwSplash := preload("res://addons/polyweave/launch/splash.gd")
 const _PwScenes := preload("res://addons/polyweave/launch/scenes.gd")
-const BIG := "user://polyweave_launch_big.tscn"
 const NODES := 4000
 
 var failed := []
+## The big scene, under a name of this run's own (§PW523): Godot names user:// after the
+## project, so two proofs at once in fixtures of one name deleted it under each other.
+var big := ""
 var launch_budget := 5000
 var frame_budget := 100.0
 var presses: Array[InputEvent] = []
@@ -22,6 +24,7 @@ var since := 0
 
 
 func _initialize() -> void:
+	big = "user://polyweave_launch_big_%d_%d.tscn" % [OS.get_process_id(), Time.get_ticks_usec()]
 	if ResourceLoader.exists("res://polyweave_launch.gd"):
 		var declared := (load("res://polyweave_launch.gd") as GDScript).get_script_constant_map()
 		launch_budget = int(declared.get("LAUNCH_MS", launch_budget))
@@ -52,7 +55,7 @@ func _big_scene() -> void:
 		child.owner = top
 	var packed := PackedScene.new()
 	packed.pack(top)
-	ResourceSaver.save(packed, BIG)
+	ResourceSaver.save(packed, big)
 	top.free()
 
 
@@ -73,7 +76,7 @@ func _late(seconds: int) -> bool:
 func _end(why := "") -> bool:
 	if why != "":
 		failed.append(why)
-	DirAccess.remove_absolute(ProjectSettings.globalize_path(BIG))
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(big))
 	if failed.is_empty():
 		print("KIT PROVED")
 	else:
@@ -111,7 +114,7 @@ func _process(_delta: float) -> bool:
 				failed.append("the splash did not lead to main.tscn")
 			stage = "big"
 			since = Time.get_ticks_msec()
-			scenes.go(BIG)
+			scenes.go(big)
 		"big":
 			var scenes := _PwScenes.shared() as _PwScenes
 			if scenes.busy():

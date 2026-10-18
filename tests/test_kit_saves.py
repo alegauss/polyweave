@@ -24,6 +24,26 @@ def test_the_saves_kit_lands_alone_and_proves_in_its_fixture(tmp_path):
 
 
 @pytest.mark.skipif(not os.environ.get("GODOT"), reason="no $GODOT on this machine")
+def test_two_proofs_at_once_keep_their_own_slots(tmp_path):
+    """Two fixtures share one user:// by name, and the gate proves this kit beside a
+    pytest run that proves it too: each run now writes a folder of its own (§PW523)."""
+    from concurrent.futures import ThreadPoolExecutor
+
+    games = []
+    for one in ("a", "b"):
+        game = tmp_path / one
+        shutil.copytree(kits.KITS / "saves" / "fixture", game)
+        kits.install("saves", root=str(game))
+        games.append(game)
+    every = kits.every()
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        for _ in range(3):
+            found = list(pool.map(lambda g: kits._scripts(["saves"], every, g), games))
+            for [one] in found:
+                assert one["status"] == "held", one
+
+
+@pytest.mark.skipif(not os.environ.get("GODOT"), reason="no $GODOT on this machine")
 @pytest.mark.parametrize(("where", "before", "after", "said"), [
     ("addons/polyweave/saves/saves.gd", 'FileAccess.open(target + ".tmp"',
      "FileAccess.open(target", "stopped once written did not load the last good one"),

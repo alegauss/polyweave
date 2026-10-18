@@ -7,7 +7,10 @@ extends SceneTree
 ## game's older save is taken into slot 0 once (§PW398). Prints KIT PROVED, or KIT FAILED with why.
 
 const _PwSaves := preload("res://addons/polyweave/saves/saves.gd")
-const DIR := "user://polyweave_saves_proof"
+## A folder of this run's own (§PW523). Godot names user:// after the project, so two
+## proofs at once in fixtures of one name shared one fixed folder and emptied it under
+## each other.
+var dir := ""
 
 var failed := []
 
@@ -22,8 +25,8 @@ func _same(a: Variant, b: Variant) -> bool:
 
 
 func _initialize() -> void:
-	_clear()
-	var saves := _PwSaves.new(DIR)
+	dir = "user://polyweave_proof/saves_%d_%d" % [OS.get_process_id(), Time.get_ticks_usec()]
+	var saves := _PwSaves.new(dir)
 	saves.adopt = Callable()
 	for slot in saves.slots:
 		if not saves.save(slot, _data(slot)):
@@ -70,7 +73,7 @@ func _initialize() -> void:
 		if not saves.migrations.has(from):
 			failed.append("no migration brings a version %d save to %d" % [from, from + 1])
 			continue
-		var old := _PwSaves.new(DIR, "res://none.gd")
+		var old := _PwSaves.new(dir, "res://none.gd")
 		old.version = from
 		old.slots = saves.slots
 		old.save(2, _data(30))
@@ -78,7 +81,7 @@ func _initialize() -> void:
 		if brought.is_empty():
 			failed.append("a version %d save did not come up: %s" % [from, saves.said])
 
-	var newer := _PwSaves.new(DIR, "res://none.gd")
+	var newer := _PwSaves.new(dir, "res://none.gd")
 	newer.version = saves.version + 1
 	newer.slots = saves.slots
 	newer.save(2, _data(40))
@@ -93,7 +96,7 @@ func _initialize() -> void:
 	# into slot 0 once and said; a slot deleted afterwards stays empty. The proof's own
 	# Callable stands in for the game's, so the game's real older file is never read here.
 	_clear()
-	var adopting := _PwSaves.new(DIR)
+	var adopting := _PwSaves.new(dir)
 	adopting.adopt = func() -> Dictionary: return _data(50)
 	if not _same(adopting.load_slot(0), _data(50)):
 		failed.append("an older save was not taken into slot 0: %s" % [adopting.said])
@@ -102,7 +105,7 @@ func _initialize() -> void:
 	adopting.delete(0)
 	if not adopting.load_slot(0).is_empty() or not adopting.listed().is_empty():
 		failed.append("an older save was taken again after its slot was deleted")
-	var played := _PwSaves.new(DIR)
+	var played := _PwSaves.new(dir)
 	_clear()
 	played.save(1, _data(60))
 	played.adopt = func() -> Dictionary: return _data(50)
@@ -111,6 +114,7 @@ func _initialize() -> void:
 		failed.append("an older save was taken over a game already saved in the kit")
 
 	_clear()
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(dir))
 	if failed.is_empty():
 		print("KIT PROVED")
 	else:
@@ -119,7 +123,7 @@ func _initialize() -> void:
 
 
 func _clear() -> void:
-	var at := ProjectSettings.globalize_path(DIR)
+	var at := ProjectSettings.globalize_path(dir)
 	var here := DirAccess.open(at)
 	if here == null:
 		return
