@@ -60,8 +60,6 @@
 
 ## Block W — A core that grows by layers
 
-- 📋 **PW530** (deps: —) **migrate leaves the imports it rewrote out of sorted order, so an adopter's import lint fails until they fix it by hand** — Five of Cottony's ten migrated files failed its ruff I001, and a migration that turns a gate red is one more hand step. → §PW530
-
 ## Done when — PW36
 
 - **Every piece of Cottony's pipeline runs on the plugin, with no fork** The

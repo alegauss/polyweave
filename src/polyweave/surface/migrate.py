@@ -266,9 +266,85 @@ def rewrite(path: Path, root: Path) -> Rewrite | None:
         for old, new in follow.items():
             # `import polyweave.x` is used as `polyweave.x.f()`, so the uses follow.
             now = re.sub(rf"(?<![\w.]){re.escape(old)}(?=\.)", new, now)
-        done.now = now
+        done.now = _sorted_runs(now)
     done.unmapped += _attributes(ast.parse(done.now), shown)
     return done if edits or done.unmapped else None
+
+
+def _ours(node: ast.stmt) -> bool:
+    if isinstance(node, ast.ImportFrom):
+        return not node.level and _old(node.module or "") is not None
+    return isinstance(node, ast.Import) and all(
+        _old(alias.name) is not None for alias in node.names)
+
+
+def _name_key(name: str) -> tuple[int, str]:
+    """isort's order by type, ruff's default: constants, classes, the rest."""
+    kind = 0 if name.isupper() and len(name) > 1 else 1 if name[:1].isupper() else 2
+    return kind, name
+
+
+def _run_lines(run: list[ast.stmt], indent: str) -> list[str]:
+    """One run of polyweave imports as isort's default profile writes it (§PW530):
+    `import` lines first, then `from` lines by module; a module's plain names merged
+    into one line and an aliased name kept on its own."""
+    plain = sorted({alias.name for node in run if isinstance(node, ast.Import)
+                    for alias in node.names if not alias.asname}, key=str.lower)
+    aliased = sorted({(alias.name, alias.asname) for node in run
+                      if isinstance(node, ast.Import) for alias in node.names
+                      if alias.asname}, key=lambda one: one[0].lower())
+    merged: dict[str, set[str]] = {}
+    alone: list[tuple[str, str]] = []
+    for node in run:
+        if isinstance(node, ast.ImportFrom):
+            for alias in node.names:
+                if alias.asname:
+                    alone.append((node.module, f"{alias.name} as {alias.asname}"))
+                else:
+                    merged.setdefault(node.module, set()).add(alias.name)
+    froms = [(module, sorted(names, key=_name_key)) for module, names in merged.items()]
+    froms += [(module, [said]) for module, said in alone]
+    froms.sort(key=lambda one: (one[0].lower(), _name_key(one[1][0])))
+    lines = [f"{indent}import {name}" for name in plain]
+    lines += [f"{indent}import {name} as {asname}" for name, asname in aliased]
+    for module, names in froms:
+        lines += _from_lines({module: names}, indent)
+    return lines
+
+
+def _sorted_runs(text: str) -> str:
+    """Each run of consecutive polyweave import statements put in isort's order, so
+    a file migrate rewrote passes an import-order lint (§PW530). A run carrying a
+    comment is left as it is, since a comment belongs to the line it is on."""
+    try:
+        tree = ast.parse(text)
+    except SyntaxError:
+        return text
+    lines = text.splitlines(keepends=True)
+    ending = "\r\n" if "\r\n" in text else "\n"
+    runs: list[list[ast.stmt]] = []
+    for node in ast.walk(tree):
+        body = getattr(node, "body", None)
+        if not isinstance(body, list):
+            continue
+        run: list[ast.stmt] = []
+        for one in [*body, None]:
+            joins = (one is not None and _ours(one)
+                     and (not run or one.lineno == run[-1].end_lineno + 1))
+            if joins:
+                run.append(one)
+                continue
+            if len(run) > 1:
+                runs.append(run)
+            run = [one] if one is not None and _ours(one) else []
+    for run in sorted(runs, key=lambda r: r[0].lineno, reverse=True):
+        start, end = run[0].lineno - 1, run[-1].end_lineno
+        if any("#" in line for line in lines[start:end]):
+            continue
+        first = lines[start]
+        indent = first[: len(first) - len(first.lstrip())]
+        lines[start:end] = [one + ending for one in _run_lines(run, indent)]
+    return "".join(lines)
 
 
 def _attributes(tree: ast.Module, shown: str) -> list[dict]:

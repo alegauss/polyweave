@@ -476,23 +476,3 @@ is replaced by the kit's acceptance, a save written by the current release loads
 the swap, and its gate passes.
 
 ## Block W — A core that grows by layers
-
-### §PW530 migrate keeps a block of imports sorted
-
-`python -m polyweave migrate --write` on Cottony (PW521) left five of its ten rewritten
-files failing Cottony's own `ruff check` with I001. A rewritten import keeps its old
-place in the block, but its new path sorts somewhere else: `from polyweave.layers.engine
-import engine` above `from polyweave.kernel.errors import PolyweaveError`. And one `from
-polyweave import a, b, c` split into three lines comes out in first-seen order. The fix
-was `ruff check --fix --select I`, by hand.
-
-`migrate` cannot know a project's import style, and it should not run a project's
-linter. What it can do is leave the polyweave imports it touched in the order isort's
-default profile gives within one block: each run of consecutive `polyweave` import
-statements it rewrote is re-sorted by module path, `import x` before `from x import`,
-with the names inside one `from` sorted. That is ruff's and isort's default, and it is
-the order Cottony and Spinhold both use. A block that mixes polyweave and other
-first-party imports keeps its other lines where they are.
-
-Done when the Cottony and Spinhold fixtures under `tests/fixtures/migrate/` pass `ruff
-check --select I` once migrated.

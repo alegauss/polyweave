@@ -616,7 +616,10 @@ that cannot be mapped is named under `unmapped` with its file and line, never gu
 and the command then exits 1. So does a `module.name` the file reaches through a module
 that no longer holds the name, since an import that resolves can still be used for a
 function that left it. `from polyweave import a, b, c` splits into one import per new
-home, and `import polyweave.x` takes its dotted uses along.
+home, and `import polyweave.x` takes its dotted uses along. In a file it rewrote, each run
+of consecutive polyweave imports is then put in isort's default order (§PW530): `import`
+lines first, `from` lines by module, a module's plain names merged and an aliased one
+kept on its own line. A run carrying a comment is left as it is.
 
 `[layers] on` is written only where the file has none: what `project.init` reads in the
 tree, the owner of every table the file holds, and the layer of every module its Python

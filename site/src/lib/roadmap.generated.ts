@@ -47,7 +47,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 2 },
-  { block: "W", title: "A core that grows by layers", open: 1 },
+  { block: "W", title: "A core that grows by layers", open: 0 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -126,13 +126,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "V",
     symptom: "Cottony keeps its own settings and save code where the kits provide them",
     why: "The second game is what shows a kit is not one project's code moved into a folder.",
-    deps: [],
-  },
-  {
-    id: "PW530",
-    block: "W",
-    symptom: "migrate leaves the imports it rewrote out of sorted order, so an adopter's import lint fails until they fix it by hand",
-    why: "Five of Cottony's ten migrated files failed its ruff I001, and a migration that turns a gate red is one more hand step.",
     deps: [],
   },
 ];

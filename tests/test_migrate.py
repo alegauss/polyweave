@@ -53,6 +53,52 @@ def test_each_consumer_migrates_and_every_import_then_resolves(tmp_path, name):
     assert again["diff"] == "" and again["clean"]
 
 
+@pytest.mark.parametrize("name", ["cottony", "spinhold"])
+def test_a_migrated_consumer_passes_an_import_order_lint(tmp_path, name):
+    """Five of Cottony's ten files failed ruff's I001 until sorted by hand (§PW530)."""
+    import subprocess
+    import sys
+
+    root = consumer(tmp_path, name)
+
+    def flagged() -> set[str]:
+        # From the consumer's own root, as its gate runs it: from here, polyweave's
+        # src/ would make polyweave first-party, which it never is in a game.
+        said = subprocess.run(
+            [sys.executable, "-m", "ruff", "check", "--select", "I",
+             "--output-format", "json", "."],
+            cwd=root, capture_output=True, text=True, check=False,
+        )
+        return {Path(one["filename"]).name for one in json.loads(said.stdout)}
+
+    (root / "pyproject.toml").write_text(
+        '[tool.ruff]\ntarget-version = "py311"\nline-length = 110\n', encoding="utf-8")
+    # Spinhold's site_assets.py was never import-sorted, and migrate leaves it alone.
+    before = flagged()
+    migrate(root, write=True)
+    assert flagged() <= before
+
+
+def test_a_run_of_imports_is_sorted_and_a_module_s_names_merged(tmp_path):
+    (tmp_path / "x.py").write_text(
+        "import polyweave\n"
+        "from polyweave import geometry, measure, render\n"
+        "from polyweave.geometry import build\n"
+        "from polyweave.pack import pack as exported\n"
+        "from polyweave.pack import source_of\n",
+        encoding="utf-8",
+    )
+    migrate(tmp_path, write=True)
+    assert (tmp_path / "x.py").read_text(encoding="utf-8") == (
+        "import polyweave\n"
+        "from polyweave.layers import geometry\n"
+        "from polyweave.layers.engine.pack import pack as exported\n"
+        "from polyweave.layers.engine.pack import source_of\n"
+        "from polyweave.layers.geometry import build, render\n"
+        "from polyweave.loop import measure\n"
+    )
+
+
 def test_a_cottony_import_reads_as_its_new_path(tmp_path):
     root = consumer(tmp_path, "cottony")
     migrate(root, write=True)
@@ -130,7 +176,7 @@ def test_an_import_the_table_cannot_map_is_named_and_left(tmp_path):
                                    "import": "from polyweave.nowhere import thing",
                                    "name": "thing"}]
     text = (tmp_path / "x.py").read_text(encoding="utf-8")
-    assert text.startswith("from polyweave.nowhere import thing\n")
+    assert "from polyweave.nowhere import thing\n" in text
     assert "from polyweave.kernel import errors" in text
 
 
