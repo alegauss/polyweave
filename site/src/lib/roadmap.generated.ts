@@ -47,7 +47,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 2 },
-  { block: "W", title: "A core that grows by layers", open: 4 },
+  { block: "W", title: "A core that grows by layers", open: 3 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -140,13 +140,6 @@ export const generatedTasks: GeneratedTask[] = [
     block: "V",
     symptom: "Cottony keeps its own settings and save code where the kits provide them",
     why: "The second game is what shows a kit is not one project's code moved into a folder.",
-    deps: [],
-  },
-  {
-    id: "PW519",
-    block: "W",
-    symptom: "An extension would hide the gap it fills, so a measure two games both wrote never becomes vocabulary",
-    why: "Friction filed as PW lines is how this vocabulary grew, and an extension point that silences the friction stops that growth unless it reports what it holds.",
     deps: [],
   },
   {

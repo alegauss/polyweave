@@ -29,6 +29,7 @@ unit = "Hz"
 range = [0, 20000]
 direction = "higher"
 about = "how high the bell rings, by its rising zero crossings"
+why = "polyweave measures no pitch off a sound file"
 '''
 
 HZ = '''import struct

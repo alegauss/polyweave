@@ -38,8 +38,9 @@ from polyweave.kernel.errors import PolyweaveError
 #: What a project measure's name begins with in a spec.
 PREFIX = "x."
 
-#: What a declaration takes, and which of it may be left out.
-FIELDS = ("fn", "subject", "unit", "range", "direction", "about")
+#: What a declaration takes, and which of it may be left out. `why` says what built-in
+#: it stands in for, which is how a gap it fills stays visible (§PW519).
+FIELDS = ("fn", "subject", "unit", "range", "direction", "about", "why")
 OPTIONAL = ("direction",)
 SUBJECTS = ("picture", "file")
 DIRECTIONS = ("higher", "lower")
@@ -64,11 +65,12 @@ class Declared:
     high: float
     direction: str
     about: str
+    why: str = ""
 
     def described(self) -> dict:
         return {"fn": self.fn, "subject": self.subject, "unit": self.unit,
                 "range": [self.low, self.high], "direction": self.direction,
-                "about": self.about}
+                "about": self.about, "why": self.why}
 
 
 def is_extended(name: str) -> bool:
@@ -116,7 +118,8 @@ def _checked(short: str, entry: Any, project: str) -> Declared:
         raise refused(
             f"has {', '.join(unknown)}, which it does not take" if unknown
             else f"says no {', '.join(missing)}",
-            f"a measure takes {', '.join(FIELDS)}; direction may be left out",
+            f"a measure takes {', '.join(FIELDS)}; direction may be left out, and "
+            "why says what built-in it stands in for",
         )
     fn = str(entry["fn"])
     if ":" not in fn or not fn.split(":", 1)[0].endswith(".py"):
@@ -138,7 +141,7 @@ def _checked(short: str, entry: Any, project: str) -> Declared:
         name=f"{PREFIX}{project}.{short}", short=short, fn=fn,
         subject=str(entry["subject"]), unit=str(entry["unit"]),
         low=float(bounds[0]), high=float(bounds[1]), direction=str(direction),
-        about=str(entry["about"]),
+        about=str(entry["about"]), why=str(entry["why"]),
     )
 
 
@@ -262,7 +265,7 @@ def stale(root: str | Path = ".") -> list[dict]:
 # -- a project's own operations (§PW518) ---------------------------------------------
 
 #: What an operation's declaration takes, and each of its parameters.
-OPERATION_FIELDS = ("fn", "about", "produces", "kind", "params", "producer")
+OPERATION_FIELDS = ("fn", "about", "why", "produces", "kind", "params", "producer")
 PARAM_FIELDS = ("type", "about", "lo", "hi", "unit", "choices", "default")
 PARAM_TYPES = ("str", "int", "float", "bool", "list", "dict")
 
@@ -281,6 +284,8 @@ class Operation:
     parameters: tuple[dict, ...]
     #: Whether `search.sweep` may turn it, a sample at a time into its `out`.
     producer: bool
+    #: What built-in it stands in for (§PW519).
+    why: str = ""
 
     def described(self) -> dict:
         """What `describe` answers for it, in the shape a built-in's answer has."""
@@ -292,7 +297,7 @@ class Operation:
             "asynchronous": self.kind is not None,
             "parameters": [dict(one) for one in self.parameters],
             "layer": None,
-            "project": {"fn": self.fn, "producer": self.producer},
+            "project": {"fn": self.fn, "producer": self.producer, "why": self.why},
         }
 
 
@@ -334,12 +339,12 @@ def _operation(short: str, entry: Any, project: str) -> Operation:
     if not isinstance(entry, dict):
         raise refused("is not a table", f"write it as [{at}] with fn and about")
     unknown = sorted(set(entry) - set(OPERATION_FIELDS))
-    if unknown or not entry.get("fn") or not entry.get("about"):
+    if unknown or not all(entry.get(one) for one in ("fn", "about", "why")):
         raise refused(
             f"has {', '.join(unknown)}, which it does not take" if unknown
-            else "says no fn or no about",
-            f"an operation takes {', '.join(OPERATION_FIELDS)}; fn and about are "
-            "needed",
+            else "says no fn, about or why",
+            f"an operation takes {', '.join(OPERATION_FIELDS)}; fn, about and why, "
+            "what built-in it stands in for, are needed",
         )
     fn = str(entry["fn"])
     if ":" not in fn or not fn.split(":", 1)[0].endswith(".py"):
@@ -361,7 +366,7 @@ def _operation(short: str, entry: Any, project: str) -> Operation:
         name=f"{PREFIX}{project}.{short}", short=short, fn=fn,
         about=str(entry["about"]),
         produces=str(entry["produces"]) if entry.get("produces") else None,
-        kind=kind, parameters=parameters, producer=producer,
+        kind=kind, parameters=parameters, producer=producer, why=str(entry["why"]),
     )
 
 
@@ -477,6 +482,83 @@ def drawer(name: str, root: str | Path = "."):
         return {"artefact": said.get("artefact") or str(out)}
 
     return draw
+
+
+# -- what polyweave does not yet do (§PW519) ------------------------------------------
+
+
+def accounted(root: str | Path = ".") -> list[dict]:
+    """Every extension the project declares, as what polyweave does not do yet.
+
+    Each with the built-in it stands in for (`why`), how often the project's own
+    records show it used, and the date polyweave.toml first declared it where git can
+    say. A measure is used once per value kept; an operation once per file recorded as
+    its make. A declaration that cannot be read is left to `project.check`.
+    """
+    here = load(root).root
+    used: dict[str, int] = {}
+    kept = _kept_at(here)
+    if kept.is_file():
+        for measures in json.loads(kept.read_text(encoding="utf-8")).values():
+            for name in measures:
+                used[name] = used.get(name, 0) + 1
+    from polyweave.kernel import provenance
+
+    for record in provenance._records(here):
+        if record.get("kind") == "extend":
+            name = (record.get("engine") or {}).get("operation")
+            used[name] = used.get(name, 0) + 1
+    out = []
+    for kind, read in (("measure", declared), ("operation", operations)):
+        try:
+            found = read(here)
+        except PolyweaveError:
+            continue
+        for name, one in sorted(found.items()):
+            table = f"[extend.{kind}s.{one.short}]"
+            out.append({"name": name, "kind": kind, "fn": one.fn, "why": one.why,
+                        "used": used.get(name, 0),
+                        "first_declared": _first_declared(here, table)})
+    return out
+
+
+def _first_declared(here: Path, table: str) -> str | None:
+    """The day a commit first wrote `table` into polyweave.toml, or None."""
+    try:
+        done = subprocess.run(
+            ["git", "log", "--reverse", "--format=%ad", "--date=short", "-S", table,
+             "--", "polyweave.toml"],
+            cwd=here, capture_output=True, text=True, encoding="utf-8", timeout=30,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    days = done.stdout.split() if done.returncode == 0 else []
+    return days[0] if days else None
+
+
+def depended(measures: list[str], artefact: str | None,
+             root: str | Path = ".") -> list[dict]:
+    """The extensions an asset's bar or its artefact depends on, for its brief."""
+    from polyweave.kernel import provenance
+
+    here = load(root).root
+    out = []
+    for name in sorted({one for one in measures if is_extended(one)}):
+        one = declared(here).get(name)
+        out.append({"name": name, "kind": "measure", "why": one.why if one else None,
+                    "in": "its bar"})
+    if artefact:
+        try:
+            record = provenance.read(artefact, here)
+        except PolyweaveError:
+            record = {}
+        if record.get("kind") == "extend":
+            name = (record.get("engine") or {}).get("operation")
+            one = operations(here).get(name)
+            out.append({"name": name, "kind": "operation",
+                        "why": one.why if one else None, "in": "its build"})
+    return out
 
 
 def _run_apart(argv: list[str], here: Path) -> subprocess.CompletedProcess:

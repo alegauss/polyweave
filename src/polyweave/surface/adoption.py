@@ -129,6 +129,11 @@ def adoption(
     the reasons say why. `clean` is false while any file is in `own`, and the command
     exits non-zero then, so a project can gate on this alone; `project.check` fails on
     the same files and never on `kept`.
+
+    `not_yet_polyweave` is each measure and operation the project declares under
+    `[extend]` (§PW519): its `why`, how often the records show it used, and when it was
+    first declared. Two projects carrying the same one is the signal it should have
+    been polyweave's own.
     """
     from polyweave.kernel.config import load
 
@@ -142,17 +147,25 @@ def adoption(
     owning = sum(len(one["own"]) for one in surfaces.values())
     keeping = sum(len(one["kept"]) for one in surfaces.values())
     stale = sorted(k for k in kept if not (here / k).is_file())
+    from polyweave.loop import extend
+
+    # What the project added to polyweave, said as what polyweave does not do yet: a
+    # gap an extension fills is still a gap, and here it stays visible (§PW519).
+    extended = extend.accounted(here)
     return {
         # What a gate stands on: false while any file does a surface unkept.
         "clean": owning == 0,
         "surfaces": surfaces,
         "adopted": {"surfaces": len(clear), "of": len(surfaces), "clear": clear},
         "unread": UNREAD,
+        "not_yet_polyweave": extended,
         **({"stale": stale} if stale else {}),
         "says": (
             f"{len(clear)} of {len(surfaces)} surfaces are polyweave's alone; "
             f"{owning} file(s) do one of them here and {keeping} are kept on purpose"
             + (f"; [adoption] own names {len(stale)} file(s) that are gone" if stale
                else "")
+            + (f"; {len(extended)} extension(s) stand in for what polyweave does not "
+               "do yet" if extended else "")
         ),
     }

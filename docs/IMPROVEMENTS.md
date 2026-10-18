@@ -520,30 +520,6 @@ the swap, and its gate passes.
 
 ## Block W — A core that grows by layers
 
-### §PW519 Extensions are reported as what polyweave does not yet do
-
-The vocabulary grew because every gap a consumer hit became a line here, through the
-polyweave-friction skill and `project.adoption`'s `[adoption.own]`, which names each
-project file doing polyweave's work and why it is kept. Extensions (the two lines before
-this) make a gap cheap to work around, and a cheap workaround is a gap nobody files.
-`geometry/custom.py` already states the rule: "where the same custom node appears in
-three projects, that is the signal it should have been vocabulary". Nothing yet sees
-that signal.
-
-So an extension is accounted for in three places:
-
-- `project.adoption` lists every `[extend.*]` entry beside `[adoption.own]`, with how often the provenance records show it used and when it was first declared, under a `not_yet_polyweave` heading;
-- each entry must carry `why`, one sentence on what built-in it stands in for, and `project.check` fails on an entry without one, as it does for `[adoption.own]`;
-- `asset.brief` mentions when an asset's bar or build depends on an extension, so the agent working on it sees the dependency.
-
-The polyweave-friction skill is updated to read `not_yet_polyweave` and file an
-extension used across many assets, or one whose `why` names a built-in that exists by
-then, as a line here. Promotion is still a person's decision. The signal is no longer
-hidden.
-
-Done when a fixture project's extensions appear in adoption, brief and check, and the
-skill's text names the field.
-
 ### §PW520 polyweave migrate: one command across the break
 
 The block breaks code and config on purpose, and it does not break data. Spinhold's 443

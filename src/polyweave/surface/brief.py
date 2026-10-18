@@ -291,6 +291,13 @@ def brief(
     for key, target in sections("brief").items():
         answer[key] = call(target, path, here)
     answer["loop"] = _loop(path, here)
+    from polyweave.loop import extend
+
+    # A bar or a build that rests on the project's own extension says so (§PW519).
+    leaning = extend.depended(
+        [p.measure for p in spec.predicates] if spec else [], path, here)
+    if leaning:
+        answer["extensions"] = leaning
     if not any(answer[k] for k in ("item", "declaration", "spec", "last_verdict")):
         raise PolyweaveError(
             "op.unknown-argument",

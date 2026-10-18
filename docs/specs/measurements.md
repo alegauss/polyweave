@@ -495,6 +495,7 @@ unit      = "ratio"
 range     = [0, 1]
 direction = "higher"                  # which way is better; "higher" if left out
 about     = "light at the silhouette over light in the body"
+why       = "no built-in measures light at a rim"   # what it stands in for
 ```
 
 - `measure.available` lists it under `extended` from the file alone; describing it
@@ -504,6 +505,9 @@ about     = "light at the silhouette over light in the body"
   nothing of the render ladder: the spec's own `rung` is the only floor.
 - A value outside `range`, or no number, is `spec.measure-out-of-range`, never clamped;
   a function that raises or is not there is `spec.measure-failed`.
+- `why` is required: the built-in it stands in for. `project.adoption` lists it
+  under `not_yet_polyweave` with how often it was used (PW519), and an asset's brief
+  says when its bar rests on it.
 - Each value is kept in `[paths] work/extended.json` with the digest of the function's
   source file. `measure.available` lists under `stale` each value whose function
   changed since.

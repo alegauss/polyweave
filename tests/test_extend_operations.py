@@ -22,10 +22,12 @@ subject = "file"
 unit = "Hz"
 range = [0, 20000]
 about = "how high the bell rings"
+why = "polyweave measures no pitch"
 
 [extend.operations.ring]
 fn = "tools/ring.py:ring"
 about = "ring a bell at a pitch, into a wav"
+why = "polyweave synthesises no bell"
 produces = "sound"
 producer = true
 [extend.operations.ring.params]
@@ -36,6 +38,7 @@ default = 440.0 }
 [extend.operations.peal]
 fn = "tools/ring.py:ring"
 about = "ring a bell as a job"
+why = "polyweave synthesises no bell"
 produces = "sound"
 kind = "fetch"
 [extend.operations.peal.params]
@@ -174,3 +177,55 @@ def test_a_declaration_it_cannot_serve_is_a_project_check_finding(bells):
         PROJECT.replace('kind = "fetch"', 'kind = "build"'), encoding="utf-8")
     found = project.check(str(bells))["findings"]
     assert "config.bad-operation" in {one["code"] for one in found}
+
+
+# -- what polyweave does not yet do (§PW519) ------------------------------------------
+
+
+def test_adoption_lists_each_extension_as_not_yet_polyweave(bells):
+    from polyweave.surface.adoption import adoption
+
+    _said(server.call("x_bells_ring", {"out": "a.wav"}))
+    _said(server.call("x_bells_ring", {"out": "b.wav"}))
+    listed = {one["name"]: one for one in adoption(str(bells))["not_yet_polyweave"]}
+    assert set(listed) == {"x.bells.pitch", "x.bells.ring", "x.bells.peal"}
+    assert listed["x.bells.ring"]["used"] == 2
+    assert listed["x.bells.ring"]["why"] == "polyweave synthesises no bell"
+    assert listed["x.bells.pitch"]["kind"] == "measure"
+    assert listed["x.bells.pitch"]["first_declared"] is None  # no git here
+
+
+def test_the_day_an_extension_was_first_declared_is_read_off_git(bells):
+    import subprocess
+
+    from polyweave.loop import extend
+
+    def git(*args):
+        subprocess.run(["git", *args], cwd=bells, check=True, capture_output=True)
+
+    git("init", "-q")
+    git("add", "polyweave.toml")
+    git("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "-m", "bells",
+        "--date", "2026-01-02T10:00:00")
+    days = {one["name"]: one["first_declared"] for one in extend.accounted(bells)}
+    assert days["x.bells.ring"] is not None and days["x.bells.ring"].startswith("20")
+
+
+def test_a_brief_says_when_its_bar_rests_on_an_extension(bells):
+    from polyweave.surface.brief import brief
+
+    said = brief("bell", root=str(bells))
+    assert said["extensions"] == [{"name": "x.bells.pitch", "kind": "measure",
+                                   "why": "polyweave measures no pitch",
+                                   "in": "its bar"}]
+
+
+@pytest.mark.parametrize("table", ["measures.pitch", "operations.ring"])
+def test_an_extension_without_its_why_fails_project_check(bells, table):
+    lines = PROJECT.split("\n")
+    at = lines.index(f"[extend.{table}]")
+    cut = next(i for i in range(at, len(lines)) if lines[i].startswith("why = "))
+    (bells / C.FILENAME).write_text("\n".join(lines[:cut] + lines[cut + 1:]),
+                                    encoding="utf-8")
+    codes = {one["code"] for one in project.check(str(bells))["findings"]}
+    assert codes & {"config.bad-measure", "config.bad-operation"}

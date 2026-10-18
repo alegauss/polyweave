@@ -593,6 +593,7 @@ polyweave's own operations. Its measures are declared the same way, under
 [extend.operations.tile_sheet]
 fn       = "tools/art/tiles.py:sheet"   # called with the parameters by name
 about    = "cut a sprite sheet into tiles"
+why      = "polyweave cuts no sheet"      # the built-in it stands in for
 produces = "picture"                    # what it answers as `artefact` is recorded
 kind     = "fetch"                      # a job kind: it runs as a job; none waits
 producer = true                         # search.sweep may turn it; it takes `out`
@@ -608,6 +609,10 @@ size   = { type = "int", about = "tile edge", lo = 8, hi = 256, unit = "px" }
 - Where the function answers an `artefact` and the operation `produces` something, the
   file is recorded (`kind = "extend"`) with the function's source as its `fn` input, so
   a changed function makes it outdated.
+- `why` is required: the built-in it stands in for. `project.adoption` lists every
+  `[extend.*]` entry under `not_yet_polyweave`, with how often the records show it used
+  and the day polyweave.toml first declared it (PW519), and an asset's brief says when
+  its build rests on one.
 - Its tools count in the session's tools/list under `project`, so a project's surface
   cannot grow without the number showing it.
 - A declaration that cannot be served is `config.bad-operation`, a `project.check`
