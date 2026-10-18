@@ -17,6 +17,7 @@ from polyweave.kernel import provenance
 from polyweave.kernel.errors import PolyweaveError
 from polyweave.layers.picture import picture, scenario, style
 from polyweave.services import purchase
+from polyweave.services import scenario as scenario_adapter
 from polyweave.services import service as S
 
 PROJECT = """[style.heroes]
@@ -74,8 +75,8 @@ def project(tmp_path, monkeypatch):
     (tmp_path / "polyweave.toml").write_text(PROJECT, encoding="utf-8")
     monkeypatch.setenv("SCENARIO_TEST_KEY", "k:s")
     fake = Fake()
-    monkeypatch.setattr(scenario, "_call", fake)
-    monkeypatch.setattr(scenario, "POLL_EVERY", 0.0)
+    monkeypatch.setattr(scenario_adapter, "call", fake)
+    monkeypatch.setattr(scenario_adapter, "POLL_EVERY", 0.0)
     monkeypatch.setattr(S, "download", lambda link: png((200, 40, 40, 255)))
     (tmp_path / "studies").mkdir()
     for index in range(5):

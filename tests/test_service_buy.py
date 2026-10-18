@@ -10,7 +10,7 @@ import pytest
 from polyweave.kernel import config as C
 from polyweave.kernel.errors import PolyweaveError
 from polyweave.layers.geometry import mesh_buy
-from polyweave.layers.picture import picture, variation
+from polyweave.layers.picture import picture, scenario, variation
 from polyweave.services import purchase
 from polyweave.services import service as S
 
@@ -147,7 +147,7 @@ def test_each_mesh_provider_is_an_adapter_found_by_its_host():
     assert S.provider("https://api.meshy.ai", "mesh", "meshy").name == "meshy"
 
 
-@pytest.mark.parametrize("module", [mesh_buy, picture, variation],
+@pytest.mark.parametrize("module", [mesh_buy, picture, variation, scenario],
                          ids=lambda module: module.__name__.rsplit(".", 1)[-1])
 def test_a_domain_neither_allows_nor_captures_nor_speaks_http_itself(module):
     source = Path(module.__file__).read_text(encoding="utf-8")
