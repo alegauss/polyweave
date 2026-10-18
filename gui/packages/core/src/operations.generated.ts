@@ -866,6 +866,8 @@ export interface LoopStartArgs {
 
 /** What can be measured now, and what is declared and still ahead of its code. */
 export interface MeasureAvailableArgs {
+  /** the project whose own measures are listed too; default "." */
+  root?: string
 }
 
 /** How well each target stands out from the ring around it, the worst named. */

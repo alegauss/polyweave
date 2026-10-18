@@ -27,6 +27,7 @@ from polyweave.kernel.errors import PolyweaveError
 from polyweave.kernel.layer import call, subjects
 from polyweave.loop.ladder import RUNGS, check_rung, lowest_rung
 
+from . import extend
 from . import measure as M
 
 SUFFIX = ".accept.toml"
@@ -124,7 +125,12 @@ def read(path: str | Path, root: str | Path = ".") -> Spec:
             "fix the syntax the detail below points at",
             detail=str(exc),
         ) from exc
-    return parse(declared, where)
+    spec = parse(declared, where)
+    # A project's own measure is the project's, so it is known only against the root.
+    for p in spec.predicates:
+        if extend.is_extended(p.measure):
+            extend.of(p.measure, root)
+    return spec
 
 
 def parse(declared: dict, path: Path | None = None) -> Spec:
@@ -455,6 +461,9 @@ def check(
     seen: dict = {}
     owners = subjects()
     for p in spec.predicates:
+        if extend.is_extended(p.measure):
+            results.append(_extended(p, subject, root))
+            continue
         if p.measure in owners:
             # A measure read off a file, by the layer whose subject it is (§PW503).
             results.append(_subjected(p, owners[p.measure][1], subject, root, seen))
@@ -536,7 +545,44 @@ def checked(
 def _off_picture(name: str) -> bool:
     """A measure read off a file rather than one picture, by a layer's subject: a
     cost, a sound, an effect, the flashes of a captured run, a video or a concept."""
-    return name in subjects()
+    return name in subjects() or extend.is_extended(name)
+
+
+def _extended(p: Predicate, subject: Any, root: str | Path) -> dict:
+    """A predicate on the project's own measure (§PW517): run apart, on the picture
+    checked or on the file the predicate names, and bounded like any other."""
+    one = extend.of(p.measure, root)
+    if one.subject == "file" and p.of:
+        on = p.of
+    elif isinstance(subject, str | Path):
+        on = subject
+    else:
+        raise PolyweaveError(
+            "spec.measure-failed",
+            f"{p.measure} is run on a file, and this check was handed a picture in "
+            "memory",
+            "check the picture by its path",
+            given=p.measure,
+        )
+    said = extend.measured(one, on, root)
+    value = said["value"]
+    return {
+        "id": p.id,
+        "measure": p.measure,
+        "of": said["of"],
+        "region": None,
+        "rung": None,
+        "value": value,
+        "unit": said["unit"],
+        "source": said["source"],
+        "min": p.minimum,
+        "max": p.maximum,
+        "weight": p.weight,
+        "passed": _passes(value, p),
+        "margin": margin(value, p.minimum, p.maximum),
+        "headroom": headroom(value, p.minimum, p.maximum),
+        **_bound(p, value),
+    }
 
 
 def _subjects_once() -> list:

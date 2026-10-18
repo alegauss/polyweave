@@ -83,6 +83,9 @@ handmade = ["docs/design/art/brand/*"]
 [layers]
 on = []                        # the layers this project uses; empty is every one
 
+[extend]
+measures = {}                  # the project's own, as [extend.measures.<name>] (PW517)
+
 [review]
 language = "en"                # the review page and its sittings: en or pt-BR, one
                                # catalog each in review_page/locales/
@@ -554,7 +557,9 @@ plugin's real interface, discovered rather than designed.
 ## Which layer owns each table
 
 The kernel declares the tables every project has: `[project]`, `[paths]`, `[tolerance]`,
-`[cache]`, `[provenance]`, `[adoption]`, `[review]`, `[service]` and `[budget]`. Every
+`[cache]`, `[provenance]`, `[adoption]`, `[review]`, `[service]`, `[budget]` and
+`[extend]`, whose `[extend.measures.<name>]` are the project's own measures (PW517, see
+[measurements.md](measurements.md#a-projects-own-measure)). Every
 other table is declared by the layer that reads it, in that layer's `settings.py`, and
 the kernel's schema is the union (PW508). A key for a layer's table is added there.
 

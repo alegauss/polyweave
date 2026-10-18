@@ -47,7 +47,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 2 },
-  { block: "W", title: "A core that grows by layers", open: 6 },
+  { block: "W", title: "A core that grows by layers", open: 5 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -143,18 +143,11 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
-    id: "PW517",
-    block: "W",
-    symptom: "A project cannot add a measure of its own, so a look only its game needs is a fork, a side script or a PW line",
-    why: "A project measure keeps the first-call guarantee only when it is described, bounded and recorded exactly as a built-in one is.",
-    deps: [],
-  },
-  {
     id: "PW518",
     block: "W",
     symptom: "A project's own generator can run as a job but is no operation, so no agent finds it, describes it or searches over it",
     why: "A target named as a file path has only the worker's signature check, so the project's most-used script is the one call the surface cannot describe.",
-    deps: ["PW517"],
+    deps: [],
   },
   {
     id: "PW519",

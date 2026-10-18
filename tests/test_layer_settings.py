@@ -96,6 +96,6 @@ def test_a_table_two_layers_declare_is_refused(tmp_path, monkeypatch):
 def test_the_kernel_keeps_only_the_tables_every_project_has():
     assert set(C.KERNEL_DEFAULTS) == {
         "project", "paths", "tolerance", "cache", "provenance", "adoption", "review",
-        "service", "budget", "layers",
+        "service", "budget", "layers", "extend",
     }
     assert C._schema().owner["voxels"] == "geometry"

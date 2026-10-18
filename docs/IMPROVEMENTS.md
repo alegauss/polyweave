@@ -520,40 +520,6 @@ the swap, and its gate passes.
 
 ## Block W — A core that grows by layers
 
-### §PW517 [extend.measures]: a project's measure, declared, run apart and recorded
-
-`measurements.md` keeps a closed list, and `spec.unknown-measure` refuses everything
-else. That rule is right for the vocabulary polyweave ships. It leaves a project with a
-look only it needs, such as Cottony's glow at a rim or Spinhold's hull readability,
-three options: a script beside polyweave, which `project.adoption` then reports as work
-done outside it; a fork; or a line here that waits its turn.
-
-`polyweave.toml` gains:
-
-```toml
-[extend.measures.rim_glow]
-fn        = "tools/art/rim.py:glow"
-subject   = "picture"
-unit      = "ratio"
-range     = [0, 1]
-direction = "higher"   # which way a search moves it
-about     = "light at the silhouette over light in the body"
-```
-
-The name in a spec is `x.<project>.rim_glow`. The prefix keeps it from colliding with a
-built-in and makes it plain that it is not polyweave's. `describe` and
-`measure.available` list it from the TOML alone, so the kernel never imports project
-code to describe it. It runs through the job worker in the project's environment, the
-way a job's target runs today. Its source file is hashed into the provenance record as
-`geometry/custom.py` does for a node, so a changed function makes the measures it
-produced stale.
-
-A measure whose function returns a value outside its declared range or unit is refused,
-never clamped.
-
-Done when a fixture project's measure is bounded in a spec, aimed at by `search.sweep`,
-recorded, and found stale after its source changes.
-
 ### §PW518 [extend.operations]: a project's generator on the surface and in the search
 
 A job's target may already be `path/to/file.py:name`, and `describe.for_target` returns

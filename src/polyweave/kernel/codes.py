@@ -449,6 +449,12 @@ KERNEL_CODES: dict[str, Code] = {
         doors=("set [review] language to en or pt-BR",
                "add review_page/locales/<language>.json"),
     ),
+    "config.bad-measure": Code(
+        means="a measure the project declares under [extend.measures] cannot be used",
+        when="a declaration misses fn, subject, unit, range or about, names a function "
+        "not as file.py:function, or gives a range that is not two numbers, low first",
+        doors=("write the declaration with every field it takes",),
+    ),
     "config.bad-type": Code(
         means="a setting was given a value of the wrong type",
         when="a number written as a string, a table given a value, or a date that is "
@@ -971,6 +977,18 @@ KERNEL_CODES: dict[str, Code] = {
         means="the code asked about is not one this plugin publishes",
         when="an explain names a code that does not exist, usually a misspelling",
         doors=("list the codes", "name one of the near matches"),
+    ),
+    "spec.measure-failed": Code(
+        means="a measure the project declares failed on its subject",
+        when="the project's function raised, took too long, answered nothing, or names "
+        "a file that is not there",
+        doors=("run the function on that file yourself", "fix the declaration's fn"),
+    ),
+    "spec.measure-out-of-range": Code(
+        means="a measure the project declares answered outside its declared range",
+        when="the project's function returned a value below or above the range its "
+        "declaration states, or no number at all; it is never clamped",
+        doors=("fix the function", "widen the range it declares"),
     ),
     "spec.unknown-measure": Code(
         means="the name is not a measure the vocabulary carries",

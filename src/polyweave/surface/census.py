@@ -152,6 +152,9 @@ CORE: dict[str, tuple[str, str]] = {
     "polyweave.kernel.post.mesh": ("internal", "an assertion"),
     "polyweave.kernel.post.pixels": ("internal", "an assertion"),
     "polyweave.kernel.post.voxels": ("internal", "an assertion"),
+    "polyweave.loop.extend": (
+        "internal", "a project's own measures, which accept.check and "
+        "measure.available read"),
     "polyweave.loop.ladder": (
         "internal", "the rung map, answered by render.plan"),
 }

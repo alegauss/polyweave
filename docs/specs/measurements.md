@@ -2,7 +2,9 @@
 
 Binds **PW8–PW11**, and is the vocabulary [acceptance-spec.md](acceptance-spec.md) draws on.
 This list is **closed**: a name not on it is a refusal (`spec.unknown-measure`), never a
-warning. That is what makes an acceptance spec checkable rather than aspirational.
+warning. That is what makes an acceptance spec checkable rather than aspirational. A
+measure only one game needs is the project's own, named `x.<project>.<name>` and
+declared in its `polyweave.toml` ([A project's own measure](#a-projects-own-measure)).
 
 ## Every measurement names its region and its rung
 
@@ -477,3 +479,31 @@ rig, and gives each subject pixel to the nearest of those colours. The masks are
 kept. The palette is recorded beside the two hashes, so a moved `look_digest` says which
 slot moved. A subject wearing one slot, and a picture read by path with
 `measure.digest`, have no masks and keep the subject's mean.
+
+## A project's own measure
+
+A look only one game needs, such as a glow at a rim, is declared by the project under
+`[extend.measures.<name>]` (PW517) and named `x.<project>.<name>` in a spec, where
+`<project>` is `[project] name`. The prefix keeps it from colliding with a measure here
+and says plainly that it is not polyweave's.
+
+```toml
+[extend.measures.rim_glow]
+fn        = "tools/art/rim.py:glow"   # called with the subject's path, answers a number
+subject   = "picture"                 # the picture checked, or "file": a predicate's `of`
+unit      = "ratio"
+range     = [0, 1]
+direction = "higher"                  # which way is better; "higher" if left out
+about     = "light at the silhouette over light in the body"
+```
+
+- `measure.available` lists it under `extended` from the file alone; describing it
+  never imports the project's code.
+- `accept.check` runs it in a separate interpreter with a job's environment, through the
+  job worker's own way of finding a target, and bounds it like any measure here. It asks
+  nothing of the render ladder: the spec's own `rung` is the only floor.
+- A value outside `range`, or no number, is `spec.measure-out-of-range`, never clamped;
+  a function that raises or is not there is `spec.measure-failed`.
+- Each value is kept in `[paths] work/extended.json` with the digest of the function's
+  source file. `measure.available` lists under `stale` each value whose function
+  changed since.

@@ -902,9 +902,24 @@ def resolve(name: str) -> str:
 
 
 @operation("measure.available")
-def available() -> dict:
-    """What can be measured now, and what is declared and still ahead of its code."""
-    return {"computed": sorted(COMPUTES), "pending": dict(sorted(PENDING.items()))}
+def available(
+    root: Annotated[str, Param("the project whose own measures are listed too")] = ".",
+) -> dict:
+    """What can be measured now, and what is declared and still ahead of its code.
+
+    `extended` is each measure the project declares under `[extend.measures]`, read off
+    polyweave.toml alone, by the `x.<project>.<name>` a spec calls it; `stale` is each
+    value one of them kept whose function has changed since (§PW517).
+    """
+    from . import extend
+
+    return {
+        "computed": sorted(COMPUTES),
+        "pending": dict(sorted(PENDING.items())),
+        "extended": {name: one.described()
+                     for name, one in sorted(extend.declared(root).items())},
+        "stale": extend.stale(root),
+    }
 
 
 # -- the picture itself -------------------------------------------------------------
