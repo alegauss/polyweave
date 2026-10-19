@@ -197,6 +197,107 @@ void fragment() {
 """
 
 
+#: The same finish opened to the project (§PW569): `%(head)s` holds its include and its
+#: instance uniform, and the colour passes through `%(colour)s` before it is lit.
+_OPEN = """shader_type spatial;
+%(head)s
+uniform vec4 albedo : source_color = vec4(0.906, 0.906, 0.906, 1.0);
+uniform float roughness : hint_range(0.0, 1.0) = 0.5;
+uniform float metallic : hint_range(0.0, 1.0) = 0.0;
+uniform float clearcoat : hint_range(0.0, 1.0) = 0.0;
+uniform float clearcoat_roughness : hint_range(0.0, 1.0) = 0.03;
+uniform float rim : hint_range(0.0, 1.0) = 0.0;
+uniform float subsurface : hint_range(0.0, 1.0) = 0.0;
+uniform float sheen : hint_range(0.0, 1.0) = 0.0;
+
+varying float hue;
+
+// `c` turned `turns` of the way round the colour wheel, keeping its lightness
+vec3 turned(vec3 c, float turns) {
+\tfloat a = turns * 6.2831853;
+\tvec3 k = vec3(0.57735);
+\treturn c * cos(a) + cross(k, c) * sin(a) + k * dot(k, c) * (1.0 - cos(a));
+}
+
+void vertex() {
+\thue = %(hue)s;
+}
+
+void fragment() {
+\tvec3 colour = max(turned(albedo.rgb, hue), vec3(0.0));
+\tALBEDO = %(colour)s;
+\tROUGHNESS = roughness;
+\tMETALLIC = metallic;
+\tCLEARCOAT = clearcoat;
+\tCLEARCOAT_ROUGHNESS = clearcoat_roughness;
+\tRIM = rim;
+\tRIM_TINT = 0.0;
+\tSSS_STRENGTH = subsurface;
+\tfloat grazing = 1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0);
+\tEMISSION = ALBEDO * sheen * pow(grazing, 4.0);
+}
+"""
+
+#: What `hue` may be: none, or each instance's own INSTANCE_CUSTOM.x.
+HUES = ("", "instance")
+
+
+def opened(table: dict) -> dict | None:
+    """The project's `[finish]` checked, or None where it leaves the finish closed."""
+    hue = str(table.get("hue") or "")
+    include = str(table.get("include") or "")
+    hold = str(table.get("hold") or "")
+    amount = str(table.get("amount") or "backdrop")
+    if hue not in HUES:
+        raise PolyweaveError(
+            "geom.bad-surface",
+            f"[finish] hue is {hue!r}, and a finish turns its hue by nothing or by "
+            f"each instance's own",
+            'write hue = "instance", or leave it out',
+            given=hue, allowed=HUES,
+        )
+    if bool(include) != bool(hold):
+        raise PolyweaveError(
+            "geom.bad-surface",
+            "[finish] names " + ("an include and no hold" if include else
+                                  "a hold and no include") +
+            ", and a hold is a function the include declares",
+            "name both: include, the res:// shader include, and hold, its function "
+            "taking (vec3 colour, float amount)",
+        )
+    for name, value in (("hold", hold), ("amount", amount)):
+        if value and not value.replace("_", "a").isalnum():
+            raise PolyweaveError(
+                "geom.bad-surface",
+                f"[finish] {name} is {value!r}, which is not a shader name",
+                f"write {name} as the name alone, such as dimmed_day",
+                given=value,
+            )
+    if include and not include.startswith("res://"):
+        raise PolyweaveError(
+            "geom.bad-surface",
+            f"[finish] include is {include!r}, and Godot includes a shader by its "
+            f"res:// path",
+            "write include as res://path/to/file.gdshaderinc",
+            given=include,
+        )
+    if not (hue or include):
+        return None
+    return {"hue": hue, "include": include, "hold": hold, "amount": amount}
+
+
+def _opened_shader(hooks: dict) -> str:
+    head = ""
+    colour = "colour"
+    if hooks["include"]:
+        head = (f"// 1 unless the instance says (§PW569)\n"
+                f"instance uniform float {hooks['amount']} = 1.0;\n\n"
+                f'#include "{hooks["include"]}"\n')
+        colour = f"{hooks['hold']}(colour, {hooks['amount']})"
+    hue = "INSTANCE_CUSTOM.x" if hooks["hue"] == "instance" else "0.0"
+    return _OPEN % {"head": head, "colour": colour, "hue": hue}
+
+
 def _rgba(value: Any) -> tuple:
     """A declared colour as the sRGB parts Godot's Color holds, as a hex already is."""
     if isinstance(value, str) and value.startswith("#") and len(value) in (7, 9):
@@ -218,13 +319,15 @@ def _color(parts: tuple) -> str:
     return "Color(" + ", ".join(f"{float(one):.6g}" for one in parts) + ")"
 
 
-def godot(material: dict) -> dict:
+def godot(material: dict, hooks: dict | None = None) -> dict:
     """The material as Godot loads it, with the numbers the bake used (§PW495).
 
     A `.tres` StandardMaterial3D for a coat, a rim and a subsurface, which it has fields
     for; with a sheen, which it has not, a ShaderMaterial over the spatial shader this
-    writes beside it. Answers `material` (the .tres text), `shader` (the .gdshader text
-    or None) and `fields`, what was set, by Godot's names.
+    writes beside it. Where the project opens the finish (`hooks`, §PW569) it is always
+    that shader, with the project's hue and hold in it. Answers `material` (the .tres
+    text), `shader` (the .gdshader text or None) and `fields`, what was set, by Godot's
+    names.
     """
     finish = asked(material)
     colour = _rgba(material.get("colour", material.get("color", BAKED["colour"])))
@@ -232,16 +335,17 @@ def godot(material: dict) -> dict:
     metal = float(material.get("metallic", BAKED["metallic"]))
     coat = finish.get("coat", {})
     inside = finish.get("subsurface", {})
-    if "sheen" in finish:
+    if "sheen" in finish or hooks:
         fields = {
             "albedo": _color(colour), "roughness": rough, "metallic": metal,
             "clearcoat": coat.get("weight", 0.0),
             "clearcoat_roughness": coat.get("roughness", COAT["roughness"]),
             "rim": finish.get("rim", 0.0), "subsurface": inside.get("weight", 0.0),
-            "sheen": finish["sheen"],
+            "sheen": finish.get("sheen", 0.0),
         }
         lines = [f"shader_parameter/{k} = {_value(v)}" for k, v in fields.items()]
-        return {"material": lines, "shader": _SHADER, "fields": fields}
+        shader = _opened_shader(hooks) if hooks else _SHADER
+        return {"material": lines, "shader": shader, "fields": fields}
     fields = {"albedo_color": _color(colour), "roughness": rough, "metallic": metal}
     if coat.get("weight"):
         fields.update(clearcoat_enabled=True, clearcoat=coat["weight"],
@@ -276,7 +380,9 @@ def write_godot(material: dict, name: str, folder: Any, stem: str, root: Any) ->
     import json
     from pathlib import Path
 
-    made = godot(material)
+    from polyweave.kernel.config import load
+
+    made = godot(material, opened(load(root).table("finish")))
     slug = "".join(c if c.isalnum() or c in "-_" else "_" for c in name)
     out = Path(folder) / f"{stem}.{slug}.tres"
     written = []
@@ -292,6 +398,69 @@ def write_godot(material: dict, name: str, folder: Any, stem: str, root: Any) ->
         text = _SHADED % {"name": said, "shader": f"res://{place}", "fields": body}
     out.write_text(text, encoding="utf-8", newline="\n")
     return [out, *written]
+
+
+#: The import settings written for a mesh Godot has not imported yet: it fills in the
+#: rest of its own defaults and keeps these (§PW570).
+_IMPORT = """[remap]
+
+importer="scene"
+importer_version=1
+
+[params]
+
+_subresources=%s
+"""
+
+
+def wire_import(mesh: Any, worn: dict, root: Any) -> Any:
+    """`<mesh>.import`, written so Godot imports each material as its written .tres.
+
+    Only in a Godot project (a project.godot at the root) and only for materials a
+    `.tres` was written for. An existing import keeps every setting but its
+    `_subresources`, which this owns while it holds only materials; one the project
+    filled with more is left alone and None answered, as for no Godot project.
+    """
+    import json
+    from pathlib import Path
+
+    here = Path(root).resolve()
+    if not worn or not (here / "project.godot").is_file():
+        return None
+    mapping = {
+        name: {
+            "use_external/enabled": True,
+            "use_external/path": "res://" + Path(path).resolve().relative_to(here)
+            .as_posix(),
+        }
+        for name, path in sorted(worn.items())
+    }
+    value = json.dumps({"materials": mapping}, indent=1)
+    target = Path(f"{mesh}.import")
+    if not target.is_file():
+        target.write_text(_IMPORT % value, encoding="utf-8", newline="\n")
+        return target
+    lines = target.read_text(encoding="utf-8").split("\n")
+    start = next((i for i, line in enumerate(lines)
+                  if line.startswith("_subresources=")), None)
+    if start is None:
+        lines += ["_subresources=" + value]
+    else:
+        end, depth = start, 0
+        for end in range(start, len(lines)):
+            depth += lines[end].count("{") - lines[end].count("}")
+            if depth <= 0:
+                break
+        held = "\n".join(lines[start:end + 1]).partition("=")[2].strip()
+        try:
+            kinds = set(json.loads(held)) if held != "{}" else set()
+        except ValueError:
+            return None
+        if kinds - {"materials"}:
+            return None
+        lines[start:end + 1] = ["_subresources=" + value]
+    target.write_text("\n".join(lines), encoding="utf-8", newline="\n")
+    return target
 
 
 def says(material: Any) -> str:

@@ -446,6 +446,32 @@ has no field for, makes it a ShaderMaterial over a spatial shader written beside
 `<name>.<material>.gdshader`, the sheen a lift of the surface's own colour where it
 turns from the view. A material with no finish is left to the glTF.
 
+**The mesh is imported wearing them** (§PW570). In a Godot project (a `project.godot`
+at the root) the build writes the mesh's `<name>.glb.import` so each material the glTF
+names is imported as its written `.tres` (`_subresources.materials.<material>
+.use_external`), so a game loads the model in the judged look and holds no code to swap
+it in. An existing import keeps every other setting; one whose `_subresources` the
+project filled with more than materials is left alone.
+
+**A project may open the finish to its own hand** (§PW569), where the pieces stand on a
+MultiMesh and the background is held under the play. `[finish]` in polyweave.toml:
+
+```toml
+[finish]
+hue     = "instance"                                 # INSTANCE_CUSTOM.x turns of the wheel
+include = "res://game/world/backdrop_dim.gdshaderinc"
+hold    = "dimmed_day"                               # hold(vec3 colour, float amount)
+amount  = "backdrop"                                 # an instance uniform, 1 unless set
+```
+
+Then every finish is written as the spatial shader, with the same numbers: the colour
+turned by the instance's hue and passed through the project's `hold` before it is lit,
+so one piece stands in several hues and dims with the rest of the background, and the
+numbers a person accepted are still the ones drawn. An include with no hold, a hold
+that is not a name, an include that is not a res:// path or a hue other than
+`instance` is `geom.bad-surface`. A project without the table writes what it always
+did.
+
 ## The escape hatch is a node, not a mode
 
 Any format eventually meets a shape it cannot state, and forcing that shape into the format

@@ -14,6 +14,13 @@
 
 ## Block G — Geometry as a declaration
 
+- 📋 **PW565** (deps: —) **A flattened sphere creases at its rim whatever its steps** — A disc or a squashed ball cannot pass a soft-edge spec, so it is rebuilt from bevelled cylinders at many more triangles. → §PW565
+- 📋 **PW566** (deps: —) **A bevel rounds every edge, so a smooth body grows triangles and creases under it** — Rounding one cut on a round part ruins the part, so a cut piece cannot be softened. → §PW566
+- 📋 **PW567** (deps: —) **A rebuild leaves the material files of materials the document dropped** — Orphan .tres files and records pile up beside a piece, found only by matching names by hand. → §PW567
+- 📋 **PW568** (deps: —) **A kit of built pieces takes a shell loop to render, spec and sit for a person** — Each piece costs five calls and a hand-written spec, and every project writes its own look script. → §PW568
+- 📋 **PW569** (deps: —) **A declared finish reaches the game closed, so it cannot take an instance's hue or the project's background hold** — A game re-implements the accepted shading to tint and dim it, and the drawn look drifts from the judged one. → §PW569
+- 📋 **PW570** (deps: —) **A built mesh imports with its glTF materials, so the game swaps in the judged ones by hand** — Every game drawing a built piece holds code matching surfaces to the written materials. → §PW570
+
 ## Block H — Proof on a real game
 
 - 🛠 **PW36** (deps: PW5 ✅, PW82 ⏸) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82. → §PW36
@@ -34,7 +41,7 @@
 
 ## Block P — Music and sound a game can ship
 
-- 📋 **PW559** (deps: —) **A recorded track cannot become an editable music.toml score** — The agent transcribes by hand through ad-hoc tools, so a bought theme never joins the scores the game edits and renders. → §PW559
+- 🛠 **PW559** (deps: —) **A recorded track cannot become an editable music.toml score** — The agent transcribes by hand through ad-hoc tools, so a bought theme never joins the scores the game edits and renders. → §PW559
 - 📋 **PW560** (deps: —) **sound.loop fails an Ogg loop's seam that sound.measure reads as ordinary** — Two seam scales answer one question, so an agent cannot trust either verdict without reading the source. → §PW560
 
 ## Block Q — Words held to the world

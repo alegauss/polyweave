@@ -111,6 +111,9 @@
 - ✅ **PW495 (material half)** **a declared finish reaches the game only through glTF import, so a look a person accepted is rebuilt in a game shader** — A build writes a finish as a Godot .tres, a shader for a sheen, with the bake's numbers; Godot reads them back.
 - ✅ **PW497** **nothing measures how round a model's edges are, so a hard-edged piece in a soft-toy style reaches a person's sitting** — A spec bounds sharp_edge_share and edge_radius_min off a .glb at a stated crease, no render, and a refusal names where the hard edges are (design recorded in `acceptance-spec.md`).
 - ✅ **PW498** **union joins parts at a hard crease, so a body whose parts flow into each other, as moulded plastic, cannot be declared** — A blend op joins primitives by a fillet of radius where they meet, a round union of their fields meshed closed, each face in its part's material (design recorded in `geometry.md`).
+- ✅ **PW562** **A sphere or torus declared with steps crashes the build with a TypeError** — Every primitive takes steps as a whole number, so a sphere or torus declared with steps builds.
+- ✅ **PW563** **A bevel in a fresh process crashes with No module named bmesh** — A bevel loads Blender before bmesh, so a declaration with a bevel builds in a fresh process.
+- ✅ **PW564** **A bevelled or carved piece loses its colours, and every built mesh is written faceted** — A solve keeps what each face wears, and a document's smooth welds and shades a mesh smooth by angle.
 
 ## Block H — Proof on a real game
 

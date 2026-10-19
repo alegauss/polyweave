@@ -20,6 +20,13 @@ TABLES: dict[str, Any] = {
         "max_parallel": 4,
     },
     "geometry": {"outlines": ""},
+    # How a finish reaches the engine (§PW569). Left as it is, a finish is the closed
+    # material the bake used. A project that draws its pieces on a MultiMesh and holds
+    # its background under the play opens it: `hue = "instance"` turns each instance's
+    # colour by INSTANCE_CUSTOM.x turns of the wheel, and `include` with `hold` passes
+    # the colour through a function of the project's, `hold(colour, amount)`, where
+    # `amount` is an instance uniform of that name, 1 unless the instance says.
+    "finish": {"hue": "", "include": "", "hold": "", "amount": "backdrop"},
     "voxels": {
         # What a voxel build is checked against (§PW97). A game decides how many cubes
         # it can draw and how thin a part may be before it vanishes, so these are the

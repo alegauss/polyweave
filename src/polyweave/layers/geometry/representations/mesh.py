@@ -57,12 +57,19 @@ def write(
     )
     # glTF carries a colour and a roughness and drops a look, so a material that asks
     # for one is also written as Godot loads it, with the bake's numbers (§PW495).
-    godot = [
-        str(path)
-        for name, one in resolved.items()
-        for path in engine(one, name, where.parent, where.stem, root)
-    ]
-    return {**made, "artefact": str(written), "materials": godot}
+    godot, worn = [], {}
+    for name, one in resolved.items():
+        for path in engine(one, name, where.parent, where.stem, root):
+            godot.append(str(path))
+            if str(path).endswith(".tres"):
+                worn[name] = Path(path)
+    # And the mesh is imported wearing them, so the game loads the judged look with the
+    # model and holds no code to swap it in (§PW570).
+    from ..finish import wire_import
+
+    wired = wire_import(Path(written), worn, root)
+    return {**made, "artefact": str(written), "materials": godot,
+            **({"import": str(wired)} if wired else {})}
 
 
 def member(document: dict, folder: Path, here: Path, given: dict, preview: bool,

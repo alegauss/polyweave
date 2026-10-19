@@ -152,6 +152,12 @@ reproducible = true            # a capture that stops reproducing is refused
 [geometry]
 outlines = "tools/art/outlines.py"   # where named shape generators come from
 
+[finish]                             # a finish opened to the game's hand (PW569)
+hue     = "instance"                 # each instance's hue, INSTANCE_CUSTOM.x
+include = "res://game/world/backdrop_dim.gdshaderinc"
+hold    = "dimmed_day"               # hold(colour, amount), from the include
+amount  = "backdrop"                 # the instance uniform it reads
+
 [style]
 canon    = "docs/design/canon"     # pictures a person approved; only a verdict adds one
 candidates = ["art/studies/*.png"] # what a person may admit from the page, ungated
@@ -566,7 +572,7 @@ the kernel's schema is the union (PW508). A key for a layer's table is added the
 
 | Layer | Tables |
 |---|---|
-| geometry | `[render]`, `[geometry]`, `[voxels]`, `[units]` |
+| geometry | `[render]`, `[geometry]`, `[finish]`, `[voxels]`, `[units]` |
 | engine | `[engine]`, `[perf]`, `[run]`, `[driving]`, `[capture]`, `[flashes]` |
 | kits | `[kit]` |
 | picture | `[style]` |

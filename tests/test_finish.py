@@ -102,6 +102,179 @@ def test_a_sheen_the_standard_material_lacks_is_a_shader_of_its_own():
     assert "shader_parameter/clearcoat = 1" in made["material"]
 
 
+HOOKS = {"hue": "instance", "include": "res://world/hold.gdshaderinc",
+         "hold": "held", "amount": "backdrop"}
+
+
+def test_a_closed_finish_is_left_as_the_bake_used_it():
+    """§PW569: a project that opens nothing keeps the material it always had."""
+    assert finish.opened({"hue": "", "include": "", "hold": "", "amount": "backdrop"}) \
+        is None
+    assert finish.godot({k: v for k, v in PLASTIC.items() if k != "sheen"},
+                        None)["shader"] is None
+
+
+def test_an_opened_finish_turns_each_instance_and_holds_it_by_the_projects_hand():
+    """§PW569: always the shader, its hue an instance's and its colour held."""
+    made = finish.godot({"colour": "#F27BA8", "coat": 1.0}, finish.opened(HOOKS))
+    shader = made["shader"]
+    assert '#include "res://world/hold.gdshaderinc"' in shader
+    assert "instance uniform float backdrop = 1.0;" in shader
+    assert "hue = INSTANCE_CUSTOM.x;" in shader
+    assert "ALBEDO = held(colour, backdrop);" in shader
+    assert "shader_parameter/clearcoat = 1" in made["material"]
+    alone = finish.godot({"coat": 1.0}, finish.opened({**HOOKS, "include": "",
+                                                        "hold": ""}))["shader"]
+    assert "#include" not in alone and "ALBEDO = colour;" in alone
+
+
+@pytest.mark.parametrize("table, said", [
+    ({"hue": "random"}, "nothing or by each instance"),
+    ({"include": "res://a.gdshaderinc"}, "an include and no hold"),
+    ({"hold": "held"}, "a hold and no include"),
+    ({"include": "world/a.gdshaderinc", "hold": "held"}, "res:// path"),
+    ({"include": "res://a.gdshaderinc", "hold": "held(x)"}, "not a shader name"),
+])
+def test_an_opened_finish_that_cannot_be_written_is_refused(table, said):
+    with pytest.raises(PolyweaveError) as refused:
+        finish.opened(table)
+    assert refused.value.code == "geom.bad-surface"
+    assert said in refused.value.message
+
+
+GODOT_PARSES = """extends SceneTree
+
+func _initialize() -> void:
+\tvar paint: ShaderMaterial = load("res://built/post.pink_plastic.tres")
+\tvar names := paint.shader.get_shader_uniform_list().map(func(u): return u.name)
+\tprint("parsed: %s" % ",".join(names))
+\tquit()
+"""
+
+
+def test_godot_parses_an_opened_finish_with_the_projects_include(tmp_path):
+    """§PW569: the shader with the project's hold in it is one Godot reads whole."""
+    import os
+
+    from polyweave.layers.engine import engine
+
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    (tmp_path / "project.godot").write_text("config_version=5\n", encoding="utf-8")
+    (tmp_path / "world").mkdir()
+    (tmp_path / "world" / "hold.gdshaderinc").write_text(
+        "vec3 held(vec3 c, float amount) {\n\treturn c * (1.0 - 0.5 * amount);\n}\n",
+        encoding="utf-8")
+    (tmp_path / "polyweave.toml").write_text(
+        '[finish]\nhue = "instance"\ninclude = "res://world/hold.gdshaderinc"\n'
+        'hold = "held"\n', encoding="utf-8")
+    folder = tmp_path / "built"
+    folder.mkdir()
+    finish.write_godot({"colour": "#F27BA8", "coat": 1.0}, "pink plastic", folder,
+                       "post", tmp_path)
+    (tmp_path / "parses.gd").write_text(GODOT_PARSES, encoding="utf-8")
+    found = engine.run("parses.gd", root=tmp_path, headless=True,
+                       expect=r"parsed: (?P<names>\S+)")
+    assert found["ok"] is True, found["why"]
+    assert {"albedo", "clearcoat", "sheen"} <= set(found["found"]["names"].split(","))
+
+
+def _godot_project(tmp_path) -> Path:
+    (tmp_path / "project.godot").write_text("config_version=5\n", encoding="utf-8")
+    (tmp_path / "built").mkdir(exist_ok=True)
+    (tmp_path / "built" / "post.glb").write_bytes(b"")
+    (tmp_path / "built" / "post.pink_plastic.tres").write_text("", encoding="utf-8")
+    return tmp_path / "built" / "post.glb"
+
+
+def test_a_mesh_is_imported_wearing_its_written_materials(tmp_path):
+    """§PW570: the import names each material's .tres, written fresh or merged."""
+    import json
+
+    mesh = _godot_project(tmp_path)
+    worn = {"pink plastic": tmp_path / "built" / "post.pink_plastic.tres"}
+    wired = finish.wire_import(mesh, worn, tmp_path)
+    text = wired.read_text(encoding="utf-8")
+    assert 'importer="scene"' in text
+    held = json.loads(text.partition("_subresources=")[2])
+    assert held["materials"]["pink plastic"] == {
+        "use_external/enabled": True,
+        "use_external/path": "res://built/post.pink_plastic.tres"}
+    # Godot's own import, with its settings and an empty mapping, keeps the settings
+    wired.write_text('[params]\n\nmeshes/generate_lods=true\n_subresources={}\n'
+                     'gltf/naming_version=2', encoding="utf-8")
+    text = finish.wire_import(mesh, worn, tmp_path).read_text(encoding="utf-8")
+    assert "meshes/generate_lods=true" in text and "gltf/naming_version=2" in text
+    assert "res://built/post.pink_plastic.tres" in text
+
+
+def test_an_import_the_project_filled_or_no_godot_project_is_left_alone(tmp_path):
+    mesh = _godot_project(tmp_path)
+    worn = {"pink plastic": tmp_path / "built" / "post.pink_plastic.tres"}
+    Path(f"{mesh}.import").write_text(
+        '[params]\n_subresources={\n"nodes": {}\n}\n', encoding="utf-8")
+    assert finish.wire_import(mesh, worn, tmp_path) is None
+    (tmp_path / "project.godot").unlink()
+    Path(f"{mesh}.import").unlink()
+    assert finish.wire_import(mesh, worn, tmp_path) is None
+
+
+GODOT_WEARS = """extends SceneTree
+
+func _find(node: Node) -> MeshInstance3D:
+\tif node is MeshInstance3D:
+\t\treturn node
+\tfor child in node.get_children():
+\t\tvar found := _find(child)
+\t\tif found:
+\t\t\treturn found
+\treturn null
+
+func _initialize() -> void:
+\tvar shape := _find((load("res://built/post.glb") as PackedScene).instantiate())
+\tprint("wears: %s" % shape.mesh.surface_get_material(0).resource_path)
+\tquit()
+"""
+
+
+def test_godot_imports_the_mesh_in_the_material_that_was_judged(tmp_path):
+    """§PW570: read back by the engine, the surface is the written .tres."""
+    import os
+    import subprocess
+
+    from polyweave.layers.engine import engine
+
+    pytest.importorskip("bpy")
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    (tmp_path / "project.godot").write_text("config_version=5\n", encoding="utf-8")
+    found = _plastic_post(tmp_path, 'colour = "#F27BA8"\ncoat = 1.0')
+    assert found["status"] == "built", found
+    subprocess.run([os.environ["GODOT"], "--headless", "--path", str(tmp_path),
+                    "--import"], capture_output=True, timeout=300, check=False)
+    (tmp_path / "wears.gd").write_text(GODOT_WEARS, encoding="utf-8")
+    ran = engine.run("wears.gd", root=tmp_path, headless=True,
+                     expect=r"wears: (?P<path>\S+)")
+    assert ran["ok"] is True, ran["why"]
+    assert ran["found"]["path"] == "res://built/post.pink_plastic.tres"
+
+
+def test_a_finish_opened_after_a_build_builds_it_again(tmp_path):
+    """§PW569: the project's [finish] is in the stamp, so opening it is not cached."""
+    pytest.importorskip("bpy")
+    from polyweave.layers.geometry.make import build_one
+
+    first = _plastic_post(tmp_path, 'colour = "#F27BA8"\ncoat = 1.0')
+    again = build_one("post.toml", out="built", root=str(tmp_path), force=False)
+    assert (first["status"], again["status"]) == ("built", "cached")
+    (tmp_path / "polyweave.toml").write_text('[finish]\nhue = "instance"\n',
+                                             encoding="utf-8")
+    opened = build_one("post.toml", out="built", root=str(tmp_path), force=False)
+    assert opened["status"] == "built"
+    assert "INSTANCE_CUSTOM.x" in (tmp_path / "built" / "post.pink_plastic.gdshader")\
+        .read_text(encoding="utf-8")
+
+
 def _plastic_post(tmp_path, material) -> dict:
     (tmp_path / "post.toml").write_text(
         'name = "post"\nversion = 1\noutput = "post"\n\n[params]\nshine = 0.9\n\n'

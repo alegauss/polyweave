@@ -87,6 +87,13 @@ def made_from(
     if not mesh:
         # Only when asked, so every stamp written before §PW226 still matches.
         params["mesh"] = False
+    # The project's [finish] changes the materials a build writes (§PW569), so it is in
+    # the stamp where the project declares it, and absent, as before, where it does not.
+    from polyweave.kernel.config import load
+
+    config = load(root)
+    if config.states("finish"):
+        params["finish"] = config.table("finish")
     return {"inputs": inputs, "params": params}
 
 

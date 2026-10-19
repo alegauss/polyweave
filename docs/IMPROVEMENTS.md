@@ -31,6 +31,114 @@ standard one lacks is asked for), with the same numbers the bake used and a prov
 record, so the game loads what was judged. A capture of the game against the bake of the
 same model at one rig says whether the two agree.
 
+### §PW565 Rings that follow the normal
+
+Where: spinhold, 2026-10-19, the Playdeck's pizza and strawberry (RK236).
+
+A `sphere` given a flattened `size`, such as `["across * 0.84", "base * 0.5", "across *
+0.84"]`, creases at its rim at any `steps`: `sharp_edge_share` read 0.028 at a 3:1
+squash with 32 steps and 0.135 on a pepperoni at 3:1 with 28. The mesher lays its rings
+evenly in the parameter angle and then scales a unit sphere, so the normal turns faster
+than the rings near the flat rim, past the 30-degree crease.
+
+Workaround in spinhold: flattened discs became cylinders under a round `bevel`, and the
+cheese became `rounded_box`es, which costs triangles (the pizza is 19,708).
+
+What polyweave should do: space a scaled sphere's rings so the normal turns evenly (for
+an ellipsoid of equatorial radius a and polar c, the parameter angle is atan((c / a) tan
+theta) for each even normal angle theta), so a flattened sphere is as round as its steps
+say.
+
+### §PW566 A bevel for the creases alone
+
+Where: spinhold, 2026-10-19, the Playdeck's arch (RK236): a `torus` (32 steps) cut in
+half by a `carve` with `bevel = 0.12`, `segments = 4`, to round the cut ends.
+
+What came back: 18,356 triangles and a `sharp_edge_share` of 0.086, worse than the
+unbevelled cut's 0.059. `solver.bevel` bevels every edge of the mesh (`geom = verts +
+edges + faces`), so the torus's smooth facets, each turning under 23 degrees, were each
+split into bevel strips: the round body multiplied and grew creases of its own.
+
+Workaround in spinhold: the arch was redrawn as a curve of overlapping spheres, with no
+cut and no bevel.
+
+What polyweave should do: a `bevel` (and a carve's) rounds only edges sharper than a
+stated crease angle, 30 degrees unless the node says, and leaves a smooth surface alone.
+Where that changes an existing build, a `crease` field on the node can keep the old
+every-edge behaviour by setting it to 0.
+
+### §PW567 A build owns what it wrote
+
+Where: spinhold, 2026-10-19, the Playdeck's kit (RK236). `playdeck_hex.toml` first
+declared materials `tile`, `lip` and `stud`, then was redrawn with `pink`, `cream` and
+`violet`; `playdeck_arch.toml` lost its `arch` material the same way.
+
+What came back: `geometry.build --out assets/pieces` wrote the new
+`playdeck_hex.pink.tres` and the rest, and left `playdeck_hex.tile.tres`,
+`playdeck_hex.lip.tres`, `playdeck_hex.stud.tres` and `playdeck_arch.arch.tres`, each
+with its `.prov.json`, beside them. Nothing said they were orphans; they were found by
+listing the folder and matching each file's material against the declaration by hand.
+
+What polyweave should do: a build owns what it writes for a document. On a rebuild it
+removes the `<name>.<material>.tres` / `.gdshader` (and records) it wrote before for a
+material the document no longer declares, and says which in its answer;
+`provenance.outdated` names any it finds whose material is gone.
+
+### §PW568 One call from a kit to its sitting
+
+Where: spinhold, 2026-10-19, the Playdeck's kit of twelve pieces (RK236).
+
+What was done by hand, twelve times over, in a shell loop: `geometry.build` each
+declaration; `cost.read` each `.glb`; `render.bake --rung final` each; write each
+`art/accept/<piece>.accept.toml` from its measured triangles (a margin over them) and a
+`sharp_edge_share` bound; `accept.check` each; then build a members JSON by hand for
+`verdict.sitting`. spinhold's `tools/art/look.py` does the same for its five models, as
+a project script.
+
+What polyweave should do: one call over a folder of declarations (`geometry.kit` or a
+`sitting` flag on `geometry.build_all`) that builds each, renders it at a stated rung,
+writes a first spec where none exists from the costs it measured (`triangles` with a
+margin, and any bounds the call names, such as `sharp_edge_share <= 0.02`), checks each,
+and lays the lot out as one family on the review page, answering which passed and where
+the sitting is.
+
+### §PW569 A finish opened to the game
+
+Where: spinhold, 2026-10-19, RK231: the Playdeck's pieces stand on a MultiMesh of their
+own (RK230), each in the finish the owner accepted on the kit's sitting (RK236), and the
+ring must (a) show one piece in several hues, one per instance, and (b) dim under the
+play by the project's `backdrop_dim`, as every background does.
+
+What came back: `finish.write_godot` writes a closed material, a StandardMaterial3D or,
+with a sheen, a ShaderMaterial over a fixed shader. Neither reads an instance's custom
+data nor any project uniform. The first workaround was a `plastic.gdshader` in the game,
+re-implementing polyweave's shading with the hue and the hold added and copying the
+numbers in from the .tres: the owner refused it, since the work belongs in polyweave.
+
+Built: an optional `[finish]` table (geometry layer): `hue = "instance"` turns each
+instance's colour by INSTANCE_CUSTOM.x turns of the wheel; `include` and `hold` pass the
+colour through a function of the project's, `hold(colour, amount)`, with `amount` an
+instance uniform (default `backdrop`, 1 unless set). With it, every finish is written as
+the spatial shader with the same numbers; without it, as before. Refusals for a bad hue,
+an include without a hold, a non-name hold and a non-res:// include. Spec in
+`geometry.md` and `project-config.md`; tests in `test_finish.py`, one of which has Godot
+parse the shader with a project include.
+
+### §PW570 Imported in the judged look
+
+Where: spinhold, 2026-10-19, RK231. The Playdeck's pieces were built with their finish
+written beside them as `<piece>.<material>.tres` (PW495), but Godot imports each `.glb`
+with the glTF's own materials, colour and roughness only. To draw the accepted look the
+game would have to walk each mesh's surfaces, match each material's name to a `.tres`
+and swap it in, which is a game holding code for what the build already knows.
+
+Built: in a Godot project, the build writes `<mesh>.glb.import` with
+`_subresources.materials.<material>.use_external/{enabled,path}` naming each written
+`.tres`, so Godot imports the mesh wearing them. An existing import keeps its other
+settings; one whose `_subresources` holds more than materials is left alone. Tests in
+`test_finish.py`, one importing a built mesh through Godot and reading the surface's
+material back.
+
 ## Block H — Proof on a real game
 
 ### §PW36 Cottony adopts it without a fork
