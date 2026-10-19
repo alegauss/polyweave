@@ -422,6 +422,7 @@
 - ✅ **PW192** **Cottony still makes its audio outside polyweave** — Cottony's effects render through polyweave as General MIDI scores held to specs, its music loops by sound.loop, both accepted by the owner (design in `docs/specs/music.md`).
 - ✅ **PW464** **sound.sitting takes no about, so a sound sitting cannot say what changed or what to listen for** — sound.sitting takes about as verdict.sitting does, kept under the summary, so a sound sitting says what changed and what to listen for (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW558** **A voice over a recorded music track cannot be removed through polyweave** — sound.stems splits a recorded track with Demucs into vocals and no_vocals, or four stems, each recorded and saying where it plays against the mix; Spinhold's intro lost its spoken tag through it.
+- ✅ **PW561** **A loop cut by sound.loop always opens on the track's first sample, even a dying beat** — sound.loop takes a start bar and rotates the loop to open on it, seamless still, and answers starts_at; Spinhold's intro now opens on bar 2, past the dying beat.
 
 ## Block Q — Words held to the world
 

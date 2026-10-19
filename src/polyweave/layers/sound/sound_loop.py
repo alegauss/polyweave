@@ -182,8 +182,15 @@ def loop(
     quality: Annotated[
         int, Param("the Vorbis quality of an Ogg loop", lo=0, hi=10)
     ] = QUALITY,
+    start: Annotated[
+        int, Param("the bar the file opens on, from the first beat", lo=0)
+    ] = 0,
 ) -> dict:
-    """Cut a recorded track into a loop on its beat grid and prove its seam."""
+    """Cut a recorded track into a loop on its beat grid and prove its seam.
+
+    A track that opens on a dying beat plays from a later bar with start: the loop is
+    rotated, which keeps it seamless (§PW561).
+    """
     here = load(root).root
     source, target = here / track, here / out
     if not source.is_file():
@@ -202,6 +209,17 @@ def loop(
     cut = frames[:length].copy()
     cut[:fade] = (frames[:fade] * np.sin(t * np.pi / 2)[:, None]
                   + frames[length: length + fade] * np.cos(t * np.pi / 2)[:, None])
+    # Rotated, a seamless loop stays seamless: its new wrap is audio that was
+    # continuous, and the crossfaded seam moves inside the file (§PW561).
+    if start >= bars:
+        raise PolyweaveError(
+            "sound.start-past-loop",
+            f"the loop is {bars} bars long, so it cannot open on bar {start}",
+            f"pass a start from 0 to {bars - 1}",
+            given=start,
+        )
+    opens = round((first + start * 4 * beat) * RATE) % length if start else 0
+    cut = np.roll(cut, -opens, axis=0)
     target.parent.mkdir(parents=True, exist_ok=True)
     _encode(cut, target, quality)
 
@@ -222,6 +240,7 @@ def loop(
         "bpm": round(float(tempo), 2),
         "first_beat": round(float(first), 3),
         "bars": int(bars),
+        "starts_at": round(opens / RATE, 3),
         "match": round(float(match), 3),
         "seam_step": round(float(step), 3),
         "seam_change": round(float(change), 3),

@@ -2064,6 +2064,8 @@ export interface SoundLoopArgs {
   root?: string
   /** the Vorbis quality of an Ogg loop; from 0 to 10; default 5 */
   quality?: number
+  /** the bar the file opens on, from the first beat; from 0 to …; default 0 */
+  start?: number
 }
 
 /** A sound's seam, loudness, peak and length: what a sound predicate bounds. */

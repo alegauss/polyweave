@@ -52,6 +52,11 @@ CODES: dict[str, Code] = {
         when="an encoder that pads or trims, which is a gap or an overlap at the seam",
         doors=("write the loop as .wav", "use an encoder that keeps the length"),
     ),
+    "sound.start-past-loop": Code(
+        means="a loop was asked to open on a bar past its own length",
+        when="sound.loop start at or beyond the bars the cut found (§PW561)",
+        doors=("pass a start below the loop's bars",),
+    ),
     "sound.no-separator": Code(
         means="splitting a track into stems needs Demucs and torch, and one is missing",
         when="sound.stems on a machine without the stems extra installed (§PW558)",

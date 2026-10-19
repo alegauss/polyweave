@@ -64,6 +64,32 @@ def test_a_track_is_cut_on_its_bars_and_its_wrap_does_not_click(tmp_path):
 
 
 @needs_ffmpeg
+def test_a_loop_opens_on_the_bar_asked_and_stays_seamless(tmp_path):
+    # Rotated, the loop is the same audio round the circle: the same length, a wrap
+    # as quiet as the unrotated one, opening where the bar was (§PW561).
+    whole = sound_loop.loop(track(tmp_path), out="whole.wav", root=str(tmp_path))
+    found = sound_loop.loop("track.wav", out="loop.wav", root=str(tmp_path), start=2)
+    bar = 4 * 60.0 / BPM
+    assert found["starts_at"] == pytest.approx(whole["first_beat"] + 2 * bar, abs=0.01)
+    assert found["seconds"] == whole["seconds"]
+    assert found["seam_step"] <= sound_loop.STEP_LIMIT
+    rotated, _ = sound.read(tmp_path / "loop.wav")
+    plain, _ = sound.read(tmp_path / "whole.wav")
+    # starts_at is to the millisecond, so the sample it names is found within 50
+    near = round(found["starts_at"] * RATE)
+    off = min(range(near - 50, near + 51),
+              key=lambda at: np.abs(rotated[:RATE] - plain[at: at + RATE]).max())
+    assert np.allclose(rotated[:RATE], plain[off: off + RATE], atol=2 / 32768)
+
+
+@needs_ffmpeg
+def test_a_start_past_the_loop_is_refused(tmp_path):
+    with pytest.raises(PolyweaveError) as refused:
+        sound_loop.loop(track(tmp_path), out="loop.wav", root=str(tmp_path), start=99)
+    assert refused.value.code == "sound.start-past-loop"
+
+
+@needs_ffmpeg
 def test_a_track_that_never_comes_back_to_its_opening_is_refused(tmp_path):
     with pytest.raises(PolyweaveError) as refused:
         sound_loop.loop(track(tmp_path, fade_out=True), out="loop.wav",
