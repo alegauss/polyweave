@@ -429,27 +429,6 @@ differently, and a skeleton that suits one may fight the next. So it stays an id
 Starship and Cottony both show code it would replace, at which point the shape it should
 take is read off that code rather than invented here.
 
-### §PW550 Kit records that name where the file landed
-
-Found in Spinhold (2026-10-19), running `provenance.verify` after RK216 moved the game
-onto the prompts and remap kits. It reports 128 records as missing: every icon and pad
-picture the kits brought, under addons/polyweave/prompts/icons and
-addons/polyweave/remap/{icons,pads}. Each copied .prov.json still names the artefact
-where polyweave built it, either `src/polyweave/layers/kits/prompts/core/icons/...` or a
-bare `core/icons/...`, paths that exist in polyweave's checkout and not in the game. The
-files are present in the game; only their records point elsewhere. So the verify a
-project runs before release is drowned in 128 false findings, and a real missing
-artefact would hide among them.
-
-What polyweave should do: `kit.install` and `kit.update` rewrite each copied record so
-its artefact is the path it lands at in the project, keep the kit-side path as the
-source it was copied from, and record the kit version. The two spellings (with and
-without `src/polyweave/layers/kits/`) should become one. Spinhold's existing records are
-fixed by the next `kit.update`.
-
-Done when `provenance.verify` in Spinhold lists the kit's icons and pads as ok and
-reports nothing missing.
-
 ### §PW551 Help lines filled with icons from the same marks
 
 Found in Spinhold (RK147, 2026-10-19). Every help line in the game's string table holds

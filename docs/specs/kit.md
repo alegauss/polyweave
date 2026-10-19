@@ -130,7 +130,11 @@ kit assumes no genre. Installing (§PW341) and proving every kit in polyweave's 
 3. for each, it writes the `[declares]` table into `polyweave.toml` as `[kit.<name>]`
    only where the project has none, so a project's own declaration is never replaced;
 4. it copies the core to `addons/polyweave/<name>/`, replaced whole so an upgrade
-   leaves no stale file, and the scene to `kits/<name>/` only where the project has
+   leaves no stale file, each record the core carries rewritten so its artefact is the
+   path it landed at in the game, with `kit` naming the kit, its version and the path
+   in the kit it came `from` (§PW550), so the game's `provenance.verify` finds every
+   icon and pad; `kit.update` on a kit already current rewrites them too, which is how
+   an older install's records are put right; and the scene to `kits/<name>/` only where the project has
    none, since the scene is the project's once it lands;
 5. it records the kit: `addons/polyweave/<name>/kit.json` holds its name and version,
    with a `borrow` record whose input is the kit's `kit.toml`, so `provenance.read`

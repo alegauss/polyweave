@@ -55,7 +55,6 @@
 
 ## Block V — Parts every game repeats, installed already proved
 
-- 📋 **PW550** (deps: —) **a kit's copied records name the artefact inside polyweave's tree, so provenance.verify reports every kit icon missing** — Spinhold's verify lists 128 false missing records from the prompts and remap kits, which would hide a real one. → §PW550
 - 📋 **PW551** (deps: —) **a help line's {action} marks fill only as words; bbcode reads another mark, ignores the player and pad, and drops {move}** — Spinhold had to write its own bridge to draw its help lines in the accepted icons. → §PW551
 - 📋 **PW552** (deps: —) **the prompts kit's follow keeps a lambda whose node was freed, and the next refresh calls it on a null instance** — Spinhold's help lines logged a script error per freed screen until they followed a bound method instead. → §PW552
 - 📋 **PW555** (deps: —) **the remap kit offers no ready button maps, so a player changes a scheme only by rebinding each action** — Spinhold's owner wants face-button and left-handed maps picked in one press, with a keep-this countdown. → §PW555

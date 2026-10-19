@@ -524,6 +524,7 @@ def install(
         for part in out:
             for file in kit["parts"][part]["core"]:
                 (core / file).unlink()
+        _own_records(core, here, one, kit["version"])
         if target is not None and not target.exists():
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(source / scene, target)
@@ -884,6 +885,40 @@ def _digests(core: Path) -> dict[str, str]:
     }
 
 
+def _own_records(core: Path, here: Path, name: str, version: str) -> int:
+    """Each record a kit's core carried, rewritten to name the file where it landed
+    (§PW550), and how many were.
+
+    A kit's icons and pads are recorded where polyweave built them, as
+    `src/polyweave/layers/kits/<kit>/core/...` or a bare `core/...`, paths a game does
+    not have, so the game's `provenance.verify` called every one missing. The artefact
+    is now its path in the game; `kit` keeps the kit, its version and the path in the
+    kit it was copied from, spelled one way. Its bytes are the kit's, so the digest
+    stands.
+    """
+    import json
+
+    from polyweave.kernel.files import write_atomic
+    from polyweave.kernel.provenance import SUFFIX, relative
+
+    count = 0
+    for sidecar in sorted(core.rglob(f"*{SUFFIX}")):
+        if sidecar.name == f"kit.json{SUFFIX}":
+            continue
+        artefact = sidecar.with_name(sidecar.name[: -len(SUFFIX)])
+        if not artefact.is_file():
+            continue
+        record = json.loads(sidecar.read_text(encoding="utf-8-sig"))
+        if not isinstance(record.get("artefact"), dict):
+            continue
+        record["artefact"]["path"] = relative(artefact, here)
+        record["kit"] = {"name": name, "version": version,
+                         "from": f"core/{artefact.relative_to(core).as_posix()}"}
+        write_atomic(sidecar, json.dumps(record, indent=2, sort_keys=True) + "\n")
+        count += 1
+    return count
+
+
 def _version(text: str) -> tuple[int, ...]:
     return tuple(int(n) for n in str(text).split("."))
 
@@ -990,7 +1025,13 @@ def update(
             "kit, or put the files back, and update again",
         }
     if _version(kit["version"]) <= _version(held["version"]):
-        return {**answer, "ok": True, "says": f"{name} is already at {held['version']}"}
+        # A core installed before its records named the game's paths is put right
+        # here, with nothing else to bring over (§PW550).
+        fixed = _own_records(core, here, name, held["version"]) if write else 0
+        return {**answer, "ok": True,
+                "says": f"{name} is already at {held['version']}"
+                + (f"; {fixed} records now name where their files are in this game"
+                   if fixed else "")}
     scene = kit["installs"].get("scene")
     ours = here / "kits" / name / Path(scene).name if scene else None
     if ours is not None and ours.is_file():

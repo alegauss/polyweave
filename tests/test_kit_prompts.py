@@ -72,6 +72,36 @@ def test_the_proof_holds_in_a_game_running_in_another_language(tmp_path):
     assert said["proved"]["passed"] is True, said["proved"]
 
 
+def test_the_kits_records_name_where_their_files_landed(tmp_path, monkeypatch):
+    """Spinhold's verify called 128 kit icons missing: each copied record named the file
+    where polyweave built it (§PW550). An update puts an older core's records right."""
+    import json
+
+    from polyweave.kernel import provenance
+
+    monkeypatch.delenv("GODOT", raising=False)
+    game = tmp_path / "game"
+    shutil.copytree(kits.KITS / "remap" / "fixture", game)
+    kits.install("remap", root=str(game))
+    checked = provenance.verify(root=str(game))
+    landed = [one for one in checked["ok"] if one.startswith("addons/polyweave/")]
+    assert landed and not [one for one in checked["missing"]
+                           if one["artefact"].startswith(("core/", "src/"))]
+    assert checked["missing"] == []
+    icon = next((game / "addons" / "polyweave" / "prompts").rglob("*.png.prov.json"))
+    record = json.loads(icon.read_text("utf-8"))
+    assert record["kit"]["name"] == "prompts"
+    assert record["kit"]["from"].startswith("core/")
+    # an older install's record, as Spinhold has them
+    record["artefact"]["path"] = record["kit"]["from"]
+    del record["kit"]
+    icon.write_text(json.dumps(record), encoding="utf-8")
+    assert provenance.verify(root=str(game))["missing"]
+    said = kits.update("prompts", root=str(game))
+    assert "records now name" in said["says"]
+    assert provenance.verify(root=str(game))["missing"] == []
+
+
 @pytest.mark.skipif(not os.environ.get("GODOT"), reason="no $GODOT on this machine")
 def test_a_missing_icon_fails_the_proof_by_name(tmp_path):
     game = tmp_path / "game"
