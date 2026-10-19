@@ -35,7 +35,9 @@ SKILL_BUDGET = 3_400
 #: (§PW379-§PW382).
 #: 4,600 at 4,413 once rows name video.cut, verdict.move and loop.report (§PW429,
 #: §PW436, §PW444), each the one way to its task.
-REFERENCE_BUDGET = 4_600
+#: 4,800 at 4,607 once the music row names sound.stems (§PW558), the one way to take a
+#: voice out of a recorded track.
+REFERENCE_BUDGET = 4_800
 
 
 def test_the_manifest_and_the_marketplace_name_the_plugin():

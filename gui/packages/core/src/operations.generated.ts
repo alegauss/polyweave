@@ -2130,6 +2130,20 @@ export interface SoundSpeechArgs {
   root?: string
 }
 
+/** Split a recorded track into stems, each saying where it plays. */
+export interface SoundStemsArgs {
+  /** the recorded track, in the project */
+  track: string
+  /** the stems' folder; <track>.stems if unset */
+  out?: string
+  /** vocals: vocals, no_vocals; four: drums, bass, other, vocals; default "vocals" */
+  split?: "vocals" | "four"
+  /** the stems' format; default "wav" */
+  format?: "wav" | "ogg"
+  /** the project the paths resolve against; default "." */
+  root?: string
+}
+
 /** Make retro effects from a seed with sfxr, each at its declared cue's file. */
 export interface SoundSynthArgs {
   /** the *.sfx.toml, relative to the project */
@@ -2679,6 +2693,7 @@ export interface Operations {
   "sound.sitting": SoundSittingArgs
   "sound.speak": SoundSpeakArgs
   "sound.speech": SoundSpeechArgs
+  "sound.stems": SoundStemsArgs
   "sound.synth": SoundSynthArgs
   "sprites.matched": SpritesMatchedArgs
   "store.capsules": StoreCapsulesArgs
@@ -2889,6 +2904,7 @@ export const OPERATIONS = [
   "sound.sitting",
   "sound.speak",
   "sound.speech",
+  "sound.stems",
   "sound.synth",
   "sprites.matched",
   "store.capsules",

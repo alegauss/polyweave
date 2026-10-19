@@ -151,7 +151,9 @@ from polyweave.surface.capabilities import capabilities
 #: record of its own path, where an agent copied it by hand (§PW549).
 #: 151,620 with clip.timeline, a scene's own properties keyed in a declared timeline
 #: where a game kept its reveal's curves as constants (§PW554).
-DESCRIBE = 151_800
+#: 152,478 with sound.stems, a voice taken out of a recorded track, which a project
+#: otherwise ran by hand outside provenance (§PW558).
+DESCRIBE = 152_700
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -278,7 +280,8 @@ DESCRIBE = 151_800
 #: (§PW547).
 #: 166,604 with verdict.place and its two codes (§PW549).
 #: 167,368 with clip.timeline and its two codes (§PW554).
-CAPABILITIES = 167_600
+#: 168,248 with sound.stems and sound.no-separator (§PW558).
+CAPABILITIES = 168_500
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
@@ -343,7 +346,8 @@ HELP_VERB = 4_900
 #: 31,771 with clip.shots (§PW372).
 #: 31,930 with verdict.place (§PW549).
 #: 32,077 with clip.timeline (§PW554).
-HELP_TOP = 32_200
+#: 32,212 with sound.stems (§PW558).
+HELP_TOP = 32_350
 #: A search's answer over its default budget of 24 samples: 3,739.
 #: 4,019 where it fails with its best on an edge, which `at_bound` and `stopped` now
 #: say, so a range that cut the answer off is not read as unreachable (§PW442).

@@ -52,6 +52,11 @@ CODES: dict[str, Code] = {
         when="an encoder that pads or trims, which is a gap or an overlap at the seam",
         doors=("write the loop as .wav", "use an encoder that keeps the length"),
     ),
+    "sound.no-separator": Code(
+        means="splitting a track into stems needs Demucs and torch, and one is missing",
+        when="sound.stems on a machine without the stems extra installed (§PW558)",
+        doors=("pip install polyweave[stems]",),
+    ),
     "sound.unknown-cue": Code(
         means="no [sound] family declares a cue of that name",
         when="a sound bought for a cue that was never added to a family's cues",

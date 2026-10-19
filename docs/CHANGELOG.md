@@ -421,6 +421,7 @@
 - ✅ **PW333** **an sfx effect cannot be declared at a note, so putting a menu sound in a key means working out base_freq by hand** — An sfx effect is declared at a note, with an arp and a slide by note and time compiled to sfxr's numbers, and sound.measure answers the pitch (design recorded in `docs/specs/effects.md`).
 - ✅ **PW192** **Cottony still makes its audio outside polyweave** — Cottony's effects render through polyweave as General MIDI scores held to specs, its music loops by sound.loop, both accepted by the owner (design in `docs/specs/music.md`).
 - ✅ **PW464** **sound.sitting takes no about, so a sound sitting cannot say what changed or what to listen for** — sound.sitting takes about as verdict.sitting does, kept under the summary, so a sound sitting says what changed and what to listen for (design recorded in `docs/specs/acceptance-spec.md`).
+- ✅ **PW558** **A voice over a recorded music track cannot be removed through polyweave** — sound.stems splits a recorded track with Demucs into vocals and no_vocals, or four stems, each recorded and saying where it plays against the mix; Spinhold's intro lost its spoken tag through it.
 
 ## Block Q — Words held to the world
 

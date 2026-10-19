@@ -13,6 +13,7 @@ LAYER = Layer(
         "polyweave.layers.sound.sound",
         "polyweave.layers.sound.sound_buy",
         "polyweave.layers.sound.sound_loop",
+        "polyweave.layers.sound.sound_stems",
     ),
     judges=(
         Judge(
@@ -35,7 +36,8 @@ LAYER = Layer(
     },
     codes="polyweave.layers.sound.codes",
     config="polyweave.layers.sound.settings",
-    tools=11_000,
+    # 11,222 with sound.stems (§PW558).
+    tools=11_400,
     census={
         "polyweave.layers.sound.sound": (
             "internal", "what sound.measure and a sound bound read"),

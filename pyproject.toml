@@ -25,6 +25,9 @@ blender = ["bpy>=4.2"]
 # Rendering a score (§PW187) loads Surge XT and runs the mix through Pedalboard. Optional
 # like Blender: music.render refuses by name without it, and nothing else imports it.
 audio = ["pedalboard>=0.9"]
+# Splitting a recorded track into stems (§PW558). Optional the same way, and heavy (torch):
+# sound.stems refuses by name without it. CPU torch is enough.
+stems = ["demucs>=4"]
 # Outlining an SVG's live text before the engine draws it (§PW453). Optional the same
 # way: an SVG with no text never imports it, and one with text refuses by name.
 text = ["fonttools>=4.40"]

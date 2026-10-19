@@ -24,7 +24,7 @@
 | Drive a game | `game.open`, `game.query`, `game.input`, `game.step`, `game.wait`, `game.call`, `game.set`, `game.shot`, `game.text_fit`, `game.close`, `game.batch`, `game.keep`, `game.record_flow`, `game.crash_read`, `game.rekey`, `game.replay`, `game.release_check`, `game.export_smoke` |
 | Scale against the engine | `units.check`, `units.engine_scale`, `units.read_number` |
 | World | `world.read`, `world.validate`, `voice.design`, `voice.choose`, `voice.lines`, `words.check`, `words.unlisted`, `words.glyphs`, `words.sheet` |
-| Music | `music.validate`, `music.to_midi`, `music.render`, `sound.synth`, `sound.loop` (a recorded track), `sound.buy`, `sound.speak` (paid) |
+| Music | `music.validate`, `music.to_midi`, `music.render`, `sound.synth`, `sound.loop`, `sound.stems` (a recorded track), `sound.buy`, `sound.speak` (paid) |
 | Visual effects | `vfx.build`, `vfx.preview`, `panel.build`, `panel.capture`, `picture.sew`, `icons.build` |
 | A teaser | `video.cut` |
 | A project's look | `style.read`, `style.drift` (before a person looks), `style.train` |
