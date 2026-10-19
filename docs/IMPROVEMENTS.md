@@ -389,31 +389,6 @@ differently, and a skeleton that suits one may fight the next. So it stays an id
 Starship and Cottony both show code it would replace, at which point the shape it should
 take is read off that code rather than invented here.
 
-### §PW555 Ready button maps in the remap kit
-
-Found in Spinhold (RK149, 2026-10-19). Its owner wants ready button maps a player picks
-in one press on the controller screen, instead of rebinding eleven actions one by one.
-The game's input is the remap kit's (PW345), so the maps belong there, not in the game.
-
-What the kit should do:
-- A game declares its maps beside its actions, in the remap declaration
-  (res://polyweave_remap.gd): `const MAPS := {"face": {"fire_left": ["button:2"], ...}}`,
-  each a complete binding of the pad half. The keys are left alone, as `rebind` keeps the
-  halves apart. "default" is the project's own InputMap.
-- The remap screen and the drawn pad screen (PW428) gain a Map row: left and right step
-  through the maps, the drawn pad shows the one in focus before it is applied, and
-  applying it starts a "keep this?" countdown that puts the old map back if nothing
-  confirms it.
-- What the player rebound by hand is kept aside as "custom", so trying a map and leaving
-  it never loses it, and "custom" is offered among the maps once it exists.
-- The store keeps the chosen map's name and the custom map.
-- The kit's proof checks that each declared map binds every action with no button
-  shared, and that the countdown undoes an unconfirmed map.
-
-Done when Spinhold declares Default, Face buttons and Left-handed maps and its
-controller screen offers them with the countdown, and RK149 needs no code of its own for
-them.
-
 ### §PW556 Button names chosen per pad
 
 Found in Spinhold (RK149, 2026-10-19). The prompts kit reads a pad's family from the

@@ -1,5 +1,5 @@
 name = "remap"
-version = "0.10.0"
+version = "0.11.0"
 summary = "rebinding on the keys and the pad apart, a clash swapped, kept across restarts, reset to the game's own"
 requires = ["prompts"]
 tab = "controls"
@@ -41,3 +41,4 @@ script = "core/proof.gd"
 "0.9.1" = "a kept or older file that names only the actions a player changed loads with no engine error for the rest"
 "0.9.2" = "the table it proposes in polyweave.toml names the file and section the game's STORE declares"
 "0.10.0" = "ready maps of the pad declared as MAPS, applied in one call, tried on a countdown that puts the old map back, the player's own kept aside as custom"
+"0.11.0" = "a Map row on the remap screen and the pad screen: left and right step through the maps, the pad shows one before it is applied, a press tries it on a countdown and a second keeps it"

@@ -22,7 +22,16 @@ const WORDS := {
 	"press_button": "Press the new button for %s, or hold it to cancel",
 	"cannot": "%s cannot be bound to that", "bound": "%s is bound anew",
 	"swapped": "%s took it from %s, which has %s's old binding now",
+	"map": "Map", "map_keep": "Keep %s? Press it again within %d s",
+	"map_kept": "%s is kept", "map_back": "Back to %s",
 }
+
+## seconds a map picked on the Map row is tried before it goes back, unless kept
+@export var keep_seconds := 10.0
+
+## the map the Map row shows, stepped by left and right before it is applied (§PW555)
+var map_focus := ""
+var _map: Button
 
 ## the actions on the screen; the shared store's where unset, which are the
 ## declaration's labelled ones in its order, else every project action but the ui_ ones
@@ -84,6 +93,12 @@ func _ready() -> void:
 	invert.button_pressed = bindings.invert_vertical
 	invert.toggled.connect(bindings.set_invert_vertical)
 	_row(said("invert"), invert)
+	# The ready maps (§PW555): left and right step, a press tries one, a second keeps it.
+	_map = Button.new()
+	_map.pressed.connect(press_map)
+	_map.gui_input.connect(_map_input)
+	_row(said("map"), _map)
+	_paint_map()
 	# the game's own pad options (§PW433): a switch for a true or false, a slider over
 	# a number's range, each named through the table as REMAP_<NAME>
 	for name: String in bindings.declared_options:
@@ -109,13 +124,47 @@ func _ready() -> void:
 	reset.pressed.connect(func() -> void:
 		bindings.reset()
 		_said.text = said("reset_done")
-		_paint())
+		_paint()
+		_paint_map())
 	add_child(reset)
 	var pad := Button.new()
 	pad.text = said("pad")
 	pad.pressed.connect(open_pad)
 	add_child(pad)
 	_draw_rows()
+
+
+func _map_input(event: InputEvent) -> void:
+	for way in [["ui_left", -1], ["ui_right", 1]]:
+		if event.is_action_pressed(way[0]):
+			step_map(way[1])
+			_map.accept_event()
+
+
+## show the map `step` along on the Map row, not yet applied
+func step_map(step: int) -> void:
+	map_focus = bindings.map_after(map_focus, step)
+	_paint_map()
+
+
+## try the map the row shows, on a countdown; pressed again while it runs, keep it
+func press_map() -> void:
+	if bindings.trial_left() >= 0.0:
+		bindings.keep_map()
+		_said.text = said("map_kept", [bindings.map_label(bindings.map_name)])
+	else:
+		var name := map_focus if map_focus != "" else bindings.map_name
+		if bindings.try_map(name, keep_seconds):
+			_said.text = said("map_keep", [bindings.map_label(name), ceili(keep_seconds)])
+	map_focus = ""
+	_paint()
+	_paint_map()
+
+
+func _paint_map() -> void:
+	if _map != null:
+		_map.text = "<  %s  >" % bindings.map_label(
+			map_focus if map_focus != "" else bindings.map_name)
 
 
 ## the pad as a picture over the screen, binding through the same store (§PW428)
@@ -260,8 +309,18 @@ func capture(event: InputEvent) -> bool:
 	return true
 
 
-## run the clocks: a press held long enough cancels, and so does nothing pressed in time
+## run the clocks: a press held long enough cancels, and so does nothing pressed in time;
+## a map on trial counts down, and goes back once its time runs out
 func _process(delta: float) -> void:
+	if bindings != null and bindings.trial_left() >= 0.0:
+		var trying := bindings.map_name
+		if bindings.tick(delta):
+			_said.text = said("map_back", [bindings.map_label(bindings.map_name)])
+			_paint()
+			_paint_map()
+		else:
+			_said.text = said("map_keep", [bindings.map_label(trying),
+				ceili(bindings.trial_left())])
 	if _listening == "":
 		return
 	if _capture != "":

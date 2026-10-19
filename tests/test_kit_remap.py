@@ -162,6 +162,12 @@ def test_a_screen_that_loses_focus_or_says_nothing_fails_the_proof(
      "did not come back once its time ran out"),
     ("bindings.gd", "\t\tcustom = pad_now()\n\t\tmap_name = \"custom\"\n", "\t\tpass\n",
      "player's own pad was not kept aside"),
+    ("pad_screen.gd",
+     "\tvar now := bindings.map_of(previewing) if previewing != \"\" "
+     "else bindings.current()",
+     "\tvar now := bindings.current()", "did not show the face map"),
+    ("remap_menu.gd", "\t\tif bindings.tick(delta):\n", "\t\tif false:\n",
+     "did not go back once its time ran out"),
 ])
 def test_screens_on_raw_names_or_ui_actions_alone_fail_the_proof(
         tmp_path, script, before, after, said):

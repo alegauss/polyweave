@@ -357,8 +357,14 @@ puts every binding back as it was once the time runs out with no word, answering
 then (`trial_left()` says the seconds). The map in force and the custom one are kept in
 the store's file. `map_faults(name)` names an action a map leaves unbound, a code no
 binding reads and a button two actions share; the proof holds every map the game
-declares to none, and the trial, the keep and the custom map on actions of its own. The
-remap and pad screens' Map row is still to come.
+declares to none, and the trial, the keep and the custom map on actions of its own.
+Both screens carry a Map row (0.11.0). On the remap screen, left and right on it step
+through the maps without applying one, a press tries the one shown for `keep_seconds`
+(10) while the row says what is tried and the seconds left, a second press keeps it,
+and one not kept goes back and is said. On the pad screen, left and right while no
+action is being chosen show a map on the pad before it is applied, confirm tries it,
+and confirm again keeps it, the countdown beside the map's name. A map reads as the
+game's `REMAP_MAP_<NAME>` row, its own name where there is none (`map_label`).
 
 The pad can be bound on its picture (§PW428, 0.4.0). The remap screen's `pad` button
 opens `pad_screen.gd`, a layer over it binding through the same store: every place on

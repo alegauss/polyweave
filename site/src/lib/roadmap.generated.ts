@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 3 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 2 },
   { block: "W", title: "A core that grows by layers", open: 0 },
 ];
 
@@ -99,13 +99,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "A playtest's trace of spawns, kills and hits cannot be measured or laid against the wave it played",
     why: "A declared wave says what it asks of a player; only a trace says where players struggle, and Starship's balance needs both.",
     deps: ["PW205"],
-  },
-  {
-    id: "PW555",
-    block: "V",
-    symptom: "the remap kit offers no ready button maps, so a player changes a scheme only by rebinding each action",
-    why: "The remap and pad screens still offer no Map row to step through the maps and preview one.",
-    deps: [],
   },
   {
     id: "PW556",

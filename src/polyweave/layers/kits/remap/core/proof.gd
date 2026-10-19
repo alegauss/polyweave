@@ -329,6 +329,29 @@ func _process(_delta: float) -> bool:
 		failed.append("the declared confirm did not press the focused button")
 	menu._stop("")
 	menu.bindings.confirm = []
+	# The Map row (§PW555): right steps to a map without applying it, a press tries it
+	# on a countdown that puts the old back, and a second press keeps it.
+	menu.bindings.reset()
+	menu.bindings.custom = {}
+	menu.bindings.maps = {"face": {J: ["button:2"], F: ["button:3"], P: ["button:6"]}}
+	var was_map: String = menu.bindings.map_name
+	menu.step_map(1)
+	if menu.map_focus != "face" or menu.bindings.map_name != was_map:
+		failed.append("stepping the Map row applied %s or showed %s"
+			% [menu.bindings.map_name, menu.map_focus])
+	menu.press_map()
+	if menu.bindings.map_name != "face" or menu.bindings.trial_left() <= 0.0:
+		failed.append("pressing the Map row did not try the face map")
+	menu._process(menu.keep_seconds + 1.0)
+	if menu.bindings.map_name != was_map or menu.bindings.trial_left() >= 0.0:
+		failed.append("the Map row's map did not go back once its time ran out")
+	menu.step_map(1)
+	menu.press_map()
+	menu.press_map()
+	menu._process(menu.keep_seconds + 1.0)
+	if menu.bindings.map_name != "face":
+		failed.append("a map kept on the Map row went back all the same")
+	menu.bindings.reset()
 	# A stick binds the way it was pushed, once it comes back (§PW432).
 	menu._listen(F, true)
 	for value in [-0.9, -0.4, 0.1]:
@@ -451,6 +474,21 @@ func _pad_screen(screen: CanvasLayer) -> void:
 		failed.append("the declared back did not back out of the choice")
 	screen.bindings.confirm = []
 	screen.bindings.back = []
+	# The pad shows a map before it is applied, and confirm tries it, then keeps it
+	# (§PW555).
+	screen.bindings.maps = {"face": {J: ["button:2"], F: ["button:3"], P: ["button:6"]}}
+	for _step in 4:
+		if screen.previewing != "face":
+			screen.press("ui_right")
+	if screen.holder("button:2") != J or (screen.bindings.current()[J] as Array).has("button:2"):
+		failed.append("the pad did not show the face map before it was applied")
+	screen.press("ui_accept")
+	if screen.bindings.map_name != "face" or screen.bindings.trial_left() <= 0.0:
+		failed.append("confirm on a previewed map did not try it")
+	screen.press("ui_accept")
+	if screen.bindings.trial_left() >= 0.0 or screen.bindings.map_name != "face":
+		failed.append("confirm on a map on trial did not keep it")
+	screen.bindings.reset()
 	screen.press("ui_cancel")
 	if not screen.is_queued_for_deletion():
 		failed.append("cancel did not close the pad screen")

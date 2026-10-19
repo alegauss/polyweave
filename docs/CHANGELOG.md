@@ -586,7 +586,7 @@
 - ✅ **PW550** **a kit's copied records name the artefact inside polyweave's tree, so provenance.verify reports every kit icon missing** — kit.install and kit.update rewrite each copied record to name the file where it landed in the game, so verify finds every kit icon (design recorded in `docs/specs/kit.md`).
 - ✅ **PW551** **a help line's {action} marks fill only as words; bbcode reads another mark, ignores the player and pad, and drops {move}** — fill_bbcode draws a help row's own {action} and {move} marks as each player's icons, words where none, and watch_bbcode keeps it filled (design recorded in `docs/specs/kit.md`).
 - ✅ **PW552** **the prompts kit's follow keeps a lambda whose node was freed, and the next refresh calls it on a null instance** — refresh asks each follower again just before calling it, so a screen freed mid-refresh is let go (design superseded: the freeing was mid-refresh) (design recorded in `docs/specs/kit.md`).
-- ✅ **PW555 (the store's maps and countdown)** **the remap kit offers no ready button maps, so a player changes a scheme only by rebinding each action** — The remap store applies a declared pad map in one call, trials one on a countdown, and keeps a player's own aside.
+- ✅ **PW555** **the remap kit offers no ready button maps, so a player changes a scheme only by rebinding each action** — Both remap screens carry a Map row: maps stepped and previewed on the pad, tried on a countdown and kept with a second press (design recorded in `docs/specs/kit.md`).
 
 ## Block W — A core that grows by layers
 

@@ -354,6 +354,21 @@ func map_names() -> Array:
 	return out
 
 
+## what the player reads for a map: its row in the game's table as REMAP_MAP_<NAME>, or
+## its own name, capitalised, where the table has none
+static func map_label(name: String) -> String:
+	var key := "REMAP_MAP_" + name.to_upper()
+	var text := String(TranslationServer.translate(key))
+	return name.capitalize() if text == key else text
+
+
+## the map `step` maps along from `from` ("" for the one in force), round again
+func map_after(from: String, step: int) -> String:
+	var names := map_names()
+	var at := names.find(from if from != "" else map_name)
+	return names[posmod(at + step, names.size())]
+
+
 ## every action's pad codes as they are now, action -> codes
 func pad_now() -> Dictionary:
 	var out := {}

@@ -53,7 +53,6 @@
 
 ## Block V — Parts every game repeats, installed already proved
 
-- ⏳ **PW555** (deps: —) **the remap kit offers no ready button maps, so a player changes a scheme only by rebinding each action** — The remap and pad screens still offer no Map row to step through the maps and preview one. → §PW555
 - 📋 **PW556** (deps: —) **a pad whose name hides its maker is named in the wrong buttons, and the player cannot say which family it is** — Spinhold's players on an 8BitDo or a clone would read generic or wrong prompts with no way to correct them. → §PW556
 - 📋 **PW557** (deps: —) **the players kit copies no ui_accept or ui_cancel per player, so one player's menu cannot answer their own A and B alone** — Spinhold's crew draft had to filter A and B by the event's pad to keep one player from taking another's card. → §PW557
 
@@ -111,16 +110,6 @@
 - **Resogun's phase 1 counts its pods, not its city** On Spinhold's resogun_p1 frames
   the count per frame follows the pods by eye on the sheets, with silhouette or warp-in
   where motion alone is not enough.
-
-## Done when — PW555
-
-- **The store applies, trials and keeps a declared pad map** The remap proof applies a
-  map, lets a trial run out and finds the old bindings back, keeps a map, and finds a
-  hand-bound pad kept aside as custom across a restart.
-- **The remap and pad screens offer a Map row with the countdown** Left and right step
-  through map_names() on both screens, the drawn pad shows the map in focus before it is
-  applied, and applying it shows the trial's seconds until kept; Spinhold's controller
-  screen needs no code of its own for its maps.
 
 ## Non-goals
 

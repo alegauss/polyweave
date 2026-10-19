@@ -35,13 +35,18 @@ const FREE := Color(0.4, 0.45, 0.55)
 ## line's `{confirm}` and `{back}` are the buttons that confirm and go back, and any
 ## `{action}` is filled as the prompts kit fills it
 const WORDS := {
-	"title": "Pad", "free": "free",
+	"title": "Pad", "free": "free", "map": "Map",
 	"help": "up and down pick a place, {confirm} chooses what it does, {back} leaves",
 	"choose": "left and right go through the actions, {confirm} binds, {back} backs out",
 }
 
 ## seconds a pressed button stays lit
 @export var lit_for := 0.5
+## seconds a map tried here runs before it goes back, unless kept (§PW555)
+@export var keep_seconds := 10.0
+## a map shown on the pad before it is applied, or "" for the bindings in force
+var previewing := ""
+var _map_line: Label
 ## the layout drawn; empty follows the pad in use
 @export var layout := ""
 
@@ -87,6 +92,12 @@ func _ready() -> void:
 	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	heading.add_theme_font_size_override("font_size", 48)
 	add_child(heading)
+	_map_line = Label.new()
+	_map_line.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	_map_line.offset_top = 110
+	_map_line.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_map_line.add_theme_font_size_override("font_size", 26)
+	add_child(_map_line)
 	_board = Control.new()
 	_board.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(_board)
@@ -153,9 +164,10 @@ static func glyph(code: String, of_layout: String) -> String:
 	return _PwPrompts.named_code(code, of_layout) if _PwBindings.decode(code) != null else ""
 
 
-## the action `code` is bound to, or "" where it is free
+## the action `code` is bound to, or "" where it is free; on the map being previewed
+## where there is one, so the pad shows a map before it is applied (§PW555)
 func holder(code: String) -> String:
-	var now := bindings.current()
+	var now := bindings.map_of(previewing) if previewing != "" else bindings.current()
 	for action in now:
 		if (now[action] as Array).has(code):
 			return action
@@ -236,6 +248,10 @@ func show_pad() -> void:
 		label.add_theme_color_override("font_color", PRESSED if lit(code)
 			else (LIT if i == picked else (FREE if free else DIM)))
 	_help.text = help_text()
+	var shown := previewing if previewing != "" else bindings.map_name
+	_map_line.text = "%s  <  %s  >" % [said("map"), bindings.map_label(shown)]
+	if bindings.trial_left() >= 0.0:
+		_map_line.text += "  %d" % ceili(bindings.trial_left())
 	_over.queue_redraw()
 
 
@@ -267,6 +283,9 @@ func _draw_leaders() -> void:
 
 
 func _process(delta: float) -> void:
+	if bindings.trial_left() >= 0.0:
+		bindings.tick(delta)
+		show_pad()
 	for code: String in _lit.keys():
 		_lit[code] -= delta
 		if _lit[code] <= 0.0:
@@ -316,12 +335,22 @@ func press(move: String) -> void:
 			if choosing == "":
 				picked = posmod(picked + (1 if move == "ui_down" else -1), slots.size())
 		"ui_left", "ui_right":
+			var step := 1 if move == "ui_right" else -1
 			if choosing != "":
-				var step := 1 if move == "ui_right" else -1
 				choosing = all[posmod(all.find(choosing) + step, all.size())]
+			else:
+				# a map shown on the pad, not yet applied (§PW555)
+				previewing = bindings.map_after(previewing, step)
+				if previewing == bindings.map_name:
+					previewing = ""
 		"ui_accept":
 			var code: String = slots[picked]["code"]
-			if choosing == "":
+			if choosing == "" and bindings.trial_left() >= 0.0:
+				bindings.keep_map()
+			elif choosing == "" and previewing != "":
+				bindings.try_map(previewing, keep_seconds)
+				previewing = ""
+			elif choosing == "":
 				var held := holder(code)
 				choosing = held if held != "" else all[0]
 			else:
