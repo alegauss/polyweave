@@ -139,6 +139,19 @@ settings; one whose `_subresources` holds more than materials is left alone. Tes
 `test_finish.py`, one importing a built mesh through Godot and reading the surface's
 material back.
 
+### §PW571 One shader for one finish
+
+Where: spinhold, 2026-10-19, RK231. With `[finish]` opened (PW569) every material of the
+Playdeck's twelve pieces is written as a ShaderMaterial, and `finish.write_godot` writes
+each one's shader beside it as `<piece>.<material>.gdshader`: 50 files with identical
+code, each with its `.prov.json` and Godot's `.uid`, 150 files where one shader would
+do. Godot compiles each as its own shader, so the ring holds 50 programs for one finish.
+
+What polyweave should do: write the finish's shader once, where its code is the same
+(per build folder, or under a path the project names in `[finish]`), and have every
+material reference it; a material whose shader differs (a project's own hold, a future
+look) keeps its own. A rebuild that changes the shared code rewrites it once.
+
 ## Block H — Proof on a real game
 
 ### §PW36 Cottony adopts it without a fork
@@ -262,28 +275,6 @@ model and the members.
 
 ## Block P — Music and sound a game can ship
 
-### §PW559 A recording drafted as a score
-
-Where: spinhold, 2026-10-19. The owner asked for a recorded intro track
-(`spinhold-intro.mp3`) to become a `*.music.toml` so it can be edited and rendered like
-the game's other themes (`art/audio/title.music.toml`).
-
-What came back: polyweave goes score -> audio (`music.render`) and score -> MIDI
-(`music.to_midi`) but never audio -> score. `reference.transcription` is for a reference
-video, not music.
-
-Workaround: stems from Demucs (see the stem-separation line), each transcribed to MIDI
-by basic-pitch in a scratch venv, then tempo, key, chords and lines read from the MIDI
-and the score written by hand by the agent into `art/audio/intro.music.toml`.
-
-What polyweave should do: `music.from_audio` (or `music.from_midi` as the first rung)
-taking a recording or a MIDI file and drafting a valid `*.music.toml`: estimated bpm,
-meter and key; one `[[track]]` per stem or MIDI track with a guessed instrument; notes
-quantised to the grid and folded into mini-notation patterns with repeats (`!n`) found;
-sections found from repetition. It should answer with the score's `music.validate`
-result and a confidence per track, and the draft should go to a person (`sound.sitting`)
-beside the original, since the timbres will differ.
-
 ### §PW560 One seam measure for the loop and its spec
 
 Where: spinhold, 2026-10-19, the intro's instrumental (`sound.stems` no_vocals, 64.8 s)
@@ -309,6 +300,32 @@ read, used by `sound.loop` for its verdict and reported under the same names
 (`seam_flux`, not `seam_change`), so the loop's `passed` is what an acceptance spec over
 the same file would answer. If the Vorbis encode really does change the wrap, say so as
 the difference between the cut and the encoded file, not as a second scale.
+
+### §PW573 A Surge render that fails on a label's codepage
+
+Where: polyweave's own gate, 2026-10-19, during PW559.
+
+`tests/test_music_render.py::test_a_surge_patch_renders_through_the_plugin` failed once
+in the parallel gate and passed run alone a minute later, on the same code. The failure
+is inside Pedalboard, not polyweave: `load_plugin` reads Surge XT's parameters while
+`music_render.py:158` opens the plug-in, and `_pedalboard.py:256` raised
+`UnicodeDecodeError: 'utf-8' codec can't decode byte 0xe3 in position 9`. 0xe3 is `ã` in
+Windows-1252, so the bytes were most likely a label in the machine's pt-BR codepage, not
+UTF-8, and which label comes back can depend on what else is loading at the time.
+
+What to build: a gate that does not go red on a third party's decode. Two ways, and the
+choice is open:
+
+- open the plug-in in `music_render.py` with the decode guarded: catch
+  `UnicodeDecodeError` around `load_plugin`, retry once, and only then refuse with a
+  named code (`music.no-engine`, with the error in the message), so a render on a
+  pt-BR machine says what happened instead of raising a traceback;
+- or mark the Surge render tests `serial`, if a second run shows they only fail under
+  load.
+
+Reproduce first: run the gate on a pt-BR Windows machine a few times and count how often
+it fails. If it never fails alone, it is contention; if it fails alone too, it is the
+codepage.
 
 ## Block Q — Words held to the world
 

@@ -59,7 +59,8 @@ CORE_TOOLS = 39_000
 #: on top of verdict.place and the args of game.open and clip.shots in the same run.
 #: 133,265 with sound.stems (§PW558), whose sound layer's figure rose by 400 for it.
 #: 134,226 with music.from_midi (§PW559), whose sound layer's figure rose by 1,000.
-SESSION_BUDGET = 134_500
+#: 135,350 with music.from_audio (§PW559), whose sound layer's figure rose by 1,100.
+SESSION_BUDGET = 135_600
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

@@ -31,7 +31,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
-  { block: "G", title: "Geometry as a declaration", open: 6 },
+  { block: "G", title: "Geometry as a declaration", open: 7 },
   { block: "H", title: "Proof on a real game", open: 1 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
@@ -48,6 +48,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 0 },
   { block: "W", title: "A core that grows by layers", open: 0 },
+  { block: "X", title: "The site on the shared design system", open: 1 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -94,6 +95,13 @@ export const generatedTasks: GeneratedTask[] = [
     deps: [],
   },
   {
+    id: "PW571",
+    block: "G",
+    symptom: "Each finished material writes its own copy of one shader",
+    why: "A kit of twelve pieces carries fifty identical shaders, each compiled apart by the game.",
+    deps: [],
+  },
+  {
     id: "PW36",
     block: "H",
     symptom: "a real project cannot adopt the plugin without carrying its own paths and palette into it",
@@ -101,17 +109,17 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW82"],
   },
   {
-    id: "PW559",
-    block: "P",
-    symptom: "A recorded track cannot become an editable music.toml score",
-    why: "A recording still has to become MIDI by hand (a transcriber per stem) before music.from_midi drafts it, and no sitting lays the draft beside the original.",
-    deps: [],
-  },
-  {
     id: "PW560",
     block: "P",
     symptom: "sound.loop fails an Ogg loop's seam that sound.measure reads as ordinary",
     why: "Two seam scales answer one question, so an agent cannot trust either verdict without reading the source.",
+    deps: [],
+  },
+  {
+    id: "PW573",
+    block: "P",
+    symptom: "The Surge render test fails in the parallel gate on a Pedalboard UnicodeDecodeError and passes alone",
+    why: "A gate that goes red on a third party's decode of a plug-in label is a gate an agent learns to rerun instead of read.",
     deps: [],
   },
   {
@@ -155,6 +163,13 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "A playtest's trace of spawns, kills and hits cannot be measured or laid against the wave it played",
     why: "A declared wave says what it asks of a player; only a trace says where players struggle, and Starship's balance needs both.",
     deps: ["PW205"],
+  },
+  {
+    id: "PW572",
+    block: "X",
+    symptom: "The site keeps its own copy of the template that eight product sites share",
+    why: "The shared Nav, Hero, Footer and sponsor slot drift apart in each copy, and the design system now carries them once.",
+    deps: [],
   },
 ];
 

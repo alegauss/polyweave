@@ -216,11 +216,12 @@ def _runs(items: list[str]) -> list[str]:
 def _folded(bars: list[str]) -> str:
     """A section's bars for one track, one a bar, a cycle or a bar played again folded.
 
-    `<a b>` takes one a bar and starts again, so bars that cycle are written once.
+    `<a b>` takes one a bar and starts again, so bars that cycle are written once. A bar
+    that is a repeat, `c2!4`, is bracketed: inside `<>` a bare one is four bars.
     """
     if len(set(bars)) == 1:
         return bars[0]
-    words = [bar if re.fullmatch(r"[^\s,\[\]]+|\[[^\[\]]*\]", bar) else f"[{bar}]"
+    words = [bar if re.fullmatch(r"[^\s,\[\]!@]+|\[[^\[\]]*\]", bar) else f"[{bar}]"
              for bar in bars]
     return f"<{' '.join(_runs(words[:_period(words)]))}>"
 
@@ -235,8 +236,13 @@ def _ident(text: str, fallback: str, taken: set[str]) -> str:
     return unique
 
 
-def draft(data: bytes, title: str, grid: int = 4, phrase: int = 4) -> tuple[str, dict]:
-    """The score a MIDI file drafts to, and what the drafting found on the way."""
+def draft(data: bytes, title: str, grid: int = 4, phrase: int = 4,
+          reference: str = "") -> tuple[str, dict]:
+    """The score a MIDI file drafts to, and what the drafting found on the way.
+
+    `reference` is the recording it was heard off, kept as the score's `[music]
+    reference` so a render's record names it (§PW422).
+    """
     midi = _read_midi(data)
     if not midi["parts"]:
         raise ValueError("it holds no notes")
@@ -316,17 +322,18 @@ def draft(data: bytes, title: str, grid: int = 4, phrase: int = 4) -> tuple[str,
             "merged": t["merged"], "plays": sorted(t["play"]),
         } for t in tracks},
     }
-    return _source(title, found, lengths, patterns, tracks), found
+    return _source(title, found, lengths, patterns, tracks, reference), found
 
 
 def _source(title: str, found: dict, lengths: dict, patterns: dict,
-            tracks: list) -> str:
+            tracks: list, reference: str = "") -> str:
     def text(value: str) -> str:
         return '"' + value.replace("\\", "\\\\").replace('"', '\\"') + '"'
 
     bpm = found["bpm"]
     out = [
-        "# Drafted by music.from_midi: quantised to the grid, one pattern a bar,",
+        f"# Drafted by music.{'from_audio' if reference else 'from_midi'}: quantised "
+        "to the grid, one pattern a bar,",
         "# the sections found from repetition. Hear it beside the original first.",
         "",
         "[music]",
@@ -336,6 +343,7 @@ def _source(title: str, found: dict, lengths: dict, patterns: dict,
         f"key   = {text(found['key'])}",
         f"form  = [{', '.join(text(s) for s in found['form'])}]",
         "loop  = false",
+        *([f"reference = {text(reference)}"] if reference else []),
         "",
     ]
     for section, bars in lengths.items():

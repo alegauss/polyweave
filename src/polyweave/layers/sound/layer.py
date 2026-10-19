@@ -9,6 +9,7 @@ LAYER = Layer(
     modules=(
         "polyweave.layers.sound.music",
         "polyweave.layers.sound.music_draft",
+        "polyweave.layers.sound.music_heard",
         "polyweave.layers.sound.music_render",
         "polyweave.layers.sound.sfx",
         "polyweave.layers.sound.sound",
@@ -37,8 +38,9 @@ LAYER = Layer(
     },
     codes="polyweave.layers.sound.codes",
     config="polyweave.layers.sound.settings",
-    # 11,222 with sound.stems (§PW558); 12,181 with music.from_midi (§PW559).
-    tools=12_400,
+    # 11,222 with sound.stems (§PW558); 12,181 with music.from_midi (§PW559); 13,303
+    # with music.from_audio (§PW559).
+    tools=13_500,
     census={
         "polyweave.layers.sound.sound": (
             "internal", "what sound.measure and a sound bound read"),
@@ -46,6 +48,8 @@ LAYER = Layer(
             "internal", "the notation and compiler music.validate calls"),
         "polyweave.layers.sound.music_draft:draft": (
             "internal", "the score a MIDI file drafts to, for music.from_midi"),
+        "polyweave.layers.sound.music_heard": (
+            "internal", "a recording heard as notes and MIDI, for music.from_audio"),
         "polyweave.layers.sound.music_render": (
             "internal", "the engines and the mix music.render runs"),
         "polyweave.layers.sound.sfxr": (

@@ -112,9 +112,16 @@ CODES: dict[str, Code] = {
         "notes (§PW559)",
         doors=("export the MIDI as format 0 or 1 with ticks a quarter",),
     ),
+    "music.nothing-heard": Code(
+        means="no note or drum hit was heard in the recording, so there is nothing to "
+        "draft",
+        when="music.from_audio on silence, noise, or a track quieter than its floor "
+        "(§PW559)",
+        doors=("pass the recording itself, not a stem that came back silent",),
+    ),
     "music.draft-exists": Code(
         means="a score is already where the draft would be written",
-        when="music.from_midi run twice on one MIDI file, or onto a hand-made score",
+        when="music.from_midi or music.from_audio run twice, or onto a hand-made score",
         doors=("pass out, another path", "pass replace = true"),
     ),
     "music.bad-format": Code(

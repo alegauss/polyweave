@@ -59,6 +59,16 @@ def test_a_phrase_that_comes_back_is_the_same_section_again(tmp_path):
     assert 'bass_a = "<[[c2 c3]!4] [[g2 g3]!4]>"' in text
 
 
+def test_a_bar_of_one_note_struck_again_is_one_bar_in_a_cycle(tmp_path):
+    """`<c2!4 g2!4>` is eight bars of one note each; the bar is `[c2!4]`."""
+    score = SCORE.replace('bass = "<[c2 c3]*4 [g2 g3]*4>"', 'bass = "<c2*4 g2*4>"')
+    model, _ = round_trip(tmp_path, score)
+    text = (tmp_path / "theme.music.toml").read_text(encoding="utf-8")
+    assert '"<[c2!4] [g2!4] [c2!4]>"' in text
+    again, _ = music.compile_source(text)
+    assert notes_of(again) == notes_of(model)
+
+
 def test_the_key_is_estimated_when_the_file_states_none(tmp_path):
     _, found = round_trip(tmp_path)
     assert found["key_stated"] is False

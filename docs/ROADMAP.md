@@ -20,6 +20,7 @@
 - 📋 **PW568** (deps: —) **A kit of built pieces takes a shell loop to render, spec and sit for a person** — Each piece costs five calls and a hand-written spec, and every project writes its own look script. → §PW568
 - 📋 **PW569** (deps: —) **A declared finish reaches the game closed, so it cannot take an instance's hue or the project's background hold** — A game re-implements the accepted shading to tint and dim it, and the drawn look drifts from the judged one. → §PW569
 - 📋 **PW570** (deps: —) **A built mesh imports with its glTF materials, so the game swaps in the judged ones by hand** — Every game drawing a built piece holds code matching surfaces to the written materials. → §PW570
+- 📋 **PW571** (deps: —) **Each finished material writes its own copy of one shader** — A kit of twelve pieces carries fifty identical shaders, each compiled apart by the game. → §PW571
 
 ## Block H — Proof on a real game
 
@@ -41,8 +42,8 @@
 
 ## Block P — Music and sound a game can ship
 
-- ⏳ **PW559** (deps: —) **A recorded track cannot become an editable music.toml score** — A recording still has to become MIDI by hand (a transcriber per stem) before music.from_midi drafts it, and no sitting lays the draft beside the original. → §PW559
 - 📋 **PW560** (deps: —) **sound.loop fails an Ogg loop's seam that sound.measure reads as ordinary** — Two seam scales answer one question, so an agent cannot trust either verdict without reading the source. → §PW560
+- 📋 **PW573** (deps: —) **The Surge render test fails in the parallel gate on a Pedalboard UnicodeDecodeError and passes alone** — A gate that goes red on a third party's decode of a plug-in label is a gate an agent learns to rerun instead of read. → §PW573
 
 ## Block Q — Words held to the world
 
@@ -121,15 +122,6 @@
 - **Resogun's phase 1 counts its pods, not its city** On Spinhold's resogun_p1 frames
   the count per frame follows the pods by eye on the sheets, with silhouette or warp-in
   where motion alone is not enough.
-
-## Done when — PW559
-
-- **A recording drafts to a valid score in one call** A test passes an audio file (or
-  its stems) and gets back a *.music.toml that music.validate accepts, transcribed to
-  MIDI inside polyweave with no scratch environment.
-- **The draft is heard beside the original** The draft's render and the recording are
-  laid side by side for a person (sound.sitting), since their timbres differ and only a
-  person can say the draft is the same music.
 
 ## Non-goals
 

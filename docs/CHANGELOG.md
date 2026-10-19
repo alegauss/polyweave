@@ -426,7 +426,7 @@
 - ✅ **PW464** **sound.sitting takes no about, so a sound sitting cannot say what changed or what to listen for** — sound.sitting takes about as verdict.sitting does, kept under the summary, so a sound sitting says what changed and what to listen for (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW558** **A voice over a recorded music track cannot be removed through polyweave** — sound.stems splits a recorded track with Demucs into vocals and no_vocals, or four stems, each recorded and saying where it plays against the mix; Spinhold's intro lost its spoken tag through it.
 - ✅ **PW561** **A loop cut by sound.loop always opens on the track's first sample, even a dying beat** — sound.loop takes a start bar and rotates the loop to open on it, seamless still, and answers starts_at; Spinhold's intro now opens on bar 2, past the dying beat.
-- ✅ **PW559 (MIDI half, music.from_midi)** **A recorded track cannot become an editable music.toml score** — music.from_midi drafts a valid score from a MIDI file: tempo, meter, key, a track per part, repeats folded, sections from repetition, on-grid share per track.
+- ✅ **PW559** **A recorded track cannot become an editable music.toml score** — music.from_audio hears a recording's stems as notes and hits, drafts a valid score, and answers the calls that sit it by the original (design recorded in `src/polyweave/layers/sound/music_heard.py`).
 
 ## Block Q — Words held to the world
 
