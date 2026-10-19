@@ -240,6 +240,7 @@
 - ✅ **PW548** **no measure reads a transparent picture's alpha edge, so a halo or a wide soft fringe round it passes every spec** — fringe_width, fringe_luma and fringe_delta_e read a transparent edge, so a spec holds a logo's outline free of a wide ramp or halo (design recorded in `docs/specs/measurements.md`).
 - ✅ **PW549** **an accepted take cannot be placed at the path the game loads, so it is copied by hand with a record naming its old path** — verdict.place puts an accepted member where the game loads it, with a record naming that path, the take and the verdict (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW553** **game.open passes no arguments to the game, so a state the game opens by a flag is reached by calling private methods** — game.open passes the game's own flags, kept in its flows, and clip.shots opens the game with them itself: a world's cutscene is one call (design recorded in `docs/specs/driving.md`).
+- ✅ **PW554** **a keyed timeline of a scene's own properties cannot be declared and built, only skeletal motion and camera shots** — clip.timeline builds a declared *.timeline.toml of keyed properties and marks into an AnimationPlayer scene the game plays or seeks (design recorded in `docs/specs/motion.md`).
 
 ## Block I — Voxel models from a declaration
 

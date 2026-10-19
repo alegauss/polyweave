@@ -202,6 +202,16 @@ export interface ClipShotsArgs {
   root?: string
 }
 
+/** Build keyed tracks of a scene's own properties into a scene the game plays. */
+export interface ClipTimelineArgs {
+  /** the *.timeline.toml, relative to the project */
+  source: string
+  /** the folder the scene is written to; beside the source if unset */
+  out?: string
+  /** the project the timeline belongs to; default "." */
+  root?: string
+}
+
 /** Write the authored clip, the source and not an export, and say where. */
 export interface ClipWriteArgs {
   /** the clip, as clip.read or clip.new returns it */
@@ -2515,6 +2525,7 @@ export interface Operations {
   "clip.retime": ClipRetimeArgs
   "clip.set_key": ClipSetKeyArgs
   "clip.shots": ClipShotsArgs
+  "clip.timeline": ClipTimelineArgs
   "clip.write": ClipWriteArgs
   "compose.place": ComposePlaceArgs
   "compose.sheet": ComposeSheetArgs
@@ -2724,6 +2735,7 @@ export const OPERATIONS = [
   "clip.retime",
   "clip.set_key",
   "clip.shots",
+  "clip.timeline",
   "clip.write",
   "compose.place",
   "compose.sheet",

@@ -55,7 +55,9 @@ CORE_TOOLS = 39_000
 #: which declares no [layers]. 129,979 when this was set. It is not raised by a line
 #: that adds one operation: that line raises its layer's own figure, and this one moves
 #: only when the layers' figures together no longer fit, argued here.
-SESSION_BUDGET = 132_000
+#: 132,521 with clip.timeline (§PW554), whose motion layer's figure rose by 600 for it
+#: on top of verdict.place and the args of game.open and clip.shots in the same run.
+SESSION_BUDGET = 132_800
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

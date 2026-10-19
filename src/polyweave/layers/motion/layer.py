@@ -12,13 +12,15 @@ LAYER = Layer(
         "polyweave.layers.motion.motion",
         "polyweave.layers.motion.skeleton",
         "polyweave.layers.motion.sprites",
+        "polyweave.layers.motion.timeline",
     ),
     requires=("blender",),
-    kinds=("camera",),
+    kinds=("camera", "timeline"),
     codes="polyweave.layers.motion.codes",
     config="polyweave.layers.motion.settings",
     # 7,104 with clip.shots, each camera shot framed in the running game (§PW372).
-    tools=7_200,
+    # Raised with clip.timeline, a scene's own properties keyed and built (§PW554).
+    tools=7_800,
     census={
         "polyweave.layers.motion.camera:checked": (
             "internal", "a camera clip's table, with defaults"),

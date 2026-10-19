@@ -149,7 +149,9 @@ from polyweave.surface.capabilities import capabilities
 #: slot answered by the one a person picked, never every one accepted (§PW547).
 #: 150,919 with verdict.place, an accepted take put where the game loads it with a
 #: record of its own path, where an agent copied it by hand (§PW549).
-DESCRIBE = 151_100
+#: 151,620 with clip.timeline, a scene's own properties keyed in a declared timeline
+#: where a game kept its reveal's curves as constants (§PW554).
+DESCRIBE = 151_800
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -275,7 +277,8 @@ DESCRIBE = 151_100
 #: 165,784 with sound.sitting's pick, verdict.answer's member and loop.pick-one
 #: (§PW547).
 #: 166,604 with verdict.place and its two codes (§PW549).
-CAPABILITIES = 166_800
+#: 167,368 with clip.timeline and its two codes (§PW554).
+CAPABILITIES = 167_600
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
@@ -339,7 +342,8 @@ HELP_VERB = 4_900
 #: break, which no adopter can do without (§PW520).
 #: 31,771 with clip.shots (§PW372).
 #: 31,930 with verdict.place (§PW549).
-HELP_TOP = 32_000
+#: 32,077 with clip.timeline (§PW554).
+HELP_TOP = 32_200
 #: A search's answer over its default budget of 24 samples: 3,739.
 #: 4,019 where it fails with its best on an edge, which `at_bound` and `stopped` now
 #: say, so a range that cut the answer off is not read as unreachable (§PW442).

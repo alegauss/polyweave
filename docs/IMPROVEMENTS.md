@@ -94,26 +94,6 @@ this is where that is recorded honestly: what still runs by hand, and why the ri
 instead of disappearing. An outcome worth having, stated, beats the same outcome
 unstated.
 
-### §PW554 Declared timelines of a scene's properties
-
-Found in Spinhold (RK155, 2026-10-19). The title's logo reveal (the halo coming up out
-of the dark, the orbit spinning in, a light wiping the letters on from the edge, a hit
-as it settles) was to have "its timing and curves declared (polyweave clip)", as the
-cutscenes are with `clip.camera`. polyweave's clips are skeletal motion (`clip.new` keys
-joints for `motion.bake`), and `clip.camera` builds only camera shots. Nothing declares
-a keyed timeline of a scene's own properties (a Control's modulate, scale or a shader
-parameter) and builds it into the game, so the reveal's curves were written as constants
-and smoothsteps in game/ui/title_logo.gd, with a comment naming this line.
-
-What polyweave should do: a `clip.timeline` (or a kind of clip) that declares tracks of
-keyed values on named properties, `node:property` or `node:shader_parameter/name`, each
-with its easing, plus marks for a cue (a sound at a time), and builds it into a Godot
-`Animation` a game plays or seeks by time, recorded like the camera clip. `clip.shots`,
-or a capture of it, frames it to judge.
-
-Done when Spinhold's reveal is a declared timeline built by polyweave, and the constants
-in title_logo.gd are gone.
-
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once

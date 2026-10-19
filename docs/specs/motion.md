@@ -251,6 +251,22 @@ display and `args`, the game's own flags that open it where the clip plays; it w
 until the camera's node exists, frames the shots and closes the game, and a camera that
 never comes is `clip.camera-absent`, the game closed. So a world's cutscene is one call.
 
+**A scene's own properties are keyed in a timeline** (§PW554). Spinhold's title logo
+reveal, a halo rising out of the dark and a light wiping the letters on, was to be
+declared as the cutscenes are, and neither a joint clip nor a camera clip keys a
+Control's modulate or a shader's parameter. A `*.timeline.toml` names the timeline,
+an `easing` for its keys, an optional `length`, `[[track]]` tables and `[[mark]]`s. A
+track's `target` is `node:property` as an Animation track names it, a shader's included
+(`Letters:material:shader_parameter/wipe`); its `keys` are `{ at, value, ease }` in
+order, `ease` (linear, in, out, in_out or step) being the key's way to the next. A value
+is a number, a bool, two to four numbers (Vector2, Vector3, Color) or `#rrggbb`, one
+kind to a track. A mark is `{ at, name }`. `clip.timeline` writes `<name>.tscn`, an
+AnimationPlayer holding the one Animation, with the node it is a child of as the root
+its tracks' paths start from; it emits `mark(name)` as the play reaches each mark,
+called at once rather than deferred. A bool track is discrete. The record is of kind
+`timeline`, and the answer says the duration and how many tracks, keys and marks. Anything
+no Animation can play is `clip.bad-timeline`, a missing file `clip.no-timeline`.
+
 **Both are baked by name** (§PW160). Every step between a clip and what a game plays took a
 mesh and a fitted rig as objects in memory, which a JSON call cannot carry, so a GDScript
 project needed a Python script for motion and for nothing else. `motion.bake` takes the

@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 2 },
+  { block: "H", title: "Proof on a real game", open: 1 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
@@ -57,13 +57,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "a real project cannot adopt the plugin without carrying its own paths and palette into it",
     why: "Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82.",
     deps: ["PW82"],
-  },
-  {
-    id: "PW554",
-    block: "H",
-    symptom: "a keyed timeline of a scene's own properties cannot be declared and built, only skeletal motion and camera shots",
-    why: "Spinhold's title logo reveal had to keep its curves as constants in code, where the design asked them declared.",
-    deps: [],
   },
   {
     id: "PW202",

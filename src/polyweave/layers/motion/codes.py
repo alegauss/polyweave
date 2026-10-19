@@ -29,6 +29,18 @@ CODES: dict[str, Code] = {
         doors=("pass the args that open the game where the clip plays",
                "open the game with game.open, drive it there, and pass session"),
     ),
+    "clip.no-timeline": Code(
+        means="the timeline named is not there, or is not TOML",
+        when="clip.timeline on a path with no *.timeline.toml, or one that does not "
+        "parse (§PW554)",
+        doors=("name a *.timeline.toml relative to the project root",),
+    ),
+    "clip.bad-timeline": Code(
+        means="a timeline declares something no Animation can play",
+        when="an unknown key, a target with no property, keys out of order or of two "
+        "kinds, a value no property holds, or an easing outside the set (§PW554)",
+        doors=("correct the key the message names",),
+    ),
     "clip.unknown-property": Code(
         means="a channel drives something a joint does not have",
         when="a property outside the three glTF animates: rotation, scale, translation",
