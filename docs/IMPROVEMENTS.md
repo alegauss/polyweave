@@ -138,6 +138,51 @@ lay their sittings this way, and `verdict.answers` says which member was chosen,
 Done when Spinhold's next voice or take sitting shows one select, the owner picks one,
 and the chosen id reaches `voice.choose` from the answer alone.
 
+### §PW548 Measures for a transparent picture's edge
+
+Found in Spinhold (RK150, 2026-10-19). The game's 4K transparent logo
+(art/brand/spinhold-logo-4k.png, drawn by picture.vector) needed an acceptance spec
+whose bounds say its alpha edge is clean: no grey or dark halo round the letters, no
+wide half-transparent fringe left by a resize or a matte. RK150's design named
+`fringe_width` and `edge_width`; `measure.available` lists neither, and nothing among
+alpha_coverage, edge, luma or saturation reads the edge's alpha ramp. The spec
+(art/accept/spinhold-logo-4k.accept.toml) went out without the predicate, with a comment
+naming this line.
+
+What polyweave should do: measures over the boundary of a picture with an alpha
+channel, on the pixels whose alpha is between the floor and opaque:
+- `fringe_width`: the median width, in pixels, of that ramp across the silhouette's
+  edge, so a resize-softened or feathered edge reads wider than a crisp one;
+- `fringe_luma` and `fringe_delta_e`: the brightness and colour of the partly
+  transparent pixels against the opaque ones next to them, so a dark or white matte
+  halo (premultiplied wrongly, or keyed off a background) is caught.
+They take `region` like the rest, are listed by `measure.available`, and accept.check
+reads them as any predicate.
+
+Done when Spinhold's logo spec holds `fringe_width` and `fringe_delta_e`, and a copy
+resized with a dark matte fails them where the drawn one passes.
+
+### §PW549 Place an accepted take where the game loads it
+
+Found in Spinhold (RK168, 2026-10-19). `sound.speak` wrote three takes of the studio tag
+under art/review/rk168-studio-tag, `sound.sitting` laid them, and the owner accepted
+take_3 on the review page. The game loads the tag from
+game/audio/voice/SPLASH_STUDIO.mp3. No operation carries an accepted take there:
+`verdict.move` moves a whole sitting's folder, `verdict.promote` is for a gate's refused
+picture, `provenance.borrow` brings in another project's file. The agent copied the mp3
+and its .prov.json by hand. The copied record still names
+art/review/rk168-studio-tag/take_3.mp3 as its artefact, so `provenance.verify` checks
+the review copy twice and the game's file not at all.
+
+What polyweave should do: an operation (or `verdict.answers` with a `place` step) that
+takes an accepted member of a sitting and a destination under the project, or the cue
+the member was spoken or rendered for, copies it there, and writes a record for the new
+path that names the take it came from, the verdict that accepted it, and the purchase it
+was bought in. Re-running it after a new verdict replaces the file and its record.
+
+Done when Spinhold's SPLASH_STUDIO.mp3 is placed from the accepted take with a record
+naming its own path, and `provenance.verify` lists it.
+
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once
@@ -445,5 +490,26 @@ What polyweave should do: the prompts kit, before a player's first input, takes 
 family of the first connected pad where one is connected, and the keyboard where none
 is, and says which in its proof. Done when Spinhold's boot no longer sets the family and
 its prompts still name the pad on a launch with a pad plugged in.
+
+### §PW550 Kit records that name where the file landed
+
+Found in Spinhold (2026-10-19), running `provenance.verify` after RK216 moved the game
+onto the prompts and remap kits. It reports 128 records as missing: every icon and pad
+picture the kits brought, under addons/polyweave/prompts/icons and
+addons/polyweave/remap/{icons,pads}. Each copied .prov.json still names the artefact
+where polyweave built it, either `src/polyweave/layers/kits/prompts/core/icons/...` or a
+bare `core/icons/...`, paths that exist in polyweave's checkout and not in the game. The
+files are present in the game; only their records point elsewhere. So the verify a
+project runs before release is drowned in 128 false findings, and a real missing
+artefact would hide among them.
+
+What polyweave should do: `kit.install` and `kit.update` rewrite each copied record so
+its artefact is the path it lands at in the project, keep the kit-side path as the
+source it was copied from, and record the kit version. The two spellings (with and
+without `src/polyweave/layers/kits/`) should become one. Spinhold's existing records are
+fixed by the next `kit.update`.
+
+Done when `provenance.verify` in Spinhold lists the kit's icons and pads as ok and
+reports nothing missing.
 
 ## Block W — A core that grows by layers

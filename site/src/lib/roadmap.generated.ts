@@ -32,7 +32,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
   { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 3 },
+  { block: "H", title: "Proof on a real game", open: 5 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 1 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 2 },
   { block: "W", title: "A core that grows by layers", open: 0 },
 ];
 
@@ -70,6 +70,20 @@ export const generatedTasks: GeneratedTask[] = [
     block: "H",
     symptom: "a sitting of alternatives for one slot lets a person accept every one, with no way to pick just one",
     why: "Spinhold's owner accepted all three studio voices in a batch, so the choice had to be asked again in chat.",
+    deps: [],
+  },
+  {
+    id: "PW548",
+    block: "H",
+    symptom: "no measure reads a transparent picture's alpha edge, so a halo or a wide soft fringe round it passes every spec",
+    why: "Spinhold's 4K logo spec could not hold its edge clean, the one thing a transparent copy for stores and streams must keep.",
+    deps: [],
+  },
+  {
+    id: "PW549",
+    block: "H",
+    symptom: "an accepted take cannot be placed at the path the game loads, so it is copied by hand with a record naming its old path",
+    why: "Spinhold copied its studio tag and record by hand, and provenance.verify then checked the review copy twice and the game's file never.",
     deps: [],
   },
   {
@@ -119,6 +133,13 @@ export const generatedTasks: GeneratedTask[] = [
     block: "V",
     symptom: "the prompts kit starts on the keyboard before any input, so a game launched with a pad in hand shows keys",
     why: "Spinhold sets the prompt family itself at boot to name the plugged-in pad, a rule the kit should keep.",
+    deps: [],
+  },
+  {
+    id: "PW550",
+    block: "V",
+    symptom: "a kit's copied records name the artefact inside polyweave's tree, so provenance.verify reports every kit icon missing",
+    why: "Spinhold's verify lists 128 false missing records from the prompts and remap kits, which would hide a real one.",
     deps: [],
   },
 ];
