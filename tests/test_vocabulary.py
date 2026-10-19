@@ -9,6 +9,8 @@ a star's silhouette becomes a mesh that *is* the drawn sprite.
 from __future__ import annotations
 
 import math
+import subprocess
+import sys
 
 import numpy as np
 import pytest
@@ -576,6 +578,17 @@ def test_a_bevel_softens_every_edge():
     assert after["faces"] > before["faces"]
     low, high = after["bounds"]
     assert high[0] - low[0] == pytest.approx(4.0, abs=0.01), "a bevel cuts in, not out"
+
+
+def test_a_bevel_is_a_process_first_call_to_blender():
+    # bmesh exists only once bpy is loaded; a fresh process that bevels first had none
+    # (§PW563), which a suite that has loaded bpy already never sees
+    solving()
+    code = ("from polyweave.layers.geometry import solid as S, solver; "
+            "print(len(solver.bevel(S.primitive('cube', 4.0), 0.4)['faces']))")
+    ran = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True,
+                         timeout=300)
+    assert ran.returncode == 0, ran.stderr[-400:]
 
 
 def test_a_build_carves_before_it_bevels():

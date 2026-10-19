@@ -120,11 +120,13 @@ def bevel(
     subject: Any, offset: float, *, segments: int = 3, profile: float = 0.5
 ) -> dict:
     """Soften every edge. Applied **after** a boolean, never before one."""
-    import bmesh
-
     from .render import blender
 
     bpy = blender.require()
+    # bmesh is Blender's and exists only once bpy is loaded: imported first, a process
+    # whose first Blender call is a bevel had none (§PW563)
+    import bmesh
+
     blender.reset()
     obj = _object(bpy, subject, "bevelled")
     working = bmesh.new()
