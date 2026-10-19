@@ -72,7 +72,12 @@ fixture = "fixture"           # a minimal Godot project it is proved in, in this
 - `[proves] script` is a GDScript inside the core, run headless in the game after the
   spec holds, for what only a running game can say (every bound action has an icon in
   every family, say). It prints `KIT PROVED`, or `KIT FAILED: <why>`, and the answer
-  carries that line; with no `$GODOT` it is `skipped` and said (§PW344). What a running
+  carries that line; with no `$GODOT` it is `skipped` and said (§PW344). A script may
+  print `KIT STEP <what>` as it reaches each step: a run cut short before its verdict,
+  by the engine's timeout or an exit, then says `<verdict>: the proof's last step was
+  <what>` rather than only that nothing came (§PW546). The dialogue proof does, and
+  times its typing by the frame time it sums, as the box types, never a wall clock read
+  before the first frame. What a running
   game mixes is heard only while it runs, so a script may write what it heard beside the
   game and print `KIT SOUND <path> <measure> <min> <max>`, the path under the game: the
   answer holds that file to its bounds with `sound.measure`, the measure a track is held

@@ -17,7 +17,10 @@ var sequences := {}
 var locales: Array[String] = []
 var stage := "type"
 var box: _PwDialogue
-var since := 0
+## the frame time summed since the first line began typing, as the box itself counts it:
+## a wall clock read from _initialize counted a slow first frame under load as typing
+## (§PW546)
+var typed_for := 0.0
 var fits := []
 var frames := 0
 
@@ -28,7 +31,7 @@ func _initialize() -> void:
 	sequences = _PwDialogue.declaration()["SEQUENCES"]
 	if sequences.is_empty():
 		failed.append("res://polyweave_dialogue.gd declares no SEQUENCES to walk")
-		stage = "done"
+		_step("done")
 		return
 	if locales.is_empty():
 		locales.assign([TranslationServer.get_locale()])
@@ -39,7 +42,14 @@ func _initialize() -> void:
 				fits.append([locale, name, line])
 	box = _PwDialogue.box(sequences.keys()[0])
 	root.add_child(box)
-	since = Time.get_ticks_msec()
+	_step("type")
+
+
+## move on to `next`, and say so: a run cut short before its verdict then says which step
+## it was on (§PW546)
+func _step(next: String) -> void:
+	stage = next
+	print("KIT STEP ", next)
 
 
 func _pad(index: int) -> void:
@@ -52,9 +62,10 @@ func _pad(index: int) -> void:
 	root.push_input(released)
 
 
-func _process(_delta: float) -> bool:
+func _process(delta: float) -> bool:
 	match stage:
 		"type":
+			typed_for += delta
 			_typed()
 		"walk":
 			for family in PRESS:
@@ -62,7 +73,7 @@ func _process(_delta: float) -> bool:
 					_walk(family, name)
 			box = _PwDialogue.box(sequences.keys()[0])
 			root.add_child(box)
-			stage = "fit"
+			_step("fit")
 		"fit":
 			_fit()
 		"done":
@@ -71,24 +82,29 @@ func _process(_delta: float) -> bool:
 	return false
 
 
-## the first line, typed on its own at the declared rate
+## the first line, typed on its own at the declared rate: never ahead of the frame time
+## gone by, and whole within twice the time the rate gives it plus a second
 func _typed() -> void:
 	var text := box.find_child("Text", true, false) as Label
 	if text == null:
 		failed.append("the box has no Label named Text")
-		stage = "done"
+		_step("done")
 		return
 	var total := text.get_total_character_count()
-	if box.typing():
-		return
-	var took := (Time.get_ticks_msec() - since) / 1000.0
 	var expected := total / box.rate
-	if total > 1 and (took < expected * 0.6 or took > expected * 1.5 + 0.1):
+	var shown := total if text.visible_characters == -1 else text.visible_characters
+	var typing := box.typing()
+	if total > 1 and shown > int(typed_for * box.rate) + 1:
 		failed.append("%d characters typed in %.2fs, not the %.2fs a rate of %.0f declares" % [
-			total, took, expected, box.rate])
+			shown, typed_for, shown / box.rate, box.rate])
+	elif typing and typed_for > expected * 2.0 + 1.0:
+		failed.append("%d of %d characters typed in %.2fs, not the %.2fs a rate of %.0f declares"
+			% [shown, total, typed_for, expected, box.rate])
+	elif typing:
+		return
 	box.queue_free()
 	box = null
-	stage = "walk"
+	_step("walk")
 
 
 ## every line of a sequence by one family's confirm alone, the other family's ignored
@@ -150,7 +166,7 @@ func _shows(walking: _PwDialogue, line: Dictionary) -> void:
 ## each line whole in each locale, two frames on so it is laid out, held to its box
 func _fit() -> void:
 	if fits.is_empty():
-		stage = "done"
+		_step("done")
 		return
 	var locale: String = fits[0][0]
 	var line: Dictionary = fits[0][2]

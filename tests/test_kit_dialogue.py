@@ -28,6 +28,24 @@ def test_the_dialogue_kit_is_skipped_without_an_engine(monkeypatch):
     assert said["status"] == "skipped"
 
 
+def test_a_proof_cut_short_says_the_last_step_it_reached(tmp_path, monkeypatch):
+    # under the gate's load a proof came back no-signal with nothing to read (§PW546)
+    from polyweave.layers.engine import engine
+
+    log = tmp_path / "proof.log"
+    log.write_text("KIT STEP type\nKIT STEP walk\n", encoding="utf-8")
+    monkeypatch.setenv("GODOT", "godot")
+    monkeypatch.setattr(engine, "run", lambda *a, **k: {
+        "ok": False, "verdict": "timeout", "log": str(log), "errors": []})
+    [found] = kits._scripts(["dialogue"], kits.every(), tmp_path)
+    assert found["status"] == "failed"
+    assert found["said"] == "timeout: the proof's last step was walk"
+    # a verdict printed after the steps is still what is said
+    log.write_text("KIT STEP type\nKIT FAILED: a line\n", encoding="utf-8")
+    [found] = kits._scripts(["dialogue"], kits.every(), tmp_path)
+    assert found["said"] == "KIT FAILED: a line"
+
+
 def _installed(tmp_path):
     game = tmp_path / "game"
     shutil.copytree(kits.KITS / "dialogue" / "fixture", game)

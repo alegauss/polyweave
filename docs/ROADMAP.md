@@ -17,7 +17,6 @@
 ## Block H — Proof on a real game
 
 - 🛠 **PW36** (deps: PW5 ✅, PW82 ⏸) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82. → §PW36
-- 🛠 **PW546** (deps: —) **a dialogue kit proof ends with no signal under the full gate's load, so its broken-box case fails with nothing to read** — It passed alone four times on a tree that never touched it, and a gate red by chance teaches the next run to rerun it. → §PW546
 - 📋 **PW547** (deps: —) **a sitting of alternatives for one slot lets a person accept every one, with no way to pick just one** — Spinhold's owner accepted all three studio voices in a batch, so the choice had to be asked again in chat. → §PW547
 - 📋 **PW548** (deps: —) **no measure reads a transparent picture's alpha edge, so a halo or a wide soft fringe round it passes every spec** — Spinhold's 4K logo spec could not hold its edge clean, the one thing a transparent copy for stores and streams must keep. → §PW548
 - 📋 **PW549** (deps: —) **an accepted take cannot be placed at the path the game loads, so it is copied by hand with a record naming its old path** — Spinhold copied its studio tag and record by hand, and provenance.verify then checked the review copy twice and the game's file never. → §PW549

@@ -94,25 +94,6 @@ this is where that is recorded honestly: what still runs by hand, and why the ri
 instead of disappearing. An outcome worth having, stated, beats the same outcome
 unstated.
 
-### §PW546 The dialogue proof ends on the game's signal
-
-On 2026-10-18 the gate went red at 98ea6d5 on
-`test_kit_dialogue.py::test_a_broken_dialogue_box_fails_the_proof_by_name`, in its
-`_shown += 100000.0` case (a box that types every character at once). The proof came
-back `no-signal`: it printed no KIT line before the engine run's timeout, so the test
-found no "characters typed in" to read. The file passed four runs out of four alone, and
-the change under test touched no dialogue code.
-
-So under the full gate's twelve workers this proof, with that mutation, runs past the
-time it is given, where alone it finishes. Like PW525, the proof is racing the clock.
-
-Measure first: run the file under `-n 12` beside the render and kit tests ten times and
-count `no-signal`, and read the dialogue proof for a wait counted in wall-clock time or
-in frames that the mutation can stretch. Then make the proof end on the game's own
-signal. Each typed-in check waits for the box's own `finished` or a frame count it sets,
-not a time, and a proof that cannot finish says which step it was on. Done when the file
-holds ten runs of ten under the gate's load.
-
 ### §PW547 Pick one of several on the review page
 
 Found in Spinhold (RK168, 2026-10-19). `voice.design` laid three previews of the studio

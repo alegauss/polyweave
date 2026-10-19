@@ -72,6 +72,8 @@ PART = {"requires", "core", "scene"}
 
 #: The line a kit's proof script prints when it holds, and the one when it does not.
 PROVED = r"^KIT PROVED$"
+#: What a proof prints as it reaches each step, so a run cut short says where (§PW546).
+STEP = "KIT STEP "
 
 _VERSION = re.compile(r"^\d+\.\d+\.\d+$")
 _NAME = re.compile(r"^[a-z][a-z0-9_]*$")
@@ -657,6 +659,12 @@ def _scripts(order: list, kits: dict, here: Path) -> list[dict]:
             )
             continue
         lines = [ln for ln in printed.splitlines() if ln.startswith("KIT ")]
+        # A proof says each step as it reaches it (`KIT STEP <what>`), so one cut short
+        # before its verdict says where it was, not only that nothing came (§PW546).
+        steps = [ln.removeprefix(STEP) for ln in lines if ln.startswith(STEP)]
+        lines = [ln for ln in lines if not ln.startswith(STEP)]
+        stopped = (f"{found.get('verdict')}: the proof's last step was {steps[-1]}"
+                   if steps else found.get("verdict"))
         errors = found.get("errors") or []
         # The engine's first error with its file and line, where there is one: a
         # proof that would not parse printed "KIT PROVED" from nothing, and said so
@@ -668,7 +676,7 @@ def _scripts(order: list, kits: dict, here: Path) -> list[dict]:
                 "script": at.as_posix(),
                 "status": "failed",
                 "said": (f"{first['text']} ({first['at'] or 'no line named'})" if first
-                         else lines[-1] if lines else found.get("verdict")),
+                         else lines[-1] if lines else stopped),
                 **({"at": first["at"]} if first and first.get("at") else {}),
             }
         )
