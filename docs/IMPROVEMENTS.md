@@ -154,6 +154,52 @@ model and the members.
 
 ## Block P — Music and sound a game can ship
 
+### §PW558 Stems from a recorded track
+
+Where: spinhold, 2026-10-19. The owner handed over a bought/recorded intro track
+(`spinhold-intro.mp3`, 64.8 s, 44.1 kHz stereo) whose last ten seconds carry a spoken
+"Viglet Games" over the closing chord, and asked for it instrumental, through polyweave.
+
+What came back: `python -m polyweave describe` has no operation that splits a recorded
+mix. `sound.loop` cuts on a beat grid, `sound.measure` measures, `sound.speech` checks a
+spoken take against its line; none removes a voice from music. Cutting before the voice
+is no answer here: the voice sits on top of the final chord (49–58 s), so a cut loses
+the ending.
+
+Workaround: a scratch venv with CPU torch and Demucs (`htdemucs`, two-stem `--two-stems
+vocals`), run by hand outside the project; the `no_vocals` stem was the deliverable.
+faster-whisper with word timestamps was used by hand to find where the voice was.
+
+What polyweave should do: a `sound.stems` operation (layer sound) taking a recorded
+track under the project and writing its stems (vocals, drums, bass, other, or
+vocals/no_vocals) next to it, each with a `.prov.json` naming the model and its version.
+It should report, per stem, loudness and the spans where it is active (so "where is the
+voice" is answered without a transcriber), and refuse with a remedy when the separation
+model is not installed. Optional: `--keep` to write the mix minus chosen stems in one
+call.
+
+### §PW559 A recording drafted as a score
+
+Where: spinhold, 2026-10-19. The owner asked for a recorded intro track
+(`spinhold-intro.mp3`) to become a `*.music.toml` so it can be edited and rendered like
+the game's other themes (`art/audio/title.music.toml`).
+
+What came back: polyweave goes score -> audio (`music.render`) and score -> MIDI
+(`music.to_midi`) but never audio -> score. `reference.transcription` is for a reference
+video, not music.
+
+Workaround: stems from Demucs (see the stem-separation line), each transcribed to MIDI
+by basic-pitch in a scratch venv, then tempo, key, chords and lines read from the MIDI
+and the score written by hand by the agent into `art/audio/intro.music.toml`.
+
+What polyweave should do: `music.from_audio` (or `music.from_midi` as the first rung)
+taking a recording or a MIDI file and drafting a valid `*.music.toml`: estimated bpm,
+meter and key; one `[[track]]` per stem or MIDI track with a guessed instrument; notes
+quantised to the grid and folded into mini-notation patterns with repeats (`!n`) found;
+sections found from repetition. It should answer with the score's `music.validate`
+result and a confidence per track, and the draft should go to a person (`sound.sitting`)
+beside the original, since the timbres will differ.
+
 ## Block Q — Words held to the world
 
 ## Block R — Levels measured before a person plays them

@@ -34,6 +34,9 @@
 
 ## Block P — Music and sound a game can ship
 
+- 📋 **PW558** (deps: —) **A voice over a recorded music track cannot be removed through polyweave** — A project hand-installs a separation model and runs it outside provenance to get an instrumental. → §PW558
+- 📋 **PW559** (deps: —) **A recorded track cannot become an editable music.toml score** — The agent transcribes by hand through ad-hoc tools, so a bought theme never joins the scores the game edits and renders. → §PW559
+
 ## Block Q — Words held to the world
 
 ## Block R — Levels measured before a person plays them
