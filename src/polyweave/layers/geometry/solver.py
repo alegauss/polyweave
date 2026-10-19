@@ -55,6 +55,12 @@ def available() -> dict:
 
 
 def _object(bpy: Any, subject: Any, name: str) -> Any:
+    """The subject as a Blender object, each material it wears a slot of its own.
+
+    What a face wears goes in as its polygon's material index (§PW564), so the solve
+    carries it: a bevel's new faces take the face they grew from, and a carve's cut
+    faces the cutter's.
+    """
     from .render import blender
 
     points, faces = as_mesh(subject)
@@ -62,6 +68,18 @@ def _object(bpy: Any, subject: Any, name: str) -> Any:
     mesh.from_pydata(
         [blender.to_blender(p) for p in points], [], [list(face) for face in faces]
     )
+    worn = subject.get("groups") if isinstance(subject, dict) else None
+    if worn:
+        names = list(dict.fromkeys(str(one["material"]) for one in worn))
+        for material in names:
+            mesh.materials.append(
+                bpy.data.materials.get(material) or bpy.data.materials.new(material)
+            )
+        index = np.zeros(len(faces), dtype=np.int32)
+        for one in worn:
+            start, end = (int(v) for v in one["faces"])
+            index[start:end] = names.index(str(one["material"]))
+        mesh.polygons.foreach_set("material_index", index)
     mesh.update()
     obj = bpy.data.objects.new(name, mesh)
     bpy.context.scene.collection.objects.link(obj)
@@ -69,12 +87,28 @@ def _object(bpy: Any, subject: Any, name: str) -> Any:
 
 
 def _back(obj: Any) -> dict:
-    """The object's mesh, back in the interface's own axes."""
+    """The object's mesh, back in the interface's own axes, with what each face wears.
+
+    Faces are ordered by their material, so each material is one run of them, as a
+    group is.
+    """
     world = [obj.matrix_world @ v.co for v in obj.data.vertices]
-    return {
-        "vertices": np.array([(v.x, v.z, -v.y) for v in world], dtype=float),
-        "faces": [tuple(p.vertices) for p in obj.data.polygons],
-    }
+    faces = [tuple(p.vertices) for p in obj.data.polygons]
+    out: dict = {"vertices": np.array([(v.x, v.z, -v.y) for v in world], dtype=float)}
+    slots = [slot.material for slot in obj.material_slots]
+    if not slots or not any(slots):
+        return {**out, "faces": faces}
+    worn = [min(p.material_index, len(slots) - 1) for p in obj.data.polygons]
+    order = sorted(range(len(faces)), key=lambda i: worn[i])
+    out["faces"] = [faces[i] for i in order]
+    groups, start = [], 0
+    for slot, material in enumerate(slots):
+        count = sum(1 for i in order if worn[i] == slot)
+        if count and material is not None:
+            groups.append({"material": material.name, "faces": [start, start + count]})
+        start += count
+    out["groups"] = groups
+    return out
 
 
 def _recalculated(bpy: Any, obj: Any) -> None:
@@ -101,6 +135,9 @@ def carve(into: Any, cutter: Any, *, min_faces: int = 1) -> dict:
     modifier.operation = "DIFFERENCE"
     modifier.object = knife
     modifier.solver = SOLVER
+    # the cut's walls wear the cutter's materials, added to the target's slots (§PW564)
+    if hasattr(modifier, "material_mode"):
+        modifier.material_mode = "TRANSFER"
     bpy.context.view_layer.objects.active = target
     bpy.ops.object.modifier_apply(modifier=modifier.name)
 
@@ -140,6 +177,8 @@ def bevel(
             segments=int(segments),
             profile=float(profile),
             affect="EDGES",
+            # a new face wears the faces it grew between, not the first slot (§PW564)
+            material=-1,
         )
     working.to_mesh(obj.data)
     working.free()
@@ -163,5 +202,7 @@ def build(
 
 
 def as_dict(subject: Any) -> dict:
+    """The subject's points and faces, and what they wear where it says (§PW564)."""
     points, faces = as_mesh(subject)
-    return {"vertices": points, "faces": faces}
+    worn = subject.get("groups") if isinstance(subject, dict) else None
+    return {"vertices": points, "faces": faces, **({"groups": worn} if worn else {})}

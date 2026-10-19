@@ -591,6 +591,31 @@ def test_a_bevel_is_a_process_first_call_to_blender():
     assert ran.returncode == 0, ran.stderr[-400:]
 
 
+def _worn(subject: dict) -> dict:
+    return {g["material"]: g["faces"][1] - g["faces"][0] for g in subject["groups"]}
+
+
+def test_a_bevel_and_a_carve_keep_what_each_face_wears():
+    # the solve went through Blender with no material on any face, so a bevelled
+    # piece in three colours came back in none (§PW564)
+    solver = solving()
+    cube = S.primitive("cube", 4.0)
+    cube["groups"] = [{"material": "pink", "faces": [0, 3]},
+                      {"material": "cream", "faces": [3, 6]}]
+    soft = solver.bevel(cube, 0.4)
+    assert set(_worn(soft)) == {"pink", "cream"}
+    assert sum(_worn(soft).values()) == len(soft["faces"])
+    # the rounds are shared out between the two, not all laid on the first slot
+    assert abs(_worn(soft)["pink"] - _worn(soft)["cream"]) <= len(soft["faces"]) // 4
+    knife = S.transform(S.primitive("cube", 2.0), at=(0, 0, 2.0))
+    knife["groups"] = [{"material": "violet", "faces": [0, len(knife["faces"])]}]
+    cut = solver.carve(cube, knife)
+    assert {"pink", "cream", "violet"} <= set(_worn(cut))
+    assert sum(_worn(cut).values()) == len(cut["faces"])
+    # and through a build's own path, which is how a bevel node reaches it
+    assert set(_worn(solver.build(cube, bevel_by=0.4))) == {"pink", "cream"}
+
+
 def test_a_build_carves_before_it_bevels():
     """A cut against an already-bevelled object is the case that went empty."""
     solver = solving()

@@ -52,7 +52,9 @@ def write(
         if isinstance(one, dict) and one.get("image") else one
         for name, one in resolved.items()
     }
-    written = write_mesh(made["output"], where, materials=materials)
+    written = write_mesh(
+        made["output"], where, materials=materials, smooth=document.get("smooth")
+    )
     # glTF carries a colour and a roughness and drops a look, so a material that asks
     # for one is also written as Godot loads it, with the bake's numbers (§PW495).
     godot = [

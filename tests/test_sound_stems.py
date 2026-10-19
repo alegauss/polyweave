@@ -124,6 +124,7 @@ def test_without_demucs_the_split_is_refused_with_its_extra():
 
 @needs_ffmpeg
 @needs_demucs
+@pytest.mark.serial  # torch in a parallel worker crashed it under the gate
 def test_the_real_model_hears_a_tone_as_no_voice(tmp_path):
     t = np.arange(int(4 * RATE)) / RATE
     pulse = 1 + np.sign(np.sin(2 * np.pi * 2 * t))

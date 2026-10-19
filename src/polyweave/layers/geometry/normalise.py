@@ -639,7 +639,10 @@ def _painted(obj: Any) -> dict:
     return out
 
 
-def write_mesh(found: dict, out: str | Path, *, materials: dict | None = None) -> Path:
+def write_mesh(
+    found: dict, out: str | Path, *, materials: dict | None = None,
+    smooth: float | None = None,
+) -> Path:
     """Write the mesh out, so nothing downstream carries the correction.
 
     **Everything the mesh worked out comes with it** (§PW69). This used to write
@@ -650,6 +653,11 @@ def write_mesh(found: dict, out: str | Path, *, materials: dict | None = None) -
 
     `materials` is the document's own table, name to shader inputs, and it is needed
     because a group names a material and a file needs the material itself.
+
+    `smooth`, in degrees (§PW564), shades smooth every edge flatter than it and leaves
+    the sharper ones flat, so a moulded piece shows a round highlight and not its
+    facets. Points at one place are welded first, since a normal is only shared across
+    a point two faces share; the shape does not move.
     """
     from .render import blender
 
@@ -679,6 +687,17 @@ def write_mesh(found: dict, out: str | Path, *, materials: dict | None = None) -
     for other in bpy.context.scene.objects:
         other.select_set(other is obj)
     bpy.context.view_layer.objects.active = obj
+    if smooth:
+        import math
+
+        import bmesh
+
+        working = bmesh.new()
+        working.from_mesh(mesh)
+        bmesh.ops.remove_doubles(working, verts=working.verts[:], dist=1e-6)
+        working.to_mesh(mesh)
+        working.free()
+        bpy.ops.object.shade_smooth_by_angle(angle=math.radians(float(smooth)))
     bpy.ops.export_scene.gltf(
         filepath=str(where),
         use_selection=True,

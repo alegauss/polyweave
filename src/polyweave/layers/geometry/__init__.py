@@ -159,13 +159,28 @@ def parse(stated: dict, *, named: str = "a declaration") -> dict:
     # One shape at other proportions or colours (§PW103), kept in the one document.
     if stated.get("variants"):
         document["variants"] = {k: dict(v) for k, v in stated["variants"].items()}
+    # Shaded smooth across every edge flatter than this many degrees (§PW564), where it
+    # is asked for: without it a mesh is written faceted, as it always was.
+    if stated.get("smooth") is not None:
+        smooth = stated["smooth"]
+        if isinstance(smooth, bool) or not isinstance(smooth, (int, float)) or not (
+            0 < float(smooth) <= 180
+        ):
+            raise PolyweaveError(
+                "geom.malformed",
+                f"smooth is {smooth!r}, and it is the angle in degrees below which an "
+                f"edge is shaded smooth",
+                "write smooth as a number of degrees above 0 and up to 180, such as 30",
+                at="smooth",
+            )
+        document["smooth"] = float(smooth)
     return document
 
 
 #: What a document may say at its top level (§PW146).
 DOCUMENT_FIELDS = (
     "name", "version", "params", "materials", "nodes", "output",
-    "voxels", "search", "variants",
+    "voxels", "search", "variants", "smooth",
 )
 
 #: What one `repeat` range may say.

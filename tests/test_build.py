@@ -190,6 +190,49 @@ def _bevelled(tmp_path, **how) -> int:
     return len(B.build(document, root=tmp_path)["output"]["faces"])
 
 
+def _shading(path: Path) -> tuple[int, float]:
+    """A written ball's point count, and how far its normals stray from the radial
+    direction at the worst corner, in degrees: smooth is near none, faceted is not."""
+    from polyweave.layers.geometry.render import blender
+
+    bpy = blender.require()
+    blender.reset()
+    bpy.ops.import_scene.gltf(filepath=str(path))
+    meshes = [o.data for o in bpy.context.scene.objects if o.type == "MESH"]
+    worst = 0.0
+    for m in meshes:
+        for loop in m.loops:
+            out = np.asarray(m.vertices[loop.vertex_index].co, dtype=float)
+            normal = np.asarray(m.corner_normals[loop.index].vector, dtype=float)
+            turn = np.dot(out / np.linalg.norm(out), normal / np.linalg.norm(normal))
+            worst = max(worst, float(np.degrees(np.arccos(np.clip(turn, -1, 1)))))
+    return sum(len(m.vertices) for m in meshes), worst
+
+
+def test_a_document_asks_for_smooth_shading_by_angle(tmp_path):
+    """§PW564: written faceted unless asked, and smooth and welded where it is."""
+    solving()
+    from polyweave.layers.geometry import solid as S
+    from polyweave.layers.geometry.normalise import write_mesh
+
+    ball = S.primitive("sphere", 2.0, steps=16)
+    flat = write_mesh(ball, tmp_path / "flat.glb")
+    soft = write_mesh(ball, tmp_path / "soft.glb", smooth=30)
+    flat_points, flat_stray = _shading(flat)
+    soft_points, soft_stray = _shading(soft)
+    assert soft_stray < 2.0 < flat_stray
+    assert soft_points < flat_points, "a normal is shared only where a point is"
+
+
+@pytest.mark.parametrize("smooth", ["0", "-5", "200", '"soft"', "true"])
+def test_a_smooth_that_is_not_an_angle_is_refused(tmp_path, smooth):
+    body = f'name = "ball"\noutput = "it"\nsmooth = {smooth}\n'
+    body += '[[nodes]]\nid = "it"\nop = "primitive"\nkind = "sphere"\n'
+    with pytest.raises(PolyweaveError) as refused:
+        document(tmp_path, body, "ball.toml")
+    assert refused.value.code == "geom.malformed"
+
+
 def test_a_bevel_says_how_many_segments_and_what_profile(tmp_path):
     """§PW493: more segments round further, and a chamfer is one flat cut."""
     solving()

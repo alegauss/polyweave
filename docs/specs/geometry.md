@@ -84,7 +84,7 @@ node is it.
 
 **A key nothing reads is refused where it is written** (§PW146), as `geom.unknown-field`
 with the path to it and the nearest real name. The document takes `name`, `version`,
-`params`, `materials`, `nodes`, `output`, `voxels`, `search` and `variants`. Every node
+`params`, `materials`, `nodes`, `output`, `voxels`, `search`, `variants` and `smooth`. Every node
 takes `id`, `op`, `material`, `repeat` and `at`, a repeat range takes `var`, `from`, `to`
 and `step`, and each op takes the fields its own module under `geometry/ops/` declares
 beside the adapter that reads them, so the list and the reading cannot drift apart. `custom` is
@@ -210,6 +210,18 @@ the rounded box's distance. A radius of 0 or past half the smallest side is
 A `bevel`, and a `carve`'s, takes `segments` (default 3) and `profile`: `round`, the
 default, or `chamfer`, one flat cut whatever the segments. So an existing node rounds as
 a moulded part does, and not as a chamfer.
+
+**A solve keeps what each face wears** (§PW564). A bevel and a carve go through
+Blender, and each material goes in as a slot of its own and comes back as a group, so a
+bevelled piece in three colours is still in three: a bevel's new faces wear the face
+they grew from, and a carve's walls the cutter's. Before, both came back in none.
+
+**`smooth` shades a mesh smooth by angle** (§PW564): every edge whose faces turn by
+less than that many degrees shares its normals, and the sharper ones stay flat, so a
+moulded piece shows one round highlight and not its facets. `smooth = 30` is a soft
+toy's; points at one place are welded first, since a normal is only shared across a
+point two faces share. A document without it is written faceted, as it always was, and
+one that is not a number of degrees above 0 and up to 180 is `geom.malformed`.
 
 **A `blend` makes parts flow into each other** (§PW498), as a tree's crown melts onto
 its trunk: `inputs` (two or more ids) joined by a fillet of `radius` where they meet,
