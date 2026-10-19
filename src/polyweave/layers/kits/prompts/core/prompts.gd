@@ -128,16 +128,29 @@ func follow(redraw: Callable) -> void:
 		_followers.append(redraw)
 
 
+## Whether a follower can still be called, asked again just before each call (§PW552):
+## a follower that closes a screen frees the next one's node in the same refresh, after
+## the list was filtered, and calling its lambda then is an error on a null instance,
+## once per freed screen. Its object is asked after as well as the callable; a lambda
+## made in no object stays.
+static func _alive(redraw: Callable) -> bool:
+	var made_in := redraw.get_object_id()
+	return redraw.is_valid() and (made_in == 0 or is_instance_id_valid(made_in))
+
+
 ## Refill every watched label and run every follower: what a device, binding or
 ## language change does, and what a game calls after changing bindings by hand.
 func refresh() -> void:
 	_watched = _watched.filter(func(one: Array) -> bool: return one[0].get_ref() != null)
 	for one in _watched:
 		var label: Object = one[0].get_ref()
-		label.set("text", _filled(one))
-	_followers = _followers.filter(func(redraw: Callable) -> bool: return redraw.is_valid())
-	for redraw in _followers:
-		redraw.call()
+		if label != null:
+			label.set("text", _filled(one))
+	_followers = _followers.filter(_alive)
+	for redraw in _followers.duplicate():
+		if _alive(redraw):
+			redraw.call()
+	_followers = _followers.filter(_alive)
 
 
 ## A binding changed somewhere: the shared service refills, where there is one. The

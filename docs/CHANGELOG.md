@@ -583,6 +583,7 @@
 - ✅ **PW545** **the prompts kit starts on the keyboard before any input, so a game launched with a pad in hand shows keys** — Before any input the prompts kit takes the first connected pad's family, the keyboard where none is, so a game needs no boot code to name the pad (design recorded in `docs/specs/kit.md`).
 - ✅ **PW550** **a kit's copied records name the artefact inside polyweave's tree, so provenance.verify reports every kit icon missing** — kit.install and kit.update rewrite each copied record to name the file where it landed in the game, so verify finds every kit icon (design recorded in `docs/specs/kit.md`).
 - ✅ **PW551** **a help line's {action} marks fill only as words; bbcode reads another mark, ignores the player and pad, and drops {move}** — fill_bbcode draws a help row's own {action} and {move} marks as each player's icons, words where none, and watch_bbcode keeps it filled (design recorded in `docs/specs/kit.md`).
+- ✅ **PW552** **the prompts kit's follow keeps a lambda whose node was freed, and the next refresh calls it on a null instance** — refresh asks each follower again just before calling it, so a screen freed mid-refresh is let go (design superseded: the freeing was mid-refresh) (design recorded in `docs/specs/kit.md`).
 
 ## Block W — A core that grows by layers
 

@@ -429,26 +429,6 @@ differently, and a skeleton that suits one may fight the next. So it stays an id
 Starship and Cottony both show code it would replace, at which point the shape it should
 take is read off that code rather than invented here.
 
-### §PW552 Let a freed lambda follower go
-
-Found in Spinhold (RK239, 2026-10-19). A help label called
-`PolyweavePrompts.shared().follow(func() -> void: show_line(...))` from a node that was
-later freed. On the next `refresh()` (the remap kit's `load_kept` calls `rebound()`),
-the kit filtered followers with `redraw.is_valid()`, kept the lambda because a GDScript
-lambda's callable still reads as valid after its instance is freed, and called it:
-"Attempt to call function '<anonymous lambda>' on a null instance", once per freed
-screen. The doc comment promises "one whose object is freed is let go".
-
-Spinhold's workaround: follow a bound method (`_refill`) instead of a lambda, with a
-comment naming this line.
-
-What polyweave should do: `follow` and `refresh` let a follower go when
-`redraw.get_object()` is null or freed (`is_instance_valid`), not only when `is_valid()`
-fails, so a lambda made in a node is dropped with the node; the kit's proof frees a node
-that followed with a lambda and refreshes, and expects no error.
-
-Done when a freed node's lambda follower is dropped silently.
-
 ### §PW555 Ready button maps in the remap kit
 
 Found in Spinhold (RK149, 2026-10-19). Its owner wants ready button maps a player picks

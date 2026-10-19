@@ -278,7 +278,10 @@ on every change a help line depends on: a player's device moving, a binding chan
 which the remap kit says with `PolyweavePrompts.rebound()` on every rebind, reset and
 load, and the language changing (`NOTIFICATION_TRANSLATION_CHANGED`). A game that
 changes a binding by hand calls `refresh()`. A label freed, or a callable whose object
-is, is let go.
+is, is let go, and each is asked again just before it is filled or called (§PW552,
+0.7.1): one screen's follower closing another frees that screen's node mid-refresh, and
+its lambda, filtered in a moment before, was called on a null instance once per freed
+screen.
 
 **remap** (§PW345, requires prompts): rebinding the controls, extracted from Starship's
 bindings. `PolyweaveBindings` stores a binding as codes a settings file holds

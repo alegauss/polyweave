@@ -123,6 +123,10 @@ def test_a_missing_icon_fails_the_proof_by_name(tmp_path):
     ("\tvar path := icon_path(action_of(action, player), wanted)\n",
      "\tvar path := icon_path(action, wanted)\n", "not their own binding's"),
     ("\tif sticks[0] != \"\" and", "\tif false and", "four moves on one stick"),
+    # Spinhold's help lines logged an error per freed screen (§PW552)
+    # the engine's own error is what the proof's run says first
+    ("\t\tif _alive(redraw):\n\t\t\tredraw.call()\n", "\t\tredraw.call()\n",
+     "on a null instance"),
 ])
 def test_prompts_that_ignore_the_pad_in_hand_fail_the_proof(
         tmp_path, before, after, said):

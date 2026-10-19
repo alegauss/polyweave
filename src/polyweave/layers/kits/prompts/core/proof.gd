@@ -21,6 +21,16 @@ class Seats:
 		return pads.size()
 
 
+## The engine errors logged while it listens, each as its rationale says it.
+class _Errors extends Logger:
+	var said: Array[String] = []
+
+	func _log_error(_function: String, _file: String, _line: int, code: String,
+			rationale: String, _editor_notify: bool, _error_type: int,
+			_script_backtrace: Array[ScriptBacktrace]) -> void:
+		said.append(rationale if rationale != "" else code)
+
+
 ## The language the proof reads names in: one no game's table carries, so only the
 ## proof's own rows apply and the words it expects are its own (§PW485). A pt-BR game
 ## read its key names through its own table, correctly, and the proof called that
@@ -158,6 +168,36 @@ func _proved() -> Array:
 	if rich.text.contains("{") or rich.text == "PRESS {%s}" % own:
 		failed.append("a watched line in icons was left unfilled: %s" % rich.text)
 	rich.free()
+	# A screen freed while the followers run is let go in silence (§PW552): one screen's
+	# follower closes another, whose lambda had passed the filter and was then called on
+	# a null instance, once per freed screen. A screen freed before is let go too.
+	var screen_script := GDScript.new()
+	screen_script.source_code = ("extends Node\nvar drawn := 0\nvar closes: Node\n"
+		+ "func follow_on(service: Object) -> void:\n"
+		+ "\tservice.follow(func() -> void:\n"
+		+ "\t\tdrawn += 1\n"
+		+ "\t\tif closes != null:\n"
+		+ "\t\t\tcloses.free()\n"
+		+ "\t\t\tcloses = null)\n")
+	screen_script.reload()
+	var gone: Node = screen_script.new()
+	gone.follow_on(prompts)
+	gone.free()
+	var closing: Node = screen_script.new()
+	var closed: Node = screen_script.new()
+	closing.closes = closed
+	closing.follow_on(prompts)
+	closed.follow_on(prompts)
+	var errors := _Errors.new()
+	OS.add_logger(errors)
+	prompts.refresh()
+	OS.remove_logger(errors)
+	if not errors.said.is_empty():
+		failed.append("a freed screen's follower was called: %s" % errors.said[0])
+	# at least once: a device or language change in the game may refresh it again
+	if closing.drawn < 1:
+		failed.append("a live screen's follower never ran")
+	closing.free()
 	for made in [own, second]:
 		InputMap.erase_action(made)
 	# Each player's own device (§PW395): with two pads seated, the second pad's input
