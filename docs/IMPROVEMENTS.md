@@ -389,27 +389,4 @@ differently, and a skeleton that suits one may fight the next. So it stays an id
 Starship and Cottony both show code it would replace, at which point the shape it should
 take is read off that code rather than invented here.
 
-### §PW557 Menu actions per player
-
-Found in Spinhold (RK242, 2026-10-19). The owner asked that every menu confirm on A and
-go back on B, which the game does through `ui_accept` and `ui_cancel`. The crew draft is
-one player's own screen: in co-op the second player's draft opens for them alone. The
-players kit copies a player's actions as `p2_<name>` (`action(name, player)`), but only
-the remap store's actions, never the `ui_` ones, and the project's `ui_accept` answers
-every pad. So nothing says "A on player two's pad": the first player's A would take the
-second player's card.
-
-Spinhold's workaround: the draft reads `ui_accept` and `ui_cancel` from `_input` and
-keeps the press only where `player_of_event` is the draft's player, with a comment
-naming this line.
-
-What polyweave should do: the players kit gives each seated player their own copy of the
-menu actions a game names (`const MENU := ["ui_accept", "ui_cancel"]` in its
-declaration, those two by default), pinned to their pad as it pins the others, so
-`action("ui_accept", 1)` is `p2_ui_accept` and answers player two's A alone; the first
-player's copy narrows to FIRST_PAD once two play, as `_narrow_first` does.
-
-Done when Spinhold's draft reads `PolyweavePlayers.action("ui_accept", player)` and the
-`_input` filter is gone.
-
 ## Block W — A core that grows by layers

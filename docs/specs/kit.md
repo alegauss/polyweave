@@ -653,6 +653,14 @@ next wave's start, say, or on the run's first tick for a pad chosen at a select.
 their own pad, for a game whose players share one layout. The proof holds a deferred join
 and a shared layout too.
 
+Each player has their own menu actions (§PW557, 0.4.0). The declaration's `MENU`,
+`["ui_accept", "ui_cancel"]` by default, names them; a player who joins gets a copy,
+`action("ui_accept", 1)` being `p2_ui_accept`, holding the pad events of the project's
+own on their pad alone, and once two play the first player's own answer `FIRST_PAD`
+alone, their keys left exactly as the project spelled them. A leave takes the copy away
+and gives the first player's menu every pad again. So one player's screen reads their
+own A and B, where Spinhold's crew draft filtered presses by the event's pad.
+
 **state** (§PW359): a game's state named once for reading. The project's
 `res://polyweave_state.gd` declares `STATE`, each name a `node` (a path from the current
 scene, or from `/root`) with a `property` (nested as `stats:health`) or a `method`

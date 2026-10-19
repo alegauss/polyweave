@@ -1,5 +1,5 @@
 name = "players"
-version = "0.3.0"
+version = "0.4.0"
 summary = "a second player joining on any free pad, each player's actions on their own pad alone, rebound apart"
 requires = ["remap"]
 
@@ -20,3 +20,4 @@ script = "core/proof.gd"
 "0.2.1" = "its scripts name one another by a _Pw name, so a game's own class of the same name, a Bindings or a Settings, cannot shadow them"
 "0.2.2" = "its proof rebinds on a store of its own run, never the game's declared one, and holds in a game that answers its own joins"
 "0.3.0" = "the players sit on the shared store and follow it, so a rebind on the remap screen keeps each pad on its player's actions"
+"0.4.0" = "each player gets a copy of the menu actions MENU names, on their own pad, and the first player's answer their pad alone once two play"

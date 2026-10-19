@@ -25,8 +25,10 @@ const _PwBindings := preload("res://addons/polyweave/remap/bindings.gd")
 ## AUTO_JOIN false leaves a join to the game, which hears join_asked and calls join
 ## when its rule allows (the next wave, say); SHARED_LAYOUT true carries a first
 ## player's rebind of a pad binding to every other player's copy (§PW396).
+## MENU names the menu actions each player gets a copy of (§PW557), so one player's A
+## answers their own screen alone: `action("ui_accept", 1)` is player two's.
 const DEFAULTS := {"MAX_PLAYERS": 2, "FIRST_PAD": 0, "JOIN_BUTTON": JOY_BUTTON_START,
-	"AUTO_JOIN": true, "SHARED_LAYOUT": false}
+	"AUTO_JOIN": true, "SHARED_LAYOUT": false, "MENU": ["ui_accept", "ui_cancel"]}
 
 var declared := {}
 ## player -> the pad they play on; the first player's is FIRST_PAD, with the keyboard
@@ -128,6 +130,9 @@ func join(device: int) -> int:
 	var now := _store.current()
 	for name in _store.actions:
 		_apply(action(name, player), _pad_half(now[name]), device)
+	# the menu's own actions too, the pad's half of the first player's on this pad
+	for name in menu():
+		_apply(action(name, player), _pad_half(_codes(name)), device)
 	_narrow_first()
 	joined.emit(player, device)
 	return player
@@ -139,7 +144,7 @@ func leave(player: int) -> void:
 		return
 	var device: int = pads[player]
 	pads.erase(player)
-	for name in _store.actions:
+	for name in _store.actions + menu():
 		if InputMap.has_action(action(name, player)):
 			InputMap.erase_action(action(name, player))
 	_narrow_first()
@@ -170,6 +175,28 @@ func _narrow_first() -> void:
 	var now := _store.current()
 	for name in _store.actions:
 		_apply(name, now[name], device)
+	for name in menu():
+		_pin(name, device)
+
+
+## the menu actions MENU names that the project has (§PW557)
+func menu() -> Array:
+	return Array(declared.get("MENU", [])).map(func(one: Variant) -> String:
+		return str(one)).filter(func(one: String) -> bool:
+		return InputMap.has_action(one))
+
+
+## `name`'s pad events answering `device` alone, or every pad at -1; its keys, and the
+## project's own spelling of them, left exactly as they are
+func _pin(name: String, device: int) -> void:
+	for event in InputMap.action_get_events(name):
+		if event is InputEventJoypadButton or event is InputEventJoypadMotion:
+			if event.device == device:
+				continue
+			var pinned: InputEvent = event.duplicate()
+			pinned.device = device
+			InputMap.action_erase_event(name, event)
+			InputMap.action_add_event(name, pinned)
 
 
 func _codes(name: String) -> Array:

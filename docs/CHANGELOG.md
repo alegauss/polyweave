@@ -588,6 +588,7 @@
 - ✅ **PW552** **the prompts kit's follow keeps a lambda whose node was freed, and the next refresh calls it on a null instance** — refresh asks each follower again just before calling it, so a screen freed mid-refresh is let go (design superseded: the freeing was mid-refresh) (design recorded in `docs/specs/kit.md`).
 - ✅ **PW555** **the remap kit offers no ready button maps, so a player changes a scheme only by rebinding each action** — Both remap screens carry a Map row: maps stepped and previewed on the pad, tried on a countdown and kept with a second press (design recorded in `docs/specs/kit.md`).
 - ✅ **PW556** **a pad whose name hides its maker is named in the wrong buttons, and the player cannot say which family it is** — A player chooses a pad's button names on the remap screen, kept by its name; every prompt and menu follows the choice at once (design recorded in `docs/specs/kit.md`).
+- ✅ **PW557** **the players kit copies no ui_accept or ui_cancel per player, so one player's menu cannot answer their own A and B alone** — Each joined player gets their own copy of the menu actions on their pad, and the first player's answer their pad alone once two play (design recorded in `docs/specs/kit.md`).
 
 ## Block W — A core that grows by layers
 

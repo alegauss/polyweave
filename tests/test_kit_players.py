@@ -110,6 +110,11 @@ PRESENCE = "addons/polyweave/presence/presence.gd"
      "after a rebind on the store, player 2's pad presses player 1's"),
     (PRESENCE, "\t\t\treturn seated\n", "\t\t\treturn device\n",
      "with the presence kit, pad 3 is named as player 4"),
+    # Spinhold's crew draft filtered A and B by the event's pad (§PW557)
+    (PLAYERS, "\t\t_apply(action(name, player), _pad_half(_codes(name)), device)\n",
+     "\t\tpass\n", "player 2's A does not press their own"),
+    (PLAYERS, "\tfor name in menu():\n\t\t_pin(name, device)\n", "",
+     "player 2's A presses player 1's ui_accept"),
 ])
 def test_a_broken_seating_fails_the_proof_by_name(tmp_path, where, before, after, said):
     game, _ = _installed(tmp_path, "presence")

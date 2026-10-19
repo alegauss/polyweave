@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 1 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 0 },
   { block: "W", title: "A core that grows by layers", open: 0 },
 ];
 
@@ -99,13 +99,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "A playtest's trace of spawns, kills and hits cannot be measured or laid against the wave it played",
     why: "A declared wave says what it asks of a player; only a trace says where players struggle, and Starship's balance needs both.",
     deps: ["PW205"],
-  },
-  {
-    id: "PW557",
-    block: "V",
-    symptom: "the players kit copies no ui_accept or ui_cancel per player, so one player's menu cannot answer their own A and B alone",
-    why: "Spinhold's crew draft had to filter A and B by the event's pad to keep one player from taking another's card.",
-    deps: [],
   },
 ];
 

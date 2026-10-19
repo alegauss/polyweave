@@ -88,6 +88,7 @@ func _process(_delta: float) -> bool:
 			failed.append("a pad freed by a leave could not be joined by the next")
 		_deferred(join, first)
 		_shared_layout(name, first)
+		_menu(first)
 	players.declared["AUTO_JOIN"] = _auto_join
 	var run := ProjectSettings.globalize_path(_kept.get_base_dir())
 	for file in DirAccess.get_files_at(run):
@@ -95,6 +96,40 @@ func _process(_delta: float) -> bool:
 	DirAccess.remove_absolute(run)
 	print("KIT PROVED" if failed.is_empty() else "KIT FAILED: " + "; ".join(failed))
 	return true
+
+
+## Each player's own menu actions (§PW557): the second player's A confirms on their copy
+## and not the first player's, whose keys stay as the project spelled them, and a leave
+## gives the first player's menu every pad again.
+func _menu(first: int) -> void:
+	for seated in players.pads.keys():
+		if seated != 0:
+			players.leave(seated)
+	var south := InputEventJoypadButton.new()
+	south.button_index = JOY_BUTTON_A
+	south.device = -1
+	InputMap.action_add_event("ui_accept", south)
+	var keys := InputMap.action_get_events("ui_accept").filter(
+		func(e: InputEvent) -> bool: return e is InputEventKey)
+	players.join(first + SECOND)
+	var mine := _PwPlayers.action("ui_accept", 1)
+	if not InputMap.has_action(mine) \
+			or not InputMap.event_is_action(_button(first + SECOND, JOY_BUTTON_A), mine):
+		failed.append("player 2's A does not press their own %s" % mine)
+	if InputMap.event_is_action(_button(first + SECOND, JOY_BUTTON_A), "ui_accept"):
+		failed.append("player 2's A presses player 1's ui_accept")
+	if not InputMap.event_is_action(_button(first, JOY_BUTTON_A), "ui_accept"):
+		failed.append("player 1's A no longer presses ui_accept")
+	for key in keys:
+		if not InputMap.event_is_action(key, "ui_accept") or InputMap.event_is_action(key, mine):
+			failed.append("a key of ui_accept moved when a second player joined")
+	players.leave(1)
+	if InputMap.has_action(mine) \
+			or not InputMap.event_is_action(_button(first + SECOND, JOY_BUTTON_A), "ui_accept"):
+		failed.append("a leave did not give player 1's ui_accept every pad again")
+	for event in InputMap.action_get_events("ui_accept"):
+		if event is InputEventJoypadButton and event.button_index == JOY_BUTTON_A:
+			InputMap.action_erase_event("ui_accept", event)
 
 
 ## each player's pad moves their own action and never the other's
