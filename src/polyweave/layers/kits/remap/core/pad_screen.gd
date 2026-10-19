@@ -5,10 +5,13 @@ extends CanvasLayer
 ## from the remap screen; extracted from Starship's pad screen.
 ##
 ## Pressing a real button lights it here, so the player learns the pad by touching it. Up
-## and down pick a place; accept on it chooses an action for it, left and right go
-## through them, and accept binds it through `PolyweaveBindings.rebind`, the same swap
-## rule as the remap screen: never shared, always swapped. Cancel backs out of the
-## choice, and out of the screen.
+## and down pick a place; confirm on it chooses an action for it, left and right go
+## through them, and confirm binds it through `PolyweaveBindings.rebind`, the same swap
+## rule as the remap screen: never shared, always swapped. Back backs out of the
+## choice, and out of the screen. Confirm and back are the game's declared CONFIRM and
+## BACK, ui_accept and ui_cancel where it names none (§PW542); each place reads its
+## action's declared label, and the help lines are filled by the prompts kit, so they
+## name the buttons that work the screen.
 ##
 ## Where each place sits is a layout's spots table, `pads/<layout>.json` beside this
 ## script, read as {"slots": [{"code", "at": [x, y] from 0 to 1 across the pad, "side":
@@ -28,11 +31,13 @@ const DIM := Color(0.55, 0.65, 0.8)
 const LIT := Color(1, 0.85, 0.3)
 const PRESSED := Color(0.4, 1.0, 0.9)
 const FREE := Color(0.4, 0.45, 0.55)
-## what the screen says where the game's string table has no PAD_ row for it
+## what the screen says where the game's string table has no PAD_ row for it; a help
+## line's `{confirm}` and `{back}` are the buttons that confirm and go back, and any
+## `{action}` is filled as the prompts kit fills it
 const WORDS := {
 	"title": "Pad", "free": "free",
-	"help": "up and down pick a place, accept chooses what it does, cancel leaves",
-	"choose": "left and right go through the actions, accept binds, cancel backs out",
+	"help": "up and down pick a place, {confirm} chooses what it does, {back} leaves",
+	"choose": "left and right go through the actions, {confirm} binds, {back} backs out",
 }
 
 ## seconds a pressed button stays lit
@@ -115,6 +120,8 @@ func _ready() -> void:
 	_help.add_theme_font_size_override("font_size", 26)
 	_help.add_theme_color_override("font_color", DIM)
 	add_child(_help)
+	# the help names the buttons of the device in hand, so it refills when that moves
+	_PwPrompts.shared().follow(show_pad)
 	show_pad()
 
 
@@ -160,11 +167,24 @@ func lit(code: String) -> bool:
 	return _lit.has(code)
 
 
-## what the label of place `index` reads: the action it holds, as the table says it
+## what the label of place `index` reads: the action it holds, by its declared label as
+## the remap screen reads it (§PW542), else as the table says it under ACTION_
 func held_text(index: int) -> String:
 	var code: String = slots[index]["code"]
 	var action := choosing if index == picked and choosing != "" else holder(code)
-	return _PwPrompts.said("ACTION_", action) if action != "" else said("free")
+	if action == "":
+		return said("free")
+	return bindings.label(action) if bindings.labels.has(action) \
+		else _PwPrompts.said("ACTION_", action)
+
+
+## a help line with its marks filled: `{confirm}` and `{back}` as the screen's own
+## actions, then every `{action}` as the prompts kit names it for the device in hand
+func help_text() -> String:
+	var line := said("choose" if choosing != "" else "help")
+	line = line.replace("{confirm}", "{%s}" % bindings.screen_action()) \
+		.replace("{back}", "{%s}" % bindings.screen_action(true))
+	return _PwPrompts.shared().fill(line)
 
 
 ## a word of the screen's own, as the game's string table says it under PAD_, else its
@@ -215,7 +235,7 @@ func show_pad() -> void:
 			float(row[i]) - 15)
 		label.add_theme_color_override("font_color", PRESSED if lit(code)
 			else (LIT if i == picked else (FREE if free else DIM)))
-	_help.text = said("choose" if choosing != "" else "help")
+	_help.text = help_text()
 	_over.queue_redraw()
 
 
@@ -254,8 +274,9 @@ func _process(delta: float) -> void:
 			show_pad()
 
 
-## a real button pressed lights its place on the pad; the screen's own moves are the
-## project's ui_ actions, so it is worked by whatever pad or keys the game has
+## a real button pressed lights its place on the pad; the screen moves on the project's
+## ui_ directions and confirms and goes back on the game's declared actions (§PW542), so
+## it is worked by whatever pad or keys the game has
 func _input(event: InputEvent) -> void:
 	var pressed := (event is InputEventJoypadButton and event.is_pressed()) \
 		or event is InputEventJoypadMotion
@@ -267,16 +288,24 @@ func _input(event: InputEvent) -> void:
 			show_pad()
 	if event.is_echo():
 		return
-	for move in ["ui_up", "ui_down", "ui_left", "ui_right", "ui_accept", "ui_cancel"]:
-		if InputMap.has_action(move) and event.is_action_pressed(move):
-			press(move)
-			var viewport := get_viewport()
-			if viewport != null:
-				viewport.set_input_as_handled()
-			return
+	var move := ""
+	for way in ["ui_up", "ui_down", "ui_left", "ui_right"]:
+		if InputMap.has_action(way) and event.is_action_pressed(way):
+			move = way
+	if move == "" and bindings.pressed_on_screen(event):
+		move = "ui_accept"
+	elif move == "" and bindings.pressed_on_screen(event, true):
+		move = "ui_cancel"
+	if move == "":
+		return
+	press(move)
+	var viewport := get_viewport()
+	if viewport != null:
+		viewport.set_input_as_handled()
 
 
-## what one move does on the screen
+## what one move does on the screen: "ui_accept" is its confirm and "ui_cancel" its
+## back, whichever actions the game works them with
 func press(move: String) -> void:
 	if slots.is_empty():
 		close()

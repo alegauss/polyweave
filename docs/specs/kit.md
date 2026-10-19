@@ -315,8 +315,17 @@ The pad can be bound on its picture (§PW428, 0.4.0). The remap screen's `pad` b
 opens `pad_screen.gd`, a layer over it binding through the same store: every place on
 the pad in use, named in its layout's glyphs where it sits, with a leader line to the
 action it holds or "free". A real press lights its place; `ui_up` and `ui_down` pick a
-place, `ui_accept` chooses an action for it, `ui_left` and `ui_right` go through them,
-and `ui_accept` again binds it with the same swap; `ui_cancel` backs out, then closes.
+place, confirm chooses an action for it, `ui_left` and `ui_right` go through them, and
+confirm again binds it with the same swap; back backs out, then closes.
+
+A game works both screens with its own buttons (§PW542, 0.9.0). The declaration may say
+`const CONFIRM := ["fire"]` and `const BACK := ["bomb"]` (an action or a list): the pad
+screen confirms and goes back on those in place of `ui_accept` and `ui_cancel`, and the
+remap screen presses its focused button on a CONFIRM as on `ui_accept`, so a game whose
+`ui_` actions have no pad buttons edits none in. Each place on the pad reads its action's
+`LABELS` row, as the remap screen's rows do, and `ACTION_<NAME>` where it has none. Its
+help lines, `PAD_HELP` and `PAD_CHOOSE`, are filled by the prompts kit: `{confirm}` and
+`{back}` name the screen's two buttons and any `{action}` is named as everywhere else.
 Where each place sits is a layout's spots table, `pads/<layout>.json` in the core:
 `{"slots": [{"code", "at": [x, y], "side"}]}`, `at` from 0 to 1 across the pad and
 `side` -1 or 1 for the side its label stands on. A layout with no table stands on the

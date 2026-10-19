@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 4 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 3 },
   { block: "W", title: "A core that grows by layers", open: 0 },
 ];
 
@@ -106,13 +106,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "A playtest's trace of spawns, kills and hits cannot be measured or laid against the wave it played",
     why: "A declared wave says what it asks of a player; only a trace says where players struggle, and Starship's balance needs both.",
     deps: ["PW205"],
-  },
-  {
-    id: "PW542",
-    block: "V",
-    symptom: "the drawn pad screen shows raw action names, unfilled help and works only on ui_accept and ui_cancel",
-    why: "Spinhold's drawn pad reads \"move_left\", its help names no button, and it had to bind pad buttons to ui_* itself.",
-    deps: [],
   },
   {
     id: "PW543",

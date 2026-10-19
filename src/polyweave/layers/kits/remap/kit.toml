@@ -1,5 +1,5 @@
 name = "remap"
-version = "0.8.0"
+version = "0.9.0"
 summary = "rebinding on the keys and the pad apart, a clash swapped, kept across restarts, reset to the game's own"
 requires = ["prompts"]
 tab = "controls"
@@ -36,3 +36,4 @@ script = "core/proof.gd"
 "0.6.5" = "its proof expects the game's own row for a word where the game has one in its fallback language, and the kit's English only where it has none"
 "0.7.0" = "the remap and pad screens bind on the game's shared store, which says changed on every rebind, reset and load"
 "0.8.0" = "the remap screen says listening and listened, answers is_listening, and repaints its rows in place so a bind keeps the focus"
+"0.9.0" = "the pad screen reads the declared labels and names its buttons in its help, and both screens confirm and go back on a declared CONFIRM and BACK"

@@ -408,26 +408,6 @@ differently, and a skeleton that suits one may fight the next. So it stays an id
 Starship and Cottony both show code it would replace, at which point the shape it should
 take is read off that code rather than invented here.
 
-### §PW542 The pad screen in the game's own labels and buttons
-
-Found moving Spinhold onto the input kits (PW370, Spinhold RK216). The remap kit's drawn
-pad screen (PW428) has three gaps a game's own words and buttons fall into:
-
-- it labels each place with an `ACTION_<name>` row, where the remap screen uses the
-  declared `LABELS`, so Spinhold, whose labels are its `OPT_` rows, shows raw names
-  such as "move_left" on the drawn pad;
-- its `PAD_HELP` and `PAD_CHOOSE` lines are drawn as plain text, with no `{action}`
-  marks filled through the prompts kit, so they cannot name the buttons that work them;
-- both kit screens confirm and go back on `ui_accept` and `ui_cancel` only. In Godot 4.7
-  those have no pad buttons by default, so Spinhold added pad buttons 0 and 1 to them in
-  project.godot, and its own rebindable fire and bomb cannot work the screens.
-
-What polyweave should do: the pad screen labels a place from the same `LABELS` the remap
-screen reads; its help lines are filled by the prompts kit as every other kit line is;
-and a declared `CONFIRM` and `BACK` (actions) replace `ui_accept` and `ui_cancel` where
-a game names them. Done when Spinhold's drawn pad reads its own labels and its help
-names the buttons, with no ui_* edit of its own.
-
 ### §PW543 Bindings load quietly where a key is absent
 
 Found moving Spinhold onto the input kits (PW370, Spinhold RK216). A file the game's

@@ -7,6 +7,7 @@ extends SceneTree
 ## (§PW428). Prints KIT PROVED, or KIT FAILED with why.
 
 const _PwBindings := preload("res://addons/polyweave/remap/bindings.gd")
+const _PwPrompts := preload("res://addons/polyweave/prompts/prompts.gd")
 const J := "proof_jump"
 const F := "proof_fire"
 const P := "proof_pause"
@@ -27,6 +28,14 @@ var _fire_key := ""
 
 func _keys(code: String) -> bool:
 	return _PwBindings.on_keys(code)
+
+
+## a key pressed, as the screens read one
+func _key(keycode: Key) -> InputEventKey:
+	var key := InputEventKey.new()
+	key.physical_keycode = keycode
+	key.pressed = true
+	return key
 
 
 ## the proof's three actions, each bound on both halves as project.godot declares them,
@@ -248,6 +257,15 @@ func _process(_delta: float) -> bool:
 	if not is_instance_valid(focused) or focused.is_queued_for_deletion() \
 			or root.gui_get_focus_owner() != focused:
 		failed.append("binding jump lost the focus on its button")
+	# A game's declared CONFIRM presses the focused button, where ui_accept has no pad
+	# button of its own (§PW542).
+	menu.bindings.confirm = [J]
+	menu.button_of(F, false).grab_focus()
+	menu._input(_key(KEY_SPACE))
+	if menu._listening != F:
+		failed.append("the declared confirm did not press the focused button")
+	menu._stop("")
+	menu.bindings.confirm = []
 	# A stick binds the way it was pushed, once it comes back (§PW432).
 	menu._listen(F, true)
 	for value in [-0.9, -0.4, 0.1]:
@@ -343,6 +361,33 @@ func _pad_screen(screen: CanvasLayer) -> void:
 	if not (now[F] as Array).has("button:0") or (now[J] as Array).has("button:0") \
 			or not (now[J] as Array).has("axis:5:1"):
 		failed.append("binding fire on the picture did not swap with jump: %s" % [now])
+	# Each place reads its action's declared label, the help names the buttons that work
+	# the screen, and a declared CONFIRM and BACK work it (§PW542).
+	var table := Translation.new()
+	table.locale = TranslationServer.get_locale()
+	table.add_message("PROOF_FIRE", "Atirar")
+	TranslationServer.add_translation(table)
+	screen.bindings.labels = {F: "PROOF_FIRE"}
+	if screen.held_text(south) != "Atirar":
+		failed.append("the pad screen labels fire's place %s, not its declared label"
+			% screen.held_text(south))
+	TranslationServer.remove_translation(table)
+	screen.bindings.labels = {}
+	screen.bindings.confirm = [J]
+	screen.bindings.back = [P]
+	var help: String = screen.help_text()
+	# a game's own help row may name no button; the kit's own always names them
+	if String(TranslationServer.translate("PAD_HELP")) == "PAD_HELP" and (
+			"{" in help or not help.contains(_PwPrompts.shared().fill("{%s}" % J))):
+		failed.append("the pad screen's help names no confirm button: %s" % help)
+	screen._input(_key(KEY_SPACE))
+	if screen.choosing == "":
+		failed.append("the declared confirm did not choose on the pad screen")
+	screen._input(_key(KEY_ESCAPE))
+	if screen.choosing != "":
+		failed.append("the declared back did not back out of the choice")
+	screen.bindings.confirm = []
+	screen.bindings.back = []
 	screen.press("ui_cancel")
 	if not screen.is_queued_for_deletion():
 		failed.append("cancel did not close the pad screen")

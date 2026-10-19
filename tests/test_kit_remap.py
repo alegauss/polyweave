@@ -124,6 +124,34 @@ def test_a_screen_that_loses_focus_or_says_nothing_fails_the_proof(
 
 
 @pytest.mark.skipif(not os.environ.get("GODOT"), reason="no $GODOT on this machine")
+@pytest.mark.parametrize(("script", "before", "after", "said"), [
+    ("pad_screen.gd",
+     "\treturn bindings.label(action) if bindings.labels.has(action) \\\n",
+     "\treturn action if false \\\n", "not its declared label"),
+    ("pad_screen.gd", "\treturn _PwPrompts.shared().fill(line)\n", "\treturn line\n",
+     "help names no confirm button"),
+    ("pad_screen.gd", "\tif move == \"\" and bindings.pressed_on_screen(event):\n",
+     "\tif move == \"\" and false:\n",
+     "declared confirm did not choose"),
+    ("remap_menu.gd", "\t\t\tand confirm_focused():\n", "\t\t\tand false:\n",
+     "declared confirm did not press the focused button"),
+])
+def test_screens_on_raw_names_or_ui_actions_alone_fail_the_proof(
+        tmp_path, script, before, after, said):
+    # Spinhold's pad read "move_left", named no button and bound pads to ui_* (§PW542)
+    game = tmp_path / "game"
+    shutil.copytree(kits.KITS / "remap" / "fixture", game)
+    kits.install("remap", root=str(game))
+    screen = game / "addons" / "polyweave" / "remap" / script
+    text = screen.read_text(encoding="utf-8")
+    assert before in text
+    screen.write_text(text.replace(before, after), encoding="utf-8")
+    [found] = kits._scripts(["remap"], kits.every(), game)
+    assert found["status"] == "failed"
+    assert said in found["said"]
+
+
+@pytest.mark.skipif(not os.environ.get("GODOT"), reason="no $GODOT on this machine")
 def test_the_remap_proof_holds_in_a_game_with_none_of_its_actions(tmp_path):
     # a kit that requires remap lands it in a game of its own actions (§PW392)
     game = tmp_path / "game"

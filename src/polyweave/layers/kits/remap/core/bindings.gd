@@ -49,6 +49,11 @@ var said: Array[String] = []
 ## each action's row in the game's string table, in the order the screen shows them,
 ## as the declaration's `const LABELS := {"jump": "ACTION_JUMP", ...}` says (§PW432)
 var labels: Dictionary = {}
+## the actions the kit's screens confirm and go back on, as the declaration's `const
+## CONFIRM := ["fire"]` and `const BACK := ["bomb"]` say (§PW542); ui_accept and
+## ui_cancel where it names none
+var confirm: Array = []
+var back: Array = []
 
 static var _shared: RefCounted
 
@@ -73,6 +78,8 @@ func _init(rebindable: Array = [], path := FILE, project := PROJECT) -> void:
 		var declared: Dictionary = (load(project) as GDScript).get_script_constant_map()
 		from = Array(declared.get("FROM", []))
 		labels = Dictionary(declared.get("LABELS", {}))
+		confirm = _named(declared.get("CONFIRM", []))
+		back = _named(declared.get("BACK", []))
 		var store := Array(declared.get("STORE", []))
 		if store.size() == 2 and path == FILE:
 			_path = str(store[0])
@@ -130,6 +137,30 @@ func label(action: String) -> String:
 		return action
 	var text := String(TranslationServer.translate(key))
 	return action if text == key else text
+
+
+## an action or a list of them, as a declaration may spell either
+static func _named(declared: Variant) -> Array:
+	return [str(declared)] if declared is String or declared is StringName \
+		else Array(declared).map(func(one: Variant) -> String: return str(one))
+
+
+## the action a screen confirms on (`back` false) or goes back on: the first declared,
+## else ui_accept or ui_cancel; what its help line names as `{confirm}` and `{back}`
+func screen_action(going_back := false) -> String:
+	var declared := back if going_back else confirm
+	return str(declared[0]) if not declared.is_empty() else (
+		"ui_cancel" if going_back else "ui_accept")
+
+
+## whether `event` presses what a screen confirms on, or goes back on: a declared action,
+## or ui_accept and ui_cancel where none is declared
+func pressed_on_screen(event: InputEvent, going_back := false) -> bool:
+	var declared := back if going_back else confirm
+	for action in declared if not declared.is_empty() else [screen_action(going_back)]:
+		if InputMap.has_action(action) and event.is_action_pressed(action):
+			return true
+	return false
 
 
 static func _project_actions() -> Array:

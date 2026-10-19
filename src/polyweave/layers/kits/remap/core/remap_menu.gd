@@ -9,7 +9,8 @@ extends VBoxContainer
 ## let go, so a stick binds the direction it was pushed; a press held `hold_to_cancel`
 ## seconds cancels instead, and so does nothing pressed in `listen_seconds`. Each row
 ## reads the action's declared label, and every word goes through the game's string
-## table under REMAP_, with English where it has no row.
+## table under REMAP_, with English where it has no row. A game's declared CONFIRM
+## presses the focused button as ui_accept does (§PW542).
 
 const _PwBindings := preload("res://addons/polyweave/remap/bindings.gd")
 const _PwPrompts := preload("res://addons/polyweave/prompts/prompts.gd")
@@ -210,8 +211,27 @@ func _listen(action: String, pad: bool) -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if _listening != "" and capture(event):
+	if _listening != "":
+		if capture(event):
+			_handled()
+	elif not bindings.confirm.is_empty() and bindings.pressed_on_screen(event) \
+			and confirm_focused():
 		_handled()
+
+
+## press the button of this screen that has the focus, as a declared CONFIRM does where
+## ui_accept has no pad button (§PW542); false where no button of its own is focused
+func confirm_focused() -> bool:
+	var focused: Control = get_viewport().gui_get_focus_owner() \
+		if get_viewport() != null else null
+	if not (focused is BaseButton) or not is_ancestor_of(focused):
+		return false
+	var button := focused as BaseButton
+	if button.toggle_mode:
+		button.button_pressed = not button.button_pressed
+	else:
+		button.pressed.emit()
+	return true
 
 
 ## take one input while listening: a press on the half asked is held on to, and its
