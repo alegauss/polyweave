@@ -31,24 +31,6 @@ standard one lacks is asked for), with the same numbers the bake used and a prov
 record, so the game loads what was judged. A capture of the game against the bake of the
 same model at one rig says whether the two agree.
 
-### §PW565 Rings that follow the normal
-
-Where: spinhold, 2026-10-19, the Playdeck's pizza and strawberry (RK236).
-
-A `sphere` given a flattened `size`, such as `["across * 0.84", "base * 0.5", "across *
-0.84"]`, creases at its rim at any `steps`: `sharp_edge_share` read 0.028 at a 3:1
-squash with 32 steps and 0.135 on a pepperoni at 3:1 with 28. The mesher lays its rings
-evenly in the parameter angle and then scales a unit sphere, so the normal turns faster
-than the rings near the flat rim, past the 30-degree crease.
-
-Workaround in spinhold: flattened discs became cylinders under a round `bevel`, and the
-cheese became `rounded_box`es, which costs triangles (the pizza is 19,708).
-
-What polyweave should do: space a scaled sphere's rings so the normal turns evenly (for
-an ellipsoid of equatorial radius a and polar c, the parameter angle is atan((c / a) tan
-theta) for each even normal angle theta), so a flattened sphere is as round as its steps
-say.
-
 ### §PW566 A bevel for the creases alone
 
 Where: spinhold, 2026-10-19, the Playdeck's arch (RK236): a `torus` (32 steps) cut in

@@ -163,6 +163,27 @@ def test_a_box_is_all_creases_and_a_rounded_one_none():
     assert 0.1 <= soft["edge_radius_min"] <= 0.2
 
 
+@pytest.mark.parametrize("size, steps", [
+    ([3.0, 1.0, 3.0], 32),  # Spinhold's pizza, 0.028 when its rings were laid evenly
+    ([3.0, 1.0, 3.0], 28),  # its pepperoni, which read 0.135
+    ([3.0, 0.5, 1.5], 24),  # flat and oval at once
+    ([1.0, 4.0, 1.0], 24),  # stretched, not squashed
+])
+def test_a_flattened_sphere_is_as_round_as_its_steps_say(size, steps):
+    """§PW565: the rings follow the normal, so the rim is no crease."""
+    import tempfile
+
+    from polyweave.layers.geometry import solid as S
+
+    made = S.primitive("sphere", size, steps=steps)
+    with tempfile.TemporaryDirectory() as folder:
+        read = cost.read(solid_glb(Path(folder) / "ball.glb", made))
+    assert read["sharp_edge_share"] == 0.0
+    # Still on the ellipsoid it declares.
+    half = np.asarray(size) / 2.0
+    assert np.allclose(np.sum((made["vertices"] / half) ** 2, axis=1), 1.0)
+
+
 def test_a_spec_refuses_a_hard_edge_and_says_where_it_is(tmp_path):
     from polyweave.layers.geometry import solid as S
 

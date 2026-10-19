@@ -114,6 +114,7 @@
 - ✅ **PW562** **A sphere or torus declared with steps crashes the build with a TypeError** — Every primitive takes steps as a whole number, so a sphere or torus declared with steps builds.
 - ✅ **PW563** **A bevel in a fresh process crashes with No module named bmesh** — A bevel loads Blender before bmesh, so a declaration with a bevel builds in a fresh process.
 - ✅ **PW564** **A bevelled or carved piece loses its colours, and every built mesh is written faceted** — A solve keeps what each face wears, and a document's smooth welds and shades a mesh smooth by angle.
+- ✅ **PW565** **A flattened sphere creases at its rim whatever its steps** — A sphere's rings and meridians follow its normal, so a squashed or oval sphere reads no crease at its rim at the steps it declares (design recorded in `src/polyweave/layers/geometry/solid.py`).
 
 ## Block H — Proof on a real game
 

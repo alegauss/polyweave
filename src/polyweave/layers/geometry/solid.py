@@ -497,9 +497,7 @@ def _primitive_mesh(kind: str, size: Any, steps: int, **stated: Any) -> dict:
             ],
         )
     if kind == "sphere":
-        made = _sphere(1.0, steps)
-        made["vertices"] = made["vertices"] * (np.asarray(found["extents"]) / 2.0)
-        return made
+        return _sphere(np.asarray(found["extents"]) / 2.0, steps)
     if kind in ROUNDED:
         return _rounded_box(np.asarray(found["extents"]) / 2.0, found["radius"], steps)
     if kind == "plane":
@@ -615,18 +613,33 @@ def _torus(major: float, minor: float, steps: int) -> dict:
     return mesh(points, faces)
 
 
-def _sphere(radius: float, steps: int) -> dict:
+def _sphere(half: np.ndarray, steps: int) -> dict:
+    """A sphere of half-extents x, y and z, its poles on y.
+
+    The rings and the meridians are laid evenly in the angle of the surface's normal,
+    not of the unit sphere it is scaled from (§PW565). Scaled, a flattened sphere's
+    normal turns faster than evenly spaced rings near its rim: a 3:1 squash at 32 steps
+    read a sharp_edge_share of 0.028, past the 30-degree crease. On an ellipse of
+    semi-axes p and q the point whose normal is at angle t is at parameter
+    atan2(q sin t, p cos t), which is t itself on a round one, so a round sphere is
+    laid as it always was.
+    """
+    ax, c, az = (float(v) for v in half)
     rings = max(3, int(steps) // 2)
     points, faces = [], []
     for row in range(rings + 1):
-        polar = math.pi * row / rings
+        normal = math.pi * row / rings
         for column in range(steps):
-            around = 2 * math.pi * column / steps
+            turned = 2 * math.pi * column / steps
+            around = math.atan2(az * math.sin(turned), ax * math.cos(turned))
+            # The meridian's own equatorial radius, which its polar spacing follows.
+            reach = math.hypot(ax * math.cos(around), az * math.sin(around))
+            polar = math.atan2(reach * math.sin(normal), c * math.cos(normal))
             points.append(
                 [
-                    radius * math.sin(polar) * math.cos(around),
-                    radius * math.cos(polar),
-                    radius * math.sin(polar) * math.sin(around),
+                    ax * math.sin(polar) * math.cos(around),
+                    c * math.cos(polar),
+                    az * math.sin(polar) * math.sin(around),
                 ]
             )
     for row in range(rings):

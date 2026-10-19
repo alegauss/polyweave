@@ -14,7 +14,6 @@
 
 ## Block G — Geometry as a declaration
 
-- 📋 **PW565** (deps: —) **A flattened sphere creases at its rim whatever its steps** — A disc or a squashed ball cannot pass a soft-edge spec, so it is rebuilt from bevelled cylinders at many more triangles. → §PW565
 - 📋 **PW566** (deps: —) **A bevel rounds every edge, so a smooth body grows triangles and creases under it** — Rounding one cut on a round part ruins the part, so a cut piece cannot be softened. → §PW566
 - 📋 **PW567** (deps: —) **A rebuild leaves the material files of materials the document dropped** — Orphan .tres files and records pile up beside a piece, found only by matching names by hand. → §PW567
 - 📋 **PW568** (deps: —) **A kit of built pieces takes a shell loop to render, spec and sit for a person** — Each piece costs five calls and a hand-written spec, and every project writes its own look script. → §PW568
