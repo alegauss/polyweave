@@ -18,10 +18,12 @@ extends RefCounted
 ## chose is ever dropped in silence. Loading says each of these in `said`.
 ##
 ## A game that kept its options its own way before the kit declares there `const ADOPTED
-## := {"tab/key": ["user://game.cfg", "section", "key"]}` (§PW398): with no file of the
-## kit's own yet, each value is taken from where the game kept it, under the same rules
-## as a value read from the kit's file, written to the kit's file at once and said; the
-## older file is left as it was and not read again.
+## := {"tab/key": ["game.cfg", "section", "key"]}` (§PW398): with no file of the kit's
+## own yet, each value is taken from where the game kept it, under the same rules as a
+## value read from the kit's file, written to the kit's file at once and said; the
+## older file is left as it was and not read again. A relative file is read from the
+## folder the kit's own file is in (§PW536), so a store built on a test folder adopts
+## the file there; a full path such as "user://game.cfg" is read where it says.
 
 signal changed(tab: String, key: String, value: Variant)
 
@@ -178,6 +180,10 @@ func _adopt() -> void:
 		if where.size() != 3:
 			continue
 		var from := str(where[0])
+		# a relative file is beside the kit's own (§PW536): a store built on a test
+		# folder adopts the file there, and the game's, on user://, the real one
+		if from.is_relative_path():
+			from = path.get_base_dir().path_join(from)
 		if not files.has(from):
 			var read := ConfigFile.new()
 			files[from] = read if read.load(from) == OK else null

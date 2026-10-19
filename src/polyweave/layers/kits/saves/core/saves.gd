@@ -20,7 +20,9 @@ extends RefCounted
 ## adopted() -> Dictionary` there (§PW398): it reads its older file into the data slot 0
 ## holds, since only the game knows that format. With no save in any slot, what it
 ## returns is saved to slot 0 once, said, and never asked for again; the older file is
-## left as it was.
+## left as it was. Declared as `adopted(folder: String)`, it is handed the store's own
+## folder (§PW536), so a game's tests that build the store on a folder of their own
+## adopt the file they seeded there and never the player's.
 
 const DIR := "user://saves"
 const PROJECT := "res://polyweave_saves.gd"
@@ -51,7 +53,10 @@ func _init(at := DIR, project := PROJECT) -> void:
 			if method["name"] == "migrations":
 				migrations = script.migrations()
 			elif method["name"] == "adopted":
-				adopt = script.adopted
+				# one argument is handed the store's folder (§PW536), so a store built on
+				# a test folder adopts the older file the test seeded there
+				adopt = script.adopted.bind(dir) if method["args"].size() == 1 \
+					else script.adopted
 
 
 func path_of(slot: int) -> String:

@@ -1,5 +1,5 @@
 name = "options"
-version = "0.3.0"
+version = "0.3.1"
 summary = "a versioned settings store and an options screen whose tabs come from the kits installed"
 requires = []
 
@@ -28,3 +28,4 @@ script = "core/proof.gd"
 "0.2.0" = "the values a game kept before the kit, named by ADOPTED, taken once into the kit's file and said"
 "0.2.1" = "its scripts name one another by a _Pw name, so a game's own class of the same name, a Bindings or a Settings, cannot shadow them"
 "0.3.0" = "the screen is a part: kit.install options without screen lands the store alone, with no menus or prompts"
+"0.3.1" = "a relative file in ADOPTED is read beside the kit's own file, so a store built on a test folder adopts the file there"

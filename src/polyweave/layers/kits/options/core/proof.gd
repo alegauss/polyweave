@@ -114,7 +114,9 @@ func _adopted() -> void:
 	var row: Dictionary = rows[0]
 	var at := "%s/%s" % [row["tab"], row["key"]]
 	var older_path := run + "/older.cfg"
-	var chosen: Variant = settings._other(row)
+	# away from the default, which a store that adopted nothing also reads: a store not
+	# yet loaded holds every default, so its other value is never one
+	var chosen: Variant = _PwSettings.new(kept)._other(row)
 	var older := ConfigFile.new()
 	older.set_value("game", "kept", chosen)
 	older.save(older_path)
@@ -133,6 +135,14 @@ func _adopted() -> void:
 	adopting.load_file()
 	if adopting.get_value(row["tab"], row["key"]) != row["default"] or not adopting.said.is_empty():
 		failed.append("the older file was taken again once the kit had its own")
+	# a relative file is read beside the kit's own (§PW536), so a store built on this
+	# run's folder adopts the file the proof seeded there
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(kept))
+	var beside := _PwSettings.new(kept)
+	beside.adopted = {at: [older_path.get_file(), "game", "kept"]}
+	beside.load_file()
+	if beside.get_value(row["tab"], row["key"]) != chosen:
+		failed.append("a relative older file was not read beside the kit's own: %s" % [beside.said])
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(older_path))
 	settings.load_file()
 

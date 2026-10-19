@@ -120,6 +120,16 @@ func _initialize() -> void:
 			or not _same(played.load_slot(last), _data(60)):
 		failed.append("an older save was taken over a game already saved in the kit")
 
+	# A game's `adopted(folder)` is handed the store's folder (§PW536), so its tests,
+	# building the store on a folder of their own, adopt the file seeded there.
+	_clear()
+	var project := dir + "/project.gd"
+	FileAccess.open(project, FileAccess.WRITE).store_string("extends RefCounted\n\n\n"
+		+ "static func adopted(folder: String) -> Dictionary:\n\treturn {\"from\": folder}\n")
+	var handed := _PwSaves.new(dir, project)
+	if str(handed.load_slot(0).get("from", "")) != dir:
+		failed.append("an older save was not handed the store's folder: %s" % [handed.said])
+
 	_clear()
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(dir))
 	if failed.is_empty():

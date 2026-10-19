@@ -408,23 +408,6 @@ differently, and a skeleton that suits one may fight the next. So it stays an id
 Starship and Cottony both show code it would replace, at which point the shape it should
 take is read off that code rather than invented here.
 
-### §PW536 Adoption resolved against the store's own folder
-
-Found moving Cottony onto the options and saves kits (PW371, Cottony RK151). A game's
-tests must never adopt the player's real older file, so Cottony's tests point the game
-at a folder of their own. But `ADOPTED` in `polyweave_options.gd` is a const of absolute
-`user://` paths, and `adopted()` in `polyweave_saves.gd` takes no argument. To aim
-adoption at a test folder, Cottony's game.gd overwrites `settings.adopted` and
-`saves.adopt` after building both stores. Both are public and the kits' own proofs do
-the same, but it is the game reaching into a kit's state to make it testable.
-
-What polyweave should do: an older file named in `ADOPTED`, or read by `adopted()`, is
-resolved against the store's own folder when it is relative. So a store built on a test
-folder adopts the older file in that folder, and the real game, built on `user://`,
-adopts the real one. The same for the saves kit, whose `adopted(folder)` is handed the
-store's folder. Done when Cottony's tests seed a folder and build the stores on it, and
-game.gd no longer overwrites either field.
-
 ### §PW540 The remap screen rebinds through the players kit
 
 Found moving Spinhold onto the input kits (PW370, Spinhold RK216). The remap screen

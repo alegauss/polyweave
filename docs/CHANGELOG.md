@@ -570,6 +570,7 @@
 - ✅ **PW370** **Starship keeps its own bindings and co-op code after the input kits were extracted from it** — Spinhold runs on the prompts, remap and players kits with its own input code gone, and a player's rebinds load unchanged (Spinhold 798845a).
 - ✅ **PW534** **the saves kit's proof writes slots 1 and 2 by number, so a game declaring one slot fails it** — The saves proof runs its corrupt, migration, newer-build and already-played cases on the last slot a game declares, so a game keeping one save proves as it is.
 - ✅ **PW535** **the options kit requires the menus and prompts kits, so a game wanting only the store ships 69 unused icons** — kit.install options without screen lands the settings store alone, with no menus or prompts, and kit.prove proves a kit whole and without each part (design recorded in `docs/specs/kit.md`).
+- ✅ **PW536** **a kit's older-file adoption is a fixed user:// path, so a game's tests overwrite kit fields to keep off the real file** — A relative ADOPTED file is read beside the options file, and adopted(folder) gets the saves folder, so a test's store adopts its seed (design recorded in `docs/specs/kit.md`).
 
 ## Block W — A core that grows by layers
 

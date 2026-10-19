@@ -77,6 +77,8 @@ def test_a_game_with_fewer_slots_proves_within_them(tmp_path, slots):
      "no migration brings a version 1 save to 2"),
     ("addons/polyweave/saves/saves.gd", "if from > version:", "if false:",
      "a save from a newer build was not refused"),
+    ("addons/polyweave/saves/saves.gd", "script.adopted.bind(dir) if",
+     'script.adopted.bind(DIR) if', "an older save was not handed the store's folder"),
 ])
 def test_a_broken_save_fails_the_proof_by_name(tmp_path, slots, where, before, after,
                                                said):

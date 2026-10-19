@@ -371,7 +371,10 @@ A game that kept its options before the kit loses none of them (§PW398, 0.2.0).
 <key>]}`, and a load with no file of the kit's own takes each value from where the game
 kept it, under the rules a value read from the kit's file meets, writes the kit's file
 at once and says so in `said`. The older file is left as it was and not read again,
-the remap kit's `FROM` door in another shape.
+the remap kit's `FROM` door in another shape. A relative `<file>` is read from the
+folder the kit's own file is in (§PW536, 0.3.1): the game, on `user://`, adopts its
+real file, and its tests, building the store on a folder of their own, adopt the file
+they seeded there without reaching into `adopted`.
 
 **saves** (§PW348): a game's saves in slots, kept through a crash and an update, from
 Cottony's save file. `PolyweaveSaves` takes a Dictionary and never names a field. A
@@ -395,7 +398,11 @@ the game's older file into the data slot 0 holds, since only the game knows that
 it returns to slot 0, say so, and leave a marker beside the slots so a slot deleted
 later stays empty. The older file is left as it was. The proof takes a save through a
 Callable of its own, deletes it, and holds that it is not taken again or over a game
-already saved in the kit.
+already saved in the kit. Declared as `adopted(folder: String)`, it is handed the
+store's own folder (§PW536, 0.2.2), so a game's tests building the store on a folder
+of their own adopt the file they seeded there and never the player's. The proof runs
+every case within the slots the game declares, on its last slot (§PW534), so a game
+keeping one save declares `SLOTS := 1`.
 
 **launch** (§PW349): from launch to the first scene, and every change of scene after.
 `PolyweaveSplash` shows the project's logos, each for its seconds, while the first

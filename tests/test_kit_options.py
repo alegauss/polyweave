@@ -103,6 +103,9 @@ def _broken(tmp_path, where, before, after):
      "for held in [_values]:", "a key no row declares was dropped"),
     ("addons/polyweave/menus/menu.gd", '"switch": JOY_BUTTON_A}',
      '"switch": JOY_BUTTON_B}', "east button did not change language"),
+    ("addons/polyweave/options/settings.gd",
+     "from = path.get_base_dir().path_join(from)", "pass",
+     "a relative older file was not read beside the kit's own"),
 ])
 def test_a_broken_option_fails_the_proof_by_name(tmp_path, where, before, after, said):
     found = _broken(tmp_path, where, before, after)

@@ -46,7 +46,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
   { block: "U", title: "A window on everything a project governs", open: 0 },
-  { block: "V", title: "Parts every game repeats, installed already proved", open: 7 },
+  { block: "V", title: "Parts every game repeats, installed already proved", open: 6 },
   { block: "W", title: "A core that grows by layers", open: 0 },
 ];
 
@@ -106,13 +106,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "A playtest's trace of spawns, kills and hits cannot be measured or laid against the wave it played",
     why: "A declared wave says what it asks of a player; only a trace says where players struggle, and Starship's balance needs both.",
     deps: ["PW205"],
-  },
-  {
-    id: "PW536",
-    block: "V",
-    symptom: "a kit's older-file adoption is a fixed user:// path, so a game's tests overwrite kit fields to keep off the real file",
-    why: "Cottony's game.gd reaches into both stores after building them, so tests never adopt a player's real save.",
-    deps: [],
   },
   {
     id: "PW540",
