@@ -576,6 +576,7 @@
 - ✅ **PW542** **the drawn pad screen shows raw action names, unfilled help and works only on ui_accept and ui_cancel** — The pad screen reads each action's declared label, its help names the buttons through the prompts kit, and both screens work on a declared CONFIRM and BACK (design recorded in `docs/specs/kit.md`).
 - ✅ **PW543** **loading an older bindings file logs an engine error for every action the player never rebound** — The store asks for each action's key before reading it, so a file naming only rebound actions loads with no engine error; the remap proof listens for one (design recorded in `docs/specs/kit.md`).
 - ✅ **PW544** **kit.install writes the remap kit's own file into polyweave.toml even where the game declares a STORE** — A kit may name the project constant that says where it keeps its file; install then writes the game's STORE file and section into [kit.remap] (design recorded in `docs/specs/kit.md`).
+- ✅ **PW545** **the prompts kit starts on the keyboard before any input, so a game launched with a pad in hand shows keys** — Before any input the prompts kit takes the first connected pad's family, the keyboard where none is, so a game needs no boot code to name the pad (design recorded in `docs/specs/kit.md`).
 
 ## Block W — A core that grows by layers
 

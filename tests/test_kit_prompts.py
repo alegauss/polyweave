@@ -82,3 +82,24 @@ def test_a_missing_icon_fails_the_proof_by_name(tmp_path):
     [found] = kits._scripts(["prompts"], kits.every(), game)
     assert found["status"] == "failed"
     assert "fire has no icon in switch" in found["said"]
+
+
+@pytest.mark.skipif(not os.environ.get("GODOT"), reason="no $GODOT on this machine")
+@pytest.mark.parametrize(("before", "after", "said"), [
+    ("\tif _touched or connected.is_empty():\n\t\treturn family\n",
+     "\treturn family\n", "started on keyboard"),
+    ("\t_touched = true\n", "", "found after a key was pressed"),
+])
+def test_prompts_that_ignore_the_pad_in_hand_fail_the_proof(
+        tmp_path, before, after, said):
+    # Spinhold set the family itself at boot to name the plugged-in pad (§PW545)
+    game = tmp_path / "game"
+    shutil.copytree(kits.KITS / "prompts" / "fixture", game)
+    kits.install("prompts", root=str(game))
+    script = game / "addons" / "polyweave" / "prompts" / "prompts.gd"
+    text = script.read_text(encoding="utf-8")
+    assert before in text
+    script.write_text(text.replace(before, after), encoding="utf-8")
+    [found] = kits._scripts(["prompts"], kits.every(), game)
+    assert found["status"] == "failed"
+    assert said in found["said"]

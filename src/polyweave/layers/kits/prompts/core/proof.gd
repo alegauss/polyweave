@@ -74,6 +74,20 @@ func _proved() -> Array:
 	prompts.note(key)
 	if on_pad == "keyboard" or prompts.family != "keyboard":
 		failed.append("a pad then a key left the family at %s" % prompts.family)
+	# Before any input the first connected pad is the one in hand, the keyboard where
+	# none is, and once an input is noted a pad found again changes nothing (§PW545).
+	var couch = _PwPrompts.new()
+	couch.start([3], {3: "DualSense Wireless Controller"})
+	if couch.family != "playstation" or couch.devices.get(0) != 3:
+		failed.append("a launch with a PlayStation pad plugged in started on %s" % couch.family)
+	var desk = _PwPrompts.new()
+	desk.start([])
+	desk.note(key)
+	desk.start([2], {2: "Xbox Series Controller"})
+	if desk.family != "keyboard":
+		failed.append("a pad found after a key was pressed moved the family to %s" % desk.family)
+	couch.free()
+	desk.free()
 	for action in InputMap.get_actions():
 		var on_xbox: String = prompts.icon_path(action, "xbox")
 		if on_xbox != "" and prompts.icon_path(action, "switch") == on_xbox:

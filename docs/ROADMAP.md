@@ -57,7 +57,6 @@
 
 ## Block V — Parts every game repeats, installed already proved
 
-- 🛠 **PW545** (deps: —) **the prompts kit starts on the keyboard before any input, so a game launched with a pad in hand shows keys** — Spinhold sets the prompt family itself at boot to name the plugged-in pad, a rule the kit should keep. → §PW545
 - 📋 **PW550** (deps: —) **a kit's copied records name the artefact inside polyweave's tree, so provenance.verify reports every kit icon missing** — Spinhold's verify lists 128 false missing records from the prompts and remap kits, which would hide a real one. → §PW550
 
 ## Block W — A core that grows by layers

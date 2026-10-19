@@ -231,6 +231,13 @@ stays the first player's, and `player_changed(player, family)` says any player's
 unplugged hands its player's prompts to another pad still in and held by nobody, or to
 the keyboard.
 
+Before any input the first player holds the first connected pad (§PW545, 0.6.0), as a
+game launched from a couch is played with the pad in hand: the service, once in the
+tree, takes that pad's family, and the keyboard's where none is connected, and a pad
+plugged in before any input is taken the same way. `start(connected, names)` is that
+rule, which the proof drives with pads of its own; once an input is noted the device in
+use decides and `start` changes nothing.
+
 Every button is named, in every family (§PW431, 0.4.0). A pad the system names but no
 word places (not PlayStation, Switch or Xbox) is `generic`, and one it gives no name is
 still Xbox. A generic pad's face buttons are called by where they sit, `SOUTH`, `EAST`,

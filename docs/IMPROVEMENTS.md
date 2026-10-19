@@ -478,19 +478,6 @@ differently, and a skeleton that suits one may fight the next. So it stays an id
 Starship and Cottony both show code it would replace, at which point the shape it should
 take is read off that code rather than invented here.
 
-### §PW545 Prompts start on the first connected pad
-
-Found moving Spinhold onto the input kits (PW370, Spinhold RK216). The prompts kit
-starts every player on the keyboard family and moves only on an input. Spinhold's rule
-(its RK146) is that, before any input, the prompts show the first pad that is plugged
-in, since a game launched from a couch is played with the pad in hand. Spinhold sets
-`family` itself at boot in game/core/settings.gd to keep that rule.
-
-What polyweave should do: the prompts kit, before a player's first input, takes the
-family of the first connected pad where one is connected, and the keyboard where none
-is, and says which in its proof. Done when Spinhold's boot no longer sets the family and
-its prompts still name the pad on a launch with a pad plugged in.
-
 ### §PW550 Kit records that name where the file landed
 
 Found in Spinhold (2026-10-19), running `provenance.verify` after RK216 moved the game

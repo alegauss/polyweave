@@ -71,12 +71,31 @@ var _watched: Array = []
 var _followers: Array[Callable] = []
 
 
+## Whether any input has been noted yet; before it, the first player's family is the
+## first connected pad's (§PW545).
+var _touched := false
+
+
 func _ready() -> void:
 	Input.joy_connection_changed.connect(unplugged)
+	start(Array(Input.get_connected_joypads()))
 
 
 func _input(event: InputEvent) -> void:
 	note(event)
+
+
+## Before any input, the first player holds the first of the `connected` pads, as a game
+## launched from a couch is played with the pad in hand (§PW545), and the keyboard where
+## none is. `names` stands in for the names the system gives the pads, pad -> name.
+## Once an input is noted the device in use decides, and this changes nothing.
+func start(connected: Array, names := {}) -> String:
+	if _touched or connected.is_empty():
+		return family
+	var pad := int(connected[0])
+	devices[0] = pad
+	_moved(0, family_of(str(names.get(pad, Input.get_joy_name(pad)))))
+	return family
 
 
 ## Fill `label`'s text from the table row `key` through `fill`, for `player`, and keep
@@ -150,6 +169,7 @@ func note(event: InputEvent) -> void:
 		device = -1
 	if device == -2:
 		return
+	_touched = true
 	var player := player_of(event)
 	if player < 0:
 		return
@@ -174,6 +194,9 @@ func _moved(player: int, now: String) -> void:
 ## pad still connected and held by nobody else, or to the keyboard.
 func unplugged(pad: int, connected: bool, connected_now: Array = []) -> void:
 	if connected:
+		# a pad plugged in before any input is the one in hand (§PW545)
+		if not devices.has(0) or devices[0] < 0:
+			start([pad])
 		return
 	var left := connected_now if not connected_now.is_empty() \
 		else Array(Input.get_connected_joypads())
