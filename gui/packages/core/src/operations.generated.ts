@@ -1070,6 +1070,22 @@ export interface MotionBakeArgs {
   root?: string
 }
 
+/** Draft an editable score from a MIDI file: tempo, key, tracks and repeats found. */
+export interface MusicFromMidiArgs {
+  /** the .mid to draft from, relative to the project */
+  midi: string
+  /** the *.music.toml to write; beside the MIDI if unset */
+  out?: string
+  /** steps a quarter note the notes are quantised to; default 4 */
+  grid?: number
+  /** bars a section is read in, to find repeats; default 4 */
+  phrase?: number
+  /** write over a score already there; default false */
+  replace?: boolean
+  /** the project the paths resolve against; default "." */
+  root?: string
+}
+
 /** Render a valid score to the formats a game loads through Surge XT and FluidSynth. */
 export interface MusicRenderArgs {
   /** the *.music.toml, relative to the project */
@@ -2609,6 +2625,7 @@ export interface Operations {
   "measure.take": MeasureTakeArgs
   "mesh.buy": MeshBuyArgs
   "motion.bake": MotionBakeArgs
+  "music.from_midi": MusicFromMidiArgs
   "music.render": MusicRenderArgs
   "music.to_midi": MusicToMidiArgs
   "music.validate": MusicValidateArgs
@@ -2820,6 +2837,7 @@ export const OPERATIONS = [
   "measure.take",
   "mesh.buy",
   "motion.bake",
+  "music.from_midi",
   "music.render",
   "music.to_midi",
   "music.validate",

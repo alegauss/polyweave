@@ -41,7 +41,7 @@
 
 ## Block P — Music and sound a game can ship
 
-- 🛠 **PW559** (deps: —) **A recorded track cannot become an editable music.toml score** — The agent transcribes by hand through ad-hoc tools, so a bought theme never joins the scores the game edits and renders. → §PW559
+- ⏳ **PW559** (deps: —) **A recorded track cannot become an editable music.toml score** — A recording still has to become MIDI by hand (a transcriber per stem) before music.from_midi drafts it, and no sitting lays the draft beside the original. → §PW559
 - 📋 **PW560** (deps: —) **sound.loop fails an Ogg loop's seam that sound.measure reads as ordinary** — Two seam scales answer one question, so an agent cannot trust either verdict without reading the source. → §PW560
 
 ## Block Q — Words held to the world
@@ -117,6 +117,15 @@
 - **Resogun's phase 1 counts its pods, not its city** On Spinhold's resogun_p1 frames
   the count per frame follows the pods by eye on the sheets, with silhouette or warp-in
   where motion alone is not enough.
+
+## Done when — PW559
+
+- **A recording drafts to a valid score in one call** A test passes an audio file (or
+  its stems) and gets back a *.music.toml that music.validate accepts, transcribed to
+  MIDI inside polyweave with no scratch environment.
+- **The draft is heard beside the original** The draft's render and the recording are
+  laid side by side for a person (sound.sitting), since their timbres differ and only a
+  person can say the draft is the same music.
 
 ## Non-goals
 

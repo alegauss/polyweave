@@ -106,6 +106,17 @@ CODES: dict[str, Code] = {
         when="music.to_midi on a source music.validate would not pass",
         doors=("call music.validate and fix every problem it names",),
     ),
+    "music.not-midi": Code(
+        means="the file is not a Standard MIDI File a score can be drafted from",
+        when="music.from_midi on an SMPTE-timed file, a truncated one, or one with no "
+        "notes (§PW559)",
+        doors=("export the MIDI as format 0 or 1 with ticks a quarter",),
+    ),
+    "music.draft-exists": Code(
+        means="a score is already where the draft would be written",
+        when="music.from_midi run twice on one MIDI file, or onto a hand-made score",
+        doors=("pass out, another path", "pass replace = true"),
+    ),
     "music.bad-format": Code(
         means="a render asked for a format it does not write",
         when="formats naming mp3 or flac, or an empty list",

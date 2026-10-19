@@ -58,7 +58,8 @@ CORE_TOOLS = 39_000
 #: 132,521 with clip.timeline (§PW554), whose motion layer's figure rose by 600 for it
 #: on top of verdict.place and the args of game.open and clip.shots in the same run.
 #: 133,265 with sound.stems (§PW558), whose sound layer's figure rose by 400 for it.
-SESSION_BUDGET = 133_500
+#: 134,226 with music.from_midi (§PW559), whose sound layer's figure rose by 1,000.
+SESSION_BUDGET = 134_500
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

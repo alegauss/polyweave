@@ -153,7 +153,9 @@ from polyweave.surface.capabilities import capabilities
 #: where a game kept its reveal's curves as constants (§PW554).
 #: 152,478 with sound.stems, a voice taken out of a recorded track, which a project
 #: otherwise ran by hand outside provenance (§PW558).
-DESCRIBE = 152_700
+#: 153,587 with music.from_midi, a MIDI file drafted as a score, which a project
+#: otherwise typed in by hand from a transcriber's notes (§PW559).
+DESCRIBE = 153_800
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -281,7 +283,8 @@ DESCRIBE = 152_700
 #: 166,604 with verdict.place and its two codes (§PW549).
 #: 167,368 with clip.timeline and its two codes (§PW554).
 #: 168,248 with sound.stems and sound.no-separator (§PW558).
-CAPABILITIES = 168_500
+#: 169,422 with music.from_midi and its two codes (§PW559).
+CAPABILITIES = 169_700
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.
@@ -347,7 +350,8 @@ HELP_VERB = 4_900
 #: 31,930 with verdict.place (§PW549).
 #: 32,077 with clip.timeline (§PW554).
 #: 32,212 with sound.stems (§PW558).
-HELP_TOP = 32_350
+#: 32,372 with music.from_midi (§PW559).
+HELP_TOP = 32_500
 #: A search's answer over its default budget of 24 samples: 3,739.
 #: 4,019 where it fails with its best on an edge, which `at_bound` and `stopped` now
 #: say, so a range that cut the answer off is not read as unreachable (§PW442).

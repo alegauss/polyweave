@@ -31,7 +31,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
-  { block: "G", title: "Geometry as a declaration", open: 0 },
+  { block: "G", title: "Geometry as a declaration", open: 6 },
   { block: "H", title: "Proof on a real game", open: 1 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
@@ -52,6 +52,48 @@ export const generatedBlocks: GeneratedBlock[] = [
 
 export const generatedTasks: GeneratedTask[] = [
   {
+    id: "PW565",
+    block: "G",
+    symptom: "A flattened sphere creases at its rim whatever its steps",
+    why: "A disc or a squashed ball cannot pass a soft-edge spec, so it is rebuilt from bevelled cylinders at many more triangles.",
+    deps: [],
+  },
+  {
+    id: "PW566",
+    block: "G",
+    symptom: "A bevel rounds every edge, so a smooth body grows triangles and creases under it",
+    why: "Rounding one cut on a round part ruins the part, so a cut piece cannot be softened.",
+    deps: [],
+  },
+  {
+    id: "PW567",
+    block: "G",
+    symptom: "A rebuild leaves the material files of materials the document dropped",
+    why: "Orphan .tres files and records pile up beside a piece, found only by matching names by hand.",
+    deps: [],
+  },
+  {
+    id: "PW568",
+    block: "G",
+    symptom: "A kit of built pieces takes a shell loop to render, spec and sit for a person",
+    why: "Each piece costs five calls and a hand-written spec, and every project writes its own look script.",
+    deps: [],
+  },
+  {
+    id: "PW569",
+    block: "G",
+    symptom: "A declared finish reaches the game closed, so it cannot take an instance's hue or the project's background hold",
+    why: "A game re-implements the accepted shading to tint and dim it, and the drawn look drifts from the judged one.",
+    deps: [],
+  },
+  {
+    id: "PW570",
+    block: "G",
+    symptom: "A built mesh imports with its glTF materials, so the game swaps in the judged ones by hand",
+    why: "Every game drawing a built piece holds code matching surfaces to the written materials.",
+    deps: [],
+  },
+  {
     id: "PW36",
     block: "H",
     symptom: "a real project cannot adopt the plugin without carrying its own paths and palette into it",
@@ -62,7 +104,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW559",
     block: "P",
     symptom: "A recorded track cannot become an editable music.toml score",
-    why: "The agent transcribes by hand through ad-hoc tools, so a bought theme never joins the scores the game edits and renders.",
+    why: "A recording still has to become MIDI by hand (a transcriber per stem) before music.from_midi drafts it, and no sitting lays the draft beside the original.",
     deps: [],
   },
   {
