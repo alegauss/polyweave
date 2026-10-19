@@ -47,6 +47,9 @@ difference sat at the 99th percentile.
 | `edge_{p1,p50,p99,mean,std}` | 0–1 | Gradient of CIELAB lightness between neighbours, inside the subject |
 | `hue_spread` | 0–1 | Circular standard deviation of hue, weighted by saturation |
 | `alpha_coverage` | 0–1 | Fraction of the region with alpha above the floor |
+| `fringe_width` | px | Median length of the ramps from opaque to clear across the outline |
+| `fringe_luma` | −1–1 | Median luminance of the partly transparent pixels less the opaque beside them |
+| `fringe_delta_e` | 0–100 | Median CIEDE2000 of the partly transparent pixels from the opaque beside them |
 
 A call asking for `saturation` returns all five statistics. A predicate names one.
 
@@ -85,6 +88,21 @@ across two pixels is 0.5. Only pixels whose eight neighbours are all in the subj
 counted: the step to transparent is the silhouette's antialiasing, and the colour under
 a transparent pixel is undefined. It is taken at the final rung, since a gradient is per
 pixel and a preview is a smaller picture.
+
+**`fringe_*` is how a transparent copy keeps its edge** (§PW548). Spinhold's 4K logo
+for stores and streams fails by its outline: a dark or white halo where a resize or a
+matte left the wrong colour in the partly transparent pixels, or a ramp gone wide. A
+fringe pixel is one whose alpha is above the floor and under 250 of 255. `fringe_width`
+is the median length of the runs of them that cross the outline, along rows and
+columns, from an opaque pixel on one side to a clear one on the other (a run between two
+opaque pixels is a hole's antialiasing and is left out): a drawn edge reads about one,
+a feathered one wider, and an edge with no partial pixel reads 0. `fringe_luma` and
+`fringe_delta_e` compare each fringe pixel's own colour with the mean of the opaque
+pixels nearest it, within one, two, four, then eight pixels: the median step in
+relative luminance, below 0 for a dark halo, and the median CIEDE2000. A picture with no
+alpha is `spec.measure-needs`. A resizer that premultiplies in eight bits quantises a
+faint pixel's colour, so a clean resized edge reads a little off 0, and the bound is set
+from the drawn copy's own reading. They are taken at the final rung.
 
 A region holding no pixels is refused (`spec.empty-region`) rather than answered with zero:
 a statistic over nothing is not a statistic.

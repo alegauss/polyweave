@@ -54,6 +54,11 @@ ANSWERS_AT = {
     "luma_bands": "final",
     # A gradient is per pixel, so it is the size and the samples of the render (§PW79).
     "edge": "final",
+    # A transparent edge's ramp and halo are a pixel or two of the final picture
+    # (§PW548).
+    "fringe_width": "final",
+    "fringe_luma": "final",
+    "fringe_delta_e": "final",
     # Whether a shot reads over what is behind it is a question of the picture drawn,
     # a game's capture or a final render, and no sphere stands in for it (§PW272).
     "contrast_min": "final",

@@ -94,30 +94,6 @@ this is where that is recorded honestly: what still runs by hand, and why the ri
 instead of disappearing. An outcome worth having, stated, beats the same outcome
 unstated.
 
-### §PW548 Measures for a transparent picture's edge
-
-Found in Spinhold (RK150, 2026-10-19). The game's 4K transparent logo
-(art/brand/spinhold-logo-4k.png, drawn by picture.vector) needed an acceptance spec
-whose bounds say its alpha edge is clean: no grey or dark halo round the letters, no
-wide half-transparent fringe left by a resize or a matte. RK150's design named
-`fringe_width` and `edge_width`; `measure.available` lists neither, and nothing among
-alpha_coverage, edge, luma or saturation reads the edge's alpha ramp. The spec
-(art/accept/spinhold-logo-4k.accept.toml) went out without the predicate, with a comment
-naming this line.
-
-What polyweave should do: measures over the boundary of a picture with an alpha
-channel, on the pixels whose alpha is between the floor and opaque:
-- `fringe_width`: the median width, in pixels, of that ramp across the silhouette's
-  edge, so a resize-softened or feathered edge reads wider than a crisp one;
-- `fringe_luma` and `fringe_delta_e`: the brightness and colour of the partly
-  transparent pixels against the opaque ones next to them, so a dark or white matte
-  halo (premultiplied wrongly, or keyed off a background) is caught.
-They take `region` like the rest, are listed by `measure.available`, and accept.check
-reads them as any predicate.
-
-Done when Spinhold's logo spec holds `fringe_width` and `fringe_delta_e`, and a copy
-resized with a dark matte fails them where the drawn one passes.
-
 ### §PW549 Place an accepted take where the game loads it
 
 Found in Spinhold (RK168, 2026-10-19). `sound.speak` wrote three takes of the studio tag

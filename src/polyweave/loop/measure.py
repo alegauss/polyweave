@@ -571,6 +571,166 @@ def ciede2000(one: np.ndarray, two: np.ndarray) -> float:
     )
 
 
+def ciede2000_many(one: np.ndarray, two: np.ndarray) -> np.ndarray:
+    """`ciede2000` over rows of Lab values at once, the same formula vectorised, for a
+    measure that compares every pixel with its own neighbour rather than one target."""
+    l1, a1, b1 = one[:, 0], one[:, 1], one[:, 2]
+    l2, a2, b2 = two[:, 0], two[:, 1], two[:, 2]
+    c_bar = (np.hypot(a1, b1) + np.hypot(a2, b2)) / 2.0
+    g = 0.5 * (1.0 - np.sqrt(c_bar**7 / (c_bar**7 + 25.0**7)))
+    a1p, a2p = (1 + g) * a1, (1 + g) * a2
+    c1p, c2p = np.hypot(a1p, b1), np.hypot(a2p, b2)
+    h1p = np.where((a1p != 0) | (b1 != 0), np.degrees(np.arctan2(b1, a1p)) % 360.0, 0.0)
+    h2p = np.where((a2p != 0) | (b2 != 0), np.degrees(np.arctan2(b2, a2p)) % 360.0, 0.0)
+    flat = c1p * c2p == 0
+    gap = h2p - h1p
+    dhp = np.where(flat, 0.0, np.where(np.abs(gap) <= 180, gap,
+                                       np.where(h2p > h1p, gap - 360.0, gap + 360.0)))
+    dHp = 2.0 * np.sqrt(c1p * c2p) * np.sin(np.radians(dhp) / 2.0)
+    lp_bar = (l1 + l2) / 2.0
+    cp_bar = (c1p + c2p) / 2.0
+    total = h1p + h2p
+    hp_bar = np.where(flat, total, np.where(
+        np.abs(h1p - h2p) <= 180, total / 2.0,
+        np.where(total < 360, (total + 360.0) / 2.0, (total - 360.0) / 2.0)))
+    t = (1.0 - 0.17 * np.cos(np.radians(hp_bar - 30.0))
+         + 0.24 * np.cos(np.radians(2.0 * hp_bar))
+         + 0.32 * np.cos(np.radians(3.0 * hp_bar + 6.0))
+         - 0.20 * np.cos(np.radians(4.0 * hp_bar - 63.0)))
+    sl = 1.0 + (0.015 * (lp_bar - 50.0) ** 2) / np.sqrt(20.0 + (lp_bar - 50.0) ** 2)
+    sc = 1.0 + 0.045 * cp_bar
+    sh = 1.0 + 0.015 * cp_bar * t
+    rt = (-2.0 * np.sqrt(cp_bar**7 / (cp_bar**7 + 25.0**7))
+          * np.sin(np.radians(60.0 * np.exp(-(((hp_bar - 275.0) / 25.0) ** 2)))))
+    dcp = c2p - c1p
+    return np.sqrt(((l2 - l1) / sl) ** 2 + (dcp / sc) ** 2 + (dHp / sh) ** 2
+                   + rt * (dcp / sc) * (dHp / sh))
+
+
+# -- a transparent picture's edge ---------------------------------------------------
+
+#: Alpha at or above this, of 255, is opaque; a fringe pixel lies between the floor and
+#: it (§PW548). Not 255, since an encoder's rounding leaves a solid pixel at 254.
+OPAQUE = 250
+
+
+def _fringe(image: Image, mask: np.ndarray, alpha_floor: float, name: str):
+    """The partly transparent pixels of the region, the opaque and the clear ones."""
+    if not image.had_alpha:
+        raise PolyweaveError(
+            "spec.measure-needs",
+            f"{name} reads a transparent picture's edge, and this one has no alpha",
+            "measure a picture with an alpha channel, such as a logo's transparent one",
+        )
+    alpha = image.alpha
+    clear = alpha <= round(alpha_floor * 255)
+    opaque = alpha >= OPAQUE
+    return ~clear & ~opaque & mask, opaque, clear
+
+
+def _ramps(partial: np.ndarray, opaque: np.ndarray, clear: np.ndarray) -> list[int]:
+    """The length of every run of fringe pixels, along rows and then columns, that goes
+    from opaque on one side to clear on the other: a ramp across the silhouette's edge.
+    A run between two opaque pixels is a hole's antialiasing, not the outline's."""
+    lengths = []
+    ways = ((partial, opaque, clear), (partial.T, opaque.T, clear.T))
+    for runs, solid, empty in ways:
+        turns = np.diff(np.pad(runs, ((0, 0), (1, 1))).astype(np.int8), axis=1)
+        width = runs.shape[1]
+        starts, ends = np.argwhere(turns == 1), np.argwhere(turns == -1)
+        for (row, start), (_, end) in zip(starts, ends, strict=True):
+            before_solid = start > 0 and solid[row, start - 1]
+            before_empty = start == 0 or empty[row, start - 1]
+            after_solid = end < width and solid[row, end]
+            after_empty = end == width or empty[row, end]
+            if (before_solid and after_empty) or (before_empty and after_solid):
+                lengths.append(int(end - start))
+    return lengths
+
+
+def _box(values: np.ndarray, radius: int) -> np.ndarray:
+    """The sum of `values` over the square of `radius` round each pixel, by an integral
+    image, so a 4K picture's neighbourhoods cost one pass."""
+    padded = np.pad(values, ((radius + 1, radius), (radius + 1, radius))
+                    + ((0, 0),) * (values.ndim - 2))
+    summed = padded.cumsum(0).cumsum(1)
+    side = 2 * radius + 1
+    return (summed[side:, side:] - summed[:-side, side:]
+            - summed[side:, :-side] + summed[:-side, :-side])
+
+
+def _beside(image: Image, partial: np.ndarray, opaque: np.ndarray):
+    """Each fringe pixel's colour, 0–1, beside the mean colour of the opaque pixels
+    nearest it: the neighbourhood widens, 1, 2, 4 then 8 pixels, until one is found."""
+    if not partial.any():
+        return np.zeros((0, 3)), np.zeros((0, 3))
+    # Only the fringe's own box and the widest neighbourhood round it are summed, in
+    # double precision: a running sum over millions of pixels loses a single's digits.
+    rows, cols = np.nonzero(partial)
+    top, left = max(rows.min() - 9, 0), max(cols.min() - 9, 0)
+    bottom, right = rows.max() + 10, cols.max() + 10
+    rgb = image.rgba[top:bottom, left:right, :3].astype(np.float64) / 255.0
+    weight = opaque[top:bottom, left:right].astype(np.float64)
+    inside = partial[top:bottom, left:right]
+    near = np.full(rgb.shape, np.nan)
+    for radius in (1, 2, 4, 8):
+        count = _box(weight, radius)
+        mean = _box(rgb * weight[..., None], radius) / np.maximum(count, 1)[..., None]
+        fill = np.isnan(near[..., 0]) & (count > 0.5)
+        near[fill] = mean[fill]
+    found = inside & ~np.isnan(near[..., 0])
+    return rgb[found], near[found]
+
+
+@_computes("fringe_width")
+def _fringe_width(
+    image: Image, mask: np.ndarray, *, alpha_floor: float, **_: Any
+) -> float:
+    """How wide the edge's ramp from opaque to clear is, in pixels (§PW548).
+
+    The median length of the runs of partly transparent pixels that cross the
+    silhouette's edge, along rows and columns: a crisp antialiased edge reads about one,
+    a resize-softened or feathered one wider. An edge with no partial pixel at all reads
+    0. A diagonal run is longer than the ramp across it, so a bound is set on the
+    picture's own drawn reading, not on a number derived by hand.
+    """
+    partial, opaque, clear = _fringe(image, mask, alpha_floor, "fringe_width")
+    lengths = _ramps(partial, opaque, clear)
+    return round(float(np.median(lengths)), 6) if lengths else 0.0
+
+
+@_computes("fringe_luma")
+def _fringe_luma(
+    image: Image, mask: np.ndarray, *, alpha_floor: float, **_: Any
+) -> float:
+    """How much darker (below 0) or brighter (above) the partly transparent pixels are
+    than the opaque colour next to them, as the median step in relative luminance
+    (§PW548). A matte premultiplied wrongly, or a key off a background, leaves a dark
+    or white halo round the letters, which reads far from 0 where a clean edge is near
+    it."""
+    partial, opaque, _ = _fringe(image, mask, alpha_floor, "fringe_luma")
+    own, near = _beside(image, partial, opaque)
+    if not len(own):
+        return 0.0
+    weights = np.array([0.2126, 0.7152, 0.0722])
+    steps = srgb_to_linear(own) @ weights - srgb_to_linear(near) @ weights
+    return round(float(np.median(steps)), 6)
+
+
+@_computes("fringe_delta_e")
+def _fringe_delta_e(
+    image: Image, mask: np.ndarray, *, alpha_floor: float, **_: Any
+) -> float:
+    """How far in colour the partly transparent pixels are from the opaque colour next
+    to them, as the median CIEDE2000 (§PW548): a halo of any hue, dark, white or the
+    background's, where `fringe_luma` reads only its brightness."""
+    partial, opaque, _ = _fringe(image, mask, alpha_floor, "fringe_delta_e")
+    own, near = _beside(image, partial, opaque)
+    if not len(own):
+        return 0.0
+    return round(float(np.median(ciede2000_many(to_lab(own), to_lab(near)))), 6)
+
+
 # -- silhouette ---------------------------------------------------------------------
 
 
