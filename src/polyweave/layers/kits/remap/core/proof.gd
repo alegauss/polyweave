@@ -214,11 +214,56 @@ func _initialize() -> void:
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(settings_path))
 	if _PwBindings.shared() != _PwBindings.shared():
 		failed.append("the shared store is not one store")
+	_maps(actions)
 
 	_fire_key = fire_key
 	_menu = load("res://addons/polyweave/remap/remap_menu.gd").new()
 	_menu.actions.assign(actions)
 	root.add_child(_menu)
+
+
+## Ready maps of the pad (§PW555): each map the game declares binds every action with no
+## button shared; on the proof's own actions, a map on trial comes back unless kept, and
+## what the player bound by hand is kept aside as their own, and kept across a restart.
+func _maps(actions: Array) -> void:
+	var failed := _failed
+	var game := _PwBindings.shared()
+	for named in game.maps:
+		for fault in game.map_faults(named):
+			failed.append("the game's map " + fault)
+	var mapped := _PwBindings.new(actions, _kept)
+	mapped.maps = {"face": {J: ["button:2"], F: ["button:3"], P: ["button:6"]},
+		"shared": {J: ["button:2"], F: ["button:2"]}}
+	if not mapped.map_faults("face").is_empty() or mapped.map_faults("shared").size() != 2:
+		failed.append("a map's faults read %s and %s"
+			% [mapped.map_faults("face"), mapped.map_faults("shared")])
+	var before: Dictionary = mapped.current()
+	mapped.try_map("face", 5.0)
+	var jump: Array = mapped.current()[J]
+	if not jump.has("button:2") or jump.has("button:0") or not jump.has("key:%d" % KEY_SPACE):
+		failed.append("the face map bound jump to %s" % [jump])
+	if mapped.tick(4.0) or not mapped.tick(1.5):
+		failed.append("a map on trial did not come back once its time ran out")
+	if mapped.current() != before or mapped.map_name != "default":
+		failed.append("a map on trial left %s, as %s" % [mapped.current(), mapped.map_name])
+	mapped.try_map("face", 5.0)
+	mapped.keep_map()
+	if mapped.tick(10.0) or mapped.map_name != "face":
+		failed.append("a kept map came back all the same")
+	var shoulder := InputEventJoypadButton.new()
+	shoulder.button_index = JOY_BUTTON_LEFT_SHOULDER
+	mapped.rebind(F, shoulder)
+	mapped.apply_map("default")
+	if not mapped.map_names().has("custom") or mapped.current()[F].has("button:9"):
+		failed.append("the player's own pad was not kept aside: %s" % [mapped.map_names()])
+	mapped.apply_map("custom")
+	if not (mapped.current()[F] as Array).has("button:9"):
+		failed.append("the player's own map did not come back: %s" % [mapped.current()[F]])
+	var restarted := _PwBindings.new(actions, _kept)
+	restarted.load_kept()
+	if restarted.map_name != "custom" or not restarted.custom.has(F):
+		failed.append("the map in force did not survive a restart: %s" % restarted.map_name)
+	mapped.reset()
 
 
 ## the screen is ready only once the tree runs, so its half of the proof waits a frame

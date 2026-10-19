@@ -157,6 +157,11 @@ def test_a_screen_that_loses_focus_or_says_nothing_fails_the_proof(
      "declared confirm did not choose"),
     ("remap_menu.gd", "\t\t\tand confirm_focused():\n", "\t\t\tand false:\n",
      "declared confirm did not press the focused button"),
+    # Spinhold's owner wants maps tried with a keep-this countdown (§PW555)
+    ("bindings.gd", "\tif float(_trial[\"left\"]) > 0.0:\n", "\tif true:\n",
+     "did not come back once its time ran out"),
+    ("bindings.gd", "\t\tcustom = pad_now()\n\t\tmap_name = \"custom\"\n", "\t\tpass\n",
+     "player's own pad was not kept aside"),
 ])
 def test_screens_on_raw_names_or_ui_actions_alone_fail_the_proof(
         tmp_path, script, before, after, said):

@@ -54,6 +54,17 @@ var labels: Dictionary = {}
 ## ui_cancel where it names none
 var confirm: Array = []
 var back: Array = []
+## Ready maps of the pad's half (§PW555), as the declaration's `const MAPS := {"face":
+## {"fire_left": ["button:2"], ...}}` says: each a complete binding of the pad, picked in
+## one press. "default" is project.godot's own, and "custom" what the player bound by
+## hand, kept aside so trying a map never loses it.
+var maps: Dictionary = {}
+## the map in force: "default", a declared one's name, or "custom"
+var map_name := "default"
+## the pad half the player bound by hand, action -> codes, or empty
+var custom: Dictionary = {}
+## a map on trial: {"was": the map before, "codes": every binding before, "left": seconds}
+var _trial: Dictionary = {}
 
 static var _shared: RefCounted
 
@@ -80,6 +91,7 @@ func _init(rebindable: Array = [], path := FILE, project := PROJECT) -> void:
 		labels = Dictionary(declared.get("LABELS", {}))
 		confirm = _named(declared.get("CONFIRM", []))
 		back = _named(declared.get("BACK", []))
+		maps = Dictionary(declared.get("MAPS", {}))
 		var store := Array(declared.get("STORE", []))
 		if store.size() == 2 and path == FILE:
 			_path = str(store[0])
@@ -303,7 +315,8 @@ func apply(action: String, codes: Array) -> void:
 			InputMap.action_add_event(action, event)
 
 
-## rebind `action` to the input `event`, swap any clash, and keep the result
+## rebind `action` to the input `event`, swap any clash, and keep the result; a pad
+## binding changed by hand makes the pad's half the player's own map, "custom" (§PW555)
 func rebind(action: String, event: InputEvent) -> bool:
 	var code := encode(event)
 	if code == "" or not actions.has(action):
@@ -311,6 +324,9 @@ func rebind(action: String, event: InputEvent) -> bool:
 	var after := bind(current(), action, code)
 	for each in after:
 		apply(each, after[each])
+	if not on_keys(code):
+		custom = pad_now()
+		map_name = "custom"
 	save()
 	_PwPrompts.rebound()
 	changed.emit()
@@ -321,9 +337,125 @@ func rebind(action: String, event: InputEvent) -> bool:
 func reset() -> void:
 	for action in actions:
 		apply(action, _defaults[action])
+	map_name = "default"
+	_trial.clear()
 	save()
 	_PwPrompts.rebound()
 	changed.emit()
+
+
+## The maps a player can pick (§PW555): the project's own, each declared one, and the
+## player's own once they have bound the pad by hand.
+func map_names() -> Array:
+	var out := ["default"]
+	out.append_array(maps.keys())
+	if not custom.is_empty():
+		out.append("custom")
+	return out
+
+
+## every action's pad codes as they are now, action -> codes
+func pad_now() -> Dictionary:
+	var out := {}
+	var now := current()
+	for action in now:
+		out[action] = (now[action] as Array).filter(func(c: String) -> bool:
+			return not on_keys(c))
+	return out
+
+
+## a map's pad half, action -> codes: the project's own for "default", the player's for
+## "custom", a declared one's for its name; empty for a name no one declared
+func map_of(name: String) -> Dictionary:
+	if name == "default":
+		var out := {}
+		for action in actions:
+			out[action] = (_defaults[action] as Array).filter(func(c: String) -> bool:
+				return not on_keys(c))
+		return out
+	if name == "custom":
+		return custom
+	return Dictionary(maps.get(name, {}))
+
+
+## What is wrong with a declared map, one sentence each: an action it leaves unbound, a
+## code no binding reads, a button two actions share. Empty where it is a whole map.
+func map_faults(name: String) -> Array[String]:
+	var faults: Array[String] = []
+	var map := map_of(name)
+	var seen := {}
+	for action in actions:
+		var codes: Array = map.get(action, [])
+		if codes.is_empty():
+			faults.append("%s leaves %s unbound" % [name, action])
+		for code in codes:
+			if not code is String or decode(code) == null or on_keys(code):
+				faults.append("%s binds %s to %s, which is no pad code" % [name, action, code])
+			elif seen.has(code):
+				faults.append("%s gives %s to both %s and %s" % [name, code, seen[code], action])
+			else:
+				seen[code] = action
+	return faults
+
+
+## Put map `name` on the pad's half and keep it, the keys left as they are; the player's
+## own map is kept aside first, so trying one never loses it. False for a name not offered.
+func apply_map(name: String) -> bool:
+	if not map_names().has(name):
+		return false
+	if map_name == "custom":
+		custom = pad_now()
+	var map := map_of(name)
+	var now := current()
+	for action in actions:
+		var keys := (now[action] as Array).filter(func(c: String) -> bool:
+			return on_keys(c))
+		apply(action, keys + Array(map.get(action, [])))
+	map_name = name
+	save()
+	_PwPrompts.rebound()
+	changed.emit()
+	return true
+
+
+## Put map `name` on trial for `seconds` (§PW555): `keep_map` keeps it, and `tick`
+## puts every binding back as it was once the time runs out with no word.
+func try_map(name: String, seconds := 10.0) -> bool:
+	var was := {"was": map_name, "codes": current(), "custom": custom.duplicate(true)}
+	if not apply_map(name):
+		return false
+	_trial = was
+	_trial["left"] = seconds
+	return true
+
+
+## the trial's map kept as the player's choice
+func keep_map() -> void:
+	_trial.clear()
+
+
+## seconds left of the map on trial, or -1 where none is
+func trial_left() -> float:
+	return float(_trial.get("left", -1.0))
+
+
+## run the trial's clock; true where it ran out now and the map before was put back
+func tick(delta: float) -> bool:
+	if _trial.is_empty():
+		return false
+	_trial["left"] = float(_trial["left"]) - delta
+	if float(_trial["left"]) > 0.0:
+		return false
+	var codes: Dictionary = _trial["codes"]
+	for action in codes:
+		apply(action, codes[action])
+	map_name = _trial["was"]
+	custom = _trial["custom"]
+	_trial.clear()
+	save()
+	_PwPrompts.rebound()
+	changed.emit()
+	return true
 
 
 func set_deadzone(value: float) -> void:
@@ -359,6 +491,9 @@ func save() -> void:
 	file.set_value(into[1], "invert_vertical", invert_vertical)
 	for name in options:
 		file.set_value(into[1], name, options[name])
+	# The map in force and the player's own, kept apart from it (§PW555).
+	file.set_value(into[1], "map", map_name)
+	file.set_value(into[1], "custom_map", custom)
 	file.save(_path)
 
 
@@ -386,6 +521,12 @@ func _read(file: ConfigFile, into: Array) -> int:
 	for name in declared_options:
 		if file.has_section_key(into[1], name):
 			options[name] = _held(name, file.get_value(into[1], name))
+	if file.has_section_key(into[1], "custom_map"):
+		var kept: Variant = file.get_value(into[1], "custom_map")
+		custom = kept if kept is Dictionary else {}
+	if file.has_section_key(into[1], "map"):
+		var named := str(file.get_value(into[1], "map"))
+		map_name = named if map_names().has(named) else "default"
 	var took := 0
 	for action in actions:
 		# a key asked for that is not there is an engine error even with a default, and a

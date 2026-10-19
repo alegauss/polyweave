@@ -346,6 +346,20 @@ the player rebinds is what the game reads at once, and the store emits `changed`
 every rebind, reset and load, once the InputMap holds it. A screen's `actions` choose
 the rows it shows, never a store of its own.
 
+A player picks a ready map of the pad in one press (§PW555, 0.10.0). The declaration
+may say `const MAPS := {"face": {"fire_left": ["button:2"], ...}}`, each a whole binding
+of the pad's half; the keys are left as they are. The store offers `map_names()`:
+"default", project.godot's own, each declared map, and "custom" once the player has
+bound the pad by hand, which a pad rebind makes the map in force and keeps aside, so
+trying a map never loses it. `apply_map(name)` puts one on and keeps it;
+`try_map(name, seconds)` puts it on trial, `keep_map()` keeps it, and `tick(delta)`
+puts every binding back as it was once the time runs out with no word, answering true
+then (`trial_left()` says the seconds). The map in force and the custom one are kept in
+the store's file. `map_faults(name)` names an action a map leaves unbound, a code no
+binding reads and a button two actions share; the proof holds every map the game
+declares to none, and the trial, the keep and the custom map on actions of its own. The
+remap and pad screens' Map row is still to come.
+
 The pad can be bound on its picture (§PW428, 0.4.0). The remap screen's `pad` button
 opens `pad_screen.gd`, a layer over it binding through the same store: every place on
 the pad in use, named in its layout's glyphs where it sits, with a leader line to the

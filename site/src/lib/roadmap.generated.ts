@@ -104,7 +104,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW555",
     block: "V",
     symptom: "the remap kit offers no ready button maps, so a player changes a scheme only by rebinding each action",
-    why: "Spinhold's owner wants face-button and left-handed maps picked in one press, with a keep-this countdown.",
+    why: "The remap and pad screens still offer no Map row to step through the maps and preview one.",
     deps: [],
   },
   {
