@@ -256,6 +256,16 @@ plugged in before any input is taken the same way. `start(connected, names)` is 
 rule, which the proof drives with pads of its own; once an input is noted the device in
 use decides and `start` changes nothing.
 
+A player says which buttons a pad has (§PW556, 0.8.0). An 8BitDo in one of its modes, a
+clone or a pad behind Steam Input names no maker, so `family_of` read it as generic or
+wrong. `PolyweavePrompts.force(joy_name, family)` chooses `xbox`, `playstation`,
+`switch` or `generic` for the pad the system calls `joy_name`, `automatic` giving its
+name the say again, and any other word is refused; a choice wins in `family_of`, so
+every place a button is named follows it, the menus' confirm and back included, and
+each player on such a pad is read again at once (`reread`). The remap kit keeps the
+choice by the pad's name in its store, puts it back on load, and its screen offers a
+Button names row cycling through them for the pad in use.
+
 Every button is named, in every family (§PW431, 0.4.0). A pad the system names but no
 word places (not PlayStation, Switch or Xbox) is `generic`, and one it gives no name is
 still Xbox. A generic pad's face buttons are called by where they sit, `SOUTH`, `EAST`,

@@ -53,7 +53,6 @@
 
 ## Block V — Parts every game repeats, installed already proved
 
-- 📋 **PW556** (deps: —) **a pad whose name hides its maker is named in the wrong buttons, and the player cannot say which family it is** — Spinhold's players on an 8BitDo or a clone would read generic or wrong prompts with no way to correct them. → §PW556
 - 📋 **PW557** (deps: —) **the players kit copies no ui_accept or ui_cancel per player, so one player's menu cannot answer their own A and B alone** — Spinhold's crew draft had to filter A and B by the event's pad to keep one player from taking another's card. → §PW557
 
 ## Block W — A core that grows by layers

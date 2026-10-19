@@ -24,7 +24,11 @@ const WORDS := {
 	"swapped": "%s took it from %s, which has %s's old binding now",
 	"map": "Map", "map_keep": "Keep %s? Press it again within %d s",
 	"map_kept": "%s is kept", "map_back": "Back to %s",
+	"button_names": "Button names", "automatic": "Automatic", "xbox": "Xbox",
+	"playstation": "PlayStation", "switch": "Switch", "generic": "Generic",
 }
+
+var _names: Button
 
 ## seconds a map picked on the Map row is tried before it goes back, unless kept
 @export var keep_seconds := 10.0
@@ -99,6 +103,11 @@ func _ready() -> void:
 	_map.gui_input.connect(_map_input)
 	_row(said("map"), _map)
 	_paint_map()
+	# Which buttons the pad in use has, where its name hides its maker (§PW556).
+	_names = Button.new()
+	_names.pressed.connect(func() -> void: cycle_names())
+	_row(said("button_names"), _names)
+	_paint_names()
 	# the game's own pad options (§PW433): a switch for a true or false, a slider over
 	# a number's range, each named through the table as REMAP_<NAME>
 	for name: String in bindings.declared_options:
@@ -159,6 +168,31 @@ func press_map() -> void:
 	map_focus = ""
 	_paint()
 	_paint_map()
+
+
+## the pad in use, by the name the system gives it: the first player's, else the first
+## connected; "" with no pad
+func pad_in_use() -> String:
+	var device: int = _prompts.devices.get(0, -1) if _prompts != null else -1
+	if device < 0 and not Input.get_connected_joypads().is_empty():
+		device = Input.get_connected_joypads()[0]
+	return Input.get_joy_name(device) if device >= 0 else ""
+
+
+## the next button names for `joy_name` (the pad in use where empty), kept and in force
+func cycle_names(joy_name := "") -> String:
+	var pad := joy_name if joy_name != "" else pad_in_use()
+	var choices := _PwPrompts.CHOOSABLE
+	var next: String = choices[(choices.find(bindings.pad_family(pad)) + 1) % choices.size()]
+	bindings.set_pad_family(pad, next)
+	_paint()
+	_paint_names()
+	return next
+
+
+func _paint_names() -> void:
+	if _names != null:
+		_names.text = said(bindings.pad_family(pad_in_use()))
 
 
 func _paint_map() -> void:

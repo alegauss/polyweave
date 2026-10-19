@@ -63,6 +63,8 @@ var seats: Object = null
 ## Each player's family and the device it came from, a pad's id or -1 for the keyboard.
 var families := {}
 var devices := {}
+## Each player's pad by the name the system gives it, which a forced family is kept by.
+var pad_names := {}
 
 
 ## Labels kept filled, each [weakref to it, its table key, its player] (§PW434), and the
@@ -94,7 +96,8 @@ func start(connected: Array, names := {}) -> String:
 		return family
 	var pad := int(connected[0])
 	devices[0] = pad
-	_moved(0, family_of(str(names.get(pad, Input.get_joy_name(pad)))))
+	pad_names[0] = str(names.get(pad, Input.get_joy_name(pad)))
+	_moved(0, family_of(pad_names[0]))
 	return family
 
 
@@ -200,6 +203,8 @@ func note(event: InputEvent) -> void:
 	var player := player_of(event)
 	if player < 0:
 		return
+	if device >= 0:
+		pad_names[player] = Input.get_joy_name(device)
 	var now := "keyboard" if device < 0 else family_of(Input.get_joy_name(device))
 	devices[player] = device
 	_moved(player, now)
@@ -234,12 +239,48 @@ func unplugged(pad: int, connected: bool, connected_now: Array = []) -> void:
 			continue
 		var next: int = left.pop_front() if not left.is_empty() else -1
 		devices[player] = next
+		pad_names[player] = Input.get_joy_name(next) if next >= 0 else ""
 		_moved(player, "keyboard" if next < 0 else family_of(Input.get_joy_name(next)))
 
 
-## A pad's family from the name the system gives it: a pad it gives no name is an Xbox
-## one, as most are, and one named but not known is generic (§PW431).
+## The button names a player chose for a pad, by the name the system gives it (§PW556):
+## an 8BitDo in one of its modes, a clone or a pad behind Steam Input names no maker, so
+## the player says which buttons they hold. The remap kit keeps the choice.
+static var forced := {}
+
+## The families a player may choose for a pad; "automatic" lets the name decide.
+const CHOOSABLE: Array[String] = ["automatic", "xbox", "playstation", "switch", "generic"]
+
+
+## Choose the button names for the pad the system calls `joy_name`, or "automatic" to let
+## its name decide again; every player on such a pad, and every prompt, follows at once.
+## False for a family no pad has.
+static func force(joy_name: String, chosen: String) -> bool:
+	if not CHOOSABLE.has(chosen):
+		return false
+	if chosen == "automatic":
+		forced.erase(joy_name)
+	else:
+		forced[joy_name] = chosen
+	if _shared != null and is_instance_valid(_shared):
+		_shared.reread()
+	return true
+
+
+## Each player's pad read again by its name, as a choice of button names changes it.
+func reread() -> void:
+	for player in pad_names:
+		if devices.get(player, -1) >= 0:
+			_moved(player, family_of(pad_names[player]))
+	refresh()
+
+
+## A pad's family from the name the system gives it: the player's own choice for it
+## first (§PW556); a pad it gives no name is an Xbox one, as most are, and one named but
+## not known is generic (§PW431).
 static func family_of(joy_name: String) -> String:
+	if forced.has(joy_name):
+		return forced[joy_name]
 	var said := joy_name.to_lower()
 	for word in ["playstation", "dualshock", "dualsense", "ps3", "ps4", "ps5", "sony"]:
 		if word in said:

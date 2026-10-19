@@ -124,6 +124,9 @@ def test_a_missing_icon_fails_the_proof_by_name(tmp_path):
      "\tvar path := icon_path(action, wanted)\n", "not their own binding's"),
     ("\tif sticks[0] != \"\" and", "\tif false and", "four moves on one stick"),
     # Spinhold's help lines logged an error per freed screen (§PW552)
+    # Spinhold's players on an 8BitDo or a clone could not say which buttons (§PW556)
+    ("\tif forced.has(joy_name):\n\t\treturn forced[joy_name]\n", "",
+     "a pad forced to switch reads"),
     # the engine's own error is what the proof's run says first
     ("\t\tif _alive(redraw):\n\t\t\tredraw.call()\n", "\t\tredraw.call()\n",
      "on a null instance"),

@@ -98,6 +98,22 @@ func _proved() -> Array:
 		failed.append("a pad found after a key was pressed moved the family to %s" % desk.family)
 	couch.free()
 	desk.free()
+	# A pad whose name hides its maker reads as the buttons its player says it has, and
+	# "automatic" gives the name back the say (§PW556).
+	var clone = _PwPrompts.new()
+	clone.start([4], {4: "8BitDo Pro 2"})
+	var read_as: String = clone.family
+	_PwPrompts.force("8BitDo Pro 2", "switch")
+	clone.reread()
+	if read_as != "generic" or clone.family != "switch":
+		failed.append("a pad forced to switch reads %s, from %s" % [clone.family, read_as])
+	if _PwPrompts.force("8BitDo Pro 2", "dreamcast"):
+		failed.append("a family no pad has was taken as a pad's button names")
+	_PwPrompts.force("8BitDo Pro 2", "automatic")
+	clone.reread()
+	if clone.family != "generic":
+		failed.append("automatic left the pad at %s" % clone.family)
+	clone.free()
 	for action in InputMap.get_actions():
 		var on_xbox: String = prompts.icon_path(action, "xbox")
 		if on_xbox != "" and prompts.icon_path(action, "switch") == on_xbox:

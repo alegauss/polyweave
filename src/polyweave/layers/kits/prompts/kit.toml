@@ -1,5 +1,5 @@
 name = "prompts"
-version = "0.7.1"
+version = "0.8.0"
 summary = "button prompts for the pad in the player's hands, switched live, drawn as icons"
 requires = []
 
@@ -27,3 +27,4 @@ script = "core/proof.gd"
 "0.6.0" = "before any input the first player's family is the first connected pad's, the keyboard where none is"
 "0.7.0" = "fill_bbcode draws a help row's own {action} and {move} marks as each player's icons, words where a family has none, and watch_bbcode keeps a label filled with it"
 "0.7.1" = "a follower or watched label freed while a refresh runs, as one screen closing another, is let go rather than called on a null instance"
+"0.8.0" = "a pad's button names chosen by the player, kept by the pad's name, win over the name everywhere a button is named"

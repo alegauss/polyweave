@@ -352,6 +352,19 @@ func _process(_delta: float) -> bool:
 	if menu.bindings.map_name != "face":
 		failed.append("a map kept on the Map row went back all the same")
 	menu.bindings.reset()
+	# Button names chosen for a pad (§PW556): the row steps from automatic, every prompt
+	# follows, and the choice is kept by the pad's name across a restart.
+	var clone_pad := "PW Proof Clone Pad"
+	var chose: String = menu.cycle_names(clone_pad)
+	if chose != "xbox" or _PwPrompts.family_of(clone_pad) != "xbox":
+		failed.append("the Button names row chose %s, read as %s"
+			% [chose, _PwPrompts.family_of(clone_pad)])
+	_PwPrompts.force(clone_pad, "automatic")
+	var named_again := _PwBindings.new(menu.actions, _kept)
+	named_again.load_kept()
+	if _PwPrompts.family_of(clone_pad) != "xbox" or named_again.pad_family(clone_pad) != "xbox":
+		failed.append("a pad's button names did not come back after a restart")
+	named_again.set_pad_family(clone_pad, "automatic")
 	# A stick binds the way it was pushed, once it comes back (§PW432).
 	menu._listen(F, true)
 	for value in [-0.9, -0.4, 0.1]:

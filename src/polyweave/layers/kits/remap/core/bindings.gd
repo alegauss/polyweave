@@ -65,6 +65,8 @@ var map_name := "default"
 var custom: Dictionary = {}
 ## a map on trial: {"was": the map before, "codes": every binding before, "left": seconds}
 var _trial: Dictionary = {}
+## the button names a player chose per pad, by the name the system gives it (§PW556)
+var pad_families: Dictionary = {}
 
 static var _shared: RefCounted
 
@@ -354,6 +356,25 @@ func map_names() -> Array:
 	return out
 
 
+## Choose the button names for the pad the system calls `joy_name` (§PW556): one of the
+## prompts kit's CHOOSABLE, "automatic" letting its name decide; kept, and every prompt
+## renamed at once. False for a family no pad has.
+func set_pad_family(joy_name: String, chosen: String) -> bool:
+	if not _PwPrompts.force(joy_name, chosen):
+		return false
+	if chosen == "automatic":
+		pad_families.erase(joy_name)
+	else:
+		pad_families[joy_name] = chosen
+	save()
+	return true
+
+
+## the button names chosen for a pad, "automatic" where none was
+func pad_family(joy_name: String) -> String:
+	return str(pad_families.get(joy_name, "automatic"))
+
+
 ## what the player reads for a map: its row in the game's table as REMAP_MAP_<NAME>, or
 ## its own name, capitalised, where the table has none
 static func map_label(name: String) -> String:
@@ -509,6 +530,7 @@ func save() -> void:
 	# The map in force and the player's own, kept apart from it (§PW555).
 	file.set_value(into[1], "map", map_name)
 	file.set_value(into[1], "custom_map", custom)
+	file.set_value(into[1], "pad_families", pad_families)
 	file.save(_path)
 
 
@@ -542,6 +564,11 @@ func _read(file: ConfigFile, into: Array) -> int:
 	if file.has_section_key(into[1], "map"):
 		var named := str(file.get_value(into[1], "map"))
 		map_name = named if map_names().has(named) else "default"
+	if file.has_section_key(into[1], "pad_families"):
+		var chosen: Variant = file.get_value(into[1], "pad_families")
+		pad_families = chosen if chosen is Dictionary else {}
+		for joy_name in pad_families:
+			_PwPrompts.force(str(joy_name), str(pad_families[joy_name]))
 	var took := 0
 	for action in actions:
 		# a key asked for that is not there is an engine error even with a default, and a

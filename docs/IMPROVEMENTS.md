@@ -389,25 +389,6 @@ differently, and a skeleton that suits one may fight the next. So it stays an id
 Starship and Cottony both show code it would replace, at which point the shape it should
 take is read off that code rather than invented here.
 
-### §PW556 Button names chosen per pad
-
-Found in Spinhold (RK149, 2026-10-19). The prompts kit reads a pad's family from the
-name the system gives it (`family_of`). A pad whose name hides its maker (an 8BitDo in
-one of its modes, a clone, a pad behind Steam Input) reads as generic, or as the wrong
-family, and the player has no way to say which buttons they are holding. Every prompt,
-the remap screen and the drawn pad then name the wrong buttons.
-
-What the kit should do: a choice of button names per pad, Automatic (as `family_of`
-reads it today), Xbox, PlayStation, Switch or Generic, kept in the remap store by the
-pad's name so a second pad keeps its own. A forced choice wins over `family_of`
-everywhere the kit names a button: `fill`, `named`, `icon_path`, the watched labels, the
-remap screen and the drawn pad, all refilled at once on the change. The remap screen
-offers it as a row for the pad in use. The kit's proof forces each family on a pad named
-as another and expects every prompt renamed.
-
-Done when Spinhold's controller screen offers Button names and a forced choice renames
-every prompt at once, with no code of the game's own.
-
 ### §PW557 Menu actions per player
 
 Found in Spinhold (RK242, 2026-10-19). The owner asked that every menu confirm on A and
