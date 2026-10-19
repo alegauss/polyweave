@@ -54,7 +54,6 @@
 
 ## Block V — Parts every game repeats, installed already proved
 
-- 📋 **PW541** (deps: —) **the remap screen says nothing when it listens and rebuilds its rows on each bind, so a host game loses focus** — Spinhold reads the screen's private listening field and restores focus after every bind to keep a pad usable. → §PW541
 - 📋 **PW542** (deps: —) **the drawn pad screen shows raw action names, unfilled help and works only on ui_accept and ui_cancel** — Spinhold's drawn pad reads "move_left", its help names no button, and it had to bind pad buttons to ui_* itself. → §PW542
 - 📋 **PW543** (deps: —) **loading an older bindings file logs an engine error for every action the player never rebound** — A player's first launch on the kits fills the crash log with errors that are not errors. → §PW543
 - 📋 **PW544** (deps: —) **kit.install writes the remap kit's own file into polyweave.toml even where the game declares a STORE** — polyweave.toml then names a bindings file the game never writes, and Spinhold corrected it by hand. → §PW544

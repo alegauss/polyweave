@@ -408,20 +408,6 @@ differently, and a skeleton that suits one may fight the next. So it stays an id
 Starship and Cottony both show code it would replace, at which point the shape it should
 take is read off that code rather than invented here.
 
-### §PW541 The remap screen says when it listens and keeps focus
-
-Found moving Spinhold onto the input kits (PW370, Spinhold RK216). A game hosting the
-remap screen inside its own options needs to know when the screen is listening for a
-binding, so its own back and tab keys stay out of the way. The screen says nothing, and
-Spinhold reads the private `remap._listening`. The screen also rebuilds its rows on
-every listen and every bind, so the focused row is freed and a pad is left with nothing
-focused. Spinhold puts focus back itself in game/ui/options.gd.
-
-What polyweave should do: the remap screen emits `listening(action)` and `listened()`
-and exposes `is_listening()`, and it updates a row in place rather than rebuilding the
-list, keeping focus on the row that was bound. Done when Spinhold reads neither private
-field nor restores focus, and a pad walks the screen after a bind without a lost focus.
-
 ### §PW542 The pad screen in the game's own labels and buttons
 
 Found moving Spinhold onto the input kits (PW370, Spinhold RK216). The remap kit's drawn

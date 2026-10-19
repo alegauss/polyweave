@@ -101,6 +101,29 @@ def test_a_screen_on_a_store_of_its_own_fails_the_proof(tmp_path):
 
 
 @pytest.mark.skipif(not os.environ.get("GODOT"), reason="no $GODOT on this machine")
+@pytest.mark.parametrize(("before", "after", "said"), [
+    ("\t_paint()\n\tif was != \"\":", "\tfor row in _rows.get_children():\n"
+     "\t\trow.free()\n\t_buttons.clear()\n\t_draw_rows()\n\tif was != \"\":",
+     "binding jump lost the focus on its button"),
+    ("\tif was != \"\":\n\t\tlistened.emit(was)\n", "",
+     "did not say it listened for jump and stopped"),
+])
+def test_a_screen_that_loses_focus_or_says_nothing_fails_the_proof(
+        tmp_path, before, after, said):
+    # a host game read the screen's private field and put focus back itself (§PW541)
+    game = tmp_path / "game"
+    shutil.copytree(kits.KITS / "remap" / "fixture", game)
+    kits.install("remap", root=str(game))
+    screen = game / "addons" / "polyweave" / "remap" / "remap_menu.gd"
+    text = screen.read_text(encoding="utf-8")
+    assert before in text
+    screen.write_text(text.replace(before, after), encoding="utf-8")
+    [found] = kits._scripts(["remap"], kits.every(), game)
+    assert found["status"] == "failed"
+    assert said in found["said"]
+
+
+@pytest.mark.skipif(not os.environ.get("GODOT"), reason="no $GODOT on this machine")
 def test_the_remap_proof_holds_in_a_game_with_none_of_its_actions(tmp_path):
     # a kit that requires remap lands it in a game of its own actions (§PW392)
     game = tmp_path / "game"

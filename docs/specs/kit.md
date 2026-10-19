@@ -285,6 +285,13 @@ with the action's label), English where the table has no row. The declaration ma
 order the screen shows them in, which is then the actions too where the screen names
 none; an action with no label reads as its own name.
 
+A game hosts the screen inside its own (§PW541, 0.8.0). It emits `listening(action)`
+when it starts listening and `listened(action)` when it binds or cancels, and
+`is_listening()` answers between, so the host keeps its own back and tab inputs out of
+the way without reading a private field. Its rows are built once and repainted in
+place, so the button a pad focused is still focused once it binds; `button_of(action,
+pad)` answers the button a half is drawn on. Its proof holds both.
+
 A game keeps one settings store, and the kit keeps to it (§PW433, 0.6.0). The
 declaration may say `const STORE := ["user://settings.cfg", "controls"]`: every binding
 under its action's name, the deadzone, the inverted vertical and the game's own options

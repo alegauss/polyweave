@@ -213,7 +213,18 @@ func _process(_delta: float) -> bool:
 	# Said in whatever words the game's table gives it, it names both actions.
 	if not (said.contains(menu.bindings.label(P)) and said.contains(menu.bindings.label(F))):
 		failed.append("the screen did not say the swap: %s" % said)
+	# A host game hears when the screen listens and when it stops, and the button a pad
+	# focused is still the one focused once it binds (§PW541).
+	var heard: Array[String] = []
+	var hear_start := func(action: String) -> void: heard.append("listening " + action)
+	var hear_stop := func(action: String) -> void: heard.append("listened " + action)
+	menu.listening.connect(hear_start)
+	menu.listened.connect(hear_stop)
+	var focused: Button = menu.button_of(J, true)
+	focused.grab_focus()
 	menu._listen(J, true)
+	if not menu.is_listening():
+		failed.append("the screen listening for jump says it is not")
 	var stray := InputEventKey.new()
 	stray.physical_keycode = KEY_Q
 	stray.pressed = true
@@ -230,6 +241,13 @@ func _process(_delta: float) -> bool:
 	var on_pad := menu.bindings.current()[J] as Array
 	if not on_pad.has("button:3") or on_pad.has("button:0") or on_pad.has("key:%d" % KEY_Q):
 		failed.append("the screen listening on the pad bound jump to %s" % [on_pad])
+	menu.listening.disconnect(hear_start)
+	menu.listened.disconnect(hear_stop)
+	if heard != ["listening " + J, "listened " + J] or menu.is_listening():
+		failed.append("the screen did not say it listened for jump and stopped: %s" % [heard])
+	if not is_instance_valid(focused) or focused.is_queued_for_deletion() \
+			or root.gui_get_focus_owner() != focused:
+		failed.append("binding jump lost the focus on its button")
 	# A stick binds the way it was pushed, once it comes back (§PW432).
 	menu._listen(F, true)
 	for value in [-0.9, -0.4, 0.1]:

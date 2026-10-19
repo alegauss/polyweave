@@ -31,6 +31,12 @@ const WORDS := {
 ## seconds the screen listens before it gives up
 @export var listen_seconds := 5.0
 
+## the screen began listening for `action`'s next input (§PW541): a host game keeps its
+## own back and tab inputs out of the way until `listened`
+signal listening(action: String)
+## the screen stopped listening for `action`, bound or cancelled
+signal listened(action: String)
+
 var bindings: _PwBindings
 var _listening := ""
 var _listening_pad := false
@@ -41,6 +47,9 @@ var _left := 0.0
 var _said: Label
 var _rows: VBoxContainer
 var _prompts: Node
+## action -> [its key button, its pad button], built once and painted in place, so the
+## button a pad focused is still there once it binds (§PW541)
+var _buttons := {}
 
 
 ## one of the screen's words, as the game's table says it under REMAP_, else English;
@@ -99,7 +108,7 @@ func _ready() -> void:
 	reset.pressed.connect(func() -> void:
 		bindings.reset()
 		_said.text = said("reset_done")
-		_draw_rows())
+		_paint())
 	add_child(reset)
 	var pad := Button.new()
 	pad.text = said("pad")
@@ -112,7 +121,7 @@ func _ready() -> void:
 func open_pad() -> CanvasLayer:
 	var screen: CanvasLayer = load("res://addons/polyweave/remap/pad_screen.gd").new()
 	screen.bindings = bindings
-	screen.closed.connect(_draw_rows)
+	screen.closed.connect(_paint)
 	get_tree().root.add_child(screen)
 	return screen
 
@@ -139,40 +148,65 @@ func _row(named: String, control: Control) -> void:
 	add_child(row)
 
 
+## a row per action, built once; `_paint` fills them
 func _draw_rows() -> void:
-	for child in _rows.get_children():
-		child.queue_free()
 	for action in actions if not actions.is_empty() else bindings.actions:
 		var row := HBoxContainer.new()
 		var label := Label.new()
-		label.text = bindings.label(action)
+		label.name = "label"
 		label.custom_minimum_size.x = 160
 		row.add_child(label)
+		var pair := []
 		for pad in [false, true]:
 			var button := Button.new()
 			button.custom_minimum_size = Vector2(56, 56)
 			button.expand_icon = true
+			button.pressed.connect(_listen.bind(action, pad))
+			row.add_child(button)
+			pair.append(button)
+		_rows.add_child(row)
+		_buttons[action] = pair
+	_paint()
+
+
+## every row's label and icons as they are now, changed in place: no button is freed,
+## so focus stays where the player left it
+func _paint() -> void:
+	for action in _buttons:
+		var pair: Array = _buttons[action]
+		(pair[0] as Button).get_parent().get_node("label").text = bindings.label(action)
+		for pad in [false, true]:
+			var button: Button = pair[1 if pad else 0]
 			var family: String = "keyboard" if not pad else (
 				_prompts.family if _prompts.family != "keyboard" else "xbox")
 			button.icon = _prompts.icon(action, family)
-			if button.icon == null:
-				button.text = "-"
+			button.text = "-" if button.icon == null else ""
 			if _listening == action and _listening_pad == pad:
 				button.icon = _own("listening")
 				button.text = "" if button.icon != null else "..."
-			button.pressed.connect(_listen.bind(action, pad))
-			row.add_child(button)
-		_rows.add_child(row)
+
+
+## whether the screen is listening for a binding now
+func is_listening() -> bool:
+	return _listening != ""
+
+
+## the button `action`'s key half (or pad half) is drawn on, or null
+func button_of(action: String, pad: bool) -> Button:
+	return _buttons[action][1 if pad else 0] if _buttons.has(action) else null
 
 
 func _listen(action: String, pad: bool) -> void:
+	if _listening != "" and _listening != action:
+		listened.emit(_listening)
 	_listening = action
 	_listening_pad = pad
 	_capture = ""
 	_held = 0.0
 	_left = listen_seconds
 	_said.text = said("press_button" if pad else "press_key", [bindings.label(action)])
-	_draw_rows()
+	_paint()
+	listening.emit(action)
 
 
 func _input(event: InputEvent) -> void:
@@ -221,10 +255,13 @@ func _process(delta: float) -> void:
 
 
 func _stop(saying: String) -> void:
+	var was := _listening
 	_listening = ""
 	_capture = ""
 	_said.text = saying
-	_draw_rows()
+	_paint()
+	if was != "":
+		listened.emit(was)
 
 
 func _handled() -> void:

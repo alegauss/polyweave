@@ -572,6 +572,7 @@
 - ✅ **PW535** **the options kit requires the menus and prompts kits, so a game wanting only the store ships 69 unused icons** — kit.install options without screen lands the settings store alone, with no menus or prompts, and kit.prove proves a kit whole and without each part (design recorded in `docs/specs/kit.md`).
 - ✅ **PW536** **a kit's older-file adoption is a fixed user:// path, so a game's tests overwrite kit fields to keep off the real file** — A relative ADOPTED file is read beside the options file, and adopted(folder) gets the saves folder, so a test's store adopts its seed (design recorded in `docs/specs/kit.md`).
 - ✅ **PW540** **the remap screen rebinds on a store of its own, so co-op pads lose their narrowing and the shared store goes stale** — The remap screens bind on the shared store, which says changed, and the players kit follows it, so a rebind keeps each pad on its own actions (design recorded in `docs/specs/kit.md`).
+- ✅ **PW541** **the remap screen says nothing when it listens and rebuilds its rows on each bind, so a host game loses focus** — The remap screen says listening and listened, answers is_listening, and repaints its rows in place, so a host game keeps focus after a bind (design recorded in `docs/specs/kit.md`).
 
 ## Block W — A core that grows by layers
 
