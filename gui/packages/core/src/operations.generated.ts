@@ -188,12 +188,14 @@ export interface ClipSetKeyArgs {
 export interface ClipShotsArgs {
   /** the *.camera.toml the game's camera was built from */
   source: string
-  /** a game.open session, opened with display */
-  session: string
   /** the built camera's node in the running game */
   camera: string
   /** the folder the shots and the sitting are written to */
   out: string
+  /** a game.open session, opened with display */
+  session?: string
+  /** the game's own flags */
+  args?: unknown[]
   /** how far through each shot's hold it is framed; from 0 to 1; default 0.5 */
   into?: number
   /** the project the clip belongs to; default "." */
@@ -482,6 +484,8 @@ export interface GameOpenArgs {
   resolution?: unknown[]
   /** the game's language; [capture]'s if unset */
   locale?: string
+  /** the game's own flags */
+  args?: unknown[]
 }
 
 /** Export a preset as a pack and list what landed in it (§PW470). */
@@ -2242,7 +2246,7 @@ export interface VerdictAnswerArgs {
   why: string
   /** one family; every family where empty */
   family?: string
-  /** the alternative picked, where a family is a pick */
+  /** the alternative picked */
   member?: string
   /** the project the sitting belongs to; default "." */
   root?: string
@@ -2294,11 +2298,11 @@ export interface VerdictMoveArgs {
 
 /** Put an accepted member where the game loads it, with its own record (§PW549). */
 export interface VerdictPlaceArgs {
-  /** the sitting, as its manifest or the folder the page lists it in */
+  /** the sitting's manifest or folder */
   sitting: string
-  /** the accepted member, by its name in the sitting */
+  /** the accepted member's name */
   member: string
-  /** where the game loads it, as a path under the project */
+  /** where the game loads it, under the project */
   to: string
   /** the project the sitting belongs to; default "." */
   root?: string
@@ -2386,7 +2390,7 @@ export interface VideoCutArgs {
 
 /** Keep the preview a person accepted as its entity's voice, written in the world. */
 export interface VoiceChooseArgs {
-  /** the preview a person accepted, or its sitting */
+  /** the accepted preview, or its sitting */
   preview: string
   /** the *.world.toml, where the project has several */
   world?: string

@@ -246,7 +246,10 @@ pinned, `seek` frames that moment whatever the game's own clock asks, so the gam
 player cannot move it on. It then lets two frames pass, saves the screen and, after the
 last shot, lets the pin go, even when a shot fails. The shots are one family in one
 `verdict.sitting`, answered on the review page. Spinhold's five opening shots were the
-first laid out this way.
+first laid out this way. With no `session` it opens the game itself (§PW553), with
+display and `args`, the game's own flags that open it where the clip plays; it waits
+until the camera's node exists, frames the shots and closes the game, and a camera that
+never comes is `clip.camera-absent`, the game closed. So a world's cutscene is one call.
 
 **Both are baked by name** (§PW160). Every step between a clip and what a game plays took a
 mesh and a fitted rig as objects in memory, which a JSON call cannot carry, so a GDScript

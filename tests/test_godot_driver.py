@@ -422,6 +422,34 @@ def test_a_session_is_opened_driven_and_closed_through_the_operations(tmp_path):
     assert gone.value.code == "game.no-session"
 
 
+def test_the_game_s_own_arguments_reach_it_and_its_kept_flow(tmp_path):
+    """Spinhold opens a run straight in a world with its own --world flag, which
+    game.open could not pass (§PW553)."""
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    root = game(tmp_path)
+    (root / "main.gd").write_text(
+        MAIN.replace("var ticks := 0\n", "var ticks := 0\nvar world := \"\"\n").replace(
+            "\tadd_to_group(\"game\")\n",
+            "\tadd_to_group(\"game\")\n\tfor arg in OS.get_cmdline_user_args():\n"
+            "\t\tif arg.begins_with(\"--world=\"):\n"
+            "\t\t\tworld = arg.get_slice(\"=\", 1)\n"),
+        encoding="utf-8")
+    opened = driving.opened(str(root), args=["--world=quilt"])
+    session = opened["session"]
+    try:
+        assert opened["args"] == ["--world=quilt"]
+        found = driving.queried(session, path=".", properties=["world"], root=str(root))
+        assert found["result"][0]["properties"]["world"] == "quilt"
+        kept = driving.kept(session, out="flows/world.flow.json",
+                            proves="the run opens in the world its flag names",
+                            root=str(root))
+    finally:
+        driving.closed(session, root=str(root))
+    flow = json.loads(Path(kept["flow"]).read_text(encoding="utf-8"))
+    assert flow["args"] == ["--world=quilt"]
+
+
 def test_an_error_the_game_prints_is_reported_by_the_call_that_caused_it(tmp_path):
     if not os.environ.get("GODOT"):
         pytest.skip("no $GODOT on this machine")

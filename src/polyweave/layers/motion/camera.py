@@ -432,13 +432,18 @@ def moments(clip: dict, into: float = 0.5) -> list[float]:
     return found
 
 
+#: Frames clip.shots waits, in a game it opened itself, for the camera to exist.
+OPEN_FRAMES = 600
+
+
 @operation("clip.shots")
 def shots(
     source: Annotated[str, Param("the *.camera.toml the game's camera was built from")],
     *,
-    session: Annotated[str, Param("a game.open session, opened with display")],
     camera: Annotated[str, Param("the built camera's node in the running game")],
     out: Annotated[str, Param("the folder the shots and the sitting are written to")],
+    session: Annotated[str, Param("a game.open session, opened with display")] = "",
+    args: Annotated[list, Param("the game's own flags")] = None,
     into: Annotated[
         float, Param("how far through each shot's hold it is framed", lo=0.0, hi=1.0)
     ] = 0.5,
@@ -451,6 +456,7 @@ def shots(
     that plays the clip first; then each shot is held through the camera's `pinned`,
     whatever the game seeks, a frame is let pass and the screen is saved. The pin is
     let go after. The shots are one family in one sitting, answered on the review page.
+    With no `session` the game is opened here with `args`, and closed after (§PW553).
     """
     from polyweave.layers.engine import driving
     from polyweave.loop import verdict
@@ -458,6 +464,20 @@ def shots(
     config = load(root)
     _, clip = _source(source, config)
     folder = Path(out) if Path(out).is_absolute() else config.root / out
+    own = not session
+    if own:
+        session = driving.opened(root, display=True, args=args)["session"]
+        found = driving.waited(session, node=camera, frames=OPEN_FRAMES, root=root)
+        if not found.get("met"):
+            driving.closed(session, root=root)
+            raise PolyweaveError(
+                "clip.camera-absent",
+                f"the game opened with {args or 'no arguments'} made no {camera} in "
+                f"{OPEN_FRAMES} frames",
+                "pass the args that open the game where the clip plays, or drive it "
+                "there yourself and pass session",
+                given=camera,
+            )
     taken = []
     try:
         for index, when in enumerate(moments(clip, into)):
@@ -471,6 +491,8 @@ def shots(
                           "picture": provenance.relative(picture, config.root)})
     finally:
         driving.set_value(session, path=camera, prop="pinned", value="-1", root=root)
+        if own:
+            driving.closed(session, root=root)
     members = [{"name": f"shot {one['shot']}" + (f" ({one['mark']})" if one["mark"]
                                                    else ""),
                 "new": one["picture"]} for one in taken]

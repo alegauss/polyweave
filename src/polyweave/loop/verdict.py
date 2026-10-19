@@ -714,22 +714,17 @@ def move(
 
 @operation("verdict.place")
 def place(
-    sitting: Annotated[
-        str, Param("the sitting, as its manifest or the folder the page lists it in")
-    ],
-    member: Annotated[str, Param("the accepted member, by its name in the sitting")],
-    to: Annotated[str, Param("where the game loads it, as a path under the project")],
+    sitting: Annotated[str, Param("the sitting's manifest or folder")],
+    member: Annotated[str, Param("the accepted member's name")],
+    to: Annotated[str, Param("where the game loads it, under the project")],
     *,
     root: Annotated[str, Param("the project the sitting belongs to")] = ".",
 ) -> dict:
     """Put an accepted member where the game loads it, with its own record (§PW549).
 
-    Refused unless a person accepted that member: its record's last verdict on its
-    bytes, or where it has none the latest answer naming it. The file is copied to `to`
-    and a record written for that path, keeping what the member's own record says (its
-    engine, its purchase, its inputs), with the member as an input and the verdict that
-    accepted it, so `provenance.verify` checks the game's file. Placing again, after a
-    newer accept, replaces the file and its record.
+    Refused unless a person accepted it. The copy's record keeps the member's own, adds
+    the member and the verdict, and names the copy's path, so verify checks the game's
+    file. Placing again replaces both.
     """
     import json
     import shutil
@@ -888,8 +883,7 @@ def answer(
     why: Annotated[str, Param("the person's own sentence, as they said it")],
     *,
     family: Annotated[str, Param("one family; every family where empty")] = "",
-    member: Annotated[
-        str, Param("the alternative picked, where a family is a pick")] = "",
+    member: Annotated[str, Param("the alternative picked")] = "",
     root: Annotated[str, Param("the project the sitting belongs to")] = ".",
     code: Annotated[str, Param(CODE)] = "",
 ) -> dict:

@@ -145,6 +145,7 @@ def opened(
         list, Param("[width, height] of the window; [capture]'s where unset")
     ] = None,
     locale: Annotated[str, Param("the game's language; [capture]'s if unset")] = None,
+    args: Annotated[list, Param("the game's own flags")] = None,
 ) -> dict:
     """Launch the game held at its first frame, and answer the session to drive it with.
 
@@ -152,10 +153,12 @@ def opened(
     driver polyweave carries is run from outside it (§PW216). The game runs until
     game.close, or `[driving] idle` seconds with no call. It runs in the environment
     `[capture]` declares, its resolution and locale, as capture.run's pictures are,
-    unless the call names its own (§PW339).
+    unless the call names its own (§PW339). `args` reach the game as its own (§PW553).
     """
     from .capture import _size_of
 
+    # The game's own, read before `args` is reused for the engine's below.
+    own_args = [str(one) for one in args or ()]
     settings = load(root)
     here = settings.root
     script, _ = _driver_for(here)
@@ -182,6 +185,7 @@ def opened(
         after.append(f"--scene={scene}")
     if language:
         after.append(f"--locale={language}")
+    after += own_args
     folder = _folder(here)
     folder.mkdir(parents=True, exist_ok=True)
     session = "g" + secrets.token_hex(4)
@@ -231,6 +235,7 @@ def opened(
         "environment": {"resolution": size or None, "locale": language or None},
         "seed": int(seed or 0),
         "scene": scene,
+        **({"args": own_args} if own_args else {}),
         # Every command that answered, in order, for game.keep (§PW214).
         "journal": [],
     }
@@ -244,6 +249,7 @@ def opened(
         "pid": process.pid,
         "log": str(log),
         "environment": record["environment"],
+        **({"args": own_args} if own_args else {}),
     }
 
 
@@ -772,6 +778,7 @@ def kept(
         "proves": proves,
         "seed": record.get("seed", 0),
         "scene": record.get("scene", ""),
+        **({"args": record["args"]} if record.get("args") else {}),
         "engine": _engine_version(
             log.read_text(encoding="utf-8", errors="replace") if log.is_file() else ""
         ),
@@ -965,7 +972,8 @@ def rekeyed(
             "name a .flow.json game.keep wrote, under the project",
         )
     kept = json.loads(where.read_text(encoding="utf-8-sig"))
-    session = opened(root, scene=kept.get("scene", ""), seed=int(kept.get("seed", 0)))
+    session = opened(root, scene=kept.get("scene", ""), seed=int(kept.get("seed", 0)),
+                     args=kept.get("args"))
     selectors: dict[str, dict] = {}
     broke = None
     try:
@@ -1047,7 +1055,9 @@ def replayed(
         root=here,
         headless=True,
         frames=max(int(load(here).get("engine.frames")), budget + 600),
-        args=("--", f"--flow={where.as_posix()}"),
+        # The game's own arguments the session was opened with (§PW553).
+        args=("--", f"--flow={where.as_posix()}",
+              *[str(one) for one in stated.get("args") or ()]),
         env=_own_user(_folder(here) / "replay.user"),
     )
     said = found.get("found") or {}

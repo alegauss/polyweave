@@ -186,6 +186,53 @@ def test_each_shot_is_framed_in_the_game_and_laid_out_to_judge(tmp_path, monkeyp
     assert said["page"].startswith("/?sitting=")
 
 
+def test_one_call_opens_the_game_where_the_clip_plays_and_closes_it(
+        tmp_path, monkeypatch):
+    """Spinhold reached each world's cutscene by calling its campaign's private methods,
+    where its own --world flag would do (§PW553)."""
+    from PIL import Image
+
+    from polyweave.layers.engine import driving
+
+    sent = []
+    monkeypatch.setattr(driving, "opened", lambda root, **said: (
+        sent.append(("open", said["display"], said["args"])) or {"session": "g9"}))
+    monkeypatch.setattr(driving, "waited", lambda session, **said: (
+        sent.append(("wait", said["node"])) or {"met": True}))
+    monkeypatch.setattr(driving, "set_value", lambda session, **said: None)
+    monkeypatch.setattr(driving, "stepped", lambda session, **said: None)
+    monkeypatch.setattr(driving, "closed", lambda session, **said: sent.append(
+        ("close", session)))
+
+    def shot(session, *, out, root):
+        Path(out).parent.mkdir(parents=True, exist_ok=True)
+        Image.new("RGB", (32, 18), (40, 40, 60)).save(out)
+
+    monkeypatch.setattr(driving, "shot", shot)
+    said = camera.shots(clip_file(tmp_path), camera="/root/World/Camera",
+                        args=["--world=quilt"], out="art/review/quilt",
+                        root=str(tmp_path))
+    assert len(said["shots"]) == 2
+    assert sent == [("open", True, ["--world=quilt"]), ("wait", "/root/World/Camera"),
+                    ("close", "g9")]
+
+
+def test_a_camera_the_opened_game_never_made_is_refused_and_the_game_closed(
+        tmp_path, monkeypatch):
+    from polyweave.layers.engine import driving
+
+    closed = []
+    monkeypatch.setattr(driving, "opened", lambda root, **said: {"session": "g9"})
+    monkeypatch.setattr(driving, "waited", lambda session, **said: {"met": False})
+    monkeypatch.setattr(driving, "closed",
+                        lambda session, **said: closed.append(session))
+    with pytest.raises(PolyweaveError) as refused:
+        camera.shots(clip_file(tmp_path), camera="Camera", out="o",
+                     args=["--world=nowhere"], root=str(tmp_path))
+    assert refused.value.code == "clip.camera-absent"
+    assert closed == ["g9"]
+
+
 def test_the_pin_is_let_go_when_a_shot_fails(tmp_path, monkeypatch):
     from polyweave.layers.engine import driving
 

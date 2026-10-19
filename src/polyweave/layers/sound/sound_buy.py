@@ -469,7 +469,7 @@ def design(
 
 @operation("voice.choose", kind="fetch")
 def choose(
-    preview: Annotated[str, Param("the preview a person accepted, or its sitting")],
+    preview: Annotated[str, Param("the accepted preview, or its sitting")],
     *,
     world: Annotated[str, Param("the *.world.toml, where the project has several")] = (
         None

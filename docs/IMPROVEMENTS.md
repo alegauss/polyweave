@@ -94,26 +94,6 @@ this is where that is recorded honestly: what still runs by hand, and why the ri
 instead of disappearing. An outcome worth having, stated, beats the same outcome
 unstated.
 
-### §PW553 Game arguments for game.open and clip.shots
-
-Found in Spinhold (RK241-RK243, 2026-10-19), framing the cutscenes of the Waist, the
-Stern and the Quilt with `clip.shots`. Each cutscene plays only once its world begins,
-and the game opens a run straight in a world with its own flag (`--world=quilt`, which
-run.cmd passes). `game.open` takes a scene, a locale, a resolution and a seed, but no
-arguments for the game, so the flag could not be given. The agent reached each world by
-hand, three times over: game.open, game.step 5, game.call Campaign._settle(["quilt"]),
-game.call RouteScreen.hide, game.call Campaign._begin(1), then clip.shots and
-game.close. That is three private methods of the game, called from outside, to stand in
-for one flag.
-
-What polyweave should do: `game.open` takes `args`, the game's own command-line
-arguments after `--`, as `engine.run` does for a script, recorded in the session's log.
-`clip.shots` could take the same, so one call opens the game where the clip plays,
-frames it and closes it.
-
-Done when Spinhold frames a world's cutscene with one `clip.shots` (or `game.open` with
-`args: ["--world=quilt"]`) and no game.call.
-
 ### §PW554 Declared timelines of a scene's properties
 
 Found in Spinhold (RK155, 2026-10-19). The title's logo reveal (the halo coming up out

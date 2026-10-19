@@ -22,6 +22,13 @@ CODES: dict[str, Code] = {
         "changes nothing over its duration is a still with a duration attached",
         doors=("give it a channel with keys", "render it as a still instead"),
     ),
+    "clip.camera-absent": Code(
+        means="the game clip.shots opened never made the camera it was to frame",
+        when="clip.shots opening the game itself, with args, and the camera node not "
+        "existing within the wait (§PW553)",
+        doors=("pass the args that open the game where the clip plays",
+               "open the game with game.open, drive it there, and pass session"),
+    ),
     "clip.unknown-property": Code(
         means="a channel drives something a joint does not have",
         when="a property outside the three glTF animates: rotation, scale, translation",

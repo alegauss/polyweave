@@ -17,7 +17,6 @@
 ## Block H — Proof on a real game
 
 - 🛠 **PW36** (deps: PW5 ✅, PW82 ⏸) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82. → §PW36
-- 📋 **PW553** (deps: —) **game.open passes no arguments to the game, so a state the game opens by a flag is reached by calling private methods** — Spinhold framed three world cutscenes by calling its campaign's private methods five times each, where one --world flag would do. → §PW553
 - 📋 **PW554** (deps: —) **a keyed timeline of a scene's own properties cannot be declared and built, only skeletal motion and camera shots** — Spinhold's title logo reveal had to keep its curves as constants in code, where the design asked them declared. → §PW554
 
 ## Block I — Voxel models from a declaration

@@ -166,7 +166,11 @@ between connections.
   them, and the answer's `environment` says what was asked. `game.shot` answers the
   `environment` it was taken in, the picture's size and the game's locale, beside the
   `asked` one, and `differs` names each that is not what was asked, so a picture at the
-  wrong size shows in the answer.
+  wrong size shows in the answer. `args` are the game's own command-line arguments,
+  passed after `--` beside the driver's, which reads only its own (§PW553): a state the
+  game opens by a flag, Spinhold's `--world=quilt`, is opened by it rather than by calling
+  the game's private methods. The session keeps them and answers them, `game.keep`
+  writes them into the flow, and `game.replay` and `game.rekey` pass them again.
 - `game.query`, `game.input`, `game.step`, `game.wait`, `game.call` and `game.shot` each
   forward one command. `game.query` takes one of `path`, `group` and `of_class`;
   `game.wait` takes `prop` and `equals` (a JSON value), a `signal`, or a `node`.
