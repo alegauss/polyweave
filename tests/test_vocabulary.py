@@ -300,6 +300,17 @@ def test_a_torus_lies_across_its_axis():
     assert np.subtract(high, low).tolist() == pytest.approx([5.0, 5.0, 1.0], rel=0.01)
 
 
+@pytest.mark.parametrize("kind", ["sphere", "torus", "cylinder", "rounded_box"])
+def test_steps_resolved_as_a_float_still_count_whole(kind):
+    # a declaration's steps = 12 comes through its expressions as 12.0 (§PW562)
+    stated = {"major": 2.0, "minor": 0.5} if kind == "torus" else {}
+    if kind == "rounded_box":
+        stated["radius"] = 0.2
+    whole = S.primitive(kind, 1.0, steps=12, **stated)
+    resolved = S.primitive(kind, 1.0, steps=12.0, **stated)
+    assert len(resolved["faces"]) == len(whole["faces"]) > 0
+
+
 @pytest.mark.parametrize(
     "stated",
     [{"kind": "frustum", "bottom": 1.0}, {"kind": "torus"}, {"size": [1, 2]},

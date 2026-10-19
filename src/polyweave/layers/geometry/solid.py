@@ -468,7 +468,9 @@ def primitive(
     Each carries its own distance field as `field`, which `transform` and `union` carry
     on, so a `blend` can join it smoothly (§PW498).
     """
-    made = _primitive_mesh(kind, size, steps, **stated)
+    # A declaration's `steps = 12` resolves as an expression, to 12.0; the sphere and
+    # the torus count with it, so it is a whole number here (§PW562).
+    made = _primitive_mesh(kind, size, int(steps), **stated)
     found = shape({"kind": kind, "size": size, **stated})
     if found["kind"] != "plane":
         made["field"] = [{"shape": found, "matrix": np.eye(4)}]
