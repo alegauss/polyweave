@@ -546,3 +546,34 @@ Starship and Cottony both show code it would replace, at which point the shape i
 take is read off that code rather than invented here.
 
 ## Block W — A core that grows by layers
+
+## Block X — The site on the shared design system
+
+### §PW572 The site on the shared design system
+
+`site/src` carries `components/Nav.tsx`, `components/Footer.tsx` with the sponsor block,
+`components/sections/Hero.tsx`, `pages/Feature.tsx` and `components/ui/CopyButton.tsx`,
+`ThemeToggle.tsx`, `Rich.tsx` and `RawSvg.tsx`, plus `scripts/prerender.mjs` and
+`scripts/og-image.mjs`: the template seven other alegauss product sites copy under the
+same names. `index.css` declares its own `--bg*`, `--panel*`, `--violet*` and
+`--accent*` tokens for both colour modes.
+
+The move, after the pilot (claude-tray T389):
+
+- `data-tone="cool"`: the ground is a violet-tinted white (`#f8f7fd`) and near-black
+  (`#0b0916`), not clay, so the warm tone would change the page.
+- The accent from the hub's `projects.json`. The two disagree today: the hub's card says
+  teal (`33,193,166`, bright `#5fe0c9`) and the page is violet (`#5a3fd6`). One value is
+  settled in `projects.json` first and the page takes it; if that is teal, the change is
+  listed as intended in the screenshot comparison.
+- The shared components come from `./site`; `Session`, `Brand`, `Icon`, `Lattice`, the
+  product sections, `pages/Specs.tsx` and `lib/` (with `roadmap.generated.ts`) stay in
+  `site/src`.
+- The build calls the `./vite` helpers instead of the two scripts; `scripts/roadmap.mjs`
+  stays.
+- Google Analytics loads only after consent, the same flow as the hub (AG1).
+
+Done when `site/src` has none of the files `./site` provides; the prerendered HTML of
+every route holds the same text as before; light and dark screenshots of each route are
+compared before and after with the differences listed in the commit; and the site
+appears in the design system's `consumers.json`.
