@@ -54,7 +54,6 @@
 
 ## Block V — Parts every game repeats, installed already proved
 
-- 📋 **PW540** (deps: —) **the remap screen rebinds on a store of its own, so co-op pads lose their narrowing and the shared store goes stale** — Spinhold reloads the shared store and re-seats player 2 every time its Controls tab closes, which the kit should do itself. → §PW540
 - 📋 **PW541** (deps: —) **the remap screen says nothing when it listens and rebuilds its rows on each bind, so a host game loses focus** — Spinhold reads the screen's private listening field and restores focus after every bind to keep a pad usable. → §PW541
 - 📋 **PW542** (deps: —) **the drawn pad screen shows raw action names, unfilled help and works only on ui_accept and ui_cancel** — Spinhold's drawn pad reads "move_left", its help names no button, and it had to bind pad buttons to ui_* itself. → §PW542
 - 📋 **PW543** (deps: —) **loading an older bindings file logs an engine error for every action the player never rebound** — A player's first launch on the kits fills the crash log with errors that are not errors. → §PW543

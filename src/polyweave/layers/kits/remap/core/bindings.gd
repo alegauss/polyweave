@@ -10,6 +10,11 @@ extends RefCounted
 ## as project.godot declares it, and the stick's deadzone and inverted vertical sit
 ## beside the bindings in one file under user://.
 
+## every rebind, reset and load, once the InputMap holds it (§PW540): the players kit
+## narrows the first player's pad bindings to their pad again on it, so a rebind on the
+## remap screen mid-co-op leaves each player's pad on their own actions
+signal changed
+
 const FILE := "user://polyweave_bindings.cfg"
 ## The project's own declaration (§PW397): `const FROM := ["user://settings.cfg",
 ## "controls"]` names the file and section a game kept its players' bindings in before
@@ -277,6 +282,7 @@ func rebind(action: String, event: InputEvent) -> bool:
 		apply(each, after[each])
 	save()
 	_PwPrompts.rebound()
+	changed.emit()
 	return true
 
 
@@ -286,6 +292,7 @@ func reset() -> void:
 		apply(action, _defaults[action])
 	save()
 	_PwPrompts.rebound()
+	changed.emit()
 
 
 func set_deadzone(value: float) -> void:
@@ -334,9 +341,11 @@ func load_kept() -> void:
 		if section == "":
 			_adopt()
 		_PwPrompts.rebound()
+		changed.emit()
 		return
 	_read(file, _sections())
 	_PwPrompts.rebound()
+	changed.emit()
 
 
 func _read(file: ConfigFile, into: Array) -> int:

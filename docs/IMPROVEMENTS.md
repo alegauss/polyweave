@@ -408,26 +408,6 @@ differently, and a skeleton that suits one may fight the next. So it stays an id
 Starship and Cottony both show code it would replace, at which point the shape it should
 take is read off that code rather than invented here.
 
-### §PW540 The remap screen rebinds through the players kit
-
-Found moving Spinhold onto the input kits (PW370, Spinhold RK216). The remap screen
-keeps a bindings store of its own, and it does not know about the players kit:
-
-- a rebind on its pad half applies to every pad, which undoes the players kit narrowing
-  player 1's pad bindings to player 1's pad during co-op;
-- a rebind is not passed on to player 2's copied actions;
-- `PolyweaveBindings.shared()` goes stale, so the game's twin-stick and invert read the
-  old values until something reloads it.
-
-Spinhold works around all three in game/ui/options.gd: on leaving the screen, where
-anything changed, it calls `load_kept()` on the shared store and has player 2 leave and
-join again (`OptionsScreen.keep_seats()`).
-
-What polyweave should do: the remap screen rebinds through the shared store, and where
-the players kit is installed, through `players.rebind(player, ...)`, so the narrowing,
-the copies and the shared values stay right with no game code. Done when Spinhold drops
-`keep_seats` and a rebind mid-co-op leaves each player's pad on their own actions.
-
 ### §PW541 The remap screen says when it listens and keeps focus
 
 Found moving Spinhold onto the input kits (PW370, Spinhold RK216). A game hosting the

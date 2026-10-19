@@ -2,7 +2,8 @@ extends SceneTree
 ## The players kit's proof, run in the game it lands in (§PW357), with simulated pads.
 ## A second pad joins on its join button and a pad past MAX_PLAYERS does not. Every
 ## rebindable action answers each player's own pad and no other's, and the keyboard
-## stays the first player's. A rebind on either player leaves the other's bindings alone.
+## stays the first player's. A rebind on either player leaves the other's bindings alone,
+## and so does one made on the bindings store itself, as the remap screen makes it.
 ## A player leaving frees the pad for the next to join. With the presence kit installed,
 ## the pad that leaves is named as the player seated on it. Prints KIT PROVED, or KIT
 ## FAILED with why.
@@ -31,7 +32,7 @@ func _initialize() -> void:
 		OS.get_process_id(), Time.get_ticks_usec()]
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(run))
 	_kept = run + "/bindings.cfg"
-	players._store = _PwBindings.new(players._store.actions, _kept)
+	players.use(_PwBindings.new(players._store.actions, _kept))
 	# The proof joins on the first press; a game that answers its joins itself
 	# (AUTO_JOIN false) is proved on that half by _deferred, and gets its value back.
 	_auto_join = bool(players.declared["AUTO_JOIN"])
@@ -77,6 +78,7 @@ func _process(_delta: float) -> bool:
 				failed.append("a pad past MAX_PLAYERS joined")
 		_apart(name, first)
 		_rebinds(name, first)
+		_on_the_store(name, first)
 		_presence(first)
 		players.leave(1)
 		if players.player_of(first + SECOND) != -1 or InputMap.has_action(_PwPlayers.action(name, 1)):
@@ -129,6 +131,30 @@ func _rebinds(name: String, first: int) -> void:
 		failed.append("player 1's rebound %s does not answer their pad alone" % name)
 	players._store.reset()
 	players._narrow_first()
+
+
+## a rebind made on the store itself, as the remap screen makes it (§PW540), and a reset
+## and a reload after it, each leave the first player's pad bindings on their pad alone
+func _on_the_store(name: String, first: int) -> void:
+	var theirs := players._codes(_PwPlayers.action(name, 1))
+	for step in ["rebind", "reset", "load"]:
+		match step:
+			"rebind":
+				players._store.rebind(name, _button(first, JOY_BUTTON_LEFT_SHOULDER))
+			"reset":
+				players._store.reset()
+			"load":
+				players._store.rebind(name, _button(first, JOY_BUTTON_LEFT_SHOULDER))
+				players._store.load_kept()
+		for event in InputMap.action_get_events(name):
+			if event is InputEventJoypadButton and InputMap.event_is_action(
+					_button(first + SECOND, (event as InputEventJoypadButton).button_index), name):
+				failed.append("after a %s on the store, player 2's pad presses player 1's %s"
+					% [step, name])
+				break
+		if players._codes(_PwPlayers.action(name, 1)) != theirs:
+			failed.append("a %s on the store changed player 2's %s" % [step, name])
+	players._store.reset()
 
 
 ## a join the game answers (§PW396): asked, not seated, until the game calls join

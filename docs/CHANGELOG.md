@@ -571,6 +571,7 @@
 - ✅ **PW534** **the saves kit's proof writes slots 1 and 2 by number, so a game declaring one slot fails it** — The saves proof runs its corrupt, migration, newer-build and already-played cases on the last slot a game declares, so a game keeping one save proves as it is.
 - ✅ **PW535** **the options kit requires the menus and prompts kits, so a game wanting only the store ships 69 unused icons** — kit.install options without screen lands the settings store alone, with no menus or prompts, and kit.prove proves a kit whole and without each part (design recorded in `docs/specs/kit.md`).
 - ✅ **PW536** **a kit's older-file adoption is a fixed user:// path, so a game's tests overwrite kit fields to keep off the real file** — A relative ADOPTED file is read beside the options file, and adopted(folder) gets the saves folder, so a test's store adopts its seed (design recorded in `docs/specs/kit.md`).
+- ✅ **PW540** **the remap screen rebinds on a store of its own, so co-op pads lose their narrowing and the shared store goes stale** — The remap screens bind on the shared store, which says changed, and the players kit follows it, so a rebind keeps each pad on its own actions (design recorded in `docs/specs/kit.md`).
 
 ## Block W — A core that grows by layers
 

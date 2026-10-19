@@ -106,6 +106,8 @@ PRESENCE = "addons/polyweave/presence/presence.gd"
      "kept their pad or their actions"),
     (PLAYERS, "_apply(action(each, player), _pad_half(after[each]), pads[player])",
      "_apply(each, _pad_half(after[each]), pads[player])", "changed player 1's"),
+    (PLAYERS, "\t_store.changed.connect(_follow)\n", "\tpass\n",
+     "after a rebind on the store, player 2's pad presses player 1's"),
     (PRESENCE, "\t\t\treturn seated\n", "\t\t\treturn device\n",
      "with the presence kit, pad 3 is named as player 4"),
 ])

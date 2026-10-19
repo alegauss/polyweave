@@ -66,7 +66,33 @@ func _init() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	declared = declaration()
 	pads[0] = int(declared["FIRST_PAD"])
-	_store = _PwBindings.new()
+	use(_PwBindings.shared())
+
+
+## seat the players on `store`, the game's shared one unless a proof hands its own, and
+## follow it (§PW540): whatever rebinds, resets or reloads it, the remap screen or the
+## game, the first player's pad bindings are narrowed to their pad again and, under
+## SHARED_LAYOUT, copied to every other player's
+func use(store: _PwBindings) -> void:
+	if _store != null and _store.changed.is_connected(_follow):
+		_store.changed.disconnect(_follow)
+	_store = store
+	_store.changed.connect(_follow)
+
+
+func _follow() -> void:
+	_narrow_first()
+	if bool(declared["SHARED_LAYOUT"]):
+		_copy_first()
+
+
+## the first player's pad half into every other player's copy, on that player's pad
+func _copy_first() -> void:
+	var now := _store.current()
+	for other in pads:
+		if other != 0:
+			for each in _store.actions:
+				_apply(action(each, other), _pad_half(now[each]), pads[other])
 
 
 ## how many play now
@@ -124,16 +150,8 @@ func leave(player: int) -> void:
 ## and leave every other player's bindings alone
 func rebind(player: int, name: String, event: InputEvent) -> bool:
 	if player == 0:
-		var done := _store.rebind(name, event)
-		_narrow_first()
-		if done and bool(declared["SHARED_LAYOUT"]):
-			# One layout for every player: the first player's pad half is theirs too.
-			var now := _store.current()
-			for other in pads:
-				if other != 0:
-					for each in _store.actions:
-						_apply(action(each, other), _pad_half(now[each]), pads[other])
-		return done
+		# the store says it changed, and _follow narrows and, under SHARED_LAYOUT, copies
+		return _store.rebind(name, event)
 	if not pads.has(player) or _PwBindings.on_keys(_PwBindings.encode(event)):
 		return false
 	var code := _PwBindings.encode(event)

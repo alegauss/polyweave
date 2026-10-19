@@ -84,6 +84,23 @@ def test_a_clash_shared_instead_of_swapped_fails_the_proof(tmp_path):
 
 
 @pytest.mark.skipif(not os.environ.get("GODOT"), reason="no $GODOT on this machine")
+def test_a_screen_on_a_store_of_its_own_fails_the_proof(tmp_path):
+    # its own store left the shared one stale and the players kit unknowing (§PW540)
+    game = tmp_path / "game"
+    shutil.copytree(kits.KITS / "remap" / "fixture", game)
+    kits.install("remap", root=str(game))
+    screen = game / "addons" / "polyweave" / "remap" / "remap_menu.gd"
+    text = screen.read_text(encoding="utf-8")
+    shared = "\t\tbindings = _PwBindings.shared()\n"
+    assert shared in text
+    screen.write_text(text.replace(shared, "\t\tbindings = _PwBindings.new(actions)\n"),
+                      encoding="utf-8")
+    [found] = kits._scripts(["remap"], kits.every(), game)
+    assert found["status"] == "failed"
+    assert "keeps a store of its own" in found["said"]
+
+
+@pytest.mark.skipif(not os.environ.get("GODOT"), reason="no $GODOT on this machine")
 def test_the_remap_proof_holds_in_a_game_with_none_of_its_actions(tmp_path):
     # a kit that requires remap lands it in a game of its own actions (§PW392)
     game = tmp_path / "game"

@@ -204,7 +204,11 @@ func _process(_delta: float) -> bool:
 	# Again here: a game's own autoloads set the player's language in their _ready,
 	# which runs after _initialize (§PW537).
 	TranslationServer.set_locale(PROOF_LOCALE)
-	menu.bindings = _PwBindings.new(menu.bindings.actions, _kept)
+	# the screen binds on the game's one store (§PW540); the proof then gives it a store
+	# of its own run, so it never rebinds the player's controls
+	if menu.bindings != _PwBindings.shared():
+		failed.append("the screen keeps a store of its own, not the game's shared one")
+	menu.bindings = _PwBindings.new(menu.actions, _kept)
 	var said: String = menu.take(P, _PwBindings.decode(fire_key))
 	# Said in whatever words the game's table gives it, it names both actions.
 	if not (said.contains(menu.bindings.label(P)) and said.contains(menu.bindings.label(F))):

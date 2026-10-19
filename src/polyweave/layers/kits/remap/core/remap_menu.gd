@@ -23,8 +23,8 @@ const WORDS := {
 	"swapped": "%s took it from %s, which has %s's old binding now",
 }
 
-## the actions on the screen; the declaration's labelled ones in its order, else every
-## project action but the ui_ ones
+## the actions on the screen; the shared store's where unset, which are the
+## declaration's labelled ones in its order, else every project action but the ui_ ones
 @export var actions: Array[String] = []
 ## seconds a press is held before it cancels instead of binding
 @export var hold_to_cancel := 1.0
@@ -53,8 +53,10 @@ static func said(name: String, args: Array = []) -> String:
 
 
 func _ready() -> void:
-	bindings = _PwBindings.new(actions)
-	bindings.load_kept()
+	# The game's one store (§PW540), so a rebind here is what the game reads at once,
+	# and the players kit, listening to it, keeps each player's pad on their own actions.
+	if bindings == null:
+		bindings = _PwBindings.shared()
 	_prompts = _PwPrompts.new()
 	add_child(_prompts)
 	_rows = VBoxContainer.new()
@@ -140,7 +142,7 @@ func _row(named: String, control: Control) -> void:
 func _draw_rows() -> void:
 	for child in _rows.get_children():
 		child.queue_free()
-	for action in bindings.actions:
+	for action in actions if not actions.is_empty() else bindings.actions:
 		var row := HBoxContainer.new()
 		var label := Label.new()
 		label.text = bindings.label(action)

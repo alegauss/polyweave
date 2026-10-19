@@ -64,8 +64,8 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	layer = 11
 	if bindings == null:
-		bindings = _PwBindings.new()
-		bindings.load_kept()
+		# the game's one store, as the remap screen binds on (§PW540)
+		bindings = _PwBindings.shared()
 	if layout == "":
 		var family: String = _PwPrompts.shared().family
 		# a generic pad keeps its own names over the Xbox places, with no picture

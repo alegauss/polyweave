@@ -298,7 +298,11 @@ which the store keeps, adopts from FROM, reads back held to the range, and the s
 shows as a switch or a slider named `REMAP_<NAME>`; `option(name)` reads one,
 `set_option(name, value)` keeps one and refuses a name nobody declared.
 `PolyweaveBindings.shared()` is the game's one store, made and loaded on first ask, so a
-script reads `invert_vertical` or an option every frame without holding one.
+script reads `invert_vertical` or an option every frame without holding one. The remap
+screen and the pad screen bind on it unless handed a store (§PW540, 0.7.0), so what
+the player rebinds is what the game reads at once, and the store emits `changed` on
+every rebind, reset and load, once the InputMap holds it. A screen's `actions` choose
+the rows it shows, never a store of its own.
 
 The pad can be bound on its picture (§PW428, 0.4.0). The remap screen's `pad` button
 opens `pad_screen.gd`, a layer over it binding through the same store: every place on
@@ -551,6 +555,14 @@ each player's pad to their own actions and the keyboard to the first player's, a
 rebind on either player to leave the other's alone. A leave must free the pad for the
 next to join, and with the presence kit installed, a pad that leaves must be named as
 the player seated on it.
+
+The players sit on the remap kit's shared store and follow its `changed` (§PW540,
+0.3.0): a rebind, reset or reload made anywhere, the remap screen included, narrows
+the first player's pad bindings to `FIRST_PAD` again and, under `SHARED_LAYOUT`, copies
+them to every other player, so no game reloads the store or re-seats a player after
+its controls screen. `use(store)` seats them on another store, as the proof does on one
+of its own run; the proof rebinds, resets and reloads that store directly and holds
+each player's pad to their own actions after each.
 
 When a player may join is the game's rule (§PW396). A free pad pressing `JOIN_BUTTON`
 emits `join_asked(device)`; it is seated at once only while the declaration's `AUTO_JOIN`
