@@ -217,10 +217,16 @@ and a generated track arrives with an ending rather than a loop. `sound.loop` cu
 (§PW192), as Cottony's own `loop_music.py` did before it moved here: the beat grid is
 read off the spectral flux, the cut is the bar in the second half whose opening matches
 the track's in level and in spectrum, refined by waveform correlation, and what followed
-the cut is crossfaded into the head over one beat. The loop is decoded again and its
-wrap measured against the track's own 99th-percentile step and 90th-percentile spectral
-change; above either, the answer says the seam stands out (`passed: false`) rather than
-hiding it. On Cottony's track it cut 57 bars at 124.00 BPM and measured the same as the
+the cut is crossfaded into the head over one beat. The loop written is measured as
+`sound.measure` measures it, `seam_step` and `seam_flux` under those names; above one
+in either, the answer says the seam stands out (`passed: false`) rather than hiding it,
+which is what a spec bounding them at one over the same file answers (§PW560). An
+encoded loop is also measured as cut, under `as_cut`, and a seam the encoder moved is
+said as that. On Cottony's track it cut 57 bars at 124.00 BPM and measured the same as the
 loop the game shipped. A track that never comes back to its opening's level is
 `sound.no-loop-point`, an encoder that changes the length `sound.loop-gap`, and no
 ffmpeg `sound.no-ffmpeg`.
+
+A recorded track can also become a score. `music.from_midi` drafts a `*.music.toml` off
+a MIDI file, and `music.from_audio` off the recording itself, hearing its stems as notes
+and hits first (§PW559); both write a draft a person hears beside the original.

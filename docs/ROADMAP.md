@@ -43,7 +43,6 @@
 
 ## Block P — Music and sound a game can ship
 
-- 🛠 **PW560** (deps: —) **sound.loop fails an Ogg loop's seam that sound.measure reads as ordinary** — Two seam scales answer one question, so an agent cannot trust either verdict without reading the source. → §PW560
 - 📋 **PW573** (deps: —) **The Surge render test fails in the parallel gate on a Pedalboard UnicodeDecodeError and passes alone** — A gate that goes red on a third party's decode of a plug-in label is a gate an agent learns to rerun instead of read. → §PW573
 
 ## Block Q — Words held to the world

@@ -50,9 +50,7 @@ def track(tmp_path, *, fade_out: bool = False):
 
 @needs_ffmpeg
 def test_a_track_is_cut_on_its_bars_and_its_wrap_does_not_click(tmp_path):
-    # The spectral bar is the track's own 90th percentile, which a tune of lone notes
-    # leaves near zero; on Cottony's dense mix the same cut read 0.61. The step is the
-    # one this sparse track can answer.
+    # The step is the seam measure this sparse tune of lone notes answers cleanly.
     found = sound_loop.loop(track(tmp_path), out="loop.wav", root=str(tmp_path))
     assert found["bpm"] == pytest.approx(BPM, abs=0.05)
     assert found["seam_step"] <= sound_loop.STEP_LIMIT
@@ -80,6 +78,24 @@ def test_a_loop_opens_on_the_bar_asked_and_stays_seamless(tmp_path):
     off = min(range(near - 50, near + 51),
               key=lambda at: np.abs(rotated[:RATE] - plain[at: at + RATE]).max())
     assert np.allclose(rotated[:RATE], plain[off: off + RATE], atol=2 / 32768)
+
+
+@needs_ffmpeg
+@pytest.mark.parametrize("suffix", ["wav", "ogg"])
+def test_the_loop_reads_its_seam_as_a_spec_over_the_file_would(tmp_path, suffix):
+    # One seam measure: the loop's numbers are sound.measure's on the file it wrote,
+    # under the same names, so its passed is the spec's answer (§PW560).
+    found = sound_loop.loop(track(tmp_path), out=f"loop.{suffix}", root=str(tmp_path))
+    heard = sound.measure(tmp_path / f"loop.{suffix}")
+    for name in ("seam_step", "seam_flux"):
+        assert found[name] == heard[name]
+    assert "seam_change" not in found
+    assert found["passed"] == (found["seam_step"] <= sound_loop.STEP_LIMIT
+                               and found["seam_flux"] <= sound_loop.FLUX_LIMIT)
+    # An encoded loop also says how its seam read as cut, before the encoder.
+    assert ("as_cut" in found) == (suffix == "ogg")
+    if suffix == "ogg":
+        assert set(found["as_cut"]) >= {"seam_step", "seam_flux"}
 
 
 @needs_ffmpeg

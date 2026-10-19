@@ -21,14 +21,17 @@ How the cut is chosen, in order:
 3. **The seam.** What followed the cut is crossfaded into the head over one beat, equal
    power, so the last sample is followed by the sample that followed it the first time.
 
-Then the file written is decoded and its wrap measured, so the answer carries the seam
-the player hears, and a seam that stands out is said, not hidden.
+Then the file written is measured as `sound.measure` measures it, so the answer carries
+the seam the player hears under the names a spec bounds, and a seam that stands out is
+said, not hidden. An encoded loop is measured as cut too, under `as_cut`, so a seam the
+encoder moved reads as the encoder's and not as a second scale.
 """
 
 from __future__ import annotations
 
 import shutil
 import subprocess
+import tempfile
 from pathlib import Path
 from typing import Annotated
 
@@ -37,6 +40,7 @@ import numpy as np
 from polyweave.kernel.config import load
 from polyweave.kernel.describe import Param, operation
 from polyweave.kernel.errors import PolyweaveError
+from polyweave.layers.sound import sound
 
 RATE = 44100
 
@@ -51,10 +55,12 @@ TEMPOS = (90.0, 170.0)
 #: opening's level, either way. It also keeps the cut out of the ending's fade.
 LEVEL = 1.5
 
-#: The seam stands out above these: the wrap's step over the track's 99th-percentile
-#: step, and its largest spectral change over the track's 90th-percentile change,
-#: Cottony's own bars. A seam may sound like any ordinary moment of the music, a note
-#: starting included.
+#: The seam stands out above these: `sound.measure`'s seam_step and seam_flux, the
+#: numbers a spec over the same file bounds, so the loop's `passed` is that spec's
+#: answer (§PW560). The loop once divided its flux by the track's 90th-percentile
+#: change instead, and on Spinhold's intro failed an Ogg seam the spec read as
+#: ordinary. A seam may sound like any ordinary moment of the music, a note starting
+#: included.
 STEP_LIMIT = 1.0
 FLUX_LIMIT = 1.0
 
@@ -162,16 +168,14 @@ def _cut_length(mono: np.ndarray, beat: float, first: float) -> tuple[int, int, 
     return cut - reach + best, bars, score
 
 
-def _seam(frames: np.ndarray) -> tuple[float, float]:
-    """The wrap against the track: its step and its spectral change, as bars read."""
-    mono = frames.mean(axis=1)
-    step = abs(mono[0] - mono[-1]) / float(np.percentile(np.abs(np.diff(mono)), 99))
-    size, hop = 2048, 512
-    wrapped = np.concatenate([mono[-4 * size:], mono[: 4 * size]])
-    across = _flux(wrapped, hop=hop)
-    middle = len(across) // 2
-    body = _flux(mono, hop=hop)
-    return step, float(across[middle - 4: middle + 4].max() / np.percentile(body, 90))
+def _seam(path: Path) -> dict:
+    """The wrap as `sound.measure` reads it, the names a spec bounds (§PW560)."""
+    found = sound.measure(path)
+    return {name: found[name] for name in sound.SEAM if name in found}
+
+
+def _stands_out(seam: dict) -> bool:
+    return seam["seam_step"] > STEP_LIMIT or seam["seam_flux"] > FLUX_LIMIT
 
 
 @operation("sound.loop")
@@ -224,7 +228,6 @@ def loop(
     _encode(cut, target, quality)
 
     heard = _decode(target)
-    step, change = _seam(heard)
     if len(heard) != length:
         raise PolyweaveError(
             "sound.loop-gap",
@@ -232,8 +235,26 @@ def loop(
             "gap or an overlap at the loop point",
             "write the loop as .wav, or use an encoder that keeps the length exactly",
         )
-    stands_out = step > STEP_LIMIT or change > FLUX_LIMIT
+    seam = _seam(target)
+    stands_out = _stands_out(seam)
+    # An encoded loop is also read as cut, so a seam the encoder moved is said as that.
+    cut_seam = None
+    if target.suffix.lower() != ".wav":
+        with tempfile.TemporaryDirectory() as scratch:
+            plain = Path(scratch) / "cut.wav"
+            _encode(cut, plain, quality)
+            cut_seam = _seam(plain)
+    moved = cut_seam is not None and _stands_out(cut_seam) != stands_out
     tempo = 60.0 / beat
+    if moved:
+        says = (f"the {target.suffix[1:]} encode moved the seam: as cut it "
+                f"{'stood out' if _stands_out(cut_seam) else 'was ordinary'}, as "
+                f"written it {'stands out' if stands_out else 'is ordinary'}; "
+                "listen across it, or write the loop as .wav")
+    elif stands_out:
+        says = "the seam stands out from the track: listen across it before using this"
+    else:
+        says = f"{bars} bars at {tempo:.2f} BPM, the seam like any ordinary moment"
     return {
         "loop": out,
         "seconds": round(length / RATE, 3),
@@ -242,12 +263,8 @@ def loop(
         "bars": int(bars),
         "starts_at": round(opens / RATE, 3),
         "match": round(float(match), 3),
-        "seam_step": round(float(step), 3),
-        "seam_change": round(float(change), 3),
+        **seam,
+        **({"as_cut": cut_seam} if cut_seam is not None else {}),
         "passed": not stands_out,
-        "says": (
-            "the seam stands out from the track: listen across it before using this"
-            if stands_out else
-            f"{bars} bars at {tempo:.2f} BPM, the seam like any ordinary moment"
-        ),
+        "says": says,
     }

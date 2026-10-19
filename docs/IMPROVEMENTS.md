@@ -291,32 +291,6 @@ model and the members.
 
 ## Block P — Music and sound a game can ship
 
-### §PW560 One seam measure for the loop and its spec
-
-Where: spinhold, 2026-10-19, the intro's instrumental (`sound.stems` no_vocals, 64.8 s)
-cut into a loop.
-
-The calls, on the same track and the same cut (23 bars at 123.98 BPM, 44.528 s):
-
-- `sound.loop --out loop.wav`: seam_step 0.045, seam_change 0.937, passed true.
-- `sound.loop --out loop.ogg`: seam_step 0.012, seam_change 1.714, passed false, "the
-  seam stands out from the track: listen across it before using this".
-- `sound.measure --subject loop.ogg`: seam_step 0.0118, seam_flux 0.2472, seam_grid
-  0.0207, where the WAV reads seam_flux 0.233.
-
-So the two operations answer the same question about the same file differently:
-sound.loop's own `_seam` divides the flux across the wrap by the track's 90th-percentile
-flux, and sound.measure's `seam_flux` by its strong onsets. One says the Ogg seam stands
-out, the other says it is as ordinary as the WAV's. An agent cannot tell which to
-believe without reading both sources, and the person is told to listen to a seam a spec
-would pass.
-
-What polyweave should do: one seam measure, the one `sound.measure` and a sound bound
-read, used by `sound.loop` for its verdict and reported under the same names
-(`seam_flux`, not `seam_change`), so the loop's `passed` is what an acceptance spec over
-the same file would answer. If the Vorbis encode really does change the wrap, say so as
-the difference between the cut and the encoded file, not as a second scale.
-
 ### §PW573 A Surge render that fails on a label's codepage
 
 Where: polyweave's own gate, 2026-10-19, during PW559.
