@@ -213,10 +213,27 @@ def answer(root, body: dict) -> dict:
             allowed=sorted(families),
         )
     members = families[family]["members"]
+    choice = str(body.get("choice") or "")
+    chosen = ""
+    if families[family].get("pick") == "one" and choice == "accept":
+        # Alternatives for one slot: an accept is of the one member picked, and the
+        # others are passed over, never refused (§PW547). Spinhold's owner accepted all
+        # three studio voices, one card each, where one was meant.
+        named = {str(one["name"]): one for one in members}
+        chosen = str(body.get("member") or "")
+        if chosen not in named:
+            raise PolyweaveError(
+                "loop.pick-one",
+                f"the family {family!r} holds alternatives, and an accept of it names "
+                f"the one chosen; {chosen or 'none'} is not one of them",
+                "pass member, the name of the one alternative the person picked",
+                given=chosen,
+                allowed=sorted(named),
+            )
+        members = [named[chosen]]
     # Checked before the verdict, so a mark that cannot be kept never leaves a verdict
     # recorded without the place it was about.
     shapes = _shapes(members, body.get("marks") or [])
-    choice = str(body.get("choice") or "")
     why = str(body.get("why") or "").strip()
     if choice == "accept" and not why:
         # A person who clicked accept and wrote nothing said exactly that, and the
@@ -240,7 +257,8 @@ def answer(root, body: dict) -> dict:
     # An event on disk, so the agent that offered the sitting resumes on it without
     # the person saying so again in chat (§PW173).
     said["answer"] = verdict.record_answer(
-        said, sitting=listed, family=family, root=config.root, marks=marks
+        said, sitting=listed, family=family, root=config.root, marks=marks,
+        chosen=chosen,
     )
     return said
 
@@ -423,7 +441,8 @@ def answered(
     body: Annotated[
         dict,
         Param("the answer as the page sends it: sitting, family, choice, why and "
-              "marks; or gate and picture; or admit or withdraw, with canon"),
+              "marks (member: the one picked); or gate and picture; or admit or "
+              "withdraw, with canon"),
     ],
     root: Annotated[str, Param("the project the sitting belongs to")] = ".",
 ) -> dict:

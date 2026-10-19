@@ -225,6 +225,20 @@ side, a loop looped so its seam is heard, under a sheet of their waveforms and w
 digest of what was heard and the sound it was heard against; a sound with no record says
 so, the verdict still in the ledger. A missing file is `sound.no-source`.
 
+**Alternatives for one slot are one pick** (§PW547). Spinhold's owner accepted all three
+previews of a studio voice, one card each, where the game uses one. A family whose
+manifest says `"pick": "one"` holds alternatives for one slot: `sound.sitting(pick=)`
+lays every member into one family named for the slot, their sheets stacked, and
+`voice.design` lays its previews that way, the family named for the entity. The page
+draws it as one card that plays each member; an accept there asks which one, as a
+choice of the members, and the card is left out of accepting every card still waiting.
+`review.answer` and `verdict.answer` take that member as `member`: only it is judged
+accepted, the others passed over and never refused, and an accept naming none of them is
+`loop.pick-one`. The answer line in `answers.jsonl` carries `chosen`, and
+`voice.choose` given the sitting, or its folder, saves the preview its latest accept
+picked, so no one is asked again in chat which it was. A redo of the card is a redo of
+every member, as on any other card.
+
 **It has one write**, `POST /api/judge`, which calls `verdict.judge` with the members taken
 from the sitting's own manifest rather than from the page, and the person's choice and
 sentence. A sitting or family the project never laid out is `loop.unknown-sitting`. The

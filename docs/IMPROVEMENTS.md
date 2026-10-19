@@ -94,31 +94,6 @@ this is where that is recorded honestly: what still runs by hand, and why the ri
 instead of disappearing. An outcome worth having, stated, beats the same outcome
 unstated.
 
-### §PW547 Pick one of several on the review page
-
-Found in Spinhold (RK168, 2026-10-19). `voice.design` laid three previews of the studio
-voice at art/review/rk168-studio-voice, and `voice.choose` takes one of them. On the
-review page each preview is a card of its own with Aceitar and Refazer, and the batch
-accept takes every card, so the owner accepted all three. Nothing in the sitting said
-the cards were alternatives, and nothing stopped three accepts where one was meant. The
-agent had to ask in chat which one, and the verdicts now record three accepted voices of
-which the game uses one.
-
-The same shape comes back wherever polyweave lays out candidates for one slot: voice
-previews, takes of a spoken line (`sound.speak`), picture variants (`picture.vary`), and
-search results a person picks from.
-
-What polyweave should do: a sitting may declare its members as alternatives for one slot
-(`pick = "one"` on the family, or a `choose` kind of sitting). The review page then
-draws them as one card with a select (radio buttons) and a single answer, refuses an
-accept of more than one, and the batch accept skips such a card. The answer records the
-chosen member; the others are passed over, not refused. `voice.design` and `sound.speak`
-lay their sittings this way, and `verdict.answers` says which member was chosen, so
-`voice.choose` can take it from the answer with no question in chat.
-
-Done when Spinhold's next voice or take sitting shows one select, the owner picks one,
-and the chosen id reaches `voice.choose` from the answer alone.
-
 ### §PW548 Measures for a transparent picture's edge
 
 Found in Spinhold (RK150, 2026-10-19). The game's 4K transparent logo

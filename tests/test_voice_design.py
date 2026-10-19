@@ -146,9 +146,41 @@ def test_a_preview_accepted_on_the_review_page_is_kept_as_a_sound(tmp_path, serv
     sitting = json.loads((tmp_path / found["sitting"]).read_text("utf-8"))
     members = next(iter(sitting["families"].values()))["members"]
     assert members[0].get("line") and members[0].get("sound")
-    verdict.judge(members, "accept", "that's him", root=str(tmp_path))
+    verdict.judge(members[:1], "accept", "that's him", root=str(tmp_path))
     kept = sound_buy.choose(members[0]["new"], root=str(tmp_path))
     assert kept["voice"] == "saved-bo"
+
+
+def test_the_previews_are_one_pick_and_the_pick_reaches_choose(tmp_path, service):
+    """Spinhold's owner accepted all three studio voices, one card each (§PW547): the
+    previews are now one family of alternatives, an accept names the one picked, and
+    voice.choose takes the sitting and saves that one."""
+    import json
+
+    from polyweave.loop import review, verdict
+
+    found = sound_buy.design(entity="bo", root=str(tmp_path))
+    sitting = json.loads((tmp_path / found["sitting"]).read_text("utf-8"))
+    [(family, laid)] = sitting["families"].items()
+    assert family == "bo" and laid["pick"] == "one" and len(laid["members"]) == 3
+    assert (tmp_path / laid["sheet"]).is_file()
+    with pytest.raises(PolyweaveError) as refused:
+        sound_buy.choose(found["sitting"], root=str(tmp_path))
+    assert refused.value.code == "world.voice-unchosen"
+    body = {"sitting": found["sitting"], "family": "bo", "choice": "accept",
+            "why": "the second"}
+    with pytest.raises(PolyweaveError) as refused:
+        review.answer(tmp_path, body)
+    assert refused.value.code == "loop.pick-one"
+    second = laid["members"][1]["name"]
+    said = review.answer(tmp_path, {**body, "member": second})
+    assert [one["name"] for one in said["members"]] == [second]
+    assert said["answer"]["chosen"] == second
+    assert verdict.answers(root=str(tmp_path))["answers"][-1]["chosen"] == second
+    folder = found["sitting"].rsplit("/", 1)[0]
+    kept = sound_buy.choose(folder, root=str(tmp_path))
+    assert kept["from"] == found["previews"][1]
+    assert service.sent[-1][1]["generated_voice_id"] == "g2"
 
 
 def test_an_entity_with_no_voice_table_gets_one(tmp_path, service):

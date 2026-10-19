@@ -297,7 +297,7 @@ MANIFEST = "sitting.json"
 def _manifest(
     folder: Path, families: dict, sheets: dict, root, kind: str = "look",
     about: str = "", abouts: dict | None = None, tone: list | None = None,
-    asset: str = "",
+    asset: str = "", pick: tuple = (),
 ) -> str:
     """The sitting as data, and its place in the project's index of sittings.
 
@@ -306,7 +306,9 @@ def _manifest(
     `kind` is what is judged, a look, a line, an effect or a sound, and says the words
     the page offers (§PW199): each choice with what it means and what it leads to, and
     a summary of the sitting, in the project's `[review] language` (§PW287). `about` is
-    what only the caller knows, added under the summary; `abouts` one family's.
+    what only the caller knows, added under the summary; `abouts` one family's. A family
+    named in `pick` holds alternatives for one slot, `"pick": "one"`: an accept of it
+    names the one member chosen, and the page offers no batch accept of it (§PW547).
     """
     import json
     from datetime import UTC, datetime
@@ -333,6 +335,7 @@ def _manifest(
                 "sheet": relative(Path(sheets[name]["sheet"]), here),
                 "said": sheets[name]["members"],
                 **({"about": abouts[name]} if abouts.get(name) else {}),
+                **({"pick": "one"} if name in pick else {}),
             }
             for name, members in families.items()
         },
@@ -558,12 +561,14 @@ ANSWERS = "answers.jsonl"
 
 
 def record_answer(
-    said: dict, *, sitting: str, family: str, root, marks: list | None = None
+    said: dict, *, sitting: str, family: str, root, marks: list | None = None,
+    chosen: str = "",
 ) -> dict:
     """Append one answer from the page, for the agent that offered the sitting.
 
     `marks` are where the person said it is wrong, each a mask the size of the picture
-    it was drawn on, with that picture's digest (§PW174).
+    it was drawn on, with that picture's digest (§PW174). `chosen` is the member a
+    person picked of a family of alternatives, the others passed over (§PW547).
     """
     import json
     from datetime import UTC, datetime
@@ -578,6 +583,7 @@ def record_answer(
         "why": said["why"],
         "members": said["members"],
         "marks": list(marks or ()),
+        **({"chosen": chosen} if chosen else {}),
     }
     path = load(root).path("paths.work") / ANSWERS
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -760,6 +766,8 @@ def answer(
     why: Annotated[str, Param("the person's own sentence, as they said it")],
     *,
     family: Annotated[str, Param("one family; every family where empty")] = "",
+    member: Annotated[
+        str, Param("the alternative picked, where a family is a pick")] = "",
     root: Annotated[str, Param("the project the sitting belongs to")] = ".",
     code: Annotated[str, Param(CODE)] = "",
 ) -> dict:
@@ -769,6 +777,7 @@ def answer(
     the ledger, the spec and `verdict.answers` take it as they take a click. A family
     already answered is skipped and named, not judged twice. Called as a tool, an
     `accept` or `number` needs `code`, the one the page shows for the sitting (§PW443).
+    An accept of a family of alternatives names `member`, the one picked (§PW547).
     """
 
     from polyweave.kernel.config import load
@@ -816,7 +825,8 @@ def answer(
             continue
         said = review.answer(
             config.root,
-            {"sitting": listed, "family": one, "choice": choice, "why": why},
+            {"sitting": listed, "family": one, "choice": choice, "why": why,
+             **({"member": member} if member else {})},
         )
         answered.append({"family": one, "members": said["members"]})
     return {"sitting": listed, "choice": choice, "why": why, "answered": answered,

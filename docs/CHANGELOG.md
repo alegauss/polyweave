@@ -236,6 +236,7 @@
 - ✅ **PW532** **kit.prove proves each fixture under its fixed project name, so a run that left state in its user:// fails the next proof** — kit.prove copies each fixture under a name of its run and removes that user:// after, so a marker left under the fixture's own name fails no proof.
 - ✅ **PW533** **a cube's settled frame comes out as a permutation on some CPUs, so CI's cube test fails now and then** — A near tie between world axes goes to x, y, z order, so a cube settles to the same frame whatever rounding the CPU's BLAS kernel leaves.
 - ✅ **PW546** **a dialogue kit proof ends with no signal under the full gate's load, so its broken-box case fails with nothing to read** — The dialogue proof times typing by summed frame time, not a wall clock read before frame one; a proof cut short names its last KIT STEP (design recorded in `docs/specs/kit.md`).
+- ✅ **PW547** **a sitting of alternatives for one slot lets a person accept every one, with no way to pick just one** — A sitting family may be a pick of alternatives: the page asks which one, batch accept skips it, and voice.choose takes the pick from the answer (design recorded in `docs/specs/acceptance-spec.md`).
 
 ## Block I — Voxel models from a declaration
 

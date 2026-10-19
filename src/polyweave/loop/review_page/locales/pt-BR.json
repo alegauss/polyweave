@@ -110,6 +110,10 @@
     "accept_rest_confirm": "Aceitar os {n} itens desta sessão que ainda não têm resposta? Os que você já respondeu ficam como estão.",
     "accept_rest_why": "Aceito em lote na página de revisão.",
     "accept_rest_running": "Aceitando {done} de {n}…",
+    "pick_one": "São alternativas para uma só vaga. Escolha uma:",
+    "pick_alone": "Ouça as opções e escolha uma só; este cartão fica de fora do aceite em lote.",
+    "need_pick": "Escolha qual das alternativas você aceita.",
+    "picked": "escolhida: {name}",
     "no_accept": "Este cartão reprovou um limite da especificação, escrito acima, então não há um Aceitar simples: aceitar o visual aqui ajusta esse limite para o valor medido, como decisão sua."
   },
   "kinds": {

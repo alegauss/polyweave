@@ -920,6 +920,12 @@ KERNEL_CODES: dict[str, Code] = {
         "family not in it",
         doors=("answer a sitting the page lists",),
     ),
+    "loop.pick-one": Code(
+        means="an accept of a family of alternatives names no one of its members",
+        when="a sitting laid a slot's alternatives as one family (a voice's previews, "
+        "§PW547) and the accept carried no member, or one not in it",
+        doors=("pass member, the name of the alternative the person picked",),
+    ),
     "loop.unknown-choice": Code(
         means="a verdict is none of the things a person says of a family",
         when="a choice other than accept, look or number (§PW109)",

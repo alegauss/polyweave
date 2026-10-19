@@ -63,6 +63,8 @@ export interface Laid {
   sheet: string
   said?: Held[]
   about?: string
+  /** Its members are alternatives for one slot: an accept names the one picked (§PW547). */
+  pick?: 'one'
 }
 
 export interface Sitting {
@@ -85,6 +87,8 @@ export interface Recorded {
   choice: string
   why?: string
   at?: string
+  /** The member picked of a family of alternatives (§PW547). */
+  chosen?: string
 }
 
 /** One picture a gate weighed, with the numbers it was judged on (§PW175). */
@@ -180,6 +184,8 @@ export interface AnswerBody {
   choice: string
   why: string
   marks?: Mark[]
+  /** The alternative picked, for an accept of a family whose `pick` is one (§PW547). */
+  member?: string
 }
 
 /** The page's other writes: a gate's picture promoted or taken into a canon, a candidate
@@ -292,9 +298,11 @@ export function choiceOf(words: Words, word: string, raw: Choice | string, kind 
 const failing = (laid: Laid) => (laid.said ?? []).some((one) => (one.failed ?? []).length > 0)
 
 /** Whether a family's card may be accepted as it stands: nothing failed, or the kind has
- * no "number" to say the bound is wrong with (§PW460). */
+ * no "number" to say the bound is wrong with (§PW460); and it is not alternatives for one
+ * slot, which only a person's pick answers (§PW547). */
 export function acceptable(sitting: Sitting, family: string): boolean {
   const laid = sitting.families[family]
+  if (laid?.pick === 'one') return false
   return !laid || !failing(laid) || !('number' in (sitting.choices ?? {}))
 }
 
@@ -431,9 +439,11 @@ export function title(name: string, laid: Laid): string {
   return speaking ? (speaking.who ?? speaking.speaker ?? name) : name
 }
 
-/** Why an answer cannot be sent yet, as a catalog key, or null when it can. */
-export function unready(choice: string | null, why: string): string | null {
+/** Why an answer cannot be sent yet, as a catalog key, or null when it can. An accept of
+ * alternatives for one slot (`pick`) needs the one picked (§PW547). */
+export function unready(choice: string | null, why: string, pick?: string | null): string | null {
   if (!choice) return 'need_choice'
+  if (choice === 'accept' && pick === null) return 'need_pick'
   // A redo needs to say what is wrong; an accept may say nothing more.
   if (choice !== 'accept' && !why.trim()) return 'need_note'
   return null

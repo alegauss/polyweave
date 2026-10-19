@@ -145,7 +145,9 @@ from polyweave.surface.capabilities import capabilities
 #: a person, which the game alone can draw (§PW372).
 #: 149,906 with kit.install's `without`, the store of a kit installed without its
 #: screen and the kits only the screen needs (§PW535).
-DESCRIBE = 150_000
+#: 150,191 with sound.sitting's pick and verdict.answer's member, alternatives for one
+#: slot answered by the one a person picked, never every one accepted (§PW547).
+DESCRIBE = 150_400
 #: capabilities(probe=False), which carries describe() and the codes: 54,155, then
 #: 54,590 with asset.brief (§PW131), then 55,225 with measure.digest (§PW141), then
 #: 55,803 with cost.read, its code and `fresh` (§PW143, §PW144), then 56,825 with
@@ -268,7 +270,9 @@ DESCRIBE = 150_000
 #: 164,312 with the project operation codes (§PW518).
 #: 165,301 with clip.shots, each camera shot framed in the running game (§PW372).
 #: 165,482 with kit.install's `without` and the kits.no-part code (§PW535).
-CAPABILITIES = 165_600
+#: 165,784 with sound.sitting's pick, verdict.answer's member and loop.pick-one
+#: (§PW547).
+CAPABILITIES = 166_000
 #: The largest refusal: an unknown code, its `allowed` cut to 40 names, 1,154.
 ERROR = 1_400
 #: One verb's `--help`: render.bake's thirty parameters, 3,847.

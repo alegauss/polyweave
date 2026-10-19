@@ -1772,7 +1772,7 @@ export interface RenderPlanArgs {
 
 /** The page's one write, marks turned into masks and then verdict.judge, refused where this process runs older code than the package on disk. */
 export interface ReviewAnswerArgs {
-  /** the answer as the page sends it: sitting, family, choice, why and marks; or gate and picture; or admit or withdraw, with canon */
+  /** the answer as the page sends it: sitting, family, choice, why and marks (member: the one picked); or gate and picture; or admit or withdraw, with canon */
   body: Record<string, unknown>
   /** the project the sitting belongs to; default "." */
   root?: string
@@ -2070,6 +2070,8 @@ export interface SoundSittingArgs {
   root?: string
   /** what the person should know, under the summary: what changed and what to listen for */
   about?: string
+  /** the one slot all members are alternatives for */
+  pick?: string
 }
 
 /** Speak one line aloud in a named voice, at a cue's file, against the ceiling. */
@@ -2240,6 +2242,8 @@ export interface VerdictAnswerArgs {
   why: string
   /** one family; every family where empty */
   family?: string
+  /** the alternative picked, where a family is a pick */
+  member?: string
   /** the project the sitting belongs to; default "." */
   root?: string
   /** the code the review page shows for the sitting, as the person said it; an accept from conversation needs it */
@@ -2370,7 +2374,7 @@ export interface VideoCutArgs {
 
 /** Keep the preview a person accepted as its entity's voice, written in the world. */
 export interface VoiceChooseArgs {
-  /** the preview a person accepted, as a path */
+  /** the preview a person accepted, or its sitting */
   preview: string
   /** the *.world.toml, where the project has several */
   world?: string

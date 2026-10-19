@@ -49,6 +49,8 @@ export interface Scripted {
   choice: string
   why: string
   marks?: Mark[]
+  /** The alternative picked, for a family of alternatives (§PW547). */
+  member?: string
 }
 
 /** Where a file will show once it has come across the desk. */
@@ -449,6 +451,9 @@ function Card({
   const badge = status(before)
   const offered = choices(words, sitting, laid)
   const [picked, setPicked] = useState<string | null>(null)
+  // The one alternative accepted, where the family holds alternatives for one slot (§PW547).
+  const alternatives = laid.pick === 'one'
+  const [member, setMember] = useState<string | null>(null)
   const [why, setWhy] = useState('')
   const [again, setAgain] = useState(false)
   const [message, setMessage] = useState<{ text: string; bad: boolean } | null>(null)
@@ -463,8 +468,8 @@ function Card({
   }, [card, picked, why, marked])
   useEffect(() => () => onHold(card, false), [card, onHold])
 
-  const send = async (choice: string | null, said: string, marks: Mark[]) => {
-    const missing = unready(choice, said)
+  const send = async (choice: string | null, said: string, marks: Mark[], one: string | null = member) => {
+    const missing = unready(choice, said, alternatives ? one : undefined)
     if (missing) return setMessage({ text: say(words, missing), bad: true })
     setSending(true)
     setMessage({ text: say(words, 'recording'), bad: false })
@@ -475,10 +480,12 @@ function Card({
         choice: choice!,
         why: said.trim(),
         marks: drawn(marks),
+        ...(alternatives && choice === 'accept' && one ? { member: one } : {}),
       })
       setMessage({ text: say(words, 'recorded'), bad: false })
       setAgain(false)
       setPicked(null)
+      setMember(null)
       setWhy('')
       setBoxes({})
       onAnswered()
@@ -491,7 +498,8 @@ function Card({
 
   // A smoke run answers its family once, the way a person would: a choice, then words.
   useEffect(() => {
-    if (scripted?.family === name && !before) void send(scripted.choice, scripted.why, scripted.marks ?? [])
+    if (scripted?.family === name && !before)
+      void send(scripted.choice, scripted.why, scripted.marks ?? [], scripted.member ?? null)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scripted, name])
 
@@ -522,6 +530,7 @@ function Card({
       {before && (
         <div data-answered className="flex flex-col gap-1 rounded-md bg-muted p-3 text-sm">
           <p>{say(words, 'answered', { choice: answeredAs?.label ?? before.choice, at: when(words, before.at) })}</p>
+          {before.chosen && <p data-chosen={before.chosen}>{say(words, 'picked', { name: before.chosen })}</p>}
           <q>{before.why || say(words, 'no_comment')}</q>
           {(laid.members ?? []).map((member) => {
             // A newer candidate came after the answer: the answer was about the older one.
@@ -565,6 +574,26 @@ function Card({
               </Button>
             ))}
           </div>
+          {alternatives && picked === 'accept' && (
+            // Alternatives for one slot: the accept is of one of them (§PW547).
+            <fieldset data-pick className="flex flex-col gap-1 rounded-md border p-3 text-sm">
+              <legend className="px-1 font-medium">{say(words, 'pick_one')}</legend>
+              {(laid.members ?? []).map((one) => (
+                <label key={one.name} className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name={`${card}:pick`}
+                    value={one.name}
+                    data-member={one.name}
+                    checked={member === one.name}
+                    onChange={() => setMember(one.name)}
+                  />
+                  {one.name}
+                </label>
+              ))}
+            </fieldset>
+          )}
+          {alternatives && <p data-pick-alone className="text-sm text-muted-foreground">{say(words, 'pick_alone')}</p>}
           {acceptWithheld(sitting, laid) && (
             // Why there is no plain accept, and which button is one (§PW486).
             <p data-no-accept className="text-sm text-muted-foreground">

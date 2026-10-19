@@ -428,6 +428,7 @@ def sitting(
         str, Param("what the person should know, under the summary: what changed and "
                    "what to listen for")
     ] = "",
+    pick: Annotated[str, Param("the one slot all members are alternatives for")] = "",
 ) -> dict:
     """Put sounds on the review page, each new one beside the one it replaces.
 
@@ -438,6 +439,9 @@ def sitting(
     from it. A loop is a member whose cue a `[sound]` family of kind loop declares, or
     one that says `loop`. `about` is kept under the summary, as `verdict.sitting` keeps
     it (§PW464), so the sitting says what changed rather than the kind's words alone.
+    With `pick`, the members are alternatives for that one slot (§PW547): one family
+    named `pick`, its sheets stacked, and an accept of it names the one chosen, so a
+    person cannot accept three voices where the game uses one.
     """
     from polyweave.kernel.provenance import relative
     from polyweave.loop import verdict
@@ -499,20 +503,51 @@ def sitting(
                                      if not r["passed"]] if spec else [])
                          + [_spoke(one) for one in spoken_fails]}],
         }
+    measured = {name: m[0]["measured"] for name, m in families.items()}
+    spoken = {name: m[0]["speech"] for name, m in families.items() if "speech" in m[0]}
+    if pick and families:
+        families, sheets = _alternatives(pick, families, sheets, folder)
     if families:
-        verdict._manifest(folder, families, sheets, here, kind="sound", about=about)
+        verdict._manifest(folder, families, sheets, here, kind="sound", about=about,
+                          pick=(pick,) if pick else ())
     return {
         "sitting": relative(folder / verdict.MANIFEST, here) if families else None,
-        "sounds": list(families),
-        "measured": {name: m[0]["measured"] for name, m in families.items()},
-        **({"speech": {name: m[0]["speech"] for name, m in families.items()
-                       if "speech" in m[0]}}
-           if any("speech" in m[0] for m in families.values()) else {}),
+        "sounds": list(measured),
+        "measured": measured,
+        **({"speech": spoken} if spoken else {}),
         "choices": dict(SOUND_CHOICES),
-        "says": f"{len(families)} sound{'' if len(families) == 1 else 's'} for a "
-        "person to hear on the review page; verdict.answers resumes from what they "
-        "said",
+        **({"pick": pick} if pick and families else {}),
+        "says": (f"{len(measured)} alternatives for {pick} for a person to hear and "
+                 "pick one of on the review page; verdict.answers says which"
+                 if pick and families else
+                 f"{len(measured)} sound{'' if len(measured) == 1 else 's'} for a "
+                 "person to hear on the review page; verdict.answers resumes from what "
+                 "they said"),
     }
+
+
+def _alternatives(
+    pick: str, families: dict, sheets: dict, folder: Path
+) -> tuple[dict, dict]:
+    """Every sound as one family of alternatives named `pick`, their sheets stacked into
+    one, so the page draws one card to pick from (§PW547)."""
+    from PIL import Image
+
+    drawn = [Image.open(sheets[name]["sheet"]).convert("RGB") for name in families]
+    stacked = Image.new("RGB", (max(one.width for one in drawn),
+                                sum(one.height for one in drawn)), "white")
+    top = 0
+    for one in drawn:
+        stacked.paste(one, (0, top))
+        top += one.height
+    sheet = folder / f"{pick}.png"
+    stacked.save(sheet)
+    return (
+        {pick: [one for members in families.values() for one in members]},
+        {pick: {"sheet": str(sheet),
+                "members": [held for name in families
+                            for held in sheets[name]["members"]]}},
+    )
 
 
 def _heard(path: Path, loop: bool) -> dict:

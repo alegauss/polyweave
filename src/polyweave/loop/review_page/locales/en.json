@@ -110,6 +110,10 @@
     "accept_rest_confirm": "Accept all {n} items of this sitting that have no answer yet? Items you already answered are left as they are.",
     "accept_rest_why": "Accepted with the rest on the review page.",
     "accept_rest_running": "Accepting {done} of {n}…",
+    "pick_one": "These are alternatives for one place. Pick one:",
+    "pick_alone": "Hear the options and pick just one; this card is left out of accepting the rest.",
+    "need_pick": "Pick which of the alternatives you accept.",
+    "picked": "picked: {name}",
     "no_accept": "This card failed a bound of its spec, written above, so there is no plain Accept: accepting the look here moves that bound to what was measured, as your decision."
   },
   "kinds": {

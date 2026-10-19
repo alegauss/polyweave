@@ -29,6 +29,7 @@ written into `[budget.<name>]` by a person and never proposed by the plugin.
 from __future__ import annotations
 
 import hashlib
+import json
 import re
 import shutil
 import subprocess
@@ -447,8 +448,10 @@ def design(
         {"name": Path(entry["artefact"]).stem, "new": entry["artefact"], "line": sample}
         for entry in S.buy(elevenlabs.SERVICE, order, report)
     ]
+    # One card of alternatives for the voice, so a person picks one and never accepts
+    # every preview (§PW547).
     laid = sound.sitting(
-        heard, out=provenance.relative(folder, here), root=str(here)
+        heard, out=provenance.relative(folder, here), root=str(here), pick=named
     )
     return {
         "entity": entity,
@@ -459,13 +462,14 @@ def design(
         "sitting": laid["sitting"],
         "says": f"{len(heard)} previews of {entity}'s voice"
         + (f" in {locale}" if locale else "")
-        + " for a person to hear; voice.choose saves the one they accept",
+        + " for a person to hear and pick one of; voice.choose takes the sitting and "
+        "saves the one they picked",
     }
 
 
 @operation("voice.choose", kind="fetch")
 def choose(
-    preview: Annotated[str, Param("the preview a person accepted, as a path")],
+    preview: Annotated[str, Param("the preview a person accepted, or its sitting")],
     *,
     world: Annotated[str, Param("the *.world.toml, where the project has several")] = (
         None
@@ -477,11 +481,13 @@ def choose(
 
     Refused unless the preview's record holds a person's `accept` on those very bytes:
     the agent never picks a voice (§PW321). The service saves it as a voice, and its id
-    is written under `[entity.<id>.voice]` with the preview it came from.
+    is written under `[entity.<id>.voice]` with the preview it came from. Given the
+    sitting voice.design laid, or its folder, the preview is the one its latest accept
+    picked (§PW547), so no one is asked again in chat which it was.
     """
     config = load(root)
     here = config.root
-    where = config.path("paths.work", preview)
+    where = config.path("paths.work", _picked(preview, here))
     try:
         record = provenance.read(str(where), root=here)
     except PolyweaveError as missing:
@@ -533,6 +539,34 @@ def choose(
     return {"entity": drawn["id"], "voice": saved["voice_id"], "world": kept,
             "from": provenance.relative(where, here),
             **({"locale": drawn["locale"]} if drawn.get("locale") else {})}
+
+
+def _picked(preview: str, here: Path) -> str:
+    """The preview a sitting's latest accept picked, where `preview` names a sitting or
+    its folder; `preview` itself otherwise (§PW547)."""
+    from polyweave.loop import verdict
+
+    listed = preview.replace("\\", "/").rstrip("/")
+    if not listed.endswith(verdict.MANIFEST):
+        listed = f"{listed}/{verdict.MANIFEST}"
+    if not (here / listed).is_file():
+        return preview
+    manifest = json.loads((here / listed).read_text(encoding="utf-8"))
+    picks = {name for name, laid in manifest.get("families", {}).items()
+             if laid.get("pick") == "one"}
+    taken = [one for one in verdict.kept_answers(here)
+             if one.get("sitting") == listed and one.get("family") in picks]
+    if not taken or taken[-1].get("choice") != "accept" or not taken[-1].get("chosen"):
+        raise PolyweaveError(
+            "world.voice-unchosen",
+            f"no person has picked a preview in {listed}",
+            "let a person pick one on the review page, or pass verdict.answer the "
+            "member they named; an agent does not choose a voice",
+            given=preview,
+        )
+    last = taken[-1]
+    members = manifest["families"][last["family"]]["members"]
+    return next(str(one["new"]) for one in members if one["name"] == last["chosen"])
 
 
 @operation("voice.lines", kind="fetch", injects=("report",), spends=True)

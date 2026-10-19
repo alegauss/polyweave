@@ -208,4 +208,14 @@ describe('the decision screen', () => {
     expect(unready('look', '  ')).toBe('need_note')
     expect(unready('accept', '')).toBeNull()
   })
+
+  it('asks for the one picked of alternatives, and leaves them out of accepting the rest', () => {
+    // §PW547: Spinhold's owner accepted all three studio voices where one was meant.
+    expect(unready('accept', '', null)).toBe('need_pick')
+    expect(unready('accept', '', 'bo_2')).toBeNull()
+    expect(unready('look', 'too bright', null)).toBeNull()
+    const voices = sitting('v', ['bo'])
+    voices.families['bo']!.pick = 'one'
+    expect(acceptable(voices, 'bo')).toBe(false)
+  })
 })
