@@ -712,6 +712,128 @@ def move(
             "this sitting's"}
 
 
+@operation("verdict.place")
+def place(
+    sitting: Annotated[
+        str, Param("the sitting, as its manifest or the folder the page lists it in")
+    ],
+    member: Annotated[str, Param("the accepted member, by its name in the sitting")],
+    to: Annotated[str, Param("where the game loads it, as a path under the project")],
+    *,
+    root: Annotated[str, Param("the project the sitting belongs to")] = ".",
+) -> dict:
+    """Put an accepted member where the game loads it, with its own record (§PW549).
+
+    Refused unless a person accepted that member: its record's last verdict on its
+    bytes, or where it has none the latest answer naming it. The file is copied to `to`
+    and a record written for that path, keeping what the member's own record says (its
+    engine, its purchase, its inputs), with the member as an input and the verdict that
+    accepted it, so `provenance.verify` checks the game's file. Placing again, after a
+    newer accept, replaces the file and its record.
+    """
+    import json
+    import shutil
+
+    from polyweave.kernel import provenance
+    from polyweave.kernel.config import load
+
+    from . import review
+
+    config = load(root)
+    here = config.root
+    listed = sitting.replace("\\", "/").rstrip("/")
+    if not listed.endswith(MANIFEST):
+        listed = f"{listed}/{MANIFEST}"
+    offered = {one["manifest"]: one for one in review.sittings(here)}
+    if listed not in offered:
+        raise PolyweaveError(
+            "loop.unknown-sitting",
+            f"{sitting!r} is not a sitting this project laid out",
+            "name a sitting the review page lists",
+            given=sitting,
+            allowed=sorted(offered),
+        )
+    found = {str(one["name"]): one for laid in offered[listed]["families"].values()
+             for one in laid["members"]}
+    if member not in found or not found[member].get("new"):
+        raise PolyweaveError(
+            "verdict.bad-member",
+            f"the sitting has no member {member!r} with a file to place",
+            "name a member the sitting laid out",
+            given=member,
+            allowed=sorted(found),
+        )
+    take = here / str(found[member]["new"])
+    landed = (here / to).resolve() if not Path(to).is_absolute() else Path(to).resolve()
+    try:
+        landed.relative_to(here.resolve())
+    except ValueError:
+        raise PolyweaveError(
+            "verdict.bad-place", f"{to} is outside the project",
+            "name the path under the project the game loads it from",
+            given=to) from None
+    if landed == take.resolve():
+        raise PolyweaveError(
+            "verdict.bad-place", f"{to} is the member itself",
+            "name the path the game loads it from, apart from the review copy",
+            given=to)
+    accepted = _accepted(take, member, listed, here)
+    if accepted is None:
+        raise PolyweaveError(
+            "verdict.unaccepted",
+            f"no person has accepted {member} in {listed}",
+            "let a person accept it on the review page first; an agent does not "
+            "choose what the game ships",
+            given=member,
+        )
+    landed.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(take, landed)
+    try:
+        own = provenance.read(str(take), root=here)
+    except PolyweaveError:
+        own = None
+    placed = provenance.source("placed", take, root=here)
+    if own:
+        digest, length = provenance.sha256_of(landed)
+        record = {**json.loads(json.dumps(own)),
+                  "artefact": {"path": provenance.relative(landed, here),
+                               "sha256": digest, "bytes": length}}
+        record["inputs"] = [*(own.get("inputs") or ()), placed]
+    else:
+        record = provenance.build("borrow", landed, engine={"name": "verdict.place"},
+                                  inputs=[placed], root=here)
+    record["placed"] = {"from": placed["path"], "sitting": listed, "verdict": accepted}
+    written = provenance.write(record, here)
+    at = provenance.relative(landed, here)
+    return {"placed": at, "record": provenance.relative(written, here),
+            "from": placed["path"], "verdict": accepted,
+            "says": f"{member} placed at {at}, its record naming its own path and the "
+            "take it came from"}
+
+
+def _accepted(take: Path, member: str, listed: str, here: Path) -> dict | None:
+    """The verdict that accepted `member`: its record's last on these bytes, or where it
+    has none the latest answer naming it; None where neither is an accept (§PW549)."""
+    from polyweave.kernel import provenance
+
+    try:
+        own = provenance.read(str(take), root=here)
+    except PolyweaveError:
+        own = {}
+    digest = provenance.sha256_of(take)[0]
+    said = [v for v in own.get("verdicts") or () if v.get("sha256") == digest]
+    if said:
+        last = said[-1]
+        return ({"choice": "accept", "why": last.get("why"), "at": last.get("at")}
+                if last.get("choice") == "accept" else None)
+    named = [(one, kept) for one in kept_answers(here) if one.get("sitting") == listed
+             for kept in one.get("members") or () if kept.get("name") == member]
+    if not named or not named[-1][1].get("person_accepted"):
+        return None
+    one = named[-1][0]
+    return {"choice": one["choice"], "why": one.get("why"), "at": one.get("at")}
+
+
 @operation("verdict.answers")
 def answers(
     since: Annotated[

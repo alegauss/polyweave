@@ -2292,6 +2292,18 @@ export interface VerdictMoveArgs {
   root?: string
 }
 
+/** Put an accepted member where the game loads it, with its own record (§PW549). */
+export interface VerdictPlaceArgs {
+  /** the sitting, as its manifest or the folder the page lists it in */
+  sitting: string
+  /** the accepted member, by its name in the sitting */
+  member: string
+  /** where the game loads it, as a path under the project */
+  to: string
+  /** the project the sitting belongs to; default "." */
+  root?: string
+}
+
 /** A refused picture a person accepted after all, from wherever they said it. */
 export interface VerdictPromoteArgs {
   /** the gate run the picture was refused in, by its id */
@@ -2668,6 +2680,7 @@ export interface Operations {
   "verdict.answers": VerdictAnswersArgs
   "verdict.judge": VerdictJudgeArgs
   "verdict.move": VerdictMoveArgs
+  "verdict.place": VerdictPlaceArgs
   "verdict.promote": VerdictPromoteArgs
   "verdict.sheet": VerdictSheetArgs
   "verdict.sitting": VerdictSittingArgs
@@ -2876,6 +2889,7 @@ export const OPERATIONS = [
   "verdict.answers",
   "verdict.judge",
   "verdict.move",
+  "verdict.place",
   "verdict.promote",
   "verdict.sheet",
   "verdict.sitting",

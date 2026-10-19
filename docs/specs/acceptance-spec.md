@@ -239,6 +239,19 @@ accepted, the others passed over and never refused, and an accept naming none of
 picked, so no one is asked again in chat which it was. A redo of the card is a redo of
 every member, as on any other card.
 
+**An accepted take is placed where the game loads it** (§PW549). Spinhold's owner
+accepted the studio tag's third take, and the agent copied the mp3 and its record into
+the game by hand; the copied record still named the review copy, so `provenance.verify`
+checked that twice and the game's file never. `verdict.place(sitting, member, to)`
+copies an accepted member to `to`, a path under the project, and writes a record for
+that path: the member's own record kept (its engine, its purchase, its inputs), the
+member added as a `placed` input, and `placed` naming where it came from, the sitting
+and the verdict. Accepted means its record's last verdict on its bytes is an accept, or,
+where its record holds none, the latest answer naming it accepted it; otherwise it is
+`verdict.unaccepted`. A path outside the project, or the review copy itself, is
+`verdict.bad-place`. Placing again after a newer accept replaces the file and its
+record.
+
 **It has one write**, `POST /api/judge`, which calls `verdict.judge` with the members taken
 from the sitting's own manifest rather than from the page, and the person's choice and
 sentence. A sitting or family the project never laid out is `loop.unknown-sitting`. The

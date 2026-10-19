@@ -183,6 +183,40 @@ def test_the_previews_are_one_pick_and_the_pick_reaches_choose(tmp_path, service
     assert service.sent[-1][1]["generated_voice_id"] == "g2"
 
 
+def test_an_accepted_take_is_placed_where_the_game_loads_it(tmp_path, service):
+    """Spinhold copied its studio tag and record by hand, and the copied record named
+    the review copy, so provenance.verify never checked the game's file (§PW549)."""
+    import json
+
+    from polyweave.loop import review, verdict
+
+    found = sound_buy.design(entity="bo", root=str(tmp_path))
+    laid = json.loads((tmp_path / found["sitting"]).read_text("utf-8"))
+    second = laid["families"]["bo"]["members"][1]["name"]
+    with pytest.raises(PolyweaveError) as refused:
+        verdict.place(found["sitting"], second, "game/audio/BO.mp3", root=str(tmp_path))
+    assert refused.value.code == "verdict.unaccepted"
+    review.answer(tmp_path, {"sitting": found["sitting"], "family": "bo",
+                             "choice": "accept", "why": "the second", "member": second})
+    with pytest.raises(PolyweaveError) as refused:
+        verdict.place(found["sitting"], second, "../outside.mp3", root=str(tmp_path))
+    assert refused.value.code == "verdict.bad-place"
+    said = verdict.place(found["sitting"], second, "game/audio/BO.mp3",
+                         root=str(tmp_path))
+    game = tmp_path / "game" / "audio" / "BO.mp3"
+    assert game.read_bytes() == (tmp_path / found["previews"][1]).read_bytes()
+    record = provenance.read(str(game), root=tmp_path)
+    assert record["artefact"]["path"] == "game/audio/BO.mp3"
+    assert record["placed"]["from"] == found["previews"][1]
+    assert record["placed"]["verdict"]["choice"] == "accept"
+    assert any(one["role"] == "placed" for one in record["inputs"])
+    # what it was bought in stays in the game's record
+    assert record["details"]["voice_preview"] == "g2"
+    assert said["placed"] == "game/audio/BO.mp3"
+    checked = provenance.verify(root=str(tmp_path))
+    assert "game/audio/BO.mp3" in json.dumps(checked)
+
+
 def test_an_entity_with_no_voice_table_gets_one(tmp_path, service):
     from polyweave.layers.words.world import keep_voice
 

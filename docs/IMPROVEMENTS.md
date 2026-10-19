@@ -94,27 +94,6 @@ this is where that is recorded honestly: what still runs by hand, and why the ri
 instead of disappearing. An outcome worth having, stated, beats the same outcome
 unstated.
 
-### §PW549 Place an accepted take where the game loads it
-
-Found in Spinhold (RK168, 2026-10-19). `sound.speak` wrote three takes of the studio tag
-under art/review/rk168-studio-tag, `sound.sitting` laid them, and the owner accepted
-take_3 on the review page. The game loads the tag from
-game/audio/voice/SPLASH_STUDIO.mp3. No operation carries an accepted take there:
-`verdict.move` moves a whole sitting's folder, `verdict.promote` is for a gate's refused
-picture, `provenance.borrow` brings in another project's file. The agent copied the mp3
-and its .prov.json by hand. The copied record still names
-art/review/rk168-studio-tag/take_3.mp3 as its artefact, so `provenance.verify` checks
-the review copy twice and the game's file not at all.
-
-What polyweave should do: an operation (or `verdict.answers` with a `place` step) that
-takes an accepted member of a sitting and a destination under the project, or the cue
-the member was spoken or rendered for, copies it there, and writes a record for the new
-path that names the take it came from, the verdict that accepted it, and the purchase it
-was bought in. Re-running it after a new verdict replaces the file and its record.
-
-Done when Spinhold's SPLASH_STUDIO.mp3 is placed from the accepted take with a record
-naming its own path, and `provenance.verify` lists it.
-
 ### §PW553 Game arguments for game.open and clip.shots
 
 Found in Spinhold (RK241-RK243, 2026-10-19), framing the cutscenes of the Waist, the

@@ -733,6 +733,18 @@ KERNEL_CODES: dict[str, Code] = {
         "or lies inside the sitting itself (§PW436)",
         doors=("name a folder under the project that does not exist yet",),
     ),
+    "verdict.bad-place": Code(
+        means="an accepted member cannot be placed where it was asked to",
+        when="verdict.place to a path outside the project, or onto the member's own "
+        "review copy (§PW549)",
+        doors=("name the path under the project the game loads it from",),
+    ),
+    "verdict.unaccepted": Code(
+        means="a member is placed for the game, and no person accepted it",
+        when="verdict.place on a member whose record's last verdict, or the latest "
+        "answer naming it, is not an accept (§PW549)",
+        doors=("let a person accept it on the review page first",),
+    ),
     # -- review: the page a person answers on, and its server ---------------------
     "review.stale-server": Code(
         means="the review server runs older code than the plugin it was started from",
