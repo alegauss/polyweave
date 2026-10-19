@@ -104,8 +104,22 @@ func start(connected: Array, names := {}) -> String:
 ## is let go.
 func watch(label: Object, key: String, player := 0) -> void:
 	_watched = _watched.filter(func(one: Array) -> bool: return one[0].get_ref() != label)
-	_watched.append([weakref(label), key, player])
-	label.set("text", fill(String(TranslationServer.translate(key)), player))
+	_watched.append([weakref(label), key, player, 0])
+	label.set("text", _filled(_watched[-1]))
+
+
+## `watch` for a RichTextLabel drawn in icons (§PW551): the row filled by `fill_bbcode`
+## at `size`, and kept filled on the same changes.
+func watch_bbcode(label: Object, key: String, player := 0, size := 32) -> void:
+	_watched = _watched.filter(func(one: Array) -> bool: return one[0].get_ref() != label)
+	_watched.append([weakref(label), key, player, size])
+	label.set("text", _filled(_watched[-1]))
+
+
+## A watched label's text now: [label, key, player, size], in words where size is 0.
+func _filled(one: Array) -> String:
+	var row := String(TranslationServer.translate(one[1]))
+	return fill_bbcode(row, one[2], "", one[3]) if int(one[3]) > 0 else fill(row, one[2])
 
 
 ## Run `redraw` on every change `watch` refills on; one whose object is freed is let go.
@@ -120,7 +134,7 @@ func refresh() -> void:
 	_watched = _watched.filter(func(one: Array) -> bool: return one[0].get_ref() != null)
 	for one in _watched:
 		var label: Object = one[0].get_ref()
-		label.set("text", fill(String(TranslationServer.translate(one[1])), one[2]))
+		label.set("text", _filled(one))
 	_followers = _followers.filter(func(redraw: Callable) -> bool: return redraw.is_valid())
 	for redraw in _followers:
 		redraw.call()
@@ -445,6 +459,42 @@ func fill(text: String, player := 0, in_family := "") -> String:
 		text = text.replace(found.get_string(0),
 			named(StringName(found.get_string(1)), player, in_family))
 	return text
+
+
+## `fill` drawn in icons, for a RichTextLabel (§PW551): the same `{action}` and `{move}`
+## marks a help row holds, each the icon of what player `player` presses for it in the
+## family they hold (or `in_family`), the word `fill` would give where that family has
+## no icon for it, and `{move}` one stick's icon where all four moves are that stick's,
+## else each move's in turn. So a row is written once and drawn as words or as icons.
+func fill_bbcode(text: String, player := 0, in_family := "", size := 32) -> String:
+	if not "{" in text:
+		return text
+	var wanted := in_family if in_family != "" else family_for(player)
+	if "{move}" in text:
+		text = text.replace("{move}", _moves_drawn(player, wanted, size))
+	var mark := RegEx.create_from_string("\\{([A-Za-z0-9_]+)\\}")
+	for found in mark.search_all(text):
+		text = text.replace(found.get_string(0),
+			_drawn(StringName(found.get_string(1)), player, wanted, size))
+	return text
+
+
+## One action as player `player` presses it in `wanted`: its icon, else its word.
+func _drawn(action: StringName, player: int, wanted: String, size: int) -> String:
+	var path := icon_path(action_of(action, player), wanted)
+	return "[img=%d]%s[/img]" % [size, path] if path != "" \
+		else named(action, player, wanted)
+
+
+## The four moves drawn: one stick's icon where all four are that stick, else each.
+func _moves_drawn(player: int, wanted: String, size: int) -> String:
+	var sticks := moves.map(func(one: String) -> String:
+		var event := event_for(action_of(one, player), wanted)
+		return button_of(event) if event is InputEventJoypadMotion else "")
+	if sticks[0] != "" and sticks.all(func(one: String) -> bool: return one == sticks[0]):
+		return _drawn(StringName(moves[0]), player, wanted, size)
+	return " ".join(moves.map(func(one: String) -> String:
+		return _drawn(StringName(one), player, wanted, size)))
 
 
 ## Text for a RichTextLabel with each `[action=jump]` drawn as that action's icon.

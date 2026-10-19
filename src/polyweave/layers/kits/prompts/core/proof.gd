@@ -127,6 +127,37 @@ func _proved() -> Array:
 	TranslationServer.remove_translation(spoken)
 	if prompts.named(own, 1, "xbox") != "B":
 		failed.append("the second player's binding reads %s" % prompts.named(own, 1, "xbox"))
+	# The same marks drawn in icons (§PW551): the family's own icon for the player's own
+	# binding, and {move} as one stick's icon where all four moves are that stick's.
+	var drawn: String = prompts.fill_bbcode("PRESS {%s}" % own, 0, "switch", 24)
+	if drawn != "PRESS [img=24]%s/switch/south_64.png[/img]" % prompts.icons_root:
+		failed.append("a south button drawn on switch reads %s" % drawn)
+	if not prompts.fill_bbcode("{%s}" % own, 1, "xbox").contains("/xbox/east_64.png"):
+		failed.append("the second player's icon is not their own binding's: %s"
+			% prompts.fill_bbcode("{%s}" % own, 1, "xbox"))
+	var was_moves: Array[String] = prompts.moves.duplicate()
+	var stick: Array[String] = []
+	for way in [[JOY_AXIS_LEFT_Y, -1.0], [JOY_AXIS_LEFT_X, -1.0], [JOY_AXIS_LEFT_Y, 1.0],
+			[JOY_AXIS_LEFT_X, 1.0]]:
+		var move := "pw_prompts_move_%d" % stick.size()
+		InputMap.add_action(move)
+		var push := InputEventJoypadMotion.new()
+		push.axis = way[0]
+		push.axis_value = way[1]
+		InputMap.action_add_event(move, push)
+		stick.append(move)
+	prompts.moves = stick
+	var moved: String = prompts.fill_bbcode("{move} to walk", 0, "xbox", 24)
+	if moved.count("[img=") != 1 or not moved.contains("/xbox/l_stick_64.png"):
+		failed.append("four moves on one stick drew %s" % moved)
+	prompts.moves = was_moves
+	for move in stick:
+		InputMap.erase_action(move)
+	var rich := Label.new()
+	prompts.watch_bbcode(rich, "PRESS {%s}" % own, 0, 16)
+	if rich.text.contains("{") or rich.text == "PRESS {%s}" % own:
+		failed.append("a watched line in icons was left unfilled: %s" % rich.text)
+	rich.free()
 	for made in [own, second]:
 		InputMap.erase_action(made)
 	# Each player's own device (§PW395): with two pads seated, the second pad's input

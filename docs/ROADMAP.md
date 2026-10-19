@@ -55,7 +55,6 @@
 
 ## Block V — Parts every game repeats, installed already proved
 
-- 📋 **PW551** (deps: —) **a help line's {action} marks fill only as words; bbcode reads another mark, ignores the player and pad, and drops {move}** — Spinhold had to write its own bridge to draw its help lines in the accepted icons. → §PW551
 - 📋 **PW552** (deps: —) **the prompts kit's follow keeps a lambda whose node was freed, and the next refresh calls it on a null instance** — Spinhold's help lines logged a script error per freed screen until they followed a bound method instead. → §PW552
 - 📋 **PW555** (deps: —) **the remap kit offers no ready button maps, so a player changes a scheme only by rebinding each action** — Spinhold's owner wants face-button and left-handed maps picked in one press, with a keep-this countdown. → §PW555
 - 📋 **PW556** (deps: —) **a pad whose name hides its maker is named in the wrong buttons, and the player cannot say which family it is** — Spinhold's players on an 8BitDo or a clone would read generic or wrong prompts with no way to correct them. → §PW556

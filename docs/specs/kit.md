@@ -232,6 +232,15 @@ where all four are its directions). A second player's binding is read from their
 copy, `p2_<action>`, in the family of the pad the players kit seated them on. Its proof
 holds this on actions of its own, so it holds in any game.
 
+The same row is drawn in icons (§PW551, 0.7.0). `fill_bbcode(text, player, family,
+size)` reads the marks `fill` reads, `{action}` and `{move}`, and gives a RichTextLabel
+each as the icon of what that player presses in the family they hold (or the one
+named), the word `fill` would give where the family has no icon for it, and `{move}` as
+one stick's icon where all four moves are that stick's directions, else each move's in
+turn. `watch_bbcode(label, key, player, size)` keeps a label filled with it on the
+changes `watch` refills on. So a row of the table is written once and drawn as words or
+as icons; the older `bbcode`, reading `[action=x]`, is kept for the rows written for it.
+
 Each player keeps their own family (§PW395). An event moves only its own player's: a key
 pressed and not an echo, a pad button pressed, a stick or trigger past half way, read as
 the players kit seats the device (`seats`, which a game may stand in for); while one plays

@@ -119,6 +119,10 @@ def test_a_missing_icon_fails_the_proof_by_name(tmp_path):
     ("\tif _touched or connected.is_empty():\n\t\treturn family\n",
      "\treturn family\n", "started on keyboard"),
     ("\t_touched = true\n", "", "found after a key was pressed"),
+    # Spinhold bridged its help lines into icons by hand (§PW551)
+    ("\tvar path := icon_path(action_of(action, player), wanted)\n",
+     "\tvar path := icon_path(action, wanted)\n", "not their own binding's"),
+    ("\tif sticks[0] != \"\" and", "\tif false and", "four moves on one stick"),
 ])
 def test_prompts_that_ignore_the_pad_in_hand_fail_the_proof(
         tmp_path, before, after, said):

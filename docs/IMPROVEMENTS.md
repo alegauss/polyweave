@@ -429,32 +429,6 @@ differently, and a skeleton that suits one may fight the next. So it stays an id
 Starship and Cottony both show code it would replace, at which point the shape it should
 take is read off that code rather than invented here.
 
-### §PW551 Help lines filled with icons from the same marks
-
-Found in Spinhold (RK147, 2026-10-19). Every help line in the game's string table holds
-`{action}` marks and `{move}` (PAUSE_HELP reads "{pause}  resume  {bomb}  quit to title
-..."), and `fill(text, player, in_family)` turns them into words for the player's own
-pad. To draw the same lines with the kit's icons, which the owner accepted on
-2026-10-19, there is only `bbcode(text, size)`, and it does not meet them:
-
-- it reads `[action=x]`, a different mark from the `{x}` the table and `fill` use, so
-  every row would be written twice or converted by the game;
-- it takes no `player` and no `in_family`, so the second player's line and a screen
-  that names a family both draw the first player's pad;
-- where an action has no icon (a key with no keycap, an unbound action) it writes the
-  action's id, not the word `fill` would;
-- `{move}` is not handled at all.
-
-Spinhold's help label bridges it in a few lines, naming this line.
-
-What polyweave should do: `fill_bbcode(text, player := 0, in_family := "", size := 32)`
-reading the same `{action}` and `{move}` marks as `fill`: an icon where the family has
-one, the word `fill` would give where it has none, `{move}` as the stick's or the four
-keys' icons. `watch` gains a form that keeps a RichTextLabel filled with it, so a screen
-states once what it shows.
-
-Done when Spinhold's help labels call the kit and the game's bridge is deleted.
-
 ### §PW552 Let a freed lambda follower go
 
 Found in Spinhold (RK239, 2026-10-19). A help label called
