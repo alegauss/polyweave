@@ -574,6 +574,7 @@
 - ✅ **PW540** **the remap screen rebinds on a store of its own, so co-op pads lose their narrowing and the shared store goes stale** — The remap screens bind on the shared store, which says changed, and the players kit follows it, so a rebind keeps each pad on its own actions (design recorded in `docs/specs/kit.md`).
 - ✅ **PW541** **the remap screen says nothing when it listens and rebuilds its rows on each bind, so a host game loses focus** — The remap screen says listening and listened, answers is_listening, and repaints its rows in place, so a host game keeps focus after a bind (design recorded in `docs/specs/kit.md`).
 - ✅ **PW542** **the drawn pad screen shows raw action names, unfilled help and works only on ui_accept and ui_cancel** — The pad screen reads each action's declared label, its help names the buttons through the prompts kit, and both screens work on a declared CONFIRM and BACK (design recorded in `docs/specs/kit.md`).
+- ✅ **PW543** **loading an older bindings file logs an engine error for every action the player never rebound** — The store asks for each action's key before reading it, so a file naming only rebound actions loads with no engine error; the remap proof listens for one (design recorded in `docs/specs/kit.md`).
 
 ## Block W — A core that grows by layers
 

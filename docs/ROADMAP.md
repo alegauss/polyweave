@@ -54,7 +54,6 @@
 
 ## Block V — Parts every game repeats, installed already proved
 
-- 📋 **PW543** (deps: —) **loading an older bindings file logs an engine error for every action the player never rebound** — A player's first launch on the kits fills the crash log with errors that are not errors. → §PW543
 - 📋 **PW544** (deps: —) **kit.install writes the remap kit's own file into polyweave.toml even where the game declares a STORE** — polyweave.toml then names a bindings file the game never writes, and Spinhold corrected it by hand. → §PW544
 - 📋 **PW545** (deps: —) **the prompts kit starts on the keyboard before any input, so a game launched with a pad in hand shows keys** — Spinhold sets the prompt family itself at boot to name the plugged-in pad, a rule the kit should keep. → §PW545
 

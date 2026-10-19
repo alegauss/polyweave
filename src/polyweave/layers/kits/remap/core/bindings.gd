@@ -388,7 +388,11 @@ func _read(file: ConfigFile, into: Array) -> int:
 			options[name] = _held(name, file.get_value(into[1], name))
 	var took := 0
 	for action in actions:
-		var codes: Variant = file.get_value(into[0], action, null)
+		# a key asked for that is not there is an engine error even with a default, and a
+		# file holds a key only for an action the player changed (§PW543)
+		if not file.has_section_key(into[0], action):
+			continue
+		var codes: Variant = file.get_value(into[0], action)
 		if codes is Array:
 			var kept := (codes as Array).filter(func(c: Variant) -> bool:
 				return c is String and decode(c) != null)
@@ -419,7 +423,9 @@ func _adopt() -> void:
 	var kept_in := str(from[1])
 	var took := 0
 	for action in actions:
-		var codes: Variant = older.get_value(kept_in, action, null)
+		if not older.has_section_key(kept_in, action):
+			continue
+		var codes: Variant = older.get_value(kept_in, action)
 		if codes is Array and not (codes as Array).filter(func(c: Variant) -> bool:
 				return c is String and decode(c) != null).is_empty():
 			took += 1

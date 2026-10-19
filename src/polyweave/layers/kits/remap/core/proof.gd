@@ -30,6 +30,16 @@ func _keys(code: String) -> bool:
 	return _PwBindings.on_keys(code)
 
 
+## the engine errors logged while it listens, each as its rationale says it
+class _Errors extends Logger:
+	var said: Array[String] = []
+
+	func _log_error(_function: String, _file: String, _line: int, code: String,
+			rationale: String, _editor_notify: bool, _error_type: int,
+			_script_backtrace: Array[ScriptBacktrace]) -> void:
+		said.append(rationale if rationale != "" else code)
+
+
 ## a key pressed, as the screens read one
 func _key(keycode: Key) -> InputEventKey:
 	var key := InputEventKey.new()
@@ -142,7 +152,15 @@ func _initialize() -> void:
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(_kept))
 	var adopting := _PwBindings.new(actions, _kept)
 	adopting.from = [older_path, "controls"]
+	# The older file names one action of three: the two it never names keep their
+	# defaults in silence, with no engine error each (§PW543).
+	var errors := _Errors.new()
+	OS.add_logger(errors)
 	adopting.load_kept()
+	OS.remove_logger(errors)
+	if not errors.said.is_empty():
+		failed.append("taking an older file logged %d engine errors: %s"
+			% [errors.said.size(), errors.said[0]])
 	if adopting.current()[J] != ["key:%d" % KEY_Q, "button:3"]:
 		failed.append("an older file's binding was not taken: %s" % [adopting.current()[J]])
 	if not is_equal_approx(adopting.deadzone, 0.4):

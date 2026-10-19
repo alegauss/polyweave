@@ -152,6 +152,24 @@ def test_screens_on_raw_names_or_ui_actions_alone_fail_the_proof(
 
 
 @pytest.mark.skipif(not os.environ.get("GODOT"), reason="no $GODOT on this machine")
+def test_an_older_file_read_without_asking_for_each_key_fails_the_proof(tmp_path):
+    # Spinhold's first launch logged an error per action never rebound (§PW543)
+    game = tmp_path / "game"
+    shutil.copytree(kits.KITS / "remap" / "fixture", game)
+    kits.install("remap", root=str(game))
+    store = game / "addons" / "polyweave" / "remap" / "bindings.gd"
+    text = store.read_text(encoding="utf-8")
+    asked = "\t\tif not older.has_section_key(kept_in, action):\n\t\t\tcontinue\n"
+    assert asked in text
+    text = text.replace(asked, "").replace(
+        "older.get_value(kept_in, action)", "older.get_value(kept_in, action, null)")
+    store.write_text(text, encoding="utf-8")
+    [found] = kits._scripts(["remap"], kits.every(), game)
+    assert found["status"] == "failed"
+    assert "taking an older file logged" in found["said"]
+
+
+@pytest.mark.skipif(not os.environ.get("GODOT"), reason="no $GODOT on this machine")
 def test_the_remap_proof_holds_in_a_game_with_none_of_its_actions(tmp_path):
     # a kit that requires remap lands it in a game of its own actions (§PW392)
     game = tmp_path / "game"

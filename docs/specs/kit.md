@@ -272,7 +272,9 @@ Its `res://polyweave_remap.gd` declares `const FROM := [<file>, <section>]`, and
 first load with no file of the kit's own, the codes under each action's name in that
 section are taken, with a `deadzone` and `invert_vertical` where it kept them, written to
 the kit's file at once and said in `said`. The older file is left as it was, and is not
-read again once the kit has its own.
+read again once the kit has its own. A file that names only the actions a player changed
+is read key by key as it holds them, so the rest keep their defaults with no engine
+error each (§PW543, 0.9.1); the proof listens for one while it adopts.
 
 The remap screen is one a game can ship (§PW432, 0.5.0). It listens through the
 release: a press on the half asked is held on to and binds when it is let go, a stick

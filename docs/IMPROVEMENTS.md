@@ -408,19 +408,6 @@ differently, and a skeleton that suits one may fight the next. So it stays an id
 Starship and Cottony both show code it would replace, at which point the shape it should
 take is read off that code rather than invented here.
 
-### §PW543 Bindings load quietly where a key is absent
-
-Found moving Spinhold onto the input kits (PW370, Spinhold RK216). A file the game's
-older build wrote holds a key only for each action the player changed. Loading it,
-`bindings.gd` reads every rebindable action with `get_value(section, action, null)`, and
-Godot prints an engine ERROR for each key that is not there. So a player's first launch
-on the kits logs one error per action they never changed, which looks like a broken
-build in a crash log and in `game.boot`.
-
-What polyweave should do: the store asks `has_section_key` before it reads, and an
-action with no key keeps its default in silence. Done when loading a file that names one
-action of eleven prints no engine error, which a check in the remap proof holds.
-
 ### §PW544 The install writes the store the game declares
 
 Found moving Spinhold onto the input kits (PW370, Spinhold RK216). `kit.install` writes
