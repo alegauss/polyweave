@@ -183,6 +183,46 @@ was bought in. Re-running it after a new verdict replaces the file and its recor
 Done when Spinhold's SPLASH_STUDIO.mp3 is placed from the accepted take with a record
 naming its own path, and `provenance.verify` lists it.
 
+### §PW553 Game arguments for game.open and clip.shots
+
+Found in Spinhold (RK241-RK243, 2026-10-19), framing the cutscenes of the Waist, the
+Stern and the Quilt with `clip.shots`. Each cutscene plays only once its world begins,
+and the game opens a run straight in a world with its own flag (`--world=quilt`, which
+run.cmd passes). `game.open` takes a scene, a locale, a resolution and a seed, but no
+arguments for the game, so the flag could not be given. The agent reached each world by
+hand, three times over: game.open, game.step 5, game.call Campaign._settle(["quilt"]),
+game.call RouteScreen.hide, game.call Campaign._begin(1), then clip.shots and
+game.close. That is three private methods of the game, called from outside, to stand in
+for one flag.
+
+What polyweave should do: `game.open` takes `args`, the game's own command-line
+arguments after `--`, as `engine.run` does for a script, recorded in the session's log.
+`clip.shots` could take the same, so one call opens the game where the clip plays,
+frames it and closes it.
+
+Done when Spinhold frames a world's cutscene with one `clip.shots` (or `game.open` with
+`args: ["--world=quilt"]`) and no game.call.
+
+### §PW554 Declared timelines of a scene's properties
+
+Found in Spinhold (RK155, 2026-10-19). The title's logo reveal (the halo coming up out
+of the dark, the orbit spinning in, a light wiping the letters on from the edge, a hit
+as it settles) was to have "its timing and curves declared (polyweave clip)", as the
+cutscenes are with `clip.camera`. polyweave's clips are skeletal motion (`clip.new` keys
+joints for `motion.bake`), and `clip.camera` builds only camera shots. Nothing declares
+a keyed timeline of a scene's own properties (a Control's modulate, scale or a shader
+parameter) and builds it into the game, so the reveal's curves were written as constants
+and smoothsteps in game/ui/title_logo.gd, with a comment naming this line.
+
+What polyweave should do: a `clip.timeline` (or a kind of clip) that declares tracks of
+keyed values on named properties, `node:property` or `node:shader_parameter/name`, each
+with its easing, plus marks for a cue (a sound at a time), and builds it into a Godot
+`Animation` a game plays or seeks by time, recorded like the camera clip. `clip.shots`,
+or a capture of it, frames it to judge.
+
+Done when Spinhold's reveal is a declared timeline built by polyweave, and the constants
+in title_logo.gd are gone.
+
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once
@@ -498,5 +538,118 @@ fixed by the next `kit.update`.
 
 Done when `provenance.verify` in Spinhold lists the kit's icons and pads as ok and
 reports nothing missing.
+
+### §PW551 Help lines filled with icons from the same marks
+
+Found in Spinhold (RK147, 2026-10-19). Every help line in the game's string table holds
+`{action}` marks and `{move}` (PAUSE_HELP reads "{pause}  resume  {bomb}  quit to title
+..."), and `fill(text, player, in_family)` turns them into words for the player's own
+pad. To draw the same lines with the kit's icons, which the owner accepted on
+2026-10-19, there is only `bbcode(text, size)`, and it does not meet them:
+
+- it reads `[action=x]`, a different mark from the `{x}` the table and `fill` use, so
+  every row would be written twice or converted by the game;
+- it takes no `player` and no `in_family`, so the second player's line and a screen
+  that names a family both draw the first player's pad;
+- where an action has no icon (a key with no keycap, an unbound action) it writes the
+  action's id, not the word `fill` would;
+- `{move}` is not handled at all.
+
+Spinhold's help label bridges it in a few lines, naming this line.
+
+What polyweave should do: `fill_bbcode(text, player := 0, in_family := "", size := 32)`
+reading the same `{action}` and `{move}` marks as `fill`: an icon where the family has
+one, the word `fill` would give where it has none, `{move}` as the stick's or the four
+keys' icons. `watch` gains a form that keeps a RichTextLabel filled with it, so a screen
+states once what it shows.
+
+Done when Spinhold's help labels call the kit and the game's bridge is deleted.
+
+### §PW552 Let a freed lambda follower go
+
+Found in Spinhold (RK239, 2026-10-19). A help label called
+`PolyweavePrompts.shared().follow(func() -> void: show_line(...))` from a node that was
+later freed. On the next `refresh()` (the remap kit's `load_kept` calls `rebound()`),
+the kit filtered followers with `redraw.is_valid()`, kept the lambda because a GDScript
+lambda's callable still reads as valid after its instance is freed, and called it:
+"Attempt to call function '<anonymous lambda>' on a null instance", once per freed
+screen. The doc comment promises "one whose object is freed is let go".
+
+Spinhold's workaround: follow a bound method (`_refill`) instead of a lambda, with a
+comment naming this line.
+
+What polyweave should do: `follow` and `refresh` let a follower go when
+`redraw.get_object()` is null or freed (`is_instance_valid`), not only when `is_valid()`
+fails, so a lambda made in a node is dropped with the node; the kit's proof frees a node
+that followed with a lambda and refreshes, and expects no error.
+
+Done when a freed node's lambda follower is dropped silently.
+
+### §PW555 Ready button maps in the remap kit
+
+Found in Spinhold (RK149, 2026-10-19). Its owner wants ready button maps a player picks
+in one press on the controller screen, instead of rebinding eleven actions one by one.
+The game's input is the remap kit's (PW345), so the maps belong there, not in the game.
+
+What the kit should do:
+- A game declares its maps beside its actions, in the remap declaration
+  (res://polyweave_remap.gd): `const MAPS := {"face": {"fire_left": ["button:2"], ...}}`,
+  each a complete binding of the pad half. The keys are left alone, as `rebind` keeps the
+  halves apart. "default" is the project's own InputMap.
+- The remap screen and the drawn pad screen (PW428) gain a Map row: left and right step
+  through the maps, the drawn pad shows the one in focus before it is applied, and
+  applying it starts a "keep this?" countdown that puts the old map back if nothing
+  confirms it.
+- What the player rebound by hand is kept aside as "custom", so trying a map and leaving
+  it never loses it, and "custom" is offered among the maps once it exists.
+- The store keeps the chosen map's name and the custom map.
+- The kit's proof checks that each declared map binds every action with no button
+  shared, and that the countdown undoes an unconfirmed map.
+
+Done when Spinhold declares Default, Face buttons and Left-handed maps and its
+controller screen offers them with the countdown, and RK149 needs no code of its own for
+them.
+
+### §PW556 Button names chosen per pad
+
+Found in Spinhold (RK149, 2026-10-19). The prompts kit reads a pad's family from the
+name the system gives it (`family_of`). A pad whose name hides its maker (an 8BitDo in
+one of its modes, a clone, a pad behind Steam Input) reads as generic, or as the wrong
+family, and the player has no way to say which buttons they are holding. Every prompt,
+the remap screen and the drawn pad then name the wrong buttons.
+
+What the kit should do: a choice of button names per pad, Automatic (as `family_of`
+reads it today), Xbox, PlayStation, Switch or Generic, kept in the remap store by the
+pad's name so a second pad keeps its own. A forced choice wins over `family_of`
+everywhere the kit names a button: `fill`, `named`, `icon_path`, the watched labels, the
+remap screen and the drawn pad, all refilled at once on the change. The remap screen
+offers it as a row for the pad in use. The kit's proof forces each family on a pad named
+as another and expects every prompt renamed.
+
+Done when Spinhold's controller screen offers Button names and a forced choice renames
+every prompt at once, with no code of the game's own.
+
+### §PW557 Menu actions per player
+
+Found in Spinhold (RK242, 2026-10-19). The owner asked that every menu confirm on A and
+go back on B, which the game does through `ui_accept` and `ui_cancel`. The crew draft is
+one player's own screen: in co-op the second player's draft opens for them alone. The
+players kit copies a player's actions as `p2_<name>` (`action(name, player)`), but only
+the remap store's actions, never the `ui_` ones, and the project's `ui_accept` answers
+every pad. So nothing says "A on player two's pad": the first player's A would take the
+second player's card.
+
+Spinhold's workaround: the draft reads `ui_accept` and `ui_cancel` from `_input` and
+keeps the press only where `player_of_event` is the draft's player, with a comment
+naming this line.
+
+What polyweave should do: the players kit gives each seated player their own copy of the
+menu actions a game names (`const MENU := ["ui_accept", "ui_cancel"]` in its
+declaration, those two by default), pinned to their pad as it pins the others, so
+`action("ui_accept", 1)` is `p2_ui_accept` and answers player two's A alone; the first
+player's copy narrows to FIRST_PAD once two play, as `_narrow_first` does.
+
+Done when Spinhold's draft reads `PolyweavePlayers.action("ui_accept", player)` and the
+`_input` filter is gone.
 
 ## Block W — A core that grows by layers

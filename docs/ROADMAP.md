@@ -17,10 +17,12 @@
 ## Block H — Proof on a real game
 
 - 🛠 **PW36** (deps: PW5 ✅, PW82 ⏸) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82. → §PW36
-- 📋 **PW546** (deps: —) **a dialogue kit proof ends with no signal under the full gate's load, so its broken-box case fails with nothing to read** — It passed alone four times on a tree that never touched it, and a gate red by chance teaches the next run to rerun it. → §PW546
+- 🛠 **PW546** (deps: —) **a dialogue kit proof ends with no signal under the full gate's load, so its broken-box case fails with nothing to read** — It passed alone four times on a tree that never touched it, and a gate red by chance teaches the next run to rerun it. → §PW546
 - 📋 **PW547** (deps: —) **a sitting of alternatives for one slot lets a person accept every one, with no way to pick just one** — Spinhold's owner accepted all three studio voices in a batch, so the choice had to be asked again in chat. → §PW547
 - 📋 **PW548** (deps: —) **no measure reads a transparent picture's alpha edge, so a halo or a wide soft fringe round it passes every spec** — Spinhold's 4K logo spec could not hold its edge clean, the one thing a transparent copy for stores and streams must keep. → §PW548
 - 📋 **PW549** (deps: —) **an accepted take cannot be placed at the path the game loads, so it is copied by hand with a record naming its old path** — Spinhold copied its studio tag and record by hand, and provenance.verify then checked the review copy twice and the game's file never. → §PW549
+- 📋 **PW553** (deps: —) **game.open passes no arguments to the game, so a state the game opens by a flag is reached by calling private methods** — Spinhold framed three world cutscenes by calling its campaign's private methods five times each, where one --world flag would do. → §PW553
+- 📋 **PW554** (deps: —) **a keyed timeline of a scene's own properties cannot be declared and built, only skeletal motion and camera shots** — Spinhold's title logo reveal had to keep its curves as constants in code, where the design asked them declared. → §PW554
 
 ## Block I — Voxel models from a declaration
 
@@ -58,6 +60,11 @@
 ## Block V — Parts every game repeats, installed already proved
 
 - 📋 **PW550** (deps: —) **a kit's copied records name the artefact inside polyweave's tree, so provenance.verify reports every kit icon missing** — Spinhold's verify lists 128 false missing records from the prompts and remap kits, which would hide a real one. → §PW550
+- 📋 **PW551** (deps: —) **a help line's {action} marks fill only as words; bbcode reads another mark, ignores the player and pad, and drops {move}** — Spinhold had to write its own bridge to draw its help lines in the accepted icons. → §PW551
+- 📋 **PW552** (deps: —) **the prompts kit's follow keeps a lambda whose node was freed, and the next refresh calls it on a null instance** — Spinhold's help lines logged a script error per freed screen until they followed a bound method instead. → §PW552
+- 📋 **PW555** (deps: —) **the remap kit offers no ready button maps, so a player changes a scheme only by rebinding each action** — Spinhold's owner wants face-button and left-handed maps picked in one press, with a keep-this countdown. → §PW555
+- 📋 **PW556** (deps: —) **a pad whose name hides its maker is named in the wrong buttons, and the player cannot say which family it is** — Spinhold's players on an 8BitDo or a clone would read generic or wrong prompts with no way to correct them. → §PW556
+- 📋 **PW557** (deps: —) **the players kit copies no ui_accept or ui_cancel per player, so one player's menu cannot answer their own A and B alone** — Spinhold's crew draft had to filter A and B by the event's pad to keep one player from taking another's card. → §PW557
 
 ## Block W — A core that grows by layers
 
