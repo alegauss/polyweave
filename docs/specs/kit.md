@@ -55,6 +55,11 @@ fixture = "fixture"           # a minimal Godot project it is proved in, in this
 - `[declares]` is the declaration the kit proposes, written into the project's
   `[kit.<name>]` only where the project has none. A kit carries no palette or theme of
   its own: anything that is a game's look is the game's to declare.
+- `store = { declaration = "res://polyweave_<kit>.gd", const = "STORE" }` names where a
+  game may say it keeps the kit's file (§PW544). Where that declaration sets the
+  constant to `["<file>", "<section>"]`, the proposed table's `file` is that file and a
+  `section` stands beside it, so `polyweave.toml` names the file the game writes and not
+  the kit's default. The remap kit carries one; another key in it is `kits.bad`.
 - `tab` names the tab the kit contributes to the options kit's screen (§PW347). A kit
   that declares one keeps `options.gd` in its core, a script with `const TAB` and
   `static func options()` answering its rows, and a kit that keeps one declares its

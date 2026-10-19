@@ -54,6 +54,28 @@ def test_the_remap_kit_needs_the_prompts_kit():
     assert found["declares"]["conflict"] == "swap"
 
 
+@pytest.mark.parametrize(("declaration", "file", "section"), [
+    ('const STORE := ["user://settings.cfg", "controls"]\n',
+     "user://settings.cfg", "controls"),
+    ("const LABELS := {}\n", "user://polyweave_bindings.cfg", None),
+    (None, "user://polyweave_bindings.cfg", None),
+])
+def test_the_table_install_proposes_names_the_store_the_game_declares(
+        tmp_path, declaration, file, section):
+    # Spinhold's table named the kit's own file, which its STORE means is never written,
+    # and it corrected the table by hand (§PW544)
+    game = tmp_path / "game"
+    shutil.copytree(kits.KITS / "remap" / "fixture", game)
+    if declaration is not None:
+        (game / "polyweave_remap.gd").write_text(
+            "extends RefCounted\n" + declaration, encoding="utf-8")
+    said = kits.install("remap", root=str(game), write=False)
+    table = said["declared"]["remap"]
+    assert table["file"] == file
+    assert table.get("section") == section
+    assert table["conflict"] == "swap"
+
+
 def test_the_remap_kit_lands_after_prompts_and_proves_in_its_fixture(tmp_path):
     game = tmp_path / "game"
     shutil.copytree(kits.KITS / "remap" / "fixture", game)

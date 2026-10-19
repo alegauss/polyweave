@@ -575,6 +575,7 @@
 - ✅ **PW541** **the remap screen says nothing when it listens and rebuilds its rows on each bind, so a host game loses focus** — The remap screen says listening and listened, answers is_listening, and repaints its rows in place, so a host game keeps focus after a bind (design recorded in `docs/specs/kit.md`).
 - ✅ **PW542** **the drawn pad screen shows raw action names, unfilled help and works only on ui_accept and ui_cancel** — The pad screen reads each action's declared label, its help names the buttons through the prompts kit, and both screens work on a declared CONFIRM and BACK (design recorded in `docs/specs/kit.md`).
 - ✅ **PW543** **loading an older bindings file logs an engine error for every action the player never rebound** — The store asks for each action's key before reading it, so a file naming only rebound actions loads with no engine error; the remap proof listens for one (design recorded in `docs/specs/kit.md`).
+- ✅ **PW544** **kit.install writes the remap kit's own file into polyweave.toml even where the game declares a STORE** — A kit may name the project constant that says where it keeps its file; install then writes the game's STORE file and section into [kit.remap] (design recorded in `docs/specs/kit.md`).
 
 ## Block W — A core that grows by layers
 

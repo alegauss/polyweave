@@ -20,6 +20,10 @@ do, and carries a `kit.toml`:
     [declares]                    # the [kit.<name>] table it proposes in polyweave.toml
     layouts = ["xbox", "playstation", "switch", "generic", "keyboard"]
 
+    # optional: where the game's declaration sets this to [<file>, <section>], the
+    # proposed table's file and section are those, not the kit's own (§PW544)
+    store = { declaration = "res://polyweave_input.gd", const = "STORE" }
+
     [proves]
     spec = "proof.accept.toml"    # its acceptance spec, run in the game it lands in
 
@@ -56,7 +60,11 @@ TOP = {
     "changes",
     "tab",
     "parts",
+    "store",
 }
+#: The keys of `store`: the project declaration and its constant naming where the
+#: game keeps the kit's file, as `[<file>, <section>]` (§PW544).
+STORE = {"declaration", "const"}
 INSTALLS = {"core", "scene"}
 PROVES = {"spec", "fixture", "script"}
 #: The keys of one `[parts.<name>]` table: what a game may install the kit without.
@@ -200,6 +208,18 @@ def read(folder: Path) -> dict:
             "has a [declares] that is not a table",
             "write the declaration it proposes as [declares]",
         )
+    store = held.get("store")
+    if store is not None and (
+        not isinstance(store, dict)
+        or set(store) != STORE
+        or not all(isinstance(v, str) for v in store.values())
+    ):
+        raise _bad(
+            where,
+            f"has a store {store!r}",
+            'write store = { declaration = "res://polyweave_<kit>.gd", '
+            'const = "STORE" }',
+        )
     return {
         "name": name,
         "version": held["version"],
@@ -211,6 +231,7 @@ def read(folder: Path) -> dict:
         "changes": dict(changes),
         "tab": tab,
         "parts": _parts(where, held, folder),
+        "store": dict(store) if store else None,
         "folder": str(folder),
     }
 
@@ -348,6 +369,31 @@ def _toml(value: Any) -> str:
     )
 
 
+def _declared(kit: dict, here: Path) -> dict:
+    """The `[kit.<name>]` table a kit proposes in this game (§PW544).
+
+    Where the kit names a `store` and the game's declaration sets that constant to
+    `[<file>, <section>]`, the kit keeps everything there and writes no file of its own,
+    so the table names that file and section rather than the kit's default.
+    """
+    table = dict(kit["declares"])
+    store = kit.get("store")
+    if not store:
+        return table
+    declaration = here / store["declaration"].removeprefix("res://")
+    if not declaration.is_file():
+        return table
+    found = re.search(
+        rf'^const\s+{re.escape(store["const"])}\s*(?::\s*\w+\s*)?:?=\s*'
+        r'\[\s*"([^"]*)"\s*,\s*"([^"]*)"\s*\]',
+        declaration.read_text(encoding="utf-8-sig"),
+        re.MULTILINE,
+    )
+    if found:
+        table["file"], table["section"] = found[1], found[2]
+    return table
+
+
 def _game(here: Path) -> dict:
     """What a kit reads of the game before it installs (§PW341)."""
     project = here / "project.godot"
@@ -458,7 +504,7 @@ def install(
             }
         )
         if one not in declared and kit["declares"]:
-            proposed[one] = kit["declares"]
+            proposed[one] = _declared(kit, here)
         scene = kit["installs"].get("scene")
         if any(kit["parts"][p]["scene"] for p in out):
             scene = None

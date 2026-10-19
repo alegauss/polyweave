@@ -113,6 +113,31 @@ signal. Each typed-in check waits for the box's own `finished` or a frame count 
 not a time, and a proof that cannot finish says which step it was on. Done when the file
 holds ten runs of ten under the gate's load.
 
+### §PW547 Pick one of several on the review page
+
+Found in Spinhold (RK168, 2026-10-19). `voice.design` laid three previews of the studio
+voice at art/review/rk168-studio-voice, and `voice.choose` takes one of them. On the
+review page each preview is a card of its own with Aceitar and Refazer, and the batch
+accept takes every card, so the owner accepted all three. Nothing in the sitting said
+the cards were alternatives, and nothing stopped three accepts where one was meant. The
+agent had to ask in chat which one, and the verdicts now record three accepted voices of
+which the game uses one.
+
+The same shape comes back wherever polyweave lays out candidates for one slot: voice
+previews, takes of a spoken line (`sound.speak`), picture variants (`picture.vary`), and
+search results a person picks from.
+
+What polyweave should do: a sitting may declare its members as alternatives for one slot
+(`pick = "one"` on the family, or a `choose` kind of sitting). The review page then
+draws them as one card with a select (radio buttons) and a single answer, refuses an
+accept of more than one, and the batch accept skips such a card. The answer records the
+chosen member; the others are passed over, not refused. `voice.design` and `sound.speak`
+lay their sittings this way, and `verdict.answers` says which member was chosen, so
+`voice.choose` can take it from the answer with no question in chat.
+
+Done when Spinhold's next voice or take sitting shows one select, the owner picks one,
+and the chosen id reaches `voice.choose` from the answer alone.
+
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once
@@ -407,20 +432,6 @@ It is the most opinionated kit in this block: games structure their state very
 differently, and a skeleton that suits one may fight the next. So it stays an idea until
 Starship and Cottony both show code it would replace, at which point the shape it should
 take is read off that code rather than invented here.
-
-### §PW544 The install writes the store the game declares
-
-Found moving Spinhold onto the input kits (PW370, Spinhold RK216). `kit.install` writes
-a `[kit.remap]` table into polyweave.toml with `file = "user://polyweave_bindings.cfg"`,
-the kit's own file, though Spinhold's `polyweave_remap.gd` declares `STORE :=
-["user://settings.cfg", "controls"]` and the store keeps everything there. Spinhold
-corrected the table by hand. A reader of polyweave.toml, an agent among them, is told
-the bindings live in a file the game never writes.
-
-What polyweave should do: where the project's declaration names a `STORE`, the install
-writes that file, with the section beside it, into the table, and `kit.update` keeps it.
-Done when installing remap into a game with a STORE writes its file into the table, and
-Spinhold's hand correction is the table install would have written.
 
 ### §PW545 Prompts start on the first connected pad
 
