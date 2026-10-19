@@ -36,6 +36,7 @@
 
 - 📋 **PW558** (deps: —) **A voice over a recorded music track cannot be removed through polyweave** — A project hand-installs a separation model and runs it outside provenance to get an instrumental. → §PW558
 - 📋 **PW559** (deps: —) **A recorded track cannot become an editable music.toml score** — The agent transcribes by hand through ad-hoc tools, so a bought theme never joins the scores the game edits and renders. → §PW559
+- 📋 **PW560** (deps: —) **sound.loop fails an Ogg loop's seam that sound.measure reads as ordinary** — Two seam scales answer one question, so an agent cannot trust either verdict without reading the source. → §PW560
 
 ## Block Q — Words held to the world
 
