@@ -43,29 +43,18 @@ def write(
     # names is, resolved here where the root is known (§PW78). Its values are resolved
     # too, as the review's are, so a finish over the params reaches the shader.
     from .. import expand
-    from ..looks import for_godot
     from ..looks import godot as engine
 
     resolved = expand(document, **given)["materials"] or {}
-    # The engine's materials name their shader by a res:// path, which only a file under
-    # the project has, so a build outside it is refused before anything is written
-    # rather than crashing half way through (§PW575).
-    if not where.resolve().is_relative_to(Path(root).resolve()):
-        asking = {name: looked for name, one in resolved.items()
-                  if (looked := for_godot(one))}
-        if asking:
-            first = next(iter(asking))
-            raise PolyweaveError(
-                "geom.out-outside-project",
-                f"{where.parent} is outside the project {Path(root).resolve()}, and "
-                f"{first} asks for {', '.join(asking[first])}, whose Godot material "
-                "names its shader by a res:// path under the project",
-                "write under the project; a trial build can go under .polyweave/, or "
-                "drop the finish from the materials to try the shape alone",
-                at=f"materials.{first}",
-                given=str(where.parent),
-            )
+    _under_root(where, root, resolved)
     made = B.build(document, root=root, manifold=manifold, **given)
+    # A material no face wears is lost somewhere in the graph, and said here rather
+    # than found in a render (§PW576), as the voxel build says a cell wears nothing.
+    wearing = {one["material"] for one in made["output"].get("groups") or ()}
+    made["report"]["warnings"] += [
+        f"no face wears {name}, which the declaration names"
+        for name in resolved if name not in wearing
+    ]
     materials = {
         name: {**one, "image": str(Path(root).resolve() / one["image"])}
         if isinstance(one, dict) and one.get("image") else one
@@ -89,6 +78,35 @@ def write(
     wired = wire_import(Path(written), worn, root)
     return {**made, "artefact": str(written), "materials": godot,
             **({"import": str(wired)} if wired else {})}
+
+
+def _under_root(where: Path, root: str | Path, resolved: dict) -> None:
+    """Refuse a build outside the project whose materials the engine is written for.
+
+    The engine's materials name their shader by a res:// path, which only a file under
+    the project has, so the build is refused before anything is written rather than
+    crashing half way through (§PW575).
+    """
+    from ..looks import for_godot
+
+    here = Path(root).resolve()
+    if where.resolve().is_relative_to(here):
+        return
+    asking = {name: looked for name, one in resolved.items()
+              if (looked := for_godot(one))}
+    if not asking:
+        return
+    first = next(iter(asking))
+    raise PolyweaveError(
+        "geom.out-outside-project",
+        f"{where.parent} is outside the project {here}, and {first} asks for "
+        f"{', '.join(asking[first])}, whose Godot material names its shader by a "
+        "res:// path under the project",
+        "write under the project; a trial build can go under .polyweave/, or drop the "
+        "finish from the materials to try the shape alone",
+        at=f"materials.{first}",
+        given=str(where.parent),
+    )
 
 
 def member(document: dict, folder: Path, here: Path, given: dict, preview: bool,

@@ -693,6 +693,12 @@ and the solver does not preserve face correspondence, so a carve or a bevel over
 material is one group and over several is none. Claiming a range the solver reordered
 would be worse than saying nothing.
 
+**Every join carries its parts' groups** (§PW576): a union, a repeat's instances joined
+under one id, and a mirror's two halves all move each part's ranges by the faces before
+it, so a transform of a union repeated round a hub wears each material on every copy. A
+mesh build warns `no face wears <name>, which the declaration names` for a material that
+reached no face, so a material lost in the graph is a finding and not a render's surprise.
+
 **A repeated node's id names the whole set at build time too.** Sixty-four seats build as
 sixty-four meshes and are joined into the one mesh their id stands for, which is what lets
 `cutter = "seat"` be one boolean rather than sixty-four. **`at` places an instance and is

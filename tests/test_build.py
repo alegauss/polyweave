@@ -464,6 +464,50 @@ def test_a_declaration_ending_in_a_transform_still_wears_its_materials(tmp_path)
     assert [one["material"] for one in found["output"]["groups"]] == ["rope", "cushion"]
 
 
+def _fan(repeat_the: str) -> dict:
+    vane = [
+        {"id": "blade", "op": "primitive", "kind": "cube", "material": "blade"},
+        {"id": "tip", "op": "primitive", "kind": "cube", "material": "tip",
+         "at": [2, 0, 0]},
+    ]
+    turn = {"var": "k", "from": 0, "to": 3}
+    union = {"id": "vane", "op": "union", "inputs": ["blade", "tip"]}
+    moved = {"id": "vanes", "op": "transform", "of": "vane", "rotate": ["0", "22", "0"]}
+    if repeat_the == "union":
+        union["repeat"] = [turn]
+    else:
+        moved.update(rotate=["0", "k * 90", "0"], repeat=[turn])
+    return {
+        "name": "fan", "version": 1, "params": {},
+        "materials": {"blade": {"colour": "#9C7BFF"}, "tip": {"colour": "#FF6FB5"}},
+        "nodes": [*vane, union, moved], "output": "vanes",
+    }
+
+
+@pytest.mark.parametrize("repeat_the", ["transform", "union"])
+def test_a_repeated_move_of_a_union_wears_its_materials_on_every_copy(tmp_path,
+                                                                     repeat_the):
+    """§PW576: a fan's four vanes came out of the build wearing nothing at all."""
+    found = B.build(_fan(repeat_the), root=tmp_path)
+    groups = found["output"]["groups"]
+    assert [one["material"] for one in groups] == ["blade", "tip"] * 4
+    assert groups[-1]["faces"][1] == len(found["output"]["faces"])
+    after = zip(groups, groups[1:], strict=False)
+    assert all(a["faces"][1] == b["faces"][0] for a, b in after)
+
+
+def test_a_material_no_face_wears_is_warned_about(tmp_path):
+    from polyweave.layers.geometry.representations import mesh
+
+    pytest.importorskip("bpy")
+    stated = _fan("transform")
+    stated["materials"]["drum"] = {"colour": "#FF9A3C"}
+    written = mesh.write(stated, tmp_path / "fan.glb", root=tmp_path)
+    said = written["report"]["warnings"]
+    assert "no face wears drum, which the declaration names" in said
+    assert not any("blade" in one or " tip" in one for one in said)
+
+
 # -- a model a game has, as a declaration (§PW64) --------------------------------------
 
 COTTONY = Path(__file__).parent / "fixtures" / "cottony"

@@ -717,14 +717,24 @@ def union(*subjects: Any) -> dict:
 
     A join and not a boolean union: the declaration's `union` composes parts that do not
     overlap, and two solids that do overlap are a `carve` away from saying so properly.
+
+    **What each part wears comes with it** (§PW576): a join lays the parts out in order,
+    so each one's material ranges are moved by the faces before it. A repeated transform
+    of a union is joined here, and dropping them left a fan's blades in no material.
     """
     from polyweave.kernel.post.mesh import as_mesh
 
     points, faces, offset = [], [], 0
     coordinates: list = []
+    groups: list = []
     for subject in subjects:
         these, those = as_mesh(subject)
         points.append(these)
+        before = len(faces)
+        worn = subject.get("groups") if isinstance(subject, dict) else None
+        for group in worn or ():
+            start, stop = group["faces"]
+            groups.append({**group, "faces": [start + before, stop + before]})
         faces += [tuple(i + offset for i in face) for face in those]
         offset += len(these)
         carried = subject.get("uv") if isinstance(subject, dict) else None
@@ -743,6 +753,8 @@ def union(*subjects: Any) -> dict:
     fields = [one.get("field") if isinstance(one, dict) else None for one in subjects]
     if all(fields):
         joined["field"] = [part for field in fields for part in field]
+    if groups:
+        joined["groups"] = groups
     return joined
 
 
@@ -773,15 +785,7 @@ def mirror(subject: Any, along: int, plane: float = 0.0) -> dict:
     flip, at = [1.0, 1.0, 1.0], [0.0, 0.0, 0.0]
     flip[along], at[along] = -1.0, 2.0 * float(plane)
     reflected = transform(subject, scale=flip, at=at)
-    joined = union(subject, reflected)
-    worn = subject.get("groups") if isinstance(subject, dict) else None
-    if worn:
-        half = len(subject["faces"])
-        joined["groups"] = [dict(one) for one in worn] + [
-            {**one, "faces": [one["faces"][0] + half, one["faces"][1] + half]}
-            for one in worn
-        ]
-    return joined
+    return union(subject, reflected)
 
 
 # -- a drawing given volume -----------------------------------------------------------

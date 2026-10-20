@@ -192,16 +192,8 @@ def _worn(node: dict, made: dict, built: dict) -> list[dict]:
     if node.get("material"):
         return [{"material": node["material"], "faces": [0, len(made["faces"])]}]
     if node["op"] == "union":
-        groups, at = [], 0
-        for one in refers_to(node):
-            part = built[one]
-            for group in part.get("groups") or ():
-                start, stop = group["faces"]
-                groups.append(
-                    {"material": group["material"], "faces": [start + at, stop + at]}
-                )
-            at += len(part["faces"])
-        return groups
+        # The join moved each operand's ranges itself, once per instance (§PW576).
+        return [dict(one) for one in made.get("groups") or ()]
     if node["op"] in ("carve", "bevel"):
         source = node.get("into") or (refers_to(node) or [""])[0]
         worn = {g["material"] for g in built.get(source, {}).get("groups") or ()}
