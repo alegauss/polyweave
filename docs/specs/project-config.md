@@ -157,6 +157,7 @@ hue     = "instance"                 # each instance's hue, INSTANCE_CUSTOM.x
 include = "res://game/world/backdrop_dim.gdshaderinc"
 hold    = "dimmed_day"               # hold(colour, amount), from the include
 amount  = "backdrop"                 # the instance uniform it reads
+struck  = { give = 0.15, lifetime = 0.6 }  # gives where a strike lands, as vfx's do (PW574)
 
 [style]
 canon    = "docs/design/canon"     # pictures a person approved; only a verdict adds one
