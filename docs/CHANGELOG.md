@@ -120,6 +120,7 @@
 - ✅ **PW568** **A kit of built pieces takes a shell loop to render, spec and sit for a person** — geometry.kit builds, renders, specs and checks every piece of a folder and sits them as one family, writing a first spec only where none is (design recorded in `src/polyweave/layers/geometry/kit.py`).
 - ✅ **PW569** **A declared finish reaches the game closed, so it cannot take an instance's hue or the project's background hold** — An optional [finish] table writes every finish as a shader that turns an instance's hue and holds it by the project's own function (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW570** **A built mesh imports with its glTF materials, so the game swaps in the judged ones by hand** — In a Godot project a build writes the mesh's .glb.import naming each written .tres, so Godot imports the piece wearing the judged materials (design recorded in `docs/specs/geometry.md`).
+- ✅ **PW571** **Each finished material writes its own copy of one shader** — A folder's finished materials share one finish.gdshader, rewritten only when its text changes, so a kit compiles one shader where it compiled fifty (design recorded in `docs/specs/geometry.md`).
 
 ## Block H — Proof on a real game
 

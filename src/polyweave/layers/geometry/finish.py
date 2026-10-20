@@ -541,8 +541,12 @@ def _value(value: Any) -> str:
 def write_godot(material: dict, name: str, folder: Any, stem: str, root: Any) -> list:
     """The Godot material written beside a build, and its shader where it needs one.
 
-    `<stem>.<name>.tres`, the name's spaces as underscores, and with a sheen
-    `<stem>.<name>.gdshader` beside it, named by its res:// path under `root`.
+    `<stem>.<name>.tres`, the name's spaces as underscores. Where it is a ShaderMaterial
+    its shader is the folder's one copy, `finish.gdshader` (`finish_sheen.gdshader` for
+    a sheen on a closed finish), named by its res:// path under `root`: the code is the
+    same for every material, whose numbers are its own parameters, so twelve pieces no
+    longer carry fifty copies for the game to compile apart (§PW571). It is written only
+    where its text changed.
     """
     import json
     from pathlib import Path
@@ -567,8 +571,10 @@ def write_godot(material: dict, name: str, folder: Any, stem: str, root: Any) ->
     if made["shader"] is None:
         text = _STANDARD % {"name": said, "fields": body}
     else:
-        shader = out.with_suffix(".gdshader")
-        shader.write_text(made["shader"], encoding="utf-8", newline="\n")
+        shared = "finish.gdshader" if hooks else "finish_sheen.gdshader"
+        shader = Path(folder) / shared
+        if not shader.is_file() or shader.read_text(encoding="utf-8") != made["shader"]:
+            shader.write_text(made["shader"], encoding="utf-8", newline="\n")
         written.append(shader)
         place = shader.resolve().relative_to(Path(root).resolve()).as_posix()
         text = _SHADED % {"name": said, "shader": f"res://{place}", "fields": body}

@@ -449,9 +449,15 @@ numbers the bake used, Blender's Principled defaults where the declaration says 
 (roughness 0.5, metallic 0, colour 0.906 grey) and not Godot's. A StandardMaterial3D
 takes the coat as its clearcoat, the rim as its rim with no tint, and the subsurface as
 its scatter strength, with the tint and depth as its transmittance. A sheen, which it
-has no field for, makes it a ShaderMaterial over a spatial shader written beside it as
-`<name>.<material>.gdshader`, the sheen a lift of the surface's own colour where it
-turns from the view. A material with no finish is left to the glTF.
+has no field for, makes it a ShaderMaterial over a spatial shader, the sheen a lift of
+the surface's own colour where it turns from the view. A material with no finish is
+left to the glTF.
+
+**One finish is one shader** (§PW571). The shader's code is the same for every
+material, whose numbers are its own `shader_parameter`s, so a folder holds one copy,
+`finish.gdshader` where the project opens the finish and `finish_sheen.gdshader` for a
+sheen on a closed one, and every material names it. It is rewritten only where its
+text changed. A rebuild's cleanup (§PW567) never takes it, since it is no one piece's.
 
 **A build owns what it wrote** (§PW567). On a rebuild, the `.tres` and `.gdshader` an
 earlier build wrote for a material the declaration no longer has are removed with their

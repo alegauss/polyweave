@@ -14,7 +14,6 @@
 
 ## Block G — Geometry as a declaration
 
-- 📋 **PW571** (deps: —) **Each finished material writes its own copy of one shader** — A kit of twelve pieces carries fifty identical shaders, each compiled apart by the game. → §PW571
 - 📋 **PW574** (deps: —) **A finished piece cannot also give when struck, since vfx's struck give is a shader of its own** — A course of judged pieces cannot jiggle where a kill lands without the game splicing two shaders. → §PW574
 
 ## Block H — Proof on a real game

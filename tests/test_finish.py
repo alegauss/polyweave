@@ -355,8 +355,32 @@ def test_a_finish_opened_after_a_build_builds_it_again(tmp_path):
                                              encoding="utf-8")
     opened = build_one("post.toml", out="built", root=str(tmp_path), force=False)
     assert opened["status"] == "built"
-    assert "INSTANCE_CUSTOM.x" in (tmp_path / "built" / "post.pink_plastic.gdshader")\
+    assert "INSTANCE_CUSTOM.x" in (tmp_path / "built" / "finish.gdshader")\
         .read_text(encoding="utf-8")
+
+
+def test_every_material_of_an_opened_finish_shares_one_shader(tmp_path):
+    """§PW571: fifty materials were fifty copies of one shader for a game to compile."""
+    pytest.importorskip("bpy")
+    from polyweave.layers.geometry.make import build_one
+
+    (tmp_path / "polyweave.toml").write_text('[finish]\nhue = "instance"\n',
+                                             encoding="utf-8")
+    (tmp_path / "pair.toml").write_text(
+        'name = "pair"\nversion = 1\noutput = "pair"\n\n'
+        '[materials.pink]\ncolour = "#F27BA8"\ncoat = 1.0\n\n'
+        '[materials.cream]\ncolour = "#F5E6C8"\nrim = 0.4\n\n'
+        '[[nodes]]\nid = "a"\nop = "primitive"\nkind = "cube"\nmaterial = "pink"\n\n'
+        '[[nodes]]\nid = "b"\nop = "primitive"\nkind = "sphere"\nmaterial = "cream"\n\n'
+        '[[nodes]]\nid = "pair"\nop = "union"\noperands = ["a", "b"]\n',
+        encoding="utf-8")
+    found = build_one("pair.toml", out="built", root=str(tmp_path))
+    assert found["status"] == "built", found
+    built = tmp_path / "built"
+    assert sorted(p.name for p in built.glob("*.gdshader")) == ["finish.gdshader"]
+    for name in ("pink", "cream"):
+        text = (built / f"pair.{name}.tres").read_text(encoding="utf-8")
+        assert 'path="res://built/finish.gdshader"' in text
 
 
 def test_a_finish_opened_leaves_a_build_without_one_cached(tmp_path):

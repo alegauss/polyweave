@@ -315,8 +315,12 @@ def _drop_orphans(mark: Path, source: Path, members: list, folder: Path,
                 if made_by == "geometry.build" and declared in sources:
                     owned.add(one.resolve())
     removed = []
+    # A piece's own files only: the folder's shared finish shader is every piece's
+    # (§PW571), and one piece no longer needing it is no reason to take it from others.
+    prefixes = tuple(f"{member['name']}." for member in members)
     for one in sorted(owned - now):
-        if one.suffix.lower() not in _MATERIAL_FILES or not one.is_file():
+        if one.suffix.lower() not in _MATERIAL_FILES or not one.is_file() \
+                or not one.name.startswith(prefixes):
             continue
         one.unlink()
         provenance.sidecar(one, here).unlink(missing_ok=True)

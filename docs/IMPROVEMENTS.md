@@ -31,19 +31,6 @@ standard one lacks is asked for), with the same numbers the bake used and a prov
 record, so the game loads what was judged. A capture of the game against the bake of the
 same model at one rig says whether the two agree.
 
-### §PW571 One shader for one finish
-
-Where: spinhold, 2026-10-19, RK231. With `[finish]` opened (PW569) every material of the
-Playdeck's twelve pieces is written as a ShaderMaterial, and `finish.write_godot` writes
-each one's shader beside it as `<piece>.<material>.gdshader`: 50 files with identical
-code, each with its `.prov.json` and Godot's `.uid`, 150 files where one shader would
-do. Godot compiles each as its own shader, so the ring holds 50 programs for one finish.
-
-What polyweave should do: write the finish's shader once, where its code is the same
-(per build folder, or under a path the project names in `[finish]`), and have every
-material reference it; a material whose shader differs (a project's own hold, a future
-look) keeps its own. A rebuild that changes the shared code rewrites it once.
-
 ### §PW574 A finish that gives
 
 Where: spinhold, 2026-10-19, RK234: the Playdeck's course should squash and jiggle back
