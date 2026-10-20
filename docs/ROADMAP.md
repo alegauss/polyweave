@@ -14,8 +14,6 @@
 
 ## Block G — Geometry as a declaration
 
-- 📋 **PW574** (deps: —) **A finished piece cannot also give when struck, since vfx's struck give is a shader of its own** — A course of judged pieces cannot jiggle where a kill lands without the game splicing two shaders. → §PW574
-
 ## Block H — Proof on a real game
 
 - 🛠 **PW36** (deps: PW5 ✅, PW82 ⏸) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82. → §PW36

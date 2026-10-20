@@ -31,22 +31,6 @@ standard one lacks is asked for), with the same numbers the bake used and a prov
 record, so the game loads what was judged. A capture of the game against the bake of the
 same model at one rig says whether the two agree.
 
-### §PW574 A finish that gives
-
-Where: spinhold, 2026-10-19, RK234: the Playdeck's course should squash and jiggle back
-where a kill lands, the higher pieces swinging more. Its pieces wear the opened finish
-(PW569) a person accepted. vfx's `kind = "struck"` (PW496) gives a struck piece its own
-mesh and its own albedo-only shader, so a course piece could either keep its judged
-finish or give, not both, and the game would have had to splice the two shaders.
-
-Built: `[finish] struck = { give, wobble, lifetime, falloff, height, radius, amount }`
-puts the struck give's uniforms and vertex body in the opened finish, the numbers as vfx
-sets them (`settle_rate`), and writes `finish_strikes.gd` beside the materials: `watch`
-each material, `strike(at, strength)` ages the strikes and hands them to all. Refusals
-for an unknown key, a missing one, a zero give, lifetime, height or radius and more than
-16 strikes. Spec in `geometry.md`; tests in `test_finish.py`, one in which Godot parses
-the composed shader and the script hands a strike to the material.
-
 ## Block H — Proof on a real game
 
 ### §PW36 Cottony adopts it without a fork

@@ -121,6 +121,7 @@
 - ✅ **PW569** **A declared finish reaches the game closed, so it cannot take an instance's hue or the project's background hold** — An optional [finish] table writes every finish as a shader that turns an instance's hue and holds it by the project's own function (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW570** **A built mesh imports with its glTF materials, so the game swaps in the judged ones by hand** — In a Godot project a build writes the mesh's .glb.import naming each written .tres, so Godot imports the piece wearing the judged materials (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW571** **Each finished material writes its own copy of one shader** — A folder's finished materials share one finish.gdshader, rewritten only when its text changes, so a kit compiles one shader where it compiled fifty (design recorded in `docs/specs/geometry.md`).
+- ✅ **PW574** **A finished piece cannot also give when struck, since vfx's struck give is a shader of its own** — [finish] struck puts vfx's struck give in the opened finish and writes finish_strikes.gd, so a judged piece also squashes where a strike lands (design recorded in `docs/specs/geometry.md`).
 
 ## Block H — Proof on a real game
 
