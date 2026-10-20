@@ -1,12 +1,23 @@
-// The prerender. One render per route, the <head> patched by replace-or-throw so a drifted
-// template fails the build rather than shipping a page under another route's title. It
-// reads the SSR bundle built by `vite build --ssr`, and the route metadata comes from the
-// same table routes.tsx has already asserted against the component map — so a route missing
-// from either side never reaches this loop.
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
-import { execFileSync } from "node:child_process";
+// The prerender and the social card, both through the design system's build helpers (PW572).
+//
+// prerenderSite renders every route into the client build's index.html, patching the <head>
+// by replace-or-throw so a drifted template fails the build rather than shipping a page under
+// another route's title, and writes the Markdown twin beside each page, manifest.json,
+// sitemap.xml (lastmod from git, never the build clock) and robots.txt — all from the route
+// table routes.tsx has already asserted against the component map.
+//
+// renderOgCard rasterises the card to dist/og.png at 1200x630. An og:image pointing at an SVG
+// is an empty rectangle on every platform that renders a card. The card is a template, not a
+// finished drawing: its mark is spliced in from public/logo.svg, because a card carrying its
+// own copy of the artwork goes stale the next time the artwork changes, and its status pill
+// is measured, not typed. The card asks for DejaVu and takes whatever the build machine has,
+// so a pill hand-fitted to one font overflows on another; resvg measures the text here and
+// the pill is drawn round the answer.
+import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { Resvg } from "@resvg/resvg-js";
+import { prerenderSite, renderOgCard } from "@viglet/viglet-design-system/vite";
 
 import {
   render,
@@ -19,174 +30,74 @@ import {
 import { htmlToMarkdown } from "./markdown.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const distDir = join(here, "..", "dist");
-const template = readFileSync(join(distDir, "index.html"), "utf8");
+const siteDir = join(here, "..");
+const distDir = join(siteDir, "dist");
 
-/** Replace the one match of `find`, or throw — a missing anchor is a drifted template. */
-function replaceOrThrow(html, find, replacement, label) {
-  if (typeof find === "string") {
-    if (!html.includes(find)) {
-      throw new Error(`prerender: template no longer contains ${label}`);
-    }
-    return html.replace(find, replacement);
+// Where the mark sits on the card, and how big. Height only: the artwork is taller than it
+// is wide and carries its own silhouette, so it is sized by height and left to find its
+// width. A width here would squash it.
+const MARK = { left: 90, top: 96, height: 156 };
+
+// The pill's left edge, and the space left after the text ends. The dot sits 28px inside
+// the left edge and the text 46px, so 26 on the right reads as the same inset once the
+// corner radius is allowed for. GUTTER is the card's right margin, which the pill may not
+// cross.
+const CHIP = { left: 90, padding: 26 };
+const GUTTER = 1110;
+const FONT = "DejaVu Sans";
+
+function cardSvg() {
+  const card = readFileSync(join(here, "og-card.svg"), "utf8");
+  const logo = readFileSync(join(siteDir, "public", "logo.svg"), "utf8");
+
+  const viewBox = logo.match(/\bviewBox="([\d.\-\s]+)"/);
+  if (!viewBox) throw new Error("og-card: public/logo.svg has no viewBox");
+  const [minX, minY, , boxHeight] = viewBox[1].trim().split(/\s+/).map(Number);
+  // The logo's own root <svg> cannot come along: a nested svg brings its own viewport and
+  // re-fits the artwork to a box this did not choose. Its children can, <defs> included.
+  const artwork = logo.replace(/^[\s\S]*?<svg\b[^>]*>/, "").replace(/<\/svg>\s*$/, "").trim();
+  const scale = MARK.height / boxHeight;
+  const mark =
+    `<g transform="translate(${MARK.left - minX * scale},${MARK.top - minY * scale})` +
+    ` scale(${scale.toFixed(6)})">\n${artwork}\n  </g>`;
+
+  // Where the chip's text lands once this font has had its say, rendered alone on a
+  // card-sized canvas so the box comes back in the card's coordinates.
+  const chipText = card.match(/<text\b[^>]*\bid="chip"[\s\S]*?<\/text>/);
+  if (!chipText) throw new Error('og-card: og-card.svg has no <text id="chip">');
+  const canvas = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">${chipText[0]}</svg>`;
+  const box = new Resvg(canvas, { font: { loadSystemFonts: true, defaultFontFamily: FONT } }).getBBox();
+  if (!box) throw new Error("og-card: the chip's text measured as nothing");
+  const chipWidth = Math.ceil(box.x + box.width + CHIP.padding - CHIP.left);
+  if (CHIP.left + chipWidth > GUTTER) {
+    throw new Error(`og-card: the status pill needs ${chipWidth}px and runs past x=${GUTTER}`);
   }
-  if (!find.test(html)) {
-    throw new Error(`prerender: template no longer contains ${label}`);
+
+  // A slot that is not there is a card drawn without the thing it was supposed to carry, and
+  // String.replace says nothing about a pattern it never found.
+  let svg = card;
+  for (const [slot, value] of Object.entries({ "{{mark}}": mark, "{{chip-width}}": String(chipWidth) })) {
+    if (!svg.includes(slot)) throw new Error(`og-card: og-card.svg has no ${slot} slot`);
+    svg = svg.replace(slot, () => value);
   }
-  return html.replace(find, replacement);
+  return svg;
 }
 
-function escapeHtml(s) {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
+const card = await renderOgCard({ svg: cardSvg(), out: join(distDir, "og.png"), fontFamily: FONT });
+console.log(`og-image: dist/og.png  ${card.width}x${card.height}  (${(card.bytes / 1024).toFixed(0)} kB)`);
 
-if (ROUTE_META.length === 0) {
-  throw new Error("prerender: ROUTE_META is empty — nothing to render");
-}
-
-const byteLength = (s) => Buffer.byteLength(s, "utf8");
-const manifestRoutes = [];
-
-for (const meta of ROUTE_META) {
-  const body = render(meta.path);
-  const canonical = canonicalUrl(meta.path);
-
-  let html = template;
-
-  html = replaceOrThrow(
-    html,
-    /<title>[\s\S]*?<\/title>/,
-    `<title>${escapeHtml(meta.title)}</title>`,
-    "a <title>",
-  );
-
-  html = replaceOrThrow(
-    html,
-    /<meta\s+name="description"[\s\S]*?\/>/,
-    `<meta name="description" content="${escapeHtml(meta.description)}" />`,
-    'a <meta name="description">',
-  );
-
-  const headBlock = [
-    `<link rel="canonical" href="${escapeHtml(canonical)}" />`,
-    `<meta property="og:type" content="website" />`,
-    `<meta property="og:title" content="${escapeHtml(meta.ogTitle)}" />`,
-    `<meta property="og:description" content="${escapeHtml(meta.ogDescription)}" />`,
-    `<meta property="og:url" content="${escapeHtml(canonical)}" />`,
-    `<meta property="og:image" content="${escapeHtml(OG_IMAGE)}" />`,
-    `<meta property="og:image:width" content="1200" />`,
-    `<meta property="og:image:height" content="630" />`,
-    `<meta name="twitter:card" content="summary_large_image" />`,
-    `<meta name="twitter:image" content="${escapeHtml(OG_IMAGE)}" />`,
-  ].join("\n    ");
-  html = replaceOrThrow(html, "</head>", `  ${headBlock}\n  </head>`, "a </head>");
-
-  html = replaceOrThrow(
-    html,
-    '<div id="root"></div>',
-    `<div id="root">${body}</div>`,
-    'the <div id="root"> mount point',
-  );
-
-  // The Markdown twin, converted from the same render.
-  const markdown = htmlToMarkdown(renderStatic(meta.path));
-
-  const rel = outputDir(meta.path);
-  const dir = join(distDir, rel);
-  mkdirSync(dir, { recursive: true });
-  writeFileSync(join(dir, "index.html"), html);
-  writeFileSync(join(dir, "index.md"), markdown);
-
-  const htmlPath = rel ? `${rel}/index.html` : "index.html";
-  const mdPath = rel ? `${rel}/index.md` : "index.md";
-  manifestRoutes.push({
-    path: meta.path,
-    url: canonical,
-    title: meta.title,
-    description: meta.description,
-    html: htmlPath,
-    markdown: mdPath,
-    htmlBytes: byteLength(html),
-    markdownBytes: byteLength(markdown),
-  });
-  console.log(
-    `prerendered ${meta.path.padEnd(22)} -> ${htmlPath} + ${mdPath}  (${byteLength(markdown)} md bytes)`,
-  );
-}
-
-// The manifest lists the routes, their twins and their sizes, so an agent finds this site
-// the way it finds any other file tree. No build timestamp — the same input builds
-// byte-identical output.
-const manifest = {
-  name: "polyweave",
-  base: "/polyweave/",
-  llms: "llms.txt",
-  routes: manifestRoutes,
-};
-writeFileSync(join(distDir, "manifest.json"), JSON.stringify(manifest, null, 2) + "\n");
-
-// --- robots.txt and sitemap.xml ---
-// Generated from the same ROUTE_META the loop above walked, so a route that exists appears
-// and a deleted one disappears with no second list to keep current.
-
-/**
- * When the authored site last changed, as YYYY-MM-DD from git.
- *
- * Not the build clock: a rebuild that changed nothing would otherwise tell a crawler that
- * every page did. Deliberately one date for every route rather than one per route —
- * `lastmod` per URL would need to know which sources compose which page, and that is
- * either a module graph or a hand-kept path-per-route table, which is exactly the second
- * list this generator exists to avoid. One date over the whole authored tree is a weaker
- * claim and a true one.
- */
-function lastAuthoredChange() {
-  try {
-    const stamp = execFileSync(
-      "git",
-      ["log", "-1", "--format=%cs", "--", "src", "public", "index.html"],
-      { cwd: join(here, ".."), encoding: "utf8" },
-    ).trim();
-    if (/^\d{4}-\d{2}-\d{2}$/.test(stamp)) {
-      return stamp;
-    }
-  } catch {
-    // A tarball with no .git, or git not on PATH. A sitemap with no lastmod is valid and
-    // says nothing, which beats a date that is a guess.
-  }
-  return null;
-}
-
-const lastmod = lastAuthoredChange();
-const urls = ROUTE_META.map((meta) => {
-  const loc = `    <loc>${escapeHtml(canonicalUrl(meta.path))}</loc>`;
-  // No changefreq and no priority: the two fields the crawlers that read this file say
-  // outright that they ignore, and a hint nobody reads is a claim nobody checks.
-  return lastmod
-    ? `  <url>\n${loc}\n    <lastmod>${lastmod}</lastmod>\n  </url>`
-    : `  <url>\n${loc}\n  </url>`;
+const written = prerenderSite({
+  distDir,
+  routes: ROUTE_META,
+  render,
+  canonicalUrl,
+  outputDir,
+  ogImage: OG_IMAGE,
+  // The Markdown twin, converted from the same component tree as clean static HTML.
+  twin: (path) => htmlToMarkdown(renderStatic(path)),
+  manifest: { name: "polyweave", base: "/polyweave/", llms: "llms.txt" },
+  git: { cwd: siteDir },
+  log: console.log,
 });
 
-writeFileSync(
-  join(distDir, "sitemap.xml"),
-  '<?xml version="1.0" encoding="UTF-8"?>\n'
-    + '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-    + urls.join("\n")
-    + "\n</urlset>\n",
-);
-
-// Absolute, because that is what makes the sitemap discoverable without a submission — and
-// it carries the base prefix, so a rename that moves every route moves this too.
-const sitemapUrl = `${canonicalUrl("/")}sitemap.xml`;
-writeFileSync(
-  join(distDir, "robots.txt"),
-  `User-agent: *\nAllow: /\n\nSitemap: ${sitemapUrl}\n`,
-);
-
-console.log(
-  `prerender: ${ROUTE_META.length} route(s) + twins + manifest.json`
-    + `, sitemap.xml (lastmod ${lastmod ?? "omitted"}) and robots.txt written to dist/`,
-);
+console.log(`prerender: ${written.length} route(s) + twins, manifest.json, sitemap.xml and robots.txt written to dist/`);

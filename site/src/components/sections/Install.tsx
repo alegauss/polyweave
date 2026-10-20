@@ -1,11 +1,10 @@
 import { install } from "../../lib/site-content";
-import { Rich } from "../ui/Rich";
-import { CopyButton } from "../ui/CopyButton";
+import { SiteCopyButton, SiteRich as Rich } from "@viglet/viglet-design-system/site";
 
 export function Install() {
   return (
     <section id="install">
-      <div className="wrap">
+      <div className="vg-site-wrap">
         <div className="banner reveal">
           <div className="eyebrow">{install.eyebrow}</div>
           <h2>{install.heading}</h2>
@@ -15,7 +14,12 @@ export function Install() {
           {/* The <pre> carries the class itself: the twin parser keeps a <pre>'s content as
               raw text, so a block found by its inner <code> would never be found at all. */}
           <div className="install-code">
-            <CopyButton text={install.commands} label="Copy the install commands" />
+            <SiteCopyButton
+              text={install.commands}
+              label="Copy the install commands"
+              copyLabel="Copy"
+              copiedLabel="Copied!"
+            />
             <pre className="codeblock">
               <code>{install.commands}</code>
             </pre>

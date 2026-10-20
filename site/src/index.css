@@ -1,132 +1,101 @@
 @import "tailwindcss";
+/* The ground, the chrome and the type come from the design system (PW572): tokens.css is the
+   preset as plain custom properties, keyed by data-tone="cool" on <html> and data-theme for
+   the mode, and site.css styles the nav, hero, section heads, buttons, copy button, sponsor
+   and footer. No webfont is imported: --font-sans names Inter with system fallbacks, and the
+   site fetches no font at page load (scripts/lint.test.mjs). */
+@import "@viglet/viglet-design-system/tokens.css";
+@import "@viglet/viglet-design-system/site.css";
 
 /* ============================================================================
-   Design tokens. The palette is light-first on bare :root; the dark values are
-   redefined under prefers-color-scheme (guarded so an explicit light toggle
-   wins) and again under [data-theme="dark"] so the toggle wins in both
-   directions.
+   The product's own colours. Everything else on this page reads a --vg-* token.
 
-   Two families of colour:
-   - brand constants (--violet*, --teal*) do not change with the theme;
-   - surface + accent tokens swap, so the page chrome inverts while the embedded
-     figures — the diagrams and the terminal — keep their own dark palette.
+   The brand is re-keyed to the hub's accent for polyweave, teal (33,193,166, bright
+   #5fe0c9, projects.json), so the buttons, the headline gradient, the eyebrows and the
+   glow all speak it. The lattice keeps the mark's own violets: it is the logo's weave,
+   drawn as scenery, and recolouring it would be recolouring the mark.
 
-   Violet for the weave and teal for what passes. That pairing is not decoration:
-   a score, a kept candidate and a satisfied predicate are all teal on this site,
-   and a refusal is the red. Nothing else earns a colour.
+   The local names below (--bg, --panel, --text, --accent...) are what the product
+   sections were written against; each now reads the design system's token, so a section
+   follows the shared ground without being rewritten. --pass, --warn and --red are the
+   product's verdict colours: a score, a kept candidate and a satisfied predicate are
+   teal on this site, and a refusal is the red.
+
+   The design system's pre-paint script always sets data-theme, so the dark values key on
+   that attribute alone, as the preset's do.
    ============================================================================ */
 
 :root {
-  /* brand — constant across themes */
+  /* the brand, re-keyed from the cool tone's orange to the hub's teal */
+  --vg-brand: #0b7a67;
+  --vg-brand-dark: #0b6b5b;
+  --vg-brand-light: #14a38b;
+  --vg-brand-lighter: #5fe0c9;
+  --vg-brand-bg: #e8f8f5;
+  --vg-brand-mid: #cdf1ea;
+  --vg-brand-border: #9fe3d6;
+  --vg-brand-on: #d7fff7;
+  --vg-gradient: linear-gradient(135deg, #0f8f78 0%, #21c1a6 100%);
+
+  /* the mark's violets and the verdict's teal, constant across themes */
   --violet: #7a5af8;
   --violet-bright: #a996ff;
   --violet-deep: #4c31c9;
   --teal: #21c1a6;
   --teal-deep: #0f8f78;
 
-  /* surfaces — light */
-  --bg: #f8f7fd;
-  --bg-2: #efedfa;
-  --panel: #ffffff;
-  --panel-2: #f4f2fc;
-  --line: #ded8f1;
-  --text: #15102b;
-  --muted: #4e4674;
-  --muted-2: #6a6191;
-
-  /* accent as text, tuned for contrast on the current surface */
-  --accent: #5a3fd6;
-  --accent-strong: #4a31bd;
+  /* the names the product sections read, on the shared ground */
+  --bg: var(--vg-background);
+  --bg-2: var(--vg-muted);
+  --panel: var(--vg-card);
+  --panel-2: var(--vg-muted);
+  --line: var(--vg-border);
+  --text: var(--vg-foreground);
+  --muted: var(--vg-muted-foreground);
+  --muted-2: var(--vg-muted-foreground);
+  --accent: var(--vg-brand);
+  --accent-strong: var(--vg-brand-dark);
   --pass: #0f8f78;
   --warn: #9a6a00;
   --red: #c33a55;
+  --grad-1: #0f8f78;
+  --grad-2: #14a38b;
+  --grad-3: #21c1a6;
+  --radius: var(--vg-radius-panel);
+  --maxw: var(--vg-site-max-width);
 
-  /* the hero gradient, deepened in light so the bright end stays legible */
-  --grad-1: var(--violet);
-  --grad-2: var(--violet-deep);
-  --grad-3: #2f1d86;
-
-  /* chrome */
-  --nav-bg: rgba(248, 247, 253, 0.8);
-  --glow-1: rgba(122, 90, 248, 0.11);
-  --glow-2: rgba(33, 193, 166, 0.07);
-
-  /* the lattice, back layer to front. These are the mark's own violets, taken up
-     until they sit on #f8f7fd as scenery — scenery that outshines the copy is a bug. */
-  --lat-1: #ded6fc;
-  --lat-2: #c8bcfa;
-  --lat-3: #ab97f7;
+  /* the lattice, back layer to front: the mark's own violets taken up until they sit on
+     the ground as scenery — scenery that outshines the copy is a bug */
+  --lat-1: #e4defc;
+  --lat-2: #d0c6fa;
+  --lat-3: #b4a3f7;
   --lat-thread: #ffffff;
   --lat-node: #7a5af8;
-
-  --radius: 18px;
-  --maxw: 1120px;
 
   color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0b0916;
-    --bg-2: #110e20;
-    --panel: #171331;
-    --panel-2: #1f1942;
-    --line: #2f2760;
-    --text: #ece9fb;
-    --muted: #a9a1cf;
-    --muted-2: #857cae;
-
-    --accent: #a996ff;
-    --accent-strong: #c4b6ff;
-    --pass: #35d3b5;
-    --warn: #e0a33c;
-    --red: #f2607a;
-
-    --grad-1: var(--violet-bright);
-    --grad-2: var(--violet);
-    --grad-3: var(--violet-deep);
-
-    --nav-bg: rgba(11, 9, 22, 0.76);
-    --glow-1: rgba(122, 90, 248, 0.24);
-    --glow-2: rgba(33, 193, 166, 0.1);
-
-    --lat-1: #221b4a;
-    --lat-2: #2a2258;
-    --lat-3: #352b6a;
-    --lat-thread: #6a5bb8;
-    --lat-node: #8f7af0;
-
-    color-scheme: dark;
-  }
-}
-
 :root[data-theme="dark"] {
-  --bg: #0b0916;
-  --bg-2: #110e20;
-  --panel: #171331;
-  --panel-2: #1f1942;
-  --line: #2f2760;
-  --text: #ece9fb;
-  --muted: #a9a1cf;
-  --muted-2: #857cae;
+  --vg-brand: #5fe0c9;
+  --vg-brand-dark: #0f8f78;
+  --vg-brand-light: #21c1a6;
+  --vg-brand-lighter: #a7f0e3;
+  --vg-brand-bg: rgba(33, 193, 166, 0.1);
+  --vg-brand-mid: rgba(33, 193, 166, 0.15);
+  --vg-brand-border: rgba(33, 193, 166, 0.3);
+  --vg-gradient: linear-gradient(135deg, #21c1a6 0%, #5fe0c9 100%);
 
-  --accent: #a996ff;
-  --accent-strong: #c4b6ff;
+  --accent-strong: #7ee8d5;
   --pass: #35d3b5;
   --warn: #e0a33c;
   --red: #f2607a;
+  --grad-1: #5fe0c9;
+  --grad-2: #21c1a6;
+  --grad-3: #0f8f78;
 
-  --grad-1: var(--violet-bright);
-  --grad-2: var(--violet);
-  --grad-3: var(--violet-deep);
-
-  --nav-bg: rgba(11, 9, 22, 0.76);
-  --glow-1: rgba(122, 90, 248, 0.24);
-  --glow-2: rgba(33, 193, 166, 0.1);
-
-  --lat-1: #221b4a;
-  --lat-2: #2a2258;
-  --lat-3: #352b6a;
+  --lat-1: #241f3a;
+  --lat-2: #2c2648;
+  --lat-3: #372f5a;
   --lat-thread: #6a5bb8;
   --lat-node: #8f7af0;
 
@@ -145,343 +114,83 @@
 html {
   scroll-behavior: smooth;
 }
-body {
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
-}
-a {
-  color: inherit;
-  text-decoration: none;
-}
 code,
 kbd {
-  font-family:
-    "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-}
-.wrap {
-  max-width: var(--maxw);
-  margin: 0 auto;
-  padding: 0 24px;
+  font-family: var(--vg-font-mono);
 }
 
-/* ambient background glow */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    radial-gradient(900px 520px at 82% -5%, var(--glow-1), transparent 60%),
-    radial-gradient(760px 620px at -10% 22%, var(--glow-2), transparent 55%),
-    linear-gradient(180deg, var(--bg), var(--bg-2));
-}
+/* ---------- the shared chrome, where this product departs from it ---------- */
 
-/* ---------- nav ---------- */
-nav {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
-  background: var(--nav-bg);
-  border-bottom: 1px solid var(--line);
-}
-nav .wrap {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 64px;
-  gap: 16px;
-}
-.nav-left {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  flex: 0 0 auto;
-}
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-weight: 800;
-  font-size: 1.05rem;
-  letter-spacing: -0.02em;
-  white-space: nowrap;
-}
 /* The mark is taller than it is wide and carries its own silhouette, so it is sized by
    height and left to find its width. A square box and a corner radius belong to a tile,
    which this is not. */
-.brand img {
-  height: 30px;
+.vg-site-brand img,
+.vg-site-foot-brand img {
   width: auto;
-  flex: 0 0 auto;
+  height: 30px;
+  border-radius: 0;
 }
-.parent {
+/* the bottom padding is the lattice's room: the weave closes the hero */
+.vg-site-hero {
+  padding-bottom: 168px;
+}
+.vg-site-hero-meta span {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  flex: 0 0 auto;
-  padding: 7px 13px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  color: var(--muted);
-  font-size: 0.8rem;
-  font-weight: 500;
-  white-space: nowrap;
-  transition: color 0.2s, border-color 0.2s, background 0.2s;
+  gap: 7px;
 }
-.parent b {
-  color: var(--text);
-  font-weight: 600;
+.vg-site-hero-meta .icon {
+  color: var(--pass);
+  width: 16px;
+  height: 16px;
 }
-.parent svg {
-  width: 12px;
-  height: 12px;
-  color: var(--muted-2);
-  transition: transform 0.2s, color 0.2s;
-}
-.parent:hover {
-  background: var(--panel);
-  border-color: var(--violet);
-  color: var(--text);
-}
-.parent:hover svg {
-  color: var(--violet);
-  transform: translate(1.5px, -1.5px);
-}
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 22px;
-}
-.nav-links a:not(.btn) {
-  color: var(--muted);
-  font-weight: 500;
-  font-size: 0.95rem;
-  transition: color 0.2s;
-  /* a two-word label is one item, not two: without this "The loop" and "Claude Code"
-     break across lines as soon as the row is tight, which sets the nav's height from the
-     narrowest label rather than from its content */
-  white-space: nowrap;
-}
-.nav-links a:not(.btn):hover {
-  color: var(--text);
-}
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  padding: 11px 20px;
-  border-radius: 11px;
-  font-weight: 600;
-  font-size: 0.95rem;
-  transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s;
-  white-space: nowrap;
-  cursor: pointer;
-}
-.btn-primary {
-  background: linear-gradient(135deg, var(--violet), var(--violet-deep));
-  color: #fff;
-  box-shadow: 0 8px 24px -8px rgba(122, 90, 248, 0.7);
-}
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 14px 32px -10px rgba(122, 90, 248, 0.85);
-}
-.btn-ghost {
-  background: var(--panel);
-  color: var(--text);
-  border: 1px solid var(--line);
-}
-.btn-ghost:hover {
-  background: var(--panel-2);
-  transform: translateY(-2px);
-}
-
-/* Nothing in this row has any give in it — every item is `flex: 0 0 auto` and nowrap — so
-   the row is narrowed by taking things out of it, in the order of what a reader loses
-   least by losing. The labels first, then the cross-promotion and the repo button, which
-   the page carries several more times further down. */
-@media (max-width: 1280px) {
-  .parent .pre {
-    display: none;
-  }
-  .nav-links {
-    gap: 16px;
-  }
-}
-@media (max-width: 1080px) {
-  .nav-links a:not(.btn) {
-    display: none;
-  }
-}
-@media (max-width: 620px) {
-  .nav-left .parent,
-  .nav-links .btn-ghost {
-    display: none;
-  }
-  .nav-links {
-    gap: 10px;
-  }
-  .nav-links .btn {
-    padding: 10px 15px;
-  }
-}
-@media (max-width: 380px) {
-  .brand {
-    font-size: 0.95rem;
-    gap: 9px;
-  }
-  .brand img {
-    height: 26px;
-  }
-}
-
-/* theme toggle */
-.theme-toggle {
-  display: inline-grid;
-  place-items: center;
-  width: 38px;
-  height: 38px;
-  flex: 0 0 auto;
-  border-radius: 10px;
-  border: 1px solid var(--line);
-  background: var(--panel);
-  color: var(--muted);
-  cursor: pointer;
-  transition: color 0.2s, border-color 0.2s, background 0.2s;
-}
-.theme-toggle:hover {
-  color: var(--text);
-  border-color: var(--violet);
-}
-.theme-toggle svg {
-  width: 18px;
-  height: 18px;
-}
-
-/* ---------- hero ---------- */
-.hero {
-  /* the bottom padding is the lattice's room: the weave closes the hero, and the pills
-     would otherwise stand in it */
-  padding: 80px 0 168px;
-  text-align: center;
-  position: relative;
-}
-.hero .wrap {
+/* the part chips and the hub sit under the hero's own content, above the weave */
+.hero-figure {
   position: relative;
   z-index: 1;
+  margin-top: 34px;
 }
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 15px;
-  border-radius: 999px;
-  background: rgba(122, 90, 248, 0.12);
-  border: 1px solid rgba(122, 90, 248, 0.35);
-  color: var(--accent);
-  font-size: 0.82rem;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  margin-bottom: 26px;
+/* No border-top: the lattice is the seam, and a rule drawn a few pixels above it reads as
+   a divider somebody forgot to take out. The top padding is the weave's room. */
+.vg-site-footer {
+  padding-top: 104px;
+  border-top: 0;
 }
-.dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--violet);
-  box-shadow: 0 0 10px var(--violet);
-  animation: pulse 2s infinite;
+.vg-site-disclaimer code {
+  color: var(--vg-brand);
 }
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.35;
-  }
+.consent-settings {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--vg-brand);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
 }
-.hero h1 {
-  font-size: clamp(2.4rem, 6vw, 4.2rem);
-  line-height: 1.05;
-  font-weight: 900;
-  letter-spacing: -0.035em;
-  margin-bottom: 22px;
+.consent {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  z-index: 60;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 18px 20px;
+  border: 1px solid var(--vg-border);
+  border-radius: var(--vg-radius-panel);
+  background: var(--vg-card);
+  color: var(--vg-foreground);
+  box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.45);
+  font-size: 0.92rem;
 }
-.hero h1 .grad {
-  background: linear-gradient(120deg, var(--grad-1), var(--grad-2) 55%, var(--grad-3));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-.hero p.sub {
-  font-size: clamp(1.02rem, 2.1vw, 1.22rem);
-  color: var(--muted);
-  max-width: 720px;
-  margin: 0 auto 32px;
-  line-height: 1.6;
-}
-.hero-cta {
+.consent-actions {
   display: flex;
-  gap: 14px;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin-bottom: 14px;
-}
-.hero-meta {
-  display: flex;
-  gap: 22px;
-  justify-content: center;
-  flex-wrap: wrap;
-  color: var(--muted-2);
-  font-size: 0.85rem;
-  margin-top: 28px;
-}
-.pills {
-  display: flex;
+  justify-content: flex-end;
   gap: 10px;
-  justify-content: center;
+  margin-top: 14px;
   flex-wrap: wrap;
-  margin-top: 22px;
-}
-.pill {
-  padding: 8px 14px;
-  border-radius: 10px;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  font-size: 0.82rem;
-  color: var(--muted);
-  font-weight: 500;
-}
-.pill b {
-  color: var(--text);
-}
-/* A box-shadow follows the element's box, not the artwork's outline, so a drop shadow
-   under a mark with no rectangle would hang a rectangle behind it. drop-shadow filters the
-   alpha channel instead, and traces the shape. */
-.hero-icon {
-  height: 96px;
-  width: auto;
-  margin: 0 auto 26px;
-  display: block;
-  filter: drop-shadow(0 18px 30px rgba(50, 34, 120, 0.4));
-  animation: float 6s ease-in-out infinite;
-}
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
 }
 
 /* ============================================================================
@@ -608,7 +317,7 @@ nav .wrap {
   transform: scaleY(-1);
 }
 @media (max-width: 600px) {
-  .hero {
+  .vg-site-hero {
     padding-bottom: 124px;
   }
   .lattice {
@@ -624,11 +333,6 @@ section {
   padding: 68px 0;
   position: relative;
 }
-.sec-head {
-  text-align: center;
-  max-width: 720px;
-  margin: 0 auto 44px;
-}
 .eyebrow {
   color: var(--accent);
   font-weight: 700;
@@ -636,17 +340,6 @@ section {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   margin-bottom: 14px;
-}
-.sec-head h2 {
-  font-size: clamp(1.8rem, 3.8vw, 2.5rem);
-  font-weight: 800;
-  letter-spacing: -0.025em;
-  line-height: 1.14;
-  margin-bottom: 16px;
-}
-.sec-head p {
-  color: var(--muted);
-  font-size: 1.04rem;
 }
 .sub-head {
   max-width: 720px;
@@ -1177,32 +870,6 @@ pre.codeblock code,
   color: #a9a1cf;
   font-size: 0.8rem;
 }
-.copy-btn {
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 6px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  background: #1f1942;
-  border: 1px solid #2f2760;
-  color: #a9a1cf;
-  font-family: "Inter", sans-serif;
-  font-size: 0.78rem;
-  font-weight: 600;
-  transition: background 0.2s, color 0.2s, border-color 0.2s;
-}
-.copy-btn:hover {
-  background: var(--violet);
-  color: #fff;
-  border-color: var(--violet);
-}
-.copy-btn.copied {
-  background: rgba(33, 193, 166, 0.2);
-  color: #7ef0d5;
-  border-color: rgba(33, 193, 166, 0.5);
-}
 
 /* ---------- conventions ---------- */
 .convs {
@@ -1440,164 +1107,6 @@ pre.codeblock code,
   margin-top: 34px;
 }
 
-/* ---------- footer ---------- */
-footer {
-  /* no border-top: the lattice is the seam now, and a rule drawn a few pixels above it
-     reads as a divider somebody forgot to take out */
-  padding: 104px 0 38px;
-  margin-top: 30px;
-  position: relative;
-  overflow: hidden;
-}
-footer .wrap {
-  position: relative;
-  z-index: 1;
-}
-.foot-grid {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 24px;
-  flex-wrap: wrap;
-}
-.foot-brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-weight: 800;
-}
-.foot-brand img {
-  height: 28px;
-  width: auto;
-}
-.foot-links {
-  display: flex;
-  gap: 24px;
-  flex-wrap: wrap;
-}
-.foot-links a {
-  color: var(--muted);
-  font-size: 0.9rem;
-  transition: color 0.2s;
-}
-.foot-links a:hover {
-  color: var(--accent);
-}
-.disclaimer {
-  color: var(--muted-2);
-  font-size: 0.8rem;
-  margin-top: 22px;
-  text-align: center;
-  max-width: 840px;
-  margin-left: auto;
-  margin-right: auto;
-  line-height: 1.6;
-}
-
-/* ---------- sponsor block ----------
-   Mirrors alegauss.github.io/sponsor.json. Sits between the footer links and the
-   disclaimer. Product tiles keep a white plate under the logo so the marks render as
-   published in both themes, never recoloured to fit this palette. */
-.sponsor {
-  margin-top: 30px;
-  padding-top: 26px;
-  border-top: 1px solid var(--line);
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-}
-.sponsor-mark {
-  width: 42px;
-  height: 42px;
-  border-radius: 10px;
-  background: #fff;
-  padding: 3px;
-  flex: none;
-}
-.sponsor-body {
-  min-width: 0;
-}
-.sponsor-label {
-  display: block;
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--muted-2);
-}
-.sponsor-name {
-  display: block;
-  margin-top: 2px;
-  font-weight: 800;
-  font-size: 1.02rem;
-  letter-spacing: -0.01em;
-  color: var(--text);
-}
-.sponsor-name:hover {
-  color: var(--accent);
-}
-.sponsor-body p {
-  margin-top: 6px;
-  max-width: 640px;
-  color: var(--muted);
-  font-size: 0.88rem;
-  line-height: 1.6;
-}
-.sponsor-body p a {
-  color: var(--accent);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-.sponsor-products {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 14px;
-}
-.sponsor-product {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 14px 9px 10px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--panel);
-  color: var(--text);
-  transition: border-color 0.2s, transform 0.15s ease;
-}
-.sponsor-product:hover {
-  border-color: var(--accent);
-  transform: translateY(-2px);
-}
-.sponsor-product img {
-  width: 28px;
-  height: 28px;
-  border-radius: 7px;
-  background: #fff;
-  padding: 2px;
-  flex: none;
-}
-.sponsor-product b {
-  display: block;
-  font-size: 0.86rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
-.sponsor-product small {
-  display: block;
-  max-width: 280px;
-  color: var(--muted-2);
-  font-size: 0.76rem;
-  line-height: 1.45;
-}
-@media (max-width: 620px) {
-  .sponsor {
-    flex-direction: column;
-  }
-  .sponsor-product {
-    width: 100%;
-  }
-}
-
 /* ============================================================================
    The landing page. Pictures first, a sentence each: every section is a grid of
    short tiles or a drawing, so the page reads at a glance and the copy is the
@@ -1611,21 +1120,12 @@ footer .wrap {
 }
 
 /* ---------- hero ---------- */
-.badge-mark {
-  height: 18px;
-  width: 18px;
-}
-.btn-lg {
-  padding: 14px 26px;
-  font-size: 1.02rem;
-  border-radius: 13px;
-}
 .part-chips {
   display: flex;
   gap: 10px;
   justify-content: center;
   flex-wrap: wrap;
-  margin: 0 auto 30px;
+  margin: 0 auto 34px;
 }
 .part-chip {
   display: inline-flex;
@@ -1645,20 +1145,9 @@ footer .wrap {
   color: var(--accent);
 }
 .part-chip:hover {
-  border-color: var(--violet);
+  border-color: var(--accent);
   transform: translateY(-2px);
 }
-.hero-meta span {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-}
-.hero-meta .icon {
-  color: var(--pass);
-  width: 16px;
-  height: 16px;
-}
-
 /* the hub: you ↔ polyweave ↔ tools, and the verdict underneath */
 .hub {
   display: grid;
@@ -2396,7 +1885,7 @@ section.band {
   margin: 26px auto 0;
   text-align: left;
 }
-.install-code .copy-btn {
+.install-code .vg-site-copy {
   position: absolute;
   top: 12px;
   right: 12px;
@@ -2458,7 +1947,7 @@ section.band {
   transition: border-color 0.2s, transform 0.15s;
 }
 .link-card:hover {
-  border-color: var(--violet);
+  border-color: var(--accent);
   transform: translateY(-2px);
 }
 .link-card b {
@@ -2489,20 +1978,16 @@ section.band {
     transform: none;
     transition: none;
   }
-  .hero-icon,
-  .dot,
   .ask-status i,
   .lat-sway,
   .lat-drift {
     animation: none;
   }
-  .sponsor-product:hover,
   .card:hover,
   .tile:hover,
   .game:hover,
   .part-chip:hover,
-  .link-card:hover,
-  .btn:hover {
+  .link-card:hover {
     transform: none;
   }
   html {

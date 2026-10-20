@@ -1,17 +1,15 @@
 import { session } from "../../lib/site-content";
-import { Rich } from "../ui/Rich";
+import { SiteRich as Rich, SiteSectionHead } from "@viglet/viglet-design-system/site";
 import { Session } from "../Session";
 
 export function Demo() {
   return (
     <section id="demo">
-      <div className="wrap">
-        <div className="sec-head reveal">
-          <div className="eyebrow">{session.eyebrow}</div>
-          <h2>{session.heading}</h2>
-          <p>
+      <div className="vg-site-wrap">
+        <div className="reveal">
+          <SiteSectionHead eyebrow={session.eyebrow} title={session.heading}>
             <Rich runs={session.intro} />
-          </p>
+          </SiteSectionHead>
         </div>
         <div className="demo reveal">
           <Session />

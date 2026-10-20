@@ -1,25 +1,16 @@
-import { hero, heroParts, repoUrl } from "../../lib/site-content";
-import { Rich } from "../ui/Rich";
+import { hero, heroParts } from "../../lib/site-content";
 import { Icon } from "../ui/Icon";
 import { Lattice } from "../ui/Lattice";
 import { Brand } from "../ui/Brand";
 
-export function Hero() {
+// The product's half of the landing hero (PW572): the design system's SiteHero draws the
+// badge, the headline, the lead, the call to action and the meta line, and this is what it
+// renders after them — the parts polyweave makes, the picture of who talks to whom, and the
+// weave behind it all.
+export function HeroFigure() {
   return (
-    <header className="hero" id="top">
-      <div className="wrap">
-        <div className="badge">
-          <img src="/polyweave/logo.svg" alt="" className="badge-mark" /> {hero.badge}
-        </div>
-        <h1>
-          {hero.titleLead}
-          <br />
-          <span className="grad">{hero.titleAccent}</span>
-        </h1>
-        <p className="sub">
-          <Rich runs={hero.sub} />
-        </p>
-
+    <>
+      <div className="vg-site-wrap hero-figure">
         <div className="part-chips">
           {heroParts.map((p) => (
             <a className="part-chip" href="#makes" key={p.label}>
@@ -28,30 +19,10 @@ export function Hero() {
             </a>
           ))}
         </div>
-
-        {/* The call to action is dropped from the Markdown twin by this attribute — it
-            converts a reader and costs an agent the same words on every page. */}
-        <div className="hero-cta" data-twin="omit">
-          <a className="btn btn-primary btn-lg" href="#install">
-            {hero.cta}
-          </a>
-          <a className="btn btn-ghost btn-lg" href={repoUrl}>
-            ★ View on GitHub
-          </a>
-        </div>
-
         <Hub />
-
-        <div className="hero-meta">
-          {hero.meta.map((item) => (
-            <span key={item}>
-              <Icon name="check" /> {item}
-            </span>
-          ))}
-        </div>
       </div>
       <Lattice />
-    </header>
+    </>
   );
 }
 

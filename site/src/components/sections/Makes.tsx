@@ -1,17 +1,15 @@
 import { makes } from "../../lib/site-content";
-import { Rich } from "../ui/Rich";
+import { SiteRich as Rich, SiteSectionHead } from "@viglet/viglet-design-system/site";
 import { Icon } from "../ui/Icon";
 
 export function Makes() {
   return (
     <section id="makes">
-      <div className="wrap">
-        <div className="sec-head reveal">
-          <div className="eyebrow">{makes.eyebrow}</div>
-          <h2>{makes.heading}</h2>
-          <p>
+      <div className="vg-site-wrap">
+        <div className="reveal">
+          <SiteSectionHead eyebrow={makes.eyebrow} title={makes.heading}>
             <Rich runs={makes.intro} />
-          </p>
+          </SiteSectionHead>
         </div>
         <div className="makes reveal">
           {makes.items.map((m) => (

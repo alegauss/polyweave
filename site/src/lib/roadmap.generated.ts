@@ -48,7 +48,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "U", title: "A window on everything a project governs", open: 0 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 0 },
   { block: "W", title: "A core that grows by layers", open: 0 },
-  { block: "X", title: "The site on the shared design system", open: 1 },
+  { block: "X", title: "The site on the shared design system", open: 0 },
 ];
 
 export const generatedTasks: GeneratedTask[] = [
@@ -100,13 +100,6 @@ export const generatedTasks: GeneratedTask[] = [
     symptom: "A playtest's trace of spawns, kills and hits cannot be measured or laid against the wave it played",
     why: "A declared wave says what it asks of a player; only a trace says where players struggle, and Starship's balance needs both.",
     deps: ["PW205"],
-  },
-  {
-    id: "PW572",
-    block: "X",
-    symptom: "The site keeps its own copy of the template that eight product sites share",
-    why: "The shared Nav, Hero, Footer and sponsor slot drift apart in each copy, and the design system now carries them once.",
-    deps: [],
   },
 ];
 

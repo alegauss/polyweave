@@ -1,6 +1,6 @@
 import { nonGoals as copy, trust } from "../../lib/site-content";
 import { nonGoals } from "../../lib/roadmap";
-import { Rich } from "../ui/Rich";
+import { SiteRich as Rich, SiteSectionHead } from "@viglet/viglet-design-system/site";
 import { Icon } from "../ui/Icon";
 
 /**
@@ -11,10 +11,9 @@ import { Icon } from "../ui/Icon";
 export function Trust() {
   return (
     <section id="trust" className="band">
-      <div className="wrap">
-        <div className="sec-head reveal">
-          <div className="eyebrow">{trust.eyebrow}</div>
-          <h2>{trust.heading}</h2>
+      <div className="vg-site-wrap">
+        <div className="reveal">
+          <SiteSectionHead eyebrow={trust.eyebrow} title={trust.heading} />
         </div>
         <div className="tiles four reveal">
           {trust.items.map((t) => (

@@ -44,6 +44,14 @@ test("no source fetches a third-party font at page load", () => {
   assert.deepEqual(offenders.map((f) => f.replace(siteDir + "/", "")), []);
 });
 
+// Analytics loads only after consent (components/Consent.tsx), so the template carries no
+// tag: one typed back into the head would load it for every visitor before they chose.
+test("the page template carries no analytics tag", () => {
+  const html = readFileSync(join(siteDir, "index.html"), "utf8");
+  assert.ok(!html.includes("googletagmanager.com"), "index.html loads Google Analytics unasked");
+  assert.ok(!/gtag\(/.test(html), "index.html calls gtag before consent");
+});
+
 // The lattice loops by translating one whole repeat of its bands, so a period that does not
 // divide that repeat puts a visible seam through the weave once per cycle — every few
 // seconds, forever. The arithmetic is the whole of the illusion, so it is asserted rather

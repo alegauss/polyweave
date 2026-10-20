@@ -1,13 +1,12 @@
 import { steps } from "../../lib/site-content";
-import { Rich } from "../ui/Rich";
+import { SiteRich as Rich, SiteSectionHead } from "@viglet/viglet-design-system/site";
 
 export function Steps() {
   return (
     <section id="how">
-      <div className="wrap">
-        <div className="sec-head reveal">
-          <div className="eyebrow">{steps.eyebrow}</div>
-          <h2>{steps.heading}</h2>
+      <div className="vg-site-wrap">
+        <div className="reveal">
+          <SiteSectionHead eyebrow={steps.eyebrow} title={steps.heading} />
         </div>
         <ol className="steps reveal">
           {steps.items.map((s) => (

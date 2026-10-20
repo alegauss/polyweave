@@ -9,7 +9,7 @@ reads from there rather than copying it.
 ```
 npm install        # once
 npm run dev        # dev server at /polyweave/
-npm run build      # generate → tsc → client → og image → SSR → prerender
+npm run build      # generate → tsc → client → SSR → og image + prerender
 npm test           # the site's own claims, against what the build produced
 npm run typecheck  # tsc -b, no emit
 npm run preview    # serve the built dist/
@@ -22,6 +22,13 @@ builds the SSR bundle and prerenders every route with its Markdown twin, its
 route with no page, or a feature record naming a block the roadmap has lost all fail it.
 `npm test` then asserts the built output, so it runs after the build rather than instead of
 it.
+
+The chrome is the design system's site layer, `@viglet/viglet-design-system` pinned in
+`package.json`: the nav, the hero, the section heads, the buttons, the copy button, the
+sponsor block, the footer and the theme toggle come from `./site`, the ground from
+`./tokens.css` on `data-tone="cool"`, their styles from `./site.css`, and the prerender and
+the social card's rasteriser from `./vite`. What `src/index.css` keeps is the product's own:
+the brand re-keyed to the hub's teal, the mark's violets for the lattice, and the sections.
 
 GitHub Pages derives the base path from the repository name, so Vite's `base` is
 `/polyweave/` and every asset path carries that prefix. It is written twice — in
@@ -56,7 +63,9 @@ person who has never heard of polyweave and has a few seconds to see what it is 
 | `src/lib/features.ts` | One record per roadmap block — route, `<head>` and page, declared together |
 | `src/lib/diagrams.ts` | The depth pages' SVGs and the session transcript, kept verbatim as figures |
 | `src/components/ui/Icon.tsx` | The line icons the landing tiles use, drawn in the current text colour |
-| `src/lib/theme.ts` + `index.html` pre-paint script + `src/index.css` tokens | **The theme follows the OS**, a stored choice overrides it, applied before first paint |
+| `src/components/Chrome.tsx` | The nav and the footer every route shares, drawn by the design system's site layer |
+| `src/components/Consent.tsx` | The analytics banner: Google Analytics loads only after the visitor allows it |
+| `vite.config.ts` pre-paint script + `THEME_KEY` | **The theme follows the OS**, a stored choice overrides it, applied before first paint |
 | `src/routes.tsx` | The route table and its metadata, asserted against each other at import time |
 | `src/components/sections/` | One component per landing section; the composition lives here |
 | `src/pages/Landing.tsx` | The landing page — the section order is the pitch |
@@ -79,5 +88,6 @@ Set `$ROADKEEP` to a command if yours is not at `.roadkeep/scripts/roadkeep.py` 
 ## Deliberate non-goals here
 
 No third-party fonts fetched at page load (the product claims nothing leaves your machine;
-the site adds no fetch of its own), no analytics, no cookie banner. Inter and JetBrains Mono
+the site adds no fetch of its own), and no analytics unless the visitor allows it: the tag
+is not in the HTML, and the banner the hub runs is what loads it. Inter and JetBrains Mono
 are named with system fallbacks rather than pulled from a CDN.

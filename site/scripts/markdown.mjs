@@ -13,6 +13,8 @@ const SKIP_TAGS = new Set(["NAV", "FOOTER", "BUTTON", "SCRIPT", "STYLE", "NOSCRI
 const SKIP_CLASSES = new Set([
   "dot", "chk", "ico", "eyebrow", "bar", "copy-btn", "block-letter", "block-count",
   "file-bar", "lattice",
+  // the same three as the design system's site layer names them
+  "vg-site-dot", "vg-site-eyebrow", "vg-site-copy",
 ]);
 // Elements that carry a run of text, not a block — rendered inline, never recursed as blocks.
 const INLINE_TAGS = new Set(["SPAN", "B", "STRONG", "I", "EM", "CODE", "KBD", "A", "BR"]);

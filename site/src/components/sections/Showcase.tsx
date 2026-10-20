@@ -1,5 +1,5 @@
 import { showcase } from "../../lib/site-content";
-import { Rich } from "../ui/Rich";
+import { SiteRich as Rich, SiteSectionHead } from "@viglet/viglet-design-system/site";
 
 /**
  * The games made with polyweave, each its logo and a link to its own site. The link sits
@@ -9,13 +9,11 @@ import { Rich } from "../ui/Rich";
 export function Showcase() {
   return (
     <section id="showcase">
-      <div className="wrap">
-        <div className="sec-head reveal">
-          <div className="eyebrow">{showcase.eyebrow}</div>
-          <h2>{showcase.heading}</h2>
-          <p>
+      <div className="vg-site-wrap">
+        <div className="reveal">
+          <SiteSectionHead eyebrow={showcase.eyebrow} title={showcase.heading}>
             <Rich runs={showcase.intro} />
-          </p>
+          </SiteSectionHead>
         </div>
         <div className="games reveal">
           {showcase.games.map((g) => (

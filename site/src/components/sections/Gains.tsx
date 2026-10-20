@@ -1,18 +1,16 @@
 import { gains } from "../../lib/site-content";
-import { Rich } from "../ui/Rich";
+import { SiteRich as Rich, SiteSectionHead } from "@viglet/viglet-design-system/site";
 import { Icon } from "../ui/Icon";
 
 /** What Claude Code can do with the plugin that it cannot do without it — the page's core. */
 export function Gains() {
   return (
     <section id="gains" className="band">
-      <div className="wrap">
-        <div className="sec-head reveal">
-          <div className="eyebrow">{gains.eyebrow}</div>
-          <h2>{gains.heading}</h2>
-          <p>
+      <div className="vg-site-wrap">
+        <div className="reveal">
+          <SiteSectionHead eyebrow={gains.eyebrow} title={gains.heading}>
             <Rich runs={gains.intro} />
-          </p>
+          </SiteSectionHead>
         </div>
         <div className="tiles reveal">
           {gains.items.map((g) => (

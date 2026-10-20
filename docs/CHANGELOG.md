@@ -645,3 +645,4 @@
 
 ## Block X — The site on the shared design system
 
+- ✅ **PW572** **The site keeps its own copy of the template that eight product sites share** — The site's nav, hero, section heads, buttons, sponsor, footer and theme toggle come from the shared site layer in the hub's teal; analytics waits for consent (design recorded in `site/README.md`).

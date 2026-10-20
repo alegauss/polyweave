@@ -1,6 +1,5 @@
-import { Nav } from "../components/Nav";
-import { Footer } from "../components/Footer";
-import { Rich } from "../components/ui/Rich";
+import { Footer, Nav } from "../components/Chrome";
+import { SiteRich as Rich, SiteSectionHead } from "@viglet/viglet-design-system/site";
 import { RawSvg } from "../components/ui/RawSvg";
 import type { FeatureRecord } from "../lib/features";
 import { features } from "../lib/features";
@@ -33,7 +32,7 @@ export function FeaturePage({ record }: { record: FeatureRecord }) {
     <>
       <Nav />
       <header className="page-head">
-        <div className="wrap">
+        <div className="vg-site-wrap">
           <div className="eyebrow">
             {record.eyebrow} · {blockTitle(record.block)}
           </div>
@@ -45,7 +44,7 @@ export function FeaturePage({ record }: { record: FeatureRecord }) {
       </header>
 
       <section>
-        <div className="wrap">
+        <div className="vg-site-wrap">
           {record.figure && (
             <figure className="shot-frame reveal">
               <RawSvg markup={FIGURES[record.figure]} />
@@ -80,10 +79,9 @@ export function FeaturePage({ record }: { record: FeatureRecord }) {
       </section>
 
       <section id="more">
-        <div className="wrap">
-          <div className="sec-head reveal">
-            <div className="eyebrow">The other blocks</div>
-            <h2>What this one sits next to</h2>
+        <div className="vg-site-wrap">
+          <div className="reveal">
+            <SiteSectionHead eyebrow="The other blocks" title="What this one sits next to" />
           </div>
           <div className="grid reveal">
             {others.map((f) => (

@@ -1,6 +1,6 @@
 import { session } from "../lib/site-content";
 import { sessionTerminal } from "../lib/diagrams";
-import { Rich } from "./ui/Rich";
+import { SiteRich as Rich } from "@viglet/viglet-design-system/site";
 
 /**
  * The transcript. A dark island in both themes, like every other figure here, and static:

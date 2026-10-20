@@ -1,7 +1,5 @@
-import { Nav } from "../components/Nav";
-import { Footer } from "../components/Footer";
-import { Rich } from "../components/ui/Rich";
-import { CopyButton } from "../components/ui/CopyButton";
+import { Footer, Nav } from "../components/Chrome";
+import { SiteCopyButton, SiteRich as Rich } from "@viglet/viglet-design-system/site";
 import { specs, specsUrl } from "../lib/site-content";
 
 export function Specs() {
@@ -9,7 +7,7 @@ export function Specs() {
     <>
       <Nav />
       <header className="page-head">
-        <div className="wrap">
+        <div className="vg-site-wrap">
           <div className="eyebrow">{specs.eyebrow}</div>
           <h1>{specs.heading}</h1>
           <p className="sub">
@@ -22,7 +20,7 @@ export function Specs() {
       </header>
 
       <section>
-        <div className="wrap">
+        <div className="vg-site-wrap">
           <div className="table-wrap reveal">
             <table className="matrix">
               <thead>
@@ -61,7 +59,7 @@ export function Specs() {
       </section>
 
       <section>
-        <div className="wrap">
+        <div className="vg-site-wrap">
           <div className="prose reveal">
             <div className="prose-block">
               <h2>{specs.formats.heading}</h2>
@@ -80,7 +78,12 @@ export function Specs() {
           <div className="codeblock file reveal">
             <div className="file-bar">
               <span>mascot.accept.toml</span>
-              <CopyButton text={specs.sample.code} label="Copy the acceptance spec" />
+              <SiteCopyButton
+                text={specs.sample.code}
+                label="Copy the acceptance spec"
+                copyLabel="Copy"
+                copiedLabel="Copied!"
+              />
             </div>
             <pre>
               <code>{specs.sample.code}</code>

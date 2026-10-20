@@ -1,7 +1,6 @@
-import { Nav } from "../components/Nav";
-import { Footer } from "../components/Footer";
+import { Footer, Nav } from "../components/Chrome";
 import { Session } from "../components/Session";
-import { Rich } from "../components/ui/Rich";
+import { SiteRich as Rich, SiteSectionHead } from "@viglet/viglet-design-system/site";
 import { claudeCode, nonGoals as nonGoalCopy } from "../lib/site-content";
 import { nonGoals } from "../lib/roadmap";
 
@@ -10,7 +9,7 @@ export function ClaudeCode() {
     <>
       <Nav />
       <header className="page-head">
-        <div className="wrap">
+        <div className="vg-site-wrap">
           <div className="eyebrow">{claudeCode.eyebrow}</div>
           <h1>{claudeCode.heading}</h1>
           <p className="sub">
@@ -20,13 +19,13 @@ export function ClaudeCode() {
       </header>
 
       <section>
-        <div className="wrap">
+        <div className="vg-site-wrap">
           <Session />
         </div>
       </section>
 
       <section>
-        <div className="wrap">
+        <div className="vg-site-wrap">
           <div className="prose reveal">
             {claudeCode.sections.map((s) => (
               <div className="prose-block" key={s.heading}>
@@ -55,13 +54,11 @@ export function ClaudeCode() {
       </section>
 
       <section id="non-goals">
-        <div className="wrap">
-          <div className="sec-head reveal">
-            <div className="eyebrow">{nonGoalCopy.eyebrow}</div>
-            <h2>{nonGoalCopy.heading}</h2>
-            <p>
+        <div className="vg-site-wrap">
+          <div className="reveal">
+            <SiteSectionHead eyebrow={nonGoalCopy.eyebrow} title={nonGoalCopy.heading}>
               <Rich runs={nonGoalCopy.intro} />
-            </p>
+            </SiteSectionHead>
           </div>
           <div className="nots reveal">
             {nonGoals.map((item) => (

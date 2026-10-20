@@ -11,7 +11,10 @@
 // states no status — what is still open lives in docs/ROADMAP.md, which the depth pages
 // link to — and it still claims no measured result for polyweave, which
 // scripts/lint.test.mjs enforces.
-import { sessionTerminal } from "./diagrams";
+import type { SponsorDeclaration } from "@viglet/viglet-design-system/site";
+// With its extension: vite.config.ts reads THEME_KEY from this module, and Vite's own config
+// loader resolves no import that leaves it off.
+import { sessionTerminal } from "./diagrams.ts";
 
 /** How many commands the transcript actually runs, so the sentence under it can say. */
 const sessionCalls = (sessionTerminal.match(/&gt;<\/span> polyweave /g) ?? []).length;
@@ -53,6 +56,10 @@ export const changelogUrl = `${repoUrl}/blob/main/docs/CHANGELOG.md`;
 export const specsUrl = `${repoUrl}/tree/main/docs/specs`;
 export const roadkeepUrl = "https://github.com/alegauss/roadkeep";
 
+// Where the light/dark choice is stored: read by the pre-paint script vite.config.ts inlines
+// and by the toggle, so the two agree on one key.
+export const THEME_KEY = "pw-theme";
+
 // Section anchors (#x) act on the landing page; the page links are base-absolute so they
 // resolve the same from every route. There is no "Claude Code" item: the whole page is.
 export const navLinks = [
@@ -79,16 +86,20 @@ export const footer = {
 // Mirrors alegauss.github.io/sponsor.json — the canonical sponsor declaration for these
 // projects. Transcribed here rather than fetched at runtime: this site is prerendered, and
 // the whole point of naming a sponsor is that crawlers and LLMs read it in the served HTML.
-export const sponsor = {
-  label: "Sponsored by",
-  name: "Viglet",
-  url: "https://www.viglet.org",
-  siteLabel: "viglet.org",
-  logo: "/polyweave/viglet/viglet-logo.png",
-  summary:
-    "Open source search and content tools for organisations with a lot to publish. Run on your own servers, with no per-user licence.",
+// Shaped as the design system's SponsorDeclaration, which SiteSponsor renders.
+export const sponsor: SponsorDeclaration = {
+  sponsor: {
+    label: "Sponsored by",
+    name: "Viglet",
+    url: "https://www.viglet.org",
+    siteLabel: "viglet.org",
+    logo: "/polyweave/viglet/viglet-logo.png",
+    summary:
+      "Open source search and content tools for organisations with a lot to publish. Run on your own servers, with no per-user licence.",
+  },
   products: [
     {
+      id: "turing",
       name: "Viglet Turing",
       url: "https://turing.viglet.org",
       logo: "/polyweave/viglet/turing-logo.png",
@@ -96,6 +107,7 @@ export const sponsor = {
         "so visitors find what they came for, with AI answers drawn only from your own content",
     },
     {
+      id: "shio",
       name: "Viglet Shio",
       url: "https://shio.viglet.org",
       logo: "/polyweave/viglet/shio-logo.png",
@@ -103,7 +115,7 @@ export const sponsor = {
         "so a new page goes live the same day, reviewed and approved by your own team",
     },
   ],
-} as const;
+};
 
 /* ------------------------------------------------------------------ hero */
 

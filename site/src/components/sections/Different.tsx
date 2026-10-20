@@ -1,5 +1,5 @@
 import { different } from "../../lib/site-content";
-import { Rich } from "../ui/Rich";
+import { SiteRich as Rich, SiteSectionHead } from "@viglet/viglet-design-system/site";
 import { Icon } from "../ui/Icon";
 
 /**
@@ -11,13 +11,11 @@ export function Different() {
   const { columns, rows, ours } = different;
   return (
     <section id="different" className="band">
-      <div className="wrap">
-        <div className="sec-head reveal">
-          <div className="eyebrow">{different.eyebrow}</div>
-          <h2>{different.heading}</h2>
-          <p>
+      <div className="vg-site-wrap">
+        <div className="reveal">
+          <SiteSectionHead eyebrow={different.eyebrow} title={different.heading}>
             <Rich runs={different.intro} />
-          </p>
+          </SiteSectionHead>
         </div>
         <div className="table-wrap reveal">
           <table className="matrix compare">

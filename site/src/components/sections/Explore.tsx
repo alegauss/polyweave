@@ -1,3 +1,4 @@
+import { SiteSectionHead } from "@viglet/viglet-design-system/site";
 import { explore } from "../../lib/site-content";
 import { features } from "../../lib/features";
 
@@ -5,10 +6,9 @@ import { features } from "../../lib/features";
 export function Explore() {
   return (
     <section id="explore">
-      <div className="wrap">
-        <div className="sec-head reveal">
-          <div className="eyebrow">{explore.eyebrow}</div>
-          <h2>{explore.heading}</h2>
+      <div className="vg-site-wrap">
+        <div className="reveal">
+          <SiteSectionHead eyebrow={explore.eyebrow} title={explore.heading} />
         </div>
         <div className="links-grid reveal">
           <a className="link-card" href="/polyweave/claude-code/">

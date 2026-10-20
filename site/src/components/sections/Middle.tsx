@@ -1,18 +1,16 @@
 import { middle } from "../../lib/site-content";
-import { Rich } from "../ui/Rich";
+import { SiteRich as Rich, SiteSectionHead } from "@viglet/viglet-design-system/site";
 import { Icon } from "../ui/Icon";
 import { Brand } from "../ui/Brand";
 
 export function Middle() {
   return (
     <section id="models" className="band">
-      <div className="wrap">
-        <div className="sec-head reveal">
-          <div className="eyebrow">{middle.eyebrow}</div>
-          <h2>{middle.heading}</h2>
-          <p>
+      <div className="vg-site-wrap">
+        <div className="reveal">
+          <SiteSectionHead eyebrow={middle.eyebrow} title={middle.heading}>
             <Rich runs={middle.intro} />
-          </p>
+          </SiteSectionHead>
         </div>
         <div className="models reveal">
           {middle.groups.map((g) => (

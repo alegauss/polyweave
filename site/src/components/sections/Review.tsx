@@ -1,17 +1,15 @@
 import { review } from "../../lib/site-content";
-import { Rich } from "../ui/Rich";
+import { SiteRich as Rich, SiteSectionHead } from "@viglet/viglet-design-system/site";
 import { Icon } from "../ui/Icon";
 
 export function Review() {
   return (
     <section id="review">
-      <div className="wrap">
-        <div className="sec-head reveal">
-          <div className="eyebrow">{review.eyebrow}</div>
-          <h2>{review.heading}</h2>
-          <p>
+      <div className="vg-site-wrap">
+        <div className="reveal">
+          <SiteSectionHead eyebrow={review.eyebrow} title={review.heading}>
             <Rich runs={review.intro} />
-          </p>
+          </SiteSectionHead>
         </div>
         <div className="review-split reveal">
           <ReviewMock />
