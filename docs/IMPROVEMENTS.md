@@ -170,32 +170,6 @@ model and the members.
 
 ## Block P — Music and sound a game can ship
 
-### §PW573 A Surge render that fails on a label's codepage
-
-Where: polyweave's own gate, 2026-10-19, during PW559.
-
-`tests/test_music_render.py::test_a_surge_patch_renders_through_the_plugin` failed once
-in the parallel gate and passed run alone a minute later, on the same code. The failure
-is inside Pedalboard, not polyweave: `load_plugin` reads Surge XT's parameters while
-`music_render.py:158` opens the plug-in, and `_pedalboard.py:256` raised
-`UnicodeDecodeError: 'utf-8' codec can't decode byte 0xe3 in position 9`. 0xe3 is `ã` in
-Windows-1252, so the bytes were most likely a label in the machine's pt-BR codepage, not
-UTF-8, and which label comes back can depend on what else is loading at the time.
-
-What to build: a gate that does not go red on a third party's decode. Two ways, and the
-choice is open:
-
-- open the plug-in in `music_render.py` with the decode guarded: catch
-  `UnicodeDecodeError` around `load_plugin`, retry once, and only then refuse with a
-  named code (`music.no-engine`, with the error in the message), so a render on a
-  pt-BR machine says what happened instead of raising a traceback;
-- or mark the Surge render tests `serial`, if a second run shows they only fail under
-  load.
-
-Reproduce first: run the gate on a pt-BR Windows machine a few times and count how often
-it fails. If it never fails alone, it is contention; if it fails alone too, it is the
-codepage.
-
 ## Block Q — Words held to the world
 
 ## Block R — Levels measured before a person plays them

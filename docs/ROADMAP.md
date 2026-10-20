@@ -36,8 +36,6 @@
 
 ## Block P — Music and sound a game can ship
 
-- 📋 **PW573** (deps: —) **The Surge render test fails in the parallel gate on a Pedalboard UnicodeDecodeError and passes alone** — A gate that goes red on a third party's decode of a plug-in label is a gate an agent learns to rerun instead of read. → §PW573
-
 ## Block Q — Words held to the world
 
 ## Block R — Levels measured before a person plays them

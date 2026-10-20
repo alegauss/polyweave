@@ -399,6 +399,45 @@ def test_a_stinger_keeps_its_tail_and_has_no_seam(tmp_path):
     assert "seam_flux" not in found["measured"]
 
 
+class _Parameter:
+    raw_value = 0.5
+
+
+class _Plugin:
+    parameters = {"a_volume": _Parameter()}
+
+
+def _decode_fails(times: int):
+    """A plug-in loader whose labels fail to decode the first `times` opens."""
+    calls = []
+
+    def load(path):
+        calls.append(path)
+        if len(calls) <= times:
+            raise UnicodeDecodeError("utf-8", b"Volume \xe3", 7, 8,
+                                     "invalid continuation byte")
+        return _Plugin()
+
+    return load, calls
+
+
+def test_a_surge_label_that_fails_to_decode_once_is_read_again():
+    """§PW573: once, under the parallel gate, a label came back in pt-BR's code page."""
+    load, calls = _decode_fails(1)
+    plugin, first = music_render._loaded(Path("Surge XT.vst3"), load)
+    assert isinstance(plugin, _Plugin) and first == {"a_volume": 0.5}
+    assert len(calls) == 2
+
+
+def test_a_surge_label_that_never_decodes_is_refused_by_name():
+    load, calls = _decode_fails(music_render.LOAD_TRIES)
+    with pytest.raises(PolyweaveError) as refused:
+        music_render._loaded(Path("Surge XT.vst3"), load)
+    assert refused.value.code == "music.engine-unreadable"
+    assert "0xe3" in refused.value.message
+    assert len(calls) == music_render.LOAD_TRIES
+
+
 @needs_surge
 def test_a_surge_patch_renders_through_the_plugin(tmp_path):
     found = music_render.render(Reported(), project(tmp_path, SURGE_SCORE),

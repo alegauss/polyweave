@@ -169,6 +169,13 @@ CODES: dict[str, Code] = {
         doors=("write surge:<patch>, gm:<program> or drums:<kit>",
                "declare [patch.<name>]"),
     ),
+    "music.engine-unreadable": Code(
+        means="Surge XT opened, and Pedalboard could not decode one of its parameter "
+        "labels, every time it was tried",
+        when="a label in the system's code page rather than UTF-8, seen once on a "
+        "pt-BR Windows machine under load (§PW573)",
+        doors=("render again", "read the byte the message names"),
+    ),
     "music.no-engine": Code(
         means="an engine or library the score renders through is not here",
         when="Pedalboard not installed, no FluidSynth on PATH, [paths] soundfont "

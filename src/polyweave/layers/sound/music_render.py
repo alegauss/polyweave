@@ -149,14 +149,43 @@ def nearest_label(labels: list, value: Any) -> Any:
     return best
 
 
+#: How many times Surge XT is opened before a label it cannot decode is refused.
+LOAD_TRIES = 2
+
+
+def _loaded(binary: Path, load: Any = None) -> tuple[Any, dict]:
+    """The plug-in and its parameters' first values, its labels read in one piece.
+
+    Pedalboard decodes each parameter's label as UTF-8 while it opens the plug-in, and
+    once, in the parallel gate on a pt-BR Windows machine, a label came back with a
+    0xe3 (`ã` in that codepage) and the render raised a bare UnicodeDecodeError from
+    inside Pedalboard; run alone a minute later it passed (§PW573). So the open is
+    tried again, and where it fails every time the render is refused by name with the
+    decode error in it, never a traceback from a library.
+    """
+    if load is None:
+        from pedalboard import load_plugin as load
+    failed = None
+    for _ in range(LOAD_TRIES):
+        try:
+            plugin = load(str(binary))
+            return plugin, {k: p.raw_value for k, p in plugin.parameters.items()}
+        except UnicodeDecodeError as exc:
+            failed = exc
+    raise PolyweaveError(
+        "music.engine-unreadable",
+        f"Surge XT opened, and Pedalboard could not read one of its labels "
+        f"{LOAD_TRIES} times running: {failed}",
+        "render again; where it fails every time, the byte named is in a label written "
+        "in the system's code page rather than UTF-8, which Pedalboard cannot read",
+    ) from failed
+
+
 class _Surge:
     """One Surge XT instance, reset between patches rather than loaded again."""
 
     def __init__(self, binary: Path):
-        from pedalboard import load_plugin
-
-        self.plugin = load_plugin(str(binary))
-        self.init = {k: p.raw_value for k, p in self.plugin.parameters.items()}
+        self.plugin, self.init = _loaded(binary)
         self.touched: set[str] = set()
 
     def patch(self, name: str, settings: dict) -> None:
