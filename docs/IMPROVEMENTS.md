@@ -149,6 +149,33 @@ build check that every material the declaration names reaches the mesh (the voxe
 build's "no cell wears" check, for meshes), so a lost material is a finding and not a
 surprise in a render.
 
+### §PW577 A macOS build smoked as an app bundle
+
+Found in spinhold (RK244), which proves its macOS build on a GitHub Actions
+`macos-latest` runner because the owner has no Mac. The project has a "macOS" preset
+(RK243) that writes `build/macos/Spinhold.zip`, a universal `Spinhold.app`.
+
+`python -m polyweave game.export_smoke --presets macOS` cannot prove it, on any machine.
+In `layers/engine/driving.py`, `_HOST` maps only `win32` to "Windows Desktop" and
+`linux` to "Linux", so on a Mac every preset answers "a macOS build does not launch on
+this machine". And `_smoked` writes the export to `game.exe` or `game.x86_64` and
+launches that file, where a macOS export is a `.zip` (or `.dmg`) holding an `.app`
+bundle whose binary is `Contents/MacOS/<name>`, with its pack at
+`Contents/Resources/<name>.pck`.
+
+Expected: on `darwin`, the "macOS" preset is exported to a `.zip`, the bundle unzipped,
+its `Contents/MacOS` binary launched headless and windowed for the frames asked and
+through the kept flow, the same `_BROKE` lines read from its output, and the answer
+naming the bundle and the pack. `game.release_check --pack` should take the `.pck`
+inside the bundle too. Ideally the answer also keeps a screenshot of the first screen,
+since a Metal or MoltenVK draw failure is only seen in a picture.
+
+Workaround: `.github/workflows/macos.yml` in spinhold makes exactly the call that would
+be made (`game.export_smoke --presets macOS`) and fails while it answers "skipped", so
+the workflow goes green once this lands with no change on the project's side. It also
+exports and unzips the app with Godot's own command so the log and the bundle are kept
+as artefacts.
+
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once
