@@ -453,6 +453,12 @@ has no field for, makes it a ShaderMaterial over a spatial shader written beside
 `<name>.<material>.gdshader`, the sheen a lift of the surface's own colour where it
 turns from the view. A material with no finish is left to the glTF.
 
+**A build owns what it wrote** (§PW567). On a rebuild, the `.tres` and `.gdshader` an
+earlier build wrote for a material the declaration no longer has are removed with their
+records, and the answer names them under `removed`. What it wrote is what its last
+stamp listed, and any `<name>.*.tres` or `.gdshader` beside it whose record says this
+declaration's `geometry.build` made it; a file the project made by hand is left.
+
 **The mesh is imported wearing them** (§PW570). In a Godot project (a `project.godot`
 at the root) the build writes the mesh's `<name>.glb.import` so each material the glTF
 names is imported as its written `.tres` (`_subresources.materials.<material>

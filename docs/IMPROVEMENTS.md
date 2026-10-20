@@ -31,23 +31,6 @@ standard one lacks is asked for), with the same numbers the bake used and a prov
 record, so the game loads what was judged. A capture of the game against the bake of the
 same model at one rig says whether the two agree.
 
-### §PW567 A build owns what it wrote
-
-Where: spinhold, 2026-10-19, the Playdeck's kit (RK236). `playdeck_hex.toml` first
-declared materials `tile`, `lip` and `stud`, then was redrawn with `pink`, `cream` and
-`violet`; `playdeck_arch.toml` lost its `arch` material the same way.
-
-What came back: `geometry.build --out assets/pieces` wrote the new
-`playdeck_hex.pink.tres` and the rest, and left `playdeck_hex.tile.tres`,
-`playdeck_hex.lip.tres`, `playdeck_hex.stud.tres` and `playdeck_arch.arch.tres`, each
-with its `.prov.json`, beside them. Nothing said they were orphans; they were found by
-listing the folder and matching each file's material against the declaration by hand.
-
-What polyweave should do: a build owns what it writes for a document. On a rebuild it
-removes the `<name>.<material>.tres` / `.gdshader` (and records) it wrote before for a
-material the document no longer declares, and says which in its answer;
-`provenance.outdated` names any it finds whose material is gone.
-
 ### §PW568 One call from a kit to its sitting
 
 Where: spinhold, 2026-10-19, the Playdeck's kit of twelve pieces (RK236).

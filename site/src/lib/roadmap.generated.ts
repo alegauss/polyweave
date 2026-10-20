@@ -31,7 +31,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
-  { block: "G", title: "Geometry as a declaration", open: 6 },
+  { block: "G", title: "Geometry as a declaration", open: 5 },
   { block: "H", title: "Proof on a real game", open: 1 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW567",
-    block: "G",
-    symptom: "A rebuild leaves the material files of materials the document dropped",
-    why: "Orphan .tres files and records pile up beside a piece, found only by matching names by hand.",
-    deps: [],
-  },
   {
     id: "PW568",
     block: "G",

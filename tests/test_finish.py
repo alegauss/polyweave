@@ -396,6 +396,43 @@ def test_a_build_writes_the_finish_beside_its_mesh(tmp_path):
                            root=tmp_path)["kind"] == "mesh"
 
 
+def test_a_rebuild_removes_what_it_wrote_for_a_material_now_gone(tmp_path):
+    """§PW567: a redrawn kit left its old materials' files beside the new ones."""
+    pytest.importorskip("bpy")
+    from polyweave.surface.cli import build_one
+
+    _plastic_post(tmp_path, 'colour = "#F27BA8"\ncoat = 1.0')
+    built = tmp_path / "built"
+    old = built / "post.pink_plastic.tres"
+    assert old.is_file()
+    # a file the project made by hand beside it is not the build's to remove
+    (built / "post.by_hand.tres").write_text("[gd_resource]\n", encoding="utf-8")
+    source = (tmp_path / "post.toml").read_text(encoding="utf-8")
+    (tmp_path / "post.toml").write_text(source.replace("pink plastic", "cream"),
+                                        encoding="utf-8")
+    again = build_one("post.toml", out="built", root=str(tmp_path))
+    assert again["status"] == "built", again
+    assert (built / "post.cream.tres").is_file()
+    assert not old.exists()
+    assert not provenance.sidecar(old, tmp_path).exists()
+    assert again["removed"] == ["built/post.pink_plastic.tres"]
+    assert (built / "post.by_hand.tres").is_file()
+
+
+def test_a_rebuild_finds_an_orphan_its_stamp_forgot_by_its_record(tmp_path):
+    """A stamp written over before §PW567 no longer lists the old material's file."""
+    pytest.importorskip("bpy")
+    from polyweave.surface.cli import build_one
+
+    _plastic_post(tmp_path, 'colour = "#F27BA8"\ncoat = 1.0')
+    (tmp_path / "built" / "post.build.json").unlink()
+    source = (tmp_path / "post.toml").read_text(encoding="utf-8")
+    (tmp_path / "post.toml").write_text(source.replace("pink plastic", "cream"),
+                                        encoding="utf-8")
+    again = build_one("post.toml", out="built", root=str(tmp_path))
+    assert again["removed"] == ["built/post.pink_plastic.tres"]
+
+
 def test_a_material_with_no_finish_is_left_to_the_gltf(tmp_path):
     pytest.importorskip("bpy")
     found = _plastic_post(tmp_path, 'colour = "#F27BA8"\nroughness = 0.35')

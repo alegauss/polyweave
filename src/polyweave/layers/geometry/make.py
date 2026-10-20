@@ -144,7 +144,8 @@ def build_one(
 
     `given` sets a declared param by name, or a field of the declaration by its table
     and key, such as `voxels.cell`, for this build only (§PW317). The answer's `set`
-    says what each one changed, and a key that names nothing is refused.
+    says what each one changed, and a key that names nothing is refused. `removed`
+    names the material files an earlier build wrote for a material now gone (§PW567).
     """
     return _built(source, out, root, given, preview, force, mesh, strict=True)
 
@@ -253,6 +254,9 @@ def _built(source, out, root, given, preview, force, mesh, *, strict: bool) -> d
             answer["members"] = built
             answer["outputs"] = [path for one in built for path in one["outputs"]]
         _recorded(answer["outputs"], made, here)
+        dropped = _drop_orphans(mark, where, members, folder, answer["outputs"], here)
+        if dropped:
+            answer["removed"] = dropped
         # The source rides in the stamp so the edit guard can name the declaration to
         # change instead of the file an agent was about to edit by hand (§PW133).
         stamped = {
@@ -270,6 +274,54 @@ def _built(source, out, root, given, preview, force, mesh, *, strict: bool) -> d
         answer["status"] = "refused"
         answer["refusal"] = refused.as_dict()
     return answer
+
+
+#: What a build writes per material, and so removes once the material is gone (§PW567).
+_MATERIAL_FILES = (".tres", ".gdshader")
+
+
+def _drop_orphans(mark: Path, source: Path, members: list, folder: Path,
+                  outputs: list, here: Path) -> list[str]:
+    """Remove the material files a build wrote before for materials now undeclared.
+
+    A build owns what it wrote: what its last stamp listed, and any `<member>.*.tres`
+    or `.gdshader` beside it whose record says this declaration's geometry.build made
+    it, which finds the ones a stamp written before this forgot. Each goes with its
+    record. Spinhold's kit kept four such files beside the redrawn ones, found only by
+    matching names by hand.
+    """
+    from polyweave.kernel import provenance
+
+    now = {Path(one).resolve() for one in outputs}
+    owned: set[Path] = set()
+    if mark.is_file():
+        try:
+            kept = json.loads(mark.read_text(encoding="utf-8-sig")).get("outputs", ())
+        except (OSError, ValueError):
+            kept = ()
+        owned |= {_under(one, here).resolve() for one in kept}
+    declared = _kept(source, here)
+    for member in members:
+        for suffix in _MATERIAL_FILES:
+            for one in folder.glob(f"{member['name']}.*{suffix}"):
+                record = provenance.sidecar(one, here)
+                try:
+                    said = json.loads(record.read_text(encoding="utf-8"))
+                except (OSError, ValueError):
+                    continue
+                made_by = (said.get("params") or {}).get("made_by")
+                sources = {i.get("path") for i in said.get("inputs") or ()
+                           if i.get("role") == "declaration"}
+                if made_by == "geometry.build" and declared in sources:
+                    owned.add(one.resolve())
+    removed = []
+    for one in sorted(owned - now):
+        if one.suffix.lower() not in _MATERIAL_FILES or not one.is_file():
+            continue
+        one.unlink()
+        provenance.sidecar(one, here).unlink(missing_ok=True)
+        removed.append(_kept(one, here))
+    return removed
 
 
 def _kept(path: Path, here: Path) -> str:
