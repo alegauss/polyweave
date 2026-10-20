@@ -420,6 +420,25 @@ def test_a_build_writes_the_finish_beside_its_mesh(tmp_path):
                            root=tmp_path)["kind"] == "mesh"
 
 
+def test_a_finish_built_outside_the_project_is_refused_before_a_write(tmp_path):
+    """§PW575: an out away from the root crashed in relative_to, half written."""
+    from polyweave.surface.cli import build_one
+
+    project, away = tmp_path / "game", tmp_path / "scratch"
+    project.mkdir()
+    (project / "post.toml").write_text(
+        'name = "post"\nversion = 1\noutput = "post"\n\n'
+        '[materials."pink plastic"]\ncolour = "#F27BA8"\nsheen = 0.4\n\n'
+        '[[nodes]]\nid = "post"\nop = "primitive"\nkind = "capsule"\n'
+        'size = [1, 1, 3]\nmaterial = "pink plastic"\n',
+        encoding="utf-8")
+    found = build_one("post.toml", out=str(away), root=str(project))
+    assert found["status"] == "refused", found
+    assert found["refusal"]["code"] == "geom.out-outside-project"
+    assert ".polyweave/" in found["refusal"]["remedy"]
+    assert not any(away.iterdir())
+
+
 def test_a_rebuild_removes_what_it_wrote_for_a_material_now_gone(tmp_path):
     """§PW567: a redrawn kit left its old materials' files beside the new ones."""
     pytest.importorskip("bpy")

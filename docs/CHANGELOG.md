@@ -252,6 +252,7 @@
 - ✅ **PW549** **an accepted take cannot be placed at the path the game loads, so it is copied by hand with a record naming its old path** — verdict.place puts an accepted member where the game loads it, with a record naming that path, the take and the verdict (design recorded in `docs/specs/acceptance-spec.md`).
 - ✅ **PW553** **game.open passes no arguments to the game, so a state the game opens by a flag is reached by calling private methods** — game.open passes the game's own flags, kept in its flows, and clip.shots opens the game with them itself: a world's cutscene is one call (design recorded in `docs/specs/driving.md`).
 - ✅ **PW554** **a keyed timeline of a scene's own properties cannot be declared and built, only skeletal motion and camera shots** — clip.timeline builds a declared *.timeline.toml of keyed properties and marks into an AnimationPlayer scene the game plays or seeks (design recorded in `docs/specs/motion.md`).
+- ✅ **PW575** **geometry.build with an out outside the project crashes with a ValueError traceback, half written** — A finish built outside the project is refused as geom.out-outside-project before any write, with .polyweave/ named for a trial (design recorded in `docs/specs/geometry.md`).
 
 ## Block I — Voxel models from a declaration
 

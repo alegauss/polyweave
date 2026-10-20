@@ -66,6 +66,12 @@ def baked(material: dict) -> dict:
     return out
 
 
+def for_godot(material: Any) -> list[str]:
+    """The looks a material asks for that write the engine's own files, by name."""
+    return [name for name, look in every().items()
+            if look.godot is not None and look.asked(material)]
+
+
 def godot(material: Any, name: str, folder: Any, stem: str, root: Any) -> list:
     """The engine's material files for each look a material asks for that glTF drops."""
     return [

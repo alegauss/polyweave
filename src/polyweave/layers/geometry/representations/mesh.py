@@ -36,7 +36,6 @@ def write(
             "whose faces it is meant for",
             at=f"nodes.{painting[0]}.op",
         )
-    made = B.build(document, root=root, manifold=manifold, **given)
     where = Path(out)
     if not where.is_absolute():
         where = Path(root).resolve() / where
@@ -44,9 +43,29 @@ def write(
     # names is, resolved here where the root is known (§PW78). Its values are resolved
     # too, as the review's are, so a finish over the params reaches the shader.
     from .. import expand
+    from ..looks import for_godot
     from ..looks import godot as engine
 
     resolved = expand(document, **given)["materials"] or {}
+    # The engine's materials name their shader by a res:// path, which only a file under
+    # the project has, so a build outside it is refused before anything is written
+    # rather than crashing half way through (§PW575).
+    if not where.resolve().is_relative_to(Path(root).resolve()):
+        asking = {name: looked for name, one in resolved.items()
+                  if (looked := for_godot(one))}
+        if asking:
+            first = next(iter(asking))
+            raise PolyweaveError(
+                "geom.out-outside-project",
+                f"{where.parent} is outside the project {Path(root).resolve()}, and "
+                f"{first} asks for {', '.join(asking[first])}, whose Godot material "
+                "names its shader by a res:// path under the project",
+                "write under the project; a trial build can go under .polyweave/, or "
+                "drop the finish from the materials to try the shape alone",
+                at=f"materials.{first}",
+                given=str(where.parent),
+            )
+    made = B.build(document, root=root, manifold=manifold, **given)
     materials = {
         name: {**one, "image": str(Path(root).resolve() / one["image"])}
         if isinstance(one, dict) and one.get("image") else one

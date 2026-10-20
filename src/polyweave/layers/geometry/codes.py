@@ -252,6 +252,14 @@ CODES: dict[str, Code] = {
         "size that is not above zero; two ways of saying one number would disagree",
         doors=("give [voxels] a `cell` size", "give [voxels] an `across` count"),
     ),
+    "geom.out-outside-project": Code(
+        means="a build that writes the engine's own materials was pointed outside the "
+        "project, where they cannot be named by a res:// path",
+        when="geometry.build with an out away from the root for a declaration whose "
+        "materials ask for a finish (§PW575)",
+        doors=("write under the project; a trial build can go under .polyweave/",
+               "drop the finish from the materials to try the shape alone"),
+    ),
     "geom.bad-kit": Code(
         means="geometry.kit was given no folder of declarations, or a bound it cannot "
         "write into a spec",

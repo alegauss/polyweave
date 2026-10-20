@@ -501,6 +501,11 @@ ages the strikes and hands them to every one, so a game holds one node and calls
 method. A key it does not take, one missing, a give, lifetime, height or radius of 0 or
 more than 16 strikes is `geom.bad-surface`.
 
+**A finish is written under the project** (§PW575): its material names its shader by a
+res:// path, which a file outside the root has none of, so a build whose `out` is away
+from the root and whose materials ask for a finish is refused before anything is
+written, as `geom.out-outside-project`. A trial build goes under `.polyweave/` instead.
+
 ## The escape hatch is a node, not a mode
 
 Any format eventually meets a shape it cannot state, and forcing that shape into the format
