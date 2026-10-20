@@ -4,9 +4,7 @@ from polyweave.kernel.layer import Layer, Producer, Subject
 
 LAYER = Layer(
     name="geometry",
-    # vfx: a struck finish gives by vfx's own settle curve, so the two cannot drift
-    # (§PW574).
-    uses=("vfx", "words",),
+    uses=("words",),
     summary="Shapes declared as data, built to meshes or voxels, rendered, measured.",
     modules=(
         "polyweave.layers.geometry.cost",

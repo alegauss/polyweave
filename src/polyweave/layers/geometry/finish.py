@@ -28,6 +28,7 @@ builds from the view's angle to the surface.
 
 from __future__ import annotations
 
+import math
 from typing import Any
 
 from polyweave.kernel.errors import PolyweaveError
@@ -445,10 +446,18 @@ def _opened_shader(hooks: dict) -> str:
     }
 
 
-def _struck_fields(struck: dict) -> dict:
-    """A struck finish's numbers as the shader's uniforms, as vfx sets a piece's."""
-    from polyweave.layers.vfx.vfx import settle_rate
+def settle_rate(lifetime: float) -> float:
+    """The decay that leaves a twentieth of a strike's give at `lifetime` seconds."""
+    return math.log(20.0) / lifetime
 
+
+def _struck_fields(struck: dict) -> dict:
+    """A struck finish's numbers as the shader's uniforms, as vfx sets a piece's.
+
+    The settle is vfx's `settle_rate`, written out here: importing vfx would make
+    geometry need Godot, which vfx's engine layer does. tests/test_finish.py holds the
+    two to one curve.
+    """
     return {"give": struck["give"], "wobble": struck["wobble"],
             "settle": settle_rate(struck["lifetime"]), "falloff": struck["falloff"],
             "height": struck["height"], "felt": struck["radius"]}

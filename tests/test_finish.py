@@ -198,6 +198,15 @@ def test_a_struck_finish_gives_where_a_strike_lands_and_keeps_its_look():
         {"coat": 1.0}, finish.opened({"hue": "instance"}))["shader"]
 
 
+@pytest.mark.parametrize("lifetime", [0.25, 0.6, 2.0])
+def test_a_struck_finish_settles_on_vfx_s_own_curve(lifetime):
+    # Written out in geometry, which may not import vfx without needing Godot; held
+    # here to one curve with the struck pieces vfx makes (§PW574).
+    from polyweave.layers.vfx.vfx import settle_rate
+
+    assert finish.settle_rate(lifetime) == settle_rate(lifetime)
+
+
 @pytest.mark.parametrize("struck, said", [
     ({**STRUCK, "bounce": 2}, "takes no bounce"),
     ({**STRUCK, "give": 0}, "struck give is 0"),
