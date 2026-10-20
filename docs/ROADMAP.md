@@ -57,8 +57,7 @@
 ## Block U — A window on everything a project governs
 
 - 🛠 **PW579** (deps: —) **project.inventory rescans the whole project for every page, so opening Spinhold in the window takes 50 s** — A read of all 1,614 items is nine full scans of about 5.5 s each, and the window reads every page before it draws. → §PW579
-- 📋 **PW580** (deps: —) **the window shows nothing while a project opens, so a slow open reads as a dead button and each click adds a read** — The owner reported that Abrir did not work on Spinhold, and a winwright case read red, both from a screen that never said it was busy. → §PW580
-- 📋 **PW581** (deps: PW580) **the window's screens are tested only by a smoke mode or through UI Automation, which cannot wait on the page** — Each screen change waits on a guessed timeout and each capture photographs the desk, so a screen flow cannot be proved the way the evidence rule wants. → §PW581
+- 📋 **PW581** (deps: PW580 ✅) **the window's screens are tested only by a smoke mode or through UI Automation, which cannot wait on the page** — Each screen change waits on a guessed timeout and each capture photographs the desk, so a screen flow cannot be proved the way the evidence rule wants. → §PW581
 
 ## Block V — Parts every game repeats, installed already proved
 

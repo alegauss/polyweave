@@ -9,7 +9,9 @@
     "find": "Procurar projetos",
     "none": "Nenhuma pasta aqui tem um polyweave.toml.",
     "nothing_yet": "Diga uma pasta e até que nível procurar. Nada é varrido antes disso.",
-    "open": "Abrir"
+    "open": "Abrir",
+    "opening": "Abrindo…",
+    "opening_read": "Abrindo… {{read}} de {{total}} itens lidos"
   },
   "project": {
     "back": "Projetos",

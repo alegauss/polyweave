@@ -27,12 +27,12 @@ export interface GeneratedNonGoal {
 export const generatedBlocks: GeneratedBlock[] = [
   { block: "A", title: "What a tool call costs the turn", open: 0 },
   { block: "B", title: "Seeing the result cheaply", open: 0 },
-  { block: "C", title: "The asset compiler", open: 0 },
+  { block: "C", title: "The asset compiler", open: 1 },
   { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
-  { block: "G", title: "Geometry as a declaration", open: 0 },
-  { block: "H", title: "Proof on a real game", open: 1 },
+  { block: "G", title: "Geometry as a declaration", open: 1 },
+  { block: "H", title: "Proof on a real game", open: 2 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
   { block: "K", title: "Reached without reading the source", open: 0 },
@@ -45,7 +45,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "R", title: "Levels measured before a person plays them", open: 6 },
   { block: "S", title: "Playing the game, not only rendering it", open: 0 },
   { block: "T", title: "Adopting polyweave in a project", open: 0 },
-  { block: "U", title: "A window on everything a project governs", open: 0 },
+  { block: "U", title: "A window on everything a project governs", open: 2 },
   { block: "V", title: "Parts every game repeats, installed already proved", open: 0 },
   { block: "W", title: "A core that grows by layers", open: 0 },
   { block: "X", title: "The site on the shared design system", open: 0 },
@@ -53,11 +53,32 @@ export const generatedBlocks: GeneratedBlock[] = [
 
 export const generatedTasks: GeneratedTask[] = [
   {
+    id: "PW582",
+    block: "C",
+    symptom: "a mesh cannot be prepared before it is rendered, so Cottony keeps prep.py and three exporters outside the record",
+    why: "Dropping fragments, settling a plush on its base, joining and filling the frame still run in project code before port.run, and nothing records them.",
+    deps: [],
+  },
+  {
+    id: "PW583",
+    block: "G",
+    symptom: "geometry.build with no out writes the mesh beside its declaration, where Godot imports it into the export",
+    why: "Cottony's export check went red on the one machine that had built a tray, from gitignored files nobody else has.",
+    deps: [],
+  },
+  {
     id: "PW36",
     block: "H",
     symptom: "a real project cannot adopt the plugin without carrying its own paths and palette into it",
     why: "Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82.",
     deps: ["PW82"],
+  },
+  {
+    id: "PW82",
+    block: "H",
+    symptom: "nothing takes bake_model.py out once its assets have moved, so the rig outlives its own replacement",
+    why: "Each family porting leaves the file smaller and still running, and two live paths to one sprite is the state this whole sequence exists to end.",
+    deps: [],
   },
   {
     id: "PW202",
@@ -101,6 +122,20 @@ export const generatedTasks: GeneratedTask[] = [
     why: "A declared wave says what it asks of a player; only a trace says where players struggle, and Starship's balance needs both.",
     deps: ["PW205"],
   },
+  {
+    id: "PW579",
+    block: "U",
+    symptom: "project.inventory rescans the whole project for every page, so opening Spinhold in the window takes 50 s",
+    why: "A read of all 1,614 items is nine full scans of about 5.5 s each, and the window reads every page before it draws.",
+    deps: [],
+  },
+  {
+    id: "PW581",
+    block: "U",
+    symptom: "the window's screens are tested only by a smoke mode or through UI Automation, which cannot wait on the page",
+    why: "Each screen change waits on a guessed timeout and each capture photographs the desk, so a screen flow cannot be proved the way the evidence rule wants.",
+    deps: [],
+  },
 ];
 
 export const generatedNonGoals: GeneratedNonGoal[] = [
@@ -139,4 +174,4 @@ export const generatedNonGoals: GeneratedNonGoal[] = [
 ];
 
 /** Lines set aside rather than shipped. They keep their ids, and are still waited on. */
-export const generatedPaused: string[] = ["PW495", "PW82", "PW57", "PW449", "PW450", "PW201", "PW480", "PW311", "PW368"];
+export const generatedPaused: string[] = ["PW495", "PW57", "PW449", "PW450", "PW201", "PW480", "PW311", "PW368"];

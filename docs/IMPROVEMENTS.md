@@ -435,27 +435,6 @@ The scan itself is the next cost. It hashes every artefact on every read, even w
 size and mtime match the record. That is worth measuring once the per-page multiplier is
 gone.
 
-### §PW580 A project opening says so
-
-Found on 2026-10-20 at the start of PW311. The owner pressed "Abrir" on Spinhold and
-reported that the button did not work. It did work, slowly (see PW579). But
-`gui/packages/ui/src/App.tsx` has no state between the click and the project screen: the
-button stays enabled, nothing is drawn, and the list looks exactly as before. Every
-further click starts another full read on the same server, so a person who clicks three
-times waits three times as long.
-
-A winwright case written to prove the button works read red for the same reason. Its 15
-s wait passed before the screen changed, and nothing on screen said the window was busy.
-
-What to build: an `opening` state in `App.tsx`, set by `open` and cleared when the
-project screen is drawn or the open fails. While it is set:
-- every "Abrir" is disabled, which also stops the duplicate reads;
-- the row being opened says so in words from the locale catalogs (`projects.opening`, in
-  `en.json` and `pt-BR.json`), with the progress the pages already carry ("200 of 1,614").
-
-An accessible busy state on the list (`aria-busy`) lets a screen reader and a winwright
-case read it.
-
 ### §PW581 Screen flows driven through the DOM, not the desktop
 
 Found while winwright drove the window (`gui/`) through UI Automation on 2026-10-20.

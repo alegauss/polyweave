@@ -9,7 +9,9 @@
     "find": "Find projects",
     "none": "No folder under here holds a polyweave.toml.",
     "nothing_yet": "Name a folder and how deep to look. Nothing is scanned until you do.",
-    "open": "Open"
+    "open": "Open",
+    "opening": "Opening…",
+    "opening_read": "Opening… {{read}} of {{total}} items read"
   },
   "project": {
     "back": "Projects",
