@@ -138,6 +138,26 @@ def test_it_filters_by_kind_and_pages(tree):
     assert lines["kinds"]["mesh"] == 2
 
 
+def test_the_pages_of_one_read_are_one_scan(tree, monkeypatch):
+    """§PW579: every page rescanned the project, and Spinhold's nine pages took 50 s."""
+    scans = []
+    real = project._items
+    monkeypatch.setattr(project, "_items",
+                        lambda here: scans.append(here) or real(here))
+    offset, seen = 0, []
+    while offset is not None:
+        page = project.inventory(str(tree), offset=offset, limit=2)
+        seen += [r["id"] for r in page["items"]]
+        offset = page["next"]
+    assert len(seen) == page["total"] > 4
+    assert len(scans) == 1
+    # A fresh read starts at 0, and sees a change made since.
+    (tree / "audio" / "hit.wav").unlink()
+    again = by_id(project.inventory(str(tree)))
+    assert again["audio/hit.wav"]["record"] == "missing"
+    assert len(scans) == 2
+
+
 def test_an_empty_project_answers_with_nothing_and_is_never_refused(tmp_path):
     found = project.inventory(str(tmp_path))
     assert found == {"items": [], "total": 0, "kinds": {}, "next": None}

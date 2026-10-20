@@ -34,6 +34,12 @@ and then by id. `total` counts what the filter selects, and `kinds` counts the w
 project whatever the filter, so one read says what else is there. `next` is the `offset`
 that reads the following page, and `null` on the last one.
 
+The pages of one read come from one scan (§PW579). An `offset` of 0 scans the project,
+and an offset past it reads the rows that scan found in the same serving process, so a
+write between two pages cannot shift a row across them. A fresh read always starts at 0.
+Paging through Spinhold's 1,614 rows took nine scans and 50 s before, and takes one scan
+and 7 s now.
+
 ## A row
 
 **`id`** is stable while the item is the same item. It is the artefact's path, relative to

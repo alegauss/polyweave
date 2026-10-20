@@ -6,6 +6,29 @@
 
 ## Block C — The asset compiler
 
+### §PW582 A mesh prepared by declared steps
+
+Found closing PW82 in Cottony on 2026-10-20. `tools/art/bake_model.py` is gone, but its
+preparation half survives as `tools/art/prep.py`. Three exporters drive Blender before
+`port.run`, because no family file can say how a fetched or built mesh has to be
+prepared before it is rendered:
+
+- `dedust`: drop the small fragments a service's mesh carries;
+- `settle`: squash the body onto its base so a plush sits rather than floats;
+- `cloth.dress`: project drawn cloth onto the mesh from an orthographic camera;
+- joining the parts into one mesh, and scaling it to the frame's fill.
+
+`normalise.ingest` covers orientation and size only. So the prep stays project code
+(`export_props.py`, `export_boosters.py`, `export_friends.py`), kept by name in
+Cottony's `polyweave.toml`, and every re-export happens outside the provenance chain.
+
+What to build: a `prepare` table on a family, or on a `mesh.buy` and `normalise.ingest`
+answer, listing ordered steps from a small vocabulary (`dedust { below }`, `settle {
+squash }`, `join`, `fill`), each recorded in the mesh's record. Cloth projected from a
+camera is Cottony's own, and stays a `custom` step naming a project function, the way
+geometry's escape hatch is a node and not a mode. The evidence that it landed is that
+`prep.py` and the three exporters go, as `bake_model.py` did.
+
 ## Block D — Fetching from a paid service without surprise
 
 ## Block E — One world with the engine
@@ -30,6 +53,25 @@ material (a `.tres` StandardMaterial3D, or a generated `.gdshader` where a featu
 standard one lacks is asked for), with the same numbers the bake used and a provenance
 record, so the game loads what was judged. A capture of the game against the bake of the
 same model at one rig says whether the two agree.
+
+### §PW583 A build with no out lands in the work area
+
+Found closing PW82 in Cottony on 2026-10-20. Cottony's `check_export` failed on the
+owner's machine with `FAIL imported from outside art/ and audio/: board_tray.glb,
+booster_tray.glb`. Those are files polyweave's geometry build wrote on 2026-10-14: a
+`<name>.glb`, its `.build.json` and its `.prov.json`, next to the declaration in
+`tools/art/`. `build_one` writes to the declaration's own folder where no `out` is
+given. In a Godot project that folder is imported like any other, so a trial build lands
+in the export, and a gate that keeps assets to `art/` and `audio/` goes red. The files
+are gitignored, so a clean checkout passes and only the machine that built them fails,
+which is the hardest red to read.
+
+What to build: where no `out` is given, write a build under `[paths] work` (the
+`.polyweave/` area Godot never imports), mirroring the declaration's path, and say where
+in the answer. A project that wants builds beside the declaration names `out` or sets it
+in `[geometry]`. `project.check` should also name any built mesh it finds outside the
+paths the project declares for assets, with the remedy of moving it or giving it an
+`out`.
 
 ## Block H — Proof on a real game
 
@@ -370,6 +412,74 @@ before handing the window over, and every friction filed as its own line in this
 It is not a test run. A change of plan that the owner asks for mid-way ("undo, try the
 other palette") is part of what is being proved, because a revision a person refines
 several times is the case this block exists for.
+
+### §PW579 One scan per read of the inventory
+
+Found on 2026-10-20 at the start of PW311. The owner pressed "Abrir" on Spinhold in the
+window and nothing happened for about 50 s. Cottony took 13 s.
+
+`project.inventory` answers a page of 200 rows, and every page calls `_items(here)`
+(`surface/project.py`), which walks every provenance record under the root, hashes every
+artefact and reads `provenance.outdated` and `provenance.unrecorded`. That scan costs
+about 5.5 s on Spinhold's 1,614 items. The window reads all the pages before it draws,
+so one open is nine full scans. A session that pages through the inventory pays the
+same.
+
+What to build: one scan per read of the whole inventory, not one per page. An offset
+past 0 reuses the rows computed by the last offset-0 read of the same root and kind,
+held in the serving process. The pages of one read then come from one snapshot, which
+they should anyway: a write between two pages could otherwise shift a row from one page
+into the next. An offset-0 call always rescans, so a fresh read is never stale.
+
+The scan itself is the next cost. It hashes every artefact on every read, even where
+size and mtime match the record. That is worth measuring once the per-page multiplier is
+gone.
+
+### §PW580 A project opening says so
+
+Found on 2026-10-20 at the start of PW311. The owner pressed "Abrir" on Spinhold and
+reported that the button did not work. It did work, slowly (see PW579). But
+`gui/packages/ui/src/App.tsx` has no state between the click and the project screen: the
+button stays enabled, nothing is drawn, and the list looks exactly as before. Every
+further click starts another full read on the same server, so a person who clicks three
+times waits three times as long.
+
+A winwright case written to prove the button works read red for the same reason. Its 15
+s wait passed before the screen changed, and nothing on screen said the window was busy.
+
+What to build: an `opening` state in `App.tsx`, set by `open` and cleared when the
+project screen is drawn or the open fails. While it is set:
+- every "Abrir" is disabled, which also stops the duplicate reads;
+- the row being opened says so in words from the locale catalogs (`projects.opening`, in
+  `en.json` and `pt-BR.json`), with the progress the pages already carry ("200 of 1,614").
+
+An accessible busy state on the list (`aria-busy`) lets a screen reader and a winwright
+case read it.
+
+### §PW581 Screen flows driven through the DOM, not the desktop
+
+Found while winwright drove the window (`gui/`) through UI Automation on 2026-10-20.
+Chromium publishes its tree to UIA, so the drive worked, but every cost of it came from
+reading a web page through the desktop's accessibility layer: a screen change had
+nothing to wait on but a guessed timeout, a capture photographed whatever lay over the
+window, and `ELECTRON_RUN_AS_NODE` had to be stripped outside the case. winwright's own
+review (its WW565 and WW566, retired) concluded that an Electron window's screens belong
+to a driver that reads the DOM.
+
+The window already carries a home-made version of that driver: `window-live.test.ts`
+runs a smoke mode in which main prints what the page drew. It answers one fixed path and
+grows a field per screen.
+
+What to build: screen flows driven by Playwright's `_electron.launch()` from the vitest
+suite already in `gui/`, with `playwright` as a devDependency of `@pw/shell` only.
+Locate by role and name as a person reads the screen, wait on the DOM state a screen
+change produces (PW580's busy state is the natural thing to wait on), and take evidence
+with `page.screenshot()`, which renders the window itself whatever covers it. Component
+logic stays in vitest against `@pw/ui`. The smoke mode is deleted once the flows it
+answers are covered, which is the evidence that this landed.
+
+Left to winwright: the native Open and Save dialogs, focus and the foreground, DPI and
+anything the shell owns, none of which a DOM driver reaches.
 
 ## Block V — Parts every game repeats, installed already proved
 

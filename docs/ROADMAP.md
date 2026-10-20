@@ -6,6 +6,8 @@
 
 ## Block C — The asset compiler
 
+- 📋 **PW582** (deps: —) **a mesh cannot be prepared before it is rendered, so Cottony keeps prep.py and three exporters outside the record** — Dropping fragments, settling a plush on its base, joining and filling the frame still run in project code before port.run, and nothing records them. → §PW582
+
 ## Block D — Fetching from a paid service without surprise
 
 ## Block E — One world with the engine
@@ -14,9 +16,12 @@
 
 ## Block G — Geometry as a declaration
 
+- 📋 **PW583** (deps: —) **geometry.build with no out writes the mesh beside its declaration, where Godot imports it into the export** — Cottony's export check went red on the one machine that had built a tray, from gitignored files nobody else has. → §PW583
+
 ## Block H — Proof on a real game
 
-- 🛠 **PW36** (deps: PW5 ✅, PW82 ⏸) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82. → §PW36
+- 🛠 **PW36** (deps: PW5 ✅, PW82 🛠) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82. → §PW36
+- 🛠 **PW82** (deps: PW81 ✅) **nothing takes bake_model.py out once its assets have moved, so the rig outlives its own replacement** — Each family porting leaves the file smaller and still running, and two live paths to one sprite is the state this whole sequence exists to end. → §PW82
 
 ## Block I — Voxel models from a declaration
 
@@ -50,6 +55,10 @@
 ## Block T — Adopting polyweave in a project
 
 ## Block U — A window on everything a project governs
+
+- 🛠 **PW579** (deps: —) **project.inventory rescans the whole project for every page, so opening Spinhold in the window takes 50 s** — A read of all 1,614 items is nine full scans of about 5.5 s each, and the window reads every page before it draws. → §PW579
+- 📋 **PW580** (deps: —) **the window shows nothing while a project opens, so a slow open reads as a dead button and each click adds a read** — The owner reported that Abrir did not work on Spinhold, and a winwright case read red, both from a screen that never said it was busy. → §PW580
+- 📋 **PW581** (deps: PW580) **the window's screens are tested only by a smoke mode or through UI Automation, which cannot wait on the page** — Each screen change waits on a guessed timeout and each capture photographs the desk, so a screen flow cannot be proved the way the evidence rule wants. → §PW581
 
 ## Block V — Parts every game repeats, installed already proved
 

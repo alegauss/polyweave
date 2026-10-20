@@ -771,6 +771,10 @@ SUFFIXES = {
 #: The rows one read returns where no limit is asked for.
 PAGE = 200
 
+#: The rows the last offset-0 read scanned, by root, which the pages after it reuse
+#: (§PW579): every page was a full scan, and Spinhold's nine took 50 s.
+_SNAPSHOT: dict[str, list[dict]] = {}
+
 
 @operation("project.inventory")
 def inventory(
@@ -785,11 +789,18 @@ def inventory(
     A row is an artefact a record names, a produced file with no record, a geometry
     declaration not built yet, or a line of the string table. It writes nothing, and a
     kind the project does not use is absent. The row format is docs/specs/inventory.md.
+
+    The pages of one read come from one scan: an offset of 0 scans the project and an
+    offset past it reads the rows that scan found, so a write between two pages cannot
+    shift a row across them, and a fresh read is always the one at 0 (§PW579).
     """
     from polyweave.kernel.config import load
 
     here = load(root).root
-    rows = _items(here)
+    key = str(here)
+    rows = _SNAPSHOT.get(key) if offset else None
+    if rows is None:
+        rows = _SNAPSHOT[key] = _items(here)
     counts = {k: sum(1 for r in rows if r["kind"] == k) for k in KINDS}
     chosen = [r for r in rows if not kind or r["kind"] == kind]
     page = chosen[offset : offset + limit]
