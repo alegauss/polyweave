@@ -14,7 +14,6 @@
 
 ## Block G — Geometry as a declaration
 
-- 🛠 **PW570** (deps: —) **A built mesh imports with its glTF materials, so the game swaps in the judged ones by hand** — Every game drawing a built piece holds code matching surfaces to the written materials. → §PW570
 - 📋 **PW571** (deps: —) **Each finished material writes its own copy of one shader** — A kit of twelve pieces carries fifty identical shaders, each compiled apart by the game. → §PW571
 - 📋 **PW574** (deps: —) **A finished piece cannot also give when struck, since vfx's struck give is a shader of its own** — A course of judged pieces cannot jiggle where a kill lands without the game splicing two shaders. → §PW574
 

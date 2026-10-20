@@ -31,21 +31,6 @@ standard one lacks is asked for), with the same numbers the bake used and a prov
 record, so the game loads what was judged. A capture of the game against the bake of the
 same model at one rig says whether the two agree.
 
-### §PW570 Imported in the judged look
-
-Where: spinhold, 2026-10-19, RK231. The Playdeck's pieces were built with their finish
-written beside them as `<piece>.<material>.tres` (PW495), but Godot imports each `.glb`
-with the glTF's own materials, colour and roughness only. To draw the accepted look the
-game would have to walk each mesh's surfaces, match each material's name to a `.tres`
-and swap it in, which is a game holding code for what the build already knows.
-
-Built: in a Godot project, the build writes `<mesh>.glb.import` with
-`_subresources.materials.<material>.use_external/{enabled,path}` naming each written
-`.tres`, so Godot imports the mesh wearing them. An existing import keeps its other
-settings; one whose `_subresources` holds more than materials is left alone. Tests in
-`test_finish.py`, one importing a built mesh through Godot and reading the surface's
-material back.
-
 ### §PW571 One shader for one finish
 
 Where: spinhold, 2026-10-19, RK231. With `[finish]` opened (PW569) every material of the

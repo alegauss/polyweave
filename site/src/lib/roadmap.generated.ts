@@ -31,7 +31,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
-  { block: "G", title: "Geometry as a declaration", open: 3 },
+  { block: "G", title: "Geometry as a declaration", open: 2 },
   { block: "H", title: "Proof on a real game", open: 1 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW570",
-    block: "G",
-    symptom: "A built mesh imports with its glTF materials, so the game swaps in the judged ones by hand",
-    why: "Every game drawing a built piece holds code matching surfaces to the written materials.",
-    deps: [],
-  },
   {
     id: "PW571",
     block: "G",
