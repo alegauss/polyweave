@@ -8,7 +8,7 @@ from . import _shared as H
 NAME = "bevel"
 
 #: What it reads beyond the fields every node has.
-FIELDS = (*H.TAKES, "bevel", "segments", "profile")
+FIELDS = (*H.TAKES, "bevel", "segments", "profile", "crease")
 
 #: Whether a voxel build traces its mesh rather than reading its own bounds.
 TRACED = False

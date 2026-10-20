@@ -31,24 +31,6 @@ standard one lacks is asked for), with the same numbers the bake used and a prov
 record, so the game loads what was judged. A capture of the game against the bake of the
 same model at one rig says whether the two agree.
 
-### §PW566 A bevel for the creases alone
-
-Where: spinhold, 2026-10-19, the Playdeck's arch (RK236): a `torus` (32 steps) cut in
-half by a `carve` with `bevel = 0.12`, `segments = 4`, to round the cut ends.
-
-What came back: 18,356 triangles and a `sharp_edge_share` of 0.086, worse than the
-unbevelled cut's 0.059. `solver.bevel` bevels every edge of the mesh (`geom = verts +
-edges + faces`), so the torus's smooth facets, each turning under 23 degrees, were each
-split into bevel strips: the round body multiplied and grew creases of its own.
-
-Workaround in spinhold: the arch was redrawn as a curve of overlapping spheres, with no
-cut and no bevel.
-
-What polyweave should do: a `bevel` (and a carve's) rounds only edges sharper than a
-stated crease angle, 30 degrees unless the node says, and leaves a smooth surface alone.
-Where that changes an existing build, a `crease` field on the node can keep the old
-every-edge behaviour by setting it to 0.
-
 ### §PW567 A build owns what it wrote
 
 Where: spinhold, 2026-10-19, the Playdeck's kit (RK236). `playdeck_hex.toml` first

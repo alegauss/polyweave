@@ -8,7 +8,7 @@ from . import _shared as H
 NAME = "carve"
 
 #: What it reads beyond the fields every node has.
-FIELDS = ("into", "cutter", "bevel", "segments", "profile")
+FIELDS = ("into", "cutter", "bevel", "segments", "profile", "crease")
 
 #: Whether a voxel build traces its mesh rather than reading its own bounds.
 TRACED = False

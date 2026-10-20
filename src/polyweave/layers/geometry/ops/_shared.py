@@ -18,6 +18,12 @@ TAKES = ("inputs", "operands", "of", "on")
 #: many segments it forces (§PW493): a chamfer is one flat cut whatever is asked.
 PROFILES = {"round": (0.5, None), "chamfer": (0.5, 1)}
 
+#: The angle, in degrees, an edge's faces must turn past before a bevel rounds it: the
+#: crease `sharp_edge_share` counts (§PW566). A torus's facets turn under 23 degrees,
+#: and rounding them too split each into strips: Spinhold's half arch went from 0.059
+#: sharp to 0.086 under a bevel meant to soften it.
+CREASE = 30.0
+
 
 def _outline(instance: dict, root: Any, field: str = "outline") -> np.ndarray:
     stated = instance.get(field)
@@ -75,5 +81,17 @@ def _beveled(node: dict, instance: dict) -> dict:
             f"{node['id']} bevels in {segments!r} segments",
             "give segments as a whole number from 1; more is rounder",
         )
+    # Only edges sharper than this are rounded, so a smooth body is left alone (§PW566);
+    # 0 rounds every edge, as a bevel did before.
+    crease = instance.get("crease", CREASE)
+    if isinstance(crease, bool) or not isinstance(crease, int | float) or not (
+            0 <= crease < 180):
+        raise PolyweaveError(
+            "geom.bad-solid",
+            f"{node['id']} bevels edges sharper than {crease!r} degrees",
+            f"give crease in degrees from 0 to under 180; {CREASE:g} is the default, "
+            "and 0 rounds every edge",
+        )
     profile, forced = PROFILES[said]
-    return {"segments": forced or int(segments), "profile": profile}
+    return {"segments": forced or int(segments), "profile": profile,
+            "crease": float(crease)}

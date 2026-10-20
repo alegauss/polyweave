@@ -31,7 +31,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
-  { block: "G", title: "Geometry as a declaration", open: 7 },
+  { block: "G", title: "Geometry as a declaration", open: 6 },
   { block: "H", title: "Proof on a real game", open: 1 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW566",
-    block: "G",
-    symptom: "A bevel rounds every edge, so a smooth body grows triangles and creases under it",
-    why: "Rounding one cut on a round part ruins the part, so a cut piece cannot be softened.",
-    deps: [],
-  },
   {
     id: "PW567",
     block: "G",

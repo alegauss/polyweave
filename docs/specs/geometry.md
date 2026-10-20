@@ -211,6 +211,13 @@ A `bevel`, and a `carve`'s, takes `segments` (default 3) and `profile`: `round`,
 default, or `chamfer`, one flat cut whatever the segments. So an existing node rounds as
 a moulded part does, and not as a chamfer.
 
+**A bevel rounds the creases alone** (§PW566). It takes `crease`, in degrees from 0 to
+under 180, default 30: only an edge whose faces turn more than that is rounded, the
+same crease `sharp_edge_share` counts, so a smooth body cut in two has its cut rounded
+and its facets left as they were. An edge on the mesh's border has no angle and is
+rounded as sharp. `crease = 0` rounds every edge, as a bevel did before. Anything else
+is `geom.bad-solid`.
+
 **A solve keeps what each face wears** (§PW564). A bevel and a carve go through
 Blender, and each material goes in as a slot of its own and comes back as a group, so a
 bevelled piece in three colours is still in three: a bevel's new faces wear the face

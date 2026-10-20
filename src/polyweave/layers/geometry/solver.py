@@ -32,6 +32,7 @@ measurement above was taken under.
 
 from __future__ import annotations
 
+import math
 from typing import Any
 
 import numpy as np
@@ -154,9 +155,14 @@ def carve(into: Any, cutter: Any, *, min_faces: int = 1) -> dict:
 
 
 def bevel(
-    subject: Any, offset: float, *, segments: int = 3, profile: float = 0.5
+    subject: Any, offset: float, *, segments: int = 3, profile: float = 0.5,
+    crease: float = 30.0,
 ) -> dict:
-    """Soften every edge. Applied **after** a boolean, never before one."""
+    """Soften the edges sharper than `crease` degrees; 0 softens every edge.
+
+    Applied **after** a boolean, never before one. An edge on the mesh's border, or
+    shared by more than two faces, has no angle to read and is rounded as sharp.
+    """
     from .render import blender
 
     bpy = blender.require()
@@ -169,10 +175,18 @@ def bevel(
     working = bmesh.new()
     working.from_mesh(obj.data)
     bmesh.ops.recalc_face_normals(working, faces=working.faces[:])
-    if float(offset) > 0:
+    if float(crease) > 0:
+        # A smooth body's facets are left alone, so it neither multiplies nor creases
+        # under a bevel meant for its cuts (§PW566).
+        limit = math.radians(float(crease))
+        edges = [e for e in working.edges if e.calc_face_angle(math.pi) > limit]
+        geom = list({v for e in edges for v in e.verts}) + edges
+    else:
+        geom = working.verts[:] + working.edges[:] + working.faces[:]
+    if float(offset) > 0 and geom:
         bmesh.ops.bevel(
             working,
-            geom=working.verts[:] + working.edges[:] + working.faces[:],
+            geom=geom,
             offset=float(offset),
             segments=int(segments),
             profile=float(profile),

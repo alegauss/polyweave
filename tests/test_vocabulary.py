@@ -580,6 +580,39 @@ def test_a_bevel_softens_every_edge():
     assert high[0] - low[0] == pytest.approx(4.0, abs=0.01), "a bevel cuts in, not out"
 
 
+def test_a_bevel_rounds_the_cut_and_leaves_a_smooth_body_alone(tmp_path):
+    """§PW566: Spinhold's half arch, a torus cut in two and its cut ends rounded."""
+    from polyweave.layers.geometry import cost
+    from test_cost import solid_glb
+
+    solver = solving()
+    ring = S.primitive("torus", 1.0, major=2.0, minor=0.5, steps=32)
+    knife = S.transform(S.primitive("cube", 10.0), at=(0, 0, -5.0))
+    half = solver.carve(ring, knife)
+
+    def read(made, name):
+        return cost.read(solid_glb(tmp_path / name, made))
+
+    cut = read(half, "cut.glb")
+    soft = solver.bevel(half, 0.12, segments=4)
+    every = solver.bevel(half, 0.12, segments=4, crease=0)
+    # Only the cut's rim is rounded: far fewer faces than rounding every facet, and
+    # the share of crease falls rather than growing.
+    assert len(soft["faces"]) < len(every["faces"]) / 2
+    assert read(soft, "soft.glb")["sharp_edge_share"] < cut["sharp_edge_share"]
+    assert read(every, "every.glb")["sharp_edge_share"] > read(
+        soft, "soft2.glb")["sharp_edge_share"]
+
+
+def test_a_crease_that_is_not_an_angle_is_refused():
+    from polyweave.layers.geometry.ops import _shared as H
+
+    with pytest.raises(PolyweaveError) as refused:
+        H._beveled({"id": "arch"}, {"crease": 200})
+    assert refused.value.code == "geom.bad-solid"
+    assert H._beveled({"id": "arch"}, {})["crease"] == H.CREASE
+
+
 def test_a_bevel_is_a_process_first_call_to_blender():
     # bmesh exists only once bpy is loaded; a fresh process that bevels first had none
     # (§PW563), which a suite that has loaded bpy already never sees
