@@ -179,6 +179,81 @@ def test_godot_parses_an_opened_finish_with_the_projects_include(tmp_path):
     assert {"albedo", "clearcoat", "sheen"} <= set(found["found"]["names"].split(","))
 
 
+STRUCK = {"give": 0.3, "wobble": 3, "lifetime": 0.9, "falloff": 1.5, "height": 6,
+          "radius": 8, "amount": 8}
+
+
+def test_a_struck_finish_gives_where_a_strike_lands_and_keeps_its_look():
+    """§PW574: the finish's own numbers, and vfx's give in the same shader."""
+    from polyweave.layers.vfx.vfx import settle_rate
+
+    hooks = finish.opened({"hue": "instance", "struck": STRUCK})
+    made = finish.godot({"colour": "#F27BA8", "coat": 1.0}, hooks)
+    assert "uniform vec4 hits[8];" in made["shader"]
+    assert "VERTEX += sway;" in made["shader"]
+    assert "CLEARCOAT = clearcoat;" in made["shader"]
+    assert made["fields"]["settle"] == pytest.approx(settle_rate(0.9))
+    assert made["fields"]["felt"] == 8 and made["fields"]["clearcoat"] == 1.0
+    assert "uniform vec4 hits" not in finish.godot(
+        {"coat": 1.0}, finish.opened({"hue": "instance"}))["shader"]
+
+
+@pytest.mark.parametrize("struck, said", [
+    ({**STRUCK, "bounce": 2}, "takes no bounce"),
+    ({**STRUCK, "give": 0}, "struck give is 0"),
+    ({**STRUCK, "amount": 20}, "struck amount is 20"),
+    ({k: v for k, v in STRUCK.items() if k != "radius"}, "states no radius"),
+    ("hard", "not a table"),
+])
+def test_a_struck_finish_that_cannot_give_is_refused(struck, said):
+    with pytest.raises(PolyweaveError) as refused:
+        finish.opened({"struck": struck})
+    assert refused.value.code == "geom.bad-surface"
+    assert said in refused.value.message
+
+
+GODOT_STRIKES = """extends SceneTree
+
+func _initialize() -> void:
+\tvar paint: ShaderMaterial = load("res://built/post.pink_plastic.tres")
+\tvar names := paint.shader.get_shader_uniform_list().map(func(u): return u.name)
+\tvar strikes = load("res://built/finish_strikes.gd").new()
+\tstrikes.watch(paint)
+\tstrikes.strike(Vector3(1, 2, 3), 0.5)
+\tvar hit: Vector4 = paint.get_shader_parameter("hits")[0]
+\tprint("struck: %s %s %s" % [",".join(names), hit, strikes.swinging()])
+\tstrikes.free()
+\tquit()
+"""
+
+
+def test_godot_strikes_a_struck_finish_through_the_written_script(tmp_path):
+    """§PW574: Godot reads the composed shader, and the script hands it a strike."""
+    import os
+
+    from polyweave.layers.engine import engine
+
+    if not os.environ.get("GODOT"):
+        pytest.skip("no $GODOT on this machine")
+    (tmp_path / "project.godot").write_text("config_version=5\n", encoding="utf-8")
+    (tmp_path / "polyweave.toml").write_text(
+        '[finish]\nhue = "instance"\n'
+        'struck = { give = 0.3, wobble = 3, lifetime = 0.9, '
+        'falloff = 1.5, height = 6, radius = 8, amount = 8 }\n', encoding="utf-8")
+    folder = tmp_path / "built"
+    folder.mkdir()
+    written = finish.write_godot({"colour": "#F27BA8", "coat": 1.0}, "pink plastic",
+                                 folder, "post", tmp_path)
+    assert folder / "finish_strikes.gd" in written
+    (tmp_path / "strikes.gd").write_text(GODOT_STRIKES, encoding="utf-8")
+    found = engine.run("strikes.gd", root=tmp_path, headless=True,
+                       expect=r"struck: (?P<names>\S+) (?P<hit>\(.*\)) (?P<on>\S+)")
+    assert found["ok"] is True, found["why"]
+    assert {"give", "hits", "ages", "albedo"} <= set(found["found"]["names"].split(","))
+    assert found["found"]["hit"] == "(1.0, 2.0, 3.0, 0.5)"
+    assert found["found"]["on"] == "true"
+
+
 def _godot_project(tmp_path) -> Path:
     (tmp_path / "project.godot").write_text("config_version=5\n", encoding="utf-8")
     (tmp_path / "built").mkdir(exist_ok=True)
@@ -273,6 +348,18 @@ def test_a_finish_opened_after_a_build_builds_it_again(tmp_path):
     assert opened["status"] == "built"
     assert "INSTANCE_CUSTOM.x" in (tmp_path / "built" / "post.pink_plastic.gdshader")\
         .read_text(encoding="utf-8")
+
+
+def test_a_finish_opened_leaves_a_build_without_one_cached(tmp_path):
+    """§PW569: only a document whose materials ask for a finish is built again."""
+    pytest.importorskip("bpy")
+    from polyweave.layers.geometry.make import build_one
+
+    first = _plastic_post(tmp_path, 'colour = "#F27BA8"\nroughness = 0.35')
+    (tmp_path / "polyweave.toml").write_text('[finish]\nhue = "instance"\n',
+                                             encoding="utf-8")
+    again = build_one("post.toml", out="built", root=str(tmp_path), force=False)
+    assert (first["status"], again["status"]) == ("built", "cached")
 
 
 def _plastic_post(tmp_path, material) -> dict:

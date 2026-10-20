@@ -26,7 +26,11 @@ TABLES: dict[str, Any] = {
     # colour by INSTANCE_CUSTOM.x turns of the wheel, and `include` with `hold` passes
     # the colour through a function of the project's, `hold(colour, amount)`, where
     # `amount` is an instance uniform of that name, 1 unless the instance says.
-    "finish": {"hue": "", "include": "", "hold": "", "amount": "backdrop"},
+    # `struck` (§PW574) makes it give where a strike lands, as vfx's struck pieces do:
+    # { give, wobble, lifetime, falloff, height, radius, amount }, with a script written
+    # beside the materials that the game strikes through.
+    "finish": {"hue": "", "include": "", "hold": "", "amount": "backdrop",
+               "struck": {}},
     "voxels": {
         # What a voxel build is checked against (§PW97). A game decides how many cubes
         # it can draw and how thin a part may be before it vanishes, so these are the
@@ -55,4 +59,4 @@ TABLES: dict[str, Any] = {
 }
 
 #: Tables whose keys a project names itself.
-OPEN = ("render.samples",)
+OPEN = ("render.samples", "finish.struck")

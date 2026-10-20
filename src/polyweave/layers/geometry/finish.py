@@ -211,7 +211,7 @@ uniform float subsurface : hint_range(0.0, 1.0) = 0.0;
 uniform float sheen : hint_range(0.0, 1.0) = 0.0;
 
 varying float hue;
-
+%(give)s
 // `c` turned `turns` of the way round the colour wheel, keeping its lightness
 vec3 turned(vec3 c, float turns) {
 \tfloat a = turns * 6.2831853;
@@ -221,7 +221,7 @@ vec3 turned(vec3 c, float turns) {
 
 void vertex() {
 \thue = %(hue)s;
-}
+%(sway)s}
 
 void fragment() {
 \tvec3 colour = max(turned(albedo.rgb, hue), vec3(0.0));
@@ -240,6 +240,145 @@ void fragment() {
 
 #: What `hue` may be: none, or each instance's own INSTANCE_CUSTOM.x.
 HUES = ("", "instance")
+
+#: A finish that gives when struck (§PW574): the same squash and swing `vfx` gives a
+#: struck piece (§PW496), its uniforms and its vertex body, so a piece keeps its judged
+#: finish and jiggles where a strike lands. `height` is how tall a piece's swing is
+#: measured over, so a tall one swings more and the ground barely moves.
+_GIVE_UNIFORMS = """
+uniform float give = 0.1;
+uniform float wobble = 3.0;
+uniform float settle = 3.7;
+uniform float falloff = 1.5;
+uniform float height = 1.0;
+uniform float felt = 1.0;
+uniform vec4 hits[%(most)d];
+uniform float ages[%(most)d];
+"""
+
+_GIVE_BODY = """\tvec3 origin = (MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+\tfloat bend = pow(clamp(VERTEX.y / height, 0.0, 1.0), falloff);
+\tvec3 sway = vec3(0.0);
+\tfloat squash = 0.0;
+\tfor (int i = 0; i < %(most)d; i++) {
+\t\tif (hits[i].w <= 0.0 || ages[i] < 0.0) {
+\t\t\tcontinue;
+\t\t}
+\t\tvec3 away = origin - hits[i].xyz;
+\t\tfloat near = 1.0 - clamp(length(away) / felt, 0.0, 1.0);
+\t\tfloat swing = hits[i].w * near * exp(-settle * ages[i])
+\t\t\t* cos(6.2831853 * wobble * ages[i]);
+\t\tvec3 local = (vec4(away, 0.0) * MODEL_MATRIX).xyz;
+\t\tlocal.y = 0.0;
+\t\tlocal = length(local) > 0.0001 ? normalize(local) : vec3(0.0);
+\t\tsway += local * swing * give * bend;
+\t\tsquash += abs(swing) * give / height;
+\t}
+\tsquash = clamp(squash, 0.0, 0.5);
+\tVERTEX.y *= 1.0 - squash * bend;
+\tVERTEX.xz *= 1.0 + 0.5 * squash * bend;
+\tVERTEX += sway;
+"""
+
+#: What a struck finish states, and the bounds each is held to.
+STRUCK = {"give": (0.0, None), "wobble": (0.0, None), "lifetime": (0.0, None),
+          "falloff": (None, None), "height": (0.0, None), "radius": (0.0, None),
+          "amount": (0.0, 16.0)}
+
+#: The script beside a struck finish's materials: `strike(at, strength)` ages each
+#: strike and hands every material it was given the points, so a game holds one node
+#: and calls one method (§PW574).
+_STRIKES = """extends Node
+## Strikes for every material a struck finish wrote (polyweave §PW574): `watch` the
+## materials the pieces wear, then `strike` where a hit lands.
+
+@export var most := %(most)d
+@export var life := %(life)s
+var hits: Array = []
+var ages: Array = []
+var _looks: Array[ShaderMaterial] = []
+
+func _init() -> void:
+\tfor i in most:
+\t\thits.append(Vector4.ZERO)
+\t\tages.append(-1.0)
+
+## hand strikes to `look` too, once
+func watch(look: Material) -> void:
+\tif look is ShaderMaterial and not _looks.has(look):
+\t\t_looks.append(look)
+\t\t_hand_one(look)
+
+func strike(at: Vector3, strength: float = 1.0) -> void:
+\tvar slot := 0
+\tfor i in most:
+\t\tif ages[i] < 0.0 or ages[i] > ages[slot]:
+\t\t\tslot = i
+\t\t\tif ages[i] < 0.0:
+\t\t\t\tbreak
+\thits[slot] = Vector4(at.x, at.y, at.z, strength)
+\tages[slot] = 0.0
+\t_hand()
+
+## whether any strike is still swinging
+func swinging() -> bool:
+\treturn ages.any(func(age: float) -> bool: return age >= 0.0)
+
+func _process(delta: float) -> void:
+\tif not swinging():
+\t\treturn
+\tfor i in most:
+\t\tif ages[i] >= 0.0:
+\t\t\tages[i] += delta
+\t\t\tif ages[i] > life * 2.0:
+\t\t\t\tages[i] = -1.0
+\t\t\t\thits[i] = Vector4.ZERO
+\t_hand()
+
+func _hand() -> void:
+\tfor look in _looks:
+\t\t_hand_one(look)
+
+func _hand_one(look: ShaderMaterial) -> void:
+\tlook.set_shader_parameter("hits", hits)
+\tlook.set_shader_parameter("ages", ages)
+"""
+
+
+def _struck(table: Any) -> dict | None:
+    """A `[finish] struck` table checked, or None where the finish does not give."""
+    if not table:
+        return None
+    if not isinstance(table, dict):
+        raise PolyweaveError(
+            "geom.bad-surface", "[finish] struck is not a table",
+            "write struck = { give = 0.3, wobble = 3, lifetime = 0.9, falloff = 1.5, "
+            "height = 6, radius = 8, amount = 8 }")
+    unknown = set(table) - set(STRUCK)
+    if unknown:
+        raise PolyweaveError(
+            "geom.bad-surface", f"[finish] struck takes no {sorted(unknown)[0]}",
+            f"write only {', '.join(STRUCK)}", given=sorted(unknown)[0],
+            allowed=tuple(STRUCK))
+    found = {"falloff": 1.5, "amount": 8, **table}
+    for key, (low, high) in STRUCK.items():
+        if key not in found:
+            raise PolyweaveError(
+                "geom.bad-surface", f"[finish] struck states no {key}",
+                f"write {key} in it, as vfx's struck pieces state it")
+        value = found[key]
+        below = low is not None and isinstance(value, int | float) and value <= low
+        above = high is not None and isinstance(value, int | float) and value > high
+        if isinstance(value, bool) or not isinstance(value, int | float) or below \
+                or above:
+            raise PolyweaveError(
+                "geom.bad-surface", f"[finish] struck {key} is {value!r}",
+                f"write {key} as a number"
+                + (f" above {low:g}" if low is not None else "")
+                + (f" and at most {high:g}" if high is not None else ""),
+                given=value)
+    found["amount"] = int(found["amount"])
+    return found
 
 
 def opened(table: dict) -> dict | None:
@@ -281,9 +420,11 @@ def opened(table: dict) -> dict | None:
             "write include as res://path/to/file.gdshaderinc",
             given=include,
         )
-    if not (hue or include):
+    struck = _struck(table.get("struck"))
+    if not (hue or include or struck):
         return None
-    return {"hue": hue, "include": include, "hold": hold, "amount": amount}
+    return {"hue": hue, "include": include, "hold": hold, "amount": amount,
+            "struck": struck}
 
 
 def _opened_shader(hooks: dict) -> str:
@@ -295,7 +436,22 @@ def _opened_shader(hooks: dict) -> str:
                 f'#include "{hooks["include"]}"\n')
         colour = f"{hooks['hold']}(colour, {hooks['amount']})"
     hue = "INSTANCE_CUSTOM.x" if hooks["hue"] == "instance" else "0.0"
-    return _OPEN % {"head": head, "colour": colour, "hue": hue}
+    struck = hooks.get("struck")
+    most = {"most": struck["amount"]} if struck else {}
+    return _OPEN % {
+        "head": head, "colour": colour, "hue": hue,
+        "give": _GIVE_UNIFORMS % most if struck else "",
+        "sway": _GIVE_BODY % most if struck else "",
+    }
+
+
+def _struck_fields(struck: dict) -> dict:
+    """A struck finish's numbers as the shader's uniforms, as vfx sets a piece's."""
+    from polyweave.layers.vfx.vfx import settle_rate
+
+    return {"give": struck["give"], "wobble": struck["wobble"],
+            "settle": settle_rate(struck["lifetime"]), "falloff": struck["falloff"],
+            "height": struck["height"], "felt": struck["radius"]}
 
 
 def _rgba(value: Any) -> tuple:
@@ -343,6 +499,8 @@ def godot(material: dict, hooks: dict | None = None) -> dict:
             "rim": finish.get("rim", 0.0), "subsurface": inside.get("weight", 0.0),
             "sheen": finish.get("sheen", 0.0),
         }
+        if hooks and hooks.get("struck"):
+            fields.update(_struck_fields(hooks["struck"]))
         lines = [f"shader_parameter/{k} = {_value(v)}" for k, v in fields.items()]
         shader = _opened_shader(hooks) if hooks else _SHADER
         return {"material": lines, "shader": shader, "fields": fields}
@@ -382,10 +540,19 @@ def write_godot(material: dict, name: str, folder: Any, stem: str, root: Any) ->
 
     from polyweave.kernel.config import load
 
-    made = godot(material, opened(load(root).table("finish")))
+    hooks = opened(load(root).table("finish"))
+    made = godot(material, hooks)
     slug = "".join(c if c.isalnum() or c in "-_" else "_" for c in name)
     out = Path(folder) / f"{stem}.{slug}.tres"
     written = []
+    if hooks and hooks.get("struck"):
+        # one script for every struck material in the folder, the game's door (§PW574)
+        struck = hooks["struck"]
+        strikes = Path(folder) / "finish_strikes.gd"
+        strikes.write_text(_STRIKES % {"most": struck["amount"],
+                                       "life": f"{float(struck['lifetime']):.6g}"},
+                           encoding="utf-8", newline="\n")
+        written.append(strikes)
     said = json.dumps(name)
     body = "\n".join(made["material"])
     if made["shader"] is None:

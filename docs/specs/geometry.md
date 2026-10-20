@@ -472,6 +472,16 @@ that is not a name, an include that is not a res:// path or a hue other than
 `instance` is `geom.bad-surface`. A project without the table writes what it always
 did.
 
+**An opened finish may give when struck** (§PW574): `struck = { give, wobble, lifetime,
+falloff, height, radius, amount }` in `[finish]` puts vfx's struck give (§PW496) in the
+same shader, so a piece keeps the finish a person judged and squashes and swings where a
+strike lands, each instance by its own distance from it and more the higher up it is,
+over `height`. The build writes `finish_strikes.gd` beside the materials: a node whose
+`watch(material)` takes each material the pieces wear and whose `strike(at, strength)`
+ages the strikes and hands them to every one, so a game holds one node and calls one
+method. A key it does not take, one missing, a give, lifetime, height or radius of 0 or
+more than 16 strikes is `geom.bad-surface`.
+
 ## The escape hatch is a node, not a mode
 
 Any format eventually meets a shape it cannot state, and forcing that shape into the format
