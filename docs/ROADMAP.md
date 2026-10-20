@@ -17,7 +17,6 @@
 ## Block H — Proof on a real game
 
 - 🛠 **PW36** (deps: PW5 ✅, PW82 ⏸) **a real project cannot adopt the plugin without carrying its own paths and palette into it** — Every family has its before side recorded and the stars have moved; the rest move one family at a time, each on a person's look, down to PW82. → §PW36
-- 📋 **PW578** (deps: —) **game.export_smoke keeps no picture of the exported build's first screen, so a draw that fails headless passes** — A Metal or MoltenVK failure prints nothing in a headless run, and a CI runner is the only Mac many owners have. → §PW578
 
 ## Block I — Voxel models from a declaration
 

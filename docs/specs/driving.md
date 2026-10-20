@@ -290,6 +290,14 @@ CI runner on `macos-latest` is how an owner with no Mac proves the build draws t
 `game.release_check`'s `pack` takes the `.app` or the `.zip` too, and reads the pack
 inside it.
 
+**The first screen, kept** (§PW578). A renderer that fails to draw, a Metal or MoltenVK
+failure, prints nothing in a headless run. With `shot`, after the headless run holds,
+the exported pack's main scene is drawn in a window on this engine for `frames` frames
+by `godot/first_screen.gd`, from outside the pack, and the frame kept as
+`<preset>/first.png`, named in the answer's `shot`. A frame one colour across, or none
+saved, is broken; any other picture is a person's to look at. It needs a display, so it
+is off unless asked.
+
 **A run a player recorded is a flow too** (§PW360). The determinism kit's
 `PolyweaveRecorder` saves a run's seed and each action's press and release by physics
 frame. `game.record_flow(record, out, proves, expect)` writes it as a flow: a `step` to

@@ -94,27 +94,6 @@ this is where that is recorded honestly: what still runs by hand, and why the ri
 instead of disappearing. An outcome worth having, stated, beats the same outcome
 unstated.
 
-### §PW578 An export smoke keeps its first screen
-
-Left over from PW577, which taught `game.export_smoke` to export and launch a macOS
-bundle. The launch is headless, as on every other platform, so the binary loads its
-resources and parses its scripts, and draws nothing. A Metal or MoltenVK failure, a
-shader the export stripped, or a first screen that comes up black is not printed by a
-headless run, and spinhold's `macos-latest` runner is the only Mac its owner has.
-
-What to build: an opt-in `shot` on `game.export_smoke` (default off, since a windowed
-run needs a display and a CI runner on Linux has none) that launches the exported binary
-windowed for the same `frames`, with `--write-movie` or the driver's own screenshot
-after the last frame, and keeps the picture beside `run.log` as `first.png`, named in
-the answer. Whether it drew is then a measure, not a look: a frame that is one colour
-across, read the way `measure_flashes` reads a frame, is answered broken with "the first
-screen is blank", and anything else is handed over for a person to see in the verdict
-page, never judged here.
-
-Open choice: `--write-movie` needs no driver in the pack but writes every frame; the
-driver from outside, as the flow pass already uses, writes one. The second is the
-smaller change and keeps the release free of the driver either way.
-
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once

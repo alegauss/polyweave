@@ -116,6 +116,37 @@ def test_a_macos_preset_is_exported_as_a_bundle_and_its_binary_launched(tmp_path
         assert os.access(preset["binary"], os.X_OK), "the execute bit kept from the zip"
 
 
+@pytest.mark.parametrize("drawn", [True, False])
+def test_a_first_screen_is_kept_and_a_blank_one_is_broken(tmp_path, monkeypatch, drawn):
+    """§PW578: a draw that fails prints nothing headless, so a picture is kept."""
+    here = game(tmp_path, exclude="")
+    monkeypatch.setenv("GODOT", "godot")
+    launched = []
+
+    def launch(command, *, cwd, timeout, env=None):
+        launched.append(command)
+        if "--export-debug" in command:
+            Path(command[-1]).write_bytes(b"binary")
+            Path(command[-1]).with_suffix(".pck").write_bytes(b"pack")
+        shot = next((one[5:] for one in command if one.startswith("shot=")), "")
+        if shot:
+            picture = Image.new("RGB", (8, 8), (20, 20, 20))
+            if drawn:
+                picture.paste((255, 200, 0), (0, 0, 4, 8))
+            picture.save(shot)
+        return "", 0
+
+    monkeypatch.setattr(driving.engine, "_launch", launch)
+    [preset] = driving.export_smoke(shot=True, root=str(here))["presets"]
+    assert Path(preset["shot"]).name == "first.png"
+    assert preset["held"] is drawn, preset
+    assert "drawn in a window" in preset["ran"]
+    assert "--headless" not in launched[-1]
+    assert launched[-1][launched[-1].index("--main-pack") + 1].endswith(".pck")
+    if not drawn:
+        assert preset["why"] == "the first screen is blank, one colour across"
+
+
 def test_a_release_check_reads_the_pack_inside_a_macos_bundle(tmp_path):
     (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
     shipped = _app_zip(tmp_path / "Smoked.zip", b"pack " + driving.ADDON.encode())

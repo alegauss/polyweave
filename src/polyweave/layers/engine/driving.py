@@ -1385,6 +1385,9 @@ def export_smoke(
     frames: Annotated[
         int, Param("frames the plain run plays before it quits", lo=1)
     ] = 120,
+    shot: Annotated[
+        bool, Param("also draw the first screen in a window, kept")
+    ] = False,
     root: Annotated[str, _ROOT] = ".",
 ) -> dict:
     """Each export preset built and launched, as a player would launch it (§PW363).
@@ -1396,6 +1399,9 @@ def export_smoke(
     this engine with the driver from outside it, never inside, and replays it. The
     answer says which each pass ran against, since a debug build proves less than a
     release; game.release_check is what keeps the driver out of the release itself.
+    With `shot`, the pack's main scene is drawn in a window and its first screen kept
+    as `first.png`, broken where it is one colour across (§PW578): a draw that fails
+    prints nothing headless. It needs a display.
     """
     here = load(root).root
     presets_file = here / "export_presets.cfg"
@@ -1425,7 +1431,7 @@ def export_smoke(
             answered.append({"preset": name, "held": None, "skipped":
                              f"a {platform} build does not launch on this machine"})
             continue
-        answered.append(_smoked(here, godot, work, name, flowed, frames))
+        answered.append(_smoked(here, godot, work, name, flowed, frames, shot))
     ran = [one for one in answered if one["held"] is not None]
     broke = [one for one in ran if not one["held"]]
     return {
@@ -1438,7 +1444,7 @@ def export_smoke(
 
 
 def _smoked(here: Path, godot: str, work: Path, name: str, flow: Path | None,
-            frames: int) -> dict:
+            frames: int, shot: bool = False) -> dict:
     """One preset exported, its binary launched, and its pack running the flow."""
     import shutil
 
@@ -1479,15 +1485,18 @@ def _smoked(here: Path, godot: str, work: Path, name: str, flow: Path | None,
     broke = [line.strip() for line in output.splitlines() if _BROKE.search(line)]
     answer.update(log=str(out / "run.log"), held=not broke,
                   why=broke[0] if broke else "")
-    if flow is None or broke:
+    packed = pack if pack and pack.is_file() else binary
+    if shot and not broke:
+        answer.update(_first_screen(godot, packed, out, frames))
+        answer["ran"] += ", and its pack drawn in a window on this engine"
+    if flow is None or not answer["held"]:
         return answer
     from .godot import ADDONS
 
     # the one polyweave carries, from outside the pack: a release never holds a driver
     driver = (ADDONS["polyweave_driver"] / Path(DRIVER).name).resolve()
     played, _ = engine._launch(
-        [godot, "--headless", "--main-pack",
-         str(pack if pack and pack.is_file() else binary),
+        [godot, "--headless", "--main-pack", str(packed),
          "--fixed-fps", "60", "--script", driver.as_posix(), "--",
          f"--flow={flow.resolve().as_posix()}"],
         cwd=out, timeout=600, env=_own_user(out / "flow.user"))
@@ -1500,6 +1509,35 @@ def _smoked(here: Path, godot: str, work: Path, name: str, flow: Path | None,
     answer.update(held=passed, flow_log=str(out / "flow.log"),
                   why="" if passed else broke_at)
     return answer
+
+
+def _first_screen(godot: str, pack: Path, out: Path, frames: int) -> dict:
+    """The pack's main scene drawn in a window for `frames` frames, and kept (§PW578).
+
+    Broken where nothing was drawn or the frame is one colour across, which is what a
+    renderer that failed leaves; any other picture is a person's to look at, never
+    judged here.
+    """
+    from PIL import Image
+
+    picture = (out / "first.png").resolve()
+    script = (Path(__file__).parent / "godot" / "first_screen.gd").resolve()
+    try:
+        said, _ = engine._launch(
+            [godot, "--main-pack", str(pack), "--fixed-fps", "60", "--script",
+             script.as_posix(), "--", f"frames={frames}", f"shot={picture.as_posix()}"],
+            cwd=out, timeout=300, env=_own_user(out / "shot.user"))
+    except subprocess.TimeoutExpired:
+        said = f"the window was still open after 300 s, past {frames} frames\n"
+    (out / "shot.log").write_text(said, encoding="utf-8")
+    if not picture.is_file():
+        last = (said.strip().splitlines() or ["nothing said"])[-1]
+        return {"held": False, "shot_log": str(out / "shot.log"),
+                "why": f"the first screen was not drawn: {last}"}
+    with Image.open(picture) as drawn:
+        flat = all(low == high for low, high in drawn.convert("RGB").getextrema())
+    return {"shot": str(picture), "held": not flat,
+            "why": "the first screen is blank, one colour across" if flat else ""}
 
 
 def _unbundled(archive: str, out: Path) -> tuple:

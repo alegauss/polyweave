@@ -440,6 +440,8 @@ export interface GameExportSmokeArgs {
   presets?: unknown[]
   /** frames the plain run plays before it quits; from 1 to …; default 120 */
   frames?: number
+  /** also draw the first screen in a window, kept; default false */
+  shot?: boolean
   /** the project the game belongs to; default "." */
   root?: string
 }
