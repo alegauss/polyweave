@@ -60,7 +60,8 @@ CORE_TOOLS = 39_000
 #: 133,265 with sound.stems (§PW558), whose sound layer's figure rose by 400 for it.
 #: 134,226 with music.from_midi (§PW559), whose sound layer's figure rose by 1,000.
 #: 135,350 with music.from_audio (§PW559), whose sound layer's figure rose by 1,100.
-SESSION_BUDGET = 135_600
+#: 136,539 with geometry.kit (§PW568), whose geometry layer's figure rose by 1,200.
+SESSION_BUDGET = 136_800
 
 #: JSON Schema's name for each type an operation declares.
 TYPES = {

@@ -31,7 +31,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
-  { block: "G", title: "Geometry as a declaration", open: 5 },
+  { block: "G", title: "Geometry as a declaration", open: 4 },
   { block: "H", title: "Proof on a real game", open: 1 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW568",
-    block: "G",
-    symptom: "A kit of built pieces takes a shell loop to render, spec and sit for a person",
-    why: "Each piece costs five calls and a hand-written spec, and every project writes its own look script.",
-    deps: [],
-  },
   {
     id: "PW569",
     block: "G",

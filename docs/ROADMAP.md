@@ -14,7 +14,6 @@
 
 ## Block G — Geometry as a declaration
 
-- 📋 **PW568** (deps: —) **A kit of built pieces takes a shell loop to render, spec and sit for a person** — Each piece costs five calls and a hand-written spec, and every project writes its own look script. → §PW568
 - 📋 **PW569** (deps: —) **A declared finish reaches the game closed, so it cannot take an instance's hue or the project's background hold** — A game re-implements the accepted shading to tint and dim it, and the drawn look drifts from the judged one. → §PW569
 - 📋 **PW570** (deps: —) **A built mesh imports with its glTF materials, so the game swaps in the judged ones by hand** — Every game drawing a built piece holds code matching surfaces to the written materials. → §PW570
 - 📋 **PW571** (deps: —) **Each finished material writes its own copy of one shader** — A kit of twelve pieces carries fifty identical shaders, each compiled apart by the game. → §PW571

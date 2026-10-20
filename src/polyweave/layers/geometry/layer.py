@@ -8,6 +8,7 @@ LAYER = Layer(
     summary="Shapes declared as data, built to meshes or voxels, rendered, measured.",
     modules=(
         "polyweave.layers.geometry.cost",
+        "polyweave.layers.geometry.kit",
         "polyweave.layers.geometry.make",
         "polyweave.layers.geometry.mesh_buy",
         "polyweave.layers.geometry.normalise",
@@ -44,7 +45,8 @@ LAYER = Layer(
     },
     codes="polyweave.layers.geometry.codes",
     config="polyweave.layers.geometry.settings",
-    tools=17_000,
+    # 18,030 with geometry.kit (§PW568).
+    tools=18_200,
     census={
         "polyweave.layers.geometry.port:read": (
             "internal", "a family file checked, inside port.run"),

@@ -31,24 +31,6 @@ standard one lacks is asked for), with the same numbers the bake used and a prov
 record, so the game loads what was judged. A capture of the game against the bake of the
 same model at one rig says whether the two agree.
 
-### §PW568 One call from a kit to its sitting
-
-Where: spinhold, 2026-10-19, the Playdeck's kit of twelve pieces (RK236).
-
-What was done by hand, twelve times over, in a shell loop: `geometry.build` each
-declaration; `cost.read` each `.glb`; `render.bake --rung final` each; write each
-`art/accept/<piece>.accept.toml` from its measured triangles (a margin over them) and a
-`sharp_edge_share` bound; `accept.check` each; then build a members JSON by hand for
-`verdict.sitting`. spinhold's `tools/art/look.py` does the same for its five models, as
-a project script.
-
-What polyweave should do: one call over a folder of declarations (`geometry.kit` or a
-`sitting` flag on `geometry.build_all`) that builds each, renders it at a stated rung,
-writes a first spec where none exists from the costs it measured (`triangles` with a
-margin, and any bounds the call names, such as `sharp_edge_share <= 0.02`), checks each,
-and lays the lot out as one family on the review page, answering which passed and where
-the sitting is.
-
 ### §PW569 A finish opened to the game
 
 Where: spinhold, 2026-10-19, RK231: the Playdeck's pieces stand on a MultiMesh of their

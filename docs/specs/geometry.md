@@ -1064,6 +1064,17 @@ invalid mesh. **A build that refuses is a failed sample**, scored zero and named
 answer, because a search that died on one invalid combination would report nothing about the
 valid ones it had already paid for.
 
+## A kit
+
+**A folder of pieces goes to a person in one call** (§PW568). `geometry.kit` builds
+each declaration under a folder as `geometry.build_all` does, renders each mesh at a
+rung into `[paths] renders`, checks each against `<piece>.accept.toml` in
+`[paths] specs`, and lays the lot out as one family in a sitting. A piece with no spec
+is given a first one from what it measured: its triangles with `headroom` (a quarter
+by default) over them, and each bound `bounds` names, read off the mesh. A spec that
+is already there is the project's and is never rewritten. The answer names the specs
+it wrote, so a person tightens them, and the page the sitting waits at.
+
 ## Conventions
 
 Axes, units, origin, colour and angles are fixed in

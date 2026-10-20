@@ -252,6 +252,14 @@ CODES: dict[str, Code] = {
         "size that is not above zero; two ways of saying one number would disagree",
         doors=("give [voxels] a `cell` size", "give [voxels] an `across` count"),
     ),
+    "geom.bad-kit": Code(
+        means="geometry.kit was given no folder of declarations, or a bound it cannot "
+        "write into a spec",
+        when="a folder with no .toml declarations in it, or bounds whose value is "
+        "neither a number nor a min or a max (§PW568)",
+        doors=("name the folder the pieces' declarations are in",
+               'give bounds as {"sharp_edge_share": {"max": 0.02}}'),
+    ),
     "geom.bad-fracture": Code(
         means="the fracture plan does not describe fragments that can exist",
         when="a size that is not two whole numbers, a smallest fragment under one "

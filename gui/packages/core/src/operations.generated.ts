@@ -716,6 +716,28 @@ export interface GeometryFitArgs {
   root?: string
 }
 
+/** Build, render, spec and check every piece of a kit, and sit them for a person. */
+export interface GeometryKitArgs {
+  /** the folder whose declarations make the kit */
+  folder: string
+  /** where the meshes go; beside each if unset */
+  out?: string
+  /** where the renders go; [paths] renders if unset */
+  renders?: string
+  /** where the specs are; [paths] specs if unset */
+  specs?: string
+  /** the rung each piece is rendered at; default "preview" */
+  rung?: "sphere" | "preview" | "final"
+  /** the share over its triangles a first spec allows; from 0 to …; default 0.25 */
+  headroom?: number
+  /** more bounds a first spec holds, as {"sharp_edge_share": {"max": 0.02}} */
+  bounds?: Record<string, unknown>
+  /** the sitting's folder; <work>/kit/<folder> if unset */
+  sitting?: string
+  /** the project the paths resolve against; default "." */
+  root?: string
+}
+
 /** The members a declaration names beside itself, one per variant. */
 export interface GeometryVariantsArgs {
   /** the declaration, as a path under the project */
@@ -2617,6 +2639,7 @@ export interface Operations {
   "geometry.compare": GeometryCompareArgs
   "geometry.describe": GeometryDescribeArgs
   "geometry.fit": GeometryFitArgs
+  "geometry.kit": GeometryKitArgs
   "geometry.variants": GeometryVariantsArgs
   "godot.install": GodotInstallArgs
   "icons.build": IconsBuildArgs
@@ -2830,6 +2853,7 @@ export const OPERATIONS = [
   "geometry.compare",
   "geometry.describe",
   "geometry.fit",
+  "geometry.kit",
   "geometry.variants",
   "godot.install",
   "icons.build",
