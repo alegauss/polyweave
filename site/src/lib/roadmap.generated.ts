@@ -123,17 +123,17 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW205"],
   },
   {
-    id: "PW579",
-    block: "U",
-    symptom: "project.inventory rescans the whole project for every page, so opening Spinhold in the window takes 50 s",
-    why: "A read of all 1,614 items is nine full scans of about 5.5 s each, and the window reads every page before it draws.",
-    deps: [],
-  },
-  {
     id: "PW581",
     block: "U",
     symptom: "the window's screens are tested only by a smoke mode or through UI Automation, which cannot wait on the page",
     why: "Deciding, sessions, paid calls, following changes and launch.mjs still run in smoke mode, deleted once they move to the flows.",
+    deps: [],
+  },
+  {
+    id: "PW584",
+    block: "U",
+    symptom: "one inventory scan hashes every artefact and input again, so opening Spinhold still takes about 7 s",
+    why: "A file whose size and mtime have not moved is read whole on every scan, and a shared input is read once per record.",
     deps: [],
   },
 ];

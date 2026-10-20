@@ -541,6 +541,7 @@
 - ✅ **PW438** **npm start fails from any VS Code terminal with a missing-export error, since ELECTRON_RUN_AS_NODE runs Electron as Node** — npm start opens the window through a launcher that drops ELECTRON_RUN_AS_NODE, so it starts from any VS Code terminal (design recorded in `gui/README.md`).
 - ✅ **PW580** **the window shows nothing while a project opens, so a slow open reads as a dead button and each click adds a read** — While a project opens, every Open is disabled, the list is aria-busy and the row says Opening with the inventory read so far, so a slow open reads as busy.
 - ✅ **PW581 (open, inventory and item flows)** **the window's screens are tested only by a smoke mode or through UI Automation, which cannot wait on the page** — Playwright drives the built window by role and name through opening a project in pt-BR, its inventory and each item viewer.
+- ✅ **PW579** **project.inventory rescans the whole project for every page, so opening Spinhold in the window takes 50 s** — The pages of one inventory read share one scan: an offset past 0 reuses the rows the last read at 0 found, so Spinhold opens in about 7 s, not 50 (design recorded in `docs/specs/inventory.md`).
 
 ## Block V — Parts every game repeats, installed already proved
 

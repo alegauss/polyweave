@@ -56,8 +56,8 @@
 
 ## Block U — A window on everything a project governs
 
-- 🛠 **PW579** (deps: —) **project.inventory rescans the whole project for every page, so opening Spinhold in the window takes 50 s** — A read of all 1,614 items is nine full scans of about 5.5 s each, and the window reads every page before it draws. → §PW579
 - ⏳ **PW581** (deps: PW580 ✅) **the window's screens are tested only by a smoke mode or through UI Automation, which cannot wait on the page** — Deciding, sessions, paid calls, following changes and launch.mjs still run in smoke mode, deleted once they move to the flows. → §PW581
+- 📋 **PW584** (deps: —) **one inventory scan hashes every artefact and input again, so opening Spinhold still takes about 7 s** — A file whose size and mtime have not moved is read whole on every scan, and a shared input is read once per record. → §PW584
 
 ## Block V — Parts every game repeats, installed already proved
 

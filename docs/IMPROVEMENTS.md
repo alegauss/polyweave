@@ -413,28 +413,6 @@ It is not a test run. A change of plan that the owner asks for mid-way ("undo, t
 other palette") is part of what is being proved, because a revision a person refines
 several times is the case this block exists for.
 
-### §PW579 One scan per read of the inventory
-
-Found on 2026-10-20 at the start of PW311. The owner pressed "Abrir" on Spinhold in the
-window and nothing happened for about 50 s. Cottony took 13 s.
-
-`project.inventory` answers a page of 200 rows, and every page calls `_items(here)`
-(`surface/project.py`), which walks every provenance record under the root, hashes every
-artefact and reads `provenance.outdated` and `provenance.unrecorded`. That scan costs
-about 5.5 s on Spinhold's 1,614 items. The window reads all the pages before it draws,
-so one open is nine full scans. A session that pages through the inventory pays the
-same.
-
-What to build: one scan per read of the whole inventory, not one per page. An offset
-past 0 reuses the rows computed by the last offset-0 read of the same root and kind,
-held in the serving process. The pages of one read then come from one snapshot, which
-they should anyway: a write between two pages could otherwise shift a row from one page
-into the next. An offset-0 call always rescans, so a fresh read is never stale.
-
-The scan itself is the next cost. It hashes every artefact on every read, even where
-size and mtime match the record. That is worth measuring once the per-page multiplier is
-gone.
-
 ### §PW581 Screen flows driven through the DOM, not the desktop
 
 Found while winwright drove the window (`gui/`) through UI Automation on 2026-10-20.
@@ -459,6 +437,29 @@ answers are covered, which is the evidence that this landed.
 
 Left to winwright: the native Open and Save dialogs, focus and the foreground, DPI and
 anything the shell owns, none of which a DOM driver reaches.
+
+### §PW584 An inventory scan that hashes only what moved
+
+Left by PW579 on 2026-10-20. Once the pages of one read shared one scan, opening
+Spinhold in the window still took about 7 s, which is that one scan.
+
+`_items` in `surface/project.py` reads every artefact whole, because the record state is
+`provenance.sha256_of(on_disk) != recorded`. An unrecorded file is hashed again for its
+`digest`. `provenance.outdated` does the same for the inputs of every record, so an
+input shared by many records is read once for each of them. Nothing remembers a file it
+read a moment ago whose size and mtime have not moved since.
+
+Measure before building: time `_items` on Spinhold split three ways (record walk,
+artefact hashing, `outdated`) and file what dominates. The guess is hashing.
+
+What to build if it is: one digest cache in `kernel/provenance.py`, keyed by resolved
+path and holding `(size, mtime_ns, sha256)`. `sha256_of` answers from it when `stat()`
+still matches and reads the file otherwise. It lives in the serving process, as the
+inventory snapshot does, so a CLI call pays the full price once and a held server pays
+it once per changed file. Every caller of `sha256_of` gets the saving, `outdated` and
+`verify` included. A file rewritten in place within one mtime tick at the same size is
+the case it would miss. The project's own writes go through the record, which hashes
+fresh, so only a hand edit inside that tick would be read stale.
 
 ## Block V — Parts every game repeats, installed already proved
 
