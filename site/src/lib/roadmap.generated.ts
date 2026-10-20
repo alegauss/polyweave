@@ -60,10 +60,10 @@ export const generatedTasks: GeneratedTask[] = [
     deps: ["PW82"],
   },
   {
-    id: "PW577",
+    id: "PW578",
     block: "H",
-    symptom: "game.export_smoke cannot export or launch a macOS build: it knows no darwin host and looks for a .exe",
-    why: "A game proved on Windows can still fail to draw on a Mac, and a Mac runner is the only Mac many owners have.",
+    symptom: "game.export_smoke keeps no picture of the exported build's first screen, so a draw that fails headless passes",
+    why: "A Metal or MoltenVK failure prints nothing in a headless run, and a CI runner is the only Mac many owners have.",
     deps: [],
   },
   {

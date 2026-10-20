@@ -254,6 +254,7 @@
 - ✅ **PW554** **a keyed timeline of a scene's own properties cannot be declared and built, only skeletal motion and camera shots** — clip.timeline builds a declared *.timeline.toml of keyed properties and marks into an AnimationPlayer scene the game plays or seeks (design recorded in `docs/specs/motion.md`).
 - ✅ **PW575** **geometry.build with an out outside the project crashes with a ValueError traceback, half written** — A finish built outside the project is refused as geom.out-outside-project before any write, with .polyweave/ named for a trial (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW576** **a transform of a union under a repeat drops its inputs' materials, and the build says nothing** — Every join carries its parts' material groups, so a repeated move of a union wears each material on every copy, and a material no face wears is warned of (design recorded in `docs/specs/geometry.md`).
+- ✅ **PW577** **game.export_smoke cannot export or launch a macOS build: it knows no darwin host and looks for a .exe** — On a Mac the macOS preset exports to a zip, its .app binary launches with modes kept, its pack runs the flow, and release_check reads a bundle's pack (design recorded in `docs/specs/driving.md`).
 
 ## Block I — Voxel models from a declaration
 

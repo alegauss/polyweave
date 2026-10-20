@@ -282,6 +282,14 @@ pass was, since a debug build proves less than the release. A project with no
 `export_presets.cfg` is `game.no-preset`, and a preset for another platform is skipped
 and said.
 
+**A Mac launches the bundle** (§PW577). On `darwin` the `macOS` preset exports to a
+`.zip`, which is unzipped with each file's mode and symlinks kept; the binary under the
+`.app`'s `Contents/MacOS` is what launches, and its `Contents/Resources/<name>.pck` is
+the pack the flow runs. The answer names the `bundle`, the `binary` and the `pack`. A
+CI runner on `macos-latest` is how an owner with no Mac proves the build draws there.
+`game.release_check`'s `pack` takes the `.app` or the `.zip` too, and reads the pack
+inside it.
+
 **A run a player recorded is a flow too** (§PW360). The determinism kit's
 `PolyweaveRecorder` saves a run's seed and each action's press and release by physics
 frame. `game.record_flow(record, out, proves, expect)` writes it as a flow: a `step` to

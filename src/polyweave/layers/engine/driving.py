@@ -1195,7 +1195,7 @@ def release_checked(
     root: Annotated[str, _ROOT] = ".",
     *,
     pack: Annotated[
-        str, Param("an exported .pck to look inside, if there is one")
+        str, Param("an exported .pck to look inside, or the macOS .app or .zip of one")
     ] = "",
     strict: Annotated[bool, Param("refuse on the first finding, as a gate")] = False,
 ) -> dict:
@@ -1284,13 +1284,13 @@ def release_checked(
     if pack:
         where = Path(pack)
         where = where if where.is_absolute() else here / where
-        if not where.is_file():
+        data = _pack_bytes(where)
+        if data is None:
             raise PolyweaveError(
                 "game.no-pack",
                 f"there is no exported pack at {where}",
                 "export the release first, or leave pack out to check the presets",
             )
-        data = where.read_bytes()
         read_pack = True
         # A pack header is GDPC, then format, major, minor, patch and flags (format 2
         # on), each 32 bits; flag 1 is an encrypted directory, which no search can read.
@@ -1342,8 +1342,30 @@ def release_checked(
     }
 
 
+def _pack_bytes(where: Path) -> bytes | None:
+    """An exported pack's bytes: a .pck, or the one a macOS .app or .zip holds (§PW577).
+
+    A macOS export is a bundle whose pack is `Contents/Resources/<name>.pck`, zipped or
+    not; None where there is no pack to read.
+    """
+    import zipfile
+
+    if where.is_dir():
+        found = sorted(where.glob("Contents/Resources/*.pck"))
+        return found[0].read_bytes() if found else None
+    if not where.is_file():
+        return None
+    if where.suffix.lower() == ".zip":
+        with zipfile.ZipFile(where) as held:
+            named = sorted(
+                one for one in held.namelist()
+                if ".app/Contents/Resources/" in one and one.endswith(".pck"))
+            return held.read(named[0]) if named else None
+    return where.read_bytes()
+
+
 #: The preset platform this machine can launch, by Godot's own name for it.
-_HOST = {"win32": "Windows Desktop", "linux": "Linux"}
+_HOST = {"win32": "Windows Desktop", "linux": "Linux", "darwin": "macOS"}
 
 #: What an exported build prints when the export left something out or broke it.
 _BROKE = re.compile(
@@ -1424,7 +1446,9 @@ def _smoked(here: Path, godot: str, work: Path, name: str, flow: Path | None,
     if out.exists():
         shutil.rmtree(out)
     out.mkdir(parents=True)
-    suffix = ".exe" if sys.platform == "win32" else ".x86_64"
+    # A macOS export is a zipped .app bundle rather than one binary (§PW577).
+    bundled = sys.platform == "darwin"
+    suffix = {"win32": ".exe", "darwin": ".zip"}.get(sys.platform, ".x86_64")
     binary = out / f"game{suffix}"
     exported, _ = engine._launch(
         [godot, "--headless", "--path", str(here), "--export-debug", name, str(binary)],
@@ -1436,6 +1460,13 @@ def _smoked(here: Path, godot: str, work: Path, name: str, flow: Path | None,
         return {**answer, "held": False, "log": str(out / "export.log"),
                 "why": "the export wrote no binary: "
                 + (exported.strip().splitlines() or ["nothing said"])[-1]}
+    pack = binary.with_suffix(".pck")
+    if bundled:
+        app, binary, pack = _unbundled(answer["binary"], out)
+        if binary is None:
+            return {**answer, "held": False, "why": "the export's zip holds no .app "
+                    "with a binary under Contents/MacOS"}
+        answer.update(binary=str(binary), bundle=str(app), pack=str(pack or ""))
     console = out / "game.console.exe"
     launched = console if console.is_file() else binary
     try:
@@ -1450,13 +1481,13 @@ def _smoked(here: Path, godot: str, work: Path, name: str, flow: Path | None,
                   why=broke[0] if broke else "")
     if flow is None or broke:
         return answer
-    pack = binary.with_suffix(".pck")
     from .godot import ADDONS
 
     # the one polyweave carries, from outside the pack: a release never holds a driver
     driver = (ADDONS["polyweave_driver"] / Path(DRIVER).name).resolve()
     played, _ = engine._launch(
-        [godot, "--headless", "--main-pack", str(pack if pack.is_file() else binary),
+        [godot, "--headless", "--main-pack",
+         str(pack if pack and pack.is_file() else binary),
          "--fixed-fps", "60", "--script", driver.as_posix(), "--",
          f"--flow={flow.resolve().as_posix()}"],
         cwd=out, timeout=600, env=_own_user(out / "flow.user"))
@@ -1469,6 +1500,36 @@ def _smoked(here: Path, godot: str, work: Path, name: str, flow: Path | None,
     answer.update(held=passed, flow_log=str(out / "flow.log"),
                   why="" if passed else broke_at)
     return answer
+
+
+def _unbundled(archive: str, out: Path) -> tuple:
+    """A macOS export unzipped: its .app, the binary under Contents/MacOS, its pack.
+
+    The zip keeps each file's mode and symlinks in its external attributes, which
+    `zipfile` does not restore, and a binary without its execute bit does not launch.
+    Answers Nones for what the archive does not hold.
+    """
+    import stat
+    import zipfile
+
+    with zipfile.ZipFile(archive) as held:
+        for info in held.infolist():
+            mode = info.external_attr >> 16
+            if stat.S_ISLNK(mode):
+                link = out / info.filename
+                link.parent.mkdir(parents=True, exist_ok=True)
+                link.symlink_to(held.read(info).decode("utf-8"))
+                continue
+            written = Path(held.extract(info, out))
+            if mode & 0o111 and written.is_file():
+                written.chmod(mode & 0o777)
+    app = next(iter(sorted(out.glob("*.app"))), None)
+    if app is None:
+        return None, None, None
+    binary = next((one for one in sorted((app / "Contents" / "MacOS").glob("*"))
+                   if one.is_file()), None)
+    pack = next(iter(sorted((app / "Contents" / "Resources").glob("*.pck"))), None)
+    return app, binary, pack
 
 
 @operation("game.close")

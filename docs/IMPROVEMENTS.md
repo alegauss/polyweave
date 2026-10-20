@@ -94,32 +94,26 @@ this is where that is recorded honestly: what still runs by hand, and why the ri
 instead of disappearing. An outcome worth having, stated, beats the same outcome
 unstated.
 
-### §PW577 A macOS build smoked as an app bundle
+### §PW578 An export smoke keeps its first screen
 
-Found in spinhold (RK244), which proves its macOS build on a GitHub Actions
-`macos-latest` runner because the owner has no Mac. The project has a "macOS" preset
-(RK243) that writes `build/macos/Spinhold.zip`, a universal `Spinhold.app`.
+Left over from PW577, which taught `game.export_smoke` to export and launch a macOS
+bundle. The launch is headless, as on every other platform, so the binary loads its
+resources and parses its scripts, and draws nothing. A Metal or MoltenVK failure, a
+shader the export stripped, or a first screen that comes up black is not printed by a
+headless run, and spinhold's `macos-latest` runner is the only Mac its owner has.
 
-`python -m polyweave game.export_smoke --presets macOS` cannot prove it, on any machine.
-In `layers/engine/driving.py`, `_HOST` maps only `win32` to "Windows Desktop" and
-`linux` to "Linux", so on a Mac every preset answers "a macOS build does not launch on
-this machine". And `_smoked` writes the export to `game.exe` or `game.x86_64` and
-launches that file, where a macOS export is a `.zip` (or `.dmg`) holding an `.app`
-bundle whose binary is `Contents/MacOS/<name>`, with its pack at
-`Contents/Resources/<name>.pck`.
+What to build: an opt-in `shot` on `game.export_smoke` (default off, since a windowed
+run needs a display and a CI runner on Linux has none) that launches the exported binary
+windowed for the same `frames`, with `--write-movie` or the driver's own screenshot
+after the last frame, and keeps the picture beside `run.log` as `first.png`, named in
+the answer. Whether it drew is then a measure, not a look: a frame that is one colour
+across, read the way `measure_flashes` reads a frame, is answered broken with "the first
+screen is blank", and anything else is handed over for a person to see in the verdict
+page, never judged here.
 
-Expected: on `darwin`, the "macOS" preset is exported to a `.zip`, the bundle unzipped,
-its `Contents/MacOS` binary launched headless and windowed for the frames asked and
-through the kept flow, the same `_BROKE` lines read from its output, and the answer
-naming the bundle and the pack. `game.release_check --pack` should take the `.pck`
-inside the bundle too. Ideally the answer also keeps a screenshot of the first screen,
-since a Metal or MoltenVK draw failure is only seen in a picture.
-
-Workaround: `.github/workflows/macos.yml` in spinhold makes exactly the call that would
-be made (`game.export_smoke --presets macOS`) and fails while it answers "skipped", so
-the workflow goes green once this lands with no change on the project's side. It also
-exports and unzips the app with Godot's own command so the log and the bundle are kept
-as artefacts.
+Open choice: `--write-movie` needs no driver in the pack but writes every frame; the
+driver from outside, as the flow pass already uses, writes one. The second is the
+smaller change and keeps the release free of the driver either way.
 
 ## Block I — Voxel models from a declaration
 

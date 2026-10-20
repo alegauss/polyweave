@@ -74,6 +74,56 @@ def test_a_project_with_no_preset_is_refused_by_name(tmp_path):
     assert caught.value.code == "game.no-preset"
 
 
+def _app_zip(where: Path, pack: bytes = b"GDPC") -> Path:
+    import zipfile
+
+    with zipfile.ZipFile(where, "w") as made:
+        binary = zipfile.ZipInfo("Smoked.app/Contents/MacOS/Smoked")
+        binary.external_attr = 0o100755 << 16
+        made.writestr(binary, b"\xcf\xfa\xed\xfe")
+        made.writestr("Smoked.app/Contents/Resources/Smoked.pck", pack)
+        made.writestr("Smoked.app/Contents/Info.plist", "<plist/>")
+    return where
+
+
+def test_a_macos_preset_is_exported_as_a_bundle_and_its_binary_launched(tmp_path,
+                                                                       monkeypatch):
+    """§PW577: on a Mac every preset was skipped, and the export looked for a .exe."""
+    here = game(tmp_path, exclude="")
+    (here / "export_presets.cfg").write_text(
+        PRESET.format(platform="macOS", exclude=""), encoding="utf-8")
+    monkeypatch.setattr(driving.sys, "platform", "darwin")
+    monkeypatch.setenv("GODOT", "godot")
+    launched = []
+
+    def launch(command, *, cwd, timeout, env=None):
+        launched.append(command)
+        if "--export-debug" in command:
+            assert command[-1].endswith(".zip")
+            _app_zip(Path(command[-1]))
+        return "", 0
+
+    monkeypatch.setattr(driving.engine, "_launch", launch)
+    [preset] = driving.export_smoke(presets=["Desktop"], root=str(here))["presets"]
+    assert preset["held"] is True, preset
+    binary = preset["binary"].replace("\\", "/")
+    assert binary.endswith("Smoked.app/Contents/MacOS/Smoked")
+    assert preset["pack"].endswith("Smoked.pck")
+    assert preset["bundle"].endswith(".app")
+    assert launched[-1][0] == preset["binary"]
+    assert "--headless" in launched[-1]
+    if sys.platform != "win32":
+        assert os.access(preset["binary"], os.X_OK), "the execute bit kept from the zip"
+
+
+def test_a_release_check_reads_the_pack_inside_a_macos_bundle(tmp_path):
+    (tmp_path / "polyweave.toml").write_text("", encoding="utf-8")
+    shipped = _app_zip(tmp_path / "Smoked.zip", b"pack " + driving.ADDON.encode())
+    found = driving.release_checked(root=str(tmp_path), pack=str(shipped))
+    assert [one["code"] for one in found["findings"]] == ["game.driver-in-pack"]
+    assert found["pack"] is True
+
+
 @pytest.mark.skipif(not os.environ.get("GODOT"), reason="no $GODOT on this machine")
 def test_a_resource_the_filter_left_out_is_found_by_launching_the_build(tmp_path):
     here = game(tmp_path, exclude="art/*")

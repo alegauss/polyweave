@@ -552,7 +552,7 @@ export interface GameRekeyArgs {
 export interface GameReleaseCheckArgs {
   /** the project the game belongs to; default "." */
   root?: string
-  /** an exported .pck to look inside, if there is one */
+  /** an exported .pck to look inside, or the macOS .app or .zip of one */
   pack?: string
   /** refuse on the first finding, as a gate; default false */
   strict?: boolean
