@@ -94,6 +94,61 @@ this is where that is recorded honestly: what still runs by hand, and why the ri
 instead of disappearing. An outcome worth having, stated, beats the same outcome
 unstated.
 
+### §PW575 A build outside the project is refused, not crashed
+
+Found in spinhold (RK232) when trying a declaration out before it landed in the game's
+folder:
+
+`python -m polyweave geometry.build --source art/pieces/playdeck_spinner.toml --out
+C:/Users/.../scratchpad/build`
+
+The answer was a Python traceback ending in `ValueError: '...\scratchpad\build\
+finish.gdshader' is not in the subpath of 'D:\Git\viglet\spinhold'`, raised from
+`finish.write_godot`'s `relative_to(root)`. No code, no remedy, and the mesh was half
+written. The finish needs a `res://` path for its shader, which only exists under the
+project, so an `--out` outside it cannot work as things stand. But the caller learns
+that from a stack, not from a refusal.
+
+Expected: either a refusal with a code (say `geom.out-outside-project`) and a remedy
+("write under the project, or pass `preview` to try the shape without its finish"), or a
+build that writes the mesh outside and skips the Godot finish with a warning saying so.
+
+Workaround: built straight into `assets/pieces/`, which is where the pieces go anyway.
+That works, but a trial build then lands in the folder the game ships before a person
+has seen it.
+
+What to build: check `out` against `root` before writing anything when a finish is
+declared, and refuse with the code. Better still, let a trial build write to the work
+area (`.polyweave/`) with its finish's `res://` paths pointing at the project's real
+shader, so an agent can try a shape without touching shipped files.
+
+### §PW576 A moved union keeps its materials
+
+Found in spinhold (RK232), building `art/pieces/playdeck_fan.toml`: a vane was a union
+of a `rounded_box` in `blade` and a `sphere` in `tip`, and a `transform` node with `of =
+"vane"`, `rotate = ["22", "k * 90", "0"]` and a `repeat` over `k` laid four of it round
+the hub.
+
+`python -m polyweave geometry.build --source art/pieces/playdeck_fan.toml --out
+assets/pieces` answered `status: built` with no warning, but the glTF export said
+"Primitives created: 4" for a declaration of six materials, and the render showed the
+blades in the drum's orange. `blade` and `tip` were gone from the mesh, and their
+`.tres` files were still written beside it. `solid.transform` says the worn material
+ranges come with the mesh, so this is either the union's groups not reaching the
+transform or the repeat dropping them.
+
+Expected: the moved copies keep each face's material, as a transform of a primitive
+does, or the build refuses with the materials it lost named.
+
+Workaround in spinhold: the four blades and their tips are laid as plain primitives on
+the two axes (`blades_x`, `blades_z`, `tips_x`, `tips_z`), so they lose their pitch. A
+comment in the declaration names this line.
+
+What to build: carry `groups` through a transform of a union, under a repeat, and add a
+build check that every material the declaration names reaches the mesh (the voxel
+build's "no cell wears" check, for meshes), so a lost material is a finding and not a
+surprise in a render.
+
 ## Block I — Voxel models from a declaration
 
 ## Block J — A bar a person sets once
