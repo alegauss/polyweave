@@ -153,9 +153,17 @@ on screen by id, keeping each unchanged row's object, so only what moved redraws
 the person is looking at that changed on disk is marked as changed, never swapped
 silently, and they open the new one when they choose.
 
-## The live test
+## The live tests
 
-`shell/src/window-live.test.ts` starts Electron in smoke mode (`POLYWEAVE_GUI_SMOKE`).
+`shell/src/window-flows-live.test.ts` drives the built window the way a person does
+(§PW581). Playwright's `_electron.launch()` starts the shell in the language asked
+(`--lang`), finds what a person reads by role and name, and waits on what the page draws,
+never on a guessed timeout. `page.screenshot()` renders the window itself, whatever lies
+over it on the desk. Playwright is a devDependency of `@pw/shell` alone, and launching
+Electron needs no browser download. A screen flow is written here.
+
+`shell/src/window-live.test.ts` is what is left of the older way, and its cases move to
+the flows one at a time. It starts Electron in smoke mode (`POLYWEAVE_GUI_SMOKE`).
 The renderer finds and opens a project under the root it is given, draws its inventory
 in the language it is given, and main prints what the page drew, read back off the page.
 Smoke mode can also save a picture of the window (`shot`), which is how a change to a

@@ -133,7 +133,7 @@ export const generatedTasks: GeneratedTask[] = [
     id: "PW581",
     block: "U",
     symptom: "the window's screens are tested only by a smoke mode or through UI Automation, which cannot wait on the page",
-    why: "Each screen change waits on a guessed timeout and each capture photographs the desk, so a screen flow cannot be proved the way the evidence rule wants.",
+    why: "Deciding, sessions, paid calls, following changes and launch.mjs still run in smoke mode, deleted once they move to the flows.",
     deps: [],
   },
 ];
