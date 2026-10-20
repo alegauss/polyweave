@@ -118,6 +118,7 @@
 - ✅ **PW566** **A bevel rounds every edge, so a smooth body grows triangles and creases under it** — A bevel rounds only edges sharper than its crease, 30 degrees unless the node says, so a cut torus has its cut rounded and its facets left alone (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW567** **A rebuild leaves the material files of materials the document dropped** — A rebuild removes the .tres and .gdshader it wrote for a material the document dropped, with their records, and names them under removed (design recorded in `docs/specs/geometry.md`).
 - ✅ **PW568** **A kit of built pieces takes a shell loop to render, spec and sit for a person** — geometry.kit builds, renders, specs and checks every piece of a folder and sits them as one family, writing a first spec only where none is (design recorded in `src/polyweave/layers/geometry/kit.py`).
+- ✅ **PW569** **A declared finish reaches the game closed, so it cannot take an instance's hue or the project's background hold** — An optional [finish] table writes every finish as a shader that turns an instance's hue and holds it by the project's own function (design recorded in `docs/specs/geometry.md`).
 
 ## Block H — Proof on a real game
 

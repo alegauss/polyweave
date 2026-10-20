@@ -31,28 +31,6 @@ standard one lacks is asked for), with the same numbers the bake used and a prov
 record, so the game loads what was judged. A capture of the game against the bake of the
 same model at one rig says whether the two agree.
 
-### §PW569 A finish opened to the game
-
-Where: spinhold, 2026-10-19, RK231: the Playdeck's pieces stand on a MultiMesh of their
-own (RK230), each in the finish the owner accepted on the kit's sitting (RK236), and the
-ring must (a) show one piece in several hues, one per instance, and (b) dim under the
-play by the project's `backdrop_dim`, as every background does.
-
-What came back: `finish.write_godot` writes a closed material, a StandardMaterial3D or,
-with a sheen, a ShaderMaterial over a fixed shader. Neither reads an instance's custom
-data nor any project uniform. The first workaround was a `plastic.gdshader` in the game,
-re-implementing polyweave's shading with the hue and the hold added and copying the
-numbers in from the .tres: the owner refused it, since the work belongs in polyweave.
-
-Built: an optional `[finish]` table (geometry layer): `hue = "instance"` turns each
-instance's colour by INSTANCE_CUSTOM.x turns of the wheel; `include` and `hold` pass the
-colour through a function of the project's, `hold(colour, amount)`, with `amount` an
-instance uniform (default `backdrop`, 1 unless set). With it, every finish is written as
-the spatial shader with the same numbers; without it, as before. Refusals for a bad hue,
-an include without a hold, a non-name hold and a non-res:// include. Spec in
-`geometry.md` and `project-config.md`; tests in `test_finish.py`, one of which has Godot
-parse the shader with a project include.
-
 ### §PW570 Imported in the judged look
 
 Where: spinhold, 2026-10-19, RK231. The Playdeck's pieces were built with their finish

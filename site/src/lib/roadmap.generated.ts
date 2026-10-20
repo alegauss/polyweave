@@ -31,7 +31,7 @@ export const generatedBlocks: GeneratedBlock[] = [
   { block: "D", title: "Fetching from a paid service without surprise", open: 0 },
   { block: "E", title: "One world with the engine", open: 0 },
   { block: "F", title: "Motion", open: 0 },
-  { block: "G", title: "Geometry as a declaration", open: 4 },
+  { block: "G", title: "Geometry as a declaration", open: 3 },
   { block: "H", title: "Proof on a real game", open: 1 },
   { block: "I", title: "Voxel models from a declaration", open: 0 },
   { block: "J", title: "A bar a person sets once", open: 0 },
@@ -52,13 +52,6 @@ export const generatedBlocks: GeneratedBlock[] = [
 ];
 
 export const generatedTasks: GeneratedTask[] = [
-  {
-    id: "PW569",
-    block: "G",
-    symptom: "A declared finish reaches the game closed, so it cannot take an instance's hue or the project's background hold",
-    why: "A game re-implements the accepted shading to tint and dim it, and the drawn look drifts from the judged one.",
-    deps: [],
-  },
   {
     id: "PW570",
     block: "G",
